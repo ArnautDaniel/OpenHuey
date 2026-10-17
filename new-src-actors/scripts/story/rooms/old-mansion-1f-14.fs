@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-14
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 : old-mansion-1f-14.enter ( -- )   \ 004268B0
     room-sounds
@@ -205,7 +205,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     15.82 20.96 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -222,7 +222,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -247,7 +247,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         90 self-turn-angle
         self-wait-done
     then then then
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     7 message   \ "This shelf is packed full of old books, discolored from years of disuse. A majority of..."
@@ -260,7 +260,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     19.0 33.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     8 message   \ "Scattered mannequin parts are strewn about. When assembled correctly, these parts will..."

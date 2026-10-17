@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-3f-1
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x06 (Room06_Cmd00_ptmf): its four objects (the name's 6th letter counting) to their
 \ places
@@ -161,13 +161,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     0 ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
-            $60B self-anim
+            rattle-behind-slow-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
         else
-            $609 self-anim
+            rattle-behind-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
@@ -257,7 +257,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     stalker-who char-file-use
     begin
-        $8001 self-anim
+        1 room-motion self-anim
         self-wait-anim
     again
 ;

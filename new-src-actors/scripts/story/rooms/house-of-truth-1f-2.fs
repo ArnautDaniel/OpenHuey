@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-2
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ room 0x88: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -251,7 +251,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 message   \ "I hope this water is pure..."
         wait-message
         fiona-who char-file-use
-        $8004 $A self-anim-blend
+        4 room-motion $A self-anim-blend
         self-frames-reset
         $16 self-wait-frames
         fiona-who 1 6 char-sound
@@ -298,14 +298,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -60.0 55.0 self-turn-to-xz
     self-wait-done
-    $A02 $A self-anim-blend
+    look-close-anim $A self-anim-blend
     self-wait-anim
     2 message   \ "Unsettling sounds and smells waft forth from the eerie hole. Enter the hole? YES NO"
     wait-message
     0 answer? if
         $F 0 fade
         wait-fade
-        fiona-who $7E 5 char-sound
+        fiona-who slide-sound 5 char-sound
         world-held state-flag-set
         $FE exit-check
     else
@@ -319,7 +319,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-scripted
     self-wait-done
     camera-restart
-    fiona-who $7E 5 char-sound
+    fiona-who slide-sound 5 char-sound
     1 map-page
     $F 1 fade
     wait-fade
@@ -345,7 +345,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -33.17 33.19 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -362,7 +362,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -373,7 +373,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -0.4 -123.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -390,7 +390,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -401,7 +401,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     35.0 33.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -418,7 +418,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -428,7 +428,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    $402 self-anim
+    turn-round-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     3 message   \ "If I went back I'm sure I would get lost. Better to keep moving forward."

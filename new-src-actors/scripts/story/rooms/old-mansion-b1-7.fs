@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-7
-USING: engine common actors messages room-names story.words story.shared story-names floor-flags ;
+USING: engine common actors messages room-names story.words story.shared story-names floor-flags fiona.anims ;
 
 \ one of the fish swimming its way (swim path k), on and on
 : swim ( id k -- )
@@ -226,7 +226,7 @@ USING: engine common actors messages room-names story.words story.shared story-n
     8.95 11.89 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -243,7 +243,7 @@ USING: engine common actors messages room-names story.words story.shared story-n
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -251,7 +251,7 @@ USING: engine common actors messages room-names story.words story.shared story-n
 
 : old-mansion-b1-7.act04 ( -- )   \ 00429520
     self-wait-done
-    1 self-anim
+    rest-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     0 message   \ "An aquarium? Schools of strange fish glide through the water."

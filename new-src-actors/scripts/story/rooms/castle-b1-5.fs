@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-5
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags hewie.anims ;
 
 \ room 0x0B (Room0B_Cond00_ptmf): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6
 : castle-b1-5.cond00? ( b0 b1 b2 b3 -- flag )   \ (x, z: s16 bytes 3..4, 5..6)
@@ -94,7 +94,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     repeat
     fiona-who char-file-use
     0 $F2 6 action
-    $8000 self-anim
+    0 room-motion self-anim
     self-wait-anim
     self-frames-reset
     $3C self-wait-frames
@@ -159,25 +159,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $A4 -55.0 0.0 90 $FFFF $A self-move-to
     self-wait-done
-    4 self-anim
+    stance-anim self-anim
     self-frames-reset
     $3C self-wait-frames
-    $1B03 self-anim
+    bark-tense-anim self-anim
     self-wait-anim
-    $1B03 self-anim
+    bark-tense-anim self-anim
     self-wait-anim
-    $1B03 self-anim
+    bark-tense-anim self-anim
     self-wait-anim
-    $1B03 self-anim
+    bark-tense-anim self-anim
     self-wait-anim
-    $1B03 self-anim
+    bark-tense-anim self-anim
     self-wait-anim
-    $1B03 self-anim
+    bark-tense-anim self-anim
     self-wait-anim
     fiona-who self-look-at
     yield
     cb1-5-flag1 story-flag-set
-    4 self-anim
+    stance-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     self-who self-look-at

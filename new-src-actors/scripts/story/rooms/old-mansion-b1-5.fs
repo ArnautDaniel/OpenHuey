@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-5
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ room 0x51 (Room51_Cmd00_ptmf): byte 3 0 door 0 set going (+0xC); else wait (2) while it moves
 : old-mansion-b1-5.cmd00 ( b0 -- )  0= if  0 1 door-play  else  0 door-wait  then ;   \ (door 0: b0 0 swung, else waited for)
@@ -493,13 +493,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 0.0 0.0 0.0 0.0 event-camera
     world-frozen state-flag-clear
     0 answer? if
-        $902 self-anim
+        reach-out-anim self-anim
         0 exit-door-open? if
             0 old-mansion-b1-5.cmd00
             self-wait-anim
             0.0 10.0 -40.0 self-look-at-point
             yield
-            $903 self-anim
+            reach-back-anim self-anim
             1 old-mansion-b1-5.cmd00
             self-frames-reset
             self-wait-16
@@ -507,7 +507,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             self-wait-anim
             0.0 10.0 -40.0 self-look-at-point
             yield
-            $903 self-anim
+            reach-back-anim self-anim
         then
         $72 5 0.0 0.0 -40.0 0 0 sound
         $52 door-open-clear
@@ -635,7 +635,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    $8003 0 self-anim-blend
+    3 room-motion 0 self-anim-blend
     self-wait-anim
     0 self-noclip
     omb1-5-flag4 story-flag-set
@@ -656,7 +656,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-noclip
     8 2 object-anim
     9 2 object-anim
-    $8002 0 self-anim-blend
+    2 room-motion 0 self-anim-blend
     self-frames-reset
     $10 self-wait-frames
     fiona-who 0 6 char-sound
@@ -689,7 +689,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-noclip
     8 4 object-anim
     9 4 object-anim
-    $8004 0 self-anim-blend
+    4 room-motion 0 self-anim-blend
     self-frames-reset
     7 self-wait-frames
     fiona-who 0 6 char-sound
@@ -747,7 +747,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-who self-look-at
     yield
     0 ebit? not if
-        $8000 5 self-anim-blend8
+        0 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         0 part-hidden
@@ -760,7 +760,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         fiona-who 1 6 char-sound
         self-wait-anim
     else
-        $8001 5 self-anim-blend8
+        1 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         0 part-hidden
@@ -788,7 +788,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 2 pad? not 1 1 var? or if
             0 1 var? if
                 1 0 var-set
-                fiona-who $43 5 char-sound
+                fiona-who seized-sound 5 char-sound
                 stalker-who char-here? if
                     ['] old-mansion-b1-5.act0A goto
                 else
@@ -819,7 +819,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             1 self-noclip
             8 2 object-anim
             9 2 object-anim
-            $8002 0 self-anim-blend
+            2 room-motion 0 self-anim-blend
             self-frames-reset
             $10 self-wait-frames
             fiona-who 0 6 char-sound
@@ -852,10 +852,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 wait-counter
     1 self-noclip
     0 ebit? not if
-        $8000 5 self-anim-blend8
+        0 room-motion 5 self-anim-blend8
         self-wait-anim
     else
-        $8001 5 self-anim-blend8
+        1 room-motion 5 self-anim-blend8
         self-wait-anim
     then
     0 self-noclip
@@ -868,16 +868,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
                 hewie-hidden state-flag-clear
                 1 self-noclip
                 1 ebit? if
-                    $8004 0 self-anim-blend
+                    4 room-motion 0 self-anim-blend
                     self-frames-reset
                     7 self-wait-frames
                     fiona-who 0 6 char-sound
                     self-wait-anim
                 else 0 0 var? if
-                    $8002 0 self-anim-blend
+                    2 room-motion 0 self-anim-blend
                     self-wait-anim
                 else
-                    $8003 0 self-anim-blend
+                    3 room-motion 0 self-anim-blend
                     self-wait-anim
                 then then
                 0 self-noclip
@@ -888,16 +888,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             hewie-hidden state-flag-clear
             1 self-noclip
             1 ebit? if
-                $8004 0 self-anim-blend
+                4 room-motion 0 self-anim-blend
                 self-frames-reset
                 7 self-wait-frames
                 fiona-who 0 6 char-sound
                 self-wait-anim
             else 0 0 var? if
-                $8002 0 self-anim-blend
+                2 room-motion 0 self-anim-blend
                 self-wait-anim
             else
-                $8003 0 self-anim-blend
+                3 room-motion 0 self-anim-blend
                 self-wait-anim
             then then
             0 self-noclip
@@ -918,7 +918,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     3 1 var-set
     1 self-scripted
     1 1 var-set
-    $8002 $A self-anim-blend
+    2 room-motion $A self-anim-blend
     self-frames-reset
     $19 self-wait-frames
     stalker-who 5 6 char-sound
@@ -930,7 +930,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-anim
     1 0 var-set
     3 0 var-set
-    $404 self-anim
+    step-back-anim self-anim
     self-wait-anim
     0 self-scripted
     $78 1 summoner-wait
@@ -958,7 +958,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     3 self-is? $22 self-is? or if
         8 3 object-anim
         9 3 object-anim
-        $8001 $A self-anim-blend
+        1 room-motion $A self-anim-blend
         self-frames-reset
         $10 self-wait-frames
         0 2 var-set
@@ -966,11 +966,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $A self-wait-frames
         stalker-who 0 6 char-sound
         self-wait-anim
-        $404 self-anim
+        step-back-anim self-anim
         self-wait-anim
         0 self-scripted
     else
-        $1601 self-anim
+        there-anim self-anim
         self-wait-anim
         fiona-hidden state-flag? if
             2 avoid-prompt
@@ -1008,10 +1008,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 counter-set
     0 stalker-who $12 action
     1 wait-counter
-    fiona-who $43 5 char-sound
-    $8000 $A self-anim-blend
+    fiona-who seized-sound 5 char-sound
+    0 room-motion $A self-anim-blend
     self-wait-anim
-    $8003 $A self-anim-blend
+    3 room-motion $A self-anim-blend
     self-wait-anim
     counter-inc
     stalkers-stay state-flag-clear
@@ -1041,7 +1041,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     9 0 object-hidden
     8 6 object-anim
     9 6 object-anim
-    $8003 self-anim
+    3 room-motion self-anim
     self-frames-reset
     7 self-wait-frames
     fiona-who 0 6 char-sound

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-21
-USING: room-names story.words story.shared story-names floor-flags ;
+USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
 : old-mansion-1f-21.enter ( -- )   \ 00439B10
     om1f-21-breakable1-broken story-flag? not if
@@ -251,9 +251,9 @@ USING: room-names story.words story.shared story-names floor-flags ;
         stalker-who self-touching? not if
             in-panic? not if
                 fiona-who $44 char-not-at-door? if
-                    $609 self-anim
+                    rattle-behind-anim self-anim
                 else
-                    $608 self-anim
+                    rattle-front-anim self-anim
                 then
                 self-frames-reset
                 $14 self-wait-frames
@@ -277,7 +277,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
     20.0 -72.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -294,7 +294,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

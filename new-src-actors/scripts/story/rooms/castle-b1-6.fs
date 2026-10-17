@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-6
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x0C (Room0C_Cmd01_ptmf): script variable byte 3 down by the player's hit (byte 4: 1 from
 \ the weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0
@@ -382,7 +382,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     160.0 0.0 self-turn-to-xz
     self-wait-done
-    $A01 $A self-anim-blend
+    look-low-anim $A self-anim-blend
     self-wait-anim
     6 message   \ "There are some letters engraved here..."
     wait-message
@@ -392,7 +392,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     wait-message
     $F 7 fade
     wait-fade
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     got-saturnus-key story-flag? not if
@@ -465,7 +465,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         wait-message
         1 ebit-set
     else
-        $A01 $A self-anim-blend
+        look-low-anim $A self-anim-blend
         $10 message   \ "I-I could have been killed... I guess fate was smiling on me today... for now."
         wait-message
         self-wait-anim
@@ -577,7 +577,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-b1-6.act0B ( -- )   \ 003F4FC8
     self-wait-done
-    $1D02 $A self-anim-blend
+    hands-clasped-anim $A self-anim-blend
     $11 message   \ "He's not moving... I-I think he's dead..."
     wait-message
     self-wait-anim
@@ -593,7 +593,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $A 1 object-hidden
     0 8 0.0 0.0 0.25 0.25 zone-rect
     6 part-hidden
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     1 1 movie-play

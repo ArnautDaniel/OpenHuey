@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-1
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims ;
 
 : old-mansion-b1-1.enter ( -- )   \ 00415BA0
     omb1-1-breakable-broken story-flag? not if
@@ -310,7 +310,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
                 else
                     $1C 1 6 char-sound
                 then
-                fiona-who $8F 5 char-sound
+                fiona-who shove-hit-sound 5 char-sound
                 $1C $900B 0 3 char-anim-hold
                 $1C wait-char-anim
                 $1C $900A 0 3 char-anim-hold
@@ -363,7 +363,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
                 else
                     $1C 1 6 char-sound
                 then
-                fiona-who $8F 5 char-sound
+                fiona-who shove-hit-sound 5 char-sound
                 $1C $900B 0 3 char-anim-hold
                 $1C wait-char-anim
                 $1C $900A 0 3 char-anim-hold
@@ -391,7 +391,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     60.5 -33.4 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -408,7 +408,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -483,7 +483,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 keeps-fiona-off keeps-pursuers-off or floor-on
     $129 -11.17 -29.06 0.3 50 hewie-go-to
     self-wait-done
-    $1C03 $A self-anim-blend
+    sit-a-while-anim $A self-anim-blend
     self-wait-anim
     omb1-1-album-medallion story-flag? not if
         fiona-half-hidden state-flag? fiona-who char-busy? not or if

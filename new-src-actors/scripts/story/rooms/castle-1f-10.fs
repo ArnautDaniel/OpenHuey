@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-10
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ the stalker in play is chasing (+0x153C 2, 6 or 7, not +0xC4 2) with the progress state 2: in
 \ this room, whether the camera sees it; elsewhere 1
@@ -181,7 +181,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $98 7.28 20.316 15 $FFFF 5 self-move-to
     self-wait-done
     1 20.0 10.0 20.0 0.0 event-camera
-    $A01 $A self-anim-blend
+    look-low-anim $A self-anim-blend
     0 message   \ "A doll lies on display here. The owner must cherish it."
     wait-message
     self-wait-anim
@@ -238,7 +238,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     11.0 -58.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -255,7 +255,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -263,7 +263,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-1f-10.act04 ( -- )   \ 00404428
     self-wait-done
-    $A01 $A self-anim-blend
+    look-low-anim $A self-anim-blend
     1 message   \ "There is no way I would even consider lying down here."
     wait-message
     self-wait-anim
@@ -302,7 +302,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -3.61 2.23 self-turn-to-xz
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -319,7 +319,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $8011 message   \ "You've obtained ."
         wait-message
     then
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;

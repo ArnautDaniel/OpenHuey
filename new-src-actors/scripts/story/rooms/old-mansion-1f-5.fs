@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-5
-USING: room-names story.words story.shared story-names floor-flags ;
+USING: room-names story.words story.shared story-names floor-flags fiona.anims fiona.sounds ;
 
 \ the effect BigFire_vtable (three quad drawers) started with parameter 0
 : old-mansion-1f-5.cmd00 ( -- )  effects:big-fire ;   \ (the fire: smoke, flames, glow)
@@ -116,7 +116,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
     self-wait-done
     -136.0 12.0 self-turn-to-xz
     self-wait-done
-    $A02 $A self-anim-blend
+    look-close-anim $A self-anim-blend
     self-wait-anim
     $21 0 pvar? if
         $21 pvar-inc
@@ -126,8 +126,8 @@ USING: room-names story.words story.shared story-names floor-flags ;
         1 6 -138.0 5.0 5.0 0 0 sound
         self-frames-reset
         $10 self-wait-frames
-        fiona-who $43 5 char-sound
-        $F00 self-anim
+        fiona-who seized-sound 5 char-sound
+        startled-anim self-anim
         $21 pvar-inc
         in-panic? not if
             3 panic-stage
@@ -155,7 +155,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
     -107.57 10.1 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -172,7 +172,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -187,7 +187,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
     -9.11 -21.78 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -204,7 +204,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

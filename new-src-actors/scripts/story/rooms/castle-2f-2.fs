@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-2
-USING: engine actors room-names story.words story.shared flag-names story-names ;
+USING: engine actors room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
 \ ---- the doll ("dool") that falls: +$30 its velocity, +$3C its triangle ($80000000: landed; -1
 \ none) ----
@@ -434,7 +434,7 @@ create dl-at 12 allot
 : castle-2f-2.act00 ( -- )   \ 003FEAF0
     1 self-scripted
     self-wait-done
-    $F02 0 self-anim-blend
+    pull-free-anim 0 self-anim-blend
     found-file-209 story-flag-set
     world-held state-flag-clear
     0 0 player-camera
@@ -463,13 +463,13 @@ create dl-at 12 allot
     self-wait-done
     $11 self-through-door
     self-wait-done
-    $609 self-anim
+    rattle-behind-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
     $F3 action-end
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $16 self-wait-frames
     $F $44 fade
@@ -522,12 +522,12 @@ create dl-at 12 allot
     4 4 player-camera
     camera-restart
     force-calm state-flag-clear
-    $8001 0 self-anim-blend
+    1 room-motion 0 self-anim-blend
     c2f-2-flag1 story-flag-set
     world-held state-flag-clear
     5 0 0 music
     $F $91 fade
-    $8003 self-anim
+    3 room-motion self-anim
     self-wait-anim
     summoner-own-cooldown
     wait-fade
@@ -544,10 +544,10 @@ create dl-at 12 allot
     self-frames-reset
     begin
         $19 chance? if
-            $1302 $A self-anim-blend
+            look-about-anim $A self-anim-blend
             self-wait-anim
         else $19 chance? if
-            $1305 $A self-anim-blend
+            look-about-3-anim $A self-anim-blend
             self-wait-anim
         then then
         4 camera-mode? not 0 0 1 $C2 castle-2f-2.cond01? or if
@@ -574,8 +574,8 @@ create dl-at 12 allot
     self-wait-done
     c2f-2-flag4 story-flag? not if
         c2f-2-flag4 story-flag-set
-        fiona-who $43 5 char-sound
-        $F00 self-anim
+        fiona-who seized-sound 5 char-sound
+        startled-anim self-anim
         $5A threat-add
         1 $FF 8 rumble
         self-frames-reset
@@ -595,7 +595,7 @@ create dl-at 12 allot
 
 : castle-2f-2.act07 ( -- )   \ 003FED00
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     3 message   \ "Nothing unusual..."
@@ -611,7 +611,7 @@ create dl-at 12 allot
     1 20.0 -10.0 0.0 6.0 event-camera
     self-frames-reset
     $10 self-wait-frames
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $37 self-wait-frames
     4 message   \ "A woman with wings protruding from her back. An angel, perhaps?"
@@ -642,7 +642,7 @@ create dl-at 12 allot
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $37 self-wait-frames
     7 message   \ "It's dark. I can't see a thing."
@@ -664,7 +664,7 @@ create dl-at 12 allot
     -11.6 142.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -681,7 +681,7 @@ create dl-at 12 allot
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -696,7 +696,7 @@ create dl-at 12 allot
     stalker-who char-file-use
     1 self-noclip
     1 self-scripted
-    $8000 5 self-anim-blend8
+    0 room-motion 5 self-anim-blend8
     begin
         fiona-who self-touching? if
             stalker-who 0 fiona-thrown
@@ -749,7 +749,7 @@ create dl-at 12 allot
     self-wait-done
     5 castle-2f-2.cmd05
     self-wait-done
-    $900 self-anim
+    pick-up-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -766,7 +766,7 @@ create dl-at 12 allot
         $8011 message   \ "You've obtained ."
         wait-message
     then
-    $901 self-anim
+    up-from-pick-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;

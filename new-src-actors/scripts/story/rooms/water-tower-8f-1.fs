@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-8f-1
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ the screen fade (renderer +0x70) by script variable 1 with Hewie's light 0xF: byte 3 0 clear
 \ (0x808080), 2 full (0x80808080); 1 fades in by 0x10 a call and 3 back out, waiting (2),
@@ -342,12 +342,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $204 0 hewie-anim-root
     0 water-tower-8f-1.cmd00
     1 water-tower-8f-1.cmd00
-    0 8 self-anim-blend
+    hewie.anims:stand-anim 8 self-anim-blend
     self-frames-reset
     8 self-wait-frames
-    $102 self-anim
+    lie-down-anim self-anim
     self-wait-anim
-    2 $A self-anim-blend
+    lie-anim $A self-anim-blend
     self-frames-reset
     $A self-wait-frames
     0 ebit-set
@@ -736,7 +736,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     stalker-who self-look-at
     yield
-    $C00 self-anim
+    go-for-it-gesture-anim self-anim
     fiona-who 1 char-wait-motion
     fiona-who $2F 5 char-sound
     self-wait-anim
@@ -849,7 +849,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : water-tower-8f-1.act0F ( -- )   \ 004303A0
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     self-wait-16
     7 ebit? not if
@@ -893,7 +893,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         12.0 7.0 self-turn-to-xz
         self-wait-done
     then then then
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     self-wait-16
     9 message   \ "There is a small hole... It looks just big enough for Hewie to fit in."

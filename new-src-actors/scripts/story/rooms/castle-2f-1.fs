@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-1
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
 \ the dial pstr_syuukouki on progress var 3
 : castle-2f-1.cmd00 ( b0 -- )  s" syuukouki" 3 0 0 dial-step ;   \ (the dial on progress variable 3, from 0 degrees)
@@ -158,9 +158,9 @@ USING: room-names story.words story.shared flag-names story-names ;
         stalker-who self-touching? not if
             in-panic? not if
                 fiona-who $15 char-not-at-door? if
-                    $609 self-anim
+                    rattle-behind-anim self-anim
                 else
-                    $608 self-anim
+                    rattle-front-anim self-anim
                 then
                 self-frames-reset
                 $14 self-wait-frames
@@ -287,7 +287,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     39.5 -38.8 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -304,7 +304,7 @@ USING: room-names story.words story.shared flag-names story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -340,7 +340,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     41.5 31.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -357,7 +357,7 @@ USING: room-names story.words story.shared flag-names story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

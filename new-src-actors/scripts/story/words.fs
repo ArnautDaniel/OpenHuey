@@ -1545,6 +1545,9 @@ $80001 constant step-or-doorway   \ (a floor's nav flags)
 : avoid-prompt ( row -- )  s" avoid" actor-named send show-avoid ;   \ 0xB4: the avoid prompt, for a second
 : char-file-load ( who file -- )   \ 0xA6: a motion file of the room's (its string `file`) loaded for who
     this-room @ room-string  rot char-model dup 0< if  drop 2drop exit  then  motions-load drop ;
+\ a motion of the file the room loaded for a character (char-file-load: its ids from $8000)
+$8000 constant room-motions
+: room-motion ( i -- anim )  room-motions + ;
 : char-file-use ( who -- )   \ 0xA7: who's model plays the motions loaded for it (after its own)
     char-model dup 0< if  drop exit  then  true swap motions-use ;
 : door-lock-for ( who door on -- )   \ 0xC2: the door locked against who's kind of character, or not

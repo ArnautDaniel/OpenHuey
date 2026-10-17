@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-20
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 : old-mansion-1f-20.enter ( -- )   \ 00439160
     room-sounds
@@ -358,7 +358,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
                 then
             then
             $1C 1 6 char-sound
-            fiona-who $8F 5 char-sound
+            fiona-who shove-hit-sound 5 char-sound
             $1C $900D 0 3 char-anim-hold
             $1C wait-char-anim
             0 5 var? if
@@ -397,7 +397,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     12.3 177.61 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -414,7 +414,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -425,7 +425,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0.34 62.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -442,7 +442,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -453,7 +453,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     13.99 94.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -470,7 +470,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -481,7 +481,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -13.99 126.99 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -498,7 +498,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -509,7 +509,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -42.23 236.98 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -526,7 +526,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

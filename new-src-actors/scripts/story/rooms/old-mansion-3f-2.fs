@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-3f-2
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x63: the script's character walks to Fiona's nav triangle (character move 6, with
 \ 0x204).
@@ -490,14 +490,14 @@ defer old-mansion-3f-2.act07
     0.0 -68.0 self-turn-to-xz
     self-wait-done
     armor-button-pushed story-flag? not if
-        $A00 self-anim
+        look-at-anim self-anim
         self-frames-reset
         self-wait-16
         0 message   \ "There is a button located on the back of the armor. Push the button? YES NO"
         wait-message
         self-wait-anim
         0 answer? if
-            $904 self-anim
+            reach-up-anim self-anim
             self-wait-anim
             fiona-who 2 6 char-sound
             armor-button-pushed story-flag-set
@@ -506,7 +506,7 @@ defer old-mansion-3f-2.act07
             1 keeps-hewie-off floor-off
             2 keeps-hewie-off floor-off
             3 keeps-hewie-off floor-off
-            $905 self-anim
+            reach-down-anim self-anim
             self-wait-anim
         then
     else

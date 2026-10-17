@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-2f-1
-USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ byte 3 0 / 1: shut / open (pi/2); 2 / 3 opening / shutting by script variable 0 (0..120
 \ frames, eased by a sine)
@@ -315,7 +315,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     fiona-who char-file-use
     wt2f-1-flag3 story-flag? not if
         1 water-tower-2f-1.cmd01
-        $8004 5 self-anim-blend8
+        4 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         0 part-hidden
@@ -339,7 +339,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         wt2f-1-flag4 story-flag-set
     else
         0 water-tower-2f-1.cmd01
-        $8003 5 self-anim-blend8
+        3 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         0 part-hidden
@@ -466,7 +466,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     4.12 -18.51 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -483,7 +483,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -494,7 +494,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     -19.9 74.61 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -511,7 +511,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

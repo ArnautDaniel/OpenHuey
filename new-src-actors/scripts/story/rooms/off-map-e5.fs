@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e5
-USING: room-names story.words story.shared flag-names story.clock ;
+USING: room-names story.words story.shared flag-names story.clock fiona.sounds stalker.anims ;
 
 \ (as Room14_Cmd00) the same for the room object D_0047B0FC
 : off-map-e5.cmd00 ( b0 -- )  s" Cartain" curtain ;   \ (as castle-b1-2's)
@@ -125,7 +125,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     2 ebit? if
         counter-inc
     then
-    $8002 5 self-anim-blend8
+    2 room-motion 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     begin
@@ -136,7 +136,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     repeat
     3 off-map-e5.cmd00
     in-panic? not if
-        fiona-who $43 5 char-sound
+        fiona-who seized-sound 5 char-sound
     then
     self-wait-anim
     0 self-noclip
@@ -156,7 +156,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     fiona-hidden state-flag-clear
     1 self-noclip
     0 0 var-set
-    $8003 5 self-anim-blend8
+    3 room-motion 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     begin
@@ -191,7 +191,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     self-who self-look-at
     yield
     0 0 var-set
-    $8000 5 self-anim-blend8
+    0 room-motion 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     begin
@@ -215,7 +215,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
         else -1 control-action? if
             in-panic? 0 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] off-map-e5.act04 goto
             else
@@ -236,7 +236,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
             fiona-hidden state-flag-clear
             1 self-noclip
             0 0 var-set
-            $8001 0 self-anim-blend8
+            1 room-motion 0 self-anim-blend8
             begin
                 1 off-map-e5.cmd00
                 yield
@@ -266,7 +266,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     self-wait-done
     $10 58.883 -8.841 180 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
+    there-anim self-anim
     self-wait-anim
     0 ebit-set
     10 self-idle-anim

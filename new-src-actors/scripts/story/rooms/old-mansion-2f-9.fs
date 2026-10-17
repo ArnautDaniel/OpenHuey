@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-9
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names fiona.anims ;
 
 : old-mansion-2f-9.enter ( -- )   \ 00412410
     got-sylvesta-esca story-flag? not if
@@ -118,7 +118,7 @@ USING: room-names story.words story.shared story-names ;
     42.0 6.6 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -135,7 +135,7 @@ USING: room-names story.words story.shared story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -145,7 +145,7 @@ USING: room-names story.words story.shared story-names ;
     self-wait-done
     50.0 9.0 self-turn-to-xz
     self-wait-done
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     0 message   \ "A stuffed chimera is showing off its fierce gaze. Why would anyone ever decorate a room..."

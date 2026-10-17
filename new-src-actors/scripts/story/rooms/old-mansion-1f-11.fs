@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-11
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x4E (D_0040B4D8): a lit quad at x -44 .. -36, z 60, from 54 to 71
 : old-mansion-1f-11.cmd00 ( b0 -- )  $1B $80  -44.0e 71.0e 60.0e  -36.0e 71.0e 60.0e  -44.0e 54.0e 60.0e  -36.0e 54.0e 60.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -294,7 +294,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     om1f-11-flag1 story-flag? not if
         0 old-mansion-1f-11.cmd00
         0 0 var-set
-        $8000 5 self-anim-blend8
+        0 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         begin
@@ -311,7 +311,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         om1f-11-flag1 story-flag-set
     else
         0 0 var-set
-        $8001 5 self-anim-blend8
+        1 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         begin
@@ -345,7 +345,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         yield
     repeat
     stalker-who 5 6 char-sound
-    $8000 5 self-anim-blend
+    0 room-motion 5 self-anim-blend
     self-wait-anim
     $E00 5 self-anim-blend
     self-frames-reset
@@ -382,7 +382,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     13.96 -5.34 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -399,7 +399,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

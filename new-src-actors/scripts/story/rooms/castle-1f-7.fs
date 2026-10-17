@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-7
-USING: engine common room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine common room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ a lid (pstr_kousi_2, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
 \ bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
@@ -251,7 +251,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         fiona-who char-file-use
         0 answer? if
             2 0 object-anim
-            $8000 $A self-anim-blend
+            0 room-motion $A self-anim-blend
             self-frames-reset
             $32 self-wait-frames
             0 6 -44.0 18.0 36.0 0 0 sound
@@ -316,13 +316,13 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     9 self-through-door
     self-wait-done
     in-panic? 2 game-mode? or if
-        $60A self-anim
+        rattle-front-slow-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
     else
-        $608 self-anim
+        rattle-front-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
@@ -362,32 +362,32 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     $F5 -9.214 -23.873 -40 $FFFF $A self-move-to
     self-wait-done
     breaker-lowered story-flag? not if
-        4 self-anim
+        stance-anim self-anim
         self-frames-reset
         $3C self-wait-frames
         c1f-7-flag1 story-flag-set
         breaker-lowered story-flag? not if
-            $1B03 self-anim
+            bark-tense-anim self-anim
             self-wait-anim
             breaker-lowered story-flag? not if
-                $1B03 self-anim
+                bark-tense-anim self-anim
                 self-wait-anim
                 breaker-lowered story-flag? not if
-                    $1B03 self-anim
+                    bark-tense-anim self-anim
                     self-wait-anim
                     breaker-lowered story-flag? not if
-                        $1B03 self-anim
+                        bark-tense-anim self-anim
                         self-wait-anim
                         breaker-lowered story-flag? not if
-                            $1B03 self-anim
+                            bark-tense-anim self-anim
                             self-wait-anim
                             breaker-lowered story-flag? not if
-                                $1B03 self-anim
+                                bark-tense-anim self-anim
                                 self-wait-anim
                                 breaker-lowered story-flag? not if
                                     fiona-who self-look-at
                                     yield
-                                    4 self-anim
+                                    stance-anim self-anim
                                     self-frames-reset
                                     $28 self-wait-frames
                                     self-who self-look-at

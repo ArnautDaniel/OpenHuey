@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-12
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ the two doors ("left", "right") opening: byte 3 0 at once (2.25), else a step-floor (0.075)
 : castle-2f-12.cmd00 ( b0 -- )   \ (the two doors opening: 0 at once - 2.25 - else a step-floor of 0.075)
@@ -297,7 +297,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    $8003 0 self-anim-blend
+    3 room-motion 0 self-anim-blend
     self-wait-anim
     0 self-noclip
     c2f-12-flag1 story-flag-set
@@ -318,7 +318,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     1 self-noclip
     0 2 object-anim
     1 2 object-anim
-    $8002 0 self-anim-blend
+    2 room-motion 0 self-anim-blend
     self-frames-reset
     $10 self-wait-frames
     fiona-who 0 6 char-sound
@@ -351,7 +351,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     1 self-noclip
     0 4 object-anim
     1 4 object-anim
-    $8004 0 self-anim-blend
+    4 room-motion 0 self-anim-blend
     self-frames-reset
     7 self-wait-frames
     fiona-who 0 6 char-sound
@@ -408,7 +408,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     self-who self-look-at
     yield
     3 ebit? not if
-        $8000 5 self-anim-blend8
+        0 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         0 part-hidden
@@ -421,7 +421,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         fiona-who 1 6 char-sound
         self-wait-anim
     else
-        $8001 5 self-anim-blend8
+        1 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         0 part-hidden
@@ -446,7 +446,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         0 2 pad? not 1 1 var? or if
             0 1 var? if
                 1 0 var-set
-                fiona-who $43 5 char-sound
+                fiona-who seized-sound 5 char-sound
                 stalker-who char-here? if
                     ['] castle-2f-12.act03 goto
                 else
@@ -477,7 +477,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             1 self-noclip
             0 2 object-anim
             1 2 object-anim
-            $8002 0 self-anim-blend
+            2 room-motion 0 self-anim-blend
             self-frames-reset
             $10 self-wait-frames
             fiona-who 0 6 char-sound
@@ -510,10 +510,10 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     1 wait-counter
     1 self-noclip
     3 ebit? not if
-        $8000 5 self-anim-blend8
+        0 room-motion 5 self-anim-blend8
         self-wait-anim
     else
-        $8001 5 self-anim-blend8
+        1 room-motion 5 self-anim-blend8
         self-wait-anim
     then
     0 self-noclip
@@ -526,16 +526,16 @@ fvariable tip  fvariable tip-yaw  fvariable reach
                 hewie-hidden state-flag-clear
                 1 self-noclip
                 4 ebit? if
-                    $8004 0 self-anim-blend
+                    4 room-motion 0 self-anim-blend
                     self-frames-reset
                     7 self-wait-frames
                     fiona-who 0 6 char-sound
                     self-wait-anim
                 else 0 0 var? if
-                    $8002 0 self-anim-blend
+                    2 room-motion 0 self-anim-blend
                     self-wait-anim
                 else
-                    $8003 0 self-anim-blend
+                    3 room-motion 0 self-anim-blend
                     self-wait-anim
                 then then
                 0 self-noclip
@@ -546,16 +546,16 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             hewie-hidden state-flag-clear
             1 self-noclip
             4 ebit? if
-                $8004 0 self-anim-blend
+                4 room-motion 0 self-anim-blend
                 self-frames-reset
                 7 self-wait-frames
                 fiona-who 0 6 char-sound
                 self-wait-anim
             else 0 0 var? if
-                $8002 0 self-anim-blend
+                2 room-motion 0 self-anim-blend
                 self-wait-anim
             else
-                $8003 0 self-anim-blend
+                3 room-motion 0 self-anim-blend
                 self-wait-anim
             then then
             0 self-noclip
@@ -585,7 +585,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     2 self-is? 6 self-is? or 7 self-is? or if
         0 3 object-anim
         1 3 object-anim
-        $8001 $A self-anim-blend
+        1 room-motion $A self-anim-blend
         self-frames-reset
         $C self-wait-frames
         stalker-who 0 6 char-sound
@@ -593,11 +593,11 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         4 self-wait-frames
         0 2 var-set
         self-wait-anim
-        $404 self-anim
+        step-back-anim self-anim
         self-wait-anim
         0 self-scripted
     else
-        $1601 self-anim
+        there-anim self-anim
         self-wait-anim
         fiona-hidden state-flag? if
             2 avoid-prompt
@@ -632,7 +632,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     3 1 var-set
     1 self-scripted
     1 1 var-set
-    $8002 $A self-anim-blend
+    2 room-motion $A self-anim-blend
     self-frames-reset
     $1E self-wait-frames
     stalker-who $28 5 char-sound
@@ -648,7 +648,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     self-wait-anim
     1 0 var-set
     3 0 var-set
-    $404 self-anim
+    step-back-anim self-anim
     self-wait-anim
     0 self-scripted
     $78 1 summoner-wait
@@ -659,7 +659,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     self-wait-done
     23.3 4.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     0 ebit? not if
@@ -807,7 +807,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     then
     $3A 3.123 11.435 -165 $FFFF 5 self-move-to
     self-wait-done
-    $1305 self-anim
+    look-about-3-anim self-anim
     self-wait-anim
     stalker-who 3 stalker-command
     c2f-12-flag3 story-flag-set
@@ -819,7 +819,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     22.9 -9.7 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -836,7 +836,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -870,7 +870,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     -17.5 47.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -887,7 +887,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

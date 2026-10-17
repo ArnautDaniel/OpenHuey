@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-7
-USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ a struggle: byte 3 0 resets Fiona's shake tracking (+0x1AD710 / +0x1AD714); 1 adds her shakes
 \ to script variable byte 4, with a grunt (voice 0x3D or 0x45 at random) when the cool-down
@@ -16,7 +16,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     b0 1 <> if  exit  then
     shakes-new to n
     n 0<>  cool var @ 0= and if
-        2 random if  fiona-who $3D 5 char-sound  cool 45 var-set  else  fiona-who $45 5 char-sound  cool 60 var-set  then
+        2 random if  fiona-who kick-sound 5 char-sound  cool 45 var-set  else  fiona-who push-sound 5 char-sound  cool 60 var-set  then
     then
     v var @ n +  dup  v swap var-set  100 >= if  bit ebit-set  then ;
 \ byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(0, 0); else
@@ -289,7 +289,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     self-wait-done
     -89.0 75.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     self-wait-16
     0 message   \ "Hewie's barking... Is he trying to tell me something about this wall?"
@@ -350,13 +350,13 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     self-wait-done
     -89.0 75.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     1 message   \ "This cane... I don't know how or why, but for some reason I feel like I've seen it some..."
     wait-message
     self-wait-anim
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -368,7 +368,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -409,7 +409,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     camera-restart
     stalkers-stay state-flag-clear
     0 1 house-of-truth-1f-7.cmd00
-    $8000 self-anim
+    0 room-motion self-anim
     4 0 object-anim
     $40000000 6 -37.0 0.0 63.0 0 0 sound
     stalker-who char-here? if
@@ -432,7 +432,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     7 ebit-set
     begin
         self-at-motion-event? if
-            $8000 self-anim
+            0 room-motion self-anim
             4 0 object-anim
         then
         1 0 var? not if
@@ -443,8 +443,8 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         1 self-wait-frames
         1 ebit? until
     self-wait-anim
-    fiona-who $45 5 char-sound
-    $8001 self-anim
+    fiona-who push-sound 5 char-sound
+    1 room-motion self-anim
     4 1 object-anim
     self-wait-anim
     stalker-who char-busy? if
@@ -471,9 +471,9 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         stalker-who self-touching? not if
             in-panic? not if
                 fiona-who $EA char-not-at-door? if
-                    $609 self-anim
+                    rattle-behind-anim self-anim
                 else
-                    $608 self-anim
+                    rattle-front-anim self-anim
                 then
                 self-frames-reset
                 $14 self-wait-frames
@@ -503,8 +503,8 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    fiona-who $7E 5 char-sound
-    $8003 $A self-anim-blend
+    fiona-who slide-sound 5 char-sound
+    3 room-motion $A self-anim-blend
     self-wait-anim
     0 self-noclip
     3 ebit? not if
@@ -528,10 +528,10 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     self-wait-done
     1 self-noclip
     1 self-scripted
-    fiona-who $7E 5 char-sound
-    $8005 $A self-anim-blend8
+    fiona-who slide-sound 5 char-sound
+    5 room-motion $A self-anim-blend8
     self-wait-anim
-    $8001 $A self-anim-blend
+    1 room-motion $A self-anim-blend
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
@@ -543,7 +543,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         0 2 pad? not if
             in-panic? 3 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] house-of-truth-1f-7.act07 goto
             else
@@ -564,10 +564,10 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             fiona-who camera-follow
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-blend8
+            2 room-motion 5 self-anim-blend8
             self-frames-reset
             5 self-wait-frames
-            fiona-who $7E 5 char-sound
+            fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -600,7 +600,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     8 ebit-clear
     $FE 45.21 54.9 180 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
+    there-anim self-anim
     self-wait-anim
     3 ebit-set
     10 self-idle-anim
@@ -617,7 +617,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     13.05 108.47 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -634,7 +634,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -683,8 +683,8 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 : house-of-truth-1f-7.act0E ( -- )   \ 00436320
     capture-no-end state-flag-set
     self-wait-done
-    fiona-who $41 5 char-sound
-    $1100 self-anim
+    fiona-who caught-sound 5 char-sound
+    held-anim self-anim
     self-wait-anim
     self-frames-reset
     $1E self-wait-frames

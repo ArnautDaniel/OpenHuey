@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-4
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims stalker.anims ;
 
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveToB(2, -290, 42); else waits (2) until
 \ Kind26_MoveDoneB says done
@@ -146,15 +146,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 exit-door-open? if
         $1F -212.0 8.0 -180 $FFFF 5 self-move-to
         self-wait-done
-        $1600 self-anim
+        stand-about-anims self-anim
         self-wait-anim
-        $404 self-anim
+        step-back-anim self-anim
         self-wait-anim
-        $404 self-anim
+        step-back-anim self-anim
         self-wait-anim
-        $404 self-anim
+        step-back-anim self-anim
         self-wait-anim
-        $404 self-anim
+        step-back-anim self-anim
         self-wait-anim
         fiona-who 4 self-move-slot
         self-wait-done
@@ -169,7 +169,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -202.89 -6.76 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -186,7 +186,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -197,7 +197,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -283.8 15.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -214,7 +214,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -256,13 +256,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         self-wait-done
         self-frames-reset
         4 self-wait-frames
-        $1200 self-anim
+        lean-anim self-anim
         self-wait-anim
         fiona-who 0 6 char-sound
-        $1203 self-anim
+        strain-anim self-anim
         self-frames-reset
         self-wait-16
-        $1202 self-anim
+        let-go-push-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset

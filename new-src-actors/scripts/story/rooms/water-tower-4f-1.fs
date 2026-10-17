@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-4f-1
-USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ (as RoomC2_Cmd00, the room object named RoomC3_ObjectNames, opening to -pi/2)
 : water-tower-4f-1.cmd00 ( b0 -- )   \ (as water-tower-2f-1's, opening the other way: -90 degrees)
@@ -294,7 +294,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     self-wait-done
     fiona-who char-file-use
     wt4f-1-flag3 story-flag? not if
-        $8004 5 self-anim-blend8
+        4 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         0 part-hidden
@@ -323,7 +323,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         $C3 0 615 $A 6 -1 0 0.0 creature-place
         wt4f-1-flag4 story-flag-set
     else
-        $8003 5 self-anim-blend8
+        3 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         0 part-hidden
@@ -454,7 +454,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     -71.41 -7.67 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -471,7 +471,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -482,7 +482,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     -86.45 -8.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -499,7 +499,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

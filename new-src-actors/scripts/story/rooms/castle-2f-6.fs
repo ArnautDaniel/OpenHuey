@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-6
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
 : castle-2f-6.enter ( -- )   \ 00400C60
     got-lunar-refractor story-flag? not if
@@ -121,10 +121,10 @@ USING: room-names story.words story.shared flag-names story-names ;
 : castle-2f-6.act00 ( -- )   \ 00400E50
     2 0 char-remove
     7 partner-load
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     fiona-who 3 6 char-sound
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     3 message-param-room
     $8019 message   \ "Used ."
@@ -134,7 +134,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-frames-reset
     8 self-wait-frames
     0 0 object-anim
-    $8000 $A self-anim-blend
+    0 room-motion $A self-anim-blend
     self-frames-reset
     $14 self-wait-frames
     fiona-who 0 6 char-sound
@@ -153,7 +153,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     1 0 0 music
     fiona-who 1 6 char-sound
     0 1 object-anim
-    $8001 0 self-anim-blend
+    1 room-motion 0 self-anim-blend
     self-wait-anim
     self-frames-reset
     self-wait-16
@@ -177,7 +177,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     $F 7 fade
     wait-fade
     got-doc-luminessants story-flag? not if
-        $1D01 $A self-anim-blend
+        hand-to-mouth-anim $A self-anim-blend
         $D message   \ "'Luminessants'...'Azoth'... No clue what any of this means."
         wait-message
         self-wait-anim
@@ -211,7 +211,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     $55 3.622 32.279 0 $FFFF 5 self-move-to
     self-wait-done
     fiona-who char-file-use
-    $8002 $A self-anim-blend
+    2 room-motion $A self-anim-blend
     self-frames-reset
     $16 self-wait-frames
     fiona-who 2 6 char-sound
@@ -236,7 +236,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         wait-message
         0 ebit-set
     else
-        $A01 $A self-anim-blend
+        look-low-anim $A self-anim-blend
         $B message   \ "The script looks almost Latin in nature... But unfortunately, it's all Greek to me."
         wait-message
         self-wait-anim
@@ -269,7 +269,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     -22.26 -41.95 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -286,7 +286,7 @@ USING: room-names story.words story.shared flag-names story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

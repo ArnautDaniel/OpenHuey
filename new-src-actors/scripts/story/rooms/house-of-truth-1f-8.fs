@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-8
-USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ room 0x91 (Room91_Cmd00_ptmf): door 0's +0x68 (0)
 : house-of-truth-1f-8.cmd00 ( -- )  0 true -1 doors-id send swing-door ;   \ (door 0 set opening, Doors_SetOpened: swung open here)
@@ -261,13 +261,13 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     0 $F1 3 action
     self-frames-reset
     8 self-wait-frames
-    fiona-who $43 5 char-sound
-    $800 self-anim
+    fiona-who seized-sound 5 char-sound
+    crouch-down-anim self-anim
     self-wait-anim
-    $801 self-anim
+    crouching-anim self-anim
     self-frames-reset
     $1E self-wait-frames
-    $802 self-anim
+    crouch-up-anim self-anim
     2 message   \ "Whoa! What was that? It felt like a tremor... I should crouch down during large tremors..."
     wait-message
     tremor-warned story-flag-set
@@ -286,7 +286,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     86.0 68.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -303,7 +303,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -378,7 +378,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     0 ebit? not if
         0 self-through-exit
         self-wait-done
-        $60B self-anim
+        rattle-behind-slow-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset

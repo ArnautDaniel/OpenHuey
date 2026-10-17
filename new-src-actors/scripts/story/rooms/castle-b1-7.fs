@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-7
-USING: engine common room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine common room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ room 0x1D (Room1D_Cmd00_ptmf): script variable 0 = 2 .. 5 at random
 : castle-b1-7.cmd00 ( -- )  0  4 random 2 +  var-set ;   \ (script variable 0: 2 .. 5 at random)
@@ -232,7 +232,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 : castle-b1-7.act02 ( -- )   \ 003FD6C0
     self-wait-done
     hewie-who $FC 0 char-to-tri-facing
-    1 self-anim
+    sit-anim self-anim
     self-wait-anim
     fiona-who self-look-at
     yield
@@ -248,7 +248,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 
 : castle-b1-7.act05 ( -- )   \ 003FD740
     self-wait-done
-    $A01 $A self-anim-blend
+    look-low-anim $A self-anim-blend
     self-wait-anim
     0 message   \ "Looks like a key or something is lying on the ground. I can't reach it from here..."
     wait-message
@@ -282,7 +282,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     31.0 13.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -299,7 +299,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -368,7 +368,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     29.0 21.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -385,7 +385,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

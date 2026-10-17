@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py), renamed by
 \ tools/story_convert.py, once: edit by hand.
 IN: story.shared
-USING: story.words flag-names story-names ;
+USING: story.words flag-names story-names fiona.anims fiona.sounds hewie.anims hewie.sounds ;
 
 \ ---- the shared scripts (ids 0x80..) -----------------------------------------------------------
 
@@ -12,7 +12,7 @@ defer shared.act97
     self-wait-done
     stalker-who self-turn-to
     self-wait-done
-    $900 self-anim
+    pick-up-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -24,7 +24,7 @@ defer shared.act97
     then
     self-frames-reset
     8 self-wait-frames
-    $901 self-anim
+    up-from-pick-anim self-anim
     self-wait-anim
     wait-message
     self-idle-or-end
@@ -37,11 +37,11 @@ defer shared.act97
     self-wait-16
     stalker-who self-look-at
     yield
-    $802 5 self-anim-blend
+    crouch-up-anim 5 self-anim-blend
     self-frames-reset
     8 self-wait-frames
-    fiona-who $43 5 char-sound
-    $F03 $A self-anim-blend
+    fiona-who seized-sound 5 char-sound
+    uneasy-anim $A self-anim-blend
     self-wait-anim
     1 $7F $F rumble
     stalker-who self-turn-to
@@ -51,11 +51,11 @@ defer shared.act97
 
 : shared.act81 ( -- )   \ 003D6340
     self-wait-done
-    $800 self-anim
+    crouch-down-anim self-anim
     self-wait-anim
     fiona-half-hidden state-flag-set
     fiona-hewie-react
-    $801 self-anim
+    crouching-anim self-anim
     begin   \ (crouched till she shakes - Fiona_Shakes - or L1 is let go, as the PS2 plays it)
         $FF $FF pad?  2 1 pad? not or  not if
             fiona-unseen? if
@@ -80,7 +80,7 @@ defer shared.act97
         else
             fiona-half-hidden state-flag-clear
             fiona-who camera-follow
-            $802 self-anim
+            crouch-up-anim self-anim
             self-wait-anim
             self-idle-or-end
         then
@@ -162,10 +162,10 @@ defer shared.act97
 
 : shared.act87 ( -- )   \ 003D6458
     self-wait-done
-    $800 self-anim
+    crouch-down-anim self-anim
     self-frames-reset
     5 self-wait-frames
-    $802 $A self-anim-blend
+    crouch-up-anim $A self-anim-blend
     self-wait-anim
     self-idle-or-end
 ;
@@ -175,7 +175,7 @@ defer shared.act97
     $1F self-face-zone
     self-wait-done
     hewie-who 1 char-silent
-    $1B00 $A self-anim-blend
+    bark-anim $A self-anim-blend
     hewie-who 1 char-wait-motion
     hewie-who 0 char-silent
     hewie-who $5B 5 char-sound
@@ -193,7 +193,7 @@ defer shared.act97
     self-wait-done
     $1F self-face-zone
     self-wait-done
-    $1C03 $A self-anim-blend
+    sit-a-while-anim $A self-anim-blend
     self-wait-anim
     10 self-idle-anim
     self-frames-reset
@@ -206,7 +206,7 @@ defer shared.act97
     self-wait-done
     $1F 0 hewie-go-to-zone
     self-wait-done
-    4 self-anim
+    stance-anim self-anim
     yield
     $1F 1 hewie-go-to-zone
     self-frames-reset
@@ -225,16 +225,16 @@ defer shared.act97
     $1F self-face-zone
     self-wait-done
     hewie-who 1 char-silent
-    $1B00 $A self-anim-blend
+    bark-anim $A self-anim-blend
     hewie-who 1 char-wait-motion
     hewie-who 0 char-silent
     hewie-who $5B 5 char-sound
     hewie-who 1 char-silent
     self-wait-anim
     hewie-who 0 char-silent
-    $100 self-anim
+    sit-down-anim self-anim
     self-wait-anim
-    1 self-anim
+    sit-anim self-anim
     yield
     fiona-who self-look-at
     yield
@@ -266,7 +266,7 @@ defer shared.act97
 
 : shared.act8D ( -- )   \ 003D6560
     self-wait-done
-    $1D00 $A self-anim-blend
+    bent-hand-mouth-anim $A self-anim-blend
     fiona-who $23 5 char-sound
     fiona-who 2 char-wait-motion
     1 $60 8 rumble
@@ -289,10 +289,10 @@ defer shared.act97
     repeat
     hewie-who self-turn-to
     self-wait-done
-    $900 self-anim
+    pick-up-anim self-anim
     self-wait-anim
     2 counter-set
-    $901 self-anim
+    up-from-pick-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
@@ -319,8 +319,8 @@ defer shared.act97
             fiona-who char-busy? 1 counter? and while
             yield
         repeat
-        hewie-who $5A 5 char-sound
-        $1003 self-anim
+        hewie-who bark-sound 5 char-sound
+        doubled-over-anim self-anim
         self-wait-anim
         0 self-scripted
         10 self-idle-anim
@@ -367,10 +367,10 @@ defer shared.act97
             fiona-who char-busy? 1 counter? and while
             yield
         repeat
-        hewie-who $66 5 char-sound
+        hewie-who yelp-sound 5 char-sound
         $2213 0 hewie-anim-root
         self-wait-anim
-        $1002 5 self-anim-blend
+        stagger-anim 5 self-anim-blend
         self-frames-reset
         5 self-wait-frames
         3 counter-set
@@ -391,7 +391,7 @@ defer shared.act97
             self-wait-anim
             hewie-who 2 char-cond!
         else
-            hewie-who $65 5 char-sound
+            hewie-who shoved-yelp 5 char-sound
             $1000 self-anim
             self-wait-anim
         then
@@ -410,10 +410,10 @@ defer shared.act97
             fiona-who char-busy? 1 counter? and while
             yield
         repeat
-        hewie-who $66 5 char-sound
+        hewie-who yelp-sound 5 char-sound
         $2213 0 hewie-anim-root
         self-wait-anim
-        $1002 5 self-anim-blend
+        stagger-anim 5 self-anim-blend
         self-frames-reset
         5 self-wait-frames
         3 counter-set
@@ -447,11 +447,11 @@ defer shared.act97
     self-wait-done
     $1F self-face-zone
     self-wait-done
-    $1B03 $A self-anim-blend
+    bark-tense-anim $A self-anim-blend
     self-wait-anim
-    $1B03 0 self-anim-blend
+    bark-tense-anim 0 self-anim-blend
     self-wait-anim
-    $1B03 0 self-anim-blend
+    bark-tense-anim 0 self-anim-blend
     self-wait-anim
     10 self-idle-anim
     self-frames-reset
@@ -464,11 +464,11 @@ defer shared.act97
     self-wait-done
     $1F self-face-zone
     self-wait-done
-    $100 $A self-anim-blend
+    sit-down-anim $A self-anim-blend
     self-wait-anim
-    $1C01 0 self-anim-blend
+    refuse-anim 0 self-anim-blend
     self-wait-anim
-    1 0 self-anim-blend
+    sit-anim 0 self-anim-blend
     self-frames-reset
     $A self-wait-frames
     hewie-stay-put

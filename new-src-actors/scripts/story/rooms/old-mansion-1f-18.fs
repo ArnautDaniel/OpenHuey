@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-18
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names fiona.anims ;
 
 : old-mansion-1f-18.enter ( -- )   \ 00424880
     3 1.0 0 bgm
@@ -166,7 +166,7 @@ USING: room-names story.words story.shared story-names ;
         -26.62 7.92 self-turn-to-xz
         self-wait-done
     then then then
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     red-painting-examined story-flag? not if

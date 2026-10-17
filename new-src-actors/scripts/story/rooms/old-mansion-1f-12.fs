@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-12
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x4F (Room4F_Cmd00_ptmf): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2
 \ lowered a step-floor (0.02, not during a movie); once down, events bit 3
@@ -278,13 +278,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 self-through-exit
         self-wait-done
         in-panic? 2 game-mode? or if
-            $60B self-anim
+            rattle-behind-slow-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
         else
-            $609 self-anim
+            rattle-behind-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
@@ -341,7 +341,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     om1f-12-flag4 story-flag? got-film-reel story-flag? not and if
         $14E -33.036 -2.992 -130 $FFFF 5 self-move-to
         self-wait-done
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         4 part-hidden
         got-film-reel story-flag-set
@@ -351,7 +351,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         item-fanfare
         $8012 message   \ "You've obtained ."
         wait-message
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     else
         world-frozen state-flag-set
@@ -381,7 +381,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     om1f-12-flag1 story-flag? not if
         38.0 -10.0 self-turn-to-xz
         self-wait-done
-        $402 self-anim
+        turn-round-anim self-anim
         self-wait-anim
         5 message   \ "A pillar of seething flame is spewing forth from the floor. There is something up a..."
         wait-message
@@ -513,12 +513,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     12.0 -24.0 self-turn-to-xz
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     2 6 12.0 10.0 -25.0 0 0 sound
     self-frames-reset
     self-wait-16
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     0 ebit? if
         0 effect-remove
@@ -547,12 +547,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -12.0 -24.0 self-turn-to-xz
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     2 6 -12.0 10.0 -25.0 0 0 sound
     self-frames-reset
     self-wait-16
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     0 ebit? if
         3 ebit-clear
@@ -610,7 +610,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     0.0 -27.0 self-turn-to-xz
     self-wait-done
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     self-wait-16
     4 message   \ "Darn it! I'm just not tall enough. If only Hewie were here, I bet it would be doable."
@@ -625,7 +625,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $D message   \ "It's holding something in its mouth."
     wait-message
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -637,7 +637,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -661,7 +661,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     52.04 5.68 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -678,7 +678,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -688,7 +688,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -63.0 -10.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     $E message   \ "Ivy has grown in through the collapsed area where the floor used to be... Looks like i..."

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-1
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 : chaos-forest-1.enter ( -- )   \ 0041DD20
     room-sounds
@@ -199,7 +199,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             else
                 $1C 1 6 char-sound
             then
-            fiona-who $8F 5 char-sound
+            fiona-who shove-hit-sound 5 char-sound
             $1C $9009 0 3 char-anim-hold
             $1C wait-char-anim
             $1C $9008 0 3 char-anim-hold
@@ -224,7 +224,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -324.0 322.0 self-turn-to-xz
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -236,7 +236,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-3f-1
-USING: actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x60 (D_00429148): the floor light (room effect 0x1B, 20 x 20 at y -0.2) by byte 3 - 1
 \ removed with its glow effect (event variable 1); 0 made, with the glow (FloorGlow_vtable);
@@ -461,7 +461,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         fiona-who 5 char-in-area? if
             0.0 0.0 self-turn-to-xz
             self-wait-done
-            $F00 $A self-anim-blend
+            startled-anim $A self-anim-blend
             self-wait-anim
             $402 $A self-anim-blend
             self-wait-anim
@@ -642,7 +642,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     0 -0.03 0.0 -90 $FFFF 5 self-move-to
     self-wait-done
     stalker-who char-file-use
-    $8000 5 self-anim-blend
+    0 room-motion 5 self-anim-blend
     self-frames-reset
     $18D self-wait-frames
     counter-inc
@@ -656,7 +656,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     0.0 -17.0 self-turn-to-xz
     self-wait-done
-    $900 self-anim
+    pick-up-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -669,7 +669,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     $8012 message   \ "You've obtained ."
     wait-message
     50 hewie-trust
-    $901 self-anim
+    up-from-pick-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -683,13 +683,13 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     0.0 0.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     5 ebit? not if
         2 message   \ "A shard of glass pierces through her body and pins her to the ground. I can't belie..."
         wait-message
         5 ebit-set
     else
-        $A02 $A self-anim-blend
+        look-close-anim $A self-anim-blend
         self-wait-anim
         3 message   \ "When she was alive, her facial expressions always seemed ice-cold and devoid of fee..."
         wait-message
@@ -823,7 +823,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     counter-inc
     2 wait-counter
     stalker-who $1AB 0.25 0.25 -90 char-to-xz
-    $8000 self-anim
+    0 room-motion self-anim
     self-frames-reset
     $96 self-wait-frames
     stalker-who 3 6 char-sound

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-9
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ a lit quad at x -43, z -15.12 .. 5.07, height 30.05 / 10.05
 : old-mansion-1f-9.cmd00 ( b0 -- )  $1B $40  -43.0e 30.053e -15.124e  -43.0e 30.053e 5.068e  -43.0e 10.053e -15.124e  -43.0e 10.053e 5.068e  lit-quad ;   \ (a reflecting window: b0 1 removed, 2 over the whole picture)
@@ -233,7 +233,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         self-wait-done
         -90 self-turn-angle
         self-wait-done
-        $A02 self-anim
+        look-close-anim self-anim
         self-frames-reset
         $28 self-wait-frames
         5 message   \ "Who opened these blinds? It's too dark out to see anything."
@@ -255,7 +255,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         2 message   \ "Is this water safe to drink?"
         wait-message
         fiona-who char-file-use
-        $8004 $A self-anim-blend
+        4 room-motion $A self-anim-blend
         self-frames-reset
         $16 self-wait-frames
         fiona-who 3 6 char-sound
@@ -308,7 +308,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     -7.97 21.3 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -325,7 +325,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -388,7 +388,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     7.72 15.08 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -405,7 +405,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -426,7 +426,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     0 0.0 0.0 0.0 0.0 event-camera
     self-frames-reset
     4 self-wait-frames
-    $1D01 $A self-anim-blend
+    hand-to-mouth-anim $A self-anim-blend
     7 message   \ "A strange jumble of letters and numbers... I wonder if this title holds some deeper, un..."
     wait-message
     self-wait-anim

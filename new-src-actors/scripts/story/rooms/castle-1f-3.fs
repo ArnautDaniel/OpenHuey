@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-3
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x09 (Room09_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) is in
 \ another room than 9 (the player about too)
@@ -315,7 +315,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     else
         10.0 -17.0 self-turn-to-xz
         self-wait-done
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -327,7 +327,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         item-fanfare
         $8012 message   \ "You've obtained ."
         wait-message
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     2 ebit? not if
@@ -377,7 +377,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -6.0 -46.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -394,7 +394,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -420,7 +420,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 20.0 60.0 -45.0 30.0 event-camera
     self-frames-reset
     $10 self-wait-frames
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $37 self-wait-frames
     1 ebit? not if
@@ -445,7 +445,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     c1f-3-bookshelf-hint story-flag-set
     2 ebit-set
     self-wait-done
-    1 $A self-anim-blend
+    rest-anim $A self-anim-blend
     6 message   \ "That bookshelf... I wonder if I can hide behind it?"
     self-wait-anim
     10 self-idle-anim

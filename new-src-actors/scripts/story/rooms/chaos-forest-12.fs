@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-12
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names fiona.anims ;
 
 \ room 0x10A: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 1 a frame (room_nudge).
@@ -172,7 +172,7 @@ USING: room-names story.words story.shared story-names ;
     -253.83 -217.28 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -189,7 +189,7 @@ USING: room-names story.words story.shared story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

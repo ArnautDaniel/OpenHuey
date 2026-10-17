@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-10
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.sounds ;
 
 \ byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(1, 0), then the partner's
 \ message slot shows progress +0x73EDC0; else Progress_SpeechCall and the slot is closed
@@ -276,12 +276,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : chaos-forest-10.act02 ( -- )   \ 00419250
     self-wait-done
-    $800 self-anim
+    crouch-down-anim self-anim
     self-wait-anim
     1 message   \ "You'll be alright, boy. Just stay still, OK?"
     wait-message
-    hewie-who $5C 5 char-sound
-    $802 self-anim
+    hewie-who cowed-whine 5 char-sound
+    crouch-up-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -291,7 +291,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     76.5 134.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -308,7 +308,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

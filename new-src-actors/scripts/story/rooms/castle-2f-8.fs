@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-8
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ Room24_Cmd00
 : castle-2f-8.cmd00 ( b0 -- )   \ (the kiln's glow - "jimen", "kama", "sumi" - pulsing: their blend 0.5 + 0.5 cos(phase),
@@ -238,7 +238,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     6.0 4.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     6 message   \ "What kind of equipment is this? It looks old, but someone has taken painstakingly good..."
@@ -251,7 +251,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     56.58 -1.5 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     7 message   \ "Such tremendous heat... With heat like this, I'm sure it's used for refining."
@@ -262,7 +262,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-2f-8.act03 ( -- )   \ 00401C68
     self-wait-done
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     8 message   \ "What a strange mark... There is something about it that makes me feel uncomfortable."
@@ -301,7 +301,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $A message   \ "There is some kind of file here."
     wait-message
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -313,7 +313,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -322,7 +322,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     10.0 -25.0 self-turn-to-xz
     self-wait-done
-    $900 self-anim
+    pick-up-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -350,7 +350,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             wait-message
         then
     then
-    $901 self-anim
+    up-from-pick-anim self-anim
     self-wait-anim
     wait-message
     self-idle-or-end
@@ -361,10 +361,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         fiona-who char-busy? not while
         yield
     repeat
-    $1203 0 self-anim-blend
+    strain-anim 0 self-anim-blend
     self-frames-reset
     self-wait-16
-    $1202 self-anim
+    let-go-push-anim self-anim
     self-wait-anim
     1 message   \ "Well, I guess you never know until you try but I figured as much. There is no way someo..."
     -1 self-idle-anim
@@ -589,7 +589,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $F $41 fade
     wait-fade
     3 ebit? not if
-        $1D01 self-anim
+        hand-to-mouth-anim self-anim
         $B message   \ "...... That got my mind off things. I feel a little better now."
         wait-message
         self-wait-anim

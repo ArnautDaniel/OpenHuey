@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-15
-USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ the moving bookshelves (Room54_GroupStep): group g's four (the colour's book and its three
 \ shelves) - op 0 at their stop; 1 / 2 back 0.25 a frame in x / z to it (event bit 0 cleared
@@ -445,13 +445,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     else
         4 ebit-set
     then
-    $904 self-anim
+    reach-up-anim self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
     8 0 object-hidden
     books-placed story-flag-set
     $15 item-use
-    $905 self-anim
+    reach-down-anim self-anim
     self-wait-anim
     0 ebit-set
     2 3 old-mansion-1f-15.cmd00
@@ -490,13 +490,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $36 35.0 -52.0 -90 $FFFF 5 self-move-to
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
-    $904 self-anim
+    reach-up-anim self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
     $B part-shown
     lectern-0-book-1 story-flag-set
     $16 item-use
-    $905 self-anim
+    reach-down-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -513,13 +513,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $36 35.0 -52.0 -90 $FFFF 5 self-move-to
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
-    $904 self-anim
+    reach-up-anim self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
     $A part-shown
     lectern-0-book-2 story-flag-set
     $17 item-use
-    $905 self-anim
+    reach-down-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -536,13 +536,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C5 30.0 49.0 90 $FFFF 5 self-move-to
     self-wait-done
     1 25.0 20.0 50.0 2.0 event-camera
-    $904 self-anim
+    reach-up-anim self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
     9 part-shown
     lectern-1-book-0 story-flag-set
     $15 item-use
-    $905 self-anim
+    reach-down-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -577,13 +577,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     else
         4 ebit-set
     then
-    $904 self-anim
+    reach-up-anim self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
     4 0 object-hidden
     lectern-1-book-1 story-flag-set
     $16 item-use
-    $905 self-anim
+    reach-down-anim self-anim
     self-wait-anim
     40.0 15.0 25.0 self-look-at-point
     yield
@@ -626,13 +626,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C5 30.0 49.0 90 $FFFF 5 self-move-to
     self-wait-done
     1 25.0 20.0 50.0 2.0 event-camera
-    $904 self-anim
+    reach-up-anim self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
     8 part-shown
     lectern-1-book-2 story-flag-set
     $17 item-use
-    $905 self-anim
+    reach-down-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -649,13 +649,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C6 0.0 43.0 180 $FFFF 5 self-move-to
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
-    $904 self-anim
+    reach-up-anim self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
     6 part-shown
     lectern-2-book-0 story-flag-set
     $15 item-use
-    $905 self-anim
+    reach-down-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -672,13 +672,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C6 0.0 43.0 180 $FFFF 5 self-move-to
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
-    $904 self-anim
+    reach-up-anim self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
     7 part-shown
     lectern-2-book-1 story-flag-set
     $16 item-use
-    $905 self-anim
+    reach-down-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -706,13 +706,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     else
         4 ebit-set
     then
-    $904 self-anim
+    reach-up-anim self-anim
     self-wait-anim
     fiona-who $E 6 char-sound
     0 0 object-hidden
     lectern-2-book-2 story-flag-set
     $17 item-use
-    $905 self-anim
+    reach-down-anim self-anim
     self-wait-anim
     0 ebit-set
     0 3 old-mansion-1f-15.cmd00
@@ -752,7 +752,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     0 message   \ "There is a book lying on the table."
     wait-message
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -764,7 +764,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -775,7 +775,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 message   \ "There is a book below the stand..."
     wait-message
-    $900 self-anim
+    pick-up-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -787,7 +787,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $901 self-anim
+    up-from-pick-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -798,7 +798,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     2 message   \ "One of the books stands out from the rest."
     wait-message
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -810,7 +810,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -823,12 +823,12 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
     lectern-0-book-1 story-flag? lectern-0-book-2 story-flag? or if
-        $904 self-anim
+        reach-up-anim self-anim
         self-wait-anim
         lectern-0-book-1 story-flag? if
             $B part-hidden
             lectern-0-book-1 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $16 message-param-room
             $16 1 item-give-count
             0 $16 item-tab
@@ -838,7 +838,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         else
             $A part-hidden
             lectern-0-book-2 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $17 message-param-room
             $17 1 item-give-count
             0 $17 item-tab
@@ -871,12 +871,12 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 25.0 20.0 50.0 2.0 event-camera
     lectern-1-book-0 story-flag? lectern-1-book-2 story-flag? or if
-        $904 self-anim
+        reach-up-anim self-anim
         self-wait-anim
         lectern-1-book-0 story-flag? if
             9 part-hidden
             lectern-1-book-0 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $15 message-param-room
             $15 1 item-give-count
             0 $15 item-tab
@@ -886,7 +886,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         else
             8 part-hidden
             lectern-1-book-2 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $17 message-param-room
             $17 1 item-give-count
             0 $17 item-tab
@@ -919,12 +919,12 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
     lectern-2-book-0 story-flag? lectern-2-book-1 story-flag? or if
-        $904 self-anim
+        reach-up-anim self-anim
         self-wait-anim
         lectern-2-book-0 story-flag? if
             6 part-hidden
             lectern-2-book-0 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $15 message-param-room
             $15 1 item-give-count
             0 $15 item-tab
@@ -934,7 +934,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         else
             7 part-hidden
             lectern-2-book-1 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $16 message-param-room
             $16 1 item-give-count
             0 $16 item-tab
@@ -1069,7 +1069,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     else
         0.0 -80.0 self-turn-to-xz
         self-wait-done
-        $A00 self-anim
+        look-at-anim self-anim
         self-frames-reset
         self-wait-16
         9 message   \ "There is a door atop this bookshelf... Why would anyone build a door of all things..."
@@ -1085,7 +1085,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     36.86 -27.91 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -1102,7 +1102,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -1113,7 +1113,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     39.16 -38.76 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -1130,7 +1130,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -1141,7 +1141,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     -23.61 -61.37 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -1158,7 +1158,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

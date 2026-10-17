@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d6
-USING: room-names story.words story.shared flag-names story.clock floor-flags ;
+USING: room-names story.words story.shared flag-names story.clock floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ (as Room105_Cmd00) pushed by the character slot byte 4 names
 : off-map-d6.cmd00 ( b0 b1 -- )  swing-three-by ;   \ (as chaos-forest-7's, pushed by character slot b1)
@@ -205,9 +205,9 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     2 ebit-clear
     1 self-noclip
     0 ebit-clear
-    $800 self-anim
+    crouch-down-anim self-anim
     self-wait-anim
-    $801 self-anim
+    crouching-anim self-anim
     fiona-hidden state-flag-set
     stalkers-stay state-flag-clear
     0 avoid-prompt
@@ -215,7 +215,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
         -1 control-action? if
             in-panic? 0 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] off-map-d6.act01 goto
             else
@@ -235,7 +235,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
                 ['] off-map-d6.act01 goto
             then
             stalkers-stay state-flag-set
-            $802 self-anim
+            crouch-up-anim self-anim
             self-wait-anim
             0 self-scripted
             0 self-noclip
@@ -250,7 +250,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     self-wait-done
     $E7 90.5 -4.5 -90 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
+    there-anim self-anim
     self-wait-anim
     0 ebit-set
     10 self-idle-anim

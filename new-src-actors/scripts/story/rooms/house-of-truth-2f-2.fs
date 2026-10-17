@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-2f-2
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 : house-of-truth-2f-2.enter ( -- )   \ 00431DE0
     0 part-shown
@@ -149,7 +149,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     40.0 54.0 self-turn-to-xz
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -161,7 +161,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -188,7 +188,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     37.0 84.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -205,7 +205,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -220,7 +220,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : house-of-truth-2f-2.act05 ( -- )   \ 004321F8
     self-wait-done
-    $A02 $A self-anim-blend
+    look-close-anim $A self-anim-blend
     3 message   \ "Various bobbles used for experimental purposes. Some notebooks have been stacked here."
     wait-message
     self-wait-anim
@@ -250,7 +250,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         wait-message
         0 ebit-set
     else
-        $A02 self-anim
+        look-close-anim self-anim
         9 message   \ "One book stands out from the others. It has no title."
         wait-message
         self-wait-anim
@@ -260,7 +260,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         wait-message
         $F 7 fade
         wait-fade
-        $1D01 self-anim
+        hand-to-mouth-anim self-anim
         $B message   \ "Not that it should surprise me, but this book makes no sense."
         wait-message
         self-wait-anim
@@ -276,7 +276,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     ht2f-2-rubrum-medallion story-flag? not if
         5 message   \ "What's this? These something wedged in between these two books..."
         wait-message
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -292,7 +292,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     else
         4 message   \ "Stacks of books have been arranged neatly on the shelf. Some of the books are in En..."
@@ -330,7 +330,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $F 7 fade
     wait-fade
     $4B subscreen-bit? not if
-        $1D01 self-anim
+        hand-to-mouth-anim self-anim
         8 message   \ "Looks like the name of some medicine... The medicine's effects are explained as well."
         wait-message
         self-wait-anim

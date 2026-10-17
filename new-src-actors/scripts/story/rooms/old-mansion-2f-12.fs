@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-12
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x69 (D_004386F8): the three-dial lock by byte 3 - 0 the dials (and their lit twins) set
 \ to their settings; 1 the player at it: up / down pick the dial (event variable 0; its lit twin
@@ -247,11 +247,11 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     fiona-who 4 6 char-sound
     self-frames-reset
     $78 self-wait-frames
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
     6 message   \ "Its composition has changed!"
     wait-message
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     $A item-use
     $B message-param-room
@@ -260,7 +260,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -273,13 +273,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     5 ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
-            $60A self-anim
+            rattle-front-slow-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
         else
-            $608 self-anim
+            rattle-front-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
@@ -289,12 +289,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         then
         5 ebit-set
     else
-        $800 self-anim
+        crouch-down-anim self-anim
         self-wait-anim
-        $801 self-anim
+        crouching-anim self-anim
         $A message   \ "Water is spilling out from the edge of the door frame. The room on the other side..."
         wait-message
-        $802 self-anim
+        crouch-up-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
@@ -347,9 +347,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             4 ebit? if
                 2 6 318.0 12.0 -80.0 0 0 sound
                 1 $FF $D2 rumble
-                1 self-anim
+                rest-anim self-anim
                 self-wait-anim
-                0 self-anim
+                fiona.anims:stand-anim self-anim
                 self-frames-reset
                 $32 self-wait-frames
                 318.0 10.0 -80.0 self-look-at-point
@@ -395,7 +395,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $F 7 fade
         wait-fade
     else
-        $1D01 $A self-anim-blend
+        hand-to-mouth-anim $A self-anim-blend
         4 message   \ "A synthesizer? What a peculiar device. It appears you can insert an item here..."
         wait-message
         self-wait-anim
@@ -416,9 +416,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     fiona-who 4 6 char-sound
     self-frames-reset
     $78 self-wait-frames
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     1 8 var? if
         8 message-param-room
@@ -451,7 +451,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $8012 message   \ "You've obtained ."
         wait-message
     then then then then then
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     5 message   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
     wait-message
@@ -465,7 +465,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     82.73 -85.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -482,7 +482,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -492,7 +492,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     -69.5 -46.5 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     8 message   \ "There are books spread out on the table. They seem to pertain to complex formulas, but..."

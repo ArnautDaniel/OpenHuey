@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-4
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared fiona.anims ;
 
 : castle-b1-4.enter ( -- )   \ 003F21E0
     room-sounds
@@ -153,7 +153,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     35.0 10.0 self-turn-to-xz
     self-wait-done
-    $1D01 $A self-anim-blend
+    hand-to-mouth-anim $A self-anim-blend
     0 message   \ "'The path beyond is the road of darkness. Go not without a guide, lest ye lose yourself..."
     wait-message
     self-wait-anim

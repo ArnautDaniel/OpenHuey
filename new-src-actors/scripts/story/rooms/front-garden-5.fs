@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-5
-USING: actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.sounds stalker.anims ;
 
 \ a hanging thing (the room's +0x34 (byte 3 + 2) object) swinging, by byte 4: 0 / 2 set going
 \ (12 degrees) away from the partner / Fiona; 1 a step-floor (22.5 degrees of its swing, shrinking to
@@ -458,13 +458,13 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     1 self-noclip
     1 self-scripted
-    $800 self-anim
+    crouch-down-anim self-anim
     self-wait-anim
     $D6 -100.488 79.931 -90 $803 5 self-move-to
     self-wait-done
     $D6 -100.488 79.931 90 $803 5 self-move-to
     self-wait-done
-    $801 self-anim
+    crouching-anim self-anim
     fiona-hidden state-flag-set
     stalkers-stay state-flag-clear
     0 avoid-prompt
@@ -472,7 +472,7 @@ fvariable sw-dx  fvariable sw-dz
         0 2 pad? not if
             in-panic? 0 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] front-garden-5.act08 goto
             else
@@ -495,7 +495,7 @@ fvariable sw-dx  fvariable sw-dz
             stalkers-stay state-flag-set
             $E5 -74.756 82.505 90 $803 5 self-move-to
             self-wait-done
-            $802 self-anim
+            crouch-up-anim self-anim
             self-wait-anim
             0 self-scripted
             0 self-noclip
@@ -509,7 +509,7 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     $1E6 -45.859 82.656 -90 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
+    there-anim self-anim
     self-wait-anim
     0 ebit-set
     10 self-idle-anim
@@ -526,7 +526,7 @@ fvariable sw-dx  fvariable sw-dz
         1 front-garden-5.cond00? not while
         yield
     repeat
-    hewie-who $6C 5 char-sound
+    hewie-who snap-sound 5 char-sound
     fg-5-flag1 story-flag? not if
         0 $F2 $F action
     then
@@ -540,21 +540,21 @@ fvariable sw-dx  fvariable sw-dz
         0 front-garden-5.cond00? not while
         yield
     repeat
-    hewie-who $6C 5 char-sound
+    hewie-who snap-sound 5 char-sound
     0 0 front-garden-5.cmd00
     0 1 front-garden-5.cmd00
     self-idle-or-end
 ;
 
 : front-garden-5.act0D ( -- )   \ 00406250
-    fiona-who $8F 5 char-sound
+    fiona-who shove-hit-sound 5 char-sound
     0 2 front-garden-5.cmd00
     0 1 front-garden-5.cmd00
     self-idle-or-end
 ;
 
 : front-garden-5.act0E ( -- )   \ 00406270
-    fiona-who $8F 5 char-sound
+    fiona-who shove-hit-sound 5 char-sound
     1 2 front-garden-5.cmd00
     1 1 front-garden-5.cmd00
     self-idle-or-end
@@ -575,7 +575,7 @@ fvariable sw-dx  fvariable sw-dz
     -265.0 160.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -592,7 +592,7 @@ fvariable sw-dx  fvariable sw-dz
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -603,7 +603,7 @@ fvariable sw-dx  fvariable sw-dz
     -228.4 103.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -620,7 +620,7 @@ fvariable sw-dx  fvariable sw-dz
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -632,13 +632,13 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     self-frames-reset
     4 self-wait-frames
-    $1200 self-anim
+    lean-anim self-anim
     self-wait-anim
     fiona-who 0 6 char-sound
-    $1203 self-anim
+    strain-anim self-anim
     self-frames-reset
     self-wait-16
-    $1202 self-anim
+    let-go-push-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
@@ -653,7 +653,7 @@ fvariable sw-dx  fvariable sw-dz
     -14.0 97.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -670,7 +670,7 @@ fvariable sw-dx  fvariable sw-dz
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -681,7 +681,7 @@ fvariable sw-dx  fvariable sw-dz
     -180.0 176.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -698,7 +698,7 @@ fvariable sw-dx  fvariable sw-dz
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

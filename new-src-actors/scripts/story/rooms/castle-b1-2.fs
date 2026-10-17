@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-2
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
 \ room 0x14: the curtain ("Cartain") animated by event variable 0 (var0_obj_anim: byte 3 picks
 \ the frame range and direction).
@@ -178,7 +178,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 message   \ "Wonder if this water is drinkable?"
         wait-message
         fiona-who char-file-use
-        $8004 $A self-anim-blend
+        4 room-motion $A self-anim-blend
         self-frames-reset
         $16 self-wait-frames
         fiona-who 1 6 char-sound
@@ -222,7 +222,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     78.0 20.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -239,7 +239,7 @@ USING: room-names story.words story.shared flag-names story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -251,13 +251,13 @@ USING: room-names story.words story.shared flag-names story-names ;
         1 self-through-exit
         self-wait-done
         in-panic? 2 game-mode? or if
-            $60A self-anim
+            rattle-front-slow-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
         else
-            $608 self-anim
+            rattle-front-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
@@ -269,7 +269,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else
         $95 -58.5 9.5 -105 $FFFF 5 self-move-to
         self-wait-done
-        $A01 self-anim
+        look-low-anim self-anim
         self-frames-reset
         $1E self-wait-frames
         4 message   \ "There are lots of grimy handprints littering the knob."
@@ -315,7 +315,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     4 ebit? if
         counter-inc
     then
-    $8002 5 self-anim-blend8
+    2 room-motion 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     begin
@@ -326,7 +326,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     repeat
     3 castle-b1-2.cmd00
     in-panic? not if
-        fiona-who $43 5 char-sound
+        fiona-who seized-sound 5 char-sound
     then
     self-wait-anim
     0 self-noclip
@@ -346,7 +346,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     fiona-hidden state-flag-clear
     1 self-noclip
     0 0 var-set
-    $8003 5 self-anim-blend8
+    3 room-motion 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     begin
@@ -382,7 +382,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-who self-look-at
     yield
     0 0 var-set
-    $8000 5 self-anim-blend8
+    0 room-motion 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     begin
@@ -406,7 +406,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         else 0 2 pad? not if
             in-panic? 2 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] castle-b1-2.act09 goto
             else
@@ -428,7 +428,7 @@ USING: room-names story.words story.shared flag-names story-names ;
             fiona-hidden state-flag-clear
             1 self-noclip
             0 0 var-set
-            $8001 0 self-anim-blend8
+            1 room-motion 0 self-anim-blend8
             begin
                 1 castle-b1-2.cmd00
                 yield
@@ -464,12 +464,12 @@ USING: room-names story.words story.shared flag-names story-names ;
         yield
         stalker-who char-file-use
         1 wait-counter
-        $8000 5 self-anim-blend8
+        0 room-motion 5 self-anim-blend8
         self-wait-anim
         counter-inc
         0 self-scripted
     else
-        $1601 self-anim
+        there-anim self-anim
         self-wait-anim
         2 ebit-set
     then
@@ -487,7 +487,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     -44.9 -12.9 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -504,7 +504,7 @@ USING: room-names story.words story.shared flag-names story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

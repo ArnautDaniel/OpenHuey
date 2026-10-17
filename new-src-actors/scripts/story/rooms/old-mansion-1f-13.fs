@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-13
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 : old-mansion-1f-13.cmd00 ( -- )  effects:drips ;   \ (water dripping, rippling)
 \ 1 unless the object at +0x18 exists and its byte +0x28 is 1.
@@ -345,7 +345,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     3 message   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
     wait-message
     0 answer? if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -357,7 +357,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         wait-message
         $3C threat-add
         fiona-who 2 6 char-sound
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
         old-mansion-1f-13.act0A
     then
@@ -375,7 +375,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     3 message   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
     wait-message
     0 answer? if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -388,7 +388,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         got-yellow-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
         old-mansion-1f-13.act0A
     then
@@ -406,7 +406,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     3 message   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
     wait-message
     0 answer? if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -419,7 +419,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         got-red-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
         old-mansion-1f-13.act0A
     then
@@ -437,7 +437,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     3 message   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
     wait-message
     0 answer? if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -450,7 +450,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         got-blue-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
         old-mansion-1f-13.act0A
     then
@@ -468,7 +468,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     3 message   \ "Full-bodied flowers sprout from the bed. Pull one out? YES NO"
     wait-message
     0 answer? if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -481,7 +481,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         got-purple-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
         old-mansion-1f-13.act0A
     then
@@ -550,7 +550,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -180 self-turn-angle
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     6 message   \ "The flower bed below contains various flowers stretching in every direction. This must..."

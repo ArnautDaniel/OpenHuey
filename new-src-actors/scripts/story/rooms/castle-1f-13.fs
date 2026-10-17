@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-13
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ room 0x08 (Room08_Cmd00_ptmf): the cutscene director's +0x6C 3 (byte 3 0) or 2
 : castle-1f-13.cmd00 ( b0 -- )   \ (the scene's cast leaves actor 3 (b0 0) or 2 be: Cutscene_Mark82)
@@ -333,12 +333,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         hewie-who char-here? if
             $2F 0 -1 hewie-to-room
         then
-        $B01 0 self-anim-blend
+        lying-anim 0 self-anim-blend
         3 0 char-remove
         4 0 char-remove
         $1A 1.0 0 bgm
         $F $41 fade
-        $B02 self-anim
+        fiona.anims:get-up-anim self-anim
         self-wait-anim
         found-file-227 story-flag-set
         found-file-227-2 story-flag-set
@@ -362,7 +362,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-1f-13.act01 ( -- )   \ 003F2AE0
     self-wait-done
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     0 ebit? not if
@@ -381,9 +381,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 ebit? not if
         2 message   \ "A door?"
         wait-message
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
         3 message   \ "What?! It's just a wall made to look like a door."
         wait-message
@@ -399,9 +399,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     2 ebit? not if
         2 message   \ "A door?"
         wait-message
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
         3 message   \ "What?! It's just a wall made to look like a door."
         wait-message
@@ -460,7 +460,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-frames-reset
     $A self-wait-frames
     1 7 -219.0 60.0 14.5 0 0 sound
-    $8000 5 self-anim-blend8
+    0 room-motion 5 self-anim-blend8
     0 0 var-set
     begin
         fiona-who self-touching? if
@@ -517,7 +517,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         2 avoid-prompt
     then
     in-panic? not if
-        fiona-who $43 5 char-sound
+        fiona-who seized-sound 5 char-sound
     then
     fiona-hidden state-flag-clear
     fiona-who camera-follow
@@ -542,13 +542,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     1 self-noclip
     1 self-scripted
-    $800 self-anim
+    crouch-down-anim self-anim
     self-wait-anim
     $122 -291.573 -146.706 -110 $803 5 self-move-to
     self-wait-done
     $122 -291.573 -146.706 80 $803 5 self-move-to
     self-wait-done
-    $801 self-anim
+    crouching-anim self-anim
     fiona-hidden state-flag-set
     stalkers-stay state-flag-clear
     0 avoid-prompt
@@ -556,7 +556,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         0 2 pad? not if
             in-panic? 3 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] castle-1f-13.act08 goto
             else
@@ -579,7 +579,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             stalkers-stay state-flag-set
             $1D4 -267.0 -140.0 70 $803 5 self-move-to
             self-wait-done
-            $802 self-anim
+            crouch-up-anim self-anim
             self-wait-anim
             0 self-scripted
             0 self-noclip
@@ -593,7 +593,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     $1A1 -238.675 -139.193 -90 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
+    there-anim self-anim
     self-wait-anim
     3 ebit-set
     10 self-idle-anim
@@ -614,7 +614,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     -254.5 -95.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -631,7 +631,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -642,7 +642,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     -283.73 2.22 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -659,7 +659,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-2
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x13: the grate ("kousi"): byte 3 0 shut (turn 0), else swung open a quarter turn.
 : front-garden-2.cmd00 ( b0 -- )  if  pi f2/ fnegate  else  0e  then  s" kousi" turn-y object! ;
@@ -224,7 +224,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : front-garden-2.act00 ( -- )   \ 003F96E8
     self-wait-done
-    $1D02 $A self-anim-blend
+    hands-clasped-anim $A self-anim-blend
     0 message   \ "It is bolted shut from the other side. I'm not going to be able to open this..."
     wait-message
     self-wait-anim
@@ -301,7 +301,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     130.0 -237.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -318,7 +318,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

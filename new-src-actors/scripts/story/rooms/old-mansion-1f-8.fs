@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-8
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims ;
 
 \ room 0x48 (D_004267F8): the handler's objects 2 and 3 swing (phases 60 degrees apart) - byte 3
 \ 0 sets them still; 1: while slower than 5, Hewie's movement (the squared length of his last
@@ -494,9 +494,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $7D self-through-door
     self-wait-done
     fiona-who $7D char-not-at-door? if
-        $609 self-anim
+        rattle-behind-anim self-anim
     else
-        $608 self-anim
+        rattle-front-anim self-anim
     then
     self-frames-reset
     $14 self-wait-frames
@@ -516,7 +516,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     122.09 10.26 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -533,7 +533,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -544,7 +544,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -131.47 9.32 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -561,7 +561,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -572,7 +572,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -140.37 -25.97 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -589,7 +589,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -602,7 +602,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $C00 self-anim
+    go-for-it-gesture-anim self-anim
     fiona-who 1 char-wait-motion
     fiona-who $2E 5 char-sound
     self-wait-anim
@@ -631,7 +631,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    $1C03 $A self-anim-blend
+    sit-a-while-anim $A self-anim-blend
     self-wait-anim
     3 effect-remove
     0 ebit-clear
@@ -663,7 +663,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     hewie-who char-busy? not if
         0 hewie-who 8 action-force
-        $C00 self-anim
+        go-for-it-gesture-anim self-anim
         fiona-who 1 char-wait-motion
         fiona-who $2E 5 char-sound
         self-wait-anim
@@ -692,7 +692,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-noclip
     $66 129.619 91.48 1.7 10 hewie-go-to
     self-wait-done
-    $1C03 $A self-anim-blend
+    sit-a-while-anim $A self-anim-blend
     self-wait-anim
     om1f-8-antimony-tube story-flag? not if
         fiona-half-hidden state-flag? fiona-who char-busy? not or if
@@ -742,7 +742,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    $102 $A self-anim-blend
+    lie-down-anim $A self-anim-blend
     self-wait-anim
     3600 2 hewie-anim
     1 ebit-clear
@@ -831,7 +831,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -154.0 -28.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     2 ebit? 0 0 var? not and 0 1 var? not and if
@@ -852,7 +852,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -86.29 -39.06 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     3 ebit? 0 0 var? not and 0 1 var? not and if
@@ -873,7 +873,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     40.56 -52.11 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     4 ebit? 0 0 var? not and 0 1 var? not and if
@@ -894,7 +894,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     77.34 6.2 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     5 ebit? 0 0 var? not and 0 1 var? not and if
@@ -915,7 +915,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     127.66 -13.38 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     6 ebit? 0 0 var? not and 0 1 var? not and if
@@ -936,7 +936,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     144.96 39.88 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     7 ebit? 0 0 var? not and 0 1 var? not and if
@@ -957,7 +957,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $47 138.0 -98.0 180 $FFFF 5 self-move-to
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     8 ebit? not if
@@ -982,7 +982,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     73.11 -9.81 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     hewie-who char-here? 118 hewie-action? and hewie-who 8 char-on-tri? and if
@@ -1013,20 +1013,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
                 $26 char-activate
                 $26 127.567 0.0 -123.393 -90 char-to-xyz
                 old-mansion-1f-8.cmd01
-                $A02 self-anim
+                look-close-anim self-anim
                 self-wait-anim
                 0 $F1 $1E action
                 self-frames-reset
                 $F self-wait-frames
-                fiona-who $43 5 char-sound
-                $8000 self-anim
+                fiona-who seized-sound 5 char-sound
+                0 room-motion self-anim
                 self-wait-anim
                 3 panic-stage? not if
                     3 panic-stage
                 then
-                $8001 self-anim
+                1 room-motion self-anim
                 self-wait-anim
-                $8003 self-anim
+                3 room-motion self-anim
                 self-wait-anim
                 om1f-8-flag2 story-flag-set
             then
@@ -1041,11 +1041,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
                 wait-message
             then
             1 2 var? if
-                $800 self-anim
+                crouch-down-anim self-anim
                 self-wait-anim
                 $F message   \ "There are traces as if something has recently been ripped to shreds here...."
                 wait-message
-                $802 self-anim
+                crouch-up-anim self-anim
                 self-wait-anim
             then
             1 var-inc
@@ -1054,11 +1054,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             then
         then
     else
-        $800 self-anim
+        crouch-down-anim self-anim
         self-wait-anim
         $10 message   \ "Mandragora... So, this is used as a substitute for life-blood."
         wait-message
-        $802 self-anim
+        crouch-up-anim self-anim
         self-wait-anim
     then
     0 self-scripted
@@ -1098,7 +1098,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 $F1 $1C action
     fiona-who 8 char-file-load
     fiona-who char-file-use
-    $8003 self-anim
+    3 room-motion self-anim
     3 panic-stage? not if
         3 panic-stage
     then
@@ -1161,7 +1161,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -112.26 -123.08 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     0 message   \ "There is something glowing from the rear of the graveyard... I just can't make it out f..."

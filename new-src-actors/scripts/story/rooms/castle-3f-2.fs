@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-3f-2
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims stalker.anims ;
 
 : castle-3f-2.char-enter ( -- )   \ 0041D140
     hewie-controlled? not if
@@ -78,7 +78,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     summoner-own-cooldown
     stalker-who $2E 0.0 192.0 -180 char-to-xz
     0 stalker-who 1 action
-    $F04 self-anim
+    uneasy-2-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
@@ -111,7 +111,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 : castle-3f-2.act01 ( -- )   \ 0041D2D0
     1 self-scripted
     self-wait-done
-    0 self-anim
+    stalker.anims:stand-anim self-anim
     counter-inc
     2 wait-counter
     0 self-scripted

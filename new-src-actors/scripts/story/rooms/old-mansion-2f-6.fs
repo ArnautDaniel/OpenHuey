@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-6
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x59 (Room59_Cmd00_ptmf): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0
 : old-mansion-2f-6.cmd00 ( b0 -- )  drop ;   \ (the stalker's model's springs (+0x9E0): not simulated here yet)
@@ -130,7 +130,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         7 message   \ "I hope this water won't make me sick if I drink it."
         wait-message
         fiona-who char-file-use
-        $8004 $A self-anim-blend
+        4 room-motion $A self-anim-blend
         self-frames-reset
         $16 self-wait-frames
         fiona-who 1 6 char-sound
@@ -372,7 +372,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     4.58 14.22 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -389,7 +389,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -426,11 +426,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who $A char-in-area? if
         -30 self-turn-angle
         self-wait-done
-        $A02 self-anim
+        look-close-anim self-anim
     else
         -16.0 -17.0 self-turn-to-xz
         self-wait-done
-        $A01 self-anim
+        look-low-anim self-anim
     then
     self-frames-reset
     $28 self-wait-frames
@@ -455,7 +455,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $A message   \ "I wonder if this could serve as a hiding spot if I'm ever in a pinch? Oh darn. It'..."
         wait-message
     else
-        $60A self-anim
+        rattle-front-slow-anim self-anim
         self-frames-reset
         $B self-wait-frames
         fiona-who $28 5 char-sound
@@ -473,7 +473,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     2.0 45.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     $C message   \ "I wonder what's inside? It's not like it's going to explode or anything... right?"
@@ -486,7 +486,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     14.2 44.7 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     $D message   \ "Looks like plastic containers used to store chemicals. I can make out the word 'Ethano..."
@@ -499,7 +499,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     6.5 14.5 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     $F message   \ "A rather dirty and unsanitary operating table. No matter how serious the illness, you..."

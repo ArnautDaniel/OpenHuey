@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-1
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ room 0x12 (Room12_Cmd00_ptmf): byte 3 0: the smoke puffs (SmokePuffs_vtable), their slot in
 \ script variable 0; else that slot started
@@ -459,7 +459,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -52.5 -1.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -476,7 +476,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -527,7 +527,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -35.35 -34.5 self-turn-to-xz
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     0 part-hidden
     5 message-param-room
@@ -536,7 +536,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     got-castle-sketch story-flag-set
     summoner-on state-flag-clear
@@ -606,7 +606,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-b1-1.act09 ( -- )   \ 003F8CB8
     self-wait-done
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     self-wait-16
     $D message   \ "The box emanates no specific odor. Looks like it is full of canned goods."
@@ -644,7 +644,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-b1-1.act0D ( -- )   \ 003F8CE8
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $1E self-wait-frames
     4 message   \ "Looks like meat is being served... It appears they still haven't finished preparing it."
@@ -661,8 +661,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    fiona-who $7E 5 char-sound
-    $8003 $A self-anim-blend
+    fiona-who slide-sound 5 char-sound
+    3 room-motion $A self-anim-blend
     self-wait-anim
     0 self-noclip
     stalker-who char-busy? if
@@ -692,10 +692,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     1 self-noclip
     1 self-scripted
-    fiona-who $7E 5 char-sound
-    $8005 $A self-anim-blend8
+    fiona-who slide-sound 5 char-sound
+    5 room-motion $A self-anim-blend8
     self-wait-anim
-    $8001 $A self-anim-blend
+    1 room-motion $A self-anim-blend
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
@@ -705,7 +705,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 2 pad? not if
             in-panic? 4 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] castle-b1-1.act0F goto
             else
@@ -725,10 +725,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             fiona-who camera-follow
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-blend8
+            2 room-motion 5 self-anim-blend8
             self-frames-reset
             5 self-wait-frames
-            fiona-who $7E 5 char-sound
+            fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -764,7 +764,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $1FE -35.74 -5.079 -180 $FFFF 5 self-move-to
         self-wait-done
         stalker-who char-file-use
-        $8000 $A self-anim-blend
+        0 room-motion $A self-anim-blend
         self-frames-reset
         $1E self-wait-frames
         4 ebit-set
@@ -772,7 +772,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     else
         $1FE -35.74 -5.079 -180 $FFFF 5 self-move-to
         self-wait-done
-        $1601 self-anim
+        there-anim self-anim
         self-wait-anim
         4 ebit-set
     then
@@ -790,7 +790,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -18.1 -8.1 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -807,7 +807,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -818,7 +818,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -13.0 10.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -835,7 +835,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

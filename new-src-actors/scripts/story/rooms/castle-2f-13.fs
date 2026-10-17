@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-13
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ the pursuer's Pursuer_GrabHewieBehind
 : castle-2f-13.cond00? ( b0 -- flag )  drop grab-hewie-behind? ;   \ (the stalker's Pursuer_GrabHewieBehind)
@@ -213,7 +213,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $F 4 figure-load
     self-wait-done
     6 ebit? if
-        1 self-anim
+        rest-anim self-anim
     then
     castle-2f-13.act02
     hewie-who char-here? if
@@ -274,7 +274,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     hewie-who char-file-use
     1 self-noclip
-    $8000 5 self-anim-blend8
+    0 room-motion 5 self-anim-blend8
     self-wait-anim
     0 keeps-fiona-off keeps-pursuers-off or floor-off
     0 self-noclip
@@ -314,9 +314,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         1 counter-set
         $1EA -149.0 -51.0 -90 $FFFF 5 self-move-to
         self-wait-done
-        $102 self-anim
+        lie-down-anim self-anim
         self-wait-anim
-        2 self-anim
+        lie-anim self-anim
         self-wait-anim
         5 2 hewie-anim
     then

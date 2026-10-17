@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-9
-USING: room-names story.words story.shared story-names floor-flags ;
+USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
 \ room 0x107: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 2 a frame (room_nudge).
@@ -129,7 +129,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
     -298.4 -365.4 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -146,7 +146,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -167,13 +167,13 @@ USING: room-names story.words story.shared story-names floor-flags ;
 : chaos-forest-9.act03 ( -- )   \ 00418D50
     self-wait-done
     3 ebit? not if
-        $A02 5 self-anim-blend
+        look-close-anim 5 self-anim-blend
         self-wait-anim
         0 message   \ "It's... a lake, I think. Looks like there some kind of a... tower erected in the ce..."
         wait-message
         3 ebit-set
     else
-        $1D02 5 self-anim-blend
+        hands-clasped-anim 5 self-anim-blend
         self-wait-anim
         1 message   \ "I'm not going to be able to go any further this way. Better go back and find a way..."
         wait-message

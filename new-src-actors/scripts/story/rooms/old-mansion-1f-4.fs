@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-4
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 : old-mansion-1f-4.enter ( -- )   \ 004070F0
     room-sounds
@@ -195,10 +195,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     4 6 -30.0 10.0 20.0 0 0 sound
     self-frames-reset
     self-wait-16
-    fiona-who $43 5 char-sound
+    fiona-who seized-sound 5 char-sound
     $3C threat-raise
     1 $FF 8 rumble
-    $F04 self-anim
+    uneasy-2-anim self-anim
     self-wait-anim
     0 part-hidden
     1 part-shown
@@ -217,11 +217,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who 3 6 char-sound
     self-frames-reset
     $78 self-wait-frames
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
     5 message   \ "Oh my! It actually transformed..."
     wait-message
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     $B item-use
     $C message-param-room
@@ -231,7 +231,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $8012 message   \ "You've obtained ."
     wait-message
     got-red-godstone story-flag-set
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     om1f-4-flag1 story-flag? not if
         old-mansion-1f-4.act0E
@@ -250,9 +250,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who 3 6 char-sound
     self-frames-reset
     $78 self-wait-frames
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     1 8 var? if
         8 message-param-room
@@ -285,7 +285,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $8012 message   \ "You've obtained ."
         wait-message
     then then then then then
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     2 message   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
     wait-message
@@ -312,7 +312,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $F 7 fade
         wait-fade
     else
-        $1D01 $A self-anim-blend
+        hand-to-mouth-anim $A self-anim-blend
         1 message   \ "A transmuter? I've never heard of such a device before... It appears you can insert..."
         wait-message
         self-wait-anim
@@ -377,7 +377,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             else
                 $1C 1 6 char-sound
             then
-            fiona-who $8F 5 char-sound
+            fiona-who shove-hit-sound 5 char-sound
             $1C $9001 0 3 char-anim-hold
             $1C wait-char-anim
             $1C $9000 0 3 char-anim-hold
@@ -403,7 +403,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -51.07 19.59 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -420,7 +420,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -436,7 +436,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-who 3 -1 char-camera
     self-frames-reset
     4 self-wait-frames
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     3 ebit? not if
@@ -460,7 +460,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -20.0 -40.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     3 ebit? not if
@@ -479,7 +479,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -48.0 -40.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     3 ebit? not if
@@ -498,7 +498,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -10.0 0.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     3 ebit? not if
@@ -518,7 +518,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -40.0 0.0 self-turn-to-xz
     self-wait-done
     om1f-4-flag1 story-flag? not if
-        $A02 self-anim
+        look-close-anim self-anim
         self-frames-reset
         $28 self-wait-frames
         3 ebit? not if
@@ -531,7 +531,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         then
         self-wait-anim
     else
-        $A02 self-anim
+        look-close-anim self-anim
         self-frames-reset
         $28 self-wait-frames
         8 message   \ "It's empty now. I can't believe that thing inside was alive..."
@@ -545,7 +545,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     8.0 40.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     3 ebit? not if
@@ -571,7 +571,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         self-who 4 -1 char-camera
         self-frames-reset
         4 self-wait-frames
-        $A02 self-anim
+        look-close-anim self-anim
         self-frames-reset
         $28 self-wait-frames
         3 ebit? not if
@@ -590,7 +590,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 self-scripted
     else
         self-wait-done
-        $A02 self-anim
+        look-close-anim self-anim
         self-frames-reset
         $28 self-wait-frames
         8 message   \ "It's empty now. I can't believe that thing inside was alive..."
@@ -604,7 +604,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -48.0 40.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     3 ebit? not if

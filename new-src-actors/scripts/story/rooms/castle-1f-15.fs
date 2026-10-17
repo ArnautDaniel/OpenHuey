@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-15
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds ;
 
 \ room 0x19 (Room19_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) while
 \ Hewie is controlled: in another room, or 30 or more from the player
@@ -300,7 +300,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     self-wait-done
     $112 -0.195 -27.107 175 $FFFF 5 self-move-to
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
     0 message   \ "'Agnus Dei' Looks like that's the title of this diorama."
     wait-message
@@ -378,7 +378,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     then
     world-held state-flag-set
     fiona-who $169 60.358 52.0 180 char-to-xz
-    $B01 0 self-anim-blend
+    lying-anim 0 self-anim-blend
     camera-restart
     $FE $19 358 2 stalker-to-room
     stalker-who $166 55.085 70.506 180 char-to-xz
@@ -386,7 +386,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     hewie-who 0 char-visible
     hewie-who action-end
     stalkers-stay state-flag-clear
-    4 $1E self-anim-blend
+    hug-self-anim $1E self-anim-blend
     self-wait-anim
     $F $41 fade
     wait-fade
@@ -456,7 +456,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     then
     world-held state-flag-set
     fiona-who $16C 63.054 67.67 -57 char-to-xz
-    $B01 0 self-anim-blend
+    lying-anim 0 self-anim-blend
     camera-restart
     hewie-who $166 62.709 59.408 -57 char-to-xz
     $FE $19 359 2 stalker-to-room
@@ -477,14 +477,14 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $A02 $A self-anim-blend
+    look-close-anim $A self-anim-blend
     self-wait-anim
     7 message   \ "Creaks and pops crackle out of the dubious-looking hole. Everything about the hole-floor scre..."
     wait-message
     0 answer? if
         $F 0 fade
         wait-fade
-        fiona-who $7E 5 char-sound
+        fiona-who slide-sound 5 char-sound
         world-held state-flag-set
         $FE exit-check
     else
@@ -498,7 +498,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     1 self-scripted
     self-wait-done
     camera-restart
-    fiona-who $7E 5 char-sound
+    fiona-who slide-sound 5 char-sound
     3 map-page
     $F 1 fade
     wait-fade
@@ -512,7 +512,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     34.3 -13.7 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -529,7 +529,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -540,7 +540,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     56.3 -71.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -557,7 +557,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-18
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x1C (Room1C_Cmd00_ptmf): room effect 0x1C (a depth range) with the cutscene from frame
 \ 0x14A: near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230)
@@ -210,7 +210,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         -34.0 -44.0 self-turn-to-xz
         self-wait-done
     then
-    $402 self-anim
+    turn-round-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     flowers-laid story-flag? not if
@@ -229,7 +229,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $EC -32.523 -39.444 -130 $FFFF 5 self-move-to
     self-wait-done
     1 30.0 10.0 0.0 0.0 event-camera
-    $A01 $A self-anim-blend
+    look-low-anim $A self-anim-blend
     0 message   \ "An empty flower vase."
     wait-message
     self-wait-anim

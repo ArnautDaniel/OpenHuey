@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-4
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ room 0x0F: the floor plate ("fumi_yuka") fading: its +0x24 toward 1 while event variable 0 is
 \ unset, toward 0 once set; byte 3 0 at once, else by 0.2 a step-floor (var_fade).
@@ -455,12 +455,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-1f-4.act04 ( -- )   \ 003F6670
     self-wait-done
-    $800 self-anim
+    crouch-down-anim self-anim
     self-wait-anim
-    $801 self-anim
+    crouching-anim self-anim
     self-frames-reset
     self-wait-16
-    $802 self-anim
+    crouch-up-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     $15 message   \ "There is something strange about this part of the floor."
@@ -505,10 +505,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         fiona-who char-busy? not while
         yield
     repeat
-    $1203 0 self-anim-blend
+    strain-anim 0 self-anim-blend
     self-frames-reset
     self-wait-16
-    $1202 self-anim
+    let-go-push-anim self-anim
     self-wait-anim
     1 ebit? not if
         $11 message   \ "It won't open. Maybe I need a key or something?"
@@ -529,8 +529,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $19 self-wait-frames
     $5A threat-raise
     1 $FF 8 rumble
-    fiona-who $43 5 char-sound
-    $F00 self-anim
+    fiona-who seized-sound 5 char-sound
+    startled-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
@@ -587,7 +587,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     world-held state-flag-clear
     camera-restart
-    1 0 self-anim-blend
+    rest-anim 0 self-anim-blend
     panic-held state-flag-clear
     $F 1 fade
     wait-fade
@@ -702,7 +702,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     140.0 94.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -719,7 +719,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -750,7 +750,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     131.392 147.223 self-turn-to-xz
     self-wait-done
-    $900 self-anim
+    pick-up-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -762,7 +762,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $901 self-anim
+    up-from-pick-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -772,13 +772,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     2 self-through-exit
     self-wait-done
     in-panic? 2 game-mode? or if
-        $60B self-anim
+        rattle-behind-slow-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
     else
-        $609 self-anim
+        rattle-behind-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
@@ -797,7 +797,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     self-frames-reset
     4 self-wait-frames
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     fiona-who $C 6 char-sound
     5 part-shown
@@ -805,7 +805,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $1E self-wait-frames
     fiona-who $72 5 char-sound
     8 door-unlock
-    $903 self-anim
+    reach-back-anim self-anim
     130.0 -20.0 170.0 self-look-at-point
     yield
     self-frames-reset
@@ -846,11 +846,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     self-frames-reset
     4 self-wait-frames
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     self-wait-16
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     7 message   \ "Looks like this isn't enough... I will need to re-forge this plate-key to be able to us..."
     wait-message
@@ -863,12 +863,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     self-frames-reset
     4 self-wait-frames
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     fiona-who $C 6 char-sound
     self-frames-reset
     self-wait-16
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-frames-reset
     $1E self-wait-frames
@@ -970,7 +970,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-1f-4.act1C ( -- )   \ 003F6E50
-    fiona-who $91 5 char-sound
+    fiona-who slam-sound 5 char-sound
     begin
         fiona-free? not while
         yield

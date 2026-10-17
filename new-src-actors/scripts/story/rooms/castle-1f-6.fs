@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-6
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 : castle-1f-6.enter ( -- )   \ 003F7920
     0 1.2 15.55 -24.813 0 flame-in
@@ -279,7 +279,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     4.0 -20.0 self-turn-to-xz
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -291,7 +291,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -336,7 +336,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     34.2 60.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -353,7 +353,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -363,12 +363,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    $402 self-anim
+    turn-round-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
-    $A00 self-anim
+    look-at-anim self-anim
     self-wait-anim
     8 message   \ "A large tapestry is suspended here. I wonder if this is an embroidery of one of the cas..."
     wait-message
@@ -383,9 +383,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         stalker-who self-touching? not if
             in-panic? not if
                 fiona-who 3 char-not-at-door? if
-                    $609 self-anim
+                    rattle-behind-anim self-anim
                 else
-                    $608 self-anim
+                    rattle-front-anim self-anim
                 then
                 self-frames-reset
                 $14 self-wait-frames

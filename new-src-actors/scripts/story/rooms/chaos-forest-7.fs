@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-7
-USING: room-names story.words story.shared flag-names floor-flags ;
+USING: room-names story.words story.shared flag-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ room 0x105: three hanging things that Fiona pushes as she walks by, swinging (swing_three).
 : chaos-forest-7.cmd00 ( b0 -- )  swing-three ;
@@ -195,9 +195,9 @@ USING: room-names story.words story.shared flag-names floor-flags ;
     1 self-noclip
     0 ebit-clear
     self-wait-done
-    $800 self-anim
+    crouch-down-anim self-anim
     self-wait-anim
-    $801 self-anim
+    crouching-anim self-anim
     fiona-hidden state-flag-set
     stalkers-stay state-flag-clear
     0 avoid-prompt
@@ -205,7 +205,7 @@ USING: room-names story.words story.shared flag-names floor-flags ;
         0 2 pad? not if
             in-panic? 0 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] chaos-forest-7.act01 goto
             else
@@ -226,7 +226,7 @@ USING: room-names story.words story.shared flag-names floor-flags ;
                 ['] chaos-forest-7.act01 goto
             then
             stalkers-stay state-flag-set
-            $802 self-anim
+            crouch-up-anim self-anim
             self-wait-anim
             0 self-scripted
             0 self-noclip
@@ -241,7 +241,7 @@ USING: room-names story.words story.shared flag-names floor-flags ;
     self-wait-done
     $E0 -2.89 -89.23 0 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
+    there-anim self-anim
     self-wait-anim
     0 ebit-set
     10 self-idle-anim

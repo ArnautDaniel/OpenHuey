@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-3
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names fiona.anims ;
 
 : castle-b1-3.enter ( -- )   \ 003FA780
     1 $2300 sound-volume
@@ -70,7 +70,7 @@ USING: room-names story.words story.shared story-names ;
         self-wait-done
         -2.0 -2.0 self-turn-to-xz
         self-wait-done
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -82,7 +82,7 @@ USING: room-names story.words story.shared story-names ;
         item-fanfare
         $8012 message   \ "You've obtained ."
         wait-message
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
         wait-message
     else
@@ -90,7 +90,7 @@ USING: room-names story.words story.shared story-names ;
         -2.0 -2.0 self-turn-to-xz
         self-wait-done
         in-panic? not if
-            $902 self-anim
+            reach-out-anim self-anim
             self-wait-anim
             self-frames-reset
             4 self-wait-frames
@@ -107,7 +107,7 @@ USING: room-names story.words story.shared story-names ;
                 $8011 message   \ "You've obtained ."
                 wait-message
             then
-            $903 self-anim
+            reach-back-anim self-anim
             self-wait-anim
         then
     then
@@ -118,7 +118,7 @@ USING: room-names story.words story.shared story-names ;
     self-wait-done
     -6.0 3.0 self-turn-to-xz
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -130,7 +130,7 @@ USING: room-names story.words story.shared story-names ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;

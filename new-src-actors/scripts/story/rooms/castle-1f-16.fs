@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-16
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ room 0x1A (D_003FC660): the fan turns
 : castle-1f-16.cmd00 ( -- )  fan-turn ;
@@ -194,7 +194,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -25.0 13.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -211,7 +211,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -222,7 +222,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $E1 18.5 13.6 120 $FFFF 5 self-move-to
     self-wait-done
     1 20.0 10.0 0.0 0.0 event-camera
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     9 0 pvar? 9 1 pvar? or if
         c1f-16-flag2 story-flag? not if
@@ -245,25 +245,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             1 self-scripted
             $5A threat-add
             1 $FF 8 rumble
-            fiona-who $43 5 char-sound
-            $F04 self-anim
+            fiona-who seized-sound 5 char-sound
+            uneasy-2-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
-            $902 self-anim
+            reach-out-anim self-anim
             self-wait-anim
             $40000001 6 23.0 11.0 9.0 0 0 sound
-            $903 self-anim
+            reach-back-anim self-anim
             self-wait-anim
             c1f-16-flag1 story-flag-set
             0 self-scripted
         else
-            $903 self-anim
+            reach-back-anim self-anim
             self-wait-anim
         then
     else
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     0 0.0 0.0 0.0 0.0 event-camera
@@ -278,8 +278,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    fiona-who $7E 5 char-sound
-    $8003 $A self-anim-blend
+    fiona-who slide-sound 5 char-sound
+    3 room-motion $A self-anim-blend
     self-wait-anim
     0 self-noclip
     0 ebit? not if
@@ -300,10 +300,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     1 self-noclip
     1 self-scripted
-    fiona-who $7E 5 char-sound
-    $8005 $A self-anim-blend8
+    fiona-who slide-sound 5 char-sound
+    5 room-motion $A self-anim-blend8
     self-wait-anim
-    $8001 $A self-anim-blend
+    1 room-motion $A self-anim-blend
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
@@ -314,7 +314,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 2 pad? not if
             in-panic? 0 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] castle-1f-16.act04 goto
             else
@@ -334,10 +334,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             fiona-who camera-follow
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-blend8
+            2 room-motion 5 self-anim-blend8
             self-frames-reset
             5 self-wait-frames
-            fiona-who $7E 5 char-sound
+            fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -356,13 +356,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     2 self-is? 6 self-is? or 7 self-is? or if
         stalker-who char-file-use
-        $8000 $A self-anim-blend
+        0 room-motion $A self-anim-blend
         self-frames-reset
         $1E self-wait-frames
         0 ebit-set
         self-wait-anim
     else
-        $1601 self-anim
+        there-anim self-anim
         self-wait-anim
         0 ebit-set
     then
@@ -392,7 +392,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 noise-level
     9 pvar-inc
     stalker-who 3 stalker-command
-    0 self-anim
+    stalker.anims:stand-anim self-anim
     self-wait-anim
     self-frames-reset
     self-wait-16
@@ -412,12 +412,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    $402 self-anim
+    turn-round-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     self-wait-16
     3 ebit? not if

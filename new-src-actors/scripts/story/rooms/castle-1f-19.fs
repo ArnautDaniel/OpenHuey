@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-19
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 : castle-1f-19.enter ( -- )   \ 003FD9C0
     room-sounds
@@ -339,9 +339,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $32 -10.776 -128.378 0 $FFFF 5 self-move-to
     self-wait-done
-    $800 self-anim
+    crouch-down-anim self-anim
     self-wait-anim
-    $801 self-anim
+    crouching-anim self-anim
     self-frames-reset
     4 self-wait-frames
     hewie-who char-here? 118 hewie-action? and hewie-who 0 char-in-nav-group? and if
@@ -358,7 +358,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then then
     self-frames-reset
     4 self-wait-frames
-    $802 self-anim
+    crouch-up-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-idle-or-end
@@ -377,7 +377,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     else
         stalkers-stay state-flag-clear
     then
-    $C04 self-anim
+    go-there-gesture-anim self-anim
     fiona-who 1 char-wait-motion
     fiona-who $2E 5 char-sound
     self-wait-anim
@@ -395,13 +395,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $118 39.008 -266.892 100 $204 5 self-move-to
     self-wait-done
-    $1C03 $A self-anim-blend
+    sit-a-while-anim $A self-anim-blend
     self-wait-anim
     1 self-noclip
     hewie-who 0 6 char-sound
     $13F 68.224 -274.752 100 $204 5 self-move-to
     self-wait-done
-    $1C03 $A self-anim-blend
+    sit-a-while-anim $A self-anim-blend
     self-wait-anim
     fiona-half-hidden state-flag? fiona-who char-busy? not or if
         $73 $63 item-count? not if

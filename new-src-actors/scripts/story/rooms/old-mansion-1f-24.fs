@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-24
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 defer old-mansion-1f-24.act02
 : old-mansion-1f-24.enter ( -- )   \ 0043B020
@@ -214,9 +214,9 @@ defer old-mansion-1f-24.act02
 
 : old-mansion-1f-24.act07 ( -- )   \ 0043B4E0
     self-wait-anim
-    $8005 7 self-anim-blend
+    5 room-motion 7 self-anim-blend
     self-wait-anim
-    $8001 $14 self-anim-blend
+    1 room-motion $14 self-anim-blend
     self-wait-anim
     6 ebit-clear
     ['] old-mansion-1f-24.act02 goto
@@ -224,16 +224,16 @@ defer old-mansion-1f-24.act02
 
 : old-mansion-1f-24.act06 ( -- )   \ 0043B4C0
     self-wait-anim
-    $8004 $14 self-anim-blend
+    4 room-motion $14 self-anim-blend
     self-wait-anim
-    $8003 7 self-anim-blend
+    3 room-motion 7 self-anim-blend
     self-wait-anim
     6 ebit-clear
     begin
         6 ebit? if
             ['] old-mansion-1f-24.act07 goto
         then
-        $8003 self-anim
+        3 room-motion self-anim
         self-wait-anim
     again
 ;
@@ -243,7 +243,7 @@ defer old-mansion-1f-24.act02
         6 ebit? if
             ['] old-mansion-1f-24.act06 goto
         then
-        $8001 self-anim
+        1 room-motion self-anim
         self-wait-anim
     again
 ; is old-mansion-1f-24.act02
@@ -253,7 +253,7 @@ defer old-mansion-1f-24.act02
     -97.5 1.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -270,7 +270,7 @@ defer old-mansion-1f-24.act02
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -334,7 +334,7 @@ defer old-mansion-1f-24.act02
     -98.51 -12.98 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -351,7 +351,7 @@ defer old-mansion-1f-24.act02
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

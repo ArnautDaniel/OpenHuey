@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-11
-USING: room-names story.words story.shared story-names floor-flags ;
+USING: room-names story.words story.shared story-names floor-flags stalker.anims ;
 
 \ Room99_Cmd00
 : house-of-truth-b1-11.cmd00 ( -- )  slam-shake ;
@@ -111,7 +111,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
     self-who 0 char-visible
     stalker-who $136 0 char-to-tri-facing
     stalker-who 1 1 char-camera
-    $1305 0 self-anim-blend
+    look-about-3-anim 0 self-anim-blend
     self-wait-anim
     stalker-who 0 stalker-command
     1 ebit-clear

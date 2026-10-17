@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-3
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle
 \ gRoomEventObj says yes to: +0x10, then the creature list's +0x28
@@ -169,7 +169,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         wait-fade
         2 ebit-set
     else
-        $1D01 $A self-anim-blend
+        hand-to-mouth-anim $A self-anim-blend
         4 message   \ "A decomposer? More unusual machines... It appears you can insert an item here..."
         wait-message
         self-wait-anim
@@ -209,7 +209,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-2f-3.act03 ( -- )   \ 0040F070
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     2 message   \ "Oh my! The floor fell out! Why is this room in such a state of disrepair? The other roo..."
@@ -332,11 +332,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who 3 6 char-sound
     self-frames-reset
     $78 self-wait-frames
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
     1 message   \ "Oh my! It actually transformed..."
     wait-message
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     $10 item-use
     8 message-param-room
@@ -345,7 +345,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -361,9 +361,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who 3 6 char-sound
     self-frames-reset
     $78 self-wait-frames
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     0 8 var? if
         8 message-param-room
@@ -402,7 +402,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $8012 message   \ "You've obtained ."
         wait-message
     then then then then then then
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     0 message   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
     wait-message
@@ -417,7 +417,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -3.17 12.09 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     3 ebit? not if
@@ -440,7 +440,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     5.3 37.5 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     om2f-3-album-medallion story-flag? not if
@@ -471,7 +471,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     $12 message   \ "The floor looks like it could give way at any second... I'm hardly overweight but I'd..."

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-10
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
 \ (as Room2D_Cmd02) three hanging things (+0x34 0..2), pushed by the square of Fiona's step-floor past
 \ 1, event flag 4 with sounds 4 / 5
@@ -197,14 +197,14 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     60.0 55.0 self-turn-to-xz
     self-wait-done
-    $A02 $A self-anim-blend
+    look-close-anim $A self-anim-blend
     self-wait-anim
     0 message   \ "A pungent odor and chapped, dry air coming from inside the hole-floor wreak havoc on the sens..."
     wait-message
     0 answer? if
         $F 0 fade
         wait-fade
-        fiona-who $7E 5 char-sound
+        fiona-who slide-sound 5 char-sound
         world-held state-flag-set
         $FE exit-check
     else
@@ -218,7 +218,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     1 self-scripted
     self-wait-done
     camera-restart
-    fiona-who $7E 5 char-sound
+    fiona-who slide-sound 5 char-sound
     1 map-page
     $F 1 fade
     wait-fade
@@ -254,13 +254,13 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     1 self-noclip
     1 self-scripted
-    $800 self-anim
+    crouch-down-anim self-anim
     self-wait-anim
     $28 32.119 -7.5 0 $803 5 self-move-to
     self-wait-done
     $28 32.119 -7.5 180 $803 5 self-move-to
     self-wait-done
-    $801 self-anim
+    crouching-anim self-anim
     fiona-hidden state-flag-set
     stalkers-stay state-flag-clear
     0 avoid-prompt
@@ -268,7 +268,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 2 pad? not if
             in-panic? 0 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] house-of-truth-1f-10.act03 goto
             else
@@ -291,7 +291,7 @@ USING: room-names story.words story.shared flag-names story-names ;
             stalkers-stay state-flag-set
             $11A 31.33 -24.45 180 $803 5 self-move-to
             self-wait-done
-            $802 self-anim
+            crouch-up-anim self-anim
             self-wait-anim
             0 self-scripted
             0 self-noclip
@@ -305,7 +305,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     $11F 40.89 -25.76 -5 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
+    there-anim self-anim
     self-wait-anim
     0 ebit-set
     10 self-idle-anim
@@ -322,7 +322,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     29.7 32.54 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -339,7 +339,7 @@ USING: room-names story.words story.shared flag-names story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

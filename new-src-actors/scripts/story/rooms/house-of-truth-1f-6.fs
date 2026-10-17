@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-6
-USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ door 0 swung by script variable 0: byte 3 0 sets it to -90; 1 opens it 10 degrees a step-floor to 0
 \ (doors +0x74), waiting (2) until there
@@ -226,12 +226,12 @@ defer house-of-truth-1f-6.act02
     $E9 door-open-clear
     $E9 door-lock
     doors-room-in
-    fiona-who $43 5 char-sound
-    $F01 3 self-anim-blend
+    fiona-who seized-sound 5 char-sound
+    look-behind-anim 3 self-anim-blend
     self-wait-anim
     0 self-through-exit
     self-wait-done
-    $60B self-anim
+    rattle-behind-slow-anim self-anim
     self-frames-reset
     self-wait-16
     begin
@@ -244,7 +244,7 @@ defer house-of-truth-1f-6.act02
     -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
-    1 $A self-anim-blend
+    rest-anim $A self-anim-blend
     self-wait-anim
     wait-message
     begin
@@ -438,7 +438,7 @@ defer house-of-truth-1f-6.act02
     else 3 2 var? if
         1 4 var-set
     then then then
-    $60B self-anim
+    rattle-behind-slow-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
@@ -456,10 +456,10 @@ defer house-of-truth-1f-6.act02
     self-frames-reset
     8 self-wait-frames
     $FFFF message-close
-    $F03 3 self-anim-blend
+    uneasy-anim 3 self-anim-blend
     1 wait-counter
-    fiona-who $3E 5 char-sound
-    $F04 $A self-anim-blend
+    fiona-who knocked-sound 5 char-sound
+    uneasy-2-anim $A self-anim-blend
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
@@ -514,7 +514,7 @@ defer house-of-truth-1f-6.act02
     1 self-noclip
     self-who self-look-at
     yield
-    $8001 5 self-anim-blend8
+    1 room-motion 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     0 part-hidden
@@ -552,7 +552,7 @@ defer house-of-truth-1f-6.act02
     1 self-noclip
     3 2 object-anim
     4 2 object-anim
-    $8002 0 self-anim-blend
+    2 room-motion 0 self-anim-blend
     self-frames-reset
     $10 self-wait-frames
     fiona-who 1 6 char-sound
@@ -574,7 +574,7 @@ defer house-of-truth-1f-6.act02
     9 ebit-set
     1 wait-counter
     1 self-noclip
-    $8001 5 self-anim-blend8
+    1 room-motion 5 self-anim-blend8
     self-wait-anim
     0 self-noclip
     hewie-hidden state-flag-set
@@ -585,7 +585,7 @@ defer house-of-truth-1f-6.act02
             else
                 hewie-hidden state-flag-clear
                 1 self-noclip
-                $8002 0 self-anim-blend
+                2 room-motion 0 self-anim-blend
                 self-wait-anim
                 0 self-noclip
                 0 self-scripted
@@ -594,7 +594,7 @@ defer house-of-truth-1f-6.act02
         else
             hewie-hidden state-flag-clear
             1 self-noclip
-            $8002 0 self-anim-blend
+            2 room-motion 0 self-anim-blend
             self-wait-anim
             0 self-noclip
             0 self-scripted

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-37
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ Room37_Cmd00
 : off-map-37.cmd00 ( -- )  fan-turn ;
@@ -913,7 +913,7 @@ defer off-map-37.act00
     0 panic-stage
     fiona-calm-reset
     fiona-who $13 -16.0 -66.5 0 char-to-xz
-    0 0 self-anim-blend
+    fiona.anims:stand-anim 0 self-anim-blend
     1 1 player-camera
     music-stage-end
     hewie-who $C4 -10.03 -61.53 0 char-to-xz

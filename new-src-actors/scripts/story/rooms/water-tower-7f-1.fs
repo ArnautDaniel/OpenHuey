@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-7f-1
-USING: actors messages room-names story.words story.shared flag-names story-names ;
+USING: actors messages room-names story.words story.shared flag-names story-names fiona.anims ;
 
 \ the 0x10-byte effect ObjectGlow_vtable on room object k + 1 (byte 4 = k, 1..8; script variable
 \ 11 - k keeps its slot): made on first use when byte 3 is set, then sent (on byte 3, index 8 -
@@ -744,7 +744,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     0.0 -105.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     $F 6 fade

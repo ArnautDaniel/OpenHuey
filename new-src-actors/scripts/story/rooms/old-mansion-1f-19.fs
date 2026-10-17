@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-19
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
 : old-mansion-1f-19.enter ( -- )   \ 00438D30
     room-sounds
@@ -164,14 +164,14 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    $A02 $A self-anim-blend
+    look-close-anim $A self-anim-blend
     self-wait-anim
     0 message   \ "A miasma of mold and corrosion wafts from within the hole. Enter the hole? YES NO"
     wait-message
     0 answer? if
         $F 0 fade
         wait-fade
-        fiona-who $7E 5 char-sound
+        fiona-who slide-sound 5 char-sound
         world-held state-flag-set
         $FE exit-check
     else
@@ -189,7 +189,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     $1C 3 1 char-load
     self-wait-done
     camera-restart
-    fiona-who $7E 5 char-sound
+    fiona-who slide-sound 5 char-sound
     $F 1 fade
     wait-fade
     world-held state-flag-clear
@@ -215,8 +215,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-who 0 char-visible
     fiona-hidden state-flag-clear
     1 self-noclip
-    fiona-who $7E 5 char-sound
-    $8003 $A self-anim-blend
+    fiona-who slide-sound 5 char-sound
+    3 room-motion $A self-anim-blend
     self-wait-anim
     0 self-noclip
     3 ebit? not if
@@ -237,10 +237,10 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     1 self-noclip
     1 self-scripted
-    fiona-who $7E 5 char-sound
-    $8005 $A self-anim-blend8
+    fiona-who slide-sound 5 char-sound
+    5 room-motion $A self-anim-blend8
     self-wait-anim
-    $8001 $A self-anim-blend
+    1 room-motion $A self-anim-blend
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
@@ -252,7 +252,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 2 pad? not if
             in-panic? 3 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] old-mansion-1f-19.act05 goto
             else
@@ -275,10 +275,10 @@ USING: room-names story.words story.shared flag-names story-names ;
             self-who 0 char-visible
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-blend8
+            2 room-motion 5 self-anim-blend8
             self-frames-reset
             5 self-wait-frames
-            fiona-who $7E 5 char-sound
+            fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -301,11 +301,11 @@ USING: room-names story.words story.shared flag-names story-names ;
     3 self-is? $22 self-is? or if
         stalker-who char-file-use
         4 stalker-who 1 char-model-op
-        $8000 self-anim
+        0 room-motion self-anim
         self-wait-anim
         4 stalker-who 0 char-model-op
     else
-        $1601 self-anim
+        there-anim self-anim
         self-wait-anim
     then
     3 ebit-set

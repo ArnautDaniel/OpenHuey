@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-2
-USING: actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims stalker.anims ;
 
 \ the room object pstr_ori's +0x24 by byte 3: 0 set (37.978 with progress flag 0x12, else 11), 1
 \ up 0.25 to 37.978 (then event +0x5C (2)), 2 up 0.25, else down 0.25
@@ -628,7 +628,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         1 self-scripted
         0 answer? if
             2 0 object-anim
-            $8000 $A self-anim-blend
+            0 room-motion $A self-anim-blend
             self-frames-reset
             $20 self-wait-frames
             $40000005 6 50.0 -5.0 171.0 0 0 sound
@@ -742,9 +742,9 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     $353 40.0 69.0 -90 $204 5 self-move-to
     self-wait-done
     0 solid-floor floor-on
-    $100 self-anim
+    sit-down-anim self-anim
     self-wait-anim
-    1 self-anim
+    sit-anim self-anim
     self-wait-anim
     begin
         fiona-who $13 char-in-area? if
@@ -832,7 +832,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             2 message   \ "There's a breeze coming from the other side. I wonder where it leads..."
             wait-message
         else
-            $1D02 $A self-anim-blend
+            hands-clasped-anim $A self-anim-blend
             3 message   \ "That is the last time I put my hand in there."
             wait-message
             self-wait-anim
@@ -848,13 +848,13 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 : castle-1f-2.act08 ( -- )   \ 003EFCD0
     self-wait-done
     1 ebit? not if
-        $A02 $A self-anim-blend
+        look-close-anim $A self-anim-blend
         4 message   \ "There are beautiful flowers blooming here."
         wait-message
         self-wait-anim
         1 ebit-set
     else
-        $A01 $A self-anim-blend
+        look-low-anim $A self-anim-blend
         5 message   \ "A section of the fence is broken. There is a hole..."
         wait-message
         self-wait-anim
@@ -931,14 +931,14 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         2 avoid-prompt
     then
     in-panic? not if
-        fiona-who $43 5 char-sound
+        fiona-who seized-sound 5 char-sound
     then
     1 self-scripted
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    fiona-who $7E 5 char-sound
-    $8003 $A self-anim-blend
+    fiona-who slide-sound 5 char-sound
+    3 room-motion $A self-anim-blend
     self-wait-anim
     0 self-noclip
     stalker-who char-busy? $B ebit? not and $11 ebit? not and if
@@ -965,10 +965,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     1 self-noclip
     1 self-scripted
-    fiona-who $7E 5 char-sound
-    $8005 $A self-anim-blend8
+    fiona-who slide-sound 5 char-sound
+    5 room-motion $A self-anim-blend8
     self-wait-anim
-    $8001 $A self-anim-blend
+    1 room-motion $A self-anim-blend
     0 self-noclip
     0 ebit? not if
         stalkers-stay state-flag-clear
@@ -980,7 +980,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         0 2 pad? not if
             in-panic? 3 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] castle-1f-2.act0D goto
             else
@@ -1000,10 +1000,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             fiona-who camera-follow
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-blend8
+            2 room-motion 5 self-anim-blend8
             self-frames-reset
             5 self-wait-frames
-            fiona-who $7E 5 char-sound
+            fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -1041,13 +1041,13 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     self-wait-done
     2 self-is? 6 self-is? or 7 self-is? or if
         stalker-who char-file-use
-        $8000 $A self-anim-blend
+        0 room-motion $A self-anim-blend
         self-frames-reset
         $1E self-wait-frames
         3 ebit-set
         self-wait-anim
     else
-        $1601 self-anim
+        there-anim self-anim
         self-wait-anim
         3 ebit-set
     then
@@ -1070,7 +1070,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     1 self-noclip
     1 self-scripted
     $C ebit-set
-    $8000 5 self-anim-blend8
+    0 room-motion 5 self-anim-blend8
     1 0 var-set
     begin
         fiona-who self-touching? if
@@ -1086,7 +1086,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         yield
     repeat
     stalker-who 0 0 char-camera
-    0 5 self-anim-blend
+    stalker.anims:stand-anim 5 self-anim-blend
     self-wait-anim
     0 self-noclip
     0 self-scripted
@@ -1102,7 +1102,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     292.2 -61.8 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -1119,7 +1119,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -1149,7 +1149,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     stalker-who char-file-use
     1 self-noclip
     1 self-scripted
-    $8001 5 self-anim-blend8
+    1 room-motion 5 self-anim-blend8
     1 0 var-set
     begin
         fiona-who self-touching? if
@@ -1179,7 +1179,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     215.5 2.6 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -1196,7 +1196,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -1207,7 +1207,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     290.5 -99.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -1224,7 +1224,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

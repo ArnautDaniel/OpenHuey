@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.lake-pathway-2
-USING: room-names story.words story.shared story-names floor-flags ;
+USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
 \ (as Room2A_Cmd03) the 0x14-byte effect BackdropModel2_vtable started with byte 3 as a word
 : lake-pathway-2.cmd00 ( b0 -- )   \ (the water's light: BackdropModel2 - b0 nonzero 500 across at (0, 50) turning, else 1500 at (775, -420))
@@ -107,7 +107,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
     180 self-turn-angle
     self-wait-done
     0 ebit? not if
-        $A01 self-anim
+        look-low-anim self-anim
         self-frames-reset
         $1E self-wait-frames
         0 message   \ "What!? The bridge is gone! It looks like it has disappeared!"
@@ -115,7 +115,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
         self-wait-anim
         0 ebit-set
     else
-        $1D02 self-anim
+        hands-clasped-anim self-anim
         self-frames-reset
         self-wait-16
         1 message   \ "There's no going back now. I'll need to find a new way out now."

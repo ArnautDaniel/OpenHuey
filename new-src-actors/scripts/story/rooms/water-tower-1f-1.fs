@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-1f-1
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0xC1: the summoner's countdown (progress +0x764) has run out.
 : water-tower-1f-1.cond00? ( -- flag )  summoner-done? ;
@@ -163,7 +163,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 message   \ "I wonder if this water is safe to drink... Guess I'll never know if I don't try."
         wait-message
         fiona-who char-file-use
-        $8004 $A self-anim-blend
+        4 room-motion $A self-anim-blend
         self-frames-reset
         $16 self-wait-frames
         fiona-who 1 6 char-sound
@@ -207,7 +207,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -39.66 0.99 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -224,7 +224,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

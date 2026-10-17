@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-1
-USING: actors room-names story.words story.shared flag-names story-names floor-flags ;
+USING: actors room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ room 0x00: a grey glow (Effect737D0, size 30) at one of four spots picked by byte 3
 \ (glow4_spot from spot 0): byte 4 0 starts it, its slot kept in event variable byte 3; else it
@@ -262,7 +262,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     -201.5 -121.8 self-turn-to-xz
     self-wait-done
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     $E message   \ "It looks like there is something up there..."
@@ -352,7 +352,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
 
 : front-garden-1.act04 ( -- )   \ 003EDEE0
     self-wait-done
-    $1D02 $A self-anim-blend
+    hands-clasped-anim $A self-anim-blend
     $C message   \ "The gate has been shut and locked solidly. It will be impossible to open it without a..."
     wait-message
     self-wait-anim
@@ -382,7 +382,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     yield
     -201.5 -121.8 self-turn-to-xz
     self-wait-done
-    $A00 $A self-anim-blend
+    look-at-anim $A self-anim-blend
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
@@ -703,7 +703,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     0 keeps-pursuers-off floor-on
     $208 -206.0 -116.0 138 $FFFF $A self-move-to
     self-wait-done
-    $1C03 self-anim
+    sit-a-while-anim self-anim
     self-wait-anim
     got-broken-marionette story-flag-set
     10 hewie-trust
@@ -740,7 +740,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     -331.4 239.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -757,7 +757,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -768,7 +768,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     -366.0 26.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -785,7 +785,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

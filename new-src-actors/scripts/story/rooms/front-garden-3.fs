@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-3
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ the box and the grate, by byte 3: 0 the box's +0x28 on by 0.4; the grate's +0x14 (an angle) 1
 \ back 1.5 degrees, 2 on 0.5, 3 back 0.5
@@ -435,11 +435,11 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     228.1 77.57 self-turn-to-xz
     self-wait-done
-    $C0A $A self-anim-blend
+    tend-start-anim $A self-anim-blend
     self-wait-anim
     $C message   \ "Unforgivable! A wire is bound to the poor animal. It is digging deeply into the dog's..."
     wait-message
-    $C0B $A self-anim-blend
+    tend-lead-in-anim $A self-anim-blend
     1 0 movie-play
     0 cutscene-start
     yield
@@ -505,7 +505,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     250.0 87.0 self-turn-to-xz
     self-wait-done
     c2f-3-flag1 story-flag? not if
-        $A00 self-anim
+        look-at-anim self-anim
         self-frames-reset
         $1E self-wait-frames
         0 ebit? not if
@@ -536,7 +536,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 
 : front-garden-3.act04 ( -- )   \ 00404FF0
     self-wait-done
-    1 self-anim
+    rest-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     6 message   \ "Where am I?"
@@ -568,7 +568,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     120 self-turn-angle
     self-wait-done
-    $402 self-anim
+    turn-round-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     2 message   \ "I just want to put the terrible things I saw back there behind me. I am not going back."
@@ -581,7 +581,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     185.7 -35.4 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -598,7 +598,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -676,12 +676,12 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     $DC -12.99 136.933 -90 $FFFF 5 self-move-to
     self-wait-done
-    $800 self-anim
+    crouch-down-anim self-anim
     self-wait-anim
-    $801 self-anim
+    crouching-anim self-anim
     $A message   \ "There is a hole-floor here, but it's far too small for me."
     wait-message
-    $802 self-anim
+    crouch-up-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-idle-or-end
@@ -763,9 +763,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     1 self-noclip
     $359 -30.0 137.0 -90 $204 5 self-move-to
     self-wait-done
-    $100 self-anim
+    sit-down-anim self-anim
     self-wait-anim
-    1 self-anim
+    sit-anim self-anim
     self-wait-anim
     begin
         fiona-who $19 char-in-area? if
@@ -804,7 +804,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     hewie-who char-busy? not if
         0 hewie-who $11 action-force
-        $C00 self-anim
+        go-for-it-gesture-anim self-anim
         fiona-who 1 char-wait-motion
         fiona-who $2E 5 char-sound
         self-wait-anim
@@ -832,7 +832,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     fg-3-refined-magnesia story-flag? not if
         $37 $FFFF 6 self-move-tri
         self-wait-done
-        $1C03 self-anim
+        sit-a-while-anim self-anim
         self-wait-anim
         fiona-half-hidden state-flag? fiona-who char-busy? not or if
             $95 $63 item-count? not if
@@ -904,11 +904,11 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     228.1 77.57 self-turn-to-xz
     self-wait-done
-    $800 $A self-anim-blend
+    crouch-down-anim $A self-anim-blend
     self-wait-anim
     $D message   \ "The wire looks like it got snagged on something. So many wounds... So much blood... Yo..."
     wait-message
-    $802 $A self-anim-blend
+    crouch-up-anim $A self-anim-blend
     self-wait-anim
     self-idle-or-end
 ;

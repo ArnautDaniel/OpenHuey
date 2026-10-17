@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-2
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
 \ room 0x85: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -161,7 +161,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     -45.77 19.99 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -178,7 +178,7 @@ USING: room-names story.words story.shared flag-names story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -189,13 +189,13 @@ USING: room-names story.words story.shared flag-names story-names ;
     0 self-through-exit
     self-wait-done
     in-panic? 2 game-mode? or if
-        $60A self-anim
+        rattle-front-slow-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
     else
-        $608 self-anim
+        rattle-front-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset

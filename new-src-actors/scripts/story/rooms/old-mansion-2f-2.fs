@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-2
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 : old-mansion-2f-2.enter ( -- )   \ 004086A0
     1 both-halves floor-on
@@ -121,7 +121,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $C02 self-anim
+    call-gesture-anim self-anim
     fiona-who 1 char-wait-motion
     fiona-who $31 5 char-sound
     self-wait-anim
@@ -197,7 +197,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         1 ebit? not if
             0 self-through-exit
             self-wait-done
-            $609 self-anim
+            rattle-behind-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
@@ -244,7 +244,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -49.36 -47.3 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -261,7 +261,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

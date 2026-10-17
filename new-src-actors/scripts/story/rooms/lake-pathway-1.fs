@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.lake-pathway-1
-USING: room-names story.words story.shared story-names floor-flags ;
+USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
 \ an effect TurningModel_vtable (8 bytes), not started
 : lake-pathway-1.cmd00 ( -- )  0 $40404040  400e 27.1e -125e  1000e 0.5e 0e  effects:caustic drop ;   \ (the water's light, turning: TurningModel)
@@ -119,13 +119,13 @@ USING: room-names story.words story.shared story-names floor-flags ;
     0 ebit? not if
         fiona-who 4 char-in-area? if
             0 message   \ "His limbs are twisted into unnatural positions. It looks so painful... But I gu..."
-            $A01 self-anim
+            look-low-anim self-anim
             self-wait-anim
         else
             180 self-turn-angle
             self-wait-done
             1 message   \ "No one could withstand a fall like that. No one."
-            $A00 self-anim
+            look-at-anim self-anim
             self-wait-anim
         then
         -1 self-idle-anim
@@ -134,11 +134,11 @@ USING: room-names story.words story.shared story-names floor-flags ;
         wait-message
         0 ebit-set
     else
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         2 message   \ "His skin... It's so dry and leathery. This body... There is something that just doe..."
         wait-message
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
         0 ebit-clear
     then
@@ -153,7 +153,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
         wait-message
     else
         1 ebit-clear
-        $A02 self-anim
+        look-close-anim self-anim
         self-frames-reset
         $28 self-wait-frames
         4 message   \ "There's a light coming from the other side of the lake. I've got to find a way to g..."
@@ -168,7 +168,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
     19.59 -247.61 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -185,7 +185,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

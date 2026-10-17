@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-2
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ the scales ("tenbin") and their pans ("sara_l", "sara_r"): level (byte 3 0) or tipped
 : old-mansion-1f-2.cmd00 ( b0 -- )   \ (the scales, "tenbin", and their pans: level (0) or tipped 25 degrees)
@@ -345,7 +345,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $F $51 fade
     wait-fade
     $38 resident-flag-set
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     $10 message-param-room
     $10 1 item-give-count
@@ -354,7 +354,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $8012 message   \ "You've obtained ."
     wait-message
     got-handful-of-ash story-flag-set
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -421,7 +421,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 answer? if
             $158 4.619 23.5 180 $FFFF 5 self-move-to
             self-wait-done
-            $902 self-anim
+            reach-out-anim self-anim
             self-wait-anim
             self-frames-reset
             4 self-wait-frames
@@ -445,7 +445,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
                 $8012 message   \ "You've obtained ."
                 wait-message
             then
-            $903 self-anim
+            reach-back-anim self-anim
             self-wait-anim
         then
     then
@@ -457,7 +457,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     2 ebit? not if
         0 self-turn-angle
         self-wait-done
-        $A00 self-anim
+        look-at-anim self-anim
         self-wait-anim
         3 message   \ "A large door stands unnervingly still. Letters have been etched into the door."
         wait-message
@@ -476,13 +476,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     else
         $1B9 -3.806 112.773 0 $FFFF 5 self-move-to
         self-wait-done
-        $1200 self-anim
+        lean-anim self-anim
         self-wait-anim
-        $1203 self-anim
+        strain-anim self-anim
         self-wait-anim
         self-frames-reset
         self-wait-16
-        $1202 self-anim
+        let-go-push-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
@@ -499,7 +499,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -72.34 -34.25 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -516,7 +516,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

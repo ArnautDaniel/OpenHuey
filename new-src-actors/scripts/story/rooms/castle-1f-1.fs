@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-1
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 : castle-1f-1.enter ( -- )   \ 003EE770
     garden-door-done story-flag? c1f-1-flag1 story-flag? not and if
@@ -246,7 +246,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-1f-1.act00 ( -- )   \ 003EEC28
     self-wait-done
-    $1D02 $A self-anim-blend
+    hands-clasped-anim $A self-anim-blend
     1 message   \ "The gate is closed. There's no way through. I am going to have to find another way."
     wait-message
     self-wait-anim
@@ -283,7 +283,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     hewie-who char-busy? not if
         0 hewie-who 4 action-force
-        $C00 self-anim
+        go-for-it-gesture-anim self-anim
         fiona-who 1 char-wait-motion
         fiona-who $2E 5 char-sound
         self-wait-anim
@@ -309,7 +309,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $1BE -31.549 70.055 150 $FFFF 5 self-move-to
     self-wait-done
-    $1C03 $A self-anim-blend
+    sit-a-while-anim $A self-anim-blend
     self-wait-anim
     fiona-half-hidden state-flag? fiona-who char-busy? not or if
         $95 $63 item-count? not if

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-10
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names fiona.anims ;
 
 : castle-2f-10.enter ( -- )   \ 00414390
     room-sounds
@@ -93,14 +93,14 @@ USING: room-names story.words story.shared flag-names ;
         fiona-who char-busy? not while
         yield
     repeat
-    $1202 0 self-anim-blend
+    let-go-push-anim 0 self-anim-blend
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
     7 self-wait-frames
     0.0 0.0 self-turn-to-xz
     self-wait-done
-    1 self-anim
+    rest-anim self-anim
     self-frames-reset
     $3C self-wait-frames
     $F $44 fade

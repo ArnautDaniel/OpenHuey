@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-7
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
 : old-mansion-1f-7.enter ( -- )   \ 00424B50
     room-sounds
@@ -199,11 +199,11 @@ USING: room-names story.words story.shared flag-names story-names ;
     fiona-who 3 6 char-sound
     self-frames-reset
     $78 self-wait-frames
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
     6 message   \ "The composition of this item has changed!"
     wait-message
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     8 item-use
     9 message-param-room
@@ -212,7 +212,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -228,9 +228,9 @@ USING: room-names story.words story.shared flag-names story-names ;
     fiona-who 3 6 char-sound
     self-frames-reset
     $78 self-wait-frames
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     0 9 var? if
         9 message-param-room
@@ -263,7 +263,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         $8012 message   \ "You've obtained ."
         wait-message
     then then then then then
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     3 message   \ "No extraction occurred. I guess it didn't work... Maybe I should try a different item?"
     wait-message
@@ -287,7 +287,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         $F 7 fade
         wait-fade
     else
-        $1D01 $A self-anim-blend
+        hand-to-mouth-anim $A self-anim-blend
         2 message   \ "An extractor? This place is full of odd inventions that I've never heard of. It app..."
         wait-message
         self-wait-anim
@@ -352,7 +352,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     -30.81 -21.85 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -369,7 +369,7 @@ USING: room-names story.words story.shared flag-names story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -379,7 +379,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     12.8 28.7 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     3 ebit? not if

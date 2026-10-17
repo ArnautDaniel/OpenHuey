@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e0
-USING: room-names story.words story.shared flag-names story.clock floor-flags ;
+USING: room-names story.words story.shared flag-names story.clock floor-flags fiona.sounds stalker.anims ;
 
 \ RoomE0_Cmd00
 : off-map-e0.cmd00 ( -- )  fiona-who 0 char-to-exit ;   \ (Fiona to exit 0: Character_ChooseExit)
@@ -218,8 +218,8 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     1 self-scripted
     fiona-hidden state-flag-clear
     1 self-noclip
-    fiona-who $7E 5 char-sound
-    $8003 $A self-anim-blend
+    fiona-who slide-sound 5 char-sound
+    3 room-motion $A self-anim-blend
     self-wait-anim
     0 self-noclip
     1 ebit? not if
@@ -241,10 +241,10 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     $27 $8004 5 14.5 -37.5 180 self-walk-anim
     self-wait-done
     1 self-noclip
-    fiona-who $7E 5 char-sound
-    $8005 $A self-anim-blend8
+    fiona-who slide-sound 5 char-sound
+    5 room-motion $A self-anim-blend8
     self-wait-anim
-    $8001 $A self-anim-blend
+    1 room-motion $A self-anim-blend
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
@@ -254,7 +254,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
         -1 control-action? if
             in-panic? 1 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] off-map-e0.act02 goto
             else
@@ -273,10 +273,10 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             then
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-blend8
+            2 room-motion 5 self-anim-blend8
             self-frames-reset
             5 self-wait-frames
-            fiona-who $7E 5 char-sound
+            fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -297,7 +297,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     then
     $1C -0.663 -24.791 180 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
+    there-anim self-anim
     self-wait-anim
     1 ebit-set
     10 self-idle-anim

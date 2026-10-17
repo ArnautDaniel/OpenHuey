@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-17
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names fiona.anims ;
 
 \ five pendulums (Room1B_ObjectNames[byte 3]) of their own periods and swings: byte 4 0 still at
 \ a phase offset (+0x34) 60 x the index, 1 swinging on (+0x30, +0x14)
@@ -183,9 +183,9 @@ USING: room-names story.words story.shared story-names ;
         stalker-who self-touching? not if
             in-panic? not if
                 fiona-who $19 char-not-at-door? if
-                    $609 self-anim
+                    rattle-behind-anim self-anim
                 else
-                    $608 self-anim
+                    rattle-front-anim self-anim
                 then
                 self-frames-reset
                 $14 self-wait-frames
@@ -206,7 +206,7 @@ USING: room-names story.words story.shared story-names ;
 
 : castle-1f-17.act01 ( -- )   \ 003FC9B0
     self-wait-done
-    $A01 $A self-anim-blend
+    look-low-anim $A self-anim-blend
     0 message   \ "Is this real? Poor little thing. Being stepped and walked on all day..."
     wait-message
     self-wait-anim
@@ -218,7 +218,7 @@ USING: room-names story.words story.shared story-names ;
     0 self-turn-angle
     self-wait-done
     1 40.0 20.0 0.0 0.0 event-camera
-    $A00 $A self-anim-blend
+    look-at-anim $A self-anim-blend
     1 message   \ "It's an anatomically correct model of the human body. It looks so real. Almost as if it..."
     wait-message
     self-wait-anim
@@ -244,7 +244,7 @@ USING: room-names story.words story.shared story-names ;
     1 ebit? not if
         4 message   \ "Looks like an ordinary pool table."
         wait-message
-        1 self-anim
+        rest-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         6 message   \ "Why would someone put something like this in here?"
@@ -265,7 +265,7 @@ USING: room-names story.words story.shared story-names ;
     -6.0 -5.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -282,7 +282,7 @@ USING: room-names story.words story.shared story-names ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

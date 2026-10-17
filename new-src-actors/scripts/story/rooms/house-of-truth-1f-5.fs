@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-5
-USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x8D: three grey smoke effects (Effect79B00, size 60) at the room's spots 7, 4, 3
 \ (grey_three).
@@ -319,12 +319,12 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     self-wait-done
     self-frames-reset
     4 self-wait-frames
-    $1200 self-anim
+    lean-anim self-anim
     self-wait-anim
-    $1203 self-anim
+    strain-anim self-anim
     self-frames-reset
     self-wait-16
-    $1202 self-anim
+    let-go-push-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
@@ -339,13 +339,13 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     0 self-through-exit
     self-wait-done
     in-panic? 2 game-mode? or if
-        $60A self-anim
+        rattle-front-slow-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
     else
-        $608 self-anim
+        rattle-front-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
@@ -361,13 +361,13 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     1 self-through-exit
     self-wait-done
     in-panic? 2 game-mode? or if
-        $60B self-anim
+        rattle-behind-slow-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
     else
-        $609 self-anim
+        rattle-behind-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
@@ -465,7 +465,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 
 : house-of-truth-1f-5.act06 ( -- )   \ 00434F10
     self-wait-done
-    1 self-anim
+    rest-anim self-anim
     5 message   \ "I have to get out of here now!"
     wait-message
     self-wait-anim
@@ -503,7 +503,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 
 : house-of-truth-1f-5.act08 ( -- )   \ 00434FC8
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     self-wait-16
     3 message   \ "This time... you really are dead. You bastard."

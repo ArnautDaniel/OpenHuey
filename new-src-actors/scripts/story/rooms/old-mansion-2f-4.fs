@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-4
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 : old-mansion-2f-4.enter ( -- )   \ 0040F490
     room-sounds
@@ -99,11 +99,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who 3 6 char-sound
     self-frames-reset
     $78 self-wait-frames
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
     6 message   \ "Oh my! It actually transformed..."
     wait-message
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     9 item-use
     $A message-param-room
@@ -112,7 +112,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -134,7 +134,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $F 7 fade
     wait-fade
     $48 subscreen-bit? not $49 subscreen-bit? not or if
-        $1D01 self-anim
+        hand-to-mouth-anim self-anim
         $B message   \ "Names for chemicals or medicine or something... Looks like their effects are liste..."
         wait-message
         self-wait-anim
@@ -161,7 +161,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $F 7 fade
         wait-fade
     else
-        $1D01 $A self-anim-blend
+        hand-to-mouth-anim $A self-anim-blend
         4 message   \ "A purifier? I've never heard of a device like this before. There is a space to inse..."
         wait-message
         self-wait-anim
@@ -182,9 +182,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who 3 6 char-sound
     self-frames-reset
     $78 self-wait-frames
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     1 8 var? if
         8 message-param-room
@@ -217,7 +217,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $8012 message   \ "You've obtained ."
         wait-message
     then then then then then
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     5 message   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
     wait-message
@@ -243,7 +243,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5.64 5.58 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -260,7 +260,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -270,7 +270,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     0.6 5.2 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     7 message   \ "The desk is covered in strange research equipment. What kind of research could possibly..."
     wait-message
     self-idle-or-end
@@ -280,7 +280,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     46.8 0.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     8 message   \ "There seems to be a passage to another one here. A warm wind is blowing in from that di..."
     wait-message
     self-idle-or-end

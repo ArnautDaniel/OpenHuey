@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-11
-USING: engine actors messages vectors story.state room-names story.words story.shared flag-names story-names ;
+USING: engine actors messages vectors story.state room-names story.words story.shared flag-names story-names fiona.anims ;
 
 \ room 0x62 (Room62_Cmd00_ptmf): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size
 \ +0x34 0.01; object 0 with sound 7), else a step-floor (+0x10 = size x sin(phase), phase on 60
@@ -223,9 +223,9 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
         stalker-who self-touching? not if
             in-panic? not if
                 fiona-who $67 char-not-at-door? if
-                    $609 self-anim
+                    rattle-behind-anim self-anim
                 else
-                    $608 self-anim
+                    rattle-front-anim self-anim
                 then
                 self-frames-reset
                 $14 self-wait-frames
@@ -248,7 +248,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-wait-done
     7.3 -28.3 self-turn-to-xz
     self-wait-done
-    $900 self-anim
+    pick-up-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -260,7 +260,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $901 self-anim
+    up-from-pick-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -287,7 +287,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
         wait-message
         0 ebit-set
     else
-        $A00 self-anim
+        look-at-anim self-anim
         self-wait-anim
         1 message   \ "There is something on top of the stepladder... I bet if I shake it a bit, I can get..."
         wait-message
@@ -327,7 +327,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     -6.82 -10.25 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -344,7 +344,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -371,7 +371,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
         -90 self-turn-angle
         self-wait-done
     then then then then then then
-    $A02 self-anim
+    look-close-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     1 0 var? if
@@ -412,7 +412,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     $F 7 fade
     wait-fade
     $63 subscreen-bit? not $65 subscreen-bit? not or if
-        $1D01 self-anim
+        hand-to-mouth-anim self-anim
         $B message   \ "I wonder what these combinations are supposed to mean?"
         wait-message
         self-wait-anim
@@ -439,7 +439,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     $F 7 fade
     wait-fade
     $46 subscreen-bit? not $47 subscreen-bit? not or if
-        $1D01 self-anim
+        hand-to-mouth-anim self-anim
         $B message   \ "I wonder what these combinations are supposed to mean?"
         wait-message
         self-wait-anim

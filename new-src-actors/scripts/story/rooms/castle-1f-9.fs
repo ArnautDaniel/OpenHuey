@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-9
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ the rising motes started
 : castle-1f-9.cmd00 ( -- )  effects:rising-motes ;
@@ -271,7 +271,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     0 ebit? not if
@@ -366,7 +366,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     0 hewie-who 6 action-force
     0 counter-set
-    $C04 self-anim
+    go-there-gesture-anim self-anim
     fiona-who 1 char-wait-motion
     fiona-who $2E 5 char-sound
     self-wait-anim
@@ -436,7 +436,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     60.0 37.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -453,7 +453,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -473,13 +473,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-through-exit
     self-wait-done
     in-panic? 2 game-mode? or if
-        $60A self-anim
+        rattle-front-slow-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
     else
-        $608 self-anim
+        rattle-front-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
@@ -518,7 +518,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -5.5 -99.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -535,7 +535,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

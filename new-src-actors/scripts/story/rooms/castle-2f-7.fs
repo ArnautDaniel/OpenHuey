@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-7
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ room 0x23 (Room23_Cmd00_ptmf): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2
 : castle-2f-7.cmd00 ( b0 -- )  drop ;   \ (Daniella's hair force (her model's springs: not simulated here yet))
@@ -157,7 +157,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     0 0 var? if
         -36.2 33.3 self-turn-to-xz
         self-wait-done
-        $A00 self-anim
+        look-at-anim self-anim
         self-frames-reset
         $32 self-wait-frames
         $D message   \ "Is this a birdcage? It looks like the remaining husk of a bird in the cage."
@@ -187,8 +187,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         0 0 self-door-knock
         self-frames-reset
         5 self-wait-frames
-        fiona-who $43 5 char-sound
-        $F04 5 self-anim-blend
+        fiona-who seized-sound 5 char-sound
+        uneasy-2-anim 5 self-anim-blend
         1 $FF 8 rumble
         self-frames-reset
         $10 self-wait-frames

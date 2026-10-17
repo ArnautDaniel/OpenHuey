@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-2f-1
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 : house-of-truth-2f-1.enter ( -- )   \ 004314B0
     ht2f-1-breakable1-broken story-flag? not if
@@ -328,13 +328,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     1 ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
-            $60B self-anim
+            rattle-behind-slow-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
         else
-            $609 self-anim
+            rattle-behind-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
@@ -466,7 +466,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -50.0 -15.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -483,7 +483,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -494,7 +494,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -17.0 -41.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -511,7 +511,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

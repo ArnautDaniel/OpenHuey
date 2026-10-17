@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-6
-USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ Room66_Cmd00
 : old-mansion-b1-6.cmd00 ( b0 -- )   \ (character 8 wading, moved by its animation - the cast does that; as a
@@ -985,7 +985,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 
 : old-mansion-b1-6.act0C ( -- )   \ 0041EFB0
     self-wait-done
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     self-wait-16
     5 message   \ "I wonder if this is the same type of golem statue that I saw in the main castle? Look!..."
@@ -1005,7 +1005,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     self-wait-done
     -170.0 20.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     self-wait-16
     1 message   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
@@ -1019,13 +1019,13 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     1 self-scripted
     self-wait-done
     fiona-who -45 $3C char-heading? if
-        $F00 self-anim
+        startled-anim self-anim
     else fiona-who 45 $3C char-heading? if
-        $F01 self-anim
+        look-behind-anim self-anim
     else fiona-who 0 $1E char-heading? if
-        $1002 self-anim
+        stagger-anim self-anim
     else
-        $1003 self-anim
+        doubled-over-anim self-anim
     then then then
     stalker-who char-here? not if
         self-frames-reset
@@ -1106,7 +1106,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     $F $41 fade
     wait-fade
     $B ebit? not if
-        $1D01 self-anim
+        hand-to-mouth-anim self-anim
         8 message   \ "...... That got my mind off things. I feel a little better now."
         wait-message
         self-wait-anim
@@ -1130,7 +1130,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     self-wait-done
     12.0 -41.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     self-wait-16
     1 message   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
@@ -1143,7 +1143,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     self-wait-done
     -19.0 -6.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     self-wait-16
     1 message   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
@@ -1156,7 +1156,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     self-wait-done
     -60.0 -110.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     self-wait-16
     1 message   \ "An unusual figure has been burned into the ground... It reads: 'METH'"
@@ -1170,13 +1170,13 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     1 self-scripted
     self-wait-done
     fiona-who 45 $3C char-heading? if
-        $F00 self-anim
+        startled-anim self-anim
     else fiona-who -45 $3C char-heading? if
-        $F01 self-anim
+        look-behind-anim self-anim
     else fiona-who 90 $1E char-heading? if
-        $1002 self-anim
+        stagger-anim self-anim
     else
-        $1003 self-anim
+        doubled-over-anim self-anim
     then then then
     stalker-who char-here? not if
         self-frames-reset
@@ -1197,13 +1197,13 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     1 self-scripted
     self-wait-done
     fiona-who 0 $3C char-heading? if
-        $F00 self-anim
+        startled-anim self-anim
     else fiona-who 90 $3C char-heading? if
-        $F01 self-anim
+        look-behind-anim self-anim
     else fiona-who 45 $1E char-heading? if
-        $1002 self-anim
+        stagger-anim self-anim
     else
-        $1003 self-anim
+        doubled-over-anim self-anim
     then then then
     stalker-who char-here? not if
         self-frames-reset
@@ -1224,13 +1224,13 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     1 self-scripted
     self-wait-done
     fiona-who 45 $3C char-heading? if
-        $F00 self-anim
+        startled-anim self-anim
     else fiona-who -45 $3C char-heading? if
-        $F01 self-anim
+        look-behind-anim self-anim
     else fiona-who 90 $1E char-heading? if
-        $1002 self-anim
+        stagger-anim self-anim
     else
-        $1003 self-anim
+        doubled-over-anim self-anim
     then then then
     stalker-who char-here? not if
         self-frames-reset
@@ -1251,7 +1251,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     2.06 -99.68 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -1268,7 +1268,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -1279,7 +1279,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     -138.94 -114.31 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -1296,7 +1296,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -1307,7 +1307,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     39.98 -40.67 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -1324,7 +1324,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

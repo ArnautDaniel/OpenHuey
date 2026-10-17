@@ -192,7 +192,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-2f-9.act03 ( -- )   \ 0047A998
     begin
-        $8001 self-anim
+        1 room-motion self-anim
         self-wait-anim
     again
 ;
@@ -201,9 +201,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-noclip
     1 self-scripted
     self-wait-done
-    $8004 $14 self-anim-blend
+    4 room-motion $14 self-anim-blend
     self-wait-anim
-    $8003 7 self-anim-blend
+    3 room-motion 7 self-anim-blend
     begin
         6 sound-bank-loaded? not while
         yield
@@ -212,9 +212,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 message   \ "Miss... It's cleaning time now."
     wait-message
     self-wait-anim
-    $8005 7 self-anim-blend
+    5 room-motion 7 self-anim-blend
     self-wait-anim
-    $8001 $14 self-anim-blend
+    1 room-motion $14 self-anim-blend
     self-wait-anim
     c2f-9-flag2 story-flag-set
     1 counter-set

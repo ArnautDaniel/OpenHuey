@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-1
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ a lit quad at x -15.96, z -2 .. 6, height 111 / 91
 : old-mansion-1f-1.cmd00 ( b0 -- )  $1B $80  -15.959e 111.0e -2.0e  -15.959e 111.0e 6.0e  -15.959e 91.0e -2.0e  -15.959e 91.0e 6.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -227,7 +227,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 counter-set
     stalker-who 5 6 char-sound
     begin
-        $8000 self-anim
+        0 room-motion self-anim
         self-wait-anim
     again
 ;
@@ -282,7 +282,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    $402 self-anim
+    turn-round-anim self-anim
     self-wait-anim
     3 self-look-at
     yield

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-4
-USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ (as RoomC7_Cmd01)
 : house-of-truth-1f-4.cmd00 ( b0 -- )  var-down-by-hit ;
@@ -244,7 +244,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     self-wait-done
     50.0 -32.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     self-wait-16
     ht1f-4-flag1 story-flag? not if
@@ -467,7 +467,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     self-wait-done
     0.0 65.0 self-turn-to-xz
     self-wait-done
-    $900 self-anim
+    pick-up-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -478,7 +478,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $901 self-anim
+    up-from-pick-anim self-anim
     self-wait-anim
     got-sol-key story-flag-set
     0 self-scripted
@@ -519,13 +519,13 @@ USING: engine common actors messages story.state room-names story.words story.sh
         self-wait-done
         4 ebit? not 2 game-mode? or in-panic? or if
             in-panic? 2 game-mode? or if
-                $60A self-anim
+                rattle-front-slow-anim self-anim
                 self-wait-anim
                 -1 self-idle-anim
                 self-frames-reset
                 7 self-wait-frames
             else
-                $608 self-anim
+                rattle-front-anim self-anim
                 self-wait-anim
                 -1 self-idle-anim
                 self-frames-reset
@@ -702,7 +702,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
         wait-message
         6 ebit-set
     else
-        $1D01 $A self-anim-blend
+        hand-to-mouth-anim $A self-anim-blend
         self-wait-anim
         7 message   \ "It's not running right now... Maybe there is a power switch somewhere that needs to..."
         wait-message

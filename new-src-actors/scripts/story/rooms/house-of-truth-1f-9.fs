@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-9
-USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ ---- the debris falling from above ("keri0".."keri5", each carried by a kind-9 thing: free
 \ while hidden) and the traps set round the middle (kind 10) - the things actor's ----
@@ -466,7 +466,7 @@ defer house-of-truth-1f-9.act0F
     self-wait-done
     0.0 65.0 self-turn-to-xz
     self-wait-done
-    $1C03 self-anim
+    sit-a-while-anim self-anim
     self-wait-anim
     fiona-who self-look-at
     yield
@@ -483,7 +483,7 @@ defer house-of-truth-1f-9.act0F
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $C04 self-anim
+    go-there-gesture-anim self-anim
     fiona-who 1 char-wait-motion
     fiona-who $2E 5 char-sound
     self-wait-anim
@@ -652,7 +652,7 @@ defer house-of-truth-1f-9.act0F
     0.0 0.0 self-turn-to-xz
     self-wait-done
     1 ebit? not over-music-f story-flag? not and if
-        $A01 self-anim
+        look-low-anim self-anim
         self-frames-reset
         $1E self-wait-frames
         6 message   \ "If I fell in from here, I would be toast... Quite literally."

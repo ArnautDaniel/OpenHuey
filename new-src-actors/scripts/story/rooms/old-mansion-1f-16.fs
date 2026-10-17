@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-16
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ Room55_Cmd00
 : old-mansion-1f-16.cmd00 ( b0 -- )   \ (Room55: b0 0 the ceiling's glass reflecting (60 x 60 at 45) and the light rippling
@@ -199,13 +199,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         4 self-through-exit
         self-wait-done
         in-panic? 2 game-mode? or if
-            $60B self-anim
+            rattle-behind-slow-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
         else
-            $609 self-anim
+            rattle-behind-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
@@ -263,7 +263,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     65.56 19.77 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -280,7 +280,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

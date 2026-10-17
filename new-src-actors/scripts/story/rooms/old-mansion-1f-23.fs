@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-23
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 : old-mansion-1f-23.enter ( -- )   \ 0043A8F0
     room-sounds
@@ -241,8 +241,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    fiona-who $7E 5 char-sound
-    $8003 $A self-anim-blend
+    fiona-who slide-sound 5 char-sound
+    3 room-motion $A self-anim-blend
     self-wait-anim
     0 self-noclip
     0 ebit? not if
@@ -263,10 +263,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     1 self-noclip
     1 self-scripted
-    fiona-who $7E 5 char-sound
-    $8005 $A self-anim-blend8
+    fiona-who slide-sound 5 char-sound
+    5 room-motion $A self-anim-blend8
     self-wait-anim
-    $8001 $A self-anim-blend
+    1 room-motion $A self-anim-blend
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
@@ -280,7 +280,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 2 pad? not if
             in-panic? 0 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] old-mansion-1f-23.act01 goto
             else
@@ -300,10 +300,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             fiona-who camera-follow
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-blend8
+            2 room-motion 5 self-anim-blend8
             self-frames-reset
             5 self-wait-frames
-            fiona-who $7E 5 char-sound
+            fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -326,11 +326,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     3 self-is? $22 self-is? or if
         stalker-who char-file-use
         4 stalker-who 1 char-model-op
-        $8000 self-anim
+        0 room-motion self-anim
         self-wait-anim
         4 stalker-who 0 char-model-op
     else
-        $1601 self-anim
+        there-anim self-anim
         self-wait-anim
     then
     0 ebit-set
@@ -348,7 +348,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0.03 -85.54 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -365,7 +365,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -376,7 +376,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     109.8 -94.58 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -393,7 +393,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -403,7 +403,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     127.0 -125.0 self-turn-to-xz
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -415,7 +415,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;

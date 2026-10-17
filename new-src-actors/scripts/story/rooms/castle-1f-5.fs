@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-5
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x10 (Room10_Cond00_ptmf): the stalker is there, not about, in mode 2, 6 or 7
 : castle-1f-5.cond00? ( -- flag )  stalker-there? stalker-told? 0= and debilitas? and ;
@@ -264,7 +264,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -177 self-turn-angle
     self-wait-done
-    $A02 self-anim
+    look-close-anim self-anim
     self-wait-anim
     4 message   \ "The lighting is dim making it hard to see, but... I can ever so faintly make out the sh..."
     wait-message
@@ -276,7 +276,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 ebit? not if
         40.0 -11.0 self-turn-to-xz
         self-wait-done
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         2 message   \ "There is nothing inside."
         wait-message
@@ -315,7 +315,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-noclip
     1 self-scripted
     5 ebit-set
-    $8000 5 self-anim-blend8
+    0 room-motion 5 self-anim-blend8
     0 0 var-set
     begin
         fiona-who self-touching? if
@@ -464,7 +464,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-1f-5.act06 ( -- )   \ 003F77A0
     self-wait-done
-    $100E self-anim
+    knocked-anim self-anim
     fiona-who 0 6 char-sound
     self-frames-reset
     $14 self-wait-frames
@@ -475,7 +475,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         6 message   \ "I should try to get some rest."
         3 ebit-clear
     then
-    2 $A self-anim-blend
+    attack-anim $A self-anim-blend
     wait-message
     self-wait-anim
     self-idle-or-end
@@ -522,7 +522,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     41.0 -19.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -539,7 +539,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

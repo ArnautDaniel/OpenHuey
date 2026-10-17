@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-11
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ room 0x03 (Room03_Cmd00_ptmf): three objects turned (-60, -60 degrees about x; -90 about z)
 : castle-1f-11.cmd00 ( -- )   \ (the drawbridge's two halves -60 degrees about x, the lever -90 about z)
@@ -333,7 +333,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     53.0 -113.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -350,7 +350,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -371,7 +371,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     stalker-who 0 char-silent
     $13C -45.739 -73.201 90 $FFFF $A self-move-to
     self-wait-done
-    $8000 5 self-anim-blend8
+    0 room-motion 5 self-anim-blend8
     1 0 var-set
     begin
         fiona-who self-touching? if
@@ -400,7 +400,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     hewie-who char-busy? not if
         0 hewie-who 7 action-force
-        $C00 self-anim
+        go-for-it-gesture-anim self-anim
         fiona-who 1 char-wait-motion
         fiona-who $2E 5 char-sound
         self-wait-anim
@@ -426,7 +426,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $145 9.804 32.761 180 $FFFF 5 self-move-to
     self-wait-done
-    $1C03 $A self-anim-blend
+    sit-a-while-anim $A self-anim-blend
     self-wait-anim
     c1f-11-medallion story-flag? not if
         fiona-half-hidden state-flag? fiona-who char-busy? not or if
@@ -465,7 +465,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     72.5 8.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -482,7 +482,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

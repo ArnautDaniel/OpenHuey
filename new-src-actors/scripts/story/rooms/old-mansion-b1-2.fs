@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-2
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ room 0x4B (D_00409910): a lit quad at x -63.65 .. -55.65, z 104.5, from 4 to 21
 : old-mansion-b1-2.cmd00 ( b0 -- )  $1B $80  -63.65e 21.0e 104.5e  -55.65e 21.0e 104.5e  -63.65e 4.0e 104.5e  -55.65e 4.0e 104.5e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -415,13 +415,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     0 ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
-            $60B self-anim
+            rattle-behind-slow-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
         else
-            $609 self-anim
+            rattle-behind-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
@@ -481,13 +481,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     1 ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
-            $60B self-anim
+            rattle-behind-slow-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
             7 self-wait-frames
         else
-            $609 self-anim
+            rattle-behind-anim self-anim
             self-wait-anim
             -1 self-idle-anim
             self-frames-reset
@@ -549,9 +549,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         stalker-who self-touching? not if
             in-panic? not if
                 fiona-who $4F char-not-at-door? if
-                    $609 self-anim
+                    rattle-behind-anim self-anim
                 else
-                    $608 self-anim
+                    rattle-front-anim self-anim
                 then
                 self-frames-reset
                 $14 self-wait-frames
@@ -602,7 +602,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     omb1-2-flag1 story-flag? not if
         0 old-mansion-b1-2.cmd00
         0 0 var-set
-        $8000 5 self-anim-blend8
+        0 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         begin
@@ -619,7 +619,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         omb1-2-flag1 story-flag-set
     else
         0 0 var-set
-        $8001 5 self-anim-blend8
+        1 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         begin
@@ -653,7 +653,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         yield
     repeat
     stalker-who 5 6 char-sound
-    $8000 5 self-anim-blend
+    0 room-motion 5 self-anim-blend
     self-wait-anim
     $E00 5 self-anim-blend
     self-frames-reset
@@ -690,7 +690,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -109.83 72.62 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -707,7 +707,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -718,7 +718,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     13.5 -75.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -735,7 +735,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -746,7 +746,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     13.5 -59.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -763,7 +763,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -798,7 +798,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 0.0 0.0 0.0 0.0 event-camera
     self-frames-reset
     4 self-wait-frames
-    $1D01 $A self-anim-blend
+    hand-to-mouth-anim $A self-anim-blend
     6 message   \ "Glowing SUN, radiant STAR, MOONLIT sky... The words from the title are highlighted in red."
     wait-message
     self-wait-anim

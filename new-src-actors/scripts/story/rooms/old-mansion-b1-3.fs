@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-3
-USING: engine actors messages story.state room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ four room objects (Room4C_ObjectNames) pressed in (+0x24 down 0.2 to -0.7, a sound as each
 \ starts) while event flag i is set, else back up 0.2 to 0; byte 3 0 all reset
@@ -575,7 +575,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             $11 9.97 0.0 -0.59 0 char-to-xyz
             1 self-scripted
             $11 $9000 0 0 char-anim-hold
-            $8002 5 self-anim-blend
+            2 room-motion 5 self-anim-blend
             self-frames-reset
             $17 self-wait-frames
             fiona-who 5 6 char-sound
@@ -586,7 +586,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             $11 9.97 0.0 -0.59 0 char-to-xyz
             1 self-scripted
             $11 $9001 0 0 char-anim-hold
-            $8003 self-anim
+            3 room-motion self-anim
         then
         $15 ebit-set
         $16 ebit-clear
@@ -624,11 +624,11 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                 self-at-motion-event? if
                     0 panic-stage? 1 panic-stage? or if
                         $11 $9001 0 5 char-anim-hold
-                        $8003 5 self-anim-blend
+                        3 room-motion 5 self-anim-blend
                     then
                     2 panic-stage? 3 panic-stage? or if
                         $11 $9002 0 5 char-anim-hold
-                        $8004 5 self-anim-blend
+                        4 room-motion 5 self-anim-blend
                     then
                 then
             then
@@ -654,7 +654,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             0 0 hewie-do
         then
         $11 $9003 0 5 char-anim-hold
-        $8005 3 self-anim-blend
+        5 room-motion 3 self-anim-blend
         self-wait-anim
         $11 $9005 0 5 char-anim-hold
         $14 ebit? if
@@ -714,7 +714,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     10.0 0.0 self-turn-to-xz
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
@@ -726,7 +726,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -740,7 +740,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    $8002 5 self-anim-blend8
+    2 room-motion 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     fiona-who 2 6 char-sound
@@ -774,7 +774,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         self-wait-done
         1 self-noclip
         fiona-who char-file-use
-        $8000 5 self-anim-blend8
+        0 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         2 part-hidden
@@ -798,7 +798,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             0 2 pad? not if
                 in-panic? $17 ebit? or if
                     in-panic? not if
-                        fiona-who $43 5 char-sound
+                        fiona-who seized-sound 5 char-sound
                     then
                     ['] old-mansion-b1-3.act0E goto
                 else
@@ -822,7 +822,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         fiona-who camera-follow
         fiona-hidden state-flag-clear
         1 self-noclip
-        $8001 5 self-anim-blend8
+        1 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         fiona-who 2 6 char-sound
@@ -843,7 +843,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     fiona-who char-file-use
     omb1-3-flag3 story-flag? not if
-        $8004 5 self-anim-blend8
+        4 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         $A 1 object-hidden
@@ -861,7 +861,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         self-wait-anim
         omb1-3-flag3 story-flag-set
     else
-        $8003 5 self-anim-blend8
+        3 room-motion 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
         $A 0 object-hidden
@@ -953,7 +953,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     self-wait-16
     $12 message   \ "Restraints, a whip, and various surgical instruments. Dried blood covers all of the s..."
@@ -989,7 +989,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         then
         7 26.16 27.36 118 $FFFF 5 self-move-to
         self-wait-done
-        $1601 self-anim
+        there-anim self-anim
         self-wait-anim
         $17 ebit-set
         10 self-idle-anim
@@ -1039,7 +1039,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     -20.96 5.57 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -1056,7 +1056,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end

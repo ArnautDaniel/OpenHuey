@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-5
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ room 0x32: room effect slot 1 made anew as the first TV screen (TvScreenA).
 : castle-2f-5.cmd00 ( -- )  1 0 tv-in ;   \ (room effect 1 the TV showing the screen)
@@ -357,7 +357,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $29 message   \ "I hope this TV works..."
         wait-message
     then
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     5 0 pvar? 5 1 pvar? or if
         c2f-3-tv-examined story-flag? not if
@@ -372,10 +372,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             1 6 sound-stop
             0 noise-level
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     else
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
         $28 message   \ "It won't turn on. Maybe it's broken?"
         wait-message
@@ -393,8 +393,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    fiona-who $7E 5 char-sound
-    $8003 $A self-anim-blend
+    fiona-who slide-sound 5 char-sound
+    3 room-motion $A self-anim-blend
     self-wait-anim
     0 self-noclip
     4 ebit? not if
@@ -431,10 +431,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         1 self-noclip
         self-who self-look-at
         yield
-        $8000 5 self-anim-blend8
+        0 room-motion 5 self-anim-blend8
         self-frames-reset
         $1C self-wait-frames
-        fiona-who $7E 5 char-sound
+        fiona-who slide-sound 5 char-sound
         self-wait-anim
     else
         fiona-who char-file-use
@@ -442,11 +442,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         self-wait-done
         counter-inc
         1 self-noclip
-        fiona-who $7E 5 char-sound
-        $8005 $A self-anim-blend8
+        fiona-who slide-sound 5 char-sound
+        5 room-motion $A self-anim-blend8
         self-wait-anim
     then
-    $8001 $A self-anim-blend
+    1 room-motion $A self-anim-blend
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
@@ -457,7 +457,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 2 pad? not if
             in-panic? 4 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] castle-2f-5.act03 goto
             else
@@ -478,10 +478,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             fiona-who camera-follow
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-blend8
+            2 room-motion 5 self-anim-blend8
             self-frames-reset
             5 self-wait-frames
-            fiona-who $7E 5 char-sound
+            fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -500,9 +500,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     7 ebit-set
     1 wait-counter
     1 self-noclip
-    $8000 5 self-anim-blend
+    0 room-motion 5 self-anim-blend
     self-wait-anim
-    $8001 $A self-anim-blend
+    1 room-motion $A self-anim-blend
     0 self-noclip
     hewie-hidden state-flag-set
     begin
@@ -512,7 +512,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             else
                 hewie-hidden state-flag-clear
                 1 self-noclip
-                $8002 5 self-anim-blend8
+                2 room-motion 5 self-anim-blend8
                 self-wait-anim
                 0 self-noclip
                 0 self-scripted
@@ -521,7 +521,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         else
             hewie-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-blend8
+            2 room-motion 5 self-anim-blend8
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -748,7 +748,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -9.0 -11.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -765,7 +765,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -789,11 +789,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     3 self-is? $22 self-is? or if
         stalker-who char-file-use
         4 stalker-who 1 char-model-op
-        $8000 self-anim
+        0 room-motion self-anim
         self-wait-anim
         4 stalker-who 0 char-model-op
     else
-        $1601 self-anim
+        there-anim self-anim
         self-wait-anim
     then
     4 ebit-set
@@ -855,7 +855,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $B5 43.571 -39.929 90 $FFFF 5 self-move-to
     self-wait-done
     1 20.0 -10.0 0.0 10.0 event-camera
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     c2f-3-portrait-1-examined story-flag-set
@@ -883,7 +883,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $9F -37.0 63.0 0 $FFFF 5 self-move-to
     self-wait-done
     1 20.0 -5.0 0.0 10.0 event-camera
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     c2f-3-portrait-2-examined story-flag-set
@@ -910,7 +910,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     9 -40.418 -39.428 -90 $FFFF 5 self-move-to
     self-wait-done
     1 20.0 -5.0 0.0 10.0 event-camera
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     c2f-3-portrait-3-examined story-flag-set
@@ -934,7 +934,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-2f-5.act19 ( -- )   \ 0042BD20
     self-wait-done
-    $100E self-anim
+    knocked-anim self-anim
     fiona-who $C 6 char-sound
     self-frames-reset
     $14 self-wait-frames
@@ -945,7 +945,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $30 message   \ "I should try to get some rest."
         8 ebit-clear
     then
-    2 $A self-anim-blend
+    attack-anim $A self-anim-blend
     wait-message
     self-wait-anim
     self-idle-or-end
@@ -1197,12 +1197,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who $25 13.928 -57.528 -90 char-to-xz
     hewie-who 9 char-file-load
     hewie-who char-file-use
-    $8001 self-anim
+    1 room-motion self-anim
     self-wait-anim
     1 counter-set
     2 wait-counter
     hewie-who $6A 5 char-sound
-    $8002 5 self-anim-blend8
+    2 room-motion 5 self-anim-blend8
     self-wait-anim
     0 self-noclip
     0 self-scripted

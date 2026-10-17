@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-3
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 : old-mansion-1f-3.enter ( -- )   \ 0041CA90
     room-sounds
@@ -210,9 +210,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         stalker-who self-touching? not if
             in-panic? not if
                 fiona-who $56 char-not-at-door? if
-                    $609 self-anim
+                    rattle-behind-anim self-anim
                 else
-                    $608 self-anim
+                    rattle-front-anim self-anim
                 then
                 self-frames-reset
                 $14 self-wait-frames
@@ -265,7 +265,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             else
                 $1C 1 6 char-sound
             then
-            fiona-who $8F 5 char-sound
+            fiona-who shove-hit-sound 5 char-sound
             $1C $9003 0 3 char-anim-hold
             $1C wait-char-anim
             $1C $9002 0 3 char-anim-hold
@@ -291,10 +291,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-recover
     2 panic-stage
     stalker-who 3 stalker-command
-    $B01 0 self-anim-blend
+    lying-anim 0 self-anim-blend
     yield
     $F $41 fade
-    $B02 self-anim
+    fiona.anims:get-up-anim self-anim
     self-wait-anim
     -1 self-idle-anim
     self-frames-reset
@@ -308,7 +308,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -10.64 -116.64 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -325,7 +325,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -336,7 +336,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -19.52 -13.68 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -353,7 +353,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -363,7 +363,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     2.0 -125.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     0 message   \ "A cart with some medicine on it. There may be some medicine here that I can use, but al..."

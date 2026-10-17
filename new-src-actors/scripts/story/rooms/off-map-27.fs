@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-27
-USING: actors messages items room-names story.words story.shared flag-names story-names floor-flags ;
+USING: actors messages items room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ the items 0x91 / 0x92, by byte 3: 0 which of them Fiona lacks (one each) kept in event var 0
 \ (0x91 low byte, 0x92 the next), and event +0x5C(3) when any; 1 they are given back, event
@@ -184,7 +184,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
     self-wait-done
     3 ebit? if
         2 ebit? not if
-            $902 self-anim
+            reach-out-anim self-anim
             self-wait-anim
             self-frames-reset
             4 self-wait-frames
@@ -209,7 +209,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
                 wait-message
             then
             2 ebit-set
-            $903 self-anim
+            reach-back-anim self-anim
             self-wait-anim
         else
             7 message   \ "There is nothing here."
@@ -345,7 +345,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
     -12.0 -22.0 self-turn-to-xz
     self-wait-done
     x-27-magist-medallion story-flag? not x-27-magist-medallion-2 story-flag? not and x-27-magist-medallion-3 story-flag? not and x-27-magist-medallion-4 story-flag? not and if
-        $1D01 self-anim
+        hand-to-mouth-anim self-anim
         $A message   \ "What on earth could this machine be for? There's a slot on it..."
         wait-message
         self-wait-anim
@@ -360,12 +360,12 @@ USING: actors messages items room-names story.words story.shared flag-names stor
     self-wait-done
     $46 -9.0 -13.0 -160 $FFFF 5 self-move-to
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     fiona-who 4 6 char-sound
     self-frames-reset
     4 self-wait-frames
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     fiona-who 5 6 char-sound
     1 -11.0 3.0 -17.0 flicker-sprite
@@ -373,7 +373,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
     self-wait-16
     self-frames-reset
     $1E self-wait-frames
-    $900 self-anim
+    pick-up-anim self-anim
     self-wait-anim
     1 effect-remove
     1 136 var? if
@@ -445,7 +445,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
         then
         x-27-magist-medallion-4 story-flag-set
     then then then then
-    $901 self-anim
+    up-from-pick-anim self-anim
     self-wait-anim
     self-idle-or-end
 ;
@@ -454,16 +454,16 @@ USING: actors messages items room-names story.words story.shared flag-names stor
     self-wait-done
     $46 -9.0 -13.0 -160 $FFFF 5 self-move-to
     self-wait-done
-    $902 self-anim
+    reach-out-anim self-anim
     self-wait-anim
     fiona-who 4 6 char-sound
     self-frames-reset
     4 self-wait-frames
-    $903 self-anim
+    reach-back-anim self-anim
     self-wait-anim
     self-frames-reset
     $1E self-wait-frames
-    $1D01 self-anim
+    hand-to-mouth-anim self-anim
     $C message   \ "Nothing happened. Nothing at all."
     wait-message
     self-wait-anim
@@ -485,7 +485,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
     $F 7 fade
     wait-fade
     $42 subscreen-bit? not $44 subscreen-bit? not or if
-        $1D01 self-anim
+        hand-to-mouth-anim self-anim
         $F message   \ "I wonder what these combinations are supposed to mean?"
         wait-message
         self-wait-anim

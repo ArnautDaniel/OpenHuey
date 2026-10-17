@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-1
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 : house-of-truth-1f-1.enter ( -- )   \ 00430AB0
     room-sounds
@@ -278,7 +278,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         3 message   \ "Life-giving water..."
         wait-message
         fiona-who char-file-use
-        $8004 $A self-anim-blend
+        4 room-motion $A self-anim-blend
         self-frames-reset
         $16 self-wait-frames
         fiona-who 1 6 char-sound
@@ -388,7 +388,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -32.0 34.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     self-wait-16
     1 message   \ "'Caution. Extremely Flammable' I wonder if there are explosives or the like inside. If..."
@@ -401,7 +401,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $10C -30.0 -26.0 90 $FFFF 5 self-move-to
     self-wait-done
-    $A00 self-anim
+    look-at-anim self-anim
     self-frames-reset
     self-wait-16
     0 message   \ "The fire spouts showers of sparks into the air."
@@ -414,7 +414,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -53.0 34.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     self-wait-16
     2 message   \ "Wreckage from the wall lies in a mass on the floor. What a powerful explosion."
@@ -442,7 +442,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -78.0 39.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
+        pick-up-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -459,7 +459,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $901 self-anim
+        up-from-pick-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -470,7 +470,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     stalker-who 0 char-silent
     self-who 0 char-visible
-    $8000 self-anim
+    0 room-motion self-anim
     begin
         yield
     again

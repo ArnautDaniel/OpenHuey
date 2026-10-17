@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-8
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ room 0x5C (Room5C_Cmd00_ptmf): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0
 \ 0x2B..0x38 (/ 13, +0x74 0 / +0x78 1), 1 0xC..0x20 (/ 20), 2 7..0x12 (/ 11) (+0x74 1 / +0x78 0)
@@ -421,14 +421,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    $A02 $A self-anim-blend
+    look-close-anim $A self-anim-blend
     self-wait-anim
     2 message   \ "A stale, damp gale of wind blows forth from the other side of the hole. Enter the hole?..."
     wait-message
     0 answer? if
         $F 0 fade
         wait-fade
-        fiona-who $7E 5 char-sound
+        fiona-who slide-sound 5 char-sound
         world-held state-flag-set
         $FE exit-check
     else
@@ -442,7 +442,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-scripted
     self-wait-done
     camera-restart
-    fiona-who $7E 5 char-sound
+    fiona-who slide-sound 5 char-sound
     $F 1 fade
     wait-fade
     stalkers-stay state-flag-clear
@@ -460,7 +460,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-hidden state-flag-clear
     1 self-noclip
     0 0 var-set
-    $8002 5 self-anim-blend8
+    2 room-motion 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     begin
@@ -495,7 +495,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who char-file-use
     1 self-noclip
     0 0 var-set
-    $8000 5 self-anim-blend8
+    0 room-motion 5 self-anim-blend8
     self-frames-reset
     5 self-wait-frames
     begin
@@ -521,7 +521,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 2 pad? not if
             in-panic? 1 ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] old-mansion-2f-8.act07 goto
             else
@@ -542,7 +542,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             fiona-hidden state-flag-clear
             1 self-noclip
             0 0 var-set
-            $8001 5 self-anim-blend8
+            1 room-motion 5 self-anim-blend8
             self-frames-reset
             5 self-wait-frames
             begin
@@ -586,7 +586,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     $182 -67.8 -110.0 180 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
+    there-anim self-anim
     self-wait-anim
     1 ebit-set
     10 self-idle-anim
@@ -603,7 +603,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     48.0 -53.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -620,7 +620,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -631,7 +631,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     53.1 -26.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
+        reach-out-anim self-anim
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
@@ -648,7 +648,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $903 self-anim
+        reach-back-anim self-anim
         self-wait-anim
     then
     self-idle-or-end
@@ -660,7 +660,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         5 ebit-set
         138.0 -58.0 self-turn-to-xz
         self-wait-done
-        $A01 self-anim
+        look-low-anim self-anim
         self-frames-reset
         $28 self-wait-frames
         3 message   \ "It's full of insects."
@@ -669,7 +669,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $64 129.0 -60.5 90 $FFFF 5 self-move-to
         self-wait-done
         1 15.0 -10.0 0.0 7.0 event-camera
-        $A00 self-anim
+        look-at-anim self-anim
         self-frames-reset
         $28 self-wait-frames
         4 message   \ "A mother is lovingly holding a child. Why is her face painted red?"
@@ -683,7 +683,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     78.0 -70.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
+    look-low-anim self-anim
     self-frames-reset
     $28 self-wait-frames
     5 message   \ "Discolored bones lay in a pile. I can lie to myself all I want to, but there is no deny..."
@@ -707,7 +707,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $F 7 fade
     wait-fade
     $43 subscreen-bit? not $45 subscreen-bit? not or if
-        $1D01 self-anim
+        hand-to-mouth-anim self-anim
         $A message   \ "This book sounds like it's about some kind of medicine."
         wait-message
         self-wait-anim
@@ -724,13 +724,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 self-through-exit
     self-wait-done
     in-panic? 2 game-mode? or if
-        $60A self-anim
+        rattle-front-slow-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
         7 self-wait-frames
     else
-        $608 self-anim
+        rattle-front-anim self-anim
         self-wait-anim
         -1 self-idle-anim
         self-frames-reset
