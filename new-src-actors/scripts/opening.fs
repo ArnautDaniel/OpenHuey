@@ -13,30 +13,36 @@
 \   variable $26 = 1, Hewie's $27 = 0), room $2A - whose entering script does the rest.
 \ Without a window (tests, screenshots) the game starts at once.
 IN: opening
-USING: engine game-state actors messages keys vectors room-names facts flag-names saves subscreen.art subscreen.saving ;
+USING: engine game-state actors messages keys vectors room-names facts flag-names ps2-screen saves subscreen.art subscreen.saving ;
 
 6 constant movie-layer   7 constant menu-layer   \ (over everything)
 
+\ its stages: the menu; he gets up; he barks; the opening movie; the game started; the save slots;
+\ the options up
+enum: opening-stage  on-menu getting-up barking opening-movie started on-slots on-options ;
+
 state: opening-state
-  cell field stage       \ 0 the menu, 1 he gets up, 2 he barks, 3 the movie, 4 the game started, 5 the save slots
+  cell field stage       \ (enum: opening-stage)
   cell field picked      \ the menu's item
   cell field slot-at     \ (the save slots) the one chosen
   cell field dog         \ the title's Hewie (a model of its own)
   cell field titled      \ the title is up (its lights and Hewie to put away)
 end-state
 
-: flag-on ( n -- )  progress pr.state over 5 rshift 4 * + dup l@ rot 31 and 1 swap lshift or swap l! ;
-variable hard   \ the new game chosen is a hard one (the title's HARD MODE)
+variable hard   \ the new game chosen is a hard one (the title's HARD MODE; new-game runs after the title has gone)
+\ the story's variables for the costumes (Fiona's, Hewie's): 1 her slip
+: costume-vars! ( fiona hewie -- )  progress pr.vars $27 + c!  progress pr.vars $26 + c! ;
+: flag-on ( n -- )  state-flag-set ;
 : new-game ( -- )   \ SceneGame_StateEntry, entry $2A (messages: from an actor or at load)
     new-game-sounds flag-on  world-held flag-on  in-play flag-on
     hard @ if  hard-mode-flag story-flag-set  then   \ (entry $4000002A: progress +0x30 bit 15)
-    1 progress pr.vars $26 + c!  0 progress pr.vars $27 + c!
+    1 0 costume-vars!
     1 s" fiona" actor-named send costume
     front-garden-3 -1 s" rooms" actor-named send go-to-room ;
 
 : extras ( -- )   \ (SceneGame_StateEntry, entry $37: the extras room - Fiona in her clothes)
     world-held flag-on  in-play flag-on
-    0 progress pr.vars $26 + c!  0 progress pr.vars $27 + c!
+    0 0 costume-vars!
     0 s" fiona" actor-named send costume
     off-map-37 -1 s" rooms" actor-named send go-to-room ;
 
@@ -55,8 +61,9 @@ create spot  -258e f, -10e f, 174e f,   \ (on the circle, between the scarecrows
 1.75e fconstant round   \ (from his front: the scarecrows behind him)
 : frame-him ( -- )   \ the camera 36 away, 13 up, looking a little over his back; turned so he
     \ sits right of centre
-    spot@ frot round fsin 36e f* f+  frot 13e f+  frot round fcos 36e f* f+   ( F: eye )
-    spot@ fswap 4e f+ fswap  cam-place
+    spot@ {: F: x y z :}
+    x round fsin 36e f* f+  y 13e f+  z round fcos 36e f* f+   ( F: eye )
+    x  y 4e f+  z  cam-place
     camera cam.yaw sf@ -0.22e f+ camera cam.yaw sf! ;
 : title-start ( -- )
     0 stage !  0 picked !  -1 titled !
@@ -70,94 +77,94 @@ create spot  -258e f, -10e f, 174e f,   \ (on the circle, between the scarecrows
 
 \ the menu, low on the left; the game's name above
 \ the entries: the last two only once a game has been cleared (the first clear's unlock)
-0 constant e-new   1 constant e-load   2 constant e-options   3 constant e-hard   4 constant e-extras   5 constant e-quit
+enum: menu-entry  e-new e-load e-options e-hard e-extras e-quit ;
 : cleared? ( -- flag )  0 resident-flag? ;
-: entry ( i -- e )  dup 3 >= cleared? 0= and if  drop e-quit  then ;
+: entry ( i -- e )  dup e-hard >= cleared? 0= and if  drop e-quit  then ;
 : #items ( -- n )  cleared? if  6  else  4  then ;
 : item ( i -- addr len )
     entry case  e-new of  s" NEW GAME"  endof  e-load of  s" LOAD GAME"  endof  e-options of  s" OPTIONS"  endof
                 e-hard of  s" HARD MODE"  endof  e-extras of  s" EXTRAS"  endof  >r s" QUIT" r>  endcase ;
-variable sw  variable sh
 \ the save slots, to load one: each its number, place and time played
 : slot-colour ( i -- rgba )  dup slot-at @ = if  drop $FFFFFFFF  else  slot-used? if  $B0A8A0FF  else  $605C58FF  then  then ;
 : slot-draw ( n -- )   \ (a word of its own: a local inside a do loop would hide the loop's index)
-    dup sh @ 4 / swap char-size nip 2* * +  {: n y :}
-    menu-layer  n 1+ n>s  sw @ 10 /  y  n slot-colour 2 ui-text
+    {: n | sw sh y left :}  screen-size to sh to sw
+    sh 4 /  n char-size nip 2* *  +  to y   sw 10 /  to left
+    left 3 char-size drop * 2* +  {: col :}   \ (where the place goes: 3 characters on)
+    menu-layer  n 1+ n>s  left  y  n slot-colour 2 ui-text
     n slot-used? if
-        menu-layer  n slot-place@ menu-line  sw @ 10 / 3 char-size drop * 2* +  y  n slot-colour 2 ui-text
-        menu-layer  n slot-frames@ clock$  sw @ 6 * 10 /  y  n slot-colour 2 ui-text
+        menu-layer  n slot-place@ menu-line  col  y  n slot-colour 2 ui-text
+        menu-layer  n slot-frames@ clock$  sw 6 * 10 /  y  n slot-colour 2 ui-text
     else
-        menu-layer  s" - empty -"  sw @ 10 / 3 char-size drop * 2* +  y  n slot-colour 2 ui-text
+        menu-layer  s" - empty -"  col  y  n slot-colour 2 ui-text
     then ;
 : slots-draw ( -- )
-    screen-size sh ! sw !  3 pen-scale
-    menu-layer  s" LOAD GAME"  sw @ 10 /  sh @ 8 /  $D8D0C8FF 3 ui-text
+    screen-size {: sw sh :}  3 pen-scale
+    menu-layer  s" LOAD GAME"  sw 10 /  sh 8 /  $D8D0C8FF 3 ui-text
     2 pen-scale
     #slots 0 do  i slot-draw  loop
-    menu-layer  s" >"  sw @ 10 / char-size drop 2* 2* -  sh @ 4 / slot-at @ char-size nip 2* * +  $FFFFFFFF 2 ui-text ;
+    menu-layer  s" >"  sw 10 / char-size drop 2* 2* -  sh 4 / slot-at @ char-size nip 2* * +  $FFFFFFFF 2 ui-text ;
 : menu-draw ( -- )
     menu-layer ui-clear
-    stage @ 5 = if  slots-draw exit  then
-    stage @ 0<> if  exit  then
-    screen-size sh ! sw !  4 pen-scale
-    menu-layer  s" HAUNTING GROUND"  sw @ 2/ 15 char-size drop * 2/ -  sh @ 8 /  $D8D0C8FF 4 ui-text
+    stage @ on-slots = if  slots-draw exit  then
+    stage @ on-menu <> if  exit  then
+    screen-size {: sw sh :}  4 pen-scale
+    menu-layer  s" HAUNTING GROUND"  sw 2/ 15 char-size drop * 2/ -  sh 8 /  $D8D0C8FF 4 ui-text
     3 pen-scale
     #items 0 do
-        menu-layer  i item  sw @ 10 /  sh @ 7 * 10 / i char-size nip 3 2 */ * +
-        i picked @ = if  $FFFFFFFF  else  $8C8880FF  then  3 ui-text
+        menu-layer  i item  sw 10 /  sh 7 * 10 / i char-size nip 3 2 */ * +
+        i picked @ = $FFFFFFFF $8C8880FF ?  3 ui-text
     loop
-    menu-layer  s" >"  sw @ 10 / char-size drop 2* -  sh @ 7 * 10 / picked @ char-size nip 3 2 */ * +  $FFFFFFFF 3 ui-text ;
+    menu-layer  s" >"  sw 10 / char-size drop 2* -  sh 7 * 10 / picked @ char-size nip 3 2 */ * +  $FFFFFFFF 3 ui-text ;
 : menu-keys ( -- )
     key: Up key-pressed? if  picked @ 1- 0 max picked !  then
     key: Down key-pressed? if  picked @ 1+ #items 1- min picked !  then
     cross button-pressed? if   \ (confirm: cross)
         picked @ entry case
-            e-new of  0 hard !  m-get-up 0 play  1 stage !  endof
-            e-hard of  -1 hard !  m-get-up 0 play  1 stage !  endof
-            e-load of  0 slot-at !  5 stage !  endof
-            e-options of  5 s" subscreen" actor-named send menu-mode  subscreen-wanted flag-on  6 stage !  endof
-            e-extras of  title-end  4 stage !  extras  self kill  endof
+            e-new of  0 hard !  m-get-up 0 play  getting-up stage !  endof
+            e-hard of  -1 hard !  m-get-up 0 play  getting-up stage !  endof
+            e-load of  0 slot-at !  on-slots stage !  endof
+            e-options of  5 s" subscreen" actor-named send menu-mode  subscreen-wanted flag-on  on-options stage !  endof
+            e-extras of  title-end  started stage !  extras  self kill  endof
             >r bye r>
         endcase
     then ;
 : load-it ( -- )   \ (the slot's game: the title away, the saves actor puts it back)
-    title-end  4 stage !  slot-at @ s" saves" actor-named send load-from-slot  self kill ;
+    title-end  started stage !  slot-at @ s" saves" actor-named send load-from-slot  self kill ;
 : slots-keys ( -- )
     key: Up key-pressed? if  slot-at @ 1- #slots + #slots mod slot-at !  then
     key: Down key-pressed? if  slot-at @ 1+ #slots mod slot-at !  then
     cross button-pressed? slot-at @ slot-used? and if  load-it exit  then
-    triangle button-pressed? if  0 stage !  then ;
+    triangle button-pressed? if  on-menu stage !  then ;
 
 \ ---- the opening movie over the whole window, 4:3 in the middle, black round it ----
-variable mx  variable my  variable mw  variable mh
 : movie-draw ( -- )
     movie-layer ui-clear
-    stage @ 3 <> if  exit  then
-    screen-size  over 3 * 4 / over min  dup mh !  4 * 3 / mw !   mh @ - 2/ my !  mw @ - 2/ mx !
+    stage @ opening-movie <> if  exit  then
     movie-layer  0 0 screen-size  $000000FF ui-rect
-    movie-layer  mx @ my @ mw @ mh @ ui-movie ;
+    movie-layer  middle-4:3 ui-movie ;
 : movie-start ( -- )   \ (none to play: straight into the game)
-    title-end  3 stage !
-    s" OPENING.SFD" movie-open 0= if  4 stage !  new-game  self kill  then ;
-: movie-over ( -- )  movie-close  movie-layer ui-clear  4 stage !  new-game  self kill ;   \ (stage 4 now: its last words leave it be)
+    title-end  opening-movie stage !
+    s" OPENING.SFD" movie-open 0= if  started stage !  new-game  self kill  then ;
+: movie-over ( -- )  movie-close  movie-layer ui-clear  started stage !  new-game  self kill ;   \ (started now: its last words leave it be)
 : ended? ( -- flag )  dog @ motion-done? ;   \ (played once, at its last frame)
+: title-up? ( -- flag )  stage @ opening-movie <  stage @ started > or ;   \ (the menu, his getting up and barking, the slots, the options)
 
 behaviour opening-the-game
   on spawned ( -- )
       self subscribe tick  self subscribe frame-end
-      hidden? if  4 stage !  self kill  else  title-start  then ;   \ (headless: game.fs started it)
+      hidden? if  started stage !  self kill  else  title-start  then ;   \ (headless: game.fs started it)
   on tick ( -- )
       stage @ case
-          0 of  menu-keys  endof
-          5 of  slots-keys  endof
-          6 of  subscreen-wanted state-flag? 0= if  0 stage !  then  endof   \ (the options up: back to the menu once they close)
-          1 of  ended? if  m-bark 0 play  bark-sound common-sound  2 stage !  then  endof
-          2 of  ended? if  movie-start  then  endof
-          3 of  movie-status 1 <>  start-button button-pressed? or if  movie-over  then  endof   \ (SceneTitle: Start skips)
+          on-menu of  menu-keys  endof
+          on-slots of  slots-keys  endof
+          on-options of  subscreen-wanted state-flag? 0= if  on-menu stage !  then  endof   \ (back to the menu once they close)
+          getting-up of  ended? if  m-bark 0 play  bark-sound common-sound  barking stage !  then  endof
+          barking of  ended? if  movie-start  then  endof
+          opening-movie of  movie-status 1 <>  start-button button-pressed? or if  movie-over  then  endof   \ (SceneTitle: Start skips)
       endcase ;
-  on frame-end ( -- )  stage @ 3 <  stage @ 5 = or  stage @ 6 = or if  frame-him  then  menu-draw  movie-draw ;
+  on frame-end ( -- )  title-up? if  frame-him  then  menu-draw  movie-draw ;
   on killed ( -- )   \ (free play: the title or the movie cut short)
-      stage @ 3 <  stage @ 4 > or if  title-end  then  stage @ 3 = if  movie-close  movie-layer ui-clear  then ;
+      title-up? if  title-end  then  stage @ opening-movie = if  movie-close  movie-layer ui-clear  then ;
 end-behaviour
 
 : opening-spawn ( -- id )  opening-the-game opening-state s" opening" spawn ;

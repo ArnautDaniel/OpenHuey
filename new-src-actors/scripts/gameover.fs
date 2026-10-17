@@ -8,7 +8,7 @@
 \ A death in a movie (kind 0: the story's 0x8B 0) leaves the world running: its music (6) at
 \ once, the movie stopped but its last picture kept over everything, then the tints and on.
 IN: gameover
-USING: engine game-state actors messages keys facts flag-names story-names ;
+USING: engine game-state actors messages keys facts flag-names story-names ps2-screen ;
 
 6 constant movie-layer   9 constant black-layer
 
@@ -122,8 +122,7 @@ $FF constant no-track
 : draw ( -- )
     movie-layer ui-clear  black-layer ui-clear
     step @ not-running =  step @ over-done = or if  exit  then
-    screen-size  {: w h | sw sh sx sy :}   \ (a 4:3 frame in the middle)
-    w 3 * 4 / h min to sh  sh 4 * 3 / to sw  h sh - 2/ to sy  w sw - 2/ to sx
+    screen-size middle-4:3  {: w h sx sy sw sh :}
     held @ if   \ (a movie death: its last picture over everything, the game over's movie over that)
         movie-layer  0 0 w h  $000000FF ui-rect  movie-layer  sx sy sw sh ui-held
     then
