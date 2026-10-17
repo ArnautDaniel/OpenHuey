@@ -35,6 +35,13 @@ registered by name), `scripts/story/rooms.fs` (all loaded). Generated once by
 `tools/story_convert.py` from new-src; edited by hand since. A word not written yet is a stub
 (`stub-step` / `stub-flag` in `words.fs`; `.missing` lists those reached).
 
+By name: the character slots the scripts know (`char-slot#`: Fiona, Hewie, the stalker, the
+figures; `self-who`, `stalker-who`), the phases (`phase#`), the scene slots and the zones (a
+`/zone` structure) are in `story/state.fs`; the words' own numbers - door bits, look slots, the
+cutscene's ops (`scene-op`), the movie's classes, the maze's deal, the stalker's gift rows (by item
+name) - beside the words that use them. The rooms' strings and the music's files are `strings:`
+lists (story/strings.fs). The word names stay as the rooms call them.
+
 ## API
 
 Declared in `scripts/messages.fs`.

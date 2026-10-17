@@ -235,4 +235,12 @@ enum: way  ahead       \ the first
     ( none here ) back \ the second
     10 aside ;
 T{ ahead back aside -> 0 1 10 }T
+
+testing strings: a list of words as strings, a number sets the next index, "" outside it
+strings: files  intro.sfd  DIR\menu.sfd   \ the first two
+    ( a gap ) 4 end.sfd ;
+T{ 0 files s" intro.sfd" s= -> -1 }T
+T{ 1 files s" DIR\menu.sfd" s= -> -1 }T
+T{ 2 files nip  3 files nip  9 files nip  -1 files nip -> 0 0 0 0 }T
+T{ 4 files s" end.sfd" s= -> -1 }T
 test-summary

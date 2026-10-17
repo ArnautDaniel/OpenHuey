@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-11
-USING: engine actors messages story.state room-names story.words story.shared flag-names ;
+USING: engine actors messages vectors story.state room-names story.words story.shared flag-names ;
 
 \ room 0x62 (Room62_Cmd00_ptmf): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size
 \ +0x34 0.01; object 0 with sound 7), else a step (+0x10 = size x sin(phase), phase on 60
@@ -28,15 +28,15 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     \ 0 each bounce) till slower than 0.2, unresting as it goes and resting a frame there)
     {: b0 | e :}  0 fx-place to e
     b0 0= if  0e drop-v f!  exit  then
-    b0 1 = if  e 2 floats + dup f@ 0.5e f+ f!  0 effect-moved  exit  then
+    b0 1 = if  0.5e e v.z field+!  0 effect-moved  exit  then
     begin
         0 fx-id @ dup alive? if  0 swap send effect-rest  else  drop  then
-        e 2 floats + dup f@ 0.16e f+ f!
+        0.16e e v.z field+!
         drop-v f@ 0.5e f- drop-v f!
-        e float+ dup f@ drop-v f@ f+ f!
-        e float+ f@ 0.7e f< if
-            0.7e e float+ f!  drop-v f@ -0.3e f* drop-v f!
-            0 6 0 0  e f@  e float+ f@  e 2 floats + f@  sound-at
+        drop-v f@ e v.y field+!
+        e v.y sf@ 0.7e f< if
+            0.7e e v.y sf!  drop-v f@ -0.3e f* drop-v f!
+            0 6 0 0  e vec@  sound-at
             drop-v f@ 0.2e f< if
                 0 effect-moved  0 fx-id @ dup alive? if  1 swap send effect-rest  else  drop  then  exit
             then

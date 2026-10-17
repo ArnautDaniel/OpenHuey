@@ -12,7 +12,7 @@ USING: engine room-names story.words story.shared flag-names ;
     1e frot fdup frot  depth-range ;
 \ room 0x1C (D_003FD350): a sound (0xC0000000, bank 6) at the room's effect 1
 : castle-1f-18.cmd01 ( -- )   \ (its sound 0, kept on, at room effect 1's place)
-    $C0000000 6 0 0  1 fx-place dup f@  dup float+ f@  2 floats + f@  sound-at ;
+    $C0000000 6 0 0  1 fx-place vec@  sound-at ;
 
 : castle-1f-18.act06 ( -- )   \ 003FD070
     0 $FF $E2 0 $D $FF $D8 1 butterflies

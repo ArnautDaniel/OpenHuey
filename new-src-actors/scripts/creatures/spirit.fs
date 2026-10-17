@@ -97,7 +97,7 @@ create spot /vec allot   fvariable turn   fvariable off
     spot v-tri  dup hang-tri !
     dup 0< over self body-tri = or if  drop false exit  then
     nav-flags no-go-floor and 0= ;
-: find-spot ( -- )  0e turn f!  -1 hang-tri !  17 0 do  i spot-try if  spot hang-at vec-copy  unloop exit  then  loop  -1 hang-tri ! ;
+: find-spot ( -- )  0e turn f!  -1 hang-tri !  17 0 do  i spot-try if  hang-at spot vec-copy  unloop exit  then  loop  -1 hang-tri ! ;
 : hang-about ( -- )
     hang-again @ if  0 hang-again !  my-path path-clear  find-spot  then
     hang-tri @ 0< if  -1 hang-again !  exit  then

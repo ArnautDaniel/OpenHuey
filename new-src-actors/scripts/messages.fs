@@ -91,6 +91,9 @@ enum: danger-level  calm followed chased ;
 enum: danger-signal  stalker-close fiona-struck no-stalker stalker-down hewie-alert stalker-near being-hunted ;
 \ a stalker's mode (the original's +0x16C8, Progress_StalkerAlert): what he is about
 enum: stalker-mode  after-her heading-for-her searching waiting-about held-off ;
+\ what he is doing as he tells it (stalker-doing's sub, the part of his move Hewie and the story
+\ read): bitten (Hewie holding on), down, leading her off
+9 constant bitten-sub   $A constant down-sub   $18 constant leading-sub
 
 \ ---- panic (docs/subsystems/panic.md); amounts and levels are floats (f>cell) ----
 message fright ( amount -- )                 \ (Panic_Fright: less with earrings $87 / $88 worn; f>cell)

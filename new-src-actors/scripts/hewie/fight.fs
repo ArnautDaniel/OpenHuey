@@ -29,8 +29,6 @@ enum: grip  -1 no-grip head-on-grip near-grip far-grip ;
 \ (hanging): he held on again, or flung
 enum: bite-hold  first-hold still-holding letting-go thrown-off ;
 0 constant held-on   1 constant flung
-\ the stalker as he tells it (st-sub): bitten, down
-9 constant him-bitten   $A constant him-down
 : at-leg? ( -- flag )  his-action @ dup at-leg-act = swap at-leg-2-act = or ;
 : on-him? ( -- flag )  his-action @ dup at-flank-act = swap at-stalker-act = or ;   \ (at him: hanging on, flung)
 : by-grip ( near far other -- anim )   \ (by his grip: the near flank, the far one, else)
@@ -283,7 +281,7 @@ $2008000 constant water-floor   \ (a floor's nav flags: water)
 \ at-flank-act .. at-leg-2-act set up (Hewie_SetAction): seeing him, not off screen, not bitten or down
 : at-pursuer ( -- )
     pursuer dup with? 0= if  drop sniff-act 0 want exit  then
-    mode-of unreachable-mode =  st-sub @ dup him-bitten = swap him-down = or  or if  sniff-act 0 want exit  then
+    mode-of unreachable-mode =  st-sub @ dup bitten-sub = swap down-sub = or  or if  sniff-act 0 want exit  then
     engaged-mode his-mode !  going-for-sub his-sub !  pursuer his-target !  no-grip his-grip !  first-hold his-biting !  on-command his-cmd !
     his-path path-clear  ['] st-run-at-pursuer behave ;
 

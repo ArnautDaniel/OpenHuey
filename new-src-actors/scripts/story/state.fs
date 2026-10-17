@@ -3,14 +3,40 @@
 \ The room's scripts all run as its actor - the phases in its handlers, the action scripts as
 \ its coroutines - so they share this state as the original's scripts share the event object.
 IN: story.state
-USING: actors messages ;
+USING: actors messages vectors ;
 
 32 constant #vars       \ script variables
-32 constant #zones      \ zones (cylinders the scripts set each frame)
-28 constant /zone       \ a zone: on, kind, the centre's x y z, radius, height
-17 constant #slots      \ action scripts at once: 0..5 the characters' (slot = character + 1), 6.. the scenes' (ids 0xF0..0xFA)
+32 constant #effects    \ the room's effect slots (RoomEffects: 0x20)
+
+\ ---- the characters the scripts know, by slot: Fiona, Hewie, the stalker, the event figures
+\ (3..5); in a script by id - 0 Fiona, 1 Hewie, the script's own, the stalker, the figures by
+\ the id they were loaded as ----
+enum: char-slot#  fiona-cs hewie-cs stalker-cs first-figure-cs ;
 6 constant #chars
-32 constant #effects    \ the room's effect slots (RoomEffects: 0x20)       \ characters the scripts know by slot: 0 Fiona, 1 Hewie, 2.. the others
+: figure-cs? ( cs -- flag )  first-figure-cs #chars within ;
+$FF constant self-who   $FE constant stalker-who
+
+\ ---- the scripts: a room's phases - entered; each frame, before the commands and after them;
+\ the frame's end; leaving; left (the next room in); a character entering ----
+enum: phase#  entering-phase frame-phase after-cmds-phase frame-end-phase leaving-phase left-phase
+    char-enter-phase ;
+7 constant #phases
+\ the action scripts at once: 0..5 the characters' (slot = character + 1), 6.. the scenes'
+\ (ids 0xF0..0xFA)
+17 constant #slots
+#chars constant first-scene-slot
+$F0 constant first-scene   $FB constant scenes-end
+
+\ ---- zones: cylinders the scripts set each frame - on, kind (bit 1: a target), the centre,
+\ radius, height; and the zone rectangles of the scene effects - an id, two corners ----
+32 constant #zones
+1 constant target-zone
+begin-structure /zone
+  lfield: z.on  lfield: z.kind  sffield: z.x  sffield: z.y  sffield: z.z  sffield: z.r  sffield: z.h
+end-structure
+begin-structure /zone-rect
+  field: zr.id  field: zr.x0  field: zr.z0  field: zr.x1  field: zr.z1
+end-structure
 
 state: room-state
   cell field this-room           \ the room these scripts are for
@@ -33,7 +59,7 @@ state: room-state
   cell field ctx-slot  cell field ctx-who  cell field ctx-id  cell field phase-frames
   \ the characters: where each was at the last frame's end (for areas entered / left), whether
   \ it was seen, and whether a script of this room has it (+0xE0: its scripted state)
-  #chars 12 * field char-was  #chars cells field char-seen  #chars cells field char-scripted
+  #chars /vec * field char-was  #chars cells field char-seen  #chars cells field char-scripted
   \ each character's move (+0xE1: done) and whether its animation ended, as it last told (moving)
   #chars cells field move-done-of  #chars cells field anim-ended-of  #chars cells field events-of
   \ the action prepared this frame (the scripts' scene-change: +0x1134): the scene (-1 none), its
@@ -46,8 +72,8 @@ state: room-state
   cell field movie-kind  cell field cue  cell field cue-prev  cell field fading
   #zones /zone * field zones    \ the zones (all off as phase 1 starts)
   \ the room's effects: each slot's actor (-1 none) and where it was made
-  #effects cells field fx-ids  #effects 3 * floats field fx-at
-  #zones 5 cells * field zone-rects   \ the zone rectangles (an id, x0 z0 x1 z1: for the scene effects)
+  #effects cells field fx-ids  #effects /vec * field fx-at
+  #zones /zone-rect * field zone-rects   \ the zone rectangles (an id, x0 z0 x1 z1: for the scene effects)
   \ what the others tell (fiona-doing, hewie-doing, danger, panic)
   cell field fiona-busy  cell field fiona-mode  cell field fiona-sub
   cell field fiona-cmd  cell field hewie-here  cell field hewie-act  cell field hewie-move-mode

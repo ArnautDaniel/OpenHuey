@@ -86,6 +86,11 @@ number in the list sets the next: `enum: act  $36 hide  $52 lie-down ;`) and `mo
 addr len )`, which names a value ("?" for one not listed) - for the debug words and traces. A long
 list may run over several lines with comments (`\`, `( )`) between the names.
 
+String lists: `strings: files  intro.sfd  DIR\menu.sfd  8 end.sfd ;` makes `files ( i -- addr len )`,
+string i of the list - each a word as written, `\` and all - and "" for one not in it. As in
+`enum:`, a number sets the next index (those skipped are ""), and comments may come between. The
+rooms' string tables and the music's file names are written so (story/strings.fs).
+
 Combinators (Factor's), to run code on values without shuffling them: `x [: .. ;] dip` (under
 x), `x [: .. ;] keep` (x kept after), `2dip`, `2keep`, `x [: p ;] [: q ;] bi` (both on x), `tri`,
 `x y [: q ;] bi@` (q on each), `flag [: .. ;] when` / `unless`, `flag a b ?` (a if the flag, else b).

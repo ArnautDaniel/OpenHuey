@@ -70,7 +70,6 @@ $1300 constant gesture-anims
     pose  tell-danger ;
 \ what he is doing, for Hewie (the original's character fields he reads: room, move mode and
 \ part, condition, health)
-9 constant bitten-sub   $A constant down-sub   $18 constant leading-sub   \ (what he does, as Hewie reads it)
 : move-mode-told ( -- mode )
     away? if  unreachable-mode exit  then
     reeling @ cond @ down-cond = or bitten @ or if  struck-mode exit  then

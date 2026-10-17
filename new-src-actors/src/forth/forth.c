@@ -1385,6 +1385,79 @@ PRIM(p_enum) {
         comma(f, (Cell)consts[i]);
     }
 }
+/* strings: files  intro.sfd  menu.sfd  8 ending.sfd ;   a list of words as strings: `files ( i --
+ * addr len )` gives string i ("" for one not in the list). A number sets the next index (those
+ * skipped are ""); comments - `\` to the line's end, `( )` - may come between them. The body: the
+ * count, then each string's address and length, then their bytes. */
+static void dostrings(Forth *f, Word *w) {
+    Cell n = w->body[0], i = POP();
+
+    if (i < 0 || i >= n || w->body[1 + 2 * i] == 0) {
+        PUSH("");
+        PUSH(0);
+        return;
+    }
+    PUSH(w->body[1 + 2 * i]);
+    PUSH(w->body[2 + 2 * i]);
+}
+PRIM(p_strings) {
+    enum { MAX = 1024 };
+    static const char *ss[MAX];
+    static size_t lens[MAX];
+    size_t len, m;
+    const char *name = parse_name(f, &len, "strings:");
+    Cell next = 0, n = 0, x, i;
+    Cell *body;
+
+    for (i = 0; i < MAX; i++) {
+        ss[i] = NULL;
+        lens[i] = 0;
+    }
+    for (;;) {
+        const char *s = parse_word(f, &m);
+
+        if (m == 0) {
+            forth_error(f, "strings: %.*s without ;", (int)len, name);
+        }
+        if (m == 1 && s[0] == ';') {
+            break;
+        }
+        if (m == 1 && s[0] == '\\') {
+            (void)parse_until(f, '\n', &m);
+            source(f)->line++;
+            continue;
+        }
+        if (m == 1 && s[0] == '(') {
+            (void)parse_until(f, ')', &m);
+            continue;
+        }
+        if (parse_int(f, s, m, &x)) {
+            next = x;
+            continue;
+        }
+        if (next < 0 || next >= MAX) {
+            forth_error(f, "strings: %.*s has too many", (int)len, name);
+        }
+        ss[next] = s;
+        lens[next] = m;
+        if (++next > n) {
+            n = next;
+        }
+    }
+    (void)new_word(f, name, len, dostrings);
+    comma(f, n);
+    body = (Cell *)allot(f, (size_t)n * 2 * sizeof(Cell));
+    for (i = 0; i < n; i++) {
+        char *dst = ss[i] ? (char *)allot(f, lens[i] + 1) : NULL;
+
+        if (dst) {
+            memcpy(dst, ss[i], lens[i]);
+            dst[lens[i]] = 0;
+        }
+        body[2 * i] = (Cell)dst;
+        body[2 * i + 1] = (Cell)lens[i];
+    }
+}
 PRIM(p_docompile) { comma(f, (Cell)f->w_does); }   /* does> */
 PRIM(p_tobody) { Word *x = (Word *)POP(); PUSH(x->body); }
 PRIM(p_latest) { PUSH(f->latest); }
@@ -2086,7 +2159,7 @@ static void define_core(Forth *f) {
         {"list", p_list}, {"list-free", p_list_free}, {"push", p_push}, {"pop", p_pop}, {"nth", p_nth},
         {"nth!", p_nth_store}, {"length", p_length}, {"list-clear", p_list_clear}, {"{", p_brace_open},
         {"}", p_brace_close},
-        {"words", p_words}, {"see", p_see}, {"enum:", p_enum}, {"vocabs", p_vocabs}, {"vocab-words", p_vocab_words},
+        {"words", p_words}, {"see", p_see}, {"enum:", p_enum}, {"strings:", p_strings}, {"vocabs", p_vocabs}, {"vocab-words", p_vocab_words},
         {"IN:", p_in}, {"USING:", p_using}, {"USE:", p_use}, {"<PRIVATE", p_private_begin},
         {"PRIVATE>", p_private_end}, {"bye", p_bye}, {"catch", p_catch}, {"error-message", p_error_message},
         {"i", p_i}, {"j", p_j}, {"leave", p_leave}, {"unloop", p_unloop},
