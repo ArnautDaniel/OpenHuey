@@ -222,10 +222,10 @@ create door-pt 12 allot
     -1 her-fall-turn !  0 her-busy-t !
     4 her-mode !  $A her-doing !  dup her-sub !
     dup knocked-or-thrown? if   \ (a blow: the danger told only of one by somebody other than Hewie;
-        by-somebody? if  1 danger-id send danger-signal  then   \ a stumble resets her recovery)
+        by-somebody? if  fiona-struck danger-id send danger-signal  then   \ a stumble resets her recovery)
         her-hit-how @ $8000 and if  reset-recovery  then
     then
-    dup $B = over 8 = or if  1 danger-id send danger-signal  then   \ (Progress_SetCondBit 1: she's been struck)
+    dup $B = over 8 = or if  fiona-struck danger-id send danger-signal  then   \ (Progress_SetCondBit 1: she's been struck)
     dup reaction-jolt
     dup $10 = if  drop  fiona-occupied state-flag-set  grabbed  true exit  then
     dup $12 = if  drop  held-down  true exit  then
@@ -249,4 +249,4 @@ create door-pt 12 allot
 : thrown-down ( who recover -- )
     if  reset-recovery  then  her-hit-who !  0 her-hit-how !
     -1 her-fall-turn !  0 her-busy-t !  4 her-mode !  $A her-doing !  $A her-sub !
-    $D0 12 fiona-jolt  1 danger-id send danger-signal  ['] thrown her-act ! ;
+    $D0 12 fiona-jolt  fiona-struck danger-id send danger-signal  ['] thrown her-act ! ;

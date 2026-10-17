@@ -95,7 +95,7 @@ defer adjust-action ( act -- act' ) ' noop is adjust-action    \ Hewie_AdjustAct
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
 : noise-make ( loud tri -- )   \ heard in his room (tri -1: anywhere in it)
     his-room swap -1 hewie-noise acoustics-id send noise ;
-: alerted ( -- )  4 danger-id send danger-signal ;   \ he's alert to a stalker (the danger's bit 4)
+: alerted ( -- )  hewie-alert danger-id send danger-signal ;   \ he's alert to a stalker
 \ barking or growling at the stalker in his room makes him sore (Relation_Request kind 6; not
 \ while he mayn't attack)
 : snap-at ( -- )

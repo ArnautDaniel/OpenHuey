@@ -108,7 +108,7 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
     her-path her-at path-rest 0.2e f* her-led-step f!
     her-led-face f@ her-yaw f@ f- angle-wrap fabs 0.2e f* her-led-turn f!
     swap her-hit-who !  -1 her-led !  0 her-ended !
-    4 her-mode !  $A her-doing !  9 her-sub !  1 s" danger" actor-named send danger-signal
+    4 her-mode !  $A her-doing !  9 her-sub !  fiona-struck s" danger" actor-named send danger-signal
     $43 0 her-sound
     6 = if  $1400 play-own  ['] led-by-hand  else  $1500 play-own  ['] led-walking  then  her-act !
     true ;

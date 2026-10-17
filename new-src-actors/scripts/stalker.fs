@@ -57,14 +57,14 @@ USING: engine game-state actors messages common facts flag-names room-names path
     1 growl-t +!  growl-t @ 90 < if  exit  then
     0 growl-t !
     my-move-mode @ 0= anim @ $1300 <> and anim @ $1600 <> and if  $2A 7 sound  then ;
+: tell-danger ( -- )  my-room my-mode @ cond @ 2 = danger-id send stalker-here ;   \ (SceneGame_Danger reads his mode, and whether he's down)
 : frame ( -- )
-    away? if  away  pose  my-room 0 my-mode @ 0= 1 and danger-id send stalker-here  exit  then
+    away? if  away  pose  tell-danger  exit  then
     thaw  hurt-down  senses  modes  dog-temper  shut-behind  ladder-watch
     step @ ?dup if  execute  then  search  looking   \ (Pursuer_Think: the head after the behaviour)
     played? growls @ and if  growl  then
     played? if  stalker.moving:footsteps  anim-sounds-play  then
-    pose
-    my-room  sees-fiona @ 0<> 1 and  my-mode @ 0= 1 and  danger-id send stalker-here ;
+    pose  tell-danger ;
 \ what he is doing, for Hewie (the original's character fields he reads: room, move mode and
 \ part, condition, health)
 : tell-doing ( -- )

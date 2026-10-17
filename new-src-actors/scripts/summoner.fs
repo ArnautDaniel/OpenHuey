@@ -186,7 +186,7 @@ create waits  0 , 10 , 30 , 30 ,                                   \ D_00419DC0:
 : roll? ( percent -- flag )
     dup 0= if  drop false exit  then  dup 100 = if  drop true exit  then
     s>f 100e rnd f* f>= ;   \ (100 x the random <= the chance)
-: hunt ( -- )  6 s" danger" actor-named send danger-signal ;
+: hunt ( -- )  being-hunted s" danger" actor-named send danger-signal ;
 : noise ( loud room door -- )
     over her-room @ <> if  drop 2drop exit  then
     swap level  2* chances +  dup c@ swap 1+ c@               ( call% hunt% )

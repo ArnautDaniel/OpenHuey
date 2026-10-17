@@ -77,9 +77,15 @@ message let-go-shut ( room exit source -- )
 message door-changed ( door -- )             \ broadcast: its state changed
 
 \ ---- danger (docs/subsystems/danger.md) ----
-message danger-signal ( bit -- )             \ this frame: 1 Fiona struck, 3 chasing, 4 Hewie alert, 6 hunted...
-message stalker-here ( room alert chasing -- )   \ the stalker in play this frame
-message danger ( level -- )                  \ broadcast: 0 calm, 1 followed, 2 chased
+message danger-signal ( signal -- )          \ something this frame (below)
+message stalker-here ( room mode down -- )   \ the stalker in play this frame: his mode, knocked down?
+message danger ( level -- )                  \ broadcast: calm, followed, chased
+enum: danger-level  calm followed chased ;
+\ the frame's signals (the original's condition bits): Fiona within 150 / 200 of the stalker,
+\ Fiona struck, no stalker in play, the stalker knocked down, Hewie alert to him, she's hunted
+enum: danger-signal  stalker-close fiona-struck no-stalker stalker-down hewie-alert stalker-near being-hunted ;
+\ a stalker's mode (the original's +0x16C8, Progress_StalkerAlert): what he is about
+enum: stalker-mode  after-her heading-for-her searching waiting-about held-off ;
 
 \ ---- panic (docs/subsystems/panic.md); amounts and levels are floats (f>cell) ----
 message fright ( amount -- )                 \ (Panic_Fright: less with earrings $87 / $88 worn; f>cell)
