@@ -116,6 +116,10 @@ enum: fiona-doing  free-doing push-doing ladder-doing door-doing 5 shove-doing k
     turn-heading-doing walk-anim-doing ;
 \ her condition: well, hurt, down
 enum: fiona-cond  well-cond hurt-cond down-cond ;
+\ her costumes (the story's variable $26, the `costume` message; the wardrobe's names): her
+\ clothes, the slip she wakes in, Normal Outfit 2, Under the Scalpel, Illegal in Some States,
+\ Texas Cowgirl, Fiona the Frog (4 and 5: none)
+enum: costume  normal-outfit slip-dress normal-outfit-2 scalpel-outfit 6 illegal-outfit cowgirl-outfit frog-outfit ;
 \ what a stalker or a creature asks of her (Fiona_Reaction's requests): a blow, a harder blow, a
 \ grab, a throw, a door pushed into her, a hold; led away; held down by homunculi; a spirit
 enum: request-kind  1 blow-request heavy-blow-request grab-request throw-request door-request

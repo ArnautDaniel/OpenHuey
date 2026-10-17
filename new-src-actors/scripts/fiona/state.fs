@@ -90,6 +90,10 @@ state: fiona-state
   cell field her-push           \ +0x1AD560: the obstacle she pushes (-1 none)
   /vec field her-push-dir         \ +0x1AD570: the push (x 0 z)
   cell field her-ladder-side    \ +0x104: the side she came at it from (0 the foot, 1 the top)
+  \ knocked off it: where she lands and on what, the frames left of the drop, from high up (a
+  \ fall, not a pull), the drop's step a frame
+  /vec field her-drop-at  cell field her-drop-tri  cell field her-drop-n  cell field her-drop-far
+  1 floats field her-drop-dx  1 floats field her-drop-dy  1 floats field her-drop-dz
   cell field her-door-side      \ the side she came from (1 in front)
   cell field her-door-kind      \ its animation (0..7 of FIN_D000.MTN)
   cell field her-door-anim      \ hers (0x600 + kind; 0x608.. trying a locked one)

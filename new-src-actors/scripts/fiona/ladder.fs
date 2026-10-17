@@ -37,70 +37,75 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
 \ side 0, its foot; 2 side 1, its top): at the foot he keeps her from getting off there; at the
 \ top, within his height above her, from going up ----
 : stalker-on ( side -- flag )
-    stalker-in-room dup 0< if  2drop false exit  then  >r
-    r@ body-at her-ladder @ nav-link-at? 0= if  r> 2drop false exit  then
-    dup  r@ body-at r@ body-tri her-ladder @ nav-link-side =        ( side flag )
-    swap 1 = if  her-at 4 + sf@ r@ body-at 4 + sf@ f-  r@ body-dims fswap fdrop f< and  then
-    r> drop ;
+    stalker-in-room {: side him :}  him 0< if  false exit  then
+    him body-at her-ladder @ nav-link-at? 0= if  false exit  then
+    him body-at him body-tri her-ladder @ nav-link-side side =
+    side 1 = if  her-at v.y sf@ him body-at v.y sf@ f-  him body-dims fswap fdrop f< and  then ;
 
 \ ---- off (Fiona_StateLadderOff): at the event $20 put by that end, free ----
 : ladder-off ( -- )
     events $20 and 0= if  climb-move exit  then
-    anim@ $707 = if  1  else  0  then
-    her-ladder @ swap off-offset nav-link-front                      ( tri ) ( F: x y z )
-    dup 0< if  drop fdrop fdrop fdrop  else  her-tri !  her-at 8 + sf! her-at 4 + sf! her-at sf!  then
-    0 her-mode !  off-ladder ;
+    anim@ off-ladder-top-anim = 1 0 ?  {: side :}
+    her-ladder @ side off-offset nav-link-front                      ( tri ) ( F: x y z )
+    dup 0< if  drop fdrop fdrop fdrop  else  her-tri !  her-at vec!  then
+    own-mode her-mode !  off-ladder ;
 
 \ ---- on it (Fiona_StateOnLadder): as each move comes round, the stick picks the next ----
 : stick-up ( F: -- v )  sz fnegate ;   \ (the stick's up; W)
-: rung-down ( -- )   \ (from $700 / $702 / $706 / $708: off at the foot within 18, else the next rung)
-    0 end-y her-at 4 + sf@ f- 18e f< if
-        0 stalker-on if  anim@ $708 <> if  $708 play-own  then  exit  then
-        anim@ dup $700 = swap $702 = or if  $703 play-cut  else  $703 play-own  then
+: from-end? ( -- flag )  anim@ dup on-ladder-top-anim = swap rung-down-end-anim = or ;   \ (a move's end: cut in)
+: rung-down ( -- )   \ (from the top, a rung's end or holding: off at the foot within 18, else the next rung)
+    0 end-y her-at v.y sf@ f- 18e f< if
+        0 stalker-on if  anim@ ladder-hold-anim <> if  ladder-hold-anim play-own  then  exit  then
+        from-end? if  off-ladder-foot-anim play-cut  else  off-ladder-foot-anim play-own  then
         ['] ladder-off her-act !  exit
     then
-    anim@ dup $700 = swap $702 = or if  $701 play-cut  else  $701 play-own  then ;
+    from-end? if  rung-down-anim play-cut  else  rung-down-anim play-own  then ;
 : going-down ( anim -- moved? )
-    $700 - case
-        0 of  rung-down  endof  2 of  rung-down  endof  6 of  rung-down  endof  8 of  rung-down  endof
-        1 of  $702 play-cut  endof
-        4 of  0 stalker-on if  $708 play-own  else  $703 play-own  ['] ladder-off her-act !  then  endof
-        5 of  $702 play-own  endof  9 of  $702 play-own  endof
+    case
+        on-ladder-top-anim of  rung-down  endof   rung-down-end-anim of  rung-down  endof
+        rung-up-end-anim of  rung-down  endof     ladder-hold-anim of  rung-down  endof
+        rung-down-anim of  rung-down-end-anim play-cut  endof
+        on-ladder-foot-anim of  0 stalker-on if  ladder-hold-anim play-own  else  off-ladder-foot-anim play-own  ['] ladder-off her-act !  then  endof
+        rung-up-anim of  rung-down-end-anim play-own  endof   ladder-hold-2-anim of  rung-down-end-anim play-own  endof
         drop false exit
     endcase  true ;
-: rung-up ( -- )   \ (from $702 / $704 / $706 / $708: off at the top within 3, else the next rung)
-    her-at 4 + sf@ 1 end-y f- 3e f< if
-        anim@ dup $704 = swap $706 = or if  $707 play-cut  else  $707 play-own  then
+: on-from-foot? ( -- flag )  anim@ dup on-ladder-foot-anim = swap rung-up-end-anim = or ;
+: rung-up ( -- )   \ (from the foot, a rung's end or holding: off at the top within 3, else the next rung)
+    her-at v.y sf@ 1 end-y f- 3e f< if
+        on-from-foot? if  off-ladder-top-anim play-cut  else  off-ladder-top-anim play-own  then
         ['] ladder-off her-act !  exit
     then
-    anim@ dup $704 = swap $706 = or if  $705 play-cut  else  $705 play-own  then ;
+    on-from-foot? if  rung-up-anim play-cut  else  rung-up-anim play-own  then ;
 : going-up ( anim -- moved? )
-    $700 - case
-        0 of  $707 play-own  ['] ladder-off her-act !  endof
-        1 of  $706 play-own  endof  9 of  $706 play-own  endof
-        5 of  $706 play-cut  endof
-        2 of  rung-up  endof  4 of  rung-up  endof  6 of  rung-up  endof  8 of  rung-up  endof
+    case
+        on-ladder-top-anim of  off-ladder-top-anim play-own  ['] ladder-off her-act !  endof
+        rung-down-anim of  rung-up-end-anim play-own  endof   ladder-hold-2-anim of  rung-up-end-anim play-own  endof
+        rung-up-anim of  rung-up-end-anim play-cut  endof
+        rung-down-end-anim of  rung-up  endof   on-ladder-foot-anim of  rung-up  endof
+        rung-up-end-anim of  rung-up  endof     ladder-hold-anim of  rung-up  endof
         drop false exit
     endcase  true ;
 : holding ( anim -- )
-    $700 - case
-        0 of  $708 play-own  endof  2 of  $708 play-own  endof  4 of  $708 play-own  endof  6 of  $708 play-own  endof
-        1 of  $709 play-own  endof  5 of  $709 play-own  endof
+    case
+        on-ladder-top-anim of  ladder-hold-anim play-own  endof   rung-down-end-anim of  ladder-hold-anim play-own  endof
+        on-ladder-foot-anim of  ladder-hold-anim play-own  endof   rung-up-end-anim of  ladder-hold-anim play-own  endof
+        rung-down-anim of  ladder-hold-2-anim play-own  endof   rung-up-anim of  ladder-hold-2-anim play-own  endof
     endcase ;
 : on-ladder ( -- )   \ (until the move has faded in: still)
     settled? 0= if  exit  then
-    anim@ events $20 and 0<>  over $708 $70A within or 0= if  drop climb-move exit  then   ( anim )
+    anim@ events $20 and 0<>  over ladder-hold-anim ladder-slip-anim within or 0= if  drop climb-move exit  then   ( anim )
     stick-up fdup fabs 0.5e f> if
         f0< if  going-down  else  1 stalker-on if  holding true  else  going-up  then  then
     else  fdrop holding true  then
-    if  anim@ dup $703 = swap $704 = or if  0  else  1  then  end-tri  then
+    if  anim@ dup off-ladder-foot-anim = swap on-ladder-foot-anim = or 0 1 ?  end-tri  then
     climb-move ;
 
 \ ---- getting on (Fiona_StateLadder, LadderWalk): to its end's spot, facing it; there, on ----
+6 constant getting-on   7 constant on-rungs   \ (her sub on the ladder)
 : ladder-walk ( -- )
     walk-to-spot dup 0< if  drop off-ladder exit  then  if  exit  then
-    7 her-sub !
-    her-ladder-side @ if  $700  else  $704  then  play-own  ['] on-ladder her-act ! ;
+    on-rungs her-sub !
+    her-ladder-side @ if  on-ladder-top-anim  else  on-ladder-foot-anim  then  play-own  ['] on-ladder her-act ! ;
 : ladder-start ( -- )
     her-ladder @ her-ladder-side @  dup if  0e 6.7e  else  0e -7.1068e  then  nav-link-front   ( tri ) ( F: x y z )
     dup 0< if  drop fdrop fdrop fdrop off-ladder exit  then
@@ -122,47 +127,45 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
         then
     loop  -1 ;
 : try-ladders ( -- )
-    her-mode @ 0<>  her-doing @ 0<> or  her-panic-stage @ 4 >= or if  exit  then
+    her-mode @ own-mode <>  her-doing @ free-doing <> or  her-panic-stage @ panicking >= or if  exit  then
     circle button-pressed? 0= if  exit  then
     ladder-here dup 0< if  drop exit  then                              ( link side )
     stalker-in-room dup 0< 0= if  self swap 0e 0e bodies-touching? if  2drop exit  then  else  drop  then
     her-ladder-side !  her-ladder !
-    6 her-sub !  2 her-doing !  3 her-mode !  ladder-start ;
+    getting-on her-sub !  ladder-doing her-doing !  ladder-mode her-mode !  ladder-start ;
 
 \ ---- knocked off it (a blow while on it, Fiona_Reaction 8: Fiona_StateCaughtCrawling): to the
 \ spot 10 out from its top - near it (under 20 below) pulled off ($F02), else dropped there
 \ ($70A, then $70B as it comes round), falling 0.5 faster each frame over as many frames as that
 \ takes; there her cry ($7D pulled, $81 fallen); fallen, down ($70C) and up ($100D) - her
 \ recovery reset (CrawlDrop / CrawlPull / CrawlFall / CrawlDown) ----
-create drop-at 12 allot  variable drop-tri  variable drop-n  variable drop-far
-fvariable drop-dx  fvariable drop-dy  fvariable drop-dz  fvariable ff-y  fvariable ff-step
 : crawl-up ( -- )   \ (standing again: out of the ladder)
-    ended? if  drop-far @ if  reset-recovery  then  0 her-mode !  off-ladder exit  then  root-move ;
-: crawl-down ( -- )  ended? if  $100D play-cut  ['] crawl-up her-act !  then  root-move ;
-: crawl-fall ( -- )  settled? if  $70C -1 play-table  ['] crawl-down her-act !  then ;
+    ended? if  her-drop-far @ if  reset-recovery  then  own-mode her-mode !  off-ladder exit  then  root-move ;
+: crawl-down ( -- )  ended? if  up-from-back-anim play-cut  ['] crawl-up her-act !  then  root-move ;
+: crawl-fall ( -- )  settled? if  ladder-fallen-anim -1 play-table  ['] crawl-down her-act !  then ;
 : crawl-drop ( -- )
-    -1 drop-n +!
-    drop-n @ if
-        drop-far @  anim@ $70B <> and  ended? and if  $70B -1 play-table  then
-        her-at sf@ drop-dx f@ f- her-at sf!
-        her-at 4 + sf@ drop-dy f@ f- her-at 4 + sf!
-        her-at 8 + sf@ drop-dz f@ f- her-at 8 + sf!
-        drop-dy f@ 0.5e f+ drop-dy f!  exit
+    -1 her-drop-n +!
+    her-drop-n @ if
+        her-drop-far @  anim@ ladder-fall-anim <> and  ended? and if  ladder-fall-anim -1 play-table  then
+        her-at v.x sf@ her-drop-dx f@ f- her-at v.x sf!
+        her-at v.y sf@ her-drop-dy f@ f- her-at v.y sf!
+        her-at v.z sf@ her-drop-dz f@ f- her-at v.z sf!
+        her-drop-dy f@ 0.5e f+ her-drop-dy f!  exit   \ (falling faster)
     then
-    her-at drop-at vec-copy  drop-tri @ dup 0< if  drop  else  her-tri !  then
+    her-at her-drop-at vec-copy  her-drop-tri @ dup 0< if  drop  else  her-tri !  then
     $D0 12 fiona-jolt   \ (landed)
-    drop-far @ if  $81 voice  ['] crawl-fall  else  $7D voice  ['] crawl-up  then  her-act ! ;
+    her-drop-far @ if  $81 voice  ['] crawl-fall  else  $7D voice  ['] crawl-up  then  her-act ! ;
 : frames-to-fall ( F: h -- ) ( -- n )   \ (0, 0.5, 1 ... a frame: how many frames to fall h)
-    ff-y f!  0e ff-step f!  1
-    begin  ff-y f@ ff-step f@ f- fdup ff-y f!  f0< 0= while  ff-step f@ 0.5e f+ ff-step f!  1+  repeat ;
+    {: F: h | F: step :}  1
+    begin  h step f- to h  h f0< 0= while  step 0.5e f+ to step  1+  repeat ;
 : knocked-off ( -- )
-    her-ladder @ 1 0e 10e nav-link-front drop-tri !  drop-at vec!
-    her-at 4 + sf@ drop-at 4 + sf@ f- fdup 20e f< if
-        0 drop-far !  $B her-mode !  $F02 -1 play-table  $3F 0 her-sound
+    her-ladder @ 1 0e 10e nav-link-front her-drop-tri !  her-drop-at vec!
+    her-at v.y sf@ her-drop-at v.y sf@ f- fdup 20e f< if
+        0 her-drop-far !  react-mode her-mode !  pull-free-anim -1 play-table  $3F 0 her-sound
     else
-        -1 drop-far !  $70A -1 play-table  $40 0 her-sound
+        -1 her-drop-far !  ladder-slip-anim -1 play-table  $40 0 her-sound
     then
-    frames-to-fall dup drop-n !  s>f                                     ( F: n )
-    her-at sf@ drop-at sf@ f- fover f/ drop-dx f!
-    her-at 8 + sf@ drop-at 8 + sf@ f- fswap f/ drop-dz f!
-    0e drop-dy f!  ['] crawl-drop her-act ! ;
+    frames-to-fall dup her-drop-n !  s>f  {: F: n :}
+    her-at v.x sf@ her-drop-at v.x sf@ f- n f/ her-drop-dx f!
+    her-at v.z sf@ her-drop-at v.z sf@ f- n f/ her-drop-dz f!
+    0e her-drop-dy f!  ['] crawl-drop her-act ! ;
