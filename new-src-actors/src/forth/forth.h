@@ -88,6 +88,7 @@ struct Task {
     Cell rs[STACK_CELLS];   /* return stack */
     Float fs[FSTACK_CELLS]; /* float stack */
     int sp, rp, fp;
+    int sfloor, ffloor;     /* below these the stacks count as empty (a message handler's: its arguments only) */
     int lp;                 /* the running word's locals: their frame on the return stack */
     int marks[16], nmarks;  /* `{`: where each list being gathered starts on the data stack */
     Cell *ip;               /* the next cell of threaded code to run; NULL when stopped */

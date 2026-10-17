@@ -34,7 +34,7 @@ void forth_push(Forth *f, Cell x) {
 Cell forth_pop(Forth *f) {
     Task *t = f->t;
 
-    if (t->sp <= 0) {
+    if (t->sp <= t->sfloor) {
         forth_error(f, "stack underflow");
     }
     return t->ds[--t->sp];
@@ -70,7 +70,7 @@ void forth_fpush(Forth *f, Float x) {
 Float forth_fpop(Forth *f) {
     Task *t = f->t;
 
-    if (t->fp <= 0) {
+    if (t->fp <= t->ffloor) {
         forth_error(f, "float stack underflow");
     }
     return t->fs[--t->fp];
@@ -78,7 +78,7 @@ Float forth_fpop(Forth *f) {
 
 /* the top items, checked (n = how many must be there) */
 static Cell *top(Forth *f, int n) {
-    if (f->t->sp < n) {
+    if (f->t->sp - f->t->sfloor < n) {
         forth_error(f, "stack underflow");
     }
     return &f->t->ds[f->t->sp - 1];

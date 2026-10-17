@@ -97,4 +97,12 @@ mortal counter-state s" m" spawn constant m3
 mortal counter-state s" m" spawn constant m4
 T{ m4 m3 =  deliver  log @ length -> -1 1 }T   \ (only m3's last words)
 
+testing a handler sees only its arguments: taking more is an error, the deliverer's stack untouched
+actors-reset
+behaviour greedy
+  on ping ( n -- )  2drop ;   \ (one too many)
+end-behaviour
+greedy counter-state s" g" spawn constant g
+T{ 11 22  3 g send ping  deliver -> 11 22 }T
+
 test-summary
