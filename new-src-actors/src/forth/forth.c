@@ -1188,15 +1188,16 @@ PRIM(p_colon) {
 /* {: a b F: x | c F: y -- comment :} the definition's locals: a and b taken from the data stack
  * (b from the top), x from the float stack, c and y starting at 0; F: makes the names after it
  * floats (until |), what follows -- is a comment. A definition may have several: each adds to
- * the same frame (made at the first), and takes its values where it stands. */
+ * the same frame (made at the first, which must be outside an if or a loop), and takes its values
+ * where it stands - a later one inside a loop each time round. */
 PRIM(p_locals_begin) {
     int first = f->locals.n, taken = -1, comment = 0, is_float = 0, i;
 
     if (!f->compiling) {
         forth_error(f, "{: only inside a definition");
     }
-    if (f->t->sp != f->top_sp) {
-        forth_error(f, "{: inside a do loop or an if: only outside them (or in a word of its own)");
+    if (first == 0 && f->t->sp != f->top_sp) {   /* (the first makes the frame: it must be made) */
+        forth_error(f, "{: the first in a definition inside a do loop or an if: only outside them (later ones may be)");
     }
     for (;;) {
         size_t n;

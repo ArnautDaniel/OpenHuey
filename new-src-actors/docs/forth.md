@@ -71,7 +71,8 @@ its values - `a` and `b` taken from the stack (`b` from the top), `x` from the f
 makes the names after it floats, until `|`), `c` and `y` starting at 0, the rest a comment. A name
 gives its value; `to name` stores into it. They last until the word returns (`exit` too), the
 return stack still free for `>r` and loops; a quotation has its own. A definition may have
-several `{: :}` (not inside an `if` or a loop): each takes its values where it stands. Prefer them
+several `{: :}`: each takes its values where it stands. The first makes the frame, so it can't be
+inside an `if` or a loop; later ones can (`... do  i thing {: t :}  ... loop`). Prefer them
 to stack juggling (`2 pick`, `rot`, `>r` chains) and to scratch variables:
 `: centred ( addr len x y -- )  {: addr len x y :}  ... ;`.
 

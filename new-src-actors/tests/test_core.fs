@@ -209,6 +209,9 @@ T{ 3 l-two -> 9 }T
 : l-two-early ( a -- )  dup 0< if  exit  then  {: a :}  a 1+  {: b F: half :}  b half f>s ;
 T{ -1 l-two-early  4 1.5e l-two-early -> -1 5 1 }T
 
+: l-in-loop ( n -- sum )  {: n | sum :}  n 0 ?do  i 2 * {: twice :}  sum twice + to sum  loop  sum ;
+T{ 4 l-in-loop -> 12 }T
+
 testing enum: constants from 0, a number sets the next, name>name names a value
 enum: colour  red green blue ;
 enum: act  $36 hide  $52 lie-down rise ;
