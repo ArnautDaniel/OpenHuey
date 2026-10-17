@@ -7,6 +7,11 @@ when told, and defends her from the stalkers on his own as his trust grows. He h
 (pleased, upset, angry), health, and a memory of how he's been treated. The original's
 `hewie.c` is ~13,000 lines (~265 functions). He is built in phases.
 
+His actions (the original's numbers, which this page still quotes) have names in
+`scripts/hewie-names.fs` (`hewie-action`), with his move modes, moods, animation groups and
+what he tells the story he is doing; his animations and sounds are named in `hewie/anims.fs`
+and `hewie/sounds.fs`, the bits of what may break in on an action in `hewie/state.fs`.
+
 ## Phases
 
 | Phase | What | Needs |

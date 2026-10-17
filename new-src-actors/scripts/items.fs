@@ -366,13 +366,13 @@ create lecterns  $D , $11 , $14 ,
         fortis of  -100 -1800 remedy-her drop  boost-9fc 1800 0e boost!  blow-boost 1800 3e boost!  used-up  endof
         paptisma of  boost-a0c 1800 0e boost!  used-up  endof
         \ the baits (to Hewie)
-        chicken-jerky of  0 $8F feed  endof
-        beef-jerky of  1 $8F feed  endof
-        onion of  2 $90 feed  endof
-        esca of  0 $8F feed  endof
-        magna-esca of  1 $8F feed  endof
-        sylvesta-esca of  at-hand? if  bite-boost 450 0e boost!  then  3 $91 feed  endof
-        bennenam-esca of  4 $90 feed  endof
+        chicken-jerky of  small-treat $8F feed  endof
+        beef-jerky of  big-treat $8F feed  endof
+        onion of  onion-bait $90 feed  endof
+        esca of  small-treat $8F feed  endof
+        magna-esca of  big-treat $8F feed  endof
+        sylvesta-esca of  at-hand? if  bite-boost 450 0e boost!  then  fury-bait $91 feed  endof
+        bennenam-esca of  rouse-bait $90 feed  endof
         folded-memo of  false $24B hint  endof
         >r no-use r>
     endcase ;

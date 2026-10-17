@@ -1,26 +1,56 @@
-\ hewie/fight.fs - Hewie and the stalker (H3; src/game/hewie.c): going for him (actions 0x1F..
-\ 0x22: Hewie_StateRunAtPursuer, StateGoesForPursuer / GoForPursuer2 - the attack asked of the
-\ stalker, who takes it with a spot to leap to or refuses), the leap (StateLeapGrip, LeapLands),
-\ biting and holding on (StateBiteHold: bites by his trust, a shake roll each time round, let
-\ go when she calls him off or the stalker is down), letting go (StateClamped) or thrown off
-\ (StateHanging, StateJumpArc); harrying him (0x59 / 0x5A / 0x23: keeping near, closing in);
-\ struck (Hewie_TakeBlow: by the stalker, by her, by a door) - his yelp, pushed back (0x69,
-\ StateMoveAlong), then down or on (Hewie_AfterYelp).
+\ hewie/fight.fs - Hewie and the stalker (src/game/hewie.c): going for him (at-flank-act ..
+\ at-leg-2-act: Hewie_StateRunAtPursuer, StateGoesForPursuer / GoForPursuer2 - the attack asked
+\ of the stalker, who takes it with a spot to leap to or refuses), the leap (StateLeapGrip,
+\ LeapLands), biting and holding on (StateBiteHold: bites by his trust, a shake roll each time
+\ round, let go when she calls him off or the stalker is down), letting go (StateClamped) or
+\ thrown off (StateHanging, StateJumpArc); harrying him (harry-act, close-on-act: keeping near,
+\ closing in); struck (Hewie_TakeBlow: by the stalker, by her, by a door) - his yelp, pushed back
+\ (StateMoveAlong), then down or on (Hewie_AfterYelp).
 IN: hewie.fight
-USING: engine game-state actors messages common facts paths flag-names hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states ;
+USING: engine game-state actors messages common facts paths vectors flag-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states ;
+
+\ ---- his fight's animations: the leap, the bite, letting go - at the near flank, the far one,
+\ head on, his leg; thrown off at a flank (hanging on), held on again or flung, at the top of
+\ the arc and falling; landing ----
+$2200 constant leap-near-anim   $2209 constant leap-far-anim   $2214 constant leap-head-on-anim   $2217 constant leap-leg-anim
+$2201 constant bite-near-anim   $220A constant bite-far-anim   $2215 constant bite-head-on-anim   $2218 constant bite-leg-anim
+$2202 constant let-go-near-anim   $220B constant let-go-far-anim   $2216 constant let-go-head-on-anim   $2219 constant let-go-leg-anim
+$2203 constant hanging-near-anim   $220C constant hanging-far-anim
+$2204 constant hold-again-near-anim   $220D constant hold-again-far-anim
+$2207 constant flung-near-anim   $2210 constant flung-far-anim
+$2205 constant top-held-near-anim   $220E constant top-held-far-anim
+$2208 constant top-flung-near-anim   $2211 constant top-flung-far-anim
+$2206 constant falling-held-near-anim   $220F constant falling-held-far-anim
+$2212 constant land-held-anim   $2213 constant flung-anim   \ (landed: held on; flung - struck down too)
+
+\ the stalkers by their kind (st-kind: the cast's ids)
+2 constant debilitas-kind   3 constant daniella-kind   4 constant riccardo-kind   10 constant lorenzo-kind
+\ his grip on the stalker (his-grip): none yet, head on, the near flank, the far one
+enum: grip  -1 no-grip head-on-grip near-grip far-grip ;
+\ his-biting: holding on - the first time round, still; letting go; thrown off. Thrown off
+\ (hanging): he held on again, or flung
+enum: bite-hold  first-hold still-holding letting-go thrown-off ;
+0 constant held-on   1 constant flung
+\ the stalker as he tells it (st-sub): bitten, down
+9 constant him-bitten   $A constant him-down
+: at-leg? ( -- flag )  his-action @ dup at-leg-act = swap at-leg-2-act = or ;
+: on-him? ( -- flag )  his-action @ dup at-flank-act = swap at-stalker-act = or ;   \ (at him: hanging on, flung)
+: by-grip ( near far other -- anim )   \ (by his grip: the near flank, the far one, else)
+    {: near far other :}  his-grip @ case  near-grip of  near  endof  far-grip of  far  endof  >r other r>  endcase ;
 
 \ ---- his feelings about the stalker (Hewie_Feeling, Hewie_ChangeFeeling: -10..10) ----
-: feel ( -- addr )   \ (by the stalker's kind: Debilitas 2, Daniella 3, Lorenzo 10..12, Riccardo 4)
+: feel ( -- addr )   \ (by the stalker's kind: Debilitas, Daniella, Lorenzo, Riccardo)
     st-kind @ case
-        3 of  1  endof  4 of  3  endof  10 of  2  endof  11 of  2  endof  12 of  2  endof
+        daniella-kind of  1  endof  riccardo-kind of  3  endof
+        lorenzo-kind of  2  endof  lorenzo-kind 1+ of  2  endof  lorenzo-kind 2 + of  2  endof
         >r 0 r>
     endcase  cells his-feel + ;
 \ Hewie_FeelPursuer: his mood normal, a stalker about - the more he dislikes him, the likelier he
-\ is upset (mood 2): a 1-in-16 roll under 14 at -10, falling by one a step to 1 at 0, none above
+\ is upset: a 1-in-16 roll under 14 at -10, falling by one a step to 1 at 0, none above
 create upset-chance  14 , 10 , 9 , 8 , 7 , 6 , 5 , 4 , 3 , 2 , 1 ,
 : feel-pursuer ( -- )
-    his-mood @  pursuer active? 0= or  feel @ 0> or if  exit  then
-    feel @ 10 + cells upset-chance + @  16 roll > if  2 -1 set-mood  then ;
+    his-mood @ normal-mood <>  pursuer active? 0= or  feel @ 0> or if  exit  then
+    feel @ 10 + cells upset-chance + @  16 roll > if  upset-mood -1 set-mood  then ;
 : feel+ ( n -- )  feel @ + -10 10 clamp feel !  feel-pursuer ;
 \ Hewie_Dares: from trust 2, a 1-in-16 roll under his level + 1 + his feeling / 5 (at most 8)
 : dares? ( -- flag )
@@ -28,88 +58,89 @@ create upset-chance  14 , 10 , 9 , 8 , 7 , 6 , 5 , 4 , 3 , 2 , 1 ,
     feel @ 5 / 8 min  his-trust @ + 1+  16 roll > ;
 
 \ ---- a bite (bite_pursuer): its damage (bite-damage), hard by chance - the more hurt the
-\ stalker, the likelier (Hewie_ReactionRoll) ----
+\ stalker, the likelier (Hewie_ReactionRoll; the chances' rows by the bite) ----
+enum: bite-row  far-bite far-charged-bite near-bite near-charged-bite head-on-bite leg-bite
+    tackle-front-bite tackle-behind-bite tackle-front-charged-bite tackle-behind-charged-bite rush-bite ;
 : band ( -- n )   \ (his health over its most: above 0.8 0, 0.6 1, 0.4 2, 0.2 3, 0.1 4, else 5)
     st-hp @ s>f st-hp-max @ 1 max s>f f/
     fdup 0.1e f< if  fdrop 5 exit  then  fdup 0.2e f< if  fdrop 4 exit  then
     fdup 0.4e f< if  fdrop 3 exit  then  fdup 0.6e f< if  fdrop 2 exit  then
     0.8e f< if  1  else  0  then ;
-: hard-bite? ( kind -- flag )  6 * band + cells hard-bite-chance + @  100 roll > ;
-\ (Hewie_BiteEffect: a mark at his mouth, bone $25 - a big one with it when he came charging; at
-\ the first bite and at each of the bite animations' $20 keys)
-$25 constant his-mouth
-create mouth-at 12 allot
+: hard-bite? ( row -- flag )  6 * band + cells hard-bite-chance + @  100 roll > ;
+\ (Hewie_BiteEffect: a mark at his mouth - a big one with it when he came charging; at the first
+\ bite and at each of the bite animations' $20 keys)
+$25 constant his-mouth   \ (his mouth's bone)
+create mouth-at /vec allot
 : bite-mark ( -- )
     his-model @ his-mouth bone-pos mouth-at vec!
     his-ready @ if  his-tri -1 mouth-at vec@ spray  then
     his-tri 0 mouth-at vec@ spray ;
 : event? ( bit -- flag )  model 0 0 1 motion-events and 0<> ;
-: bite-him ( kind base -- )
-    bite-damage  swap hard-bite? pursuer send bite ;
+: bite-him ( row base -- )  bite-damage  swap hard-bite? pursuer send bite ;
 
 \ ---- which side he comes at him from (Hewie_AttackSide): from behind, facing the stalker's
-\ back - 0 (not while he is timid); else a flank (1 near, 2 far: Daniella the other way) ----
-: daniella? ( -- flag )  st-kind @ dup 3 = swap 34 37 within or ;
-: attack-side ( -- side )
+\ back - head on (not while he is timid); else a flank (Daniella the other way) ----
+: daniella? ( -- flag )  st-kind @ dup daniella-kind = swap 34 37 within or ;
+: attack-side ( -- grip )
     pursuer body-at heading-to                                     ( F: a )
     hewie-timid state-flag? 0=
     fdup pursuer body-yaw f- angle-wrap fabs pi f2/ f< and
-    fdup his-yaw f- angle-wrap fabs pi f2/ f< and if  fdrop 0 exit  then
+    fdup his-yaw f- angle-wrap fabs pi f2/ f< and if  fdrop head-on-grip exit  then
     pi f+ angle-wrap pursuer body-yaw f- angle-wrap f0< if
-        daniella? if  1  else  2  then
-    else  daniella? st-kind @ 11 = or if  2  else  1  then  then ;
+        daniella? if  near-grip  else  far-grip  then
+    else  daniella? st-kind @ lorenzo-kind 1+ = or if  far-grip  else  near-grip  then  then ;
 
 \ ---- held at the stalker's height (his feet's plane: HumanModel +0x8C0) ----
-: at-his-height ( -- )  pursuer body-at 4 + sf@ his-y! ;
+: his-height ( F: -- y )  pursuer body-at v.y sf@ ;
+: at-his-height ( -- )  his-height his-y! ;
 
 \ ---- thrown off (StateHanging, StateJumpArc): hanging on by his teeth to the end of it; then
 \ he holds on again if he dares, else flung (10 damage) - along his last root motion, falling;
-\ landing ($2212 held on, $2213 flung), then on ----
-\ (Hewie_State18B0: down - 300 frames before he's petted again; flung, he gets up ($1003) and
-\ is as after a yelp - down, or cowering from her)
+\ landing, then on ----
+\ (Hewie_State18B0: down - 300 frames before he's petted again; flung, he gets up and is as
+\ after a yelp - down, or cowering from her)
 defer after-yelp ( -- )   \ (yelped, below)
 : st-landed ( -- )
     anim-done? 0= if  exit  then
     300 his-pet-time !
-    his-biting @ 0= if  to-default exit  then
-    anim@ $2213 = if  his-cond @ 2 <> if  $1003 play  else  after-yelp  then  exit  then
-    anim@ $1003 = if  after-yelp  then ;
-\ his splash into water (sound $1E; the ripple in rooms 7 / $106)
+    his-biting @ held-on = if  to-default exit  then
+    anim@ flung-anim = if  his-cond @ down-cond <> if  get-up-anim play  else  after-yelp  then  exit  then
+    anim@ get-up-anim = if  after-yelp  then ;
+\ his splash into water (the ripple in rooms 7 / $106)
+$2008000 constant water-floor   \ (a floor's nav flags: water)
 : splash-here ( -- )
-    his-tri dup 0< if  drop exit  then  nav-flags $2008000 and $2008000 <> if  exit  then
-    $1E 6 0 0 his-at vec@ his-sound  flooded? if  1 his-at water-step  then ;
-: land ( -- )  his-biting @ 0= if  $2212  else  $2213  then  play  ['] st-landed behave ;
-: air-floor ( F: -- y )  his-at sf@ his-fly-h f@ his-at 8 + sf@ nav-floor drop ;
+    his-tri dup 0< if  drop exit  then  nav-flags water-floor and water-floor <> if  exit  then
+    splash-sound 6 0 0 his-at vec@ his-sound  flooded? if  1 his-at water-step  then ;
+: land ( -- )  his-biting @ held-on = if  land-held-anim  else  flung-anim  then  play  ['] st-landed behave ;
+: air-floor ( F: -- y )  his-at v.x sf@ his-fly-h f@ his-at v.z sf@ nav-floor drop ;
 : fly-on ( -- landed? )   \ (a frame of it: across by his-fly-x / z, up by his-fly-y less 0.5 a frame)
     his-fly-x f@ his-fly-z f@ body-move-local  1 his-no-root !
     his-fly-h f@ his-fly-y f@ f+  fdup air-floor f< if  fdrop true exit  then
     fdup his-fly-h f!  his-y!  his-fly-y f@ 0.5e f- his-fly-y f!  false ;
-: on-him? ( -- flag )  his-action @ dup $1F = swap $20 = or ;   \ (at him: hanging on, flung)
-: st-falling ( -- )   \ (Hewie_StateFalling: coming down - holding on, the hanging pose; flung, a splash)
-    his-biting @ 0= anim-done? and on-him? and if
+: st-falling ( -- )   \ (Hewie_StateFalling: coming down - held on, the hanging pose; flung, a splash)
+    his-biting @ held-on = anim-done? and on-him? and if
         his-grip @ case
-            1 of  anim@ $2206 <> if  $2206 play-cut  then  endof
-            2 of  anim@ $2211 <> if  $220F play-cut  then  endof   \ (the original tests $2211, starts $220F)
+            near-grip of  anim@ falling-held-near-anim <> if  falling-held-near-anim play-cut  then  endof
+            far-grip of  anim@ top-flung-far-anim <> if  falling-held-far-anim play-cut  then  endof   \ (the original tests the flung top, starts this)
         endcase
     then
-    fly-on if  land  his-biting @ if  splash-here  then  then ;
+    fly-on if  land  his-biting @ flung = if  splash-here  then  then ;
 : st-jump-arc ( -- )   \ (Hewie_StateJumpArc: going up - at the top, falling)
     fly-on if  land exit  then
     his-fly-y f@ f0> if  exit  then
     on-him? if
-        his-grip @ case
-            1 of  his-biting @ if  $2208  else  $2205  then  play  endof
-            2 of  his-biting @ if  $2211  else  $220E  then  play  endof
-        endcase
+        his-biting @ flung = if  top-flung-near-anim top-flung-far-anim  else  top-held-near-anim top-held-far-anim  then
+        0 by-grip ?dup if  play  then
     then  ['] st-falling behave ;
 : st-hanging ( -- )
-    root@  rm-x f@ rm-z f@ body-move-local  his-fly-h f@ rm-y f@ f+ fdup his-fly-h f! his-y!  1 his-no-root !
+    root@ {: F: turn x up z :}
+    x z body-move-local  his-fly-h f@ up f+ fdup his-fly-h f! his-y!  1 his-no-root !
     anim-done? 0= if  exit  then
     pursuer with? 0= if  to-default exit  then
     rnd 0.25e f< if  -1 feel+  then
-    dares? if  0 his-biting !  his-grip @ 1 = if  $2204  else  $220D  then
-    else  1 his-biting !  10 hurt-by  his-grip @ 1 = if  $2207  else  $2210  then  then  play-cut
-    rm-x f@ his-fly-x f!  rm-y f@ his-fly-y f!  rm-z f@ his-fly-z f!
+    dares? if  held-on his-biting !  his-grip @ near-grip = if  hold-again-near-anim  else  hold-again-far-anim  then
+    else  flung his-biting !  10 hurt-by  his-grip @ near-grip = if  flung-near-anim  else  flung-far-anim  then  then  play-cut
+    x his-fly-x f!  up his-fly-y f!  z his-fly-z f!
     ['] st-jump-arc behave ;
 
 \ ---- letting go (StateClamped): the let-go animation, its bite marks at its $20 keys, until its
@@ -117,59 +148,55 @@ defer after-yelp ( -- )   \ (yelped, below)
 \ then down from it over 5 frames (his-fly-h 0..1, then 2: free) ----
 : ease-off ( -- )
     his-fly-h f@ 0.2e f+  fdup 1e f< 0= if  fdrop 2e his-fly-h f! exit  then
-    fdup his-fly-h f!
-    1e fover f- pursuer body-at 4 + sf@ f*  fswap his-at 4 + sf@ f* f+  his-y! ;
+    fdup his-fly-h f!  {: F: k :}
+    1e k f- his-height f*  k his-at v.y sf@ f* f+  his-y! ;
 : st-clamped ( -- )
     $20 event? if  bite-mark  then
     anim-done? if  300 his-pet-time !  to-default exit  then
     slide-root
     pursuer with? 0= if  exit  then
-    his-biting @ 0= if  2 event? if  1 his-biting !  then  at-his-height exit  then
+    his-biting @ first-hold = if  2 event? if  still-holding his-biting !  then  at-his-height exit  then
     his-fly-h f@ 1e f< if  ease-off  then ;
 
 \ ---- biting and holding on (StateBiteHold): at each time round, a shake roll - his bites left,
 \ his chance to hold on (+30 the first time, -10 each time held); failing it he lets go and
 \ the stalker shakes. Thrown off meanwhile (the stalker's `shaken-off`): hanging. Let go when
-\ she calls him off (her commands 0x27 / 0x2C) or the stalker is down ----
-: shake-off ( -- )  2 his-biting !  pursuer send shaken-off ;
-: bite-anim ( -- a )
-    his-action @ dup $21 = swap $22 = or if  $2218 exit  then
-    his-grip @ case  1 of  $2201  endof  2 of  $220A  endof  >r $2215 r>  endcase ;
-: let-go-anim ( -- a )
-    his-action @ dup $21 = swap $22 = or if  $2219 exit  then
-    his-grip @ case  1 of  $2202  endof  2 of  $220B  endof  >r $2216 r>  endcase ;
+\ she calls him off (her come / come back) or the stalker is down ----
+: shake-off ( -- )  letting-go his-biting !  pursuer send shaken-off ;
+: bite-anim ( -- a )  at-leg? if  bite-leg-anim exit  then  bite-near-anim bite-far-anim bite-head-on-anim by-grip ;
+: let-go-anim ( -- a )  at-leg? if  let-go-leg-anim exit  then  let-go-near-anim let-go-far-anim let-go-head-on-anim by-grip ;
 : bite-again ( -- )   \ (the bite by his action and grip: damage 10 the leg, 2 / 3 a flank, 3 head on)
     bite-anim play-if-not
-    his-action @ dup $21 = swap $22 = or if  5 10 bite-him exit  then
+    at-leg? if  leg-bite 10 bite-him exit  then
     his-grip @ case
-        1 of  his-ready @ if  3 3  else  2 2  then  endof
-        2 of  his-ready @ if  1 3  else  0 2  then  endof
-        >r 4 3 r>
+        near-grip of  his-ready @ if  near-charged-bite 3  else  near-bite 2  then  endof
+        far-grip of  his-ready @ if  far-charged-bite 3  else  far-bite 2  then  endof
+        >r head-on-bite 3 r>
     endcase  bite-him ;
 : shake-roll ( -- )
     his-bites @ 1- dup his-bites !
-    if  his-hold @  his-biting @ 0= if  1 his-biting !  30 +  then  else  0  then
+    if  his-hold @  his-biting @ first-hold = if  still-holding his-biting !  30 +  then  else  0  then
     100 roll > if  his-hold @ 10 - 0 max his-hold !  else  shake-off  then ;
-: let-go ( -- )  0 his-biting !  0e his-fly-h f!  let-go-anim play-cut  ['] st-clamped behave ;
+: let-go ( -- )  first-hold his-biting !  0e his-fly-h f!  let-go-anim play-cut  ['] st-clamped behave ;
+: hang-on ( -- )   \ (thrown off at a flank: hanging on; else he lets go)
+    his-grip @ dup near-grip = swap far-grip = or  on-him? and 0= if  let-go exit  then
+    his-grip @ near-grip = if  hanging-near-anim  else  hanging-far-anim  then  play-cut
+    at-his-height  his-height his-fly-h f!  struck-mode his-mode !  holding-on-sub his-sub !
+    ['] st-hanging behave ;
 : st-bite-hold ( -- )
     pursuer with? 0= if  to-default exit  then
     $20 event? if  bite-mark  then
     anim-done? if
-        his-biting @ 2 < if  shake-roll  then
+        his-biting @ letting-go < if  shake-roll  then
         his-biting @ case
-            2 of  let-go exit  endof
-            3 of  his-grip @ dup 1 = swap 2 = or his-action @ dup $1F = swap $20 = or and if
-                      his-grip @ 1 = if  $2203  else  $220C  then  play-cut
-                      at-his-height  pursuer body-at 4 + sf@ his-fly-h f!  4 his-mode !  $A his-sub !
-                      ['] st-hanging behave  exit
-                  then
-                  let-go exit  endof
+            letting-go of  let-go exit  endof
+            thrown-off of  hang-on exit  endof
         endcase
         bite-again
     else
-        his-biting @ 2 < if   \ (her command this frame: come / back - let go; hold on - his grip anew)
-            his-heard @ dup $27 = swap $2C = or  st-hp @ 0= or if  shake-off
-            else  his-biting @ 1 = his-heard @ $2E = and if  0 his-biting !  then  then
+        his-biting @ letting-go < if   \ (her command this frame: come / come back - let go; attack now - his grip anew)
+            his-heard @ dup come-cmd = swap come-back-cmd = or  st-hp @ 0= or if  shake-off
+            else  his-biting @ still-holding = his-heard @ attack-now-cmd = and if  first-hold his-biting !  then  then
         then
     then
     slide-root  at-his-height ;
@@ -179,18 +206,18 @@ defer after-yelp ( -- )   \ (yelped, below)
 \ the first bite (the leg 5 / 30, a flank 2 or 3 / 5 or 10 charged, head on 4 / 10), his sound,
 \ on the spot facing the grip's heading, holding on (chance (his feeling + 10) x 5) ----
 : first-bite ( -- )
-    his-action @ dup $21 = swap $22 = or if  5 30 bite-him  bite-mark exit  then
+    at-leg? if  leg-bite 30 bite-him  bite-mark exit  then
     his-grip @ case
-        1 of  his-ready @ if  3 10  else  2 5  then  endof
-        2 of  his-ready @ if  1 10  else  0 5  then  endof
-        >r 4 10 r>
+        near-grip of  his-ready @ if  near-charged-bite 10  else  near-bite 5  then  endof
+        far-grip of  his-ready @ if  far-charged-bite 10  else  far-bite 5  then  endof
+        >r head-on-bite 10 r>
     endcase  bite-him  bite-mark ;
 : st-leap-lands ( -- )
     pursuer with? 0= if  to-default exit  then
     anim-done? if
-        first-bite  $6B make-sound
+        first-bite  bite-sound make-sound
         his-to vec@ his-place  his-leap-yaw f@ his-yaw!
-        bite-anim play-cut  1 his-biting !
+        bite-anim play-cut  still-holding his-biting !
         feel @ 10 + 5 * his-hold !
         ['] st-bite-hold behave
     else
@@ -200,47 +227,49 @@ defer after-yelp ( -- )   \ (yelped, below)
     at-his-height ;
 : bites-by-trust ( -- n )
     his-action @ case
-        $1F of  his-grip @ if  his-ready @ if  bites-flank-charged  else  bites-flank  then
-                else  bites-head-on  then  trust-of  endof
-        $21 of  bites-leg trust-of  endof
+        at-flank-act of
+            his-grip @ head-on-grip <> if  his-ready @ if  bites-flank-charged  else  bites-flank  then
+            else  bites-head-on  then  trust-of  endof
+        at-leg-act of  bites-leg trust-of  endof
         >r 1 r>
     endcase ;
+: turn-round ( -- )  his-leap-yaw f@ pi f+ angle-wrap his-leap-yaw f! ;
 : leap ( tri F: x y z yaw -- )
     his-leap-yaw f!  his-to vec!  his-to-tri !
     his-to-tri @ his-to plan-to 0= if  to-default exit  then
     bites-by-trust his-bites !
     his-hits @ if  -1 his-hits +!  300 his-hit-t !  then
-    $19 his-sub !
+    leaping-sub his-sub !
     rnd 0.33333e f< if  1 feel+  then
-    his-action @ dup $21 = swap $22 = or if  $2217
+    at-leg? if  leap-leg-anim
     else  his-grip @ case
-            1 of  st-kind @ $B <> if  his-leap-yaw f@ pi f+ angle-wrap his-leap-yaw f!  then  $2200  endof
-            2 of  his-leap-yaw f@ pi f+ angle-wrap his-leap-yaw f!  $2209  endof
-            >r $2214 r>
+            near-grip of  st-kind @ lorenzo-kind 1+ <> if  turn-round  then  leap-near-anim  endof
+            far-grip of  turn-round  leap-far-anim  endof
+            >r leap-head-on-anim r>
           endcase
     then  play
-    his-action @ dup $21 = swap $22 = or if  12e  else  8e  then
-    rest fover f/ his-leap-k f!
-    his-leap-yaw f@ his-yaw f- angle-wrap fabs fswap f/ his-leap-turn f!
-    $68 make-sound
+    at-leg? if  12e  else  8e  then  {: F: frames :}
+    rest frames f/ his-leap-k f!
+    his-leap-yaw f@ his-yaw f- angle-wrap fabs frames f/ his-leap-turn f!
+    leap-snarl make-sound
     ['] st-leap-lands behave ;
 
 \ ---- going for him (StateRunAtPursuer, StateGoesForPursuer, GoForPursuer2): at him at a trot
 \ or a run; within 23, the side he comes from picks the grip (and the action), the attack is
-\ asked of the stalker (`dog-attack`: 15 the leg, a flank 10 / 11 charged or 12 / 13, head on
-\ 14), and he waits for the answer ----
-: st-await-grip ( -- )  pursuer with? 0= if  to-default exit  then  0 keep-pose ;
+\ asked of the stalker (`dog-attack`), and he waits for the answer ----
+: st-await-grip ( -- )  pursuer with? 0= if  to-default exit  then  stand-pose keep-pose ;
 : attack-kind ( -- kind )
-    his-action @ dup $21 = swap $22 = or if  15 exit  then
-    his-grip @ case  1 of  his-ready @ if  11  else  10  then  endof
-                    2 of  his-ready @ if  13  else  12  then  endof  >r 14 r>  endcase ;
+    at-leg? if  leg-attack exit  then
+    his-grip @ case  near-grip of  his-ready @ if  near-charged-attack  else  near-flank-attack  then  endof
+                    far-grip of  his-ready @ if  far-charged-attack  else  far-flank-attack  then  endof
+                    >r head-on-attack r>  endcase ;
 : goes-for ( -- )
     hewie-no-attack state-flag? fiona-occupied state-flag? or if  to-default exit  then
-    his-grip @ 0< if
-        attack-side dup 0= if
-            his-action @ dup $1F = swap $20 = or if  0 his-grip !  then  drop
+    his-grip @ no-grip = if
+        attack-side dup head-on-grip = if
+            on-him? if  head-on-grip his-grip !  then  drop
         else
-            his-action @ dup $1F = swap $21 = or if  $1F  else  $20  then  his-action !
+            his-action @ dup at-flank-act = swap at-leg-act = or if  at-flank-act  else  at-stalker-act  then  his-action !
             his-grip !
         then
     then
@@ -248,134 +277,130 @@ defer after-yelp ( -- )   \ (yelped, below)
     ['] st-await-grip behave ;
 : st-run-at-pursuer ( -- )
     pursuer with? 0= if  to-default exit  then
-    pursuer body-at his-at vec-dist 23e f< if   \ (nothing breaks in from here: +0xF356C's top bit)
-        4 look-now!  his-cmd @ $80000000 or his-cmd !  1 his-2d !  goes-for exit
+    pursuer body-at his-at vec-dist 23e f< if   \ (nothing breaks in from here)
+        ahead-look look-now!  shut-out  1 his-2d !  goes-for exit
     then
     path-done? if  pursuer body-tri pursuer body-at plan-to 0= if  to-default exit  then  then
-    stride if  $202  else  $201  then  play-if-not ;
-\ action 0x1F..0x22 set up (Hewie_SetAction): seeing him, not off screen, not bitten or down
+    stride if  run-anim  else  trot-anim  then  play-if-not ;
+\ at-flank-act .. at-leg-2-act set up (Hewie_SetAction): seeing him, not off screen, not bitten or down
 : at-pursuer ( -- )
-    pursuer dup with? 0= if  drop 6 0 want exit  then
-    mode-of 3 =  st-sub @ dup 9 = swap $A = or or if  6 0 want exit  then
-    8 his-mode !  $18 his-sub !  pursuer his-target !  -1 his-grip !  0 his-biting !  8 his-cmd !
+    pursuer dup with? 0= if  drop sniff-act 0 want exit  then
+    mode-of unreachable-mode =  st-sub @ dup him-bitten = swap him-down = or  or if  sniff-act 0 want exit  then
+    engaged-mode his-mode !  going-for-sub his-sub !  pursuer his-target !  no-grip his-grip !  first-hold his-biting !  on-command his-cmd !
     his-path path-clear  ['] st-run-at-pursuer behave ;
 
 \ a homunculus bitten (bite_landed): his temper with her easing (one fewer of her hits held
 \ against him, for 300 frames more), his sound
 : bite-landed ( -- )
-    his-hits @ if  -1 his-hits +!  300 his-hit-t !  then  $6C make-sound ;
+    his-hits @ if  -1 his-hits +!  300 his-hit-t !  then  snap-sound make-sound ;
 
 \ Hewie_PickTarget: whom he goes for - the stalker when he has hold of her; a homunculus holding
 \ her down; the stalker; else the nearest creature up and after her, not struck or going -
 \ each in his room, one he can get to (the stalker not off screen)
 : reachable? ( id -- flag )  dup with? 0= if  drop false exit  then  dup body-tri swap body-at plan-to ;
-: chase? ( -- flag )  pursuer dup with? if  dup mode-of 3 <> swap reachable? and  else  drop false  then ;
-: her-held? ( sub -- flag )  her with? fiona-mode @ 4 = and  swap fiona-sub @ = and ;
-4 constant creature-struck   8 constant creature-holding
+: chase? ( -- flag )  pursuer dup with? if  dup mode-of unreachable-mode <> swap reachable? and  else  drop false  then ;
+: her-held? ( sub -- flag )  her with? fiona-mode @ thrown-mode = and  swap fiona-sub @ = and ;
+4 constant creature-struck   8 constant creature-holding   \ (a creature's move mode)
 : holding-her ( -- id | -1 )   \ (a homunculus, slots 7..9)
     10 7 do  i creature dup mode-of creature-holding = over reachable? and if  unloop exit  then  drop  loop  -1 ;
-variable nearest  fvariable nearest-d
-: closer? ( id -- flag ) ( F: -- )   \ (nearer than the nearest yet)
-    body-at his-at vec-dist  nearest @ 0< fdup nearest-d f@ f< or  if  nearest-d f!  true  else  fdrop false  then ;
-: nearest-creature ( -- id | -1 )
-    -1 nearest !
+: nearest-creature ( -- id | -1 )   \ (up, not struck, one he can get to: the nearest)
+    -1 0e {: best F: best-d :}
     10 0 do
-        i creature  dup with?  i creature-up? and  over mode-of creature-struck <> and
-        over reachable? and  if  dup closer? if  dup nearest !  then  then  drop
-    loop  nearest @ ;
+        i creature  dup with?  i creature-up? and  over mode-of creature-struck <> and  over reachable? and if
+            dup body-at his-at vec-dist  best 0< fdup best-d f< or if  to best-d  dup to best  else  fdrop  then
+        then  drop
+    loop  best ;
 : pick-target ( -- id | -1 )
-    chase?  9 her-held? and if  pursuer exit  then
-    $12 her-held? if  holding-her dup 0< 0= if  exit  then  drop  then
+    chase?  led-away-r her-held? and if  pursuer exit  then
+    held-down-r her-held? if  holding-her dup 0< 0= if  exit  then  drop  then
     chase? if  pursuer exit  then
     nearest-creature ;
 
-\ ---- harrying (0x59 / 0x5A, 0x53 then 0x23: Hewie_StateCloseOnTarget): near him a while, then
-\ at him and off again his-wanted times (0x5A: 3) ----
+\ ---- harrying (harry-act / harry-stalker-act; near-target-act then close-on-act:
+\ Hewie_StateCloseOnTarget): near him a while, then at him and off again his-wanted times ----
 defer close-by ( F: rest -- done? )   :noname fdrop false ; is close-by   \ (hewie/pounce.fs: the pounce, or closing in)
+: harried ( -- )  his-target @ her = if  harry-her-act  else  harry-act  then  0 want ;
 : st-close-on ( -- )
     his-target @ with? 0= if  to-default exit  then
     -1 his-t1 +!  his-t1 @ 0= if  to-default exit  then
     his-target @ body-tri his-target @ body-at plan-to 0= if  to-default exit  then
-    5 step-to-pose 0= if  $202 play-if-not  then
+    as-is-pose step-to-pose 0= if  run-anim play-if-not  then
     settled? 0= if  exit  then
     rest 5e f< if
         his-wanted @ if  -1 his-wanted +!  then
         his-wanted @ 0= if  to-default exit  then
-        his-target @ her = if  $61  else  $59  then  0 want exit
+        harried exit
     then
     rest fdup 30e f< if  close-by if  exit  then  else  fdrop  then
     stride drop ;
-: close-on ( -- )   \ (0x23)
-    his-target @ dup with? 0= if  drop 6 0 want exit  then
-    mode-of dup 3 = swap 4 = or if  6 0 want exit  then
-    his-target @ body-at his-at vec-dist 10e f<= if
-        his-target @ her = if  $61  else  $59  then  0 want exit
-    then
-    8 his-mode !  $5A his-t1 !  8 his-cmd !  ['] st-close-on behave ;
-: harry ( -- )   \ (0x59: whom he goes for - near him, then 0x23)
+: close-on ( -- )
+    his-target @ dup with? 0= if  drop sniff-act 0 want exit  then
+    mode-of dup unreachable-mode = swap struck-mode = or if  sniff-act 0 want exit  then
+    his-target @ body-at his-at vec-dist 10e f<= if  harried exit  then
+    engaged-mode his-mode !  90 his-t1 !  on-command his-cmd !  ['] st-close-on behave ;
+: harry ( -- )   \ (whom he goes for - near him, then at him)
     his-target2 @ 0< if  pick-target his-target2 !  then
-    his-target2 @ dup with? if  his-target !  $53 $23 want  else  drop 6 0 want  then ;
+    his-target2 @ dup with? if  his-target !  near-target-act close-on-act want  else  drop sniff-act 0 want  then ;
 
 \ ---- struck (Hewie_TakeBlow): `blow` by the stalker (his blows, the throw), by her (her shove
 \ or kick: twice its damage, and he is scolded - hit often, angry), or a door slammed on him.
-\ His yelp ($1000; $65 a shove, else $66), pushed back from whoever struck him (0x69: 1.5 less
-\ 0.5 a frame; a door 0x6B: 5 less 1), then at its event down (out of health) or on ----
-variable tb-from  variable tb-how
+\ His yelp (loud for a shove), pushed back from whoever struck him (1.5 less 0.5 a frame; a
+\ door 5 less 1), then at its event down (out of health) or on ----
 : yelped ( -- )   \ (Hewie_AfterYelp)
     his-hp @ 0= if   \ (down: counted for the dog's level at the end - not in a hard game)
         his-by @ pursuer? if  -3 feel+  then
         hard-mode? 0= if  progress pr.hewie-downs dup l@ 1+ 9999 min swap l!  then
-        $52 0 want exit
+        knocked-down-act 0 want exit
     then
     0 his-2d !
-    his-by @ her =  her-with? and  his-hits @ 0> and if
-        his-hits @ 1 = if  9  else  $B  then  0 want exit
+    his-by @ her =  her-with? and  his-hits @ 0> and if   \ (cowering from her)
+        his-hits @ 1 = if  wait-for-her-act  else  bark-at-her-act  then  0 want exit
     then
     to-default ;
 ' yelped is after-yelp
-: st-on-event20 ( -- )  model 0 0 1 motion-events $20 and  anim-done? or if  yelped  then ;
+: st-on-event20 ( -- )  $20 event?  anim-done? or if  yelped  then ;
 : st-move-along ( -- )
     0e his-push f@ his-push-yaw f@ his-yaw f- angle-wrap rotate-by body-move-local
     his-push f@ his-push-less f@ f- fdup his-push f!  1 his-no-root !
     f0> if  exit  then
     ['] st-on-event20 behave ;
-: yelp ( kind -- )   \ (0x69)
-    4 his-mode !  0 his-cmd !  1.5e his-push f!  0.5e his-push-less f!
-    tb-from @ dup -2 = if  drop his-blow-pt heading-to pi f+ angle-wrap
-    else dup 0< 0= if  dup his-target !  body-at heading-to pi f+ angle-wrap  else  drop his-yaw  then then  his-push-yaw f!
-    $1000 play  1 = if  $65  else  $66  then  make-sound
-    $69 his-action !  ['] st-move-along behave ;
-: door-yelp ( exit -- )   \ (0x6B: back from the door's swing, away from her side of it)
-    4 his-mode !  0 his-cmd !  5e his-push f!  1e his-push-less f!
+: yelp ( kind from -- )   \ (yelp-act; from -2: a blow from a point, his-blow-pt)
+    {: kind from :}
+    struck-mode his-mode !  0 his-cmd !  1.5e his-push f!  0.5e his-push-less f!
+    from -2 = if  his-blow-pt heading-to pi f+ angle-wrap
+    else from 0< 0= if  from his-target !  from body-at heading-to pi f+ angle-wrap  else  his-yaw  then then  his-push-yaw f!
+    yelp-anim play  kind shove-blow = if  shoved-yelp  else  yelp-sound  then  make-sound
+    yelp-act his-action !  ['] st-move-along behave ;
+: door-yelp ( exit -- )   \ (back from the door's swing, away from her side of it)
+    struck-mode his-mode !  0 his-cmd !  5e his-push f!  1e his-push-less f!
     dup door-turn  her body-at vec@ door-side 1 = if  pi f+ angle-wrap  then  his-push-yaw f!
-    $1000 play  $66 make-sound
-    $6B his-action !  ['] st-move-along behave ;
+    yelp-anim play  yelp-sound make-sound
+    door-yelp-act his-action !  ['] st-move-along behave ;
 : take-blow ( kind damage how from -- taken? )
-    dup tb-from !  his-by !  tb-how !                                ( kind damage )
-    his-cond @ 2 = if  2drop  his-action @ $74 <> if  $74 0 want  then  true exit  then
-    over $B <>  his-mode @ 4 = and if  2drop false exit  then
-    over $B <>  his-mode @ 8 = and  his-sub @ $18 $1A within and if  2drop false exit  then
-    tb-from @ her =  2 pick 5 <> and if  2*  then  hurt-by   \ (her blows twice: not a door)
+    {: kind damage how from :}  from his-by !
+    his-cond @ down-cond = if  his-action @ go-limp-act <> if  go-limp-act 0 want  then  true exit  then
+    kind throw-off-blow <>  his-mode @ struck-mode = and if  false exit  then
+    kind throw-off-blow <>  his-mode @ engaged-mode = and  his-sub @ going-for-sub leaping-sub 1+ within and if  false exit  then
+    damage  from her =  kind door-blow <> and if  2*  then  hurt-by   \ (her blows twice: not a door)
     his-hurt-t @ 0> 0= if  300 his-hurt-t !  then
-    case
-        5 of  tb-how @ door-yelp  true  endof                     \ (a door: how is its exit)
-        6 of  false  endof  $B of  false  endof
-        tb-from @ pursuer? if  rnd 0.25e f< if  -1 feel+  then  0 his-hits !
-        else tb-from @ her = if
+    kind case
+        door-blow of  how door-yelp  true  endof                   \ (a door: how is its exit)
+        ignored-blow of  false  endof  throw-off-blow of  false  endof
+        from pursuer? if  rnd 0.25e f< if  -1 feel+  then  0 his-hits !
+        else from her = if
             0 3 praise-scold drop
             his-hits @ 1+ 6 min his-hits !  300 his-hit-t !
-            16 roll  his-hits @ cells angry-chance + @ < if  3 -1 set-mood  then
+            16 roll  his-hits @ cells angry-chance + @ < if  angry-mood -1 set-mood  then
         then then
-        dup yelp  true swap
+        dup from yelp  true swap
     endcase ;
 
-\ ---- his scuffles off screen (Hewie_Scuffle): the stalker hunting in his room (its mode 1..3),
+\ ---- his scuffles off screen (Hewie_Scuffle): the stalker hunting in his room (its alert 1..3),
 \ once a meeting and not within 900 frames of the last, him neither hurt nor down. By chance:
 \ 15 in 100 both hurt, 45 him only, 15 the stalker only, 25 nothing. Him hurt: a tenth of his
-\ health (not below 1), a grudge one time in four. Heard next door: his yelp ($66; $69 when he
+\ health (not below 1), a grudge one time in four. Heard next door: his yelp (another when he
 \ was not hurt). The stalker held 30 .. 180 frames, hurt a tenth of its health (bite-damage)
-\ unless it was him only or he may not attack - a liking one time in three. Then he waits it
-\ out ($30) ----
+\ unless it was him only or he may not attack - a liking one time in three. Then he waits it out ----
 0 constant both-hurt   1 constant he-is-hurt   2 constant it-is-hurt   3 constant nothing-came
 create scuffle-chances  both-hurt , 15 ,  he-is-hurt , 45 ,  it-is-hurt , 15 ,  nothing-came , 25 ,
 : scuffle-outcome ( -- outcome )   \ (the first whose chances so far pass a roll of 100)
@@ -385,10 +410,10 @@ create scuffle-chances  both-hurt , 15 ,  he-is-hurt , 45 ,  it-is-hurt , 15 ,  
     8 0 do  room-id i room-exit-leads drop his-room = if  true unloop exit  then  loop  false ;
 : scuffle-heard ( outcome -- )
     next-door? 0= if  drop exit  then
-    it-is-hurt = if  $69  else  $66  then  5 0 0  his-at vec@ his-sound ;
+    it-is-hurt = if  scuffle-yelp  else  yelp-sound  then  5 0 0  his-at vec@ his-sound ;
 : scuffle ( -- )
     pursuer active?  pursuer with? 0= and if  0 his-scuffled !  then   \ (met again once it has been elsewhere)
-    his-cond @ 1 3 within  his-hold-call @ or  his-scuffled @ or if  exit  then
+    his-cond @ hurt-cond down-cond 1+ within  his-hold-call @ or  his-scuffled @ or if  exit  then
     pursuer with?  st-alert @ 1 4 within and 0= if  exit  then
     -1 his-scuffled !  900 his-hold-call !
     scuffle-outcome  dup nothing-came = if  drop exit  then
@@ -399,5 +424,5 @@ create scuffle-chances  both-hurt , 15 ,  he-is-hurt , 45 ,  it-is-hurt , 15 ,  
     dup scuffle-heard
     he-is-hurt =  hewie-no-attack state-flag? or  fiona-occupied state-flag? or if  0
     else  st-hp-max @ 10 / bite-damage  rnd 0.33333e f< if  1 feel+  then  then
-    8 swap his-wanted @  pursuer send blow
-    $30 0 want ;
+    scuffle-blow swap his-wanted @  pursuer send blow
+    wait-scuffle-act 0 want ;

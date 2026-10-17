@@ -56,7 +56,7 @@ $20020008 constant hand-stops   \ (the floors her hand can't pass over)
     held let-go-as nip  tri  x f>cell y f>cell z f>cell  vx f>cell vy f>cell vz f>cell
     s" things" actor-named send thing-made
     held s" items" actor-named send take-item
-    her-sub @ thrown-sub = if  12 s" hewie" actor-named send reaction  then ;   \ (his reaction to a throw)
+    her-sub @ thrown-sub = if  throw-reaction s" hewie" actor-named send reaction  then ;
 
 \ ---- her states ----
 : letting-go ( -- )   \ (Fiona_StateLetGo)

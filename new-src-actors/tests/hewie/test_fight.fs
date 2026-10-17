@@ -105,7 +105,7 @@ true blind  debug:debilitas-out  5 frames
 false blind
 
 testing off screen, the stalker searching his room (Hewie_Scuffle): they scuffle - he waits it out ($30), the stalker held; once a meeting
-1 seed !
+2 seed !   \ (a seed it comes to a scuffle with: a quarter of the time nothing does)
 front-garden-2 room!  10 frames  140.64e 124e -217.33e 0e tp-facing  5 frames  game:hewie send join-fiona  20 frames
 front-garden-3 room!  2 frames                     \ (she goes on: he is left off screen in front-garden-2)
 true blind  front-garden-2 0 game:debilitas send stalker-in  2 frames  [: 2 mode! ;] deb!

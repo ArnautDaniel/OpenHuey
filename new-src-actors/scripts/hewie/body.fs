@@ -2,14 +2,19 @@
 \ operations), Fiona's and the others' bodies (facts), whom he is with, his way over the floor,
 \ chance, and the words that choose his next action (filled in by hewie.actions).
 IN: hewie.body
-USING: engine game-state actors messages common facts paths flag-names hewie.state ;
+USING: items engine game-state actors messages common facts paths vectors flag-names hewie-names hewie.state ;
 
-$29020008 constant his-floor   \ the nav triangles he can't stand on (through blocked floor: 8)
+$29020008 constant his-floor   \ the nav triangles he can't stand on
+8 constant through-mask       \ ... going through blocked floor
 
 \ ---- chance (the original's gRandom: 0 <= r < 1) ----
 : roll ( n -- i )  s>f rnd f* f>s ;   \ (s32)(n x r)
-: black-shepherd? ( -- flag )  progress pr.vars $27 + c@ 1 = ;   \ his costume (variable $27) the black German Shepherd: harder bites, his own times and lists
-: sylvesta? ( -- flag )  progress pr.boosts 6 8 * + 4 + sl@ 0> ;   \ Sylvesta Esca's 450 frames (+0xA10: the boosts' seventh, items.fs)
+\ his costume (the story's variable $27): his own coat; the black German Shepherd (harder bites,
+\ his own times and lists); a third, in which he is never knocked out
+enum: dog-costume  own-coat shepherd-coat third-coat ;
+: his-costume ( -- n )  progress pr.vars $27 + c@ ;
+: black-shepherd? ( -- flag )  his-costume shepherd-coat = ;
+: sylvesta? ( -- flag )  bite-boost boost-on? ;   \ (Sylvesta Esca's 450 frames: items.fs)
 \ his bites' and tackles' damage: twice as the black shepherd, half again with Sylvesta Esca's
 : bite-damage ( base -- n )  black-shepherd? if  2*  then  sylvesta? if  dup 2/ +  then ;
 
@@ -21,16 +26,16 @@ $29020008 constant his-floor   \ the nav triangles he can't stand on (through bl
 : his-room ( -- room )  self body-room ;
 : his-place ( F: x y z -- )  body-place-at ;   \ (its triangle found under it)
 : his-y! ( F: y -- )   \ his height alone (a leap)
-    his-at sf@ fswap his-at 8 + sf@  his-room his-tri  body-place ;
+    his-at v.x sf@ fswap his-at v.z sf@  his-room his-tri  body-place ;
 : here? ( -- flag )  his-away @ 0= ;           \ in the room being played
 : away! ( flag -- )  0<> his-away ! ;
 : hp! ( n -- )  his-hp ! ;
 : cond! ( n -- )  his-cond ! ;
-\ Hewie_TakeDamage: his health down by n (never below 0); in his third costume (variable $27 2)
-\ never knocked out - he keeps 1
+\ Hewie_TakeDamage: his health down by n (never below 0); in his third costume never knocked out
+\ - he keeps 1
 : hurt-by ( n -- )
     abs his-hp @ swap - 0 max
-    dup 0= progress pr.vars $27 + c@ 2 = and if  drop 1  then  hp! ;
+    dup 0= his-costume third-coat = and if  drop 1  then  hp! ;
 
 \ ---- the others: their bodies (facts), Fiona's doings (her broadcast) ----
 : her ( -- id )  his-fiona @ ;
@@ -54,7 +59,7 @@ $29020008 constant his-floor   \ the nav triangles he can't stand on (through bl
 \ being played if that's his
 : with? ( id -- flag )
     dup active? 0= if  drop false exit  then
-    dup cond-of 2 = if  drop false exit  then
+    dup cond-of down-cond = if  drop false exit  then
     dup body-room his-room <> if  drop false exit  then
     his-room room-id <> if  drop true exit  then
     body-tri 0< 0= ;
@@ -64,15 +69,15 @@ $29020008 constant his-floor   \ the nav triangles he can't stand on (through bl
 : heading-to ( v -- ) ( F: -- yaw )  self swap body-heading-to ;   \ from him (his heading when right above)
 
 \ ---- his way over the floor (Hewie_PlanTo / Hewie_PlanAndGo) ----
-\ triangles either side of a room's divider (flags 0x100000 / 0x200000)
-: level-of ( tri -- bits )  nav-flags $300000 and ;
-: across? ( tri -- flag )
-    level-of his-tri level-of
-    2dup $100000 = swap $200000 = and >r  $200000 = swap $100000 = and  r> or ;
+\ triangles either side of a room's divider (their nav flags)
+$100000 constant near-side   $200000 constant far-side
+: side-of ( tri -- bits )  nav-flags near-side far-side or and ;
+: across? ( tri -- flag )   \ the other side of the divider from him
+    side-of his-tri side-of {: a b :}  a far-side = b near-side = and  a near-side = b far-side = and or ;
 \ a way to v on `tri` (not across the divider): true if there is one
 : plan-to ( tri v -- flag )
-    over across? if  2drop false exit  then
-    >r >r  his-path his-tri his-at r> r> self body-mask path-plan 0> ;
+    {: tri v :}  tri across? if  false exit  then
+    his-path his-tri his-at tri v self body-mask path-plan 0> ;
 : plan-and-go ( tri v -- 0 | -1 )  plan-to if  0  else  -1  then ;
 : path-done? ( -- flag )  his-path path-left? 0= ;
 : path-stop ( -- )  his-path path-end ;
@@ -84,8 +89,8 @@ $29020008 constant his-floor   \ the nav triangles he can't stand on (through bl
 defer set-action ( act arg -- )     ' 2drop is set-action      \ Hewie_SetAction
 defer adjust-action ( act -- act' ) ' noop is adjust-action    \ Hewie_AdjustAction
 \ hewie_want: the action his situation makes of `act` (with `arg` only if it stays itself)
-: want ( act arg -- )  over adjust-action rot over <> if  nip 0  else  swap  then  set-action ;
-: to-default ( -- )  0 0 want ;                \ Hewie_ToDefault
+: want ( act arg -- )  {: act arg :}  act adjust-action  dup act = if  arg  else  0  then  set-action ;
+: to-default ( -- )  choose-act 0 want ;       \ Hewie_ToDefault
 : start ( act -- )  adjust-action 0 set-action ;   \ Hewie_Start
 : behave ( xt -- )  his-act ! ;
 : trust-of ( table -- n )  his-trust @ cells + @ ;

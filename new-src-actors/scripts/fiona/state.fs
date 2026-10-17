@@ -132,10 +132,3 @@ end-state
 \ her-sub's that others test: pushing (fiona/push.fs), letting go of a thing (fiona/letgo.fs: how)
 5 constant pushing-sub
 $31 constant thrown-sub   $32 constant aimed-sub   $33 constant set-down-sub
-\ her reactions (Fiona_Reaction: her sub while she is thrown-mode): knocked off a ladder; led away;
-\ thrown; thrown by a door; knocked down on a step or in a doorway, harder; knocked down, harder;
-\ grabbed; held down by homunculi; a spirit's fall; caught in a hold
-8 constant off-ladder-r   9 constant led-away-r   $A constant thrown-r   $B constant door-thrown-r
-$C constant step-knock-r   $D constant step-knock-hard-r   $E constant knock-r   $F constant knock-hard-r
-$10 constant grabbed-r   $12 constant held-down-r   $13 constant spirit-fall-r   $20 constant caught-r
--1 constant no-reaction

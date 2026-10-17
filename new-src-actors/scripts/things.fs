@@ -147,17 +147,16 @@ $20 constant object-x   $24 constant object-y   $28 constant object-z   \ (a roo
 : sets-him-off? ( -- flag )
     him-in-its-room dup 0< if  drop false exit  then
     here? if  in-reach?  else  drop true  then ;
-2 constant hard-blow   \ (a blow's kind)
 : magnesia-frame ( -- )   \ (thing_watch)
     age kind armed-at >= if
         here? if  kind damage kind reach blow-homunculi  then   \ (ThingShared_ReachStalkers)
-        sets-him-off? quiet? 0= and if  him-in-its-room hard-blow kind damage kind startle blow-him  then
+        sets-him-off? quiet? 0= and if  him-in-its-room kick-blow kind damage kind startle blow-him  then
         here? if  go-off  else  gone  then  exit
     then
     here? 0= quiet? or if  exit  then
     homunculi-tread?  stalker 0 treads?  {: homunculi? him? :}
     homunculi? him? or 0= if  kick exit  then
-    him? if  hard-blow kind damage kind startle blow-stalker  then
+    him? if  kick-blow kind damage kind startle blow-stalker  then
     homunculi? if  kind damage 0 blow-homunculi  then   \ (those standing on it struck: ThingShared_StompStalkers)
     go-off ;
 : stone-frame ( -- )   \ (Thing08_Frame: armed, a noise the stalker hears - $4F at it - and gone)

@@ -1507,7 +1507,7 @@ fvariable sx  fvariable sy  fvariable sz
         then
     loop  drop false ;
 : fiona-caught? ( -- flag )  fiona-unseen @ 0<> ;   \ cond 0x59: she can't be seen (+0x1AD630: item $89 worn, still)
-: fiona-hewie-react ( -- )  8 hewie-id send reaction ;   \ 0xBC: Fiona_HewieReact 8
+: fiona-hewie-react ( -- )  story-reaction hewie-id send reaction ;   \ 0xBC: Fiona_HewieReact 8
 : who-actor ( id -- actor | -1 )  char-slot dup 0< if  exit  then  char-actor ;
 : fiona-target ( id frames -- )   \ 0x96: her head on character `id` for `frames` (30 when not above 0)
     dup 0> 0= if  drop 30  then  >r who-actor r>  fiona-id send look-hold ;

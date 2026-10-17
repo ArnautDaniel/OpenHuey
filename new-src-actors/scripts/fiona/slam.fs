@@ -28,7 +28,6 @@ $40 constant motion-frozen   \ (her motion's flag: held still)
 
 \ ---- where someone stands by a door (Progress_WhoIsWhere's bits): at its front (its area 0),
 \ on its far side (Doors_Side 1), in its way (on its passage: its sides' triangles) ----
-5 constant slammed-blow   \ (the blow's kind: a door - its how, the exit)
 : at-front? ( id exit -- flag )  swap body-at vec@ 0 door-in-area? ;
 : far-side? ( id exit -- flag )  swap body-at vec@ door-side 1 = ;
 : in-way? ( id exit -- flag )  {: id ex :}  ex 0 id body-tri door-on-side?  ex 1 id body-tri door-on-side? or ;
@@ -36,14 +35,14 @@ $40 constant motion-frozen   \ (her motion's flag: held still)
     {: id ex burst? :}  id 0< if  false exit  then
     id ex at-front? 0= if  false exit  then
     id ex far-side?  burst? if  exit  then  id ex in-way? or ;
-: door-blow ( id exit -- )  {: id ex :}  slammed-blow 3 ex id send blow ;
+: strike-with-door ( id exit -- )  {: id ex :}  door-blow 3 ex id send blow ;   \ (its how: the exit)
 : strike-out ( exit burst? -- hit? )   \ (the stalker burst in on: only chasing her, as the original)
     {: ex burst? :}  false
-    dog-in-room ex burst? shut-out? if  dog-in-room ex door-blow  drop true  then
+    dog-in-room ex burst? shut-out? if  dog-in-room ex strike-with-door  drop true  then
     burst?  her-danger @ chased <> and if  exit  then
-    stalker-in-room dup 0< 0= if  ex burst? shut-out? if  stalker-in-room ex door-blow  drop true  then  exit  then  drop
+    stalker-in-room dup 0< 0= if  ex burst? shut-out? if  stalker-in-room ex strike-with-door  drop true  then  exit  then  drop
     burst? 0= if  exit  then
-    stalker-in-game dup 0< if  drop exit  then  ex door-blow ;   \ (off screen: he decides)
+    stalker-in-game dup 0< if  drop exit  then  ex strike-with-door ;   \ (off screen: he decides)
 
 \ ---- the door she faces on her way to `to` ----
 : door-of-exit ( exit -- door | -1 )  room-id swap room-exit-door ;

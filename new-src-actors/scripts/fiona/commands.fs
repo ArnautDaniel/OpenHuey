@@ -7,11 +7,11 @@
 \ (stay / come), 4 right (praise; held: more), 5 left (scold). They are read only under state
 \ flag 0xD (the story: Hewie is hers to command) and not 0x2B.
 IN: fiona.commands
-USING: engine vectors game-state actors messages common facts keys fiona.state fiona.anims fiona.model fiona.moving fiona.spots fiona.looks flag-names ;
+USING: engine vectors game-state actors messages hewie-names common facts keys fiona.state fiona.anims fiona.model fiona.moving fiona.spots fiona.looks flag-names ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
-: dog-in? ( -- flag )  dog-here @ 0<> ;            \ in the game (+0x1AD5D4)
+: dog-in? ( -- flag )  dog-here @ dog-absent <> ;            \ in the game (+0x1AD5D4)
 : dog-at ( -- v )  hewie-id body-at ;
 : dog-dist ( F: -- d )  dog-ok? if  her-at dog-at vec-dist  else  1000e  then ;
 : react ( n -- )  hewie-id send reaction ;          \ Fiona_HewieReact (his to weigh)
@@ -26,14 +26,15 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
                 dog-ok? 0= if  $20 noise-here  then  endof
         go-for-it-cmd of  $30 line  endof
     endcase ;
-: praise-scold-line ( -- )   \ 0x27: by what he is doing
-    dog-action @
-    dup $22 = over $20 = or over $21 = or over $1F = or over $59 = or over $53 = or
-    dog-group @ 8 - 2 u< and if  drop $36 line exit  then
-    dup $25 = over $24 = or over $63 = or over $13 = or over $A = or over $22 = or
-    over $20 = or over $21 = or over $1F = or if  drop $36 line exit  then
-    8 = if  $35 line exit  then
-    dog-mode @ 0= dog-sub @ 3 = and if  $35 line exit  then
+: praise-scold-line ( -- )   \ (come-cmd: by what he is doing)
+    dog-action @ {: act :}
+    act dup at-flank-act at-leg-2-act 1+ within  over harry-act = or  swap near-target-act = or   \ (at the stalker, on the run)
+    dog-group @ dup in-running = swap in-trotting = or and if  $36 line exit  then
+    act dup at-flank-act at-leg-2-act 1+ within  over away-from-her-act = or  over away-act = or  over go-there-act = or  over scramble-act = or  swap bark-at-target-act = or if
+        $36 line exit   \ (at him, off, away)
+    then
+    act face-target-act = if  $35 line exit  then
+    dog-mode @ free-mode = dog-sub @ sitting-sub = and if  $35 line exit  then
     rnd 0.5e f< if  $35  else  $36  then  line ;
 : call-line ( -- )   \ Fiona_CallHewie: as the command's gesture shows
     her-sub @ case
@@ -42,7 +43,7 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
         stay-cmd of  $34 line  endof
         come-cmd of  praise-scold-line  endof
         pat-cmd of  rnd 0.75e f< if  $3A  else  $32  then  line  endof
-        praise-cmd of  dog-cond @ 2 = if  $33  else  $3A  then  line  endof
+        praise-cmd of  dog-cond @ down-cond = if  $33  else  $3A  then  line  endof
         tend-cmd of  $39 line  endof
         scold-near-cmd of  rnd 0.75e f< if  $3B  else  $30  then  line  endof
         come-back-cmd of  $31 line  dog-ok? 0= if  $20 noise-here  then  endof
@@ -72,11 +73,11 @@ $29020008 constant his-floor-stops   \ (the floors Hewie can't stand on)
         hewie-id send command
     then
     her-sub @ case
-        go-for-it-cmd of  0 react  endof  go-there-cmd of  0 react  endof
-        come-back-cmd of  1 react  endof
-        come-cmd of  2 react  endof  stay-cmd of  2 react  endof
-        scold-cmd of  3 react  endof  praise-cmd of  4 react  endof
-        help-cmd of  14 react  endof  attack-now-cmd of  15 react  endof
+        go-for-it-cmd of  go-reaction react  endof  go-there-cmd of  go-reaction react  endof
+        come-back-cmd of  come-back-reaction react  endof
+        come-cmd of  come-reaction react  endof  stay-cmd of  come-reaction react  endof
+        scold-cmd of  scold-reaction react  endof  praise-cmd of  praise-reaction react  endof
+        help-cmd of  help-reaction react  endof  attack-now-cmd of  attack-now-reaction react  endof
     endcase ;
 
 \ ---- Fiona_HewieCommandAction: the code for a gesture (0 up, 1 down, 2 R3, 3 right, 4 left) ----
@@ -92,7 +93,7 @@ $29020008 constant his-floor-stops   \ (the floors Hewie can't stand on)
 : any-creature-ahead? ( -- flag )
     10 0 do  i cells her-creatures + @ creature-ahead? if  true unloop exit  then  loop  false ;
 : call-action ( -- code )   \ up: go there (calm), go for it (chased, or a creature ahead while followed)
-    her-danger @ chased = if  dog-ok? dog-mode @ 8 = and if  attack-now-cmd  else  go-for-it-cmd  then  exit  then
+    her-danger @ chased = if  dog-ok? dog-mode @ engaged-mode = and if  attack-now-cmd  else  go-for-it-cmd  then  exit  then
     her-danger @ followed = any-creature-ahead? and if  go-for-it-cmd exit  then
     go-there-cmd ;
 : command-code ( cmd -- code )
@@ -102,13 +103,13 @@ $29020008 constant his-floor-stops   \ (the floors Hewie can't stand on)
         stay-gesture of  her-danger @ calm <> dog-ok? 0= or if  come-cmd
               else dog-dist 30e f< 0= if  come-cmd
               else dog-dist 12e f< 0= if  stay-cmd
-              else dog-action @ $4B = dog-sub @ 3 = dog-action @ 2 = and or if  rouse-cmd  else  stay-cmd  then
+              else dog-action @ patted-act = dog-sub @ sitting-sub = dog-action @ stay-act = and or if  rouse-cmd  else  stay-cmd  then
               then then then  endof
         praise-gesture of  dog-ok? 0= dog-dist 15e f< 0= or if  praise-cmd
-              else dog-cond @ 2 = if  her-at dog-at vec-heading facing-diff 60e deg>rad f< if  tend-cmd  else  praise-cmd  then
-              else her-danger @ calm <> dog-mood @ 3 = or if  praise-cmd  else  pat-cmd  then
+              else dog-cond @ down-cond = if  her-at dog-at vec-heading facing-diff 60e deg>rad f< if  tend-cmd  else  praise-cmd  then
+              else her-danger @ calm <> dog-mood @ angry-mood = or if  praise-cmd  else  pat-cmd  then
               then then  endof
-        scold-gesture of  her-danger @ calm <> dog-ok? 0= or dog-dist 15e f< 0= or dog-mood @ 3 = or
+        scold-gesture of  her-danger @ calm <> dog-ok? 0= or dog-dist 15e f< 0= or dog-mood @ angry-mood = or
               if  scold-cmd  else  scold-near-cmd  then  endof
         >r -1 r>
     endcase ;
@@ -146,23 +147,23 @@ $29020008 constant his-floor-stops   \ (the floors Hewie can't stand on)
 \ ---- the meeting by his side (0x24 stay, 0x28 praise, 0x2B scold): she asks; at the place he
 \ finds she faces him, he sits, the second part and her gesture (Fiona_StateHeldStart ..) ----
 : meet-type ( -- t )  her-sub @ case  scold-near-cmd of  0  endof  pat-cmd of  2  endof  >r 4 r>  endcase ;
-: dog-off? ( -- flag )  dog-ok? 0=  dog-action @ $48 <> or ;   \ held_off
+: dog-off? ( -- flag )  dog-ok? 0=  dog-action @ turn-with-her-act <> or ;   \ held_off
 : give-up ( -- )  hewie-id send meet-off  root-move  to-idle ;
 : held-command ( -- )
-    her-danger @ calm = her-sub @ pat-cmd = and her-cmd @ praise-gesture = and dog-ok? and dog-mode @ $C = and anim@ pat-anim = and if
+    her-danger @ calm = her-sub @ pat-cmd = and her-cmd @ praise-gesture = and dog-ok? and dog-mode @ meeting-mode = and anim@ pat-anim = and if
         2 her-held-n !
     then
     ended? if
         her-sub @ case
             pat-cmd of
                 anim@ case
-                    pat-start-anim of  1 her-held-n !  her-danger @ calm = dog-ok? and dog-mode @ $C = and if  3 her-held-n !  then
+                    pat-start-anim of  1 her-held-n !  her-danger @ calm = dog-ok? and dog-mode @ meeting-mode = and if  3 her-held-n !  then
                              pat-anim play-now  endof
                     pat-anim of  -1 her-held-n +!  her-held-n @ 0= if  pat-end-anim  else  pat-anim  then  play-now  endof
-                    pat-end-anim of  6 react  to-idle  endof
+                    pat-end-anim of  pat-reaction react  to-idle  endof
                 endcase  endof
-            scold-near-cmd of  5 react  to-idle  endof
-            rouse-cmd of  7 react  to-idle  endof
+            scold-near-cmd of  scold-close-reaction react  to-idle  endof
+            rouse-cmd of  rouse-reaction react  to-idle  endof
         endcase
     then
     root-move ;
@@ -170,7 +171,7 @@ $29020008 constant his-floor-stops   \ (the floors Hewie can't stand on)
 : wait-hewie ( -- )   \ Fiona_StateWaitHewie: him ready (0x48, sitting, settled), the second part
     dog-off? if  give-up exit  then
     settled? 0= if  root-move exit  then
-    dog-group @ 1 <> if  exit  then
+    dog-group @ in-sitting <> if  exit  then
     meet-type 1+ hewie-id send meet-now  ['] meet-waiting her-act ! ;
 : held-stopped ( -- )  dog-off? if  give-up exit  then  settled? if  ['] wait-hewie her-act !  then ;
 : held-walk ( -- )

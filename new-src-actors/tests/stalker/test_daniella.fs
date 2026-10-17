@@ -16,7 +16,7 @@ testing her kit: her tables, turn (4 degrees), reach for Hewie (12), the Pursuer
 T{ [: kit @ daniella-kit =  base-chase @  gives-up @  turn-k f@ 100e f* f>s  reach-k f@ f>s ;] hers -> -1 -1 0 6 12 }T
 T{ [: throw-moves  moves /move 11 * + @  combos @ ;] hers -> 11 12 $1702 1 }T
 testing in her room, Fiona 30 ahead: the Pursuer's chase - walking at her ($200) for her row's 300 frames
-room-id game:fiona body-tri dan send stalker-in  3 frames
+1 seed !  room-id game:fiona body-tri dan send stalker-in  3 frames   \ (the chase row by chance: walking - whatever Hewie rolled meanwhile)
 [: 340e deg>rad body-turn ;] hers  1 frames
 fvariable dx  fvariable dz  dan body-pos dz f! fdrop dx f!
 340e deg>rad fsin 30e f* dx f@ f+  dan body-pos fdrop fswap fdrop  340e deg>rad fcos 30e f* dz f@ f+  160e tp-facing  3 frames

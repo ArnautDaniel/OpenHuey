@@ -2,7 +2,7 @@
 \ at the console shows them. Where he is is his body (the engine's body operations move it);
 \ the comments give the original's offsets in Hewie (+0xF35..) where they help to compare.
 IN: hewie.state
-USING: actors paths ;
+USING: actors paths vectors ;
 
 state: hewie-state
   cell field his-model          \ his model (an Actor)
@@ -15,22 +15,22 @@ state: hewie-state
   cell field his-mood-act       \ his mode's behaviour: calm / wary / tense (an xt)
   cell field his-wait           \ frames before he moves on (+0xF355C)
   cell field his-target   cell field his-target2   \ whom: an actor id (-1 none)
-  cell field his-cmd            \ what may break in (bit 31: nothing) (+0xF356C)
+  cell field his-cmd            \ what may break in on his action (the on-.. bits below) (+0xF356C)
   cell field his-pending        \ choose what to do next
   cell field his-look-to  cell field his-look-delay   \ where he is to look, after a delay
   cell field his-yelp     cell field his-yelp-anim
   \ his body as the others see it (the original's character fields)
   cell field his-hp             \ 0..100
-  cell field his-cond           \ 0 well, 1 hurt, 2 down
-  cell field his-mode           \ his move mode (+0xF8): 0 his own, 4 struck, 6 off screen, 8 by her, $C with her
-  cell field his-sub            \ what he is doing, for the story (+0xFC)
+  cell field his-cond           \ well-cond, hurt-cond, down-cond (messages.fs)
+  cell field his-mode           \ his move mode (+0xF8; hewie-mode, hewie-names.fs)
+  cell field his-sub            \ what he is doing, for the story (+0xFC; hewie-sub)
   cell field his-away           \ out of the room being played (the character's +0x29)
   cell field his-busy           \ a script has him (+0xE0; H4)
   cell field his-done           \ the script's move is done (+0xE1; H4)
   /path field his-path
   /path field his-probe          \ a way planned only to see if there is one (Hewie_FionaReachable)
   \ how he feels and obeys
-  cell field his-mood   cell field his-mood-time   \ 0 normal, 1 pleased, 2 upset, 3 angry
+  cell field his-mood   cell field his-mood-time   \ hewie-mood
   cell field his-waiting        \ waiting (1: does as he likes) or obeying (0)
   cell field his-obey           \ frames left of that
   cell field his-obey-marked
@@ -68,11 +68,11 @@ state: hewie-state
   \ his behaviours' working values
   cell field his-t1  cell field his-t2  cell field his-t3
   1 floats field his-heading  1 floats field his-turn  1 floats field his-f36cc
-  12 field his-spot
+  /vec field his-spot
   cell field his-hushed         \ his own sounds don't play (the scripts' 0x3D)
   cell field his-creature-t     \ a creature about in his room lately (frames left)
   cell field his-exit           \ the exit he makes for (hewie/exits.fs)
-  12 field his-cut  cell field his-cut-tri   \ the spot on the stalker's way he makes for first
+  /vec field his-cut  cell field his-cut-tri   \ the spot on the stalker's way he makes for first
   cell field his-wanted         \ how many times, or a wait
   \ where he looks (Hewie_TurnHead)
   cell field his-look-now  cell field his-look-t
@@ -80,15 +80,15 @@ state: hewie-state
   1 floats field his-head-pitch  1 floats field his-head-yaw   \ his head turned
   1 floats field his-yaw-was
   cell field his-look-char      \ an actor he looks at (-1 none)
-  cell field his-look-pt?  12 field his-look-pt
-  12 field his-scent
+  cell field his-look-pt?  /vec field his-look-pt
+  /vec field his-scent
   \ where her commands put him
   1 floats field his-side  cell field his-side-dir
   cell field his-last-idle
   cell field his-cmd-was  cell field his-cmd-act
   cell field his-heard          \ her command this frame (+0xF3578 within a frame; else -1)
   \ a spot to go to: its triangle, an animation, the heading, the point
-  cell field his-to-tri  cell field his-to-anim  1 floats field his-to-yaw  12 field his-to
+  cell field his-to-tri  cell field his-to-anim  1 floats field his-to-yaw  /vec field his-to
   cell field his-pet
   cell field his-hurt-t         \ frames to his next health point
   cell field his-by  cell field his-how   \ who struck him last ($FF: a door), and how
@@ -140,5 +140,35 @@ state: hewie-state
   1 floats field his-leap-k  1 floats field his-leap-turn  1 floats field his-leap-yaw
   1 floats field his-fly-x  1 floats field his-fly-y  1 floats field his-fly-z  1 floats field his-fly-h
   1 floats field his-push  1 floats field his-push-less  1 floats field his-push-yaw
-  12 field his-blow-pt   \ where a blow from no one came from (blow-from: from -2)
+  /vec field his-blow-pt   \ where a blow from no one came from (blow-from: from -2)
+  \ the story's leap (hewie/scripted.fs): its way (level), his height, the fall a frame, the rise's scale
+  /vec field his-jump-dir  1 floats field his-jump-y  1 floats field his-jump-fall  1 floats field his-jump-rise
+  \ his pounce (hewie/pounce.fs): his height, its top, how fast he rises, the way he leaps
+  1 floats field his-pounce-y  1 floats field his-pounce-top  1 floats field his-pounce-vy  1 floats field his-pounce-yaw
 end-state
+
+\ what may break in on an action (his-cmd's bits; the top bit: nothing does, whatever the rest)
+1 constant on-obeying       \ he obeys her again (pleased, or his waiting over): he chooses afresh
+2 constant on-waiting       \ his obeying over
+4 constant on-danger        \ the danger changes
+8 constant on-command       \ her commands
+$10 constant on-noise       \ off screen: a noise from another room
+$20 constant on-footing     \ his nose over an edge, her right by him
+$40 constant on-story       \ off screen: the story's condition 1
+$80 constant on-wait-over   \ his wait ran out
+$100 constant on-100        \ (set by the original, never tested)
+$200 constant on-alert      \ followed: something alerts him
+$400 constant on-praise-due \ near her, due a praise
+$80000000 constant nothing-breaks-in
+: but ( bits bits' -- bits'' )  invert and ;   \ all of them but those
+\ (most actions on his feet: all but the off-screen ones)
+on-obeying on-waiting or on-danger or on-command or on-footing or on-wait-over or on-100 or on-alert or on-praise-due or
+    constant breaks-any
+\ (off screen)
+on-obeying on-waiting or on-danger or on-command or on-noise or on-story or on-wait-over or  constant breaks-away
+: breaks-in? ( bit -- flag )  his-cmd @ dup nothing-breaks-in and if  2drop false  else  and 0<>  then ;
+: shut-out ( -- )  his-cmd @ nothing-breaks-in or his-cmd ! ;          \ nothing breaks in for now
+: let-in ( -- )  his-cmd @ nothing-breaks-in invert and his-cmd ! ;     \ again as it was
+\ what alerts him (his-alert): nothing; the stalker in sight ahead (this frame); (2: never set);
+\ the stalker in his room while she is chased
+enum: alert-kind  no-alert sight-alert unused-alert chase-alert ;

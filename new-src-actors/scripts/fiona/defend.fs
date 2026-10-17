@@ -43,7 +43,6 @@ create hand /vec allot
 \ her blow, as worked out (blow-power): its kind, damage, how (a stumble), a big one (a burst at
 \ them), its reach - the shove's working values, read again as it lands
 variable blow-kind  variable blow-dmg  variable blow-how  variable blow-big  fvariable blow-reach
-1 constant plain-blow   2 constant hard-blow   \ (a blow's kinds)
 $8000 constant stumble-blow
 : form ( -- n )  her-costume @ ;
 : special? ( -- flag )  form dup illegal-outfit = swap cowgirl-outfit = or ;
@@ -54,14 +53,14 @@ $8000 constant stumble-blow
     blow-boost boost-on? if  s>f  blow-boost boost-value f* f>s  then ;
 : blow-power ( -- )
     0 blow-how !  0 blow-big !
-    form cowgirl-outfit = if  hard-blow blow-kind !  10 blow-dmg !
+    form cowgirl-outfit = if  kick-blow blow-kind !  10 blow-dmg !
         boots burst-shoes = 0.1e chance? and if  100 blow-dmg !  -1 blow-big !  then  0.2e chance? if  stumbles  then  exit  then
-    form illegal-outfit = if  plain-blow blow-kind !  5 blow-dmg !
+    form illegal-outfit = if  shove-blow blow-kind !  5 blow-dmg !
         boots burst-shoes = 0.1e chance? and if  50 blow-dmg !  -1 blow-big !  then  0.2e chance? if  stumbles  then  exit  then
-    plain-blow blow-kind !  1 blow-dmg !
+    shove-blow blow-kind !  1 blow-dmg !
     boots case
-        burst-shoes of  0.1e chance? if  hard-blow blow-kind !  50 blow-dmg !  -1 blow-big !  then  endof
-        silver-boots of  0.2e chance? if  stumbles  then  hard-blow blow-kind !  5 blow-dmg !  endof
+        burst-shoes of  0.1e chance? if  kick-blow blow-kind !  50 blow-dmg !  -1 blow-big !  then  endof
+        silver-boots of  0.2e chance? if  stumbles  then  kick-blow blow-kind !  5 blow-dmg !  endof
         metal-boots of  0.1e chance? if  stumbles  then  2 blow-dmg !  endof
     endcase ;
 : at-bone ( bone -- ) ( F: ox oz -- )   \ (an offset in the bone's own axes: the original's bone matrix applied)
@@ -73,7 +72,7 @@ $8000 constant stumble-blow
 : shove-end ( -- )  ended? if  0 her-run-t !  to-idle exit  then  moving ;
 : shoving ( -- )
     recoil-down
-    ended? if  her-struck @ 2 and 0= if  10 hewie-id send reaction  then  0 her-run-t !  to-idle exit  then
+    ended? if  her-struck @ 2 and 0= if  shove-reaction hewie-id send reaction  then  0 her-run-t !  to-idle exit  then
     moving
     events 2 and 0= if  exit  then
     blow-point
@@ -103,13 +102,13 @@ create ahead-pt /vec allot   \ (her radius ahead)
     recoil-down
     her-recoil @ 0= if  settled? 0= if  0e 1.0756e her-yaw f@ rotate-by move-by  else  root-move  then  then
     ended? if
-        her-struck @ 2 and 0= if  11 hewie-id send reaction  then
+        her-struck @ 2 and 0= if  kick-reaction hewie-id send reaction  then
         10e add-fear  0 her-run-t !  to-idle exit
     then
     events 2 and if  exit  then
     ahead-pt! ahead-pt true slam-door if  exit  then                 \ (a door ahead slammed)
     0  stalker-in-room touching? 1 and or  dog-in-room touching? 2 and or
-    {: mask :}  mask if  hard-blow 5 boosted 1 mask strike  then   \ (Fortis's x3 too: Fiona_StateKick's 5 x +0xA04)
+    {: mask :}  mask if  kick-blow 5 boosted 1 mask strike  then   \ (Fortis's x3 too: Fiona_StateKick's 5 x +0xA04)
     5 her-at vec@ -1e blow-at ;   \ (the creatures 5 as it is)
 : kick-start ( -- )
     root-move

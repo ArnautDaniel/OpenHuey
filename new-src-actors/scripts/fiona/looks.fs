@@ -5,12 +5,12 @@
 \ story's moves 12 / 13). The head bone ($35) takes the pitch and half the turn, the bone below
 \ it ($2B) the other half.
 IN: fiona.looks
-USING: engine messages vectors actors common fiona.state fiona.anims fiona.model fiona.slam ;
+USING: engine messages hewie-names vectors actors common fiona.state fiona.anims fiona.model fiona.slam ;
 
 : head-bone ( -- b )  her-costume @ slip-dress = if  $35  else  $21  then ;   \ (FionaModel / EventHumanModel +0x8B0)
 : neck-bone ( -- b )  her-costume @ slip-dress = if  $2B  else  $17  then ;   \ (+0x8B4)
 14e fconstant eye-up
-: dog-ok? ( -- flag )  dog-here @ 2 = ;            \ Hewie with her (the original's +0x1AD5D5)
+: dog-ok? ( -- flag )  dog-here @ dog-with-her = ;            \ Hewie with her (the original's +0x1AD5D5)
 : hewie-id ( -- id )  s" hewie" actor-named ;
 
 \ Motion_LookAt: from her eye (14 up) to the point - the pitch (its rise over the level distance)

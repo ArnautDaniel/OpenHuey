@@ -42,7 +42,7 @@ T{ ball-ahead  [: [: his-follows @ 0< 0= ;] his@ ;] 5 soon -> -1 }T
 testing ... at it, he picks it up - gone; hers again (she has none)
 T{ [: balls 0= ;] 900 soon  $90 count-of -> -1 1 }T
 testing ... and back to her; sat by her a while, his doing counted as praised
-T{ [: [: his-act @ ['] st-1a60 = ;] his@ ;] 900 soon -> -1 }T
+T{ [: [: his-act @ ['] st-sat-by-her = ;] his@ ;] 900 soon -> -1 }T
 T{ [: action $78 <> ;] 200 soon  [: his-follows @ ;] his@  0 skill@ -> -1 -1 31 }T
 
 testing not going after it (going 0, watching 31): his eyes on it as it goes
@@ -50,7 +50,7 @@ testing not going after it (going 0, watching 31): his eyes on it as it goes
 0 skills!  31 1 cells [: his-skill + ! ;] his!  $90 equip
 T{ throw  [: action $78 = ;] 300 soon -> -1 }T
 T{ [: [: his-act @ ['] st-watch = ;] his@ ;] 30 soon -> -1 }T
-T{ [: [: his-act @ ['] st-1a60 = ;] his@ ;] 300 soon -> -1 }T
+T{ [: [: his-act @ ['] st-sat-by-her = ;] his@ ;] 300 soon -> -1 }T
 testing ... praised: the skills he used up (watching), the one that failed down (going)
 T{ [: action $78 <> ;] 200 soon  0 skill@ 1 skill@ -> -1 0 31 }T
 
