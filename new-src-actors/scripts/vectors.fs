@@ -2,9 +2,8 @@
 IN: vectors
 USING: engine ;
 
-fvariable k
 \ scale a vector
-: v* ( F: x y z s -- x' y' z' )  k f!  k f@ f* frot  k f@ f* frot  k f@ f* frot ;
+: v* ( F: x y z s -- x' y' z' )  {: F: x y z s :}  x s f*  y s f*  z s f* ;
 
 \ a 32-bit float field: read, write, add to
 : field@ ( addr -- ) ( F: -- x )  sf@ ;

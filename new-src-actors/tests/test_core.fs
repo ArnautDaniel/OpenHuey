@@ -193,4 +193,27 @@ T{ 5 l-nested -> 1 }T
 T{ 3 l-quote -> 303 }T
 : l-r ( a -- a )  {: a :}  a >r  r>  a + ;   \ (the return stack still free to use)
 T{ 4 l-r -> 8 }T
+testing float locals: F: makes the names after it floats (taken from the float stack), | starts them at 0
+: fl-sub ( F: x y -- x-y )  {: F: x y :}  x y f- ;
+T{ 10e 3e fl-sub f>s -> 7 }T
+: fl-mixed ( n F: x -- n*x )  {: n F: x :}  n s>f x f* ;
+T{ 4 2.5e fl-mixed f>s -> 10 }T
+: fl-acc ( n -- )  {: n | F: sum :}  n 0 ?do  sum 0.5e f+ to sum  loop  sum ;
+T{ 6 fl-acc f>s -> 3 }T
+: fl-order ( a F: x b -- )  {: a F: x | c :}  a  x f>s  c ;   \ (the cells and the floats each in their own order)
+T{ 1 9e fl-order -> 1 9 0 }T
+
+testing several {: :} in one definition: each takes its values where it stands
+: l-two ( a -- )  {: a :}  a 2 *  {: b :}  a b + ;
+T{ 3 l-two -> 9 }T
+: l-two-early ( a -- )  dup 0< if  exit  then  {: a :}  a 1+  {: b F: half :}  b half f>s ;
+T{ -1 l-two-early  4 1.5e l-two-early -> -1 5 1 }T
+
+testing enum: constants from 0, a number sets the next, name>name names a value
+enum: colour  red green blue ;
+enum: act  $36 hide  $52 lie-down rise ;
+T{ red green blue -> 0 1 2 }T
+T{ hide lie-down rise -> $36 $52 $53 }T
+T{ blue colour>name s" blue" s= -> -1 }T
+T{ 99 act>name s" ?" s= -> -1 }T
 test-summary

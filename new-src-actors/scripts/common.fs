@@ -1,6 +1,6 @@
 \ common.fs - small helpers every subsystem uses: random numbers, headings, steps.
 IN: common
-USING: engine ;
+USING: engine room-names ;
 
 variable seed  12345 seed !
 
@@ -9,20 +9,18 @@ variable seed  12345 seed !
 : rnd ( F: -- r )  32768 random s>f 32768e f/ ;   \ 0 <= r < 1
 : vlen ( F: x z -- l )  fsq fswap fsq f+ fsqrt ;
 \ a heading turned toward `target` by at most `step`: the new heading, and how far it still is
-fvariable tt-target  fvariable tt-step
 : turn-toward ( F: yaw target step -- yaw' left )
-    tt-step f!  tt-target f!
-    tt-target f@ fover f- angle-wrap                         ( F: yaw d )
-    fdup fabs tt-step f@ f<= if  fdrop fdrop tt-target f@ 0e exit  then
-    f0< if  tt-step f@ f-  else  tt-step f@ f+  then  angle-wrap
-    fdup tt-target f@ fswap f- angle-wrap fabs ;
+    {: F: yaw target step | F: d :}
+    target yaw f- angle-wrap to d
+    d fabs step f<= if  target 0e exit  then
+    yaw  d f0< if  step f-  else  step f+  then  angle-wrap
+    fdup target fswap f- angle-wrap fabs ;
 \ the rooms whose water the characters' steps ripple (Character_WaterStep's callers: rooms 7 and
 \ $106; Fiona's and Hewie's steps, and a stalker's fall, also in $D1)
-: flooded? ( -- flag )  room-id dup 7 = swap $106 = or ;
-: wading? ( -- flag )  flooded? room-id $D1 = or ;
+: flooded? ( -- flag )  room-id dup castle-b1-4 = swap chaos-forest-8 = or ;
+: wading? ( -- flag )  flooded? room-id off-map-d1 = or ;
 \ a step (x, z) in something's own frame turned into the room by its heading
-fvariable ry-x  fvariable ry-z  fvariable ry-a
 : rotate-by ( F: x z yaw -- x' z' )
-    ry-a f!  ry-z f!  ry-x f!
-    ry-x f@ ry-a f@ fcos f*  ry-z f@ ry-a f@ fsin f* f+
-    ry-z f@ ry-a f@ fcos f*  ry-x f@ ry-a f@ fsin f* f- ;
+    {: F: x z yaw :}
+    x yaw fcos f*  z yaw fsin f* f+
+    z yaw fcos f*  x yaw fsin f* f- ;

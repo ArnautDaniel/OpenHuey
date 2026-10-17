@@ -66,12 +66,18 @@ defer on-hit   ' noop is on-hit
 Control: `if else then`, `begin until`, `begin while repeat`, `begin again`,
 `do loop`, `?do loop`, `+loop`, `i j leave unloop`, `case of endof endcase`, `exit`, `recurse`.
 
-Locals (Forth-2012's): `{: a b | c -- comment :}` inside a definition names its values - `a` and
-`b` taken from the stack (`b` from the top), `c` starting at 0, the rest a comment. A name gives
-its value; `to name` stores into it. They last until the word returns (`exit` too), the return
-stack still free for `>r` and loops; a quotation has its own. Prefer them to stack juggling
-(`2 pick`, `rot`) and to scratch variables:
-`: centred ( addr len x y -- )  {: addr len x y :}  ... ;`. Cells only (floats: `fvariable`).
+Locals (Forth-2012's, with floats): `{: a b F: x | c F: y -- comment :}` inside a definition names
+its values - `a` and `b` taken from the stack (`b` from the top), `x` from the float stack (`F:`
+makes the names after it floats, until `|`), `c` and `y` starting at 0, the rest a comment. A name
+gives its value; `to name` stores into it. They last until the word returns (`exit` too), the
+return stack still free for `>r` and loops; a quotation has its own. A definition may have
+several `{: :}` (not inside an `if` or a loop): each takes its values where it stands. Prefer them
+to stack juggling (`2 pick`, `rot`, `>r` chains) and to scratch variables:
+`: centred ( addr len x y -- )  {: addr len x y :}  ... ;`.
+
+Enumerations: `enum: mood  calm wary tense angry ;` makes the constants `calm` .. `angry` (0 up; a
+number in the list sets the next: `enum: act  $36 hide  $52 lie-down ;`) and `mood>name ( n --
+addr len )`, which names a value ("?" for one not listed) - for the debug words and traces.
 
 Quotations: `[: ... ;]` leaves anonymous code as an execution token, inside definitions or at
 the prompt (Factor's `[ ... ]`): `{ 1 2 3 } [: dup * ;] map`.

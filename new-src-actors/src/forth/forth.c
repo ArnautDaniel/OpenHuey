@@ -434,19 +434,18 @@ PRIM(p_litstring) {   /* ( -- addr len ): the length, then the bytes */
 }
 PRIM(p_exit) { IP = (Cell *)rpop(f); }
 
-/* ---- locals ({: a b -- :}): a frame on the return stack, made as the word starts and dropped
- * as it leaves; the names compile to fetches from it, `to name` to a store ---- */
-PRIM(p_locals) {   /* (locals) n k: a frame of n, its first k from the data stack (the first deepest) */
-    Cell n = *IP++, k = *IP++, j;
+/* ---- locals ({: a b F: x -- :}): a frame on the return stack, made at the first {: and dropped
+ * as the word leaves; the names compile to fetches from it, `to name` to a store. Each {: takes
+ * its values with stores, the last named first. A float local's slot holds the float's bits. ---- */
+_Static_assert(sizeof(Float) <= sizeof(Cell), "a float local needs a cell of its own");
+PRIM(p_locals) {   /* (locals) n: a frame of n, zeroed */
+    Cell n = *IP++, j;
     Task *t = f->t;
 
     rpush(f, t->lp);
     t->lp = t->rp;
     for (j = 0; j < n; j++) {
         rpush(f, 0);
-    }
-    for (j = k - 1; j >= 0; j--) {
-        t->rs[t->lp + j] = POP();
     }
 }
 PRIM(p_unlocals) {   /* the frame dropped (before the word returns) */
@@ -457,6 +456,17 @@ PRIM(p_unlocals) {   /* the frame dropped (before the word returns) */
 }
 PRIM(p_local_fetch) { Cell i = *IP++; PUSH(f->t->rs[f->t->lp + i]); }
 PRIM(p_local_store) { Cell i = *IP++; f->t->rs[f->t->lp + i] = POP(); }
+PRIM(p_flocal_fetch) {
+    Float x;
+
+    memcpy(&x, &f->t->rs[f->t->lp + *IP++], sizeof x);
+    FPUSH(x);
+}
+PRIM(p_flocal_store) {
+    Float x = FPOP();
+
+    memcpy(&f->t->rs[f->t->lp + *IP++], &x, sizeof x);
+}
 static int local_index(Forth *f, const char *s, size_t n) {
     int i;
 
@@ -962,7 +972,7 @@ static void interpret(Forth *f) {
             int k = local_index(f, s, n);
 
             if (k >= 0) {
-                comma(f, (Cell)f->w_local_fetch);
+                comma(f, (Cell)(f->locals.is_float[k] ? f->w_flocal_fetch : f->w_local_fetch));
                 comma(f, k);
                 continue;
             }
@@ -973,7 +983,7 @@ static void interpret(Forth *f) {
 
                 k = local_index(f, t, m);
                 if (k >= 0) {
-                    comma(f, (Cell)f->w_local_store);
+                    comma(f, (Cell)(f->locals.is_float[k] ? f->w_flocal_store : f->w_local_store));
                     comma(f, k);
                     continue;
                 }
@@ -1175,19 +1185,18 @@ PRIM(p_colon) {
     f->nlocals_saved = 0;
     f->top_sp = f->t->sp;
 }
-/* {: a b | c -- comment :} the definition's locals: a and b taken from the stack (b from the
- * top), c starting at 0; what follows -- is a comment */
+/* {: a b F: x | c F: y -- comment :} the definition's locals: a and b taken from the data stack
+ * (b from the top), x from the float stack, c and y starting at 0; F: makes the names after it
+ * floats (until |), what follows -- is a comment. A definition may have several: each adds to
+ * the same frame (made at the first), and takes its values where it stands. */
 PRIM(p_locals_begin) {
-    int k = -1, comment = 0;
+    int first = f->locals.n, taken = -1, comment = 0, is_float = 0, i;
 
     if (!f->compiling) {
         forth_error(f, "{: only inside a definition");
     }
-    if (f->locals.n > 0) {
-        forth_error(f, "{: once in a definition");
-    }
     if (f->t->sp != f->top_sp) {
-        forth_error(f, "{: inside a do loop or an if: only at the start of a definition (or a word of its own)");
+        forth_error(f, "{: inside a do loop or an if: only outside them (or in a word of its own)");
     }
     for (;;) {
         size_t n;
@@ -1207,20 +1216,39 @@ PRIM(p_locals_begin) {
             continue;
         }
         if (n == 1 && s[0] == '|') {
-            k = f->locals.n;
+            taken = f->locals.n;
+            is_float = 0;
             continue;
         }
-        if (f->locals.n == 16 || n > WORD_NAME_MAX) {
+        if (n == 2 && strncasecmp(s, "F:", 2) == 0) {
+            is_float = 1;
+            continue;
+        }
+        if (f->locals.n == FORTH_LOCALS || n > WORD_NAME_MAX) {
             forth_error(f, "{: too many locals, or a name too long");
         }
         if (n == 4 && strncasecmp(s, "exit", 4) == 0) {   /* (it would hide EXIT: `exit` would push it) */
             forth_error(f, "{: a local can't be called exit");
         }
+        if (local_index(f, s, n) >= 0) {
+            forth_error(f, "{: a local named twice");
+        }
+        f->locals.is_float[f->locals.n] = (char)is_float;
         snprintf(f->locals.names[f->locals.n++], WORD_NAME_MAX + 1, "%.*s", (int)n, s);
     }
-    comma(f, (Cell)f->w_locals);
-    comma(f, f->locals.n);
-    comma(f, k < 0 ? f->locals.n : k);
+    if (taken < 0) {
+        taken = f->locals.n;
+    }
+    if (first == 0) {   /* the frame: its size patched as later {:s add to it */
+        comma(f, (Cell)f->w_locals);
+        f->locals.frame_size = (Cell *)f->here;
+        comma(f, 0);
+    }
+    *f->locals.frame_size = f->locals.n;
+    for (i = taken - 1; i >= first; i--) {   /* (the last named is on top) */
+        comma(f, (Cell)(f->locals.is_float[i] ? f->w_flocal_store : f->w_local_store));
+        comma(f, i);
+    }
 }
 PRIM(p_semicolon) {
     if (f->locals.n > 0) {
@@ -1278,6 +1306,63 @@ PRIM(p_create) {
     const char *name = parse_name(f, &len, "create");
 
     new_word(f, name, len, dovar);
+}
+/* enum: mood  calm wary tense angry ;   names for the values of something: constants from 0 up
+ * (a number in the list sets the next one: `enum: act  $36 hide  $52 lie-down ;`), and
+ * `mood>name ( n -- addr len )` naming a value ("?" for one not in the list). */
+static void doenum_name(Forth *f, Word *w) {
+    Cell n = w->body[0], i, v = POP();
+
+    for (i = 0; i < n; i++) {
+        if (w->body[1 + 2 * i] == v) {
+            Word *c = (Word *)w->body[2 + 2 * i];
+
+            PUSH(c->name);
+            PUSH(c->len);
+            return;
+        }
+    }
+    PUSH("?");
+    PUSH(1);
+}
+PRIM(p_enum) {
+    size_t len, m;
+    const char *name = parse_name(f, &len, "enum:");
+    char tname[WORD_NAME_MAX + 1];
+    Word *consts[256];
+    Cell values[256], next = 0, x;
+    int n = 0, i;
+
+    if (len + 5 > WORD_NAME_MAX) {
+        forth_error(f, "enum: name too long: %.*s", (int)len, name);
+    }
+    snprintf(tname, sizeof tname, "%.*s>name", (int)len, name);
+    for (;;) {
+        const char *s = parse_word(f, &m);
+
+        if (m == 0) {
+            forth_error(f, "enum: %s without ;", tname);
+        }
+        if (m == 1 && s[0] == ';') {
+            break;
+        }
+        if (parse_int(f, s, m, &x)) {
+            next = x;
+            continue;
+        }
+        if (n == 256) {
+            forth_error(f, "enum: %s has too many names", tname);
+        }
+        consts[n] = new_word(f, s, m, docon);
+        comma(f, next);
+        values[n++] = next++;
+    }
+    new_word(f, tname, strlen(tname), doenum_name);
+    comma(f, n);
+    for (i = 0; i < n; i++) {
+        comma(f, values[i]);
+        comma(f, (Cell)consts[i]);
+    }
 }
 PRIM(p_docompile) { comma(f, (Cell)f->w_does); }   /* does> */
 PRIM(p_tobody) { Word *x = (Word *)POP(); PUSH(x->body); }
@@ -1980,7 +2065,7 @@ static void define_core(Forth *f) {
         {"list", p_list}, {"list-free", p_list_free}, {"push", p_push}, {"pop", p_pop}, {"nth", p_nth},
         {"nth!", p_nth_store}, {"length", p_length}, {"list-clear", p_list_clear}, {"{", p_brace_open},
         {"}", p_brace_close},
-        {"words", p_words}, {"see", p_see}, {"vocabs", p_vocabs}, {"vocab-words", p_vocab_words},
+        {"words", p_words}, {"see", p_see}, {"enum:", p_enum}, {"vocabs", p_vocabs}, {"vocab-words", p_vocab_words},
         {"IN:", p_in}, {"USING:", p_using}, {"USE:", p_use}, {"<PRIVATE", p_private_begin},
         {"PRIVATE>", p_private_end}, {"bye", p_bye}, {"catch", p_catch}, {"error-message", p_error_message},
         {"i", p_i}, {"j", p_j}, {"leave", p_leave}, {"unloop", p_unloop},
@@ -2005,10 +2090,12 @@ static void define_core(Forth *f) {
     f->w_flit = prim_word(f, "(flit)", p_flit, 0, 0);
     f->w_litstring = prim_word(f, "(litstring)", p_litstring, 0, 0xFF);
     f->w_exit = prim_word(f, "exit", p_exit, 0, 0);
-    f->w_locals = prim_word(f, "(locals)", p_locals, 0, 2);
+    f->w_locals = prim_word(f, "(locals)", p_locals, 0, 1);
     f->w_unlocals = prim_word(f, "(unlocals)", p_unlocals, 0, 0);
     f->w_local_fetch = prim_word(f, "(local@)", p_local_fetch, 0, 1);
     f->w_local_store = prim_word(f, "(local!)", p_local_store, 0, 1);
+    f->w_flocal_fetch = prim_word(f, "(flocal@)", p_flocal_fetch, 0, 1);
+    f->w_flocal_store = prim_word(f, "(flocal!)", p_flocal_store, 0, 1);
     f->w_halt = prim_word(f, "(halt)", p_halt, 0, 0);
     f->w_does = prim_word(f, "(does>)", p_does, 0, 0);
     prim_word(f, "branch", p_branch, 0, 1);
