@@ -14,6 +14,7 @@ USING: actors ;
 
 state: room-state
   cell field this-room           \ the room these scripts are for
+  cell field entered            \ its entry ran (a stale room-enter - the room already left - is ignored)
   cell field came-by            \ the exit it was entered by (-1: none)
   #vars cells field vars        \ the script variables (+0x810), cleared on entering
   cell field ebits              \ the event bits (+0x890)
