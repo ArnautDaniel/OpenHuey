@@ -621,15 +621,18 @@ static void ply_close(Ply *p) {
     p->rgb = NULL;
 }
 
-/* advance the clock and the frames to it */
-static void ply_update(Ply *p) {
+static int sGameClock;   /* the clock by game ticks (headless runs: the same frames each time) */
+
+/* advance the clock and the frames to it: by real time, or (sGameClock) by the ticks given - a
+ * game tick is 1/30 s */
+static void ply_update(Ply *p, int ticks) {
     uint64_t now = SDL_GetTicksNS();
 
     if (p->stat != STAT_PLAYING) {
         return;
     }
     if (!p->paused && p->shownNo >= 0) {
-        p->clock += (double)(now - p->lastTick) / 1e9;
+        p->clock += sGameClock ? ticks / 30.0 : (double)(now - p->lastTick) / 1e9;
     }
     p->lastTick = now;
     for (;;) {
@@ -731,10 +734,14 @@ void movie_close(void) {
     }
 }
 
-void movie_update(void) {
+void movie_update(void) {   /* (each game tick) */
     if (sPly != NULL) {
-        ply_update(sPly);
+        ply_update(sPly, 1);
     }
+}
+
+void movie_game_clock(int on) {
+    sGameClock = on != 0;
 }
 
 int movie_status(void) {
@@ -762,7 +769,7 @@ const uint8_t *movie_picture(int *w, int *h, int *fresh) {
 
 void movie_pause(int on) {
     if (sPly != NULL) {
-        ply_update(sPly);
+        ply_update(sPly, 0);
         sPly->paused = on != 0;
     }
 }

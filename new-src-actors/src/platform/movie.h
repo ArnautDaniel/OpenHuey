@@ -14,6 +14,8 @@ int movie_open(const char *path);
 void movie_close(void);
 /* each tick: the clock on, frames decoded up to it */
 void movie_update(void);
+/* the movie's clock by game ticks, not real time (headless runs: the same frames each run) */
+void movie_game_clock(int on);
 int movie_status(void);
 /* the frame shown (from 0; -1 none yet) */
 int movie_frame(void);

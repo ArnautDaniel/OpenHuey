@@ -22,6 +22,7 @@
 #include "platform/snddrv.h"
 #include "platform/sound.h"
 #include "platform/platform.h"
+#include "platform/movie.h"
 #include "render/render.h"
 #include "render/post.h"
 
@@ -556,6 +557,7 @@ int main(int argc, char **argv) {
         free(libsd);
     }
     e->testing = opt.test != NULL;
+    movie_game_clock(opt.test != NULL || opt.frames > 0);   /* (headless runs: the same frames each run) */
     start_scripts(e, opt.hidden);
     for (i = 0; i < opt.nevals; i++) {
         forth_eval(e->forth, opt.evals[i], strlen(opt.evals[i]), "--eval");
