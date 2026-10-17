@@ -7,7 +7,7 @@ USING: tester engine game-state actors messages facts flag-names room-names game
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : mus ( xt -- x )  game:music enter  execute  leave-actor ;
-: vols ( -- p a b c )  [: 4 0 do  i cells sm-track + @  loop ;] mus ;
+: vols ( -- p a b c )  [: 4 0 do  i track-volume  loop ;] mus ;
 : state ( -- s )  [: sm-state @ ;] mus ;
 : chase-vol ( -- v )  vols >r 2drop drop r> ;
 : danger! ( flag -- )   \ (one of the danger's forcing flags; the others off)
@@ -35,11 +35,11 @@ testing ... the stalker by her and after her (he sees her): the chase loud (255)
 stalkers-blind state-flag-set  s" fiona" actor-named body-tri debug:debilitas-tri
 120 frames
 T{ state  chase-vol -> sm-chase-seen 255 }T
-T{ [: chase-step cell+ @ ;] mus -> 210 }T
-T{ [: seq3 f@ f>s  1 bend# f@ f>s ;] mus -> $88 127 }T      \ (stage 1's chase seen: its volume $88, channel 1 bent full)
+T{ [: chase-step step-volume @ ;] mus -> 210 }T
+T{ [: seq3 now f@ f>s  1 bend now f@ f>s ;] mus -> $88 127 }T      \ (stage 1's chase seen: its volume $88, channel 1 bent full)
 testing a bend goes the whole range over its frames, up or down (MusicDir_BendTo: 127 / 90 a frame)
-T{ [: 9 64 bend-now  9 90 127 bend-to  9 floats ch-bend-by + f@ 1000e f* f>s
-      9 90 0 bend-to  9 floats ch-bend-by + f@ 1000e f* f>s ;] mus -> 1411 -1411 }T
+T{ [: 9 64 bend-now  9 90 127 bend-to  9 bend by f@ 1000e f* f>s
+      9 90 0 bend-to  9 bend by f@ 1000e f* f>s ;] mus -> 1411 -1411 }T
 testing the scripts' op 1 (the stage's channels by the story's flags) and op 3 (loaded at once)
 1 0 0 game:music send music-op  3 0 0 game:music send music-op  2 frames
 T{ state -> sm-chase-seen }T
