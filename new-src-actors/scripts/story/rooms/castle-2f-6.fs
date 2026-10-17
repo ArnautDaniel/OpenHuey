@@ -77,34 +77,34 @@ USING: room-names story.words story.shared flag-names story-names ;
     c2f-6-lavender story-flag? not if
         3 0 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 7 4 scene-change
+            7 calm offer-action
         then
     then
     got-lunar-refractor story-flag? not if
         fiona-who 5 char-in-area? fiona-who 0 $2D char-heading? and if
-            5 3 0 scene-change
+            3 unhurried offer-action
         then
     then
     fiona-who 6 char-in-area? fiona-who -45 $2D char-heading? and if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     fiona-who $F char-in-area? fiona-who -67 $32 char-heading? and if
-        5 6 0 scene-change
+        6 unhurried offer-action
     then
     fiona-who 7 char-in-area? fiona-who 9 char-in-area? or fiona-who -45 $2D char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who 8 char-in-area? fiona-who $B char-in-area? or fiona-who 0 $2D char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who $D char-in-area? or fiona-who 45 $2D char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who $C char-in-area? fiona-who 90 $2D char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who $E $32 char-faces-area? if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
 ;
 
@@ -293,16 +293,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-2f-6.enter castle-2f-6 0 room-script!
-' castle-2f-6.char-enter castle-2f-6 6 room-script!
-' castle-2f-6.phase1 castle-2f-6 1 room-script!
-' castle-2f-6.phase2 castle-2f-6 2 room-script!
-' castle-2f-6.phase3 castle-2f-6 3 room-script!
-' castle-2f-6.act00 castle-2f-6 $00 action-script!
-' castle-2f-6.act01 castle-2f-6 $01 action-script!
-' castle-2f-6.act02 castle-2f-6 $02 action-script!
-' castle-2f-6.act03 castle-2f-6 $03 action-script!
-' castle-2f-6.act04 castle-2f-6 $04 action-script!
-' castle-2f-6.act05 castle-2f-6 $05 action-script!
-' castle-2f-6.act06 castle-2f-6 $06 action-script!
-' castle-2f-6.act07 castle-2f-6 $07 action-script!
+castle-2f-6 register-scripts   \ (its phases and actions, by their names)

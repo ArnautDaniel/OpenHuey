@@ -195,16 +195,16 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 
 : castle-1f-15.phase2 ( -- )   \ 003FB720
     fiona-who $C char-in-area? fiona-who 90 $2D char-heading? and if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     fiona-who $D $3C char-faces-area? if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who $E char-in-area? fiona-who $F char-in-area? or fiona-who 90 $2D char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who $14 char-in-area? fiona-who -45 $5A char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     7 ebit? not 9 ebit? not and if
         fiona-who $18 char-in-area? if
@@ -260,18 +260,18 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         then
     then
     fiona-who $17 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 8 0 scene-change
+        8 unhurried offer-action
     then
     c1f-15-camomile-found story-flag? c1f-15-camomile story-flag? not and if
         5 0 5 5 0 zone-at-effect
         fiona-who 5 3 char-zone-bits? if
-            5 $A 4 scene-change
+            $A calm offer-action
         then
     then
     c1f-15-medallion-found story-flag? c1f-15-medallion story-flag? not and if
         6 1 5 5 0 zone-at-effect
         fiona-who 6 3 char-zone-bits? if
-            5 $B 4 scene-change
+            $B calm offer-action
         then
     then
 ;
@@ -636,23 +636,4 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-15.enter castle-1f-15 0 room-script!
-' castle-1f-15.char-enter castle-1f-15 6 room-script!
-' castle-1f-15.phase1 castle-1f-15 1 room-script!
-' castle-1f-15.phase2 castle-1f-15 2 room-script!
-' castle-1f-15.phase3 castle-1f-15 3 room-script!
-' castle-1f-15.act00 castle-1f-15 $00 action-script!
-' castle-1f-15.act01 castle-1f-15 $01 action-script!
-' castle-1f-15.act02 castle-1f-15 $02 action-script!
-' castle-1f-15.act03 castle-1f-15 $03 action-script!
-' castle-1f-15.act04 castle-1f-15 $04 action-script!
-' castle-1f-15.act05 castle-1f-15 $05 action-script!
-' castle-1f-15.act06 castle-1f-15 $06 action-script!
-' castle-1f-15.act07 castle-1f-15 $07 action-script!
-' castle-1f-15.act08 castle-1f-15 $08 action-script!
-' castle-1f-15.act09 castle-1f-15 $09 action-script!
-' castle-1f-15.act0A castle-1f-15 $0A action-script!
-' castle-1f-15.act0B castle-1f-15 $0B action-script!
-' castle-1f-15.act0C castle-1f-15 $0C action-script!
-' castle-1f-15.act0D castle-1f-15 $0D action-script!
-' castle-1f-15.act0E castle-1f-15 $0E action-script!
+castle-1f-15 register-scripts   \ (its phases and actions, by their names)

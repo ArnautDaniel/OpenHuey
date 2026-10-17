@@ -131,15 +131,15 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : water-tower-7f-2.phase2 ( -- )   \ 00441400
     fiona-who $C $32 char-faces-area? if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     fiona-who $E $32 char-faces-area? if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     wt7f-2-rubrum-medallion-found story-flag? wt7f-2-rubrum-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 2 4 scene-change
+            2 calm offer-action
         then
     then
 ;
@@ -222,12 +222,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' water-tower-7f-2.enter water-tower-7f-2 0 room-script!
-' water-tower-7f-2.char-enter water-tower-7f-2 6 room-script!
-' water-tower-7f-2.phase1 water-tower-7f-2 1 room-script!
-' water-tower-7f-2.phase2 water-tower-7f-2 2 room-script!
-' water-tower-7f-2.act00 water-tower-7f-2 $00 action-script!
-' water-tower-7f-2.act01 water-tower-7f-2 $01 action-script!
-' water-tower-7f-2.act02 water-tower-7f-2 $02 action-script!
-' water-tower-7f-2.act03 water-tower-7f-2 $03 action-script!
-' water-tower-7f-2.phase5 water-tower-7f-2 5 room-script!
+water-tower-7f-2 register-scripts   \ (its phases and actions, by their names)

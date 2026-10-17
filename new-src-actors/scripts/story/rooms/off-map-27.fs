@@ -42,34 +42,34 @@ USING: actors messages items room-names story.words story.shared flag-names stor
 
 : off-map-27.phase2 ( -- )   \ 0041C420
     fiona-who 0 char-in-area? fiona-who 45 $32 char-heading? and if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     fiona-who 1 char-in-area? fiona-who -90 $37 char-heading? and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
     fiona-who 2 char-in-area? fiona-who 90 $37 char-heading? and if
         fg-3-flag3 story-flag? not if
-            5 3 0 scene-change
+            3 unhurried offer-action
         else
-            5 6 0 scene-change
+            6 unhurried offer-action
         then
     then
     fiona-who 1 2 char-zone-bits? if
         fiona-who -50 $3C char-heading? if
-            5 2 0 scene-change
+            2 unhurried offer-action
         then
     then
     fiona-who 2 2 char-zone-bits? if
         fiona-who -45 $3C char-heading? if
-            5 4 0 scene-change
+            4 unhurried offer-action
         then
     then
     fiona-who 4 char-in-area? fiona-who 45 $32 char-heading? and if
-        5 $A 0 scene-change
+        $A unhurried offer-action
     then
     fg-3-flag3 story-flag? if
         fiona-who 3 char-in-area? fiona-who 90 $37 char-heading? and if
-            5 7 0 scene-change
+            7 unhurried offer-action
         then
     then
 ;
@@ -501,18 +501,4 @@ USING: actors messages items room-names story.words story.shared flag-names stor
 ;
 
 \ ---- registered ----
-' off-map-27.enter off-map-27 0 room-script!
-' off-map-27.phase1 off-map-27 1 room-script!
-' off-map-27.phase2 off-map-27 2 room-script!
-' off-map-27.act00 off-map-27 $00 action-script!
-' off-map-27.act01 off-map-27 $01 action-script!
-' off-map-27.act02 off-map-27 $02 action-script!
-' off-map-27.act03 off-map-27 $03 action-script!
-' off-map-27.act04 off-map-27 $04 action-script!
-' off-map-27.act05 off-map-27 $05 action-script!
-' off-map-27.act06 off-map-27 $06 action-script!
-' off-map-27.act07 off-map-27 $07 action-script!
-' off-map-27.act08 off-map-27 $08 action-script!
-' off-map-27.act09 off-map-27 $09 action-script!
-' off-map-27.act0A off-map-27 $0A action-script!
-' off-map-27.char-enter off-map-27 6 room-script!
+off-map-27 register-scripts   \ (its phases and actions, by their names)

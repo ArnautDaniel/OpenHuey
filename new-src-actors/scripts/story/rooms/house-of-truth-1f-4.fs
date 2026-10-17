@@ -222,20 +222,20 @@ USING: engine common actors messages story.state room-names story.words story.sh
 
 : house-of-truth-1f-4.phase2 ( -- )   \ 00433F50
     fiona-who $A char-in-area? fiona-who 90 $32 char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     -2147483646 scene-request? if
-        5 7 1 scene-change
+        7 always offer-action
     then
     ht1f-4-flag1 story-flag? got-sol-key story-flag? not and if
         1 0.0 -3.2 65.0 5 5 0 zone
         fiona-who 1 3 char-zone-bits? if
-            5 5 4 scene-change
+            5 calm offer-action
         then
     then
     found-file-250 story-flag? not if
         fiona-who $C $32 char-faces-area? if
-            5 $A 0 scene-change
+            $A unhurried offer-action
         then
     then
 ;
@@ -786,22 +786,4 @@ USING: engine common actors messages story.state room-names story.words story.sh
 ;
 
 \ ---- registered ----
-' house-of-truth-1f-4.enter house-of-truth-1f-4 0 room-script!
-' house-of-truth-1f-4.char-enter house-of-truth-1f-4 6 room-script!
-' house-of-truth-1f-4.phase1 house-of-truth-1f-4 1 room-script!
-' house-of-truth-1f-4.phase2 house-of-truth-1f-4 2 room-script!
-' house-of-truth-1f-4.act00 house-of-truth-1f-4 $00 action-script!
-' house-of-truth-1f-4.act01 house-of-truth-1f-4 $01 action-script!
-' house-of-truth-1f-4.act02 house-of-truth-1f-4 $02 action-script!
-' house-of-truth-1f-4.act03 house-of-truth-1f-4 $03 action-script!
-' house-of-truth-1f-4.act04 house-of-truth-1f-4 $04 action-script!
-' house-of-truth-1f-4.act05 house-of-truth-1f-4 $05 action-script!
-' house-of-truth-1f-4.act06 house-of-truth-1f-4 $06 action-script!
-' house-of-truth-1f-4.act07 house-of-truth-1f-4 $07 action-script!
-' house-of-truth-1f-4.act08 house-of-truth-1f-4 $08 action-script!
-' house-of-truth-1f-4.act09 house-of-truth-1f-4 $09 action-script!
-' house-of-truth-1f-4.act0A house-of-truth-1f-4 $0A action-script!
-' house-of-truth-1f-4.act0B house-of-truth-1f-4 $0B action-script!
-' house-of-truth-1f-4.act0C house-of-truth-1f-4 $0C action-script!
-' house-of-truth-1f-4.act0D house-of-truth-1f-4 $0D action-script!
-' house-of-truth-1f-4.phase5 house-of-truth-1f-4 5 room-script!
+house-of-truth-1f-4 register-scripts   \ (its phases and actions, by their names)

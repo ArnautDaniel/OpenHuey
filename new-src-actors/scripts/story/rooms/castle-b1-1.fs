@@ -316,33 +316,33 @@ USING: room-names story.words story.shared flag-names story-names ;
     else cb1-1-chicken-jerky story-flag? not if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then then
     cb1-1-lavender-found story-flag? cb1-1-lavender story-flag? not and if
         3 2 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 $12 4 scene-change
+            $12 calm offer-action
         then
     then
     cb1-1-chicken-jerky-2 story-flag? not if
         9 3 5 5 0 zone-at-effect
         fiona-who 9 3 char-zone-bits? if
-            5 $13 4 scene-change
+            $13 calm offer-action
         then
     then
     fiona-who $12 $2D char-faces-area? if
         fiona-who -45 $3C char-heading? if
             got-castle-sketch story-flag? not if
                 fiona-who $A $2D char-faces-area? if
-                    5 4 4 scene-change
+                    4 calm offer-action
                 then
             else stalker-who char-here? not if
                 3 ebit-clear
-                5 $E 5 scene-change
+                $E calm offer-action
             else stalker-who char-unseen? if
                 3 ebit-clear
-                5 $E 5 scene-change
+                $E calm offer-action
             else
                 $8016 examine-message   \ "I have to get away! I don't have time for this!"
             then then then
@@ -350,14 +350,14 @@ USING: room-names story.words story.shared flag-names story-names ;
         fiona-who 45 $3C char-heading? if
             got-castle-sketch story-flag? not if
                 fiona-who $A $2D char-faces-area? if
-                    5 4 4 scene-change
+                    4 calm offer-action
                 then
             else stalker-who char-here? not if
                 3 ebit-set
-                5 $E 5 scene-change
+                $E calm offer-action
             else stalker-who char-unseen? if
                 3 ebit-set
-                5 $E 5 scene-change
+                $E calm offer-action
             else
                 $8016 examine-message   \ "I have to get away! I don't have time for this!"
             then then then
@@ -365,32 +365,32 @@ USING: room-names story.words story.shared flag-names story-names ;
     then
     5 scene-request? not if
         fiona-who 9 char-in-area? fiona-who 45 $32 char-heading? and if
-            5 8 0 scene-change
+            8 unhurried offer-action
         then
         fiona-who $B char-in-area? fiona-who 45 $32 char-heading? and if
-            5 9 0 scene-change
+            9 unhurried offer-action
         then
         fiona-who $C char-in-area? fiona-who 90 $32 char-heading? and if
-            5 $A 0 scene-change
+            $A unhurried offer-action
         then
         fiona-who $D char-in-area? fiona-who 0 $32 char-heading? and if
-            5 $B 0 scene-change
+            $B unhurried offer-action
         then
         hewie-found-in-wire story-flag? not if
             fiona-who $E char-in-area? fiona-who 0 $32 char-heading? and if
-                5 $C 0 scene-change
+                $C unhurried offer-action
             then
         else found-file-208 story-flag? if
             fiona-who $E char-in-area? fiona-who 0 $32 char-heading? and if
-                5 $16 0 scene-change
+                $16 unhurried offer-action
             then
         then then
         fiona-who 3 -2 $32 char-faces-xz? fiona-who -3 -2 $32 char-faces-xz? or fiona-who $F char-in-area? and if
-            5 $D 0 scene-change
+            $D unhurried offer-action
         then
     then
     fiona-who 5 3 char-zone-bits? fiona-who 0 $32 char-heading? and if
-        5 6 0 scene-change
+        6 unhurried offer-action
     then
 ;
 
@@ -901,32 +901,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-b1-1.enter castle-b1-1 0 room-script!
-' castle-b1-1.char-enter castle-b1-1 6 room-script!
-' castle-b1-1.phase1 castle-b1-1 1 room-script!
-' castle-b1-1.phase2 castle-b1-1 2 room-script!
-' castle-b1-1.phase3 castle-b1-1 3 room-script!
-' castle-b1-1.phase5 castle-b1-1 5 room-script!
-' castle-b1-1.act00 castle-b1-1 $00 action-script!
-' castle-b1-1.act01 castle-b1-1 $01 action-script!
-' castle-b1-1.act02 castle-b1-1 $02 action-script!
-' castle-b1-1.act03 castle-b1-1 $03 action-script!
-' castle-b1-1.act04 castle-b1-1 $04 action-script!
-' castle-b1-1.act05 castle-b1-1 $05 action-script!
-' castle-b1-1.act06 castle-b1-1 $06 action-script!
-' castle-b1-1.act07 castle-b1-1 $07 action-script!
-' castle-b1-1.act08 castle-b1-1 $08 action-script!
-' castle-b1-1.act09 castle-b1-1 $09 action-script!
-' castle-b1-1.act0A castle-b1-1 $0A action-script!
-' castle-b1-1.act0B castle-b1-1 $0B action-script!
-' castle-b1-1.act0C castle-b1-1 $0C action-script!
-' castle-b1-1.act0D castle-b1-1 $0D action-script!
-' castle-b1-1.act0E castle-b1-1 $0E action-script!
-' castle-b1-1.act0F castle-b1-1 $0F action-script!
-' castle-b1-1.act10 castle-b1-1 $10 action-script!
-' castle-b1-1.act11 castle-b1-1 $11 action-script!
-' castle-b1-1.act12 castle-b1-1 $12 action-script!
-' castle-b1-1.act13 castle-b1-1 $13 action-script!
-' castle-b1-1.act14 castle-b1-1 $14 action-script!
-' castle-b1-1.act15 castle-b1-1 $15 action-script!
-' castle-b1-1.act16 castle-b1-1 $16 action-script!
+castle-b1-1 register-scripts   \ (its phases and actions, by their names)

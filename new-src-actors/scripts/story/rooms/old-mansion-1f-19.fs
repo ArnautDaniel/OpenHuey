@@ -145,11 +145,11 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-19.phase2 ( -- )   \ 00438F10
     fiona-who 7 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who 6 char-in-area? fiona-who 90 $3C char-heading? and if
         stalker-who char-here? not if
-            5 4 5 scene-change
+            4 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
@@ -322,16 +322,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-19.enter old-mansion-1f-19 0 room-script!
-' old-mansion-1f-19.char-enter old-mansion-1f-19 6 room-script!
-' old-mansion-1f-19.phase1 old-mansion-1f-19 1 room-script!
-' old-mansion-1f-19.phase2 old-mansion-1f-19 2 room-script!
-' old-mansion-1f-19.act00 old-mansion-1f-19 $00 action-script!
-' old-mansion-1f-19.act01 old-mansion-1f-19 $01 action-script!
-' old-mansion-1f-19.act02 old-mansion-1f-19 $02 action-script!
-' old-mansion-1f-19.act03 old-mansion-1f-19 $03 action-script!
-' old-mansion-1f-19.act04 old-mansion-1f-19 $04 action-script!
-' old-mansion-1f-19.act05 old-mansion-1f-19 $05 action-script!
-' old-mansion-1f-19.act06 old-mansion-1f-19 $06 action-script!
-' old-mansion-1f-19.act07 old-mansion-1f-19 $07 action-script!
-' old-mansion-1f-19.phase5 old-mansion-1f-19 5 room-script!
+old-mansion-1f-19 register-scripts   \ (its phases and actions, by their names)

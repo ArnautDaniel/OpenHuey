@@ -163,21 +163,21 @@ USING: room-names story.words story.shared flag-names story-names ;
 : old-mansion-1f-16.phase2 ( -- )   \ 00420D80
     found-file-234 story-flag? not if
         fiona-who 1 char-before-door? if
-            5 5 1 scene-change
+            5 always offer-action
         then
     then
     -2147483646 scene-request? if
         fiona-who 4 char-before-door? if
-            5 1 1 scene-change
+            1 always offer-action
         then
     then
     fiona-who $B char-in-area? fiona-who 83 $3C char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     om1f-16-refined-magnesia story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 3 4 scene-change
+            3 calm offer-action
         then
     then
 ;
@@ -362,14 +362,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-16.enter old-mansion-1f-16 0 room-script!
-' old-mansion-1f-16.char-enter old-mansion-1f-16 6 room-script!
-' old-mansion-1f-16.phase1 old-mansion-1f-16 1 room-script!
-' old-mansion-1f-16.phase2 old-mansion-1f-16 2 room-script!
-' old-mansion-1f-16.act00 old-mansion-1f-16 $00 action-script!
-' old-mansion-1f-16.act01 old-mansion-1f-16 $01 action-script!
-' old-mansion-1f-16.act02 old-mansion-1f-16 $02 action-script!
-' old-mansion-1f-16.act03 old-mansion-1f-16 $03 action-script!
-' old-mansion-1f-16.act04 old-mansion-1f-16 $04 action-script!
-' old-mansion-1f-16.act05 old-mansion-1f-16 $05 action-script!
-' old-mansion-1f-16.act06 old-mansion-1f-16 $06 action-script!
+old-mansion-1f-16 register-scripts   \ (its phases and actions, by their names)

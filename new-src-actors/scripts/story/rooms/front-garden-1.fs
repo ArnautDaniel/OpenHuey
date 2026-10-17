@@ -210,32 +210,32 @@ USING: actors room-names story.words story.shared flag-names story-names ;
 : front-garden-1.phase2 ( -- )   \ 003EDBC0
     fiona-who 5 char-in-area? fiona-who 0 $32 char-heading? and if
         found-file-222 story-flag? not if
-            5 9 0 scene-change
+            9 unhurried offer-action
         else
-            5 4 0 scene-change
+            4 unhurried offer-action
         then
     then
     fiona-who char-busy? not got-broken-marionette story-flag? not and if
         fiona-who 4 $2D char-faces-area? if
             found-file-202 story-flag? not if
-                5 7 0 scene-change
+                7 unhurried offer-action
             else found-file-223 story-flag? not if
-                5 0 0 scene-change
+                0 unhurried offer-action
             else
-                5 5 0 scene-change
+                5 unhurried offer-action
             then then
         then
     then
     fg-1-medallion-found story-flag? fg-1-medallion story-flag? not and if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 $D 4 scene-change
+            $D calm offer-action
         then
     then
     fg-1-medallion-2 story-flag? not if
         3 1 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 $E 4 scene-change
+            $E calm offer-action
         then
     then
 ;
@@ -895,27 +895,4 @@ USING: actors room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' front-garden-1.enter front-garden-1 0 room-script!
-' front-garden-1.char-enter front-garden-1 6 room-script!
-' front-garden-1.phase1 front-garden-1 1 room-script!
-' front-garden-1.phase2 front-garden-1 2 room-script!
-' front-garden-1.phase3 front-garden-1 3 room-script!
-' front-garden-1.act00 front-garden-1 $00 action-script!
-' front-garden-1.act01 front-garden-1 $01 action-script!
-' front-garden-1.act02 front-garden-1 $02 action-script!
-' front-garden-1.act03 front-garden-1 $03 action-script!
-' front-garden-1.act04 front-garden-1 $04 action-script!
-' front-garden-1.act05 front-garden-1 $05 action-script!
-' front-garden-1.act06 front-garden-1 $06 action-script!
-' front-garden-1.act07 front-garden-1 $07 action-script!
-' front-garden-1.act08 front-garden-1 $08 action-script!
-' front-garden-1.act09 front-garden-1 $09 action-script!
-' front-garden-1.act0A front-garden-1 $0A action-script!
-' front-garden-1.act0B front-garden-1 $0B action-script!
-' front-garden-1.act0C front-garden-1 $0C action-script!
-' front-garden-1.act0D front-garden-1 $0D action-script!
-' front-garden-1.act0E front-garden-1 $0E action-script!
-' front-garden-1.act0F front-garden-1 $0F action-script!
-' front-garden-1.act10 front-garden-1 $10 action-script!
-' front-garden-1.act11 front-garden-1 $11 action-script!
-' front-garden-1.act12 front-garden-1 $12 action-script!
+front-garden-1 register-scripts   \ (its phases and actions, by their names)

@@ -321,43 +321,43 @@ USING: room-names story.words story.shared flag-names story-names ;
         -2147483644 scene-request? if
             0 fiona-who 6 action
         else broken-marionette-used story-flag? not fiona-who -45 $2D char-heading? and if
-            5 2 0 scene-change
+            2 unhurried offer-action
         then then
     then
     fiona-who $E char-in-area? fiona-who 90 $2D char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who $10 char-in-area? fiona-who 0 $2D char-heading? and if
-        5 $E 0 scene-change
+        $E unhurried offer-action
     then
     fiona-who $D char-in-area? if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     fiona-who $F char-in-area? fiona-who -45 $32 char-heading? and if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     3 ebit? c1f-4-refined-antimony story-flag? not and if
         c1f-4-refined-antimony story-flag? not if
             2 1 5 5 0 zone-at-effect
             fiona-who 2 3 char-zone-bits? if
-                5 $10 4 scene-change
+                $10 calm offer-action
             then
         then
     else fiona-who 2 2 char-zone-bits? fiona-who 45 $32 char-heading? and if
-        5 9 0 scene-change
+        9 unhurried offer-action
     then then
     -2147483646 scene-request? if
         fiona-who 2 char-before-door? if
-            5 $13 1 scene-change
+            $13 always offer-action
         then
     then
     fiona-who $11 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 $15 0 scene-change
+        $15 unhurried offer-action
     then
     got-cracked-plate-key story-flag? not if
         4 131.392 -30.0 147.223 5 5 0 zone
         fiona-who 4 3 char-zone-bits? if
-            5 $12 4 scene-change
+            $12 calm offer-action
         then
     then
 ;
@@ -980,36 +980,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-4.enter castle-1f-4 0 room-script!
-' castle-1f-4.char-enter castle-1f-4 6 room-script!
-' castle-1f-4.phase1 castle-1f-4 1 room-script!
-' castle-1f-4.phase2 castle-1f-4 2 room-script!
-' castle-1f-4.act00 castle-1f-4 $00 action-script!
-' castle-1f-4.act01 castle-1f-4 $01 action-script!
-' castle-1f-4.act02 castle-1f-4 $02 action-script!
-' castle-1f-4.act03 castle-1f-4 $03 action-script!
-' castle-1f-4.act04 castle-1f-4 $04 action-script!
-' castle-1f-4.act05 castle-1f-4 $05 action-script!
-' castle-1f-4.act06 castle-1f-4 $06 action-script!
-' castle-1f-4.act07 castle-1f-4 $07 action-script!
-' castle-1f-4.act08 castle-1f-4 $08 action-script!
-' castle-1f-4.act09 castle-1f-4 $09 action-script!
-' castle-1f-4.act0A castle-1f-4 $0A action-script!
-' castle-1f-4.act0B castle-1f-4 $0B action-script!
-' castle-1f-4.act0C castle-1f-4 $0C action-script!
-' castle-1f-4.act0D castle-1f-4 $0D action-script!
-' castle-1f-4.act0E castle-1f-4 $0E action-script!
-' castle-1f-4.act0F castle-1f-4 $0F action-script!
-' castle-1f-4.act10 castle-1f-4 $10 action-script!
-' castle-1f-4.act11 castle-1f-4 $11 action-script!
-' castle-1f-4.act12 castle-1f-4 $12 action-script!
-' castle-1f-4.act13 castle-1f-4 $13 action-script!
-' castle-1f-4.act14 castle-1f-4 $14 action-script!
-' castle-1f-4.act15 castle-1f-4 $15 action-script!
-' castle-1f-4.act16 castle-1f-4 $16 action-script!
-' castle-1f-4.act17 castle-1f-4 $17 action-script!
-' castle-1f-4.act18 castle-1f-4 $18 action-script!
-' castle-1f-4.act19 castle-1f-4 $19 action-script!
-' castle-1f-4.act1A castle-1f-4 $1A action-script!
-' castle-1f-4.act1B castle-1f-4 $1B action-script!
-' castle-1f-4.act1C castle-1f-4 $1C action-script!
+castle-1f-4 register-scripts   \ (its phases and actions, by their names)

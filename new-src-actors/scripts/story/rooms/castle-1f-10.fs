@@ -87,39 +87,39 @@ USING: room-names story.words story.shared flag-names story-names ;
         fiona-who 5 char-in-area? fiona-who 0 $2D char-heading? and if
             2 game-mode? in-panic? not and if
                 castle-1f-10.cond00? if
-                    5 0 6 scene-change
+                    0 calm offer-action
                 else
                     $8016 examine-message   \ "I have to get away! I don't have time for this!"
                 then
             else
-                5 1 0 scene-change
+                1 unhurried offer-action
             then
         then
     then then
     c1f-10-beef-jerky story-flag? not if
         0 1 7 4 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 3 4 scene-change
+            3 calm offer-action
         then
     then
     found-file-20b story-flag? c1f-10-flag1 story-flag? not and if
         fiona-who 2 $14 0 $2D char-touching-facing? if
             c1f-10-flag2 story-flag? not if
-                5 2 0 scene-change
+                2 unhurried offer-action
             else 1 ebit? not if
-                5 6 0 scene-change
+                6 unhurried offer-action
             then then
         then
     then
     fiona-who 6 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     fiona-who 7 char-in-area? fiona-who 45 $32 char-heading? and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
     2 ebit? if
         fiona-who 8 $3C char-faces-area? if
-            5 7 4 scene-change
+            7 calm offer-action
         then
     then
 ;
@@ -377,20 +377,6 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-10.enter castle-1f-10 0 room-script!
-' castle-1f-10.char-enter castle-1f-10 6 room-script!
-' castle-1f-10.phase1 castle-1f-10 1 room-script!
-' castle-1f-10.phase2 castle-1f-10 2 room-script!
-' castle-1f-10.phase5 castle-1f-10 5 room-script!
-' castle-1f-10.act00 castle-1f-10 $00 action-script!
-' castle-1f-10.act01 castle-1f-10 $01 action-script!
-' castle-1f-10.act02 castle-1f-10 $02 action-script!
-' castle-1f-10.act03 castle-1f-10 $03 action-script!
-' castle-1f-10.act04 castle-1f-10 $04 action-script!
-' castle-1f-10.act05 castle-1f-10 $05 action-script!
-' castle-1f-10.act06 castle-1f-10 $06 action-script!
-' castle-1f-10.act07 castle-1f-10 $07 action-script!
-' castle-1f-10.act08 castle-1f-10 $08 action-script!
-' castle-1f-10.act09 castle-1f-10 $09 action-script!
+castle-1f-10 register-scripts   \ (its phases and actions, by their names)
 ' castle-1f-10.char-enter castle-1f-10 $38 action-script!
 ' castle-1f-10.char-enter castle-1f-10 $3D action-script!

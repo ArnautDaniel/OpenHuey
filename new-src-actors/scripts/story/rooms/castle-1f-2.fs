@@ -495,9 +495,9 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 : castle-1f-2.phase2 ( -- )   \ 003EF5B0
     fiona-who $18 char-in-area? fiona-who 0 $3C char-heading? and if
         stalker-who char-here? not if
-            5 $C 5 scene-change
+            $C calm offer-action
         else stalker-who char-unseen? if
-            5 $C 5 scene-change
+            $C calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then then
@@ -507,20 +507,20 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         then
     then
     fiona-who $12 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who $15 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 6 0 scene-change
+        6 unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who -45 $32 char-heading? and if
-        5 8 0 scene-change
+        8 unhurried offer-action
     then
     fiona-who $14 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 9 0 scene-change
+        9 unhurried offer-action
     then
     9 276.5 -1.0 -145.9 7 10 0 zone
     fiona-who 9 2 char-zone-bits? fiona-who 276 -146 $32 char-faces-xz? and if
-        5 $12 0 scene-change
+        $12 unhurried offer-action
     then
     0 exit-door-open? not 5 ebit? and if
         fiona-who 0 char-before-door? if
@@ -530,7 +530,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     c1f-2-rubrum-medallion-found story-flag? c1f-2-rubrum-medallion story-flag? not and if
         8 1 5 5 0 zone-at-effect
         fiona-who 8 3 char-zone-bits? if
-            5 $11 4 scene-change
+            $11 calm offer-action
         then
     then
     c1f-2-breakable1-broken story-flag? not if
@@ -548,7 +548,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     else c1f-2-viola-medallion story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 $14 4 scene-change
+            $14 calm offer-action
         then
     then then
     c1f-2-breakable2-broken story-flag? not if
@@ -566,7 +566,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     else got-onion story-flag? not if
         1 2 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 $15 4 scene-change
+            $15 calm offer-action
         then
     then then
 ;
@@ -1281,34 +1281,4 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 \ ---- registered ----
-' castle-1f-2.enter castle-1f-2 0 room-script!
-' castle-1f-2.char-enter castle-1f-2 6 room-script!
-' castle-1f-2.phase1 castle-1f-2 1 room-script!
-' castle-1f-2.phase2 castle-1f-2 2 room-script!
-' castle-1f-2.phase3 castle-1f-2 3 room-script!
-' castle-1f-2.phase5 castle-1f-2 5 room-script!
-' castle-1f-2.act00 castle-1f-2 $00 action-script!
-' castle-1f-2.act01 castle-1f-2 $01 action-script!
-' castle-1f-2.act02 castle-1f-2 $02 action-script!
-' castle-1f-2.act03 castle-1f-2 $03 action-script!
-' castle-1f-2.act04 castle-1f-2 $04 action-script!
-' castle-1f-2.act05 castle-1f-2 $05 action-script!
-' castle-1f-2.act06 castle-1f-2 $06 action-script!
-' castle-1f-2.act07 castle-1f-2 $07 action-script!
-' castle-1f-2.act08 castle-1f-2 $08 action-script!
-' castle-1f-2.act09 castle-1f-2 $09 action-script!
-' castle-1f-2.act0A castle-1f-2 $0A action-script!
-' castle-1f-2.act0B castle-1f-2 $0B action-script!
-' castle-1f-2.act0C castle-1f-2 $0C action-script!
-' castle-1f-2.act0D castle-1f-2 $0D action-script!
-' castle-1f-2.act0E castle-1f-2 $0E action-script!
-' castle-1f-2.act0F castle-1f-2 $0F action-script!
-' castle-1f-2.act10 castle-1f-2 $10 action-script!
-' castle-1f-2.act11 castle-1f-2 $11 action-script!
-' castle-1f-2.act12 castle-1f-2 $12 action-script!
-' castle-1f-2.act13 castle-1f-2 $13 action-script!
-' castle-1f-2.act14 castle-1f-2 $14 action-script!
-' castle-1f-2.act15 castle-1f-2 $15 action-script!
-' castle-1f-2.act16 castle-1f-2 $16 action-script!
-' castle-1f-2.act17 castle-1f-2 $17 action-script!
-' castle-1f-2.act18 castle-1f-2 $18 action-script!
+castle-1f-2 register-scripts   \ (its phases and actions, by their names)

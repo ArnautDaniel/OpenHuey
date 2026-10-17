@@ -86,6 +86,9 @@ number in the list sets the next: `enum: act  $36 hide  $52 lie-down ;`) and `mo
 addr len )`, which names a value ("?" for one not listed) - for the debug words and traces. A long
 list may run over several lines with comments (`\`, `( )`) between the names.
 
+The dictionary's `find ( addr len -- xt | 0 )` is `find-word` once the prelude is in: its `find` is
+the lists' (Factor's).
+
 String lists: `strings: files  intro.sfd  DIR\menu.sfd  8 end.sfd ;` makes `files ( i -- addr len )`,
 string i of the list - each a word as written, `\` and all - and "" for one not in it. As in
 `enum:`, a number sets the next index (those skipped are ""), and comments may come between. The

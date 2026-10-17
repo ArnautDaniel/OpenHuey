@@ -215,7 +215,7 @@ USING: room-names story.words story.shared story-names ;
 : old-mansion-1f-21.phase2 ( -- )   \ 00439F10
     -2147483646 scene-request? if
         fiona-who 0 char-before-door? if
-            5 0 1 scene-change
+            0 always offer-action
         then
     then
     om1f-21-breakable1-broken story-flag? not if
@@ -233,7 +233,7 @@ USING: room-names story.words story.shared story-names ;
     else om1f-21-album-medallion story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then then
 ;
@@ -301,10 +301,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-21.enter old-mansion-1f-21 0 room-script!
-' old-mansion-1f-21.char-enter old-mansion-1f-21 6 room-script!
-' old-mansion-1f-21.phase1 old-mansion-1f-21 1 room-script!
-' old-mansion-1f-21.phase2 old-mansion-1f-21 2 room-script!
-' old-mansion-1f-21.phase3 old-mansion-1f-21 3 room-script!
-' old-mansion-1f-21.act00 old-mansion-1f-21 $00 action-script!
-' old-mansion-1f-21.act01 old-mansion-1f-21 $01 action-script!
+old-mansion-1f-21 register-scripts   \ (its phases and actions, by their names)

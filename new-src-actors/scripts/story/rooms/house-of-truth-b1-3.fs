@@ -68,7 +68,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' house-of-truth-b1-3.enter house-of-truth-b1-3 0 room-script!
-' house-of-truth-b1-3.char-enter house-of-truth-b1-3 6 room-script!
-' house-of-truth-b1-3.phase1 house-of-truth-b1-3 1 room-script!
-' house-of-truth-b1-3.act00 house-of-truth-b1-3 $00 action-script!
+house-of-truth-b1-3 register-scripts   \ (its phases and actions, by their names)

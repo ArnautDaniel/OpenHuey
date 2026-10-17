@@ -290,7 +290,7 @@ fvariable sw-dx  fvariable sw-dz
     found-file-202 story-flag? if
         fiona-who 9 char-in-area? if
             stalker-who char-here? not if
-                5 7 5 scene-change
+                7 calm offer-action
             else
                 $8016 examine-message   \ "I have to get away! I don't have time for this!"
             then
@@ -300,18 +300,18 @@ fvariable sw-dx  fvariable sw-dz
         fg-5-viola-medallion story-flag? not if
             1 0 5 5 0 zone-at-effect
             fiona-who 1 3 char-zone-bits? if
-                5 $10 4 scene-change
+                $10 calm offer-action
             then
         then
     then
     fg-5-medallion-found story-flag? fg-5-medallion story-flag? not and if
         3 1 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 $11 4 scene-change
+            $11 calm offer-action
         then
     then
     fiona-who $E char-in-area? fiona-who 90 $3C char-heading? and if
-        5 $12 0 scene-change
+        $12 unhurried offer-action
     then
     fg-5-breakable-broken story-flag? not if
         0 -14.0 -10.0 97.0 5 8 1 zone
@@ -328,13 +328,13 @@ fvariable sw-dx  fvariable sw-dz
     else fg-5-beef-jerky story-flag? not if
         0 2 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 $13 4 scene-change
+            $13 calm offer-action
         then
     then then
     got-ball story-flag? not if
         8 3 5 5 0 zone-at-effect
         fiona-who 8 3 char-zone-bits? if
-            5 $14 4 scene-change
+            $14 calm offer-action
         then
     then
 ;
@@ -705,28 +705,4 @@ fvariable sw-dx  fvariable sw-dz
 ;
 
 \ ---- registered ----
-' front-garden-5.enter front-garden-5 0 room-script!
-' front-garden-5.char-enter front-garden-5 6 room-script!
-' front-garden-5.phase1 front-garden-5 1 room-script!
-' front-garden-5.phase2 front-garden-5 2 room-script!
-' front-garden-5.act00 front-garden-5 $00 action-script!
-' front-garden-5.act01 front-garden-5 $01 action-script!
-' front-garden-5.act02 front-garden-5 $02 action-script!
-' front-garden-5.act03 front-garden-5 $03 action-script!
-' front-garden-5.act04 front-garden-5 $04 action-script!
-' front-garden-5.act05 front-garden-5 $05 action-script!
-' front-garden-5.act06 front-garden-5 $06 action-script!
-' front-garden-5.act07 front-garden-5 $07 action-script!
-' front-garden-5.act08 front-garden-5 $08 action-script!
-' front-garden-5.act09 front-garden-5 $09 action-script!
-' front-garden-5.act0A front-garden-5 $0A action-script!
-' front-garden-5.act0B front-garden-5 $0B action-script!
-' front-garden-5.act0C front-garden-5 $0C action-script!
-' front-garden-5.act0D front-garden-5 $0D action-script!
-' front-garden-5.act0E front-garden-5 $0E action-script!
-' front-garden-5.act0F front-garden-5 $0F action-script!
-' front-garden-5.act10 front-garden-5 $10 action-script!
-' front-garden-5.act11 front-garden-5 $11 action-script!
-' front-garden-5.act12 front-garden-5 $12 action-script!
-' front-garden-5.act13 front-garden-5 $13 action-script!
-' front-garden-5.act14 front-garden-5 $14 action-script!
+front-garden-5 register-scripts   \ (its phases and actions, by their names)

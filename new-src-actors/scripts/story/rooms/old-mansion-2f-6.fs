@@ -69,10 +69,10 @@ USING: room-names story.words story.shared flag-names story-names ;
                 stalker-who char-here? if
                     $8016 examine-message   \ "I have to get away! I don't have time for this!"
                 else
-                    5 1 6 scene-change
+                    1 calm offer-action
                 then
             else
-                5 3 0 scene-change
+                3 unhurried offer-action
             then
         then
     then
@@ -82,39 +82,39 @@ USING: room-names story.words story.shared flag-names story-names ;
                 stalker-who char-here? if
                     $8016 examine-message   \ "I have to get away! I don't have time for this!"
                 else
-                    5 2 6 scene-change
+                    2 calm offer-action
                 then
             else
-                5 4 0 scene-change
+                4 unhurried offer-action
             then
         then
     then
     fiona-who 9 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who -15 $3C char-heading? and if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     fiona-who $B char-in-area? fiona-who -16 -17 $3C char-faces-xz? and if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     fiona-who $C char-in-area? fiona-who -35 $3C char-heading? and if
-        5 8 0 scene-change
+        8 unhurried offer-action
     then
     fiona-who $E char-in-area? fiona-who 0 $3C char-heading? and if
-        5 9 0 scene-change
+        9 unhurried offer-action
     then
     fiona-who $D char-in-area? fiona-who 10 $3C char-heading? and if
-        5 $A 0 scene-change
+        $A unhurried offer-action
     then
     om2f-6-lavender story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 5 4 scene-change
+            5 calm offer-action
         then
     then
     fiona-who $F $3C char-faces-area? if
-        5 $B 0 scene-change
+        $B unhurried offer-action
     then
 ;
 
@@ -666,26 +666,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-2f-6.enter old-mansion-2f-6 0 room-script!
-' old-mansion-2f-6.char-enter old-mansion-2f-6 6 room-script!
-' old-mansion-2f-6.phase1 old-mansion-2f-6 1 room-script!
-' old-mansion-2f-6.phase2 old-mansion-2f-6 2 room-script!
-' old-mansion-2f-6.act00 old-mansion-2f-6 $00 action-script!
-' old-mansion-2f-6.act01 old-mansion-2f-6 $01 action-script!
-' old-mansion-2f-6.act02 old-mansion-2f-6 $02 action-script!
-' old-mansion-2f-6.act03 old-mansion-2f-6 $03 action-script!
-' old-mansion-2f-6.act04 old-mansion-2f-6 $04 action-script!
-' old-mansion-2f-6.act05 old-mansion-2f-6 $05 action-script!
-' old-mansion-2f-6.act06 old-mansion-2f-6 $06 action-script!
-' old-mansion-2f-6.act07 old-mansion-2f-6 $07 action-script!
-' old-mansion-2f-6.act08 old-mansion-2f-6 $08 action-script!
-' old-mansion-2f-6.act09 old-mansion-2f-6 $09 action-script!
-' old-mansion-2f-6.act0A old-mansion-2f-6 $0A action-script!
-' old-mansion-2f-6.act0B old-mansion-2f-6 $0B action-script!
-' old-mansion-2f-6.act0C old-mansion-2f-6 $0C action-script!
-' old-mansion-2f-6.act0D old-mansion-2f-6 $0D action-script!
-' old-mansion-2f-6.act0E old-mansion-2f-6 $0E action-script!
-' old-mansion-2f-6.act0F old-mansion-2f-6 $0F action-script!
-' old-mansion-2f-6.act10 old-mansion-2f-6 $10 action-script!
-' old-mansion-2f-6.act11 old-mansion-2f-6 $11 action-script!
-' old-mansion-2f-6.act12 old-mansion-2f-6 $12 action-script!
+old-mansion-2f-6 register-scripts   \ (its phases and actions, by their names)

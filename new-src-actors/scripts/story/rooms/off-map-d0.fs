@@ -147,10 +147,4 @@ USING: room-names story.words story.shared flag-names story.clock ;
 ;
 
 \ ---- registered ----
-' off-map-d0.enter off-map-d0 0 room-script!
-' off-map-d0.char-enter off-map-d0 6 room-script!
-' off-map-d0.phase1 off-map-d0 1 room-script!
-' off-map-d0.phase3 off-map-d0 3 room-script!
-' off-map-d0.phase2 off-map-d0 2 room-script!
-' off-map-d0.act00 off-map-d0 $00 action-script!
-' off-map-d0.act01 off-map-d0 $01 action-script!
+off-map-d0 register-scripts   \ (its phases and actions, by their names)

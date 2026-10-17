@@ -240,30 +240,30 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 : castle-2f-12.phase2 ( -- )   \ 00402FA0
     fiona-who 6 char-in-area? fiona-who 22 $3C char-heading? and if
         stalker-who char-here? not if
-            5 0 5 scene-change
+            0 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
     fiona-who 7 $3C char-faces-area? if
-        5 6 0 scene-change
+        6 unhurried offer-action
     then
     fiona-who 8 char-in-area? fiona-who 75 $32 char-heading? and if
-        5 8 0 scene-change
+        8 unhurried offer-action
     then
     fiona-who 9 $3C char-faces-area? if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who 90 $32 char-heading? and if
-        5 $A 0 scene-change
+        $A unhurried offer-action
     then
     fiona-who $B $3C char-faces-area? if
-        5 $10 0 scene-change
+        $10 unhurried offer-action
     then
     c2f-12-refined-antimony-found story-flag? c2f-12-refined-antimony story-flag? not and if
         3 2 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 $F 4 scene-change
+            $F calm offer-action
         then
     then
     c2f-12-breakable-broken story-flag? not if
@@ -281,7 +281,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     else c2f-12-medallion story-flag? not if
         2 1 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 $12 4 scene-change
+            $12 calm offer-action
         then
     then then
 ;
@@ -907,27 +907,4 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 ;
 
 \ ---- registered ----
-' castle-2f-12.enter castle-2f-12 0 room-script!
-' castle-2f-12.char-enter castle-2f-12 6 room-script!
-' castle-2f-12.phase1 castle-2f-12 1 room-script!
-' castle-2f-12.phase2 castle-2f-12 2 room-script!
-' castle-2f-12.act00 castle-2f-12 $00 action-script!
-' castle-2f-12.act01 castle-2f-12 $01 action-script!
-' castle-2f-12.act02 castle-2f-12 $02 action-script!
-' castle-2f-12.act03 castle-2f-12 $03 action-script!
-' castle-2f-12.act04 castle-2f-12 $04 action-script!
-' castle-2f-12.act05 castle-2f-12 $05 action-script!
-' castle-2f-12.act06 castle-2f-12 $06 action-script!
-' castle-2f-12.act07 castle-2f-12 $07 action-script!
-' castle-2f-12.act08 castle-2f-12 $08 action-script!
-' castle-2f-12.act09 castle-2f-12 $09 action-script!
-' castle-2f-12.act0A castle-2f-12 $0A action-script!
-' castle-2f-12.act0B castle-2f-12 $0B action-script!
-' castle-2f-12.act0C castle-2f-12 $0C action-script!
-' castle-2f-12.act0D castle-2f-12 $0D action-script!
-' castle-2f-12.act0E castle-2f-12 $0E action-script!
-' castle-2f-12.act0F castle-2f-12 $0F action-script!
-' castle-2f-12.act10 castle-2f-12 $10 action-script!
-' castle-2f-12.act11 castle-2f-12 $11 action-script!
-' castle-2f-12.act12 castle-2f-12 $12 action-script!
-' castle-2f-12.act13 castle-2f-12 $13 action-script!
+castle-2f-12 register-scripts   \ (its phases and actions, by their names)

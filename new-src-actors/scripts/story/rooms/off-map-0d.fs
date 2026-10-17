@@ -45,7 +45,4 @@ USING: room-names story.words story.shared ;
 ;
 
 \ ---- registered ----
-' off-map-0d.char-enter off-map-0d 6 room-script!
-' off-map-0d.phase1 off-map-0d 1 room-script!
-' off-map-0d.enter off-map-0d 0 room-script!
-' off-map-0d.act00 off-map-0d $00 action-script!
+off-map-0d register-scripts   \ (its phases and actions, by their names)

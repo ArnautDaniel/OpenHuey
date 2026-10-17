@@ -77,16 +77,16 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 : castle-2f-7.phase2 ( -- )   \ 004011B0
     fiona-who 3 $2D char-faces-area? if
         c2f-7-flag1 story-flag? not if
-            5 0 0 scene-change
+            0 unhurried offer-action
         else
-            5 3 0 scene-change
+            3 unhurried offer-action
         then
     then
     fiona-who 4 $2D char-faces-area? if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     fiona-who 5 $2D char-faces-area? if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
 ;
 
@@ -399,17 +399,4 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-2f-7.enter castle-2f-7 0 room-script!
-' castle-2f-7.char-enter castle-2f-7 6 room-script!
-' castle-2f-7.phase1 castle-2f-7 1 room-script!
-' castle-2f-7.phase2 castle-2f-7 2 room-script!
-' castle-2f-7.act00 castle-2f-7 $00 action-script!
-' castle-2f-7.act01 castle-2f-7 $01 action-script!
-' castle-2f-7.act02 castle-2f-7 $02 action-script!
-' castle-2f-7.act03 castle-2f-7 $03 action-script!
-' castle-2f-7.act04 castle-2f-7 $04 action-script!
-' castle-2f-7.act05 castle-2f-7 $05 action-script!
-' castle-2f-7.act06 castle-2f-7 $06 action-script!
-' castle-2f-7.act07 castle-2f-7 $07 action-script!
-' castle-2f-7.act08 castle-2f-7 $08 action-script!
-' castle-2f-7.act09 castle-2f-7 $09 action-script!
+castle-2f-7 register-scripts   \ (its phases and actions, by their names)

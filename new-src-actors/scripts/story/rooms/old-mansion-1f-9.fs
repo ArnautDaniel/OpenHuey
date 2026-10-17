@@ -89,30 +89,30 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-9.phase2 ( -- )   \ 004080A0
     fiona-who 2 $32 char-faces-area? if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who 1 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who 3 char-in-area? fiona-who 15 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who 4 char-in-area? fiona-who -6 -22 $32 char-faces-xz? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     fiona-who 5 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 8 0 scene-change
+        8 unhurried offer-action
     then
     om1f-9-refined-antimony story-flag? not if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 5 4 scene-change
+            5 calm offer-action
         then
     then
     om1f-9-refined-magnesia-found story-flag? om1f-9-refined-magnesia story-flag? not and if
         3 1 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 7 4 scene-change
+            7 calm offer-action
         then
     then
 ;
@@ -475,17 +475,4 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-9.enter old-mansion-1f-9 0 room-script!
-' old-mansion-1f-9.char-enter old-mansion-1f-9 6 room-script!
-' old-mansion-1f-9.phase1 old-mansion-1f-9 1 room-script!
-' old-mansion-1f-9.phase2 old-mansion-1f-9 2 room-script!
-' old-mansion-1f-9.act00 old-mansion-1f-9 $00 action-script!
-' old-mansion-1f-9.act01 old-mansion-1f-9 $01 action-script!
-' old-mansion-1f-9.act02 old-mansion-1f-9 $02 action-script!
-' old-mansion-1f-9.act03 old-mansion-1f-9 $03 action-script!
-' old-mansion-1f-9.act04 old-mansion-1f-9 $04 action-script!
-' old-mansion-1f-9.act05 old-mansion-1f-9 $05 action-script!
-' old-mansion-1f-9.act06 old-mansion-1f-9 $06 action-script!
-' old-mansion-1f-9.act07 old-mansion-1f-9 $07 action-script!
-' old-mansion-1f-9.act08 old-mansion-1f-9 $08 action-script!
-' old-mansion-1f-9.act09 old-mansion-1f-9 $09 action-script!
+old-mansion-1f-9 register-scripts   \ (its phases and actions, by their names)

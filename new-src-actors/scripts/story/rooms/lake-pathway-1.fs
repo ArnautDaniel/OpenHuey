@@ -98,18 +98,18 @@ USING: room-names story.words story.shared story-names ;
 : lake-pathway-1.phase2 ( -- )   \ 004416A0
     c7-second-event story-flag? if
         fiona-who 4 char-in-area? fiona-who 0 $32 char-heading? and if
-            5 0 0 scene-change
+            0 unhurried offer-action
         then
         fiona-who 5 char-in-area? fiona-who 90 $32 char-heading? and if
-            5 0 0 scene-change
+            0 unhurried offer-action
         then
     else fiona-who 6 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then then
     lp-1-lavender story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 2 4 scene-change
+            2 calm offer-action
         then
     then
 ;
@@ -192,10 +192,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' lake-pathway-1.enter lake-pathway-1 0 room-script!
-' lake-pathway-1.char-enter lake-pathway-1 6 room-script!
-' lake-pathway-1.phase1 lake-pathway-1 1 room-script!
-' lake-pathway-1.phase2 lake-pathway-1 2 room-script!
-' lake-pathway-1.act00 lake-pathway-1 $00 action-script!
-' lake-pathway-1.act01 lake-pathway-1 $01 action-script!
-' lake-pathway-1.act02 lake-pathway-1 $02 action-script!
+lake-pathway-1 register-scripts   \ (its phases and actions, by their names)

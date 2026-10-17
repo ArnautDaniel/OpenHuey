@@ -144,34 +144,34 @@ USING: room-names story.words story.shared story-names ;
 
 : castle-1f-17.phase2 ( -- )   \ 003FC8F0
     -2147483646 scene-request? if
-        5 0 1 scene-change
+        0 always offer-action
     then
     fiona-who 6 char-in-area? if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     fiona-who 7 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who 8 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who 9 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who 90 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who $B char-in-area? fiona-who 45 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     c1f-17-lavender story-flag? not if
         0 0 8 4 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 5 4 scene-change
+            5 calm offer-action
         then
     then
     fiona-who $C $32 char-faces-area? if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
 ;
 
@@ -299,14 +299,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-17.enter castle-1f-17 0 room-script!
-' castle-1f-17.char-enter castle-1f-17 6 room-script!
-' castle-1f-17.phase1 castle-1f-17 1 room-script!
-' castle-1f-17.phase2 castle-1f-17 2 room-script!
-' castle-1f-17.act00 castle-1f-17 $00 action-script!
-' castle-1f-17.act01 castle-1f-17 $01 action-script!
-' castle-1f-17.act02 castle-1f-17 $02 action-script!
-' castle-1f-17.act03 castle-1f-17 $03 action-script!
-' castle-1f-17.act04 castle-1f-17 $04 action-script!
-' castle-1f-17.act05 castle-1f-17 $05 action-script!
-' castle-1f-17.act06 castle-1f-17 $06 action-script!
+castle-1f-17 register-scripts   \ (its phases and actions, by their names)

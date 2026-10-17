@@ -66,7 +66,7 @@ defer off-map-37.act00
         else
             3 message-close
         then
-        5 7 7 scene-change
+        7 always offer-action
     else
         3 message-close
     then
@@ -76,7 +76,7 @@ defer off-map-37.act00
         else
             $14 message-close
         then
-        5 6 7 scene-change
+        6 always offer-action
     else
         $14 message-close
     then
@@ -86,7 +86,7 @@ defer off-map-37.act00
         else
             $40 message-close
         then
-        5 2 7 scene-change
+        2 always offer-action
     else
         $40 message-close
     then
@@ -96,7 +96,7 @@ defer off-map-37.act00
         else
             1 message-close
         then
-        5 5 7 scene-change
+        5 always offer-action
     else
         1 message-close
     then
@@ -106,7 +106,7 @@ defer off-map-37.act00
         else
             0 message-close
         then
-        5 0 7 scene-change
+        0 always offer-action
     else
         0 message-close
     then
@@ -116,7 +116,7 @@ defer off-map-37.act00
         else
             $15 message-close
         then
-        5 1 7 scene-change
+        1 always offer-action
     else
         $15 message-close
     then
@@ -126,7 +126,7 @@ defer off-map-37.act00
         else
             $16 message-close
         then
-        5 8 7 scene-change
+        8 always offer-action
     else
         $16 message-close
     then
@@ -136,7 +136,7 @@ defer off-map-37.act00
         else
             2 message-close
         then
-        5 4 7 scene-change
+        4 always offer-action
     else
         2 message-close
     then
@@ -949,22 +949,4 @@ defer off-map-37.act00
 ;
 
 \ ---- registered ----
-' off-map-37.enter off-map-37 0 room-script!
-' off-map-37.char-enter off-map-37 6 room-script!
-' off-map-37.phase1 off-map-37 1 room-script!
-' off-map-37.phase2 off-map-37 2 room-script!
-' off-map-37.phase3 off-map-37 3 room-script!
-' off-map-37.act00 off-map-37 $00 action-script!
-' off-map-37.act01 off-map-37 $01 action-script!
-' off-map-37.act02 off-map-37 $02 action-script!
-' off-map-37.act03 off-map-37 $03 action-script!
-' off-map-37.act04 off-map-37 $04 action-script!
-' off-map-37.act05 off-map-37 $05 action-script!
-' off-map-37.act06 off-map-37 $06 action-script!
-' off-map-37.act07 off-map-37 $07 action-script!
-' off-map-37.act08 off-map-37 $08 action-script!
-' off-map-37.act09 off-map-37 $09 action-script!
-' off-map-37.act0A off-map-37 $0A action-script!
-' off-map-37.act0B off-map-37 $0B action-script!
-' off-map-37.act0C off-map-37 $0C action-script!
-' off-map-37.act0D off-map-37 $0D action-script!
+off-map-37 register-scripts   \ (its phases and actions, by their names)

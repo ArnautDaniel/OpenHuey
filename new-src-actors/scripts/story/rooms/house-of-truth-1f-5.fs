@@ -166,43 +166,43 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 : house-of-truth-1f-5.phase2 ( -- )   \ 00434B50
     fiona-who $A char-in-area? fiona-who 67 $32 char-heading? and if
         found-file-257 story-flag? not if
-            5 $84 3 scene-change
+            $84 calm-hewie-up offer-action
         else
-            5 6 0 scene-change
+            6 unhurried offer-action
         then
     then
     fiona-who $C char-in-area? fiona-who 0 $32 char-heading? and if
         found-file-257 story-flag? if
-            5 1 0 scene-change
+            1 unhurried offer-action
         else
-            5 2 0 scene-change
+            2 unhurried offer-action
         then
     then
     -2147483646 scene-request? if
         fiona-who 0 char-before-door? if
             found-file-257 story-flag? not if
-                5 3 1 scene-change
+                3 always offer-action
             else
-                5 6 0 scene-change
+                6 unhurried offer-action
             then
         then
         fiona-who 1 char-before-door? if
             found-file-257 story-flag? not if
-                5 4 1 scene-change
+                4 always offer-action
             else
-                5 6 0 scene-change
+                6 unhurried offer-action
             then
         then
         fiona-who 2 char-before-door? if
             found-file-257 story-flag? if
-                5 6 0 scene-change
+                6 unhurried offer-action
             then
         then
     then
     found-file-257 story-flag? if
         0 0.0 0.0 74.25 8 5 0 zone
         fiona-who 0 8 char-zone-bits? if
-            5 8 0 scene-change
+            8 unhurried offer-action
         then
     then
 ;
@@ -513,18 +513,4 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 ;
 
 \ ---- registered ----
-' house-of-truth-1f-5.enter house-of-truth-1f-5 0 room-script!
-' house-of-truth-1f-5.char-enter house-of-truth-1f-5 6 room-script!
-' house-of-truth-1f-5.phase1 house-of-truth-1f-5 1 room-script!
-' house-of-truth-1f-5.phase2 house-of-truth-1f-5 2 room-script!
-' house-of-truth-1f-5.phase3 house-of-truth-1f-5 3 room-script!
-' house-of-truth-1f-5.phase5 house-of-truth-1f-5 5 room-script!
-' house-of-truth-1f-5.act00 house-of-truth-1f-5 $00 action-script!
-' house-of-truth-1f-5.act01 house-of-truth-1f-5 $01 action-script!
-' house-of-truth-1f-5.act02 house-of-truth-1f-5 $02 action-script!
-' house-of-truth-1f-5.act03 house-of-truth-1f-5 $03 action-script!
-' house-of-truth-1f-5.act04 house-of-truth-1f-5 $04 action-script!
-' house-of-truth-1f-5.act05 house-of-truth-1f-5 $05 action-script!
-' house-of-truth-1f-5.act06 house-of-truth-1f-5 $06 action-script!
-' house-of-truth-1f-5.act07 house-of-truth-1f-5 $07 action-script!
-' house-of-truth-1f-5.act08 house-of-truth-1f-5 $08 action-script!
+house-of-truth-1f-5 register-scripts   \ (its phases and actions, by their names)

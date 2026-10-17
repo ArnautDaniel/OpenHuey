@@ -47,13 +47,13 @@ USING: room-names story.words story.shared story-names ;
     got-metal-boots story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 0 4 scene-change
+            0 calm offer-action
         then
     then
     got-castle-gate-key story-flag? not if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then
 ;
@@ -136,10 +136,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' castle-b1-3.enter castle-b1-3 0 room-script!
-' castle-b1-3.char-enter castle-b1-3 6 room-script!
-' castle-b1-3.phase1 castle-b1-3 1 room-script!
-' castle-b1-3.phase2 castle-b1-3 2 room-script!
-' castle-b1-3.phase3 castle-b1-3 3 room-script!
-' castle-b1-3.act00 castle-b1-3 $00 action-script!
-' castle-b1-3.act01 castle-b1-3 $01 action-script!
+castle-b1-3 register-scripts   \ (its phases and actions, by their names)

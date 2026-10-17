@@ -117,24 +117,24 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : front-garden-4.phase2 ( -- )   \ 00405850
     fiona-who 4 char-in-area? fiona-who -140 0 $3C char-faces-xz? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who 5 char-in-area? fiona-who 90 $3C char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     fiona-who 6 char-in-area? fiona-who 0 $3C char-heading? and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
     fg-4-camomile story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then
     fg-4-album-medallion-found story-flag? fg-4-album-medallion story-flag? not and if
         2 1 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 2 4 scene-change
+            2 calm offer-action
         then
     then
 ;
@@ -285,14 +285,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' front-garden-4.enter front-garden-4 0 room-script!
-' front-garden-4.char-enter front-garden-4 6 room-script!
-' front-garden-4.phase1 front-garden-4 1 room-script!
-' front-garden-4.phase2 front-garden-4 2 room-script!
-' front-garden-4.act00 front-garden-4 $00 action-script!
-' front-garden-4.act01 front-garden-4 $01 action-script!
-' front-garden-4.act02 front-garden-4 $02 action-script!
-' front-garden-4.act03 front-garden-4 $03 action-script!
-' front-garden-4.act04 front-garden-4 $04 action-script!
-' front-garden-4.act05 front-garden-4 $05 action-script!
-' front-garden-4.act06 front-garden-4 $06 action-script!
+front-garden-4 register-scripts   \ (its phases and actions, by their names)

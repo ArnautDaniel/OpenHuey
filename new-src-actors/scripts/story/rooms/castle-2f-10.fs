@@ -162,9 +162,4 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 \ ---- registered ----
-' castle-2f-10.enter castle-2f-10 0 room-script!
-' castle-2f-10.char-enter castle-2f-10 6 room-script!
-' castle-2f-10.phase1 castle-2f-10 1 room-script!
-' castle-2f-10.phase2 castle-2f-10 2 room-script!
-' castle-2f-10.act00 castle-2f-10 $00 action-script!
-' castle-2f-10.act01 castle-2f-10 $01 action-script!
+castle-2f-10 register-scripts   \ (its phases and actions, by their names)

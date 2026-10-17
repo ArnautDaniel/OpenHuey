@@ -157,21 +157,21 @@ defer house-of-truth-1f-6.act02
 : house-of-truth-1f-6.phase2 ( -- )   \ 00435200
     fiona-who 9 char-in-area? fiona-who -45 $3C char-heading? and if
         stalker-who char-here? not if
-            5 8 5 scene-change
+            8 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
     -2147483646 scene-request? if
         fiona-who 0 char-before-door? if
-            5 4 1 scene-change
+            4 always offer-action
         then
     then
     over-music-e story-flag? not if
         1 -1 var? if
             5 ebit? not if
                 fiona-who $B char-in-area? fiona-who 0 $32 char-heading? and if
-                    5 7 0 scene-change
+                    7 unhurried offer-action
                 then
             then
         then
@@ -637,19 +637,4 @@ defer house-of-truth-1f-6.act02
 ;
 
 \ ---- registered ----
-' house-of-truth-1f-6.enter house-of-truth-1f-6 0 room-script!
-' house-of-truth-1f-6.char-enter house-of-truth-1f-6 6 room-script!
-' house-of-truth-1f-6.phase1 house-of-truth-1f-6 1 room-script!
-' house-of-truth-1f-6.phase2 house-of-truth-1f-6 2 room-script!
-' house-of-truth-1f-6.act00 house-of-truth-1f-6 $00 action-script!
-' house-of-truth-1f-6.act01 house-of-truth-1f-6 $01 action-script!
-' house-of-truth-1f-6.act02 house-of-truth-1f-6 $02 action-script!
-' house-of-truth-1f-6.act03 house-of-truth-1f-6 $03 action-script!
-' house-of-truth-1f-6.act04 house-of-truth-1f-6 $04 action-script!
-' house-of-truth-1f-6.act05 house-of-truth-1f-6 $05 action-script!
-' house-of-truth-1f-6.act06 house-of-truth-1f-6 $06 action-script!
-' house-of-truth-1f-6.act07 house-of-truth-1f-6 $07 action-script!
-' house-of-truth-1f-6.act08 house-of-truth-1f-6 $08 action-script!
-' house-of-truth-1f-6.act09 house-of-truth-1f-6 $09 action-script!
-' house-of-truth-1f-6.act0A house-of-truth-1f-6 $0A action-script!
-' house-of-truth-1f-6.act0B house-of-truth-1f-6 $0B action-script!
+house-of-truth-1f-6 register-scripts   \ (its phases and actions, by their names)

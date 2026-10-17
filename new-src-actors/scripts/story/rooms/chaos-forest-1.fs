@@ -140,7 +140,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 : chaos-forest-1.phase2 ( -- )   \ 0041DF70
     got-forest-map story-flag? not if
         fiona-who $F char-in-area? fiona-who 90 $32 char-heading? and if
-            5 2 4 scene-change
+            2 calm offer-action
         then
     then
 ;
@@ -251,12 +251,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' chaos-forest-1.enter chaos-forest-1 0 room-script!
-' chaos-forest-1.char-enter chaos-forest-1 6 room-script!
-' chaos-forest-1.phase1 chaos-forest-1 1 room-script!
-' chaos-forest-1.phase5 chaos-forest-1 5 room-script!
-' chaos-forest-1.phase2 chaos-forest-1 2 room-script!
-' chaos-forest-1.act00 chaos-forest-1 $00 action-script!
-' chaos-forest-1.act01 chaos-forest-1 $01 action-script!
-' chaos-forest-1.act02 chaos-forest-1 $02 action-script!
-' chaos-forest-1.act03 chaos-forest-1 $03 action-script!
+chaos-forest-1 register-scripts   \ (its phases and actions, by their names)

@@ -130,17 +130,17 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-b1-2.phase2 ( -- )   \ 003F9B60
     fiona-who $A char-in-area? fiona-who 90 $2D char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who $B char-in-area? fiona-who 90 $2D char-heading? and if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     -2147483646 scene-request? if
-        5 3 1 scene-change
+        3 always offer-action
     then
     fiona-who $C char-in-area? fiona-who 90 $3C char-heading? and if
         stalker-who char-here? not if
-            5 5 5 scene-change
+            5 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
@@ -148,13 +148,13 @@ USING: room-names story.words story.shared flag-names story-names ;
     cb1-2-camomile story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 2 4 scene-change
+            2 calm offer-action
         then
     then
     cb1-2-medallion-found story-flag? cb1-2-medallion story-flag? not and if
         2 1 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 $A 4 scene-change
+            $A calm offer-action
         then
     then
 ;
@@ -511,18 +511,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-b1-2.enter castle-b1-2 0 room-script!
-' castle-b1-2.char-enter castle-b1-2 6 room-script!
-' castle-b1-2.phase1 castle-b1-2 1 room-script!
-' castle-b1-2.phase2 castle-b1-2 2 room-script!
-' castle-b1-2.act00 castle-b1-2 $00 action-script!
-' castle-b1-2.act01 castle-b1-2 $01 action-script!
-' castle-b1-2.act02 castle-b1-2 $02 action-script!
-' castle-b1-2.act03 castle-b1-2 $03 action-script!
-' castle-b1-2.act04 castle-b1-2 $04 action-script!
-' castle-b1-2.act05 castle-b1-2 $05 action-script!
-' castle-b1-2.act06 castle-b1-2 $06 action-script!
-' castle-b1-2.act07 castle-b1-2 $07 action-script!
-' castle-b1-2.act08 castle-b1-2 $08 action-script!
-' castle-b1-2.act09 castle-b1-2 $09 action-script!
-' castle-b1-2.act0A castle-b1-2 $0A action-script!
+castle-b1-2 register-scripts   \ (its phases and actions, by their names)

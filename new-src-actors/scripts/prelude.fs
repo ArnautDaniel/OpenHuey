@@ -133,6 +133,7 @@ IN: forth
     loop  nip nip ;
 : reduce ( l acc xt -- acc' )  \ xt ( acc x -- acc' )
     swap  2 pick length 0 ?do  2 pick i swap nth  2 pick execute  loop  nip nip ;
+: find-word ( addr len -- xt | 0 )  find ;   \ (the dictionary's: `find` below is the lists')
 : find ( l xt -- x true | false )  \ the first item xt ( x -- flag ) holds for
     over length 0 ?do
         over i swap nth  dup 2 pick execute if  nip nip true unloop exit  then  drop

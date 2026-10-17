@@ -210,10 +210,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' chaos-forest-11.enter chaos-forest-11 0 room-script!
-' chaos-forest-11.char-enter chaos-forest-11 6 room-script!
-' chaos-forest-11.phase1 chaos-forest-11 1 room-script!
-' chaos-forest-11.phase5 chaos-forest-11 5 room-script!
-' chaos-forest-11.act00 chaos-forest-11 $00 action-script!
-' chaos-forest-11.act01 chaos-forest-11 $01 action-script!
-' chaos-forest-11.act02 chaos-forest-11 $02 action-script!
+chaos-forest-11 register-scripts   \ (its phases and actions, by their names)

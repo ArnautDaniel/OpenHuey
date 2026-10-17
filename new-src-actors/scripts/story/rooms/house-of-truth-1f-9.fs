@@ -336,17 +336,17 @@ defer house-of-truth-1f-9.act0F
 
 : house-of-truth-1f-9.phase2 ( -- )   \ 004370F0
     fiona-who 3 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     scene-5-pending state-flag? if
         -2147483646 scene-request? if
-            5 6 1 scene-change
+            6 always offer-action
         then
     then
     ht1f-9-flag2 story-flag? if
         2 0.0 0.0 0.0 $17 4 0 zone
         fiona-who 2 3 char-zone-bits? fiona-who 0 0 $32 char-faces-xz? and if
-            5 7 0 scene-change
+            7 unhurried offer-action
         then
     then
 ;
@@ -1000,27 +1000,4 @@ defer house-of-truth-1f-9.act0F
 ;
 
 \ ---- registered ----
-' house-of-truth-1f-9.enter house-of-truth-1f-9 0 room-script!
-' house-of-truth-1f-9.char-enter house-of-truth-1f-9 6 room-script!
-' house-of-truth-1f-9.phase1 house-of-truth-1f-9 1 room-script!
-' house-of-truth-1f-9.phase2 house-of-truth-1f-9 2 room-script!
-' house-of-truth-1f-9.phase3 house-of-truth-1f-9 3 room-script!
-' house-of-truth-1f-9.act00 house-of-truth-1f-9 $00 action-script!
-' house-of-truth-1f-9.act01 house-of-truth-1f-9 $01 action-script!
-' house-of-truth-1f-9.act02 house-of-truth-1f-9 $02 action-script!
-' house-of-truth-1f-9.act03 house-of-truth-1f-9 $03 action-script!
-' house-of-truth-1f-9.act04 house-of-truth-1f-9 $04 action-script!
-' house-of-truth-1f-9.act05 house-of-truth-1f-9 $05 action-script!
-' house-of-truth-1f-9.act06 house-of-truth-1f-9 $06 action-script!
-' house-of-truth-1f-9.act07 house-of-truth-1f-9 $07 action-script!
-' house-of-truth-1f-9.act08 house-of-truth-1f-9 $08 action-script!
-' house-of-truth-1f-9.act09 house-of-truth-1f-9 $09 action-script!
-' house-of-truth-1f-9.act0A house-of-truth-1f-9 $0A action-script!
-' house-of-truth-1f-9.act0B house-of-truth-1f-9 $0B action-script!
-' house-of-truth-1f-9.act0C house-of-truth-1f-9 $0C action-script!
-' house-of-truth-1f-9.act0D house-of-truth-1f-9 $0D action-script!
-' house-of-truth-1f-9.act0E house-of-truth-1f-9 $0E action-script!
-' house-of-truth-1f-9.act0F house-of-truth-1f-9 $0F action-script!
-' house-of-truth-1f-9.act10 house-of-truth-1f-9 $10 action-script!
-' house-of-truth-1f-9.act11 house-of-truth-1f-9 $11 action-script!
-' house-of-truth-1f-9.act12 house-of-truth-1f-9 $12 action-script!
+house-of-truth-1f-9 register-scripts   \ (its phases and actions, by their names)

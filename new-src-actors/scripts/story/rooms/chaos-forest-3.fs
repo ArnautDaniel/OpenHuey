@@ -95,6 +95,4 @@ USING: room-names story.words story.shared ;
 ;
 
 \ ---- registered ----
-' chaos-forest-3.char-enter chaos-forest-3 6 room-script!
-' chaos-forest-3.phase1 chaos-forest-3 1 room-script!
-' chaos-forest-3.enter chaos-forest-3 0 room-script!
+chaos-forest-3 register-scripts   \ (its phases and actions, by their names)

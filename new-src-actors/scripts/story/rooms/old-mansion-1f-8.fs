@@ -374,52 +374,52 @@ USING: room-names story.words story.shared flag-names story-names ;
 : old-mansion-1f-8.phase2 ( -- )   \ 004258D0
     -2147483646 scene-request? if
         fiona-who 1 char-before-door? fiona-who 1 char-in-area? and if
-            5 1 1 scene-change
+            1 always offer-action
         then
     then
     0 ebit? if
         fiona-who $F char-in-area? fiona-who -60 $3C char-heading? and if
-            5 $1D 0 scene-change
+            $1D unhurried offer-action
         then
     then
     om1f-8-beef-jerky story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 2 4 scene-change
+            2 calm offer-action
         then
     then
     om1f-8-album-medallion story-flag? not if
         2 2 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 4 4 scene-change
+            4 calm offer-action
         then
     then
     fiona-who $18 char-in-area? fiona-who -40 $3C char-heading? and if
-        5 $E 0 scene-change
+        $E unhurried offer-action
     then
     fiona-who $10 char-in-area? fiona-who 0 $3C char-heading? and if
-        5 $F 0 scene-change
+        $F unhurried offer-action
     then
     fiona-who $11 char-in-area? fiona-who -40 $3C char-heading? and if
-        5 $10 0 scene-change
+        $10 unhurried offer-action
     then
     fiona-who $12 char-in-area? fiona-who -60 $3C char-heading? and if
-        5 $11 0 scene-change
+        $11 unhurried offer-action
     then
     fiona-who $13 char-in-area? fiona-who 45 $3C char-heading? and if
-        5 $12 0 scene-change
+        $12 unhurried offer-action
     then
     fiona-who $14 char-in-area? fiona-who 62 $3C char-heading? and if
-        5 $13 0 scene-change
+        $13 unhurried offer-action
     then
     fiona-who $15 char-in-area? fiona-who 90 $3C char-heading? and if
-        5 $14 0 scene-change
+        $14 unhurried offer-action
     then
     fiona-who $16 char-in-area? fiona-who -30 $3C char-heading? and if
-        5 $15 0 scene-change
+        $15 unhurried offer-action
     then
     fiona-who $17 char-in-area? fiona-who 45 $3C char-heading? and if
-        5 $16 0 scene-change
+        $16 unhurried offer-action
     then
 ;
 
@@ -1275,44 +1275,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-8.enter old-mansion-1f-8 0 room-script!
-' old-mansion-1f-8.char-enter old-mansion-1f-8 6 room-script!
-' old-mansion-1f-8.phase1 old-mansion-1f-8 1 room-script!
-' old-mansion-1f-8.phase2 old-mansion-1f-8 2 room-script!
-' old-mansion-1f-8.phase5 old-mansion-1f-8 5 room-script!
-' old-mansion-1f-8.act00 old-mansion-1f-8 $00 action-script!
-' old-mansion-1f-8.act01 old-mansion-1f-8 $01 action-script!
-' old-mansion-1f-8.act02 old-mansion-1f-8 $02 action-script!
-' old-mansion-1f-8.act03 old-mansion-1f-8 $03 action-script!
-' old-mansion-1f-8.act04 old-mansion-1f-8 $04 action-script!
-' old-mansion-1f-8.act05 old-mansion-1f-8 $05 action-script!
-' old-mansion-1f-8.act06 old-mansion-1f-8 $06 action-script!
-' old-mansion-1f-8.act07 old-mansion-1f-8 $07 action-script!
-' old-mansion-1f-8.act08 old-mansion-1f-8 $08 action-script!
-' old-mansion-1f-8.act09 old-mansion-1f-8 $09 action-script!
-' old-mansion-1f-8.act0A old-mansion-1f-8 $0A action-script!
-' old-mansion-1f-8.act0B old-mansion-1f-8 $0B action-script!
-' old-mansion-1f-8.act0C old-mansion-1f-8 $0C action-script!
-' old-mansion-1f-8.act0D old-mansion-1f-8 $0D action-script!
-' old-mansion-1f-8.act0E old-mansion-1f-8 $0E action-script!
-' old-mansion-1f-8.act0F old-mansion-1f-8 $0F action-script!
-' old-mansion-1f-8.act10 old-mansion-1f-8 $10 action-script!
-' old-mansion-1f-8.act11 old-mansion-1f-8 $11 action-script!
-' old-mansion-1f-8.act12 old-mansion-1f-8 $12 action-script!
-' old-mansion-1f-8.act13 old-mansion-1f-8 $13 action-script!
-' old-mansion-1f-8.act14 old-mansion-1f-8 $14 action-script!
-' old-mansion-1f-8.act15 old-mansion-1f-8 $15 action-script!
-' old-mansion-1f-8.act16 old-mansion-1f-8 $16 action-script!
-' old-mansion-1f-8.act17 old-mansion-1f-8 $17 action-script!
-' old-mansion-1f-8.act18 old-mansion-1f-8 $18 action-script!
-' old-mansion-1f-8.act19 old-mansion-1f-8 $19 action-script!
-' old-mansion-1f-8.act1A old-mansion-1f-8 $1A action-script!
-' old-mansion-1f-8.act1B old-mansion-1f-8 $1B action-script!
-' old-mansion-1f-8.act1C old-mansion-1f-8 $1C action-script!
-' old-mansion-1f-8.act1D old-mansion-1f-8 $1D action-script!
-' old-mansion-1f-8.act1E old-mansion-1f-8 $1E action-script!
-' old-mansion-1f-8.act1F old-mansion-1f-8 $1F action-script!
-' old-mansion-1f-8.act20 old-mansion-1f-8 $20 action-script!
-' old-mansion-1f-8.act21 old-mansion-1f-8 $21 action-script!
-' old-mansion-1f-8.act22 old-mansion-1f-8 $22 action-script!
-' old-mansion-1f-8.act23 old-mansion-1f-8 $23 action-script!
+old-mansion-1f-8 register-scripts   \ (its phases and actions, by their names)

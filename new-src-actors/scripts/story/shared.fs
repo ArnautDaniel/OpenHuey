@@ -733,7 +733,7 @@ defer shared.act97
 
 : shared.after-phase2 ( -- )   \ 003D6230
     fiona-who stalker-who 2 0 $32 char-touching-facing? stalker-second-stance? and if
-        5 $80 4 scene-change
+        $80 calm offer-action
     then
 ;
 
@@ -1088,40 +1088,8 @@ defer shared.act97
     then
 ;
 
-' shared.act80 $80 builtin-script!
-' shared.act81 $81 builtin-script!
-' shared.act82 $82 builtin-script!
-' shared.act83 $83 builtin-script!
-' shared.act84 $84 builtin-script!
-' shared.act85 $85 builtin-script!
-' shared.act86 $86 builtin-script!
-' shared.act87 $87 builtin-script!
-' shared.act88 $88 builtin-script!
-' shared.act89 $89 builtin-script!
-' shared.act8A $8A builtin-script!
-' shared.act8B $8B builtin-script!
-' shared.act8C $8C builtin-script!
-' shared.act8D $8D builtin-script!
-' shared.act8E $8E builtin-script!
-' shared.act8F $8F builtin-script!
-' shared.act90 $90 builtin-script!
-' shared.act91 $91 builtin-script!
-' shared.act92 $92 builtin-script!
-' shared.act93 $93 builtin-script!
-' shared.act94 $94 builtin-script!
-' shared.act95 $95 builtin-script!
-' shared.act96 $96 builtin-script!
-' shared.act97 $97 builtin-script!
-' shared.act98 $98 builtin-script!
-' shared.act99 $99 builtin-script!
-' shared.act9A $9A builtin-script!
-' shared.act9B $9B builtin-script!
-' shared.act9C $9C builtin-script!
-' shared.actB8 $B8 builtin-script!
-' shared.actB9 $B9 builtin-script!
+register-shared   \ (shared.act80 .., by their names; the four below share a script)
 ' shared.actB8 $BA builtin-script!
 ' shared.actB9 $BB builtin-script!
-' shared.actBC $BC builtin-script!
-' shared.actBD $BD builtin-script!
 ' shared.actB8 $BE builtin-script!
 ' shared.actB9 $BF builtin-script!

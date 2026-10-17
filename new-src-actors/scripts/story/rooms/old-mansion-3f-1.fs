@@ -263,18 +263,18 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 : old-mansion-3f-1.phase2 ( -- )   \ 00428460
     scene-5-pending state-flag? if
         -2147483646 scene-request? if
-            5 6 1 scene-change
+            6 always offer-action
         then
     then
     om3f-1-flag2 story-flag? if
         fiona-who 5 $2D char-faces-area? if
-            5 7 0 scene-change
+            7 unhurried offer-action
         then
     then
     got-mars-key story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 5 4 scene-change
+            5 calm offer-action
         then
     then
 ;
@@ -1030,20 +1030,4 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 \ ---- registered ----
-' old-mansion-3f-1.enter old-mansion-3f-1 0 room-script!
-' old-mansion-3f-1.char-enter old-mansion-3f-1 6 room-script!
-' old-mansion-3f-1.phase1 old-mansion-3f-1 1 room-script!
-' old-mansion-3f-1.phase2 old-mansion-3f-1 2 room-script!
-' old-mansion-3f-1.phase3 old-mansion-3f-1 3 room-script!
-' old-mansion-3f-1.act00 old-mansion-3f-1 $00 action-script!
-' old-mansion-3f-1.act01 old-mansion-3f-1 $01 action-script!
-' old-mansion-3f-1.act02 old-mansion-3f-1 $02 action-script!
-' old-mansion-3f-1.act03 old-mansion-3f-1 $03 action-script!
-' old-mansion-3f-1.act04 old-mansion-3f-1 $04 action-script!
-' old-mansion-3f-1.act05 old-mansion-3f-1 $05 action-script!
-' old-mansion-3f-1.act06 old-mansion-3f-1 $06 action-script!
-' old-mansion-3f-1.act07 old-mansion-3f-1 $07 action-script!
-' old-mansion-3f-1.act08 old-mansion-3f-1 $08 action-script!
-' old-mansion-3f-1.act09 old-mansion-3f-1 $09 action-script!
-' old-mansion-3f-1.act0A old-mansion-3f-1 $0A action-script!
-' old-mansion-3f-1.act0B old-mansion-3f-1 $0B action-script!
+old-mansion-3f-1 register-scripts   \ (its phases and actions, by their names)

@@ -212,24 +212,24 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-2f-12.phase2 ( -- )   \ 00438230
     fiona-who $A $32 char-faces-area? if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who $B char-in-area? fiona-who -45 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who $C char-in-area? fiona-who 22 $3C char-heading? and if
-        5 6 0 scene-change
+        6 unhurried offer-action
     then
     -2147483646 scene-request? fiona-who 0 char-before-door? and if
-        5 1 1 scene-change
+        1 always offer-action
     then
     fiona-who $D char-in-area? fiona-who 50 $32 char-heading? and if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     om2f-12-antimony-powder-found story-flag? om2f-12-antimony-powder story-flag? not and if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 5 4 scene-change
+            5 calm offer-action
         then
     then
 ;
@@ -505,16 +505,4 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-2f-12.enter old-mansion-2f-12 0 room-script!
-' old-mansion-2f-12.char-enter old-mansion-2f-12 6 room-script!
-' old-mansion-2f-12.phase1 old-mansion-2f-12 1 room-script!
-' old-mansion-2f-12.phase2 old-mansion-2f-12 2 room-script!
-' old-mansion-2f-12.phase3 old-mansion-2f-12 3 room-script!
-' old-mansion-2f-12.act00 old-mansion-2f-12 $00 action-script!
-' old-mansion-2f-12.act01 old-mansion-2f-12 $01 action-script!
-' old-mansion-2f-12.act02 old-mansion-2f-12 $02 action-script!
-' old-mansion-2f-12.act03 old-mansion-2f-12 $03 action-script!
-' old-mansion-2f-12.act04 old-mansion-2f-12 $04 action-script!
-' old-mansion-2f-12.act05 old-mansion-2f-12 $05 action-script!
-' old-mansion-2f-12.act06 old-mansion-2f-12 $06 action-script!
-' old-mansion-2f-12.phase5 old-mansion-2f-12 5 room-script!
+old-mansion-2f-12 register-scripts   \ (its phases and actions, by their names)

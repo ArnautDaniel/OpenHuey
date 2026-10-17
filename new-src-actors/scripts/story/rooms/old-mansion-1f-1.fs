@@ -326,13 +326,4 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-1.enter old-mansion-1f-1 0 room-script!
-' old-mansion-1f-1.char-enter old-mansion-1f-1 6 room-script!
-' old-mansion-1f-1.phase1 old-mansion-1f-1 1 room-script!
-' old-mansion-1f-1.phase5 old-mansion-1f-1 5 room-script!
-' old-mansion-1f-1.act00 old-mansion-1f-1 $00 action-script!
-' old-mansion-1f-1.act01 old-mansion-1f-1 $01 action-script!
-' old-mansion-1f-1.act02 old-mansion-1f-1 $02 action-script!
-' old-mansion-1f-1.act03 old-mansion-1f-1 $03 action-script!
-' old-mansion-1f-1.act04 old-mansion-1f-1 $04 action-script!
-' old-mansion-1f-1.phase2 old-mansion-1f-1 2 room-script!
+old-mansion-1f-1 register-scripts   \ (its phases and actions, by their names)

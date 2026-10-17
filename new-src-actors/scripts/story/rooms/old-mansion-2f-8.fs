@@ -295,43 +295,43 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-2f-8.phase2 ( -- )   \ 00411430
     fiona-who $16 $32 char-faces-area? if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who $17 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     fiona-who $18 char-in-area? fiona-who 90 $3C char-heading? and if
         stalker-who char-here? not if
-            5 6 5 scene-change
+            6 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
     fiona-who $19 char-in-area? fiona-who -15 $32 char-heading? and if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     fiona-who $1A char-in-area? fiona-who 45 $3C char-heading? and if
-        5 $C 0 scene-change
+        $C unhurried offer-action
     then
     fiona-who $1B char-in-area? fiona-who -90 $3C char-heading? and if
-        5 $D 0 scene-change
+        $D unhurried offer-action
     then
     fiona-who $1C char-in-area? fiona-who 0 $3C char-heading? and if
-        5 $E 0 scene-change
+        $E unhurried offer-action
     then
     -2147483646 scene-request? fiona-who 0 char-before-door? and if
-        5 $F 1 scene-change
+        $F always offer-action
     then
     om2f-8-camomile story-flag? not if
         3 0 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 $A 4 scene-change
+            $A calm offer-action
         then
     then
     om2f-8-lavender story-flag? not if
         4 1 5 5 0 zone-at-effect
         fiona-who 4 3 char-zone-bits? if
-            5 $B 4 scene-change
+            $B calm offer-action
         then
     then
 ;
@@ -742,24 +742,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-2f-8.enter old-mansion-2f-8 0 room-script!
-' old-mansion-2f-8.char-enter old-mansion-2f-8 6 room-script!
-' old-mansion-2f-8.phase1 old-mansion-2f-8 1 room-script!
-' old-mansion-2f-8.phase2 old-mansion-2f-8 2 room-script!
-' old-mansion-2f-8.phase3 old-mansion-2f-8 3 room-script!
-' old-mansion-2f-8.act00 old-mansion-2f-8 $00 action-script!
-' old-mansion-2f-8.act01 old-mansion-2f-8 $01 action-script!
-' old-mansion-2f-8.act02 old-mansion-2f-8 $02 action-script!
-' old-mansion-2f-8.act03 old-mansion-2f-8 $03 action-script!
-' old-mansion-2f-8.act04 old-mansion-2f-8 $04 action-script!
-' old-mansion-2f-8.act05 old-mansion-2f-8 $05 action-script!
-' old-mansion-2f-8.act06 old-mansion-2f-8 $06 action-script!
-' old-mansion-2f-8.act07 old-mansion-2f-8 $07 action-script!
-' old-mansion-2f-8.act08 old-mansion-2f-8 $08 action-script!
-' old-mansion-2f-8.act09 old-mansion-2f-8 $09 action-script!
-' old-mansion-2f-8.act0A old-mansion-2f-8 $0A action-script!
-' old-mansion-2f-8.act0B old-mansion-2f-8 $0B action-script!
-' old-mansion-2f-8.act0C old-mansion-2f-8 $0C action-script!
-' old-mansion-2f-8.act0D old-mansion-2f-8 $0D action-script!
-' old-mansion-2f-8.act0E old-mansion-2f-8 $0E action-script!
-' old-mansion-2f-8.act0F old-mansion-2f-8 $0F action-script!
+old-mansion-2f-8 register-scripts   \ (its phases and actions, by their names)

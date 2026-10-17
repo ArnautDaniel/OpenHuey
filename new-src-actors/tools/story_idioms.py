@@ -56,6 +56,15 @@ def shaped(seq):
     return re.compile(r"(?<!\S)" + r"\s+".join(parts) + r"(?!\S)")
 
 
+# Fiona's action offered: `5 act kind scene-change` (scene 5 always) - its kind by when it may be
+WHEN = {0: "unhurried", 1: "always", 7: "always", 2: "calm", 4: "calm", 5: "calm", 6: "calm", 3: "calm-hewie-up"}
+OFFER = re.compile(r"(?<!\S)5\s+(\S+)\s+([0-7])\s+scene-change(?!\S)")
+
+
+def offers(text):
+    return OFFER.subn(lambda m: f"{m.group(1)} {WHEN[int(m.group(2))]} offer-action", text)
+
+
 def main():
     pats = [(name, pattern(seq)) for name, seq in IDIOMS]
     pats += [(name, shaped(seq)) for name, seq in SHAPED]
@@ -67,6 +76,8 @@ def main():
                                                   for w in name.split()))
             t, n = p.subn(repl, t)
             counts[name] += n
+        t, n = offers(t)
+        counts["offer-action"] = counts.get("offer-action", 0) + n
         if t != s:
             f.write_text(t)
     for name, n in counts.items():

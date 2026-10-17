@@ -94,8 +94,4 @@ USING: room-names story.words story.shared flag-names story.clock ;
 ;
 
 \ ---- registered ----
-' off-map-d9.enter off-map-d9 0 room-script!
-' off-map-d9.char-enter off-map-d9 6 room-script!
-' off-map-d9.phase1 off-map-d9 1 room-script!
-' off-map-d9.phase3 off-map-d9 3 room-script!
-' off-map-d9.act00 off-map-d9 $00 action-script!
+off-map-d9 register-scripts   \ (its phases and actions, by their names)

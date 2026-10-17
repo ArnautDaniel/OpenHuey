@@ -310,119 +310,119 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
 : old-mansion-1f-15.phase2 ( -- )   \ 004272A0
     got-cathedral-secrets story-flag? not if
         fiona-who 9 $32 char-faces-area? if
-            5 9 4 scene-change
+            9 calm offer-action
         then
     then
     got-occult-philosophy story-flag? not if
         fiona-who $B char-in-area? om1f-15-flag1 story-flag? and if
-            5 $A 4 scene-change
+            $A calm offer-action
         then
     then
     got-wisemans-crafts story-flag? not if
         fiona-who $A char-in-area? fiona-who 90 $32 char-heading? and if
-            5 $B 4 scene-change
+            $B calm offer-action
         then
     then
     books-placed story-flag? not if
         fiona-who $D char-in-area? fiona-who -45 $32 char-heading? and if
             lectern-0-book-1 story-flag? lectern-0-book-2 story-flag? or if
-                5 $C 4 scene-change
+                $C calm offer-action
             else
-                5 $C 0 scene-change
+                $C unhurried offer-action
             then
         then
         fiona-who $C char-in-area? fiona-who 45 $32 char-heading? and if
-            5 $10 0 scene-change
+            $10 unhurried offer-action
         then
     else
         fiona-who $10 char-in-area? fiona-who -45 $32 char-heading? and if
-            5 $F 0 scene-change
+            $F unhurried offer-action
         then
         fiona-who $F char-in-area? fiona-who 45 $32 char-heading? and if
-            5 $10 0 scene-change
+            $10 unhurried offer-action
         then
     then
     lectern-1-book-1 story-flag? not if
         fiona-who $11 char-in-area? fiona-who 45 $32 char-heading? and if
             lectern-1-book-0 story-flag? lectern-1-book-2 story-flag? or if
-                5 $D 4 scene-change
+                $D calm offer-action
             else
-                5 $D 0 scene-change
+                $D unhurried offer-action
             then
         then
     else fiona-who $13 char-in-area? fiona-who 45 $32 char-heading? and if
-        5 $11 0 scene-change
+        $11 unhurried offer-action
     then then
     lectern-2-book-2 story-flag? not if
         fiona-who $14 char-in-area? fiona-who 90 $32 char-heading? and if
             lectern-2-book-0 story-flag? lectern-2-book-1 story-flag? or if
-                5 $E 4 scene-change
+                $E calm offer-action
             else
-                5 $E 0 scene-change
+                $E unhurried offer-action
             then
         then
         fiona-who $15 char-in-area? fiona-who 0 $32 char-heading? and if
-            5 $13 0 scene-change
+            $13 unhurried offer-action
         then
     else
         fiona-who $17 char-in-area? fiona-who 90 $32 char-heading? and if
-            5 $12 0 scene-change
+            $12 unhurried offer-action
         then
         fiona-who $18 char-in-area? fiona-who 0 $32 char-heading? and if
-            5 $13 0 scene-change
+            $13 unhurried offer-action
         then
     then
     fiona-who $19 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 $12 0 scene-change
+        $12 unhurried offer-action
     then
     fiona-who $1B char-in-area? fiona-who 0 $32 char-heading? and if
-        5 $13 0 scene-change
+        $13 unhurried offer-action
     then
     fiona-who $1C char-in-area? fiona-who 90 $32 char-heading? and if
-        5 $14 0 scene-change
+        $14 unhurried offer-action
     then
     fiona-who $1D char-in-area? fiona-who 0 $32 char-heading? and if
-        5 $15 0 scene-change
+        $15 unhurried offer-action
     then
     fiona-who $20 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 $16 0 scene-change
+        $16 unhurried offer-action
     then
     fiona-who $21 char-in-area? fiona-who $22 char-in-area? or fiona-who 45 $32 char-heading? and if
-        5 $17 0 scene-change
+        $17 unhurried offer-action
     then
     fiona-who $1E char-in-area? fiona-who 90 $32 char-heading? and if
-        5 $18 0 scene-change
+        $18 unhurried offer-action
     then
     fiona-who $1F char-in-area? fiona-who 0 $32 char-heading? and if
-        5 $19 0 scene-change
+        $19 unhurried offer-action
     then
     books-placed story-flag? not if
         fiona-who $1A char-in-area? fiona-who 90 $32 char-heading? and if
-            5 $1A 0 scene-change
+            $1A unhurried offer-action
         then
     then
     fiona-who 8 char-in-area? fiona-who 22 $32 char-heading? and if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     fiona-who $23 $32 char-faces-area? if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     om1f-15-refined-antimony story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 $1B 4 scene-change
+            $1B calm offer-action
         then
     then
     om1f-15-antimony-tube-found story-flag? om1f-15-antimony-tube story-flag? not and if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 $1C 4 scene-change
+            $1C calm offer-action
         then
     then
     om1f-15-rubrum-medallion-found story-flag? om1f-15-rubrum-medallion story-flag? not and if
         2 2 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 $1D 4 scene-change
+            $1D calm offer-action
         then
     then
 ;
@@ -1165,37 +1165,4 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
 ;
 
 \ ---- registered ----
-' old-mansion-1f-15.enter old-mansion-1f-15 0 room-script!
-' old-mansion-1f-15.char-enter old-mansion-1f-15 6 room-script!
-' old-mansion-1f-15.phase1 old-mansion-1f-15 1 room-script!
-' old-mansion-1f-15.phase2 old-mansion-1f-15 2 room-script!
-' old-mansion-1f-15.act00 old-mansion-1f-15 $00 action-script!
-' old-mansion-1f-15.act01 old-mansion-1f-15 $01 action-script!
-' old-mansion-1f-15.act02 old-mansion-1f-15 $02 action-script!
-' old-mansion-1f-15.act03 old-mansion-1f-15 $03 action-script!
-' old-mansion-1f-15.act04 old-mansion-1f-15 $04 action-script!
-' old-mansion-1f-15.act05 old-mansion-1f-15 $05 action-script!
-' old-mansion-1f-15.act06 old-mansion-1f-15 $06 action-script!
-' old-mansion-1f-15.act07 old-mansion-1f-15 $07 action-script!
-' old-mansion-1f-15.act08 old-mansion-1f-15 $08 action-script!
-' old-mansion-1f-15.act09 old-mansion-1f-15 $09 action-script!
-' old-mansion-1f-15.act0A old-mansion-1f-15 $0A action-script!
-' old-mansion-1f-15.act0B old-mansion-1f-15 $0B action-script!
-' old-mansion-1f-15.act0C old-mansion-1f-15 $0C action-script!
-' old-mansion-1f-15.act0D old-mansion-1f-15 $0D action-script!
-' old-mansion-1f-15.act0E old-mansion-1f-15 $0E action-script!
-' old-mansion-1f-15.act0F old-mansion-1f-15 $0F action-script!
-' old-mansion-1f-15.act10 old-mansion-1f-15 $10 action-script!
-' old-mansion-1f-15.act11 old-mansion-1f-15 $11 action-script!
-' old-mansion-1f-15.act12 old-mansion-1f-15 $12 action-script!
-' old-mansion-1f-15.act13 old-mansion-1f-15 $13 action-script!
-' old-mansion-1f-15.act14 old-mansion-1f-15 $14 action-script!
-' old-mansion-1f-15.act15 old-mansion-1f-15 $15 action-script!
-' old-mansion-1f-15.act16 old-mansion-1f-15 $16 action-script!
-' old-mansion-1f-15.act17 old-mansion-1f-15 $17 action-script!
-' old-mansion-1f-15.act18 old-mansion-1f-15 $18 action-script!
-' old-mansion-1f-15.act19 old-mansion-1f-15 $19 action-script!
-' old-mansion-1f-15.act1A old-mansion-1f-15 $1A action-script!
-' old-mansion-1f-15.act1B old-mansion-1f-15 $1B action-script!
-' old-mansion-1f-15.act1C old-mansion-1f-15 $1C action-script!
-' old-mansion-1f-15.act1D old-mansion-1f-15 $1D action-script!
+old-mansion-1f-15 register-scripts   \ (its phases and actions, by their names)

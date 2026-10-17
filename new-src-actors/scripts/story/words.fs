@@ -25,6 +25,25 @@ create shared-scripts  first-shared cells allot            shared-scripts first-
 : action-script! ( xt room id -- )  action-script ! ;
 : shared-script ( id -- addr )  first-shared - first-shared 1- and cells shared-scripts + ;
 : builtin-script! ( xt id -- )  shared-script ! ;
+\ ---- a room's scripts registered by their names: <room>.enter, .phase1 .. .phase5,
+\ .char-enter for its phases, <room>.act00 .. .act7F for its actions; the shared ones
+\ shared.act80 .. ----
+strings: phase-suffix  enter phase1 phase2 phase3 phase4 phase5 char-enter ;
+create script-name 40 allot  variable #script-name
+: name+ ( addr len -- )  tuck  script-name #script-name @ + swap move  #script-name +! ;
+: hex-digit ( n -- c )  $F and  dup 10 < if  [char] 0  else  [char] A 10 -  then  + ;
+: hex2+ ( n -- )  dup 4 rshift hex-digit script-name #script-name @ + c!  hex-digit script-name #script-name @ 1+ + c!
+    2 #script-name +! ;
+: script-named ( addr len suffix-addr suffix-len -- xt | 0 )   \ the word <addr len>.<suffix>, if defined
+    2swap  0 #script-name !  name+  s" ." name+  name+  script-name #script-name @ find-word ;
+: act-named ( addr len act -- xt | 0 )
+    >r  0 #script-name !  name+  s" .act" name+  r> hex2+  script-name #script-name @ find-word ;
+: register-scripts ( room -- )   \ the room's phases and actions, each defined
+    {: room | a n :}  room room-name to n to a
+    #phases 0 do  a n i phase-suffix script-named ?dup if  room i room-script!  then  loop
+    first-shared 0 do  a n i act-named ?dup if  room i action-script!  then  loop ;
+: register-shared ( -- )   \ shared.act80 ..
+    $100 first-shared do  s" shared" i act-named ?dup if  i builtin-script!  then  loop ;
 : script-for ( act -- xt | 0 )   \ (an action of this room, or a shared one)
     dup first-shared < if  this-room @ swap action-script @  else  shared-script @  then ;
 
@@ -483,23 +502,24 @@ overlap-height overlap-across or constant overlapping
 \ script for Fiona, taken with the action button; the others change the scene (S4) ----
 5 constant her-action   \ (a scene: an action script for Fiona, taken with the action button)
 : prepare ( scene arg kind -- )  prep-kind !  prep-arg !  prep-scene ! ;
-\ (by its kind: 0 not in a panic, nor chased - then the pending ending instead, S4; 1 and 7 even
-\ in a panic; 3 - with Hewie's partner state, S4 - and the others, not in a panic)
+\ when it may be offered (cmd_scene_change's kinds; 2 4 5 6 alike, 1 and 7 alike): not in a panic -
+\ chased, her "no time" message instead; always; not in a panic; that, and in hard mode not while
+\ Hewie is down (the original's game mode check: S4)
+enum: offer-when  unhurried always calm calm-hewie-up ;
+$8016 constant no-time-message   \ ("I have to get away! I don't have time for this!")
+$80000005 constant read-message
 : scene-change ( scene arg kind -- )
     {: scene arg kind :}
     prep-scene @ her-action =  scene-locked state-flag? or  fiona-scripted? or if  exit  then
-    in-panic?  kind case
-        0 of  0= the-danger @ chased <> and  endof
-        1 of  drop true  endof   7 of  drop true  endof
-        >r 0= r>
-    endcase
-    0= if  exit  then
+    in-panic? if  kind dup always = swap 7 = or 0= if  exit  then  then
+    kind unhurried = the-danger @ chased = and if  read-message no-time-message 0 prepare  exit  then
     scene her-action = fiona-scripted? and if  exit  then
     scene arg kind prepare ;
+\ Fiona's action script `act` offered on her action button this frame (scene 5)
+: offer-action ( act when -- )  her-action -rot scene-change ;
 : scene-request? ( v -- flag )  prep-scene @ = ;
 \ 0xA5: message `msg` offered on her action button instead (Progress +0x1134 = 0x80000005) -
 \ not while scenes are locked or a script has her
-$80000005 constant read-message
 : examine-message ( msg -- )
     scene-locked state-flag?  fiona-scripted? or if  drop exit  then
     read-message swap 0 prepare ;

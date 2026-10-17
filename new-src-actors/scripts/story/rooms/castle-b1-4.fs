@@ -142,10 +142,10 @@ USING: room-names story.words story.shared ;
 
 : castle-b1-4.phase2 ( -- )   \ 003F24B0
     fiona-who 6 $32 char-faces-area? if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     fiona-who 7 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
 ;
 
@@ -161,8 +161,4 @@ USING: room-names story.words story.shared ;
 ;
 
 \ ---- registered ----
-' castle-b1-4.enter castle-b1-4 0 room-script!
-' castle-b1-4.char-enter castle-b1-4 6 room-script!
-' castle-b1-4.phase1 castle-b1-4 1 room-script!
-' castle-b1-4.phase2 castle-b1-4 2 room-script!
-' castle-b1-4.act00 castle-b1-4 $00 action-script!
+castle-b1-4 register-scripts   \ (its phases and actions, by their names)

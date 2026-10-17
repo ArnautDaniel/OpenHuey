@@ -359,34 +359,34 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     c2f-3-flag1 story-flag? if
         hewie-found-in-wire story-flag? not if
             fiona-who hewie-who $A 0 $5A char-touching-facing? if
-                5 0 0 scene-change
+                0 unhurried offer-action
             then
         else
             5 228.1 8.0 77.57 $A 0 0 zone
             fiona-who 5 2 char-zone-bits? fiona-who 228 77 $5A char-faces-xz? and if
-                5 $15 0 scene-change
+                $15 unhurried offer-action
             then
         then
     then
     fiona-who $A $3C char-faces-area? if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     grate-open story-flag? not if
         fiona-who $17 char-in-area? fiona-who -45 $32 char-heading? and if
-            5 9 0 scene-change
+            9 unhurried offer-action
         then
     then
     fiona-who $18 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 $A 0 scene-change
+        $A unhurried offer-action
     then
     fiona-who $11 char-in-area? fg-3-flag1 story-flag? not and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     fiona-who $12 char-in-area? fg-3-flag2 story-flag? not and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
     fiona-who $13 $32 char-faces-area? if
-        5 6 0 scene-change
+        6 unhurried offer-action
     then
     fg-3-breakable-broken story-flag? not if
         0 185.7 -0.1 -35.4 5 8 1 zone
@@ -403,7 +403,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     else fg-3-magnesia story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 8 4 scene-change
+            8 calm offer-action
         then
     then then
 ;
@@ -937,31 +937,4 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 ;
 
 \ ---- registered ----
-' front-garden-3.enter front-garden-3 0 room-script!
-' front-garden-3.char-enter front-garden-3 6 room-script!
-' front-garden-3.phase1 front-garden-3 1 room-script!
-' front-garden-3.phase2 front-garden-3 2 room-script!
-' front-garden-3.phase5 front-garden-3 5 room-script!
-' front-garden-3.act00 front-garden-3 $00 action-script!
-' front-garden-3.act01 front-garden-3 $01 action-script!
-' front-garden-3.act02 front-garden-3 $02 action-script!
-' front-garden-3.act03 front-garden-3 $03 action-script!
-' front-garden-3.act04 front-garden-3 $04 action-script!
-' front-garden-3.act05 front-garden-3 $05 action-script!
-' front-garden-3.act06 front-garden-3 $06 action-script!
-' front-garden-3.act07 front-garden-3 $07 action-script!
-' front-garden-3.act08 front-garden-3 $08 action-script!
-' front-garden-3.act09 front-garden-3 $09 action-script!
-' front-garden-3.act0A front-garden-3 $0A action-script!
-' front-garden-3.act0B front-garden-3 $0B action-script!
-' front-garden-3.act0C front-garden-3 $0C action-script!
-' front-garden-3.act0D front-garden-3 $0D action-script!
-' front-garden-3.act0E front-garden-3 $0E action-script!
-' front-garden-3.act0F front-garden-3 $0F action-script!
-' front-garden-3.act10 front-garden-3 $10 action-script!
-' front-garden-3.act11 front-garden-3 $11 action-script!
-' front-garden-3.act12 front-garden-3 $12 action-script!
-' front-garden-3.act13 front-garden-3 $13 action-script!
-' front-garden-3.act14 front-garden-3 $14 action-script!
-' front-garden-3.act15 front-garden-3 $15 action-script!
-' front-garden-3.act16 front-garden-3 $16 action-script!
+front-garden-3 register-scripts   \ (its phases and actions, by their names)

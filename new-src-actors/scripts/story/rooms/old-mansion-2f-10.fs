@@ -139,19 +139,19 @@ USING: room-names story.words story.shared story-names ;
     else om2f-10-weeping-stone story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 0 4 scene-change
+            0 calm offer-action
         then
     then then
     4 -67.5 0.0 -11.5 8 10 0 zone
     fiona-who 4 8 char-zone-bits? if
         fiona-who -67 -11 $3C char-faces-xz? if
-            5 1 0 scene-change
+            1 unhurried offer-action
         then
     then
     5 -67.5 0.0 11.5 8 10 0 zone
     fiona-who 5 8 char-zone-bits? if
         fiona-who -67 11 $3C char-faces-xz? if
-            5 1 0 scene-change
+            1 unhurried offer-action
         then
     then
 ;
@@ -214,10 +214,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-2f-10.enter old-mansion-2f-10 0 room-script!
-' old-mansion-2f-10.char-enter old-mansion-2f-10 6 room-script!
-' old-mansion-2f-10.phase1 old-mansion-2f-10 1 room-script!
-' old-mansion-2f-10.phase2 old-mansion-2f-10 2 room-script!
-' old-mansion-2f-10.phase3 old-mansion-2f-10 3 room-script!
-' old-mansion-2f-10.act00 old-mansion-2f-10 $00 action-script!
-' old-mansion-2f-10.act01 old-mansion-2f-10 $01 action-script!
+old-mansion-2f-10 register-scripts   \ (its phases and actions, by their names)

@@ -250,19 +250,19 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 : water-tower-2f-1.phase2 ( -- )   \ 0043F480
     fiona-who $C char-in-area? fiona-who -45 $32 char-heading? and if
         1 ebit? not if
-            5 0 0 scene-change
+            0 unhurried offer-action
         then
     then
     wt2f-1-medallion-found story-flag? wt2f-1-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 4 4 scene-change
+            4 calm offer-action
         then
     then
     wt2f-1-refined-antimony story-flag? not if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 5 4 scene-change
+            5 calm offer-action
         then
     then
 ;
@@ -518,14 +518,4 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 ;
 
 \ ---- registered ----
-' water-tower-2f-1.enter water-tower-2f-1 0 room-script!
-' water-tower-2f-1.char-enter water-tower-2f-1 6 room-script!
-' water-tower-2f-1.phase1 water-tower-2f-1 1 room-script!
-' water-tower-2f-1.phase2 water-tower-2f-1 2 room-script!
-' water-tower-2f-1.phase5 water-tower-2f-1 5 room-script!
-' water-tower-2f-1.act00 water-tower-2f-1 $00 action-script!
-' water-tower-2f-1.act01 water-tower-2f-1 $01 action-script!
-' water-tower-2f-1.act02 water-tower-2f-1 $02 action-script!
-' water-tower-2f-1.act03 water-tower-2f-1 $03 action-script!
-' water-tower-2f-1.act04 water-tower-2f-1 $04 action-script!
-' water-tower-2f-1.act05 water-tower-2f-1 $05 action-script!
+water-tower-2f-1 register-scripts   \ (its phases and actions, by their names)

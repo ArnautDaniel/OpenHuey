@@ -169,7 +169,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 : chaos-forest-10.phase2 ( -- )   \ 00419050
     found-file-247 story-flag? cf-13-flag1 story-flag? not and if
         cf-10-flag1 story-flag? fiona-who hewie-who $A $A $2D char-touching-facing? and if
-            5 2 0 scene-change
+            2 unhurried offer-action
         then
     then
     cf-10-breakable-broken story-flag? not if
@@ -187,7 +187,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else cf-10-medallion story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 3 4 scene-change
+            3 calm offer-action
         then
     then then
 ;
@@ -341,13 +341,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' chaos-forest-10.enter chaos-forest-10 0 room-script!
-' chaos-forest-10.char-enter chaos-forest-10 6 room-script!
-' chaos-forest-10.phase1 chaos-forest-10 1 room-script!
-' chaos-forest-10.phase2 chaos-forest-10 2 room-script!
-' chaos-forest-10.phase5 chaos-forest-10 5 room-script!
-' chaos-forest-10.act00 chaos-forest-10 $00 action-script!
-' chaos-forest-10.act01 chaos-forest-10 $01 action-script!
-' chaos-forest-10.act02 chaos-forest-10 $02 action-script!
-' chaos-forest-10.act03 chaos-forest-10 $03 action-script!
-' chaos-forest-10.act04 chaos-forest-10 $04 action-script!
+chaos-forest-10 register-scripts   \ (its phases and actions, by their names)

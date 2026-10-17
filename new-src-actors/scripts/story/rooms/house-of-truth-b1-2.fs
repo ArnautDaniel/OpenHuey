@@ -90,22 +90,22 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : house-of-truth-b1-2.phase2 ( -- )   \ 004328A0
     fiona-who 8 $32 char-faces-area? if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     over-music-e story-flag? not if
         fiona-who 1 char-before-door? if
-            5 0 1 scene-change
+            0 always offer-action
         then
     then
     -2147483646 scene-request? if
         fiona-who 0 char-before-door? if
-            5 3 1 scene-change
+            3 always offer-action
         then
     then
     htb1-2-lavender story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 2 4 scene-change
+            2 calm offer-action
         then
     then
 ;
@@ -226,12 +226,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' house-of-truth-b1-2.enter house-of-truth-b1-2 0 room-script!
-' house-of-truth-b1-2.char-enter house-of-truth-b1-2 6 room-script!
-' house-of-truth-b1-2.phase1 house-of-truth-b1-2 1 room-script!
-' house-of-truth-b1-2.phase2 house-of-truth-b1-2 2 room-script!
-' house-of-truth-b1-2.act00 house-of-truth-b1-2 $00 action-script!
-' house-of-truth-b1-2.act01 house-of-truth-b1-2 $01 action-script!
-' house-of-truth-b1-2.act02 house-of-truth-b1-2 $02 action-script!
-' house-of-truth-b1-2.act03 house-of-truth-b1-2 $03 action-script!
-' house-of-truth-b1-2.act04 house-of-truth-b1-2 $04 action-script!
+house-of-truth-b1-2 register-scripts   \ (its phases and actions, by their names)

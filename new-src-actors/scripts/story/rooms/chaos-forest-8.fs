@@ -230,9 +230,9 @@ USING: room-names story.words story.shared flag-names story-names ;
 : chaos-forest-8.phase2 ( -- )   \ 00418730
     fiona-who 6 $32 char-faces-area? if
         sundial-examined story-flag? not if
-            5 1 0 scene-change
+            1 unhurried offer-action
         else
-            5 $85 3 scene-change
+            $85 calm-hewie-up offer-action
         then
     then
     cf-8-breakable1-broken story-flag? not if
@@ -250,7 +250,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else cf-8-medallion story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 2 4 scene-change
+            2 calm offer-action
         then
     then then
     cf-8-breakable5-broken story-flag? not if
@@ -268,7 +268,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else cf-8-chicken-jerky story-flag? not if
         4 1 5 5 0 zone-at-effect
         fiona-who 4 3 char-zone-bits? if
-            5 3 4 scene-change
+            3 calm offer-action
         then
     then then
 ;
@@ -407,12 +407,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' chaos-forest-8.enter chaos-forest-8 0 room-script!
-' chaos-forest-8.char-enter chaos-forest-8 6 room-script!
-' chaos-forest-8.phase1 chaos-forest-8 1 room-script!
-' chaos-forest-8.phase2 chaos-forest-8 2 room-script!
-' chaos-forest-8.act00 chaos-forest-8 $00 action-script!
-' chaos-forest-8.act01 chaos-forest-8 $01 action-script!
-' chaos-forest-8.act02 chaos-forest-8 $02 action-script!
-' chaos-forest-8.act03 chaos-forest-8 $03 action-script!
-' chaos-forest-8.act04 chaos-forest-8 $04 action-script!
+chaos-forest-8 register-scripts   \ (its phases and actions, by their names)

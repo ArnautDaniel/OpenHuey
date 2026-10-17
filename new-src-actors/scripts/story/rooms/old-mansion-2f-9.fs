@@ -105,11 +105,11 @@ USING: room-names story.words story.shared story-names ;
     got-sylvesta-esca story-flag? not if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 0 4 scene-change
+            0 calm offer-action
         then
     then
     fiona-who 7 $3C char-faces-area? if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
 ;
 
@@ -155,9 +155,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-2f-9.enter old-mansion-2f-9 0 room-script!
-' old-mansion-2f-9.char-enter old-mansion-2f-9 6 room-script!
-' old-mansion-2f-9.phase1 old-mansion-2f-9 1 room-script!
-' old-mansion-2f-9.phase2 old-mansion-2f-9 2 room-script!
-' old-mansion-2f-9.act00 old-mansion-2f-9 $00 action-script!
-' old-mansion-2f-9.act01 old-mansion-2f-9 $01 action-script!
+old-mansion-2f-9 register-scripts   \ (its phases and actions, by their names)

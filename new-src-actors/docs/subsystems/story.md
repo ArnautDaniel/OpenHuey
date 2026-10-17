@@ -52,6 +52,13 @@ The rooms (converted once from the bytecode) were then reworked by tools, each r
 `panic-eased`; `tools/story_messages.py` wrote each message's text beside the line that shows
 it (it runs the game: it needs the game's data).
 
+A room registers its scripts by their names: `castle-1f-2 register-scripts` finds
+`castle-1f-2.enter`, `.phase1` .. `.phase5`, `.char-enter` and `.act00` .. `.act7F` and puts each in
+its place (`register-shared` the same for `shared.act80` ..); only a script registered under another
+name is written out. Fiona's action offered on her action button is `act when offer-action` -
+`when` the original's kind by when it may be: `unhurried` (not in a panic; chased, her "no time"
+message instead), `always`, `calm` (not in a panic), `calm-hewie-up`.
+
 ## API
 
 Declared in `scripts/messages.fs`.

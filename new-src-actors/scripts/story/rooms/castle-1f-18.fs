@@ -143,7 +143,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 : castle-1f-18.phase2 ( -- )   \ 003FCD70
     flowers-laid story-flag? not if
         fiona-who 9 $5A char-faces-area? if
-            5 2 0 scene-change
+            2 unhurried offer-action
         then
     then
     fiona-who 0 char-action? in-panic? not and if
@@ -152,10 +152,10 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         then
     then
     fiona-who 7 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 $85 3 scene-change
+        $85 calm-hewie-up offer-action
     then
     fiona-who 8 char-in-area? fiona-who 45 $32 char-heading? and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
 ;
 
@@ -385,16 +385,4 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-18.enter castle-1f-18 0 room-script!
-' castle-1f-18.char-enter castle-1f-18 6 room-script!
-' castle-1f-18.phase1 castle-1f-18 1 room-script!
-' castle-1f-18.phase2 castle-1f-18 2 room-script!
-' castle-1f-18.act00 castle-1f-18 $00 action-script!
-' castle-1f-18.act01 castle-1f-18 $01 action-script!
-' castle-1f-18.act02 castle-1f-18 $02 action-script!
-' castle-1f-18.act03 castle-1f-18 $03 action-script!
-' castle-1f-18.act04 castle-1f-18 $04 action-script!
-' castle-1f-18.act05 castle-1f-18 $05 action-script!
-' castle-1f-18.act06 castle-1f-18 $06 action-script!
-' castle-1f-18.act07 castle-1f-18 $07 action-script!
-' castle-1f-18.act08 castle-1f-18 $08 action-script!
+castle-1f-18 register-scripts   \ (its phases and actions, by their names)

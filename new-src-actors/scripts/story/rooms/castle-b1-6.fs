@@ -159,27 +159,27 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 : castle-b1-6.phase2 ( -- )   \ 003F4850
     scene-5-pending state-flag? if
         -2147483646 scene-request? if
-            5 3 1 scene-change
+            3 always offer-action
         then
     then
     fiona-who 5 char-in-area? fiona-who 45 $32 char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     cb1-6-flag1 story-flag? not cb1-6-flag2 story-flag? or if
         fiona-who $C char-in-area? fiona-who 10 -40 $32 char-faces-xz? and if
-            5 6 0 scene-change
+            6 unhurried offer-action
         then
         fiona-who $D char-in-area? fiona-who 10 40 $32 char-faces-xz? and if
-            5 6 0 scene-change
+            6 unhurried offer-action
         then
     then
     found-file-20b story-flag? if
         fiona-who $E $32 char-faces-area? if
-            5 5 0 scene-change
+            5 unhurried offer-action
         then
     else cb1-6-flag2 story-flag? if
         fiona-who $E $32 char-faces-area? if
-            5 $B 0 scene-change
+            $B unhurried offer-action
         then
     then then
 ;
@@ -748,24 +748,4 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-b1-6.enter castle-b1-6 0 room-script!
-' castle-b1-6.char-enter castle-b1-6 6 room-script!
-' castle-b1-6.phase1 castle-b1-6 1 room-script!
-' castle-b1-6.phase2 castle-b1-6 2 room-script!
-' castle-b1-6.act00 castle-b1-6 $00 action-script!
-' castle-b1-6.act01 castle-b1-6 $01 action-script!
-' castle-b1-6.act02 castle-b1-6 $02 action-script!
-' castle-b1-6.act03 castle-b1-6 $03 action-script!
-' castle-b1-6.act04 castle-b1-6 $04 action-script!
-' castle-b1-6.act05 castle-b1-6 $05 action-script!
-' castle-b1-6.act06 castle-b1-6 $06 action-script!
-' castle-b1-6.act07 castle-b1-6 $07 action-script!
-' castle-b1-6.act08 castle-b1-6 $08 action-script!
-' castle-b1-6.act09 castle-b1-6 $09 action-script!
-' castle-b1-6.act0A castle-b1-6 $0A action-script!
-' castle-b1-6.act0B castle-b1-6 $0B action-script!
-' castle-b1-6.act0C castle-b1-6 $0C action-script!
-' castle-b1-6.act0D castle-b1-6 $0D action-script!
-' castle-b1-6.act0E castle-b1-6 $0E action-script!
-' castle-b1-6.act0F castle-b1-6 $0F action-script!
-' castle-b1-6.act10 castle-b1-6 $10 action-script!
+castle-b1-6 register-scripts   \ (its phases and actions, by their names)

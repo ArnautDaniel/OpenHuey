@@ -156,25 +156,25 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     else cb1-7-medallion story-flag? not if
         0 2 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 7 4 scene-change
+            7 calm offer-action
         then
     then then
     fiona-who 7 $3C char-faces-area? if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     hewie-who char-here? not 1 hewie-side? not or got-study-key story-flag? not and fiona-who 6 char-in-area? and fiona-who -12 -25 $32 char-faces-xz? and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
     -2147483646 scene-request? if
-        5 8 1 scene-change
+        8 always offer-action
     then
     fiona-who 8 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 $B 0 scene-change
+        $B unhurried offer-action
     then
     cb1-7-medallion-found story-flag? cb1-7-medallion-2 story-flag? not and if
         1 3 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 $A 4 scene-change
+            $A calm offer-action
         then
     then
 ;
@@ -422,21 +422,4 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 ;
 
 \ ---- registered ----
-' castle-b1-7.enter castle-b1-7 0 room-script!
-' castle-b1-7.char-enter castle-b1-7 6 room-script!
-' castle-b1-7.phase1 castle-b1-7 1 room-script!
-' castle-b1-7.phase2 castle-b1-7 2 room-script!
-' castle-b1-7.phase3 castle-b1-7 3 room-script!
-' castle-b1-7.act00 castle-b1-7 $00 action-script!
-' castle-b1-7.act01 castle-b1-7 $01 action-script!
-' castle-b1-7.act02 castle-b1-7 $02 action-script!
-' castle-b1-7.act03 castle-b1-7 $03 action-script!
-' castle-b1-7.act04 castle-b1-7 $04 action-script!
-' castle-b1-7.act05 castle-b1-7 $05 action-script!
-' castle-b1-7.act06 castle-b1-7 $06 action-script!
-' castle-b1-7.act07 castle-b1-7 $07 action-script!
-' castle-b1-7.act08 castle-b1-7 $08 action-script!
-' castle-b1-7.act09 castle-b1-7 $09 action-script!
-' castle-b1-7.act0A castle-b1-7 $0A action-script!
-' castle-b1-7.act0B castle-b1-7 $0B action-script!
-' castle-b1-7.phase5 castle-b1-7 5 room-script!
+castle-b1-7 register-scripts   \ (its phases and actions, by their names)

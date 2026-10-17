@@ -186,34 +186,34 @@ USING: room-names story.words story.shared flag-names story-names ;
     c1f-8-magnesia story-flag? not if
         5 5 5 5 0 zone-at-effect
         fiona-who 5 3 char-zone-bits? if
-            5 $B 4 scene-change
+            $B calm offer-action
         then
     then
     fiona-who $C char-in-area? fiona-who 90 $3C char-heading? and if
         stalker-who char-here? not if
-            5 5 5 scene-change
+            5 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
     c1f-8-flag1 story-flag? if
         fiona-who $B char-in-area? fiona-who 75 $2D char-heading? and if
-            5 1 0 scene-change
+            1 unhurried offer-action
         then
     then
     fiona-who 8 char-in-area? fiona-who 45 $2D char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who 9 $2D char-faces-area? if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who -67 $2D char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     c1f-8-album-medallion-found story-flag? c1f-8-album-medallion story-flag? not and if
         0 4 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 9 4 scene-change
+            9 calm offer-action
         then
     then
 ;
@@ -563,23 +563,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-8.enter castle-1f-8 0 room-script!
-' castle-1f-8.char-enter castle-1f-8 6 room-script!
-' castle-1f-8.phase1 castle-1f-8 1 room-script!
-' castle-1f-8.phase2 castle-1f-8 2 room-script!
-' castle-1f-8.phase3 castle-1f-8 3 room-script!
-' castle-1f-8.act00 castle-1f-8 $00 action-script!
-' castle-1f-8.act01 castle-1f-8 $01 action-script!
-' castle-1f-8.act02 castle-1f-8 $02 action-script!
-' castle-1f-8.act03 castle-1f-8 $03 action-script!
-' castle-1f-8.act04 castle-1f-8 $04 action-script!
-' castle-1f-8.act05 castle-1f-8 $05 action-script!
-' castle-1f-8.act06 castle-1f-8 $06 action-script!
-' castle-1f-8.act07 castle-1f-8 $07 action-script!
-' castle-1f-8.act08 castle-1f-8 $08 action-script!
-' castle-1f-8.act09 castle-1f-8 $09 action-script!
-' castle-1f-8.act0A castle-1f-8 $0A action-script!
-' castle-1f-8.act0B castle-1f-8 $0B action-script!
-' castle-1f-8.act0C castle-1f-8 $0C action-script!
-' castle-1f-8.act0D castle-1f-8 $0D action-script!
-' castle-1f-8.phase5 castle-1f-8 5 room-script!
+castle-1f-8 register-scripts   \ (its phases and actions, by their names)

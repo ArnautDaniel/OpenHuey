@@ -162,21 +162,21 @@ USING: room-names story.words story.shared flag-names story-names ;
 : house-of-truth-1f-10.phase2 ( -- )   \ 00443AB0
     fiona-who $A char-in-area? fiona-who 0 $3C char-heading? and if
         stalker-who char-here? not if
-            5 2 5 scene-change
+            2 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
     fiona-who 3 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     fiona-who 6 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     ht1f-10-camomile story-flag? not if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 6 4 scene-change
+            6 calm offer-action
         then
     then
 ;
@@ -346,15 +346,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' house-of-truth-1f-10.enter house-of-truth-1f-10 0 room-script!
-' house-of-truth-1f-10.char-enter house-of-truth-1f-10 6 room-script!
-' house-of-truth-1f-10.phase1 house-of-truth-1f-10 1 room-script!
-' house-of-truth-1f-10.phase2 house-of-truth-1f-10 2 room-script!
-' house-of-truth-1f-10.phase3 house-of-truth-1f-10 3 room-script!
-' house-of-truth-1f-10.act00 house-of-truth-1f-10 $00 action-script!
-' house-of-truth-1f-10.act01 house-of-truth-1f-10 $01 action-script!
-' house-of-truth-1f-10.act02 house-of-truth-1f-10 $02 action-script!
-' house-of-truth-1f-10.act03 house-of-truth-1f-10 $03 action-script!
-' house-of-truth-1f-10.act04 house-of-truth-1f-10 $04 action-script!
-' house-of-truth-1f-10.act05 house-of-truth-1f-10 $05 action-script!
-' house-of-truth-1f-10.act06 house-of-truth-1f-10 $06 action-script!
+house-of-truth-1f-10 register-scripts   \ (its phases and actions, by their names)

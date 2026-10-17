@@ -62,6 +62,4 @@ USING: room-names story.words story.shared ;
 ;
 
 \ ---- registered ----
-' off-map-65.char-enter off-map-65 6 room-script!
-' off-map-65.phase1 off-map-65 1 room-script!
-' off-map-65.enter off-map-65 0 room-script!
+off-map-65 register-scripts   \ (its phases and actions, by their names)

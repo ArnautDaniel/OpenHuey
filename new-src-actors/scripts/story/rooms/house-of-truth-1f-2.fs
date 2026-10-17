@@ -191,18 +191,18 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : house-of-truth-1f-2.phase2 ( -- )   \ 004330C0
     fiona-who $12 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who $13 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     fiona-who $14 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     ht1f-2-refined-magnesia story-flag? not if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 4 4 scene-change
+            4 calm offer-action
         then
     then
     ht1f-2-breakable-broken story-flag? not if
@@ -220,13 +220,13 @@ USING: room-names story.words story.shared flag-names story-names ;
     else ht1f-2-refined-antimony story-flag? not if
         0 1 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 5 4 scene-change
+            5 calm offer-action
         then
     then then
     ht1f-2-prima-magnesia-found story-flag? ht1f-2-prima-magnesia story-flag? not and if
         3 2 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 6 4 scene-change
+            6 calm offer-action
         then
     then
 ;
@@ -437,16 +437,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' house-of-truth-1f-2.enter house-of-truth-1f-2 0 room-script!
-' house-of-truth-1f-2.char-enter house-of-truth-1f-2 6 room-script!
-' house-of-truth-1f-2.phase1 house-of-truth-1f-2 1 room-script!
-' house-of-truth-1f-2.phase2 house-of-truth-1f-2 2 room-script!
-' house-of-truth-1f-2.phase3 house-of-truth-1f-2 3 room-script!
-' house-of-truth-1f-2.act00 house-of-truth-1f-2 $00 action-script!
-' house-of-truth-1f-2.act01 house-of-truth-1f-2 $01 action-script!
-' house-of-truth-1f-2.act02 house-of-truth-1f-2 $02 action-script!
-' house-of-truth-1f-2.act03 house-of-truth-1f-2 $03 action-script!
-' house-of-truth-1f-2.act04 house-of-truth-1f-2 $04 action-script!
-' house-of-truth-1f-2.act05 house-of-truth-1f-2 $05 action-script!
-' house-of-truth-1f-2.act06 house-of-truth-1f-2 $06 action-script!
-' house-of-truth-1f-2.act07 house-of-truth-1f-2 $07 action-script!
+house-of-truth-1f-2 register-scripts   \ (its phases and actions, by their names)

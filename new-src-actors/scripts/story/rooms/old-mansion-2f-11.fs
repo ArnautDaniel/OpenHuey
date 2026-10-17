@@ -164,50 +164,50 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 : old-mansion-2f-11.phase2 ( -- )   \ 00421EF0
     -2147483646 scene-request? if
         fiona-who 0 char-before-door? if
-            5 0 1 scene-change
+            0 always offer-action
         then
     then
     om2f-11-flag1 story-flag? got-jupiter-key story-flag? not and if
         3 0 5 5 0 zone-at-effect
         fiona-who 3 2 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then
     fiona-who 8 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     fiona-who 9 char-in-area? fiona-who 60 $32 char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who -10 $32 char-heading? and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
     fiona-who $B char-in-area? fiona-who 90 $32 char-heading? and if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     fiona-who $C char-in-area? fiona-who 0 $32 char-heading? and if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     fiona-who $D char-in-area? fiona-who -80 $32 char-heading? and if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     fiona-who $E char-in-area? fiona-who 90 $32 char-heading? and if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     fiona-who $10 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     om2f-11-magnesia story-flag? not if
         6 1 5 5 0 zone-at-effect
         fiona-who 6 3 char-zone-bits? if
-            5 6 4 scene-change
+            6 calm offer-action
         then
     then
     fiona-who $11 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 9 0 scene-change
+        9 unhurried offer-action
     then
     fiona-who $12 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 $A 0 scene-change
+        $A unhurried offer-action
     then
 ;
 
@@ -468,20 +468,4 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 ;
 
 \ ---- registered ----
-' old-mansion-2f-11.enter old-mansion-2f-11 0 room-script!
-' old-mansion-2f-11.char-enter old-mansion-2f-11 6 room-script!
-' old-mansion-2f-11.phase1 old-mansion-2f-11 1 room-script!
-' old-mansion-2f-11.phase2 old-mansion-2f-11 2 room-script!
-' old-mansion-2f-11.phase3 old-mansion-2f-11 3 room-script!
-' old-mansion-2f-11.act00 old-mansion-2f-11 $00 action-script!
-' old-mansion-2f-11.act01 old-mansion-2f-11 $01 action-script!
-' old-mansion-2f-11.act02 old-mansion-2f-11 $02 action-script!
-' old-mansion-2f-11.act03 old-mansion-2f-11 $03 action-script!
-' old-mansion-2f-11.act04 old-mansion-2f-11 $04 action-script!
-' old-mansion-2f-11.act05 old-mansion-2f-11 $05 action-script!
-' old-mansion-2f-11.act06 old-mansion-2f-11 $06 action-script!
-' old-mansion-2f-11.act07 old-mansion-2f-11 $07 action-script!
-' old-mansion-2f-11.act08 old-mansion-2f-11 $08 action-script!
-' old-mansion-2f-11.act09 old-mansion-2f-11 $09 action-script!
-' old-mansion-2f-11.act0A old-mansion-2f-11 $0A action-script!
-' old-mansion-2f-11.act0B old-mansion-2f-11 $0B action-script!
+old-mansion-2f-11 register-scripts   \ (its phases and actions, by their names)

@@ -121,24 +121,24 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-7.phase2 ( -- )   \ 00424D70
     fiona-who 8 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who 9 char-in-area? fiona-who 0 0 $32 char-faces-xz? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who 0 0 $32 char-faces-xz? and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
     fiona-who $B char-in-area? fiona-who -25 $3C char-heading? and if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     fiona-who $C char-in-area? fiona-who 45 $3C char-heading? and if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     om1f-7-album-medallion-found story-flag? om1f-7-album-medallion story-flag? not and if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 6 4 scene-change
+            6 calm offer-action
         then
     then
 ;
@@ -417,16 +417,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-7.enter old-mansion-1f-7 0 room-script!
-' old-mansion-1f-7.char-enter old-mansion-1f-7 6 room-script!
-' old-mansion-1f-7.phase1 old-mansion-1f-7 1 room-script!
-' old-mansion-1f-7.phase2 old-mansion-1f-7 2 room-script!
-' old-mansion-1f-7.act00 old-mansion-1f-7 $00 action-script!
-' old-mansion-1f-7.act01 old-mansion-1f-7 $01 action-script!
-' old-mansion-1f-7.act02 old-mansion-1f-7 $02 action-script!
-' old-mansion-1f-7.act03 old-mansion-1f-7 $03 action-script!
-' old-mansion-1f-7.act04 old-mansion-1f-7 $04 action-script!
-' old-mansion-1f-7.act05 old-mansion-1f-7 $05 action-script!
-' old-mansion-1f-7.act06 old-mansion-1f-7 $06 action-script!
-' old-mansion-1f-7.act07 old-mansion-1f-7 $07 action-script!
-' old-mansion-1f-7.act08 old-mansion-1f-7 $08 action-script!
+old-mansion-1f-7 register-scripts   \ (its phases and actions, by their names)

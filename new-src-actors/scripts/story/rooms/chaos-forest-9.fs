@@ -100,11 +100,11 @@ USING: room-names story.words story.shared story-names ;
     else cf-9-refined-antimony story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then then
     fiona-who 1 char-in-area? fiona-who 90 $2D char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
 ;
 
@@ -187,12 +187,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' chaos-forest-9.enter chaos-forest-9 0 room-script!
-' chaos-forest-9.char-enter chaos-forest-9 6 room-script!
-' chaos-forest-9.phase1 chaos-forest-9 1 room-script!
-' chaos-forest-9.phase2 chaos-forest-9 2 room-script!
-' chaos-forest-9.act00 chaos-forest-9 $00 action-script!
-' chaos-forest-9.act01 chaos-forest-9 $01 action-script!
-' chaos-forest-9.act02 chaos-forest-9 $02 action-script!
-' chaos-forest-9.act03 chaos-forest-9 $03 action-script!
-' chaos-forest-9.phase5 chaos-forest-9 5 room-script!
+chaos-forest-9 register-scripts   \ (its phases and actions, by their names)

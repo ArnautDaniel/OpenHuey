@@ -64,38 +64,38 @@ USING: room-names story.words story.shared flag-names story-names ;
 : house-of-truth-2f-2.phase2 ( -- )   \ 00431EF0
     got-mystery-sketch story-flag? not if
         fiona-who 3 char-in-area? fiona-who 52 $32 char-heading? and if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then
     fiona-who 4 char-in-area? fiona-who -34 $32 char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who 5 char-in-area? fiona-who 32 $32 char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     fiona-who 6 char-in-area? fiona-who -3 $32 char-heading? and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
     fiona-who 7 char-in-area? fiona-who 46 $32 char-heading? and if
-        5 6 0 scene-change
+        6 unhurried offer-action
     then
     fiona-who 9 char-in-area? fiona-who -35 $32 char-heading? and if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     fiona-who 8 char-in-area? fiona-who -41 $32 char-heading? and if
-        5 8 0 scene-change
+        8 unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who -24 $32 char-heading? and if
-        5 9 0 scene-change
+        9 unhurried offer-action
     then
     ht2f-2-viride-medallion-found story-flag? ht2f-2-viride-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 3 4 scene-change
+            3 calm offer-action
         then
     then
     fiona-who $B char-in-area? fiona-who 12 $32 char-heading? and if
-        5 $B 0 scene-change
+        $B unhurried offer-action
     then
 ;
 
@@ -368,21 +368,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' house-of-truth-2f-2.enter house-of-truth-2f-2 0 room-script!
-' house-of-truth-2f-2.char-enter house-of-truth-2f-2 6 room-script!
-' house-of-truth-2f-2.phase1 house-of-truth-2f-2 1 room-script!
-' house-of-truth-2f-2.phase2 house-of-truth-2f-2 2 room-script!
-' house-of-truth-2f-2.phase3 house-of-truth-2f-2 3 room-script!
-' house-of-truth-2f-2.act00 house-of-truth-2f-2 $00 action-script!
-' house-of-truth-2f-2.act01 house-of-truth-2f-2 $01 action-script!
-' house-of-truth-2f-2.act02 house-of-truth-2f-2 $02 action-script!
-' house-of-truth-2f-2.act03 house-of-truth-2f-2 $03 action-script!
-' house-of-truth-2f-2.act04 house-of-truth-2f-2 $04 action-script!
-' house-of-truth-2f-2.act05 house-of-truth-2f-2 $05 action-script!
-' house-of-truth-2f-2.act06 house-of-truth-2f-2 $06 action-script!
-' house-of-truth-2f-2.act07 house-of-truth-2f-2 $07 action-script!
-' house-of-truth-2f-2.act08 house-of-truth-2f-2 $08 action-script!
-' house-of-truth-2f-2.act09 house-of-truth-2f-2 $09 action-script!
-' house-of-truth-2f-2.act0A house-of-truth-2f-2 $0A action-script!
-' house-of-truth-2f-2.act0B house-of-truth-2f-2 $0B action-script!
-' house-of-truth-2f-2.act0C house-of-truth-2f-2 $0C action-script!
+house-of-truth-2f-2 register-scripts   \ (its phases and actions, by their names)

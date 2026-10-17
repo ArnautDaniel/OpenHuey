@@ -108,7 +108,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : off-map-5a.phase2 ( -- )   \ 00410D90
     fiona-who $16 $32 char-faces-area? if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     1 exit-door-open? not 0 ebit? and if
         fiona-who 1 char-before-door? if
@@ -116,7 +116,7 @@ USING: room-names story.words story.shared flag-names ;
         then
     then
     fiona-who $17 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
 ;
 
@@ -232,13 +232,4 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 \ ---- registered ----
-' off-map-5a.char-enter off-map-5a 6 room-script!
-' off-map-5a.phase1 off-map-5a 1 room-script!
-' off-map-5a.phase2 off-map-5a 2 room-script!
-' off-map-5a.phase5 off-map-5a 5 room-script!
-' off-map-5a.act00 off-map-5a $00 action-script!
-' off-map-5a.act01 off-map-5a $01 action-script!
-' off-map-5a.act02 off-map-5a $02 action-script!
-' off-map-5a.act03 off-map-5a $03 action-script!
-' off-map-5a.act04 off-map-5a $04 action-script!
-' off-map-5a.enter off-map-5a 0 room-script!
+off-map-5a register-scripts   \ (its phases and actions, by their names)

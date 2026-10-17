@@ -376,38 +376,38 @@ create dl-at 12 allot
 : castle-2f-2.phase2 ( -- )   \ 003FE9C0
     fiona-who 2 char-before-door? if
         c1f-8-flag1 story-flag? found-file-209 story-flag? not and stalker-who char-here? not and if
-            5 2 0 scene-change
+            2 unhurried offer-action
         then
         found-file-209 story-flag? -2147483646 scene-request? and if
-            5 5 1 scene-change
+            5 always offer-action
         then
     then
     fiona-who $11 $2D char-faces-area? if
-        5 6 0 scene-change
+        6 unhurried offer-action
     then
     fiona-who $12 $2D char-faces-area? if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     fiona-who $13 $2D char-faces-area? if
-        5 8 0 scene-change
+        8 unhurried offer-action
     then
     c2f-2-flag2 story-flag? not fiona-who $16 char-in-area? and if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     fiona-who $18 char-in-area? fiona-who $19 char-in-area? or fiona-who 0 $32 char-heading? and if
-        5 $A 0 scene-change
+        $A unhurried offer-action
     then
     c2f-2-album-medallion-found story-flag? c2f-2-album-medallion story-flag? not and if
         2 2 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 $C 4 scene-change
+            $C calm offer-action
         then
     then
     got-bisque-doll story-flag? not if
         1 ebit? if
             5 6 castle-2f-2.cond02? if
                 fiona-who 6 3 char-zone-bits? if
-                    5 $F 0 scene-change
+                    $F unhurried offer-action
                 then
             then
         then
@@ -813,27 +813,4 @@ create dl-at 12 allot
 ;
 
 \ ---- registered ----
-' castle-2f-2.enter castle-2f-2 0 room-script!
-' castle-2f-2.char-enter castle-2f-2 6 room-script!
-' castle-2f-2.phase1 castle-2f-2 1 room-script!
-' castle-2f-2.phase2 castle-2f-2 2 room-script!
-' castle-2f-2.phase3 castle-2f-2 3 room-script!
-' castle-2f-2.phase5 castle-2f-2 5 room-script!
-' castle-2f-2.act00 castle-2f-2 $00 action-script!
-' castle-2f-2.act01 castle-2f-2 $01 action-script!
-' castle-2f-2.act02 castle-2f-2 $02 action-script!
-' castle-2f-2.act03 castle-2f-2 $03 action-script!
-' castle-2f-2.act04 castle-2f-2 $04 action-script!
-' castle-2f-2.act05 castle-2f-2 $05 action-script!
-' castle-2f-2.act06 castle-2f-2 $06 action-script!
-' castle-2f-2.act07 castle-2f-2 $07 action-script!
-' castle-2f-2.act08 castle-2f-2 $08 action-script!
-' castle-2f-2.act09 castle-2f-2 $09 action-script!
-' castle-2f-2.act0A castle-2f-2 $0A action-script!
-' castle-2f-2.act0B castle-2f-2 $0B action-script!
-' castle-2f-2.act0C castle-2f-2 $0C action-script!
-' castle-2f-2.act0D castle-2f-2 $0D action-script!
-' castle-2f-2.act0E castle-2f-2 $0E action-script!
-' castle-2f-2.act0F castle-2f-2 $0F action-script!
-' castle-2f-2.act10 castle-2f-2 $10 action-script!
-' castle-2f-2.act11 castle-2f-2 $11 action-script!
+castle-2f-2 register-scripts   \ (its phases and actions, by their names)

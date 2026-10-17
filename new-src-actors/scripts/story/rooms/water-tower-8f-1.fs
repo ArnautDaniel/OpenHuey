@@ -239,39 +239,39 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 : water-tower-8f-1.phase2 ( -- )   \ 0042F7B0
     scene-5-pending state-flag? if
         -2147483646 scene-request? if
-            5 9 1 scene-change
+            9 always offer-action
         then
     then
     fiona-who $B char-in-area? fiona-who 90 $3C char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     wt8f-1-flag3 story-flag? not if
         fiona-who $D char-in-area? fiona-who -58 54 $32 char-faces-xz? and if
-            5 $E 0 scene-change
+            $E unhurried offer-action
         then
     then
     wt8f-1-flag4 story-flag? not if
         fiona-who $E char-in-area? fiona-who -5 -78 $32 char-faces-xz? and if
-            5 $E 0 scene-change
+            $E unhurried offer-action
         then
     then
     wt8f-1-flag1 story-flag? not if
         fiona-who $C char-in-area? fiona-who 3 79 $32 char-faces-xz? and if
-            5 $E 0 scene-change
+            $E unhurried offer-action
         then
     else c7-second-event story-flag? if
         fiona-who $C char-in-area? fiona-who 3 79 $32 char-faces-xz? and if
-            5 $F 0 scene-change
+            $F unhurried offer-action
         then
     then then
     fiona-who $F char-in-area? fiona-who -6 -12 $3C char-faces-xz? and if
-        5 $12 0 scene-change
+        $12 unhurried offer-action
     then
     fiona-who $10 char-in-area? fiona-who -9 10 $3C char-faces-xz? and if
-        5 $12 0 scene-change
+        $12 unhurried offer-action
     then
     fiona-who $11 char-in-area? fiona-who 12 7 $3C char-faces-xz? and if
-        5 $12 0 scene-change
+        $12 unhurried offer-action
     then
 ;
 
@@ -1036,32 +1036,4 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' water-tower-8f-1.enter water-tower-8f-1 0 room-script!
-' water-tower-8f-1.char-enter water-tower-8f-1 6 room-script!
-' water-tower-8f-1.phase1 water-tower-8f-1 1 room-script!
-' water-tower-8f-1.phase2 water-tower-8f-1 2 room-script!
-' water-tower-8f-1.phase3 water-tower-8f-1 3 room-script!
-' water-tower-8f-1.phase5 water-tower-8f-1 5 room-script!
-' water-tower-8f-1.act00 water-tower-8f-1 $00 action-script!
-' water-tower-8f-1.act01 water-tower-8f-1 $01 action-script!
-' water-tower-8f-1.act02 water-tower-8f-1 $02 action-script!
-' water-tower-8f-1.act03 water-tower-8f-1 $03 action-script!
-' water-tower-8f-1.act04 water-tower-8f-1 $04 action-script!
-' water-tower-8f-1.act05 water-tower-8f-1 $05 action-script!
-' water-tower-8f-1.act06 water-tower-8f-1 $06 action-script!
-' water-tower-8f-1.act07 water-tower-8f-1 $07 action-script!
-' water-tower-8f-1.act08 water-tower-8f-1 $08 action-script!
-' water-tower-8f-1.act09 water-tower-8f-1 $09 action-script!
-' water-tower-8f-1.act0A water-tower-8f-1 $0A action-script!
-' water-tower-8f-1.act0B water-tower-8f-1 $0B action-script!
-' water-tower-8f-1.act0C water-tower-8f-1 $0C action-script!
-' water-tower-8f-1.act0D water-tower-8f-1 $0D action-script!
-' water-tower-8f-1.act0E water-tower-8f-1 $0E action-script!
-' water-tower-8f-1.act0F water-tower-8f-1 $0F action-script!
-' water-tower-8f-1.act10 water-tower-8f-1 $10 action-script!
-' water-tower-8f-1.act11 water-tower-8f-1 $11 action-script!
-' water-tower-8f-1.act12 water-tower-8f-1 $12 action-script!
-' water-tower-8f-1.act13 water-tower-8f-1 $13 action-script!
-' water-tower-8f-1.act14 water-tower-8f-1 $14 action-script!
-' water-tower-8f-1.act15 water-tower-8f-1 $15 action-script!
-' water-tower-8f-1.act16 water-tower-8f-1 $16 action-script!
+water-tower-8f-1 register-scripts   \ (its phases and actions, by their names)

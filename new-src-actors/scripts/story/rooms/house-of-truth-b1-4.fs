@@ -84,7 +84,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : house-of-truth-b1-4.phase2 ( -- )   \ 00432C10
     fiona-who 6 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
 ;
 
@@ -146,12 +146,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' house-of-truth-b1-4.enter house-of-truth-b1-4 0 room-script!
-' house-of-truth-b1-4.char-enter house-of-truth-b1-4 6 room-script!
-' house-of-truth-b1-4.phase1 house-of-truth-b1-4 1 room-script!
-' house-of-truth-b1-4.phase2 house-of-truth-b1-4 2 room-script!
-' house-of-truth-b1-4.act00 house-of-truth-b1-4 $00 action-script!
-' house-of-truth-b1-4.act01 house-of-truth-b1-4 $01 action-script!
-' house-of-truth-b1-4.act02 house-of-truth-b1-4 $02 action-script!
-' house-of-truth-b1-4.act03 house-of-truth-b1-4 $03 action-script!
-' house-of-truth-b1-4.phase5 house-of-truth-b1-4 5 room-script!
+house-of-truth-b1-4 register-scripts   \ (its phases and actions, by their names)

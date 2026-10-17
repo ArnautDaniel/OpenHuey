@@ -117,27 +117,27 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-2f-1.phase2 ( -- )   \ 003F3E90
     -2147483646 scene-request? if
-        5 0 1 scene-change
+        0 always offer-action
     then
     fiona-who 6 $32 char-faces-area? if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     fiona-who 7 $32 char-faces-area? if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
     fiona-who 8 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 6 0 scene-change
+        6 unhurried offer-action
     then
     c2f-1-refined-magnesia-found story-flag? c2f-1-refined-magnesia story-flag? not and if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 4 4 scene-change
+            4 calm offer-action
         then
     then
     c2f-1-lavender story-flag? not if
         3 1 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 8 4 scene-change
+            8 calm offer-action
         then
     then
 ;
@@ -385,18 +385,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-2f-1.enter castle-2f-1 0 room-script!
-' castle-2f-1.char-enter castle-2f-1 6 room-script!
-' castle-2f-1.phase1 castle-2f-1 1 room-script!
-' castle-2f-1.phase2 castle-2f-1 2 room-script!
-' castle-2f-1.phase3 castle-2f-1 3 room-script!
-' castle-2f-1.act00 castle-2f-1 $00 action-script!
-' castle-2f-1.act01 castle-2f-1 $01 action-script!
-' castle-2f-1.act02 castle-2f-1 $02 action-script!
-' castle-2f-1.act03 castle-2f-1 $03 action-script!
-' castle-2f-1.act04 castle-2f-1 $04 action-script!
-' castle-2f-1.act05 castle-2f-1 $05 action-script!
-' castle-2f-1.act06 castle-2f-1 $06 action-script!
-' castle-2f-1.act07 castle-2f-1 $07 action-script!
-' castle-2f-1.act08 castle-2f-1 $08 action-script!
-' castle-2f-1.act09 castle-2f-1 $09 action-script!
+castle-2f-1 register-scripts   \ (its phases and actions, by their names)

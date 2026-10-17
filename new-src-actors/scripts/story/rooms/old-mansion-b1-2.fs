@@ -302,30 +302,30 @@ USING: room-names story.words story.shared flag-names story-names ;
 : old-mansion-b1-2.phase2 ( -- )   \ 004090C0
     -2147483646 scene-request? if
         fiona-who 0 char-before-door? if
-            5 4 1 scene-change
+            4 always offer-action
         then
         fiona-who 2 char-before-door? if
-            5 0 1 scene-change
+            0 always offer-action
         then
         fiona-who 3 char-before-door? if
-            5 2 1 scene-change
+            2 always offer-action
         then
     then
     fiona-who $19 char-in-area? fiona-who 45 $32 char-heading? and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
     3 ebit? not if
         fiona-who $1A char-in-area? fiona-who 0 $3C char-heading? and if
             omb1-2-breakable3-broken story-flag? not if
                 stalker-who char-here? not if
-                    5 6 5 scene-change
+                    6 calm offer-action
                 else stalker-who $1A char-in-area? stalker-who fiona-who 40 chars-within? or if
                     $8016 examine-message   \ "I have to get away! I don't have time for this!"
                 else
-                    5 6 5 scene-change
+                    6 calm offer-action
                 then then
             else
-                5 8 0 scene-change
+                8 unhurried offer-action
             then
         then
     else 3 stalker-kind? $22 stalker-kind? or if
@@ -338,23 +338,23 @@ USING: room-names story.words story.shared flag-names story-names ;
     omb1-2-refined-magnesia story-flag? not if
         7 2 5 5 0 zone-at-effect
         fiona-who 7 3 char-zone-bits? if
-            5 9 4 scene-change
+            9 calm offer-action
         then
     then
     8 -29.58 0.0 75.55 7 10 0 zone
     fiona-who 8 8 char-zone-bits? if
         fiona-who -30 76 $3C char-faces-xz? if
-            5 $C 0 scene-change
+            $C unhurried offer-action
         then
     then
     9 -133.09 0.0 71.35 7 10 0 zone
     fiona-who 9 8 char-zone-bits? if
         fiona-who -133 71 $3C char-faces-xz? if
-            5 $C 0 scene-change
+            $C unhurried offer-action
         then
     then
     fiona-who $1D char-in-area? fiona-who -45 $32 char-heading? and if
-        5 $D 0 scene-change
+        $D unhurried offer-action
     then
     omb1-2-breakable1-broken story-flag? not if
         0 13.5 -10.0 -75.0 5 8 1 zone
@@ -371,7 +371,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else omb1-2-viola-medallion story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 $A 4 scene-change
+            $A calm offer-action
         then
     then then
     omb1-2-breakable2-broken story-flag? not if
@@ -389,7 +389,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else omb1-2-rubrum-medallion story-flag? not if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 $B 4 scene-change
+            $B calm offer-action
         then
     then then
 ;
@@ -812,23 +812,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-b1-2.enter old-mansion-b1-2 0 room-script!
-' old-mansion-b1-2.char-enter old-mansion-b1-2 6 room-script!
-' old-mansion-b1-2.phase1 old-mansion-b1-2 1 room-script!
-' old-mansion-b1-2.phase2 old-mansion-b1-2 2 room-script!
-' old-mansion-b1-2.phase5 old-mansion-b1-2 5 room-script!
-' old-mansion-b1-2.phase3 old-mansion-b1-2 3 room-script!
-' old-mansion-b1-2.act00 old-mansion-b1-2 $00 action-script!
-' old-mansion-b1-2.act01 old-mansion-b1-2 $01 action-script!
-' old-mansion-b1-2.act02 old-mansion-b1-2 $02 action-script!
-' old-mansion-b1-2.act03 old-mansion-b1-2 $03 action-script!
-' old-mansion-b1-2.act04 old-mansion-b1-2 $04 action-script!
-' old-mansion-b1-2.act05 old-mansion-b1-2 $05 action-script!
-' old-mansion-b1-2.act06 old-mansion-b1-2 $06 action-script!
-' old-mansion-b1-2.act07 old-mansion-b1-2 $07 action-script!
-' old-mansion-b1-2.act08 old-mansion-b1-2 $08 action-script!
-' old-mansion-b1-2.act09 old-mansion-b1-2 $09 action-script!
-' old-mansion-b1-2.act0A old-mansion-b1-2 $0A action-script!
-' old-mansion-b1-2.act0B old-mansion-b1-2 $0B action-script!
-' old-mansion-b1-2.act0C old-mansion-b1-2 $0C action-script!
-' old-mansion-b1-2.act0D old-mansion-b1-2 $0D action-script!
+old-mansion-b1-2 register-scripts   \ (its phases and actions, by their names)

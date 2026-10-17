@@ -156,19 +156,19 @@ USING: room-names story.words story.shared flag-names story-names ;
 : castle-1f-12.phase2 ( -- )   \ 003F1060
     -2147483646 scene-request? if
         fiona-who 0 char-before-door? if
-            5 0 1 scene-change
+            0 always offer-action
         then
     then
     c1f-12-flag1 story-flag? not if
         fiona-who $E char-in-area? fiona-who -45 $32 char-heading? and if
-            5 2 0 scene-change
+            2 unhurried offer-action
         then
     then
     fiona-who $C char-in-area? fiona-who 54 49 $32 char-faces-xz? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who $D char-in-area? fiona-who 30 -51 $32 char-faces-xz? and if
-        5 6 0 scene-change
+        6 unhurried offer-action
     then
     c1f-12-breakable-broken story-flag? not if
         0 -73.5 -103.0 55.5 5 8 1 zone
@@ -185,7 +185,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else c1f-12-medallion story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 8 4 scene-change
+            8 calm offer-action
         then
     then then
 ;
@@ -552,19 +552,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-12.enter castle-1f-12 0 room-script!
-' castle-1f-12.char-enter castle-1f-12 6 room-script!
-' castle-1f-12.phase1 castle-1f-12 1 room-script!
-' castle-1f-12.phase2 castle-1f-12 2 room-script!
-' castle-1f-12.act00 castle-1f-12 $00 action-script!
-' castle-1f-12.act01 castle-1f-12 $01 action-script!
-' castle-1f-12.act02 castle-1f-12 $02 action-script!
-' castle-1f-12.act03 castle-1f-12 $03 action-script!
-' castle-1f-12.act04 castle-1f-12 $04 action-script!
-' castle-1f-12.act05 castle-1f-12 $05 action-script!
-' castle-1f-12.act06 castle-1f-12 $06 action-script!
-' castle-1f-12.act07 castle-1f-12 $07 action-script!
-' castle-1f-12.act08 castle-1f-12 $08 action-script!
-' castle-1f-12.act09 castle-1f-12 $09 action-script!
-' castle-1f-12.act0A castle-1f-12 $0A action-script!
-' castle-1f-12.act0B castle-1f-12 $0B action-script!
+castle-1f-12 register-scripts   \ (its phases and actions, by their names)

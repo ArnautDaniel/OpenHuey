@@ -647,10 +647,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 
 : water-tower-7f-1.phase2 ( -- )   \ 00440E00
     fiona-who $D $32 char-faces-area? if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     fiona-who $E $32 char-faces-area? if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
 ;
 
@@ -801,13 +801,4 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 \ ---- registered ----
-' water-tower-7f-1.enter water-tower-7f-1 0 room-script!
-' water-tower-7f-1.char-enter water-tower-7f-1 6 room-script!
-' water-tower-7f-1.phase1 water-tower-7f-1 1 room-script!
-' water-tower-7f-1.phase2 water-tower-7f-1 2 room-script!
-' water-tower-7f-1.act00 water-tower-7f-1 $00 action-script!
-' water-tower-7f-1.act01 water-tower-7f-1 $01 action-script!
-' water-tower-7f-1.act02 water-tower-7f-1 $02 action-script!
-' water-tower-7f-1.act03 water-tower-7f-1 $03 action-script!
-' water-tower-7f-1.act04 water-tower-7f-1 $04 action-script!
-' water-tower-7f-1.phase5 water-tower-7f-1 5 room-script!
+water-tower-7f-1 register-scripts   \ (its phases and actions, by their names)

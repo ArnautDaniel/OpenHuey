@@ -97,7 +97,7 @@ USING: room-names story.words story.shared story-names ;
 : lake-pathway-2.phase2 ( -- )   \ 0043EC20
     over-music-d story-flag? if
         fiona-who 6 char-in-area? fiona-who 90 $32 char-heading? and if
-            5 0 0 scene-change
+            0 unhurried offer-action
         then
     then
 ;
@@ -126,8 +126,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' lake-pathway-2.enter lake-pathway-2 0 room-script!
-' lake-pathway-2.char-enter lake-pathway-2 6 room-script!
-' lake-pathway-2.phase1 lake-pathway-2 1 room-script!
-' lake-pathway-2.phase2 lake-pathway-2 2 room-script!
-' lake-pathway-2.act00 lake-pathway-2 $00 action-script!
+lake-pathway-2 register-scripts   \ (its phases and actions, by their names)

@@ -252,7 +252,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else omb1-1-chicken-jerky story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then then
 ;
@@ -518,13 +518,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-b1-1.enter old-mansion-b1-1 0 room-script!
-' old-mansion-b1-1.char-enter old-mansion-b1-1 6 room-script!
-' old-mansion-b1-1.phase1 old-mansion-b1-1 1 room-script!
-' old-mansion-b1-1.phase2 old-mansion-b1-1 2 room-script!
-' old-mansion-b1-1.phase3 old-mansion-b1-1 3 room-script!
-' old-mansion-b1-1.phase5 old-mansion-b1-1 5 room-script!
-' old-mansion-b1-1.act00 old-mansion-b1-1 $00 action-script!
-' old-mansion-b1-1.act01 old-mansion-b1-1 $01 action-script!
-' old-mansion-b1-1.act02 old-mansion-b1-1 $02 action-script!
-' old-mansion-b1-1.act03 old-mansion-b1-1 $03 action-script!
+old-mansion-b1-1 register-scripts   \ (its phases and actions, by their names)

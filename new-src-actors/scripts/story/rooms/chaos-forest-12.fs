@@ -146,7 +146,7 @@ USING: room-names story.words story.shared story-names ;
     cf-12-camomile story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then
 ;
@@ -213,11 +213,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' chaos-forest-12.enter chaos-forest-12 0 room-script!
-' chaos-forest-12.char-enter chaos-forest-12 6 room-script!
-' chaos-forest-12.phase1 chaos-forest-12 1 room-script!
-' chaos-forest-12.phase2 chaos-forest-12 2 room-script!
-' chaos-forest-12.act00 chaos-forest-12 $00 action-script!
-' chaos-forest-12.act01 chaos-forest-12 $01 action-script!
-' chaos-forest-12.act02 chaos-forest-12 $02 action-script!
-' chaos-forest-12.phase5 chaos-forest-12 5 room-script!
+chaos-forest-12 register-scripts   \ (its phases and actions, by their names)

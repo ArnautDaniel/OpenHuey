@@ -126,7 +126,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-3f-1.phase2 ( -- )   \ 003F1D58
     -2147483646 scene-request? if
-        5 0 1 scene-change
+        0 always offer-action
     then
 ;
 
@@ -290,13 +290,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-3f-1.enter castle-3f-1 0 room-script!
-' castle-3f-1.char-enter castle-3f-1 6 room-script!
-' castle-3f-1.phase1 castle-3f-1 1 room-script!
-' castle-3f-1.phase2 castle-3f-1 2 room-script!
-' castle-3f-1.phase3 castle-3f-1 3 room-script!
-' castle-3f-1.phase5 castle-3f-1 5 room-script!
-' castle-3f-1.act00 castle-3f-1 $00 action-script!
-' castle-3f-1.act01 castle-3f-1 $01 action-script!
-' castle-3f-1.act02 castle-3f-1 $02 action-script!
-' castle-3f-1.act03 castle-3f-1 $03 action-script!
+castle-3f-1 register-scripts   \ (its phases and actions, by their names)

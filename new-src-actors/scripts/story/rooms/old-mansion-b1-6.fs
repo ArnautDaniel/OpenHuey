@@ -345,42 +345,42 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 
 : old-mansion-b1-6.phase2 ( -- )   \ 0041E700
     fiona-who $14 $32 char-faces-area? if
-        5 8 0 scene-change
+        8 unhurried offer-action
     then
     fiona-who $15 $32 char-faces-area? if
-        5 $B 0 scene-change
+        $B unhurried offer-action
     then
     fiona-who $16 char-in-area? fiona-who 75 -40 $32 char-faces-xz? and if
-        5 $C 0 scene-change
+        $C unhurried offer-action
     then
     fiona-who $1B char-in-area? if
-        5 $E 0 scene-change
+        $E unhurried offer-action
     then
     fiona-who $1D char-in-area? if
-        5 $12 0 scene-change
+        $12 unhurried offer-action
     then
     fiona-who $1F char-in-area? if
-        5 $13 0 scene-change
+        $13 unhurried offer-action
     then
     fiona-who $21 char-in-area? if
-        5 $14 0 scene-change
+        $14 unhurried offer-action
     then
     omb1-6-medallion story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 $18 4 scene-change
+            $18 calm offer-action
         then
     then
     omb1-6-viola-medallion-found story-flag? omb1-6-viola-medallion story-flag? not and if
         2 1 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 $19 4 scene-change
+            $19 calm offer-action
         then
     then
     omb1-6-magist-medallion story-flag? not if
         3 2 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 $1A 4 scene-change
+            $1A calm offer-action
         then
     then
 ;
@@ -1373,36 +1373,4 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 ;
 
 \ ---- registered ----
-' old-mansion-b1-6.enter old-mansion-b1-6 0 room-script!
-' old-mansion-b1-6.char-enter old-mansion-b1-6 6 room-script!
-' old-mansion-b1-6.phase1 old-mansion-b1-6 1 room-script!
-' old-mansion-b1-6.phase2 old-mansion-b1-6 2 room-script!
-' old-mansion-b1-6.act00 old-mansion-b1-6 $00 action-script!
-' old-mansion-b1-6.act01 old-mansion-b1-6 $01 action-script!
-' old-mansion-b1-6.act02 old-mansion-b1-6 $02 action-script!
-' old-mansion-b1-6.act03 old-mansion-b1-6 $03 action-script!
-' old-mansion-b1-6.act04 old-mansion-b1-6 $04 action-script!
-' old-mansion-b1-6.act05 old-mansion-b1-6 $05 action-script!
-' old-mansion-b1-6.act06 old-mansion-b1-6 $06 action-script!
-' old-mansion-b1-6.act07 old-mansion-b1-6 $07 action-script!
-' old-mansion-b1-6.act08 old-mansion-b1-6 $08 action-script!
-' old-mansion-b1-6.act09 old-mansion-b1-6 $09 action-script!
-' old-mansion-b1-6.act0A old-mansion-b1-6 $0A action-script!
-' old-mansion-b1-6.act0B old-mansion-b1-6 $0B action-script!
-' old-mansion-b1-6.act0C old-mansion-b1-6 $0C action-script!
-' old-mansion-b1-6.act0D old-mansion-b1-6 $0D action-script!
-' old-mansion-b1-6.act0E old-mansion-b1-6 $0E action-script!
-' old-mansion-b1-6.act0F old-mansion-b1-6 $0F action-script!
-' old-mansion-b1-6.act10 old-mansion-b1-6 $10 action-script!
-' old-mansion-b1-6.act11 old-mansion-b1-6 $11 action-script!
-' old-mansion-b1-6.act12 old-mansion-b1-6 $12 action-script!
-' old-mansion-b1-6.act13 old-mansion-b1-6 $13 action-script!
-' old-mansion-b1-6.act14 old-mansion-b1-6 $14 action-script!
-' old-mansion-b1-6.act15 old-mansion-b1-6 $15 action-script!
-' old-mansion-b1-6.act16 old-mansion-b1-6 $16 action-script!
-' old-mansion-b1-6.act17 old-mansion-b1-6 $17 action-script!
-' old-mansion-b1-6.act18 old-mansion-b1-6 $18 action-script!
-' old-mansion-b1-6.act19 old-mansion-b1-6 $19 action-script!
-' old-mansion-b1-6.act1A old-mansion-b1-6 $1A action-script!
-' old-mansion-b1-6.act1B old-mansion-b1-6 $1B action-script!
-' old-mansion-b1-6.phase5 old-mansion-b1-6 5 room-script!
+old-mansion-b1-6 register-scripts   \ (its phases and actions, by their names)

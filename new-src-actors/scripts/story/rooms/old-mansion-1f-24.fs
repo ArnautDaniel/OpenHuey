@@ -156,20 +156,20 @@ defer old-mansion-1f-24.act02
     4 ebit? if
         fiona-who stalker-who $A 0 $2D char-touching-facing? if
             6 ebit? not if
-                5 5 0 scene-change
+                5 unhurried offer-action
             then
         then
     then
     fiona-who $A char-in-area? fiona-who -90 $1E char-heading? and if
-        5 9 0 scene-change
+        9 unhurried offer-action
     then
     fiona-who $B char-in-area? fiona-who -67 $3C char-heading? and if
-        5 9 0 scene-change
+        9 unhurried offer-action
     then
     om1f-24-rubrum-medallion story-flag? not if
         2 1 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 8 4 scene-change
+            8 calm offer-action
         then
     then
     om1f-24-breakable-broken story-flag? not if
@@ -187,7 +187,7 @@ defer old-mansion-1f-24.act02
     else om1f-24-beef-jerky story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 3 4 scene-change
+            3 calm offer-action
         then
     then then
 ;
@@ -365,18 +365,4 @@ defer old-mansion-1f-24.act02
 ;
 
 \ ---- registered ----
-' old-mansion-1f-24.enter old-mansion-1f-24 0 room-script!
-' old-mansion-1f-24.char-enter old-mansion-1f-24 6 room-script!
-' old-mansion-1f-24.phase1 old-mansion-1f-24 1 room-script!
-' old-mansion-1f-24.phase2 old-mansion-1f-24 2 room-script!
-' old-mansion-1f-24.phase5 old-mansion-1f-24 5 room-script!
-' old-mansion-1f-24.act00 old-mansion-1f-24 $00 action-script!
-' old-mansion-1f-24.act01 old-mansion-1f-24 $01 action-script!
-' old-mansion-1f-24.act02 old-mansion-1f-24 $02 action-script!
-' old-mansion-1f-24.act03 old-mansion-1f-24 $03 action-script!
-' old-mansion-1f-24.act04 old-mansion-1f-24 $04 action-script!
-' old-mansion-1f-24.act05 old-mansion-1f-24 $05 action-script!
-' old-mansion-1f-24.act06 old-mansion-1f-24 $06 action-script!
-' old-mansion-1f-24.act07 old-mansion-1f-24 $07 action-script!
-' old-mansion-1f-24.act08 old-mansion-1f-24 $08 action-script!
-' old-mansion-1f-24.act09 old-mansion-1f-24 $09 action-script!
+old-mansion-1f-24 register-scripts   \ (its phases and actions, by their names)

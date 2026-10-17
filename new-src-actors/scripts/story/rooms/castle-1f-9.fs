@@ -214,21 +214,21 @@ USING: room-names story.words story.shared flag-names story-names ;
     c1f-9-rubrum-medallion-found story-flag? c1f-9-rubrum-medallion story-flag? not and if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 7 4 scene-change
+            7 calm offer-action
         then
     then
     fiona-who $C char-in-area? fiona-who 45 $32 char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who $D $32 char-faces-area? if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     fiona-who $10 char-in-area? fiona-who 35 -45 $32 char-faces-xz? and if
-        5 8 0 scene-change
+        8 unhurried offer-action
     then
     fiona-who 1 char-before-door? if
         -2147483646 scene-request? if
-            5 9 1 scene-change
+            9 always offer-action
         then
     then
     c1f-9-breakable2-broken story-flag? not if
@@ -246,7 +246,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else c1f-9-magnesia story-flag? not if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 $B 4 scene-change
+            $B calm offer-action
         then
     then then
 ;
@@ -563,22 +563,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-9.enter castle-1f-9 0 room-script!
-' castle-1f-9.char-enter castle-1f-9 6 room-script!
-' castle-1f-9.phase1 castle-1f-9 1 room-script!
-' castle-1f-9.phase2 castle-1f-9 2 room-script!
-' castle-1f-9.phase3 castle-1f-9 3 room-script!
-' castle-1f-9.phase5 castle-1f-9 5 room-script!
-' castle-1f-9.act00 castle-1f-9 $00 action-script!
-' castle-1f-9.act01 castle-1f-9 $01 action-script!
-' castle-1f-9.act02 castle-1f-9 $02 action-script!
-' castle-1f-9.act03 castle-1f-9 $03 action-script!
-' castle-1f-9.act04 castle-1f-9 $04 action-script!
-' castle-1f-9.act05 castle-1f-9 $05 action-script!
-' castle-1f-9.act06 castle-1f-9 $06 action-script!
-' castle-1f-9.act07 castle-1f-9 $07 action-script!
-' castle-1f-9.act08 castle-1f-9 $08 action-script!
-' castle-1f-9.act09 castle-1f-9 $09 action-script!
-' castle-1f-9.act0A castle-1f-9 $0A action-script!
-' castle-1f-9.act0B castle-1f-9 $0B action-script!
-' castle-1f-9.act0C castle-1f-9 $0C action-script!
+castle-1f-9 register-scripts   \ (its phases and actions, by their names)

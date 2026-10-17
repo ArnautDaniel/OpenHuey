@@ -158,67 +158,67 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-13.phase2 ( -- )   \ 0040E680
     fiona-who 6 $3C char-faces-area? if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who $C char-in-area? fiona-who 90 $3C char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     white-mandragora-used story-flag? not if
         $18 1 item-count? not $19 1 item-count? not and $1A 1 item-count? not and $1B 1 item-count? not and $1C 1 item-count? not and if
             fiona-who $A $3C char-faces-area? if
-                5 4 0 scene-change
+                4 unhurried offer-action
             then
             fiona-who 9 $3C char-faces-area? if
-                5 5 0 scene-change
+                5 unhurried offer-action
             then
             fiona-who 8 $3C char-faces-area? if
-                5 6 0 scene-change
+                6 unhurried offer-action
             then
             fiona-who $B $3C char-faces-area? if
-                5 7 0 scene-change
+                7 unhurried offer-action
             then
             fiona-who 7 char-in-area? fiona-who 90 $3C char-heading? and if
-                5 8 0 scene-change
+                8 unhurried offer-action
             then
         else
             fiona-who $A $3C char-faces-area? if
-                5 0 0 scene-change
+                0 unhurried offer-action
             then
             fiona-who 9 $3C char-faces-area? if
-                5 0 0 scene-change
+                0 unhurried offer-action
             then
             fiona-who 8 $3C char-faces-area? if
-                5 0 0 scene-change
+                0 unhurried offer-action
             then
             fiona-who $B $3C char-faces-area? if
-                5 0 0 scene-change
+                0 unhurried offer-action
             then
             fiona-who 7 char-in-area? fiona-who 90 $3C char-heading? and if
-                5 0 0 scene-change
+                0 unhurried offer-action
             then
         then
     else
         fiona-who $A $3C char-faces-area? if
-            5 9 0 scene-change
+            9 unhurried offer-action
         then
         fiona-who 9 $3C char-faces-area? if
-            5 9 0 scene-change
+            9 unhurried offer-action
         then
         fiona-who 8 $3C char-faces-area? if
-            5 9 0 scene-change
+            9 unhurried offer-action
         then
         fiona-who $B $3C char-faces-area? if
-            5 9 0 scene-change
+            9 unhurried offer-action
         then
         fiona-who 7 char-in-area? fiona-who 90 $3C char-heading? and if
-            5 9 0 scene-change
+            9 unhurried offer-action
         then
     then
     fiona-who $D char-in-area? fiona-who -90 $3C char-heading? and if
-        5 $D 0 scene-change
+        $D unhurried offer-action
     then
     fiona-who $E char-in-area? fiona-who -90 $3C char-heading? and if
-        5 $D 0 scene-change
+        $D unhurried offer-action
     then
 ;
 
@@ -587,22 +587,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-13.enter old-mansion-1f-13 0 room-script!
-' old-mansion-1f-13.char-enter old-mansion-1f-13 6 room-script!
-' old-mansion-1f-13.phase1 old-mansion-1f-13 1 room-script!
-' old-mansion-1f-13.phase2 old-mansion-1f-13 2 room-script!
-' old-mansion-1f-13.act00 old-mansion-1f-13 $00 action-script!
-' old-mansion-1f-13.act01 old-mansion-1f-13 $01 action-script!
-' old-mansion-1f-13.act02 old-mansion-1f-13 $02 action-script!
-' old-mansion-1f-13.act03 old-mansion-1f-13 $03 action-script!
-' old-mansion-1f-13.act04 old-mansion-1f-13 $04 action-script!
-' old-mansion-1f-13.act05 old-mansion-1f-13 $05 action-script!
-' old-mansion-1f-13.act06 old-mansion-1f-13 $06 action-script!
-' old-mansion-1f-13.act07 old-mansion-1f-13 $07 action-script!
-' old-mansion-1f-13.act08 old-mansion-1f-13 $08 action-script!
-' old-mansion-1f-13.act09 old-mansion-1f-13 $09 action-script!
-' old-mansion-1f-13.act0A old-mansion-1f-13 $0A action-script!
-' old-mansion-1f-13.act0B old-mansion-1f-13 $0B action-script!
-' old-mansion-1f-13.act0C old-mansion-1f-13 $0C action-script!
-' old-mansion-1f-13.act0D old-mansion-1f-13 $0D action-script!
-' old-mansion-1f-13.act0E old-mansion-1f-13 $0E action-script!
+old-mansion-1f-13 register-scripts   \ (its phases and actions, by their names)

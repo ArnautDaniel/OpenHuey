@@ -178,7 +178,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else c1f-14-chicken-jerky story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then then
     c1f-14-breakable3-broken story-flag? not if
@@ -196,16 +196,16 @@ USING: room-names story.words story.shared flag-names story-names ;
     else c1f-14-antimony-powder story-flag? not if
         2 2 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 3 4 scene-change
+            3 calm offer-action
         then
     then then
     -2147483646 scene-request? if
-        5 0 1 scene-change
+        0 always offer-action
     then
     c1f-14-viride-medallion-found story-flag? c1f-14-viride-medallion story-flag? not and if
         3 1 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 2 4 scene-change
+            2 calm offer-action
         then
     then
 ;
@@ -401,14 +401,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-14.enter castle-1f-14 0 room-script!
-' castle-1f-14.char-enter castle-1f-14 6 room-script!
-' castle-1f-14.phase1 castle-1f-14 1 room-script!
-' castle-1f-14.phase2 castle-1f-14 2 room-script!
-' castle-1f-14.phase3 castle-1f-14 3 room-script!
-' castle-1f-14.act00 castle-1f-14 $00 action-script!
-' castle-1f-14.act01 castle-1f-14 $01 action-script!
-' castle-1f-14.act02 castle-1f-14 $02 action-script!
-' castle-1f-14.act03 castle-1f-14 $03 action-script!
-' castle-1f-14.act04 castle-1f-14 $04 action-script!
-' castle-1f-14.act05 castle-1f-14 $05 action-script!
+castle-1f-14 register-scripts   \ (its phases and actions, by their names)

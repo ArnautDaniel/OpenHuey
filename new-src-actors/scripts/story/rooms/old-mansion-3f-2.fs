@@ -177,7 +177,7 @@ defer old-mansion-3f-2.act07
 
 : old-mansion-3f-2.phase2 ( -- )   \ 00421400
     fiona-who 6 char-in-area? fiona-who 0 -68 $41 char-faces-xz? and if
-        5 9 0 scene-change
+        9 unhurried offer-action
     then
 ;
 
@@ -592,20 +592,4 @@ defer old-mansion-3f-2.act07
 ;
 
 \ ---- registered ----
-' old-mansion-3f-2.enter old-mansion-3f-2 0 room-script!
-' old-mansion-3f-2.char-enter old-mansion-3f-2 6 room-script!
-' old-mansion-3f-2.phase1 old-mansion-3f-2 1 room-script!
-' old-mansion-3f-2.phase2 old-mansion-3f-2 2 room-script!
-' old-mansion-3f-2.phase5 old-mansion-3f-2 5 room-script!
-' old-mansion-3f-2.act00 old-mansion-3f-2 $00 action-script!
-' old-mansion-3f-2.act01 old-mansion-3f-2 $01 action-script!
-' old-mansion-3f-2.act02 old-mansion-3f-2 $02 action-script!
-' old-mansion-3f-2.act03 old-mansion-3f-2 $03 action-script!
-' old-mansion-3f-2.act04 old-mansion-3f-2 $04 action-script!
-' old-mansion-3f-2.act05 old-mansion-3f-2 $05 action-script!
-' old-mansion-3f-2.act06 old-mansion-3f-2 $06 action-script!
-' old-mansion-3f-2.act07 old-mansion-3f-2 $07 action-script!
-' old-mansion-3f-2.act08 old-mansion-3f-2 $08 action-script!
-' old-mansion-3f-2.act09 old-mansion-3f-2 $09 action-script!
-' old-mansion-3f-2.act0A old-mansion-3f-2 $0A action-script!
-' old-mansion-3f-2.act0B old-mansion-3f-2 $0B action-script!
+old-mansion-3f-2 register-scripts   \ (its phases and actions, by their names)

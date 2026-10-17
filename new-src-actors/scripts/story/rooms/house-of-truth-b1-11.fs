@@ -137,11 +137,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' house-of-truth-b1-11.char-enter house-of-truth-b1-11 6 room-script!
-' house-of-truth-b1-11.phase1 house-of-truth-b1-11 1 room-script!
-' house-of-truth-b1-11.phase5 house-of-truth-b1-11 5 room-script!
-' house-of-truth-b1-11.act00 house-of-truth-b1-11 $00 action-script!
-' house-of-truth-b1-11.act01 house-of-truth-b1-11 $01 action-script!
-' house-of-truth-b1-11.act02 house-of-truth-b1-11 $02 action-script!
-' house-of-truth-b1-11.enter house-of-truth-b1-11 0 room-script!
-' house-of-truth-b1-11.phase2 house-of-truth-b1-11 2 room-script!
+house-of-truth-b1-11 register-scripts   \ (its phases and actions, by their names)

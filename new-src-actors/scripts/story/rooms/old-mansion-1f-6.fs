@@ -245,23 +245,23 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     om1f-6-medallion story-flag? not if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then
     fiona-who $F char-in-area? fiona-who -45 $3C char-heading? and if
         stalker-who char-here? not if
-            5 5 5 scene-change
+            5 calm offer-action
         else old-mansion-1f-6.cond00? not if
-            5 5 5 scene-change
+            5 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then then
     then
     fiona-who $C $3C char-faces-area? if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who $D char-in-area? fiona-who 45 $3C char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
 ;
 
@@ -520,18 +520,4 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-6.enter old-mansion-1f-6 0 room-script!
-' old-mansion-1f-6.char-enter old-mansion-1f-6 6 room-script!
-' old-mansion-1f-6.phase1 old-mansion-1f-6 1 room-script!
-' old-mansion-1f-6.phase2 old-mansion-1f-6 2 room-script!
-' old-mansion-1f-6.phase3 old-mansion-1f-6 3 room-script!
-' old-mansion-1f-6.act00 old-mansion-1f-6 $00 action-script!
-' old-mansion-1f-6.act01 old-mansion-1f-6 $01 action-script!
-' old-mansion-1f-6.act02 old-mansion-1f-6 $02 action-script!
-' old-mansion-1f-6.act03 old-mansion-1f-6 $03 action-script!
-' old-mansion-1f-6.act04 old-mansion-1f-6 $04 action-script!
-' old-mansion-1f-6.act05 old-mansion-1f-6 $05 action-script!
-' old-mansion-1f-6.act06 old-mansion-1f-6 $06 action-script!
-' old-mansion-1f-6.act07 old-mansion-1f-6 $07 action-script!
-' old-mansion-1f-6.act08 old-mansion-1f-6 $08 action-script!
-' old-mansion-1f-6.phase5 old-mansion-1f-6 5 room-script!
+old-mansion-1f-6 register-scripts   \ (its phases and actions, by their names)

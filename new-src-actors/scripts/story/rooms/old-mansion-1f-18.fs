@@ -138,13 +138,13 @@ USING: room-names story.words story.shared story-names ;
 
 : old-mansion-1f-18.phase2 ( -- )   \ 00424AC0
     fiona-who 8 char-in-area? fiona-who 8 $3C char-faces-area? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who 9 char-in-area? fiona-who 9 $3C char-faces-area? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who $A $3C char-faces-area? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
 ;
 
@@ -181,9 +181,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-18.enter old-mansion-1f-18 0 room-script!
-' old-mansion-1f-18.char-enter old-mansion-1f-18 6 room-script!
-' old-mansion-1f-18.phase1 old-mansion-1f-18 1 room-script!
-' old-mansion-1f-18.phase2 old-mansion-1f-18 2 room-script!
-' old-mansion-1f-18.phase4 old-mansion-1f-18 4 room-script!
-' old-mansion-1f-18.act00 old-mansion-1f-18 $00 action-script!
+old-mansion-1f-18 register-scripts   \ (its phases and actions, by their names)

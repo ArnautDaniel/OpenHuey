@@ -78,12 +78,12 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : house-of-truth-b1-5.phase2 ( -- )   \ 00444270
     fiona-who 6 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     htb1-5-camomile story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 4 4 scene-change
+            4 calm offer-action
         then
     then
 ;
@@ -173,13 +173,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' house-of-truth-b1-5.enter house-of-truth-b1-5 0 room-script!
-' house-of-truth-b1-5.char-enter house-of-truth-b1-5 6 room-script!
-' house-of-truth-b1-5.phase1 house-of-truth-b1-5 1 room-script!
-' house-of-truth-b1-5.phase2 house-of-truth-b1-5 2 room-script!
-' house-of-truth-b1-5.act00 house-of-truth-b1-5 $00 action-script!
-' house-of-truth-b1-5.act01 house-of-truth-b1-5 $01 action-script!
-' house-of-truth-b1-5.act02 house-of-truth-b1-5 $02 action-script!
-' house-of-truth-b1-5.act03 house-of-truth-b1-5 $03 action-script!
-' house-of-truth-b1-5.act04 house-of-truth-b1-5 $04 action-script!
-' house-of-truth-b1-5.phase5 house-of-truth-b1-5 5 room-script!
+house-of-truth-b1-5 register-scripts   \ (its phases and actions, by their names)

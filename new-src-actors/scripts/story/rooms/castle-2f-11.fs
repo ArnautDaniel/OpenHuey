@@ -76,7 +76,7 @@ USING: room-names story.words story.shared ;
 
 : castle-2f-11.phase2 ( -- )   \ 003FE420
     fiona-who 4 char-in-area? fiona-who 30 $32 char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
 ;
 
@@ -97,9 +97,4 @@ USING: room-names story.words story.shared ;
 ;
 
 \ ---- registered ----
-' castle-2f-11.enter castle-2f-11 0 room-script!
-' castle-2f-11.char-enter castle-2f-11 6 room-script!
-' castle-2f-11.phase1 castle-2f-11 1 room-script!
-' castle-2f-11.phase2 castle-2f-11 2 room-script!
-' castle-2f-11.act00 castle-2f-11 $00 action-script!
-' castle-2f-11.act01 castle-2f-11 $01 action-script!
+castle-2f-11 register-scripts   \ (its phases and actions, by their names)

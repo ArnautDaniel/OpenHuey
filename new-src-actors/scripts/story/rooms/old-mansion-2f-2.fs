@@ -94,14 +94,14 @@ USING: room-names story.words story.shared flag-names story-names ;
     2 game-mode? not in-panic? not and if
         om2f-2-flag1 story-flag? not if
             fiona-who 0 char-before-door? if
-                5 5 1 scene-change
+                5 always offer-action
             then
         then
     then
     om2f-2-medallion-found story-flag? om2f-2-medallion story-flag? not and if
         3 1 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 7 4 scene-change
+            7 calm offer-action
         then
     then
 ;
@@ -287,17 +287,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-2f-2.enter old-mansion-2f-2 0 room-script!
-' old-mansion-2f-2.char-enter old-mansion-2f-2 6 room-script!
-' old-mansion-2f-2.phase1 old-mansion-2f-2 1 room-script!
-' old-mansion-2f-2.phase2 old-mansion-2f-2 2 room-script!
-' old-mansion-2f-2.phase5 old-mansion-2f-2 5 room-script!
-' old-mansion-2f-2.act00 old-mansion-2f-2 $00 action-script!
-' old-mansion-2f-2.act01 old-mansion-2f-2 $01 action-script!
-' old-mansion-2f-2.act02 old-mansion-2f-2 $02 action-script!
-' old-mansion-2f-2.act03 old-mansion-2f-2 $03 action-script!
-' old-mansion-2f-2.act04 old-mansion-2f-2 $04 action-script!
-' old-mansion-2f-2.act05 old-mansion-2f-2 $05 action-script!
-' old-mansion-2f-2.act06 old-mansion-2f-2 $06 action-script!
-' old-mansion-2f-2.act07 old-mansion-2f-2 $07 action-script!
-' old-mansion-2f-2.act08 old-mansion-2f-2 $08 action-script!
+old-mansion-2f-2 register-scripts   \ (its phases and actions, by their names)

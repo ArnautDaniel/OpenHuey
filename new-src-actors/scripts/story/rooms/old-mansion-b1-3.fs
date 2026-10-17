@@ -418,51 +418,51 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 
 : old-mansion-b1-3.phase2 ( -- )   \ 0040A020
     fiona-who 3 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who 4 char-in-area? fiona-who 10 0 $32 char-faces-xz? and if
         omb1-3-flag2 story-flag? not if
-            5 2 0 scene-change
+            2 unhurried offer-action
         else got-venus-key story-flag? not if
-            5 5 4 scene-change
+            5 calm offer-action
         else
-            5 4 0 scene-change
+            4 unhurried offer-action
         then then
     then
     fiona-who 5 char-in-area? fiona-who 45 $32 char-heading? and if
         omb1-3-flag3 story-flag? not if
-            5 6 0 scene-change
+            6 unhurried offer-action
         else stalker-who char-here? not if
-            5 6 5 scene-change
+            6 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then then
     then
     fiona-who 6 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 7 0 scene-change
+        7 unhurried offer-action
     then
     fiona-who 7 char-in-area? fiona-who 55 $32 char-heading? and if
-        5 8 0 scene-change
+        8 unhurried offer-action
     then
     fiona-who 8 char-in-area? fiona-who 45 $32 char-heading? and if
-        5 9 0 scene-change
+        9 unhurried offer-action
     then
     fiona-who 9 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 $A 0 scene-change
+        $A unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who -22 $32 char-heading? and if
-        5 $B 0 scene-change
+        $B unhurried offer-action
     then
     fiona-who $B char-in-area? fiona-who -45 $32 char-heading? and if
-        5 $C 0 scene-change
+        $C unhurried offer-action
     then
     fiona-who $C char-in-area? fiona-who -45 $32 char-heading? and if
-        5 $D 0 scene-change
+        $D unhurried offer-action
     then
     omb1-3-camomile story-flag? not if
         7 5 5 5 0 zone-at-effect
         fiona-who 7 3 char-zone-bits? if
-            5 $12 4 scene-change
+            $12 calm offer-action
         then
     then
 ;
@@ -1163,30 +1163,4 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 ;
 
 \ ---- registered ----
-' old-mansion-b1-3.enter old-mansion-b1-3 0 room-script!
-' old-mansion-b1-3.char-enter old-mansion-b1-3 6 room-script!
-' old-mansion-b1-3.phase1 old-mansion-b1-3 1 room-script!
-' old-mansion-b1-3.phase2 old-mansion-b1-3 2 room-script!
-' old-mansion-b1-3.act00 old-mansion-b1-3 $00 action-script!
-' old-mansion-b1-3.act01 old-mansion-b1-3 $01 action-script!
-' old-mansion-b1-3.act02 old-mansion-b1-3 $02 action-script!
-' old-mansion-b1-3.act03 old-mansion-b1-3 $03 action-script!
-' old-mansion-b1-3.act04 old-mansion-b1-3 $04 action-script!
-' old-mansion-b1-3.act05 old-mansion-b1-3 $05 action-script!
-' old-mansion-b1-3.act06 old-mansion-b1-3 $06 action-script!
-' old-mansion-b1-3.act07 old-mansion-b1-3 $07 action-script!
-' old-mansion-b1-3.act08 old-mansion-b1-3 $08 action-script!
-' old-mansion-b1-3.act09 old-mansion-b1-3 $09 action-script!
-' old-mansion-b1-3.act0A old-mansion-b1-3 $0A action-script!
-' old-mansion-b1-3.act0B old-mansion-b1-3 $0B action-script!
-' old-mansion-b1-3.act0C old-mansion-b1-3 $0C action-script!
-' old-mansion-b1-3.act0D old-mansion-b1-3 $0D action-script!
-' old-mansion-b1-3.act0E old-mansion-b1-3 $0E action-script!
-' old-mansion-b1-3.act0F old-mansion-b1-3 $0F action-script!
-' old-mansion-b1-3.act10 old-mansion-b1-3 $10 action-script!
-' old-mansion-b1-3.act11 old-mansion-b1-3 $11 action-script!
-' old-mansion-b1-3.act12 old-mansion-b1-3 $12 action-script!
-' old-mansion-b1-3.act13 old-mansion-b1-3 $13 action-script!
-' old-mansion-b1-3.act14 old-mansion-b1-3 $14 action-script!
-' old-mansion-b1-3.act15 old-mansion-b1-3 $15 action-script!
-' old-mansion-b1-3.act16 old-mansion-b1-3 $16 action-script!
+old-mansion-b1-3 register-scripts   \ (its phases and actions, by their names)

@@ -149,11 +149,11 @@ USING: room-names story.words story.shared flag-names ;
         1 chaos-forest-6.cmd00
         in-panic? not if
             stalker-who char-here? not if
-                5 0 5 scene-change
+                0 calm offer-action
             else stalker-who 3 char-heading-for? if
                 $8016 examine-message   \ "I have to get away! I don't have time for this!"
             else
-                5 0 5 scene-change
+                0 calm offer-action
             then then
         then
     then
@@ -251,11 +251,4 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 \ ---- registered ----
-' chaos-forest-6.char-enter chaos-forest-6 6 room-script!
-' chaos-forest-6.phase1 chaos-forest-6 1 room-script!
-' chaos-forest-6.phase2 chaos-forest-6 2 room-script!
-' chaos-forest-6.act00 chaos-forest-6 $00 action-script!
-' chaos-forest-6.act01 chaos-forest-6 $01 action-script!
-' chaos-forest-6.act02 chaos-forest-6 $02 action-script!
-' chaos-forest-6.act03 chaos-forest-6 $03 action-script!
-' chaos-forest-6.enter chaos-forest-6 0 room-script!
+chaos-forest-6 register-scripts   \ (its phases and actions, by their names)

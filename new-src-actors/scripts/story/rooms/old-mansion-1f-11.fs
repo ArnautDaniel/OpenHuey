@@ -180,26 +180,26 @@ USING: room-names story.words story.shared flag-names story-names ;
 : old-mansion-1f-11.phase2 ( -- )   \ 0040B160
     omb1-5-flag3 story-flag? if
         fiona-who $10 char-in-area? fiona-who 0 $32 char-heading? and if
-            5 0 0 scene-change
+            0 unhurried offer-action
         then
         fiona-who $11 char-in-area? fiona-who 90 $32 char-heading? and if
-            5 1 0 scene-change
+            1 unhurried offer-action
         then
     else fiona-who $12 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then then
     2 ebit? not if
         fiona-who $13 char-in-area? fiona-who 0 $3C char-heading? and if
             om1f-11-breakable-broken story-flag? not if
                 stalker-who char-here? not if
-                    5 3 5 scene-change
+                    3 calm offer-action
                 else stalker-who $13 char-in-area? stalker-who fiona-who 40 chars-within? or if
                     $8016 examine-message   \ "I have to get away! I don't have time for this!"
                 else
-                    5 3 5 scene-change
+                    3 calm offer-action
                 then then
             else
-                5 5 0 scene-change
+                5 unhurried offer-action
             then
         then
     else 3 stalker-kind? $22 stalker-kind? or if
@@ -212,7 +212,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     om1f-11-album-medallion-found story-flag? om1f-11-album-medallion story-flag? not and if
         3 0 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 6 4 scene-change
+            6 calm offer-action
         then
     then
 ;
@@ -406,15 +406,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-11.enter old-mansion-1f-11 0 room-script!
-' old-mansion-1f-11.char-enter old-mansion-1f-11 6 room-script!
-' old-mansion-1f-11.phase1 old-mansion-1f-11 1 room-script!
-' old-mansion-1f-11.phase2 old-mansion-1f-11 2 room-script!
-' old-mansion-1f-11.phase5 old-mansion-1f-11 5 room-script!
-' old-mansion-1f-11.act00 old-mansion-1f-11 $00 action-script!
-' old-mansion-1f-11.act01 old-mansion-1f-11 $01 action-script!
-' old-mansion-1f-11.act02 old-mansion-1f-11 $02 action-script!
-' old-mansion-1f-11.act03 old-mansion-1f-11 $03 action-script!
-' old-mansion-1f-11.act04 old-mansion-1f-11 $04 action-script!
-' old-mansion-1f-11.act05 old-mansion-1f-11 $05 action-script!
-' old-mansion-1f-11.act06 old-mansion-1f-11 $06 action-script!
+old-mansion-1f-11 register-scripts   \ (its phases and actions, by their names)

@@ -276,16 +276,16 @@ USING: room-names story.words story.shared flag-names story-names ;
 : house-of-truth-2f-1.phase2 ( -- )   \ 00431A60
     -2147483646 scene-request? if
         fiona-who 0 char-before-door? if
-            5 1 1 scene-change
+            1 always offer-action
         then
     then
     fiona-who $14 char-in-area? fiona-who 45 $32 char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     ht2f-1-medallion-found story-flag? ht2f-1-medallion story-flag? not and if
         7 6 5 5 0 zone-at-effect
         fiona-who 7 3 char-zone-bits? if
-            5 5 4 scene-change
+            5 calm offer-action
         then
     then
     ht2f-1-breakable2-broken story-flag? not if
@@ -303,7 +303,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else ht2f-1-viola-medallion story-flag? not if
         8 7 5 5 0 zone-at-effect
         fiona-who 8 3 char-zone-bits? if
-            5 6 4 scene-change
+            6 calm offer-action
         then
     then then
 ;
@@ -518,14 +518,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' house-of-truth-2f-1.enter house-of-truth-2f-1 0 room-script!
-' house-of-truth-2f-1.char-enter house-of-truth-2f-1 6 room-script!
-' house-of-truth-2f-1.phase1 house-of-truth-2f-1 1 room-script!
-' house-of-truth-2f-1.phase2 house-of-truth-2f-1 2 room-script!
-' house-of-truth-2f-1.act00 house-of-truth-2f-1 $00 action-script!
-' house-of-truth-2f-1.act01 house-of-truth-2f-1 $01 action-script!
-' house-of-truth-2f-1.act02 house-of-truth-2f-1 $02 action-script!
-' house-of-truth-2f-1.act03 house-of-truth-2f-1 $03 action-script!
-' house-of-truth-2f-1.act04 house-of-truth-2f-1 $04 action-script!
-' house-of-truth-2f-1.act05 house-of-truth-2f-1 $05 action-script!
-' house-of-truth-2f-1.act06 house-of-truth-2f-1 $06 action-script!
+house-of-truth-2f-1 register-scripts   \ (its phases and actions, by their names)

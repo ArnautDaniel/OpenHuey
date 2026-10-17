@@ -218,7 +218,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 : castle-1f-1.phase2 ( -- )   \ 003EEB90
     c1f-2-flag1 story-flag? not if
         fiona-who 7 char-in-area? fiona-who -67 $2D char-heading? and if
-            5 0 0 scene-change
+            0 unhurried offer-action
         then
     then
     1 exit-door-open? not 0 ebit? and if
@@ -362,15 +362,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-1.enter castle-1f-1 0 room-script!
-' castle-1f-1.char-enter castle-1f-1 6 room-script!
-' castle-1f-1.phase1 castle-1f-1 1 room-script!
-' castle-1f-1.phase2 castle-1f-1 2 room-script!
-' castle-1f-1.phase3 castle-1f-1 3 room-script!
-' castle-1f-1.phase5 castle-1f-1 5 room-script!
-' castle-1f-1.act00 castle-1f-1 $00 action-script!
-' castle-1f-1.act01 castle-1f-1 $01 action-script!
-' castle-1f-1.act02 castle-1f-1 $02 action-script!
-' castle-1f-1.act03 castle-1f-1 $03 action-script!
-' castle-1f-1.act04 castle-1f-1 $04 action-script!
-' castle-1f-1.act05 castle-1f-1 $05 action-script!
+castle-1f-1 register-scripts   \ (its phases and actions, by their names)

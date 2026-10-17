@@ -198,23 +198,23 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-2.phase2 ( -- )   \ 00406930
     fiona-who $11 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     medallion-40-done story-flag? not if
         fiona-who $12 char-in-area? fiona-who 0 $32 char-heading? and if
-            5 5 0 scene-change
+            5 unhurried offer-action
         then
     then
     fiona-who $13 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     fiona-who $14 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     om1f-2-camomile story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 6 4 scene-change
+            6 calm offer-action
         then
     then
 ;
@@ -582,16 +582,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-1f-2.enter old-mansion-1f-2 0 room-script!
-' old-mansion-1f-2.char-enter old-mansion-1f-2 6 room-script!
-' old-mansion-1f-2.phase1 old-mansion-1f-2 1 room-script!
-' old-mansion-1f-2.phase2 old-mansion-1f-2 2 room-script!
-' old-mansion-1f-2.act00 old-mansion-1f-2 $00 action-script!
-' old-mansion-1f-2.act01 old-mansion-1f-2 $01 action-script!
-' old-mansion-1f-2.act02 old-mansion-1f-2 $02 action-script!
-' old-mansion-1f-2.act03 old-mansion-1f-2 $03 action-script!
-' old-mansion-1f-2.act04 old-mansion-1f-2 $04 action-script!
-' old-mansion-1f-2.act05 old-mansion-1f-2 $05 action-script!
-' old-mansion-1f-2.act06 old-mansion-1f-2 $06 action-script!
-' old-mansion-1f-2.act07 old-mansion-1f-2 $07 action-script!
-' old-mansion-1f-2.act08 old-mansion-1f-2 $08 action-script!
+old-mansion-1f-2 register-scripts   \ (its phases and actions, by their names)

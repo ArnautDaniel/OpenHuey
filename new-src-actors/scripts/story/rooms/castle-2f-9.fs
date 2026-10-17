@@ -130,9 +130,9 @@ USING: room-names story.words story.shared flag-names story-names ;
     c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
         fiona-who 3 $A 0 $2D char-touching-facing? if
             c2f-9-flag2 story-flag? not if
-                5 1 0 scene-change
+                1 unhurried offer-action
             else
-                5 2 0 scene-change
+                2 unhurried offer-action
             then
         then
     then
@@ -232,14 +232,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-2f-9.enter castle-2f-9 0 room-script!
-' castle-2f-9.char-enter castle-2f-9 6 room-script!
-' castle-2f-9.phase1 castle-2f-9 1 room-script!
-' castle-2f-9.phase2 castle-2f-9 2 room-script!
-' castle-2f-9.phase5 castle-2f-9 5 room-script!
-' castle-2f-9.act00 castle-2f-9 $00 action-script!
-' castle-2f-9.act01 castle-2f-9 $01 action-script!
-' castle-2f-9.act02 castle-2f-9 $02 action-script!
-' castle-2f-9.act03 castle-2f-9 $03 action-script!
-' castle-2f-9.act04 castle-2f-9 $04 action-script!
-' castle-2f-9.act05 castle-2f-9 $05 action-script!
+castle-2f-9 register-scripts   \ (its phases and actions, by their names)

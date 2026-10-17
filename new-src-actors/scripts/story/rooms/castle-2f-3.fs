@@ -329,118 +329,118 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 : castle-2f-3.phase2 ( -- )   \ 003FF650
     fiona-who 4 char-in-area? fiona-who 90 $5A char-heading? and if
         found-file-202 story-flag? not if
-            5 $C 0 scene-change
+            $C unhurried offer-action
         else
-            5 0 0 scene-change
+            0 unhurried offer-action
         then
     then
     found-file-202 story-flag? not if
         found-file-201 story-flag? if
             fiona-who $10 char-in-area? fiona-who 90 $32 char-heading? and if
-                5 $D 0 scene-change
+                $D unhurried offer-action
             then
         then
         -2147483646 scene-request? if
-            5 $C 1 scene-change
+            $C always offer-action
         then
     else c2f-3-flag1 story-flag? hewie-found-in-wire story-flag? not and if
         -2147483646 scene-request? if
-            5 $E 1 scene-change
+            $E always offer-action
         then
         fiona-who 5 char-in-area? fiona-who 90 $3C char-heading? and if
-            5 $F 0 scene-change
+            $F unhurried offer-action
         then
         fiona-who $D char-in-area? fiona-who 22 $3C char-heading? and if
-            5 $10 0 scene-change
+            $10 unhurried offer-action
         then
     else fiona-who 5 char-in-area? fiona-who 90 $3C char-heading? and if
         c2f-2-flag1 story-flag? not if
-            5 $16 0 scene-change
+            $16 unhurried offer-action
         else stalker-who char-here? not if
-            5 1 5 scene-change
+            1 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then then
     then then then
     fiona-who $B char-in-area? fiona-who -67 $3C char-heading? and if
-        5 $14 0 scene-change
+        $14 unhurried offer-action
     then
     fiona-who $C char-in-area? fiona-who 45 $3C char-heading? and if
         found-file-202 story-flag? not if
-            5 $C 0 scene-change
+            $C unhurried offer-action
         else
-            5 $15 0 scene-change
+            $15 unhurried offer-action
         then
     then
     fiona-who $11 char-in-area? fiona-who 0 $3C char-heading? and if
         found-file-202 story-flag? not if
-            5 $C 0 scene-change
+            $C unhurried offer-action
         else
-            5 $17 0 scene-change
+            $17 unhurried offer-action
         then
     then
     fiona-who 6 char-in-area? fiona-who -45 $3C char-heading? and if
         found-file-202 story-flag? not if
-            5 $C 0 scene-change
+            $C unhurried offer-action
         else
-            5 $18 0 scene-change
+            $18 unhurried offer-action
         then
     then
     fiona-who $12 char-in-area? fiona-who 0 $32 char-heading? and if
         found-file-202 story-flag? not if
-            5 $C 0 scene-change
+            $C unhurried offer-action
         else
-            5 $1C 0 scene-change
+            $1C unhurried offer-action
         then
     then
     fiona-who $13 $32 char-faces-area? if
         found-file-202 story-flag? not if
-            5 $C 0 scene-change
+            $C unhurried offer-action
         else
-            5 $1D 0 scene-change
+            $1D unhurried offer-action
         then
     then
     fiona-who $14 char-in-area? fiona-who -45 $32 char-heading? and if
         found-file-202 story-flag? not if
-            5 $C 0 scene-change
+            $C unhurried offer-action
         else
-            5 $1E 0 scene-change
+            $1E unhurried offer-action
         then
     then
     fiona-who $15 char-in-area? fiona-who 90 $32 char-heading? and if
         found-file-202 story-flag? not if
-            5 $C 0 scene-change
+            $C unhurried offer-action
         else fg-3-flag3 story-flag? not if
-            5 $1F 0 scene-change
+            $1F unhurried offer-action
         else
-            5 $26 0 scene-change
+            $26 unhurried offer-action
         then then
     then
     fiona-who $D char-in-area? fiona-who $16 char-in-area? or fiona-who 22 $3C char-heading? and if
         found-file-202 story-flag? not if
-            5 $C 0 scene-change
+            $C unhurried offer-action
         else c2f-3-flag1 story-flag? not if
-            5 $20 0 scene-change
+            $20 unhurried offer-action
         else
-            5 $22 0 scene-change
+            $22 unhurried offer-action
         then then
     then
     found-file-201 story-flag? if
         fiona-who 7 char-in-area? fiona-who -45 $32 char-heading? and if
             found-file-202 story-flag? not if
-                5 $C 0 scene-change
+                $C unhurried offer-action
             else
-                5 $84 3 scene-change
+                $84 calm-hewie-up offer-action
             then
         then
     then
     $C ebit? -2147483646 scene-request? and if
-        5 $24 1 scene-change
+        $24 always offer-action
     then
     c2f-3-medallion-found story-flag? c2f-3-medallion story-flag? not and if
         7 2 5 5 0 zone-at-effect
         fiona-who 7 3 char-zone-bits? if
-            5 $19 4 scene-change
+            $19 calm offer-action
         then
     then
 ;
@@ -1745,51 +1745,4 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-2f-3.enter castle-2f-3 0 room-script!
-' castle-2f-3.char-enter castle-2f-3 6 room-script!
-' castle-2f-3.phase1 castle-2f-3 1 room-script!
-' castle-2f-3.phase2 castle-2f-3 2 room-script!
-' castle-2f-3.phase3 castle-2f-3 3 room-script!
-' castle-2f-3.act00 castle-2f-3 $00 action-script!
-' castle-2f-3.act01 castle-2f-3 $01 action-script!
-' castle-2f-3.act02 castle-2f-3 $02 action-script!
-' castle-2f-3.act03 castle-2f-3 $03 action-script!
-' castle-2f-3.act04 castle-2f-3 $04 action-script!
-' castle-2f-3.act05 castle-2f-3 $05 action-script!
-' castle-2f-3.act06 castle-2f-3 $06 action-script!
-' castle-2f-3.act07 castle-2f-3 $07 action-script!
-' castle-2f-3.act08 castle-2f-3 $08 action-script!
-' castle-2f-3.act09 castle-2f-3 $09 action-script!
-' castle-2f-3.act0A castle-2f-3 $0A action-script!
-' castle-2f-3.act0B castle-2f-3 $0B action-script!
-' castle-2f-3.act0C castle-2f-3 $0C action-script!
-' castle-2f-3.act0D castle-2f-3 $0D action-script!
-' castle-2f-3.act0E castle-2f-3 $0E action-script!
-' castle-2f-3.act0F castle-2f-3 $0F action-script!
-' castle-2f-3.act10 castle-2f-3 $10 action-script!
-' castle-2f-3.act11 castle-2f-3 $11 action-script!
-' castle-2f-3.act12 castle-2f-3 $12 action-script!
-' castle-2f-3.act13 castle-2f-3 $13 action-script!
-' castle-2f-3.act14 castle-2f-3 $14 action-script!
-' castle-2f-3.act15 castle-2f-3 $15 action-script!
-' castle-2f-3.act16 castle-2f-3 $16 action-script!
-' castle-2f-3.act17 castle-2f-3 $17 action-script!
-' castle-2f-3.act18 castle-2f-3 $18 action-script!
-' castle-2f-3.act19 castle-2f-3 $19 action-script!
-' castle-2f-3.act1A castle-2f-3 $1A action-script!
-' castle-2f-3.act1B castle-2f-3 $1B action-script!
-' castle-2f-3.act1C castle-2f-3 $1C action-script!
-' castle-2f-3.act1D castle-2f-3 $1D action-script!
-' castle-2f-3.act1E castle-2f-3 $1E action-script!
-' castle-2f-3.act1F castle-2f-3 $1F action-script!
-' castle-2f-3.act20 castle-2f-3 $20 action-script!
-' castle-2f-3.act21 castle-2f-3 $21 action-script!
-' castle-2f-3.act22 castle-2f-3 $22 action-script!
-' castle-2f-3.act23 castle-2f-3 $23 action-script!
-' castle-2f-3.act24 castle-2f-3 $24 action-script!
-' castle-2f-3.act25 castle-2f-3 $25 action-script!
-' castle-2f-3.act26 castle-2f-3 $26 action-script!
-' castle-2f-3.act27 castle-2f-3 $27 action-script!
-' castle-2f-3.act28 castle-2f-3 $28 action-script!
-' castle-2f-3.act29 castle-2f-3 $29 action-script!
-' castle-2f-3.act2A castle-2f-3 $2A action-script!
+castle-2f-3 register-scripts   \ (its phases and actions, by their names)

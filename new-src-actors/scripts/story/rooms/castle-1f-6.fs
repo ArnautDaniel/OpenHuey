@@ -240,26 +240,26 @@ USING: room-names story.words story.shared flag-names story-names ;
     got-cracked-plate-key-2 story-flag? not if
         $E 4.0 8.5 -20.0 5 5 0 zone
         fiona-who $E 3 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then
     c1f-6-medallion-found story-flag? c1f-6-medallion story-flag? not and if
         0 $E 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 3 4 scene-change
+            3 calm offer-action
         then
     then
     fiona-who 5 char-in-area? fiona-who -45 $3C char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who 6 char-in-area? fiona-who 45 $3C char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who 7 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     -2147483646 scene-request? if
-        5 5 1 scene-change
+        5 always offer-action
     then
 ;
 
@@ -448,14 +448,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-6.enter castle-1f-6 0 room-script!
-' castle-1f-6.char-enter castle-1f-6 6 room-script!
-' castle-1f-6.phase1 castle-1f-6 1 room-script!
-' castle-1f-6.phase2 castle-1f-6 2 room-script!
-' castle-1f-6.act00 castle-1f-6 $00 action-script!
-' castle-1f-6.act01 castle-1f-6 $01 action-script!
-' castle-1f-6.act02 castle-1f-6 $02 action-script!
-' castle-1f-6.act03 castle-1f-6 $03 action-script!
-' castle-1f-6.act04 castle-1f-6 $04 action-script!
-' castle-1f-6.act05 castle-1f-6 $05 action-script!
-' castle-1f-6.act06 castle-1f-6 $06 action-script!
+castle-1f-6 register-scripts   \ (its phases and actions, by their names)

@@ -52,6 +52,4 @@ USING: room-names story.words story.shared ;
 ;
 
 \ ---- registered ----
-' old-mansion-2f-7.enter old-mansion-2f-7 0 room-script!
-' old-mansion-2f-7.char-enter old-mansion-2f-7 6 room-script!
-' old-mansion-2f-7.phase1 old-mansion-2f-7 1 room-script!
+old-mansion-2f-7 register-scripts   \ (its phases and actions, by their names)

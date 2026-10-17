@@ -156,12 +156,12 @@ USING: engine common actors messages room-names story.words story.shared story-n
 
 : old-mansion-b1-7.phase2 ( -- )   \ 004293E0
     fiona-who $A char-in-area? if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     omb1-7-medallion-found story-flag? omb1-7-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 3 4 scene-change
+            3 calm offer-action
         then
     then
 ;
@@ -262,14 +262,4 @@ USING: engine common actors messages room-names story.words story.shared story-n
 ;
 
 \ ---- registered ----
-' old-mansion-b1-7.enter old-mansion-b1-7 0 room-script!
-' old-mansion-b1-7.char-enter old-mansion-b1-7 6 room-script!
-' old-mansion-b1-7.phase1 old-mansion-b1-7 1 room-script!
-' old-mansion-b1-7.phase2 old-mansion-b1-7 2 room-script!
-' old-mansion-b1-7.phase3 old-mansion-b1-7 3 room-script!
-' old-mansion-b1-7.phase5 old-mansion-b1-7 5 room-script!
-' old-mansion-b1-7.act00 old-mansion-b1-7 $00 action-script!
-' old-mansion-b1-7.act01 old-mansion-b1-7 $01 action-script!
-' old-mansion-b1-7.act02 old-mansion-b1-7 $02 action-script!
-' old-mansion-b1-7.act03 old-mansion-b1-7 $03 action-script!
-' old-mansion-b1-7.act04 old-mansion-b1-7 $04 action-script!
+old-mansion-b1-7 register-scripts   \ (its phases and actions, by their names)

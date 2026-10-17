@@ -199,40 +199,40 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-b1-4.phase2 ( -- )   \ 0040C420
     fiona-who 5 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 0 0 scene-change
+        0 unhurried offer-action
     then
     fiona-who 6 char-in-area? fiona-who 45 $32 char-heading? and if
-        5 1 0 scene-change
+        1 unhurried offer-action
     then
     fiona-who 7 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who 8 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who 9 char-in-area? fiona-who -45 $32 char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     6 ebit? not if
         fiona-who $A char-in-area? fiona-who -45 $32 char-heading? and if
-            5 5 0 scene-change
+            5 unhurried offer-action
         then
     then
     fiona-who $B char-in-area? fiona-who 90 $32 char-heading? and if
-        5 6 0 scene-change
+        6 unhurried offer-action
     then
     fiona-who $C char-in-area? fiona-who 0 $3C char-heading? and if
         6 ebit? if
-            5 $12 0 scene-change
+            $12 unhurried offer-action
         else stalker-who char-here? not if
-            5 7 5 scene-change
+            7 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then then
     then
     6 ebit? if
         fiona-who 3 $14 0 $2D char-touching-facing? if
-            5 $10 0 scene-change
+            $10 unhurried offer-action
         then
     then
 ;
@@ -897,28 +897,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-b1-4.enter old-mansion-b1-4 0 room-script!
-' old-mansion-b1-4.char-enter old-mansion-b1-4 6 room-script!
-' old-mansion-b1-4.phase1 old-mansion-b1-4 1 room-script!
-' old-mansion-b1-4.phase2 old-mansion-b1-4 2 room-script!
-' old-mansion-b1-4.phase5 old-mansion-b1-4 5 room-script!
-' old-mansion-b1-4.act00 old-mansion-b1-4 $00 action-script!
-' old-mansion-b1-4.act01 old-mansion-b1-4 $01 action-script!
-' old-mansion-b1-4.act02 old-mansion-b1-4 $02 action-script!
-' old-mansion-b1-4.act03 old-mansion-b1-4 $03 action-script!
-' old-mansion-b1-4.act04 old-mansion-b1-4 $04 action-script!
-' old-mansion-b1-4.act05 old-mansion-b1-4 $05 action-script!
-' old-mansion-b1-4.act06 old-mansion-b1-4 $06 action-script!
-' old-mansion-b1-4.act07 old-mansion-b1-4 $07 action-script!
-' old-mansion-b1-4.act08 old-mansion-b1-4 $08 action-script!
-' old-mansion-b1-4.act09 old-mansion-b1-4 $09 action-script!
-' old-mansion-b1-4.act0A old-mansion-b1-4 $0A action-script!
-' old-mansion-b1-4.act0B old-mansion-b1-4 $0B action-script!
-' old-mansion-b1-4.act0C old-mansion-b1-4 $0C action-script!
-' old-mansion-b1-4.act0D old-mansion-b1-4 $0D action-script!
-' old-mansion-b1-4.act0E old-mansion-b1-4 $0E action-script!
-' old-mansion-b1-4.act0F old-mansion-b1-4 $0F action-script!
-' old-mansion-b1-4.act10 old-mansion-b1-4 $10 action-script!
-' old-mansion-b1-4.act11 old-mansion-b1-4 $11 action-script!
-' old-mansion-b1-4.act12 old-mansion-b1-4 $12 action-script!
-' old-mansion-b1-4.act13 old-mansion-b1-4 $13 action-script!
+old-mansion-b1-4 register-scripts   \ (its phases and actions, by their names)

@@ -162,16 +162,16 @@ USING: room-names story.words story.shared flag-names story-names ;
 : castle-2f-15.phase2 ( -- )   \ 00413160
     found-file-227 story-flag? if
         fiona-who 9 char-in-area? if
-            5 0 0 scene-change
+            0 unhurried offer-action
         then
     then
     fiona-who $A char-in-area? fiona-who 45 $32 char-heading? and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
     c2f-15-prima-magnesia-found story-flag? c2f-15-prima-magnesia story-flag? not and if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 2 4 scene-change
+            2 calm offer-action
         then
     then
 ;
@@ -365,15 +365,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-2f-15.enter castle-2f-15 0 room-script!
-' castle-2f-15.char-enter castle-2f-15 6 room-script!
-' castle-2f-15.phase1 castle-2f-15 1 room-script!
-' castle-2f-15.phase2 castle-2f-15 2 room-script!
-' castle-2f-15.phase5 castle-2f-15 5 room-script!
-' castle-2f-15.act00 castle-2f-15 $00 action-script!
-' castle-2f-15.act01 castle-2f-15 $01 action-script!
-' castle-2f-15.act02 castle-2f-15 $02 action-script!
-' castle-2f-15.act03 castle-2f-15 $03 action-script!
-' castle-2f-15.act04 castle-2f-15 $04 action-script!
-' castle-2f-15.act05 castle-2f-15 $05 action-script!
-' castle-2f-15.act06 castle-2f-15 $06 action-script!
+castle-2f-15 register-scripts   \ (its phases and actions, by their names)

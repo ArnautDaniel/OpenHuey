@@ -167,7 +167,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else c1f-11-beef-jerky story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 8 4 scene-change
+            8 calm offer-action
         then
     then then
     c1f-11-breakable2-broken story-flag? not if
@@ -185,7 +185,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else c1f-11-magnesia story-flag? not if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 4 4 scene-change
+            4 calm offer-action
         then
     then then
     c1f-11-breakable3-broken story-flag? not if
@@ -201,7 +201,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         then
     then
     fiona-who 2 char-in-area? fiona-who 90 $32 char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
 ;
 
@@ -527,20 +527,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-11.enter castle-1f-11 0 room-script!
-' castle-1f-11.char-enter castle-1f-11 6 room-script!
-' castle-1f-11.phase1 castle-1f-11 1 room-script!
-' castle-1f-11.phase2 castle-1f-11 2 room-script!
-' castle-1f-11.phase3 castle-1f-11 3 room-script!
-' castle-1f-11.phase5 castle-1f-11 5 room-script!
-' castle-1f-11.act00 castle-1f-11 $00 action-script!
-' castle-1f-11.act01 castle-1f-11 $01 action-script!
-' castle-1f-11.act02 castle-1f-11 $02 action-script!
-' castle-1f-11.act03 castle-1f-11 $03 action-script!
-' castle-1f-11.act04 castle-1f-11 $04 action-script!
-' castle-1f-11.act05 castle-1f-11 $05 action-script!
-' castle-1f-11.act06 castle-1f-11 $06 action-script!
-' castle-1f-11.act07 castle-1f-11 $07 action-script!
-' castle-1f-11.act08 castle-1f-11 $08 action-script!
-' castle-1f-11.act09 castle-1f-11 $09 action-script!
-' castle-1f-11.act0A castle-1f-11 $0A action-script!
+castle-1f-11 register-scripts   \ (its phases and actions, by their names)

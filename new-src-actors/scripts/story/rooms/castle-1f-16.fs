@@ -144,28 +144,28 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-1f-16.phase2 ( -- )   \ 003FC220
     fiona-who 8 $32 char-faces-area? if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     fiona-who 9 char-in-area? fiona-who 60 $5A char-heading? and if
-        5 2 0 scene-change
+        2 unhurried offer-action
     then
     fiona-who $A char-in-area? fiona-who 45 $3C char-heading? and if
         stalker-who char-here? not if
-            5 3 5 scene-change
+            3 calm offer-action
         else
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
     fiona-who $B char-in-area? fiona-who -72 $32 char-heading? and if
-        5 8 0 scene-change
+        8 unhurried offer-action
     then
     fiona-who $C char-in-area? fiona-who 0 $32 char-heading? and if
-        5 9 0 scene-change
+        9 unhurried offer-action
     then
     c1f-16-magnesia story-flag? not if
         0 1 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
-            5 1 4 scene-change
+            1 calm offer-action
         then
     then
 ;
@@ -434,18 +434,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-16.enter castle-1f-16 0 room-script!
-' castle-1f-16.char-enter castle-1f-16 6 room-script!
-' castle-1f-16.phase1 castle-1f-16 1 room-script!
-' castle-1f-16.phase2 castle-1f-16 2 room-script!
-' castle-1f-16.phase3 castle-1f-16 3 room-script!
-' castle-1f-16.act00 castle-1f-16 $00 action-script!
-' castle-1f-16.act01 castle-1f-16 $01 action-script!
-' castle-1f-16.act02 castle-1f-16 $02 action-script!
-' castle-1f-16.act03 castle-1f-16 $03 action-script!
-' castle-1f-16.act04 castle-1f-16 $04 action-script!
-' castle-1f-16.act05 castle-1f-16 $05 action-script!
-' castle-1f-16.act06 castle-1f-16 $06 action-script!
-' castle-1f-16.act07 castle-1f-16 $07 action-script!
-' castle-1f-16.act08 castle-1f-16 $08 action-script!
-' castle-1f-16.act09 castle-1f-16 $09 action-script!
+castle-1f-16 register-scripts   \ (its phases and actions, by their names)

@@ -204,10 +204,4 @@ USING: actors room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' chaos-forest-13.enter chaos-forest-13 0 room-script!
-' chaos-forest-13.char-enter chaos-forest-13 6 room-script!
-' chaos-forest-13.phase1 chaos-forest-13 1 room-script!
-' chaos-forest-13.phase3 chaos-forest-13 3 room-script!
-' chaos-forest-13.act00 chaos-forest-13 $00 action-script!
-' chaos-forest-13.act01 chaos-forest-13 $01 action-script!
-' chaos-forest-13.act02 chaos-forest-13 $02 action-script!
+chaos-forest-13 register-scripts   \ (its phases and actions, by their names)

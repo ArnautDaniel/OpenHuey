@@ -26,10 +26,10 @@ USING: room-names story.words story.shared story-names ;
 : old-mansion-2f-1.phase2 ( -- )   \ 00407ED0
     omb1-5-flag3 story-flag? if
         fiona-who $10 char-in-area? fiona-who 0 $32 char-heading? and if
-            5 0 0 scene-change
+            0 unhurried offer-action
         then
         fiona-who $11 char-in-area? fiona-who 90 $32 char-heading? and if
-            5 1 0 scene-change
+            1 unhurried offer-action
         then
     then
 ;
@@ -62,10 +62,4 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 \ ---- registered ----
-' old-mansion-2f-1.enter old-mansion-2f-1 0 room-script!
-' old-mansion-2f-1.char-enter old-mansion-2f-1 6 room-script!
-' old-mansion-2f-1.phase2 old-mansion-2f-1 2 room-script!
-' old-mansion-2f-1.phase1 old-mansion-2f-1 1 room-script!
-' old-mansion-2f-1.phase5 old-mansion-2f-1 5 room-script!
-' old-mansion-2f-1.act00 old-mansion-2f-1 $00 action-script!
-' old-mansion-2f-1.act01 old-mansion-2f-1 $01 action-script!
+old-mansion-2f-1 register-scripts   \ (its phases and actions, by their names)

@@ -186,13 +186,13 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : front-garden-2.phase2 ( -- )   \ 003F9530
     fg-2-flag1 story-flag? not fiona-who $E char-in-area? and fiona-who -45 $32 char-heading? and if
-        5 0 1 scene-change
+        0 always offer-action
     then
     fiona-who $10 char-in-area? fiona-who 90 $3C char-heading? and if
-        5 3 0 scene-change
+        3 unhurried offer-action
     then
     fiona-who $11 char-in-area? fiona-who -45 $3C char-heading? and if
-        5 4 0 scene-change
+        4 unhurried offer-action
     then
     fg-2-breakable2-broken story-flag? not if
         1 130.0 60.0 -237.0 5 8 1 zone
@@ -209,7 +209,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     else fg-2-medallion story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
-            5 5 4 scene-change
+            5 calm offer-action
         then
     then then
 ;
@@ -363,16 +363,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' front-garden-2.enter front-garden-2 0 room-script!
-' front-garden-2.char-enter front-garden-2 6 room-script!
-' front-garden-2.phase1 front-garden-2 1 room-script!
-' front-garden-2.phase2 front-garden-2 2 room-script!
-' front-garden-2.phase3 front-garden-2 3 room-script!
-' front-garden-2.act00 front-garden-2 $00 action-script!
-' front-garden-2.act01 front-garden-2 $01 action-script!
-' front-garden-2.act02 front-garden-2 $02 action-script!
-' front-garden-2.act03 front-garden-2 $03 action-script!
-' front-garden-2.act04 front-garden-2 $04 action-script!
-' front-garden-2.act05 front-garden-2 $05 action-script!
-' front-garden-2.act06 front-garden-2 $06 action-script!
-' front-garden-2.act07 front-garden-2 $07 action-script!
+front-garden-2 register-scripts   \ (its phases and actions, by their names)

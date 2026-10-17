@@ -207,17 +207,17 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 
 : house-of-truth-1f-8.phase2 ( -- )   \ 00436A00
     fiona-who $A char-in-area? fiona-who -22 $32 char-heading? and if
-        5 $84 3 scene-change
+        $84 calm-hewie-up offer-action
     then
     -2147483646 scene-request? if
         fiona-who 0 char-before-door? if
-            5 6 1 scene-change
+            6 always offer-action
         then
     then
     ht1f-8-magist-medallion-found story-flag? ht1f-8-magist-medallion story-flag? not and if
         3 3 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
-            5 2 4 scene-change
+            2 calm offer-action
         then
     then
 ;
@@ -391,15 +391,4 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 ;
 
 \ ---- registered ----
-' house-of-truth-1f-8.enter house-of-truth-1f-8 0 room-script!
-' house-of-truth-1f-8.char-enter house-of-truth-1f-8 6 room-script!
-' house-of-truth-1f-8.phase1 house-of-truth-1f-8 1 room-script!
-' house-of-truth-1f-8.phase2 house-of-truth-1f-8 2 room-script!
-' house-of-truth-1f-8.phase3 house-of-truth-1f-8 3 room-script!
-' house-of-truth-1f-8.act00 house-of-truth-1f-8 $00 action-script!
-' house-of-truth-1f-8.act01 house-of-truth-1f-8 $01 action-script!
-' house-of-truth-1f-8.act02 house-of-truth-1f-8 $02 action-script!
-' house-of-truth-1f-8.act03 house-of-truth-1f-8 $03 action-script!
-' house-of-truth-1f-8.act04 house-of-truth-1f-8 $04 action-script!
-' house-of-truth-1f-8.act05 house-of-truth-1f-8 $05 action-script!
-' house-of-truth-1f-8.act06 house-of-truth-1f-8 $06 action-script!
+house-of-truth-1f-8 register-scripts   \ (its phases and actions, by their names)

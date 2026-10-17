@@ -231,7 +231,7 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-1f-19.phase2 ( -- )   \ 003FDEC8
     fiona-who 9 char-in-area? fiona-who 0 $32 char-heading? and if
-        5 5 0 scene-change
+        5 unhurried offer-action
     then
 ;
 
@@ -479,19 +479,4 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 \ ---- registered ----
-' castle-1f-19.enter castle-1f-19 0 room-script!
-' castle-1f-19.char-enter castle-1f-19 6 room-script!
-' castle-1f-19.phase1 castle-1f-19 1 room-script!
-' castle-1f-19.phase2 castle-1f-19 2 room-script!
-' castle-1f-19.phase5 castle-1f-19 5 room-script!
-' castle-1f-19.act00 castle-1f-19 $00 action-script!
-' castle-1f-19.act01 castle-1f-19 $01 action-script!
-' castle-1f-19.act02 castle-1f-19 $02 action-script!
-' castle-1f-19.act03 castle-1f-19 $03 action-script!
-' castle-1f-19.act04 castle-1f-19 $04 action-script!
-' castle-1f-19.act05 castle-1f-19 $05 action-script!
-' castle-1f-19.act06 castle-1f-19 $06 action-script!
-' castle-1f-19.act07 castle-1f-19 $07 action-script!
-' castle-1f-19.act08 castle-1f-19 $08 action-script!
-' castle-1f-19.act09 castle-1f-19 $09 action-script!
-' castle-1f-19.act0A castle-1f-19 $0A action-script!
+castle-1f-19 register-scripts   \ (its phases and actions, by their names)
