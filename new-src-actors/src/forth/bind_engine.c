@@ -15,6 +15,7 @@
 #include "../game/particles.h"
 #include "../game/rumble.h"
 #include "../game/swimpath.h"
+#include "../game/obstacles.h"
 #include "../game/things.h"
 #include "../render/post.h"
 #include "../platform/snddrv.h"
@@ -513,6 +514,55 @@ PRIM(p_nav_square_step) {   /* ( a b -- a' b' ok? ) ( F: dx dz -- ) a square of 
     PUSH(b);
     PUSH(r == 0 ? -1 : 0);
 }
+/* ---- the obstacles (game/obstacles.c) ---- */
+PRIM(p_obstacles_reset) { obstacles_reset(); }
+PRIM(p_obstacle_placed) { PUSH(obstacle_on((int)POP()) ? -1 : 0); }   /* ( i -- flag ) */
+PRIM(p_obstacle_make) {   /* ( i kind a b -- ok? ) */
+    Cell b = POP(), a = POP(), kind = POP(), i = POP();
+
+    PUSH(obstacle_make((int)i, (int)kind, (int)a, (int)b) == 0 ? -1 : 0);
+}
+PRIM(p_obstacle_stop) { obstacle_stop((int)POP()); }   /* ( i -- ) */
+PRIM(p_obstacle_square) {   /* ( i -- a b ) its reference square */
+    int a, b;
+
+    obstacle_square((int)POP(), &a, &b);
+    PUSH(a);
+    PUSH(b);
+}
+PRIM(p_obstacle_at) {   /* ( i -- ) ( F: -- x y z ) where it stands (its model's place) */
+    Vec3 p = obstacle_pos((int)POP());
+
+    FPUSH(p.x); FPUSH(p.y); FPUSH(p.z);
+}
+PRIM(p_obstacle_middle) {   /* ( i -- ) ( F: -- x y z ) its middle */
+    Vec3 p = obstacle_middle((int)POP());
+
+    FPUSH(p.x); FPUSH(p.y); FPUSH(p.z);
+}
+PRIM(p_obstacles_ring_mask) { PUSH(obstacles_ring_mask((int)POP())); }   /* ( tri -- bits ) */
+PRIM(p_obstacle_on_square) {   /* ( i tri -- flag ) */
+    Cell t = POP(), i = POP();
+
+    PUSH(obstacle_on_square((int)i, (int)t) ? -1 : 0);
+}
+PRIM(p_obstacle_can_push) {   /* ( i tris n -- flag ) ( F: dx dz -- ) tris: the other characters' triangles */
+    float dz = (float)FPOP(), dx = (float)FPOP();
+    Cell n = POP(), tris = POP(), i = POP();
+    int t[16], k;
+
+    for (k = 0; k < n && k < 16; k++) {
+        t[k] = (int)((const Cell *)tris)[k];
+    }
+    PUSH(obstacle_can_push((int)i, vec3(dx, 0, dz), t, k) ? -1 : 0);
+}
+PRIM(p_obstacle_push) {   /* ( i -- ) ( F: dx dz -- ) */
+    float dz = (float)FPOP(), dx = (float)FPOP();
+
+    obstacle_push((int)POP(), vec3(dx, 0, dz));
+}
+PRIM(p_obstacle_step) { PUSH(obstacle_step((int)POP()) ? -1 : 0); }   /* ( i -- scrape? ) a frame of its move */
+PRIM(p_obstacle_moved) { obstacle_moved((int)POP()); }   /* ( i -- ) */
 /* ---- the nav links (ladders: the original's nav door regions) ---- */
 static const NavLink *nav_link(Cell i) {
     NavMesh *n = &gEngine.room.nav;
@@ -3167,7 +3217,7 @@ void bind_engine(Forth *f) {
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-wall", p_v_wall}, {"nav-links", p_nav_links}, {"nav-next", p_nav_next}, {"nav-link-tri", p_nav_link_tri}, {"nav-link-yaw", p_nav_link_yaw}, {"nav-link-spot", p_nav_link_spot}, {"nav-link-at?", p_nav_link_at}, {"nav-link-side", p_nav_link_side}, {"nav-link-front", p_nav_link_front}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-path-curved", p_v_path_curved}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
-        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-crosses?", p_nav_crosses}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {"placed-at", p_placed_at}, {"placed-f@", p_placed_f_fetch}, {"placed-f!", p_placed_f_store}, {"placed-l@", p_placed_l_fetch}, {"placed-l!", p_placed_l_store}, {"placed-here?", p_placed_here}, {"placed-shown?", p_placed_shown}, {"nav-square-step", p_nav_square_step}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
+        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-crosses?", p_nav_crosses}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {"placed-at", p_placed_at}, {"placed-f@", p_placed_f_fetch}, {"placed-f!", p_placed_f_store}, {"placed-l@", p_placed_l_fetch}, {"placed-l!", p_placed_l_store}, {"placed-here?", p_placed_here}, {"placed-shown?", p_placed_shown}, {"nav-square-step", p_nav_square_step}, {"obstacles-reset", p_obstacles_reset}, {"obstacle-placed?", p_obstacle_placed}, {"obstacle-make", p_obstacle_make}, {"obstacle-stop", p_obstacle_stop}, {"obstacle-square", p_obstacle_square}, {"obstacle-at", p_obstacle_at}, {"obstacle-middle", p_obstacle_middle}, {"obstacles-ring-mask", p_obstacles_ring_mask}, {"obstacle-on-square?", p_obstacle_on_square}, {"obstacle-can-push?", p_obstacle_can_push}, {"obstacle-push", p_obstacle_push}, {"obstacle-step", p_obstacle_step}, {"obstacle-moved", p_obstacle_moved}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
         {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area},
         {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"door-turn", p_door_turn}, {"door-angle", p_door_angle}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},

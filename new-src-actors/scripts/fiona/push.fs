@@ -33,8 +33,8 @@ PRIVATE>
     reach f!
     group  dup 1 =  over 2 = or  swap 6 = or 0= if  drop false exit  then
     0e reach f@ probe!  her-tri @ her-at probe blocked-floor v-wall 0= if  fdrop drop false exit  then  wall-yaw f!
-    -2e side-tri dup 0< if  2drop false exit  then  ring-mask
-    2e side-tri dup 0< if  drop 2drop false exit  then  ring-mask and                ( pick? both )
+    -2e side-tri dup 0< if  2drop false exit  then  obstacles-ring-mask
+    2e side-tri dup 0< if  drop 2drop false exit  then  obstacles-ring-mask and                ( pick? both )
     \ the push: square to the wall, from her side of it
     wall-yaw f@ pi f2/ f+ angle-wrap
     fdup her-yaw f@ f- angle-wrap fabs pi f2/ f> if  pi f+ angle-wrap  then

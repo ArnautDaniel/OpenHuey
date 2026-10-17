@@ -1636,7 +1636,7 @@ variable daniella-second   \ (her model's +0x878: op 1 shows her second part, no
 : obstacles-id ( -- id )  s" obstacles" actor-named ;
 : obstacle-keep-spot ( i -- )  obstacles-id send keep-obstacle-spot ;
 : obstacle-model-back ( i n -- )  obstacles-id send obstacle-model-to-spot ;
-: obstacle-on? ( i tri -- flag )  on-square? ;
+: obstacle-on? ( i tri -- flag )  obstacle-on-square? ;
 : obstacle-place ( i n kind a b -- )  obstacles-id send place-obstacle ;
 : obstacle-place-saved ( i n kind -- )  obstacles-id send place-obstacle-kept ;
 : obstacle-save ( i -- )  obstacles-id send keep-obstacle ;

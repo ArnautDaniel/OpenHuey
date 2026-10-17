@@ -21,14 +21,15 @@ Declared in `scripts/messages.fs`. All go to the `obstacles` actor.
 | `push-obstacle` | `( i dx dz -- )` | (Fiona) pushed along (dx, dz), floats `f>cell`: two squares over its move. |
 | `obstacle-moved` | `( i -- )` | (Fiona) its move done. |
 
-**Queries** (anyone's; `obstacles` vocabulary): `on-square? ( i tri -- flag )` its square (the
-one it is going to on its move's last frame); `ring-mask ( tri -- bits )` the obstacles with
-`tri` on the ring round them; `can-push? ( i -- flag ) ( F: dx dz -- )`;
-`obstacle-at ( i -- ) ( F: -- x y z )` where it stands.
+**Queries** (anyone's: facts in C, `game/obstacles.c`): `obstacle-on-square? ( i tri -- flag )` its
+square (the one it is going to on its move's last frame); `obstacles-ring-mask ( tri -- bits )`
+the obstacles with `tri` on the ring round them; `obstacle-at ( i -- ) ( F: -- x y z )` where it
+stands. `can-push? ( i -- flag ) ( F: dx dz -- )` (`obstacles` vocabulary) gathers the other
+characters in the room and asks `obstacle-can-push?`.
 
 The story's words (`story/words.fs`): `obstacle-place`, `obstacle-place-saved`, `obstacle-stop`,
 `obstacle-save`, `obstacle-save-at`, `obstacle-keep-spot`, `obstacle-model-back` send these;
-`obstacle-on?` asks `on-square?`.
+`obstacle-on?` asks `obstacle-on-square?`.
 
 ## State
 
@@ -68,7 +69,7 @@ of 30, the push). The places and spots kept. Its kinds come from the executable
 
 ## Status
 
-**Built** (`scripts/obstacles.fs`; engine: `nav-square-step`, `placed-at`). Checked by
+**Built**: the geometry and the move in C (`src/game/obstacles.c`, from room_map.c's Obstacle_*); the actor (`scripts/obstacles.fs`) places, pushes, sounds, moves the models (`placed-at`). Checked by
 `tests/obstacles/test_obstacles.fs` (13): placed in castle-b1-7 (its square, its place, the floor
 blocked, its ring marked); which ways it can go; Fiona walking into it, leaning on it and
 pushing it twice, straining at the end, letting go; its square after; stopped; its place kept
