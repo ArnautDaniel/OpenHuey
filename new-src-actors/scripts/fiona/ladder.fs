@@ -11,12 +11,10 @@
 \ event $20 she is put by that end and free. Her moves on it are her animations' own,
 \ up and down too.
 IN: fiona.ladder
-USING: engine vectors game-state actors messages common keys facts flag-names rumble fiona.state fiona.anims fiona.model fiona.moving fiona.spots fiona.controls fiona.slam fiona.fear fiona.voice ;
+USING: engine vectors game-state actors messages common keys facts flag-names rumble fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.spots fiona.controls fiona.slam fiona.fear fiona.voice ;
 
 defer to-idle   ' noop is to-idle        \ (fiona.fs)
 : events ( -- bits )  her act.mflags l@ ;   \ (MOTION_EVENTS: the motion's flags; $20 come round)
-: play-own ( anim -- )  dup entry 8 or >r >r -1 r> r> start ;   \ (Motion_PlayOwnBlend)
-: play-cut ( anim -- )  dup entry >r >r -1 r> r> start ;        \ (Motion_Play)
 : off-ladder ( -- )  -1 her-ladder !  to-idle ;
 
 \ ---- moved by her animation's root motion, free of the floor (up and down too) ----
@@ -154,16 +152,16 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
     then
     her-at her-drop-at vec-copy  her-drop-tri @ dup 0< if  drop  else  her-tri !  then
     $D0 12 fiona-jolt   \ (landed)
-    her-drop-far @ if  $81 voice  ['] crawl-fall  else  $7D voice  ['] crawl-up  then  her-act ! ;
+    her-drop-far @ if  long-fall-cry voice  ['] crawl-fall  else  pull-free-cry voice  ['] crawl-up  then  her-act ! ;
 : frames-to-fall ( F: h -- ) ( -- n )   \ (0, 0.5, 1 ... a frame: how many frames to fall h)
     {: F: h | F: step :}  1
     begin  h step f- to h  h f0< 0= while  step 0.5e f+ to step  1+  repeat ;
 : knocked-off ( -- )
     her-ladder @ 1 0e 10e nav-link-front her-drop-tri !  her-drop-at vec!
     her-at v.y sf@ her-drop-at v.y sf@ f- fdup 20e f< if
-        0 her-drop-far !  react-mode her-mode !  pull-free-anim -1 play-table  $3F 0 her-sound
+        0 her-drop-far !  react-mode her-mode !  pull-free-anim -1 play-table  struck-hard-sound 0 her-sound
     else
-        -1 her-drop-far !  ladder-slip-anim -1 play-table  $40 0 her-sound
+        -1 her-drop-far !  ladder-slip-anim -1 play-table  fall-sound 0 her-sound
     then
     frames-to-fall dup her-drop-n !  s>f  {: F: n :}
     her-at v.x sf@ her-drop-at v.x sf@ f- n f/ her-drop-dx f!

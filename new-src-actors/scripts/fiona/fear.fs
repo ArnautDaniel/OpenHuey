@@ -4,13 +4,12 @@
 \ panic run until she's out of breath; stumbling or falling as she runs into something; getting
 \ up again. The panic itself is its own actor (panic.fs): she hears its stage and level.
 IN: fiona.fear
-USING: engine vectors keys game-state actors messages common facts items.names fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.slam flag-names ;
+USING: engine vectors keys game-state actors messages common facts items.names fiona.state fiona.anims fiona.sounds fiona.model fiona.controls fiona.moving fiona.slam flag-names ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
 : panic-id ( -- id )  s" panic" actor-named ;
 : noise-here ( loud -- )  room-id her-tri @ -1 fiona-noise acoustics-id send noise ;
-: her-sound ( id vol -- )  5 swap 0 her-pos sound-at ;
 
 \ ---- her fear meter (Fiona_ChangeFear; charms: with items) ----
 : worn-scaled ( F: d -- d' )   \ (Fiona_ChangeFear's chokers: the jade a quarter off a rise; the ruby a
@@ -61,7 +60,7 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
 \ ---- the panic attack (at full fear: 150 frames, her cry 0x44, animation 2) ----
 : in-attack ( -- )
     -1 her-attack-t +!  her-attack-t @ 0= if  to-idle exit  then
-    settled? anim@ attack-anim <> and if  $44 0 her-sound  attack-anim -1 play-table  then
+    settled? anim@ attack-anim <> and if  attack-sound 0 her-sound  attack-anim -1 play-table  then
     root-move ;
 
 \ ---- falling, sliding, getting up (Fiona_StatePanicFall, StateFallen, StateSpecialEntry) ----
@@ -109,7 +108,7 @@ create probe /vec allot  create up-was /vec allot  variable up-tri
 : falling ( -- )
     settled? if
         -1 her-attack-t !  -1 her-fall-turn !  -1 her-wall-side !  her-yaw f@ her-fall-yaw f!
-        fall-anim -1 play-table  $40 0 her-sound  $5F noise-here
+        fall-anim -1 play-table  fall-sound 0 her-sound  $5F noise-here
         ['] fallen her-act !
     then
     root-move ;
@@ -126,7 +125,7 @@ create next-at /vec allot
     her-fear-bits @ 2 and if
         her-stumble-t @ if  -1 her-stumble-t +!  then
         blocked-ahead? 0= if  false exit  then
-        $7F 0 her-sound
+        bump-sound 0 her-sound
         her-stumble-t @ 0= if
             30 her-stumble-t !
             rnd 0.2e f< if
@@ -154,7 +153,7 @@ create behind-pt /vec allot   \ (her radius behind her: a door slammed as she tu
     events $20 and if
         her-yaw f@ pi f+ angle-wrap self body-dims fdrop behind-pt her-at vec-ahead  behind-pt false slam-door drop
     then
-    events 2 and if  own-mode her-mode !  costume 8 <> if  10e add-fear  then  then
+    events 2 and if  own-mode her-mode !  costume frog-outfit <> if  10e add-fear  then  then
     12e deg>rad turn-to-heading fdrop
     root-step her-heading f@ rotate-by move-by ;
 : flee-start ( -- )

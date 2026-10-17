@@ -6,7 +6,7 @@
 \ stumble). A blow is a `blow` to whom it reaches; struck home she's held still 5 frames.
 \ Hewie is told when she shoves or kicks without him being struck (Fiona_HewieReact 10 / 11).
 IN: fiona.defend
-USING: engine vectors game-state actors messages common keys facts flag-names rumble items items.names fiona.state fiona.anims fiona.model fiona.moving fiona.slam fiona.fear fiona.controls fiona.looks ;
+USING: engine vectors game-state actors messages common keys facts flag-names rumble items items.names fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.slam fiona.fear fiona.controls fiona.looks ;
 
 defer to-idle ( -- )
 \ the shove's steps move her every frame - held still by a blow that landed, its frozen frame's
@@ -114,7 +114,7 @@ create ahead-pt /vec allot   \ (her radius ahead)
 : kick-start ( -- )
     root-move
     settled? 0= if  exit  then
-    $3D 0 her-sound  kick-anim -1 play-table  1 her-blow-n +!  0 her-struck !  ['] kicking her-act ! ;
+    kick-sound 0 her-sound  kick-anim -1 play-table  1 her-blow-n +!  0 her-struck !  ['] kicking her-act ! ;
 
 \ ---- the square button (Progress_PlayerButtons, Fiona_StateBlock 8) ----
 : shove-sub ( -- n )  $1A ;   : kick-sub ( -- n )  $1B ;   \ (her sub defending)
@@ -142,9 +142,9 @@ create ahead-pt /vec allot   \ (her radius ahead)
 : struck-home ( -- )
     by-dog? if  dog-mistreated  then
     her-sub @ kick-sub = if   \ (her kick landed: the rumble only on the stalker or a creature)
-        by-dog? 0= if  $C0 12 fiona-jolt  then  $90 0 her-sound  recoil exit
+        by-dog? 0= if  $C0 12 fiona-jolt  then  kick-hit-sound 0 her-sound  recoil exit
     then
-    form illegal-outfit = if  $22 0 her-sound  else  form cowgirl-outfit <> if  $8F 0 her-sound  then  then
+    form illegal-outfit = if  illegal-hit-sound 0 her-sound  else  form cowgirl-outfit <> if  shove-hit-sound 0 her-sound  then  then
     form cowgirl-outfit = if  sender spray-on  then
     blow-big @ if  sender body-at vec@ puffs  then
     recoil ;

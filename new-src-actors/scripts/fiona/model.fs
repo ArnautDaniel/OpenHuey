@@ -6,6 +6,7 @@ USING: engine actors vectors messages fiona.state fiona.anims ;
 
 : her ( -- a )  her-model @ actor ;
 : her-pos ( F: -- x y z )  her-at vec@ ;
+: her-sound ( id vol -- )  5 swap 0 her-pos sound-at ;   \ (Actor_PlaySound: her bank, from where she is)
 \ the model and the body where she is
 : show-her ( -- )
     her-at v.x sf@ her act.x sf!  her-at v.y sf@ her act.y sf!  her-at v.z sf@ her act.z sf!
@@ -24,6 +25,8 @@ USING: engine actors vectors messages fiona.state fiona.anims ;
     variant her-variant !  her-model @ variant motion-variant ;
 : entry ( anim -- blend flags )  her-model @ swap motion-entry nip ;   \ its table's fade and flags
 : play-table ( anim variant -- )  over entry start ;                 \ Motion_PlayTable
+: play-own ( anim -- )  -1 over entry 8 or start ;   \ (Motion_PlayOwnBlend: no variant, no time of its own)
+: play-cut ( anim -- )  -1 play-table ;              \ (Motion_Play)
 : play-blend ( anim n variant -- )  {: anim n variant :}  anim variant n  anim entry nip  start ;   \ blended over n frames
 : weight! ( F: w -- )  her act.vweight sf! ;      \ the animation against its variant
 : settled? ( -- flag )  her act.fade sf@ 0e f<= ;  \ faded in

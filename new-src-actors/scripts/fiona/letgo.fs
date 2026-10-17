@@ -7,24 +7,32 @@
 \ of the item is used - if her hand isn't past a wall; then she stands again. Throwing, Hewie is
 \ told (Fiona_HewieReact 12).
 IN: fiona.letgo
-USING: engine vectors game-state actors messages common keys facts flag-names fiona.state fiona.anims fiona.model fiona.moving fiona.slam ;
+USING: things items items.names engine vectors game-state actors messages common keys facts flag-names fiona.state fiona.anims fiona.model fiona.moving fiona.slam ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 : events ( -- bits )  her-model @ 0 -1 1 motion-events ;   \ (her motion's key events this frame)
 
 \ ---- the item: how it is let go, and the thing it becomes ----
-: held ( -- item )  progress pr.equipped 8 + sl@ ;   \ (the equipment's slot 2)
-create hows   $31 c, $32 c, $33 c, $31 c, $32 c, $33 c, 0 c, $32 c, $33 c, 0 c, 0 c, $33 c,
-create kinds   0 c, 1 c, 2 c, 3 c, 4 c, 5 c, -1 c, 6 c, 7 c, -1 c, -1 c, 8 c,
-: slot ( item -- k | -1 )  $90 - dup 12 u< 0= if  drop -1  then ;
-: how ( item -- how | 0 )  slot dup 0< if  drop 0  else  hows + c@  then ;
-: thing-kind ( item -- kind )  slot dup 0< if  exit  then  kinds + c@ dup $FF = if  drop -1  then ;
+: held ( -- item )  throw-slot equipped ;
+: let-go-as ( item -- how kind | 0 -1 )
+    case
+        ball of  thrown-sub ball-thing  endof
+        bisque-doll of  thrown-sub doll-thing  endof
+        antimony-powder of  aimed-sub antimony-thing  endof
+        refined-antimony of  aimed-sub refined-antimony-thing  endof
+        antimony-tube of  aimed-sub tube-thing  endof
+        magnesia of  set-down-sub magnesia-thing  endof
+        refined-magnesia of  set-down-sub refined-magnesia-thing  endof
+        prima-magnesia of  set-down-sub prima-thing  endof
+        weeping-stone of  set-down-sub stone-thing  endof
+        >r 0 -1 r>
+    endcase ;
 
 \ ---- the aim: the stalker within 80 and 60 degrees of her facing (an aimed one only) ----
-create aim-at 12 allot   \ (aimed: where he stood as she began)
+create aim-at /vec allot   \ (aimed: where he stood as she began)
 : aim ( -- )   \ (her-letgo-yaw: the way she turns to; aimed: at him)
     her-yaw f@ her-letgo-yaw f!  0 her-aimed !
-    her-sub @ $32 <> if  exit  then
+    her-sub @ aimed-sub <> if  exit  then
     stalker-in-room dup 0< if  drop exit  then
     dup body-at her-at vec-dist 80e f< 0= if  drop exit  then
     aim-at over body-at vec-copy
@@ -33,21 +41,22 @@ create aim-at 12 allot   \ (aimed: where he stood as she began)
     else  fdrop  then ;
 
 \ ---- at the key: the thing made at her hand ----
-create hand 12 allot   create step-at 12 allot
-: speed ( -- ) ( F: -- s )  her-sub @ case  $31 of 4e endof  $32 of 6e endof  >r 0e r>  endcase ;
+create hand /vec allot   create step-at /vec allot
+: speed ( -- ) ( F: -- s )  her-sub @ case  thrown-sub of 4e endof  aimed-sub of 6e endof  >r 0e r>  endcase ;
 : way ( -- ) ( F: -- vx vy vz )   \ (at that speed, level: her facing - aimed, from her hand at where he stood)
     0e speed  her-aimed @ if  hand aim-at vec-heading  else  her-letgo-yaw f@  then  rotate-by  0e fswap ;
+$20020008 constant hand-stops   \ (the floors her hand can't pass over)
 : hand-reached ( -- tri | -1 )   \ (her hand not past a wall: from where she stands at its height)
-    step-at her-at vec-copy  hand 4 + sf@ step-at 4 + sf!
-    her-tri @ step-at hand $20020008 v-walk ;
+    step-at her-at vec-copy  hand v.y sf@ step-at v.y sf!
+    her-tri @ step-at hand hand-stops v-walk ;
 : let-go ( -- )
     her-model @ 9 bone-pos hand vec!
-    hand-reached dup 0< if  drop exit  then                  ( tri )
-    held thing-kind swap  hand vec@ f>cell >r f>cell >r f>cell  r> r>   ( kind tri x y z )
-    way f>cell >r f>cell >r f>cell  r> r>
+    hand-reached dup 0< if  drop exit  then  {: tri :}
+    hand vec@ {: F: x y z :}  way {: F: vx vy vz :}
+    held let-go-as nip  tri  x f>cell y f>cell z f>cell  vx f>cell vy f>cell vz f>cell
     s" things" actor-named send thing-made
     held s" items" actor-named send take-item
-    her-sub @ $31 = if  12 s" hewie" actor-named send reaction  then ;
+    her-sub @ thrown-sub = if  12 s" hewie" actor-named send reaction  then ;   \ (his reaction to a throw)
 
 \ ---- her states ----
 : letting-go ( -- )   \ (Fiona_StateLetGo)
@@ -58,12 +67,11 @@ create hand 12 allot   create step-at 12 allot
 : let-go-start ( -- )   \ (Fiona_StateLetGoStart: once what she was doing has faded in)
     root-move  settled? 0= if  exit  then
     aim  0 her-let-gone !
-    her-sub @ case  $31 of $D00 endof  $32 of $D01 endof  >r $D02 r>  endcase  -1 play-table
+    her-sub @ case  thrown-sub of throw-anim endof  aimed-sub of aimed-throw-anim endof  >r set-down-anim r>  endcase  -1 play-table
     ['] letting-go her-act ! ;
 \ the triangle (Progress_PlayerButtons): free, a thing in slot 2 (not under progress flag $14)
 : try-let-go ( -- )
-    her-mode @ 0<>  her-doing @ 0<> or  no-flee state-flag? or if  exit  then
+    her-mode @ own-mode <>  her-doing @ free-doing <> or  no-flee state-flag? or if  exit  then
     triangle button-pressed? 0= if  exit  then
-    held how ?dup 0= if  exit  then
-    held thing-kind 0< if  drop exit  then
-    her-sub !  $E her-mode !  7 her-doing !  ['] let-go-start her-act ! ;
+    held let-go-as {: how kind :}  how 0=  kind 0< or if  exit  then
+    how her-sub !  throw-mode her-mode !  let-go-doing her-doing !  ['] let-go-start her-act ! ;

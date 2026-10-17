@@ -26,6 +26,8 @@ $403 constant flee-turn-anim       \ turning to flee (Fiona_StateFleeTurn)
 $600 constant door-anim            \ through a door: $600 + its kind (FIN_D000.MTN)
 $608 constant rattle-front-anim    \ trying a locked door, from in front
 $609 constant rattle-behind-anim   \ ... from behind
+$60A constant rattle-front-slow-anim   \ ... slowly (chased or panicking)
+$60B constant rattle-behind-slow-anim
 \ ---- ladders (Fiona_StateOnLadder) ----
 $700 constant on-ladder-top-anim   \ getting on from the top
 $701 constant rung-down-anim       \ a rung down
@@ -50,6 +52,16 @@ $B04 constant flung-down-anim      \ flung down, panicking
 $D00 constant throw-anim
 $D01 constant aimed-throw-anim
 $D02 constant set-down-anim
+\ ---- her gestures to Hewie (named for the commands that play them) ----
+$C00 constant go-for-it-gesture-anim
+$C02 constant call-gesture-anim      \ (from afar: praise, scold, come back)
+$C03 constant stay-gesture-anim      \ (stay, come)
+$C04 constant go-there-gesture-anim
+$C06 constant rouse-gesture-anim
+$C07 constant pat-start-anim   $C08 constant pat-anim   $C09 constant pat-end-anim
+$C0A constant tend-start-anim  $C0B constant tend-lead-in-anim  $C0C constant tend-anim
+$C0D constant scold-near-anim
+$C0E constant look-around-anim  $C0F constant look-around-end-anim   \ (attack now)
 \ ---- defending ----
 $E00 constant shove-anim           \ her hand
 $E01 constant kick-anim            \ her body

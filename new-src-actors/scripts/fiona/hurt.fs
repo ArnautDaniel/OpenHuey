@@ -5,16 +5,9 @@
 \ caught (a hold: she flinches in his grip and pulls free) - the fright it carries, and getting
 \ up again. How she stands for an attack (`fiona-plight`) is told each frame.
 IN: fiona.hurt
-USING: engine vectors game-state actors messages common facts flag-names rumble items.names fiona.state fiona.anims fiona.model fiona.moving fiona.fear ;
+USING: engine vectors game-state actors messages common facts flag-names rumble items.names fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.fear ;
 
 defer to-idle ( -- )
-\ her reactions (Fiona_Reaction: her sub while she is thrown-mode): knocked off a ladder; led away;
-\ thrown; thrown by a door; knocked down on a step or in a doorway, harder; knocked down, harder;
-\ grabbed; held down by homunculi; a spirit's fall; caught in a hold
-8 constant off-ladder-r   9 constant led-away-r   $A constant thrown-r   $B constant door-thrown-r
-$C constant step-knock-r   $D constant step-knock-hard-r   $E constant knock-r   $F constant knock-hard-r
-$10 constant grabbed-r   $12 constant held-down-r   $13 constant spirit-fall-r   $20 constant caught-r
--1 constant no-reaction
 \ how he holds her (her-hit-how): by the arm, from the side, from behind, from the front; a door's
 1 constant by-arm   2 constant by-side   3 constant from-behind   4 constant from-front   5 constant by-door
 $8000 constant stumbles   \ (a blow's flag: she stumbles)
@@ -94,10 +87,10 @@ create from-pt /vec allot
     settled? if
         blow-side
         her-sub @ case
-            step-knock-r of  $3E 0 her-sound  knocked-anim -1 play-table  endof
-            knock-r of  $3E 0 her-sound  $1000 fall-by-side  endof
-            step-knock-hard-r of  $3F 0 her-sound  fall-through-anim -1 play-table  endof
-            knock-hard-r of  $3F 0 her-sound  $1004 fall-by-side  endof
+            step-knock-r of  knocked-sound 0 her-sound  knocked-anim -1 play-table  endof
+            knock-r of  knocked-sound 0 her-sound  $1000 fall-by-side  endof
+            step-knock-hard-r of  struck-hard-sound 0 her-sound  fall-through-anim -1 play-table  endof
+            knock-hard-r of  struck-hard-sound 0 her-sound  $1004 fall-by-side  endof
         endcase
         $5F noise-here  ['] up-again her-act !
     then
@@ -139,8 +132,8 @@ create from-pt /vec allot
             her-fear-bits @ 2 and if  -1 her-fall-turn !  her-fall-yaw f@ her-yaw f!  flung-down-anim  else  thrown-back-anim  then
             -1 play-table
         then
-        her-fear-bits @ 2 and if  $42 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fear-set
-        else  $40 0 her-sound  $5F noise-here  then
+        her-fear-bits @ 2 and if  panic-scream-sound 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fear-set
+        else  fall-sound 0 her-sound  $5F noise-here  then
         ['] after-throw her-act !
     then
     pull-back ;
@@ -152,7 +145,7 @@ create from-pt /vec allot
 : after-caught ( -- )  ended? if  to-idle exit  then  watch-him  root-move ;
 : flinching ( -- )
     settled? if
-        $80 8 fiona-jolt  $43 0 her-sound
+        $80 8 fiona-jolt  seized-sound 0 her-sound
         her-hit-how @ case  from-front of $F05 endof  by-arm of pull-free-anim endof  by-side of $F04 endof  >r $F03 r>  endcase
         -1 play-table  ['] after-caught her-act !
     then
@@ -181,7 +174,7 @@ create from-pt /vec allot
     root-move ;
 : falling ( -- )
     settled? if
-        $3F 0 her-sound
+        struck-hard-sound 0 her-sound
         on-step? if  fall-through-anim -1 play-table
         else  from-pt her-at vec-heading her-yaw f@ f- angle-wrap side f!  $1004 fall-by-side  then
         $5F noise-here  ['] after-fall her-act !
@@ -205,8 +198,8 @@ create door-pt /vec allot
         her-fear-bits @ 2 and if  her-fall-yaw f@ her-yaw f!  flung-down-anim  else  thrown-back-anim  then  -1 play-table
     then
     her-fear-bits @ 2 and if
-        $42 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fear-set
-    else  $40 0 her-sound  $5F noise-here  then
+        panic-scream-sound 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fear-set
+    else  fall-sound 0 her-sound  $5F noise-here  then
     ['] after-throw her-act ! ;
 
 \ the jolt each reaction gives the pad (Fiona_React)

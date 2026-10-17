@@ -127,6 +127,8 @@ enum: request-kind  1 blow-request heavy-blow-request grab-request throw-request
 \ her commands to Hewie (the right stick's gestures; Fiona_HewieCommandAction): go there; get up;
 \ stay; ($26: nobody gives it); come; a pat; praise from afar; tending him when he's down; a scold
 \ near; come back; go for it; go for it now (chased); a scold from afar; her cry for help
+\ her gestures to him (the right stick, her-cmd: told in fiona-doing): up, down, R3, right, left
+enum: stick-gesture  -1 no-gesture go-gesture back-gesture stay-gesture praise-gesture scold-gesture ;
 enum: hewie-command  $23 go-there-cmd rouse-cmd stay-cmd cmd-26 come-cmd pat-cmd praise-cmd
     tend-cmd scold-near-cmd come-back-cmd go-for-it-cmd attack-now-cmd scold-cmd help-cmd ;
 message flinch ( -- )                       \ (Fiona) flinching as if caught, nobody holding her (a room's command: action $B / $21)

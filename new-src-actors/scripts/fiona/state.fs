@@ -99,6 +99,7 @@ state: fiona-state
   cell field her-door-anim      \ hers (0x600 + kind; 0x608.. trying a locked one)
   cell field her-door-opens     \ she opens it (else shuts it)
   cell field her-rattle         \ frames after trying a locked one
+  1 floats field her-try-step  1 floats field her-try-turn   \ (sliding to try it: the step and turn a frame)
   \ Hewie (F3): her command this frame (-1 none: 0 up, 1 down, 2 R3, 3 right, 4 left), the
   \ command's code and where it was given, frames the pad isn't read, the praise's repeats
   cell field her-cmd   cell field her-busy-t
@@ -128,3 +129,13 @@ state: fiona-state
   10 cells field her-creatures    \ each creature slot's actor, as it last told her (creature-doing; -1 none)
   cell field her-blow-n        \ her blows, numbered (a creature takes each once: Fiona_BlowCreatures' skip)
 end-state
+\ her-sub's that others test: pushing (fiona/push.fs), letting go of a thing (fiona/letgo.fs: how)
+5 constant pushing-sub
+$31 constant thrown-sub   $32 constant aimed-sub   $33 constant set-down-sub
+\ her reactions (Fiona_Reaction: her sub while she is thrown-mode): knocked off a ladder; led away;
+\ thrown; thrown by a door; knocked down on a step or in a doorway, harder; knocked down, harder;
+\ grabbed; held down by homunculi; a spirit's fall; caught in a hold
+8 constant off-ladder-r   9 constant led-away-r   $A constant thrown-r   $B constant door-thrown-r
+$C constant step-knock-r   $D constant step-knock-hard-r   $E constant knock-r   $F constant knock-hard-r
+$10 constant grabbed-r   $12 constant held-down-r   $13 constant spirit-fall-r   $20 constant caught-r
+-1 constant no-reaction
