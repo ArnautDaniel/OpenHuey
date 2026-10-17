@@ -21,8 +21,9 @@ $2000 constant end-msg       \ MSG_END's messages: ids $2000.. (message-file)
 99 3600 *  59 60 * +  59 +  per-second *  constant most-frames   \ (99:59:59)
 
 \ its stages
-0 constant playing   1 constant staff-roll   2 constant staff-fade
-3 constant results   4 constant unlocks      5 constant word-plate   6 constant done
+enum: ending-stage  playing staff-roll staff-fade results unlocks word-plate done ;
+\ the endings (the story sets which)
+enum: ending-letter  ending-a ending-b ending-c ending-d ;
 
 state: ending-state
   cell field stage
@@ -36,13 +37,14 @@ state: ending-state
   cell field dog       \ the dog level (0 A .. 4 E)
   cell field shown     \ the message up (-1 none): an unlock, the word plate's
   1 floats field volume   \ the staff roll's
+  cell field pen  cell field w1   \ (drawing: the pen; a character's width at 1)
 end-state
 
 : music-id ( -- id )  s" music" actor-named ;
 : bgm ( track -- )  0 1e f>cell music-id send bgm-want ;
 
 \ ==== the record ====
-: letter ( -- n )  progress pr.vars $2D + c@ ;   \ the ending: 0 A .. 3 D (the story sets it)
+: letter ( -- n )  progress pr.vars $2D + c@ ;   \ the ending (enum: ending-letter; script variable $2D)
 : mistreated ( -- n )  progress pr.hewie-mistreated l@ ;
 : pleased ( -- n )  progress pr.hewie-pleased l@ ;
 : injuries ( -- n )  progress pr.hewie-downs l@ ;
@@ -76,12 +78,11 @@ here bonus-flags - cell / constant #bonus-flags
     10 swap - ;
 
 \ the TYPE: the first of these that applies (messages 8..$11, $12 for 0)
-0 constant unjudged   1 constant dog-beater   2 constant fugitive   3 constant top-breeder
-4 constant treasure-hunter   5 constant warmonger   6 constant track-star   7 constant dog-lover
-8 constant scream-queen   9 constant speed-walker   10 constant late-bloomer
+enum: ending-type  unjudged dog-beater fugitive top-breeder treasure-hunter warmonger track-star
+    dog-lover scream-queen speed-walker late-bloomer ;
 : type-earned ( -- n )
     mistreated 100 >= if  dog-beater exit  then
-    letter 2 = if  fugitive exit  then
+    letter ending-c = if  fugitive exit  then
     dog @ 0= injuries 0= and if  top-breeder exit  then
     items-percent 80 >= if  treasure-hunter exit  then
     defeated 30 >= if  warmonger exit  then
@@ -95,6 +96,8 @@ here bonus-flags - cell / constant #bonus-flags
 
 \ ==== what it unlocks: the resident flags (the system data's +0x24: 0 the first clear, 1..4 by
 \ the ending, 5 + the TYPE; 86 a hard game cleared, 87 / 88 with ending A / B) ====
+0 constant first-clear
+: for-type ( type -- flag# )  5 + ;
 : unlock? ( n -- flag )  resident-flag? ;
 : unlock ( n -- )  resident-flag-set ;
 86 constant hard-cleared   87 constant hard-a   88 constant hard-b
@@ -102,13 +105,13 @@ here bonus-flags - cell / constant #bonus-flags
 : unlock-new ( n -- )  dup unlock? if  drop  else  unlock  some-news  then ;
 : by-ending ( -- )
     letter case
-        0 of  1 unlock-new  hard-mode? if  hard-a unlock  then  endof
-        1 of  2 unlock      hard-mode? if  hard-b unlock  then  endof
-        2 of  3 unlock-new  endof
-        3 of  4 unlock  endof
+        ending-a of  1 unlock-new  hard-mode? if  hard-a unlock  then  endof
+        ending-b of  2 unlock      hard-mode? if  hard-b unlock  then  endof
+        ending-c of  3 unlock-new  endof
+        ending-d of  4 unlock  endof
     endcase ;
 : by-type? ( -- flag )  kind @ dup top-breeder =  swap dog-lover = or ;
-: by-type-before? ( -- flag )  3 5 + unlock?  7 5 + unlock? or ;
+: by-type-before? ( -- flag )  top-breeder for-type unlock?  dog-lover for-type unlock? or ;
 : hard-news ( -- )   \ (nothing else new: a hard game's own)
     news @ if  exit  then
     hard-cleared unlock? 0= if
@@ -118,10 +121,10 @@ here bonus-flags - cell / constant #bonus-flags
     then ;
 : unlocks! ( -- )
     0 news !
-    0 unlock? 0= if  1 news !  0 unlock  then
+    first-clear unlock? 0= if  1 news !  first-clear unlock  then
     by-ending  hard-news
     hard-mode? if  hard-cleared unlock  then
-    kind @ 5 + unlock ;
+    kind @ for-type unlock ;
 \ the type's word for the word plate (messages $14..$17: top breeder, treasure hunter,
 \ warmonger, track star)
 : plate-word? ( -- flag )  kind @ top-breeder track-star 1+ within ;
@@ -139,8 +142,8 @@ here bonus-flags - cell / constant #bonus-flags
     movie-status 1 <>  start-button button-pressed? showing? and  or if  staff-fade stage !  then ;
 : picture ( -- addr len )
     letter case
-        0 of  s" SYSTEM/ENDING_A.TEX"  endof   1 of  s" SYSTEM/ENDING_B.TEX"  endof
-        2 of  s" SYSTEM/ENDING_C.TEX"  endof   >r s" SYSTEM/ENDING_D.TEX" r>
+        ending-a of  s" SYSTEM/ENDING_A.TEX"  endof   ending-b of  s" SYSTEM/ENDING_B.TEX"  endof
+        ending-c of  s" SYSTEM/ENDING_C.TEX"  endof   >r s" SYSTEM/ENDING_D.TEX" r>
     endcase ;
 : setup ( -- )   \ the results: the picture, the words, the record worked out, its music
     picture picture-group tex-bank drop
@@ -182,12 +185,14 @@ here bonus-flags - cell / constant #bonus-flags
             news @ if  0 step !  unlocks stage !  exit  then
             to-word-plate? 0= if  finish  then  endof
     endcase ;
+$1C end-msg + constant first-clear-msg   $1D end-msg + constant first-clear-2-msg
+$1E end-msg + constant costumes-msg
 : unlocks-frame ( -- )   \ (SceneEnding_SeqUnlocks: the first clear's two, then the costumes)
     step @ case
         0 of  pic-in if  next  then  endof
-        1 of  news @ 1 and if  $1C end-msg + show  next  else  $1E end-msg + show  5 step !  then  endof
-        2 of  closed? if  $1D end-msg + show  next  then  endof
-        3 of  closed? if  $1E end-msg + show  next  then  endof
+        1 of  news @ 1 and if  first-clear-msg show  next  else  costumes-msg show  5 step !  then  endof
+        2 of  closed? if  first-clear-2-msg show  next  then  endof
+        3 of  closed? if  costumes-msg show  next  then  endof
         4 of  next  endof
         5 of  closed? if  to-word-plate? 0= if  finish  then  then  endof
     endcase ;
@@ -201,18 +206,22 @@ here bonus-flags - cell / constant #bonus-flags
 
 \ ==== drawing (the PS2's 512 x 448: labels at x 32, values right-aligned at 480, a line
 \ every 32 from 96; the font 16 wide) ====
-variable pen  variable w1   \ (the pen; a character's width at 1)
 : fit-pen ( -- )   \ (ours is fixed-width: narrower than its 16)
     1 pen-scale  char-size drop 1 max w1 !  12 sw w1 @ /  1 max  dup pen !  pen-scale ;   \ (ours is fixed-width: narrower than its 16)
 : text-w ( len -- px )  char-size drop * ;
 : alpha ( a -- c )  2* 255 min ;   \ (the PS2's 0..$80)
-: colour ( c -- rgba )   \ (0 white, 1 red, 2 yellow - the font's own; and the record's alpha)
-    case  1 of  $FF6060  endof  2 of  $FFE040  endof  >r $FFFFFF r>  endcase
+enum: text-colour  white red yellow ;
+: colour ( c -- rgba )   \ (the font's own; and the record's alpha)
+    case  red of  $FF6060  endof  yellow of  $FFE040  endof  >r $FFFFFF r>  endcase
     8 lshift  text-a @ alpha or ;
 : msg-text ( msg -- addr len )  message-layout drop  0 0 message-line ;
 : words-at ( addr len x y c -- )  {: a n x y c :}  words-layer a n  x sx  y sy  c colour  pen @ ui-text ;
 : right-at ( addr len y c -- )  {: a n y c :}  words-layer a n  480 sx n text-w -  y sy  c colour  pen @ ui-text ;
-: hl ( flag -- c )  if  2  else  0  then ;   \ (a value the TYPE came from: yellow)
+: hl ( flag -- c )  if  yellow  else  white  then ;   \ (a value the TYPE came from: yellow)
+: type? ( type -- flag )  kind @ = ;
+: time-colour ( -- c )   \ (fast: yellow; slow: red)
+    track-star type? speed-walker type? or if  yellow exit  then  late-bloomer type? if  red  else  white  then ;
+: dog-colour ( -- c )  dog-beater type? if  red  else  top-breeder type? dog-lover type? or hl  then ;
 
 create time-buf 16 allot   variable time-n
 : put ( c -- )  time-buf time-n @ + c!  1 time-n +! ;
@@ -229,14 +238,14 @@ create pct-buf 8 allot
 : labels ( -- )
     8 0 do  i end-msg + msg-text  32  i 32 * 96 +  0 words-at  loop ;
 : values ( -- )
-    letter $18 + end-msg + msg-text  96   kind @ fugitive = hl  right-at
-    time$                            128  kind @ dup track-star =  swap speed-walker = or if  2  else  kind @ late-bloomer = if  1  else  0  then  then  right-at
-    dog$                             160  kind @ dup dog-beater = if  drop 1  else  dup top-breeder =  swap dog-lover = or hl  then  right-at
-    panics n>s                       192  kind @ scream-queen = if  1  else  0  then  right-at
-    pct$                             224  kind @ treasure-hunter = hl  right-at
-    injuries n>s                     256  kind @ top-breeder = hl  right-at
-    defeated n>s                     288  kind @ warmonger = hl  right-at
-    kind @ type-msg msg-text         320  0  right-at ;
+    letter $18 + end-msg + msg-text  96   fugitive type? hl  right-at
+    time$                            128  time-colour  right-at
+    dog$                             160  dog-colour  right-at
+    panics n>s                       192  scream-queen type? if  red  else  white  then  right-at
+    pct$                             224  treasure-hunter type? hl  right-at
+    injuries n>s                     256  top-breeder type? hl  right-at
+    defeated n>s                     288  warmonger type? hl  right-at
+    kind @ type-msg msg-text         320  white  right-at ;
 : fitting ( n -- scale )  w1 @ * 1 max  432 sw swap /  1 max  pen @ min ;   \ (n characters in the box)
 : centred-line ( i -- )   \ (line i of the message's first page, centred on 256, as wide as fits)
     {: i | a n k :}  0 i message-line to n to a  n fitting to k
