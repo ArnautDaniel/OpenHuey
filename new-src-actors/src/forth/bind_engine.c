@@ -1570,13 +1570,19 @@ PRIM(p_message_line) {   /* ( page line -- addr len ) */
     PUSH(strlen(sMsg->pages[pg].lines[ln]));
 }
 PRIM(p_message_options) { PUSH(sMsg != NULL ? sMsg->noptions : 0); }   /* ( -- n ) */
-PRIM(p_message_option) {   /* ( i -- page line col leads-to ) */
-    Cell i = POP();
-    const MessageOption *o = sMsg != NULL && i >= 0 && i < sMsg->noptions ? &sMsg->options[i] : NULL;
+static const MessageOption *message_option(Cell i) {
+    return sMsg != NULL && i >= 0 && i < sMsg->noptions ? &sMsg->options[i] : NULL;
+}
+PRIM(p_message_option_at) {   /* ( i -- page line col ) where option i is written */
+    const MessageOption *o = message_option(POP());
 
     PUSH(o ? o->page : -1);
     PUSH(o ? o->line : -1);
     PUSH(o ? o->col : 0);
+}
+PRIM(p_message_option_leads) {   /* ( i -- msg ) the message option i leads to (0xFFFF: none) */
+    const MessageOption *o = message_option(POP());
+
     PUSH(o ? o->leads_to : 0xFFFF);
 }
 PRIM(p_message_choice_flags) { PUSH(sMsg != NULL ? sMsg->choice_flags : 0); }
@@ -3183,7 +3189,7 @@ void bind_engine(Forth *f) {
         {"nav-block!", p_nav_block}, {"nav-group!", p_nav_group}, {"nav-tri-flags!", p_nav_tri_flags},
         {"nav-in-group?", p_nav_in_group}, {"nav-flags", p_nav_flags},
         {"message-layout", p_message_layout}, {"message-file", p_message_file}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
-        {"message-options", p_message_options}, {"message-option", p_message_option},
+        {"message-options", p_message_options}, {"message-option-at", p_message_option_at}, {"message-option-leads", p_message_option_leads},
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-back!", p_cloth_back}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
