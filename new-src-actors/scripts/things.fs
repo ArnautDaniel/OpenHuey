@@ -133,11 +133,11 @@ $20 constant object-x   $24 constant object-y   $28 constant object-z   \ (a roo
 
 \ ---- each kind's frame ----
 : quiet? ( -- flag )  $20 state-flag? ;   \ (progress flag $20: nothing set off)
-7 constant tread-blow   \ (a blow's kind: trod on a powder)
+
 : powder-frame ( -- )   \ (thing_stomped: the stalker treading on it - its damage and his stun's loops; under flag $20 nothing, no kick)
     quiet? if  exit  then
     stalker 1 treads? if
-        tread-blow kind powder-damage kind powder-stun at vec@ xyz>cells  stalker send blow-from
+        powder-blow kind powder-damage kind powder-stun at vec@ xyz>cells  stalker send blow-from
         powder-splash  gone exit
     then  kick ;
 : go-off ( -- )  go-off-sound thing-sound  go-burst  gone ;
@@ -165,7 +165,7 @@ $20 constant object-x   $24 constant object-y   $28 constant object-z   \ (a roo
     $4F heard  gone ;
 \ the doll and Debilitas (Thing03_StalkerCheck): only him - kinds 2 6 7 $1B (his cast ids) - and in its room
 $1F constant doll-noise
-: debilitas-kind? ( -- flag )  st-kind @ dup 2 = over 6 = or over 7 = or swap $1B = or ;
+: debilitas-kind? ( -- flag )  st-kind @ dup debilitas-kind = over debilitas-6-kind = or over debilitas-7-kind = or swap debilitas-27-kind = or ;
 : he-is-with-it? ( -- flag )  st-told @ 2 <  debilitas-kind? and  st-room @ its-room = and ;
 : met ( -- addr )  it @ cells met-in + ;
 : after-her? ( -- flag )  st-mode @ after-her = ;

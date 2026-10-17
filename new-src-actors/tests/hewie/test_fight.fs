@@ -2,7 +2,7 @@
 \ stalker's reaction and temper, Hewie struck (docs/subsystems/hewie.md). Headless:
 \   build/new-src-actors/hga --test new-src-actors/tests/hewie/test_fight.fs
 IN: test-fight
-USING: tester engine game-state actors messages common facts room-names game debug flag-names hewie.state hewie.body hewie.model hewie.states hewie.fight fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.bitten ;
+USING: tester engine game-state actors messages common facts room-names game debug flag-names hewie.state hewie.body hewie.model hewie.states hewie.fight fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.anims stalker.chase stalker.bitten ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : his@ ( xt -- x )  game:hewie enter  execute  leave-actor ;

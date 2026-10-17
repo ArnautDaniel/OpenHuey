@@ -22,11 +22,12 @@ defer drop-door ( -- )   ' noop is drop-door   \ (a door she held let go: fiona.
 \ (her reactions, mode 4) or seized; the panic's stages 4 / 5; fleeing (mode $B); panicking
 \ (fear over 90, or the panic attack) ----
 : plight ( -- n )
-    her-mode @ thrown-mode =  her-sub @ grabbed-r = or  stalkers-blind state-flag? or  her-aside @ or if  3 exit  then
-    her-panic-stage @ dup panicking = swap calming-down = or if  her-panic-stage @ exit  then
-    her-mode @ react-mode = if  1 exit  then
-    her-fear f@ 90e f>  her-doing @ attack-doing = or if  2 exit  then
-    0 ;
+    her-mode @ thrown-mode =  her-sub @ grabbed-r = or  stalkers-blind state-flag? or  her-aside @ or if  unreachable-plight exit  then
+    her-panic-stage @ panicking = if  panicking-plight exit  then
+    her-panic-stage @ calming-down = if  calming-plight exit  then
+    her-mode @ react-mode = if  fleeing-plight exit  then
+    her-fear f@ 90e f>  her-doing @ attack-doing = or if  frightened-plight exit  then
+    free-plight ;
 
 \ ---- the reaction to a blow of `kind` (Fiona_Reaction): none while one is under way (mode 4,
 \ floored $A) or the world is held; on a ladder (mode 3) her fall from it comes with the

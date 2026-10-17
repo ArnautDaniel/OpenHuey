@@ -24,7 +24,7 @@ T{ [: step @ ['] pursue-run =  chase-act @  anim @  hold-t @ 290 > ;] hers -> -1
 testing ... within reach: a combo from her tables; Fiona struck
 T{ [: [: chase-act @ $13 = ;] hers ;] 120 soon  [: [: her-mode @ 4 = ;] fiona@ ;] 60 soon -> -1 -1 }T
 testing in a rage (0x31): her slow walk $205, her stance 3, her rage's row (walking 150 frames)
-T{ [: -1 raging !  walk-slow  stand-anim  0 pursue-row cell+ @ ;] hers -> $205 3 150 }T
+T{ [: -1 raging !  walk-slow  still-anim  0 pursue-row cell+ @ ;] hers -> $205 3 150 }T
 [: 0 raging ! ;] hers
 testing struck past 20 damage: she doesn't give up (the Pursuer's GivesUp)
 T{ [: 25 hits !  give-up? ;] hers -> 0 }T

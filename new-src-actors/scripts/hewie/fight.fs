@@ -7,7 +7,7 @@
 \ closing in); struck (Hewie_TakeBlow: by the stalker, by her, by a door) - his yelp, pushed back
 \ (StateMoveAlong), then down or on (Hewie_AfterYelp).
 IN: hewie.fight
-USING: engine game-state actors messages common facts paths vectors flag-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states ;
+USING: engine game-state actors messages common facts paths vectors flag-names stalker-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states ;
 
 \ ---- his fight's animations: the leap, the bite, letting go - at the near flank, the far one,
 \ head on, his leg; thrown off at a flank (hanging on), held on again or flung, at the top of
@@ -23,8 +23,6 @@ $2208 constant top-flung-near-anim   $2211 constant top-flung-far-anim
 $2206 constant falling-held-near-anim   $220F constant falling-held-far-anim
 $2212 constant land-held-anim   $2213 constant flung-anim   \ (landed: held on; flung - struck down too)
 
-\ the stalkers by their kind (st-kind: the cast's ids)
-2 constant debilitas-kind   3 constant daniella-kind   4 constant riccardo-kind   10 constant lorenzo-kind
 \ his grip on the stalker (his-grip): none yet, head on, the near flank, the far one
 enum: grip  -1 no-grip head-on-grip near-grip far-grip ;
 \ his-biting: holding on - the first time round, still; letting go; thrown off. Thrown off
@@ -42,7 +40,7 @@ enum: bite-hold  first-hold still-holding letting-go thrown-off ;
 : feel ( -- addr )   \ (by the stalker's kind: Debilitas, Daniella, Lorenzo, Riccardo)
     st-kind @ case
         daniella-kind of  1  endof  riccardo-kind of  3  endof
-        lorenzo-kind of  2  endof  lorenzo-kind 1+ of  2  endof  lorenzo-kind 2 + of  2  endof
+        lorenzo2-kind of  2  endof  lorenzo-kind of  2  endof  kind12-kind of  2  endof
         >r 0 r>
     endcase  cells his-feel + ;
 \ Hewie_FeelPursuer: his mood normal, a stalker about - the more he dislikes him, the likelier he
@@ -80,7 +78,7 @@ create mouth-at /vec allot
 
 \ ---- which side he comes at him from (Hewie_AttackSide): from behind, facing the stalker's
 \ back - head on (not while he is timid); else a flank (Daniella the other way) ----
-: daniella? ( -- flag )  st-kind @ dup daniella-kind = swap 34 37 within or ;
+: daniella? ( -- flag )  st-kind @ dup daniella-kind = swap kind34-kind kind37-kind within or ;
 : attack-side ( -- grip )
     pursuer body-at heading-to                                     ( F: a )
     hewie-timid state-flag? 0=
@@ -88,7 +86,7 @@ create mouth-at /vec allot
     fdup his-yaw f- angle-wrap fabs pi f2/ f< and if  fdrop head-on-grip exit  then
     pi f+ angle-wrap pursuer body-yaw f- angle-wrap f0< if
         daniella? if  near-grip  else  far-grip  then
-    else  daniella? st-kind @ lorenzo-kind 1+ = or if  far-grip  else  near-grip  then  then ;
+    else  daniella? st-kind @ lorenzo-kind = or if  far-grip  else  near-grip  then  then ;
 
 \ ---- held at the stalker's height (his feet's plane: HumanModel +0x8C0) ----
 : his-height ( F: -- y )  pursuer body-at v.y sf@ ;
@@ -243,7 +241,7 @@ $2008000 constant water-floor   \ (a floor's nav flags: water)
     rnd 0.33333e f< if  1 feel+  then
     at-leg? if  leap-leg-anim
     else  his-grip @ case
-            near-grip of  st-kind @ lorenzo-kind 1+ <> if  turn-round  then  leap-near-anim  endof
+            near-grip of  st-kind @ lorenzo-kind <> if  turn-round  then  leap-near-anim  endof
             far-grip of  turn-round  leap-far-anim  endof
             >r leap-head-on-anim r>
           endcase

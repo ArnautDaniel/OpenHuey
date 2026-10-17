@@ -18,8 +18,6 @@ defer to-idle ( -- )
     capture-no-end state-flag? if  exit  then  caught state-flag-set ;
 : free! ( -- )  0 her-led !  fiona-occupied state-flag-clear ;
 
-\ how he takes her (the stalker's `seize`): by the hand, or walking her off
-6 constant by-the-hand   8 constant walked-off
 \ ---- her spot by him (Fiona_JointAction kind 1) ----
 : meet-index ( type -- i )   \ (Fiona_MeetIndex: by her costume, by the hand or not)
     by-the-hand = her-costume @ case

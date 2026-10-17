@@ -150,7 +150,10 @@ message fiona-blow ( n damage x y z reach -- )   \ broadcast: her blow `n` there
 message throw-down ( who recover -- )        \ (Fiona) thrown down by who (an actor, -1 none); recover: her recovery reset (the story's 0xB2)
 message look-hold ( who frames -- )          \ (Fiona) her head on who for so many frames (the story's 0x96)
 message fiona-unseen ( on -- )               \ broadcast when it changes: she can't be seen (item $89 worn, still)
-message fiona-plight ( state ladder -- )     \ broadcast each frame: how she stands for a stalker's attack; the ladder she is on (-1 none)
+message fiona-plight ( state ladder -- )     \ broadcast each frame: how she stands for a stalker's attack (plight); the ladder she is on (-1 none)
+\ how she stands for a stalker's attack (Pursuer_FionaState; his tables by it): free; fleeing; frightened
+\ (her fear past 90, her panic attack); out of reach (struck, seized, the stalkers blind); panicking; calming down
+enum: plight  free-plight fleeing-plight frightened-plight unreachable-plight panicking-plight calming-plight ;
                                              \ (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking, 3 out
                                              \ of reach (hidden, already struck), 4 / 5 the panic's stages 4 / 5
 \ ---- blows (F4, the stalkers' P2: Relation_Request kind 4 to Fiona / Hewie) ----
@@ -161,6 +164,7 @@ message hit-taken ( kind -- )                \ the answer: it struck home (none:
 \ ---- seized (F4b, the stalkers' P2b: Relation_Request kind 9, Fiona_JointAction kind 1) ----
 message seize ( type -- )                    \ to Fiona: taken to the sender's side - 6 by the hand (dragged),
                                              \ 8 walking (carried off)
+6 constant by-the-hand   8 constant walked-off   \ (seize's types)
 message seize-taken ( -- )                   \ her answer: she's being led
 message seize-refused ( -- )                 \ her answer: no spot by him she can be led to (or she isn't free)
 message broke-free ( -- )                    \ to the stalker leading her: she shook free
@@ -169,9 +173,11 @@ message blow-from ( kind damage how x y z -- )   \ a blow from a point, not from
 message blow ( kind damage how -- )          \ to a stalker (or Hewie): its kind (blow-kind); how: $8000 he stumbles,
                                              \ 1 he may (her kick: by how worn he is - Fiona_ChaseRoll, rolled by
                                              \ him); a door's: its exit
-\ the blows' kinds: a shove, a kick, a killing one, a hard one, a door; a scuffle off screen (Hewie's
-\ and the stalker's); Hewie thrown off (6: one Hewie takes no notice of)
-enum: blow-kind  1 shove-blow kick-blow killing-blow hard-blow door-blow 6 ignored-blow 8 scuffle-blow $B throw-off-blow ;
+\ the blows' kinds: a shove, a kick, a killing one, a hard one, a door; (6: one Hewie takes no
+\ notice of); a powder trodden on (how: its loops); a scuffle off screen (Hewie's and the
+\ stalker's); Hewie's hold, his bite (on the stalker); his throw (Hewie thrown off by it)
+enum: blow-kind  1 shove-blow kick-blow killing-blow hard-blow door-blow ignored-blow powder-blow scuffle-blow
+    $A hold-blow bite-blow  $B throw-off-blow ;
 message blow-taken ( -- )                    \ the answer: it struck him
 message game-over-kind ( kind -- )           \ (the game over) how the next one goes: 0 the movie's, 1 faded out, 2 the ending
 message the-ending ( -- )                     \ (the game over, kind 2) the story is over: the staff roll and the results (ending.fs)

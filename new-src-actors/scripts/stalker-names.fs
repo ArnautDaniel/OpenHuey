@@ -3,6 +3,12 @@
 IN: stalker-names
 USING: engine actors ;
 
+\ the stalkers by kind (their character's +0x153C: the cutscenes' cast ids): Debilitas (and his
+\ figures in the scenes), Daniella, Riccardo, Lorenzo's other class, Lorenzo, kind 12, the
+\ TintStalker, Daniella's later kinds, Riccardo's other class, Lorenzo's other class again
+enum: stalker-kind#  2 debilitas-kind daniella-kind riccardo-kind 6 debilitas-6-kind debilitas-7-kind
+    10 lorenzo2-kind lorenzo-kind kind12-kind 23 tintstalker-kind 27 debilitas-27-kind
+    34 kind34-kind kind35-kind kind36-kind kind37-kind 39 kind39-kind ;
 12 constant #stalkers
 : stalker# ( i -- id | -1 )   \ the i-th stalker's actor (-1 not spawned)
     case

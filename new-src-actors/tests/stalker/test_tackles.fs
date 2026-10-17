@@ -8,7 +8,7 @@ USING: tester engine game-state actors messages facts room-names game debug flag
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
-: tackle ( kind dir -- temper )  0 temper !  0 swap tackled 2drop drop  temper @ ;
+: tackle ( kind dir -- temper )  0 temper !  tackled  temper @ ;
 
 free-play  front-garden-2 room!  10 frames
 testing Debilitas tackled by Hewie: in front 5, in front low 8, behind 10, behind low 16
@@ -16,7 +16,7 @@ T{ [: hewie striker !  1 0 tackle  1 2 tackle  1 1 tackle  2 3 tackle ;] his -> 
 testing ... not a bite ($B) or a hold ($A); not from Fiona
 T{ [: hewie striker !  $B 1 tackle  $A 1 tackle  fiona striker !  1 1 tackle ;] his -> 0 0 0 }T
 testing ... at most 1000
-T{ [: hewie striker !  998 temper !  0 1 0 tackled 2drop drop  temper @ ;] his -> 1000 }T
+T{ [: hewie striker !  998 temper !  0 0 tackled  temper @ ;] his -> 1000 }T
 
 testing Hewie let go of his leg (Pursuer_StateKnockedDown $1709): down on his front ($1709, lying as $1806), up again ($1807)
 stalkers-blind state-flag-set  s" fiona" actor-named body-tri debug:debilitas-tri  3 frames
