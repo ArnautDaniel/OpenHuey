@@ -96,6 +96,8 @@ message fear-in ( amount -- )
 message panic-stage! ( stage -- )
 message panic-level! ( level -- )
 message panic ( stage level -- )             \ broadcast each frame
+\ the panic's stages: under 60, from 60 / 75 / 90, panicking (at 100), calming down after
+enum: panic-stage  composed shaken scared terrified panicking calming-down ;
 
 \ ---- Fiona (docs/subsystems/fiona.md) ----
 message flinch ( -- )                       \ (Fiona) flinching as if caught, nobody holding her (a room's command: action $B / $21)

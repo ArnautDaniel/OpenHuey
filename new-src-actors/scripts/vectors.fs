@@ -2,6 +2,9 @@
 IN: vectors
 USING: engine ;
 
+\ a point or a direction as the engine keeps them: three 32-bit floats (vec@ vec! vec-copy)
+begin-structure /vec  sffield: v.x  sffield: v.y  sffield: v.z  end-structure
+
 \ scale a vector
 : v* ( F: x y z s -- x' y' z' )  {: F: x y z s :}  x s f*  y s f*  z s f* ;
 
