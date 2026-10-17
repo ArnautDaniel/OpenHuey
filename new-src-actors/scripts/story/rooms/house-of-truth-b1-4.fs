@@ -2,21 +2,21 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-4
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x87: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
 : house-of-truth-b1-4.cmd00 ( -- )  slam-shake ;
 
 : house-of-truth-b1-4.enter ( -- )   \ 00432B10
-    $350 story-flag? not if
+    found-file-254 story-flag? not if
         room-sounds
         keep-room-sounds state-flag-set
     then
-    $345 story-flag-clear
-    $346 story-flag-clear
-    $347 story-flag-clear
-    $348 story-flag-clear
+    htb1-5-flag1 story-flag-clear
+    htb1-6-flag1 story-flag-clear
+    htb1-7-flag1 story-flag-clear
+    htb1-8-flag1 story-flag-clear
     $F1 door-open-clear
     $F2 door-open-clear
     $104 door-open-clear
@@ -28,7 +28,7 @@ USING: room-names story.words story.shared flag-names ;
     $10A door-open-clear
     $10B door-open-clear
     doors-room-in
-    $354 story-flag? if
+    shared-flag4 story-flag? if
         $FE $87 2 2 stalker-to-room
         stalker-who 0 stalker-command
         stalker-who 1 1 char-camera
@@ -115,8 +115,8 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $F 1 fade
     wait-fade
-    $350 story-flag? not if
-        $350 story-flag-set
+    found-file-254 story-flag? not if
+        found-file-254 story-flag-set
     else
         $254 item-give
     then

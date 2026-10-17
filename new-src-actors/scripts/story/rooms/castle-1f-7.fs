@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-7
-USING: engine common room-names story.words story.shared flag-names ;
+USING: engine common room-names story.words story.shared flag-names story-names ;
 
 \ a lid (pstr_kousi_2, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
 \ bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
@@ -13,7 +13,7 @@ USING: engine common room-names story.words story.shared flag-names ;
     -0.1e s" kousi" $34 object+!  s" kousi" $34 object@ s" kousi" place-y object+!
     lid-y -25.3e f< if
         s" kousi" $30 object@ f0> if
-            -1e s" kousi" $30 object!  $310 story-flag-clear
+            -1e s" kousi" $30 object!  c1f-4-flag2 story-flag-clear
             cam-scene? 0= if  2 6 0 0  0e 30e 30e sound  then
         then
         -25.3e s" kousi" place-y object!  s" kousi" $34 object@ -0.2e f* s" kousi" $34 object!
@@ -43,27 +43,27 @@ USING: engine common room-names story.words story.shared flag-names ;
     0 0 var-set
     $80 exit-taken? if
         1 castle-1f-7.cmd00
-        $13 story-flag-clear
+        c1f-4-flag1 story-flag-clear
     else
         stalker-who char-here? stalker-who 0 char-in-nav-group? and if
             stalker-who $F0 char-to-tri
         then
         1 exit-taken? if
         else
-            $310 story-flag-clear
-            $13 story-flag-clear
+            c1f-4-flag2 story-flag-clear
+            c1f-4-flag1 story-flag-clear
         then
-        $310 story-flag? not $13 story-flag? not and if
+        c1f-4-flag2 story-flag? not c1f-4-flag1 story-flag? not and if
             1 0 $20000 nav-group
             1 castle-1f-7.cmd00
         else
-            $13 story-flag-set
+            c1f-4-flag1 story-flag-set
             0 0 $20000 nav-group
             0 1 var-set
             0 castle-1f-7.cmd00
         then
     then
-    $14 story-flag? not if
+    breaker-lowered story-flag? not if
         2 0 object-hidden
         0 0 $14 door-bits
         1 1 $14 door-bits
@@ -104,8 +104,8 @@ USING: engine common room-names story.words story.shared flag-names ;
         then
     then
     hewie-who self-is? if
-        $14 story-flag? not if
-            $316 story-flag? not if
+        breaker-lowered story-flag? not if
+            c1f-7-flag1 story-flag? not if
                 0 hewie-who 8 action
             then
         then
@@ -115,7 +115,7 @@ USING: engine common room-names story.words story.shared flag-names ;
 : castle-1f-7.phase1 ( -- )   \ 003FA1C0
     0 ebit? not if
         6 sound-bank-loaded? if
-            $14 story-flag? not if
+            breaker-lowered story-flag? not if
                 $40000003 6 -10.0 15.0 0.0 0 0 sound
             then
             0 ebit-set
@@ -144,24 +144,24 @@ USING: engine common room-names story.words story.shared flag-names ;
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    $13 story-flag? not if
+    c1f-4-flag1 story-flag? not if
         0 0 var-set
     else castle-1f-7.cond00? not if
         0 0 var-set
     then then
     hewie-who $15 0 room-doors-state
-    $13 story-flag? if
+    c1f-4-flag1 story-flag? if
         0 0 var? if
             fiona-who 0 char-in-nav-group? hewie-who 0 char-in-nav-group? or stalker-who 0 char-in-nav-group? or if
                 hewie-who $15 1 room-doors-state
             else
-                $13 story-flag-clear
+                c1f-4-flag1 story-flag-clear
                 1 0 $20000 nav-group
                 0 $F1 3 action
             then
         then
     then
-    $14 story-flag? not if
+    breaker-lowered story-flag? not if
         fiona-who $11 char-entered-area? 1 ebit? not and if
             1 ebit-set
             panic-eased
@@ -178,7 +178,7 @@ USING: engine common room-names story.words story.shared flag-names ;
     fiona-who 8 char-in-area? fiona-who -45 $2D char-heading? and if
         5 1 0 scene-change
     then
-    $14 story-flag? not $13 story-flag? not and if
+    breaker-lowered story-flag? not c1f-4-flag1 story-flag? not and if
         fiona-who 9 char-in-area? fiona-who -45 $2D char-heading? and if
             5 4 0 scene-change
         then
@@ -241,7 +241,7 @@ USING: engine common room-names story.words story.shared flag-names ;
 
 : castle-1f-7.act01 ( -- )   \ 003FA450
     self-wait-done
-    $14 story-flag? not if
+    breaker-lowered story-flag? not if
         fiona-who 3 char-file-load
         $BF -39.071 35.745 -90 $FFFF 5 self-move-to
         self-wait-done
@@ -257,7 +257,7 @@ USING: engine common room-names story.words story.shared flag-names ;
             0 6 -44.0 18.0 36.0 0 0 sound
             3 6 sound-stop
             1 0 $14 door-bits
-            $14 story-flag-set
+            breaker-lowered story-flag-set
             40 hewie-trust
             stalker-who $15 0 room-doors-state
             0 1 $1000000 nav-group
@@ -280,7 +280,7 @@ USING: engine common room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-7.act03 ( -- )   \ 003FA4F0
-    $310 story-flag-set
+    c1f-4-flag2 story-flag-set
     $40000001 6 0.0 30.0 30.0 0 0 sound
     2 castle-1f-7.cmd00
     self-idle-or-end
@@ -315,7 +315,7 @@ USING: engine common room-names story.words story.shared flag-names ;
     self-wait-done
     9 self-through-door
     self-wait-done
-    $FF panic-stage? 2 game-mode? or if
+    in-panic? 2 game-mode? or if
         $60A self-anim
         self-wait-anim
         -1 self-idle-anim
@@ -361,30 +361,30 @@ USING: engine common room-names story.words story.shared flag-names ;
     self-wait-done
     $F5 -9.214 -23.873 -40 $FFFF $A self-move-to
     self-wait-done
-    $14 story-flag? not if
+    breaker-lowered story-flag? not if
         4 self-anim
         self-frames-reset
         $3C self-wait-frames
-        $316 story-flag-set
-        $14 story-flag? not if
+        c1f-7-flag1 story-flag-set
+        breaker-lowered story-flag? not if
             $1B03 self-anim
             self-wait-anim
-            $14 story-flag? not if
+            breaker-lowered story-flag? not if
                 $1B03 self-anim
                 self-wait-anim
-                $14 story-flag? not if
+                breaker-lowered story-flag? not if
                     $1B03 self-anim
                     self-wait-anim
-                    $14 story-flag? not if
+                    breaker-lowered story-flag? not if
                         $1B03 self-anim
                         self-wait-anim
-                        $14 story-flag? not if
+                        breaker-lowered story-flag? not if
                             $1B03 self-anim
                             self-wait-anim
-                            $14 story-flag? not if
+                            breaker-lowered story-flag? not if
                                 $1B03 self-anim
                                 self-wait-anim
-                                $14 story-flag? not if
+                                breaker-lowered story-flag? not if
                                     fiona-who self-look-at
                                     yield
                                     4 self-anim

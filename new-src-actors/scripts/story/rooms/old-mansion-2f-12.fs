@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-12
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names ;
 
 \ room 0x69 (D_004386F8): the three-dial lock by byte 3 - 0 the dials (and their lit twins) set
 \ to their settings; 1 the player at it: up / down pick the dial (event variable 0; its lit twin
@@ -53,7 +53,7 @@ USING: engine room-names story.words story.shared flag-names ;
     3 1 object-hidden
     4 1 object-hidden
     5 1 object-hidden
-    $2AF story-flag? $2B0 story-flag? not and if
+    om2f-12-antimony-powder-found story-flag? om2f-12-antimony-powder story-flag? not and if
         0 82.73 31.0 -85.2 flicker-sprite
     then
     1 -31.0 51.9 -132.6 1 flame-in
@@ -64,7 +64,7 @@ USING: engine room-names story.words story.shared flag-names ;
     6 82.0 51.9 -62.7 1 flame-in
     7 160.0 51.9 -62.7 1 flame-in
     8 215.7 21.9 -62.6 1 flame-in
-    $2CC story-flag? not if
+    om2f-12-breakable1-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -73,7 +73,7 @@ USING: engine room-names story.words story.shared flag-names ;
         0 0 $14 door-bits
         1 1 $14 door-bits
     then
-    $2CD story-flag? not if
+    om2f-12-breakable2-broken story-flag? not if
         1 1 $8000000 nav-group
         2 1 $14 door-bits
         3 0 $14 door-bits
@@ -132,12 +132,12 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    $2AF story-flag? not if
+    om2f-12-antimony-powder-found story-flag? not if
         2 82.73 30.0 -85.2 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 687 var-set
-                $1A 688 var-set
+                $19 om2f-12-antimony-powder-found var-set
+                $1A om2f-12-antimony-powder var-set
                 $1B 0 var-set
                 $1C 82730 var-set
                 $1D 31000 var-set
@@ -165,10 +165,10 @@ USING: engine room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2CC story-flag? not if
+    om2f-12-breakable1-broken story-flag? not if
         0 -114.0 30.0 -48.0 5 8 1 zone
         self-who 0 char-in-zone? if
-            $2CC story-flag-set
+            om2f-12-breakable1-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -177,10 +177,10 @@ USING: engine room-names story.words story.shared flag-names ;
             $40 $DD noise
         then
     then
-    $2CD story-flag? not if
+    om2f-12-breakable2-broken story-flag? not if
         1 -114.0 30.0 -42.0 5 8 1 zone
         self-who 1 char-in-zone? if
-            $2CD story-flag-set
+            om2f-12-breakable2-broken story-flag-set
             0 1 $8000000 nav-group
             2 0 $14 door-bits
             3 1 $14 door-bits
@@ -226,7 +226,7 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who $D char-in-area? fiona-who 50 $32 char-heading? and if
         5 $84 3 scene-change
     then
-    $2AF story-flag? $2B0 story-flag? not and if
+    om2f-12-antimony-powder-found story-flag? om2f-12-antimony-powder story-flag? not and if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 5 4 scene-change
@@ -271,8 +271,8 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     0 self-through-exit
     self-wait-done
-    5 ebit? not 2 game-mode? or $FF panic-stage? or if
-        $FF panic-stage? 2 game-mode? or if
+    5 ebit? not 2 game-mode? or in-panic? or if
+        in-panic? 2 game-mode? or if
             $60A self-anim
             self-wait-anim
             -1 self-idle-anim
@@ -308,7 +308,7 @@ USING: engine room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $54 story-flag? not if
+    om2f-12-flag1 story-flag? not if
         1 message   \ "There's a dial connected to what looks like a water pipe... Operate the dial? YES NO"
         wait-message
         0 answer? if
@@ -357,7 +357,7 @@ USING: engine room-names story.words story.shared flag-names ;
                 $72 5 318.0 12.0 -80.0 0 0 sound
                 $74 door-unlock
                 $62 door-unlock
-                $54 story-flag-set
+                om2f-12-flag1 story-flag-set
                 self-frames-reset
                 $1E self-wait-frames
                 fiona-who 3 6 char-sound
@@ -365,10 +365,10 @@ USING: engine room-names story.words story.shared flag-names ;
                 $5A self-wait-frames
                 self-who self-look-at
                 yield
-            else $333 story-flag? if
+            else om1f-14-flag1 story-flag? if
                 $23B item-give
             then then
-        else $333 story-flag? if
+        else om1f-14-flag1 story-flag? if
             $23B item-give
         then then
     else
@@ -464,7 +464,7 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     82.73 -85.2 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -474,7 +474,7 @@ USING: engine room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2B0 story-flag-set
+            om2f-12-antimony-powder story-flag-set
             0 effect-remove
             $91 1 item-give-count
             0 $91 item-tab

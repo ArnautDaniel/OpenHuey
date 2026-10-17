@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-9
-USING: engine common actors messages story.state room-names story.words story.shared flag-names ;
+USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names ;
 
 \ ---- the debris falling from above ("keri0".."keri5", each carried by a kind-9 thing: free
 \ while hidden) and the traps set round the middle (kind 10) - the things actor's ----
@@ -136,18 +136,18 @@ defer house-of-truth-1f-9.act0F
     room-sounds
     0 -36.4 13.4 54.4 1 flame-in
     1 58.7 10.0 -29.9 1 flame-in
-    $A2 story-flag? if
+    ht1f-9-flag1 story-flag? if
         0 1 $14 door-bits
         0 $F1 9 action
         4 3 var-set
         5 3 var-set
     then
-    $34E story-flag? if
+    tremor-warned story-flag? if
         5 1.0 0 bgm
     then
     $80 exit-taken? not if
         shared.act95
-        $A3 story-flag? if
+        ht1f-9-flag2 story-flag? if
             house-of-truth-1f-9.cmd01
             0 0 house-of-truth-1f-9.cmd0C
             0 house-of-truth-1f-9.cmd0D
@@ -186,7 +186,7 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.phase1 ( -- )   \ 00436DE0
-    $A2 story-flag? if
+    ht1f-9-flag1 story-flag? if
         8 ebit? not if
             6 sound-bank-loaded? if
                 $40000000 6 0.0 50.0 0.0 0 0 sound
@@ -209,16 +209,16 @@ defer house-of-truth-1f-9.act0F
     then
     1 0 0 1 chars-area-camera
     2 1 1 1 chars-area-camera
-    $A1 story-flag? not if
+    found-file-255 story-flag? not if
         0 control-action? hewie-who char-here? and hewie-who 2 char-cond? not and stalker-who char-here? not and fiona-who 4 char-in-area? and fiona-who 0 65 $32 char-faces-xz? and if
             hewie-may-break-off? if
                 0 fiona-who 3 action
             then
         then
     then
-    $A2 story-flag? $A3 story-flag? not and if
+    ht1f-9-flag1 story-flag? ht1f-9-flag2 story-flag? not and if
         stalker-who 2 char-cond? if
-            $A3 story-flag-set
+            ht1f-9-flag2 story-flag-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 5 action-force
@@ -227,7 +227,7 @@ defer house-of-truth-1f-9.act0F
             then
         then
     then
-    $A2 story-flag? $A3 story-flag? not and if
+    ht1f-9-flag1 story-flag? ht1f-9-flag2 story-flag? not and if
         house-of-truth-1f-9.cmd05
         3 ebit? not if
             9 ebit? if
@@ -305,7 +305,7 @@ defer house-of-truth-1f-9.act0F
     stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
         stalker-who 1 char-effect-moving
     then
-    $A1 story-flag? not if
+    found-file-255 story-flag? not if
         3 1.06 0.0 59.99 $1A 14 0 zone
         2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -343,7 +343,7 @@ defer house-of-truth-1f-9.act0F
             5 6 1 scene-change
         then
     then
-    $A3 story-flag? if
+    ht1f-9-flag2 story-flag? if
         2 0.0 0.0 0.0 $17 4 0 zone
         fiona-who 2 3 char-zone-bits? fiona-who 0 0 $32 char-faces-xz? and if
             5 7 0 scene-change
@@ -352,7 +352,7 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.phase3 ( -- )   \ 00437140
-    $A3 story-flag? $B ebit? not and if
+    ht1f-9-flag2 story-flag? $B ebit? not and if
         $40000030 $47 0.0 0.0 0.0 0 0 sound
         $B ebit-set
     then
@@ -364,7 +364,7 @@ defer house-of-truth-1f-9.act0F
     0 counter-set
     0 hewie-who 1 action-force
     1 wait-counter
-    $A1 story-flag-set
+    found-file-255 story-flag-set
     50 hewie-trust
     3 message   \ "Hewie? Have you picked up the scent boy?"
     wait-message
@@ -379,8 +379,8 @@ defer house-of-truth-1f-9.act0F
 
 : house-of-truth-1f-9.act00 ( -- )   \ 00437160
     self-wait-done
-    $A3 story-flag? not if
-        $A1 story-flag? not if
+    ht1f-9-flag2 story-flag? not if
+        found-file-255 story-flag? not if
             hewie-who char-here? hewie-who 2 char-cond? not and stalker-who char-here? not and if
                 stalkers-stay state-flag-set
                 1 self-scripted
@@ -548,7 +548,7 @@ defer house-of-truth-1f-9.act0F
     $ED door-open-clear
     doors-room-in
     $ED door-lock
-    $A2 story-flag-set
+    ht1f-9-flag1 story-flag-set
     scene-5-pending state-flag-set
     4 ebit-clear
     5 ebit-clear
@@ -651,7 +651,7 @@ defer house-of-truth-1f-9.act0F
     self-wait-done
     0.0 0.0 self-turn-to-xz
     self-wait-done
-    1 ebit? not $A4 story-flag? not and if
+    1 ebit? not over-music-f story-flag? not and if
         $A01 self-anim
         self-frames-reset
         $1E self-wait-frames

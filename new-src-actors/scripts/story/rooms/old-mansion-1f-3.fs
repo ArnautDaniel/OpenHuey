@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-3
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-3.enter ( -- )   \ 0041CA90
     room-sounds
@@ -17,17 +17,17 @@ USING: room-names story.words story.shared flag-names ;
     then
     0 $F1 1 action
     hunted state-flag-set
-    $322 story-flag? if
+    om2f-3-flag1 story-flag? if
         hewie-who char-here? hewie-who 0 char-in-nav-group? and if
             hewie-who $13 char-to-tri
         then
         0 1 $14 door-bits
         1 0 $20000 nav-group
     then
-    $277 story-flag? not if
+    om1f-3-medallion story-flag? not if
         0 -10.64 9.5 -116.64 flicker-sprite
     then
-    $2BF story-flag? $2C0 story-flag? not and if
+    om1f-3-refined-antimony-found story-flag? om1f-3-refined-antimony story-flag? not and if
         1 -19.52 1.0 -13.68 flicker-sprite
     then
     1 $2300 sound-volume
@@ -110,12 +110,12 @@ USING: room-names story.words story.shared flag-names ;
     1 47 var? if
         $1C 2 6 char-sound
     then
-    $2BF story-flag? not if
+    om1f-3-refined-antimony-found story-flag? not if
         4 -19.52 0.0 -13.68 $A 5 0 zone
         hewie-who 4 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 703 var-set
-                $1A 704 var-set
+                $19 om1f-3-refined-antimony-found var-set
+                $1A om1f-3-refined-antimony var-set
                 $1B 1 var-set
                 $1C -19520 var-set
                 $1D 1000 var-set
@@ -173,13 +173,13 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $D char-in-area? fiona-who -70 $3C char-heading? and if
         5 5 0 scene-change
     then
-    $277 story-flag? not if
+    om1f-3-medallion story-flag? not if
         3 0 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 3 4 scene-change
         then
     then
-    $2BF story-flag? $2C0 story-flag? not and if
+    om1f-3-refined-antimony-found story-flag? om1f-3-refined-antimony story-flag? not and if
         4 1 5 5 0 zone-at-effect
         fiona-who 4 3 char-zone-bits? if
             5 4 4 scene-change
@@ -208,7 +208,7 @@ USING: room-names story.words story.shared flag-names ;
         $56 self-through-door
         self-wait-done
         stalker-who self-touching? not if
-            $FF panic-stage? not if
+            in-panic? not if
                 fiona-who $56 char-not-at-door? if
                     $609 self-anim
                 else
@@ -216,7 +216,7 @@ USING: room-names story.words story.shared flag-names ;
                 then
                 self-frames-reset
                 $14 self-wait-frames
-                $FF panic-stage? not if
+                in-panic? not if
                     fiona-who $72 5 char-sound
                     $56 door-unlock
                     $8008 message   \ "You unlocked the door."
@@ -307,7 +307,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -10.64 -116.64 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -317,7 +317,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $277 story-flag-set
+            om1f-3-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
@@ -335,7 +335,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -19.52 -13.68 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -345,7 +345,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2C0 story-flag-set
+            om1f-3-refined-antimony story-flag-set
             1 effect-remove
             $94 1 item-give-count
             0 $94 item-tab

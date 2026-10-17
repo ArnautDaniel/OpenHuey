@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-3f-1
-USING: actors messages room-names story.words story.shared flag-names ;
+USING: actors messages room-names story.words story.shared flag-names story-names ;
 
 \ room 0x60 (D_00429148): the floor light (room effect 0x1B, 20 x 20 at y -0.2) by byte 3 - 1
 \ removed with its glow effect (event variable 1); 0 made, with the glow (FloorGlow_vtable);
@@ -38,7 +38,7 @@ USING: actors messages room-names story.words story.shared flag-names ;
     room-sounds
     9 0 $14 door-bits
     $A 0 $14 door-bits
-    $56 story-flag? not if
+    om3f-1-flag2 story-flag? not if
         0 1 $14 door-bits
         1 0 $14 door-bits
         0 0 0 $217 $4E2 obstacle-place
@@ -69,13 +69,13 @@ USING: actors messages room-names story.words story.shared flag-names ;
         7 1 $14 door-bits
         0 0 var-set
         1 0 8 nav-group
-        $338 story-flag? not if
+        om3f-1-flag3 story-flag? not if
             9 1 $14 door-bits
         else
             $A 1 $14 door-bits
         then
-        $7F story-flag? not if
-            $7F story-flag? not if
+        got-mars-key story-flag? not if
+            got-mars-key story-flag? not if
                 0 1.29 1.0 -17.02 flicker-sprite
             then
         then
@@ -186,7 +186,7 @@ USING: actors messages room-names story.words story.shared flag-names ;
             3 0 old-mansion-3f-1.cmd02
         then
     then
-    $55 story-flag? not fiona-who 4 char-entered-area? and 7 ebit? not and if
+    om3f-1-flag1 story-flag? not fiona-who 4 char-entered-area? and 7 ebit? not and if
         7 ebit-set
         panic-eased
         fiona-who 0 char-action? if
@@ -195,12 +195,12 @@ USING: actors messages room-names story.words story.shared flag-names ;
             1 fiona-who 0 action-force
         then
     then
-    $55 story-flag? $56 story-flag? not and if
+    om3f-1-flag1 story-flag? om3f-1-flag2 story-flag? not and if
         0 ebit? 1 ebit? and 2 ebit? and 3 ebit? and if
             0 0.0 0.0 0.0 $A 10 0 zone
             stalker-who 0 3 char-zone-bits? if
-                $56 story-flag-set
-                $7B story-flag-set
+                om3f-1-flag2 story-flag-set
+                om1f-6-flag1 story-flag-set
                 force-calm state-flag-set
                 0 counter-set
                 panic-eased
@@ -266,12 +266,12 @@ USING: actors messages room-names story.words story.shared flag-names ;
             5 6 1 scene-change
         then
     then
-    $56 story-flag? if
+    om3f-1-flag2 story-flag? if
         fiona-who 5 $2D char-faces-area? if
             5 7 0 scene-change
         then
     then
-    $7F story-flag? not if
+    got-mars-key story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 5 4 scene-change
@@ -299,10 +299,10 @@ USING: actors messages room-names story.words story.shared flag-names ;
     self-wait-done
     4 ebit? if
         $23 partner-load
-        $338 story-flag-clear
+        om3f-1-flag3 story-flag-clear
     else
         $24 partner-load
-        $338 story-flag-set
+        om3f-1-flag3 story-flag-set
     then
     summoner-on state-flag-clear
     2 char-start
@@ -346,7 +346,7 @@ USING: actors messages room-names story.words story.shared flag-names ;
     $70 door-lock
     doors-room-in
     scene-5-pending state-flag-set
-    $55 story-flag-set
+    om3f-1-flag1 story-flag-set
     summoner-on state-flag-clear
     fiona-who $247 -0.592 1.575 180 char-to-xz
     hewie-who $2CF 0.346 -5.781 180 char-to-xz
@@ -455,7 +455,7 @@ USING: actors messages room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         stalker-who self-look-at
         yield
         fiona-who 5 char-in-area? if
@@ -487,7 +487,7 @@ USING: actors messages room-names story.words story.shared flag-names ;
     1 1 $14 door-bits
     0 $F9 3 action
     $1E 1 object-hidden
-    $338 story-flag? not if
+    om3f-1-flag3 story-flag? not if
         9 1 $14 door-bits
     else
         $A 1 $14 door-bits
@@ -538,7 +538,7 @@ USING: actors messages room-names story.words story.shared flag-names ;
     $1B 1 object-hidden
     0 self-scripted
     0 panic-stage
-    $7F story-flag? not if
+    got-mars-key story-flag? not if
         0 1.29 1.0 -17.02 flicker-sprite
     then
     fiona-who 0 char-visible
@@ -660,7 +660,7 @@ USING: actors messages room-names story.words story.shared flag-names ;
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    $7F story-flag-set
+    got-mars-key story-flag-set
     0 effect-remove
     $11 message-param-room
     $11 1 item-give-count
@@ -731,7 +731,7 @@ USING: actors messages room-names story.words story.shared flag-names ;
     1 1 $14 door-bits
     0 $F9 3 action
     $1E 1 object-hidden
-    $338 story-flag? not if
+    om3f-1-flag3 story-flag? not if
         9 1 $14 door-bits
     else
         $A 1 $14 door-bits
@@ -784,7 +784,7 @@ USING: actors messages room-names story.words story.shared flag-names ;
     $1B 1 object-hidden
     0 self-scripted
     0 panic-stage
-    $7F story-flag? not if
+    got-mars-key story-flag? not if
         0 1.29 1.0 -17.02 flicker-sprite
     then
     fiona-who 0 char-visible

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-4
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ Room31_Cmd00
 : castle-2f-4.cmd00 ( -- )  1 0 tv-in ;   \ (room effect 1 the TV showing the screen)
@@ -62,7 +62,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-2f-4.act00 ( -- )   \ 00429F30
-    $300 story-flag-clear
+    c2f-3-tv-examined story-flag-clear
     self-wait-done
     1 2 movie-play
     0 cutscene-start

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-10
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ the stalker in play is chasing (+0x153C 2, 6 or 7, not +0xC4 2) with the progress state 2: in
 \ this room, whether the camera sees it; elsewhere 1
@@ -13,14 +13,14 @@ USING: room-names story.words story.shared flag-names ;
 : castle-1f-10.cond01? ( -- flag )  3 thing-lying? 0= ;
 
 : castle-1f-10.enter ( -- )   \ 00403F90
-    $31D story-flag? if
+    c1f-10-flag3 story-flag? if
         2 1 object-hidden
     then
     0 24.35 9.0 19.7 0 flame-in
-    $228 story-flag? not if
+    c1f-10-beef-jerky story-flag? not if
         1 11.0 12.0 -58.5 flicker-sprite
     then
-    $34 story-flag? $21 story-flag? not and if
+    found-file-20b story-flag? c1f-10-flag1 story-flag? not and if
         1 0 $1000010 nav-group
         3 char-start
         2 char-activate
@@ -31,7 +31,7 @@ USING: room-names story.words story.shared flag-names ;
     8 9.4 7.3 -57.3 8 $60 $60 $60 $40 specks
     8 -12.0 21.0 -27.0 8 $70 $70 $70 $40 specks
     0 0 $14 door-bits
-    $349 story-flag? if
+    got-bisque-doll story-flag? if
         $93 1 item-count? not castle-1f-10.cond01? and if
             0 1 $14 door-bits
             2 ebit-set
@@ -82,10 +82,10 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-10.phase2 ( -- )   \ 00404100
-    $34 story-flag? $21 story-flag? not and if
-    else $31D story-flag? not if
+    found-file-20b story-flag? c1f-10-flag1 story-flag? not and if
+    else c1f-10-flag3 story-flag? not if
         fiona-who 5 char-in-area? fiona-who 0 $2D char-heading? and if
-            2 game-mode? $FF panic-stage? not and if
+            2 game-mode? in-panic? not and if
                 castle-1f-10.cond00? if
                     5 0 6 scene-change
                 else
@@ -96,15 +96,15 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then then
-    $228 story-flag? not if
+    c1f-10-beef-jerky story-flag? not if
         0 1 7 4 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 3 4 scene-change
         then
     then
-    $34 story-flag? $21 story-flag? not and if
+    found-file-20b story-flag? c1f-10-flag1 story-flag? not and if
         fiona-who 2 $14 0 $2D char-touching-facing? if
-            $22 story-flag? not if
+            c1f-10-flag2 story-flag? not if
                 5 2 0 scene-change
             else 1 ebit? not if
                 5 6 0 scene-change
@@ -125,7 +125,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-10.phase5 ( -- )   \ 00404198
-    $34 story-flag? $21 story-flag? not and if
+    found-file-20b story-flag? c1f-10-flag1 story-flag? not and if
         2 action-end
         2 char-done
     then
@@ -171,7 +171,7 @@ USING: room-names story.words story.shared flag-names ;
         $81 exit-check
     then
     hewie-who $29 0 room-doors-state
-    $31D story-flag-set
+    c1f-10-flag3 story-flag-set
     $22 resident-flag-set
     self-idle-or-end
 ;
@@ -215,7 +215,7 @@ USING: room-names story.words story.shared flag-names ;
     0 self-idle-anim
     2 $83 12.913 14.864 90 char-to-xz
     2 $9000 1 0 char-anim-hold
-    $22 story-flag-set
+    c1f-10-flag2 story-flag-set
     hewie-who 0 char-visible
     hewie-who action-end
     camera-restart
@@ -237,7 +237,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     11.0 -58.5 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -247,7 +247,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $228 story-flag-set
+            c1f-10-beef-jerky story-flag-set
             1 effect-remove
             $61 1 item-give-count
             0 $61 item-tab

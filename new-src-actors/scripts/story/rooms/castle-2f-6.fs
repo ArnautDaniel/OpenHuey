@@ -2,16 +2,16 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-6
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-2f-6.enter ( -- )   \ 00400C60
-    $A story-flag? not if
+    got-lunar-refractor story-flag? not if
         room-sounds
     then
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
-    $296 story-flag? not if
+    c2f-6-lavender story-flag? not if
         0 -22.26 8.5 -41.95 flicker-sprite
     then
 ;
@@ -37,7 +37,7 @@ USING: room-names story.words story.shared flag-names ;
     2 1 -1 1 chars-area-camera
     3 1 -1 1 chars-area-camera
     4 2 -1 1 chars-area-camera
-    $A story-flag? not if
+    got-lunar-refractor story-flag? not if
         0 3.5 0.0 33.0 $1E 20 0 zone
         2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -74,13 +74,13 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-2f-6.phase2 ( -- )   \ 00400D90
-    $296 story-flag? not if
+    c2f-6-lavender story-flag? not if
         3 0 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 7 4 scene-change
         then
     then
-    $A story-flag? not if
+    got-lunar-refractor story-flag? not if
         fiona-who 5 char-in-area? fiona-who 0 $2D char-heading? and if
             5 3 0 scene-change
         then
@@ -142,7 +142,7 @@ USING: room-names story.words story.shared flag-names ;
     self-frames-reset
     self-wait-16
     2 char-start
-    $A story-flag-set
+    got-lunar-refractor story-flag-set
     3 item-use
     4 message-param-room
     4 1 item-give-count
@@ -176,7 +176,7 @@ USING: room-names story.words story.shared flag-names ;
     wait-message
     $F 7 fade
     wait-fade
-    $25 story-flag? not if
+    got-doc-luminessants story-flag? not if
         $1D01 $A self-anim-blend
         $D message   \ "'Luminessants'...'Azoth'... No clue what any of this means."
         wait-message
@@ -268,7 +268,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -22.26 -41.95 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -278,7 +278,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $296 story-flag-set
+            c2f-6-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab

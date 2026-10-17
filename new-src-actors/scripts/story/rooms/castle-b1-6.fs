@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-6
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names ;
 
 \ room 0x0C (Room0C_Cmd01_ptmf): script variable byte 3 down by the player's hit (byte 4: 1 from
 \ the weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0
@@ -41,27 +41,27 @@ USING: engine room-names story.words story.shared flag-names ;
 : castle-b1-6.enter ( -- )   \ 003F4650
     room-sounds
     $15 1.0 0 bgm
-    $23 story-flag? not if
+    got-saturnus-key story-flag? not if
         0 1 $14 door-bits
     then
     1 1 $14 door-bits
     6 1 object-hidden
-    $35 story-flag? not if
+    cb1-6-flag4 story-flag? not if
         0 25 var-set
     else
         $D 1 object-hidden
         5 1 $14 door-bits
     then
-    $36 story-flag? not if
+    cb1-6-flag5 story-flag? not if
         1 25 var-set
     else
         $E 1 object-hidden
         3 1 $14 door-bits
     then
-    $34 story-flag? not if
+    found-file-20b story-flag? not if
         9 0 object-hidden
         $A 1 object-hidden
-        $16 story-flag? if
+        cb1-6-flag2 story-flag? if
             7 1 $14 door-bits
             1 0 8 nav-group
         then
@@ -100,7 +100,7 @@ USING: engine room-names story.words story.shared flag-names ;
     9 1 0 1 chars-area-camera
     $A 0 -1 1 chars-area-camera
     $B 1 0 1 chars-area-camera
-    $23 story-flag? $15 story-flag? not and $16 story-flag? not and fiona-who 7 char-entered-area? and 2 ebit? not and if
+    got-saturnus-key story-flag? cb1-6-flag1 story-flag? not and cb1-6-flag2 story-flag? not and fiona-who 7 char-entered-area? and 2 ebit? not and if
         2 ebit-set
         panic-eased
         fiona-who 0 char-action? if
@@ -109,22 +109,22 @@ USING: engine room-names story.words story.shared flag-names ;
             1 fiona-who 0 action-force
         then
     then
-    $35 story-flag? not if
+    cb1-6-flag4 story-flag? not if
         0 10.0 0.0 -37.0 7 20 0 zone
         stalker-who 0 char-in-zone? fiona-who 0 char-in-zone? or if
             0 $F1 8 action
         then
     then
-    $36 story-flag? not if
+    cb1-6-flag5 story-flag? not if
         1 10.0 0.0 37.0 7 20 0 zone
         stalker-who 1 char-in-zone? fiona-who 1 char-in-zone? or if
             0 $F2 9 action
         then
     then
-    $15 story-flag? $16 story-flag? not and if
+    cb1-6-flag1 story-flag? cb1-6-flag2 story-flag? not and if
         stalker-who 2 char-cond? if
             $28 door-unlock
-            $16 story-flag-set
+            cb1-6-flag2 story-flag-set
             force-calm state-flag-set
             panic-eased
             fiona-who 0 char-action? if
@@ -133,9 +133,9 @@ USING: engine room-names story.words story.shared flag-names ;
                 1 fiona-who 1 action-force
             then
         then
-        $35 story-flag? $36 story-flag? and if
+        cb1-6-flag4 story-flag? cb1-6-flag5 story-flag? and if
             $28 door-unlock
-            $16 story-flag-set
+            cb1-6-flag2 story-flag-set
             force-calm state-flag-set
             panic-eased
             fiona-who 0 char-action? if
@@ -165,7 +165,7 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who 5 char-in-area? fiona-who 45 $32 char-heading? and if
         5 4 0 scene-change
     then
-    $15 story-flag? not $16 story-flag? or if
+    cb1-6-flag1 story-flag? not cb1-6-flag2 story-flag? or if
         fiona-who $C char-in-area? fiona-who 10 -40 $32 char-faces-xz? and if
             5 6 0 scene-change
         then
@@ -173,11 +173,11 @@ USING: engine room-names story.words story.shared flag-names ;
             5 6 0 scene-change
         then
     then
-    $34 story-flag? if
+    found-file-20b story-flag? if
         fiona-who $E $32 char-faces-area? if
             5 5 0 scene-change
         then
-    else $16 story-flag? if
+    else cb1-6-flag2 story-flag? if
         fiona-who $E $32 char-faces-area? if
             5 $B 0 scene-change
         then
@@ -216,7 +216,7 @@ USING: engine room-names story.words story.shared flag-names ;
     then
     world-held state-flag-set
     stalker-who 0 char-no-shadow
-    6 story-flag-set
+    found-file-209 story-flag-set
     $11 door-unlock
     1 1 $14 door-bits
     6 1 object-hidden
@@ -234,7 +234,7 @@ USING: engine room-names story.words story.shared flag-names ;
     stalker-who 0 stalker-search-delay
     stalker-who $CE 90 char-to-tri-facing
     stalker-who char-full-health
-    $15 story-flag-set
+    cb1-6-flag1 story-flag-set
     2 1 player-camera
     camera-restart
     world-held state-flag-clear
@@ -357,7 +357,7 @@ USING: engine room-names story.words story.shared flag-names ;
     doors-room-in
     $A 0 object-hidden
     1 0 8 nav-group
-    $34 story-flag-set
+    found-file-20b story-flag-set
     0 panic-stage
     $15 1.0 0 bgm
     force-calm state-flag-clear
@@ -395,7 +395,7 @@ USING: engine room-names story.words story.shared flag-names ;
     $A00 self-anim
     self-frames-reset
     $28 self-wait-frames
-    $23 story-flag? not if
+    got-saturnus-key story-flag? not if
         8 message   \ "A cane? Hmm, curious. I'll bet this is related to that goddess statue... Search mor..."
         wait-message
         self-wait-anim
@@ -413,13 +413,13 @@ USING: engine room-names story.words story.shared flag-names ;
             hewie-who char-done
             creatures-on state-flag-clear
             1 creatures-clear
-            $24 story-flag-set
-            $25 story-flag-set
-            $2C story-flag-set
-            $2D story-flag-set
-            $2E story-flag-set
-            $2F story-flag-set
-            $38 story-flag-set
+            c1f-1-flag1 story-flag-set
+            got-doc-luminessants story-flag-set
+            cb1-6-flag3 story-flag-set
+            found-file-227-2 story-flag-set
+            c2f-2-flag3 story-flag-set
+            c2f-1-flag1 story-flag-set
+            c1f-13-flag1 story-flag-set
             $28 $C8 movie-param
             panic-eased
             $FFFF message-prepare
@@ -437,7 +437,7 @@ USING: engine room-names story.words story.shared flag-names ;
             $28 door-open-set
             doors-room-in
             0 0 $14 door-bits
-            $23 story-flag-set
+            got-saturnus-key story-flag-set
             $15 1.0 0 bgm
             $F $41 fade
             wait-fade
@@ -475,7 +475,7 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : castle-b1-6.act06 ( -- )   \ 003F4E50
     self-wait-done
-    $34 story-flag? if
+    found-file-20b story-flag? if
         $E message   \ "It's broken beyond repair..."
         wait-message
     else 0 ebit? not if
@@ -514,7 +514,7 @@ USING: engine room-names story.words story.shared flag-names ;
 ;
 
 : castle-b1-6.act08 ( -- )   \ 003F4EB0
-    $15 story-flag? $16 story-flag? not and if
+    cb1-6-flag1 story-flag? cb1-6-flag2 story-flag? not and if
         stalker-who 0 char-in-zone? if
             0 0 castle-b1-6.cmd01
         else
@@ -525,7 +525,7 @@ USING: engine room-names story.words story.shared flag-names ;
         10.0 10.0 -35.0 0 -2144325584 3 -9.0 shards-at
         $D 1 object-hidden
         5 1 $14 door-bits
-        $35 story-flag-set
+        cb1-6-flag4 story-flag-set
         1 6 10.0 10.0 -40.0 0 0 sound
     else
         0 6 10.0 10.0 -40.0 0 0 sound
@@ -538,7 +538,7 @@ USING: engine room-names story.words story.shared flag-names ;
 ;
 
 : castle-b1-6.act09 ( -- )   \ 003F4F30
-    $15 story-flag? $16 story-flag? not and if
+    cb1-6-flag1 story-flag? cb1-6-flag2 story-flag? not and if
         stalker-who 1 char-in-zone? if
             1 0 castle-b1-6.cmd01
         else
@@ -549,7 +549,7 @@ USING: engine room-names story.words story.shared flag-names ;
         10.0 10.0 35.0 0 -2144325584 3 -9.0 shards-at
         $E 1 object-hidden
         3 1 $14 door-bits
-        $36 story-flag-set
+        cb1-6-flag5 story-flag-set
         1 6 10.0 10.0 40.0 0 0 sound
     else
         0 6 10.0 10.0 40.0 0 0 sound

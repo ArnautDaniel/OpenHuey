@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-6
-USING: engine common actors messages room-names story.words story.shared flag-names ;
+USING: engine common actors messages room-names story.words story.shared flag-names story-names ;
 
 \ door 0 swung by script variable 0: byte 3 0 sets it to -90; 1 opens it 10 degrees a step to 0
 \ (doors +0x74), waiting (2) until there
@@ -39,7 +39,7 @@ defer house-of-truth-1f-6.act02
     room-sounds
     2 -1 var-set
     1 -1 var-set
-    $95 story-flag? not if
+    over-music-e story-flag? not if
         0 $F1 2 action
     then
     0 79.7 11.1 -39.8 0 flame-in
@@ -57,7 +57,7 @@ defer house-of-truth-1f-6.act02
     then then
     0 0 0 area-camera
     fiona-who self-is? if
-        $95 story-flag? not if
+        over-music-e story-flag? not if
             fiona-who $85 0.0 10.0 180 char-to-xz
             0 fiona-who 1 action
         then
@@ -65,7 +65,7 @@ defer house-of-truth-1f-6.act02
 ;
 
 : house-of-truth-1f-6.phase1 ( -- )   \ 004350E0
-    $95 story-flag? if
+    over-music-e story-flag? if
         0 exit-usable? if
             0 exit-check
         then
@@ -83,7 +83,7 @@ defer house-of-truth-1f-6.act02
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    $95 story-flag? not if
+    over-music-e story-flag? not if
         0 ebit? not if
             $B ebit? $A ebit? and if
                 fiona-who 8 char-left-area? $C ebit? not and if
@@ -167,7 +167,7 @@ defer house-of-truth-1f-6.act02
             5 4 1 scene-change
         then
     then
-    $95 story-flag? not if
+    over-music-e story-flag? not if
         1 -1 var? if
             5 ebit? not if
                 fiona-who $B char-in-area? fiona-who 0 $32 char-heading? and if

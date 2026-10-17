@@ -2,19 +2,19 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-5
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ Room93_Cmd00
 : house-of-truth-b1-5.cmd00 ( -- )  slam-shake ;
 
 : house-of-truth-b1-5.enter ( -- )   \ 00444170
-    $345 story-flag-set
-    $354 story-flag? if
+    htb1-5-flag1 story-flag-set
+    shared-flag4 story-flag? if
         $FE $93 124 2 stalker-to-room
         stalker-who 0 stalker-command
         stalker-who 1 1 char-camera
     then
-    $2E4 story-flag? not if
+    htb1-5-camomile story-flag? not if
         0 -117.05 1.0 101.81 flicker-sprite
     then
     $31 1.0 0 bgm
@@ -57,14 +57,14 @@ USING: room-names story.words story.shared flag-names ;
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
     fiona-who 2 char-entered-area? if
-        $347 story-flag? not if
+        htb1-7-flag1 story-flag? not if
             $95 room-preload
         else
             $87 room-preload
         then
     then
     fiona-who 3 char-entered-area? if
-        $345 story-flag? $346 story-flag? and $347 story-flag? and $348 story-flag? and if
+        htb1-5-flag1 story-flag? htb1-6-flag1 story-flag? and htb1-7-flag1 story-flag? and htb1-8-flag1 story-flag? and if
             0 ebit-set
             $88 room-preload
         else
@@ -80,7 +80,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 6 char-in-area? fiona-who -45 $32 char-heading? and if
         5 3 0 scene-change
     then
-    $2E4 story-flag? not if
+    htb1-5-camomile story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 4 4 scene-change
@@ -144,7 +144,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -117.05 101.81 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -154,7 +154,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2E4 story-flag-set
+            htb1-5-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab

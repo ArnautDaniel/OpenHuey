@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-8
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x5C (Room5C_Cmd00_ptmf): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0
 \ 0x2B..0x38 (/ 13, +0x74 0 / +0x78 1), 1 0xC..0x20 (/ 20), 2 7..0x12 (/ 11) (+0x74 1 / +0x78 0)
@@ -27,7 +27,7 @@ USING: room-names story.words story.shared flag-names ;
         2 1 $14 door-bits
         1 1 8 nav-group
     then
-    $4B story-flag? if
+    om2f-8-flag1 story-flag? if
         3 1 $14 door-bits
     then
     2 48.8 10.3 -50.7 0 flame-in
@@ -117,14 +117,14 @@ USING: room-names story.words story.shared flag-names ;
         5 3 player-camera
     then then
     4 5 3 area-camera
-    $265 story-flag? not if
+    om2f-8-camomile story-flag? not if
         0 48.0 8.0 -53.0 flicker-sprite
     then
-    $266 story-flag? not if
+    om2f-8-lavender story-flag? not if
         1 53.1 12.0 -26.2 flicker-sprite
     then
     fiona-who self-is? if
-        $4A story-flag? not if
+        found-file-234 story-flag? not if
             0.0 sound-volume-scale
             0 fiona-who 0 action
         then
@@ -153,14 +153,14 @@ USING: room-names story.words story.shared flag-names ;
     6 ebit? not if
         6 sound-bank-loaded? if
             $40000008 6 5.0 18.0 -125.0 0 0 sound
-            $54 story-flag? not if
+            om2f-12-flag1 story-flag? not if
                 $40000009 6 -120.0 10.0 -105.0 0 0 sound
             then
             6 ebit-set
         then
     else
         $C0000008 6 5.0 18.0 -125.0 0 0 sound
-        $54 story-flag? not if
+        om2f-12-flag1 story-flag? not if
             $C0000009 6 -120.0 10.0 -105.0 0 0 sound
         then
     then
@@ -207,7 +207,7 @@ USING: room-names story.words story.shared flag-names ;
         4 exit-prepare
     then
     0 ebit? not if
-        $4B story-flag? not if
+        om2f-8-flag1 story-flag? not if
             3 camera-mode? 4 camera-mode? or if
                 old-mansion-2f-8.cond00? if
                     0 ebit-set
@@ -322,13 +322,13 @@ USING: room-names story.words story.shared flag-names ;
     -2147483646 scene-request? fiona-who 0 char-before-door? and if
         5 $F 1 scene-change
     then
-    $265 story-flag? not if
+    om2f-8-camomile story-flag? not if
         3 0 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 $A 4 scene-change
         then
     then
-    $266 story-flag? not if
+    om2f-8-lavender story-flag? not if
         4 1 5 5 0 zone-at-effect
         fiona-who 4 3 char-zone-bits? if
             5 $B 4 scene-change
@@ -356,7 +356,7 @@ USING: room-names story.words story.shared flag-names ;
     $62 door-lock
     creatures-on state-flag-clear
     1 creatures-clear
-    $4A story-flag-set
+    found-file-234 story-flag-set
     camera-restart
     $F $51 fade
     wait-fade
@@ -389,7 +389,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     camera-restart
     world-held state-flag-clear
-    $4B story-flag-set
+    om2f-8-flag1 story-flag-set
     $54 door-unlock
     2 exit-prepare
     $F $41 fade
@@ -404,7 +404,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     60.0 0.0 self-turn-to-xz
     self-wait-done
-    $4B story-flag? not if
+    om2f-8-flag1 story-flag? not if
         0 message   \ "There is a statue clasping an oil lamp. The wick of the lamp is unlit."
         wait-message
     else
@@ -519,8 +519,8 @@ USING: room-names story.words story.shared flag-names ;
     then
     begin
         0 2 pad? not if
-            $FF panic-stage? 1 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 1 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] old-mansion-2f-8.act07 goto
@@ -602,7 +602,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     48.0 -53.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -612,7 +612,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $265 story-flag-set
+            om2f-8-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
@@ -630,7 +630,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     53.1 -26.2 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -640,7 +640,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $266 story-flag-set
+            om2f-8-lavender story-flag-set
             1 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
@@ -723,7 +723,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0 self-through-exit
     self-wait-done
-    $FF panic-stage? 2 game-mode? or if
+    in-panic? 2 game-mode? or if
         $60A self-anim
         self-wait-anim
         -1 self-idle-anim

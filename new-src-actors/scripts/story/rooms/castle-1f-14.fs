@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-14
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-1f-14.enter ( -- )   \ 003F5540
-    $25A story-flag? $25B story-flag? not and if
+    c1f-14-viride-medallion-found story-flag? c1f-14-viride-medallion story-flag? not and if
         1 -70.0 61.0 54.1 flicker-sprite
     then
-    $21F story-flag? not if
+    c1f-14-breakable1-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -17,7 +17,7 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $14 door-bits
         1 1 $14 door-bits
     then
-    $220 story-flag? not if
+    c1f-14-breakable2-broken story-flag? not if
         1 1 $8000000 nav-group
         2 1 $14 door-bits
         3 0 $14 door-bits
@@ -25,11 +25,11 @@ USING: room-names story.words story.shared flag-names ;
         0 1 $8000000 nav-group
         2 0 $14 door-bits
         3 1 $14 door-bits
-        $22B story-flag? not if
+        c1f-14-chicken-jerky story-flag? not if
             0 -68.0 1.0 -58.0 flicker-sprite
         then
     then
-    $221 story-flag? not if
+    c1f-14-breakable3-broken story-flag? not if
         1 2 $8000000 nav-group
         4 1 $14 door-bits
         5 0 $14 door-bits
@@ -37,14 +37,14 @@ USING: room-names story.words story.shared flag-names ;
         0 2 $8000000 nav-group
         4 0 $14 door-bits
         5 1 $14 door-bits
-        $28A story-flag? not if
+        c1f-14-antimony-powder story-flag? not if
             2 -66.0 1.0 55.0 flicker-sprite
         then
     then
     1 $2300 sound-volume
-    $AF story-flag? if
-        $3F story-flag? not if
-            $3F story-flag-set
+    items-40-as-70 story-flag? if
+        c1f-14-flag1 story-flag? not if
+            c1f-14-flag1 story-flag-set
             $E 0 829 $80 10 -1 $FF80 0.0 creature-place
         then
     then
@@ -82,8 +82,8 @@ USING: room-names story.words story.shared flag-names ;
     then then
     2 0 0 area-camera
     fiona-who self-is? if
-        $42 story-flag? $5B story-flag? not and if
-            $5B story-flag-set
+        saturnus-hint-on story-flag? c1f-14-flag2 story-flag? not and if
+            c1f-14-flag2 story-flag-set
             stalker-who action-end
             stalker-who char-done
         then
@@ -133,12 +133,12 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $D char-left-area? if
         2 map-page
     then
-    $25A story-flag? not if
+    c1f-14-viride-medallion-found story-flag? not if
         3 -70.0 60.0 54.1 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 602 var-set
-                $1A 603 var-set
+                $19 c1f-14-viride-medallion-found var-set
+                $1A c1f-14-viride-medallion var-set
                 $1B 1 var-set
                 $1C -70000 var-set
                 $1D 61000 var-set
@@ -151,10 +151,10 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-14.phase2 ( -- )   \ 003F57E0
-    $21F story-flag? not if
+    c1f-14-breakable1-broken story-flag? not if
         0 -61.0 0.0 -52.0 5 8 1 zone
         self-who 0 char-in-zone? if
-            $21F story-flag-set
+            c1f-14-breakable1-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -163,10 +163,10 @@ USING: room-names story.words story.shared flag-names ;
             $40 $55 noise
         then
     then
-    $220 story-flag? not if
+    c1f-14-breakable2-broken story-flag? not if
         1 -68.0 0.0 -58.0 5 8 1 zone
         self-who 1 char-in-zone? if
-            $220 story-flag-set
+            c1f-14-breakable2-broken story-flag-set
             0 1 $8000000 nav-group
             2 0 $14 door-bits
             3 1 $14 door-bits
@@ -175,16 +175,16 @@ USING: room-names story.words story.shared flag-names ;
             $40 $2BF noise
             0 -68.0 1.0 -58.0 flicker-sprite
         then
-    else $22B story-flag? not if
+    else c1f-14-chicken-jerky story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 1 4 scene-change
         then
     then then
-    $221 story-flag? not if
+    c1f-14-breakable3-broken story-flag? not if
         2 -66.0 0.0 55.0 5 8 1 zone
         self-who 2 char-in-zone? if
-            $221 story-flag-set
+            c1f-14-breakable3-broken story-flag-set
             0 2 $8000000 nav-group
             4 0 $14 door-bits
             5 1 $14 door-bits
@@ -193,7 +193,7 @@ USING: room-names story.words story.shared flag-names ;
             $40 $295 noise
             2 -66.0 1.0 55.0 flicker-sprite
         then
-    else $28A story-flag? not if
+    else c1f-14-antimony-powder story-flag? not if
         2 2 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 3 4 scene-change
@@ -202,7 +202,7 @@ USING: room-names story.words story.shared flag-names ;
     -2147483646 scene-request? if
         5 0 1 scene-change
     then
-    $25A story-flag? $25B story-flag? not and if
+    c1f-14-viride-medallion-found story-flag? c1f-14-viride-medallion story-flag? not and if
         3 1 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 2 4 scene-change
@@ -231,7 +231,7 @@ USING: room-names story.words story.shared flag-names ;
         0 self-through-door
         self-wait-done
         stalker-who self-touching? not if
-            $FF panic-stage? not if
+            in-panic? not if
                 fiona-who 0 char-not-at-door? if
                     $609 self-anim
                 else
@@ -239,7 +239,7 @@ USING: room-names story.words story.shared flag-names ;
                 then
                 self-frames-reset
                 $14 self-wait-frames
-                $FF panic-stage? not if
+                in-panic? not if
                     fiona-who $72 5 char-sound
                     0 door-unlock
                     $8008 message   \ "You unlocked the door."
@@ -258,7 +258,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -68.0 -58.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -268,7 +268,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $22B story-flag-set
+            c1f-14-chicken-jerky story-flag-set
             0 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
@@ -286,7 +286,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -70.0 54.1 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -296,7 +296,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $25B story-flag-set
+            c1f-14-viride-medallion story-flag-set
             1 effect-remove
             $74 1 item-give-count
             0 $74 item-tab
@@ -314,7 +314,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -66.0 55.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -324,7 +324,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $28A story-flag-set
+            c1f-14-antimony-powder story-flag-set
             2 effect-remove
             $91 1 item-give-count
             0 $91 item-tab

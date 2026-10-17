@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-17
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 \ five pendulums (Room1B_ObjectNames[byte 3]) of their own periods and swings: byte 4 0 still at
 \ a phase offset (+0x34) 60 x the index, 1 swinging on (+0x30, +0x14)
@@ -20,7 +20,7 @@ USING: room-names story.words story.shared ;
 
 : castle-1f-17.enter ( -- )   \ 003FC6A0
     $14 1.0 0 bgm
-    $227 story-flag? not if
+    c1f-17-lavender story-flag? not if
         0 -6.0 8.5 -5.0 flicker-sprite
     then
     0 0 castle-1f-17.cmd00
@@ -164,7 +164,7 @@ USING: room-names story.words story.shared ;
     fiona-who $B char-in-area? fiona-who 45 $32 char-heading? and if
         5 3 0 scene-change
     then
-    $227 story-flag? not if
+    c1f-17-lavender story-flag? not if
         0 0 8 4 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 5 4 scene-change
@@ -181,7 +181,7 @@ USING: room-names story.words story.shared ;
         $19 self-through-door
         self-wait-done
         stalker-who self-touching? not if
-            $FF panic-stage? not if
+            in-panic? not if
                 fiona-who $19 char-not-at-door? if
                     $609 self-anim
                 else
@@ -189,7 +189,7 @@ USING: room-names story.words story.shared ;
                 then
                 self-frames-reset
                 $14 self-wait-frames
-                $FF panic-stage? not if
+                in-panic? not if
                     fiona-who $72 5 char-sound
                     $19 door-unlock
                     $8008 message   \ "You unlocked the door."
@@ -264,7 +264,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     -6.0 -5.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -274,7 +274,7 @@ USING: room-names story.words story.shared ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $227 story-flag-set
+            c1f-17-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab

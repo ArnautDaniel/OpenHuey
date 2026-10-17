@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-7f-2
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : water-tower-7f-2.enter ( -- )   \ 00441170
     room-sounds
     hunted state-flag-set
     $30 1.0 0 bgm
-    $2DA story-flag? $2DB story-flag? not and if
+    wt7f-2-rubrum-medallion-found story-flag? wt7f-2-rubrum-medallion story-flag? not and if
         0 -9.0 140.97 -10.23 flicker-sprite
     then
 ;
@@ -93,12 +93,12 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $F char-left-area? if
         8 map-page
     then
-    $2DA story-flag? not if
+    wt7f-2-rubrum-medallion-found story-flag? not if
         0 -9.0 139.97 -10.23 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 730 var-set
-                $1A 731 var-set
+                $19 wt7f-2-rubrum-medallion-found var-set
+                $1A wt7f-2-rubrum-medallion var-set
                 $1B 0 var-set
                 $1C -9000 var-set
                 $1D 140970 var-set
@@ -136,7 +136,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $E $32 char-faces-area? if
         5 3 0 scene-change
     then
-    $2DA story-flag? $2DB story-flag? not and if
+    wt7f-2-rubrum-medallion-found story-flag? wt7f-2-rubrum-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 2 4 scene-change
@@ -172,7 +172,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -9.0 -10.23 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -182,7 +182,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2DB story-flag-set
+            wt7f-2-rubrum-medallion story-flag-set
             0 effect-remove
             $73 1 item-give-count
             0 $73 item-tab

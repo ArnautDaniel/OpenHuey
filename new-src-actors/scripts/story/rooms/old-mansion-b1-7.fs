@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-7
-USING: engine common actors messages room-names story.words story.shared ;
+USING: engine common actors messages room-names story.words story.shared story-names ;
 
 \ one of the fish swimming its way (swim path k), on and on
 : swim ( id k -- )
@@ -42,7 +42,7 @@ USING: engine common actors messages room-names story.words story.shared ;
     0 0 var-set
     1 20 var-set
     2 90 var-set
-    $2A5 story-flag? $2A6 story-flag? not and if
+    omb1-7-medallion-found story-flag? omb1-7-medallion story-flag? not and if
         0 8.95 1.0 11.89 flicker-sprite
     then
     1 $2300 sound-volume
@@ -137,12 +137,12 @@ USING: engine common actors messages room-names story.words story.shared ;
             then then then
         then
     then
-    $2A5 story-flag? not if
+    omb1-7-medallion-found story-flag? not if
         0 8.95 0.0 11.89 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 677 var-set
-                $1A 678 var-set
+                $19 omb1-7-medallion-found var-set
+                $1A omb1-7-medallion var-set
                 $1B 0 var-set
                 $1C 8950 var-set
                 $1D 1000 var-set
@@ -158,7 +158,7 @@ USING: engine common actors messages room-names story.words story.shared ;
     fiona-who $A char-in-area? if
         5 4 0 scene-change
     then
-    $2A5 story-flag? $2A6 story-flag? not and if
+    omb1-7-medallion-found story-flag? omb1-7-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 3 4 scene-change
@@ -225,7 +225,7 @@ USING: engine common actors messages room-names story.words story.shared ;
     self-wait-done
     8.95 11.89 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -235,7 +235,7 @@ USING: engine common actors messages room-names story.words story.shared ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2A6 story-flag-set
+            omb1-7-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab

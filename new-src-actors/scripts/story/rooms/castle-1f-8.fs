@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-8
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x18 (Room18_Cmd00_ptmf): object byte 3's PlacedObject_ToDef
 : castle-1f-8.cmd00 ( b0 -- )   \ (Room18_ObjectNames[b0] back as defined: the telephones' receivers, 4 / 5)
@@ -12,17 +12,17 @@ USING: room-names story.words story.shared flag-names ;
     endcase ;
 
 : castle-1f-8.enter ( -- )   \ 003FAA20
-    5 story-flag? not if
+    c1f-8-flag1 story-flag? not if
         room-sounds
     then
     0 34.2 18.3 14.2 1 flame-in
     1 34.2 18.3 -14.2 1 flame-in
     2 -34.2 18.3 -14.2 1 flame-in
     3 -34.2 18.3 14.2 1 flame-in
-    $25C story-flag? $25D story-flag? not and if
+    c1f-8-album-medallion-found story-flag? c1f-8-album-medallion story-flag? not and if
         4 -25.6 1.0 27.6 flicker-sprite
     then
-    $295 story-flag? not if
+    c1f-8-magnesia story-flag? not if
         5 0.0 8.5 25.0 flicker-sprite
     then
     0 1 $14 door-bits
@@ -114,9 +114,9 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 3 char-entered-area? if
         0 exit-prepare
     then
-    5 story-flag? not if
+    c1f-8-flag1 story-flag? not if
         fiona-who 2 char-left-area? if
-            5 story-flag-set
+            c1f-8-flag1 story-flag-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
@@ -165,12 +165,12 @@ USING: room-names story.words story.shared flag-names ;
     stalker-who 4 3 char-zone-bits? stalker-who 4 3 char-zone-bits-before? not and if
         stalker-who 3 char-effect-moving
     then
-    $25C story-flag? not if
+    c1f-8-album-medallion-found story-flag? not if
         0 -25.6 0.0 27.6 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 604 var-set
-                $1A 605 var-set
+                $19 c1f-8-album-medallion-found var-set
+                $1A c1f-8-album-medallion var-set
                 $1B 4 var-set
                 $1C -25600 var-set
                 $1D 1000 var-set
@@ -183,7 +183,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-8.phase2 ( -- )   \ 003FACB0
-    $295 story-flag? not if
+    c1f-8-magnesia story-flag? not if
         5 5 5 5 0 zone-at-effect
         fiona-who 5 3 char-zone-bits? if
             5 $B 4 scene-change
@@ -196,7 +196,7 @@ USING: room-names story.words story.shared flag-names ;
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
-    5 story-flag? if
+    c1f-8-flag1 story-flag? if
         fiona-who $B char-in-area? fiona-who 75 $2D char-heading? and if
             5 1 0 scene-change
         then
@@ -210,7 +210,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $A char-in-area? fiona-who -67 $2D char-heading? and if
         5 4 0 scene-change
     then
-    $25C story-flag? $25D story-flag? not and if
+    c1f-8-album-medallion-found story-flag? c1f-8-album-medallion story-flag? not and if
         0 4 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 9 4 scene-change
@@ -284,7 +284,7 @@ USING: room-names story.words story.shared flag-names ;
     0 self-idle-anim
     fiona-who $48 19.0 -19.0 150 char-to-xz
     2 -1 player-camera
-    5 story-flag-set
+    c1f-8-flag1 story-flag-set
     $11 door-open-clear
     $11 door-lock
     summoner-on state-flag-set
@@ -294,7 +294,7 @@ USING: room-names story.words story.shared flag-names ;
     stalker-who 0 -1 char-camera
     stalker-who 2 stalker-command
     0 stalker-who $A action
-    $31 story-flag-set
+    found-file-208 story-flag-set
     5 0 0 music
     $F $81 fade
     wait-fade
@@ -384,8 +384,8 @@ USING: room-names story.words story.shared flag-names ;
     self-who 3 -1 char-camera
     begin
         0 2 pad? not if
-            $FF panic-stage? 0 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 0 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] castle-1f-8.act06 goto
@@ -455,7 +455,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -25.6 27.6 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -465,7 +465,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $25D story-flag-set
+            c1f-8-album-medallion story-flag-set
             4 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
@@ -493,7 +493,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0.0 25.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -503,7 +503,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $295 story-flag-set
+            c1f-8-magnesia story-flag-set
             5 effect-remove
             $92 1 item-give-count
             0 $92 item-tab

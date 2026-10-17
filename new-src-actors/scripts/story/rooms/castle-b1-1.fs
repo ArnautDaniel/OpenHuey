@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-1
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x12 (Room12_Cmd00_ptmf): byte 3 0: the smoke puffs (SmokePuffs_vtable), their slot in
 \ script variable 0; else that slot started
@@ -10,11 +10,11 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-b1-1.enter ( -- )   \ 003F8200
     room-sounds
-    1 story-flag? not if
+    got-castle-sketch story-flag? not if
         0 1 $14 door-bits
     then
     0 -35.8 -50.5 -27.25 0 flame-in
-    $203 story-flag? not if
+    cb1-1-breakable1-broken story-flag? not if
         1 0 $8000000 nav-group
         1 1 $14 door-bits
         2 0 $14 door-bits
@@ -22,18 +22,18 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $8000000 nav-group
         1 0 $14 door-bits
         2 1 $14 door-bits
-        $22C story-flag? not if
+        cb1-1-chicken-jerky story-flag? not if
             1 -52.5 -59.05 -1.5 flicker-sprite
         then
     then
     0 8 0.562 0.5 0.25 0.5 zone-rect
-    $244 story-flag? $245 story-flag? not and if
+    cb1-1-lavender-found story-flag? cb1-1-lavender story-flag? not and if
         2 -18.1 -59.0 -8.1 flicker-sprite
     then
-    $281 story-flag? not if
+    cb1-1-chicken-jerky-2 story-flag? not if
         3 -13.0 9.0 10.0 flicker-sprite
     then
-    3 story-flag? $31 story-flag? not and if
+    hewie-found-in-wire story-flag? found-file-208 story-flag? not and if
         force-followed state-flag-set
         1 1 $1000010 nav-group
         3 char-start
@@ -44,12 +44,12 @@ USING: room-names story.words story.shared flag-names ;
         4 0 object-anim-loop
         0 castle-b1-1.cmd00
     then
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     1 0 -19.5 -26.0 -31.0 4.0 4.0 100.0 0.0 10.0 wanderer
     2 0 -53.0 -22.0 -11.0 4.0 5.0 80.0 0.0 30.0 wanderer
-    $321 story-flag? not if
+    cb1-1-breakable2-broken story-flag? not if
         3 1 $14 door-bits
         4 0 $14 door-bits
         1 2 $20000 nav-group
@@ -166,7 +166,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $13 char-left-area? if
         1 map-page
     then
-    1 story-flag? 2 story-flag? not and if
+    got-castle-sketch story-flag? c2f-3-flag1 story-flag? not and if
         fiona-who 5 char-entered-area? $A ebit? not and if
             $A ebit-set
             panic-eased
@@ -177,12 +177,12 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $244 story-flag? not if
+    cb1-1-lavender-found story-flag? not if
         3 -18.1 -60.0 -8.1 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 580 var-set
-                $1A 581 var-set
+                $19 cb1-1-lavender-found var-set
+                $1A cb1-1-lavender var-set
                 $1B 2 var-set
                 $1C -18100 var-set
                 $1D -59000 var-set
@@ -202,15 +202,15 @@ USING: room-names story.words story.shared flag-names ;
     stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
         stalker-who 0 char-effect-moving
     then
-    3 story-flag? $31 story-flag? not and if
-        $32 story-flag? not if
+    hewie-found-in-wire story-flag? found-file-208 story-flag? not and if
+        cb1-1-flag1 story-flag? not if
             2 16.5 0.0 16.5 $1E 10 0 zone
         else
             2 16.5 0.0 16.5 $A 10 0 zone
         then
-        $32 story-flag? not if
+        cb1-1-flag1 story-flag? not if
             fiona-who 2 3 char-zone-bits? 2 camera-mode? and if
-                $32 story-flag-set
+                cb1-1-flag1 story-flag-set
                 panic-eased
                 fiona-who 0 char-action? if
                     0 fiona-who 0 action-force
@@ -219,7 +219,7 @@ USING: room-names story.words story.shared flag-names ;
                 then
             then
         else fiona-who 2 3 char-zone-bits? fiona-who 2 3 char-zone-bits-before? not and if
-            fiona-who 0 char-action? $FF panic-stage? not and if
+            fiona-who 0 char-action? in-panic? not and if
                 panic-eased
                 0 fiona-who 2 action-force
             then
@@ -262,7 +262,7 @@ USING: room-names story.words story.shared flag-names ;
             castle-b1-1.act10
         then
     then
-    $321 story-flag? not if
+    cb1-1-breakable2-broken story-flag? not if
         5 22.0 -40.0 -32.0 6 12 0 zone
         fiona-who 5 char-in-zone? if
             fiona-who 0 6 char-sound
@@ -270,7 +270,7 @@ USING: room-names story.words story.shared flag-names ;
             3 0 $14 door-bits
             4 1 $14 door-bits
             0 2 $20000 nav-group
-            $321 story-flag-set
+            cb1-1-breakable2-broken story-flag-set
             0 8 0.234 0.5 0.328 0.5 zone-rect
             19.0 -40.0 -32.0 0 -2144325584 2 0.0 shards-at
             22.0 -40.0 -32.0 0 -2143272896 2 0.0 shards-at
@@ -301,10 +301,10 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-b1-1.phase2 ( -- )   \ 003F8750
-    $203 story-flag? not if
+    cb1-1-breakable1-broken story-flag? not if
         1 -52.5 -60.05 -1.5 5 8 1 zone
         self-who 1 char-in-zone? if
-            $203 story-flag-set
+            cb1-1-breakable1-broken story-flag-set
             0 0 $8000000 nav-group
             1 0 $14 door-bits
             2 1 $14 door-bits
@@ -313,19 +313,19 @@ USING: room-names story.words story.shared flag-names ;
             $40 $209 noise
             1 -52.5 -59.05 -1.5 flicker-sprite
         then
-    else $22C story-flag? not if
+    else cb1-1-chicken-jerky story-flag? not if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 1 4 scene-change
         then
     then then
-    $244 story-flag? $245 story-flag? not and if
+    cb1-1-lavender-found story-flag? cb1-1-lavender story-flag? not and if
         3 2 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 $12 4 scene-change
         then
     then
-    $281 story-flag? not if
+    cb1-1-chicken-jerky-2 story-flag? not if
         9 3 5 5 0 zone-at-effect
         fiona-who 9 3 char-zone-bits? if
             5 $13 4 scene-change
@@ -333,7 +333,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     fiona-who $12 $2D char-faces-area? if
         fiona-who -45 $3C char-heading? if
-            1 story-flag? not if
+            got-castle-sketch story-flag? not if
                 fiona-who $A $2D char-faces-area? if
                     5 4 4 scene-change
                 then
@@ -348,7 +348,7 @@ USING: room-names story.words story.shared flag-names ;
             then then then
         then
         fiona-who 45 $3C char-heading? if
-            1 story-flag? not if
+            got-castle-sketch story-flag? not if
                 fiona-who $A $2D char-faces-area? if
                     5 4 4 scene-change
                 then
@@ -376,11 +376,11 @@ USING: room-names story.words story.shared flag-names ;
         fiona-who $D char-in-area? fiona-who 0 $32 char-heading? and if
             5 $B 0 scene-change
         then
-        3 story-flag? not if
+        hewie-found-in-wire story-flag? not if
             fiona-who $E char-in-area? fiona-who 0 $32 char-heading? and if
                 5 $C 0 scene-change
             then
-        else $31 story-flag? if
+        else found-file-208 story-flag? if
             fiona-who $E char-in-area? fiona-who 0 $32 char-heading? and if
                 5 $16 0 scene-change
             then
@@ -402,7 +402,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-b1-1.phase5 ( -- )   \ 003F89D0
-    3 story-flag? $31 story-flag? not and if
+    hewie-found-in-wire story-flag? found-file-208 story-flag? not and if
         force-followed state-flag-clear
         1 stalker-who 0 char-model-op
         3 action-end
@@ -458,7 +458,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -52.5 -1.5 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -468,7 +468,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $22C story-flag-set
+            cb1-1-chicken-jerky story-flag-set
             1 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
@@ -499,7 +499,7 @@ USING: room-names story.words story.shared flag-names ;
         4 self-through-door
         self-wait-done
         stalker-who self-touching? not if
-            $FF panic-stage? not if
+            in-panic? not if
                 fiona-who 4 char-not-at-door? if
                     $609 self-anim
                 else
@@ -507,7 +507,7 @@ USING: room-names story.words story.shared flag-names ;
                 then
                 self-frames-reset
                 $14 self-wait-frames
-                $FF panic-stage? not if
+                in-panic? not if
                     fiona-who $72 5 char-sound
                     4 door-unlock
                     $8008 message   \ "You unlocked the door."
@@ -538,7 +538,7 @@ USING: room-names story.words story.shared flag-names ;
     wait-message
     $903 self-anim
     self-wait-anim
-    1 story-flag-set
+    got-castle-sketch story-flag-set
     summoner-on state-flag-clear
     5 door-open-clear
     doors-room-in
@@ -703,8 +703,8 @@ USING: room-names story.words story.shared flag-names ;
     0 avoid-prompt
     begin
         0 2 pad? not if
-            $FF panic-stage? 4 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 4 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] castle-b1-1.act0F goto
@@ -789,7 +789,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -18.1 -8.1 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -799,7 +799,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $245 story-flag-set
+            cb1-1-lavender story-flag-set
             2 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
@@ -817,7 +817,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -13.0 10.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -827,7 +827,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $281 story-flag-set
+            cb1-1-chicken-jerky-2 story-flag-set
             3 effect-remove
             $60 1 item-give-count
             0 $60 item-tab

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-8f-1
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names ;
 
 \ the screen fade (renderer +0x70) by script variable 1 with Hewie's light 0xF: byte 3 0 clear
 \ (0x808080), 2 full (0x80808080); 1 fades in by 0x10 a call and 3 back out, waiting (2),
@@ -69,7 +69,7 @@ USING: engine room-names story.words story.shared flag-names ;
 : water-tower-8f-1.enter ( -- )   \ 0042F500
     room-sounds
     $1B 1.0 0 bgm
-    $8E story-flag? not if
+    c7-second-event story-flag? not if
         0 0 $14 door-bits
         1 0 $14 door-bits
         8 1 object-hidden
@@ -79,7 +79,7 @@ USING: engine room-names story.words story.shared flag-names ;
         0 1 $14 door-bits
         1 1 $14 door-bits
     then
-    $91 story-flag? not if
+    wt8f-1-flag1 story-flag? not if
         2 3 var-set
         2 1 $14 door-bits
         3 0 $14 door-bits
@@ -87,7 +87,7 @@ USING: engine room-names story.words story.shared flag-names ;
         2 0 $14 door-bits
         3 1 $14 door-bits
     then
-    $33E story-flag? not if
+    wt8f-1-flag3 story-flag? not if
         3 3 var-set
         4 1 $14 door-bits
         5 0 $14 door-bits
@@ -95,7 +95,7 @@ USING: engine room-names story.words story.shared flag-names ;
         4 0 $14 door-bits
         5 1 $14 door-bits
     then
-    $33F story-flag? not if
+    wt8f-1-flag4 story-flag? not if
         4 3 var-set
         6 1 $14 door-bits
         7 0 $14 door-bits
@@ -121,9 +121,9 @@ USING: engine room-names story.words story.shared flag-names ;
 ;
 
 : water-tower-8f-1.phase1 ( -- )   \ 0042F5D0
-    $AE story-flag? $8E story-flag? and $93 story-flag? not and if
+    fg-3-flag3 story-flag? c7-second-event story-flag? and wt8f-1-flag2 story-flag? not and if
         fiona-who 0 char-entered-area? if
-            $93 story-flag-set
+            wt8f-1-flag2 story-flag-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who $A action-force
@@ -172,7 +172,7 @@ USING: engine room-names story.words story.shared flag-names ;
                         stalker-who 8 char-in-area? if
                             water-tower-8f-1.cond01? if
                                 1 ebit-set
-                                $91 story-flag? if
+                                wt8f-1-flag1 story-flag? if
                                     panic-eased
                                     0 fiona-who 8 action-force
                                 then
@@ -197,28 +197,28 @@ USING: engine room-names story.words story.shared flag-names ;
             2 ebit-set
         then then then
     then
-    $91 story-flag? not if
+    wt8f-1-flag1 story-flag? not if
         0 3.0 620.0 79.0 $A 8 0 zone
         fiona-who $C char-in-area? fiona-who 0 char-in-zone? and if
             5 0 var-set
             0 $F1 6 action
         then
     then
-    $33E story-flag? not if
+    wt8f-1-flag3 story-flag? not if
         1 -58.0 620.0 54.0 $A 8 0 zone
         fiona-who $D char-in-area? fiona-who 1 char-in-zone? and if
             5 1 var-set
             0 $F2 6 action
         then
     then
-    $33F story-flag? not if
+    wt8f-1-flag4 story-flag? not if
         2 -5.0 620.0 -78.0 $A 8 0 zone
         fiona-who $E char-in-area? fiona-who 2 char-in-zone? and if
             5 2 var-set
             0 $F3 6 action
         then
     then
-    $8E story-flag? not if
+    c7-second-event story-flag? not if
         3 0.0 620.0 41.0 $11 10 0 zone
         8 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -245,21 +245,21 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who $B char-in-area? fiona-who 90 $3C char-heading? and if
         5 2 0 scene-change
     then
-    $33E story-flag? not if
+    wt8f-1-flag3 story-flag? not if
         fiona-who $D char-in-area? fiona-who -58 54 $32 char-faces-xz? and if
             5 $E 0 scene-change
         then
     then
-    $33F story-flag? not if
+    wt8f-1-flag4 story-flag? not if
         fiona-who $E char-in-area? fiona-who -5 -78 $32 char-faces-xz? and if
             5 $E 0 scene-change
         then
     then
-    $91 story-flag? not if
+    wt8f-1-flag1 story-flag? not if
         fiona-who $C char-in-area? fiona-who 3 79 $32 char-faces-xz? and if
             5 $E 0 scene-change
         then
-    else $8E story-flag? if
+    else c7-second-event story-flag? if
         fiona-who $C char-in-area? fiona-who 3 79 $32 char-faces-xz? and if
             5 $F 0 scene-change
         then
@@ -487,10 +487,10 @@ USING: engine room-names story.words story.shared flag-names ;
     50 hewie-trust
     stalker-who action-end
     stalker-who char-done
-    $8E story-flag-set
+    c7-second-event story-flag-set
     fiona-who $33 -1.38 70.2 0 char-to-xz
     hewie-who $33 5.0 67.76 0 char-to-xz
-    $AE story-flag? not if
+    fg-3-flag3 story-flag? not if
         2 0 char-remove
     then
     camera-restart
@@ -518,7 +518,7 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : water-tower-8f-1.act02 ( -- )   \ 0042FE40
     self-wait-done
-    $8E story-flag? not if
+    c7-second-event story-flag? not if
         1 self-scripted
         1 self-noclip
         self-frames-reset
@@ -699,7 +699,7 @@ USING: engine room-names story.words story.shared flag-names ;
             3 water-tower-8f-1.cmd04
             2 0 $14 door-bits
             3 1 $14 door-bits
-            $91 story-flag-set
+            wt8f-1-flag1 story-flag-set
         then
     else 5 1 var? if
         3 water-tower-8f-1.cmd01
@@ -711,7 +711,7 @@ USING: engine room-names story.words story.shared flag-names ;
             4 water-tower-8f-1.cmd04
             4 0 $14 door-bits
             5 1 $14 door-bits
-            $33E story-flag-set
+            wt8f-1-flag3 story-flag-set
         then
     else 5 2 var? if
         4 water-tower-8f-1.cmd01
@@ -723,7 +723,7 @@ USING: engine room-names story.words story.shared flag-names ;
             5 water-tower-8f-1.cmd04
             6 0 $14 door-bits
             7 1 $14 door-bits
-            $33F story-flag-set
+            wt8f-1-flag4 story-flag-set
         then
     then then then
     self-frames-reset
@@ -782,7 +782,7 @@ USING: engine room-names story.words story.shared flag-names ;
     3 0 char-remove
     world-held state-flag-set
     0 exit-prepare
-    $93 story-flag-set
+    wt8f-1-flag2 story-flag-set
     $42 resident-flag-set
     $81 exit-check
     self-idle-or-end

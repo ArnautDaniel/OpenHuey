@@ -2,10 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-9
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 : old-mansion-2f-9.enter ( -- )   \ 00412410
-    $26B story-flag? not if
+    got-sylvesta-esca story-flag? not if
         0 42.0 63.5 6.6 flicker-sprite
     then
 ;
@@ -44,7 +44,7 @@ USING: room-names story.words story.shared ;
     hewie-who self-is? if
         2 hewie-mood
     then
-    $26B story-flag? not if
+    got-sylvesta-esca story-flag? not if
         0 42.0 63.5 6.6 flicker-sprite
     then
 ;
@@ -102,7 +102,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-9.phase2 ( -- )   \ 004125E0
-    $26B story-flag? not if
+    got-sylvesta-esca story-flag? not if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 0 4 scene-change
@@ -117,7 +117,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     42.0 6.6 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -127,7 +127,7 @@ USING: room-names story.words story.shared ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $26B story-flag-set
+            got-sylvesta-esca story-flag-set
             0 effect-remove
             $65 1 item-give-count
             0 $65 item-tab

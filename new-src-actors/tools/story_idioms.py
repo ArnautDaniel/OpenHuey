@@ -22,6 +22,7 @@ IDIOMS = [
                    "while yield repeat yield pause-wanted state-flag-set 8 cutscene-control"),
     ("item-fanfare", "0 $F9 $8C action-force $83 $85 0.0 0.0 0.0 0 0 sound"),
     ("panic-eased", "$FF panic-stage? if 3 panic-stage then"),
+    ("in-panic?", "$FF panic-stage?"),
     ("scene-play-through", "6 cutscene-control 1.0 movie-volume effects-arena-flip yield $F 1 fade $A cutscene-control "
                            "begin 7 cutscene-control $C cutscene-control 0 cutscene-control 4 cutscene-control "
                            "-1 result? not if 5 cutscene-mode? not 4 cutscene-mode? not and if yield false else true "

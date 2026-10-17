@@ -2,17 +2,17 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-2f-2
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : house-of-truth-2f-2.enter ( -- )   \ 00431DE0
     0 1 $14 door-bits
     0 1 object-hidden
     1 1 object-hidden
     2 1 object-hidden
-    $343 story-flag? not if
+    got-mystery-sketch story-flag? not if
         1 1 $14 door-bits
     then
-    $2EF story-flag? $2F0 story-flag? not and if
+    ht2f-2-viride-medallion-found story-flag? ht2f-2-viride-medallion story-flag? not and if
         0 37.0 1.0 84.0 flicker-sprite
     then
 ;
@@ -44,12 +44,12 @@ USING: room-names story.words story.shared flag-names ;
     then
     1 0 -1 1 chars-area-camera
     2 1 0 1 chars-area-camera
-    $2EF story-flag? not if
+    ht2f-2-viride-medallion-found story-flag? not if
         0 37.0 0.0 84.0 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 751 var-set
-                $1A 752 var-set
+                $19 ht2f-2-viride-medallion-found var-set
+                $1A ht2f-2-viride-medallion var-set
                 $1B 0 var-set
                 $1C 37000 var-set
                 $1D 1000 var-set
@@ -62,7 +62,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : house-of-truth-2f-2.phase2 ( -- )   \ 00431EF0
-    $343 story-flag? not if
+    got-mystery-sketch story-flag? not if
         fiona-who 3 char-in-area? fiona-who 52 $32 char-heading? and if
             5 1 4 scene-change
         then
@@ -88,7 +88,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $A char-in-area? fiona-who -24 $32 char-heading? and if
         5 9 0 scene-change
     then
-    $2EF story-flag? $2F0 story-flag? not and if
+    ht2f-2-viride-medallion-found story-flag? ht2f-2-viride-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 3 4 scene-change
@@ -131,7 +131,7 @@ USING: room-names story.words story.shared flag-names ;
     stalker-who action-end
     stalker-who char-done
     0 self-scripted
-    $94 story-flag-set
+    over-music-d story-flag-set
     fiona-who 0 char-no-shadow
     $80 exit-check
     $E2 door-open-clear
@@ -153,7 +153,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    $343 story-flag-set
+    got-mystery-sketch story-flag-set
     1 0 $14 door-bits
     $27 message-param-room
     $27 1 item-give-count
@@ -187,7 +187,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     37.0 84.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -197,7 +197,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2F0 story-flag-set
+            ht2f-2-viride-medallion story-flag-set
             0 effect-remove
             $74 1 item-give-count
             0 $74 item-tab
@@ -273,7 +273,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-2f-2.act09 ( -- )   \ 00432250
     self-wait-done
-    $2F6 story-flag? not if
+    ht2f-2-rubrum-medallion story-flag? not if
         5 message   \ "What's this? These something wedged in between these two books..."
         wait-message
         $902 self-anim
@@ -285,7 +285,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2F6 story-flag-set
+            ht2f-2-rubrum-medallion story-flag-set
             $73 1 item-give-count
             0 $73 item-tab
             item-fanfare

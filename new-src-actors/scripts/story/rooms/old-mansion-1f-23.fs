@@ -2,19 +2,19 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-23
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-23.enter ( -- )   \ 0043A8F0
     room-sounds
     0 0 var-set
     1 0 var-set
-    $335 story-flag? not if
+    got-mansion-sketch story-flag? not if
         0 1 $14 door-bits
     then
-    $29F story-flag? $2A0 story-flag? not and if
+    om1f-23-viride-medallion-found story-flag? om1f-23-viride-medallion story-flag? not and if
         0 0.03 1.0 -85.54 flicker-sprite
     then
-    $2A1 story-flag? $2A2 story-flag? not and if
+    om1f-23-medallion-found story-flag? om1f-23-medallion story-flag? not and if
         1 109.8 -9.0 -94.58 flicker-sprite
     then
     1 $2300 sound-volume
@@ -152,12 +152,12 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 6 char-entered-area? if
         2 exit-prepare
     then
-    $29F story-flag? not if
+    om1f-23-viride-medallion-found story-flag? not if
         0 0.03 0.0 -85.54 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 671 var-set
-                $1A 672 var-set
+                $19 om1f-23-viride-medallion-found var-set
+                $1A om1f-23-viride-medallion var-set
                 $1B 0 var-set
                 $1C 30 var-set
                 $1D 1000 var-set
@@ -167,12 +167,12 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2A1 story-flag? not if
+    om1f-23-medallion-found story-flag? not if
         1 109.8 -10.0 -94.58 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 673 var-set
-                $1A 674 var-set
+                $19 om1f-23-medallion-found var-set
+                $1A om1f-23-medallion var-set
                 $1B 1 var-set
                 $1C 109800 var-set
                 $1D -9000 var-set
@@ -214,18 +214,18 @@ USING: room-names story.words story.shared flag-names ;
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
-    $335 story-flag? not if
+    got-mansion-sketch story-flag? not if
         fiona-who $D char-in-area? fiona-who 45 $32 char-heading? and if
             5 6 4 scene-change
         then
     then
-    $29F story-flag? $2A0 story-flag? not and if
+    om1f-23-viride-medallion-found story-flag? om1f-23-viride-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 4 4 scene-change
         then
     then
-    $2A1 story-flag? $2A2 story-flag? not and if
+    om1f-23-medallion-found story-flag? om1f-23-medallion story-flag? not and if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 5 4 scene-change
@@ -278,8 +278,8 @@ USING: room-names story.words story.shared flag-names ;
     self-who 3 -1 char-camera
     begin
         0 2 pad? not if
-            $FF panic-stage? 0 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 0 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] old-mansion-1f-23.act01 goto
@@ -347,7 +347,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0.03 -85.54 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -357,7 +357,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2A0 story-flag-set
+            om1f-23-viride-medallion story-flag-set
             0 effect-remove
             $74 1 item-give-count
             0 $74 item-tab
@@ -375,7 +375,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     109.8 -94.58 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -385,7 +385,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2A2 story-flag-set
+            om1f-23-medallion story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
@@ -407,7 +407,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    $335 story-flag-set
+    got-mansion-sketch story-flag-set
     0 0 $14 door-bits
     $1E message-param-room
     $1E 1 item-give-count

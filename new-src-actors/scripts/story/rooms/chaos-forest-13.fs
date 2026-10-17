@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-13
-USING: actors room-names story.words story.shared flag-names ;
+USING: actors room-names story.words story.shared flag-names story-names ;
 
 \ byte 3 0: a 0x4480 effect is spawned and its slot kept in event var 0; else that slot's effect
 \ is removed
@@ -16,7 +16,7 @@ USING: actors room-names story.words story.shared flag-names ;
     $1F 0 pvar? if
         deal-things
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     then
 ;
@@ -46,8 +46,8 @@ USING: actors room-names story.words story.shared flag-names ;
         0 exit-prepare
     then
     fiona-who 3 char-entered-area? if
-        $87 story-flag? chaos-forest-13.cond00? not or if
-            $AE story-flag? not if
+        cf-10-flag1 story-flag? chaos-forest-13.cond00? not or if
+            fg-3-flag3 story-flag? not if
                 $C0 room-preload
             else
                 $59 room-preload
@@ -57,10 +57,10 @@ USING: actors room-names story.words story.shared flag-names ;
         then
     then
     fiona-who 1 char-entered-area? if
-        $86 story-flag? $88 story-flag? not and if
+        found-file-247 story-flag? cf-13-flag1 story-flag? not and if
             4 0 char-remove
             5 0 char-remove
-            $88 story-flag-set
+            cf-13-flag1 story-flag-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
@@ -70,12 +70,12 @@ USING: actors room-names story.words story.shared flag-names ;
         then
     then
     0 ebit? not if
-        1 ebit? not $FF panic-stage? and if
+        1 ebit? not in-panic? and if
             0 ebit-set
             deal-things
         then
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     else
         1 ebit-clear
@@ -99,12 +99,12 @@ USING: actors room-names story.words story.shared flag-names ;
     $F $54 fade
     $FF 1.0 0 bgm
     wait-fade
-    $AF story-flag? if
+    items-40-as-70 story-flag? if
         creatures-on state-flag-clear
         1 creatures-clear
     then
     0 creatures-clear
-    $88 story-flag-set
+    cf-13-flag1 story-flag-set
     $17 3 $FF char-load
     3 char-start
     1 2 movie-play
@@ -127,7 +127,7 @@ USING: actors room-names story.words story.shared flag-names ;
         1 chaos-forest-13.cmd00
     then
     world-held state-flag-set
-    $87 story-flag? chaos-forest-13.cond00? not or if
+    cf-10-flag1 story-flag? chaos-forest-13.cond00? not or if
         new-game-sounds state-flag-set
         1 sound-set
         3 fiona-costume
@@ -137,7 +137,7 @@ USING: actors room-names story.words story.shared flag-names ;
         begin
             yield
             4 sound-bank-loaded? until
-        $AE story-flag? not if
+        fg-3-flag3 story-flag? not if
             $C0 room-preload
             3 0 char-remove
             $80 exit-check

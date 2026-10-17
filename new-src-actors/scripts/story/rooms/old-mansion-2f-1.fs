@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-1
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 : old-mansion-2f-1.enter ( -- )   \ 00407E70
     1 1 $14 door-bits
@@ -24,7 +24,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-1.phase2 ( -- )   \ 00407ED0
-    $45 story-flag? if
+    omb1-5-flag3 story-flag? if
         fiona-who $10 char-in-area? fiona-who 0 $32 char-heading? and if
             5 0 0 scene-change
         then

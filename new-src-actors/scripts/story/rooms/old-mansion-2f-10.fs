@@ -2,10 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-10
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 : old-mansion-2f-10.enter ( -- )   \ 0041B130
-    $233 story-flag? not if
+    om2f-10-breakable-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -13,14 +13,14 @@ USING: room-names story.words story.shared ;
         0 0 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $274 story-flag? not if
+        om2f-10-weeping-stone story-flag? not if
             0 -10.5 1.0 -0.4 flicker-sprite
         then
     then
     0 2 0.812 0.687 0.187 0.312 zone-rect
-    $50 story-flag? if
-        $7A story-flag? not if
-            $7A story-flag-set
+    om1f-12-flag1 story-flag? if
+        om2f-10-flag1 story-flag? not if
+            om2f-10-flag1 story-flag-set
             $5F 0 259 4 8 -1 0 0.0 creature-place
         then
     then
@@ -124,10 +124,10 @@ USING: room-names story.words story.shared ;
 ;
 
 : old-mansion-2f-10.phase2 ( -- )   \ 0041B370
-    $233 story-flag? not if
+    om2f-10-breakable-broken story-flag? not if
         0 -10.5 0.0 -0.4 5 8 1 zone
         self-who 0 char-in-zone? if
-            $233 story-flag-set
+            om2f-10-breakable-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -136,7 +136,7 @@ USING: room-names story.words story.shared ;
             $40 $7B noise
             0 -10.5 1.0 -0.4 flicker-sprite
         then
-    else $274 story-flag? not if
+    else om2f-10-weeping-stone story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 0 4 scene-change
@@ -165,7 +165,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     -10.5 -0.4 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -175,7 +175,7 @@ USING: room-names story.words story.shared ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $274 story-flag-set
+            om2f-10-weeping-stone story-flag-set
             0 effect-remove
             $9B 1 item-give-count
             0 $9B item-tab

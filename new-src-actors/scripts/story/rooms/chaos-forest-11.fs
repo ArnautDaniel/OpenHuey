@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-11
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveTo(2, -6, 257); else waits (2) until
 \ Kind26_MoveDone says done
@@ -18,14 +18,14 @@ USING: room-names story.words story.shared ;
     $1F 0 pvar? if
         deal-things
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     then
     $1E chance? if
         $1A 4 $FF char-load
         0 $F1 0 action
     then
-    $8A story-flag? not if
+    cf-11-flag1 story-flag? not if
         $E 5 $FF char-load
         0 $F2 1 action
     then
@@ -142,20 +142,20 @@ USING: room-names story.words story.shared ;
         4 exit-prepare
     then
     0 ebit? not if
-        1 ebit? not $FF panic-stage? and if
+        1 ebit? not in-panic? and if
             0 ebit-set
             deal-things
         then
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     else
         1 ebit-clear
     then
-    2 ebit? $8A story-flag? not and if
+    2 ebit? cf-11-flag1 story-flag? not and if
         0 -24.0 8.31 -132.0 $19 10 0 zone
         fiona-who 0 2 char-zone-bits? hewie-who 0 2 char-zone-bits? or if
-            $8A story-flag-set
+            cf-11-flag1 story-flag-set
             $F2 action-end
             0 $F2 2 action
         then

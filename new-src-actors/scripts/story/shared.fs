@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py), renamed by
 \ tools/story_convert.py, once: edit by hand.
 IN: story.shared
-USING: story.words flag-names ;
+USING: story.words flag-names story-names ;
 
 \ ---- the shared scripts (ids 0x80..) -----------------------------------------------------------
 
@@ -61,12 +61,12 @@ defer shared.act97
             fiona-unseen? if
                 stalker-who self-touching? stalker-who 2 char-cond? not and if
                     ['] shared.act82 goto
-                else self-near-creature? $FF panic-stage? or if
+                else self-near-creature? in-panic? or if
                     ['] shared.act82 goto
                 then then
             else 2 game-mode? stalker-who char-here? and fiona-who stalker-who 70 chars-within? and if
                 ['] shared.act82 goto
-            else $FF panic-stage? if
+            else in-panic? if
                 ['] shared.act82 goto
             then then then
             1 panic-calm-in
@@ -482,8 +482,8 @@ defer shared.act97
 ;
 
 : shared.act95 ( -- )   \ 003D6750
-    $A3 story-flag? if
-        $A4 story-flag? $96 story-flag? not and if
+    ht1f-9-flag2 story-flag? if
+        over-music-f story-flag? found-file-257 story-flag? not and if
             0 $F8 $97 action
         else
             0 $F8 $96 action
@@ -553,24 +553,24 @@ defer shared.act97
 : shared.act98 ( -- )   \ 003D6820
     fading? not world-held state-flag? not and $F8 char-busy? not and if
         fiona-who char-busy? not fiona-half-hidden state-flag? or if
-            $351 story-flag? not if
+            shared-flag1 story-flag? not if
                 $708 room-frames-reached? 6 sound-bank-loaded? and if
                     0 $F8 $99 action
-                    $351 story-flag-set
+                    shared-flag1 story-flag-set
                 then
-            else $352 story-flag? not if
+            else shared-flag2 story-flag? not if
                 $1194 room-frames-reached? if
                     0 $F8 $9A action
-                    $352 story-flag-set
+                    shared-flag2 story-flag-set
                 then
-            else $353 story-flag? not if
+            else shared-flag3 story-flag? not if
                 $1C20 room-frames-reached? if
                     0 $F8 $9B action
-                    $353 story-flag-set
+                    shared-flag3 story-flag-set
                 then
-            else $354 story-flag? not if
+            else shared-flag4 story-flag? not if
                 $1D4C room-frames-reached? if
-                    $354 story-flag-set
+                    shared-flag4 story-flag-set
                 then
             then then then then
         then
@@ -606,7 +606,7 @@ defer shared.act97
 ;
 
 : shared.act9C ( -- )   \ 003D6920
-    $AF story-flag? if
+    items-40-as-70 story-flag? if
         1 hewie-trust-level? if
             $828F item-give
         else 2 hewie-trust-level? if
@@ -689,7 +689,7 @@ defer shared.act97
                 $D fiona-action? not if
                     2 2 pad? fiona-free? and if
                         fading? not world-held state-flag? not and world-frozen state-flag? not and if
-                            2 game-mode? $34F story-flag? not and if
+                            2 game-mode? tremor-warned-2 story-flag? not and if
                                 fiona-who stalker-who 70 chars-within? not if
                                     fiona-who 1 char-on-nav-flags? not if
                                         0 fiona-who $81 action
@@ -710,13 +710,13 @@ defer shared.act97
             then
         then
     then
-    fiona-half-hidden state-flag? no-stalker-camera state-flag? not and $34F story-flag? not and if
+    fiona-half-hidden state-flag? no-stalker-camera state-flag? not and tremor-warned-2 story-flag? not and if
         stalker-who camera-follow
     then
-    $75 story-flag? $76 story-flag? not and if
+    om1f-13-flag2 story-flag? white-mandragora-used story-flag? not and if
         $18 1 item-count? $19 1 item-count? or $1A 1 item-count? or $1B 1 item-count? or $1C 1 item-count? or if
             $3C panic-level
-            $FF panic-stage? not fiona-hidden state-flag? and if
+            in-panic? not fiona-hidden state-flag? and if
                 4 panic-stage
             then
         else
@@ -724,7 +724,7 @@ defer shared.act97
             stalker-who $66 1 room-doors-state
         then
     then
-    $AF story-flag? if
+    items-40-as-70 story-flag? if
         fiona-who char-busy? not hewie-who char-busy? not and hewie-who 0 char-action? and if
             reward-item
         then

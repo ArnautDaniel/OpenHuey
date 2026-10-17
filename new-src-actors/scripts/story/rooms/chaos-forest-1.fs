@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-1
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : chaos-forest-1.enter ( -- )   \ 0041DD20
     room-sounds
@@ -18,7 +18,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     0 $F1 1 action
     hunted state-flag-set
-    $336 story-flag? not if
+    got-forest-map story-flag? not if
         0 1 $14 door-bits
     then
     $10 54.3 20.2 154.5 $E $80 $80 $80 $40 specks
@@ -56,7 +56,7 @@ USING: room-names story.words story.shared flag-names ;
     else hewie-who 0 char-in-area? hewie-who char-busy? not and if
         0 exit-check
     then then
-    $86 story-flag? not if
+    found-file-247 story-flag? not if
         fiona-who 1 char-in-area? if
             0 fiona-who 0 action
         then
@@ -138,7 +138,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : chaos-forest-1.phase2 ( -- )   \ 0041DF70
-    $336 story-flag? not if
+    got-forest-map story-flag? not if
         fiona-who $F char-in-area? fiona-who 90 $32 char-heading? and if
             5 2 4 scene-change
         then
@@ -228,7 +228,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    $336 story-flag-set
+    got-forest-map story-flag-set
     0 0 $14 door-bits
     $1F message-param-room
     $1F 1 item-give-count

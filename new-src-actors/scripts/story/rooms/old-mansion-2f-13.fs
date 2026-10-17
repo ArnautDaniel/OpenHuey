@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-13
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x6A (D_00438CE0): a lit quad at x 120, z 47 .. 39, from 4 to 21
 : old-mansion-2f-13.cmd00 ( b0 -- )  $1B $80  120.0e 21.0e 47.0e  120.0e 21.0e 39.0e  120.0e 4.0e 47.0e  120.0e 4.0e 39.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -14,10 +14,10 @@ USING: room-names story.words story.shared flag-names ;
 : old-mansion-2f-13.enter ( -- )   \ 00438730
     room-sounds
     2 0 object-hidden
-    $32D story-flag? not if
+    om2f-13-breakable-broken story-flag? not if
         0 1 $14 door-bits
         1 0 $14 door-bits
-        $32E story-flag? not if
+        om2f-13-flag1 story-flag? not if
             3 old-mansion-2f-13.cmd01
             1 old-mansion-2f-13.cmd00
         else
@@ -30,7 +30,7 @@ USING: room-names story.words story.shared flag-names ;
         1 old-mansion-2f-13.cmd00
         1 0 $2008000 nav-group
     then
-    $2AD story-flag? $2AE story-flag? not and if
+    om2f-13-rubrum-medallion-found story-flag? om2f-13-rubrum-medallion story-flag? not and if
         0 88.5 1.0 71.56 flicker-sprite
     then
     1 $3FFF sound-volume
@@ -131,18 +131,18 @@ USING: room-names story.words story.shared flag-names ;
         $1C 3 1 char-load
     then
     fiona-who 8 char-entered-area? if
-        $56 story-flag? not $7B story-flag? not and if
+        om3f-1-flag2 story-flag? not om1f-6-flag1 story-flag? not and if
             4 0 char-remove
         then
     then
     fiona-who 9 char-entered-area? if
-        $56 story-flag? not $7B story-flag? not and if
+        om3f-1-flag2 story-flag? not om1f-6-flag1 story-flag? not and if
             $21 4 3 char-load
         then
         3 exit-prepare
     then
     1 ebit? not if
-        $32D story-flag? not $32E story-flag? and if
+        om2f-13-breakable-broken story-flag? not om2f-13-flag1 story-flag? and if
             3 stalker-kind? $22 stalker-kind? or if
                 stalker-who $E char-entered-area? stalker-who 0 char-action? and if
                     0 stalker-who 2 action
@@ -150,12 +150,12 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2AD story-flag? not if
+    om2f-13-rubrum-medallion-found story-flag? not if
         0 88.5 0.0 71.56 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 685 var-set
-                $1A 686 var-set
+                $19 om2f-13-rubrum-medallion-found var-set
+                $1A om2f-13-rubrum-medallion var-set
                 $1B 0 var-set
                 $1C 88500 var-set
                 $1D 1000 var-set
@@ -180,7 +180,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     2 ebit? not if
         fiona-who $E char-in-area? fiona-who 45 $3C char-heading? and if
-            $32D story-flag? not if
+            om2f-13-breakable-broken story-flag? not if
                 stalker-who char-here? not if
                     5 1 5 scene-change
                 else stalker-who $E char-in-area? stalker-who fiona-who 40 chars-within? or if
@@ -199,7 +199,7 @@ USING: room-names story.words story.shared flag-names ;
     else
         2 ebit-clear
     then then
-    $2AD story-flag? $2AE story-flag? not and if
+    om2f-13-rubrum-medallion-found story-flag? om2f-13-rubrum-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 4 4 scene-change
@@ -209,8 +209,8 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-2f-13.phase5 ( -- )   \ 00438A70
     2 ebit? if
-        $32E story-flag-set
-        $32D story-flag-set
+        om2f-13-flag1 story-flag-set
+        om2f-13-breakable-broken story-flag-set
         3 stalker-kind? $22 stalker-kind? or if
             stalker-who 1 stalker-rage
         then
@@ -240,7 +240,7 @@ USING: room-names story.words story.shared flag-names ;
         6 sound-bank-loaded? not while
         yield
     repeat
-    $32E story-flag? not if
+    om2f-13-flag1 story-flag? not if
         0 old-mansion-2f-13.cmd00
         0 0 var-set
         $8000 5 self-anim-blend8
@@ -257,7 +257,7 @@ USING: room-names story.words story.shared flag-names ;
         repeat
         self-wait-anim
         2 old-mansion-2f-13.cmd01
-        $32E story-flag-set
+        om2f-13-flag1 story-flag-set
     else
         0 0 var-set
         $8001 5 self-anim-blend8
@@ -274,7 +274,7 @@ USING: room-names story.words story.shared flag-names ;
         repeat
         self-wait-anim
         3 old-mansion-2f-13.cmd01
-        $32E story-flag-clear
+        om2f-13-flag1 story-flag-clear
         1 old-mansion-2f-13.cmd00
     then
     1 ebit-clear
@@ -300,7 +300,7 @@ USING: room-names story.words story.shared flag-names ;
     self-frames-reset
     $16 self-wait-frames
     stalker-who 1 6 char-sound
-    $32D story-flag-set
+    om2f-13-breakable-broken story-flag-set
     stalker-who 1 stalker-rage
     0 0 $14 door-bits
     1 1 $14 door-bits
@@ -330,7 +330,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     88.5 71.56 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -340,7 +340,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2AE story-flag-set
+            om2f-13-rubrum-medallion story-flag-set
             0 effect-remove
             $73 1 item-give-count
             0 $73 item-tab

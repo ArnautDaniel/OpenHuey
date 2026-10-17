@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-5
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-2f-5.enter ( -- )   \ 0040F910
     room-sounds
     3 0 var-set
     4 0 var-set
-    $261 story-flag? not if
+    om2f-5-breakable1-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -17,7 +17,7 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $14 door-bits
         1 1 $14 door-bits
     then
-    $262 story-flag? not if
+    om2f-5-breakable2-broken story-flag? not if
         1 1 $8000000 nav-group
         2 1 $14 door-bits
         3 0 $14 door-bits
@@ -25,7 +25,7 @@ USING: room-names story.words story.shared flag-names ;
         0 1 $8000000 nav-group
         2 0 $14 door-bits
         3 1 $14 door-bits
-        $28D story-flag? not if
+        om2f-5-medallion story-flag? not if
             0 10.5 1.0 -28.0 flicker-sprite
         then
     then
@@ -41,15 +41,15 @@ USING: room-names story.words story.shared flag-names ;
     then
     0 $F1 0 action
     hunted state-flag-set
-    $56 story-flag? if
-        $78 story-flag? not if
-            $78 story-flag-set
+    om3f-1-flag2 story-flag? if
+        om2f-5-flag1 story-flag? not if
+            om2f-5-flag1 story-flag-set
             $58 0 291 $81 3 -1 0 0.0 creature-place
             $58 0 426 $81 3 -1 0 0.0 creature-place
             $58 0 205 $81 3 -1 0 0.0 creature-place
         then
     then
-    $2C1 story-flag? $2C2 story-flag? not and if
+    om2f-5-viride-medallion-found story-flag? om2f-5-viride-medallion story-flag? not and if
         1 7.38 1.0 20.58 flicker-sprite
     then
     1 $2300 sound-volume
@@ -133,10 +133,10 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 3 char-entered-area? if
         6 exit-prepare
     then
-    $261 story-flag? not if
+    om2f-5-breakable1-broken story-flag? not if
         0 -10.3 0.0 -93.8 5 8 1 zone
         self-who 0 char-in-zone? if
-            $261 story-flag-set
+            om2f-5-breakable1-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -177,12 +177,12 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2C1 story-flag? not if
+    om2f-5-viride-medallion-found story-flag? not if
         4 7.38 0.0 20.58 $A 5 0 zone
         hewie-who 4 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 705 var-set
-                $1A 706 var-set
+                $19 om2f-5-viride-medallion-found var-set
+                $1A om2f-5-viride-medallion var-set
                 $1B 1 var-set
                 $1C 7380 var-set
                 $1D 1000 var-set
@@ -217,10 +217,10 @@ USING: room-names story.words story.shared flag-names ;
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
-    $262 story-flag? not if
+    om2f-5-breakable2-broken story-flag? not if
         1 10.5 0.0 -28.0 5 8 1 zone
         self-who 1 char-in-zone? if
-            $262 story-flag-set
+            om2f-5-breakable2-broken story-flag-set
             0 1 $8000000 nav-group
             2 0 $14 door-bits
             3 1 $14 door-bits
@@ -229,13 +229,13 @@ USING: room-names story.words story.shared flag-names ;
             $40 $1AD noise
             0 10.5 1.0 -28.0 flicker-sprite
         then
-    else $28D story-flag? not if
+    else om2f-5-medallion story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 5 4 scene-change
         then
     then then
-    $2C1 story-flag? $2C2 story-flag? not and if
+    om2f-5-viride-medallion-found story-flag? om2f-5-viride-medallion story-flag? not and if
         4 1 5 5 0 zone-at-effect
         fiona-who 4 3 char-zone-bits? if
             5 6 4 scene-change
@@ -340,8 +340,8 @@ USING: room-names story.words story.shared flag-names ;
     self-who 2 -1 char-camera
     begin
         0 2 pad? not if
-            $FF panic-stage? 1 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 1 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] old-mansion-2f-5.act02 goto
@@ -413,7 +413,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     10.5 -28.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -423,7 +423,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $28D story-flag-set
+            om2f-5-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
@@ -441,7 +441,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     7.38 20.58 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -451,7 +451,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2C2 story-flag-set
+            om2f-5-viride-medallion story-flag-set
             1 effect-remove
             $74 1 item-give-count
             0 $74 item-tab

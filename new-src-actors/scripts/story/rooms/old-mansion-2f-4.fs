@@ -2,16 +2,16 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-4
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-2f-4.enter ( -- )   \ 0040F490
     room-sounds
     1 0 $300000 nav-group
-    $84 story-flag? if
+    om2f-2-flag1 story-flag? if
         0 1 $14 door-bits
         2 1 object-hidden
     then
-    $27C story-flag? not if
+    om2f-4-viride-medallion story-flag? not if
         0 5.64 9.5 5.58 flicker-sprite
     then
 ;
@@ -79,7 +79,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $10 char-in-area? fiona-who 45 $3C char-heading? and if
         5 9 0 scene-change
     then
-    $27C story-flag? not if
+    om2f-4-viride-medallion story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 7 4 scene-change
@@ -242,7 +242,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     5.64 5.58 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -252,7 +252,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $27C story-flag-set
+            om2f-4-viride-medallion story-flag-set
             0 effect-remove
             $74 1 item-give-count
             0 $74 item-tab

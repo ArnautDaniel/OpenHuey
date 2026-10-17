@@ -2,10 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-9
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-2f-9.enter ( -- )   \ 003F1800
-    $5B story-flag? $5C story-flag? not and if
+    c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
         room-sounds
         force-followed state-flag-set
         stalker-no-fear state-flag-set
@@ -52,7 +52,7 @@ USING: room-names story.words story.shared flag-names ;
     then then
     2 1 1 area-camera
     fiona-who self-is? if
-        $1D story-flag? not if
+        c2f-9-flag1 story-flag? not if
             self-who char-find-tri
             $80 exit-taken? if
                 2 2 player-camera
@@ -96,7 +96,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 4 char-entered-area? if
         0 exit-prepare
     then
-    $5B story-flag? $5C story-flag? not and if
+    c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
         0 -4.53 -46.0 -47.5 $1E 15 0 zone
         0 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -127,9 +127,9 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-2f-9.phase2 ( -- )   \ 003F1A30
-    $5B story-flag? $5C story-flag? not and if
+    c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
         fiona-who 3 $A 0 $2D char-touching-facing? if
-            $61 story-flag? not if
+            c2f-9-flag2 story-flag? not if
                 5 1 0 scene-change
             else
                 5 2 0 scene-change
@@ -140,7 +140,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-2f-9.phase5 ( -- )   \ 003F1A50
     force-followed state-flag-clear
-    $5B story-flag? $5C story-flag? not and if
+    c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
         1 stalker-who 0 char-model-op
         stalker-who 0 char-silent
         stalker-who action-end
@@ -160,7 +160,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-16
     world-held state-flag-clear
     $F $41 fade
-    $1D story-flag-set
+    c2f-9-flag1 story-flag-set
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -216,7 +216,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-anim
     $8001 $14 self-anim-blend
     self-wait-anim
-    $61 story-flag-set
+    c2f-9-flag2 story-flag-set
     1 counter-set
     ['] castle-2f-9.act03 goto
 ;

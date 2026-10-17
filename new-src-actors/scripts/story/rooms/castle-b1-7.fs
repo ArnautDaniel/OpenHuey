@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-7
-USING: engine common room-names story.words story.shared flag-names ;
+USING: engine common room-names story.words story.shared flag-names story-names ;
 
 \ room 0x1D (Room1D_Cmd00_ptmf): script variable 0 = 2 .. 5 at random
 : castle-b1-7.cmd00 ( -- )  0  4 random 2 +  var-set ;   \ (script variable 0: 2 .. 5 at random)
@@ -28,17 +28,17 @@ USING: engine common room-names story.words story.shared flag-names ;
     hewie-who $1E char-in-room? 119 hewie-action? and if
         room-flag-2d state-flag-set
         $1D 1 252 hewie-to-room
-        8 story-flag? not if
+        got-study-key story-flag? not if
             0 hewie-who 2 action
         then
     else
         castle-b1-7.act04
     then
     0 30.0 -27.65 -9.8 0 flame-in
-    8 story-flag? not if
+    got-study-key story-flag? not if
         1 -12.0 -40.0 -25.0 flicker-sprite
     then
-    $201 story-flag? not if
+    cb1-7-breakable-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -46,12 +46,12 @@ USING: engine common room-names story.words story.shared flag-names ;
         0 0 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $22D story-flag? not if
+        cb1-7-medallion story-flag? not if
             2 31.0 -40.0 13.0 flicker-sprite
         then
     then
     0 9 0.812 0.687 0.187 0.312 zone-rect
-    $252 story-flag? $253 story-flag? not and if
+    cb1-7-medallion-found story-flag? cb1-7-medallion-2 story-flag? not and if
         3 29.0 1.0 21.0 flicker-sprite
     then
     0 0 0 $1ED $245 obstacle-place
@@ -123,12 +123,12 @@ USING: engine common room-names story.words story.shared flag-names ;
         stalkers-stay state-flag-clear
         1 ebit-clear
     then then
-    $252 story-flag? not if
+    cb1-7-medallion-found story-flag? not if
         1 29.0 0.0 21.0 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 594 var-set
-                $1A 595 var-set
+                $19 cb1-7-medallion-found var-set
+                $1A cb1-7-medallion-2 var-set
                 $1B 3 var-set
                 $1C 29000 var-set
                 $1D 1000 var-set
@@ -141,10 +141,10 @@ USING: engine common room-names story.words story.shared flag-names ;
 ;
 
 : castle-b1-7.phase2 ( -- )   \ 003FD580
-    $201 story-flag? not if
+    cb1-7-breakable-broken story-flag? not if
         0 31.0 -41.0 13.0 5 8 1 zone
         self-who 0 char-in-zone? if
-            $201 story-flag-set
+            cb1-7-breakable-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -153,7 +153,7 @@ USING: engine common room-names story.words story.shared flag-names ;
             $40 $1B0 noise
             2 31.0 -40.0 13.0 flicker-sprite
         then
-    else $22D story-flag? not if
+    else cb1-7-medallion story-flag? not if
         0 2 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 7 4 scene-change
@@ -162,7 +162,7 @@ USING: engine common room-names story.words story.shared flag-names ;
     fiona-who 7 $3C char-faces-area? if
         5 1 0 scene-change
     then
-    hewie-who char-here? not 1 hewie-side? not or 8 story-flag? not and fiona-who 6 char-in-area? and fiona-who -12 -25 $32 char-faces-xz? and if
+    hewie-who char-here? not 1 hewie-side? not or got-study-key story-flag? not and fiona-who 6 char-in-area? and fiona-who -12 -25 $32 char-faces-xz? and if
         5 5 0 scene-change
     then
     -2147483646 scene-request? if
@@ -171,7 +171,7 @@ USING: engine common room-names story.words story.shared flag-names ;
     fiona-who 8 char-in-area? fiona-who 0 $32 char-heading? and if
         5 $B 0 scene-change
     then
-    $252 story-flag? $253 story-flag? not and if
+    cb1-7-medallion-found story-flag? cb1-7-medallion-2 story-flag? not and if
         1 3 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 $A 4 scene-change
@@ -193,7 +193,7 @@ USING: engine common room-names story.words story.shared flag-names ;
     1 self-scripted
     self-wait-done
     2 wait-counter
-    8 story-flag-set
+    got-study-key story-flag-set
     1 effect-remove
     10 hewie-trust
     3 message-param-room
@@ -281,7 +281,7 @@ USING: engine common room-names story.words story.shared flag-names ;
     self-wait-done
     31.0 13.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -291,7 +291,7 @@ USING: engine common room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $22D story-flag-set
+            cb1-7-medallion story-flag-set
             2 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
@@ -348,10 +348,10 @@ USING: engine common room-names story.words story.shared flag-names ;
         yield
     repeat
     $26 door-locked? if
-        $31A story-flag? not if
-            $31A story-flag-set
+        cb1-7-flag1 story-flag? not if
+            cb1-7-flag1 story-flag-set
         else $4B chance? if
-            $31B story-flag-set
+            cb1-7-flag2 story-flag-set
         then then
         stalker-who action-end
         stalker-who char-done
@@ -367,7 +367,7 @@ USING: engine common room-names story.words story.shared flag-names ;
     self-wait-done
     29.0 21.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -377,7 +377,7 @@ USING: engine common room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $253 story-flag-set
+            cb1-7-medallion-2 story-flag-set
             3 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
@@ -393,7 +393,7 @@ USING: engine common room-names story.words story.shared flag-names ;
 
 : castle-b1-7.act0B ( -- )   \ 003FD900
     self-wait-done
-    $2FD story-flag? not if
+    cb1-7-medallion-3 story-flag? not if
         0 self-turn-angle
         self-wait-done
         4 message   \ "Huh? There is something in the drain."
@@ -403,7 +403,7 @@ USING: engine common room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2FD story-flag-set
+            cb1-7-medallion-3 story-flag-set
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare

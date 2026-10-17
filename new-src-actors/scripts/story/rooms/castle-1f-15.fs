@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-15
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names ;
 
 \ room 0x19 (Room19_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) while
 \ Hewie is controlled: in another room, or 30 or more from the player
@@ -18,16 +18,16 @@ USING: engine room-names story.words story.shared flag-names ;
         2 -1 player-camera
         0 fiona-who 9 action
     then
-    $254 story-flag? $255 story-flag? not and if
+    c1f-15-camomile-found story-flag? c1f-15-camomile story-flag? not and if
         0 34.3 1.0 -13.7 flicker-sprite
     then
-    $256 story-flag? $257 story-flag? not and if
+    c1f-15-medallion-found story-flag? c1f-15-medallion story-flag? not and if
         1 56.3 51.0 -71.5 flicker-sprite
     then
     1 $2300 sound-volume
-    $AF story-flag? if
-        $40 story-flag? not if
-            $40 story-flag-set
+    items-40-as-70 story-flag? if
+        c1f-15-flag1 story-flag? not if
+            c1f-15-flag1 story-flag-set
             $19 0 389 $80 10 -1 $FFDC 0.0 creature-place
         then
     then
@@ -161,12 +161,12 @@ USING: engine room-names story.words story.shared flag-names ;
             then
         then
     then
-    $254 story-flag? not if
+    c1f-15-camomile-found story-flag? not if
         5 34.3 0.0 -13.7 $A 5 0 zone
         hewie-who 5 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 596 var-set
-                $1A 597 var-set
+                $19 c1f-15-camomile-found var-set
+                $1A c1f-15-camomile var-set
                 $1B 0 var-set
                 $1C 34300 var-set
                 $1D 1000 var-set
@@ -176,12 +176,12 @@ USING: engine room-names story.words story.shared flag-names ;
             then
         then
     then
-    $256 story-flag? not if
+    c1f-15-medallion-found story-flag? not if
         6 56.3 50.0 -71.5 $A 5 0 zone
         hewie-who 6 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 598 var-set
-                $1A 599 var-set
+                $19 c1f-15-medallion-found var-set
+                $1A c1f-15-medallion var-set
                 $1B 1 var-set
                 $1C 56300 var-set
                 $1D 51000 var-set
@@ -208,7 +208,7 @@ USING: engine room-names story.words story.shared flag-names ;
     then
     7 ebit? not 9 ebit? not and if
         fiona-who $18 char-in-area? if
-            2 game-mode? $FF panic-stage? not and if
+            2 game-mode? in-panic? not and if
                 castle-1f-15.cond00? if
                     hewie-who char-here? not hewie-who 2 char-cond? or if
                         9 ebit-set
@@ -262,13 +262,13 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who $17 char-in-area? fiona-who -45 $32 char-heading? and if
         5 8 0 scene-change
     then
-    $254 story-flag? $255 story-flag? not and if
+    c1f-15-camomile-found story-flag? c1f-15-camomile story-flag? not and if
         5 0 5 5 0 zone-at-effect
         fiona-who 5 3 char-zone-bits? if
             5 $A 4 scene-change
         then
     then
-    $256 story-flag? $257 story-flag? not and if
+    c1f-15-medallion-found story-flag? c1f-15-medallion story-flag? not and if
         6 1 5 5 0 zone-at-effect
         fiona-who 6 3 char-zone-bits? if
             5 $B 4 scene-change
@@ -511,7 +511,7 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     34.3 -13.7 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -521,7 +521,7 @@ USING: engine room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $255 story-flag-set
+            c1f-15-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
@@ -539,7 +539,7 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     56.3 -71.5 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -549,7 +549,7 @@ USING: engine room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $257 story-flag-set
+            c1f-15-medallion story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab

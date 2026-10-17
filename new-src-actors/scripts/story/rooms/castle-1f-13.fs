@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-13
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names ;
 
 \ room 0x08 (Room08_Cmd00_ptmf): the cutscene director's +0x6C 3 (byte 3 0) or 2
 : castle-1f-13.cmd00 ( b0 -- )   \ (the scene's cast leaves actor 3 (b0 0) or 2 be: Cutscene_Mark82)
@@ -26,9 +26,9 @@ USING: engine room-names story.words story.shared flag-names ;
     else
         1 1 $14 door-bits
     then
-    $E story-flag? if
-        $2D story-flag? not if
-            $2D story-flag-set
+    found-file-227 story-flag? if
+        found-file-227-2 story-flag? not if
+            found-file-227-2 story-flag-set
             8 0 248 4 15 -1 0 0.0 creature-place
         then
         4 1 object-hidden
@@ -47,14 +47,14 @@ USING: engine room-names story.words story.shared flag-names ;
         8 0 object-hidden
         9 0 object-hidden
     then
-    7 story-flag? if
-        $38 story-flag? not if
-            $38 story-flag-set
+    flowers-laid story-flag? if
+        c1f-13-flag1 story-flag? not if
+            c1f-13-flag1 story-flag-set
             8 0 274 4 15 -1 0 0.0 creature-place
             8 0 448 4 15 -1 0 0.0 creature-place
         then
     then
-    $31B story-flag? if
+    cb1-7-flag2 story-flag? if
         castle-1f-13.cond01? summoner-on state-flag? and if
             stalker-who char-activate
             $FE 8 376 2 stalker-to-room
@@ -65,9 +65,9 @@ USING: engine room-names story.words story.shared flag-names ;
             stalker-who $178 120 char-to-tri-facing
             summoner-own-cooldown
         then
-        $31B story-flag-clear
+        cb1-7-flag2 story-flag-clear
     then
-    $250 story-flag? $251 story-flag? not and if
+    c1f-13-antimony-powder-found story-flag? c1f-13-antimony-powder story-flag? not and if
         0 -254.5 1.0 -95.0 flicker-sprite
     then
     $10 -150.0 23.7 98.6 $A $80 $80 $80 $40 specks
@@ -75,7 +75,7 @@ USING: engine room-names story.words story.shared flag-names ;
     $A -300.0 29.0 -95.0 $A $80 $80 $80 $40 specks
     $10 -150.0 23.7 -158.6 $C $80 $80 $80 $40 specks
     0 castle-1f-13.cmd01
-    $294 story-flag? not if
+    c1f-13-chicken-jerky story-flag? not if
         1 -283.73 1.0 2.22 flicker-sprite
     then
 ;
@@ -229,12 +229,12 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who 0 8 char-zone-bits? if
         1 castle-1f-13.cmd01
     then
-    $250 story-flag? not if
+    c1f-13-antimony-powder-found story-flag? not if
         1 -254.5 0.0 -95.0 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 592 var-set
-                $1A 593 var-set
+                $19 c1f-13-antimony-powder-found var-set
+                $1A c1f-13-antimony-powder var-set
                 $1B 0 var-set
                 $1C -254500 var-set
                 $1D 1000 var-set
@@ -247,7 +247,7 @@ USING: engine room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-13.phase2 ( -- )   \ 003F28A0
-    $294 story-flag? not if
+    c1f-13-chicken-jerky story-flag? not if
         2 1 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 $D 4 scene-change
@@ -269,7 +269,7 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who $12 char-in-area? fiona-who 45 $32 char-heading? and if
         5 3 0 scene-change
     then
-    $250 story-flag? $251 story-flag? not and if
+    c1f-13-antimony-powder-found story-flag? c1f-13-antimony-powder story-flag? not and if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 $C 4 scene-change
@@ -291,7 +291,7 @@ USING: engine room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-13.act00 ( -- )   \ 003F29A0
-    $E story-flag? not if
+    found-file-227 story-flag? not if
         1 self-scripted
         hewie-who char-here? if
             0 hewie-who 4 action-force
@@ -340,8 +340,8 @@ USING: engine room-names story.words story.shared flag-names ;
         $F $41 fade
         $B02 self-anim
         self-wait-anim
-        $E story-flag-set
-        $2D story-flag-set
+        found-file-227 story-flag-set
+        found-file-227-2 story-flag-set
         8 0 248 4 15 -1 0 0.0 creature-place
         wait-fade
         $21 resident-flag-set
@@ -516,7 +516,7 @@ USING: engine room-names story.words story.shared flag-names ;
     3 ebit? if
         2 avoid-prompt
     then
-    $FF panic-stage? not if
+    in-panic? not if
         fiona-who $43 5 char-sound
     then
     fiona-hidden state-flag-clear
@@ -554,8 +554,8 @@ USING: engine room-names story.words story.shared flag-names ;
     0 avoid-prompt
     begin
         0 2 pad? not if
-            $FF panic-stage? 3 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 3 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] castle-1f-13.act08 goto
@@ -613,7 +613,7 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     -254.5 -95.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -623,7 +623,7 @@ USING: engine room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $251 story-flag-set
+            c1f-13-antimony-powder story-flag-set
             0 effect-remove
             $91 1 item-give-count
             0 $91 item-tab
@@ -641,7 +641,7 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     -283.73 2.22 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -651,7 +651,7 @@ USING: engine room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $294 story-flag-set
+            c1f-13-chicken-jerky story-flag-set
             1 effect-remove
             $60 1 item-give-count
             0 $60 item-tab

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-4
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-b1-4.cmd00 ( -- )  $651 $238 file-once-flag ;
 
@@ -10,7 +10,7 @@ USING: room-names story.words story.shared flag-names ;
     room-sounds
     1 0 $1000000 nav-group
     1 0 $4000000 nav-group
-    $326 story-flag? if
+    omb1-4-flag1 story-flag? if
         0 1 $14 door-bits
         1 0 $20000 nav-group
         0 1 object-hidden
@@ -21,10 +21,10 @@ USING: room-names story.words story.shared flag-names ;
         0 0 object-hidden
         1 0 object-hidden
     then
-    $6F story-flag? not if
+    x-37-flag1 story-flag? not if
         3 stalker-kind? $22 stalker-kind? or if
             stalker-active? not if
-                $75 story-flag? not $76 story-flag? or if
+                om1f-13-flag2 story-flag? not white-mandragora-used story-flag? or if
                     6 ebit-set
                 then
             then
@@ -405,7 +405,7 @@ USING: room-names story.words story.shared flag-names ;
     $8003 0 self-anim-blend
     self-wait-anim
     0 self-noclip
-    $326 story-flag-set
+    omb1-4-flag1 story-flag-set
     1 0 $20000 nav-group
     0 self-scripted
     self-idle-or-end
@@ -438,7 +438,7 @@ USING: room-names story.words story.shared flag-names ;
         stalker-who self-turn-to
         self-wait-done
     then
-    $326 story-flag-clear
+    omb1-4-flag1 story-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -468,7 +468,7 @@ USING: room-names story.words story.shared flag-names ;
         stalker-who self-turn-to
         self-wait-done
     then
-    $326 story-flag-set
+    omb1-4-flag1 story-flag-set
     1 0 $20000 nav-group
     0 self-scripted
     self-idle-or-end
@@ -481,7 +481,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0 0 var-set
     1 0 var-set
-    $326 story-flag? not if
+    omb1-4-flag1 story-flag? not if
         0 ebit-set
     else
         0 ebit-clear
@@ -560,7 +560,7 @@ USING: room-names story.words story.shared flag-names ;
                 else
                     ['] old-mansion-b1-4.act09 goto
                 then
-            else $FF panic-stage? if
+            else in-panic? if
                 ['] old-mansion-b1-4.act0A goto
             then then
             2 panic-calm-in
@@ -600,7 +600,7 @@ USING: room-names story.words story.shared flag-names ;
                 stalker-who self-turn-to
                 self-wait-done
             then
-            $326 story-flag-clear
+            omb1-4-flag1 story-flag-clear
             0 0 $20000 nav-group
             0 self-scripted
             self-idle-or-end
@@ -773,7 +773,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-b1-4.act10 ( -- )   \ 0040CC50
-    $6F story-flag-set
+    x-37-flag1 story-flag-set
     6 ebit-clear
     1 self-scripted
     self-wait-done

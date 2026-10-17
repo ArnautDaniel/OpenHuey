@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-22
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-22.enter ( -- )   \ 0043A120
     room-sounds
     1 0 $1000000 nav-group
     1 0 $4000000 nav-group
-    $325 story-flag? if
+    om1f-22-flag1 story-flag? if
         0 1 $14 door-bits
         1 0 $20000 nav-group
         0 1 object-hidden
@@ -19,7 +19,7 @@ USING: room-names story.words story.shared flag-names ;
         0 0 object-hidden
         1 0 object-hidden
     then
-    $27F story-flag? not if
+    om1f-22-refined-antimony story-flag? not if
         0 147.17 11.0 86.89 flicker-sprite
     then
     1 -36.7 19.1 -34.8 1 flame-in
@@ -146,7 +146,7 @@ USING: room-names story.words story.shared flag-names ;
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
-    $27F story-flag? not if
+    om1f-22-refined-antimony story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 9 4 scene-change
@@ -178,7 +178,7 @@ USING: room-names story.words story.shared flag-names ;
     $8003 0 self-anim-blend
     self-wait-anim
     0 self-noclip
-    $325 story-flag-set
+    om1f-22-flag1 story-flag-set
     1 0 $20000 nav-group
     0 self-scripted
     self-idle-or-end
@@ -211,7 +211,7 @@ USING: room-names story.words story.shared flag-names ;
         stalker-who self-turn-to
         self-wait-done
     then
-    $325 story-flag-clear
+    om1f-22-flag1 story-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -241,7 +241,7 @@ USING: room-names story.words story.shared flag-names ;
         stalker-who self-turn-to
         self-wait-done
     then
-    $325 story-flag-set
+    om1f-22-flag1 story-flag-set
     1 0 $20000 nav-group
     0 self-scripted
     self-idle-or-end
@@ -254,7 +254,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0 0 var-set
     1 0 var-set
-    $325 story-flag? not if
+    om1f-22-flag1 story-flag? not if
         0 ebit-set
     else
         0 ebit-clear
@@ -330,7 +330,7 @@ USING: room-names story.words story.shared flag-names ;
                 else
                     ['] old-mansion-1f-22.act03 goto
                 then
-            else $FF panic-stage? if
+            else in-panic? if
                 ['] old-mansion-1f-22.act04 goto
             then then
             2 panic-calm-in
@@ -372,7 +372,7 @@ USING: room-names story.words story.shared flag-names ;
                 stalker-who self-turn-to
                 self-wait-done
             then
-            $325 story-flag-clear
+            om1f-22-flag1 story-flag-clear
             0 0 $20000 nav-group
             0 self-scripted
             self-idle-or-end
@@ -532,7 +532,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     147.17 86.89 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -542,7 +542,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $27F story-flag-set
+            om1f-22-refined-antimony story-flag-set
             0 effect-remove
             $94 1 item-give-count
             0 $94 item-tab

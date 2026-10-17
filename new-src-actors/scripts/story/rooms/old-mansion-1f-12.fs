@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-12
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x4F (Room4F_Cmd00_ptmf): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2
 \ lowered a step (0.02, not during a movie); once down, events bit 3
@@ -32,16 +32,16 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-12.enter ( -- )   \ 0040B520
     room-sounds
-    $52 story-flag? if
+    om1f-12-flag3 story-flag? if
         0 1 old-mansion-1f-12.cmd00
     then
-    $50 story-flag? if
+    om1f-12-flag1 story-flag? if
         1 1 old-mansion-1f-12.cmd00
     then
-    $51 story-flag? if
+    om1f-12-flag2 story-flag? if
         2 1 old-mansion-1f-12.cmd00
     then
-    $70 story-flag? if
+    om1f-12-flag4 story-flag? if
         0 1 $14 door-bits
         3 1 $14 door-bits
         8 1 object-hidden
@@ -50,12 +50,12 @@ USING: room-names story.words story.shared flag-names ;
         3 0 $14 door-bits
         8 0 object-hidden
     then
-    $4C story-flag? if
+    got-film-reel story-flag? if
         4 0 $14 door-bits
     else
         4 1 $14 door-bits
     then
-    $50 story-flag? if
+    om1f-12-flag1 story-flag? if
         5 0 $14 door-bits
         6 1 $14 door-bits
         1 1 $14 door-bits
@@ -66,10 +66,10 @@ USING: room-names story.words story.shared flag-names ;
         2 1 $14 door-bits
         0 old-mansion-1f-12.cmd02
     then
-    $73 story-flag? not $51 story-flag? not and if
+    got-torn-letter story-flag? not om1f-12-flag2 story-flag? not and if
         0 12.0 13.0 -24.0 flicker-sprite
     then
-    $2A3 story-flag? $2A4 story-flag? not and if
+    om1f-12-rubrum-medallion-found story-flag? om1f-12-rubrum-medallion story-flag? not and if
         1 52.04 1.0 5.68 flicker-sprite
     then
 ;
@@ -113,7 +113,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-1f-12.phase1 ( -- )   \ 0040B680
-    $50 story-flag? not if
+    om1f-12-flag1 story-flag? not if
         7 ebit? not if
             6 sound-bank-loaded? if
                 $40000004 6 38.0 5.0 -10.0 0 0 sound
@@ -143,20 +143,20 @@ USING: room-names story.words story.shared flag-names ;
         1 exit-prepare
     then
     4 ebit? not if
-        $70 story-flag? not if
+        om1f-12-flag4 story-flag? not if
             0 camera-mode? 1 camera-mode? or if
                 old-mansion-1f-12.cond00? if
                     4 ebit-set
-                    $70 story-flag-set
+                    om1f-12-flag4 story-flag-set
                     0 $F1 $C action
                 then
             then
         then
     then
-    $73 story-flag? not $51 story-flag? not and if
+    got-torn-letter story-flag? not om1f-12-flag2 story-flag? not and if
         0 0 4 4 0 zone-at-effect
     then
-    $50 story-flag? not if
+    om1f-12-flag1 story-flag? not if
         1 0.32 0.0 -28.08 $19 31 0 zone
         5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -217,12 +217,12 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2A3 story-flag? not if
+    om1f-12-rubrum-medallion-found story-flag? not if
         6 52.04 0.0 5.68 $A 5 0 zone
         hewie-who 6 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 675 var-set
-                $1A 676 var-set
+                $19 om1f-12-rubrum-medallion-found var-set
+                $1A om1f-12-rubrum-medallion var-set
                 $1B 1 var-set
                 $1C 52040 var-set
                 $1D 1000 var-set
@@ -239,7 +239,7 @@ USING: room-names story.words story.shared flag-names ;
         5 0 1 scene-change
     then
     fiona-who 5 char-in-area? fiona-who 90 $32 char-heading? and if
-        $70 story-flag? $4C story-flag? not and if
+        om1f-12-flag4 story-flag? got-film-reel story-flag? not and if
             5 2 4 scene-change
         else
             5 2 0 scene-change
@@ -251,7 +251,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 7 char-in-area? fiona-who 0 $32 char-heading? and if
         5 4 0 scene-change
     then
-    $73 story-flag? not $51 story-flag? not and if
+    got-torn-letter story-flag? not om1f-12-flag2 story-flag? not and if
         fiona-who 0 2 char-zone-bits? if
             5 $B 4 scene-change
         then
@@ -264,7 +264,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $F char-in-area? fiona-who -45 $3C char-heading? and if
         5 $E 0 scene-change
     then
-    $2A3 story-flag? $2A4 story-flag? not and if
+    om1f-12-rubrum-medallion-found story-flag? om1f-12-rubrum-medallion story-flag? not and if
         6 1 5 5 0 zone-at-effect
         fiona-who 6 3 char-zone-bits? if
             5 $D 4 scene-change
@@ -274,10 +274,10 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-12.act00 ( -- )   \ 0040B940
     self-wait-done
-    1 ebit? not 2 game-mode? or $FF panic-stage? or if
+    1 ebit? not 2 game-mode? or in-panic? or if
         0 self-through-exit
         self-wait-done
-        $FF panic-stage? 2 game-mode? or if
+        in-panic? 2 game-mode? or if
             $60B self-anim
             self-wait-anim
             -1 self-idle-anim
@@ -338,13 +338,13 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-12.act02 ( -- )   \ 0040BA10
     self-wait-done
-    $70 story-flag? $4C story-flag? not and if
+    om1f-12-flag4 story-flag? got-film-reel story-flag? not and if
         $14E -33.036 -2.992 -130 $FFFF 5 self-move-to
         self-wait-done
         $900 self-anim
         self-wait-anim
         4 0 $14 door-bits
-        $4C story-flag-set
+        got-film-reel story-flag-set
         $E message-param-room
         $E 1 item-give-count
         0 $E item-tab
@@ -360,7 +360,7 @@ USING: room-names story.words story.shared flag-names ;
         1 10.0 -10.0 0.0 0.0 event-camera
         self-frames-reset
         4 self-wait-frames
-        $70 story-flag? not if
+        om1f-12-flag4 story-flag? not if
             $B message   \ "A statue grasping firmly onto an oil lamp. I know I've seen this somewhere bef..."
             wait-message
         else
@@ -378,7 +378,7 @@ USING: room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $50 story-flag? not if
+    om1f-12-flag1 story-flag? not if
         38.0 -10.0 self-turn-to-xz
         self-wait-done
         $402 self-anim
@@ -487,7 +487,7 @@ USING: room-names story.words story.shared flag-names ;
         6 1 $14 door-bits
         old-mansion-1f-12.cmd01
         4 6 sound-stop
-        $50 story-flag-set
+        om1f-12-flag1 story-flag-set
     else
         2 1 $14 door-bits
         5 1 $14 door-bits
@@ -529,7 +529,7 @@ USING: room-names story.words story.shared flag-names ;
             3 ebit? not while
             yield
         repeat
-        $51 story-flag-set
+        om1f-12-flag2 story-flag-set
     else
         self-frames-reset
         $1E self-wait-frames
@@ -562,7 +562,7 @@ USING: room-names story.words story.shared flag-names ;
             3 ebit? not while
             yield
         repeat
-        $52 story-flag-set
+        om1f-12-flag3 story-flag-set
     else
         self-frames-reset
         $1E self-wait-frames
@@ -591,8 +591,8 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-12.act09 ( -- )   \ 0040BE20
     self-wait-done
-    $50 story-flag? not if
-        $52 story-flag? not $51 story-flag? not or if
+    om1f-12-flag1 story-flag? not if
+        om1f-12-flag3 story-flag? not om1f-12-flag2 story-flag? not or if
             0 message   \ "A 3-headed monster. Is this some kind of dragon? Its wide-open mouth is very un..."
             wait-message
         else
@@ -629,7 +629,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    $73 story-flag-set
+    got-torn-letter story-flag-set
     0 effect-remove
     $A3 message-param-room
     $A3 1 item-give-count
@@ -660,7 +660,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     52.04 5.68 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -670,7 +670,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2A4 story-flag-set
+            om1f-12-rubrum-medallion story-flag-set
             1 effect-remove
             $73 1 item-give-count
             0 $73 item-tab

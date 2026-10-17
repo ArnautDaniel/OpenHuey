@@ -2,17 +2,17 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-3
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 : castle-b1-3.enter ( -- )   \ 003FA780
     1 $2300 sound-volume
-    $2D3 story-flag? not if
+    got-metal-boots story-flag? not if
         0 -2.0 9.0 -2.0 flicker-sprite
     then
-    $AE story-flag? if
-        $3E story-flag? not if
+    fg-3-flag3 story-flag? if
+        got-castle-gate-key story-flag? not if
             $28 1 item-count? not if
-                $3E story-flag? not if
+                got-castle-gate-key story-flag? not if
                     1 -6.0 9.0 3.0 flicker-sprite
                 then
             then
@@ -44,13 +44,13 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-b1-3.phase2 ( -- )   \ 003FA820
-    $2D3 story-flag? not if
+    got-metal-boots story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 0 4 scene-change
         then
     then
-    $3E story-flag? not if
+    got-castle-gate-key story-flag? not if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 1 4 scene-change
@@ -75,7 +75,7 @@ USING: room-names story.words story.shared ;
         self-frames-reset
         4 self-wait-frames
         0 effect-remove
-        $2D3 story-flag-set
+        got-metal-boots story-flag-set
         $81 message-param-room
         $81 1 item-give-count
         0 $81 item-tab
@@ -89,7 +89,7 @@ USING: room-names story.words story.shared ;
         self-wait-done
         -2.0 -2.0 self-turn-to-xz
         self-wait-done
-        $FF panic-stage? not if
+        in-panic? not if
             $902 self-anim
             self-wait-anim
             self-frames-reset
@@ -99,7 +99,7 @@ USING: room-names story.words story.shared ;
                 $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
                 wait-message
             else
-                $2D3 story-flag-set
+                got-metal-boots story-flag-set
                 0 effect-remove
                 $75 1 item-give-count
                 0 $75 item-tab
@@ -122,7 +122,7 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    $3E story-flag-set
+    got-castle-gate-key story-flag-set
     1 effect-remove
     $28 message-param-room
     $28 1 item-give-count

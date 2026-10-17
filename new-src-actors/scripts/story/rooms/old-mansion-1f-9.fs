@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-9
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names ;
 
 \ a lit quad at x -43, z -15.12 .. 5.07, height 30.05 / 10.05
 : old-mansion-1f-9.cmd00 ( b0 -- )  $1B $40  -43.0e 30.053e -15.124e  -43.0e 30.053e 5.068e  -43.0e 10.053e -15.124e  -43.0e 10.053e 5.068e  lit-quad ;   \ (a reflecting window: b0 1 removed, 2 over the whole picture)
@@ -16,10 +16,10 @@ USING: engine room-names story.words story.shared flag-names ;
 : old-mansion-1f-9.enter ( -- )   \ 00407F30
     room-sounds
     0 old-mansion-1f-9.cmd00
-    $268 story-flag? not if
+    om1f-9-refined-antimony story-flag? not if
         0 -7.97 12.42 21.3 flicker-sprite
     then
-    $29D story-flag? $29E story-flag? not and if
+    om1f-9-refined-magnesia-found story-flag? om1f-9-refined-magnesia story-flag? not and if
         1 7.72 1.0 15.08 flicker-sprite
     then
     1 $78 $10000000 nav-tri-flags
@@ -39,7 +39,7 @@ USING: engine room-names story.words story.shared flag-names ;
         0 -1 player-camera
     then then
     0 0 -1 area-camera
-    $58 story-flag? if
+    om1f-13-flag1 story-flag? if
         2 1 object-hidden
         3 1 object-hidden
         4 1 object-hidden
@@ -70,12 +70,12 @@ USING: engine room-names story.words story.shared flag-names ;
             then
         then
     then
-    $29D story-flag? not if
+    om1f-9-refined-magnesia-found story-flag? not if
         3 7.72 0.0 15.08 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 669 var-set
-                $1A 670 var-set
+                $19 om1f-9-refined-magnesia-found var-set
+                $1A om1f-9-refined-magnesia var-set
                 $1B 1 var-set
                 $1C 7720 var-set
                 $1D 1000 var-set
@@ -103,13 +103,13 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who 5 char-in-area? fiona-who 0 $32 char-heading? and if
         5 8 0 scene-change
     then
-    $268 story-flag? not if
+    om1f-9-refined-antimony story-flag? not if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 5 4 scene-change
         then
     then
-    $29D story-flag? $29E story-flag? not and if
+    om1f-9-refined-magnesia-found story-flag? om1f-9-refined-magnesia story-flag? not and if
         3 1 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 7 4 scene-change
@@ -127,21 +127,21 @@ USING: engine room-names story.words story.shared flag-names ;
             wait-message
             0 ebit-set
         then
-        $20 story-flag-clear
+        plate-made story-flag-clear
         2 subscreen-open
         begin
             subscreen-wanted state-flag? while
             yield
         repeat
         yield
-        $20 story-flag? if
+        plate-made story-flag? if
             $3F message-param-room
             0 $3F item-tab
             item-fanfare
             $8012 message   \ "You've obtained ."
             wait-message
         then
-        $20 story-flag-set
+        plate-made story-flag-set
     else 0 ebit? not if
         $F message   \ "There's a plate pressing machine here. There are no remaining plates currently so..."
         wait-message
@@ -163,15 +163,15 @@ USING: engine room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-1f-9.act02 ( -- )   \ 00408190
-    $58 story-flag? not if
+    om1f-13-flag1 story-flag? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
         0 message   \ "I wonder what's going on outside of this steel cage I seemed to have landed myself..."
         wait-message
         0 answer? if
-            $58 story-flag-set
-            $59 story-flag-set
+            om1f-13-flag1 story-flag-set
+            om1f-9-flag1 story-flag-set
             $F $44 fade
             $13 3 $FF char-load
             3 char-start
@@ -225,7 +225,7 @@ USING: engine room-names story.words story.shared flag-names ;
         then
         stalkers-stay state-flag-clear
         0 self-scripted
-    else $59 story-flag? if
+    else om1f-9-flag1 story-flag? if
         self-wait-done
         1 message   \ "It's pitch black outside. I can't see anything. Who could possibly fathom that this..."
         wait-message
@@ -267,14 +267,14 @@ USING: engine room-names story.words story.shared flag-names ;
         2 ebit-set
         self-frames-reset
         $1E self-wait-frames
-        $31E story-flag? not if
+        got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
             $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             wait-message
             $F 7 fade
             wait-fade
-            $31E story-flag-set
+            got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
@@ -307,7 +307,7 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     -7.97 21.3 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -317,7 +317,7 @@ USING: engine room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $268 story-flag-set
+            om1f-9-refined-antimony story-flag-set
             0 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
@@ -387,7 +387,7 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     7.72 15.08 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -397,7 +397,7 @@ USING: engine room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $29E story-flag-set
+            om1f-9-refined-magnesia story-flag-set
             1 effect-remove
             $95 1 item-give-count
             0 $95 item-tab

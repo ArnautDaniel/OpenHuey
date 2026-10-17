@@ -2,10 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-21
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 : old-mansion-1f-21.enter ( -- )   \ 00439B10
-    $21E story-flag? not if
+    om1f-21-breakable1-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -13,11 +13,11 @@ USING: room-names story.words story.shared ;
         0 0 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $28E story-flag? not if
+        om1f-21-album-medallion story-flag? not if
             0 20.0 1.0 -72.5 flicker-sprite
         then
     then
-    $2CE story-flag? not if
+    om1f-21-breakable2-broken story-flag? not if
         1 3 $8000000 nav-group
         2 1 $14 door-bits
         3 0 $14 door-bits
@@ -26,7 +26,7 @@ USING: room-names story.words story.shared ;
         2 0 $14 door-bits
         3 1 $14 door-bits
     then
-    $2CF story-flag? not if
+    om1f-21-breakable3-broken story-flag? not if
         1 2 $8000000 nav-group
         4 1 $14 door-bits
         5 0 $14 door-bits
@@ -35,7 +35,7 @@ USING: room-names story.words story.shared ;
         4 0 $14 door-bits
         5 1 $14 door-bits
     then
-    $2D0 story-flag? not if
+    om1f-21-breakable4-broken story-flag? not if
         1 1 $8000000 nav-group
         6 1 $14 door-bits
         7 0 $14 door-bits
@@ -45,9 +45,9 @@ USING: room-names story.words story.shared ;
         7 1 $14 door-bits
     then
     0 6 0.345 0.687 0.187 0.312 zone-rect
-    $56 story-flag? if
-        $7D story-flag? not if
-            $7D story-flag-set
+    om3f-1-flag2 story-flag? if
+        om1f-21-flag1 story-flag? not if
+            om1f-21-flag1 story-flag-set
             $6D 0 65 $80 3 -1 $FF80 44.0 creature-place
             $6D 0 36 $80 3 -1 $81 44.0 creature-place
         then
@@ -174,10 +174,10 @@ USING: room-names story.words story.shared ;
             then
         then
     then
-    $2CE story-flag? not if
+    om1f-21-breakable2-broken story-flag? not if
         2 6.4 0.0 -132.4 5 8 1 zone
         self-who 2 char-in-zone? if
-            $2CE story-flag-set
+            om1f-21-breakable2-broken story-flag-set
             0 3 $8000000 nav-group
             2 0 $14 door-bits
             3 1 $14 door-bits
@@ -186,10 +186,10 @@ USING: room-names story.words story.shared ;
             $40 $100 noise
         then
     then
-    $2CF story-flag? not if
+    om1f-21-breakable3-broken story-flag? not if
         3 -63.9 0.0 -147.4 5 8 1 zone
         self-who 3 char-in-zone? if
-            $2CF story-flag-set
+            om1f-21-breakable3-broken story-flag-set
             0 2 $8000000 nav-group
             4 0 $14 door-bits
             5 1 $14 door-bits
@@ -198,10 +198,10 @@ USING: room-names story.words story.shared ;
             $40 $112 noise
         then
     then
-    $2D0 story-flag? not if
+    om1f-21-breakable4-broken story-flag? not if
         4 -68.8 0.0 -156.4 5 8 1 zone
         self-who 4 char-in-zone? if
-            $2D0 story-flag-set
+            om1f-21-breakable4-broken story-flag-set
             0 1 $8000000 nav-group
             6 0 $14 door-bits
             7 1 $14 door-bits
@@ -218,10 +218,10 @@ USING: room-names story.words story.shared ;
             5 0 1 scene-change
         then
     then
-    $21E story-flag? not if
+    om1f-21-breakable1-broken story-flag? not if
         0 20.0 0.0 -72.5 5 8 1 zone
         self-who 0 char-in-zone? if
-            $21E story-flag-set
+            om1f-21-breakable1-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -230,7 +230,7 @@ USING: room-names story.words story.shared ;
             $40 $35 noise
             0 20.0 1.0 -72.5 flicker-sprite
         then
-    else $28E story-flag? not if
+    else om1f-21-album-medallion story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 1 4 scene-change
@@ -249,7 +249,7 @@ USING: room-names story.words story.shared ;
         $44 self-through-door
         self-wait-done
         stalker-who self-touching? not if
-            $FF panic-stage? not if
+            in-panic? not if
                 fiona-who $44 char-not-at-door? if
                     $609 self-anim
                 else
@@ -257,7 +257,7 @@ USING: room-names story.words story.shared ;
                 then
                 self-frames-reset
                 $14 self-wait-frames
-                $FF panic-stage? not if
+                in-panic? not if
                     fiona-who $72 5 char-sound
                     $44 door-unlock
                     $8008 message   \ "You unlocked the door."
@@ -276,7 +276,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     20.0 -72.5 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -286,7 +286,7 @@ USING: room-names story.words story.shared ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $28E story-flag-set
+            om1f-21-album-medallion story-flag-set
             0 effect-remove
             $71 1 item-give-count
             0 $71 item-tab

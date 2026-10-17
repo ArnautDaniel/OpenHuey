@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-4
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x0F: the floor plate ("fumi_yuka") fading: its +0x24 toward 1 while event variable 0 is
 \ unset, toward 0 once set; byte 3 0 at once, else by 0.2 a step (var_fade).
@@ -20,7 +20,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-1f-4.enter ( -- )   \ 003F5EC0
     room-sounds
-    $11 story-flag? if
+    broken-marionette-used story-flag? if
         0 0 $14 door-bits
         2 0 object-hidden
         3 0 object-hidden
@@ -35,20 +35,20 @@ USING: room-names story.words story.shared flag-names ;
         1 0 $800008 nav-group
     then
     $80 exit-taken? if
-        $13 story-flag-set
+        c1f-4-flag1 story-flag-set
         0 1 var-set
         1 24 var-set
     else
         3 exit-taken? if
         else
-            $310 story-flag-clear
-            $13 story-flag-clear
+            c1f-4-flag2 story-flag-clear
+            c1f-4-flag1 story-flag-clear
         then
-        $310 story-flag? if
-            $13 story-flag-set
+        c1f-4-flag2 story-flag? if
+            c1f-4-flag1 story-flag-set
             0 1 var-set
             1 12 var-set
-        else $13 story-flag? not if
+        else c1f-4-flag1 story-flag? not if
             0 0 var-set
             1 0 var-set
         else
@@ -57,21 +57,21 @@ USING: room-names story.words story.shared flag-names ;
         then then
     then
     0 castle-1f-4.cmd00
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     0 22.8 14.65 68.75 0 flame-in
-    $319 story-flag? not if
+    c1f-4-flag4 story-flag? not if
         1 1 $14 door-bits
         3 ebit-clear
     else
         2 1 $14 door-bits
-        $239 story-flag? not if
+        c1f-4-refined-antimony story-flag? not if
             1 140.0 -9.0 94.0 flicker-sprite
         then
         3 ebit-set
     then
-    $31F story-flag? not if
+    got-cracked-plate-key story-flag? not if
         4 1 $14 door-bits
     else
         4 0 $14 door-bits
@@ -128,7 +128,7 @@ USING: room-names story.words story.shared flag-names ;
     then then
     3 0 0 area-camera
     fiona-who self-is? if
-        1 story-flag? 2 story-flag? not and if
+        got-castle-sketch story-flag? c2f-3-flag1 story-flag? not and if
             0.0 sound-volume-scale
             world-held state-flag-set
             0 fiona-who 0 action
@@ -144,11 +144,11 @@ USING: room-names story.words story.shared flag-names ;
             fiona-who $221 -90 char-to-tri-facing
             1 1 player-camera
             world-frozen state-flag-clear
-            $311 story-flag-set
+            c1f-4-flag3 story-flag-set
             0 fiona-who $B action
         then
-        $42 story-flag? $5B story-flag? not and if
-            $5B story-flag-set
+        saturnus-hint-on story-flag? c1f-14-flag2 story-flag? not and if
+            c1f-14-flag2 story-flag-set
             stalker-who action-end
             stalker-who char-done
         then
@@ -157,7 +157,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-1f-4.phase1 ( -- )   \ 003F6120
     6 sound-bank-loaded? if
-        $11 story-flag? not if
+        broken-marionette-used story-flag? not if
             $C0000003 6 -72.0 10.0 15.0 0 0 sound
         else
             $C0000001 6 -72.0 10.0 15.0 0 0 sound
@@ -166,7 +166,7 @@ USING: room-names story.words story.shared flag-names ;
     0 exit-usable? if
         0 exit-check
     then
-    3 story-flag? $31 story-flag? not and if
+    hewie-found-in-wire story-flag? found-file-208 story-flag? not and if
         1 exit-usable? if
             3 3 1 char-load
             1 exit-check
@@ -186,7 +186,7 @@ USING: room-names story.words story.shared flag-names ;
     then then
     $B 1 1 1 chars-area-camera
     $C 0 0 1 chars-area-camera
-    3 story-flag? $31 story-flag? not and if
+    hewie-found-in-wire story-flag? found-file-208 story-flag? not and if
         fiona-who 6 char-entered-area? fiona-who 9 char-left-area? or if
             3 0 char-remove
         then
@@ -198,7 +198,7 @@ USING: room-names story.words story.shared flag-names ;
         3 exit-prepare
     then
     fiona-who 7 char-left-area? fiona-who 8 char-entered-area? or if
-        3 story-flag? $31 story-flag? not and if
+        hewie-found-in-wire story-flag? found-file-208 story-flag? not and if
             3 3 1 char-load
         then
         1 exit-prepare
@@ -208,39 +208,39 @@ USING: room-names story.words story.shared flag-names ;
     then
     0 0 var? if
         hewie-who $D char-in-area? if
-            $13 story-flag-set
+            c1f-4-flag1 story-flag-set
             0 1 var-set
             hewie-who 0 6 char-sound
             0 $F1 $D action
         else fiona-who $D char-in-area? if
-            $13 story-flag-set
+            c1f-4-flag1 story-flag-set
             0 1 var-set
             fiona-who 0 6 char-sound
-            $11 story-flag? $311 story-flag? not and $14 story-flag? not and if
+            broken-marionette-used story-flag? c1f-4-flag3 story-flag? not and breaker-lowered story-flag? not and if
                 0 fiona-who $A action
             else
                 0 $F1 $D action
             then
         else stalker-who $D char-in-area? if
-            $13 story-flag-set
+            c1f-4-flag1 story-flag-set
             0 1 var-set
             stalker-who 0 6 char-sound
             0 $F1 $D action
         then then then
     else hewie-who $D char-in-area? not fiona-who $D char-in-area? not and stalker-who $D char-in-area? not and if
-        $13 story-flag-clear
+        c1f-4-flag1 story-flag-clear
         0 0 var-set
         0 $F2 $D action
     then then
     1 castle-1f-4.cmd00
-    $11 story-flag? not if
+    broken-marionette-used story-flag? not if
         0 -28.0 0.0 15.0 $A 15 0 zone
         fiona-who 0 char-in-zone? if
             0 $F5 $1C action
         then
     then
     2 140.0 -10.0 94.0 6 5 0 zone
-    $319 story-flag? not if
+    c1f-4-flag4 story-flag? not if
         6 ebit? not if
             fiona-who 2 char-in-zone? if
                 2 2 var? if
@@ -280,7 +280,7 @@ USING: room-names story.words story.shared flag-names ;
     stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
         stalker-who 0 char-effect-moving
     then
-    $319 story-flag? not if
+    c1f-4-flag4 story-flag? not if
         3 140.0 -10.0 94.0 $1E 20 0 zone
         4 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -320,7 +320,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $A char-in-area? if
         -2147483644 scene-request? if
             0 fiona-who 6 action
-        else $11 story-flag? not fiona-who -45 $2D char-heading? and if
+        else broken-marionette-used story-flag? not fiona-who -45 $2D char-heading? and if
             5 2 0 scene-change
         then then
     then
@@ -336,8 +336,8 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $F char-in-area? fiona-who -45 $32 char-heading? and if
         5 $84 3 scene-change
     then
-    3 ebit? $239 story-flag? not and if
-        $239 story-flag? not if
+    3 ebit? c1f-4-refined-antimony story-flag? not and if
+        c1f-4-refined-antimony story-flag? not if
             2 1 5 5 0 zone-at-effect
             fiona-who 2 3 char-zone-bits? if
                 5 $10 4 scene-change
@@ -354,7 +354,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $11 char-in-area? fiona-who -45 $32 char-heading? and if
         5 $15 0 scene-change
     then
-    $31F story-flag? not if
+    got-cracked-plate-key story-flag? not if
         4 131.392 -30.0 147.223 5 5 0 zone
         fiona-who 4 3 char-zone-bits? if
             5 $12 4 scene-change
@@ -401,7 +401,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0 item-use
     7 door-unlock
-    $11 story-flag-set
+    broken-marionette-used story-flag-set
     0 $F0 5 action
     1 wait-counter
     fiona-who $1DD -4.507 15.509 -90 char-to-xz
@@ -555,7 +555,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-1f-4.act09 ( -- )   \ 003F67E0
     self-wait-done
-    $319 story-flag? not if
+    c1f-4-flag4 story-flag? not if
         $13 message   \ "The wall looks weak here. Maybe if I hit it hard enough I can break through it?"
         wait-message
     else
@@ -622,45 +622,45 @@ USING: room-names story.words story.shared flag-names ;
         6 sound-bank-loaded? not while
         yield
     repeat
-    $310 story-flag-set
-    $11 story-flag? not if
+    c1f-4-flag2 story-flag-set
+    broken-marionette-used story-flag? not if
         $40000003 6 -72.0 10.0 15.0 0 0 sound
     else
         $40000001 6 -72.0 10.0 15.0 0 0 sound
     then
-    $13 story-flag? not if
+    c1f-4-flag1 story-flag? not if
         begin
-            1 0 var? not $13 story-flag? not and while
+            1 0 var? not c1f-4-flag1 story-flag? not and while
             1 var-dec
             self-frames-reset
             1 self-wait-frames
         repeat
-        $13 story-flag? not if
-            $11 story-flag? not if
+        c1f-4-flag1 story-flag? not if
+            broken-marionette-used story-flag? not if
                 3 6 sound-stop
                 $40000004 6 -72.0 10.0 15.0 0 0 sound
             else
                 1 6 sound-stop
                 $40000002 6 -72.0 10.0 15.0 0 0 sound
             then
-            $310 story-flag-clear
+            c1f-4-flag2 story-flag-clear
         then
     else
         begin
-            1 24 var? not $13 story-flag? and while
+            1 24 var? not c1f-4-flag1 story-flag? and while
             1 var-inc
             self-frames-reset
             3 self-wait-frames
         repeat
-        $13 story-flag? if
-            $11 story-flag? not if
+        c1f-4-flag1 story-flag? if
+            broken-marionette-used story-flag? not if
                 3 6 sound-stop
                 $40000004 6 -72.0 10.0 15.0 0 0 sound
             else
                 1 6 sound-stop
                 $40000002 6 -72.0 10.0 15.0 0 0 sound
             then
-            $310 story-flag-clear
+            c1f-4-flag2 story-flag-clear
         then
     then
     self-idle-or-end
@@ -690,7 +690,7 @@ USING: room-names story.words story.shared flag-names ;
     self-frames-reset
     $25 self-wait-frames
     $4000000B 6 120.0 -10.0 92.0 0 0 sound
-    $239 story-flag? not if
+    c1f-4-refined-antimony story-flag? not if
         1 140.0 -9.0 94.0 flicker-sprite
     then
     3 ebit-set
@@ -701,7 +701,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     140.0 94.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -711,7 +711,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $239 story-flag-set
+            c1f-4-refined-antimony story-flag-set
             1 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
@@ -754,7 +754,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    $31F story-flag-set
+    got-cracked-plate-key story-flag-set
     4 0 $14 door-bits
     $12 message-param-room
     $12 1 item-give-count
@@ -771,7 +771,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     2 self-through-exit
     self-wait-done
-    $FF panic-stage? 2 game-mode? or if
+    in-panic? 2 game-mode? or if
         $60B self-anim
         self-wait-anim
         -1 self-idle-anim
@@ -949,7 +949,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-1f-4.act1B ( -- )   \ 003F6DA0
     1 $FF 4 rumble
-    $319 story-flag-set
+    c1f-4-flag4 story-flag-set
     fiona-who 9 6 char-sound
     $4000000A 6 140.0 -10.0 92.0 0 0 sound
     1 0 $14 door-bits

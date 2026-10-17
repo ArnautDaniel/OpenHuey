@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d8
-USING: room-names story.words story.shared story.clock ;
+USING: room-names story.words story.shared story.clock story-names ;
 
 \ as Room109_Cmd01
 : off-map-d8.cmd00 ( b0 -- )  1e room-nudge ;   \ (as chaos-forest-11's)
@@ -18,7 +18,7 @@ USING: room-names story.words story.shared story.clock ;
 : off-map-d8.enter ( -- )   \ 00447BD0
     room-sounds
     $19 1.0 0 bgm
-    $35C story-flag? not if
+    x-d8-flag1 story-flag? not if
         $E 5 $FF char-load
         0 $F1 0 action
     then
@@ -110,9 +110,9 @@ USING: room-names story.words story.shared story.clock ;
     hewie-who 9 char-entered-area? if
         3 exit-prepare
     then
-    0 ebit? $35C story-flag? not and if
+    0 ebit? x-d8-flag1 story-flag? not and if
         off-map-d8.cond00? if
-            $35C story-flag-set
+            x-d8-flag1 story-flag-set
             $F1 action-end
             0 $F1 1 action
         then

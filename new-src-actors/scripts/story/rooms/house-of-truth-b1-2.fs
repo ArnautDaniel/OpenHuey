@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-2
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x85: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -12,7 +12,7 @@ USING: room-names story.words story.shared flag-names ;
     room-sounds
     0 0 var-set
     1 0 var-set
-    $2E3 story-flag? not if
+    htb1-2-lavender story-flag? not if
         0 -45.77 5.75 19.99 flicker-sprite
     then
 ;
@@ -39,7 +39,7 @@ USING: room-names story.words story.shared flag-names ;
     then then
     1 2 2 area-camera
     fiona-who self-is? if
-        $98 story-flag? not $80 exit-taken? and if
+        found-file-252 story-flag? not $80 exit-taken? and if
             world-held state-flag-set
             panic-eased
             0 fiona-who 1 action-force
@@ -51,7 +51,7 @@ USING: room-names story.words story.shared flag-names ;
     0 exit-usable? if
         0 exit-check
     then
-    $95 story-flag? if
+    over-music-e story-flag? if
         1 exit-usable? if
             1 exit-check
         then
@@ -92,7 +92,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 8 $32 char-faces-area? if
         5 $84 3 scene-change
     then
-    $95 story-flag? not if
+    over-music-e story-flag? not if
         fiona-who 1 char-before-door? if
             5 0 1 scene-change
         then
@@ -102,7 +102,7 @@ USING: room-names story.words story.shared flag-names ;
             5 3 1 scene-change
         then
     then
-    $2E3 story-flag? not if
+    htb1-2-lavender story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 2 4 scene-change
@@ -145,7 +145,7 @@ USING: room-names story.words story.shared flag-names ;
     $E9 door-lock
     $EF door-lock
     doors-room-in
-    $98 story-flag-set
+    found-file-252 story-flag-set
     $F $41 fade
     wait-fade
     $4A resident-flag-set
@@ -160,7 +160,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -45.77 19.99 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -170,7 +170,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2E3 story-flag-set
+            htb1-2-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
@@ -188,7 +188,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0 self-through-exit
     self-wait-done
-    $FF panic-stage? 2 game-mode? or if
+    in-panic? 2 game-mode? or if
         $60A self-anim
         self-wait-anim
         -1 self-idle-anim

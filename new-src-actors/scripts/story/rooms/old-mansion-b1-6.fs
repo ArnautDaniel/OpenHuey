@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-6
-USING: engine actors messages room-names story.words story.shared flag-names ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names ;
 
 \ Room66_Cmd00
 : old-mansion-b1-6.cmd00 ( b0 -- )   \ (character 8 wading, moved by its animation - the cast does that; as a
@@ -54,29 +54,29 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     room-sounds
     0 1 $14 door-bits
     1 4 $20000 nav-group
-    $5D story-flag? not if
+    omb1-6-flag2 story-flag? not if
         1 0 $20000 nav-group
         0 0 old-mansion-b1-6.cmd01
     then
-    $5E story-flag? not if
+    omb1-6-flag3 story-flag? not if
         1 1 $20000 nav-group
         1 0 old-mansion-b1-6.cmd01
     then
-    $5F story-flag? not if
+    omb1-6-flag4 story-flag? not if
         1 2 $20000 nav-group
         2 0 old-mansion-b1-6.cmd01
     then
-    $60 story-flag? not if
+    omb1-6-flag5 story-flag? not if
         1 3 $20000 nav-group
         3 0 old-mansion-b1-6.cmd01
     then
-    $271 story-flag? not if
+    omb1-6-medallion story-flag? not if
         0 2.06 6.5 -99.68 flicker-sprite
     then
-    $2C3 story-flag? not if
+    omb1-6-magist-medallion story-flag? not if
         2 39.98 1.0 -40.67 flicker-sprite
     then
-    $2A9 story-flag? $2AA story-flag? not and if
+    omb1-6-viola-medallion-found story-flag? omb1-6-viola-medallion story-flag? not and if
         1 -138.94 1.0 -114.31 flicker-sprite
     then
     3 117.5 11.7 -21.8 0 flame-in
@@ -230,66 +230,66 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then
     7 ebit? not if
         6 sound-bank-loaded? if
-            $5D story-flag? not if
+            omb1-6-flag2 story-flag? not if
                 $40000007 6 -185.0 10.0 20.0 0 0 sound
-            else $5E story-flag? not if
+            else omb1-6-flag3 story-flag? not if
                 $40000007 6 30.0 10.0 -42.0 0 0 sound
             then then
-            $5F story-flag? not if
+            omb1-6-flag4 story-flag? not if
                 $40000008 6 -20.0 10.0 10.0 0 0 sound
-            else $60 story-flag? not if
+            else omb1-6-flag5 story-flag? not if
                 $40000008 6 -40.0 10.0 -110.0 0 0 sound
             then then
             7 ebit-set
         then
     else
-        $5D story-flag? not $5E story-flag? not or if
-            8 ebit? $5D story-flag? not and $5E story-flag? or if
+        omb1-6-flag2 story-flag? not omb1-6-flag3 story-flag? not or if
+            8 ebit? omb1-6-flag2 story-flag? not and omb1-6-flag3 story-flag? or if
                 $C0000007 6 -185.0 10.0 20.0 0 0 sound
             then
-            8 ebit? not $5E story-flag? not and $5D story-flag? or if
+            8 ebit? not omb1-6-flag3 story-flag? not and omb1-6-flag2 story-flag? or if
                 $C0000007 6 30.0 10.0 -42.0 0 0 sound
             then
         then
-        $5F story-flag? not $60 story-flag? not or if
-            9 ebit? not $5F story-flag? not and $60 story-flag? or if
+        omb1-6-flag4 story-flag? not omb1-6-flag5 story-flag? not or if
+            9 ebit? not omb1-6-flag4 story-flag? not and omb1-6-flag5 story-flag? or if
                 $C0000008 6 -20.0 10.0 10.0 0 0 sound
             then
-            9 ebit? $60 story-flag? not and $5F story-flag? or if
+            9 ebit? omb1-6-flag5 story-flag? not and omb1-6-flag4 story-flag? or if
                 $C0000008 6 -40.0 10.0 -110.0 0 0 sound
             then
         then
     then
-    $5D story-flag? not if
+    omb1-6-flag2 story-flag? not if
         fiona-who $1C char-entered-area? $A ebit? not and if
             panic-eased
             0 fiona-who $F action-force
         then
     then
-    $5E story-flag? not if
+    omb1-6-flag3 story-flag? not if
         fiona-who $1E char-entered-area? $A ebit? not and if
             panic-eased
             0 fiona-who $15 action-force
         then
     then
-    $5F story-flag? not if
+    omb1-6-flag4 story-flag? not if
         fiona-who $20 char-entered-area? $A ebit? not and if
             panic-eased
             0 fiona-who $16 action-force
         then
     then
-    $60 story-flag? not if
+    omb1-6-flag5 story-flag? not if
         fiona-who $22 char-entered-area? $A ebit? not and if
             panic-eased
             0 fiona-who $17 action-force
         then
     then
-    $2A9 story-flag? not if
+    omb1-6-viola-medallion-found story-flag? not if
         2 -138.94 0.0 -114.31 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 681 var-set
-                $1A 682 var-set
+                $19 omb1-6-viola-medallion-found var-set
+                $1A omb1-6-viola-medallion var-set
                 $1B 1 var-set
                 $1C -138940 var-set
                 $1D 1000 var-set
@@ -365,19 +365,19 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     fiona-who $21 char-in-area? if
         5 $14 0 scene-change
     then
-    $271 story-flag? not if
+    omb1-6-medallion story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 $18 4 scene-change
         then
     then
-    $2A9 story-flag? $2AA story-flag? not and if
+    omb1-6-viola-medallion-found story-flag? omb1-6-viola-medallion story-flag? not and if
         2 1 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 $19 4 scene-change
         then
     then
-    $2C3 story-flag? not if
+    omb1-6-magist-medallion story-flag? not if
         3 2 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 $1A 4 scene-change
@@ -408,28 +408,28 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         2 old-mansion-b1-6.cmd00
         yield
     repeat
-    $60 story-flag? not if
+    omb1-6-flag5 story-flag? not if
         3 1 old-mansion-b1-6.cmd01
     then
     8 3 6 char-sound
     8 0 1 8 char-anim-hold
     self-frames-reset
     8 self-wait-frames
-    $5F story-flag? if
+    omb1-6-flag4 story-flag? if
         8 6 sound-stop
     then
-    $60 story-flag? not if
+    omb1-6-flag5 story-flag? not if
         8 9 6 char-sound
     then
     8 $A 6 char-sound
     3 old-mansion-b1-6.cmd02
-    $60 story-flag? not if
+    omb1-6-flag5 story-flag? not if
         $76 door-unlock
         6 $86 0.0 0.0 0.0 0 0 sound
         self-frames-reset
         $5A self-wait-frames
     then
-    $60 story-flag-set
+    omb1-6-flag5 story-flag-set
     0 3 $20000 nav-group
     3 ebit-set
     self-idle-or-end
@@ -529,28 +529,28 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         2 old-mansion-b1-6.cmd00
         yield
     repeat
-    $5D story-flag? not if
+    omb1-6-flag2 story-flag? not if
         0 1 old-mansion-b1-6.cmd01
     then
     8 3 6 char-sound
     8 0 1 8 char-anim-hold
     self-frames-reset
     8 self-wait-frames
-    $5E story-flag? if
+    omb1-6-flag3 story-flag? if
         7 6 sound-stop
     then
-    $5D story-flag? not if
+    omb1-6-flag2 story-flag? not if
         8 9 6 char-sound
     then
     8 $A 6 char-sound
     0 old-mansion-b1-6.cmd02
-    $5D story-flag? not if
+    omb1-6-flag2 story-flag? not if
         $5E door-unlock
         6 $86 0.0 0.0 0.0 0 0 sound
         self-frames-reset
         $5A self-wait-frames
     then
-    $5D story-flag-set
+    omb1-6-flag2 story-flag-set
     0 0 $20000 nav-group
     3 ebit-set
     self-idle-or-end
@@ -582,28 +582,28 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         then
         yield
     repeat
-    $5F story-flag? not if
+    omb1-6-flag4 story-flag? not if
         2 1 old-mansion-b1-6.cmd01
     then
     8 3 6 char-sound
     8 0 1 8 char-anim-hold
     self-frames-reset
     8 self-wait-frames
-    $60 story-flag? if
+    omb1-6-flag5 story-flag? if
         8 6 sound-stop
     then
-    $5F story-flag? not if
+    omb1-6-flag4 story-flag? not if
         8 9 6 char-sound
     then
     8 $A 6 char-sound
     2 old-mansion-b1-6.cmd02
-    $5F story-flag? not if
+    omb1-6-flag4 story-flag? not if
         $7B door-unlock
         6 $86 0.0 0.0 0.0 0 0 sound
         self-frames-reset
         $5A self-wait-frames
     then
-    $5F story-flag-set
+    omb1-6-flag4 story-flag-set
     0 2 $20000 nav-group
     3 ebit-set
     self-idle-or-end
@@ -644,27 +644,27 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         2 old-mansion-b1-6.cmd00
         yield
     repeat
-    $5E story-flag? not if
+    omb1-6-flag3 story-flag? not if
         1 1 old-mansion-b1-6.cmd01
     then
     8 3 6 char-sound
     8 0 1 8 char-anim-hold
     self-frames-reset
     8 self-wait-frames
-    $5D story-flag? if
+    omb1-6-flag2 story-flag? if
         7 6 sound-stop
     then
-    $5E story-flag? not if
+    omb1-6-flag3 story-flag? not if
         8 9 6 char-sound
     then
     8 $A 6 char-sound
     1 old-mansion-b1-6.cmd02
-    $5E story-flag? not if
+    omb1-6-flag3 story-flag? not if
         6 $86 0.0 0.0 0.0 0 0 sound
         self-frames-reset
         $5A self-wait-frames
     then
-    $5E story-flag-set
+    omb1-6-flag3 story-flag-set
     0 1 $20000 nav-group
     3 ebit-set
     self-idle-or-end
@@ -838,21 +838,21 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
             wait-message
             0 ebit-set
         then
-        $20 story-flag-clear
+        plate-made story-flag-clear
         2 subscreen-open
         begin
             subscreen-wanted state-flag? while
             yield
         repeat
         yield
-        $20 story-flag? if
+        plate-made story-flag? if
             $3F message-param-room
             0 $3F item-tab
             item-fanfare
             $8012 message   \ "You've obtained ."
             wait-message
         then
-        $20 story-flag-set
+        plate-made story-flag-set
     else 0 ebit? not if
         $F message   \ "There's a plate pressing machine here. There are no remaining plates currently so..."
         wait-message
@@ -888,7 +888,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     repeat
     8 3 $FF char-load
     self-wait-done
-    $5A story-flag? not if
+    omb1-6-flag1 story-flag? not if
         1 1 movie-play
         0 cutscene-start
         yield
@@ -913,7 +913,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         fiona-who $56 83.405 -17.137 -28 char-to-xz
         8 $126 74.6 13.8 0 char-to-xz
         8 3 1 char-camera
-        $5A story-flag-set
+        omb1-6-flag1 story-flag-set
     else
         wait-fade
         panic-eased
@@ -1250,7 +1250,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     self-wait-done
     2.06 -99.68 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -1260,7 +1260,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $271 story-flag-set
+            omb1-6-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
@@ -1278,7 +1278,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     self-wait-done
     -138.94 -114.31 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -1288,7 +1288,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2AA story-flag-set
+            omb1-6-viola-medallion story-flag-set
             1 effect-remove
             $72 1 item-give-count
             0 $72 item-tab
@@ -1306,7 +1306,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     self-wait-done
     39.98 -40.67 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -1316,7 +1316,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2C3 story-flag-set
+            omb1-6-magist-medallion story-flag-set
             2 effect-remove
             $75 1 item-give-count
             0 $75 item-tab

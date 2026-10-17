@@ -2,17 +2,17 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-5
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x10 (Room10_Cond00_ptmf): the stalker is there, not about, in mode 2, 6 or 7
 : castle-1f-5.cond00? ( -- flag )  stalker-there? stalker-told? 0= and debilitas? and ;
 
 : castle-1f-5.enter ( -- )   \ 003F6F80
     room-sounds
-    $1B story-flag? $308 story-flag? not and if
+    c2f-8-flag3 story-flag? c1f-5-flag1 story-flag? not and if
         1 exit-taken? if
             castle-1f-5.cond00? if
-                $308 story-flag-set
+                c1f-5-flag1 story-flag-set
                 force-followed state-flag-set
                 $C door-open-clear
                 doors-room-in
@@ -26,7 +26,7 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $200 story-flag? not if
+    c1f-5-breakable-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -34,19 +34,19 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $28B story-flag? not if
+        c1f-5-antimony-powder story-flag? not if
             3 41.0 1.0 -19.0 flicker-sprite
         then
     then
     0 4 0.812 0.687 0.187 0.312 zone-rect
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     0 6.0 21.8 -3.2 0 flame-in
     1 29.0 41.8 41.9 0 flame-in
     2 -46.8 93.8 18.5 0 flame-in
     5 ebit-clear
-    $39 story-flag? $41 story-flag? not and if
+    c1f-6-flag1 story-flag? over-music-b story-flag? not and if
         hewie-who action-end
         hewie-who char-done
     then
@@ -88,7 +88,7 @@ USING: room-names story.words story.shared flag-names ;
         1 exit-taken? if
             2 ebit-set
         then
-        $39 story-flag? $41 story-flag? not and if
+        c1f-6-flag1 story-flag? over-music-b story-flag? not and if
             fiona-who 1 char-to-exit
             0 0 player-camera
             0 fiona-who 5 action
@@ -145,7 +145,7 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $41 story-flag? $42 story-flag? not and if
+    over-music-b story-flag? saturnus-hint-on story-flag? not and if
         1 2 pad? 2 2 pad? or 3 2 pad? or 0 control-action? or 1 control-action? or 2 control-action? or 3 control-action? or 4 control-action? or fiona-free? and if
             0 fiona-who 6 action
         then
@@ -205,15 +205,15 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $14 char-in-area? fiona-who 45 $32 char-heading? and if
         5 8 0 scene-change
     then
-    $41 story-flag? $42 story-flag? not and if
+    over-music-b story-flag? saturnus-hint-on story-flag? not and if
         -2147483646 scene-request? 2 scene-request? or if
             5 6 1 scene-change
         then
     then
-    $200 story-flag? not if
+    c1f-5-breakable-broken story-flag? not if
         0 41.0 0.0 -19.0 5 8 1 zone
         self-who 0 char-in-zone? if
-            $200 story-flag-set
+            c1f-5-breakable-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -222,7 +222,7 @@ USING: room-names story.words story.shared flag-names ;
             $40 $232 noise
             3 41.0 1.0 -19.0 flicker-sprite
         then
-    else $28B story-flag? not if
+    else c1f-5-antimony-powder story-flag? not if
         0 3 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 9 4 scene-change
@@ -410,7 +410,7 @@ USING: room-names story.words story.shared flag-names ;
     hewie-commandable state-flag-set
     scene-locked state-flag-clear
     world-held state-flag-set
-    $41 story-flag-set
+    over-music-b story-flag-set
     subscreen-locked state-flag-set
     $26 1 pvar? if
         1 fiona-costume
@@ -521,7 +521,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     41.0 -19.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -531,7 +531,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $28B story-flag-set
+            c1f-5-antimony-powder story-flag-set
             3 effect-remove
             $91 1 item-give-count
             0 $91 item-tab

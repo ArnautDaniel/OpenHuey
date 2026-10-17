@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-3f-1
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x06 (Room06_Cmd00_ptmf): its four objects (the name's 6th letter counting) to their
 \ places
@@ -12,7 +12,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-3f-1.enter ( -- )   \ 003F1B60
     room-sounds
-    $1D story-flag? not if
+    c2f-9-flag1 story-flag? not if
         1 exit-taken? if
             0 $584 $DF8 obstacle-save-at
             1 $65C $ED0 obstacle-save-at
@@ -27,7 +27,7 @@ USING: room-names story.words story.shared flag-names ;
     else
         castle-3f-1.cmd00
     then
-    $5B story-flag? $5C story-flag? not and if
+    c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
         force-followed state-flag-set
         stalker-no-fear state-flag-set
         no-stalker-camera state-flag-set
@@ -143,7 +143,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-3f-1.phase5 ( -- )   \ 003F1F00
     force-followed state-flag-clear
-    $5B story-flag? $5C story-flag? not and if
+    c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
         1 stalker-who 0 char-model-op
         stalker-who 0 char-silent
         stalker-who action-end
@@ -159,8 +159,8 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0 self-through-exit
     self-wait-done
-    0 ebit? not 2 game-mode? or $FF panic-stage? or if
-        $FF panic-stage? 2 game-mode? or if
+    0 ebit? not 2 game-mode? or in-panic? or if
+        in-panic? 2 game-mode? or if
             $60B self-anim
             self-wait-anim
             -1 self-idle-anim
@@ -204,7 +204,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $34 self-through-door
     self-wait-done
-    $41 story-flag? not if
+    over-music-b story-flag? not if
         $F $44 fade
         scene-locked state-flag-set
         3 partner-load

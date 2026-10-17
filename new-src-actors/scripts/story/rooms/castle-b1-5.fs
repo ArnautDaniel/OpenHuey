@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-5
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x0B (Room0B_Cond00_ptmf): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6
 : castle-b1-5.cond00? ( b0 b1 b2 b3 -- flag )   \ (x, z: s16 bytes 3..4, 5..6)
@@ -40,7 +40,7 @@ USING: room-names story.words story.shared flag-names ;
     then then
     1 1 1 area-camera
     hewie-who self-is? if
-        $317 story-flag? not hewie-who 0 char-heading-for? and if
+        cb1-5-flag1 story-flag? not hewie-who 0 char-heading-for? and if
             0 hewie-who 5 action
         then
     then
@@ -176,7 +176,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-anim
     fiona-who self-look-at
     yield
-    $317 story-flag-set
+    cb1-5-flag1 story-flag-set
     4 self-anim
     self-frames-reset
     $28 self-wait-frames

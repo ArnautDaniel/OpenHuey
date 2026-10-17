@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.lake-pathway-2
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 \ (as Room2A_Cmd03) the 0x14-byte effect BackdropModel2_vtable started with byte 3 as a word
 : lake-pathway-2.cmd00 ( b0 -- )   \ (the water's light: BackdropModel2 - b0 nonzero 500 across at (0, 50) turning, else 1500 at (775, -420))
@@ -12,7 +12,7 @@ USING: room-names story.words story.shared ;
     $18 1.0 0 bgm
     $10 22.8 95.4 53.7 $E $80 $80 $80 $40 specks
     $10 -23.1 95.4 53.7 $E $80 $80 $80 $40 specks
-    $94 story-flag? not if
+    over-music-d story-flag? not if
         0 1 $14 door-bits
         0 lake-pathway-2.cmd00
     else
@@ -22,7 +22,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : lake-pathway-2.char-enter ( -- )   \ 0043EAE0
-    $94 story-flag? not if
+    over-music-d story-flag? not if
         hewie-controlled? not if
             fiona-who self-is? 0 exit-taken? and if
                 fiona-who 0 char-to-exit
@@ -76,7 +76,7 @@ USING: room-names story.words story.shared ;
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    $94 story-flag? if
+    over-music-d story-flag? if
         0 -2.26 38.0 -25.57 $1E 15 0 zone
         1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -95,7 +95,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : lake-pathway-2.phase2 ( -- )   \ 0043EC20
-    $94 story-flag? if
+    over-music-d story-flag? if
         fiona-who 6 char-in-area? fiona-who 90 $32 char-heading? and if
             5 0 0 scene-change
         then

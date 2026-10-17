@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-16
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x1A (D_003FC660): the fan turns
 : castle-1f-16.cmd00 ( -- )  fan-turn ;
@@ -13,7 +13,7 @@ USING: room-names story.words story.shared flag-names ;
     room-sounds
     0 $F1 0 action
     castle-1f-16.cmd01
-    $30A story-flag? not if
+    c1f-16-flag2 story-flag? not if
         0 1 $14 door-bits
         0 0 1 effect-string
     else
@@ -21,7 +21,7 @@ USING: room-names story.words story.shared flag-names ;
         0 1 1 effect-string
         1 noise-level
     then
-    $226 story-flag? not if
+    c1f-16-magnesia story-flag? not if
         1 -25.0 10.0 13.0 flicker-sprite
     then
 ;
@@ -77,7 +77,7 @@ USING: room-names story.words story.shared flag-names ;
     stalker-who self-is? if
         fiona-hidden state-flag? if
             4 ebit-set
-            $30A story-flag? 2 creature-action? not and if
+            c1f-16-flag2 story-flag? 2 creature-action? not and if
                 2 self-is? 6 self-is? or 7 self-is? or if
                     $78 1 summoner-wait
                     0 stalker-who 6 action
@@ -96,7 +96,7 @@ USING: room-names story.words story.shared flag-names ;
 : castle-1f-16.phase1 ( -- )   \ 003FC110
     2 ebit? not if
         6 sound-bank-loaded? if
-            $30A story-flag? if
+            c1f-16-flag2 story-flag? if
                 $40000001 6 23.0 11.0 9.0 0 0 sound
             then
             2 ebit-set
@@ -119,7 +119,7 @@ USING: room-names story.words story.shared flag-names ;
                 0 0 var-set
             then
         then
-        $309 story-flag? if
+        c1f-16-flag1 story-flag? if
             $C0000001 6 23.0 11.0 9.0 0 0 sound
         then
     then
@@ -133,7 +133,7 @@ USING: room-names story.words story.shared flag-names ;
     5 2 -1 1 chars-area-camera
     6 2 -1 1 chars-area-camera
     7 2 -1 1 chars-area-camera
-    $30A story-flag? not if
+    c1f-16-flag2 story-flag? not if
         0 1 $14 door-bits
         0 0 1 effect-string
     else
@@ -162,7 +162,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $C char-in-area? fiona-who 0 $32 char-heading? and if
         5 9 0 scene-change
     then
-    $226 story-flag? not if
+    c1f-16-magnesia story-flag? not if
         0 1 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 1 4 scene-change
@@ -193,7 +193,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -25.0 13.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -203,7 +203,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $226 story-flag-set
+            c1f-16-magnesia story-flag-set
             1 effect-remove
             $92 1 item-give-count
             0 $92 item-tab
@@ -225,10 +225,10 @@ USING: room-names story.words story.shared flag-names ;
     $902 self-anim
     self-wait-anim
     9 0 pvar? 9 1 pvar? or if
-        $30A story-flag? not if
-            $30A story-flag-set
+        c1f-16-flag2 story-flag? not if
+            c1f-16-flag2 story-flag-set
             fiona-who 0 6 char-sound
-            $309 story-flag? not if
+            c1f-16-flag1 story-flag? not if
                 3 $86 0.0 0.0 0.0 0 0 sound
             else
                 $40000001 6 23.0 11.0 9.0 0 0 sound
@@ -238,10 +238,10 @@ USING: room-names story.words story.shared flag-names ;
         else
             fiona-who 2 6 char-sound
             1 6 sound-stop
-            $30A story-flag-clear
+            c1f-16-flag2 story-flag-clear
             0 noise-level
         then
-        $309 story-flag? not if
+        c1f-16-flag1 story-flag? not if
             1 self-scripted
             $5A threat-add
             1 $FF 8 rumble
@@ -256,7 +256,7 @@ USING: room-names story.words story.shared flag-names ;
             $40000001 6 23.0 11.0 9.0 0 0 sound
             $903 self-anim
             self-wait-anim
-            $309 story-flag-set
+            c1f-16-flag1 story-flag-set
             0 self-scripted
         else
             $903 self-anim
@@ -312,8 +312,8 @@ USING: room-names story.words story.shared flag-names ;
     self-who 3 -1 char-camera
     begin
         0 2 pad? not if
-            $FF panic-stage? 0 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 0 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] castle-1f-16.act04 goto
@@ -388,7 +388,7 @@ USING: room-names story.words story.shared flag-names ;
     $12 self-wait-frames
     stalker-who 2 6 char-sound
     1 6 sound-stop
-    $30A story-flag-clear
+    c1f-16-flag2 story-flag-clear
     0 noise-level
     9 pvar-inc
     stalker-who 3 stalker-command

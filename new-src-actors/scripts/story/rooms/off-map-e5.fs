@@ -86,7 +86,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     0 62.08 0.0 -16.33 $A 5 0 zone
     hewie-who 0 8 char-zone-bits? if
         fiona-who char-here? if
-            fiona-who char-busy? not $FF panic-stage? not and fiona-free? and if
+            fiona-who char-busy? not in-panic? not and fiona-free? and if
                 -1 control-action? not if
                     stalker-who char-here? not if
                         0 fiona-who 0 action
@@ -135,7 +135,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
         0 var-inc
     repeat
     3 off-map-e5.cmd00
-    $FF panic-stage? not if
+    in-panic? not if
         fiona-who $43 5 char-sound
     then
     self-wait-anim
@@ -213,8 +213,8 @@ USING: room-names story.words story.shared flag-names story.clock ;
         2 ebit? if
             ['] off-map-e5.act01 goto
         else -1 control-action? if
-            $FF panic-stage? 0 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 0 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] off-map-e5.act04 goto

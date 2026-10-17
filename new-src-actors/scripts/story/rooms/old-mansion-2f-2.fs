@@ -2,11 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-2
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-2f-2.enter ( -- )   \ 004086A0
     1 1 $300000 nav-group
-    $84 story-flag? not if
+    om2f-2-flag1 story-flag? not if
         hewie-who $56 char-in-room? 119 hewie-action? and if
             $4A 0 65 hewie-to-room
             0 hewie-who 4 action
@@ -16,10 +16,10 @@ USING: room-names story.words story.shared flag-names ;
         0 1 $14 door-bits
         2 1 object-hidden
     then
-    $27C story-flag? not if
+    om2f-4-viride-medallion story-flag? not if
         0 5.64 9.5 5.58 flicker-sprite
     then
-    $2BD story-flag? $2BE story-flag? not and if
+    om2f-2-medallion-found story-flag? om2f-2-medallion story-flag? not and if
         1 -49.36 1.0 -47.3 flicker-sprite
     then
 ;
@@ -66,19 +66,19 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $A char-entered-area? if
         2 exit-prepare
     then
-    $84 story-flag? not if
+    om2f-2-flag1 story-flag? not if
         fiona-who 0 char-in-area? fiona-who 0 $50 char-heading? and if
             1 control-action? 2 ebit? and stalker-who char-here? not and fiona-who 0 char-action? and if
                 0 fiona-who 1 action
             then
         then
     then
-    $2BD story-flag? not if
+    om2f-2-medallion-found story-flag? not if
         3 -49.36 0.0 -47.3 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 701 var-set
-                $1A 702 var-set
+                $19 om2f-2-medallion-found var-set
+                $1A om2f-2-medallion var-set
                 $1B 1 var-set
                 $1C -49360 var-set
                 $1D 1000 var-set
@@ -91,14 +91,14 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-2f-2.phase2 ( -- )   \ 00408840
-    2 game-mode? not $FF panic-stage? not and if
-        $84 story-flag? not if
+    2 game-mode? not in-panic? not and if
+        om2f-2-flag1 story-flag? not if
             fiona-who 0 char-before-door? if
                 5 5 1 scene-change
             then
         then
     then
-    $2BD story-flag? $2BE story-flag? not and if
+    om2f-2-medallion-found story-flag? om2f-2-medallion story-flag? not and if
         3 1 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 7 4 scene-change
@@ -107,7 +107,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-2f-2.phase5 ( -- )   \ 00408880
-    $84 story-flag? not hewie-who char-here? and 2 ebit? and if
+    om2f-2-flag1 story-flag? not hewie-who char-here? and 2 ebit? and if
         $56 0 -1 hewie-to-room
         18000 2 hewie-anim
     then
@@ -149,7 +149,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $CB -38.75 -31.7 0 char-to-xz
     camera-restart
     $47 door-unlock
-    $84 story-flag-set
+    om2f-2-flag1 story-flag-set
     2 ebit-clear
     $57 0 -1 hewie-to-room
     $F $41 fade
@@ -243,7 +243,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -49.36 -47.3 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -253,7 +253,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2BE story-flag-set
+            om2f-2-medallion story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab

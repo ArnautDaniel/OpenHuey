@@ -136,7 +136,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 7 char-entered-area? if
         3 exit-prepare
     then
-    $FF panic-stage? not if
+    in-panic? not if
         fiona-who char-busy? not 2 2 pad? and if
             0 -4.49 9.0 -66.28 5 10 0 zone
             fiona-who 0 8 char-zone-bits? if
@@ -155,7 +155,7 @@ USING: room-names story.words story.shared flag-names ;
     0 -4.49 9.0 -66.28 5 10 0 zone
     fiona-who 0 8 char-zone-bits? if
         1 chaos-forest-7.cmd00
-        $FF panic-stage? not if
+        in-panic? not if
             stalker-who char-here? not if
                 5 0 5 scene-change
             else stalker-who 0 char-heading-for? if
@@ -203,8 +203,8 @@ USING: room-names story.words story.shared flag-names ;
     0 avoid-prompt
     begin
         0 2 pad? not if
-            $FF panic-stage? 0 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 0 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] chaos-forest-7.act01 goto

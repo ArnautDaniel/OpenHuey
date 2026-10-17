@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-10
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ (as Room2D_Cmd02) three hanging things (+0x34 0..2), pushed by the square of Fiona's step past
 \ 1, event flag 4 with sounds 4 / 5
@@ -11,7 +11,7 @@ USING: room-names story.words story.shared flag-names ;
 : house-of-truth-1f-10.enter ( -- )   \ 00443870
     room-sounds
     0 house-of-truth-1f-10.cmd00
-    $2E1 story-flag? not if
+    ht1f-10-camomile story-flag? not if
         0 29.7 5.25 32.54 flicker-sprite
     then
 ;
@@ -173,7 +173,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 6 char-in-area? fiona-who 0 $32 char-heading? and if
         5 0 0 scene-change
     then
-    $2E1 story-flag? not if
+    ht1f-10-camomile story-flag? not if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 6 4 scene-change
@@ -266,8 +266,8 @@ USING: room-names story.words story.shared flag-names ;
     0 avoid-prompt
     begin
         0 2 pad? not if
-            $FF panic-stage? 0 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 0 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] house-of-truth-1f-10.act03 goto
@@ -321,7 +321,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     29.7 32.54 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -331,7 +331,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2E1 story-flag-set
+            ht1f-10-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab

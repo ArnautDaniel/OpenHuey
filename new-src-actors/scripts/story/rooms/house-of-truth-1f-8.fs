@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-8
-USING: engine common actors messages room-names story.words story.shared flag-names ;
+USING: engine common actors messages room-names story.words story.shared flag-names story-names ;
 
 \ room 0x91 (Room91_Cmd00_ptmf): door 0's +0x68 (0)
 : house-of-truth-1f-8.cmd00 ( -- )  0 true -1 doors-id send swing-door ;   \ (door 0 set opening, Doors_SetOpened: swung open here)
@@ -22,19 +22,19 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     1 101.9 66.0 87.1 4 flame-in
     2 97.6 29.5 144.8 1 flame-in
     4 101.9 66.0 87.4 4 flame-in
-    $A3 story-flag? if
+    ht1f-9-flag2 story-flag? if
         1 0 $20000 nav-group
         0 1 $14 door-bits
     then
-    $34E story-flag? if
+    tremor-warned story-flag? if
         5 1.0 0 bgm
     then
-    $2F3 story-flag? $2F4 story-flag? not and if
+    ht1f-8-magist-medallion-found story-flag? ht1f-8-magist-medallion story-flag? not and if
         3 86.0 1.0 68.0 flicker-sprite
     then
     $80 exit-taken? not if
         shared.act95
-        $A3 story-flag? if
+        ht1f-9-flag2 story-flag? if
             house-of-truth-1f-8.cmd02
         then
     else
@@ -109,7 +109,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     fiona-who 5 char-entered-area? if
         2 exit-prepare
     then
-    $A3 story-flag? $A4 story-flag? not and if
+    ht1f-9-flag2 story-flag? over-music-f story-flag? not and if
         fiona-who 6 char-entered-area? 1 ebit? not and if
             1 ebit-set
             panic-eased
@@ -161,19 +161,19 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     stalker-who 2 3 char-zone-bits? stalker-who 2 3 char-zone-bits-before? not and if
         stalker-who 2 char-effect-moving
     then
-    $A6 story-flag? not if
+    ht1f-8-flag1 story-flag? not if
         fiona-who $B char-entered-area? if
-            $A6 story-flag-set
+            ht1f-8-flag1 story-flag-set
             $91 0 467 $88 0 -1 $5A 0.0 creature-place
             $91 0 131 $89 0 -1 $FFA6 0.0 creature-place
         then
     then
-    $2F3 story-flag? not if
+    ht1f-8-magist-medallion-found story-flag? not if
         3 86.0 0.0 68.0 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 755 var-set
-                $1A 756 var-set
+                $19 ht1f-8-magist-medallion-found var-set
+                $1A ht1f-8-magist-medallion var-set
                 $1B 3 var-set
                 $1C 86000 var-set
                 $1D 1000 var-set
@@ -214,7 +214,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             5 6 1 scene-change
         then
     then
-    $2F3 story-flag? $2F4 story-flag? not and if
+    ht1f-8-magist-medallion-found story-flag? ht1f-8-magist-medallion story-flag? not and if
         3 3 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 2 4 scene-change
@@ -223,7 +223,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 ;
 
 : house-of-truth-1f-8.phase3 ( -- )   \ 00436A40
-    $A3 story-flag? 2 ebit? not and if
+    ht1f-9-flag2 story-flag? 2 ebit? not and if
         $40000030 $47 0.0 0.0 0.0 0 0 sound
         2 ebit-set
     then
@@ -245,7 +245,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     1 self-scripted
     0 exit-prepare
     self-wait-done
-    $A4 story-flag-set
+    over-music-f story-flag-set
     $91 0 493 hewie-to-room
     hewie-who $1ED 45 char-to-tri-facing
     stalker-who char-activate
@@ -270,9 +270,9 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     $802 self-anim
     2 message   \ "Whoa! What was that? It felt like a tremor... I should crouch down during large tremors..."
     wait-message
-    $34E story-flag-set
+    tremor-warned story-flag-set
     5 1.0 0 bgm
-    $34F story-flag-set
+    tremor-warned-2 story-flag-set
     $F1 action-end
     shared.act95
     0 5 var-set
@@ -285,7 +285,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     self-wait-done
     86.0 68.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -295,7 +295,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2F4 story-flag-set
+            ht1f-8-magist-medallion story-flag-set
             3 effect-remove
             $75 1 item-give-count
             0 $75 item-tab

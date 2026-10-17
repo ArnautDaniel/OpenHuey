@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-5
-USING: actors messages room-names story.words story.shared flag-names ;
+USING: actors messages room-names story.words story.shared flag-names story-names ;
 
 \ a hanging thing (the room's +0x34 (byte 3 + 2) object) swinging, by byte 4: 0 / 2 set going
 \ (12 degrees) away from the partner / Fiona; 1 a step (22.5 degrees of its swing, shrinking to
@@ -65,10 +65,10 @@ fvariable sw-dx  fvariable sw-dz
     0 1 object-hidden
     1 1 object-hidden
     2 1 $14 door-bits
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     then
-    $212 story-flag? not if
+    fg-5-breakable-broken story-flag? not if
         1 2 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -76,21 +76,21 @@ fvariable sw-dx  fvariable sw-dz
         0 2 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $284 story-flag? not if
+        fg-5-beef-jerky story-flag? not if
             2 -14.0 -9.0 97.0 flicker-sprite
         then
     then
     0 5 0.562 0.5 0.25 0.5 zone-rect
-    $23A story-flag? if
-        $23B story-flag? not if
+    fg-5-flag1 story-flag? if
+        fg-5-viola-medallion story-flag? not if
             0 -265.0 -9.0 160.0 flicker-sprite
         then
     then
-    $23E story-flag? $23F story-flag? not and if
+    fg-5-medallion-found story-flag? fg-5-medallion story-flag? not and if
         1 -228.4 -9.0 103.2 flicker-sprite
     then
     0 front-garden-5.cmd02
-    $2F5 story-flag? not if
+    got-ball story-flag? not if
         3 -180.0 5.61 176.0 flicker-sprite
     then
 ;
@@ -247,12 +247,12 @@ fvariable sw-dx  fvariable sw-dz
     fiona-who 5 char-in-zone? if
         0 $F1 $E action
     then
-    $23E story-flag? not if
+    fg-5-medallion-found story-flag? not if
         3 -228.4 -10.0 103.2 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 574 var-set
-                $1A 575 var-set
+                $19 fg-5-medallion-found var-set
+                $1A fg-5-medallion var-set
                 $1B 1 var-set
                 $1C -228400 var-set
                 $1D -9000 var-set
@@ -287,7 +287,7 @@ fvariable sw-dx  fvariable sw-dz
 ;
 
 : front-garden-5.phase2 ( -- )   \ 00405E30
-    0 story-flag? if
+    found-file-202 story-flag? if
         fiona-who 9 char-in-area? if
             stalker-who char-here? not if
                 5 7 5 scene-change
@@ -296,15 +296,15 @@ fvariable sw-dx  fvariable sw-dz
             then
         then
     then
-    $23A story-flag? if
-        $23B story-flag? not if
+    fg-5-flag1 story-flag? if
+        fg-5-viola-medallion story-flag? not if
             1 0 5 5 0 zone-at-effect
             fiona-who 1 3 char-zone-bits? if
                 5 $10 4 scene-change
             then
         then
     then
-    $23E story-flag? $23F story-flag? not and if
+    fg-5-medallion-found story-flag? fg-5-medallion story-flag? not and if
         3 1 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 $11 4 scene-change
@@ -313,10 +313,10 @@ fvariable sw-dx  fvariable sw-dz
     fiona-who $E char-in-area? fiona-who 90 $3C char-heading? and if
         5 $12 0 scene-change
     then
-    $212 story-flag? not if
+    fg-5-breakable-broken story-flag? not if
         0 -14.0 -10.0 97.0 5 8 1 zone
         self-who 0 char-in-zone? if
-            $212 story-flag-set
+            fg-5-breakable-broken story-flag-set
             0 2 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -325,13 +325,13 @@ fvariable sw-dx  fvariable sw-dz
             $40 $10A noise
             2 -14.0 -9.0 97.0 flicker-sprite
         then
-    else $284 story-flag? not if
+    else fg-5-beef-jerky story-flag? not if
         0 2 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 $13 4 scene-change
         then
     then then
-    $2F5 story-flag? not if
+    got-ball story-flag? not if
         8 3 5 5 0 zone-at-effect
         fiona-who 8 3 char-zone-bits? if
             5 $14 4 scene-change
@@ -470,8 +470,8 @@ fvariable sw-dx  fvariable sw-dz
     0 avoid-prompt
     begin
         0 2 pad? not if
-            $FF panic-stage? 0 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 0 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] front-garden-5.act08 goto
@@ -527,7 +527,7 @@ fvariable sw-dx  fvariable sw-dz
         yield
     repeat
     hewie-who $6C 5 char-sound
-    $23A story-flag? not if
+    fg-5-flag1 story-flag? not if
         0 $F2 $F action
     then
     1 0 front-garden-5.cmd00
@@ -563,8 +563,8 @@ fvariable sw-dx  fvariable sw-dz
 : front-garden-5.act0F ( -- )   \ 00406290
     0 front-garden-5.cmd01
     1 front-garden-5.cmd01
-    $23A story-flag-set
-    $23B story-flag? not if
+    fg-5-flag1 story-flag-set
+    fg-5-viola-medallion story-flag? not if
         0 -265.0 -9.0 160.0 flicker-sprite
     then
     self-idle-or-end
@@ -574,7 +574,7 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     -265.0 160.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -584,7 +584,7 @@ fvariable sw-dx  fvariable sw-dz
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $23B story-flag-set
+            fg-5-viola-medallion story-flag-set
             0 effect-remove
             $72 1 item-give-count
             0 $72 item-tab
@@ -602,7 +602,7 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     -228.4 103.2 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -612,7 +612,7 @@ fvariable sw-dx  fvariable sw-dz
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $23F story-flag-set
+            fg-5-medallion story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
@@ -652,7 +652,7 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     -14.0 97.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -662,7 +662,7 @@ fvariable sw-dx  fvariable sw-dz
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $284 story-flag-set
+            fg-5-beef-jerky story-flag-set
             2 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
@@ -680,7 +680,7 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     -180.0 176.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -690,7 +690,7 @@ fvariable sw-dx  fvariable sw-dz
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2F5 story-flag-set
+            got-ball story-flag-set
             3 effect-remove
             $90 1 item-give-count
             0 $90 item-tab

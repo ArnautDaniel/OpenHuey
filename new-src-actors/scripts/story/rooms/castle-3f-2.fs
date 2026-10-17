@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-3f-2
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-3f-2.char-enter ( -- )   \ 0041D140
     hewie-controlled? not if
@@ -35,23 +35,23 @@ USING: room-names story.words story.shared flag-names ;
         1 exit-check
     then
     fiona-who 2 char-entered-area? if
-        $5B story-flag? $5C story-flag? not and if
+        c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
             stalker-who 0 char-file-load
         then
         0 exit-prepare
     then
     fiona-who 3 char-entered-area? if
-        $5B story-flag? $5C story-flag? not and if
+        c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
         then
         1 exit-prepare
     then
-    $5B story-flag? $5C story-flag? not and if
+    c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
         fiona-who 4 char-left-area? if
             panic-eased
             0 fiona-who 0 action-force
         then
     then
-    $5C story-flag? $71 story-flag? not and if
+    c3f-2-flag1 story-flag? found-file-233 story-flag? not and if
         0 stalker-alert? not if
             stalker-who 0 stalker-command
         then
@@ -62,7 +62,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-3f-2.act00 ( -- )   \ 0041D220
-    $5C story-flag-set
+    c3f-2-flag1 story-flag-set
     stalkers-stay state-flag-set
     1 self-scripted
     0 exit-door-open? not if

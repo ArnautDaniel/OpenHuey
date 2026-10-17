@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-14
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x2F (Room2F_Cond00_ptmf): the pursuer's Pursuer_GrabHewieBehind
 : castle-2f-14.cond00? ( b0 -- flag )  drop grab-hewie-behind? ;   \ (the stalker's Pursuer_GrabHewieBehind)
@@ -10,7 +10,7 @@ USING: room-names story.words story.shared flag-names ;
 : castle-2f-14.enter ( -- )   \ 00412950
     room-sounds
     $16 1.0 0 bgm
-    $260 story-flag? not if
+    c2f-13-medallion story-flag? not if
         1 -151.78 97.684 -50.579 flicker-sprite
     then
     1 $13 $10000000 nav-tri-flags
@@ -32,7 +32,7 @@ USING: room-names story.words story.shared flag-names ;
     then then
     0 0 0 area-camera
     fiona-who self-is? if
-        $E story-flag? not if
+        found-file-227 story-flag? not if
             fiona-who $4D -45 char-to-tri-facing
             hewie-who char-activate
             hewie-who char-here? if
@@ -97,7 +97,7 @@ USING: room-names story.words story.shared flag-names ;
             then
         then then
     then
-    $260 story-flag? not hewie-who 7 char-in-area? and if
+    c2f-13-medallion story-flag? not hewie-who 7 char-in-area? and if
         0 -149.92 60.0 -50.71 $36 36 0 zone
         1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -125,7 +125,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-2f-14.phase2 ( -- )   \ 00412B60
-    $E story-flag? if
+    found-file-227 story-flag? if
         fiona-who 9 char-in-area? if
             5 1 0 scene-change
         then
@@ -156,7 +156,7 @@ USING: room-names story.words story.shared flag-names ;
     camera-restart
     world-held state-flag-clear
     $F $41 fade
-    $E story-flag-set
+    found-file-227 story-flag-set
     0 exit-prepare
     wait-fade
     $227 item-give
@@ -218,8 +218,8 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-anim
     0 0 $30 nav-group
     0 self-noclip
-    $260 story-flag? not if
-        $260 story-flag? not if
+    c2f-13-medallion story-flag? not if
+        c2f-13-medallion story-flag? not if
             fiona-half-hidden state-flag? fiona-who char-busy? not or if
                 $70 $63 item-count? not if
                     10 hewie-trust
@@ -229,14 +229,14 @@ USING: room-names story.words story.shared flag-names ;
                     $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
                     wait-message
                 else
-                    $260 story-flag-set
+                    c2f-13-medallion story-flag-set
                     $70 1 item-give-count
                     0 $70 item-tab
                     item-fanfare
                     $8011 message   \ "You've obtained ."
                     wait-message
                 then
-                $260 story-flag? if
+                c2f-13-medallion story-flag? if
                     1 effect-remove
                 then
             then

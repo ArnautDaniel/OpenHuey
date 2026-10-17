@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-27
-USING: actors messages items room-names story.words story.shared flag-names ;
+USING: actors messages items room-names story.words story.shared flag-names story-names ;
 
 \ the items 0x91 / 0x92, by byte 3: 0 which of them Fiona lacks (one each) kept in event var 0
 \ (0x91 low byte, 0x92 the next), and event +0x5C(3) when any; 1 they are given back, event
@@ -29,7 +29,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             0 -27.75 10.0 5.68 flicker-sprite
         then
     then
-    $AE story-flag? if
+    fg-3-flag3 story-flag? if
         0 1 $14 door-bits
     then
 ;
@@ -48,7 +48,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
         5 5 0 scene-change
     then
     fiona-who 2 char-in-area? fiona-who 90 $37 char-heading? and if
-        $AE story-flag? not if
+        fg-3-flag3 story-flag? not if
             5 3 0 scene-change
         else
             5 6 0 scene-change
@@ -67,7 +67,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     fiona-who 4 char-in-area? fiona-who 45 $32 char-heading? and if
         5 $A 0 scene-change
     then
-    $AE story-flag? if
+    fg-3-flag3 story-flag? if
         fiona-who 3 char-in-area? fiona-who 90 $37 char-heading? and if
             5 7 0 scene-change
         then
@@ -79,15 +79,15 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     camera-restart
     $F 1 fade
     wait-fade
-    $AE story-flag? not if
-        $89 story-flag? $34B story-flag? not and if
+    fg-3-flag3 story-flag? not if
+        x-37-flag2 story-flag? got-doc-action story-flag? not and if
             $F 6 fade
             wait-fade
             $40AB message   \ "'Costumes' You are now able to change costumes. Change into alternate costu..."
             wait-message
             $F 7 fade
             wait-fade
-            $34B story-flag-set
+            got-doc-action story-flag-set
             $AB message-param-room
             $AB 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
@@ -123,7 +123,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    $34B story-flag? not if
+    got-doc-action story-flag? not if
         $40 message   \ "A chest used to store clothes."
         wait-message
     else $26 3 pvar? if
@@ -344,7 +344,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
     self-wait-done
     -12.0 -22.0 self-turn-to-xz
     self-wait-done
-    $368 story-flag? not $369 story-flag? not and $36A story-flag? not and $36B story-flag? not and if
+    x-27-magist-medallion story-flag? not x-27-magist-medallion-2 story-flag? not and x-27-magist-medallion-3 story-flag? not and x-27-magist-medallion-4 story-flag? not and if
         $1D01 self-anim
         $A message   \ "What on earth could this machine be for? There's a slot on it..."
         wait-message
@@ -392,7 +392,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             $8012 message   \ "You've obtained ."
             wait-message
         then
-        $368 story-flag-set
+        x-27-magist-medallion story-flag-set
     else 1 140 var? if
         $8C 1 item-count? if
             $75 message-param-room
@@ -409,7 +409,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             $8012 message   \ "You've obtained ."
             wait-message
         then
-        $369 story-flag-set
+        x-27-magist-medallion-2 story-flag-set
     else 1 131 var? if
         $83 1 item-count? if
             $75 message-param-room
@@ -426,7 +426,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             $8012 message   \ "You've obtained ."
             wait-message
         then
-        $36A story-flag-set
+        x-27-magist-medallion-3 story-flag-set
     else 1 137 var? if
         $89 1 item-count? if
             $75 message-param-room
@@ -443,7 +443,7 @@ USING: actors messages items room-names story.words story.shared flag-names ;
             $8012 message   \ "You've obtained ."
             wait-message
         then
-        $36B story-flag-set
+        x-27-magist-medallion-4 story-flag-set
     then then then then
     $901 self-anim
     self-wait-anim

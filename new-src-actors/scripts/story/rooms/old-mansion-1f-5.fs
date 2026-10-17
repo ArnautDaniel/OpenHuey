@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-5
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 \ the effect BigFire_vtable (three quad drawers) started with parameter 0
 : old-mansion-1f-5.cmd00 ( -- )  effects:big-fire ;   \ (the fire: smoke, flames, glow)
@@ -11,20 +11,20 @@ USING: room-names story.words story.shared ;
     room-sounds
     $19 1.0 0 bgm
     1 1 $300000 nav-group
-    $26E story-flag? not if
+    om1f-8-beef-jerky story-flag? not if
         0 122.09 8.28 10.26 flicker-sprite
     then
-    $26F story-flag? not if
+    om1f-5-lavender story-flag? not if
         1 -107.57 1.0 10.1 flicker-sprite
     then
-    $270 story-flag? not if
+    om1f-8-album-medallion story-flag? not if
         2 -140.37 16.0 -25.97 flicker-sprite
     then
     8 1 item-count? not 9 1 item-count? not and $A 1 item-count? not and $B 1 item-count? not and $C 1 item-count? not and if
         0 ebit-set
         3 -111.0 17.0 -115.0 flicker-sprite
     then
-    $2AB story-flag? $2AC story-flag? not and if
+    om1f-5-refined-magnesia-found story-flag? om1f-5-refined-magnesia story-flag? not and if
         4 -9.11 1.0 -21.78 flicker-sprite
     then
     old-mansion-1f-5.cmd00
@@ -77,12 +77,12 @@ USING: room-names story.words story.shared ;
     else hewie-who 4 char-in-area? hewie-who char-busy? not and if
         4 exit-check
     then then
-    $2AB story-flag? not if
+    om1f-5-refined-magnesia-found story-flag? not if
         3 -9.11 0.0 -21.78 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 683 var-set
-                $1A 684 var-set
+                $19 om1f-5-refined-magnesia-found var-set
+                $1A om1f-5-refined-magnesia var-set
                 $1B 4 var-set
                 $1C -9110 var-set
                 $1D 1000 var-set
@@ -98,13 +98,13 @@ USING: room-names story.words story.shared ;
     fiona-who $19 char-in-area? fiona-who -45 $32 char-heading? and if
         5 0 0 scene-change
     then
-    $26F story-flag? not if
+    om1f-5-lavender story-flag? not if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 3 4 scene-change
         then
     then
-    $2AB story-flag? $2AC story-flag? not and if
+    om1f-5-refined-magnesia-found story-flag? om1f-5-refined-magnesia story-flag? not and if
         3 4 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 5 4 scene-change
@@ -129,7 +129,7 @@ USING: room-names story.words story.shared ;
         fiona-who $43 5 char-sound
         $F00 self-anim
         $21 pvar-inc
-        $FF panic-stage? not if
+        in-panic? not if
             3 panic-stage
         then
         $12 message   \ "Wait a second! It's still moving in there! It's being cooked alive!"
@@ -154,7 +154,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     -107.57 10.1 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -164,7 +164,7 @@ USING: room-names story.words story.shared ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $26F story-flag-set
+            om1f-5-lavender story-flag-set
             1 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
@@ -186,7 +186,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     -9.11 -21.78 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -196,7 +196,7 @@ USING: room-names story.words story.shared ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2AC story-flag-set
+            om1f-5-refined-magnesia story-flag-set
             4 effect-remove
             $95 1 item-give-count
             0 $95 item-tab

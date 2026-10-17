@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-7
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names ;
 
 \ room 0x23 (Room23_Cmd00_ptmf): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2
 : castle-2f-7.cmd00 ( b0 -- )  drop ;   \ (Daniella's hair force (her model's springs: not simulated here yet))
@@ -18,7 +18,7 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : castle-2f-7.enter ( -- )   \ 004010A0
     room-sounds
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     0 0 -39.0 6.0 31.0 3.0 3.0 0.0 0.0 -60.0 wanderer
@@ -76,7 +76,7 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : castle-2f-7.phase2 ( -- )   \ 004011B0
     fiona-who 3 $2D char-faces-area? if
-        $1F story-flag? not if
+        c2f-7-flag1 story-flag? not if
             5 0 0 scene-change
         else
             5 3 0 scene-change
@@ -107,7 +107,7 @@ USING: engine room-names story.words story.shared flag-names ;
         scene-play
     then
     world-held state-flag-set
-    $1F story-flag-set
+    c2f-7-flag1 story-flag-set
     0 ebit-set
     2 subscreen-open
     begin
@@ -115,7 +115,7 @@ USING: engine room-names story.words story.shared flag-names ;
         yield
     repeat
     yield
-    $20 story-flag? if
+    plate-made story-flag? if
         3 0 movie-play
         1 cutscene-start
         yield
@@ -135,7 +135,7 @@ USING: engine room-names story.words story.shared flag-names ;
     camera-restart
     $F 1 fade
     wait-fade
-    $20 story-flag? if
+    plate-made story-flag? if
         $3F message-param-room
         0 $3F item-tab
         item-fanfare
@@ -181,7 +181,7 @@ USING: engine room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $1B story-flag? $307 story-flag? not and castle-2f-7.cond00? and 0 exit-door-open? and if
+    c2f-8-flag3 story-flag? c2f-7-flag2 story-flag? not and castle-2f-7.cond00? and 0 exit-door-open? and if
         $11 door-open-clear
         doors-room-in
         0 0 self-door-knock
@@ -192,7 +192,7 @@ USING: engine room-names story.words story.shared flag-names ;
         1 $FF 8 rumble
         self-frames-reset
         $10 self-wait-frames
-        $307 story-flag-set
+        c2f-7-flag2 story-flag-set
         $5A threat-raise
         self-wait-anim
     else plates-under-10? if
@@ -201,22 +201,22 @@ USING: engine room-names story.words story.shared flag-names ;
             wait-message
             0 ebit-set
         then
-        $20 story-flag? if
-            $20 story-flag-clear
+        plate-made story-flag? if
+            plate-made story-flag-clear
             2 subscreen-open
             begin
                 subscreen-wanted state-flag? while
                 yield
             repeat
             yield
-            $20 story-flag? if
+            plate-made story-flag? if
                 $3F message-param-room
                 0 $3F item-tab
                 item-fanfare
                 $8012 message   \ "You've obtained ."
                 wait-message
             then
-            $20 story-flag-set
+            plate-made story-flag-set
         else
             2 subscreen-open
             begin
@@ -224,7 +224,7 @@ USING: engine room-names story.words story.shared flag-names ;
                 yield
             repeat
             yield
-            $20 story-flag? if
+            plate-made story-flag? if
                 $F 4 fade
                 3 0 movie-play
                 1 cutscene-start

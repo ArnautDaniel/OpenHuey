@@ -2,20 +2,20 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-3
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : house-of-truth-1f-3.enter ( -- )   \ 00433580
-    $9D story-flag? not if
+    got-golden-candlestick story-flag? not if
         0 1 $14 door-bits
     then
     0 -42.5 45.4 -36.9 1 flame-in
     1 -72.4 17.2 -7.1 1 flame-in
     2 -42.5 45.4 87.3 1 flame-in
     3 -72.4 17.2 117.2 1 flame-in
-    $2E2 story-flag? not if
+    ht1f-3-rubrum-medallion story-flag? not if
         4 -23.41 1.0 -14.78 flicker-sprite
     then
-    $2ED story-flag? $2EE story-flag? not and if
+    ht1f-3-viola-medallion-found story-flag? ht1f-3-viola-medallion story-flag? not and if
         5 3.0 1.0 168.0 flicker-sprite
     then
     1 $2300 sound-volume
@@ -100,9 +100,9 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 6 char-entered-area? if
         2 exit-prepare
     then
-    $97 story-flag? not if
+    ht1f-3-flag1 story-flag? not if
         fiona-who 9 char-left-area? if
-            $97 story-flag-set
+            ht1f-3-flag1 story-flag-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
@@ -151,7 +151,7 @@ USING: room-names story.words story.shared flag-names ;
     stalker-who 4 3 char-zone-bits? stalker-who 4 3 char-zone-bits-before? not and if
         stalker-who 3 char-effect-moving
     then
-    $9D story-flag? not if
+    got-golden-candlestick story-flag? not if
         0 -61.25 0.0 -4.27 $11 15 0 zone
         hewie-who char-here? 0 game-mode? and if
             hewie-can-command? if
@@ -162,12 +162,12 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2ED story-flag? not if
+    ht1f-3-viola-medallion-found story-flag? not if
         2 3.0 0.0 168.0 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 749 var-set
-                $1A 750 var-set
+                $19 ht1f-3-viola-medallion-found var-set
+                $1A ht1f-3-viola-medallion var-set
                 $1B 5 var-set
                 $1C 3000 var-set
                 $1D 1000 var-set
@@ -180,7 +180,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : house-of-truth-1f-3.phase2 ( -- )   \ 004338F0
-    $9D story-flag? not if
+    got-golden-candlestick story-flag? not if
         fiona-who $A char-in-area? fiona-who 0 $32 char-heading? and if
             5 1 4 scene-change
         then
@@ -188,13 +188,13 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $B char-in-area? fiona-who 45 $32 char-heading? and if
         5 2 0 scene-change
     then
-    $2E2 story-flag? not if
+    ht1f-3-rubrum-medallion story-flag? not if
         1 4 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 3 4 scene-change
         then
     then
-    $2ED story-flag? $2EE story-flag? not and if
+    ht1f-3-viola-medallion-found story-flag? ht1f-3-viola-medallion story-flag? not and if
         2 5 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 4 4 scene-change
@@ -244,7 +244,7 @@ USING: room-names story.words story.shared flag-names ;
     $45 resident-flag-set
     stalkers-stay state-flag-clear
     0 self-scripted
-    $97 story-flag-set
+    ht1f-3-flag1 story-flag-set
     self-idle-or-end
 ;
 
@@ -255,8 +255,8 @@ USING: room-names story.words story.shared flag-names ;
     $902 self-anim
     self-wait-anim
     0 0 $14 door-bits
-    $9D story-flag-set
-    $AF story-flag? not if
+    got-golden-candlestick story-flag-set
+    items-40-as-70 story-flag? not if
         $24E item-add
     then
     $24 message-param-room
@@ -267,7 +267,7 @@ USING: room-names story.words story.shared flag-names ;
     wait-message
     $903 self-anim
     self-wait-anim
-    $AF story-flag? not if
+    items-40-as-70 story-flag? not if
         $C $85 0.0 0.0 0.0 0 0 sound
     then
     self-idle-or-end
@@ -288,7 +288,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -23.41 -14.78 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -298,7 +298,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2E2 story-flag-set
+            ht1f-3-rubrum-medallion story-flag-set
             4 effect-remove
             $73 1 item-give-count
             0 $73 item-tab
@@ -316,7 +316,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     3.0 168.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -326,7 +326,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2EE story-flag-set
+            ht1f-3-viola-medallion story-flag-set
             5 effect-remove
             $72 1 item-give-count
             0 $72 item-tab

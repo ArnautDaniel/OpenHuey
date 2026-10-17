@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-18
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names ;
 
 \ room 0x1C (Room1C_Cmd00_ptmf): room effect 0x1C (a depth range) with the cutscene from frame
 \ 0x14A: near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230)
@@ -91,7 +91,7 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    7 story-flag? not if
+    flowers-laid story-flag? not if
         0 55.0 4.0 -30.0 $A 5 0 zone
         1 55.0 4.0 -30.0 $14 50 0 zone
         1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
@@ -126,14 +126,14 @@ USING: engine room-names story.words story.shared flag-names ;
     then
     2 ebit? not if
         6 sound-bank-loaded? if
-            7 story-flag? not if
+            flowers-laid story-flag? not if
                 $40000000 6 55.0 4.0 -30.0 0 0 sound
             else
                 $40000000 6 -34.0 0.0 -44.0 0 0 sound
             then
             2 ebit-set
         then
-    else 7 story-flag? not if
+    else flowers-laid story-flag? not if
         castle-1f-18.cmd01
     else
         $C0000000 6 -34.0 0.0 -44.0 0 0 sound
@@ -141,12 +141,12 @@ USING: engine room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-18.phase2 ( -- )   \ 003FCD70
-    7 story-flag? not if
+    flowers-laid story-flag? not if
         fiona-who 9 $5A char-faces-area? if
             5 2 0 scene-change
         then
     then
-    fiona-who 0 char-action? $FF panic-stage? not and if
+    fiona-who 0 char-action? in-panic? not and if
         fiona-who 0 2 char-zone-bits? fiona-who 0 2 char-zone-bits-before? not and if
             0 fiona-who 1 action
         then
@@ -188,7 +188,7 @@ USING: engine room-names story.words story.shared flag-names ;
     1 item-use
     2 item-use
     $26 door-unlock
-    7 story-flag-set
+    flowers-laid story-flag-set
     castle-1f-18.act06
     0 0 $20000000 nav-group
     0 1 $1000000 nav-group
@@ -203,7 +203,7 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : castle-1f-18.act01 ( -- )   \ 003FCEA0
     self-wait-done
-    7 story-flag? not if
+    flowers-laid story-flag? not if
         55.0 -30.0 self-turn-to-xz
         self-wait-done
     else
@@ -213,7 +213,7 @@ USING: engine room-names story.words story.shared flag-names ;
     $402 self-anim
     self-wait-anim
     -1 self-idle-anim
-    7 story-flag? not if
+    flowers-laid story-flag? not if
         1 message   \ "Yuck! Look at all those moths! I'm not going there. Looks like they are attracted t..."
         wait-message
         $229 item-give

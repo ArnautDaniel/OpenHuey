@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-15
-USING: engine actors messages room-names story.words story.shared flag-names ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names ;
 
 \ the moving bookshelves (Room54_GroupStep): group g's four (the colour's book and its three
 \ shelves) - op 0 at their stop; 1 / 2 back 0.25 a frame in x / z to it (event bit 0 cleared
@@ -50,16 +50,16 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     room-sounds
     0 0 var-set
     1 0 var-set
-    $63 story-flag? not if
+    got-cathedral-secrets story-flag? not if
         1 1 $14 door-bits
     then
-    $64 story-flag? not if
+    got-occult-philosophy story-flag? not if
         2 1 $14 door-bits
     then
-    $65 story-flag? not if
+    got-wisemans-crafts story-flag? not if
         0 1 $14 door-bits
     then
-    $66 story-flag? not if
+    books-placed story-flag? not if
         1 4 $20000 nav-group
         1 5 $1000000 nav-group
         8 1 object-hidden
@@ -67,16 +67,16 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         1 5 $20000 nav-group
         2 0 old-mansion-1f-15.cmd00
     then
-    $67 story-flag? if
+    lectern-0-book-1 story-flag? if
         $B 1 $14 door-bits
     then
-    $68 story-flag? if
+    lectern-0-book-2 story-flag? if
         $A 1 $14 door-bits
     then
-    $69 story-flag? if
+    lectern-1-book-0 story-flag? if
         9 1 $14 door-bits
     then
-    $6A story-flag? not if
+    lectern-1-book-1 story-flag? not if
         1 2 $20000 nav-group
         1 3 $1000000 nav-group
         1 $18A $10000000 nav-tri-flags
@@ -90,16 +90,16 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         1 $1D1 $10000000 nav-tri-flags
         1 0 old-mansion-1f-15.cmd00
     then
-    $6B story-flag? if
+    lectern-1-book-2 story-flag? if
         8 1 $14 door-bits
     then
-    $6C story-flag? if
+    lectern-2-book-0 story-flag? if
         6 1 $14 door-bits
     then
-    $6D story-flag? if
+    lectern-2-book-1 story-flag? if
         7 1 $14 door-bits
     then
-    $6E story-flag? not if
+    lectern-2-book-2 story-flag? not if
         1 0 $20000 nav-group
         1 1 $1000000 nav-group
         0 1 object-hidden
@@ -109,19 +109,19 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         1 1 $20000 nav-group
         0 0 old-mansion-1f-15.cmd00
     then
-    $62 story-flag? not if
+    om1f-15-flag1 story-flag? not if
         0 0 0 $69 $12A obstacle-place
     else
         0 0 0 $87 $148 obstacle-place
     then
     1 7 $10000000 nav-group
-    $273 story-flag? not if
+    om1f-15-refined-antimony story-flag? not if
         0 36.86 51.0 -27.91 flicker-sprite
     then
-    $2A7 story-flag? $2A8 story-flag? not and if
+    om1f-15-antimony-tube-found story-flag? om1f-15-antimony-tube story-flag? not and if
         1 39.16 1.0 -38.76 flicker-sprite
     then
-    $2B1 story-flag? $2B2 story-flag? not and if
+    om1f-15-rubrum-medallion-found story-flag? om1f-15-rubrum-medallion story-flag? not and if
         2 -23.61 51.0 -61.37 flicker-sprite
     then
 ;
@@ -204,16 +204,16 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         3 exit-prepare
     then
     0 $148 obstacle-on? if
-        $62 story-flag-set
+        om1f-15-flag1 story-flag-set
     else
-        $62 story-flag-clear
+        om1f-15-flag1 story-flag-clear
     then
-    $2A7 story-flag? not if
+    om1f-15-antimony-tube-found story-flag? not if
         1 39.16 0.0 -38.76 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 679 var-set
-                $1A 680 var-set
+                $19 om1f-15-antimony-tube-found var-set
+                $1A om1f-15-antimony-tube var-set
                 $1B 1 var-set
                 $1C 39160 var-set
                 $1D 1000 var-set
@@ -223,12 +223,12 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             then
         then
     then
-    $2B1 story-flag? not if
+    om1f-15-rubrum-medallion-found story-flag? not if
         2 -23.61 50.0 -61.37 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 689 var-set
-                $1A 690 var-set
+                $19 om1f-15-rubrum-medallion-found var-set
+                $1A om1f-15-rubrum-medallion var-set
                 $1B 2 var-set
                 $1C -23610 var-set
                 $1D 51000 var-set
@@ -238,7 +238,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             then
         then
     then
-    $64 story-flag? not if
+    got-occult-philosophy story-flag? not if
         3 -31.67 0.0 -62.5 $B 10 0 zone
         2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -308,24 +308,24 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
 ;
 
 : old-mansion-1f-15.phase2 ( -- )   \ 004272A0
-    $63 story-flag? not if
+    got-cathedral-secrets story-flag? not if
         fiona-who 9 $32 char-faces-area? if
             5 9 4 scene-change
         then
     then
-    $64 story-flag? not if
-        fiona-who $B char-in-area? $62 story-flag? and if
+    got-occult-philosophy story-flag? not if
+        fiona-who $B char-in-area? om1f-15-flag1 story-flag? and if
             5 $A 4 scene-change
         then
     then
-    $65 story-flag? not if
+    got-wisemans-crafts story-flag? not if
         fiona-who $A char-in-area? fiona-who 90 $32 char-heading? and if
             5 $B 4 scene-change
         then
     then
-    $66 story-flag? not if
+    books-placed story-flag? not if
         fiona-who $D char-in-area? fiona-who -45 $32 char-heading? and if
-            $67 story-flag? $68 story-flag? or if
+            lectern-0-book-1 story-flag? lectern-0-book-2 story-flag? or if
                 5 $C 4 scene-change
             else
                 5 $C 0 scene-change
@@ -342,9 +342,9 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             5 $10 0 scene-change
         then
     then
-    $6A story-flag? not if
+    lectern-1-book-1 story-flag? not if
         fiona-who $11 char-in-area? fiona-who 45 $32 char-heading? and if
-            $69 story-flag? $6B story-flag? or if
+            lectern-1-book-0 story-flag? lectern-1-book-2 story-flag? or if
                 5 $D 4 scene-change
             else
                 5 $D 0 scene-change
@@ -353,9 +353,9 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     else fiona-who $13 char-in-area? fiona-who 45 $32 char-heading? and if
         5 $11 0 scene-change
     then then
-    $6E story-flag? not if
+    lectern-2-book-2 story-flag? not if
         fiona-who $14 char-in-area? fiona-who 90 $32 char-heading? and if
-            $6C story-flag? $6D story-flag? or if
+            lectern-2-book-0 story-flag? lectern-2-book-1 story-flag? or if
                 5 $E 4 scene-change
             else
                 5 $E 0 scene-change
@@ -396,7 +396,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     fiona-who $1F char-in-area? fiona-who 0 $32 char-heading? and if
         5 $19 0 scene-change
     then
-    $66 story-flag? not if
+    books-placed story-flag? not if
         fiona-who $1A char-in-area? fiona-who 90 $32 char-heading? and if
             5 $1A 0 scene-change
         then
@@ -407,19 +407,19 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     fiona-who $23 $32 char-faces-area? if
         5 $84 3 scene-change
     then
-    $273 story-flag? not if
+    om1f-15-refined-antimony story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 $1B 4 scene-change
         then
     then
-    $2A7 story-flag? $2A8 story-flag? not and if
+    om1f-15-antimony-tube-found story-flag? om1f-15-antimony-tube story-flag? not and if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 $1C 4 scene-change
         then
     then
-    $2B1 story-flag? $2B2 story-flag? not and if
+    om1f-15-rubrum-medallion-found story-flag? om1f-15-rubrum-medallion story-flag? not and if
         2 2 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 $1D 4 scene-change
@@ -449,7 +449,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     fiona-who $E 6 char-sound
     8 0 object-hidden
-    $66 story-flag-set
+    books-placed story-flag-set
     $15 item-use
     $905 self-anim
     self-wait-anim
@@ -494,7 +494,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     fiona-who $E 6 char-sound
     $B 1 $14 door-bits
-    $67 story-flag-set
+    lectern-0-book-1 story-flag-set
     $16 item-use
     $905 self-anim
     self-wait-anim
@@ -517,7 +517,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     fiona-who $E 6 char-sound
     $A 1 $14 door-bits
-    $68 story-flag-set
+    lectern-0-book-2 story-flag-set
     $17 item-use
     $905 self-anim
     self-wait-anim
@@ -540,7 +540,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     fiona-who $E 6 char-sound
     9 1 $14 door-bits
-    $69 story-flag-set
+    lectern-1-book-0 story-flag-set
     $15 item-use
     $905 self-anim
     self-wait-anim
@@ -581,7 +581,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     fiona-who $E 6 char-sound
     4 0 object-hidden
-    $6A story-flag-set
+    lectern-1-book-1 story-flag-set
     $16 item-use
     $905 self-anim
     self-wait-anim
@@ -630,7 +630,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     fiona-who $E 6 char-sound
     8 1 $14 door-bits
-    $6B story-flag-set
+    lectern-1-book-2 story-flag-set
     $17 item-use
     $905 self-anim
     self-wait-anim
@@ -653,7 +653,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     fiona-who $E 6 char-sound
     6 1 $14 door-bits
-    $6C story-flag-set
+    lectern-2-book-0 story-flag-set
     $15 item-use
     $905 self-anim
     self-wait-anim
@@ -676,7 +676,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     fiona-who $E 6 char-sound
     7 1 $14 door-bits
-    $6D story-flag-set
+    lectern-2-book-1 story-flag-set
     $16 item-use
     $905 self-anim
     self-wait-anim
@@ -710,7 +710,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-anim
     fiona-who $E 6 char-sound
     0 0 object-hidden
-    $6E story-flag-set
+    lectern-2-book-2 story-flag-set
     $17 item-use
     $905 self-anim
     self-wait-anim
@@ -757,7 +757,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-frames-reset
     4 self-wait-frames
     1 0 $14 door-bits
-    $63 story-flag-set
+    got-cathedral-secrets story-flag-set
     $15 message-param-room
     $15 1 item-give-count
     0 $15 item-tab
@@ -780,7 +780,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-frames-reset
     4 self-wait-frames
     2 0 $14 door-bits
-    $64 story-flag-set
+    got-occult-philosophy story-flag-set
     $16 message-param-room
     $16 1 item-give-count
     0 $16 item-tab
@@ -803,7 +803,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-frames-reset
     4 self-wait-frames
     0 0 $14 door-bits
-    $65 story-flag-set
+    got-wisemans-crafts story-flag-set
     $17 message-param-room
     $17 1 item-give-count
     0 $17 item-tab
@@ -822,12 +822,12 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $36 35.0 -52.0 -90 $FFFF 5 self-move-to
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
-    $67 story-flag? $68 story-flag? or if
+    lectern-0-book-1 story-flag? lectern-0-book-2 story-flag? or if
         $904 self-anim
         self-wait-anim
-        $67 story-flag? if
+        lectern-0-book-1 story-flag? if
             $B 0 $14 door-bits
-            $67 story-flag-clear
+            lectern-0-book-1 story-flag-clear
             $905 self-anim
             $16 message-param-room
             $16 1 item-give-count
@@ -837,7 +837,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             wait-message
         else
             $A 0 $14 door-bits
-            $68 story-flag-clear
+            lectern-0-book-2 story-flag-clear
             $905 self-anim
             $17 message-param-room
             $17 1 item-give-count
@@ -870,12 +870,12 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C5 30.0 49.0 90 $FFFF 5 self-move-to
     self-wait-done
     1 25.0 20.0 50.0 2.0 event-camera
-    $69 story-flag? $6B story-flag? or if
+    lectern-1-book-0 story-flag? lectern-1-book-2 story-flag? or if
         $904 self-anim
         self-wait-anim
-        $69 story-flag? if
+        lectern-1-book-0 story-flag? if
             9 0 $14 door-bits
-            $69 story-flag-clear
+            lectern-1-book-0 story-flag-clear
             $905 self-anim
             $15 message-param-room
             $15 1 item-give-count
@@ -885,7 +885,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             wait-message
         else
             8 0 $14 door-bits
-            $6B story-flag-clear
+            lectern-1-book-2 story-flag-clear
             $905 self-anim
             $17 message-param-room
             $17 1 item-give-count
@@ -918,12 +918,12 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C6 0.0 43.0 180 $FFFF 5 self-move-to
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
-    $6C story-flag? $6D story-flag? or if
+    lectern-2-book-0 story-flag? lectern-2-book-1 story-flag? or if
         $904 self-anim
         self-wait-anim
-        $6C story-flag? if
+        lectern-2-book-0 story-flag? if
             6 0 $14 door-bits
-            $6C story-flag-clear
+            lectern-2-book-0 story-flag-clear
             $905 self-anim
             $15 message-param-room
             $15 1 item-give-count
@@ -933,7 +933,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             wait-message
         else
             7 0 $14 door-bits
-            $6D story-flag-clear
+            lectern-2-book-1 story-flag-clear
             $905 self-anim
             $16 message-param-room
             $16 1 item-give-count
@@ -1084,7 +1084,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     36.86 -27.91 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -1094,7 +1094,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $273 story-flag-set
+            om1f-15-refined-antimony story-flag-set
             0 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
@@ -1112,7 +1112,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     39.16 -38.76 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -1122,7 +1122,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2A8 story-flag-set
+            om1f-15-antimony-tube story-flag-set
             1 effect-remove
             $97 1 item-give-count
             0 $97 item-tab
@@ -1140,7 +1140,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     -23.61 -61.37 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -1150,7 +1150,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2B2 story-flag-set
+            om1f-15-rubrum-medallion story-flag-set
             2 effect-remove
             $73 1 item-give-count
             0 $73 item-tab

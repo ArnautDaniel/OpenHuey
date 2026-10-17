@@ -130,7 +130,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     1 -27.83 -60.0 -33.59 $A 5 0 zone
     hewie-who 1 8 char-zone-bits? if
         fiona-who char-here? if
-            fiona-who char-busy? not $FF panic-stage? not and if
+            fiona-who char-busy? not in-panic? not and if
                 -1 control-action? not if
                     stalker-who char-here? not if
                         3 ebit-clear
@@ -143,7 +143,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     2 -44.45 -60.0 -32.32 $A 5 0 zone
     hewie-who 2 8 char-zone-bits? if
         fiona-who char-here? if
-            fiona-who char-busy? not $FF panic-stage? not and fiona-free? and if
+            fiona-who char-busy? not in-panic? not and fiona-free? and if
                 -1 control-action? not if
                     stalker-who char-here? not if
                         3 ebit-set
@@ -233,8 +233,8 @@ USING: room-names story.words story.shared flag-names story.clock ;
     0 avoid-prompt
     begin
         -1 control-action? if
-            $FF panic-stage? 4 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 4 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] off-map-e3.act01 goto

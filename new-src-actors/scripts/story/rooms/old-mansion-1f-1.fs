@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-1
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names ;
 
 \ a lit quad at x -15.96, z -2 .. 6, height 111 / 91
 : old-mansion-1f-1.cmd00 ( b0 -- )  $1B $80  -15.959e 111.0e -2.0e  -15.959e 111.0e 6.0e  -15.959e 91.0e -2.0e  -15.959e 91.0e 6.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -17,10 +17,10 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-1.enter ( -- )   \ 0041D2E0
     room-sounds
-    $4A story-flag? not if
+    found-file-234 story-flag? not if
         0 old-mansion-1f-1.cmd00
         0 1 $14 door-bits
-        $71 story-flag? if
+        found-file-233 story-flag? if
             force-followed state-flag-set
             stalker-no-fear state-flag-set
             no-stalker-camera state-flag-set
@@ -94,12 +94,12 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who $A char-left-area? if
         1 map-page
     then
-    $5C story-flag? $71 story-flag? not and if
+    c3f-2-flag1 story-flag? found-file-233 story-flag? not and if
         0 stalker-alert? not if
             stalker-who 0 stalker-command
         then
     then
-    $71 story-flag? not if
+    found-file-233 story-flag? not if
         0 ebit? not if
             fiona-who 8 char-entered-area? if
                 0 ebit-set
@@ -111,13 +111,13 @@ USING: engine room-names story.words story.shared flag-names ;
                 then
             then
         then
-    else $4A story-flag? not if
+    else found-file-234 story-flag? not if
         fiona-who 9 char-entered-area? 2 ebit? not and if
             panic-eased
             0 fiona-who 3 action-force
         then
     then then
-    $4A story-flag? not $71 story-flag? and if
+    found-file-234 story-flag? not found-file-233 story-flag? and if
         0 -3.91 90.0 3.23 $50 26 0 zone
         1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -149,7 +149,7 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-1.phase5 ( -- )   \ 0041D4E0
     force-followed state-flag-clear
-    $71 story-flag? $4A story-flag? not and if
+    found-file-233 story-flag? found-file-234 story-flag? not and if
         force-followed state-flag-clear
         stalker-no-fear state-flag-clear
         no-stalker-camera state-flag-clear
@@ -195,7 +195,7 @@ USING: engine room-names story.words story.shared flag-names ;
     0 3 1 action
     hewie-who action-end
     hewie-who $31 30 char-to-tri-facing
-    $71 story-flag-set
+    found-file-233 story-flag-set
     1 exit-prepare
     0 old-mansion-1f-1.cmd00
     1 wait-counter

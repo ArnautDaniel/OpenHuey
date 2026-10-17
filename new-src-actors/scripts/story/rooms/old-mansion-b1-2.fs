@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-2
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x4B (D_00409910): a lit quad at x -63.65 .. -55.65, z 104.5, from 4 to 21
 : old-mansion-b1-2.cmd00 ( b0 -- )  $1B $80  -63.65e 21.0e 104.5e  -55.65e 21.0e 104.5e  -63.65e 4.0e 104.5e  -55.65e 4.0e 104.5e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -14,12 +14,12 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-b1-2.enter ( -- )   \ 00408B90
     room-sounds
-    $70 story-flag? not if
+    om1f-12-flag4 story-flag? not if
         old-mansion-b1-2.cond00? if
             $4B 0 422 2 8 6 0 0.0 creature-place
         then
     then
-    $237 story-flag? not if
+    omb1-2-breakable1-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -27,11 +27,11 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $290 story-flag? not if
+        omb1-2-viola-medallion story-flag? not if
             0 13.5 -9.0 -75.0 flicker-sprite
         then
     then
-    $238 story-flag? not if
+    omb1-2-breakable2-broken story-flag? not if
         1 1 $8000000 nav-group
         2 1 $14 door-bits
         3 0 $14 door-bits
@@ -39,16 +39,16 @@ USING: room-names story.words story.shared flag-names ;
         0 1 $8000000 nav-group
         2 0 $14 door-bits
         3 1 $14 door-bits
-        $291 story-flag? not if
+        omb1-2-rubrum-medallion story-flag? not if
             1 13.5 -9.0 -59.5 flicker-sprite
         then
     then
     0 4 0.5 0.5 0.25 0.5 zone-rect
     1 $B 0.4 0.0 0.2 0.5 zone-rect
-    $329 story-flag? not if
+    omb1-2-breakable3-broken story-flag? not if
         4 0 $14 door-bits
         5 1 $14 door-bits
-        $32A story-flag? not if
+        omb1-2-flag1 story-flag? not if
             3 old-mansion-b1-2.cmd01
             1 old-mansion-b1-2.cmd00
         else
@@ -61,7 +61,7 @@ USING: room-names story.words story.shared flag-names ;
         1 old-mansion-b1-2.cmd00
         1 2 $2008000 nav-group
     then
-    $269 story-flag? not if
+    omb1-2-refined-magnesia story-flag? not if
         2 -109.83 12.0 72.62 flicker-sprite
     then
     3 132.4 -16.6 -76.8 1 flame-in
@@ -195,7 +195,7 @@ USING: room-names story.words story.shared flag-names ;
         1 map-page
     then
     2 ebit? not if
-        $329 story-flag? not $32A story-flag? and if
+        omb1-2-breakable3-broken story-flag? not omb1-2-flag1 story-flag? and if
             3 stalker-kind? $22 stalker-kind? or if
                 stalker-who $1A char-entered-area? stalker-who 0 char-action? and if
                     0 stalker-who 7 action
@@ -212,7 +212,7 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $329 story-flag? not $32A story-flag? and if
+    omb1-2-breakable3-broken story-flag? not omb1-2-flag1 story-flag? and if
         3 -60.85 0.0 104.12 $10 6 0 zone
         4 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -316,7 +316,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     3 ebit? not if
         fiona-who $1A char-in-area? fiona-who 0 $3C char-heading? and if
-            $329 story-flag? not if
+            omb1-2-breakable3-broken story-flag? not if
                 stalker-who char-here? not if
                     5 6 5 scene-change
                 else stalker-who $1A char-in-area? stalker-who fiona-who 40 chars-within? or if
@@ -335,7 +335,7 @@ USING: room-names story.words story.shared flag-names ;
     else
         3 ebit-clear
     then then
-    $269 story-flag? not if
+    omb1-2-refined-magnesia story-flag? not if
         7 2 5 5 0 zone-at-effect
         fiona-who 7 3 char-zone-bits? if
             5 9 4 scene-change
@@ -356,10 +356,10 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $1D char-in-area? fiona-who -45 $32 char-heading? and if
         5 $D 0 scene-change
     then
-    $237 story-flag? not if
+    omb1-2-breakable1-broken story-flag? not if
         0 13.5 -10.0 -75.0 5 8 1 zone
         self-who 0 char-in-zone? if
-            $237 story-flag-set
+            omb1-2-breakable1-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -368,16 +368,16 @@ USING: room-names story.words story.shared flag-names ;
             $40 $23A noise
             0 13.5 -9.0 -75.0 flicker-sprite
         then
-    else $290 story-flag? not if
+    else omb1-2-viola-medallion story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 $A 4 scene-change
         then
     then then
-    $238 story-flag? not if
+    omb1-2-breakable2-broken story-flag? not if
         1 13.5 -10.0 -59.5 5 8 1 zone
         self-who 1 char-in-zone? if
-            $238 story-flag-set
+            omb1-2-breakable2-broken story-flag-set
             0 1 $8000000 nav-group
             2 0 $14 door-bits
             3 1 $14 door-bits
@@ -386,7 +386,7 @@ USING: room-names story.words story.shared flag-names ;
             $40 $234 noise
             1 13.5 -9.0 -59.5 flicker-sprite
         then
-    else $291 story-flag? not if
+    else omb1-2-rubrum-medallion story-flag? not if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 $B 4 scene-change
@@ -396,8 +396,8 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-b1-2.phase5 ( -- )   \ 004092C0
     3 ebit? if
-        $32A story-flag-set
-        $329 story-flag-set
+        omb1-2-flag1 story-flag-set
+        omb1-2-breakable3-broken story-flag-set
         3 stalker-kind? $22 stalker-kind? or if
             stalker-who 1 stalker-rage
         then
@@ -413,8 +413,8 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     2 self-through-exit
     self-wait-done
-    0 ebit? not 2 game-mode? or $FF panic-stage? or if
-        $FF panic-stage? 2 game-mode? or if
+    0 ebit? not 2 game-mode? or in-panic? or if
+        in-panic? 2 game-mode? or if
             $60B self-anim
             self-wait-anim
             -1 self-idle-anim
@@ -479,8 +479,8 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     3 self-through-exit
     self-wait-done
-    1 ebit? not 2 game-mode? or $FF panic-stage? or if
-        $FF panic-stage? 2 game-mode? or if
+    1 ebit? not 2 game-mode? or in-panic? or if
+        in-panic? 2 game-mode? or if
             $60B self-anim
             self-wait-anim
             -1 self-idle-anim
@@ -547,7 +547,7 @@ USING: room-names story.words story.shared flag-names ;
         $4F self-through-door
         self-wait-done
         stalker-who self-touching? not if
-            $FF panic-stage? not if
+            in-panic? not if
                 fiona-who $4F char-not-at-door? if
                     $609 self-anim
                 else
@@ -555,7 +555,7 @@ USING: room-names story.words story.shared flag-names ;
                 then
                 self-frames-reset
                 $14 self-wait-frames
-                $FF panic-stage? not if
+                in-panic? not if
                     fiona-who $72 5 char-sound
                     $4F door-unlock
                     $8008 message   \ "You unlocked the door."
@@ -599,7 +599,7 @@ USING: room-names story.words story.shared flag-names ;
         6 sound-bank-loaded? not while
         yield
     repeat
-    $32A story-flag? not if
+    omb1-2-flag1 story-flag? not if
         0 old-mansion-b1-2.cmd00
         0 0 var-set
         $8000 5 self-anim-blend8
@@ -616,7 +616,7 @@ USING: room-names story.words story.shared flag-names ;
         repeat
         self-wait-anim
         2 old-mansion-b1-2.cmd01
-        $32A story-flag-set
+        omb1-2-flag1 story-flag-set
     else
         0 0 var-set
         $8001 5 self-anim-blend8
@@ -633,7 +633,7 @@ USING: room-names story.words story.shared flag-names ;
         repeat
         self-wait-anim
         3 old-mansion-b1-2.cmd01
-        $32A story-flag-clear
+        omb1-2-flag1 story-flag-clear
         1 old-mansion-b1-2.cmd00
     then
     2 ebit-clear
@@ -658,7 +658,7 @@ USING: room-names story.words story.shared flag-names ;
     $E00 5 self-anim-blend
     self-frames-reset
     $16 self-wait-frames
-    $329 story-flag-set
+    omb1-2-breakable3-broken story-flag-set
     stalker-who 1 6 char-sound
     stalker-who 1 stalker-rage
     4 1 $14 door-bits
@@ -689,7 +689,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -109.83 72.62 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -699,7 +699,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $269 story-flag-set
+            omb1-2-refined-magnesia story-flag-set
             2 effect-remove
             $95 1 item-give-count
             0 $95 item-tab
@@ -717,7 +717,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     13.5 -75.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -727,7 +727,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $290 story-flag-set
+            omb1-2-viola-medallion story-flag-set
             0 effect-remove
             $72 1 item-give-count
             0 $72 item-tab
@@ -745,7 +745,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     13.5 -59.5 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -755,7 +755,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $291 story-flag-set
+            omb1-2-rubrum-medallion story-flag-set
             1 effect-remove
             $73 1 item-give-count
             0 $73 item-tab

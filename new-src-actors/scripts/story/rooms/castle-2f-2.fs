@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-2
-USING: engine actors room-names story.words story.shared flag-names ;
+USING: engine actors room-names story.words story.shared flag-names story-names ;
 
 \ ---- the doll ("dool") that falls: +$30 its velocity, +$3C its triangle ($80000000: landed; -1
 \ none) ----
@@ -73,10 +73,10 @@ create dl-at 12 allot
 
 : castle-2f-2.enter ( -- )   \ 003FE460
     room-sounds
-    $D story-flag? not if
+    c2f-2-flag1 story-flag? not if
         0 $F2 9 action
     then
-    $1C story-flag? not if
+    c2f-2-flag2 story-flag? not if
         0 0 0 $36B $3AF obstacle-place
     else
         0 0 0 $377 $3BB obstacle-place
@@ -84,33 +84,33 @@ create dl-at 12 allot
     then
     0 23.3 12.75 87.0 0 flame-in
     1 25.15 12.75 86.0 0 flame-in
-    $24A story-flag? $24B story-flag? not and if
+    c2f-2-album-medallion-found story-flag? c2f-2-album-medallion story-flag? not and if
         2 -11.6 1.0 142.2 flicker-sprite
     then
-    $A story-flag? if
-        $2E story-flag? not if
-            $2E story-flag-set
+    got-lunar-refractor story-flag? if
+        c2f-2-flag3 story-flag? not if
+            c2f-2-flag3 story-flag-set
             $20 0 316 $D 15 -1 0 0.0 creature-place
             $20 0 361 4 15 -1 0 0.0 creature-place
         then
     then
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     3 0 castle-2f-2.cmd02
     4 0 castle-2f-2.cmd02
     0 $F4 $11 action
     5 1 object-hidden
-    $349 story-flag? not if
+    got-bisque-doll story-flag? not if
         1 ebit-clear
-        $D story-flag? $31C story-flag? not and if
+        c2f-2-flag1 story-flag? c2f-2-flag5 story-flag? not and if
             5 0 object-hidden
             castle-2f-2.cmd01
             1 ebit-set
             7 ebit-set
         then
     then
-    5 story-flag? 6 story-flag? not and if
+    c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
         $80 exit-taken? if
         else
             0 $F3 $E action
@@ -184,7 +184,7 @@ create dl-at 12 allot
     1 exit-usable? if
         1 exit-check
     then
-    5 story-flag? 6 story-flag? not and if
+    c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
         2 exit-usable? if
             3 3 2 char-load
             4 4 2 char-load
@@ -213,7 +213,7 @@ create dl-at 12 allot
         1 exit-prepare
     then
     fiona-who 9 char-entered-area? if
-        5 story-flag? 6 story-flag? not and if
+        c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
             3 3 2 char-load
             4 4 2 char-load
         then
@@ -226,13 +226,13 @@ create dl-at 12 allot
         4 exit-prepare
     then
     fiona-who $A char-entered-area? if
-        5 story-flag? 6 story-flag? not and if
+        c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
             3 0 char-remove
             4 0 char-remove
         then
         4 exit-prepare
     then
-    $D story-flag? not if
+    c2f-2-flag1 story-flag? not if
         fiona-who $17 char-entered-area? 8 ebit? not and if
             8 ebit-set
             panic-eased
@@ -243,9 +243,9 @@ create dl-at 12 allot
             then
         then
     then
-    $1C story-flag? not if
+    c2f-2-flag2 story-flag? not if
         0 $377 obstacle-on? if
-            $1C story-flag-set
+            c2f-2-flag2 story-flag-set
             0 obstacle-stop
             $12 door-unlock
             stalker-who $24 0 room-doors-state
@@ -271,12 +271,12 @@ create dl-at 12 allot
     stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
         stalker-who 1 char-effect-moving
     then
-    $24A story-flag? not if
+    c2f-2-album-medallion-found story-flag? not if
         2 -11.6 0.0 142.2 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 586 var-set
-                $1A 587 var-set
+                $19 c2f-2-album-medallion-found var-set
+                $1A c2f-2-album-medallion var-set
                 $1B 2 var-set
                 $1C -11600 var-set
                 $1D 1000 var-set
@@ -286,7 +286,7 @@ create dl-at 12 allot
             then
         then
     then
-    $349 story-flag? not if
+    got-bisque-doll story-flag? not if
         1 ebit? if
             castle-2f-2.cond00? if
                 fiona-who 4 6 char-sound
@@ -299,7 +299,7 @@ create dl-at 12 allot
             then
         then
     then
-    5 story-flag? 6 story-flag? not and if
+    c1f-8-flag1 story-flag? found-file-209 story-flag? not and if
         hewie-who 2 char-in-area? not if
             1 -144.0 0.0 109.0 $1E 20 0 zone
             3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
@@ -317,7 +317,7 @@ create dl-at 12 allot
             then
         then
     then
-    $1C story-flag? hewie-who 4 char-in-area? not and if
+    c2f-2-flag2 story-flag? hewie-who 4 char-in-area? not and if
         0 33.656 0.0 111.061 $A 20 0 zone
         2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -366,7 +366,7 @@ create dl-at 12 allot
         then
     then
     6 sound-bank-loaded? if
-        $D story-flag? not if
+        c2f-2-flag1 story-flag? not if
             $C0000002 6 -82.0 0.0 92.0 0 0 sound
         then
         $C0000001 6 -85.0 30.0 90.0 0 0 sound
@@ -375,10 +375,10 @@ create dl-at 12 allot
 
 : castle-2f-2.phase2 ( -- )   \ 003FE9C0
     fiona-who 2 char-before-door? if
-        5 story-flag? 6 story-flag? not and stalker-who char-here? not and if
+        c1f-8-flag1 story-flag? found-file-209 story-flag? not and stalker-who char-here? not and if
             5 2 0 scene-change
         then
-        6 story-flag? -2147483646 scene-request? and if
+        found-file-209 story-flag? -2147483646 scene-request? and if
             5 5 1 scene-change
         then
     then
@@ -391,19 +391,19 @@ create dl-at 12 allot
     fiona-who $13 $2D char-faces-area? if
         5 8 0 scene-change
     then
-    $1C story-flag? not fiona-who $16 char-in-area? and if
+    c2f-2-flag2 story-flag? not fiona-who $16 char-in-area? and if
         5 1 0 scene-change
     then
     fiona-who $18 char-in-area? fiona-who $19 char-in-area? or fiona-who 0 $32 char-heading? and if
         5 $A 0 scene-change
     then
-    $24A story-flag? $24B story-flag? not and if
+    c2f-2-album-medallion-found story-flag? c2f-2-album-medallion story-flag? not and if
         2 2 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 $C 4 scene-change
         then
     then
-    $349 story-flag? not if
+    got-bisque-doll story-flag? not if
         1 ebit? if
             5 6 castle-2f-2.cond02? if
                 fiona-who 6 3 char-zone-bits? if
@@ -426,7 +426,7 @@ create dl-at 12 allot
             0 summon-take
         then
     then
-    6 story-flag? $11 door-locked? and if
+    found-file-209 story-flag? $11 door-locked? and if
         $11 door-unlock
     then
 ;
@@ -435,7 +435,7 @@ create dl-at 12 allot
     1 self-scripted
     self-wait-done
     $F02 0 self-anim-blend
-    6 story-flag-set
+    found-file-209 story-flag-set
     world-held state-flag-clear
     0 0 player-camera
     camera-restart
@@ -511,7 +511,7 @@ create dl-at 12 allot
     fiona-who char-file-use
     stalker-who char-activate
     stalker-who 0 stalker-command
-    $349 story-flag? not if
+    got-bisque-doll story-flag? not if
         castle-2f-2.cmd01
         1 ebit-set
     then
@@ -523,7 +523,7 @@ create dl-at 12 allot
     camera-restart
     force-calm state-flag-clear
     $8001 0 self-anim-blend
-    $D story-flag-set
+    c2f-2-flag1 story-flag-set
     world-held state-flag-clear
     5 0 0 music
     $F $91 fade
@@ -572,8 +572,8 @@ create dl-at 12 allot
 
 : castle-2f-2.act06 ( -- )   \ 003FECD0
     self-wait-done
-    $304 story-flag? not if
-        $304 story-flag-set
+    c2f-2-flag4 story-flag? not if
+        c2f-2-flag4 story-flag-set
         fiona-who $43 5 char-sound
         $F00 self-anim
         $5A threat-add
@@ -652,7 +652,7 @@ create dl-at 12 allot
 ;
 
 : castle-2f-2.act0B ( -- )   \ 003FEDB8
-    $31C story-flag-set
+    c2f-2-flag5 story-flag-set
     begin
         castle-2f-2.cmd03
         yield
@@ -663,7 +663,7 @@ create dl-at 12 allot
     self-wait-done
     -11.6 142.2 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -673,7 +673,7 @@ create dl-at 12 allot
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $24B story-flag-set
+            c2f-2-album-medallion story-flag-set
             2 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
@@ -759,7 +759,7 @@ create dl-at 12 allot
         wait-message
     else
         $93 1 item-give-count
-        $349 story-flag-set
+        got-bisque-doll story-flag-set
         5 1 object-hidden
         0 $93 item-tab
         item-fanfare

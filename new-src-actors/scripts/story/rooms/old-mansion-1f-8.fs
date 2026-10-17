@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-8
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x48 (D_004267F8): the handler's objects 2 and 3 swing (phases 60 degrees apart) - byte 3
 \ 0 sets them still; 1: while slower than 5, Hewie's movement (the squared length of his last
@@ -52,22 +52,22 @@ USING: room-names story.words story.shared flag-names ;
         0 4 $200000 nav-group
         1 4 $100000 nav-group
     then
-    $26E story-flag? not if
+    om1f-8-beef-jerky story-flag? not if
         0 122.09 8.28 10.26 flicker-sprite
     then
-    $26F story-flag? not if
+    om1f-5-lavender story-flag? not if
         1 -131.47 1.0 9.32 flicker-sprite
     then
-    $270 story-flag? not if
+    om1f-8-album-medallion story-flag? not if
         2 -140.37 16.0 -25.97 flicker-sprite
     then
     8 1 item-count? not 9 1 item-count? not and $A 1 item-count? not and $B 1 item-count? not and $C 1 item-count? not and $10 1 item-count? not and if
         0 ebit-set
         3 -111.0 17.0 -115.0 flicker-sprite
     then
-    $50 story-flag? if
-        $79 story-flag? not if
-            $79 story-flag-set
+    om1f-12-flag1 story-flag? if
+        om1f-8-flag1 story-flag? not if
+            om1f-8-flag1 story-flag-set
             $48 0 97 4 8 -1 0 0.0 creature-place
             $48 0 488 4 8 -1 0 0.0 creature-place
         then
@@ -92,14 +92,14 @@ USING: room-names story.words story.shared flag-names ;
     $10 -100.0 53.3 -25.0 $E $80 $80 $80 $40 specks
     $10 -42.0 53.2 -118.0 $E $80 $80 $80 $40 specks
     $10 149.5 38.0 61.0 $E $80 $80 $80 $40 specks
-    $75 story-flag? $76 story-flag? not and if
+    om1f-13-flag2 story-flag? white-mandragora-used story-flag? not and if
         stalker-who action-end
         stalker-who char-done
     then
-    $76 story-flag? not if
+    white-mandragora-used story-flag? not if
         1 3 $20000 nav-group
         $26 3 $FF char-load
-        $80 story-flag? if
+        om1f-8-flag2 story-flag? if
             0 $F1 $1C action
         then
         0 old-mansion-1f-8.cmd02
@@ -229,7 +229,7 @@ USING: room-names story.words story.shared flag-names ;
             44 fiona-started? if
                 0 hewie-who $A action
             then
-            $FF panic-stage? not if
+            in-panic? not if
                 fiona-who char-busy? not fiona-half-hidden state-flag? or if
                     3 stalker-kind-here? $22 stalker-kind-here? or if
                         stalker-who 2 char-cond? not if
@@ -269,7 +269,7 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2C4 story-flag? not if
+    om1f-8-antimony-tube story-flag? not if
         hewie-who char-here? hewie-who 2 char-cond? not and hewie-who char-busy? not and if
             2 game-mode? not if
                 0 control-action? if
@@ -339,7 +339,7 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2C4 story-flag? not if
+    om1f-8-antimony-tube story-flag? not if
         7 77.32 0.0 95.28 $3C 10 0 zone
         $C ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -382,13 +382,13 @@ USING: room-names story.words story.shared flag-names ;
             5 $1D 0 scene-change
         then
     then
-    $26E story-flag? not if
+    om1f-8-beef-jerky story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 2 4 scene-change
         then
     then
-    $270 story-flag? not if
+    om1f-8-album-medallion story-flag? not if
         2 2 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 4 4 scene-change
@@ -448,7 +448,7 @@ USING: room-names story.words story.shared flag-names ;
     $18 message-param-room
     $18 item-use
     $7C door-unlock
-    $76 story-flag-set
+    white-mandragora-used story-flag-set
     0 3 $20000 nav-group
     $F $54 fade
     $FF 1.0 0 bgm
@@ -515,7 +515,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     122.09 10.26 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -525,7 +525,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $26E story-flag-set
+            om1f-8-beef-jerky story-flag-set
             0 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
@@ -543,7 +543,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -131.47 9.32 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -553,7 +553,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $26F story-flag-set
+            om1f-5-lavender story-flag-set
             1 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
@@ -571,7 +571,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -140.37 -25.97 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -581,7 +581,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $270 story-flag-set
+            om1f-8-album-medallion story-flag-set
             2 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
@@ -647,7 +647,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $130 -83.0 -83.0 60 $FFFF $A self-move-to
     self-wait-done
-    $AF story-flag? if
+    items-40-as-70 story-flag? if
         5 0 creature-count
     then
     0 self-noclip
@@ -694,7 +694,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $1C03 $A self-anim-blend
     self-wait-anim
-    $2C4 story-flag? not if
+    om1f-8-antimony-tube story-flag? not if
         fiona-half-hidden state-flag? fiona-who char-busy? not or if
             $97 $63 item-count? not if
                 10 hewie-trust
@@ -704,7 +704,7 @@ USING: room-names story.words story.shared flag-names ;
                 $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
                 wait-message
             else
-                $2C4 story-flag-set
+                om1f-8-antimony-tube story-flag-set
                 $97 1 item-give-count
                 0 $97 item-tab
                 item-fanfare
@@ -1001,8 +1001,8 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     1 25.0 20.0 30.0 0.0 event-camera
     1 self-scripted
-    $76 story-flag? not if
-        $80 story-flag? not if
+    white-mandragora-used story-flag? not if
+        om1f-8-flag2 story-flag? not if
             stalkers-stay state-flag-set
             fiona-who 8 char-file-load
             $14 message   \ "It's too dark to see... It looks like there could be something in the back. F..."
@@ -1028,7 +1028,7 @@ USING: room-names story.words story.shared flag-names ;
                 self-wait-anim
                 $8003 self-anim
                 self-wait-anim
-                $80 story-flag-set
+                om1f-8-flag2 story-flag-set
             then
             stalkers-stay state-flag-clear
         else
@@ -1094,7 +1094,7 @@ USING: room-names story.words story.shared flag-names ;
         $F ebit-clear
         hewie-who $19F 140 char-to-tri-facing
     then
-    $80 story-flag-set
+    om1f-8-flag2 story-flag-set
     0 $F1 $1C action
     fiona-who 8 char-file-load
     fiona-who char-file-use

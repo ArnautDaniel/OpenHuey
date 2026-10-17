@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-5
-USING: engine actors messages room-names story.words story.shared flag-names ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names ;
 
 \ room 0x8D: three grey smoke effects (Effect79B00, size 60) at the room's spots 7, 4, 3
 \ (grey_three).
@@ -34,26 +34,26 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     room-sounds
     2 0 var-set
     3 0 var-set
-    $A4 story-flag? $96 story-flag? not and if
+    over-music-f story-flag? found-file-257 story-flag? not and if
         1 ebit-set
     then
     1 ebit? if
         stalkers-stay state-flag-set
     then
-    $A4 story-flag? if
+    over-music-f story-flag? if
         1 0 $20000 nav-group
         0 1 $14 door-bits
     else
         1 1 $14 door-bits
     then
-    $96 story-flag? if
+    found-file-257 story-flag? if
         2 1 $14 door-bits
     then
-    $34E story-flag? if
+    tremor-warned story-flag? if
         5 1.0 0 bgm
     then
     shared.act95
-    $A3 story-flag? if
+    ht1f-9-flag2 story-flag? if
         house-of-truth-1f-5.cmd00
     then
     1 $2300 sound-volume
@@ -94,7 +94,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-5.phase1 ( -- )   \ 00434A00
     3 ebit? not if
-        $A4 story-flag? if
+        over-music-f story-flag? if
             2 ebit? not if
                 6 sound-bank-loaded? if
                     $40000000 6 0.0 20.0 100.0 0 0 sound
@@ -165,14 +165,14 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-5.phase2 ( -- )   \ 00434B50
     fiona-who $A char-in-area? fiona-who 67 $32 char-heading? and if
-        $96 story-flag? not if
+        found-file-257 story-flag? not if
             5 $84 3 scene-change
         else
             5 6 0 scene-change
         then
     then
     fiona-who $C char-in-area? fiona-who 0 $32 char-heading? and if
-        $96 story-flag? if
+        found-file-257 story-flag? if
             5 1 0 scene-change
         else
             5 2 0 scene-change
@@ -180,26 +180,26 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     then
     -2147483646 scene-request? if
         fiona-who 0 char-before-door? if
-            $96 story-flag? not if
+            found-file-257 story-flag? not if
                 5 3 1 scene-change
             else
                 5 6 0 scene-change
             then
         then
         fiona-who 1 char-before-door? if
-            $96 story-flag? not if
+            found-file-257 story-flag? not if
                 5 4 1 scene-change
             else
                 5 6 0 scene-change
             then
         then
         fiona-who 2 char-before-door? if
-            $96 story-flag? if
+            found-file-257 story-flag? if
                 5 6 0 scene-change
             then
         then
     then
-    $96 story-flag? if
+    found-file-257 story-flag? if
         0 0.0 0.0 74.25 8 5 0 zone
         fiona-who 0 8 char-zone-bits? if
             5 8 0 scene-change
@@ -208,7 +208,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 ;
 
 : house-of-truth-1f-5.phase3 ( -- )   \ 00434BE0
-    $A3 story-flag? 4 ebit? not and if
+    ht1f-9-flag2 story-flag? 4 ebit? not and if
         $40000030 $47 0.0 0.0 0.0 0 0 sound
         4 ebit-set
     then
@@ -222,7 +222,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-5.act00 ( -- )   \ 00434C10
     1 self-scripted
-    $34E story-flag-clear
+    tremor-warned story-flag-clear
     $FF 1.0 0 bgm
     $F8 action-end
     $F $14 fade
@@ -270,7 +270,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     $257 item-give
     $828E item-give
     stalkers-stay state-flag-clear
-    $96 story-flag-set
+    found-file-257 story-flag-set
     1 ebit-clear
     shared.act95
     $40000030 $47 0.0 0.0 0.0 0 0 sound
@@ -338,7 +338,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     self-wait-done
     0 self-through-exit
     self-wait-done
-    $FF panic-stage? 2 game-mode? or if
+    in-panic? 2 game-mode? or if
         $60A self-anim
         self-wait-anim
         -1 self-idle-anim
@@ -360,7 +360,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     self-wait-done
     1 self-through-exit
     self-wait-done
-    $FF panic-stage? 2 game-mode? or if
+    in-panic? 2 game-mode? or if
         $60B self-anim
         self-wait-anim
         -1 self-idle-anim

@@ -2,12 +2,12 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-4
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-4.enter ( -- )   \ 004070F0
     room-sounds
     $12 1.0 0 bgm
-    $77 story-flag? not if
+    om1f-4-flag1 story-flag? not if
         0 1 $14 door-bits
     else
         1 1 $14 door-bits
@@ -23,7 +23,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     0 $F1 4 action
     hunted state-flag-set
-    $278 story-flag? not if
+    om1f-4-chicken-jerky story-flag? not if
         0 -51.07 1.0 19.59 flicker-sprite
     then
     1 $2300 sound-volume
@@ -153,7 +153,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 5 char-in-area? fiona-who 20 $32 char-heading? and if
         5 2 0 scene-change
     then
-    $278 story-flag? not if
+    om1f-4-chicken-jerky story-flag? not if
         3 0 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 5 4 scene-change
@@ -204,7 +204,7 @@ USING: room-names story.words story.shared flag-names ;
     1 1 $14 door-bits
     $42 0 105 $80 5 -1 $68 40.0 creature-place
     $42 0 23 $80 10 -1 $5A 0.0 creature-place
-    $77 story-flag-set
+    om1f-4-flag1 story-flag-set
     exit
 ;
 
@@ -230,10 +230,10 @@ USING: room-names story.words story.shared flag-names ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $360 story-flag-set
+    got-red-godstone story-flag-set
     $903 self-anim
     self-wait-anim
-    $77 story-flag? not if
+    om1f-4-flag1 story-flag? not if
         old-mansion-1f-4.act0E
     then
     stalkers-stay state-flag-clear
@@ -289,7 +289,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-anim
     2 message   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
     wait-message
-    $77 story-flag? not if
+    om1f-4-flag1 story-flag? not if
         old-mansion-1f-4.act0E
     then
     stalkers-stay state-flag-clear
@@ -402,7 +402,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -51.07 19.59 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -412,7 +412,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $278 story-flag-set
+            om1f-4-chicken-jerky story-flag-set
             0 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
@@ -517,7 +517,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -40.0 0.0 self-turn-to-xz
     self-wait-done
-    $77 story-flag? not if
+    om1f-4-flag1 story-flag? not if
         $A02 self-anim
         self-frames-reset
         $28 self-wait-frames
@@ -561,7 +561,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-1f-4.act0C ( -- )   \ 00407980
-    $77 story-flag? not if
+    om1f-4-flag1 story-flag? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done

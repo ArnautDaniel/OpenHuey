@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-8
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ Room24_Cmd00
 : castle-2f-8.cmd00 ( b0 -- )   \ (the kiln's glow - "jimen", "kama", "sumi" - pulsing: their blend 0.5 + 0.5 cos(phase),
@@ -30,35 +30,35 @@ USING: room-names story.words story.shared flag-names ;
 \ ($1B) the plate, and after act0B's ending (not act0A's, $1A) all of him
 : golem-down ( -- )
     $B 4 do  50e i object-lowered  loop
-    $1B story-flag? 0= if  exit  then
+    c2f-8-flag3 story-flag? 0= if  exit  then
     $A 1 object-hidden
-    $1A story-flag? if  exit  then
+    c2f-8-flag2 story-flag? if  exit  then
     $A 4 do  i 1 object-hidden  loop ;
 
 : castle-2f-8.enter ( -- )   \ 00401890
     golem-down
     room-sounds
-    $1B story-flag? not if
+    c2f-8-flag3 story-flag? not if
         1 0 $20000 nav-group
         1 5 $800000 nav-group
         1 1 $4000000 nav-group
         0 1 $14 door-bits
     else
         0 0 $14 door-bits
-        $1A story-flag? if
+        c2f-8-flag2 story-flag? if
             1 2 $20000 nav-group
             1 6 $800000 nav-group
             1 3 $4000000 nav-group
             1 1 $14 door-bits
-        else $19 story-flag? if
+        else c2f-8-flag1 story-flag? if
             2 1 $14 door-bits
         then then
     then
-    $1E story-flag? not if
+    got-old-parchment story-flag? not if
         5 1 $14 door-bits
     then
     castle-2f-8.cmd01
-    $209 story-flag? not if
+    c2f-8-breakable-broken story-flag? not if
         1 4 $8000000 nav-group
         3 1 $14 door-bits
         4 0 $14 door-bits
@@ -68,10 +68,10 @@ USING: room-names story.words story.shared flag-names ;
         4 1 $14 door-bits
     then
     0 7 0.812 0.687 0.187 0.312 zone-rect
-    $19 story-flag? $315 story-flag? not and if
+    c2f-8-flag1 story-flag? got-obsidian-choker story-flag? not and if
         0 10.0 1.0 -25.0 flicker-sprite
     then
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     2 2 1.5 light
@@ -124,10 +124,10 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    $209 story-flag? not if
+    c2f-8-breakable-broken story-flag? not if
         0 34.0 0.0 29.0 5 8 1 zone
         self-who 0 char-in-zone? if
-            $209 story-flag-set
+            c2f-8-breakable-broken story-flag-set
             0 4 $8000000 nav-group
             3 0 $14 door-bits
             4 1 $14 door-bits
@@ -137,8 +137,8 @@ USING: room-names story.words story.shared flag-names ;
         then
     then
     1 0 4 4 0 zone-at-effect
-    $1B story-flag? if
-        $1A story-flag? if
+    c2f-8-flag3 story-flag? if
+        c2f-8-flag2 story-flag? if
             2 43.743 0.0 -29.309 $F 20 0 zone
             2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
@@ -153,7 +153,7 @@ USING: room-names story.words story.shared flag-names ;
                     then
                 then
             then
-        else $19 story-flag? if
+        else c2f-8-flag1 story-flag? if
             hewie-who 0 char-in-area? not if
                 2 10.0 0.0 -25.0 $A 20 0 zone
                 2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
@@ -186,14 +186,14 @@ USING: room-names story.words story.shared flag-names ;
 : castle-2f-8.phase2 ( -- )   \ 00401B50
     -2147483644 scene-request? if
         0 fiona-who 8 action
-    else $1B story-flag? not if
+    else c2f-8-flag3 story-flag? not if
         fiona-who 6 $32 char-faces-area? if
             5 0 0 scene-change
         then
-    else fiona-who $B $32 char-faces-area? $1A story-flag? and if
+    else fiona-who $B $32 char-faces-area? c2f-8-flag2 story-flag? and if
         5 9 0 scene-change
     then then then
-    fiona-who $C char-in-area? $1E story-flag? not and if
+    fiona-who $C char-in-area? got-old-parchment story-flag? not and if
         fiona-who 0 $32 char-heading? if
             5 6 4 scene-change
         then
@@ -306,7 +306,7 @@ USING: room-names story.words story.shared flag-names ;
     self-frames-reset
     4 self-wait-frames
     5 0 $14 door-bits
-    $1E story-flag-set
+    got-old-parchment story-flag-set
     $A0 message-param-room
     $A0 1 item-give-count
     0 $A0 item-tab
@@ -328,7 +328,7 @@ USING: room-names story.words story.shared flag-names ;
     4 self-wait-frames
     $8D 1 item-count? not if
         0 effect-remove
-        $315 story-flag-set
+        got-obsidian-choker story-flag-set
         $8D message-param-room
         $8D 1 item-give-count
         0 $8D item-tab
@@ -341,7 +341,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $315 story-flag-set
+            got-obsidian-choker story-flag-set
             0 effect-remove
             $75 1 item-give-count
             0 $75 item-tab
@@ -415,7 +415,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $A8 -160 char-to-tri-facing
     camera-restart
     $13 door-unlock
-    $1B story-flag-set
+    c2f-8-flag3 story-flag-set
     1 0 0 music
     0 0 $20000 nav-group
     0 5 $800000 nav-group
@@ -467,7 +467,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $A8 -160 char-to-tri-facing
     camera-restart
     $13 door-unlock
-    $1B story-flag-set
+    c2f-8-flag3 story-flag-set
     1 0 0 music
     0 0 $20000 nav-group
     0 5 $800000 nav-group

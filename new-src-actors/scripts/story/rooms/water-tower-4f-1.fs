@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-4f-1
-USING: engine actors messages room-names story.words story.shared flag-names ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names ;
 
 \ (as RoomC2_Cmd00, the room object named RoomC3_ObjectNames, opening to -pi/2)
 : water-tower-4f-1.cmd00 ( b0 -- )   \ (as water-tower-2f-1's, opening the other way: -90 degrees)
@@ -25,7 +25,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
 : water-tower-4f-1.enter ( -- )   \ 0043F8F0
     room-sounds
     0 exit-taken? if
-        $342 story-flag? not if
+        wt4f-1-flag3 story-flag? not if
             $FF door-lock
             $101 door-lock
         else
@@ -33,7 +33,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
             $101 door-unlock
         then
     else 1 exit-taken? if
-        $342 story-flag-set
+        wt4f-1-flag3 story-flag-set
         $FF door-unlock
         $101 door-unlock
     then then
@@ -43,7 +43,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     1 1 object-hidden
     2 1 object-hidden
     3 1 object-hidden
-    $342 story-flag? not if
+    wt4f-1-flag3 story-flag? not if
         0 water-tower-4f-1.cmd00
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -56,7 +56,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         1 1 $10020000 nav-group
         0 0 $10020000 nav-group
     then
-    $33A story-flag? if
+    wt4f-1-flag2 story-flag? if
         4 1 object-hidden
     else
         4 0 object-hidden
@@ -70,17 +70,17 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     then
     stalker-who action-end
     1 summon-take
-    $2DF story-flag? not if
+    wt4f-1-medallion story-flag? not if
         0 -71.41 143.0 -7.67 flicker-sprite
     then
     0 0 0.812 0.687 0.187 0.312 zone-rect
-    $2F8 story-flag? not if
+    wt4f-1-breakable-broken story-flag? not if
         5 1 $14 door-bits
         6 0 $14 door-bits
     else
         5 0 $14 door-bits
         6 1 $14 door-bits
-        $2F9 story-flag? not if
+        wt4f-1-camomile story-flag? not if
             1 -86.45 47.0 -8.0 flicker-sprite
         then
     then
@@ -161,17 +161,17 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     fiona-who $10 char-entered-area? fiona-who $11 char-entered-area? or fiona-who $12 char-entered-area? or if
         fiona-who 0 3 char-camera
     then
-    $8D story-flag? $8E story-flag? not and if
+    wt2f-1-flag2 story-flag? c7-second-event story-flag? not and if
         4 stalker-kind? $17 stalker-kind? or stalker-who char-here? not and if
-            $33A story-flag? not if
+            wt4f-1-flag2 story-flag? not if
                 fiona-who $F char-entered-area? if
                     fiona-who 5 4 char-camera
                 then
                 fiona-who $D char-entered-area? fiona-who $E char-entered-area? or if
-                    $33A story-flag-set
+                    wt4f-1-flag2 story-flag-set
                     0 $F1 1 action
                 then
-            else $8C story-flag? if
+            else wt4f-1-flag1 story-flag? if
                 5 ebit? not if
                     1 1800 var-set
                     stalker-active? not if
@@ -182,7 +182,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
                 else 1 0 var? not if
                     1 var-dec
                 else 1 ebit? not stalkers-stay state-flag? not and if
-                    $342 story-flag? not if
+                    wt4f-1-flag3 story-flag? not if
                         $FE $C3 249 2 stalker-to-room
                         stalker-who 0 stalker-command
                         summoner-own-cooldown
@@ -207,7 +207,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
             then
         then
     then
-    $34D story-flag? not if
+    wt4f-1-flag4 story-flag? not if
         1 -47.23 142.0 1.87 $26 10 0 zone
         6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -231,16 +231,16 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
             5 0 0 scene-change
         then
     then
-    $2DF story-flag? not if
+    wt4f-1-medallion story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 4 4 scene-change
         then
     then
-    $2F8 story-flag? not if
+    wt4f-1-breakable-broken story-flag? not if
         2 -86.45 46.0 -8.0 5 8 1 zone
         self-who 2 char-in-zone? if
-            $2F8 story-flag-set
+            wt4f-1-breakable-broken story-flag-set
             5 0 $14 door-bits
             6 1 $14 door-bits
             -86.45 46.0 -8.0 0 -2145378272 0 0.0 shards-at
@@ -248,7 +248,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
             $40 $131 noise
             1 -86.45 47.0 -8.0 flicker-sprite
         then
-    else $2F9 story-flag? not if
+    else wt4f-1-camomile story-flag? not if
         2 1 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 5 4 scene-change
@@ -268,7 +268,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     1 self-scripted
     1 ebit-set
     3 ebit-clear
-    $342 story-flag? not if
+    wt4f-1-flag3 story-flag? not if
         2 ebit-clear
         1 1 $10000030 nav-group
         hewie-who char-here? hewie-who 1 char-in-nav-group? and if
@@ -293,7 +293,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     $166 73.23 -0.48 180 $FFFF 5 self-move-to
     self-wait-done
     fiona-who char-file-use
-    $342 story-flag? not if
+    wt4f-1-flag3 story-flag? not if
         $8004 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
@@ -310,7 +310,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         fiona-who 0 6 char-sound
         self-wait-anim
         0 $F3 3 action
-        $342 story-flag-set
+        wt4f-1-flag3 story-flag-set
         2 1 object-hidden
         3 1 object-hidden
         0 0 $14 door-bits
@@ -321,7 +321,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         $C3 0 1051 $A 7 -1 0 0.0 creature-place
         $C3 0 607 $A 4 -1 0 0.0 creature-place
         $C3 0 615 $A 6 -1 0 0.0 creature-place
-        $34D story-flag-set
+        wt4f-1-flag4 story-flag-set
     else
         $8003 5 self-anim-blend8
         self-frames-reset
@@ -339,7 +339,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         fiona-who 0 6 char-sound
         self-wait-anim
         0 $F3 3 action
-        $342 story-flag-clear
+        wt4f-1-flag3 story-flag-clear
         2 1 object-hidden
         3 1 object-hidden
         0 1 $14 door-bits
@@ -359,12 +359,12 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     water-tower-4f-1.cmd02
     self-frames-reset
     $3C self-wait-frames
-    $8C story-flag? not if
+    wt4f-1-flag1 story-flag? not if
         $13 7 54.0 112.0 -56.0 0 0 sound
         $FE $C3 830 2 stalker-to-room
         stalker-who 0 stalker-command
         summoner-own-cooldown
-        $8C story-flag-set
+        wt4f-1-flag1 story-flag-set
     then
     self-idle-or-end
 ;
@@ -438,7 +438,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
         0 1 $30 nav-group
         0 water-tower-4f-1.cmd00
     then
-    $342 story-flag? not if
+    wt4f-1-flag3 story-flag? not if
         $FF door-lock
         $101 door-lock
     else
@@ -453,7 +453,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     self-wait-done
     -71.41 -7.67 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -463,7 +463,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2DF story-flag-set
+            wt4f-1-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
@@ -481,7 +481,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
     self-wait-done
     -86.45 -8.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -491,7 +491,7 @@ USING: engine actors messages room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2F9 story-flag-set
+            wt4f-1-camomile story-flag-set
             1 effect-remove
             $40 1 item-give-count
             0 $40 item-tab

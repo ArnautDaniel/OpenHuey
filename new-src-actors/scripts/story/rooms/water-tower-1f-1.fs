@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-1f-1
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0xC1: the summoner's countdown (progress +0x764) has run out.
 : water-tower-1f-1.cond00? ( -- flag )  summoner-done? ;
@@ -12,7 +12,7 @@ USING: room-names story.words story.shared flag-names ;
     $17 stalker-kind? if
         no-stalker-camera state-flag-set
     then
-    $2D6 story-flag? $2D7 story-flag? not and if
+    wt1f-1-medallion-found story-flag? wt1f-1-medallion story-flag? not and if
         0 -39.66 1.0 0.99 flicker-sprite
     then
     1 $2300 sound-volume
@@ -96,12 +96,12 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2D6 story-flag? not if
+    wt1f-1-medallion-found story-flag? not if
         0 -39.66 0.0 0.99 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 726 var-set
-                $1A 727 var-set
+                $19 wt1f-1-medallion-found var-set
+                $1A wt1f-1-medallion var-set
                 $1B 0 var-set
                 $1C -39660 var-set
                 $1D 1000 var-set
@@ -139,7 +139,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $C char-in-area? fiona-who -22 $32 char-heading? and if
         5 0 0 scene-change
     then
-    $2D6 story-flag? $2D7 story-flag? not and if
+    wt1f-1-medallion-found story-flag? wt1f-1-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 1 4 scene-change
@@ -175,14 +175,14 @@ USING: room-names story.words story.shared flag-names ;
         fiona-who $84 5 char-sound
         self-frames-reset
         $1E self-wait-frames
-        $31E story-flag? not if
+        got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
             $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             wait-message
             $F 7 fade
             wait-fade
-            $31E story-flag-set
+            got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
@@ -206,7 +206,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -39.66 0.99 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -216,7 +216,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2D7 story-flag-set
+            wt1f-1-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab

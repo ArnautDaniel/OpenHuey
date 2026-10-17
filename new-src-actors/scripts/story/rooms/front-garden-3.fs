@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-3
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ the box and the grate, by byte 3: 0 the box's +0x28 on by 0.4; the grate's +0x14 (an angle) 1
 \ back 1.5 degrees, 2 on 0.5, 3 back 0.5
@@ -29,9 +29,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 : front-garden-3.enter ( -- )   \ 00404740
     room-sounds
     1 1 8 nav-group
-    $C story-flag? not if
+    opening-done story-flag? not if
         0 resident-flag? if
-            $AE story-flag-set
+            fg-3-flag3 story-flag-set
         then
         fiona-who $275 -90 char-to-tri-facing
         2 1 player-camera
@@ -83,8 +83,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     then
     3 0 $14 door-bits
     4 0 $14 door-bits
-    2 story-flag? if
-        3 story-flag? not if
+    c2f-3-flag1 story-flag? if
+        hewie-found-in-wire story-flag? not if
             0 30 var-set
             $2A 0 360 hewie-to-room
             0 hewie-who 3 action
@@ -93,7 +93,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
             4 1 $14 door-bits
         then
     then
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
         front-garden-3.cmd02
         0 front-garden-3.cmd03
@@ -102,7 +102,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         $10 152.0 56.7 13.0 $C $80 $80 $80 $40 specks
         1 front-garden-3.cmd03
     then
-    $33 story-flag? not if
+    grate-open story-flag? not if
         1 2 $20000 nav-group
     else
         2 1 object-hidden
@@ -110,7 +110,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         2 1 $14 door-bits
     then
     0 $A 0.812 0.687 0.187 0.312 zone-rect
-    $214 story-flag? not if
+    fg-3-breakable-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -118,7 +118,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         0 0 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $229 story-flag? not if
+        fg-3-magnesia story-flag? not if
             0 185.7 0.9 -35.4 flicker-sprite
         then
     then
@@ -135,7 +135,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         1 0 player-camera
     then then
     0 1 0 area-camera
-    $D story-flag? not if
+    c2f-2-flag1 story-flag? not if
         hewie-controlled? not if
             fiona-who self-is? 1 exit-taken? and if
                 fiona-who 1 char-to-exit
@@ -207,7 +207,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         3 exit-check
     then
     $B 0 -1 1 chars-area-camera
-    $D story-flag? not if
+    c2f-2-flag1 story-flag? not if
         $C 2 1 1 chars-area-camera
     else
         $C 6 5 1 chars-area-camera
@@ -236,16 +236,16 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     fiona-who 6 char-left-area? if
         3 0 char-remove
     then
-    fiona-who 0 char-action? $FF panic-stage? not and fiona-who $16 char-entered-area? and if
+    fiona-who 0 char-action? in-panic? not and fiona-who $16 char-entered-area? and if
         0 fiona-who 7 action
     then
     hewie-who char-here? hewie-who 2 char-cond? not and hewie-who char-busy? not and if
         35 fiona-started? if
-            fiona-who $19 char-in-area? hewie-who $1A char-in-area? and fiona-who -16 137 $32 char-faces-xz? and $33 story-flag? not and stalker-who char-here? not and if
+            fiona-who $19 char-in-area? hewie-who $1A char-in-area? and fiona-who -16 137 $32 char-faces-xz? and grate-open story-flag? not and stalker-who char-here? not and if
                 hewie-may-break-off? if
                     0 hewie-who $B action
                 then
-            else 238 0 -135 point-on-camera? not fiona-who char-unseen? not and hewie-who char-unseen? not and fiona-who 238 -135 $32 char-faces-xz? and $231 story-flag? not and if
+            else 238 0 -135 point-on-camera? not fiona-who char-unseen? not and hewie-who char-unseen? not and fiona-who 238 -135 $32 char-faces-xz? and fg-3-refined-magnesia story-flag? not and if
                 hewie-may-break-off? if
                     0 fiona-who $10 action
                 then
@@ -273,8 +273,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
             $F3 action-end
         then
     then
-    2 story-flag? if
-        3 story-flag? not if
+    c2f-3-flag1 story-flag? if
+        hewie-found-in-wire story-flag? not if
             0 0 var? if
                 $1E chance? if
                     hewie-who 1 6 char-sound
@@ -310,7 +310,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
             then
         then
     then
-    $33 story-flag? not if
+    grate-open story-flag? not if
         hewie-who $1A char-in-area? if
             3 -23.45 -10.0 138.0 $28 20 0 zone
             6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
@@ -328,7 +328,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
             then
         then
     then
-    $231 story-flag? not if
+    fg-3-refined-magnesia story-flag? not if
         4 252.44 0.0 -156.9 $30 20 0 zone
         8 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -356,8 +356,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 ;
 
 : front-garden-3.phase2 ( -- )   \ 00404CE0
-    2 story-flag? if
-        3 story-flag? not if
+    c2f-3-flag1 story-flag? if
+        hewie-found-in-wire story-flag? not if
             fiona-who hewie-who $A 0 $5A char-touching-facing? if
                 5 0 0 scene-change
             then
@@ -371,7 +371,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     fiona-who $A $3C char-faces-area? if
         5 2 0 scene-change
     then
-    $33 story-flag? not if
+    grate-open story-flag? not if
         fiona-who $17 char-in-area? fiona-who -45 $32 char-heading? and if
             5 9 0 scene-change
         then
@@ -379,19 +379,19 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     fiona-who $18 char-in-area? fiona-who -45 $32 char-heading? and if
         5 $A 0 scene-change
     then
-    fiona-who $11 char-in-area? $29 story-flag? not and if
+    fiona-who $11 char-in-area? fg-3-flag1 story-flag? not and if
         5 4 0 scene-change
     then
-    fiona-who $12 char-in-area? $2A story-flag? not and if
+    fiona-who $12 char-in-area? fg-3-flag2 story-flag? not and if
         5 5 0 scene-change
     then
     fiona-who $13 $32 char-faces-area? if
         5 6 0 scene-change
     then
-    $214 story-flag? not if
+    fg-3-breakable-broken story-flag? not if
         0 185.7 -0.1 -35.4 5 8 1 zone
         self-who 0 char-in-zone? if
-            $214 story-flag-set
+            fg-3-breakable-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -400,7 +400,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
             $40 $2CF noise
             0 185.7 0.9 -35.4 flicker-sprite
         then
-    else $229 story-flag? not if
+    else fg-3-magnesia story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 8 4 scene-change
@@ -409,12 +409,12 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 ;
 
 : front-garden-3.phase5 ( -- )   \ 00404E00
-    2 story-flag? 3 story-flag? not and if
+    c2f-3-flag1 story-flag? hewie-found-in-wire story-flag? not and if
         hewie-who action-end
         hewie-who char-done
     then
-    $29 story-flag-set
-    $2A story-flag-set
+    fg-3-flag1 story-flag-set
+    fg-3-flag2 story-flag-set
     1 ebit? if
         stalkers-stay state-flag-clear
     then
@@ -431,7 +431,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 : front-garden-3.act00 ( -- )   \ 00404E50
     stalkers-stay state-flag-set
     1 self-scripted
-    3 story-flag-set
+    hewie-found-in-wire story-flag-set
     self-wait-done
     228.1 77.57 self-turn-to-xz
     self-wait-done
@@ -491,7 +491,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     5 ebit-set
     0 $F1 $12 action
     0 $F3 $13 action
-    $C story-flag-set
+    opening-done story-flag-set
     $16 1.0 0 bgm
     in-play state-flag-clear
     $F 1 fade
@@ -504,7 +504,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     250.0 87.0 self-turn-to-xz
     self-wait-done
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $A00 self-anim
         self-frames-reset
         $1E self-wait-frames
@@ -543,7 +543,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-frames-reset
     7 self-wait-frames
     wait-message
-    $29 story-flag-set
+    fg-3-flag1 story-flag-set
     self-idle-or-end
 ;
 
@@ -551,7 +551,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     7 message   \ "It's kind of cold... The air smells... funny."
     wait-message
-    $2A story-flag-set
+    fg-3-flag2 story-flag-set
     self-idle-or-end
 ;
 
@@ -580,7 +580,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     185.7 -35.4 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -590,7 +590,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $229 story-flag-set
+            fg-3-magnesia story-flag-set
             0 effect-remove
             $92 1 item-give-count
             0 $92 item-tab
@@ -736,7 +736,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     5 4 player-camera
     stalkers-stay state-flag-clear
     1 ebit-clear
-    $33 story-flag-set
+    grate-open story-flag-set
     counter-inc
     1 self-doorway-fade
     30 hewie-trust
@@ -829,7 +829,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     1 3 $30 nav-group
     $1A1 238.0 -135.0 1.0 35 hewie-go-to
     self-wait-done
-    $231 story-flag? not if
+    fg-3-refined-magnesia story-flag? not if
         $37 $FFFF 6 self-move-tri
         self-wait-done
         $1C03 self-anim
@@ -843,7 +843,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
                 $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
                 wait-message
             else
-                $231 story-flag-set
+                fg-3-refined-magnesia story-flag-set
                 $95 1 item-give-count
                 0 $95 item-tab
                 item-fanfare

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-11
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 \ Room99_Cmd00
 : house-of-truth-b1-11.cmd00 ( -- )  slam-shake ;
@@ -52,9 +52,9 @@ USING: room-names story.words story.shared ;
         3 exit-prepare
     then
     house-of-truth-b1-11.cmd00
-    $A8 story-flag? $A9 story-flag? not and fiona-who $B char-entered-area? and if
+    htb1-10-flag1 story-flag? htb1-11-flag1 story-flag? not and fiona-who $B char-entered-area? and if
         stalker-who char-here? not if
-            $A9 story-flag-set
+            htb1-11-flag1 story-flag-set
             stalker-who action-end
             1 summon-take
         else
@@ -64,9 +64,9 @@ USING: room-names story.words story.shared ;
     0 ebit? stalker-who 0 char-action? and if
         0 stalker-who 0 action
     then
-    $AA story-flag? $AB story-flag? not and fiona-who $D char-left-area? and if
+    htb1-12-flag1 story-flag? htb1-11-flag2 story-flag? not and fiona-who $D char-left-area? and if
         stalker-who char-here? not if
-            $AB story-flag-set
+            htb1-11-flag2 story-flag-set
             $FE $99 310 2 stalker-to-room
             stalker-who 0 stalker-command
             0 stalker-who 1 action
@@ -80,13 +80,13 @@ USING: room-names story.words story.shared ;
 ;
 
 : house-of-truth-b1-11.phase5 ( -- )   \ 00443680
-    0 ebit? $A9 story-flag? not and if
-        $A9 story-flag-set
+    0 ebit? htb1-11-flag1 story-flag? not and if
+        htb1-11-flag1 story-flag-set
         stalker-who action-end
         1 summon-take
     then
-    1 ebit? $AB story-flag? not and if
-        $AB story-flag-set
+    1 ebit? htb1-11-flag2 story-flag? not and if
+        htb1-11-flag2 story-flag-set
         $FE $99 310 2 stalker-to-room
         stalker-who 0 stalker-command
     then
@@ -97,7 +97,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     $1304 self-anim
     self-wait-anim
-    $A9 story-flag-set
+    htb1-11-flag1 story-flag-set
     0 ebit-clear
     stalker-who action-end
     1 summon-take
@@ -115,7 +115,7 @@ USING: room-names story.words story.shared ;
     self-wait-anim
     stalker-who 0 stalker-command
     1 ebit-clear
-    $AB story-flag-set
+    htb1-11-flag2 story-flag-set
     0 self-scripted
     self-idle-or-end
 ;

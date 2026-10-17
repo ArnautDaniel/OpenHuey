@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-19
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-1f-19.enter ( -- )   \ 003FD9C0
     room-sounds
@@ -108,7 +108,7 @@ USING: room-names story.words story.shared flag-names ;
                     hewie-may-break-off? if
                         0 hewie-who 0 action
                     then
-                else $236 story-flag? not if
+                else c1f-19-rubrum-medallion story-flag? not if
                     2 game-mode? not if
                         68 0 -274 point-on-camera? not fiona-who char-unseen? not and hewie-who char-unseen? not and if
                             fiona-who 68 -274 $32 char-faces-xz? hewie-who char-busy? not and if
@@ -124,7 +124,7 @@ USING: room-names story.words story.shared flag-names ;
             44 fiona-started? if
                 0 hewie-who 1 action
             then
-            $FF panic-stage? not if
+            in-panic? not if
                 fiona-who char-busy? not fiona-half-hidden state-flag? or if
                     2 stalker-kind-here? 6 stalker-kind-here? or 7 stalker-kind-here? or if
                         stalker-who 2 char-cond? not stalker-who 8 char-in-area? and if
@@ -412,7 +412,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $236 story-flag-set
+            c1f-19-rubrum-medallion story-flag-set
             $73 1 item-give-count
             0 $73 item-tab
             item-fanfare

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-7
-USING: engine common actors messages room-names story.words story.shared flag-names ;
+USING: engine common actors messages room-names story.words story.shared flag-names story-names ;
 
 \ a struggle: byte 3 0 resets Fiona's shake tracking (+0x1AD710 / +0x1AD714); 1 adds her shakes
 \ to script variable byte 4, with a grunt (voice 0x3D or 0x45 at random) when the cool-down
@@ -37,12 +37,12 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 
 : house-of-truth-1f-7.enter ( -- )   \ 00435990
     room-sounds
-    $9E story-flag? not if
+    got-cane-of-caduceus story-flag? not if
         0 1 $14 door-bits
     else
         0 0 $14 door-bits
     then
-    $9F story-flag? not if
+    ht1f-7-flag1 story-flag? not if
         2 0 object-hidden
         3 0 object-hidden
         1 0 8 nav-group
@@ -51,7 +51,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         3 1 object-hidden
     then
     4 0 object-hidden
-    $A4 story-flag? not if
+    over-music-f story-flag? not if
         1 0 $14 door-bits
         2 1 $14 door-bits
     else
@@ -64,14 +64,14 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     2 84.1 19.8 -2.3 1 flame-in
     3 -57.4 20.0 24.4 1 flame-in
     4 115.9 19.5 33.2 1 flame-in
-    $34E story-flag? if
+    tremor-warned story-flag? if
         5 1.0 0 bgm
     then
     shared.act95
-    $A3 story-flag? if
+    ht1f-9-flag2 story-flag? if
         house-of-truth-1f-7.cmd02
     then
-    $2E7 story-flag? not if
+    ht1f-7-antimony-tube story-flag? not if
         5 13.05 6.54 108.47 flicker-sprite
     then
     1 $2300 sound-volume
@@ -179,7 +179,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    $A1 story-flag? $9F story-flag? not and if
+    found-file-255 story-flag? ht1f-7-flag1 story-flag? not and if
         hewie-who $10 char-in-area? if
             0 ebit? not if
                 2 game-mode? not if
@@ -198,10 +198,10 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     hewie-who 2 char-cond? if
         0 ebit-clear
     then
-    $A4 story-flag? if
-        $A0 story-flag? not if
+    over-music-f story-flag? if
+        ht1f-7-flag2 story-flag? not if
             fiona-who $11 char-entered-area? if
-                $A0 story-flag-set
+                ht1f-7-flag2 story-flag-set
                 panic-eased
                 fiona-who 0 char-action? if
                     0 fiona-who 3 action-force
@@ -211,10 +211,10 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             then
         then
     then
-    $A3 story-flag? not if
-        $A5 story-flag? not if
+    ht1f-9-flag2 story-flag? not if
+        ht1f-7-flag3 story-flag? not if
             fiona-who $13 char-entered-area? if
-                $A5 story-flag-set
+                ht1f-7-flag3 story-flag-set
                 $8F 0 235 $88 0 -1 0 0.0 creature-place
             then
         then
@@ -234,7 +234,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 ;
 
 : house-of-truth-1f-7.phase2 ( -- )   \ 00435C20
-    $A5 story-flag? if
+    ht1f-7-flag3 story-flag? if
         fiona-who $14 char-in-area? fiona-who 90 $3C char-heading? and if
             stalker-who char-here? not if
                 5 6 5 scene-change
@@ -250,18 +250,18 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             5 5 1 scene-change
         then
     then
-    $9F story-flag? not if
+    ht1f-7-flag1 story-flag? not if
         fiona-who $12 char-in-area? fiona-who -45 $32 char-heading? and if
             0 ebit? if
                 5 0 0 scene-change
             then
         then
-    else $9E story-flag? not if
+    else got-cane-of-caduceus story-flag? not if
         fiona-who $12 char-in-area? fiona-who -45 $32 char-heading? and if
             5 2 0 scene-change
         then
     then then
-    $2E7 story-flag? not if
+    ht1f-7-antimony-tube story-flag? not if
         0 5 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 $A 4 scene-change
@@ -272,7 +272,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 : house-of-truth-1f-7.phase3 ( -- )   \ 00435CA0
     -72.3 18.0 56.0 -85.0 18.0 56.4 -72.3 -2.0 51.4 -85.0 -2.0 51.4 lights-doorway
     72.0 16.0 -0.1 91.2 16.0 -0.1 72.0 0.0 -2.0 91.2 0.0 -2.0 lights-doorway
-    $A3 story-flag? 9 ebit? not and if
+    ht1f-9-flag2 story-flag? 9 ebit? not and if
         $40000030 $47 0.0 0.0 0.0 0 0 sound
         9 ebit-set
     then
@@ -314,7 +314,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     2 1 object-hidden
     3 1 object-hidden
     0 0 8 nav-group
-    $9F story-flag-set
+    ht1f-7-flag1 story-flag-set
     fiona-who $B3 -74.86 74.73 -91 char-to-xz
     hewie-who char-activate
     hewie-who $B5 -51.58 76.38 -80 char-to-xz
@@ -361,7 +361,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     self-frames-reset
     4 self-wait-frames
     0 0 $14 door-bits
-    $9E story-flag-set
+    got-cane-of-caduceus story-flag-set
     $26 message-param-room
     $26 1 item-give-count
     0 $26 item-tab
@@ -401,7 +401,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     $50 resident-flag-set
     4 0 object-hidden
     1 1 8 nav-group
-    $A0 story-flag-set
+    ht1f-7-flag2 story-flag-set
     fiona-who 5 char-file-load
     fiona-who char-file-use
     fiona-who $192 -37.91 65.69 180 char-to-xz
@@ -469,7 +469,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         $EA self-through-door
         self-wait-done
         stalker-who self-touching? not if
-            $FF panic-stage? not if
+            in-panic? not if
                 fiona-who $EA char-not-at-door? if
                     $609 self-anim
                 else
@@ -477,7 +477,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
                 then
                 self-frames-reset
                 $14 self-wait-frames
-                $FF panic-stage? not if
+                in-panic? not if
                     fiona-who $72 5 char-sound
                     $EA door-unlock
                     $8008 message   \ "You unlocked the door."
@@ -541,8 +541,8 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     self-who 1 char-visible
     begin
         0 2 pad? not if
-            $FF panic-stage? 3 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 3 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] house-of-truth-1f-7.act07 goto
@@ -616,7 +616,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     self-wait-done
     13.05 108.47 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -626,7 +626,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2E7 story-flag-set
+            ht1f-7-antimony-tube story-flag-set
             5 effect-remove
             $97 1 item-give-count
             0 $97 item-tab

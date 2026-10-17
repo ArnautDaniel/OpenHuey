@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-16
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ Room55_Cmd00
 : old-mansion-1f-16.cmd00 ( b0 -- )   \ (Room55: b0 0 the ceiling's glass reflecting (60 x 60 at 45) and the light rippling
@@ -17,14 +17,14 @@ USING: room-names story.words story.shared flag-names ;
 : old-mansion-1f-16.enter ( -- )   \ 00420B40
     room-sounds
     $11 1.0 0 bgm
-    $54 story-flag? not if
+    om2f-12-flag1 story-flag? not if
         0 1 $14 door-bits
         0 old-mansion-1f-16.cmd00
     else
         1 1 $14 door-bits
         1 old-mansion-1f-16.cmd00
     then
-    $272 story-flag? not if
+    om1f-16-refined-magnesia story-flag? not if
         0 65.56 94.52 19.77 flicker-sprite
     then
     1 $3FFF sound-volume
@@ -98,7 +98,7 @@ USING: room-names story.words story.shared flag-names ;
     1 exit-usable? if
         1 exit-check
     then
-    $46 story-flag? not 1 ebit? not and if
+    om3f-2-flag1 story-flag? not 1 ebit? not and if
         fiona-who 2 char-in-area? if
             1 ebit-set
             panic-eased
@@ -118,13 +118,13 @@ USING: room-names story.words story.shared flag-names ;
         4 exit-check
     then
     fiona-who 5 char-entered-area? if
-        $4A story-flag? not $71 story-flag? and if
+        found-file-234 story-flag? not found-file-233 story-flag? and if
             stalker-who 0 char-file-load
         then
         0 exit-prepare
     then
     fiona-who 6 char-entered-area? if
-        $4A story-flag? not $71 story-flag? and if
+        found-file-234 story-flag? not found-file-233 story-flag? and if
         then
         1 exit-prepare
     then
@@ -161,7 +161,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-1f-16.phase2 ( -- )   \ 00420D80
-    $4A story-flag? not if
+    found-file-234 story-flag? not if
         fiona-who 1 char-before-door? if
             5 5 1 scene-change
         then
@@ -174,7 +174,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $B char-in-area? fiona-who 83 $3C char-heading? and if
         5 4 0 scene-change
     then
-    $272 story-flag? not if
+    om1f-16-refined-magnesia story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 3 4 scene-change
@@ -195,10 +195,10 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-16.act01 ( -- )   \ 00420DF0
     self-wait-done
-    0 ebit? not 2 game-mode? or $FF panic-stage? or if
+    0 ebit? not 2 game-mode? or in-panic? or if
         4 self-through-exit
         self-wait-done
-        $FF panic-stage? 2 game-mode? or if
+        in-panic? 2 game-mode? or if
             $60B self-anim
             self-wait-anim
             -1 self-idle-anim
@@ -262,7 +262,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     65.56 19.77 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -272,7 +272,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $272 story-flag-set
+            om1f-16-refined-magnesia story-flag-set
             0 effect-remove
             $95 1 item-give-count
             0 $95 item-tab

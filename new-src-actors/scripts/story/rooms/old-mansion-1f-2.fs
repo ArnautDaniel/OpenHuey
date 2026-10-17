@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-2
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ the scales ("tenbin") and their pans ("sara_l", "sara_r"): level (byte 3 0) or tipped
 : old-mansion-1f-2.cmd00 ( b0 -- )   \ (the scales, "tenbin", and their pans: level (0) or tipped 25 degrees)
@@ -31,14 +31,14 @@ USING: room-names story.words story.shared flag-names ;
     6 1 object-hidden
     7 1 object-hidden
     8 1 object-hidden
-    $85 story-flag? not if
+    medallion-40-done story-flag? not if
         1 0 $20000 nav-group
     else
         0 1 $14 door-bits
         9 1 object-hidden
         $A 1 object-hidden
     then
-    $27A story-flag? not if
+    om1f-2-camomile story-flag? not if
         0 -72.34 59.0 -34.25 flicker-sprite
     then
     2 -19.7 18.3 22.5 0 flame-in
@@ -161,7 +161,7 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $85 story-flag? if
+    medallion-40-done story-flag? if
         4 ebit? not if
             6 sound-bank-loaded? if
                 $40000000 6 0.0 0.0 130.0 0 0 sound
@@ -200,7 +200,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $11 char-in-area? fiona-who 90 $32 char-heading? and if
         5 4 0 scene-change
     then
-    $85 story-flag? not if
+    medallion-40-done story-flag? not if
         fiona-who $12 char-in-area? fiona-who 0 $32 char-heading? and if
             5 5 0 scene-change
         then
@@ -211,7 +211,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $14 char-in-area? fiona-who 0 $32 char-heading? and if
         5 $84 3 scene-change
     then
-    $27A story-flag? not if
+    om1f-2-camomile story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 6 4 scene-change
@@ -288,7 +288,7 @@ USING: room-names story.words story.shared flag-names ;
     $A 1 object-hidden
     0 ebit-set
     1 6.2 18.0 17.1 flicker-sprite
-    $85 story-flag-set
+    medallion-40-done story-flag-set
     $5D door-unlock
     $F $51 fade
     wait-fade
@@ -353,7 +353,7 @@ USING: room-names story.words story.shared flag-names ;
     item-fanfare
     $8012 message   \ "You've obtained ."
     wait-message
-    $361 story-flag-set
+    got-handful-of-ash story-flag-set
     $903 self-anim
     self-wait-anim
     stalkers-stay state-flag-clear
@@ -498,7 +498,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -72.34 -34.25 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -508,7 +508,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $27A story-flag-set
+            om1f-2-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab

@@ -2,26 +2,26 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.lake-pathway-1
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 \ an effect TurningModel_vtable (8 bytes), not started
 : lake-pathway-1.cmd00 ( -- )  0 $40404040  400e 27.1e -125e  1000e 0.5e 0e  effects:caustic drop ;   \ (the water's light, turning: TurningModel)
 
 : lake-pathway-1.enter ( -- )   \ 00441520
     $18 1.0 0 bgm
-    $8E story-flag? not $94 story-flag? or if
+    c7-second-event story-flag? not over-music-d story-flag? or if
         1 0 $10020000 nav-group
     else
         0 1 $14 door-bits
     then
-    $2E0 story-flag? not if
+    lp-1-lavender story-flag? not if
         0 19.59 39.0 -247.61 flicker-sprite
     then
     lake-pathway-1.cmd00
 ;
 
 : lake-pathway-1.char-enter ( -- )   \ 00441560
-    $8E story-flag? not $94 story-flag? or if
+    c7-second-event story-flag? not over-music-d story-flag? or if
         hewie-controlled? not if
             fiona-who self-is? 0 exit-taken? and if
                 fiona-who 0 char-to-exit
@@ -77,7 +77,7 @@ USING: room-names story.words story.shared ;
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    $8E story-flag? not if
+    c7-second-event story-flag? not if
         1 -4.8 38.0 -171.89 $35 15 0 zone
         2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -96,7 +96,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : lake-pathway-1.phase2 ( -- )   \ 004416A0
-    $8E story-flag? if
+    c7-second-event story-flag? if
         fiona-who 4 char-in-area? fiona-who 0 $32 char-heading? and if
             5 0 0 scene-change
         then
@@ -106,7 +106,7 @@ USING: room-names story.words story.shared ;
     else fiona-who 6 char-in-area? fiona-who 0 $32 char-heading? and if
         5 1 0 scene-change
     then then
-    $2E0 story-flag? not if
+    lp-1-lavender story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 2 4 scene-change
@@ -167,7 +167,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     19.59 -247.61 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -177,7 +177,7 @@ USING: room-names story.words story.shared ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2E0 story-flag-set
+            lp-1-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab

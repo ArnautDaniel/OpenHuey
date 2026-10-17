@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-7f-1
-USING: actors messages room-names story.words story.shared flag-names ;
+USING: actors messages room-names story.words story.shared flag-names story-names ;
 
 \ the 0x10-byte effect ObjectGlow_vtable on room object k + 1 (byte 4 = k, 1..8; script variable
 \ 11 - k keeps its slot): made on first use when byte 3 is set, then sent (on byte 3, index 8 -
@@ -37,8 +37,8 @@ USING: actors messages room-names story.words story.shared flag-names ;
     1 8 water-tower-7f-1.cmd00
     stalker-who action-end
     1 summon-take
-    $34A story-flag? not if
-        $34A story-flag-set
+    wt7f-1-flag1 story-flag? not if
+        wt7f-1-flag1 story-flag-set
         1 creatures-clear
     then
     1 $2300 sound-volume

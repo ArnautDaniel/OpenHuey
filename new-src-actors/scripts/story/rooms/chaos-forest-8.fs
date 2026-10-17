@@ -2,23 +2,23 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-8
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x106: starts a water drip effect (OneDrip, 0xC0 bytes).
 : chaos-forest-8.cmd00 ( -- )  effects:one-drip ;   \ (a drop falling now and then)
 
 : chaos-forest-8.enter ( -- )   \ 004182D0
-    $86 story-flag? if
+    found-file-247 story-flag? if
         room-sounds
         $19 1.0 0 bgm
     then
     $1F 0 pvar? if
         deal-things
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     then
-    $215 story-flag? not if
+    cf-8-breakable1-broken story-flag? not if
         1 2 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -26,11 +26,11 @@ USING: room-names story.words story.shared flag-names ;
         0 2 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $2C8 story-flag? not if
+        cf-8-medallion story-flag? not if
             0 -367.0 1.0 -118.7 flicker-sprite
         then
     then
-    $216 story-flag? not if
+    cf-8-breakable2-broken story-flag? not if
         1 1 $8000000 nav-group
         2 1 $14 door-bits
         3 0 $14 door-bits
@@ -39,7 +39,7 @@ USING: room-names story.words story.shared flag-names ;
         2 0 $14 door-bits
         3 1 $14 door-bits
     then
-    $217 story-flag? not if
+    cf-8-breakable3-broken story-flag? not if
         1 0 $8000000 nav-group
         4 1 $14 door-bits
         5 0 $14 door-bits
@@ -48,7 +48,7 @@ USING: room-names story.words story.shared flag-names ;
         4 0 $14 door-bits
         5 1 $14 door-bits
     then
-    $218 story-flag? not if
+    cf-8-breakable4-broken story-flag? not if
         1 3 $8000000 nav-group
         7 1 $14 door-bits
         6 0 $14 door-bits
@@ -57,7 +57,7 @@ USING: room-names story.words story.shared flag-names ;
         7 0 $14 door-bits
         6 1 $14 door-bits
     then
-    $219 story-flag? not if
+    cf-8-breakable5-broken story-flag? not if
         1 4 $8000000 nav-group
         9 1 $14 door-bits
         8 0 $14 door-bits
@@ -65,11 +65,11 @@ USING: room-names story.words story.shared flag-names ;
         0 4 $8000000 nav-group
         9 0 $14 door-bits
         8 1 $14 door-bits
-        $2C9 story-flag? not if
+        cf-8-chicken-jerky story-flag? not if
             1 -275.5 1.0 -96.0 flicker-sprite
         then
     then
-    $21A story-flag? not if
+    cf-8-breakable6-broken story-flag? not if
         1 5 $8000000 nav-group
         $B 1 $14 door-bits
         $A 0 $14 door-bits
@@ -78,7 +78,7 @@ USING: room-names story.words story.shared flag-names ;
         $B 0 $14 door-bits
         $A 1 $14 door-bits
     then
-    $21B story-flag? not if
+    cf-8-breakable7-broken story-flag? not if
         1 6 $8000000 nav-group
         $D 1 $14 door-bits
         $C 0 $14 door-bits
@@ -113,7 +113,7 @@ USING: room-names story.words story.shared flag-names ;
     then then
     1 1 1 area-camera
     fiona-who self-is? if
-        $86 story-flag? not if
+        found-file-247 story-flag? not if
             0 fiona-who 0 action
         then
     then
@@ -142,22 +142,22 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 3 char-entered-area? if
         $1A 4 1 char-load
         $E 5 1 char-load
-        $86 story-flag? if
+        found-file-247 story-flag? if
             3 0 char-remove
         then
         1 exit-prepare
     then
     fiona-who 3 char-left-area? if
-        $86 story-flag? if
+        found-file-247 story-flag? if
             $1C 3 0 char-load
         then
         4 0 char-remove
         5 0 char-remove
     then
-    $216 story-flag? not if
+    cf-8-breakable2-broken story-flag? not if
         1 -376.0 0.0 -115.9 5 8 1 zone
         self-who 1 char-in-zone? if
-            $216 story-flag-set
+            cf-8-breakable2-broken story-flag-set
             0 1 $8000000 nav-group
             2 0 $14 door-bits
             3 1 $14 door-bits
@@ -166,10 +166,10 @@ USING: room-names story.words story.shared flag-names ;
             $40 $F0 noise
         then
     then
-    $217 story-flag? not if
+    cf-8-breakable3-broken story-flag? not if
         2 -381.0 0.0 -106.4 5 8 1 zone
         self-who 2 char-in-zone? if
-            $217 story-flag-set
+            cf-8-breakable3-broken story-flag-set
             0 0 $8000000 nav-group
             4 0 $14 door-bits
             5 1 $14 door-bits
@@ -178,10 +178,10 @@ USING: room-names story.words story.shared flag-names ;
             $40 $E6 noise
         then
     then
-    $218 story-flag? not if
+    cf-8-breakable4-broken story-flag? not if
         3 -275.5 0.0 -105.0 5 8 1 zone
         self-who 3 char-in-zone? if
-            $218 story-flag-set
+            cf-8-breakable4-broken story-flag-set
             0 3 $8000000 nav-group
             7 0 $14 door-bits
             6 1 $14 door-bits
@@ -190,10 +190,10 @@ USING: room-names story.words story.shared flag-names ;
             $40 $84 noise
         then
     then
-    $21A story-flag? not if
+    cf-8-breakable6-broken story-flag? not if
         5 -244.5 0.0 -105.0 5 8 1 zone
         self-who 5 char-in-zone? if
-            $21A story-flag-set
+            cf-8-breakable6-broken story-flag-set
             0 5 $8000000 nav-group
             $B 0 $14 door-bits
             $A 1 $14 door-bits
@@ -202,10 +202,10 @@ USING: room-names story.words story.shared flag-names ;
             $40 $8E noise
         then
     then
-    $21B story-flag? not if
+    cf-8-breakable7-broken story-flag? not if
         6 -244.5 0.0 -96.0 5 8 1 zone
         self-who 6 char-in-zone? if
-            $21B story-flag-set
+            cf-8-breakable7-broken story-flag-set
             0 6 $8000000 nav-group
             $D 0 $14 door-bits
             $C 1 $14 door-bits
@@ -215,12 +215,12 @@ USING: room-names story.words story.shared flag-names ;
         then
     then
     0 ebit? not if
-        1 ebit? not $FF panic-stage? and if
+        1 ebit? not in-panic? and if
             0 ebit-set
             deal-things
         then
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     else
         1 ebit-clear
@@ -229,16 +229,16 @@ USING: room-names story.words story.shared flag-names ;
 
 : chaos-forest-8.phase2 ( -- )   \ 00418730
     fiona-who 6 $32 char-faces-area? if
-        $334 story-flag? not if
+        sundial-examined story-flag? not if
             5 1 0 scene-change
         else
             5 $85 3 scene-change
         then
     then
-    $215 story-flag? not if
+    cf-8-breakable1-broken story-flag? not if
         0 -367.0 0.0 -118.7 5 8 1 zone
         self-who 0 char-in-zone? if
-            $215 story-flag-set
+            cf-8-breakable1-broken story-flag-set
             0 2 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -247,16 +247,16 @@ USING: room-names story.words story.shared flag-names ;
             $40 $E8 noise
             0 -367.0 1.0 -118.7 flicker-sprite
         then
-    else $2C8 story-flag? not if
+    else cf-8-medallion story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 2 4 scene-change
         then
     then then
-    $219 story-flag? not if
+    cf-8-breakable5-broken story-flag? not if
         4 -275.5 0.0 -96.0 5 8 1 zone
         self-who 4 char-in-zone? if
-            $219 story-flag-set
+            cf-8-breakable5-broken story-flag-set
             0 4 $8000000 nav-group
             9 0 $14 door-bits
             8 1 $14 door-bits
@@ -265,7 +265,7 @@ USING: room-names story.words story.shared flag-names ;
             $40 $FE noise
             1 -275.5 1.0 -96.0 flicker-sprite
         then
-    else $2C9 story-flag? not if
+    else cf-8-chicken-jerky story-flag? not if
         4 1 5 5 0 zone-at-effect
         fiona-who 4 3 char-zone-bits? if
             5 3 4 scene-change
@@ -305,7 +305,7 @@ USING: room-names story.words story.shared flag-names ;
     0 self-idle-anim
     fiona-who $BD -78.171 -25.963 -73 char-to-xz
     camera-restart
-    $86 story-flag-set
+    found-file-247 story-flag-set
     $19 1.0 0 bgm
     $F $41 fade
     wait-fade
@@ -320,7 +320,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0 message   \ "This is a sundial. I think it's used to tell the time of day depending on the length an..."
     wait-message
-    $334 story-flag-set
+    sundial-examined story-flag-set
     self-idle-or-end
 ;
 
@@ -328,7 +328,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -367.0 -118.7 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -338,7 +338,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2C8 story-flag-set
+            cf-8-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
@@ -356,7 +356,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -275.5 -96.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -366,7 +366,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2C9 story-flag-set
+            cf-8-chicken-jerky story-flag-set
             1 effect-remove
             $60 1 item-give-count
             0 $60 item-tab

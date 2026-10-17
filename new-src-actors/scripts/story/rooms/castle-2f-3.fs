@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-3
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names ;
 
 : castle-2f-3.cmd00 ( -- )  1 0 tv-in ;   \ (room effect 1 the TV showing the screen)
 \ room 0x21 (D_00400B98): the fan turns, except while a movie plays
@@ -31,7 +31,7 @@ USING: engine room-names story.words story.shared flag-names ;
 : castle-2f-3.enter ( -- )   \ 003FF170
     room-sounds
     castle-2f-3.cmd00
-    $300 story-flag? not if
+    c2f-3-tv-examined story-flag? not if
         0 1 $14 door-bits
         1 0 1 effect-string
     else
@@ -40,23 +40,23 @@ USING: engine room-names story.words story.shared flag-names ;
         1 noise-level
     then
     0 $F1 $12 action
-    $25E story-flag? $25F story-flag? not and if
+    c2f-3-medallion-found story-flag? c2f-3-medallion story-flag? not and if
         2 -9.0 1.0 -11.0 flicker-sprite
     then
-    0 story-flag? not if
+    found-file-202 story-flag? not if
         $3D door-lock
     then
-    2 story-flag? 3 story-flag? not and if
+    c2f-3-flag1 story-flag? hewie-found-in-wire story-flag? not and if
         $3D door-lock
     then
-    $17 story-flag? 0 story-flag? not and if
+    found-file-201 story-flag? found-file-202 story-flag? not and if
         1 1 $14 door-bits
     else
         1 0 $14 door-bits
     then
     0 0 var-set
     1 0 var-set
-    1 story-flag? not if
+    got-castle-sketch story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     0 castle-2f-3.cmd02
@@ -128,10 +128,10 @@ USING: engine room-names story.words story.shared flag-names ;
     then then
     1 0 0 area-camera
     fiona-who self-is? if
-        $1B story-flag? not $D story-flag? and if
-            $3A story-flag? not if
-                $3A story-flag-set
-                0 exit-taken? $FF panic-stage? not and if
+        c2f-8-flag3 story-flag? not c2f-2-flag1 story-flag? and if
+            c2f-3-flag3 story-flag? not if
+                c2f-3-flag3 story-flag-set
+                0 exit-taken? in-panic? not and if
                     castle-2f-3.cond00? if
                         0 fiona-who $23 action
                     then
@@ -139,7 +139,7 @@ USING: engine room-names story.words story.shared flag-names ;
             then
         then
         $80 exit-taken? if
-            1 story-flag? 2 story-flag? not and if
+            got-castle-sketch story-flag? c2f-3-flag1 story-flag? not and if
                 force-calm state-flag-clear
                 0.0 sound-volume-scale
                 2 2 player-camera
@@ -149,12 +149,12 @@ USING: engine room-names story.words story.shared flag-names ;
             then
         then
         $81 exit-taken? if
-            $18 story-flag? not if
-                3 story-flag? $B story-flag? not and if
+            c2f-3-flag2 story-flag? not if
+                hewie-found-in-wire story-flag? hewie-freed story-flag? not and if
                     0.0 sound-volume-scale
                     fiona-who $128 -38.951 -26.464 90 char-to-xz
                     0 fiona-who 9 action
-                    $18 story-flag-set
+                    c2f-3-flag2 story-flag-set
                 then
             then
         then
@@ -164,7 +164,7 @@ USING: engine room-names story.words story.shared flag-names ;
     stalker-who self-is? if
         fiona-hidden state-flag? if
             $B ebit-set
-            $300 story-flag? 2 creature-action? not and if
+            c2f-3-tv-examined story-flag? 2 creature-action? not and if
                 2 self-is? 6 self-is? or 7 self-is? or if
                     $78 1 summoner-wait
                     0 stalker-who 6 action
@@ -183,7 +183,7 @@ USING: engine room-names story.words story.shared flag-names ;
 : castle-2f-3.phase1 ( -- )   \ 003FF340
     3 ebit? not if
         6 sound-bank-loaded? if
-            $300 story-flag? if
+            c2f-3-tv-examined story-flag? if
                 $40000001 6 0.0 3.0 7.0 0 0 sound
             then
             $40000009 6 -42.0 4.0 -63.0 0 0 sound
@@ -226,15 +226,15 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    $300 story-flag? not if
+    c2f-3-tv-examined story-flag? not if
         0 1 $14 door-bits
         1 0 1 effect-string
     else
         0 0 $14 door-bits
         1 1 1 effect-string
     then
-    0 story-flag? not if
-        $17 story-flag? not if
+    found-file-202 story-flag? not if
+        found-file-201 story-flag? not if
             fiona-who $E char-entered-area? $D ebit? not and if
                 $D ebit-set
                 panic-eased
@@ -246,12 +246,12 @@ USING: engine room-names story.words story.shared flag-names ;
             then
         then
     then
-    $25E story-flag? not if
+    c2f-3-medallion-found story-flag? not if
         7 -9.0 0.0 -11.0 $A 5 0 zone
         hewie-who 7 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 606 var-set
-                $1A 607 var-set
+                $19 c2f-3-medallion-found var-set
+                $1A c2f-3-medallion var-set
                 $1B 2 var-set
                 $1C -9000 var-set
                 $1D 1000 var-set
@@ -328,14 +328,14 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : castle-2f-3.phase2 ( -- )   \ 003FF650
     fiona-who 4 char-in-area? fiona-who 90 $5A char-heading? and if
-        0 story-flag? not if
+        found-file-202 story-flag? not if
             5 $C 0 scene-change
         else
             5 0 0 scene-change
         then
     then
-    0 story-flag? not if
-        $17 story-flag? if
+    found-file-202 story-flag? not if
+        found-file-201 story-flag? if
             fiona-who $10 char-in-area? fiona-who 90 $32 char-heading? and if
                 5 $D 0 scene-change
             then
@@ -343,7 +343,7 @@ USING: engine room-names story.words story.shared flag-names ;
         -2147483646 scene-request? if
             5 $C 1 scene-change
         then
-    else 2 story-flag? 3 story-flag? not and if
+    else c2f-3-flag1 story-flag? hewie-found-in-wire story-flag? not and if
         -2147483646 scene-request? if
             5 $E 1 scene-change
         then
@@ -354,7 +354,7 @@ USING: engine room-names story.words story.shared flag-names ;
             5 $10 0 scene-change
         then
     else fiona-who 5 char-in-area? fiona-who 90 $3C char-heading? and if
-        $D story-flag? not if
+        c2f-2-flag1 story-flag? not if
             5 $16 0 scene-change
         else stalker-who char-here? not if
             5 1 5 scene-change
@@ -366,68 +366,68 @@ USING: engine room-names story.words story.shared flag-names ;
         5 $14 0 scene-change
     then
     fiona-who $C char-in-area? fiona-who 45 $3C char-heading? and if
-        0 story-flag? not if
+        found-file-202 story-flag? not if
             5 $C 0 scene-change
         else
             5 $15 0 scene-change
         then
     then
     fiona-who $11 char-in-area? fiona-who 0 $3C char-heading? and if
-        0 story-flag? not if
+        found-file-202 story-flag? not if
             5 $C 0 scene-change
         else
             5 $17 0 scene-change
         then
     then
     fiona-who 6 char-in-area? fiona-who -45 $3C char-heading? and if
-        0 story-flag? not if
+        found-file-202 story-flag? not if
             5 $C 0 scene-change
         else
             5 $18 0 scene-change
         then
     then
     fiona-who $12 char-in-area? fiona-who 0 $32 char-heading? and if
-        0 story-flag? not if
+        found-file-202 story-flag? not if
             5 $C 0 scene-change
         else
             5 $1C 0 scene-change
         then
     then
     fiona-who $13 $32 char-faces-area? if
-        0 story-flag? not if
+        found-file-202 story-flag? not if
             5 $C 0 scene-change
         else
             5 $1D 0 scene-change
         then
     then
     fiona-who $14 char-in-area? fiona-who -45 $32 char-heading? and if
-        0 story-flag? not if
+        found-file-202 story-flag? not if
             5 $C 0 scene-change
         else
             5 $1E 0 scene-change
         then
     then
     fiona-who $15 char-in-area? fiona-who 90 $32 char-heading? and if
-        0 story-flag? not if
+        found-file-202 story-flag? not if
             5 $C 0 scene-change
-        else $AE story-flag? not if
+        else fg-3-flag3 story-flag? not if
             5 $1F 0 scene-change
         else
             5 $26 0 scene-change
         then then
     then
     fiona-who $D char-in-area? fiona-who $16 char-in-area? or fiona-who 22 $3C char-heading? and if
-        0 story-flag? not if
+        found-file-202 story-flag? not if
             5 $C 0 scene-change
-        else 2 story-flag? not if
+        else c2f-3-flag1 story-flag? not if
             5 $20 0 scene-change
         else
             5 $22 0 scene-change
         then then
     then
-    $17 story-flag? if
+    found-file-201 story-flag? if
         fiona-who 7 char-in-area? fiona-who -45 $32 char-heading? and if
-            0 story-flag? not if
+            found-file-202 story-flag? not if
                 5 $C 0 scene-change
             else
                 5 $84 3 scene-change
@@ -437,7 +437,7 @@ USING: engine room-names story.words story.shared flag-names ;
     $C ebit? -2147483646 scene-request? and if
         5 $24 1 scene-change
     then
-    $25E story-flag? $25F story-flag? not and if
+    c2f-3-medallion-found story-flag? c2f-3-medallion story-flag? not and if
         7 2 5 5 0 zone-at-effect
         fiona-who 7 3 char-zone-bits? if
             5 $19 4 scene-change
@@ -455,22 +455,22 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     self-wait-done
     1 20.0 10.0 0.0 0.0 event-camera
-    $306 story-flag? not if
-        $306 story-flag-set
+    c2f-3-tv-examined-2 story-flag? not if
+        c2f-3-tv-examined-2 story-flag-set
         $29 message   \ "I hope this TV works..."
         wait-message
     then
     $902 self-anim
     self-wait-anim
     5 0 pvar? 5 1 pvar? or if
-        $300 story-flag? not if
-            $300 story-flag-set
+        c2f-3-tv-examined story-flag? not if
+            c2f-3-tv-examined story-flag-set
             fiona-who 0 6 char-sound
             $40000001 6 0.0 3.0 7.0 0 0 sound
             $40 $6A noise
             1 noise-level
         else
-            $300 story-flag-clear
+            c2f-3-tv-examined story-flag-clear
             fiona-who 2 6 char-sound
             1 6 sound-stop
             0 noise-level
@@ -565,8 +565,8 @@ USING: engine room-names story.words story.shared flag-names ;
     self-who 3 -1 char-camera
     begin
         0 2 pad? not if
-            $FF panic-stage? 4 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 4 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] castle-2f-3.act03 goto
@@ -671,7 +671,7 @@ USING: engine room-names story.words story.shared flag-names ;
     stalker-who 2 6 char-sound
     1 6 sound-stop
     0 noise-level
-    $300 story-flag-clear
+    c2f-3-tv-examined story-flag-clear
     5 pvar-inc
     stalker-who 3 stalker-command
     0 self-anim
@@ -715,7 +715,7 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who $10E -27.455 -48.354 107 char-to-xz
     1 1 player-camera
     camera-restart
-    $17 story-flag-set
+    found-file-201 story-flag-set
     $F $51 fade
     wait-fade
     $201 item-give
@@ -725,7 +725,7 @@ USING: engine room-names story.words story.shared flag-names ;
 
 : castle-2f-3.act08 ( -- )   \ 003FFC30
     self-wait-done
-    2 story-flag-set
+    c2f-3-flag1 story-flag-set
     2 2 player-camera
     1 exit-prepare
     fiona-who $A8 46 char-to-tri-facing
@@ -791,7 +791,7 @@ USING: engine room-names story.words story.shared flag-names ;
     hewie-commandable state-flag-set
     $29 0 hewie-do
     1 hewie-pause
-    $B story-flag-set
+    hewie-freed story-flag-set
     fiona-who $13 -16.325 -66.999 -8 char-to-xz
     0 self-idle-anim
     self-wait-anim
@@ -817,7 +817,7 @@ USING: engine room-names story.words story.shared flag-names ;
     $83 $85 0.0 0.0 0.0 0 0 sound
     $801B message   \ "has been saved to your file."
     wait-message
-    $AF story-flag? if
+    items-40-as-70 story-flag? if
         $F 6 fade
         wait-fade
         $32 message   \ "WARNING!! In HARD MODE, if your dog is ever 'critically wounded,' the game is ove..."
@@ -1013,7 +1013,7 @@ USING: engine room-names story.words story.shared flag-names ;
         camera-restart
         $3C door-unlock
         $3D door-unlock
-        0 story-flag-set
+        found-file-202 story-flag-set
         no-flee state-flag-clear
         $F $51 fade
         wait-fade
@@ -1027,7 +1027,7 @@ USING: engine room-names story.words story.shared flag-names ;
         wait-fade
         $40A6 message   \ "'Additional Actions' You are now able to perform the following new actions in t..."
         wait-message
-        $AE story-flag? if
+        fg-3-flag3 story-flag? if
             $40AB message   \ "'Costumes' You are now able to change costumes. Change into alternate costu..."
             wait-message
         then
@@ -1038,8 +1038,8 @@ USING: engine room-names story.words story.shared flag-names ;
         $83 $85 0.0 0.0 0.0 0 0 sound
         $801B message   \ "has been saved to your file."
         wait-message
-        $AE story-flag? if
-            $34B story-flag-set
+        fg-3-flag3 story-flag? if
+            got-doc-action story-flag-set
             $AB message-param-room
             $AB 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
@@ -1125,7 +1125,7 @@ USING: engine room-names story.words story.shared flag-names ;
     $A00 self-anim
     self-frames-reset
     $28 self-wait-frames
-    $312 story-flag-set
+    c2f-3-portrait-1-examined story-flag-set
     0 ebit? not if
         $24 message   \ "I wonder whose portrait this is?"
         wait-message
@@ -1171,12 +1171,12 @@ USING: engine room-names story.words story.shared flag-names ;
     $A00 self-anim
     self-frames-reset
     $28 self-wait-frames
-    $314 story-flag-set
+    c2f-3-portrait-2-examined story-flag-set
     1 ebit? not if
         $2D message   \ "The man pictured here has a noble air about him. I wonder how long ago this portr..."
         wait-message
         1 ebit-set
-    else $312 story-flag? $313 story-flag? or if
+    else c2f-3-portrait-1-examined story-flag? c2f-3-portrait-3-examined story-flag? or if
         $2E message   \ "In this painting, the man looks quite young. There is no mistaking that all the p..."
         wait-message
     else
@@ -1198,12 +1198,12 @@ USING: engine room-names story.words story.shared flag-names ;
     $A00 self-anim
     self-frames-reset
     $28 self-wait-frames
-    $313 story-flag-set
+    c2f-3-portrait-3-examined story-flag-set
     2 ebit? not if
         $2B message   \ "What a powerful piece of art. The eyes really feel like they are peering deep int..."
         wait-message
         2 ebit-set
-    else $312 story-flag? $314 story-flag? and if
+    else c2f-3-portrait-1-examined story-flag? c2f-3-portrait-2-examined story-flag? and if
         $2C message   \ "Every painting features the same person. Perhaps it's the lord of this castle?"
         wait-message
     else
@@ -1221,7 +1221,7 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     -9.0 -11.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -1231,7 +1231,7 @@ USING: engine room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $25F story-flag-set
+            c2f-3-medallion story-flag-set
             2 effect-remove
             $70 1 item-give-count
             0 $70 item-tab

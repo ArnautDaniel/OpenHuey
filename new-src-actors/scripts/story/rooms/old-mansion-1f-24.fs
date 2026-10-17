@@ -2,12 +2,12 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-24
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 defer old-mansion-1f-24.act02
 : old-mansion-1f-24.enter ( -- )   \ 0043B020
     room-sounds
-    $263 story-flag? not if
+    om1f-24-breakable-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -15,12 +15,12 @@ defer old-mansion-1f-24.act02
         0 0 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $292 story-flag? not if
+        om1f-24-beef-jerky story-flag? not if
             0 -97.5 1.0 1.0 flicker-sprite
         then
     then
     0 8 0.812 0.687 0.187 0.312 zone-rect
-    $76 story-flag? not if
+    white-mandragora-used story-flag? not if
         3 stalker-kind? $22 stalker-kind? or if
             stalker-active? not if
                 4 ebit-set
@@ -40,7 +40,7 @@ defer old-mansion-1f-24.act02
         $FE $70 49 2 stalker-to-room
         0 stalker-who 4 action
     then
-    $27D story-flag? not if
+    om1f-24-rubrum-medallion story-flag? not if
         1 -98.51 1.0 -12.98 flicker-sprite
     then
     1 $2300 sound-volume
@@ -121,7 +121,7 @@ defer old-mansion-1f-24.act02
     fiona-who 5 char-entered-area? if
         3 exit-prepare
     then
-    $76 story-flag? not if
+    white-mandragora-used story-flag? not if
         1 -76.01 0.0 -50.35 $46 17 0 zone
         5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -166,16 +166,16 @@ defer old-mansion-1f-24.act02
     fiona-who $B char-in-area? fiona-who -67 $3C char-heading? and if
         5 9 0 scene-change
     then
-    $27D story-flag? not if
+    om1f-24-rubrum-medallion story-flag? not if
         2 1 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 8 4 scene-change
         then
     then
-    $263 story-flag? not if
+    om1f-24-breakable-broken story-flag? not if
         0 -97.5 0.0 1.0 5 8 1 zone
         self-who 0 char-in-zone? if
-            $263 story-flag-set
+            om1f-24-breakable-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -184,7 +184,7 @@ defer old-mansion-1f-24.act02
             $40 $B4 noise
             0 -97.5 1.0 1.0 flicker-sprite
         then
-    else $292 story-flag? not if
+    else om1f-24-beef-jerky story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 3 4 scene-change
@@ -252,7 +252,7 @@ defer old-mansion-1f-24.act02
     self-wait-done
     -97.5 1.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -262,7 +262,7 @@ defer old-mansion-1f-24.act02
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $292 story-flag-set
+            om1f-24-beef-jerky story-flag-set
             0 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
@@ -311,7 +311,7 @@ defer old-mansion-1f-24.act02
         item-fanfare
         $8012 message   \ "You've obtained ."
         wait-message
-        $366 story-flag-set
+        got-hebels-perfume story-flag-set
     else
         stalker-who 1 6 char-sound
         1 message   \ "Miss... It's cleaning time now."
@@ -333,7 +333,7 @@ defer old-mansion-1f-24.act02
     self-wait-done
     -98.51 -12.98 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -343,7 +343,7 @@ defer old-mansion-1f-24.act02
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $27D story-flag-set
+            om1f-24-rubrum-medallion story-flag-set
             1 effect-remove
             $73 1 item-give-count
             0 $73 item-tab

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-3f-2
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x63: the script's character walks to Fiona's nav triangle (character move 6, with
 \ 0x204).
@@ -13,11 +13,11 @@ defer old-mansion-3f-2.act06
 defer old-mansion-3f-2.act07
 : old-mansion-3f-2.enter ( -- )   \ 00421130
     room-sounds
-    $46 story-flag? not if
+    om3f-2-flag1 story-flag? not if
         panic-eased
         0 fiona-who 0 action-force
     then
-    $57 story-flag? not if
+    armor-button-pushed story-flag? not if
         hewie-who char-here? hewie-who 0 char-in-nav-group? and if
             0 exit-taken? if
                 hewie-who $187 char-to-tri
@@ -75,7 +75,7 @@ defer old-mansion-3f-2.act07
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    $57 story-flag? not if
+    armor-button-pushed story-flag? not if
         hewie-who 2 char-cond? not stalker-who char-here? not and hewie-who char-here? and if
             35 fiona-started? 45 fiona-started? or if
                 fiona-who 0 -55 $32 char-faces-xz? fiona-who 0 -100 $32 char-faces-xz? and if
@@ -144,7 +144,7 @@ defer old-mansion-3f-2.act07
             0 ebit-clear
         then
     then
-    $57 story-flag? not if
+    armor-button-pushed story-flag? not if
         5 ebit? if
             $23C item-give
             $8281 item-give
@@ -182,7 +182,7 @@ defer old-mansion-3f-2.act07
 ;
 
 : old-mansion-3f-2.phase5 ( -- )   \ 00421420
-    $57 story-flag? not if
+    armor-button-pushed story-flag? not if
         hewie-who char-here? hewie-who 0 char-in-nav-group? and if
             fiona-who 0 char-in-area? if
                 hewie-who $187 char-to-tri
@@ -217,7 +217,7 @@ defer old-mansion-3f-2.act07
     camera-restart
     hewie-who 0 char-visible
     hewie-who action-end
-    $46 story-flag-set
+    om3f-2-flag1 story-flag-set
     0 self-scripted
     $F $41 fade
     wait-fade
@@ -489,7 +489,7 @@ defer old-mansion-3f-2.act07
     self-wait-done
     0.0 -68.0 self-turn-to-xz
     self-wait-done
-    $57 story-flag? not if
+    armor-button-pushed story-flag? not if
         $A00 self-anim
         self-frames-reset
         self-wait-16
@@ -500,7 +500,7 @@ defer old-mansion-3f-2.act07
             $904 self-anim
             self-wait-anim
             fiona-who 2 6 char-sound
-            $57 story-flag-set
+            armor-button-pushed story-flag-set
             30 hewie-trust
             0 0 $1000000 nav-group
             0 1 $1000000 nav-group

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-37
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ Room37_Cmd00
 : off-map-37.cmd00 ( -- )  fan-turn ;
@@ -463,47 +463,47 @@ defer off-map-37.act00
     $2E 0 pvar? if
         $D9 room-preload
         7 partner-load
-        $1B story-flag-set
-        $41 story-flag-clear
-        $6F story-flag-clear
-        $82 story-flag-clear
-        $88 story-flag-clear
-        $89 story-flag-clear
-        $94 story-flag-clear
-        $95 story-flag-clear
+        c2f-8-flag3 story-flag-set
+        over-music-b story-flag-clear
+        x-37-flag1 story-flag-clear
+        over-music-c story-flag-clear
+        cf-13-flag1 story-flag-clear
+        x-37-flag2 story-flag-clear
+        over-music-d story-flag-clear
+        over-music-e story-flag-clear
     else $2E 1 pvar? if
         $E0 room-preload
         $22 partner-load
-        $1B story-flag-set
-        $41 story-flag-set
-        $6F story-flag-set
-        $82 story-flag-clear
-        $88 story-flag-clear
-        $89 story-flag-clear
-        $94 story-flag-clear
-        $95 story-flag-clear
+        c2f-8-flag3 story-flag-set
+        over-music-b story-flag-set
+        x-37-flag1 story-flag-set
+        over-music-c story-flag-clear
+        cf-13-flag1 story-flag-clear
+        x-37-flag2 story-flag-clear
+        over-music-d story-flag-clear
+        over-music-e story-flag-clear
     else $2E 2 pvar? if
         $D9 room-preload
         $C partner-load
-        $1B story-flag-set
-        $41 story-flag-set
-        $6F story-flag-set
-        $82 story-flag-set
-        $88 story-flag-set
-        $89 story-flag-set
-        $94 story-flag-set
-        $95 story-flag-set
+        c2f-8-flag3 story-flag-set
+        over-music-b story-flag-set
+        x-37-flag1 story-flag-set
+        over-music-c story-flag-set
+        cf-13-flag1 story-flag-set
+        x-37-flag2 story-flag-set
+        over-music-d story-flag-set
+        over-music-e story-flag-set
     else $2E 3 pvar? if
         $E0 room-preload
         $17 partner-load
-        $1B story-flag-set
-        $41 story-flag-set
-        $6F story-flag-set
-        $82 story-flag-set
-        $88 story-flag-set
-        $89 story-flag-set
-        $94 story-flag-clear
-        $95 story-flag-clear
+        c2f-8-flag3 story-flag-set
+        over-music-b story-flag-set
+        x-37-flag1 story-flag-set
+        over-music-c story-flag-set
+        cf-13-flag1 story-flag-set
+        x-37-flag2 story-flag-set
+        over-music-d story-flag-clear
+        over-music-e story-flag-clear
     then then then then
     $F 1 fade
     wait-fade

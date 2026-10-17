@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-3
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle
 \ gRoomEventObj says yes to: +0x10, then the creature list's +0x28
@@ -10,7 +10,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-2f-3.enter ( -- )   \ 0040ED10
     room-sounds
-    $322 story-flag? not if
+    om2f-3-flag1 story-flag? not if
         0 1 $14 door-bits
         1 0 $1000000 nav-group
     else
@@ -19,7 +19,7 @@ USING: room-names story.words story.shared flag-names ;
     hewie-who char-here? hewie-who 1 char-in-nav-group? and if
         hewie-who $A8 char-to-tri
     then
-    $84 story-flag? not if
+    om2f-2-flag1 story-flag? not if
         hewie-who char-here? 119 hewie-action? and if
             hewie-who $96 -78.0 0.0 90 char-to-xz
             18000 2 hewie-anim
@@ -56,16 +56,16 @@ USING: room-names story.words story.shared flag-names ;
     then then
     1 0 0 1 chars-area-camera
     2 1 1 1 chars-area-camera
-    $322 story-flag? not if
+    om2f-3-flag1 story-flag? not if
         0 35.0 0.0 0.0 8 4 0 zone
         fiona-who 0 2 char-zone-bits? fiona-who 0 2 char-zone-bits-before? not and if
             fiona-who 0 6 char-sound
         then
     then
-    $82 story-flag? $322 story-flag? not and if
+    over-music-c story-flag? om2f-3-flag1 story-flag? not and if
         0 35.0 0.0 0.0 8 4 0 zone
         stalker-who 0 2 char-zone-bits? stalker-who 0 2 char-zone-bits-before? not and if
-            $322 story-flag-set
+            om2f-3-flag1 story-flag-set
             0 stalker-who 2 action
             panic-eased
             fiona-who 0 char-action? if
@@ -75,7 +75,7 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $84 story-flag? not if
+    om2f-2-flag1 story-flag? not if
         hewie-who char-here? if
             118 hewie-action? not if
                 35 fiona-started? hewie-who 2 char-cond? not and stalker-who char-here? not and 1 camera-mode? and fiona-who char-unseen? not and hewie-who char-unseen? not and fiona-who -50 0 $32 char-faces-xz? and if
@@ -132,7 +132,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 6 char-in-area? fiona-who 90 $32 char-heading? and if
         5 8 0 scene-change
     then
-    $322 story-flag? if
+    om2f-3-flag1 story-flag? if
         fiona-who 3 $32 char-faces-area? if
             5 3 0 scene-change
         then
@@ -283,7 +283,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -50.0 0.0 self-turn-to-xz
     self-wait-done
-    $84 story-flag? not if
+    om2f-2-flag1 story-flag? not if
         0 ebit? not if
             6 message   \ "I can distinctly feel air coming from inside. I wonder where this leads?"
             wait-message
@@ -443,7 +443,7 @@ USING: room-names story.words story.shared flag-names ;
     $A01 self-anim
     self-frames-reset
     $28 self-wait-frames
-    $2C5 story-flag? not if
+    om2f-3-album-medallion story-flag? not if
         $10 message   \ "What's this? There is something inside..."
         wait-message
         $71 message-param-room
@@ -451,7 +451,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2C5 story-flag-set
+            om2f-3-album-medallion story-flag-set
             $71 1 item-give-count
             0 $71 item-tab
             item-fanfare

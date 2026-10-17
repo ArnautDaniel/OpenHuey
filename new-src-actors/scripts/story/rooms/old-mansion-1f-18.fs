@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-18
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 : old-mansion-1f-18.enter ( -- )   \ 00424880
     3 1.0 0 bgm
@@ -74,14 +74,14 @@ USING: room-names story.words story.shared ;
         1 exit-prepare
     then
     fiona-who 6 char-entered-area? if
-        $76 story-flag? not if
+        white-mandragora-used story-flag? not if
             3 stalker-kind? $22 stalker-kind? or if
             then
         then
         2 exit-prepare
     then
     fiona-who 7 char-entered-area? if
-        $76 story-flag? not if
+        white-mandragora-used story-flag? not if
             3 stalker-kind? $22 stalker-kind? or if
                 stalker-who 0 char-file-load
             then
@@ -169,8 +169,8 @@ USING: room-names story.words story.shared ;
     $A01 self-anim
     self-frames-reset
     $28 self-wait-frames
-    $332 story-flag? not if
-        $332 story-flag-set
+    red-painting-examined story-flag? not if
+        red-painting-examined story-flag-set
         0 message   \ "Why would someone intentionally paint this completely red?"
         wait-message
     else

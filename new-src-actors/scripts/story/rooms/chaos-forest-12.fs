@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-12
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 \ room 0x10A: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 1 a frame (room_nudge).
@@ -14,17 +14,17 @@ USING: room-names story.words story.shared ;
 : chaos-forest-12.enter ( -- )   \ 00419730
     room-sounds
     $19 1.0 0 bgm
-    $344 story-flag? not if
+    cf-12-flag1 story-flag? not if
         $E 5 $FF char-load
         0 $F1 0 action
     then
     $1F 0 pvar? if
         deal-things
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     then
-    $2C7 story-flag? not if
+    cf-12-camomile story-flag? not if
         0 -253.83 5.54 -217.28 flicker-sprite
     then
 ;
@@ -88,7 +88,7 @@ USING: room-names story.words story.shared ;
         1 exit-check
     then then
     fiona-who 2 char-in-area? fiona-who char-busy? not and if
-        $86 story-flag? $88 story-flag? not and if
+        found-file-247 story-flag? cf-13-flag1 story-flag? not and if
             $17 3 2 char-load
         then
         2 exit-check
@@ -109,7 +109,7 @@ USING: room-names story.words story.shared ;
         1 exit-prepare
     then
     fiona-who 7 char-entered-area? if
-        $86 story-flag? $88 story-flag? not and if
+        found-file-247 story-flag? cf-13-flag1 story-flag? not and if
             $17 3 2 char-load
         then
         2 exit-prepare
@@ -118,24 +118,24 @@ USING: room-names story.words story.shared ;
         3 exit-prepare
     then
     fiona-who 7 char-left-area? if
-        $86 story-flag? $88 story-flag? not and if
+        found-file-247 story-flag? cf-13-flag1 story-flag? not and if
             3 0 char-remove
         then
     then
     0 ebit? not if
-        1 ebit? not $FF panic-stage? and if
+        1 ebit? not in-panic? and if
             0 ebit-set
             deal-things
         then
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     else
         1 ebit-clear
     then
-    2 ebit? $344 story-flag? not and if
+    2 ebit? cf-12-flag1 story-flag? not and if
         chaos-forest-12.cond00? if
-            $344 story-flag-set
+            cf-12-flag1 story-flag-set
             $F1 action-end
             0 $F1 2 action
         then
@@ -143,7 +143,7 @@ USING: room-names story.words story.shared ;
 ;
 
 : chaos-forest-12.phase2 ( -- )   \ 00419950
-    $2C7 story-flag? not if
+    cf-12-camomile story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 1 4 scene-change
@@ -171,7 +171,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     -253.83 -217.28 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -181,7 +181,7 @@ USING: room-names story.words story.shared ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2C7 story-flag-set
+            cf-12-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab

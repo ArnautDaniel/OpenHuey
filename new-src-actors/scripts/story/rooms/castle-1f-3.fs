@@ -2,18 +2,18 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-3
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x09 (Room09_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) is in
 \ another room than 9 (the player about too)
 : castle-1f-3.cond00? ( -- flag )  hunting-debilitas? stalker-room 9 <> and ;
 
 : castle-1f-3.enter ( -- )   \ 003F3240
-    $3B story-flag? not if
+    c1f-3-flag1 story-flag? not if
         4 1.0 0 bgm
     then
     0 4 $1000000 nav-group
-    $301 story-flag? not if
+    c1f-3-bookshelf-examined story-flag? not if
         1 0 $800088 nav-group
         1 1 $40 nav-group
     else
@@ -24,18 +24,18 @@ USING: room-names story.words story.shared flag-names ;
         1 2 8 nav-group
         1 3 $40 nav-group
     then
-    $223 story-flag? not if
+    c1f-3-camomile story-flag? not if
         0 -6.0 11.5 -46.0 flicker-sprite
     then
-    $3C story-flag? not if
+    got-garden-key story-flag? not if
         3 1 $14 door-bits
     then
-    $3B story-flag? not if
+    c1f-3-flag1 story-flag? not if
         1 1 $14 door-bits
     else
         2 1 $14 door-bits
     then
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     1 $2300 sound-volume
@@ -53,9 +53,9 @@ USING: room-names story.words story.shared flag-names ;
     then then
     0 0 0 area-camera
     fiona-who self-is? if
-        $301 story-flag? not if
-            $3D story-flag? not if
-                2 game-mode? $FF panic-stage? not and if
+        c1f-3-bookshelf-examined story-flag? not if
+            c1f-3-bookshelf-hint story-flag? not if
+                2 game-mode? in-panic? not and if
                     castle-1f-3.cond00? if
                         stalker-who char-here? not if
                             0 fiona-who $C action
@@ -75,9 +75,9 @@ USING: room-names story.words story.shared flag-names ;
     2 1 1 1 chars-area-camera
     3 0 0 1 chars-area-camera
     4 1 1 1 chars-area-camera
-    $301 story-flag? not if
+    c1f-3-bookshelf-examined story-flag? not if
         fiona-who 8 char-in-area? if
-            2 game-mode? $FF panic-stage? not and if
+            2 game-mode? in-panic? not and if
                 castle-1f-3.cond00? if
                     0 fiona-who 0 action
                 then
@@ -121,7 +121,7 @@ USING: room-names story.words story.shared flag-names ;
 : castle-1f-3.phase2 ( -- )   \ 003F3400
     -2147483644 scene-request? if
         0 fiona-who 6 action
-    else $301 story-flag? not if
+    else c1f-3-bookshelf-examined story-flag? not if
         fiona-who 9 char-in-area? fiona-who 90 $2D char-heading? and if
             5 7 0 scene-change
         then
@@ -138,13 +138,13 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $C char-in-area? fiona-who -45 $2D char-heading? and if
         5 $F 0 scene-change
     then
-    $223 story-flag? not if
+    c1f-3-camomile story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 9 4 scene-change
         then
     then
-    $3C story-flag? not if
+    got-garden-key story-flag? not if
         1 10.0 6.0 -17.0 5 5 0 zone
         fiona-who 1 3 char-zone-bits? if
             5 5 4 scene-change
@@ -169,7 +169,7 @@ USING: room-names story.words story.shared flag-names ;
         $F1 action-end
     then
     1 self-scripted
-    $301 story-flag-set
+    c1f-3-bookshelf-examined story-flag-set
     hewie-who 9 1 room-doors-state
     $FE 9 103 2 stalker-to-room
     stalker-who $67 180 char-to-tri-facing
@@ -177,7 +177,7 @@ USING: room-names story.words story.shared flag-names ;
     stalker-who action-end
     stalker-who char-done
     $F $54 fade
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         6 4 movie-play
         5 cutscene-start
         yield
@@ -194,7 +194,7 @@ USING: room-names story.words story.shared flag-names ;
     0 $F9 3 action
     hewie-who char-here? if
         0 hewie-who 2 action-force
-        $303 story-flag-set
+        c1f-3-flag2 story-flag-set
     then
     fiona-who 1 char-no-shadow
     stalker-who 1 char-no-shadow
@@ -212,7 +212,7 @@ USING: room-names story.words story.shared flag-names ;
     stalker-who 0 0 char-camera
     stalker-who char-activate
     stalker-who stalker-knock-down
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $18 resident-flag-set
     else
         $19 resident-flag-set
@@ -225,8 +225,8 @@ USING: room-names story.words story.shared flag-names ;
     0 exit-prepare
     0 exit-check
     hewie-who 9 0 room-doors-state
-    $301 story-flag-set
-    $302 story-flag-clear
+    c1f-3-bookshelf-examined story-flag-set
+    c1f-1-flag2 story-flag-clear
     self-idle-or-end
 ;
 
@@ -283,7 +283,7 @@ USING: room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $3B story-flag? not if
+    c1f-3-flag1 story-flag? not if
         $F $44 fade
         4 4 movie-play
         3 cutscene-start
@@ -309,7 +309,7 @@ USING: room-names story.words story.shared flag-names ;
         fiona-who $13C 23.771 -27.607 -73 char-to-xz
         1 1 player-camera
         camera-restart
-        $3B story-flag-set
+        c1f-3-flag1 story-flag-set
         $F $41 fade
         wait-fade
     else
@@ -319,7 +319,7 @@ USING: room-names story.words story.shared flag-names ;
         self-wait-anim
         self-frames-reset
         4 self-wait-frames
-        $3C story-flag-set
+        got-garden-key story-flag-set
         3 0 $14 door-bits
         $14 message-param-room
         $14 1 item-give-count
@@ -376,7 +376,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -6.0 -46.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -386,7 +386,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $223 story-flag-set
+            c1f-3-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
@@ -442,7 +442,7 @@ USING: room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-set
     force-chased state-flag-set
     1 self-scripted
-    $3D story-flag-set
+    c1f-3-bookshelf-hint story-flag-set
     2 ebit-set
     self-wait-done
     1 $A self-anim-blend
@@ -488,7 +488,7 @@ USING: room-names story.words story.shared flag-names ;
     1 self-scripted
     fiona-who $13B 20.181 -28.363 -90 char-to-xz
     1 10.0 20.0 -30.0 0.0 event-camera
-    $3B story-flag? not if
+    c1f-3-flag1 story-flag? not if
         8 message   \ "What... is this? I probably shouldn't go snooping around things I know nothing about."
         wait-message
     else 5 ebit? not if

@@ -2,11 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-14
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-14.enter ( -- )   \ 004268B0
     room-sounds
-    $74 story-flag? not if
+    film-reel-used-om1f-14 story-flag? not if
         0 1 $14 door-bits
         1 0 $14 door-bits
     else
@@ -15,7 +15,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     8 0 object-hidden
     9 0 object-hidden
-    $26D story-flag? not if
+    om1f-14-chicken-jerky story-flag? not if
         0 15.82 1.0 20.96 flicker-sprite
     then
 ;
@@ -69,7 +69,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $B $3C char-faces-area? if
         5 6 0 scene-change
     then
-    $26D story-flag? not if
+    om1f-14-chicken-jerky story-flag? not if
         0 0 5 -8 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 3 4 scene-change
@@ -117,13 +117,13 @@ USING: room-names story.words story.shared flag-names ;
         yield
         world-held state-flag-clear
     then
-    $337 story-flag-set
+    film-reel-used-om1f-14-2 story-flag-set
     world-held state-flag-set
     $E item-use
     3 stalker-kind? $22 stalker-kind? or if
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $74 story-flag-set
+        film-reel-used-om1f-14 story-flag-set
         yield
         yield
         7 0 movie-play
@@ -148,7 +148,7 @@ USING: room-names story.words story.shared flag-names ;
         stalker-who $2B 7.18 33.88 -160 char-to-xz
         summoner-own-cooldown
         1 self-scripted
-        $333 story-flag-set
+        om1f-14-flag1 story-flag-set
         stalkers-stay state-flag-clear
         fiona-who $16 -1.36 20.03 0 char-to-xz
         0 0 player-camera
@@ -172,7 +172,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-14.act01 ( -- )   \ 00426B60
     self-wait-done
-    $337 story-flag? not if
+    film-reel-used-om1f-14-2 story-flag? not if
         0 ebit? not if
             1 message   \ "There's a projector set up here. Its looks rather old, but perhaps it still works."
             wait-message
@@ -190,7 +190,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : old-mansion-1f-14.act02 ( -- )   \ 00426B80
     self-wait-done
-    $74 story-flag? not if
+    film-reel-used-om1f-14 story-flag? not if
         3 message   \ "A screen... Has someone been watching films here recently?"
         wait-message
     else
@@ -204,7 +204,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     15.82 20.96 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -214,7 +214,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $26D story-flag-set
+            om1f-14-chicken-jerky story-flag-set
             0 effect-remove
             $60 1 item-give-count
             0 $60 item-tab

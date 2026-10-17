@@ -2,10 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-1
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-b1-1.enter ( -- )   \ 00415BA0
-    $264 story-flag? not if
+    omb1-1-breakable-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -13,7 +13,7 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $28F story-flag? not if
+        omb1-1-chicken-jerky story-flag? not if
             0 60.5 0.9 -33.4 flicker-sprite
         then
     then
@@ -29,7 +29,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     0 $F1 0 action
     hunted state-flag-set
-    $2C6 story-flag? not if
+    omb1-1-album-medallion story-flag? not if
         1 -6.17 39.94 -29.06 flicker-sprite
     then
     1 $2300 sound-volume
@@ -209,7 +209,7 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2C6 story-flag? not if
+    omb1-1-album-medallion story-flag? not if
         3 -9.31 39.5 -32.27 $32 13 0 zone
         2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -237,10 +237,10 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-b1-1.phase2 ( -- )   \ 00415FA0
-    $264 story-flag? not if
+    omb1-1-breakable-broken story-flag? not if
         0 60.5 -0.1 -33.4 5 8 1 zone
         self-who 0 char-in-zone? if
-            $264 story-flag-set
+            omb1-1-breakable-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -249,7 +249,7 @@ USING: room-names story.words story.shared flag-names ;
             $40 $123 noise
             0 60.5 0.9 -33.4 flicker-sprite
         then
-    else $28F story-flag? not if
+    else omb1-1-chicken-jerky story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 1 4 scene-change
@@ -390,7 +390,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     60.5 -33.4 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -400,7 +400,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $28F story-flag-set
+            omb1-1-chicken-jerky story-flag-set
             0 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
@@ -485,7 +485,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $1C03 $A self-anim-blend
     self-wait-anim
-    $2C6 story-flag? not if
+    omb1-1-album-medallion story-flag? not if
         fiona-half-hidden state-flag? fiona-who char-busy? not or if
             $71 $63 item-count? not if
                 10 hewie-trust
@@ -495,14 +495,14 @@ USING: room-names story.words story.shared flag-names ;
                 $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
                 wait-message
             else
-                $2C6 story-flag-set
+                omb1-1-album-medallion story-flag-set
                 $71 1 item-give-count
                 0 $71 item-tab
                 item-fanfare
                 $8011 message   \ "You've obtained ."
                 wait-message
             then
-            $2C6 story-flag? if
+            omb1-1-album-medallion story-flag? if
                 1 effect-remove
             then
         then

@@ -2,17 +2,17 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-13
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ the pursuer's Pursuer_GrabHewieBehind
 : castle-2f-13.cond00? ( b0 -- flag )  drop grab-hewie-behind? ;   \ (the stalker's Pursuer_GrabHewieBehind)
 
 : castle-2f-13.enter ( -- )   \ 00403980
     $16 1.0 0 bgm
-    $232 story-flag? not if
+    c2f-13-flag1 story-flag? not if
         0 -231.0 61.0 24.0 flicker-sprite
     then
-    $260 story-flag? not if
+    c2f-13-medallion story-flag? not if
         1 -151.78 97.684 -50.579 flicker-sprite
     then
 ;
@@ -51,7 +51,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 3 char-entered-area? if
         4 map-page
     then
-    $E story-flag? not 1 ebit? not and if
+    found-file-227 story-flag? not 1 ebit? not and if
         fiona-who 6 char-in-area? if
             0 var-inc
             0 30 var? if
@@ -129,7 +129,7 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $260 story-flag? not hewie-who 7 char-in-area? and if
+    c2f-13-medallion story-flag? not hewie-who 7 char-in-area? and if
         1 -149.92 60.0 -50.71 $36 36 0 zone
         2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -278,8 +278,8 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-anim
     0 0 $30 nav-group
     0 self-noclip
-    $260 story-flag? not if
-        $260 story-flag? not if
+    c2f-13-medallion story-flag? not if
+        c2f-13-medallion story-flag? not if
             fiona-half-hidden state-flag? fiona-who char-busy? not or if
                 $70 $63 item-count? not if
                     10 hewie-trust
@@ -289,14 +289,14 @@ USING: room-names story.words story.shared flag-names ;
                     $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
                     wait-message
                 else
-                    $260 story-flag-set
+                    c2f-13-medallion story-flag-set
                     $70 1 item-give-count
                     0 $70 item-tab
                     item-fanfare
                     $8011 message   \ "You've obtained ."
                     wait-message
                 then
-                $260 story-flag? if
+                c2f-13-medallion story-flag? if
                     1 effect-remove
                 then
             then

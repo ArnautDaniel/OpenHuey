@@ -2,27 +2,27 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-6
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x59 (Room59_Cmd00_ptmf): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0
 : old-mansion-2f-6.cmd00 ( b0 -- )  drop ;   \ (the stalker's model's springs (+0x9E0): not simulated here yet)
 
 : old-mansion-2f-6.enter ( -- )   \ 00410070
     room-sounds
-    $324 story-flag? if
+    om2f-6-flag2 story-flag? if
         8 1 object-hidden
     then
-    $323 story-flag? if
+    om2f-6-flag1 story-flag? if
         9 1 object-hidden
     then
     0 0 $14 door-bits
-    $88 story-flag? $89 story-flag? not and if
+    cf-13-flag1 story-flag? x-37-flag2 story-flag? not and if
         $80 exit-taken? if
             4 ebit-set
         then
     then
     4 ebit? not if
-        $276 story-flag? not if
+        om2f-6-lavender story-flag? not if
             0 4.58 9.0 14.22 flicker-sprite
         then
     then
@@ -63,9 +63,9 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-2f-6.phase2 ( -- )   \ 00410140
-    $324 story-flag? not if
+    om2f-6-flag2 story-flag? not if
         fiona-who 7 char-in-area? fiona-who 45 $32 char-heading? and if
-            3 stalker-kind? $22 stalker-kind? or 4 stalker-kind? or 2 game-mode? and $FF panic-stage? not and stalker-who 2 char-cond? not and if
+            3 stalker-kind? $22 stalker-kind? or 4 stalker-kind? or 2 game-mode? and in-panic? not and stalker-who 2 char-cond? not and if
                 stalker-who char-here? if
                     $8016 examine-message   \ "I have to get away! I don't have time for this!"
                 else
@@ -76,9 +76,9 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $323 story-flag? not if
+    om2f-6-flag1 story-flag? not if
         fiona-who 8 char-in-area? fiona-who -45 $32 char-heading? and if
-            3 stalker-kind? $22 stalker-kind? or 4 stalker-kind? or 2 game-mode? and $FF panic-stage? not and stalker-who 2 char-cond? not and if
+            3 stalker-kind? $22 stalker-kind? or 4 stalker-kind? or 2 game-mode? and in-panic? not and stalker-who 2 char-cond? not and if
                 stalker-who char-here? if
                     $8016 examine-message   \ "I have to get away! I don't have time for this!"
                 else
@@ -107,7 +107,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $D char-in-area? fiona-who 10 $3C char-heading? and if
         5 $A 0 scene-change
     then
-    $276 story-flag? not if
+    om2f-6-lavender story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 5 4 scene-change
@@ -142,14 +142,14 @@ USING: room-names story.words story.shared flag-names ;
         2 ebit-set
         self-frames-reset
         $1E self-wait-frames
-        $31E story-flag? not if
+        got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
             $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             wait-message
             $F 7 fade
             wait-fade
-            $31E story-flag-set
+            got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
@@ -245,7 +245,7 @@ USING: room-names story.words story.shared flag-names ;
             hewie-who 3 -7.85 29.94 52 char-to-xz
         then
     then
-    $324 story-flag-set
+    om2f-6-flag2 story-flag-set
     $F $41 fade
     wait-fade
     stalkers-stay state-flag-clear
@@ -310,7 +310,7 @@ USING: room-names story.words story.shared flag-names ;
             hewie-who $38 -4.97 35.12 -145 char-to-xz
         then
     then
-    $323 story-flag-set
+    om2f-6-flag1 story-flag-set
     3 stalker-kind? $22 stalker-kind? or if
         fiona-who $4A 180 char-to-tri-facing
         $FE $59 16 2 stalker-to-room
@@ -371,7 +371,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     4.58 14.22 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -381,7 +381,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $276 story-flag-set
+            om2f-6-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab

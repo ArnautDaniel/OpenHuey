@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-11
-USING: engine actors messages vectors story.state room-names story.words story.shared flag-names ;
+USING: engine actors messages vectors story.state room-names story.words story.shared flag-names story-names ;
 
 \ room 0x62 (Room62_Cmd00_ptmf): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size
 \ +0x34 0.01; object 0 with sound 7), else a step (+0x10 = size x sin(phase), phase on 60
@@ -48,18 +48,18 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     room-sounds
     2 0 var-set
     3 0 var-set
-    $72 story-flag? not if
+    om2f-11-flag1 story-flag? not if
         0 5.19 35.3 -34.0 flicker-sprite
         0 old-mansion-2f-11.cmd01
-    else $53 story-flag? not if
+    else got-jupiter-key story-flag? not if
         0 7.3 0.7 -28.3 flicker-sprite
     then then
-    $26C story-flag? not if
+    om2f-11-magnesia story-flag? not if
         1 -6.82 1.0 -10.25 flicker-sprite
     then
-    $AF story-flag? if
-        $81 story-flag? not if
-            $81 story-flag-set
+    items-40-as-70 story-flag? if
+        om2f-11-flag2 story-flag? not if
+            om2f-11-flag2 story-flag-set
             $62 0 15 $80 8 -1 $5A 0.0 creature-place
         then
     then
@@ -112,7 +112,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     0 3.0 0.0 -35.5 9 15 0 zone
     1 -5.75 0.0 -33.25 9 15 0 zone
     2 -14.5 0.0 -31.0 9 15 0 zone
-    $72 story-flag? not if
+    om2f-11-flag1 story-flag? not if
         fiona-who 0 char-in-zone? fiona-who 1 char-in-zone? or fiona-who 2 char-in-zone? or if
             0 $F1 $B action
         then
@@ -167,7 +167,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
             5 0 1 scene-change
         then
     then
-    $72 story-flag? $53 story-flag? not and if
+    om2f-11-flag1 story-flag? got-jupiter-key story-flag? not and if
         3 0 5 5 0 zone-at-effect
         fiona-who 3 2 char-zone-bits? if
             5 1 4 scene-change
@@ -197,7 +197,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     fiona-who $10 char-in-area? fiona-who -45 $32 char-heading? and if
         5 7 0 scene-change
     then
-    $26C story-flag? not if
+    om2f-11-magnesia story-flag? not if
         6 1 5 5 0 zone-at-effect
         fiona-who 6 3 char-zone-bits? if
             5 6 4 scene-change
@@ -221,7 +221,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
         $67 self-through-door
         self-wait-done
         stalker-who self-touching? not if
-            $FF panic-stage? not if
+            in-panic? not if
                 fiona-who $67 char-not-at-door? if
                     $609 self-anim
                 else
@@ -229,7 +229,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
                 then
                 self-frames-reset
                 $14 self-wait-frames
-                $FF panic-stage? not if
+                in-panic? not if
                     fiona-who $72 5 char-sound
                     $67 door-unlock
                     $8008 message   \ "You unlocked the door."
@@ -252,7 +252,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    $53 story-flag-set
+    got-jupiter-key story-flag-set
     0 effect-remove
     $D message-param-room
     $D 1 item-give-count
@@ -266,7 +266,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
 ;
 
 : old-mansion-2f-11.act02 ( -- )   \ 00422090
-    $72 story-flag-set
+    om2f-11-flag1 story-flag-set
     2 old-mansion-2f-11.cmd01
     0 7.3 0.7 -28.3 flicker-sprite
     self-idle-or-end
@@ -282,7 +282,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-wait-done
     5.19 -34.0 self-turn-to-xz
     self-wait-done
-    0 ebit? not $72 story-flag? or if
+    0 ebit? not om2f-11-flag1 story-flag? or if
         0 message   \ "There is a rusty stepladder here. It really is in bad shape. If I were to try climb..."
         wait-message
         0 ebit-set
@@ -302,10 +302,10 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-wait-done
     -20 self-turn-angle
     self-wait-done
-    $331 story-flag? not if
+    journals-examined story-flag? not if
         2 message   \ "Mountains of books have been piled up here. Are these journals?"
         wait-message
-        $331 story-flag-set
+        journals-examined story-flag-set
     else
         3 message   \ "The dates on these journals are just too spread out for the same man to have writte..."
         wait-message
@@ -326,7 +326,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
     self-wait-done
     -6.82 -10.25 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -336,7 +336,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $26C story-flag-set
+            om2f-11-magnesia story-flag-set
             1 effect-remove
             $92 1 item-give-count
             0 $92 item-tab

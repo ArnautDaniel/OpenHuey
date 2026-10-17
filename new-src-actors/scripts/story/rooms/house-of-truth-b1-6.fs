@@ -2,15 +2,15 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-6
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x94: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
 : house-of-truth-b1-6.cmd00 ( -- )  slam-shake ;
 
 : house-of-truth-b1-6.enter ( -- )   \ 00444390
-    $346 story-flag-set
-    $354 story-flag? if
+    htb1-6-flag1 story-flag-set
+    shared-flag4 story-flag? if
         $FE $94 2 2 stalker-to-room
         stalker-who 0 stalker-command
         stalker-who 1 1 char-camera
@@ -55,14 +55,14 @@ USING: room-names story.words story.shared flag-names ;
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
     fiona-who 2 char-entered-area? if
-        $348 story-flag? not if
+        htb1-8-flag1 story-flag? not if
             $96 room-preload
         else
             $87 room-preload
         then
     then
     fiona-who 3 char-entered-area? if
-        $347 story-flag? not if
+        htb1-7-flag1 story-flag? not if
             $95 room-preload
         else
             $87 room-preload

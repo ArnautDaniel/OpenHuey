@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-6
-USING: engine room-names story.words story.shared flag-names ;
+USING: engine room-names story.words story.shared flag-names story-names ;
 
 \ Room46_Cmd00
 : old-mansion-1f-6.cmd00 ( b0 -- )   \ (Room46_CharHook, for the script's character ($21): b0 1 turned from pi by
@@ -35,10 +35,10 @@ USING: engine room-names story.words story.shared flag-names ;
     then
     0 $F1 0 action
     hunted state-flag-set
-    $275 story-flag? not if
+    om1f-6-medallion story-flag? not if
         0 -119.67 9.0 151.64 flicker-sprite
     then
-    $56 story-flag? not $7B story-flag? not and if
+    om3f-1-flag2 story-flag? not om1f-6-flag1 story-flag? not and if
         1 exit-taken? if
             4 char-start
             $21 $FB char-to-tri
@@ -47,7 +47,7 @@ USING: engine room-names story.words story.shared flag-names ;
             $21 0 1 0 char-anim-hold
             0 $21 2 action-force
         else
-            $7B story-flag-set
+            om1f-6-flag1 story-flag-set
         then
     then
     1 -122.2 13.1 139.0 0 flame-in
@@ -157,16 +157,16 @@ USING: engine room-names story.words story.shared flag-names ;
     fiona-who $E char-left-area? if
         2 map-page
     then
-    $56 story-flag? not $7B story-flag? not and if
+    om3f-1-flag2 story-flag? not om1f-6-flag1 story-flag? not and if
         fiona-who $B char-entered-area? if
             2 ebit-set
         then
     then
     fiona-who $A char-entered-area? if
-        $7B story-flag? not if
+        om1f-6-flag1 story-flag? not if
             4 0 char-remove
             $46 0 82 $80 8 -1 $B4 0.0 creature-place
-            $7B story-flag-set
+            om1f-6-flag1 story-flag-set
         then
     then
     stalker-who 2 char-cond? not if
@@ -242,7 +242,7 @@ USING: engine room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-1f-6.phase2 ( -- )   \ 00416D60
-    $275 story-flag? not if
+    om1f-6-medallion story-flag? not if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 1 4 scene-change
@@ -330,7 +330,7 @@ USING: engine room-names story.words story.shared flag-names ;
     self-wait-done
     -119.67 151.64 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -340,7 +340,7 @@ USING: engine room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $275 story-flag-set
+            om1f-6-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
@@ -443,8 +443,8 @@ USING: engine room-names story.words story.shared flag-names ;
     self-who 4 -1 char-camera
     begin
         0 2 pad? not if
-            $FF panic-stage? 4 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 4 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] old-mansion-1f-6.act06 goto

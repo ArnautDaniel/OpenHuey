@@ -2,11 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-1
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : house-of-truth-1f-1.enter ( -- )   \ 00430AB0
     room-sounds
-    $99 story-flag? not if
+    ht1f-1-flag1 story-flag? not if
         0 1 $14 door-bits
         1 0 $14 door-bits
         0 1 8 nav-group
@@ -18,15 +18,15 @@ USING: room-names story.words story.shared flag-names ;
         1 1 8 nav-group
     then
     0 -24.6 22.1 -26.4 1 flame-in
-    $2E9 story-flag? $2EA story-flag? not and if
+    ht1f-1-album-medallion-found story-flag? ht1f-1-album-medallion story-flag? not and if
         1 -78.0 1.0 39.0 flicker-sprite
     then
-    $99 story-flag? if
+    ht1f-1-flag1 story-flag? if
         5 ebit-set
     then
-    $AF story-flag? if
-        $94 story-flag? $AC story-flag? not and if
-            $AC story-flag-set
+    items-40-as-70 story-flag? if
+        over-music-d story-flag? ht1f-1-flag2 story-flag? not and if
+            ht1f-1-flag2 story-flag-set
             $81 0 624 4 10 -1 0 0.0 creature-place
             $81 0 321 4 10 -1 0 0.0 creature-place
         then
@@ -178,9 +178,9 @@ USING: room-names story.words story.shared flag-names ;
         2 map-page
     then
     fiona-who $1B char-entered-area? if
-        $99 story-flag? not if
+        ht1f-1-flag1 story-flag? not if
             0 game-mode? not $24 1 item-count? and if
-                $99 story-flag-set
+                ht1f-1-flag1 story-flag-set
                 panic-eased
                 fiona-who 0 char-action? if
                     0 fiona-who 1 action-force
@@ -190,12 +190,12 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2E9 story-flag? not if
+    ht1f-1-album-medallion-found story-flag? not if
         0 -78.0 0.0 39.0 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 745 var-set
-                $1A 746 var-set
+                $19 ht1f-1-album-medallion-found var-set
+                $1A ht1f-1-album-medallion var-set
                 $1B 1 var-set
                 $1C -78000 var-set
                 $1D 1000 var-set
@@ -229,7 +229,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $19 char-in-area? fiona-who 0 $32 char-heading? and if
         5 0 0 scene-change
     then
-    $99 story-flag? not if
+    ht1f-1-flag1 story-flag? not if
         fiona-who $1A $32 char-faces-area? if
             5 2 0 scene-change
         then
@@ -239,7 +239,7 @@ USING: room-names story.words story.shared flag-names ;
     else fiona-who $1C char-in-area? fiona-who 30 $32 char-heading? and 2 ebit? and if
         5 4 0 scene-change
     then then
-    $2E9 story-flag? $2EA story-flag? not and if
+    ht1f-1-album-medallion-found story-flag? ht1f-1-album-medallion story-flag? not and if
         0 1 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 6 4 scene-change
@@ -290,14 +290,14 @@ USING: room-names story.words story.shared flag-names ;
         fiona-who $84 5 char-sound
         self-frames-reset
         $1E self-wait-frames
-        $31E story-flag? not if
+        got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
             $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             wait-message
             $F 7 fade
             wait-fade
-            $31E story-flag-set
+            got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
@@ -441,7 +441,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -78.0 39.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -451,7 +451,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2EA story-flag-set
+            ht1f-1-album-medallion story-flag-set
             1 effect-remove
             $71 1 item-give-count
             0 $71 item-tab

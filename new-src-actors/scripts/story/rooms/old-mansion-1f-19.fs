@@ -2,13 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-19
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-19.enter ( -- )   \ 00438D30
     room-sounds
-    $56 story-flag? if
-        $7C story-flag? not if
-            $7C story-flag-set
+    om3f-1-flag2 story-flag? if
+        om1f-19-flag1 story-flag? not if
+            om1f-19-flag1 story-flag-set
             $6B 0 109 $80 5 -1 $B4 0.0 creature-place
         then
     then
@@ -250,8 +250,8 @@ USING: room-names story.words story.shared flag-names ;
     self-who 1 char-visible
     begin
         0 2 pad? not if
-            $FF panic-stage? 3 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 3 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] old-mansion-1f-19.act05 goto

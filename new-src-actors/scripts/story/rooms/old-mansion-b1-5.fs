@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-5
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x51 (Room51_Cmd00_ptmf): byte 3 0 door 0 set going (+0xC); else wait (2) while it moves
 : old-mansion-b1-5.cmd00 ( b0 -- )  0= if  0 1 door-play  else  0 door-wait  then ;   \ (door 0: b0 0 swung, else waited for)
@@ -12,7 +12,7 @@ USING: room-names story.words story.shared flag-names ;
     room-sounds
     1 0 $1000000 nav-group
     1 0 $4000000 nav-group
-    $327 story-flag? if
+    omb1-5-flag4 story-flag? if
         0 1 $14 door-bits
         1 0 $20000 nav-group
         8 1 object-hidden
@@ -23,10 +23,10 @@ USING: room-names story.words story.shared flag-names ;
         8 0 object-hidden
         9 0 object-hidden
     then
-    $328 story-flag? not $327 story-flag? not and if
+    omb1-5-flag5 story-flag? not omb1-5-flag4 story-flag? not and if
         3 stalker-kind? $22 stalker-kind? or if
             stalker-active? not if
-                $75 story-flag? not $76 story-flag? or if
+                om1f-13-flag2 story-flag? not white-mandragora-used story-flag? or if
                     7 ebit-set
                     force-followed state-flag-set
                 then
@@ -126,7 +126,7 @@ USING: room-names story.words story.shared flag-names ;
     2 2 2 1 chars-area-camera
     3 1 1 1 chars-area-camera
     4 2 2 1 chars-area-camera
-    $328 story-flag? not $327 story-flag? not and if
+    omb1-5-flag5 story-flag? not omb1-5-flag4 story-flag? not and if
         0 17.96 0.0 -27.69 $F 18 0 zone
         5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -241,7 +241,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-b1-5.act00 ( -- )   \ 0040D290
-    $43 story-flag? not if
+    omb1-5-flag1 story-flag? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -311,7 +311,7 @@ USING: room-names story.words story.shared flag-names ;
             stalker-who char-here? not stalker-active? and stalker-who 2 char-cond? not and if
                 $FE $4B -1 2 stalker-to-room
             then
-            $43 story-flag-set
+            omb1-5-flag1 story-flag-set
             0 0.0 0.0 0.0 0.0 event-camera
             $F $41 fade
             wait-fade
@@ -338,7 +338,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-b1-5.act01 ( -- )   \ 0040D450
-    $44 story-flag? not if
+    omb1-5-flag2 story-flag? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -385,7 +385,7 @@ USING: room-names story.words story.shared flag-names ;
             exits-rebuild
             hewie-who $5F 0 room-doors-state
             stalker-who $5F 0 room-doors-state
-            $44 story-flag-set
+            omb1-5-flag2 story-flag-set
             0 0.0 0.0 0.0 0.0 event-camera
             $2B resident-flag-set
             $F $41 fade
@@ -413,7 +413,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-b1-5.act02 ( -- )   \ 0040D5E0
-    $45 story-flag? not if
+    omb1-5-flag3 story-flag? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -461,7 +461,7 @@ USING: room-names story.words story.shared flag-names ;
             stalker-who char-here? not stalker-active? and stalker-who 2 char-cond? not and if
                 $FE $4B -1 2 stalker-to-room
             then
-            $45 story-flag-set
+            omb1-5-flag3 story-flag-set
             0 0.0 0.0 0.0 0.0 event-camera
             $F $41 fade
             wait-fade
@@ -638,7 +638,7 @@ USING: room-names story.words story.shared flag-names ;
     $8003 0 self-anim-blend
     self-wait-anim
     0 self-noclip
-    $327 story-flag-set
+    omb1-5-flag4 story-flag-set
     1 0 $20000 nav-group
     0 self-scripted
     self-idle-or-end
@@ -671,7 +671,7 @@ USING: room-names story.words story.shared flag-names ;
         stalker-who self-turn-to
         self-wait-done
     then
-    $327 story-flag-clear
+    omb1-5-flag4 story-flag-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -701,7 +701,7 @@ USING: room-names story.words story.shared flag-names ;
         stalker-who self-turn-to
         self-wait-done
     then
-    $327 story-flag-set
+    omb1-5-flag4 story-flag-set
     1 0 $20000 nav-group
     0 self-scripted
     self-idle-or-end
@@ -715,7 +715,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     0 0 var-set
     1 0 var-set
-    $327 story-flag? not if
+    omb1-5-flag4 story-flag? not if
         0 ebit-set
     else
         0 ebit-clear
@@ -794,7 +794,7 @@ USING: room-names story.words story.shared flag-names ;
                 else
                     ['] old-mansion-b1-5.act0B goto
                 then
-            else $FF panic-stage? if
+            else in-panic? if
                 ['] old-mansion-b1-5.act0C goto
             then then
             2 panic-calm-in
@@ -834,7 +834,7 @@ USING: room-names story.words story.shared flag-names ;
                 stalker-who self-turn-to
                 self-wait-done
             then
-            $327 story-flag-clear
+            omb1-5-flag4 story-flag-clear
             0 0 $20000 nav-group
             0 self-scripted
             self-idle-or-end
@@ -1017,7 +1017,7 @@ USING: room-names story.words story.shared flag-names ;
     stalkers-stay state-flag-clear
     force-followed state-flag-clear
     7 ebit-clear
-    $328 story-flag-set
+    omb1-5-flag5 story-flag-set
     0 self-scripted
     self-idle-or-end
 ;
@@ -1034,7 +1034,7 @@ USING: room-names story.words story.shared flag-names ;
     stalker-who 0 char-silent
     0 0 $14 door-bits
     stalker-who char-file-use
-    $327 story-flag-set
+    omb1-5-flag4 story-flag-set
     1 0 $20000 nav-group
     counter-inc
     8 0 object-hidden

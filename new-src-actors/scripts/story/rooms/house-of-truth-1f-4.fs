@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-4
-USING: engine common actors messages story.state room-names story.words story.shared flag-names ;
+USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names ;
 
 \ (as RoomC7_Cmd01)
 : house-of-truth-1f-4.cmd00 ( b0 -- )  var-down-by-hit ;
@@ -61,7 +61,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
 
 : house-of-truth-1f-4.enter ( -- )   \ 00433CC0
     room-sounds
-    $9A story-flag? not $9B story-flag? not and if
+    found-file-250 story-flag? not ht1f-4-flag1 story-flag? not and if
         0 3 var-set
         7 1 object-hidden
         8 0 object-hidden
@@ -96,12 +96,12 @@ USING: engine common actors messages story.state room-names story.words story.sh
         $14 1 object-hidden
         $15 1 object-hidden
         $16 1 object-hidden
-        $9C story-flag? not if
+        got-sol-key story-flag? not if
             0 0.0 -2.2 65.0 flicker-sprite
         then
     then
     0 0 $14 door-bits
-    $9B story-flag? not if
+    ht1f-4-flag1 story-flag? not if
         force-followed state-flag-set
     then
     1 $2300 sound-volume
@@ -149,7 +149,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    $9B story-flag? not if
+    ht1f-4-flag1 story-flag? not if
         1 ebit? not if
             0 50.0 0.0 -28.0 5 11 0 zone
             fiona-who 0 char-in-zone? if
@@ -157,7 +157,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
             then
         then
     then
-    $9A story-flag? $9B story-flag? not and if
+    found-file-250 story-flag? ht1f-4-flag1 story-flag? not and if
         1 ebit? 2 ebit? not and if
             stalker-who $B char-in-area? if
                 2 ebit-set
@@ -227,13 +227,13 @@ USING: engine common actors messages story.state room-names story.words story.sh
     -2147483646 scene-request? if
         5 7 1 scene-change
     then
-    $9B story-flag? $9C story-flag? not and if
+    ht1f-4-flag1 story-flag? got-sol-key story-flag? not and if
         1 0.0 -3.2 65.0 5 5 0 zone
         fiona-who 1 3 char-zone-bits? if
             5 5 4 scene-change
         then
     then
-    $9A story-flag? not if
+    found-file-250 story-flag? not if
         fiona-who $C $32 char-faces-area? if
             5 $A 0 scene-change
         then
@@ -247,7 +247,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     $A01 self-anim
     self-frames-reset
     self-wait-16
-    $9B story-flag? not if
+    ht1f-4-flag1 story-flag? not if
         0 ebit? not if
             0 message   \ "Looks like a power generator. The switch is turned on, but it's not getting any..."
             wait-message
@@ -271,7 +271,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     0 house-of-truth-1f-4.cmd01
     1 house-of-truth-1f-4.cmd01
     0 0 var? if
-        $9A story-flag? not if
+        found-file-250 story-flag? not if
             begin
                 fiona-free? not while
                 yield
@@ -349,7 +349,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     $16 1 object-hidden
     2 2 player-camera
     camera-restart
-    $9A story-flag-set
+    found-file-250 story-flag-set
     $F $51 fade
     wait-fade
     $46 resident-flag-set
@@ -429,7 +429,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     hewie-who char-activate
     hewie-who $9D 6.01 27.57 18 char-to-xz
     50 hewie-trust
-    $9B story-flag-set
+    ht1f-4-flag1 story-flag-set
     1 1 player-camera
     camera-restart
     6 0 object-hidden
@@ -480,7 +480,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     wait-message
     $901 self-anim
     self-wait-anim
-    $9C story-flag-set
+    got-sol-key story-flag-set
     0 self-scripted
     self-idle-or-end
 ;
@@ -517,8 +517,8 @@ USING: engine common actors messages story.state room-names story.words story.sh
         self-wait-done
         0 self-through-exit
         self-wait-done
-        4 ebit? not 2 game-mode? or $FF panic-stage? or if
-            $FF panic-stage? 2 game-mode? or if
+        4 ebit? not 2 game-mode? or in-panic? or if
+            in-panic? 2 game-mode? or if
                 $60A self-anim
                 self-wait-anim
                 -1 self-idle-anim

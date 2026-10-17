@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-3
-USING: engine actors messages story.state room-names story.words story.shared flag-names ;
+USING: engine actors messages story.state room-names story.words story.shared flag-names story-names ;
 
 \ four room objects (Room4C_ObjectNames) pressed in (+0x24 down 0.2 to -0.7, a sound as each
 \ starts) while event flag i is set, else back up 0.2 to 0; byte 3 0 all reset
@@ -36,7 +36,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 : old-mansion-b1-3.enter ( -- )   \ 00409980
     room-sounds
     0 old-mansion-b1-3.cmd00
-    $48 story-flag? not if
+    omb1-3-flag2 story-flag? not if
         0 -0.5 18.5 -35.5 2 flame-in
         1 9.5 18.5 -35.0 2 flame-in
         2 4.8 25.5 -37.5 2 flame-in
@@ -49,14 +49,14 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     then
     3 char-start
     $11 char-activate
-    $49 story-flag? if
+    got-venus-key story-flag? if
         0 old-mansion-b1-3.cmd02
     else
         1 old-mansion-b1-3.cmd02
     then
     $11 $9005 1 0 char-anim-hold
     $11 9.97 0.0 -0.59 0 char-to-xyz
-    $330 story-flag? not if
+    omb1-3-flag3 story-flag? not if
         $A 1 object-hidden
         $B 0 object-hidden
         $F 1 object-hidden
@@ -70,7 +70,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     2 1 $14 door-bits
     $E 1 object-hidden
     5 0 $14 door-bits
-    $26A story-flag? not if
+    omb1-3-camomile story-flag? not if
         5 -20.96 8.5 5.57 flicker-sprite
     then
     1 $2300 sound-volume
@@ -175,7 +175,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         3 ebit-set
     then
     1 old-mansion-b1-3.cmd00
-    $48 story-flag? not if
+    omb1-3-flag2 story-flag? not if
         1 ebit? 2 ebit? and if
             8 ebit? not 4 ebit? not and if
                 0 0 var? if
@@ -268,7 +268,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         then
         4 ebit? 5 ebit? and 6 ebit? and 7 ebit? and if
             fiona-who char-busy? not if
-                $48 story-flag-set
+                omb1-3-flag2 story-flag-set
                 panic-eased
                 fiona-who 0 char-action? if
                     0 fiona-who 0 action-force
@@ -380,7 +380,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                 then
             then
         then
-        $48 story-flag? not if
+        omb1-3-flag2 story-flag? not if
             6 11.81 0.0 -0.03 $14 6 0 zone
             $1B ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
@@ -421,16 +421,16 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         5 3 0 scene-change
     then
     fiona-who 4 char-in-area? fiona-who 10 0 $32 char-faces-xz? and if
-        $48 story-flag? not if
+        omb1-3-flag2 story-flag? not if
             5 2 0 scene-change
-        else $49 story-flag? not if
+        else got-venus-key story-flag? not if
             5 5 4 scene-change
         else
             5 4 0 scene-change
         then then
     then
     fiona-who 5 char-in-area? fiona-who 45 $32 char-heading? and if
-        $330 story-flag? not if
+        omb1-3-flag3 story-flag? not if
             5 6 0 scene-change
         else stalker-who char-here? not if
             5 6 5 scene-change
@@ -459,7 +459,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     fiona-who $C char-in-area? fiona-who -45 $32 char-heading? and if
         5 $D 0 scene-change
     then
-    $26A story-flag? not if
+    omb1-3-camomile story-flag? not if
         7 5 5 5 0 zone-at-effect
         fiona-who 7 3 char-zone-bits? if
             5 $12 4 scene-change
@@ -529,7 +529,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $47 story-flag? not if
+    omb1-3-flag1 story-flag? not if
         $8D 9.0 10.0 180 $FFFF 5 self-move-to
         self-wait-done
         0 message   \ "A corpse. There are traces that suggest this person was heavily tortured... There i..."
@@ -567,7 +567,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     then
     0 answer? if
         self-wait-done
-        $47 story-flag? if
+        omb1-3-flag1 story-flag? if
             fiona-who 8 char-file-load
             fiona-who char-file-use
             1 27.0 10.0 -40.0 0.0 event-camera
@@ -660,7 +660,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $14 ebit? if
             4 panic-stage
         then
-        $47 story-flag-set
+        omb1-3-flag1 story-flag-set
         $2F resident-flag-set
     then
     stalkers-stay state-flag-clear
@@ -718,7 +718,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-anim
     self-frames-reset
     4 self-wait-frames
-    $49 story-flag-set
+    got-venus-key story-flag-set
     0 old-mansion-b1-3.cmd02
     $F message-param-room
     $F 1 item-give-count
@@ -758,7 +758,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 ;
 
 : old-mansion-b1-3.act06 ( -- )   \ 0040A560
-    $330 story-flag? not if
+    omb1-3-flag3 story-flag? not if
         self-wait-done
         $3C 32.0 20.63 90 $FFFF 5 self-move-to
         self-wait-done
@@ -796,8 +796,8 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         self-who 3 -1 char-camera
         begin
             0 2 pad? not if
-                $FF panic-stage? $17 ebit? or if
-                    $FF panic-stage? not if
+                in-panic? $17 ebit? or if
+                    in-panic? not if
                         fiona-who $43 5 char-sound
                     then
                     ['] old-mansion-b1-3.act0E goto
@@ -842,7 +842,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     5 9.83 27.45 0 $FFFF 5 self-move-to
     self-wait-done
     fiona-who char-file-use
-    $330 story-flag? not if
+    omb1-3-flag3 story-flag? not if
         $8004 5 self-anim-blend8
         self-frames-reset
         5 self-wait-frames
@@ -859,7 +859,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $37 self-wait-frames
         fiona-who 0 6 char-sound
         self-wait-anim
-        $330 story-flag-set
+        omb1-3-flag3 story-flag-set
     else
         $8003 5 self-anim-blend8
         self-frames-reset
@@ -880,7 +880,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         5 self-wait-frames
         fiona-who 7 6 char-sound
         self-wait-anim
-        $330 story-flag-clear
+        omb1-3-flag3 story-flag-clear
     then
     0 self-scripted
     stalkers-stay state-flag-clear
@@ -1038,7 +1038,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     self-wait-done
     -20.96 5.57 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -1048,7 +1048,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $26A story-flag-set
+            omb1-3-camomile story-flag-set
             5 effect-remove
             $40 1 item-give-count
             0 $40 item-tab

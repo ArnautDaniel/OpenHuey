@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-13
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-13.cmd00 ( -- )  effects:drips ;   \ (water dripping, rippling)
 \ 1 unless the object at +0x18 exists and its byte +0x28 is 1.
@@ -11,13 +11,13 @@ USING: room-names story.words story.shared flag-names ;
 : old-mansion-1f-13.enter ( -- )   \ 0040E3B0
     room-sounds
     $35 1.0 0 bgm
-    $4B story-flag? not if
+    om2f-8-flag1 story-flag? not if
         old-mansion-1f-13.cond00? if
             $52 1 323 2 5 6 0 0.0 creature-place
         then
     then
     old-mansion-1f-13.cmd00
-    $75 story-flag? not if
+    om1f-13-flag2 story-flag? not if
         2 0 object-hidden
         3 0 object-hidden
         4 0 object-hidden
@@ -99,7 +99,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 4 char-entered-area? if
         2 exit-prepare
     then
-    $75 story-flag? not if
+    om1f-13-flag2 story-flag? not if
         fiona-who 5 char-left-area? if
             panic-eased
             fiona-who 0 char-action? if
@@ -163,7 +163,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $C char-in-area? fiona-who 90 $3C char-heading? and if
         5 3 0 scene-change
     then
-    $76 story-flag? not if
+    white-mandragora-used story-flag? not if
         $18 1 item-count? not $19 1 item-count? not and $1A 1 item-count? not and $1B 1 item-count? not and $1C 1 item-count? not and if
             fiona-who $A $3C char-faces-area? if
                 5 4 0 scene-change
@@ -230,7 +230,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-1f-13.act01 ( -- )   \ 0040E780
-    $75 story-flag-set
+    om1f-13-flag2 story-flag-set
     stalker-who action-end
     stalker-who char-done
     summoner-on state-flag-clear
@@ -288,8 +288,8 @@ USING: room-names story.words story.shared flag-names ;
     0 0 player-camera
     yield
     camera-restart
-    $58 story-flag? not if
-        $58 story-flag-set
+    om1f-13-flag1 story-flag? not if
+        om1f-13-flag1 story-flag-set
     then
     0 1 door-flag-unread
     $F $51 fade
@@ -326,7 +326,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : old-mansion-1f-13.act0A ( -- )   \ 0040EAD0
-    $75 story-flag? $76 story-flag? not and if
+    om1f-13-flag2 story-flag? white-mandragora-used story-flag? not and if
         stalker-who $48 1 room-doors-state
         stalker-active? not if
             $FE $4B 217 2 stalker-to-room
@@ -385,7 +385,7 @@ USING: room-names story.words story.shared flag-names ;
         item-fanfare
         $8012 message   \ "You've obtained ."
         wait-message
-        $362 story-flag-set
+        got-yellow-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
         $903 self-anim
@@ -416,7 +416,7 @@ USING: room-names story.words story.shared flag-names ;
         item-fanfare
         $8012 message   \ "You've obtained ."
         wait-message
-        $363 story-flag-set
+        got-red-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
         $903 self-anim
@@ -447,7 +447,7 @@ USING: room-names story.words story.shared flag-names ;
         item-fanfare
         $8012 message   \ "You've obtained ."
         wait-message
-        $364 story-flag-set
+        got-blue-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
         $903 self-anim
@@ -478,7 +478,7 @@ USING: room-names story.words story.shared flag-names ;
         item-fanfare
         $8012 message   \ "You've obtained ."
         wait-message
-        $365 story-flag-set
+        got-purple-mandragora story-flag-set
         $3C threat-add
         fiona-who 2 6 char-sound
         $903 self-anim

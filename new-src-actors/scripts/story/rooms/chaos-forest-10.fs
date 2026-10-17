@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-10
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(1, 0), then the partner's
 \ message slot shows progress +0x73EDC0; else Progress_SpeechCall and the slot is closed
@@ -16,10 +16,10 @@ USING: room-names story.words story.shared flag-names ;
     $1F 0 pvar? if
         deal-things
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     then
-    $21D story-flag? not if
+    cf-10-breakable-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -27,12 +27,12 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $2CA story-flag? not if
+        cf-10-medallion story-flag? not if
             0 76.5 -25.5 134.5 flicker-sprite
         then
     then
     0 9 0.812 0.687 0.187 0.312 zone-rect
-    $86 story-flag? $88 story-flag? not and if
+    found-file-247 story-flag? cf-13-flag1 story-flag? not and if
         hewie-who char-activate
         hewie-who $118 4.7 54.573 180 char-to-xz
         0 hewie-who 1 action
@@ -130,8 +130,8 @@ USING: room-names story.words story.shared flag-names ;
         3 exit-prepare
     then
     fiona-who $D char-entered-area? if
-        $86 story-flag? $87 story-flag? not and if
-            $87 story-flag-set
+        found-file-247 story-flag? cf-10-flag1 story-flag? not and if
+            cf-10-flag1 story-flag-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
@@ -141,17 +141,17 @@ USING: room-names story.words story.shared flag-names ;
         then
     then
     0 ebit? not if
-        1 ebit? not $FF panic-stage? and if
+        1 ebit? not in-panic? and if
             0 ebit-set
             deal-things
         then
     then
-    $FF panic-stage? if
+    in-panic? if
         1 ebit-set
     else
         1 ebit-clear
     then
-    $86 story-flag? $88 story-flag? not and if
+    found-file-247 story-flag? cf-13-flag1 story-flag? not and if
         0 0 var? if
             $1E chance? if
                 hewie-who $40000001 6 char-sound
@@ -167,15 +167,15 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : chaos-forest-10.phase2 ( -- )   \ 00419050
-    $86 story-flag? $88 story-flag? not and if
-        $87 story-flag? fiona-who hewie-who $A $A $2D char-touching-facing? and if
+    found-file-247 story-flag? cf-13-flag1 story-flag? not and if
+        cf-10-flag1 story-flag? fiona-who hewie-who $A $A $2D char-touching-facing? and if
             5 2 0 scene-change
         then
     then
-    $21D story-flag? not if
+    cf-10-breakable-broken story-flag? not if
         0 76.5 -26.5 134.5 5 8 1 zone
         self-who 0 char-in-zone? if
-            $21D story-flag-set
+            cf-10-breakable-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -184,7 +184,7 @@ USING: room-names story.words story.shared flag-names ;
             $40 $262 noise
             0 76.5 -25.5 134.5 flicker-sprite
         then
-    else $2CA story-flag? not if
+    else cf-10-medallion story-flag? not if
         0 0 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 3 4 scene-change
@@ -193,7 +193,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : chaos-forest-10.phase5 ( -- )   \ 004190F0
-    $86 story-flag? $88 story-flag? not and if
+    found-file-247 story-flag? cf-13-flag1 story-flag? not and if
         hewie-who action-end
         hewie-who char-done
         $27 0 pvar? if
@@ -226,7 +226,7 @@ USING: room-names story.words story.shared flag-names ;
     then
     30 hewie-trust
     world-held state-flag-set
-    $87 story-flag-set
+    cf-10-flag1 story-flag-set
     fiona-who $9E 12.16 49.91 -7 char-to-xz
     hewie-who $118 4.7 54.573 180 char-to-xz
     $27 0 pvar? if
@@ -261,7 +261,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     $1004 0 self-anim-blend
     $27 0 pvar? if
-        $87 story-flag? not if
+        cf-10-flag1 story-flag? not if
             0 chaos-forest-10.cmd00
         else
             1 chaos-forest-10.cmd00
@@ -290,7 +290,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     76.5 134.5 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -300,7 +300,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2CA story-flag-set
+            cf-10-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab

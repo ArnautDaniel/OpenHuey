@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-9
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ the rising motes started
 : castle-1f-9.cmd00 ( -- )  effects:rising-motes ;
@@ -12,7 +12,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-1f-9.enter ( -- )   \ 00402330
     room-sounds
-    $20C story-flag? not if
+    c1f-9-breakable1-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -21,7 +21,7 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $14 door-bits
         1 1 $14 door-bits
     then
-    $20D story-flag? not if
+    c1f-9-breakable2-broken story-flag? not if
         1 1 $8000000 nav-group
         2 1 $14 door-bits
         3 0 $14 door-bits
@@ -29,19 +29,19 @@ USING: room-names story.words story.shared flag-names ;
         0 1 $8000000 nav-group
         2 0 $14 door-bits
         3 1 $14 door-bits
-        $288 story-flag? not if
+        c1f-9-magnesia story-flag? not if
             1 -5.5 1.0 -99.0 flicker-sprite
         then
     then
     0 6 0.5 1.0 0.187 0.312 zone-rect
-    $248 story-flag? $249 story-flag? not and if
+    c1f-9-rubrum-medallion-found story-flag? c1f-9-rubrum-medallion story-flag? not and if
         0 60.0 1.0 37.2 flicker-sprite
     then
-    $230 story-flag? not if
+    c1f-9-album-medallion story-flag? not if
         2 -33.0 43.5 15.0 flicker-sprite
     then
     castle-1f-9.cmd00
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     else
         $10 20.0 19.7 36.4 $E $80 $80 $80 $40 specks
@@ -82,8 +82,8 @@ USING: room-names story.words story.shared flag-names ;
     then then
     2 3 1 area-camera
     fiona-who self-is? if
-        $42 story-flag? $5B story-flag? not and if
-            $5B story-flag-set
+        saturnus-hint-on story-flag? c1f-14-flag2 story-flag? not and if
+            c1f-14-flag2 story-flag-set
             stalker-who action-end
             stalker-who char-done
         then
@@ -129,10 +129,10 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 3 char-entered-area? if
         2 map-page
     then
-    $20C story-flag? not if
+    c1f-9-breakable1-broken story-flag? not if
         0 -30.0 0.0 -85.4 5 8 1 zone
         self-who 0 char-in-zone? if
-            $20C story-flag-set
+            c1f-9-breakable1-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -141,12 +141,12 @@ USING: room-names story.words story.shared flag-names ;
             $40 $1E7 noise
         then
     then
-    $248 story-flag? not if
+    c1f-9-rubrum-medallion-found story-flag? not if
         2 60.0 0.0 37.2 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 584 var-set
-                $1A 585 var-set
+                $19 c1f-9-rubrum-medallion-found var-set
+                $1A c1f-9-rubrum-medallion var-set
                 $1B 0 var-set
                 $1C 60000 var-set
                 $1D 1000 var-set
@@ -169,9 +169,9 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2B story-flag? not if
+    c1f-9-flag1 story-flag? not if
         castle-1f-9.cond00? if
-            $2B story-flag-set
+            c1f-9-flag1 story-flag-set
             0 $F1 2 action
         then
     then
@@ -183,7 +183,7 @@ USING: room-names story.words story.shared flag-names ;
     else
         $C0000000 6 0.0 71.0 35.0 0 0 sound
     then
-    $230 story-flag? not if
+    c1f-9-album-medallion story-flag? not if
         4 -33.85 42.7 15.04 $2C 30 0 zone
         2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -211,7 +211,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-9.phase2 ( -- )   \ 00402700
-    $248 story-flag? $249 story-flag? not and if
+    c1f-9-rubrum-medallion-found story-flag? c1f-9-rubrum-medallion story-flag? not and if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 7 4 scene-change
@@ -231,10 +231,10 @@ USING: room-names story.words story.shared flag-names ;
             5 9 1 scene-change
         then
     then
-    $20D story-flag? not if
+    c1f-9-breakable2-broken story-flag? not if
         1 -5.5 0.0 -99.0 5 8 1 zone
         self-who 1 char-in-zone? if
-            $20D story-flag-set
+            c1f-9-breakable2-broken story-flag-set
             0 1 $8000000 nav-group
             2 0 $14 door-bits
             3 1 $14 door-bits
@@ -243,7 +243,7 @@ USING: room-names story.words story.shared flag-names ;
             $40 $1F1 noise
             1 -5.5 1.0 -99.0 flicker-sprite
         then
-    else $288 story-flag? not if
+    else c1f-9-magnesia story-flag? not if
         1 1 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 $B 4 scene-change
@@ -258,10 +258,10 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-9.phase5 ( -- )   \ 00402880
-    $37 story-flag? if
-        $2B story-flag? not if
+    garden-door-done story-flag? if
+        c1f-9-flag1 story-flag? not if
             fiona-who 0 char-before-door? fiona-who 1 char-before-door? or if
-                $2B story-flag-set
+                c1f-9-flag1 story-flag-set
             then
         then
     then
@@ -340,7 +340,7 @@ USING: room-names story.words story.shared flag-names ;
     wait-message
     $F 7 fade
     wait-fade
-    $37 story-flag-set
+    garden-door-done story-flag-set
     $A9 message-param-room
     $A9 1 item-give-count
     $83 $85 0.0 0.0 0.0 0 0 sound
@@ -348,8 +348,8 @@ USING: room-names story.words story.shared flag-names ;
     wait-message
     2 char-start
     summoner-on state-flag-set
-    $25 story-flag? not if
-        $25 story-flag-set
+    got-doc-luminessants story-flag? not if
+        got-doc-luminessants story-flag-set
         $25 0 217 3 6 -1 0 0.0 creature-place
     then
     $14 item-use
@@ -397,7 +397,7 @@ USING: room-names story.words story.shared flag-names ;
     $CF -35.0 20.3 0.2 50 hewie-go-to
     self-wait-done
     hewie-who 2 -1 char-camera
-    $230 story-flag? not if
+    c1f-9-album-medallion story-flag? not if
         $71 $63 item-count? not if
             10 hewie-trust
         then
@@ -406,14 +406,14 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $230 story-flag-set
+            c1f-9-album-medallion story-flag-set
             $71 1 item-give-count
             0 $71 item-tab
             item-fanfare
             $8011 message   \ "You've obtained ."
             wait-message
         then
-        $230 story-flag? if
+        c1f-9-album-medallion story-flag? if
             2 effect-remove
         then
     then
@@ -435,7 +435,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     60.0 37.2 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -445,7 +445,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $249 story-flag-set
+            c1f-9-rubrum-medallion story-flag-set
             0 effect-remove
             $73 1 item-give-count
             0 $73 item-tab
@@ -472,7 +472,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     1 self-through-exit
     self-wait-done
-    $FF panic-stage? 2 game-mode? or if
+    in-panic? 2 game-mode? or if
         $60A self-anim
         self-wait-anim
         -1 self-idle-anim
@@ -517,7 +517,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -5.5 -99.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -527,7 +527,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $288 story-flag-set
+            c1f-9-magnesia story-flag-set
             1 effect-remove
             $92 1 item-give-count
             0 $92 item-tab

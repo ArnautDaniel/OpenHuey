@@ -2,27 +2,27 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-1
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-1f-1.enter ( -- )   \ 003EE770
-    $37 story-flag? $24 story-flag? not and if
-        $24 story-flag-set
+    garden-door-done story-flag? c1f-1-flag1 story-flag? not and if
+        c1f-1-flag1 story-flag-set
         1 0 443 4 8 -1 0 0.0 creature-place
     then
-    $3B story-flag? not if
+    c1f-3-flag1 story-flag? not if
         1 exit-door-open? if
             4 0.1 0 bgm
         else
             4 0.01 0 bgm
         then
     then
-    $12 story-flag? not if
+    c1f-2-flag1 story-flag? not if
         1 1 $14 door-bits
         1 0 8 nav-group
     else
         0 1 $14 door-bits
     then
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     else
         $A 103.4 28.8 -51.9 $A $80 $80 $80 $20 specks
@@ -64,15 +64,15 @@ USING: room-names story.words story.shared flag-names ;
     then then
     2 0 -1 area-camera
     fiona-who self-is? if
-        $301 story-flag? $302 story-flag? not and if
+        c1f-3-bookshelf-examined story-flag? c1f-1-flag2 story-flag? not and if
             0.0 sound-volume-scale
             0 -1 player-camera
             fiona-who $B7 0 char-to-tri-facing
-            $303 story-flag? if
+            c1f-3-flag2 story-flag? if
                 1 0 306 hewie-to-room
                 hewie-who $132 0 char-to-tri-facing
             then
-            $302 story-flag-set
+            c1f-1-flag2 story-flag-set
             0 ebit-set
             0 $F1 1 action
         then
@@ -99,10 +99,10 @@ USING: room-names story.words story.shared flag-names ;
     $B 2 -1 1 chars-area-camera
     $B 2 -1 1 chars-area-camera
     $C 0 -1 -1 chars-area-camera
-    $340 story-flag? not if
+    got-doc-crouch-evasion story-flag? not if
         $D 3 -1 1 chars-area-camera
     then
-    $12 story-flag? not if
+    c1f-2-flag1 story-flag? not if
         fiona-who 3 char-entered-area? if
             1 exit-prepare
         then
@@ -125,7 +125,7 @@ USING: room-names story.words story.shared flag-names ;
             0 ebit-clear
         then
     then
-    $234 story-flag? not if
+    c1f-1-refined-magnesia story-flag? not if
         hewie-who char-here? hewie-who 2 char-cond? not and hewie-who char-busy? not and if
             2 game-mode? not if
                 0 control-action? if
@@ -193,10 +193,10 @@ USING: room-names story.words story.shared flag-names ;
             2 ebit-set
         then
     then
-    $340 story-flag? not if
+    got-doc-crouch-evasion story-flag? not if
         fiona-who $E char-in-area? fiona-free? and if
             2 game-mode? fiona-who stalker-who 70 chars-within? not and 2 game-mode? not or if
-                $340 story-flag-set
+                got-doc-crouch-evasion story-flag-set
                 panic-eased
                 fiona-who 0 char-action? if
                     0 fiona-who 5 action-force
@@ -206,7 +206,7 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $3B story-flag? not if
+    c1f-3-flag1 story-flag? not if
         1 exit-door-open? not if
             4 0.01 0 bgm
         else
@@ -216,7 +216,7 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-1f-1.phase2 ( -- )   \ 003EEB90
-    $12 story-flag? not if
+    c1f-2-flag1 story-flag? not if
         fiona-who 7 char-in-area? fiona-who -67 $2D char-heading? and if
             5 0 0 scene-change
         then
@@ -260,12 +260,12 @@ USING: room-names story.words story.shared flag-names ;
     yield
     force-followed state-flag-clear
     world-held state-flag-clear
-    $AF story-flag? not if
+    items-40-as-70 story-flag? not if
         $22A item-add
     then
     $F $51 fade
     wait-fade
-    $AF story-flag? not if
+    items-40-as-70 story-flag? not if
         $C $85 0.0 0.0 0.0 0 0 sound
     then
     self-idle-or-end
@@ -320,7 +320,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $234 story-flag-set
+            c1f-1-refined-magnesia story-flag-set
             $95 1 item-give-count
             0 $95 item-tab
             item-fanfare
@@ -349,7 +349,7 @@ USING: room-names story.words story.shared flag-names ;
     wait-message
     $F 7 fade
     wait-fade
-    $340 story-flag-set
+    got-doc-crouch-evasion story-flag-set
     $AA message-param-room
     $AA 1 item-give-count
     $83 $85 0.0 0.0 0.0 0 0 sound

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-2
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x88: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -10,7 +10,7 @@ USING: room-names story.words story.shared flag-names ;
 
 : house-of-truth-1f-2.enter ( -- )   \ 00432CA0
     room-sounds
-    $298 story-flag? not if
+    ht1f-2-breakable-broken story-flag? not if
         1 0 $8000000 nav-group
         0 1 $14 door-bits
         1 0 $14 door-bits
@@ -18,15 +18,15 @@ USING: room-names story.words story.shared flag-names ;
         0 0 $8000000 nav-group
         0 0 $14 door-bits
         1 1 $14 door-bits
-        $2E8 story-flag? not if
+        ht1f-2-refined-antimony story-flag? not if
             1 -0.4 71.0 -123.2 flicker-sprite
         then
     then
     0 1 0.812 0.687 0.187 0.312 zone-rect
-    $2E6 story-flag? not if
+    ht1f-2-refined-magnesia story-flag? not if
         0 -33.17 71.0 33.19 flicker-sprite
     then
-    $2F1 story-flag? $2F2 story-flag? not and if
+    ht1f-2-prima-magnesia-found story-flag? ht1f-2-prima-magnesia story-flag? not and if
         2 35.0 71.0 33.0 flicker-sprite
     then
     1 $51 $10000000 nav-tri-flags
@@ -168,15 +168,15 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    fiona-who 0 char-action? $FF panic-stage? not and fiona-who 1 char-entered-area? and if
+    fiona-who 0 char-action? in-panic? not and fiona-who 1 char-entered-area? and if
         0 fiona-who 7 action
     then
-    $2F1 story-flag? not if
+    ht1f-2-prima-magnesia-found story-flag? not if
         3 35.0 70.0 33.0 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 753 var-set
-                $1A 754 var-set
+                $19 ht1f-2-prima-magnesia-found var-set
+                $1A ht1f-2-prima-magnesia var-set
                 $1B 2 var-set
                 $1C 35000 var-set
                 $1D 71000 var-set
@@ -199,16 +199,16 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $14 char-in-area? fiona-who 0 $32 char-heading? and if
         5 1 0 scene-change
     then
-    $2E6 story-flag? not if
+    ht1f-2-refined-magnesia story-flag? not if
         2 0 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 4 4 scene-change
         then
     then
-    $298 story-flag? not if
+    ht1f-2-breakable-broken story-flag? not if
         0 -0.4 70.0 -123.2 5 8 1 zone
         self-who 0 char-in-zone? if
-            $298 story-flag-set
+            ht1f-2-breakable-broken story-flag-set
             0 0 $8000000 nav-group
             0 0 $14 door-bits
             1 1 $14 door-bits
@@ -217,13 +217,13 @@ USING: room-names story.words story.shared flag-names ;
             $40 $34E noise
             1 -0.4 71.0 -123.2 flicker-sprite
         then
-    else $2E8 story-flag? not if
+    else ht1f-2-refined-antimony story-flag? not if
         0 1 5 5 0 zone-at-effect
         fiona-who 0 3 char-zone-bits? if
             5 5 4 scene-change
         then
     then then
-    $2F1 story-flag? $2F2 story-flag? not and if
+    ht1f-2-prima-magnesia-found story-flag? ht1f-2-prima-magnesia story-flag? not and if
         3 2 5 5 0 zone-at-effect
         fiona-who 3 3 char-zone-bits? if
             5 6 4 scene-change
@@ -263,14 +263,14 @@ USING: room-names story.words story.shared flag-names ;
         fiona-who $84 5 char-sound
         self-frames-reset
         $1E self-wait-frames
-        $31E story-flag? not if
+        got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
             $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             wait-message
             $F 7 fade
             wait-fade
-            $31E story-flag-set
+            got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
@@ -344,7 +344,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -33.17 33.19 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -354,7 +354,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2E6 story-flag-set
+            ht1f-2-refined-magnesia story-flag-set
             0 effect-remove
             $95 1 item-give-count
             0 $95 item-tab
@@ -372,7 +372,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -0.4 -123.2 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -382,7 +382,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2E8 story-flag-set
+            ht1f-2-refined-antimony story-flag-set
             1 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
@@ -400,7 +400,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     35.0 33.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -410,7 +410,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2F2 story-flag-set
+            ht1f-2-prima-magnesia story-flag-set
             2 effect-remove
             $98 1 item-give-count
             0 $98 item-tab

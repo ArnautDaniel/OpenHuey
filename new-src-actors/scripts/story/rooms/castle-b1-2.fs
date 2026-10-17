@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-2
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 \ room 0x14: the curtain ("Cartain") animated by event variable 0 (var0_obj_anim: byte 3 picks
 \ the frame range and direction).
@@ -10,13 +10,13 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-b1-2.enter ( -- )   \ 003F99E0
     room-sounds
-    $225 story-flag? not if
+    cb1-2-camomile story-flag? not if
         0 78.0 6.5 20.0 flicker-sprite
     then
-    $246 story-flag? $247 story-flag? not and if
+    cb1-2-medallion-found story-flag? cb1-2-medallion story-flag? not and if
         1 -44.9 -7.0 -12.9 flicker-sprite
     then
-    2 story-flag? not if
+    c2f-3-flag1 story-flag? not if
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     3 castle-b1-2.cmd00
@@ -111,12 +111,12 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    $246 story-flag? not if
+    cb1-2-medallion-found story-flag? not if
         2 -44.9 -8.0 -12.9 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 582 var-set
-                $1A 583 var-set
+                $19 cb1-2-medallion-found var-set
+                $1A cb1-2-medallion var-set
                 $1B 1 var-set
                 $1C -44900 var-set
                 $1D -7000 var-set
@@ -145,13 +145,13 @@ USING: room-names story.words story.shared flag-names ;
             $8016 examine-message   \ "I have to get away! I don't have time for this!"
         then
     then
-    $225 story-flag? not if
+    cb1-2-camomile story-flag? not if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 2 4 scene-change
         then
     then
-    $246 story-flag? $247 story-flag? not and if
+    cb1-2-medallion-found story-flag? cb1-2-medallion story-flag? not and if
         2 1 5 5 0 zone-at-effect
         fiona-who 2 3 char-zone-bits? if
             5 $A 4 scene-change
@@ -190,14 +190,14 @@ USING: room-names story.words story.shared flag-names ;
         fiona-who $84 5 char-sound
         self-frames-reset
         $1E self-wait-frames
-        $31E story-flag? not if
+        got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
             $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             wait-message
             $F 7 fade
             wait-fade
-            $31E story-flag-set
+            got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
@@ -221,7 +221,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     78.0 20.0 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $902 self-anim
         self-wait-anim
         self-frames-reset
@@ -231,7 +231,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $225 story-flag-set
+            cb1-2-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
@@ -247,10 +247,10 @@ USING: room-names story.words story.shared flag-names ;
 
 : castle-b1-2.act03 ( -- )   \ 003F9CF0
     self-wait-done
-    1 ebit? not 2 game-mode? or $FF panic-stage? or if
+    1 ebit? not 2 game-mode? or in-panic? or if
         1 self-through-exit
         self-wait-done
-        $FF panic-stage? 2 game-mode? or if
+        in-panic? 2 game-mode? or if
             $60A self-anim
             self-wait-anim
             -1 self-idle-anim
@@ -325,7 +325,7 @@ USING: room-names story.words story.shared flag-names ;
         0 var-inc
     repeat
     3 castle-b1-2.cmd00
-    $FF panic-stage? not if
+    in-panic? not if
         fiona-who $43 5 char-sound
     then
     self-wait-anim
@@ -404,8 +404,8 @@ USING: room-names story.words story.shared flag-names ;
         4 ebit? if
             ['] castle-b1-2.act06 goto
         else 0 2 pad? not if
-            $FF panic-stage? 2 ebit? or if
-                $FF panic-stage? not if
+            in-panic? 2 ebit? or if
+                in-panic? not if
                     fiona-who $43 5 char-sound
                 then
                 ['] castle-b1-2.act09 goto
@@ -486,7 +486,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -44.9 -12.9 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -496,7 +496,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $247 story-flag-set
+            cb1-2-medallion story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab

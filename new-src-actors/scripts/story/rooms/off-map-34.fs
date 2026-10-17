@@ -2,11 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-34
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : off-map-34.char-enter ( -- )   \ 00442950
     fiona-who self-is? if
-        $88 story-flag? if
+        cf-13-flag1 story-flag? if
             $80 exit-taken? if
                 fiona-who 0 0 char-to-tri-facing
                 world-held state-flag-set

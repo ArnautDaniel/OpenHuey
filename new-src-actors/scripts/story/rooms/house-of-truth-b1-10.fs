@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-10
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared story-names ;
 
 \ Room98_Cmd00
 : house-of-truth-b1-10.cmd00 ( -- )  slam-shake ;
@@ -52,9 +52,9 @@ USING: room-names story.words story.shared ;
         3 exit-prepare
     then
     house-of-truth-b1-10.cmd00
-    $A8 story-flag? not if
+    htb1-10-flag1 story-flag? not if
         fiona-who $A char-entered-area? if
-            $A8 story-flag-set
+            htb1-10-flag1 story-flag-set
             $FE $98 380 2 stalker-to-room
             stalker-who 0 stalker-command
             0 stalker-who 0 action

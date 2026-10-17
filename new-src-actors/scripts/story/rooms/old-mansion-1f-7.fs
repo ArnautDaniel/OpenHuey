@@ -2,11 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-7
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names story-names ;
 
 : old-mansion-1f-7.enter ( -- )   \ 00424B50
     room-sounds
-    $2BB story-flag? $2BC story-flag? not and if
+    om1f-7-album-medallion-found story-flag? om1f-7-album-medallion story-flag? not and if
         0 -30.81 1.0 -21.85 flicker-sprite
     then
     1 $2300 sound-volume
@@ -35,11 +35,11 @@ USING: room-names story.words story.shared flag-names ;
     1 0 0 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
-            $82 story-flag? not if
+            over-music-c story-flag? not if
                 world-held state-flag-set
                 0.0 sound-volume-scale
                 0 fiona-who 0 action
-                $82 story-flag-set
+                over-music-c story-flag-set
             then
         then
     then
@@ -102,12 +102,12 @@ USING: room-names story.words story.shared flag-names ;
             then
         then
     then
-    $2BB story-flag? not if
+    om1f-7-album-medallion-found story-flag? not if
         1 -30.81 0.0 -21.85 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 699 var-set
-                $1A 700 var-set
+                $19 om1f-7-album-medallion-found var-set
+                $1A om1f-7-album-medallion var-set
                 $1B 0 var-set
                 $1C -30810 var-set
                 $1D 1000 var-set
@@ -135,7 +135,7 @@ USING: room-names story.words story.shared flag-names ;
     fiona-who $C char-in-area? fiona-who 45 $3C char-heading? and if
         5 7 0 scene-change
     then
-    $2BB story-flag? $2BC story-flag? not and if
+    om1f-7-album-medallion-found story-flag? om1f-7-album-medallion story-flag? not and if
         1 0 5 5 0 zone-at-effect
         fiona-who 1 3 char-zone-bits? if
             5 6 4 scene-change
@@ -351,7 +351,7 @@ USING: room-names story.words story.shared flag-names ;
     self-wait-done
     -30.81 -21.85 self-turn-to-xz
     self-wait-done
-    $FF panic-stage? not if
+    in-panic? not if
         $900 self-anim
         self-wait-anim
         self-frames-reset
@@ -361,7 +361,7 @@ USING: room-names story.words story.shared flag-names ;
             $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
             wait-message
         else
-            $2BC story-flag-set
+            om1f-7-album-medallion story-flag-set
             0 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
