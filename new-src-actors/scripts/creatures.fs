@@ -4,7 +4,7 @@
 \ clears them, and after a loaded game brings them back from the progress, where each keeps
 \ itself.
 IN: creatures
-USING: engine game-state actors messages common facts flag-names summoner creatures.state creatures.spirit creatures.homunculus ;
+USING: engine game-state actors messages common facts flag-names doors creatures.state creatures.spirit creatures.homunculus ;
 
 10 constant #creatures
 
@@ -48,12 +48,12 @@ end-state
 \ first `scatter` slots that is free gets a new spirit in a room next to hers (within two open
 \ doors, SceneGame_RoomsNear; a room more likely the more of her exits lead to it), sent after
 \ her. (The homunculi's kind - bit 7 - no room's script asks for: not built) ----
-create next-rooms 65 cells allot  variable next-n
+create near-rooms 65 cells allot  create next-rooms 65 cells allot  variable next-n
 : next-room+ ( room -- )  next-n @ 65 < if  next-n @ cells next-rooms + !  1 next-n +!  else  drop  then ;
 : rooms-next-to-hers ( -- n )   \ (once for each of her exits that leads there)
-    0 next-n !  room-id rooms-near
-    near-n @ 0 ?do
-        i cells near-list + @  dup room-id = if  drop
+    0 next-n !
+    room-id near-rooms 65 rooms-near 0 ?do
+        i cells near-rooms + @  dup room-id = if  drop
         else  8 0 do  room-id i room-exit-leads drop  over = if  dup next-room+  then  loop  drop  then
     loop  next-n @ ;
 : figure-here? ( addr len -- flag )   \ (a figure of the story in her room)

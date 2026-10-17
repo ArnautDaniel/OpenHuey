@@ -12,8 +12,8 @@ USING: tester engine game-state actors messages room-names game debug keys facts
 : count-of ( item -- n )  game:items enter  items:items-of  leave-actor ;
 : things ( -- n )  0  128 0 do  i thing-used? if  1+  then  loop ;
 : first ( -- i | -1 )  128 0 do  i thing-used? if  i unloop exit  then  loop  -1 ;
-: kind@ ( i -- k )  thing-info 2drop 2drop ;
-: state@ ( i -- s )  thing-info drop nip nip nip ;
+: kind@ ( i -- k )  thing-kind ;
+: state@ ( i -- s )  thing-state ;
 : free? ( -- flag )  [: her-mode @ 0= ;] hers ;
 : let-go ( -- )   \ (the triangle, once she is free)
     ['] free? 200 soon drop  key: V true key-hold  game-tick  key: V false key-hold ;
@@ -25,7 +25,7 @@ $90 1 have  $90 equip
 T{ things  let-go  [: [: anim@ ;] hers $D00 = ;] 20 soon -> 0 -1 }T
 T{ ' things 60 soon drop  things  first kind@  $90 count-of -> 1 0 0 }T
 testing it lands and rolls to rest on the floor, a thing of her room
-T{ [: first state@ 1 = ;] 200 soon  first thing-info 2drop drop nip  room-id = -> -1 -1 }T
+T{ [: first state@ 1 = ;] 200 soon  first thing-room  room-id = -> -1 -1 }T
 testing her ball gone (its 3 minutes): hers again
 first 5399 swap thing-age!  3 frames
 T{ things  $90 count-of -> 0 1 }T

@@ -2,9 +2,11 @@
 IN: vectors
 USING: engine ;
 
-fvariable k
+\ a point or a direction as the engine keeps them: three 32-bit floats (vec@ vec! vec-copy)
+begin-structure /vec  sffield: v.x  sffield: v.y  sffield: v.z  end-structure
+
 \ scale a vector
-: v* ( F: x y z s -- x' y' z' )  k f!  k f@ f* frot  k f@ f* frot  k f@ f* frot ;
+: v* ( F: x y z s -- x' y' z' )  {: F: x y z s :}  x s f*  y s f*  z s f* ;
 
 \ a 32-bit float field: read, write, add to
 : field@ ( addr -- ) ( F: -- x )  sf@ ;

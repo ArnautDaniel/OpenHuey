@@ -3,7 +3,7 @@
 \ looks; each sets her move done (+0xE1) as the original's do. She reports at each frame's end
 \ (`moving`: done, her animation ended).
 IN: fiona.moves
-USING: engine common paths fiona.state fiona.model fiona.moving fiona.spots ;
+USING: engine messages vectors common paths fiona.state fiona.anims fiona.model fiona.moving fiona.spots ;
 
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
 defer door-use ( exit opens? -- )   ' 2drop is door-use   \ (fiona/doors.fs scripted-door)
@@ -21,16 +21,15 @@ create there 12 allot
 \ ---- along a planned path, turning toward it 10 degrees a frame and stepping by her root
 \ motion - the less the sharper the turn (Fiona_StateCmdPath / CmdPathTurn) ----
 : spot-tri ( -- tri )   \ (the spot's triangle: the one given, else under the point)
-    her-move @ 17 = her-move-a @ 0< or if  her-move-at blocked-floor v-tri-in  else  her-move-a @  then ;
+    her-move @ walk-anim-move = her-move-a @ 0< or if  her-move-at blocked-floor v-tri-in  else  her-move-a @  then ;
 : plan ( -- ok? )   \ (curved, as the original's: Character_WaypointsCurve)
     her-path her-tri @ her-at spot-tri her-move-at blocked-floor path-plan-curved 0> ;
-fvariable turn-left  fvariable stepping
 : path-step ( -- arrived? )
-    root@
+    root-step fnip {: F: fwd :}
     her-path her-at 3e path-ahead drop  her-at ahead vec-heading            ( F: toward )
-    her-yaw f@ fswap 10e deg>rad turn-toward  turn-left f!  her-yaw f!
-    rm-z f@ f0< if  0e  else  rm-z f@  pi turn-left f@ f-  pi f/ f*  then  stepping f!
-    her-path her-at stepping f@ path-ahead                                   ( i )
+    her-yaw f@ fswap 10e deg>rad turn-toward  {: F: left :}  her-yaw f!
+    fwd f0< if  0e  else  fwd  pi left f-  pi f/ f*  then  {: F: stepping :}   \ (less the sharper the turn)
+    her-path her-at stepping path-ahead                                      ( i )
     ahead blocked-floor v-tri-in dup 0< if  drop  else  her-tri !  then
     her-at ahead vec-copy  her-path path-i!
     her-path path-left? 0= ;
@@ -43,11 +42,11 @@ fvariable turn-left  fvariable stepping
     her-yaw f@ her-move-yaw f@ 20e deg>rad turn-toward f0= her-yaw f!
     if  ['] anim-done her-act !  then ;
 : path-turn ( -- )   \ Fiona_StateCmdPathTurn (5 with a path, 10)
-    path-step 0= if  $12 anim-kept exit  then
+    path-step 0= if  walk-to-doing anim-kept exit  then
     her-yaw f@ her-move-yaw f@ 10e deg>rad turn-toward f0= her-yaw f!
     if  ['] anim-done  else  ['] cmd-turn  then  her-act ! ;
 : path-to ( -- )   \ Fiona_StateCmdPath (6 / 11): at the end the rest of the step, done, idle
-    $14 anim-kept
+    run-to-doing anim-kept
     path-step 0= if  exit  then
     done  to-idle ;
 
@@ -58,15 +57,15 @@ fvariable turn-left  fvariable stepping
 : idle-step ( -- )   \ Fiona_StateIdleStep: standing played out - done; else her idle
     settled? if  group 0= if  done  else  -1 idle-anim  then  then  root-move ;
 : turning ( -- )
-    her-yaw f@ her-heading f@ 10e deg>rad turn-toward  turn-left f!  her-yaw f!
+    her-yaw f@ her-heading f@ 10e deg>rad turn-toward  {: F: left :}  her-yaw f!
     settled? 0= if  exit  then
-    group if  turn-left f@ pi f2/ f< if  -1 idle-anim  then  exit  then
-    turn-left f@ f0= if  ['] idle-step her-act !  exit  then
-    her-heading f@ her-yaw f@ f- angle-wrap f0< if  $400  else  $401  then
+    group if  left pi f2/ f< if  -1 idle-anim  then  exit  then
+    left f0= if  ['] idle-step her-act !  exit  then
+    her-heading f@ her-yaw f@ f- angle-wrap f0< if  turn-left-anim  else  turn-right-anim  then
     dup anim@ <> if  -1 play-table  else  drop  then ;
 
 \ ---- 17: the walk's animation along the way, arriving as it ends (Fiona_StateCmdWalkAnim) ----
-: walk-anim ( -- )
+: walking-in-anim ( -- )
     ended? if   \ (MOTION_EVENTS: the motion's flags - $20 come round)
         her-move-at blocked-floor v-tri-in dup 0< if  drop  else  her-tri !  then
         her-at her-move-at vec-copy  her-move-yaw f@ her-yaw f!  done exit
@@ -79,33 +78,33 @@ fvariable turn-left  fvariable stepping
 : path-start ( -- )   \ (a way to the spot; none: idle)
     plan if  ['] path-turn her-act !  else  to-idle  then ;
 : start-move ( kind -- )
-    0 her-move-done !  2 her-mode !
+    0 her-move-done !  led-mode her-mode !
     case
-        1 of  to-idle  done  endof
-        2 of  ['] idle-step her-act !  endof
-        5 of  $12 her-doing !
+        stand-move of  to-idle  done  endof
+        idle-step-move of  ['] idle-step her-act !  endof
+        walk-move of  walk-to-doing her-doing !
               her-move-b @ -1 = if
                   spot-tri her-move-at vec@ her-move-yaw f@ walk-spot  ['] to-spot her-act !
               else  path-start  then  endof
-        10 of  $13 her-doing !  path-start  endof
-        6 of  $14 her-doing !  plan if  ['] path-to her-act !  else  to-idle  then  endof
-        11 of  $15 her-doing !  plan if  ['] path-to her-act !  else  to-idle  then  endof
-        7 of  $11 her-doing !  her-move-a @ -1 play-table  done  ['] root-move her-act !  endof
-        8 of  $11 her-doing !  her-move-a @ her-move-b @ -1 play-blend  done  ['] root-move her-act !  endof
-        9 of  $11 her-doing !  her-move-a @ her-move-b @ -1 play-blend  done  ['] root-move her-act !  endof   \ (no time of its own: like 8 here)
-        16 of  $11 her-doing !  her-move-b @ idle-anim  done  ['] root-move her-act !  endof
-        12 of  her-move-a @ dup 0< if  drop 0 her-look-on !  else  her-look-who !  1 her-look-on !  then  done  endof
-        13 of  her-move-at her-look-pt 12 move  -1 her-look-who !  1 her-look-on !  done  endof
-        14 of  $16 her-doing !  her-move-yaw f@ her-heading f!  ['] turning her-act !  endof   \ (the heading to the character: the room's)
-        15 of  $17 her-doing !  her-move-yaw f@ her-heading f!  ['] turning her-act !  endof
-        17 of  plan if
+        walk-path-move of  walk-path-doing her-doing !  path-start  endof
+        run-move of  run-to-doing her-doing !  plan if  ['] path-to her-act !  else  to-idle  then  endof
+        run-path-move of  run-path-doing her-doing !  plan if  ['] path-to her-act !  else  to-idle  then  endof
+        anim-move of  anim-doing her-doing !  her-move-a @ -1 play-table  done  ['] root-move her-act !  endof
+        blend-move of  anim-doing her-doing !  her-move-a @ her-move-b @ -1 play-blend  done  ['] root-move her-act !  endof
+        blend8-move of  anim-doing her-doing !  her-move-a @ her-move-b @ -1 play-blend  done  ['] root-move her-act !  endof   \ (no time of its own: as a blend here)
+        idle-anim-move of  anim-doing her-doing !  her-move-b @ idle-anim  done  ['] root-move her-act !  endof
+        look-move of  her-move-a @ dup 0< if  drop 0 her-look-on !  else  her-look-who !  1 her-look-on !  then  done  endof
+        look-point-move of  her-move-at her-look-pt /vec move  -1 her-look-who !  1 her-look-on !  done  endof
+        turn-to-who-move of  turn-who-doing her-doing !  her-move-yaw f@ her-heading f!  ['] turning her-act !  endof   \ (the heading to the character: the room's)
+        turn-to-heading-move of  turn-heading-doing her-doing !  her-move-yaw f@ her-heading f!  ['] turning her-act !  endof
+        walk-anim-move of  plan if
                    her-move-a @ her-move-b @ -1 play-blend
                    her-path her-at path-rest  her-model @ motion-frames s>f  fdup f0= if  fdrop 1e  then
                    fover fover f/ 0.1e f+ her-move-step f!  fswap fdrop
                    her-move-yaw f@ her-yaw f@ f- angle-wrap fabs fswap f/ 0.1e deg>rad f+ her-move-turn f!
-                   $18 her-doing !  ['] walk-anim her-act !
+                   walk-anim-doing her-doing !  ['] walking-in-anim her-act !
                else  done  then  endof
-        3 of  her-move-a @ true door-use  endof    \ (through the door at exit a, opening it: Fiona_StateDoorStart, sub $14;
-        4 of  her-move-a @ false door-use  endof   \ shutting it, $15 - done as the door's use ends)
+        open-door-move of  her-move-a @ true door-use  endof    \ (through the door at exit a, opening it: Fiona_StateDoorStart, sub $14;
+        shut-door-move of  her-move-a @ false door-use  endof   \ shutting it, $15 - done as the door's use ends)
         >r done r>
     endcase ;

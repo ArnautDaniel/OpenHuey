@@ -3,20 +3,20 @@
 IN: facts
 USING: game-state ;
 
-: bit? ( n addr -- flag )  over 5 rshift 4 * + l@  swap 31 and 1 swap lshift and 0<> ;
-: state-flag? ( n -- flag )  progress pr.state bit? ;    \ the state flags (+0x8: control, panic...)
-: story-flag? ( n -- flag )  progress pr.story bit? ;    \ the scenario flags (+0x1C)
+: bit ( n base -- addr mask )   \ flag n of a run of 32-bit words
+    {: n base :}  n 5 rshift 4 * base +   1 n 31 and lshift ;
+: bit? ( n base -- flag )  bit swap l@ and 0<> ;
+: bit-set ( n base -- )  bit over l@ or swap l! ;
+: bit-clear ( n base -- )  bit invert over l@ and swap l! ;
+: state-flag? ( n -- flag )  progress pr.state bit? ;    \ the state flags (control, panic, ...)
+: story-flag? ( n -- flag )  progress pr.story bit? ;    \ the scenario flags
 $AF constant hard-mode-flag
 : hard-mode? ( -- flag )  hard-mode-flag story-flag? ;   \ a game started in hard mode (the original's progress +0x30 bit 15: the title's hard new game)
-: state-flag-clear ( n -- )   \ (its owner clears it: Hewie's trust clears 0x11 / 0x1D)
-    dup 5 rshift 4 * progress pr.state +  swap 31 and 1 swap lshift invert  over l@ and swap l! ;
-: state-flag-set ( n -- )   \ (its owner sets it: Fiona held - fiona-occupied; caught - the game's end)
-    dup 5 rshift 4 * progress pr.state +  swap 31 and 1 swap lshift  over l@ or swap l! ;
-: story-flag-set ( n -- )   \ (its owner sets it: the items set the maps' flags)
-    dup 5 rshift 4 * progress pr.story +  swap 31 and 1 swap lshift  over l@ or swap l! ;
+: state-flag-clear ( n -- )  progress pr.state bit-clear ;   \ (its owner clears it: Hewie's trust clears 0x11 / 0x1D)
+: state-flag-set ( n -- )  progress pr.state bit-set ;       \ (its owner sets it: Fiona held - fiona-occupied; caught - the game's end)
+: story-flag-set ( n -- )  progress pr.story bit-set ;       \ (its owner sets it: the items set the maps' flags)
 : resident-flag? ( n -- flag )  progress pr.resident bit? ;   \ the system data's (the unlocks: kept across games)
-: resident-flag-set ( n -- )   \ (its owner sets it: the ending)
-    dup 5 rshift 4 * progress pr.resident +  swap 31 and 1 swap lshift  over l@ or swap l! ;
+: resident-flag-set ( n -- )  progress pr.resident bit-set ;   \ (its owner sets it: the ending)
 
 \ ---- the play record (the results at the end): its owners count it ----
 : tally ( addr -- )  dup l@ 1+ 9999 min swap l! ;   \ (one more, as the original: to 9999)

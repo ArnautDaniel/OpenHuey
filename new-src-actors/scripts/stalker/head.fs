@@ -6,61 +6,66 @@
 \ a frame) and his sight looks where it does. The head bone takes the tilt and half the turn,
 \ the bone below it the other half.
 IN: stalker.head
-USING: engine game-state actors common stalker.state stalker.senses stalker.moving ;
+USING: engine game-state actors common vectors stalker-names stalker.state stalker.senses stalker.moving stalker.names ;
 
 \ ---- the look mode of each action (kPursuerSteps +0x19, actions 0..$29): set as it starts ----
+: v, ( mode -- )  c, ;
 create look-modes
-    0 c, 1 c, 0 c, 1 c, 3 c, 1 c, 1 c, 2 c, 3 c, 0 c, 4 c, 4 c, 4 c, 4 c, 3 c, 0 c,    \ 0..$F
-    1 c, 4 c, 3 c, 4 c, 4 c, 4 c, 4 c, 4 c, 4 c, 4 c, 1 c, 1 c, 3 c, 1 c, 4 c, 4 c,    \ $10..$1F
-    4 c, 4 c, 4 c, 4 c, 4 c, 3 c, 3 c, 3 c, 3 c, 3 c,                                  \ $20..$29
-: action-look! ( action -- )   \ (Pursuer_StartAction: an action's look; 0 - as it was)
+    as-was-look v, her-look v, as-was-look v, her-look v, goal-look v, her-look v, her-look v, hewie-look v,       \ 0..7
+    goal-look v, as-was-look v, ahead-look v, ahead-look v, ahead-look v, ahead-look v, goal-look v, as-was-look v,   \ 8..$F
+    her-look v, ahead-look v, goal-look v, ahead-look v, ahead-look v, ahead-look v, ahead-look v, ahead-look v,     \ $10..$17
+    ahead-look v, ahead-look v, her-look v, her-look v, goal-look v, her-look v, ahead-look v, ahead-look v,         \ $18..$1F
+    ahead-look v, ahead-look v, ahead-look v, ahead-look v, ahead-look v, goal-look v, goal-look v, goal-look v,     \ $20..$27
+    goal-look v, goal-look v,                                                                                          \ $28..$29
+: action-look! ( action -- )   \ (Pursuer_StartAction: an action's look; as it was - none)
     dup 0 $2A within 0= if  drop exit  then  look-modes + c@  ?dup if  look-mode !  then ;
 
-\ ---- his bones by his model (the models' Loaded: +0x8B0 / +0x8B4) ----
+\ ---- his bones by his model (the models' Loaded: +0x8B0 / +0x8B4): head, neck ----
 : head-bones! ( kind -- )
     case
-        2 of  $16 $F  endof   6 of  $16 $F  endof   7 of  $16 $F  endof   27 of  $16 $F  endof   \ DebilitasModel
-        3 of  $1F $15  endof  34 of  $1F $15  endof  35 of  $1F $15  endof  36 of  $1F $15  endof  \ DaniellaModel
-        4 of  $23 $1A  endof                                                                     \ RiccardoModel
-        10 of  $2B $22  endof  39 of  $2B $22  endof                                             \ Lorenzo2Model
-        12 of  $13 $B  endof                                                                     \ Kind12Model
+        debilitas-kind of  $16 $F  endof   debilitas-6-kind of  $16 $F  endof        \ DebilitasModel
+        debilitas-7-kind of  $16 $F  endof   debilitas-27-kind of  $16 $F  endof
+        daniella-kind of  $1F $15  endof  kind34-kind of  $1F $15  endof            \ DaniellaModel
+        kind35-kind of  $1F $15  endof  kind36-kind of  $1F $15  endof
+        riccardo-kind of  $23 $1A  endof                                             \ RiccardoModel
+        lorenzo2-kind of  $2B $22  endof  kind39-kind of  $2B $22  endof            \ Lorenzo2Model
+        kind12-kind of  $13 $B  endof                                                \ Kind12Model
         >r -1 -1 r>                                                       \ (Lorenzo's, the tinted ones': none)
     endcase  neck-bone !  head-bone ! ;
 
 \ ---- Motion_LookAt: from his eye (16 up) the tilt (rise over the level distance) and the turn
 \ from his heading; Motion_EaseTilt: each toward its target by at most the step ----
 16e fconstant eye-up
-create eye 12 allot
+create eye /vec allot
 : look-at ( v -- ) ( F: -- pitch turn )
-    my-at eye 12 move  eye 4 + dup sf@ eye-up f+ sf!
-    dup 4 + sf@ eye 4 + sf@ f-  dup eye vec-dist-xz fatan2
-    eye swap vec-heading yaw f- angle-wrap ;
-: rate ( F: -- r )  0.13962634e ;   \ (vtable +0xA4: 8 degrees a frame - the family's and Debilitas's)
-fvariable e-to
+    {: v :}  eye my-at vec-copy  eye v.y sf@ eye-up f+ eye v.y sf!
+    v v.y sf@ eye v.y sf@ f-  v eye vec-dist-xz fatan2
+    eye v vec-heading yaw f- angle-wrap ;
+: rate ( F: -- r )  8e deg>rad ;   \ (vtable +0xA4: the family's and Debilitas's)
 : ease ( addr -- ) ( F: target step -- )
-    fabs  fswap e-to f!                                                ( F: step )
-    dup f@ e-to f@ f- fabs fover f<= if  fdrop e-to f@ f! exit  then
-    dup f@ e-to f@ f> if  dup f@ fswap f- f!  else  dup f@ f+ f!  then ;
-: look-ahead ( -- )  0e rate head-pitch ease  0e rate head-yaw ease ;      \ (Model_EaseTilt)
+    fabs {: a F: goal step :}
+    a f@ goal f- fabs step f<= if  goal a f! exit  then
+    a f@ goal f> if  a f@ step f-  else  a f@ step f+  then  a f! ;
+: look-ahead ( -- )  head-pitch 0e rate ease  head-yaw 0e rate ease ;      \ (Model_EaseTilt)
 : turn-only ( v -- )   \ (Pursuer_LookAt: the turn alone, small ones none; the tilt left)
-    look-at  fswap fdrop  fdup fabs 0.05e f< if  fdrop 0e  then  rate head-yaw ease ;
-create hewie-pt 12 allot
+    look-at  fswap fdrop  fdup fabs 0.05e f< if  fdrop 0e  then  head-yaw rate ease ;
+create hewie-pt /vec allot
 : at-hewie ( -- )   \ (5 above him: the tilt too)
-    hewie body-at hewie-pt 12 move  hewie-pt 4 + dup sf@ 5e f+ sf!
-    hewie-pt look-at  rate head-yaw ease  rate head-pitch ease ;
+    hewie-pt hewie body-at vec-copy  hewie-pt v.y sf@ 5e f+ hewie-pt v.y sf!
+    hewie-pt look-at {: F: pitch turn :}  head-yaw turn rate ease  head-pitch pitch rate ease ;
 : goal-in-view? ( -- flag )   \ (his goal on the triangle a walk there reaches, in his sight, within 30 degrees)
     goal-tri @ dup 0< if  drop false exit  then
-    self body-tri my-at goal-at $40080 v-walk <> if  false exit  then
+    self body-tri my-at goal-at sight-walls v-walk <> if  false exit  then
     goal-at in-view? ;
-: near-ahead? ( -- flag )  goal-at heading-to yaw f- angle-wrap fabs 0.5235988e f< ;
+: near-ahead? ( -- flag )  goal-at heading-to yaw f- angle-wrap fabs 30e deg>rad f< ;
 
 \ ---- each frame (Pursuer_HeadLook), then his sight's heading, then the bones ----
 : head-look ( -- )
     look-mode @ case
-        0 of  exit  endof
-        1 of  sees-fiona @ if  fiona body-at turn-only  else  look-ahead  then  endof
-        2 of  sees-hewie @ if  at-hewie  else  look-ahead  then  endof
-        3 of  goal-in-view? if  near-ahead? if  goal-at turn-only  then  else  look-ahead  then  endof
+        as-was-look of  exit  endof
+        her-look of  sees-fiona @ if  fiona body-at turn-only  else  look-ahead  then  endof
+        hewie-look of  sees-hewie @ if  at-hewie  else  look-ahead  then  endof
+        goal-look of  goal-in-view? if  near-ahead? if  goal-at turn-only  then  else  look-ahead  then  endof
         >r look-ahead r>
     endcase ;
 : turn-head ( -- )

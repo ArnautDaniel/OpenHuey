@@ -4,9 +4,11 @@
 \ does there (Pursuer_PickFromTable over Debilitas_AttackTable's "searched": walk on, or look
 \ about), and his mode with its clock (Pursuer_ModesSearching).
 IN: stalker.search
-USING: engine game-state actors messages common facts flag-names paths stalker.state stalker.senses stalker.moving stalker.spots stalker.head ;
+USING: engine game-state actors messages common facts flag-names paths vectors stalker.state stalker.senses stalker.moving stalker.spots stalker.head stalker.names stalker.anims ;
 
 : here-played? ( -- flag )  in-game @ if  self body-room room-id =  else  false  then ;
+\ his search's phase: none, walking to a stop, searching it
+enum: search-phase#  no-search to-stop at-the-stop ;
 
 \ ---- his route (8 stops: a triangle, and whether it was picked at random) ----
 : stop ( k -- addr )  2* cells stops + ;
@@ -16,23 +18,23 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
 : route-add ( tri random? -- )   \ Npc_RouteAdd (full, or no triangle: not added)
     over 0<  route-end @ 8 < 0= or if  2drop exit  then
     route-end @ stop  tuck cell+ !  !  1 route-end +! ;
-\ Npc_RandomTri: a triangle of the room he may stand on (his floor; not both $100000 and $200000)
+\ Npc_RandomTri: a triangle of the room he may stand on (his floor; not both sides of a divider)
+$300000 constant divider-sides
 : random-tri ( -- tri )
     here-played? 0= nav-tris 0= or if  -1 exit  then
     1000 0 do
         rnd nav-tris s>f f* f>s  nav-tris 1- min
-        dup nav-flags self body-mask and 0=  over nav-flags $300000 and $300000 <> and if  unloop exit  then
+        dup nav-flags self body-mask and 0=  over nav-flags divider-sides and divider-sides <> and if  unloop exit  then
         drop
     loop  -1 ;
 \ Pursuer_AddSearchStops: n stops - each 60 in 100 the room's next search spot while it has
 \ more, else a triangle at random
-variable spots  variable spots-n  variable spots-used
 : add-stops ( n -- )
-    room-id search-spots spots-n !  spots !  0 spots-used !
-    0 ?do
-        spot-next @ spots-n @ < 0= if  0 spot-next !  then
-        spots-used @ spots-n @ <  rnd 100e f* 60e f<= and if
-            spot-next @ cells spots @ + @ 0 route-add  1 spot-next +!  1 spots-used +!
+    room-id search-spots {: n spots count | used :}
+    n 0 ?do
+        spot-next @ count < 0= if  0 spot-next !  then
+        used count <  rnd 100e f* 60e f<= and if
+            spot-next @ cells spots + @ 0 route-add  1 spot-next +!  used 1+ to used
         else  random-tri -1 route-add  then
     loop ;
 : search-stops ( -- n )  rnd 4e f* f>s 2 + ;   \ (searching: 2..5 stops)
@@ -42,22 +44,23 @@ variable spots  variable spots-n  variable spots-used
 : after-t ( -- )  hard-mode? if  540  else  300  then  mode-t ! ;
 : mode! ( m -- )
     dup my-mode !  case
-        0 of  after-t  endof
-        2 of  600 mode-t !  endof
-        3 of  900 mode-t !  endof
-        4 of  900 mode-t !  endof   \ (held off: Debilitas 900)
+        after-her of  after-t  endof
+        searching of  600 mode-t !  endof
+        waiting-about of  900 mode-t !  endof
+        held-off of  900 mode-t !  endof   \ (held off: Debilitas 900)
     endcase ;
 
 \ ---- the steps (one runs each frame: `step`) ----
 : step! ( xt -- )  step !  0 step-done !  0 step-t ! ;
-: stand ( -- )   \ (vtable +0x320: Debilitas stands with 0)
-    stand-anim play  ['] noop step!  4 action-look! ;
+: stand ( -- )   \ (vtable +0x320)
+    still-anim play  ['] noop step!  after-her-act action-look! ;
 \ his walk for his mode (Debilitas_StandAnim, vtable +0x128): after her, close (80 on foot) and
-\ she isn't hiding, $200, else $206; waiting $200; searching or heading for her room $201
-: walk-anim ( -- anim )
+\ she isn't hiding, the fast one, else the slow; waiting the fast one; searching or heading for
+\ her room the slow
+: mode-walk ( -- anim )
     my-mode @ case
-        0 of  base-chase @ 0=  d-fiona f@ 80e f<= and d-fiona f@ f0< 0= and  fiona-hidden state-flag? 0= and if  walk-fast  else  walk-slow  then  endof
-        3 of  walk-fast  endof
+        after-her of  base-chase @ 0=  d-fiona f@ 80e f<= and d-fiona f@ f0< 0= and  fiona-hidden state-flag? 0= and if  walk-fast  else  walk-slow  then  endof
+        waiting-about of  walk-fast  endof
         >r walk-slow r>
     endcase ;
 
@@ -65,31 +68,31 @@ variable spots  variable spots-n  variable spots-used
 \ stand has faded in (a stop picked at random: at most 150 frames' walk)
 : walking ( -- )
     walk-stride drop
-    way-left 10e f<  anim @ walk-slow = and if  stand-anim play  then
-    anim @ stand-anim = settled? and  my-path path-left? 0= or if  -1 step-done !  then ;
+    way-left 10e f<  anim @ walk-slow = and if  still-anim play  then
+    anim @ still-anim = settled? and  my-path path-left? 0= or if  -1 step-done !  then ;
 \ the turn on the spot: turned by it until it ends or he faces the way, then his walk
-create to-at 12 allot
+create to-at /vec allot
 : turning ( -- )
     root-move
     settled? 0= if  exit  then
     ended?  to-at heading-to yaw f- angle-wrap fabs 0.1e f< or if
-        walk-anim play  ['] walking step!
+        mode-walk play  ['] walking step!
     then ;
 \ Pursuer_StepBack: setting off - turned on the spot toward the way's next point, or walking
-: set-off ( -- )   \ (action 8: his goal looked at)
-    8 action-look!
+: set-off ( -- )
+    set-off-act action-look!
     0.1e my-path my-at path-ahead drop  to-at ahead vec-copy
-    to-at way-to dup $FF = if  drop walk-anim play  ['] walking step!  exit  then
+    to-at way-to dup no-turn = if  drop mode-walk play  ['] walking step!  exit  then
     turn-base + play-now  ['] turning step! ;
 
-\ the look about at a stop (Pursuer_StateWalkGesture: Debilitas_AttackTable's gestures $1302,
-\ $1303, $1305 from his gesture table) to its end; or standing a moment (Pursuer_WalkAside)
+\ the look about at a stop (Pursuer_StateWalkGesture: Debilitas_AttackTable's gestures) to its
+\ end; or standing a moment (Pursuer_WalkAside)
 : gesturing ( -- )   root-move  ended? if  -1 step-done !  then ;
 : standing ( -- )   1 step-t +!  settled? step-t @ 30 > and if  -1 step-done !  then ;
-: searched ( -- )   \ (situation $10: 50 walk on, 20 $1302, 20 $1303, 10 $1305)
+: searched ( -- )   \ (50 walk on, 20, 20 and 10 a look about)
     rnd 100e f*
-    fdup 50e f< if  fdrop -1 gesture !  stand-anim play  ['] standing step!  exit  then
-    fdup 70e f< if  fdrop $1302  else  90e f< if  $1303  else  $1305  then  then
+    fdup 50e f< if  fdrop -1 gesture !  still-anim play  ['] standing step!  exit  then
+    fdup 70e f< if  fdrop look-about-anim  else  90e f< if  look-about-2-anim  else  look-about-3-anim  then  then
     dup gesture !  play-now  ['] gesturing step! ;
 
 \ ---- Pursuer_SearchRoute: aimed at the route's next stop (none: one at random added); one
@@ -106,70 +109,70 @@ create to-at 12 allot
     until  route-clear  -1 route-done !  false ;
 
 \ ---- Pursuer_BehaviourSearch (searching): each stop walked to and searched, then the next;
-\ the route over, he stands (his mode moves on: stalker/modes) ----
+\ the route over, he stands (his mode moves on) ----
 : to-next-stop ( -- )
-    aim if  set-off  1 search-phase !  else  stand  0 search-phase !  then ;
+    aim if  set-off  to-stop search-phase !  else  stand  no-search search-phase !  then ;
 : at-stop ( -- )
     1 route-next +!  0 stop-wait !
     route-next @ route-end @ < 0= if  -1 route-done !  then
-    2 search-phase !  searched ;
+    at-the-stop search-phase !  searched ;
 : search ( -- )   \ (each frame, after his step)
     search-phase @ case
-        1 of
+        to-stop of
             stop-wait @ if  -1 stop-wait +!  stop-wait @ 0= if  -1 step-done !  then  then
             step-done @ if  at-stop  then
         endof
-        2 of
-            step-done @ if  route-done @ if  stand 0 search-phase !  else  to-next-stop  then  then
+        at-the-stop of
+            step-done @ if  route-done @ if  stand no-search search-phase !  else  to-next-stop  then  then
         endof
     endcase ;
 : search-start ( -- )  0 route-done !  to-next-stop ;
 
-\ ---- to where she is (Pursuer_ChaseFiona, action 4: after her but not seeing her): toward
-\ her on foot, his way re-planned every 30 frames; standing facing her within 15. Seeing her,
-\ his chase (stalker/chase.fs: `chase-begin`) ----
+\ ---- to where she is (Pursuer_ChaseFiona: after her but not seeing her): toward her on foot,
+\ his way re-planned every 30 frames; standing facing her within 15. Seeing her, his chase
+\ (stalker/chase.fs: `chase-begin`) ----
 defer round-to-her ( -- went? )   ' false is round-to-her   \ (she across his room: stalker/doorway.fs)
 defer out-of-reach ( -- went? )   ' false is out-of-reach   \ (no way to her on foot: round by a ladder - stalker/ladder.fs)
 defer at-a-ladder? ( -- flag )   ' false is at-a-ladder?   \ (his ladder action - stalker/ladder.fs)
 defer leave-at-random ( -- )   ' noop is leave-at-random   \ (out by an exit at random: stalker/doorway.fs)
 defer out-cancelled ( -- )   ' noop is out-cancelled      \ (his way out given up: stalker/doorway.fs)
-: after-her ( -- )
+: toward-her ( -- )
     -1 step-t +!  step-t @ 0> if  exit  then  30 step-t !
     round-to-her if  exit  then
     fiona body-tri dup 0< if  drop exit  then  fiona body-at plan 0> 0= if  out-of-reach drop exit  then   \ (none: round by a ladder -
     \ Pursuer_WalkToGoal)
-    d-fiona f@ 15e f< d-fiona f@ f0< 0= and if  stand-anim play  my-path path-clear  else  walk-anim play  then
-    her-unseen @  d-fiona f@ 10e f<  d-fiona f@ f0< 0= and and  my-mode @ 0= and if  0 mode-t !  then ;   \ (there, and she's not: Pursuer_BehaviourRun)
+    d-fiona f@ 15e f< d-fiona f@ f0< 0= and if  still-anim play  my-path path-clear  else  mode-walk play  then
+    her-unseen @  d-fiona f@ 10e f<  d-fiona f@ f0< 0= and and  my-mode @ after-her = and if  0 mode-t !  then ;   \ (there, and she's not: Pursuer_BehaviourRun)
 : chase-step ( -- )   \ (the step while after her)
     my-path path-left? if  walk-stride drop  else  fiona body-at turn-rate turn-to fdrop  then
-    after-her ;
-: chase-start ( -- )  4 action-look!  0 search-phase !  ['] chase-step step!  after-her ;   \ (action 4)
+    toward-her ;
+: chase-start ( -- )  after-her-act action-look!  no-search search-phase !  ['] chase-step step!  toward-her ;
 defer chase-begin ( -- )   ' chase-start is chase-begin   \ (seeing her: stalker.chase)
 defer chasing? ( -- flag )   ' false is chasing?
 defer lost-her ( -- )   ' chase-start is lost-her
 
-\ ---- Pursuer_ModesSearching, in the room being played (elsewhere: with his travel, P1d):
-\ seeing her he's after her (mode 0) and his clock (300 frames) starts again; out of sight it
-\ runs down, then he searches the room (mode 2: 2..5 stops); his route over he waits about
-\ (mode 3, 900 frames) - out of the room by an exit at random (Pursuer_GoAfterFiona); heading
-\ for her room (1) he searches it once in; held off (4) he's after her again when it runs out ----
+\ ---- Pursuer_ModesSearching, in the room being played (elsewhere: with his travel): seeing her
+\ he's after her and his clock starts again; out of sight it runs down, then he searches the
+\ room (2..5 stops); his route over he waits about - out of the room by an exit at random
+\ (Pursuer_GoAfterFiona); heading for her room he searches it once in; held off he's after her
+\ again when it runs out ----
 : tick-down ( -- out? )  mode-t @ 0> if  -1 mode-t +!  then  mode-t @ 0= ;
 defer lead-taken? ( -- flag )   ' false is lead-taken?   \ (a lead he heard: stalker/leads.fs)
 defer starting? ( -- flag )   ' false is starting?      \ (starting at one)
 defer leads-forgotten ( -- )   ' noop is leads-forgotten
-: search-again ( -- )  leads-forgotten  -1 drawn-tri !  2 mode!  route-clear  search-stops add-stops  search-start ;
+: search-again ( -- )  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  search-stops add-stops  search-start ;
 \ the doll (Thing03_StalkerCheck): searching the room being played, he sees it and has a way
 \ there - it is his one stop, his search going on from it
-create drawn-at 12 allot
+create drawn-at /vec allot
 : go-for-doll ( tri -- )
-    here-played? 0=  my-mode @ 1 4 within 0= or  over drawn-tri @ = or if  drop exit  then
+    here-played? 0=  my-mode @ heading-for-her held-off within 0= or  over drawn-tri @ = or if  drop exit  then
     dup tri-center drawn-at vec!
     drawn-at in-view? 0= if  drop exit  then
     dup drawn-at plan 0> 0= if  drop exit  then
-    dup drawn-tri !  2 mode!  route-clear  0 route-add  search-start ;
+    dup drawn-tri !  searching mode!  route-clear  0 route-add  search-start ;
 : modes ( -- )
     here-played? 0= if  exit  then
-    at-a-ladder? if  exit  then   \ (to a ladder or on it: his chase's action $12, over first)
+    at-a-ladder? if  exit  then   \ (to a ladder or on it: over first)
     reeling @ at-dog @ or if  exit  then   \ (struck: his reaction first; after Hewie)
     out-going @ if   \ (on his way out by a door: that first - unless he's only wandering off, when the
         wandering-out @ 0=  sees-fiona @ did-hear @ or 0=  or if  exit  then   \ sight of her or a noise
@@ -177,18 +180,18 @@ create drawn-at 12 allot
     then
     start-t @ 0> if  starting? if  exit  then  0 start-t !  then   \ (starting at something he heard or saw: that
     \ first - unless something else has him now)
-    sees-fiona @  my-mode @ 4 <> and if   \ (held off: going away, not after her)
-        my-mode @ if  0 mode!  route-clear  then
+    sees-fiona @  my-mode @ held-off <> and if   \ (held off: going away, not after her)
+        my-mode @ after-her <> if  after-her mode!  route-clear  then
         chasing? 0= if  chase-begin  then  after-t exit
     then
     chasing? if  lost-her  then   \ (lost sight of her: to where she is)
     lead-taken? if  exit  then
     my-mode @ case
-        0 of  tick-down if  search-again  then  endof
-        1 of  search-again  endof
-        2 of  route-done @ if  0 route-done !  3 mode!  leave-at-random  then  endof   \ (his route over:
+        after-her of  tick-down if  search-again  then  endof
+        heading-for-her of  search-again  endof
+        searching of  route-done @ if  0 route-done !  waiting-about mode!  leave-at-random  then  endof   \ (his route over:
         \ Pursuer_GoAfterFiona - Pursuer_PlanWhere's mode 3 - out of the room by an exit at random)
-        3 of  route-done @ if  0 route-done !  leave-at-random  then  endof   \ (no clock here: a lead or
+        waiting-about of  route-done @ if  0 route-done !  leave-at-random  then  endof   \ (no clock here: a lead or
         \ the sight of her moves him on; his route over, out as above)
-        4 of  tick-down if  0 mode!  chase-start  then  endof
+        held-off of  tick-down if  after-her mode!  chase-start  then  endof
     endcase ;

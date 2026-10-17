@@ -93,6 +93,7 @@ ts send stalker-out  3 frames
 
 testing his hanging parts (RiccardoModel_Springs): as drawn, his coat's pairs at their length ($A to $B 1.1), those drawn along their bones too ($26 to $27 0.67)
 castle-1f-3 room!  20 frames   \ (a room whose camera has him in view: posed as drawn)
+3 seed !   \ (where he wanders is by chance: one that keeps him in view)
 room-id game:fiona body-tri ric send stalker-in  [: 3 my-mode ! ;] his  40 frames
 create b1-at 12 allot  create b2-at 12 allot
 : apart ( b1 b2 -- ) ( F: -- d )

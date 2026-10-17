@@ -8,10 +8,10 @@ USING: engine actors facts story-names subscreen.state subscreen.art subscreen.i
 $28 constant map-group   \ (the page's picture in the texture cache)
 
 \ a map's rooms: room, page | x scale, z scale, x offset, y offset (where the arrow goes)
-2 cells 4 floats + constant /map-room
-: room-of ( e -- room )  @ ;
-: page-of ( e -- page )  cell+ @ ;
-: scales ( e -- addr )  2 cells + ;
+begin-structure /map-room  field: room-of-e  field: page-of-e
+    ffield: x-scale  ffield: z-scale  ffield: x-off  ffield: y-off  end-structure
+: room-of ( e -- room )  room-of-e @ ;
+: page-of ( e -- page )  page-of-e @ ;
 : next-room ( e -- e' )  /map-room + ;
 : ended? ( e -- flag )  room-of 0< ;
 
@@ -22,32 +22,31 @@ $28 constant map-group   \ (the page's picture in the texture cache)
 : held? ( map -- flag )  dup 0 #maps within 0= if  drop false exit  then  1 swap lshift held-maps and 0<> ;
 
 \ ---- where she is ----
-variable want-room  variable want-page
 : entry-for ( map room page -- e | 0 )   \ that room's entry on that page of the map
-    want-page !  want-room !  map-rooms
+    {: map room page :}  map map-rooms
     begin  dup ended? 0= while
-        dup room-of want-room @ =  over page-of want-page @ = and if  exit  then  next-room
+        dup room-of room =  over page-of page = and if  exit  then  next-room
+    repeat  drop 0 ;
+: shown-on ( room map -- e | 0 )   \ the room's first entry on a page the map has
+    {: room map :}  map map-rooms
+    begin  dup ended? 0= while
+        dup room-of room =  over page-of map map-pages < and if  exit  then  next-room
     repeat  drop 0 ;
 : find-room ( room -- )   \ (Map_FindRoom: the first map and page showing it)
-    dup her-room !  -1 her-map !  -1 her-pg !
+    {: room :}  room her-room !  -1 her-map !  -1 her-pg !
     #maps 0 do
-        i map-rooms begin  dup ended? 0= while
-            dup room-of 2 pick =  over page-of i map-pages < and if
-                page-of her-pg !  i her-map !  drop unloop exit
-            then  next-room
-        repeat  drop
-    loop  drop ;
+        room i shown-on ?dup if  page-of her-pg !  i her-map !  unloop exit  then
+    loop ;
 : show-on-page ( page -- )   \ (Map_TurnTo: her room shown on that page of her map, if it is there)
-    her-map @ 0< if  drop exit  then
-    her-map @ her-room @ 2 pick entry-for if  her-pg !  else  drop  then ;
+    {: page :}  her-map @ 0< if  exit  then
+    her-map @ her-room @ page entry-for if  page her-pg !  then ;
 : back-to-her ( -- )  her-map @ map-at !  her-pg @ map-pg ! ;
 
 \ ---- turning (Map_LeftRight: past the ends to the next / last map she holds, round) ----
 : last-page ( -- )  map-at @ map-pages 1- map-pg ! ;
 : other-map ( d -- )   \ the next map along that way she holds (or back to this one)
-    map-at @ >r
-    begin  map-at @ over + #maps wrap map-at !  map-at @ r@ =  map-at @ held? or  until
-    r> 2drop ;
+    {: d :}  map-at @ {: was :}
+    begin  map-at @ d + #maps wrap map-at !  map-at @ was =  map-at @ held? or  until ;
 : first-held ( -- )  #maps 0 do  i held? if  i map-at !  unloop exit  then  loop ;
 : map-left ( -- )
     map-at @ 0< if  first-held  last-page  exit  then
@@ -63,14 +62,14 @@ variable want-room  variable want-page
     map-at @ held? 0= if  exit  then
     map-at @ 16 * map-pg @ +  dup map-loaded @ = if  drop exit  then  map-loaded !
     map-at @ map-pg @ map-page drop  map-group load-bank ;
-fvariable arrow-x  fvariable arrow-y
 : here-arrow ( -- )   \ the arrow where she stands (not turned to her heading here)
     map-at @ her-map @ <>  map-pg @ her-pg @ <> or if  exit  then
-    her-map @ her-room @ her-pg @ entry-for ?dup 0= if  exit  then  scales >r
-    s" fiona" actor-named body-pos  fswap fdrop                         ( F: x z )
-    r@ 1 floats + f@ f/  r@ 3 floats + f@ f+  128e f+  arrow-y f!     \ (z down the page, from its line 128)
-    r@ f@ f/ 512e f* 640e f/  r> 2 floats + f@ f+  arrow-x f!          \ (x across, squeezed 512 / 640)
-    arrow-x f@ f>s 16 -  arrow-y f@ f>s 16 -  32 32 picture
+    her-map @ her-room @ her-pg @ entry-for ?dup 0= if  exit  then  {: e :}
+    s" fiona" actor-named body-pos  fswap fdrop  {: F: x z :}
+    z e z-scale f@ f/  e y-off f@ f+  128e f+                 \ (z down the page, from its line 128)
+    x e x-scale f@ f/ 512e f* 640e f/  e x-off f@ f+          \ (x across, squeezed 512 / 640)
+    {: F: ay ax :}
+    ax f>s 16 -  ay f>s 16 -  32 32 picture
     base-group 0 -1  $1C0 $60 32 32  $80 from ;
 : map-view ( -- )
     1 page-art  load-page

@@ -648,9 +648,9 @@ $40 constant music-eased   \ (kind bit: the music eased with it, over 90 frames)
 : music-to ( kind -- volume | -1 )   \ (silent going out, full coming back; -1 the other kinds)
     $F and  dup fade-to-black = if  drop 0 exit  then  fade-from-black = if  255  else  -1  then ;
 : fade-music ( kind -- )
-    dup music-frames  swap music-to   {: frames to :}
-    frames 0= to 0< or if  exit  then
-    0 frames to  music-id send music-op ;   \ (the stage music's volume over those frames)
+    dup music-frames  swap music-to   {: frames volume :}
+    frames 0= volume 0< or if  exit  then
+    0 frames volume  music-id send music-op ;   \ (the stage music's volume over those frames)
 : fade ( frames kind -- )
     dup fade-music  $F and  dup 8 <  over 1 and 0<> and if  world-held state-flag-clear  then   \ (1 3 5 7)
     over 0> fading !  screen-id send fade ;
@@ -1204,14 +1204,14 @@ variable cl-id  variable cl-slot  variable cl-exit
 : hunting-debilitas? ( -- flag )   \ about, not down, Debilitas
     stalker-about? stalker-down? 0= and debilitas? and ;
 : thing-lying? ( kind -- flag )   \ (PlacedThings_FirstOfKind: in any room)
-    128 0 do  i thing-used? if  i thing-info 2drop 2drop over = if  drop true unloop exit  then  then  loop
+    128 0 do  i thing-used? if  i thing-kind over = if  drop true unloop exit  then  then  loop
     drop false ;
 \ (Room8C) the things lying here in the area, of the kinds kept in the save (0 2 3 5 7 8), aged
 \ past every time they keep (age 300000): they go, or go off
 : things-age-out-in ( area -- )
     128 0 do
         i thing-used? if
-            i thing-info 2drop drop  room-id =  swap 1 swap lshift $1AD and 0<>  and if
+            i thing-room room-id =  1 i thing-kind lshift $1AD and 0<>  and if   \ ($1AD: the kept kinds)
                 dup i thing-at vec@ area-in? if  300000 i thing-age!  then
             then
         then
@@ -1220,9 +1220,9 @@ variable cl-id  variable cl-slot  variable cl-exit
 : things-off-group ( g -- )
     128 0 do
         i thing-used? if
-            i thing-info 2drop  rot drop  swap room-id = if                     ( g tri )
-                dup 0< 0= if  over nav-in-group? if  i s" things" actor-named send thing-taken  then  else  drop  then
-            else  drop  then
+            i thing-room room-id =  i thing-tri 0< 0= and if
+                i thing-tri over nav-in-group? if  i s" things" actor-named send thing-taken  then
+            then
         then
     loop  drop ;
 : room-exit-open? ( room exit -- flag )   \ (Progress_ExitOpen)
@@ -1507,7 +1507,7 @@ fvariable sx  fvariable sy  fvariable sz
         then
     loop  drop false ;
 : fiona-caught? ( -- flag )  fiona-unseen @ 0<> ;   \ cond 0x59: she can't be seen (+0x1AD630: item $89 worn, still)
-: fiona-hewie-react ( -- )  8 hewie-id send reaction ;   \ 0xBC: Fiona_HewieReact 8
+: fiona-hewie-react ( -- )  story-reaction hewie-id send reaction ;   \ 0xBC: Fiona_HewieReact 8
 : who-actor ( id -- actor | -1 )  char-slot dup 0< if  exit  then  char-actor ;
 : fiona-target ( id frames -- )   \ 0x96: her head on character `id` for `frames` (30 when not above 0)
     dup 0> 0= if  drop 30  then  >r who-actor r>  fiona-id send look-hold ;
@@ -1636,7 +1636,7 @@ variable daniella-second   \ (her model's +0x878: op 1 shows her second part, no
 : obstacles-id ( -- id )  s" obstacles" actor-named ;
 : obstacle-keep-spot ( i -- )  obstacles-id send keep-obstacle-spot ;
 : obstacle-model-back ( i n -- )  obstacles-id send obstacle-model-to-spot ;
-: obstacle-on? ( i tri -- flag )  on-square? ;
+: obstacle-on? ( i tri -- flag )  obstacle-on-square? ;
 : obstacle-place ( i n kind a b -- )  obstacles-id send place-obstacle ;
 : obstacle-place-saved ( i n kind -- )  obstacles-id send place-obstacle-kept ;
 : obstacle-save ( i -- )  obstacles-id send keep-obstacle ;

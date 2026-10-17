@@ -4,102 +4,115 @@
 IN: acoustics
 USING: engine actors messages ;
 
+\ a noise this frame: how loud, the room, its triangle (-1: at a door), the door (-1: none)
+begin-structure /noise  field: n.loud  field: n.room  field: n.tri  field: n.door  end-structure
+\ who listens: hearing noises louder than `threshold`, not those of its own source
+begin-structure /listener  field: l.id  field: l.threshold  field: l.source  end-structure
+16 constant #listeners-max
+$FF constant no-exit
+
 state: acoustics-state
-  #noise-sources cells field noise-louds      \ this frame's noise from each source (0: none)
-  #noise-sources cells field noise-rooms
-  #noise-sources cells field noise-tris
-  #noise-sources cells field noise-doors
-  cell field setting                    \ 0..3
-  cell field listeners                  \ a list: id threshold source, three cells each
+  #noise-sources /noise * field noises      \ this frame's from each source (loud 0: none)
+  cell field setting                        \ 0..3: quiet noises quieter
+  #listeners-max /listener * field listeners
+  cell field #listeners
+  \ hearing (Character_Hearing): the listener, and the exit the last noise came in by - carried
+  \ across the sources, as the original's `exit` is (quirk: step 7)
+  cell field hearer  cell field last-exit
 end-state
 
-: nth-of ( s field-addr -- addr )  swap cells + ;
+: noise ( source -- n )  /noise * noises + ;
 : forget-noises ( -- )
-    #noise-sources 0 do  0 i noise-louds nth-of !  -1 i noise-rooms nth-of !  -1 i noise-tris nth-of !  -1 i noise-doors nth-of !  loop ;
+    #noise-sources 0 do  0 i noise n.loud !  -1 i noise n.room !  -1 i noise n.tri !  -1 i noise n.door !  loop ;
 
-\ ---- the listeners ----
-: listener# ( id -- i | -1 )   \ its place in the list
-    listeners @ length 0 ?do  listeners @ i swap nth over = if  drop i unloop exit  then  3 +loop  drop -1 ;
+\ ---- the listeners, in the order they asked ----
+: listener ( i -- l )  /listener * listeners + ;
+: listener# ( id -- i | -1 )
+    #listeners @ 0 ?do  i listener l.id @ over = if  drop i unloop exit  then  loop  drop -1 ;
 : drop-listener ( id -- )
-    listener# dup 0< if  drop exit  then
-    listeners @ length 3 - over ?do  listeners @ i 3 + swap nth  listeners @ i swap nth!  loop
-    drop  3 0 do  listeners @ pop drop  loop ;
+    listener# dup 0< if  drop exit  then  {: i :}
+    i 1+ listener  i listener  #listeners @ i - 1- /listener *  move
+    -1 #listeners +! ;
+: add-listener ( id threshold source -- )
+    #listeners @ #listeners-max < 0= if  drop 2drop exit  then
+    #listeners @ listener {: l :}  l l.source !  l l.threshold !  l l.id !  1 #listeners +! ;
 
-\ ---- hearing one noise (Character_Hearing's loop body). `exit-was` carries across the sources,
-\ as the original's `exit` does (quirk: step 7) ----
-variable who   variable src   variable base   variable exit-was
-: n@ ( field-addr -- x )  src @ swap nth-of @ ;
-: setting-loud ( -- loud )
-    noise-louds n@  dup $80 < if
-        setting @ case  1 of  $1F -  endof  2 of  $3F -  endof  3 of  $5F -  endof  endcase
-    then ;
-: none>ff ( exit -- exit' )  dup 0< if  drop $FF  then ;
+\ ---- hearing one noise (Character_Hearing's loop body) ----
+: setting-loud ( loud -- loud' )   \ (below $80, quieter by the setting)
+    dup $80 < if  setting @ case  1 of  $1F -  endof  2 of  $3F -  endof  3 of  $5F -  endof  endcase  then ;
+: none>ff ( exit -- exit' )  dup 0< if  drop no-exit  then ;
+: hearer-room ( -- room )  hearer @ body-room ;
 \ in the listener's room, or at a door into it
-: reaches? ( -- flag )
-    who @ body-room noise-rooms n@ = if  true exit  then
-    noise-doors n@ 0< if  false exit  then
-    noise-doors n@ noise-rooms n@ door-exit-in none>ff dup exit-was !
-    dup $FF = if  drop true exit  then
-    noise-rooms n@ swap room-exit-leads drop  who @ body-room = ;
+: reaches? ( n -- flag )
+    {: n :}  hearer-room n n.room @ = if  true exit  then
+    n n.door @ 0< if  false exit  then
+    n n.door @ n n.room @ door-exit-in none>ff  dup last-exit !
+    dup no-exit = if  drop true exit  then
+    n n.room @ swap room-exit-leads drop  hearer-room = ;
 \ where it came from: its triangle's centre, else where its door stands, else the listener
-fvariable sx  fvariable sy  fvariable sz
-: source-at ( -- )
-    noise-tris n@ dup 0< 0= if  tri-center sz f! sy f! sx f! exit  then  drop
-    who @ body-pos sz f! sy f! sx f!
-    noise-doors n@ 0< if  exit  then
-    noise-doors n@ who @ body-room door-exit-in dup 0< if  drop exit  then
-    exit-stand if  sz f! sy f! sx f!  then ;
-: by-distance ( loud -- loud' )   \ a tenth of the level distance plus three times the rise
-    source-at  who @ body-pos                                    ( F: x y z )
-    sz f@ f- fsq  fswap sy f@ f- fabs 3e f*  frot sx f@ f- fsq  frot f+ fsqrt  f+
-    0.1e f* f>s - ;
-: route-end ( n -- door | -1 )  dup 0> if  1- route-door  else  drop -1  then ;
-: by-route ( loud -- loud' )   \ through at most 2 doors, for a walker (kind 1)
-    who @ body-room noise-rooms n@ 1 2 route                           ( loud n )
-    noise-doors n@ 0< 0=  over 0> and if
-        dup route-end noise-rooms n@ door-exit-in none>ff  exit-was @ = if  1-  then
+: door-stand ( n -- flag ) ( F: -- x y z | )
+    {: n :}  n n.door @ 0< if  false exit  then
+    n n.door @ hearer-room door-exit-in  dup 0< if  drop false exit  then  exit-stand ;
+: source-at ( n -- ) ( F: -- x y z )
+    dup n.tri @ dup 0< 0= if  nip tri-center exit  then  drop
+    door-stand 0= if  hearer @ body-pos  then ;
+: by-distance ( loud n -- loud' )   \ a tenth of the level distance plus three times the rise
+    source-at  {: loud | F: sx F: sy F: sz :}  to sz to sy to sx
+    hearer @ body-pos  {: F: x y z :}
+    y sy f- fabs 3e f*   x sx f- fsq  z sz f- fsq f+ fsqrt  f+
+    0.1e f* f>s  loud swap - ;
+: route-end ( doors -- door | -1 )  dup 0> if  1- route-door  else  drop -1  then ;
+1 constant walker   \ (route's kind: through doors on foot)
+: by-route ( loud n -- loud' )   \ through at most 2 doors, for a walker
+    {: loud n | doors :}  hearer-room n n.room @ walker 2 route to doors   \ (-1: no way)
+    n n.door @ 0< 0=  doors 0> and if   \ (its door the one it came in by: one door less)
+        doors route-end n n.room @ door-exit-in none>ff  last-exit @ = if  doors 1- to doors  then
     then
-    dup -1 = if  drop  base @ $60 < if  drop 0  then  exit  then
-    base @ over 5 lshift < if  2drop 0 exit  then
-    base @ $41 < if  route-end door-open? 0= if  drop 0  then  else  drop  then ;
-: heard? ( threshold -- flag )   \ (base, src set)
-    base @ reaches? if  who @ body-room room-id = if  by-distance  then  else  by-route  then
-    < ;
+    doors -1 = if  loud $60 < if  0  else  loud  then  exit  then
+    loud doors 5 lshift < if  0 exit  then
+    loud $41 < if  doors route-end door-open? 0= if  0 exit  then  then
+    loud ;
+: heard? ( threshold loud n -- flag )
+    {: threshold loud n :}
+    n reaches? if
+        hearer-room room-id = if  loud n by-distance  else  loud  then
+    else  loud n by-route  then
+    threshold swap < ;
 : tell ( id threshold source -- )   \ the first source it hears, or nothing
-    rot who !  0 exit-was !
+    {: id threshold own :}  id hearer !  0 last-exit !
     #noise-sources 0 do
-        i over <> if
-            i src !  setting-loud dup base !  0> if
-                over heard? if
-                    2drop  noise-louds n@ noise-rooms n@ noise-tris n@ noise-doors n@ src @  who @ send heard  unloop exit
+        i own <> if
+            i noise {: n :}
+            n n.loud @ setting-loud  dup 0> if
+                threshold swap n heard? if
+                    n n.loud @  n n.room @  n n.tri @  n n.door @  i  id send heard  unloop exit
                 then
-            then
+            else  drop  then
         then
-    loop  2drop  who @ send heard-nothing ;
+    loop  id send heard-nothing ;
 
 behaviour hearing
-  on spawned ( -- )  forget-noises  list listeners !  self subscribe frame-end ;
-  on noise ( loud room tri door source -- )
-      dup 0 #noise-sources within 0= if  2drop 2drop drop exit  then   >r
-      3 pick 0=  3 pick -1 = or  4 pick $FF and r@ noise-louds nth-of @ < or if  r> drop 2drop 2drop exit  then
-      dup 0< 0= if  nip -1 swap  then                        \ (at a door: no triangle)
-      r@ noise-doors nth-of !  r@ noise-tris nth-of !  r@ noise-rooms nth-of !  $FF and r> noise-louds nth-of ! ;
-  on listen ( threshold source -- )
-      sender drop-listener  sender listeners @ push  swap listeners @ push  listeners @ push ;
+  on spawned ( -- )  forget-noises  self subscribe frame-end ;
+  on noise ( loud room tri door source -- )   \ the loudest of each source kept
+      {: loud room tri door src :}
+      src 0 #noise-sources within 0= if  exit  then
+      loud 0=  room -1 = or  loud $FF and src noise n.loud @ < or if  exit  then
+      src noise {: n :}
+      loud $FF and n n.loud !  room n n.room !  door n n.door !
+      door 0< if  tri  else  -1  then  n n.tri ! ;   \ (at a door: no triangle)
+  on listen ( threshold source -- )  sender drop-listener  sender -rot add-listener ;
   on stop-listening ( -- )  sender drop-listener ;
   on noise-setting ( n -- )  setting ! ;
   on frame-end ( -- )
       \ (Fiona's loudest noise this frame, for the summoner: the original's pursuer request)
-      fiona-noise noise-louds nth-of @ ?dup if
-          fiona-noise noise-rooms nth-of @  fiona-noise noise-doors nth-of @  broadcast noise-made
-      then
-      listeners @ length 0 ?do
-          listeners @ i swap nth  dup body? if
-              listeners @ i 1+ swap nth  listeners @ i 2 + swap nth  tell
-          else  drop  then
-      3 +loop
+      fiona-noise noise {: hers :}
+      hers n.loud @ if  hers n.loud @  hers n.room @  hers n.door @  broadcast noise-made  then
+      #listeners @ 0 ?do
+          i listener {: l :}
+          l l.id @ body? if  l l.id @  l l.threshold @  l l.source @  tell  then
+      loop
       \ (each source's noise this frame, for the rooms' scripts: the original's +0x10D4, kept a frame)
-      #noise-sources 0 do  i noise-louds nth-of @ ?dup if  i noise-rooms nth-of @  broadcast noise-was  then  loop
+      #noise-sources 0 do  i noise n.loud @ ?dup if  i noise n.room @  broadcast noise-was  then  loop
       forget-noises ;
 end-behaviour
 

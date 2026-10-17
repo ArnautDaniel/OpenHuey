@@ -9,7 +9,7 @@ USING: engine messages keys ps2-screen subscreen.state subscreen.art subscreen.i
 : choosing? ( -- flag )  shown @ message-layout drop  message-options 0>  last-shown-page? and ;
 
 : marker ( -- )   \ ">" before the option picked
-    shown @ message-layout drop  picked @ message-option drop  {: pg line col :}
+    shown @ message-layout drop  picked @ message-option-at  {: pg line col :}
     word-layer s" >"  $40 sx  col 1- 0 max char-size drop * scale * +  line 18 * $B0 + sy  $FFD878FF scale  ui-text ;
 : box-view ( -- )
     $100 $E0 $1A0 $A0 shade

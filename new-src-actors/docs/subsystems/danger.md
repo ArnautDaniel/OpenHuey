@@ -10,9 +10,9 @@ Hewie all follow it. The original's "game mode" (`Progress_GameMode`, set by
 
 | Message | Stack | Direction | Meaning |
 |---|---|---|---|
-| `danger-signal` | `( bit -- )` | in | Something this frame: 0 / 5 Fiona within 150 / 200 of the stalker, 1 Fiona was struck, 3 the stalker chases, 4 Hewie is alert to him, 6 hunted (the summoner). |
-| `stalker-here` | `( room alert chasing -- )` | in | The stalker in play this frame (the stalkers send it). None this frame: no stalker. |
-| `danger` | `( level -- )` | broadcast | Changed: 0 calm, 1 followed (tense), 2 chased. Also sent on `entered-room`. |
+| `danger-signal` | `( signal -- )` | in | Something this frame (`enum: danger-signal` in messages.fs): `stalker-close` / `stalker-near` Fiona within 150 / 200 of the stalker, `fiona-struck`, `no-stalker`, `stalker-down` (knocked down), `hewie-alert` (alert to him), `being-hunted` (the summoner). |
+| `stalker-here` | `( room mode down -- )` | in | The stalker in play this frame (the stalkers send it): his mode (`enum: stalker-mode`; the original's Progress_StalkerAlert) and whether he is knocked down (condition 2). None this frame: no stalker. |
+| `danger` | `( level -- )` | broadcast | Changed: `calm`, `followed` (tense), `chased` (`enum: danger-level`). Also sent on `entered-room`. |
 
 **Facts:** story flags 0x1B (force calm), 0x1F (force chased), 7 (force tense), 0x22; the played
 room; the room graph.
@@ -20,12 +20,12 @@ room; the room graph.
 ## State
 
 The level; the level before the last change; last frame's; the hold timer; this frame's signals;
-this frame's stalker (room, alert, chasing).
+this frame's stalker (room, mode, down).
 
 ## Rules
 
 From `SceneGame_Danger` (`scene_game.c`). Each frame, at its end:
-1. With no stalker, signal 2. A chasing stalker: signal 3.
+1. With no stalker, `no-stalker`. A stalker knocked down: `stalker-down`.
 2. Story flags force it: 0x1B calm, 0x1F chased, 7 tense (the hold timer 0).
 3. Otherwise: the stalker in Fiona's room makes it chased (hold 30). Else, by the current level:
    - calm: `hunted` makes it tense (hold 450); or with the hold over, a stalker in play, a
@@ -34,7 +34,7 @@ From `SceneGame_Danger` (`scene_game.c`). Each frame, at its end:
      it goes calm once the hold is over (hold 30); otherwise, coming from calm the hold is 450,
      from chased 150;
    - chased: no stalker: tense if `hunted` or a creature, else calm (hold 30); the stalker next
-     door with alert 3 or 4: tense when the hold is over (hold 30); otherwise the hold is 150.
+     door waiting about or held off (mode 3 or 4): tense when the hold is over (hold 30); otherwise the hold is 150.
    The hold counts down by one each frame.
 4. The signals are the frame's: forgotten after. Struck (1) while calm signals hunted (6) for the
    next frame (*quirk:* the original sets it after clearing).

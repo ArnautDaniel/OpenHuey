@@ -44,7 +44,7 @@ tables = [('calm-lists', 0x3B02C0, 7, 'D_003B02C0: calm, by her distance band'),
           ('followed-wait-lists', 0x3B06F0, 7, 'D_003B06F0: being followed, waiting'),
           ('tense-lists', 0x3B0850, 11, 'D_003B0850: the chase / a hostile creature'),
           ('tense-wait-lists', 0x3B0A90, 11, 'D_003B0A90: the chase, waiting'),
-          ('tense-wait-hard-lists', 0x3B0E20, 11, 'D_003B0E20: the chase, waiting (hard)')]
+          ('tense-wait-shepherd-lists', 0x3B0E20, 11, 'D_003B0E20: the chase, waiting (hard)')]
 for name, va, n, what in tables:
     ptrs = struct.unpack('<%dI' % n, at(va, 4 * n))
     names = []
@@ -71,11 +71,14 @@ lines.append('\\ chance tables: a signed percent per trust level 0..7')
 for name, va, what in chances:
     vals = struct.unpack('<8b', at(va, 8))
     lines.append('create %s  %s   \\ %s' % (name, ' '.join('%d ,' % v for v in vals), what))
+    if name == 'growl-chance':   # (a frame count, kept by the chances it goes with)
+        vals = struct.unpack('<8i', at(0x3B1C00, 32))
+        lines.append('create flee-wait  %s   \\ D_003B1C00: his wait after drawing him off' % ' '.join('%d ,' % v for v in vals))
 lines.append('')
 times = [('obey-time', 0x3B1350, 'kHewieLevelNormal: how long he obeys (+0xF359C)'),
-         ('obey-time-hard', 0x3B1370, 'kHewieLevelHard: ... on the hard difficulty'),
+         ('obey-time-shepherd', 0x3B1370, 'kHewieLevelHard: ... on the hard difficulty'),
          ('wait-time', 0x3B1390, 'D_003B1390: how long he waits once disobedient'),
-         ('wait-time-hard', 0x3B13B0, 'D_003B13B0: ... on the hard difficulty'),
+         ('wait-time-shepherd', 0x3B13B0, 'D_003B13B0: ... on the hard difficulty'),
          ('idle-wait', 0x3B13D0, 'D_003B13D0: the wait of action 0x2E')]
 lines.append('\\ frame counts per trust level 0..7')
 for name, va, what in times:
@@ -101,10 +104,13 @@ for name, va in (('overlays-calm', 0x3B13F0), ('overlays-tense', 0x3B1580)):
     lines.append('create %s  %s  -1 ,' % (name, '  '.join(vals)))
 lines.append('')
 lines.append('\\ his fight with the stalker (H3)')
-vals = struct.unpack('<48b', at(0x3B12C0, 48))
-lines.append('\\ D_003B12C0 (Hewie_ReactionRoll): a bite of kind 0..7 is a hard one - percent by the stalker\'s')
-lines.append('\\ health band (0 above 0.8 of it, 1 0.6, 2 0.4, 3 0.2, 4 0.1, 5 below): 6 cells a kind')
-lines.append('create hard-bite-chance  %s' % '  '.join(' '.join('%d ,' % v for v in vals[k * 6:k * 6 + 6]) for k in range(8)))
+vals = struct.unpack('<66b', at(0x3B12C0, 66))
+lines.append('\\ D_003B12C0 (Hewie_ReactionRoll): a bite of kind 0..10 is a hard one - percent by the stalker\'s')
+lines.append('\\ health band (0 above 0.8 of it, 1 0.6, 2 0.4, 3 0.2, 4 0.1, 5 below): 6 cells a kind. The kinds')
+lines.append('\\ (hewie/fight.fs bite-row): his bites at the far flank, charged, the near one, charged, head on,')
+lines.append('\\ his leg; his tackles from in front, behind, charged; the rush (the decomp declares 8 rows; the')
+lines.append('\\ game reads 11)')
+lines.append('create hard-bite-chance  %s' % '  '.join(' '.join('%d ,' % v for v in vals[k * 6:k * 6 + 6]) for k in range(11)))
 for name, va, what in (('bites-flank', 0x3B1310, 'D_003B1310: action 0x1F at a flank'),
                        ('bites-flank-charged', 0x3B1320, 'D_003B1320: ... charged'),
                        ('bites-head-on', 0x3B1330, 'D_003B1330: action 0x1F head on'),

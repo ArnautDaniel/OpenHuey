@@ -12,25 +12,24 @@ USING: engine game-state actors messages keys facts flag-names story.words ;
 
 \ ---- the files ----
 create path-buf 256 allot   variable path-len
+: path+ ( addr len -- )   \ added to the path being made
+    {: a n :}  a  path-buf path-len @ +  n move  n path-len +! ;
 : in-user-dir ( name len -- addr len )   \ <user-dir>name
-    user-dir  dup path-len !  path-buf swap move
-    dup >r  path-buf path-len @ + swap move  r> path-len +!
-    path-buf path-len @ ;
+    0 path-len !  user-dir path+  path+  path-buf path-len @ ;
 : quick-path ( -- addr len )   \ (under --test: hga-test-quick.fs, the player's own left be)
     testing? if  s" hga-test-quick.fs"  else  s" hga-quick-save.fs"  then  in-user-dir ;
 \ ---- the save slots (the original's memory card saves): each its own file, and an index of
 \ what each holds - where it was made (a place's name) and the time played - for the lists ----
 8 constant #slots
-create slot-name 16 allot
 : slot-path ( n -- addr len )   \ hga-save-<n>.fs (under --test: hga-test-<n>.fs, the player's own left be)
-    testing? if  s" hga-test-"  else  s" hga-save-"  then  slot-name swap move
-    [char] 0 + slot-name 9 + c!  s" .fs" slot-name 10 + swap move
-    slot-name 13 in-user-dir ;
+    {: n :}  0 path-len !  user-dir path+
+    testing? if  s" hga-test-"  else  s" hga-save-"  then  path+  n n>s path+  s" .fs" path+
+    path-buf path-len @ ;
 : index-path ( -- addr len )  s" hga-saves.fs" in-user-dir ;
 create slot-used  #slots cells allot   create slot-place  #slots cells allot
 create slot-frames  #slots cells allot
 : slot-was ( n place frames -- )   \ (the index's lines run this)
-    rot >r  r@ cells slot-frames + !  r@ cells slot-place + !  true r> cells slot-used + ! ;
+    {: n place frames :}  frames n cells slot-frames + !  place n cells slot-place + !  true n cells slot-used + ! ;
 : slot-used? ( n -- flag )  cells slot-used + @ ;
 : slot-place@ ( n -- msg )  cells slot-place + @ ;
 : slot-frames@ ( n -- frames )  cells slot-frames + @ ;
@@ -78,8 +77,7 @@ create st-more 8 cells allot   variable st-more?   \ (a save without them: as he
 
 \ ---- writing ----
 : .f ( F: r -- )  6 f>s$ type space ;   \ (always with a point: read back as a float)
-fvariable tx  fvariable ty  fvariable tz
-: .at ( F: x y z -- )  tz f!  ty f!  tx f!  tx f@ .f  ty f@ .f  tz f@ .f ;   \ a place, as x y z
+: .at ( F: x y z -- )  {: F: x y z :}  x .f  y .f  z .f ;   \ a place, as x y z
 : write-progress ( -- )
     ." progress-clear" cr
     progress-size 4 / 0 do
@@ -89,7 +87,7 @@ fvariable tx  fvariable ty  fvariable tz
 \ ---- loading: the progress back, the room played, then everyone put where they were ----
 : fiona-id ( -- id )  s" fiona" actor-named ;
 : hewie-id ( -- id )  s" hewie" actor-named ;
-: place-msg ( F: x y z yaw -- ) ( -- x y z yaw )  f>cell >r f>cell >r f>cell >r f>cell  r> r> r> ;
+: place-msg ( F: x y z yaw -- ) ( -- x y z yaw )  {: F: x y z yaw :}  x f>cell y f>cell z f>cell yaw f>cell ;
 : put-back ( -- )
     was-costume @ fiona-id send costume
     was-x f@ was-y f@ was-z f@ was-yaw f@ place-msg fiona-id send place
@@ -108,7 +106,7 @@ fvariable tx  fvariable ty  fvariable tz
     st-hp @ st-mode @  was-stalker @ stalker-actor send stalker-restore
     st-more? @ if  8 0 do  i cells st-more + @  loop  was-stalker @ stalker-actor send stalker-restore-more  then ;
 
-0 constant idle   1 constant writing   2 constant entering   3 constant settling
+enum: saves-step  idle writing entering settling ;
 
 state: saves-state
   cell field step

@@ -3,7 +3,7 @@
 \ being played only. Each frame: how far one of them is on foot (Fiona and Hewie in turn), whom
 \ he sees or can reach, whether he heard a noise (the acoustics actor tells him).
 IN: stalker.senses
-USING: engine game-state actors messages common facts flag-names paths stalker.state ;
+USING: engine game-state actors messages common facts flag-names paths vectors stalker.state ;
 
 : my-at ( -- v )  self body-at ;
 : fiona ( -- id )  fiona-id @ ;
@@ -12,51 +12,48 @@ USING: engine game-state actors messages common facts flag-names paths stalker.s
     dup 0< if  drop false exit  then  dup body? 0= if  drop false exit  then  body-room self body-room = ;
 \ walking straight from him to someone over the mask reaches their triangle (one off the floor:
 \ never - the walk's -1 is a wall)
-variable st-who
 : straight? ( id mask -- flag )
-    swap st-who !  st-who @ body-tri 0< if  drop false exit  then
-    >r  self body-tri my-at st-who @ body-at r> v-walk  st-who @ body-tri = ;
+    {: who mask :}  who body-tri 0< if  false exit  then
+    self body-tri my-at who body-at mask v-walk  who body-tri = ;
 
 \ ---- on foot (Npc_DistanceTo): straight there if nothing's in the way, else along a way
 \ planned over the floor; -1 no way ----
 : foot-dist ( id -- ) ( F: -- d )
-    dup here? 0= if  drop -1e exit  then
-    >r  r@ self body-mask straight? if
-        my-at r@ body-at vec-dist  r> drop exit
-    then
-    probe-path self body-tri my-at r@ body-tri r@ body-at self body-mask path-plan 0> if
+    {: who :}  who here? 0= if  -1e exit  then
+    who self body-mask straight? if  my-at who body-at vec-dist exit  then
+    probe-path self body-tri my-at who body-tri who body-at self body-mask path-plan 0> if
         probe-path my-at path-rest
-    else  -1e  then  r> drop ;
+    else  -1e  then ;
 
 \ ---- sight: within his range and half an angle either side of where he looks, and nothing
 \ in the way - to its middle, or to one of 9 points round its far side (its radius out, 22.5
-\ degrees apart). Walls are the floor's triangles flagged $40080 ($40088 while she's hidden) ----
-: sight-mask ( -- mask )  fiona-hidden state-flag? fiona-half-hidden state-flag? or if  $40088  else  $40080  then ;
+\ degrees apart). Walls are the floor's triangles flagged so (more of them while she's hidden) ----
+$40080 constant sight-walls   $40088 constant hidden-walls
+: sight-mask ( -- mask )  fiona-hidden state-flag? fiona-half-hidden state-flag? or if  hidden-walls  else  sight-walls  then ;
 : in-view? ( v -- flag )   \ (Eye_CanSee)
     my-at over vec-dist-xz f0= if  drop false exit  then
     my-at over vec-dist view-range f@ f> if  drop false exit  then
     my-at swap vec-heading view-heading f@ f- angle-wrap fabs view-half f@ f<= ;
-create round-pt 12 allot  fvariable round-a  fvariable round-r  variable sc-who  variable sc-t
+create round-pt /vec allot
+: round-in-view? ( who F: a r -- flag )   \ (that point round them: round a wall from them, in his sight)
+    {: who F: a r :}
+    a r round-pt who body-at vec-ahead
+    round-pt 0 v-tri-in dup 0< if  drop false exit  then  {: t :}
+    who body-tri who body-at round-pt sight-mask v-walk 0<
+    self body-tri my-at round-pt sight-mask v-walk t =  and ;
 : sees? ( id -- flag )   \ (Npc_SeesChar)
-    dup here? 0= if  drop false exit  then  sc-who !
-    sc-who @ body-at in-view? 0= if  false exit  then
-    sc-who @ sight-mask straight? if  true exit  then
-    my-at sc-who @ body-at vec-heading pi f2/ f+ round-a f!
-    sc-who @ body-dims fdrop round-r f!
+    {: who :}  who here? 0= if  false exit  then
+    who body-at in-view? 0= if  false exit  then
+    who sight-mask straight? if  true exit  then
+    my-at who body-at vec-heading pi f2/ f+  who body-dims fdrop  {: F: a r :}
     9 0 do
-        round-a f@ round-r f@ round-pt sc-who @ body-at vec-ahead
-        round-pt 0 v-tri-in dup 0< if  drop  else
-            sc-t !
-            sc-who @ body-tri sc-who @ body-at round-pt sight-mask v-walk 0<      \ (round a wall from it)
-            self body-tri my-at round-pt sight-mask v-walk sc-t @ =  and          \ (and in his sight)
-            if  true unloop exit  then
-        then
-        round-a f@ 0.3926991e f+ round-a f!
+        who a r round-in-view? if  true unloop exit  then
+        a 22.5e deg>rad f+ to a
     loop  false ;
 : near-straight? ( id F: d reach -- flag )   \ (within reach on foot, and straight there; not
     f< 0=  noclipped @ or if  drop false exit  then          \ while through blocked floor: +0x2B)
-    $40080 straight? ;
-: fiona-in-reach? ( -- flag )   \ NPC_FionaInReach (her hiding place: with the hiding, F5)
+    sight-walls straight? ;
+: fiona-in-reach? ( -- flag )   \ NPC_FionaInReach
     her-unseen @ if  false exit  then   \ (camouflaged and still: not there to him)
     fiona sees? if  true exit  then
     fiona-hidden state-flag? if  false exit  then

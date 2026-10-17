@@ -77,9 +77,15 @@ message let-go-shut ( room exit source -- )
 message door-changed ( door -- )             \ broadcast: its state changed
 
 \ ---- danger (docs/subsystems/danger.md) ----
-message danger-signal ( bit -- )             \ this frame: 1 Fiona struck, 3 chasing, 4 Hewie alert, 6 hunted...
-message stalker-here ( room alert chasing -- )   \ the stalker in play this frame
-message danger ( level -- )                  \ broadcast: 0 calm, 1 followed, 2 chased
+message danger-signal ( signal -- )          \ something this frame (below)
+message stalker-here ( room mode down -- )   \ the stalker in play this frame: his mode, knocked down?
+message danger ( level -- )                  \ broadcast: calm, followed, chased
+enum: danger-level  calm followed chased ;
+\ the frame's signals (the original's condition bits): Fiona within 150 / 200 of the stalker,
+\ Fiona struck, no stalker in play, the stalker knocked down, Hewie alert to him, she's hunted
+enum: danger-signal  stalker-close fiona-struck no-stalker stalker-down hewie-alert stalker-near being-hunted ;
+\ a stalker's mode (the original's +0x16C8, Progress_StalkerAlert): what he is about
+enum: stalker-mode  after-her heading-for-her searching waiting-about held-off ;
 
 \ ---- panic (docs/subsystems/panic.md); amounts and levels are floats (f>cell) ----
 message fright ( amount -- )                 \ (Panic_Fright: less with earrings $87 / $88 worn; f>cell)
@@ -90,8 +96,48 @@ message fear-in ( amount -- )
 message panic-stage! ( stage -- )
 message panic-level! ( level -- )
 message panic ( stage level -- )             \ broadcast each frame
+\ the panic's stages: under 60, from 60 / 75 / 90, panicking (at 100), calming down after
+enum: panic-stage  composed shaken scared terrified panicking calming-down ;
 
 \ ---- Fiona (docs/subsystems/fiona.md) ----
+\ Fiona's mode (the original's moveMode): moving on her own; led (a door, a scripted move, a walk
+\ to a spot); on a ladder; thrown or stumbling; defending (a shove, a kick); request 9; down;
+\ reacting (a flinch, fleeing, caught); held; commanding Hewie; letting go of a thing
+enum: fiona-mode  own-mode 2 led-mode ladder-mode thrown-mode 8 defend-mode request-9-mode down-mode
+    react-mode held-mode command-mode throw-mode ;
+\ what she is doing (+0x1AD580, the story's condition 0x3F): nothing; turning to push; on a
+\ ladder; at a door; a shove; a kick; letting go of a thing; flinching; thrown; down;
+\ commanding; fleeing; a panic attack; out of breath; the story's moves - an animation, walking
+\ to a spot, along a path, running there, along a path, turning to someone, to a heading,
+\ walking in an animation
+enum: fiona-doing  free-doing push-doing ladder-doing door-doing 5 shove-doing kick-doing let-go-doing
+    flinch-doing 10 thrown-doing down-doing command-doing flee-doing attack-doing breathless-doing
+    $11 anim-doing walk-to-doing walk-path-doing run-to-doing run-path-doing turn-who-doing
+    turn-heading-doing walk-anim-doing ;
+\ her condition: well, hurt, down
+enum: fiona-cond  well-cond hurt-cond down-cond ;
+\ her reactions (Fiona_Reaction: her sub while she is thrown-mode): knocked off a ladder; led away;
+\ thrown; thrown by a door; knocked down on a step or in a doorway, harder; knocked down, harder;
+\ grabbed; held down by homunculi; a spirit's fall; caught in a hold
+8 constant off-ladder-r   9 constant led-away-r   $A constant thrown-r   $B constant door-thrown-r
+$C constant step-knock-r   $D constant step-knock-hard-r   $E constant knock-r   $F constant knock-hard-r
+$10 constant grabbed-r   $12 constant held-down-r   $13 constant spirit-fall-r   $20 constant caught-r
+-1 constant no-reaction
+\ her costumes (the story's variable $26, the `costume` message; the wardrobe's names): her
+\ clothes, the slip she wakes in, Normal Outfit 2, Under the Scalpel, Illegal in Some States,
+\ Texas Cowgirl, Fiona the Frog (4 and 5: none)
+enum: costume  normal-outfit slip-dress normal-outfit-2 scalpel-outfit 6 illegal-outfit cowgirl-outfit frog-outfit ;
+\ what a stalker or a creature asks of her (Fiona_Reaction's requests): a blow, a harder blow, a
+\ grab, a throw, a door pushed into her, a hold; led away; held down by homunculi; a spirit
+enum: request-kind  1 blow-request heavy-blow-request grab-request throw-request door-request
+    hold-request $A lead-request $C homunculi-request spirit-request ;
+\ her commands to Hewie (the right stick's gestures; Fiona_HewieCommandAction): go there; get up;
+\ stay; ($26: nobody gives it); come; a pat; praise from afar; tending him when he's down; a scold
+\ near; come back; go for it; go for it now (chased); a scold from afar; her cry for help
+\ her gestures to him (the right stick, her-cmd: told in fiona-doing): up, down, R3, right, left
+enum: stick-gesture  -1 no-gesture go-gesture back-gesture stay-gesture praise-gesture scold-gesture ;
+enum: hewie-command  $23 go-there-cmd rouse-cmd stay-cmd cmd-26 come-cmd pat-cmd praise-cmd
+    tend-cmd scold-near-cmd come-back-cmd go-for-it-cmd attack-now-cmd scold-cmd help-cmd ;
 message flinch ( -- )                       \ (Fiona) flinching as if caught, nobody holding her (a room's command: action $B / $21)
 message count-shakes ( on? -- )             \ (Fiona) her shakes counted from now (Fiona_Shakes: the story's old-mansion-b1-3), or not
 message fiona-shakes ( n -- )               \ broadcast each frame while counting: her shakes so far
@@ -104,7 +150,10 @@ message fiona-blow ( n damage x y z reach -- )   \ broadcast: her blow `n` there
 message throw-down ( who recover -- )        \ (Fiona) thrown down by who (an actor, -1 none); recover: her recovery reset (the story's 0xB2)
 message look-hold ( who frames -- )          \ (Fiona) her head on who for so many frames (the story's 0x96)
 message fiona-unseen ( on -- )               \ broadcast when it changes: she can't be seen (item $89 worn, still)
-message fiona-plight ( state ladder -- )     \ broadcast each frame: how she stands for a stalker's attack; the ladder she is on (-1 none)
+message fiona-plight ( state ladder -- )     \ broadcast each frame: how she stands for a stalker's attack (plight); the ladder she is on (-1 none)
+\ how she stands for a stalker's attack (Pursuer_FionaState; his tables by it): free; fleeing; frightened
+\ (her fear past 90, her panic attack); out of reach (struck, seized, the stalkers blind); panicking; calming down
+enum: plight  free-plight fleeing-plight frightened-plight unreachable-plight panicking-plight calming-plight ;
                                              \ (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking, 3 out
                                              \ of reach (hidden, already struck), 4 / 5 the panic's stages 4 / 5
 \ ---- blows (F4, the stalkers' P2: Relation_Request kind 4 to Fiona / Hewie) ----
@@ -115,14 +164,20 @@ message hit-taken ( kind -- )                \ the answer: it struck home (none:
 \ ---- seized (F4b, the stalkers' P2b: Relation_Request kind 9, Fiona_JointAction kind 1) ----
 message seize ( type -- )                    \ to Fiona: taken to the sender's side - 6 by the hand (dragged),
                                              \ 8 walking (carried off)
+6 constant by-the-hand   8 constant walked-off   \ (seize's types)
 message seize-taken ( -- )                   \ her answer: she's being led
 message seize-refused ( -- )                 \ her answer: no spot by him she can be led to (or she isn't free)
 message broke-free ( -- )                    \ to the stalker leading her: she shook free
 \ ---- her blows on him (F4, the stalkers' P3: Relation_Request kinds 1 / 2 from Fiona; 5 a door) ----
 message blow-from ( kind damage how x y z -- )   \ a blow from a point, not from anyone (Progress_Noise: the slot's +0x1060; xyz>cells)
-message blow ( kind damage how -- )          \ to a stalker (or Hewie): kind 1 a shove, 2 a kick, 3 a killing one, 4 a
-                                             \ hard one, 5 a door; how: $8000 he stumbles, 1 he may (her kick: by
-                                             \ how worn he is - Fiona_ChaseRoll, rolled by him)
+message blow ( kind damage how -- )          \ to a stalker (or Hewie): its kind (blow-kind); how: $8000 he stumbles,
+                                             \ 1 he may (her kick: by how worn he is - Fiona_ChaseRoll, rolled by
+                                             \ him); a door's: its exit
+\ the blows' kinds: a shove, a kick, a killing one, a hard one, a door; (6: one Hewie takes no
+\ notice of); a powder trodden on (how: its loops); a scuffle off screen (Hewie's and the
+\ stalker's); Hewie's hold, his bite (on the stalker); his throw (Hewie thrown off by it)
+enum: blow-kind  1 shove-blow kick-blow killing-blow hard-blow door-blow ignored-blow powder-blow scuffle-blow
+    $A hold-blow bite-blow  $B throw-off-blow ;
 message blow-taken ( -- )                    \ the answer: it struck him
 message game-over-kind ( kind -- )           \ (the game over) how the next one goes: 0 the movie's, 1 faded out, 2 the ending
 message the-ending ( -- )                     \ (the game over, kind 2) the story is over: the staff roll and the results (ending.fs)
@@ -155,7 +210,13 @@ message hewie-doing ( here action mode sub cond mood group commandable near reac
                                              \ (Hewie_FionaReachable), he may be broken off (Hewie_MayBreakOff), his
                                              \ half of the room (+0xF3668), his trust level
 message command ( code tri yaw x z -- )      \ Fiona's command (0x23 go there: the spot; floats f>cell)
-message reaction ( n -- )                    \ how her doing strikes him (Fiona_HewieReact's row)
+message reaction ( n -- )                    \ how her doing strikes him (Fiona_HewieReact's row: hewie-reaction)
+\ what she did, as it strikes Hewie: her "go", "come back", "come" / "stay", a scolding and a praise
+\ from afar, a scolding close up, a pat, rousing him; the story's (its 0xBC); her turn to flee, her
+\ shove, her kick, a throw; (13: none); her cry for help, her "attack now"; his nudge (obedience)
+enum: hewie-reaction  go-reaction come-back-reaction come-reaction scold-reaction praise-reaction
+    scold-close-reaction pat-reaction rouse-reaction story-reaction flee-reaction shove-reaction
+    kick-reaction throw-reaction 14 help-reaction attack-now-reaction nudge-reaction ;
 \ a joint action by his side: she asks (type 0 scold, 2 praise, 4 stay); he finds her place by
 \ him, or refuses; she goes there, he sits; then the second part (1 / 3 / 5)
 message meet-me ( type -- )
@@ -198,6 +259,14 @@ message scripted ( on -- )                   \ (room -> a character) a script of
 \ at the point, 14 turn to a character (a: its actor), 15 turn to the heading, 17 walk the way to
 \ the spot with animation a (blend b), arriving as it ends
 message scripted-move ( kind a b x y z yaw -- )   \ (to a character; floats f>cell; a / b: as the kind says)
+\ the story's moves (Fiona_Requests' commands): stand; her idle's step; through a door at exit a,
+\ opening it / shutting it; walk / run to the spot; an animation (a), blended (a over b frames),
+\ blended with no time of its own; walk / run there by a path; look at a character (a) / a point;
+\ turn to a character / to the move's heading; an idle (b); walk to the spot in an animation (a)
+enum: move-kind  1 stand-move idle-step-move open-door-move shut-door-move walk-move run-move
+    anim-move blend-move blend8-move walk-path-move run-path-move look-move look-point-move
+    turn-to-who-move turn-to-heading-move idle-anim-move walk-anim-move
+    bark-move leap-move spot-move still-anim-move ;   \ (Hewie's own: a bark, a leap to the spot, milling about it, an animation not moving him)
 message moving ( done ended events -- )      \ broadcast at each frame's end by a character: its move done, its animation ended, its motion's event keys
 message hold-anim ( anim flags blend -- )    \ (to a character) play this animation and stay in it (the scripts' 0x9D: its flags - 1 loops - and frames faded in)
 message show ( on -- )                       \ (to a character) shown or hidden (the scripts' 0x1F)
@@ -264,8 +333,9 @@ message silent ( on -- )                     \ 0x3D: his own sounds don't play
 \ ---- Hewie at the stalker (H3, the stalkers' P3c): his attack is a joint action (Relation_Request
 \ kind 9 / Pursuer_GrabOrder): asked, then taken - with the spot to leap to - or refused; his bites
 \ (kind $B) while he holds on; either lets go (their state 7) ----
-message dog-attack ( kind -- )               \ (Hewie -> the stalker) his attack: 10 / 11 the near flank (11 charged), 12 /
-                                             \ 13 the far one, 14 head on, 15 his leg
+message dog-attack ( kind -- )               \ (Hewie -> the stalker) his attack (dog-attack-kind)
+\ Hewie's attacks: at the near flank (charged), the far one (charged), head on, his leg
+enum: dog-attack-kind  10 near-flank-attack near-charged-attack far-flank-attack far-charged-attack head-on-attack leg-attack ;
 message dog-grip ( tri x y z yaw -- )        \ (the stalker's answer) taken: leap to there, facing so (floats f>cell)
 message dog-refused ( -- )                   \ (the stalker's answer) not now
 message bite ( damage hard -- )              \ (Hewie -> the stalker he holds) a bite; hard: he stumbles
@@ -323,8 +393,10 @@ message item-event ( who ev var value -- )    \ (items -> the room) character sl
                                               \ script variable var set to value (var -1: none) - an item used here
 message remedy ( fear recovery -- )           \ (items -> Fiona) her fear and her recovery's count changed by these
 message soothe ( calm fear -- )               \ (items -> the panic) calming at once, and fear, by these
-message fed ( how -- )                        \ (items -> Hewie) given 0 a jerky (20), 1 a big one (100), 2 an onion,
-                                              \ 3 a calming bait (he waits 450 frames), 4 one that gets him up
+message fed ( how -- )                        \ (items -> Hewie) given a bait (bait)
+\ the baits: a treat (20 health), a big one (100), an onion (it hurts him), a fury (Sylvesta Esca:
+\ angry 450 frames), one that gets him up
+enum: bait  small-treat big-treat onion-bait fury-bait rouse-bait ;
 message tab-op ( op item -- )                \ (the sub screen) the tab: 0 an item handed her (its picture), 1 loaded, 2 in, 3 shown, 4 out
 message tab-done ( -- )                       \ (from the sub screen) the tab's step is done (it waits on 2 / 4)
 message menu-mode ( mode -- )                 \ (the sub screen) the mode the scripts open it in (0x6D: 0 the menu, 1 saving ...)

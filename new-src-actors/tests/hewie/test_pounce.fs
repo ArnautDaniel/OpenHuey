@@ -38,9 +38,10 @@ T{ [: hp @ ;] deb@ dup 62 = swap 65 = or -> -1 }T
 testing the rush (0x6D): at her (standing still), the bite once his mouth reaches her - done
 debug:debilitas-out  5 frames
 [: [: fiona-mode @ 0= ;] his@ ;] 600 soon drop   \ (her free again)
+[: fiona-at vec@ 12e f+ his-place ;] his!  2 frames   \ (12 from her, wherever he was)
 calm  [: her his-target !  close-in ;] his!
 T{ [: [: his-act @ ['] st-rush = ;] his@ ;] 2 soon -> -1 }T
-T{ [: [: his-act @ ['] st-1980 = ;] his@ ;] 200 soon -> -1 }T
+T{ [: [: his-act @ ['] st-bitten = ;] his@ ;] 200 soon -> -1 }T
 T{ [: [: his-act @ ['] st-rush <> ;] his@ ;] 5 soon -> -1 }T
 
 testing the flank (0x12): round to the stalker's side - settled there (within 40, behind him), then himself

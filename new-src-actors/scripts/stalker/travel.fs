@@ -6,7 +6,7 @@
 \ (Pursuer_ModesSearching off screen, Pursuer_SearchRouteIn) and coming into the room being
 \ played (Pursuer_EnterRoom; Pursuer_BackOnMesh when she comes into his).
 IN: stalker.travel
-USING: engine game-state actors messages common facts flag-names paths doors stalker.state stalker.senses stalker.moving stalker.search stalker.tables ;
+USING: engine game-state actors messages common facts flag-names paths vectors doors stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.anims ;
 
 : my-room ( -- room )  self body-room ;
 : away? ( -- flag )  in-game @ if  my-room room-id <>  else  false  then ;
@@ -17,9 +17,9 @@ USING: engine game-state actors messages common facts flag-names paths doors sta
 
 \ ---- the doors that let him down: not that way again until a fresh route ----
 : avoid-clear ( -- )  avoid 13 cells 0 fill ;
-: avoid-door ( door -- )
-    dup 0< if  drop exit  then
-    avoid over 5 rshift cells +  swap 31 and 1 swap lshift  over @ or swap ! ;
+: avoid-door ( door -- )   \ (a bit a door)
+    dup 0< if  drop exit  then  {: door :}
+    avoid door 5 rshift cells + {: a :}  a @  1 door 31 and lshift or  a ! ;
 
 \ ---- his route to a room (> 0 doors, 0 there, -1 none); the next door, its exit here ----
 : next-door ( -- door )  door-i @ doors-n @ < if  door-i @ cells doors + @  else  -1  then ;
@@ -27,9 +27,9 @@ USING: engine game-state actors messages common facts flag-names paths doors sta
 \ Rooms_DoorTri: the door's triangle on a room's side - the original's own measure of the way
 \ to it (its number); -1 none
 : door-tri ( door room -- tri )
-    >r dup 0< if  r> 2drop -1 exit  then  door-sides               ( r0 e0 t0 r1 e1 t1 )
-    2 pick r@ = if  >r 2drop 2drop drop r> r> drop exit  then
-    2drop drop  rot r> = if  nip  else  2drop -1  then ;
+    {: door room :}  door 0< if  -1 exit  then
+    door door-sides {: r0 e0 t0 r1 e1 t1 :}
+    r1 room = if  t1  else  r0 room = if  t0  else  -1  then then ;
 \ Npc_NodeDistance: from the door he came in by to the next one (each its triangle's number)
 : came-door ( -- door )  came-by @ dup 0< if  exit  then  my-room swap room-exit-door ;
 : stretch ( -- ) ( F: -- d )
@@ -41,7 +41,8 @@ USING: engine game-state actors messages common facts flag-names paths doors sta
 \ to a half of the goal room (`want`; -1 either: Fiona's half when she is across his own room -
 \ stalker/doorway.fs)
 : route-way! ( room want -- n )   \ (planned: the first stretch set)
-    >r dup goal-room !  >r my-room my-way r> r> stalker-kind -1 avoid route-sides
+    {: room want :}  room goal-room !
+    my-room my-way room want stalker-kind -1 avoid route-sides
     dup 0> if
         dup 16 min 0 do  i route-door  i cells doors + !  loop
         dup 16 min doors-n !  0 door-i !
@@ -50,24 +51,26 @@ USING: engine game-state actors messages common facts flag-names paths doors sta
 : route! ( room -- n )  -1 route-way! ;
 : route-over? ( -- flag )  door-i @ doors-n @ < 0= ;
 
-\ ---- a door as he finds it (Npc_ExitKind): 2 held, 3 not for him (locked against him, locked,
-\ stuck), 4 a way through (a doorway, open), 5 shut ----
-: door-kind ( door -- k )
-    dup 0< if  drop 3 exit  then
-    dup fixed? if  drop 4 exit  then
-    dup door-held? if  drop 2 exit  then
-    dup against stalker-kind kind-bit and if  drop 3 exit  then
-    dup door-locked? if  drop 3 exit  then
-    dup state@ stuck-bit and if  drop 3 exit  then
-    state@ opened-bit and if  4  else  5  then ;
+\ ---- a door as he finds it (Npc_ExitKind): held, not for him (locked against him, locked,
+\ stuck), a way through (a doorway, open), shut ----
+enum: door-way  2 held-way barred-way open-way shut-way ;
+: door-kind ( door -- way )
+    dup 0< if  drop barred-way exit  then
+    dup fixed? if  drop open-way exit  then
+    dup door-held? if  drop held-way exit  then
+    dup against stalker-kind kind-bit and if  drop barred-way exit  then
+    dup door-locked? if  drop barred-way exit  then
+    dup state@ stuck-bit and if  drop barred-way exit  then
+    state@ opened-bit and if  open-way  else  shut-way  then ;
+: usable-kind? ( way -- flag )  dup open-way =  swap shut-way = or ;
 
 \ ---- his pace out of sight (a stretch's length a frame): after her 1.6..1.8, searching or
 \ waiting 0.6, heading for her room or held off 1; while she hides 2 ----
 : pace ( F: -- p )
     fiona-hidden state-flag? if  2e exit  then
     my-mode @ case
-        0 of  rnd 0.2e f* 1.6e f+  endof
-        2 of  0.6e  endof  3 of  0.6e  endof
+        after-her of  rnd 0.2e f* 1.6e f+  endof
+        searching of  0.6e  endof  waiting-about of  0.6e  endof
         >r 1e r>
     endcase ;
 
@@ -75,30 +78,31 @@ USING: engine game-state actors messages common facts flag-names paths doors sta
 \ exit's spots are 4 inside, 12 beyond, 12 inside), facing in - or, by the door he made for,
 \ facing it (Pursuer_BackOnMesh); after her and not seeing her, or come to her room, he
 \ searches it ----
-create in-at 12 allot  create out-at 12 allot
+create in-at /vec allot  create out-at /vec allot
 : place-at-exit ( exit facing-in? -- ok? )
-    >r  dup 2 exit-spot dup 0< if  r> drop 2drop fdrop fdrop fdrop false exit  then
-    >r in-at vec!  0 exit-spot drop out-at vec!
-    room-id r> in-at vec@ body-place
-    r> if  out-at in-at  else  in-at out-at  then  vec-heading body-turn  true ;
+    {: e facing-in :}
+    e 2 exit-spot dup 0< if  drop fdrop fdrop fdrop false exit  then  {: tri :}
+    in-at vec!  e 0 exit-spot drop out-at vec!
+    room-id tri in-at vec@ body-place
+    facing-in if  out-at in-at  else  in-at out-at  then  vec-heading body-turn  true ;
 variable in-tri
 \ through a door into her room he comes from its doorway - the exit's spot 12 beyond it - turned
 \ in, and walks in (Pursuer_EnterRoom: Rooms_ExitTriIn, the exit's heading turned round)
 : come-through ( exit -- ok? )
-    dup 1 exit-spot dup 0< if  2drop fdrop fdrop fdrop false exit  then
-    >r out-at vec!  2 exit-spot in-tri !  in-at vec!
-    room-id r> out-at vec@ body-place
+    {: e :}  e 1 exit-spot dup 0< if  drop fdrop fdrop fdrop false exit  then  {: tri :}
+    out-at vec!  e 2 exit-spot in-tri !  in-at vec!
+    room-id tri out-at vec@ body-place
     out-at in-at vec-heading body-turn  true ;
 : placed-anywhere ( -- )   \ (Actor_TeleportRandom: no exit to stand at)
     random-tri dup 0< if  drop fiona body-tri  then
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place ;
 : in-play ( -- )   \ in the room being played now: his search there, or after her
-    0 away-search !  0 out-going !  -1 anim !  stand-anim play-now  my-path path-clear
-    my-mode @ 4 = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
+    0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
+    my-mode @ held-off = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
         own-tri dup tri-center goal-at vec!  goal-at plan 0> if  walk-slow play  ['] walking step!  then  exit
     then
-    my-mode @ 0= if  chase-start exit  then
-    my-mode @ 1 = if  2 mode!  then
+    my-mode @ after-her = if  chase-start exit  then
+    my-mode @ heading-for-her = if  searching mode!  then
     search-again ;
 
 \ from the doorway on in to the spot 12 inside (Pursuer_SearchRouteIn), then as in-play has it
@@ -108,7 +112,7 @@ variable in-tri
     goal-at in-at vec-copy  in-tri @ goal-at plan 0> 0= if   \ (no way in yet - the door still
         room-id in-tri @ in-at vec@ body-place  in-play exit   \ swinging open: inside at once)
     then
-    walk-anim play  ['] walking-in step! ;
+    mode-walk play  ['] walking-in step! ;
 
 \ ---- through the next door (Pursuer_ThroughDoor) into the room beyond: into hers he comes
 \ in; elsewhere on to the next door, or - the route over - his search there out of sight ----
@@ -137,28 +141,28 @@ variable in-tri
     self doors-id send pull-shut  -1 to-shut ! ;
 
 : through ( exit -- )
-    my-room over room-exit-leads                                     ( exit room' exit' )
-    over 0< if  2drop  my-room swap room-exit-door avoid-door  goal-room @ route! drop  exit  then
-    rot drop  came-by !  body-room!  -1 body-tri!
+    {: e :}  my-room e room-exit-leads {: room' exit' :}
+    room' 0< if  my-room e room-exit-door avoid-door  goal-room @ route! drop  exit  then
+    exit' came-by !  room' body-room!  -1 body-tri!
     1 door-i +!  -1 making-for !  0 knock-t !
     my-room room-id = if
-        room-id came-by @ room-exit-door door-kind 5 = if  came-by @ open-for-me  then
+        room-id came-by @ room-exit-door door-kind shut-way = if  came-by @ open-for-me  then
         came-by @ came-in-by
         came-by @ come-through 0= if  placed-anywhere  in-play exit  then
         walk-in exit
     then
     route-over? if
-        my-mode @ 1 = my-room goal-room @ = and if  2 mode!  then
-        my-mode @ 2 4 within if  search-stops 150 * away-search !  then  exit
+        my-mode @ heading-for-her = my-room goal-room @ = and if  searching mode!  then
+        my-mode @ searching held-off within if  search-stops 150 * away-search !  then  exit
     then
     next-door door-exit making-for !  stretch to-door f! ;
 
 \ ---- a knock at a shut door into her room (Pursuer_KnockAtDoor: a sound by his kit's knocks -
 \ Debilitas $28 or $23 -, bank 7, at the door on her side), then 60..120 frames' wait - longer
 \ while she holds it ----
-1 cells 1 floats + constant /knock
+begin-structure /knock  field: kn.sound  ffield: kn.upto  end-structure
 : knock-sound ( -- n )   \ (a roll against the knocks' running chances)
-    rnd 100e f*  knocks  begin  dup cell+ f@ fover f< while  /knock +  repeat  fdrop @ ;
+    rnd 100e f*  knocks  begin  dup kn.upto f@ fover f< while  /knock +  repeat  fdrop kn.sound @ ;
 : knock ( exit -- )
     my-room swap room-exit-leads nip                                 ( exit' )
     dup 0< if  drop exit  then
@@ -167,32 +171,32 @@ variable in-tri
 
 \ ---- each frame out of sight on his route (Pursuer_TravelOffscreen) ----
 : at-door ( -- )
-    next-door dup door-exit                                          ( door exit )
-    dup 0< if  2drop  goal-room @ route! drop  exit  then
-    over door-kind case
-        3 of  drop avoid-door  goal-room @ route! drop  endof         \ (not for him: another way)
-        2 of  2drop  endof                                            \ (held shut: he waits)
-        5 of  nip
-              my-room over room-exit-leads drop room-id =  my-mode @ 4 <> and if
-                  knock-t @ 0= if  knock exit  then
-                  -1 knock-t +!  knock-t @ 1 > if  drop exit  then
-              then  through  endof
-        >r nip through r>
+    next-door dup door-exit {: door e :}
+    e 0< if  goal-room @ route! drop  exit  then
+    door door-kind case
+        barred-way of  door avoid-door  goal-room @ route! drop  endof   \ (not for him: another way)
+        held-way of  endof                                               \ (held shut: he waits)
+        shut-way of
+            my-room e room-exit-leads drop room-id =  my-mode @ held-off <> and if
+                knock-t @ 0= if  e knock exit  then
+                -1 knock-t +!  knock-t @ 1 > if  exit  then
+            then  e through  endof
+        >r e through r>
     endcase ;
 \ ---- his footsteps heard through the walls (Pursuer_FootstepsThroughWalls): making for a door of
 \ her room, within 80 of it, each 10 he closes in a step (his sounds 0 / 1 in turn, bank 7) out
 \ beyond that door at his way left further off (100 more; a shut door 150: Character_RouteExitPoint) ----
-create fs-a 12 allot  create fs-b 12 allot
-fvariable fs-d
+create fs-a /vec allot  create fs-b /vec allot
 : step-at ( exit -- )   \ (beyond its spot 1 along spot 2 -> 1, his way left + 100 / 150 out)
-    dup 1 exit-spot drop fs-a vec!  dup 2 exit-spot drop fs-b vec!
-    room-id swap room-exit-door door-open? if  100e  else  150e  then  to-door f@ f+  fs-d f!
-    fs-a sf@ fs-b sf@ f-  fs-a 8 + sf@ fs-b 8 + sf@ f-                        ( F: dx dz )
-    fover fdup f* fover fdup f* f+ fsqrt fdup f0= if  fdrop fdrop fdrop exit  then   ( F: dx dz len )
-    fs-d f@ fswap f/  fswap fover f* fs-a 8 + sf@ f+  frot frot f* fs-a sf@ f+  fswap   ( F: x z )
-    fs-a 4 + sf@ fswap                                                        ( F: x y z )
-    world-held state-flag? hushed @ or if  fdrop fdrop fdrop exit  then
-    step-foot @ 1 and 7 10 2 sound-at  1 step-foot +! ;   \ (always at its fullest: the original takes the step as 15)
+    {: e :}
+    e 1 exit-spot drop fs-a vec!  e 2 exit-spot drop fs-b vec!
+    room-id e room-exit-door door-open? if  100e  else  150e  then  to-door f@ f+  {: F: d :}
+    fs-a v.x sf@ fs-b v.x sf@ f-  fs-a v.z sf@ fs-b v.z sf@ f-  {: F: dx dz :}
+    dx dx f* dz dz f* f+ fsqrt {: F: len :}  len f0= if  exit  then
+    d len f/ {: F: k :}
+    world-held state-flag? hushed @ or if  exit  then
+    step-foot @ 1 and 7 10 2  fs-a v.x sf@ dx k f* f+  fs-a v.y sf@  fs-a v.z sf@ dz k f* f+  sound-at
+    1 step-foot +! ;   \ (always at its fullest: the original takes the step as 15)
 : footsteps ( -- )
     next-door dup 0< if  drop exit  then  room-id door-exit-in              ( exit | -1 )
     dup 0< if  drop  -1e step-last f!  exit  then
@@ -219,19 +223,17 @@ fvariable fs-d
     her-room dup 0< if  drop exit  then
     dup goal-room @ = route-over? 0= and if  drop exit  then
     avoid-clear  route! drop ;
-create seen-exits 8 cells allot
 : wander ( -- )   \ (Pursuer_Plan170: an exit at random he can go by)
     8 0 do
         8 s>f rnd f* f>s 7 min  my-room over room-exit-door              ( e door )
-        dup 0< 0= if  door-kind dup 4 = swap 5 = or if
+        dup 0< 0= if  door-kind usable-kind? if
             my-room swap room-exit-leads drop  route! drop  unloop exit
         then  else  drop  then  drop
     loop ;
 \ held off: to the nearer of his own rooms (Debilitas_PickDestination: the shorter route); none
 \ of his own (Daniella, Riccardo, ...: NPC_PickDestination's Npc_HeadRandomRoom - a room at
 \ random, not hers), on by a random way out
-variable ha-n
-: usable? ( exit -- flag )  my-room swap room-exit-door  dup 0< if  drop false exit  then  door-kind dup 4 =  swap 5 = or ;
+: usable? ( exit -- flag )  my-room swap room-exit-door  dup 0< if  drop false exit  then  door-kind usable-kind? ;
 : wander-off ( -- )   \ (a way out at random he can go by, not into hers)
     8 0 do
         8 s>f rnd f* f>s 7 min                                         ( e )
@@ -241,33 +243,32 @@ variable ha-n
     loop ;
 : head-home ( -- )
     own-a @ 0< if  wander-off exit  then  avoid-clear
-    own-a @ route! ha-n !
-    own-b @ 0< if  ha-n @ 0> if  own-a @ route! drop  then  exit  then
-    own-b @ route!                                                ( nb: his route there now )
-    ha-n @ 0> if  dup 0> 0=  over ha-n @ > or if  drop  own-a @ route! drop exit  then  then
-    drop ;
+    own-a @ route! {: na :}
+    own-b @ 0< if  na 0> if  own-a @ route! drop  then  exit  then
+    own-b @ route! {: nb :}   \ (his route there now: the shorter kept)
+    na 0> if  nb 0> 0=  nb na > or if  own-a @ route! drop  then  then ;
 : modes-away ( -- )
     my-mode @ case
-        0 of  head-for-her  tick-down if  1 mode!  then  endof
-        1 of  head-for-her  endof
-        2 of  route-over? if  away-search @ if  -1 away-search +!  else  3 mode!  then  then  endof
-        3 of  route-over? if
-                  tick-down if  next-to-hers? if  wander  else  1 mode!  head-for-her  then  900 mode-t !  then
+        after-her of  head-for-her  tick-down if  heading-for-her mode!  then  endof
+        heading-for-her of  head-for-her  endof
+        searching of  route-over? if  away-search @ if  -1 away-search +!  else  waiting-about mode!  then  then  endof
+        waiting-about of  route-over? if
+                  tick-down if  next-to-hers? if  wander  else  heading-for-her mode!  head-for-her  then  900 mode-t !  then
               then  endof
-        4 of  own-room? 0= route-over? and if  head-home  then  tick-down if  0 mode!  then  endof
+        held-off of  own-room? 0= route-over? and if  head-home  then  tick-down if  after-her mode!  then  endof
     endcase ;
 : away ( -- )   \ (stunned a while once knocked out of her room by a door: stalker/doorway.fs; held
     \ off in his own room he stays there - Pursuer_TravelOffscreen)
     stun-t @ if  -1 stun-t +!  exit  then  modes-away
-    my-mode @ 4 = own-room? and if  exit  then  travel ;
+    my-mode @ held-off = own-room? and if  exit  then  travel ;
 
 \ ---- the room being played changes (Fiona went through a door): his room no longer it - out
 \ of sight, his walk stopped; she came into his - put on its floor (Pursuer_BackOnMesh: near
 \ the door he made for - within 80 of it - there, facing it; else by the door he came in by,
 \ facing in; else anywhere) ----
 : gone-from-view ( -- )
-    0 out-going !  -1 body-tri!  my-path path-clear  ['] noop step !  0 search-phase !  -1 anim !
-    my-mode @ 0= if  avoid-clear  her-room route! drop  then ;
+    0 out-going !  -1 body-tri!  my-path path-clear  ['] noop step !  no-search search-phase !  -1 anim !
+    my-mode @ after-her = if  avoid-clear  her-room route! drop  then ;
 : back-on-floor ( -- )
     making-for @ 0< 0=  to-door f@ 80e f<= and if
         making-for @ false place-at-exit if  in-play exit  then

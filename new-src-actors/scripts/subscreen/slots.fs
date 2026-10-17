@@ -10,10 +10,12 @@ USING: engine actors common messages keys items items.names subscreen.state subs
 
 : items-id ( -- id )  s" items" actor-named ;
 5 constant wild   4 constant blank
-$75 constant fallback   \ (the Magist Medallion: when nothing is left to forge)
+magist-medallion constant fallback   \ (when nothing is left to forge)
+\ the machine's states: choosing a medallion, none to put in, rolling, what came out
+enum: slot-machine  choosing-medal no-medals rolling came-out ;
 
 \ ---- the medallions she can put in ----
-: medallion-id ( m -- id )  $70 + ;
+: medallion-id ( m -- id )  medallion + ;   \ (the six in order from the plain one)
 : held-of ( m -- n )  cells stock + @ ;
 : count-stock ( -- any? )  0  6 0 do  i medallion-id items-of  dup i cells stock + !  0<> or  loop ;
 : offered ( -- n )  0  6 0 do  i held-of 0<> 1 and +  loop ;   \ (those she has, listed)
@@ -25,17 +27,15 @@ $75 constant fallback   \ (the Magist Medallion: when nothing is left to forge)
 : row! ( sym i -- )  cells rows + ! ;
 : reel-symbol ( pos -- sym )  reel @ 35 * + cells reels + @ ;
 : reel-step ( -- )  0 reel-tick !  reel-pos @ 1+ 35 mod reel-pos ! ;
-fvariable roll  fvariable sum
-: by-chance ( addr n -- i )   \ which of n chances (percentages) a roll of 100 falls in (n: none)
-    rnd 100e f* roll f!  0e sum f!
-    0 ?do  dup i cells + @ s>f sum f@ f+ sum f!  roll f@ sum f@ f<= if  drop i unloop exit  then  loop
-    drop  -1 ;
+: by-chance ( addr n -- i )   \ which of n chances (percentages) a roll of 100 falls in (-1: none)
+    {: chances n | F: sum :}  rnd 100e f* {: F: roll :}
+    n 0 ?do  chances i cells + @ s>f sum f+ to sum  roll sum f<= if  i unloop exit  then  loop  -1 ;
 : odds ( table per n -- i )   \ by-chance in the medallion's row of a table (n chances; none: n)
-    >r  medal @ * cells +  r@ by-chance  dup 0< if  drop r>  else  r> drop  then ;
+    {: table per n :}  table medal @ per * cells +  n by-chance  dup 0< if  drop n  then ;
 : clear-rows ( -- )
     10 0 do  -1 i row!  loop  22 0 do  -1 i cells matches + !  loop
     -1 result !  -1 row-at !  0 reel-turning !  0 stopping !  0 all-rolled ! ;
-: start-slots ( -- )  0 slot-cursor !  clear-rows  count-stock if  0  else  1  then  slot-state ! ;
+: start-slots ( -- )  0 slot-cursor !  clear-rows  count-stock choosing-medal no-medals ? slot-state ! ;
 
 \ ---- rolling (SlotMachine_StateRoll) ----
 : top-row ( -- )   \ the first row: drawn straight from the medallion's odds
@@ -93,7 +93,7 @@ create candidates 8 cells allot   variable #candidates
         #candidates @ 0= if  fallback forged !  1 amount !
         else  #candidates @ s>f rnd f* f>s  #candidates @ 1- min  cells candidates + @ forged !  then
     then
-    0 found-t !  0 found-heard !  3 slot-state ! ;
+    0 found-t !  0 found-heard !  came-out slot-state ! ;
 : roll-frame ( -- )   \ (SlotMachine_StateRoll, a frame)
     row-at @ 0< if  top-row  then
     stopping @ if  settle  reel-tick @ 0= if  stopped  then  then
@@ -107,8 +107,8 @@ create candidates 8 cells allot   variable #candidates
 create symbol-palettes  6 , 3 , 4 , 5 , 0 , 7 ,
 : palette-of ( sym -- pal )  dup 0 6 within if  cells symbol-palettes + @  else  drop 1  then ;
 : draw-row ( i sym -- )   \ its symbol, 32 x 32 at its place
-    >r  dup 2* cells row-places + @ 16 +  swap 2* 1+ cells row-places + @ 16 +  32 32 picture
-    back-group 4 r> palette-of  $60 0 32 32  $80 from ;
+    {: i sym :}  i 2* cells row-places + @ 16 +  i 2* 1+ cells row-places + @ 16 +  32 32 picture
+    back-group 4 sym palette-of  $60 0 32 32  $80 from ;
 : draw-cell ( c -- )   \ its symbol's piece of the machine, flipped as its place needs
     {: c | u v w h :}  c 8 * cells cell-draws + piece !
     0 column to u  1 column to v  2 column to w  3 column to h
@@ -118,8 +118,8 @@ create symbol-palettes  6 , 3 , 4 , 5 , 0 , 7 ,
     back-group 4  c cells matches + @ palette-of  u v w h  $80 from ;
 : blinker ( -- )   \ the start prompt's light: 128 down to 64 and back, over 60 frames
     blink-t @ 1+ 60 mod blink-t !
-    blink-t @ 30 - abs 64 * 30 / $40 + $80 min  >r
-    $1B8 $100 $40 $30 picture  back-group 4 8 $1A0 0 $40 $30 r> from ;
+    blink-t @ 30 - abs 64 * 30 / $40 + $80 min  {: alpha :}
+    $1B8 $100 $40 $30 picture  back-group 4 8 $1A0 0 $40 $30 alpha from ;
 : say ( msg -- )   \ the machine's line (the room's own messages), in a box at the bottom
     $100 $172 $1C0 $40 shade  0 0 line-of  $50 $164 false text ;
 : medal-list ( -- )   \ the medallions she has, with how many; the one at the cursor lit
@@ -142,9 +142,11 @@ create symbol-palettes  6 , 3 , 4 , 5 , 0 , 7 ,
     dup 10 < if  0<> 128 and  false exit  then
     9 - dup 14 >=  swap 13 min  13 swap - 128 * 13 /  swap ;
 : found-panels ( -- up? done? )
-    found-t @ covering >r >r  $170 $A0 $40 $B0 picture  back-group 4 $A $90 $20 $40 $B0 r> from  r>
-    result @ 0< if  dup exit  then
-    found-t @ item-shown >r >r  $180 $B0 $38 $90 picture  back-group 4 9 $D0 $20 $38 $90 r> from  r> ;
+    found-t @ covering {: alpha up :}
+    $170 $A0 $40 $B0 picture  back-group 4 $A $90 $20 $40 $B0 alpha from
+    result @ 0< if  up up exit  then
+    found-t @ item-shown {: alpha2 done :}
+    $180 $B0 $38 $90 picture  back-group 4 9 $D0 $20 $38 $90 alpha2 from  up done ;
 : found-view ( -- )
     10 0 do  i i row@ draw-row  loop
     22 0 do  i cells cell-order + @  dup cells matches + @ dup 0< swap blank = or if  drop  else  draw-cell  then  loop
@@ -165,31 +167,31 @@ create symbol-palettes  6 , 3 , 4 , 5 , 0 , 7 ,
 : slots-view ( -- )
     6 page-art  blinker
     slot-state @ case
-        0 of  medal-list  endof
-        1 of  3 say  endof
-        2 of  rolling-view  endof
-        3 of  found-view  endof
+        choosing-medal of  medal-list  endof
+        no-medals of  3 say  endof
+        rolling of  rolling-view  endof
+        came-out of  found-view  endof
     endcase ;
 
 \ ---- the keys ----
 : put-in ( -- )   \ the medallion at the cursor: one spent, the rolling begins
     chosen dup 0< if  drop exit  then  se-decide
-    dup medal !  medallion-id items-id send take-item  clear-rows  2 slot-state ! ;
+    dup medal !  medallion-id items-id send take-item  clear-rows  rolling slot-state ! ;
 : take-forged ( -- )   \ (what came out done, then confirmed: it is hers; again, or none left)
     result @ 0< 0= if  forged @ amount @ items-id send give-item  then
-    0 slot-cursor !  clear-rows  count-stock if  0  else  1  then  slot-state ! ;
+    0 slot-cursor !  clear-rows  count-stock choosing-medal no-medals ? slot-state ! ;
 : done-showing? ( -- flag )   \ (the panels gone: the item's at frame 23, with none the first's at 16)
     result @ 0< if  found-t @ 16 >=  else  found-t @ 23 >=  then ;
 : slots-keys ( -- )
     slot-state @ case
-        0 of
+        choosing-medal of
             slot-cursor @
             up? if  slot-cursor @ 1- offered wrap slot-cursor !  then
             down? if  slot-cursor @ 1+ offered wrap slot-cursor !  then
             slot-cursor @ <> if  se-cursor exit  then
             back? if  close-menu exit  then
             confirm? if  put-in  then  endof
-        1 of  confirm? back? or if  close-menu  then  endof
-        2 of  roll-frame  endof
-        3 of  done-showing? confirm? and if  take-forged  then  endof
+        no-medals of  confirm? back? or if  close-menu  then  endof
+        rolling of  roll-frame  endof
+        came-out of  done-showing? confirm? and if  take-forged  then  endof
     endcase ;

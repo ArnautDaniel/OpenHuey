@@ -5,42 +5,41 @@
 \ original's order (SceneGame's play frame: CamDirector_Ease first, then whom it follows and their
 \ setup, CamDirector_Track, CamDirector_Update) and takes the story's own shot of the one followed.
 IN: camera
-USING: engine actors messages common ;
+USING: engine actors messages common vectors ;
 
 state: camera-state
   cell field held                     \ the game over: the room's next set, nobody followed, no setups taken
   \ the story's shot (EventCam_Frame): from `dist` away at `pitch` degrees up, `yaw` degrees round
   \ from the heading the one followed had as it started, looking at the point it started on (its
   \ middle, raised by `rise`)
-  cell field shot                     \ none, wanted, or taken
+  cell field shot                     \ (enum: shot)
   1 floats field dist   1 floats field pitch   1 floats field yaw   1 floats field rise
-  3 floats field look   1 floats field heading   1 floats field toward
+  /vec field look   1 floats field heading   1 floats field toward
   \ the room's depth range (look slot $1C), off during the shot (CamDirector_HoldEffect1C)
   cell field fog-held   16 field fog
 end-state
-0 constant no-shot   1 constant shot-wanted   2 constant shot-taken
+enum: shot  no-shot shot-wanted shot-taken ;
+$1C constant depth-range   \ (the room's look slot: its fog, held off during the shot)
 
 : thousandths ( n -- ) ( F: -- r )  s>f 1000e f/ ;
-: v! ( addr -- ) ( F: x y z -- )  dup 2 floats + f!  dup float+ f!  f! ;
-: v@ ( addr -- ) ( F: -- x y z )  dup f@  dup float+ f@  2 floats + f@ ;
 
 \ ---- the shot ----
 : take-shot ( -- )   \ (its first frame: the point and the heading fixed)
-    cam-target  dup body-pos look v!
-    look float+ f@  10e f+  rise f@ f+  look float+ f!     \ (followed 10 up, then raised)
+    cam-target  dup body-pos look vec!
+    look v.y sf@  10e f+  rise f@ f+  look v.y sf!     \ (followed 10 up, then raised)
     body-yaw heading f!  shot-taken shot ! ;
 : across ( -- ) ( F: -- d )  dist f@  pitch f@ deg>rad fcos f* ;   \ how far off, along the floor
 : above ( -- ) ( F: -- d )  dist f@  pitch f@ deg>rad fsin f* ;    \ how far up
 : shoot ( -- )   \ (each frame: dist, pitch and yaw as they are now; the eye behind along the heading)
     heading f@  yaw f@ deg>rad f+  toward f!
-    look f@             toward f@ fsin across f* f-
-    look float+ f@      above f+
-    look 2 floats + f@  toward f@ fcos across f* f-
-    look v@ cam-place ;
+    look v.x sf@  toward f@ fsin across f* f-
+    look v.y sf@  above f+
+    look v.z sf@  toward f@ fcos across f* f-
+    look vec@ cam-place ;
 : hold-fog ( -- )   \ (kept and taken off, if the room has one)
     fog-held @ if  exit  then
-    $1C fog look@ 0> if  -1 fog-held !  $1C 0 0 look-set  then ;
-: give-fog ( -- )  fog-held @ 0= if  exit  then  0 fog-held !  $1C fog 16 look-set ;
+    depth-range fog look@ 0> if  -1 fog-held !  depth-range 0 0 look-set  then ;
+: give-fog ( -- )  fog-held @ 0= if  exit  then  0 fog-held !  depth-range fog 16 look-set ;
 : shot-over ( -- )   \ (the setup taken anew)
     false cam-event!  shot @ no-shot <> if  no-shot shot !  cam-retake  then ;
 
@@ -74,7 +73,7 @@ behaviour filming
       cam-target 0< if  shot-over  then   \ (following nobody: no shot)
       cam-update
       shot @ shot-wanted = if  take-shot  then
-      shot @ if  shoot  then
+      shot @ no-shot <> if  shoot  then
       cam-cut? if  broadcast camera-cut  then ;
 end-behaviour
 

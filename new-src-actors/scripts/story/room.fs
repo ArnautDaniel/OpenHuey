@@ -70,7 +70,9 @@ USING: engine game-state actors messages common room-names story.state story.wor
 : start-camera ( -- )  cam-room-start  from-a-room? if  cam-followed cam-on  then ;
 : shot-camera ( -- )  from-a-room? if  cam-update  then ;
 behaviour playing-room
-  on room-enter ( room exit -- )
+  on spawned ( -- )  effects-none ;   \ (its effects none from the start: a room left before it was entered frees nothing)
+  on room-enter ( room exit -- )   \ (queued as the room came in: if another came in since, not this one's)
+      over room-id <> if  2drop exit  then  -1 entered !
       dup came-by !  exit-taken !  this-room !
       self subscribe tick  self subscribe frame-end
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe moving
@@ -115,7 +117,7 @@ behaviour playing-room
       3 phase  remember-chars  draw-scene
       going @ 0< 0= if  going @  -1 going !  -1 leaving !  rooms-id send go-through  then ;
   on room-leave ( -- )  4 phase ;
-  on room-left ( -- )  5 phase  clock-off  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
+  on room-left ( -- )  entered @ if  5 phase  then  clock-off  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
   on story-stop ( -- )  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
   on danger ( level -- )  the-danger ! ;
   on panic ( stage level -- )  cell>f f>s the-panic-level !  the-panic ! ;

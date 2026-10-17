@@ -2,7 +2,7 @@
 \ controls, standing, walking, running and turning, her footsteps, going out by exits; F4: struck
 \ and caught (fiona/hurt.fs).
 IN: fiona
-USING: engine game-state facts actors messages common paths doors saves fiona.state fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend fiona.voice fiona.letgo flag-names ;
+USING: engine vectors game-state facts actors messages common paths doors saves fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend fiona.voice fiona.letgo flag-names ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -10,22 +10,22 @@ USING: engine game-state facts actors messages common paths doors saves fiona.st
 \ ---- arriving (by an exit: on its outside spot - Rooms_ExitPointOut - her heading kept from
 \ going through, as the original's: Fiona_Vt34 saves it, the scripts' 0x04 places without
 \ turning) ----
-fvariable ix  fvariable iy  fvariable iz
 : put ( F: x y z yaw -- )
     fdup her-yaw f!  her-heading f!
-    her-at 8 + sf!  her-at 4 + sf!  her-at sf!
+    her-at vec!
     her-at blocked-floor v-tri-in dup 0< if  drop her-at v-tri  then  her-tri !
-    her-at her-was-at 12 move  her-tri @ her-was-tri !
+    her-at her-was-at /vec move  her-tri @ her-was-tri !
     show-her ;
+: camera-target ( F: -- x y z )   \ (the room's first camera's: where it looks)
+    0 room-camera  {: F: ex ey ez fov tx ty tz :}  tx ty tz ;
 : arrive-anywhere ( -- )   \ (no exit: by the room's first camera's target, else its middle)
-    room-cameras if  0 room-camera  iz f! iy f! ix f!  fdrop fdrop fdrop fdrop  ix f@ iy f@ iz f@
-    else  0e 0e 0e  then
+    room-cameras if  camera-target  else  0e 0e 0e  then
     nav-tris if  nav-nearest  then  0e put ;
 : arrive-at ( exit -- )   \ (the room scripts' char-to-exit: its outside spot, her heading kept)
     dup 0 exit-spot 0< if  fdrop fdrop fdrop  drop arrive-anywhere exit  then
     drop  her-yaw f@ put ;
 : idle ( -- )   \ Fiona_ToIdle: free, standing, her moves her own
-    0 her-doing !  0 her-mode !  her-yaw f@ her-heading f!  0 her-rest !   \ (the turn mode kept: Fiona_ToIdle leaves +0x1AD588)
+    free-doing her-doing !  own-mode her-mode !  her-yaw f@ her-heading f!  0 her-rest !   \ (the turn mode kept: Fiona_ToIdle leaves +0x1AD588)
     -1 idle-anim  ['] idle-move her-act ! ;
 ' idle is fiona.defend:to-idle   ' idle is fiona.hurt:to-idle   ' idle is fiona.seized:to-idle   ' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle   ' idle is fiona.ladder:to-idle   ' idle is fiona.push:to-idle   ' idle is fiona.letgo:to-idle
 ' fiona.ladder:knocked-off is fiona.hurt:knocked-off
@@ -35,72 +35,72 @@ fvariable ix  fvariable iy  fvariable iz
 \ Fiona_Vt34: going out by a door - with the stick held, she faces where it points (by the camera
 \ she leaves) if that is less than a quarter turn round from her heading, and that camera keeps
 \ steering in the next room while the stick stays (turn mode 3: controls.fs after-cut)
-fvariable dl
-: fatan2-xz ( F: dx dz -- a )  fatan2 ;   \ (a direction's heading, as stick-heading takes it)
 : through-door ( -- )
     her-scripted @ if  exit  then
-    her-stick sf@ fabs 0.5e f> her-stick 8 + sf@ fabs 0.5e f> or 0= if  exit  then
-    her-stick sf@ her-stick 8 + sf@ vlen fdup f0= if  fdrop exit  then  dl f!
-    cam-yaw  her-stick sf@ dl f@ f/  her-stick 8 + sf@ dl f@ f/  turned  fatan2-xz     ( F: heading )
+    her-stick v.x sf@ her-stick v.z sf@  {: F: x z :}
+    x fabs 0.5e f> z fabs 0.5e f> or 0= if  exit  then
+    x z vlen {: F: l :}  l f0= if  exit  then
+    cam-yaw  x l f/  z l f/  turned  fatan2                                  ( F: heading )
     fdup her-yaw f@ f- angle-wrap pi f2/ f< if
-        fdup her-yaw f!  her-heading f!  3 her-turn-mode !
+        fdup her-yaw f!  her-heading f!  door-steered her-turn-mode !
     else  fdrop  then ;
 : fresh ( -- )   \ standing, the controls as new
-    0 her-doing !  0 her-mode !  0 her-sub !  6 her-still !  0 her-lock !
-    her-turn-mode @ 3 <> if  0 her-turn-mode !  then   \ (a door's held stick kept through the arrival)
+    free-doing her-doing !  own-mode her-mode !  0 her-sub !  6 her-still !  0 her-lock !
+    her-turn-mode @ door-steered <> if  camera-relative her-turn-mode !  then   \ (a door's held stick kept through the arrival)
     1e her-stick-k f!  -1 her-variant !  1e her-tired-w f!  0 her-rest !  0 her-run-t !
     -1 her-cmd !  0 her-busy-t !  0 her-scripted !  0 her-move !  -1 her-move-done !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  idle ;
 
 \ arriving by an exit while walking or running on her own, she keeps on into the room: her
 \ stride and the held stick carry over (Fiona_Vt34 stops her only when she was busy)
 : going-on? ( -- flag )
-    her-mode @ 0=  her-doing @ 0= and  her-scripted @ 0= and  her-sub @ 1 3 within and ;
+    her-mode @ own-mode =  her-doing @ free-doing = and  her-scripted @ 0= and  her-sub @ walk-sub run-sub 1+ within and ;
 : carry-on ( -- )
     -1 her-cmd !  0 her-busy-t !  0 her-move !  -1 her-move-done !  -1 her-door-exit !  her-path path-clear ;
 : arrive ( exit -- )  arrive-at  going-on? if  carry-on  else  fresh  then ;
 
 \ ---- walking to a point (go-to: the console's, later the story's moves): her way over the nav
 \ mesh, arriving facing the way she walked ----
-create goal 12 allot
+create goal /vec allot
 : going ( -- )  walk-to-spot dup 0< if  drop idle exit  then  if  exit  then  idle ;
 : go-to-point ( F: x y z -- )
     goal vec!  goal blocked-floor v-tri-in dup 0< if  drop exit  then
     goal vec@  her-at goal vec-heading  walk-spot
-    2 her-mode !  $14 her-doing !  ['] going her-act ! ;
+    led-mode her-mode !  run-to-doing her-doing !  ['] going her-act ! ;
 
 \ ---- keeping out of the others (Fiona_KeepApart), while she is free: overlapping the stalker
 \ she is pushed out to their radii apart - along his way when he is coming at her (his heading
 \ 20 on, plus the way from him to her), else straight away from him - unless that is off the
 \ floor; overlapping Hewie (not at the frame's start) back to where she was ----
-fvariable ap-x  fvariable ap-z  create ap-at 12 allot
+create ap-at /vec allot
 : overlaps? ( id -- flag )  dup 0< if  drop false exit  then  self swap 0e 0e bodies-touching? ;
-: coming-at-her? ( id -- flag )   \ (his heading against the way from him to her)
-    dup body-yaw fsin ap-x f@ f*  body-yaw fcos ap-z f@ f* f+ f0> ;
+: coming-at-her? ( id -- flag ) ( F: dx dz -- )   \ (his heading against the way from him to her)
+    {: him F: dx dz :}  him body-yaw fsin dx f*  him body-yaw fcos dz f* f+ f0> ;
 : push-from ( id -- )
     {: him :}
-    her-at sf@ him body-at sf@ f- ap-x f!  her-at 8 + sf@ him body-at 8 + sf@ f- ap-z f!
-    self body-dims fdrop  him body-dims fdrop f+  ap-x f@ ap-z f@ vlen f-     ( F: gap )
-    him coming-at-her? if
-        0e 20e him body-yaw rotate-by  ap-z f@ f+ ap-z f!  ap-x f@ f+ ap-x f!
+    her-at v.x sf@ him body-at v.x sf@ f-  her-at v.z sf@ him body-at v.z sf@ f-  {: F: dx dz :}   \ (from him to her)
+    self body-dims fdrop  him body-dims fdrop f+  dx dz vlen f-  {: F: gap :}
+    him dx dz coming-at-her? if   \ (along his way: 20 on, plus the way from him to her)
+        0e 20e him body-yaw rotate-by  dz f+ to dz  dx f+ to dx
     then
-    ap-x f@ ap-z f@ vlen fdup f0= if  fdrop fdrop exit  then               ( F: gap len )
-    f/  fdup ap-x f@ f* her-at sf@ f+ ap-at sf!
-    ap-z f@ f* her-at 8 + sf@ f+ ap-at 8 + sf!  her-at 4 + sf@ ap-at 4 + sf!
+    dx dz vlen {: F: l :}  l f0= if  exit  then
+    gap l f/ {: F: k :}
+    dx k f* her-at v.x sf@ f+ ap-at v.x sf!
+    dz k f* her-at v.z sf@ f+ ap-at v.z sf!  her-at v.y sf@ ap-at v.y sf!
     ap-at blocked-floor v-tri-in dup 0< if  drop exit  then
     her-tri !  her-at ap-at vec-copy ;
 : keep-apart ( hewie-was? -- )
-    her-mode @ 0<>  her-scripted @ or if  drop exit  then
+    her-mode @ own-mode <>  her-scripted @ or if  drop exit  then
     stalker-in-room dup overlaps? if  nip push-from exit  then  drop
     if  exit  then
     dog-in-room overlaps? if  her-at her-was-at vec-copy  her-was-tri @ her-tri !  then ;
 
 \ ---- each frame (Fiona_Update, the parts built so far) ----
 : frame ( -- )
-    her-at her-was-at 12 move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
+    her-at her-was-at /vec move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
     look-cleared
     feel-the-panic
     read-controls
-    her-mode @ 0= if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
+    her-mode @ own-mode = if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
     hands-off? if  -1 her-cmd !  else  read-command  try-flee  try-defend  try-doors  try-ladders  try-let-go  then
     dog-in-room overlaps?  her-act @ execute  keep-apart
     looks  tell-point
@@ -242,7 +242,7 @@ behaviour free
       cell>f her-move-yaw f!  cells>xyz her-move-at vec!
       her-move-b !  her-move-a !  dup her-move !  start-move ;
   on hold-anim ( anim flags blend -- )   \ (the scripts' 0x9D: in it, held - its flags hers)
-      nip -1 play-blend  2 her-mode !  $11 her-doing !  ['] root-move her-act !  done ;
+      nip -1 play-blend  led-mode her-mode !  anim-doing her-doing !  ['] root-move her-act !  done ;
   on show ( on -- )  0<> 1 and her act.visible l! ;
   \ the story's (F5): calmer (Fiona_CalmDown: n / 30 off her fear), her recovery shorter
   \ (Fiona_LowerRecovery: 60 / n frames)

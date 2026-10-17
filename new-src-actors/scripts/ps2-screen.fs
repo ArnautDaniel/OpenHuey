@@ -8,3 +8,6 @@ variable fw  variable fh  variable fx
 : sx ( n -- x )  fw @ * 512 / fx @ + ;   \ a screen x, in the window
 : sy ( n -- y )  fh @ * 448 / ;          \ a screen y (or height)
 : sw ( n -- w )  fw @ * 512 / ;          \ a width
+: middle-4:3 ( -- x y w h )   \ the largest 4:3 frame in the middle of the window
+    screen-size {: w h | fw fh :}  w 3 * 4 / h min to fh  fh 4 * 3 / to fw
+    w fw - 2/  h fh - 2/  fw fh ;

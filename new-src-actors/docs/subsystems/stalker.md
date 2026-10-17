@@ -8,6 +8,12 @@ special moves. The original's shared base is `src/game/pursuer.c` (the NPC and P
 ~14,000 lines); each stalker overrides part of it (`debilitas.c`, `daniella.c`, `riccardo.c`,
 `lorenzo.c`). Debilitas is built first.
 
+By name: the kinds in `scripts/stalker-names.fs`; his actions (the original's kPursuerSteps
+numbers), his tables' situations and where his head looks in `stalker/names.fs`; the family's
+animations and sounds in `stalker/anims.fs` and `stalker/sounds.fs` (each one's own in his file);
+a kit's tables as structures (`/kit`, `/move`, `/row`: `tools/stalkertables.py`); her plight, the
+blows' kinds, Hewie's attacks and `seize`'s types in `messages.fs`.
+
 One actor per stalker in the game (`stalker`), with a behaviour per kind extending the family's.
 It owns its body, mode, what it knows of Fiona and Hewie, its route and its health. It tells the
 danger actor it is in play each frame (`stalker-here`), makes noises (steps, growls) and hears
