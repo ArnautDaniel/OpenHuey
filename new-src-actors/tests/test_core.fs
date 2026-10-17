@@ -231,4 +231,8 @@ T{ red green blue -> 0 1 2 }T
 T{ hide lie-down rise -> $36 $52 $53 }T
 T{ blue colour>name s" blue" s= -> -1 }T
 T{ 99 act>name s" ?" s= -> -1 }T
+enum: way  ahead       \ the first
+    ( none here ) back \ the second
+    10 aside ;
+T{ ahead back aside -> 0 1 10 }T
 test-summary

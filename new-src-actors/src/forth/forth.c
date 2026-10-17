@@ -1320,7 +1320,8 @@ PRIM(p_create) {
 }
 /* enum: mood  calm wary tense angry ;   names for the values of something: constants from 0 up
  * (a number in the list sets the next one: `enum: act  $36 hide  $52 lie-down ;`), and
- * `mood>name ( n -- addr len )` naming a value ("?" for one not in the list). */
+ * `mood>name ( n -- addr len )` naming a value ("?" for one not in the list). Comments - `\` to
+ * the line's end, `( )` - may come between the names. */
 static void doenum_name(Forth *f, Word *w) {
     Cell n = w->body[0], i, v = POP();
 
@@ -1356,6 +1357,15 @@ PRIM(p_enum) {
         }
         if (m == 1 && s[0] == ';') {
             break;
+        }
+        if (m == 1 && s[0] == '\\') {   /* a comment: the rest of the line */
+            (void)parse_until(f, '\n', &m);
+            source(f)->line++;
+            continue;
+        }
+        if (m == 1 && s[0] == '(') {
+            (void)parse_until(f, ')', &m);
+            continue;
         }
         if (parse_int(f, s, m, &x)) {
             next = x;

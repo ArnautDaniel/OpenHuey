@@ -83,7 +83,8 @@ Records: `begin-structure /point  ffield: p.x  ffield: p.y  end-structure` (`fie
 
 Enumerations: `enum: mood  calm wary tense angry ;` makes the constants `calm` .. `angry` (0 up; a
 number in the list sets the next: `enum: act  $36 hide  $52 lie-down ;`) and `mood>name ( n --
-addr len )`, which names a value ("?" for one not listed) - for the debug words and traces.
+addr len )`, which names a value ("?" for one not listed) - for the debug words and traces. A long
+list may run over several lines with comments (`\`, `( )`) between the names.
 
 Combinators (Factor's), to run code on values without shuffling them: `x [: .. ;] dip` (under
 x), `x [: .. ;] keep` (x kept after), `2dip`, `2keep`, `x [: p ;] [: q ;] bi` (both on x), `tri`,
