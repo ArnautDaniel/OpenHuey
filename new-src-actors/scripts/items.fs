@@ -53,11 +53,12 @@ enum: equip-slot  boots-slot earrings-slot throw-slot choker-slot ;
 : equipped ( slot -- id )  4 * progress pr.equipped + sl@ ;
 : kind-slot ( kind -- slot | -1 )  dup 0 10 within if  cells kind-slots + @  else  drop -1  then ;
 : slot-of ( list i -- slot | -1 )  item-at dup 0< if  exit  then  item-kind kind-slot ;
-: equip-state ( list i -- s )   \ -1 not worn at all, 0 its slot empty, 1 worn, 2 another worn there
+-1 constant not-wearable   0 constant slot-free   1 constant worn   2 constant other-worn
+: equip-state ( list i -- s )   \ not wearable, its slot free, worn, another worn there
     {: list at :}  list at slot-of {: slot :}
-    slot 0< if  -1 exit  then
-    slot equipped dup 0< if  drop 0 exit  then
-    list at item-at = 1 2 ? ;
+    slot 0< if  not-wearable exit  then
+    slot equipped dup 0< if  drop slot-free exit  then
+    list at item-at = worn other-worn ? ;
 
 \ the files (key things, documents: their message ids; 128, in the order found)
 : file@ ( i -- id )  2* progress pr.files + w@ ;
@@ -78,6 +79,11 @@ begin-structure /boost  sffield: b.value  lfield: b.left  end-structure
 : boost ( k -- addr )  /boost * progress pr.boosts + ;
 : boost-on? ( k -- flag )  boost b.left sl@ 0> ;
 : boost-value ( k -- ) ( F: -- v )  boost b.value sf@ ;
+
+\ what using one did (the items actor's answer, item-used): nothing, used up, a mark set, an event
+\ started, she / Hewie act, the word plate's event, a hint filed (bits 1 / 2: one spent)
+0 constant no-use   1 constant used-up   2 constant marked   4 constant event-started
+5 constant acted   6 constant plate-used   8 constant hinted
 
 <PRIVATE
 state: items-state
@@ -140,8 +146,6 @@ end-state
 \ ==== using one: its own rule (the items' +0x3C uses; items.c, story_chars.c). The result: 0
 \ nothing, 1 used up, 2 a mark set (used up), 4 an event started, 5 she / Hewie act, 6 the word
 \ plate's event, 8 a hint (bits 1 / 2: one spent) ====
-0 constant no-use   1 constant used-up   2 constant marked   4 constant event-started
-5 constant acted   6 constant plate-used   8 constant hinted
 : her-at ( -- ) ( F: -- x y z )  fiona-id body-pos ;
 : in-room? ( room -- flag )  room-id = ;
 : at-spot? ( room spot -- flag )   \ (item_room_spot: she stands in the room's event area)
@@ -418,7 +422,7 @@ behaviour keeping-items
       {: list at :}  list at slot-of {: slot :}
       slot 0< if  exit  then  list at item-at slot equip-slot l!  tell-equipment ;
   on unequip-item ( list held-at -- )
-      2dup equip-state 1 = if  slot-of equip-slot -1 swap l!  tell-equipment  else  2drop  then ;
+      2dup equip-state worn = if  slot-of equip-slot -1 swap l!  tell-equipment  else  2drop  then ;
   on sort-items ( list -- )   \ (Items_Sort: by their places in a sort)
       {: list :}  list listed {: n :}  n 2 < if  exit  then
       n 1- 0 ?do   \ (a bubble sort, as the original)

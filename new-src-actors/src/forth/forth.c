@@ -1197,7 +1197,7 @@ PRIM(p_locals_begin) {
         forth_error(f, "{: only inside a definition");
     }
     if (first == 0 && f->t->sp != f->top_sp) {   /* (the first makes the frame: it must be made) */
-        forth_error(f, "{: the first in a definition inside a do loop or an if: only outside them (later ones may be)");
+        forth_error(f, "{: the first in a definition inside a do loop or an if (it makes the frame): name them at the start - {: | name :} - and `to name` here");
     }
     for (;;) {
         size_t n;
