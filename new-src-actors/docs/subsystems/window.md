@@ -31,5 +31,5 @@ order: 0 a scene's movie, 1 the fade, 2 the window, 3 the prompt, 4 the subtitle
 
 ## Status
 
-**Built** (`scripts/window.fs`), with the story's S2. The prompt says "Space: look" for now (the
-original's icon: with the HUD art).
+**Built** (`scripts/window.fs`), with the story's S2. The prompt is the circle button's glyph and
+"look", in the game's own font (`draw-prompt`).

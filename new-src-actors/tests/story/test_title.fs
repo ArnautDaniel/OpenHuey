@@ -12,9 +12,11 @@ USING: tester engine game-state actors messages keys facts flag-names room-names
 20 frames
 
 testing the entries: three, and quit; with the first clear three more (hard mode, extras, the mini-game)
-T{ #items  3 entry  -> 4 e-quit }T
+T{ entries!  #items  3 entry  -> 4 e-quit }T
 0 resident-flag-set
-T{ #items  3 entry  4 entry  5 entry  6 entry -> 7 e-hard e-extras e-mini e-quit }T
+T{ entries!  #items  3 entry  4 entry  5 entry  6 entry -> 7 e-hard e-extras e-mini e-quit }T
+testing no MODS entry without mods (the tests see none in mods/)
+T{ mods-menu-count -> 0 }T
 
 testing the options alone: the options page, no turning to the others; closed, the pages as before
 5 game:subscreen send menu-mode  subscreen-wanted state-flag-set  deliver  20 frames

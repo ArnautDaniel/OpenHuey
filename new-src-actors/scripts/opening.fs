@@ -13,13 +13,13 @@
 \   variable $26 = 1, Hewie's $27 = 0), room $2A - whose entering script does the rest.
 \ Without a window (tests, screenshots) the game starts at once.
 IN: opening
-USING: engine game-state actors messages keys vectors room-names facts flag-names ps2-screen saves subscreen.art subscreen.saving ;
+USING: engine game-state actors messages keys vectors room-names facts flag-names ps2-screen saves subscreen.art subscreen.saving mods.menu ;
 
 6 constant movie-layer   7 constant menu-layer   \ (over everything)
 
 \ its stages: the menu; he gets up; he barks; the opening movie; the game started; the save slots;
 \ the options up
-enum: opening-stage  on-menu getting-up barking opening-movie started on-slots on-options ;
+enum: opening-stage  on-menu getting-up barking opening-movie started on-slots on-options on-mods ;
 
 state: opening-state
   cell field stage       \ (enum: opening-stage)
@@ -76,18 +76,46 @@ create spot  -258e f, -10e f, 174e f,   \ (on the circle, between the scarecrows
 : title-end ( -- )   \ (his model gone, the room's lights back)
     titled @ 0= if  exit  then  0 titled !
     dog @ actor-free  0 stage-lights  0.06e 0.06e 0.08e clear-color  menu-layer ui-clear ;
+: title-gone ( -- )  title-end  started stage !  self kill ;   \ (leaving the title for the game: a mod's entry)
 
 \ the menu, low on the left; the game's name above
 \ the entries: the last two only once a game has been cleared (the first clear's unlock)
 \ (MINI-GAME, hga's own: straight into the extras room's mini-game - its menu up, as at its door)
-enum: menu-entry  e-new e-load e-options e-hard e-extras e-mini e-quit ;
+\ (MODS, hga's own: only when there are mods in mods/ - the mods menu, mods/menu.fs)
+enum: menu-entry  e-new e-load e-options e-hard e-extras e-mini e-mods e-quit e-mod ;
 : cleared? ( -- flag )  0 resident-flag? ;
-: entry ( i -- e )  dup e-hard >= cleared? 0= and if  drop e-quit  then ;
-: #items ( -- n )  cleared? if  7  else  4  then ;
+create entries 16 cells allot   variable #entries
+: +entry ( e -- )  #entries @ 16 < if  entries #entries @ cells + !  1 #entries +!  else  drop  then ;
+
+\ ---- the hook (docs/library-and-mods.md): mods' own entries, after the game's (before MODS and
+\ QUIT). A mod sets its own with `is`, calls what it replaced (`action-of title-menu-hook`), and
+\ adds its entries with `title-entry`: a name, and what picking it does (run by the title's actor:
+\ `title-gone` first if it leaves the title) ----
+8 constant most-mod-entries
+create mod-names most-mod-entries 2 cells * allot   create mod-picks most-mod-entries cells allot
+variable #mod-entries
+: title-entry ( addr len xt -- )
+    #mod-entries @ most-mod-entries < if
+        mod-picks #mod-entries @ cells + !  mod-names #mod-entries @ 2 cells * + 2!
+        e-mod #mod-entries @ +  +entry  1 #mod-entries +!
+    else  drop 2drop  then ;
+defer title-menu-hook ( -- )
+
+: entries! ( -- )   \ the menu's entries, as the title comes up
+    0 #entries !  0 #mod-entries !  e-new +entry  e-load +entry  e-options +entry
+    cleared? if  e-hard +entry  e-extras +entry  e-mini +entry  then
+    title-menu-hook
+    mods-menu-count 0> if  e-mods +entry  then
+    e-quit +entry ;
+: entry ( i -- e )  cells entries + @ ;
+: #items ( -- n )  #entries @ ;
 : item ( i -- addr len )
     entry case  e-new of  s" NEW GAME"  endof  e-load of  s" LOAD GAME"  endof  e-options of  s" OPTIONS"  endof
                 e-hard of  s" HARD MODE"  endof  e-extras of  s" EXTRAS"  endof  e-mini of  s" MINI-GAME"  endof
-                >r s" QUIT" r>  endcase ;
+                e-mods of  s" MODS"  endof
+                e-quit of  s" QUIT"  endof
+                >r  r@ e-mod - 2 cells * mod-names + 2@  r>   \ (a mod's)
+            endcase ;
 \ the save slots, to load one: each its number, place and time played
 : slot-colour ( i -- rgba )  dup slot-at @ = if  drop $FFFFFFFF  else  slot-used? if  $B0A8A0FF  else  $605C58FF  then  then ;
 : slot-draw ( n -- )   \ (a word of its own: a local inside a do loop would hide the loop's index)
@@ -110,6 +138,7 @@ enum: menu-entry  e-new e-load e-options e-hard e-extras e-mini e-quit ;
 : menu-draw ( -- )
     menu-layer ui-clear
     stage @ on-slots = if  slots-draw exit  then
+    stage @ on-mods = if  menu-layer mods.menu:draw exit  then
     stage @ on-menu <> if  exit  then
     screen-size {: sw sh :}  4 pen-scale
     menu-layer  s" HAUNTING GROUND"  sw 2/ 15 char-size drop * 2/ -  sh 8 /  $D8D0C8FF 4 ui-text
@@ -130,7 +159,9 @@ enum: menu-entry  e-new e-load e-options e-hard e-extras e-mini e-quit ;
             e-options of  5 s" subscreen" actor-named send menu-mode  subscreen-wanted flag-on  on-options stage !  endof
             e-extras of  title-end  started stage !  extras  self kill  endof
             e-mini of  title-end  started stage !  -1 mini-game-wanted !  extras  self kill  endof
-            >r bye r>
+            e-mods of  mods.menu:open  on-mods stage !  endof
+            e-quit of  bye  endof
+            >r  r@ e-mod - cells mod-picks + @ execute  r>   \ (a mod's: what it said picking it does)
         endcase
     then ;
 : load-it ( -- )   \ (the slot's game: the title away, the saves actor puts it back)
@@ -157,11 +188,12 @@ enum: menu-entry  e-new e-load e-options e-hard e-extras e-mini e-quit ;
 behaviour opening-the-game
   on spawned ( -- )
       self subscribe tick  self subscribe frame-end
-      hidden? if  started stage !  self kill  else  title-start  then ;   \ (headless: game.fs started it)
+      hidden? if  started stage !  self kill  else  title-start  entries!  then ;   \ (headless: game.fs started it)
   on tick ( -- )
       stage @ case
           on-menu of  menu-keys  endof
           on-slots of  slots-keys  endof
+          on-mods of  mods.menu:keys if  on-menu stage !  then  endof
           on-options of  subscreen-wanted state-flag? 0= if  on-menu stage !  then  endof   \ (back to the menu once they close)
           getting-up of  ended? if  m-bark 0 play  bark-sound common-sound  barking stage !  then  endof
           barking of  ended? if  movie-start  then  endof

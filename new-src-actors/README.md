@@ -16,13 +16,17 @@ The third codebase, and the one meant to ship.
 
 Start with `docs/design.md`, then `docs/actors.md` (the kernel) and `docs/subsystems.md` (the
 map of the game). Each subsystem gets its own page in `docs/subsystems/` before it is built.
+The Forth is `docs/forth.md`; the game library (the disc imported, its assets in common formats)
+and mods are `docs/library-and-mods.md`; **making a mod: `docs/modding.md`**.
 
 ## Building and running
 
 ```
 cmake -S new-src-actors -B build/new-src-actors -G Ninja
 cmake --build build/new-src-actors
-build/new-src-actors/hga [disc.iso | data folder]   # the game (none: the disc chosen before, or ask)
+build/new-src-actors/hga                       # the game: from its library (the first run imports the disc)
+build/new-src-actors/hga --import disc.iso     # import a disc into the library (library/ beside hga)
+build/new-src-actors/hga --mod path/to/mod     # with a mod on (mods/ beside hga holds the installed ones)
 build/new-src-actors/hga --hidden --frames 300 --eval "..."   # headless, for tests
 ctest --test-dir build/new-src-actors    # all the tests
 build/new-src-actors/hga --test new-src-actors/tests/acoustics/test_hearing.fs   # one subsystem's

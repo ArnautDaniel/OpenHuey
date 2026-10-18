@@ -118,7 +118,8 @@ what it was told (danger, panic, Fiona's mode, Hewie's action).
 From `event.c` (`Events_RunPhase`, `Events_CharEnter`, `Events_RunCharScripts`, the commands and
 conditions), `scene_game.c` (the order), `progress.c`.
 
-1. **Characters by slot:** 0 Fiona, 1 Hewie, 2.. the stalkers and the others (later); 0xFF the
+1. **Characters by slot:** 0 Fiona, 1 Hewie, 2 the stalker, 3.. the event characters' figures
+   (`cast-actor`: docs/subsystems/cast.md); 0xFF the
    script's own character; 0xFE the active stalker.
 2. **Areas entered / left** compare where a character was at the last frame's end with where
    it is now (the original's previous position).
@@ -152,6 +153,11 @@ conditions), `scene_game.c` (the order), `progress.c`.
   setup.
 
 ## Status
+
+The opening from a new game (no `free-play`): `tests/story/test_opening.fs` (7) - the cage room's
+entering script (Fiona's act01: the doors locked, the opening's music and figures, the fade in),
+then she is the player's: the world not held, walking, the room's first offered action ("Where
+am I?", area $11) taken. (`free-play` is a test and debug shortcut past it, not a stand-in.)
 
 **S1 built**: the story and room actors, the phases, the action scripts as coroutines; the
 words for flags, variables, bits, the counter, chance; the script context and its waits;
@@ -413,11 +419,11 @@ back) go to the room `room-preload` or `exit-prepare` named (`docs/subsystems/ro
 The title's MINI-GAME starts the extras room's action 1 at once (its door 0's offer:
 `mini-game-asked?`).
 
-Next, by how much the scripts use them:
+The later stages, by how much the scripts use them (all built now):
 
 | Stage | Words |
 |---|---|
 | S4 | (built) The rest: scene changes (`scene-change`'s other scenes), endings, `movie-loop`, the half-black screen (op 11). |
-| S5b | Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`flame-in` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `specks`, `butterflies`, `shards-at`, `effects-arena-flip`). |
-| S5c | The rooms' own commands (`<room>.cmdNN`: their effects - wisps, smoke, drips, the mirror...). |
-| S6 | The stalkers' and creatures' words, with them (the stalker's: P4a, `docs/subsystems/stalker.md`; the creatures' later). |
+| S5b | (built: docs/subsystems/effects.md) Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`flame-in` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `specks`, `butterflies`, `shards-at`, `effects-arena-flip`). |
+| S5c | (built) The rooms' own commands (`<room>.cmdNN`: their effects - wisps, smoke, drips, the mirror...). |
+| S6 | (built) The stalkers' and creatures' words, with them (`docs/subsystems/stalker.md`, `creatures.md`). |

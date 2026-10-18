@@ -67,5 +67,6 @@ the cage room; out by an exit - leaving / arrived / entered in order, with both 
 again; an exit to nowhere; a jump). Listeners subscribe to `leaving-room`, `arrived` and
 `entered-room`.
 
-The rooms' own sounds come with their scripts (`room-sounds`). Not yet: the sections where Hewie is
-the one played (`hewie-controlled?` is always false).
+The rooms' own sounds come with their scripts (`room-sounds`). The sections where Hewie is the
+one played (the mini-game: `hewie-controlled?` is `hewie-played?`) are built:
+`docs/subsystems/hewie.md`, `docs/subsystems/story.md`.

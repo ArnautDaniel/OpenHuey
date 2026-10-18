@@ -54,6 +54,7 @@ anything else (a scene playing, the room's own script state) starts afresh, as i
 
 ## Not yet
 
-The sections where Hewie is the one played, and the extras' menus (the movies, the galleries).
+The extras' menus (the movies, the galleries). (The sections where Hewie is the one played -
+the mini-game - are built.)
 Two story stubs are left (they print "not written yet" when reached): a room command of the
 unused off-map-5a, and `char-load` of a figure outside slots 3..5.

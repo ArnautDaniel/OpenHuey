@@ -59,7 +59,7 @@ variable lives   3 lives !
 10 constant max-items
 0 value score   score 1+ to score
 fvariable speed  2.5e speed f!
-defer on-hit   ' noop is on-hit
+defer on-hit   ' noop is on-hit   action-of on-hit   \ (what it does now: a hook's chain)
 : array ( n "name" -- ) create cells allot does> ( i -- addr ) swap cells + ;
 ```
 
@@ -111,6 +111,23 @@ free the ones made over and over at run time.
 Strings: `s" text"` gives `addr len`; `." text"` prints; `type`, `s=`, `compare`.
 
 Comments: `( ... )` and `\ to the end of the line`.
+
+## Pitfalls
+
+Each of these has cost someone time:
+
+- **Your own words shadow everything**, the core too: a file that defines `move` has lost the core
+  `move` (copying bytes) for the rest of its words - and gets no warning. Name words after what
+  they mean here. `see word` shows what a name compiles to.
+- **Control words compile only inside a definition**: `if`, `do`, `?do`, `case`, `begin` at the top
+  of a file or at `--eval` are an error ("only inside a definition"). Wrap them: `: go ... ; go`.
+- **`r@` inside a `do` loop is the loop's index**: the loop keeps its counters on the return
+  stack, so what you `>r`'d before the loop is under them. Take it into a local instead.
+- **The first `{: :}` of a definition** can't be inside an `if` or a loop; later ones can.
+- **Floats** are on their own stack (`.s` shows both: the floats after `F:`). Memory floats are 32-bit
+  (`sf@ sf!`); `f@ f!` are for an `fvariable`'s double.
+- **Two vocabularies with one name**: the later in `USING:` wins; `vocab:name` reaches the other.
+- **Messages**: a handler takes its message's arguments, all of them (docs/actors.md).
 
 ## Game words (bind_engine.c)
 
@@ -202,4 +219,14 @@ edited by hand since): one vocabulary per room, `story.rooms.<name>`, on the wor
 
 ## Tests
 
-`tests/test_*.fs` are vocabularies that say `USING: tester ;` (`T{ 1 2 + -> 3 }T`); `ctest` runs each.
+`tester` (`scripts/tester.fs`, so any test file anywhere can use it): `T{ code -> results }T` runs
+the code and checks the stack against the results; `testing name` labels what follows;
+`test-summary` prints the totals and sets the exit status.
+
+- `tests/test_*.fs`: the language and the kernel, run by the `forth` tool (no game).
+- `tests/<subsystem>/test_*.fs`: the game's, headless - `hga --test file.fs` loads the scripts,
+  starts a new game at once, runs the file and exits with its status. `game-tick` runs a tick,
+  `deliver` delivers what is queued; `key: X true key-hold` holds a key. Run them with
+  `SDL_AUDIO_DRIVER=dummy` (and `--hidden` for other headless runs).
+- `ctest` runs both, and the C checks of the library's conversions (`tests/*_check.c`).
+- Mods' tests: `docs/modding.md`.

@@ -149,3 +149,17 @@ add_executable(model-check tests/model_check.c)
 target_link_libraries(model-check PRIVATE hgadata)
 add_test(NAME model_check COMMAND model-check "${DEFAULT_DATA}")
 set_tests_properties(model_check PROPERTIES SKIP_RETURN_CODE 77)
+# the mods menu: a copy of the sample mods as the mods folder - driven, saved, then read again
+add_test(NAME mods_menu_folder COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods"
+    "${CMAKE_CURRENT_BINARY_DIR}/mods-menu.scratch")
+set_tests_properties(mods_menu_folder PROPERTIES FIXTURES_SETUP mods_menu_folder)
+add_test(NAME mods_menu_clean COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_CURRENT_BINARY_DIR}/mods-menu.scratch/order.txt")
+set_tests_properties(mods_menu_clean PROPERTIES FIXTURES_SETUP mods_menu_folder DEPENDS mods_menu_folder)
+add_test(NAME mods_menu COMMAND hga --mods "${CMAKE_CURRENT_BINARY_DIR}/mods-menu.scratch"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/menu.fs")
+set_tests_properties(mods_menu PROPERTIES FIXTURES_REQUIRED mods_menu_folder FIXTURES_SETUP mods_menu_saved)
+add_test(NAME mods_menu_after COMMAND hga --mods "${CMAKE_CURRENT_BINARY_DIR}/mods-menu.scratch"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/menu-after.fs")
+set_tests_properties(mods_menu_after PROPERTIES FIXTURES_REQUIRED "mods_menu_folder;mods_menu_saved")
+add_test(NAME mods_free_play_entry COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods/free-play-entry"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/free-play-entry.fs")

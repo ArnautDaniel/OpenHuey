@@ -59,4 +59,7 @@ the rise alone - not checked that it is the same ladder), not while he is down n
 In the mini-game's run she out of sight with him, her fear grows; away from the room played her
 panic stops at 99.
 
-Left: the story's commands (with the story), charms (items), the screen's shake and tint (effects).
+Also built: the story's commands (`panic-level` and the rooms' frights), the charms (the earrings
+and chokers: `earrings`, `fiona/moving.fs`), the camera's shake (`jolting`), and with each breath
+the pad's beat (`breath-rumble`: the table the decomp calls the stage's "tint" is a rumble
+pattern, Panic_Breath's call to gRumble).

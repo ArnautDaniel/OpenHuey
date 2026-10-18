@@ -6,6 +6,7 @@
  *     --eval "code"     run Forth after the scripts have loaded (repeatable)
  *     --import disc.iso the disc imported into the library beside the executable, then out
  *     --mod folder|zip  a mod turned on (repeatable; with --test the only mods)
+ *     --mods folder     the folder of mods (instead of mods/ beside the library)
  *
  * The game data: a disc image or folder named (read as it is), else the library
  * (platform/library.c), else - with a window - the player is asked for the disc to import.
@@ -55,6 +56,7 @@ typedef struct Options {
     const char *import; /* --import DISC: the disc imported into the library, then out */
     const char *test;   /* --test FILE: run it after the scripts, headless, and exit with its status */
     const char *mods[MAX_EVALS];   /* --mod DIR: a mod's folder, on (the tests' only mods) */
+    const char *mods_folder;       /* --mods DIR: the folder of mods instead of <base>mods/ (the tests' too) */
     int nmods;
 } Options;
 
@@ -72,13 +74,15 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->evals[o->nevals++] = argv[++i];
         } else if (strcmp(argv[i], "--import") == 0 && i + 1 < argc) {
             o->import = argv[++i];
+        } else if (strcmp(argv[i], "--mods") == 0 && i + 1 < argc) {
+            o->mods_folder = argv[++i];
         } else if (strcmp(argv[i], "--mod") == 0 && i + 1 < argc && o->nmods < MAX_EVALS) {
             o->mods[o->nmods++] = argv[++i];
         } else if (strcmp(argv[i], "--test") == 0 && i + 1 < argc) {
             o->test = argv[++i];
             o->hidden = 1;
         } else if (argv[i][0] == '-') {
-            fprintf(stderr, "usage: hga [--hidden] [--frames N] [--eval code] [--test file.fs] [--mod folder|zip] [--import disc.iso] [disc.iso | data folder]\n");
+            fprintf(stderr, "usage: hga [--hidden] [--frames N] [--eval code] [--test file.fs] [--mod folder|zip] [--mods folder] [--import disc.iso] [disc.iso | data folder]\n");
             return 0;
         } else {
             o->data = argv[i];
@@ -568,7 +572,14 @@ int main(int argc, char **argv) {
     if (!library_choose(opt.data, HG2_DEFAULT_DATA, opt.hidden)) {
         return 1;
     }
-    mods_find(opt.test != NULL ? NULL : library_mods_dir(), opt.mods, opt.nmods);   /* (tests: only --mod's) */
+    {   /* (tests: only --mod's, or a folder named with --mods) */
+        char folder[1100];
+
+        if (opt.mods_folder != NULL) {
+            snprintf(folder, sizeof(folder), "%s/", opt.mods_folder);
+        }
+        mods_find(opt.mods_folder != NULL ? folder : opt.test != NULL ? NULL : library_mods_dir(), opt.mods, opt.nmods);
+    }
     if (!platform_open("Haunting Ground (new-src)", 1280, 720, opt.hidden) || !render_init()) {
         return 1;
     }
@@ -606,7 +617,7 @@ int main(int argc, char **argv) {
         if (slash != NULL) {
             *slash = 0;
             forth_add_root(e->forth, root);
-            slash = strrchr(root, '/');   /* and the folder above (tests/: tester.fs) */
+            slash = strrchr(root, '/');   /* and the folder above (tests/: shared helpers) */
             if (slash != NULL) {
                 *slash = 0;
                 forth_add_root(e->forth, root);

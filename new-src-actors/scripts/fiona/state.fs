@@ -120,7 +120,7 @@ state: fiona-state
   \ +0x1AD620 frames to keep it, +0x1AD664 whom to face after a command), the head's angles
   \ as eased (the motion's +0x854 pitch, +0x858 turn)
   cell field her-look-on  cell field her-look-who  /vec field her-look-pt  cell field her-look-hold
-  cell field her-look-after  1 floats field her-head-pitch  1 floats field her-head-yaw          \ (the stand-in exit check: she has been out of every exit's area since arriving)
+  cell field her-look-after  1 floats field her-head-pitch  1 floats field her-head-yaw
   \ out of sight: item $89 worn (the equipment's slot 1), standing still 60 frames (Fiona_Frame's area fade)
   cell field her-unseen  cell field her-still-t
   cell field her-fade           \ 0..$80: how much of her shows (fading out while unseen, back in after)
