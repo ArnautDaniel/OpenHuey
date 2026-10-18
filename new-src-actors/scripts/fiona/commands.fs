@@ -65,8 +65,8 @@ create ch-at /vec allot
         5e f-  her-act-yaw f@ fswap ch-at her-act-at vec-ahead
         her-tri @ her-at ch-at hewie-floor v-walk dup 0< if  drop  else  her-act-tri !  her-act-at ch-at vec-copy  then
     else  fdrop  then ;
-: command-hewie ( -- )
-    plain-commands state-flag? 0= if
+: command-hewie ( -- )   \ (in the run he is the one played: the command isn't his to take)
+    plain-commands state-flag? 0=  hewie-played? 0= and if
         her-sub @ go-there-cmd = if  go-spot  then
         her-sub @  her-act-tri @  her-act-yaw f@ f>cell  her-act-at v.x sf@ f>cell  her-act-at v.z sf@ f>cell
         hewie-id send command
@@ -217,7 +217,7 @@ create ch-at /vec allot
 : control-command ( -- )
     her-cmd @ dup no-gesture = if  drop exit  then
     her-fear-bits @ 2 and  her-mode @ thrown-mode = her-sub @ dup led-away-r = swap held-down-r = or and  or if
-        drop  help-cmd -1 0 0 0 hewie-id send command   \ (a cry for help)
+        drop  hewie-played? 0= if  help-cmd -1 0 0 0 hewie-id send command  then   \ (a cry for help - in the run, the cry alone)
         $38 line  60 her-busy-t !  exit
     then
     her-mode @ own-mode <>  still? or if  drop exit  then

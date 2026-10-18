@@ -2,7 +2,7 @@
 \ controls, standing, walking, running and turning, her footsteps, going out by exits; F4: struck
 \ and caught (fiona/hurt.fs).
 IN: fiona
-USING: engine vectors game-state facts actors messages common paths doors saves fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend fiona.voice fiona.letgo flag-names ;
+USING: engine vectors game-state facts actors messages common paths doors saves fiona.companion fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend fiona.voice fiona.letgo flag-names ;
 
 : rooms-id ( -- id )  s" rooms" actor-named ;
 : camera-id ( -- id )  s" camera" actor-named ;
@@ -57,6 +57,7 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
 : carry-on ( -- )
     -1 her-cmd !  0 her-busy-t !  0 her-move !  -1 her-move-done !  -1 her-door-exit !  her-path path-clear ;
 : arrive ( exit -- )  arrive-at  going-on? if  carry-on  else  fresh  then ;
+' put is put-her   ' fresh is fresh-her   \ (the run's companion places her too)
 
 \ ---- walking to a point (go-to: the console's, later the story's moves): her way over the nav
 \ mesh, arriving facing the way she walked ----
@@ -88,14 +89,33 @@ create ap-at /vec allot
     dz k f* her-at v.z sf@ f+ ap-at v.z sf!  her-at v.y sf@ ap-at v.y sf!
     ap-at blocked-floor v-tri-in dup 0< if  drop exit  then
     her-tri !  her-at ap-at vec-copy ;
-: keep-apart ( hewie-was? -- )
+: keep-apart ( hewie-was? -- )   \ (in the run, not out of Hewie)
     her-mode @ own-mode <>  her-scripted @ or if  drop exit  then
     stalker-in-room dup overlaps? if  nip push-from exit  then  drop
-    if  exit  then
+    hewie-played? or if  exit  then
     dog-in-room overlaps? if  her-at her-was-at vec-copy  her-was-tri @ her-tri !  then ;
+
+\ ---- a frame in the mini-game's run (Fiona_Update while Hewie is played): she goes with him by
+\ herself (fiona/companion.fs) - out of sight, nothing else; her calls to him from her mind, the
+\ pad not hers ----
+: run-frame ( -- )
+    mate-was-run @ 0= if  companion-start  -1 mate-was-run !  then
+    her-at her-was-at /vec move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
+    fiona.companion:here? 0= if  companion-frame  fiona.companion:here? 0= if  0 her act.visible l!  then  exit  then
+    look-cleared
+    feel-the-panic
+    companion-frame
+    her-mode @ own-mode = if  panic-controls  else  false  then  0= hands-off? 0= and if  control-command  then
+    -1 her-cmd !
+    dog-in-room overlaps?  her-act @ execute  keep-apart
+    looks  tell-point
+    command-sounds  motion-sounds
+    footsteps
+    show-her ;
 
 \ ---- each frame (Fiona_Update, the parts built so far) ----
 : frame ( -- )
+    hewie-played? if  run-frame exit  then  0 mate-was-run !
     her-at her-was-at /vec move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
     look-cleared
     feel-the-panic
@@ -175,16 +195,18 @@ $1C constant softened-layer
 : crouch-over ( -- )  fiona-half-hidden state-flag-clear ;
 \ ... and the camera back on her, the story's shot over (Fiona_FullStop: Progress_CameraOn 0,
 \ CamDirector_HoldEffect1C 0)
-: let-go ( -- )  crouch-over  self cam-on  0 0 0 0 0 camera-id send event-shot ;
+: let-go ( -- )  crouch-over  hewie-played? 0= if  self cam-on  then  0 0 0 0 0 camera-id send event-shot ;   \ (in the run the camera his)
 
 behaviour free
   on spawned ( -- )  self cam-player!
       -1 her-model !  -1 her-hit-who !  -1 her-shake-count !  her-creatures #creatures cells -1 fill  progress pr.vars $26 + c@ wear  2e 15e body-size
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe camera-cut  self subscribe write-save  self subscribe creature-doing
       self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene  self subscribe stalker-doing ;
-  on leaving-room ( room exit -- )  2drop  through-door ;
-  on arrived ( room exit -- )  nip arrive  1 her act.visible l! ;   \ (the story's scripts place her too)
-  on to-exit ( exit -- )  arrive ;
+  on leaving-room ( room exit -- )  hewie-played? if  nip fiona.companion:he-left exit  then  2drop  through-door ;
+  on arrived ( room exit -- )   \ (the story's scripts place her too; in the run, she comes with him or not)
+      hewie-played? if  fiona.companion:room-came exit  then  nip arrive  1 her act.visible l! ;
+  on to-exit ( exit -- )  hewie-played? if  mate-door ! exit  then  arrive ;   \ (in the run: Character_ChooseExit - the exit she came in by)
+  on hewie-told ( what arg -- )  fiona.companion:told ;
   \ examining (Progress_PlayerButtons): an action offered here, taken with the action button
   \ while she is free; a script of the room has her, or lets go; a message on screen
   on offer ( scene arg -- )
@@ -208,7 +230,7 @@ behaviour free
       her-costume @ .  self body-pos .at  self body-yaw .f  ." fiona-was" cr
       self cam-setup-of swap . . ." fiona-camera" cr ;   \ (the new game; the story's 0x97)
   on text-shown ( on -- )  her-reading ! ;
-  on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop 2drop drop  her-st-cond !  drop her-st-mode !  drop ;
+  on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  her-st-came !  2drop 2drop  her-st-cond !  drop her-st-mode !  drop ;
   on scene ( on -- )  her-in-scene ! ;   \ (a cutscene has her)
   on go-to ( x y z -- )  cells>xyz  go-to-point ;
   on place ( x y z yaw -- )  cells>xyzw  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)
@@ -255,7 +277,7 @@ behaviour free
   on recovery-less ( n -- )  1 max 60 swap / negate her-recovery +!  her-recovery @ 0 max her-recovery ! ;
   \ Hewie (F3)
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
-      2drop 2drop 2drop  dog-group !  dog-mood !  dog-cond !  dog-sub !  dog-mode !  dog-action !  dog-here ! ;
+      drop dog-way !  2drop 2drop  dog-group !  dog-mood !  dog-cond !  dog-sub !  dog-mode !  dog-action !  dog-here ! ;
   on meet-at ( tri x y z face -- )
       asked? 0= if  2drop 2drop drop  hewie-id send meet-off exit  then
       >r >r >r cell>f  r> cell>f  r> cell>f  r> cell>f  meet-placed ;

@@ -6,7 +6,7 @@
 \ dashing, the stance, barking, being down); praise and her commands. The stalkers and the
 \ story's moves are in the later files.
 IN: hewie.states
-USING: engine game-state actors messages common facts paths vectors hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving flag-names floor-flags ;
+USING: engine game-state actors messages common facts paths vectors doors hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving flag-names floor-flags ;
 
 \ ---- how he is treated: the progress's counters (for the dog's level at the end) ----
 : counter+ ( n addr -- )  tuck l@ + 0 10000 clamp swap l! ;
@@ -345,7 +345,16 @@ create kn-at /vec allot
     then  stand-pose keep-pose ;
 \ Hewie_StateLookLow / Bark (bark-act): a bark (low when calm), then the default action
 : look-target ( -- )  his-target @ 0< if  ahead-look  else  target-look  then  look! ;
-: st-look-low ( -- )  look-target  resting-pose step-to-pose if  exit  then  resting-pose keep-pose  to-default ;
+\ down low, he tells her (her within 100 in his room) of each shut exit he is at the front of - to
+\ open; told of none, where he is (Hewie_StateLookLow: her state block's 0xD - the run's companion)
+: at-front? ( exit -- flag )  dup door-here? 0= if  drop false exit  then
+    dup his-at vec@ door-near?  swap 0 his-at vec@ door-in-area? and ;
+: tell-her ( -- )
+    false  her-with?  her-dist 100e f< and if
+        8 0 do  i at-front?  room-id i exit-open? 0= and if  0 i her send hewie-told  drop true  then  loop
+    then
+    0= if  1 his-tri her send hewie-told  then ;
+: st-look-low ( -- )  look-target  resting-pose step-to-pose if  exit  then  resting-pose keep-pose  tell-her  to-default ;
 : st-bark ( -- )
     look-target
     his-danger @ calm = his-cond @ hurt-cond <> and if  resting-pose  else  stand-pose  then

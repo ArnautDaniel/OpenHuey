@@ -3,7 +3,7 @@
 \ sure, then until it moves), then she turns toward the old camera's heading while the stick
 \ holds within 15 degrees. On the keyboard: W A S D the stick, Shift the run button; a gamepad's left stick as it is pushed.
 IN: fiona.controls
-USING: engine keys common vectors messages fiona.state fiona.anims ;
+USING: engine keys common vectors messages facts fiona.state fiona.anims ;
 
 : hands-off? ( -- flag )  her-scripted @ her-reading @ or her-in-scene @ or ;   \ (a script or a cutscene has her, or a message is up)
 : sx ( F: -- x )  stick-x f@ ;   : sz ( F: -- z )  stick-z f@ ;
@@ -75,7 +75,8 @@ enum: direction-from  by-camera by-facing by-none by-steering ;
 
 \ ---- her struggling (Fiona_Shakes): this frame's shakes - the stick swung past 120 degrees, or out
 \ from rest; the buttons pressed (keys.fs) ----
-: shakes-now ( -- n )   \ (Fiona_Shakes: the stick swung past 120 degrees, or out from rest; the buttons)
+: shakes-now ( -- n )   \ (Fiona_Shakes: the stick swung past 120 degrees, or out from rest; the buttons - not in the run)
+    hewie-played? if  0 exit  then
     0  her-stick v.x sf@ her-stick v.z sf@ vlen                               ( n ) ( F: len )
     fdup 0.8e f<= if  0.2e f< if  -1 her-shake-rest !  then
     else
@@ -86,4 +87,4 @@ enum: direction-from  by-camera by-facing by-none by-steering ;
     buttons-pressed + ;
 \ the story's test of her shaking (Progress_FionaFlag: Fiona_Shakes as from rest) - the stick out
 \ past 0.8, or a button; her own count left as it is
-: shook-from-rest ( -- n )  her-stick v.x sf@ her-stick v.z sf@ vlen 0.8e f> 1 and  buttons-pressed + ;
+: shook-from-rest ( -- n )  hewie-played? if  0 exit  then  her-stick v.x sf@ her-stick v.z sf@ vlen 0.8e f> 1 and  buttons-pressed + ;
