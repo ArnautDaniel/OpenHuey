@@ -165,6 +165,10 @@ struct Forth {
     jmp_buf *catch;         /* where an error unwinds to */
     int silent;             /* inside `catch`: errors are not printed */
     char error[256];        /* the last error message */
+    char said[256];         /* the last error message printed */
+    long repeats;           /* times it came again since, not printed */
+    int quiet;              /* the error being raised is a repeat (not printed: nor what callers add) */
+    long errors;            /* errors raised outside `catch`, repeats too (the tests: none while...) */
 
     /* words the compiler uses */
     Word *w_lit, *w_flit, *w_litstring, *w_exit, *w_halt, *w_comma, *w_does, *w_type;

@@ -168,6 +168,9 @@ set_tests_properties(mods_menu PROPERTIES FIXTURES_REQUIRED mods_menu_folder FIX
 add_test(NAME mods_menu_after COMMAND hga --mods "${CMAKE_CURRENT_BINARY_DIR}/mods-menu.scratch"
     --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/menu-after.fs")
 set_tests_properties(mods_menu_after PROPERTIES FIXTURES_REQUIRED "mods_menu_folder;mods_menu_saved")
+# the title as a player meets it: --title brings it up headless too (not a test_*.fs: those run
+# without it, straight into a new game)
+add_test(NAME title_title COMMAND hga --title --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/title/title.fs")
 # the updater: against releases made in the test (file://), and the title's UPDATE page
 if(NOT WIN32)
     add_test(NAME update_run COMMAND sh "${CMAKE_CURRENT_SOURCE_DIR}/tests/update/run.sh" $<TARGET_FILE:hga> "${HGA_BUILD}"

@@ -65,6 +65,7 @@ typedef struct RenderSettings {
     int32_t room_bloom;
     int32_t room_dof;        /* the room's depth of field */
     int32_t game_font;       /* text in the game's own font (the room's), not the built-in one */
+    int32_t fullscreen;      /* the window fullscreen (F11, Alt+Return) */
     int32_t debug;           /* show a buffer instead: 1 occlusion, 2 bloom, 3 depth (white 1500 away),
                               * 4 the bloom mask */
 } RenderSettings;

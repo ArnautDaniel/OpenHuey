@@ -208,7 +208,9 @@ static void dispatch(Forth *f, const HMessage *m) {
     i = forth_call(f, h);
     a->running--;
     if (i != 0) {
-        forth_printf(f, "  (in %s's `on %s`, behaviour %s)\n", a->name, sKinds[m->kind].name, a->beh->name);
+        if (!f->quiet) {   /* (a repeat: nor where it was) */
+            forth_printf(f, "  (in %s's `on %s`, behaviour %s)\n", a->name, sKinds[m->kind].name, a->beh->name);
+        }
     } else if (f->t->sp != sp0 || f->t->fp != fp0) {
         forth_printf(f, "%s's `on %s` left %d cells and %d floats on the stacks\n", a->name,
                      sKinds[m->kind].name, f->t->sp - sp0, f->t->fp - fp0);

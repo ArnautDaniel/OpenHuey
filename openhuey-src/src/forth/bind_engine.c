@@ -2521,6 +2521,41 @@ PRIM(p_key_hold) {   /* ( scancode flag -- ) hold a key down (or let it go) as i
 
     gEngine.held[k] = on != 0;
 }
+/* the controls (platform.h): the actions, each a key the scripts read, and the keys bound to them */
+PRIM(p_controls) { PUSH(platform_actions()); }   /* ( -- n ) */
+PRIM(p_control_key) { Cell i = POP(); PUSH(platform_action_key((int)i)); }   /* ( i -- scancode ) the scripts' key */
+PRIM(p_control_binding) {   /* ( i which -- scancode ) its first (0) or second (1) key; 0 none */
+    Cell which = POP(), i = POP();
+
+    PUSH(platform_binding((int)i, (int)which));
+}
+PRIM(p_control_bind) {   /* ( scancode i which -- ) (0 and which 1: its second cleared) */
+    Cell which = POP(), i = POP(), k = POP();
+
+    platform_bind((int)i, (int)which, (SDL_Scancode)k);
+}
+PRIM(p_controls_reset) { platform_bindings_reset(); }   /* ( -- ) the defaults */
+PRIM(p_control_bind_next) { platform_bind_next((int)POP()); }   /* ( i -- ) the next key pressed bound to i (Escape: not) */
+PRIM(p_control_waiting) { PUSH(platform_binding_wanted()); }   /* ( -- i ) the action waiting for a key; -1 none */
+PRIM(p_key_push) {   /* ( scancode -- ) (tests) the key pressed, as from the keyboard - through the
+                      * controls; the only one pressed now */
+    SDL_Event e;
+
+    memset(gEngine.input.pressed, 0, sizeof(gEngine.input.pressed));
+    memset(&e, 0, sizeof(e));
+    e.type = SDL_EVENT_KEY_DOWN;
+    e.key.scancode = (SDL_Scancode)POP();
+    e.key.down = true;
+    SDL_PushEvent(&e);
+    platform_poll(&gEngine.input);
+}
+PRIM(p_key_name) {   /* ( scancode -- addr len ) as the keyboard calls it ("" none) */
+    Cell k = POP();
+    const char *name = k > 0 && k < SDL_SCANCODE_COUNT ? SDL_GetScancodeName((SDL_Scancode)k) : "";
+
+    PUSH((Cell)name);
+    PUSH((Cell)strlen(name));
+}
 PRIM(p_key_pressed) {
     Cell k = scancode(f);
 
@@ -3252,7 +3287,7 @@ void bind_engine(Forth *f) {
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
         {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
-        {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
+        {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"controls", p_controls}, {"control-key", p_control_key}, {"control-binding", p_control_binding}, {"control-bind", p_control_bind}, {"controls-reset", p_controls_reset}, {"control-bind-next", p_control_bind_next}, {"control-waiting", p_control_waiting}, {"key-name", p_key_name}, {"key-push", p_key_push}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"freecam?", p_freecam}, {"freecam!", p_freecam_set}, {"mouse-down?", p_mouse_down},
         {"on-tick", p_on_tick}, {"off-tick", p_off_tick}, {"ticks", p_ticks}, {"dt", p_dt},
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
@@ -3360,5 +3395,6 @@ void bind_engine(Forth *f) {
     field(f, "gfx.room-tint", offsetof(RenderSettings, room_tint));
     field(f, "gfx.room-bloom", offsetof(RenderSettings, room_bloom));
     field(f, "gfx.game-font", offsetof(RenderSettings, game_font));
+    field(f, "gfx.fullscreen", offsetof(RenderSettings, fullscreen));
     f->m.current = saved;
 }

@@ -8,6 +8,95 @@
 static SDL_Window *sWindow;
 static SDL_GLContext sContext;
 
+/* ---- the controls (platform.h): the actions' keys, as the scripts read them (keys.fs) ---- */
+static const SDL_Scancode kActions[] = {
+    SDL_SCANCODE_W, SDL_SCANCODE_S, SDL_SCANCODE_A, SDL_SCANCODE_D,   /* the left stick */
+    SDL_SCANCODE_C, SDL_SCANCODE_X, SDL_SCANCODE_Z, SDL_SCANCODE_V,   /* circle, cross, square, triangle */
+    SDL_SCANCODE_Q, SDL_SCANCODE_E, SDL_SCANCODE_RETURN, SDL_SCANCODE_TAB,   /* L1, R1, start, select */
+    SDL_SCANCODE_I, SDL_SCANCODE_K, SDL_SCANCODE_L, SDL_SCANCODE_J, SDL_SCANCODE_F,   /* the right stick, R3 */
+};
+#define ACTIONS (int)(sizeof(kActions) / sizeof(kActions[0]))
+static SDL_Scancode sBinding[ACTIONS][2];
+static int sBindNext = -1;   /* the action the next key is bound to (-1 none) */
+
+void platform_bindings_reset(void) {
+    int i;
+
+    for (i = 0; i < ACTIONS; i++) {
+        sBinding[i][0] = kActions[i];
+        sBinding[i][1] = kActions[i] == SDL_SCANCODE_X   ? SDL_SCANCODE_SPACE
+                         : kActions[i] == SDL_SCANCODE_C ? SDL_SCANCODE_BACKSPACE   /* (as hg: native/platform/input.c) */
+                                                         : SDL_SCANCODE_UNKNOWN;
+    }
+}
+
+int platform_actions(void) { return ACTIONS; }
+SDL_Scancode platform_action_key(int i) { return i >= 0 && i < ACTIONS ? kActions[i] : SDL_SCANCODE_UNKNOWN; }
+SDL_Scancode platform_binding(int i, int which) {
+    return i >= 0 && i < ACTIONS && (which == 0 || which == 1) ? sBinding[i][which] : SDL_SCANCODE_UNKNOWN;
+}
+
+void platform_bind(int i, int which, SDL_Scancode key) {
+    int k, w;
+
+    if (i < 0 || i >= ACTIONS || which < 0 || which > 1 || key < 0 || key >= SDL_SCANCODE_COUNT) {
+        return;
+    }
+    if (which == 1 && key == sBinding[i][0]) {   /* (its first as its second too: no) */
+        return;
+    }
+    if (key == SDL_SCANCODE_UNKNOWN) {   /* (only a second one is cleared: an action keeps a key) */
+        if (which == 1) {
+            sBinding[i][1] = SDL_SCANCODE_UNKNOWN;
+        }
+        return;
+    }
+    for (k = 0; k < ACTIONS; k++) {   /* (a key does one thing) */
+        for (w = 0; w < 2; w++) {
+            if (sBinding[k][w] == key && !(k == i && w == which)) {
+                sBinding[k][w] = SDL_SCANCODE_UNKNOWN;
+            }
+        }
+        if (sBinding[k][0] == SDL_SCANCODE_UNKNOWN && k != i) {   /* (its first gone: its second moves up) */
+            sBinding[k][0] = sBinding[k][1];
+            sBinding[k][1] = SDL_SCANCODE_UNKNOWN;
+        }
+    }
+    if (which == 0 && sBinding[i][0] != key) {
+        sBinding[i][1] = sBinding[i][0];
+    }
+    sBinding[i][which] = key;
+}
+
+void platform_bind_next(int i) { sBindNext = i >= 0 && i < ACTIONS ? i : -1; }
+int platform_binding_wanted(void) { return sBindNext; }
+
+static int is_action_key(SDL_Scancode k) {
+    int i;
+
+    for (i = 0; i < ACTIONS; i++) {
+        if (kActions[i] == k) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* a key pressed: the actions it is bound to pressed, or the key itself if no action is it */
+static void key_pressed(Input *in, SDL_Scancode k) {
+    int i;
+
+    in->typed[k] = true;
+    for (i = 0; i < ACTIONS; i++) {
+        if (sBinding[i][0] == k || sBinding[i][1] == k) {
+            in->pressed[kActions[i]] = true;
+        }
+    }
+    if (!is_action_key(k)) {
+        in->pressed[k] = true;
+    }
+}
+
 /* ---- a gamepad, played as the keyboard: its buttons hold the keys the scripts read for the pad's
  * (scripts/keys.fs: as hg's native/platform/input.c lays them out), the d-pad the arrows, the left
  * stick W A S D past half way - and its own reading for Fiona's walk ---- */
@@ -95,6 +184,7 @@ int platform_open(const char *title, int w, int h, int hidden) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    platform_bindings_reset();
     sWindow = SDL_CreateWindow(title, w, h, flags);
     if (sWindow == NULL) {
         fprintf(stderr, "platform: SDL_CreateWindow: %s\n", SDL_GetError());
@@ -133,14 +223,26 @@ void platform_poll(Input *in) {
     /* (presses and mouse motion add up until a game tick takes them: a frame can come without a
      * tick, and a press then must not be lost) */
     in->text[0] = 0;
+    in->fullscreen_toggle = 0;
+    memset(in->typed, 0, sizeof(in->typed));
     while (SDL_PollEvent(&e)) {
         switch (e.type) {
         case SDL_EVENT_QUIT:
             in->quit = 1;
             break;
         case SDL_EVENT_KEY_DOWN:
-            if (!e.key.repeat || e.key.scancode == SDL_SCANCODE_BACKSPACE) {
-                in->pressed[e.key.scancode] = true;
+            if (sBindNext >= 0 && !e.key.repeat) {   /* (the key wanted for an action: taken, nothing else) */
+                if (e.key.scancode != SDL_SCANCODE_ESCAPE) {
+                    platform_bind(sBindNext, 0, e.key.scancode);
+                }
+                sBindNext = -1;
+            } else if ((e.key.scancode == SDL_SCANCODE_RETURN && (e.key.mod & SDL_KMOD_ALT)) ||
+                       e.key.scancode == SDL_SCANCODE_F11) {
+                if (!e.key.repeat) {
+                    in->fullscreen_toggle = 1;
+                }
+            } else if (!e.key.repeat || e.key.scancode == SDL_SCANCODE_BACKSPACE) {
+                key_pressed(in, e.key.scancode);
             }
             break;
         case SDL_EVENT_GAMEPAD_ADDED:
@@ -176,11 +278,23 @@ void platform_poll(Input *in) {
 
         pad_poll(in);
         for (k = 0; k < SDL_SCANCODE_COUNT; k++) {
-            sHeld[k] = kb[k] || sPadHeld[k];
+            sHeld[k] = (kb[k] && !is_action_key((SDL_Scancode)k)) || sPadHeld[k];
+        }
+        for (k = 0; k < ACTIONS; k++) {   /* (an action held: either of its keys) */
+            if ((sBinding[k][0] != SDL_SCANCODE_UNKNOWN && kb[sBinding[k][0]]) ||
+                (sBinding[k][1] != SDL_SCANCODE_UNKNOWN && kb[sBinding[k][1]])) {
+                sHeld[kActions[k]] = true;
+            }
         }
         in->keys = sHeld;
     }
     in->mouse_buttons = SDL_GetMouseState(NULL, NULL);
+}
+
+void platform_fullscreen(int on) {
+    if (sWindow != NULL) {
+        SDL_SetWindowFullscreen(sWindow, on != 0);   /* (no mode set: the desktop's, borderless) */
+    }
 }
 
 void platform_size(int *w, int *h) {

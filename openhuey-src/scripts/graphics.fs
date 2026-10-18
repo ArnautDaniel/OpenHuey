@@ -1,7 +1,9 @@
-\ graphics.fs - the look of the picture: presets, and a settings menu (F1; brought over from
-\ new-src). The settings are C's (render.h RenderSettings), reached through the gfx fields:
-\ flags and counts are 32-bit (l@ l!), the rest floats (sf@ sf!). Saved to graphics.fs in the
-\ player's directory and read back at start-up.
+\ graphics.fs - the settings menu (F1; brought over from new-src): the look of the picture, its
+\ presets, fullscreen, and the controls. The picture's settings are C's (render.h RenderSettings),
+\ reached through the gfx fields: flags and counts are 32-bit (l@ l!), the rest floats (sf@ sf!);
+\ saved to graphics.fs in the player's directory when asked, read back at start-up. The controls
+\ (platform.h: the keys bound to each of the game's actions) and fullscreen are saved to
+\ controls.fs there as they change.
 IN: graphics
 USING: engine ;
 
@@ -62,13 +64,14 @@ PRIVATE>
 
 <PRIVATE
 \ the kinds: on / off; a count, min .. max by 1; doubling, 1 2 4 8 ...; a float, min .. max by
-\ step (thousandths); a count shown by name (step: the names); runs a word (the field: its word)
-enum: item-kind  flag count doubling number choice action ;
+\ step (thousandths); a count shown by name (step: the names); runs a word (the field: its word);
+\ a control (the field: the action's number)
+enum: item-kind  flag count doubling number choice action control ;
 
 begin-structure /item
   field: i.label  field: i.len  field: i.field  field: i.kind  field: i.lo  field: i.hi  field: i.step
 end-structure
-48 constant most-items
+72 constant most-items
 create items most-items /item * allot
 variable #items
 
@@ -93,6 +96,15 @@ variable tbl
     0 ?do  keep  tbl @ dup @ i - 1- 2* 1+ cells + 2!  loop  tbl @ ;
 : name ( i table -- addr len )  swap 2* 1+ cells + 2@ ;
 
+\ ---- a control's keys as text: "X / Space"; waiting for one, says so ----
+create keys-text 80 allot   variable keys-n
+: +keys ( addr len -- )  80 keys-n @ - min  keys-text keys-n @ + swap dup keys-n +! move ;
+: control-text ( i -- addr len )
+    dup control-waiting = if  drop s" press a key (Escape: keep it)"  exit  then
+    0 keys-n !  dup 0 control-binding key-name +keys
+    1 control-binding ?dup if  s"  / " +keys  key-name +keys  then
+    keys-text keys-n @ ;
+
 \ ---- the value as text ----
 : thousandths ( n -- ) ( F: -- x ) s>f 1000e f/ ;
 : value-text ( rec -- addr len )
@@ -103,6 +115,7 @@ variable tbl
         number of   dup field sf@  step 10 < if 4 else 2 then f>s$ endof
         choice of   dup field l@ swap step name endof
         action of   drop s" " endof
+        control of  slot control-text endof
     endcase ;
 
 \ ---- changing a value (dir: -1 or 1) ----
@@ -117,6 +130,7 @@ variable tbl
         number of   >r s>f r@ step thousandths f* r@ field sf@ f+
                     r@ lo thousandths r@ hi thousandths fclamp r> field sf! endof
         action of   nip slot execute endof
+        control of  swap 0> if  slot control-bind-next  else  0 swap slot 1 control-bind  then endof   \ (right: a new key; left: its second off)
     endcase ;
 
 \ ---- saving: the settings written out as Forth, read back at start-up ----
@@ -124,15 +138,40 @@ variable tbl
     str-reset  user-dir +str  s" graphics.fs" +str  str ;
 
 : save-item ( rec -- )
-    dup kind action = if  drop exit  then
+    dup kind action =  over kind control = or if  drop exit  then
     dup kind number = if  dup field sf@ 6 f>s$ type  else  dup field l@ n>s type  then
     ."  gfx " dup slot xt>name type
     kind number = if  ."  sf!"  else  ."  l!"  then  cr ;
+
+\ the controls and fullscreen, as they change (not in a test: nothing kept)
+: controls-file ( -- addr len )
+    str-reset  user-dir +str  s" controls.fs" +str  str ;
+: save-controls ( -- )
+    controls-file to-file
+    ." \ the controls and fullscreen, saved as they change (the settings menu, F1)" cr
+    ." USING: engine ;" cr
+    ." controls-reset" cr
+    controls 0 ?do
+        i 0 control-binding n>s type space  i n>s type  ."  0 control-bind" cr
+        i 1 control-binding n>s type space  i n>s type  ."  1 control-bind" cr
+    loop
+    gfx gfx.fullscreen l@ n>s type  ."  gfx gfx.fullscreen l!" cr
+    end-file ;
+\ what was last saved: each action's two keys, then fullscreen
+create controls-kept 64 cells allot
+: control-now ( i -- x )   \ (i: action i/2's key i mod 2; the last, fullscreen)
+    dup controls 2* = if  drop gfx gfx.fullscreen l@ exit  then  2 /mod swap control-binding ;
+: controls-changed? ( -- flag )
+    controls 2* 1+ 0 ?do  i control-now  controls-kept i cells + @ <> if  true unloop exit  then  loop  false ;
+: keep-controls ( -- )  controls 2* 1+ 0 ?do  i control-now  controls-kept i cells + !  loop ;
+: watch-controls ( -- )
+    control-waiting 0< controls-changed? and if  keep-controls  testing? 0= if  save-controls  then  then ;
 
 defer save-graphics
 : (save-graphics)
     settings-file to-file
     ." \ graphics settings, saved from the menu (F1)" cr
+    ." USING: engine ;" cr   \ (a file read starts with only the core's words)
     #items @ 0 ?do  i rec save-item  loop
     end-file  ." saved " settings-file type cr ;
 ' (save-graphics) is save-graphics
@@ -143,6 +182,7 @@ PRIVATE>
 s" Preset: as on the PS2"  ' look-original  action 0 0 0 item
 s" Preset: enhanced"       ' look-enhanced  action 0 0 0 item
 s" Preset: cinematic"      ' look-cinematic action 0 0 0 item
+s" Fullscreen (F11)" ' gfx.fullscreen flag 0 1 0 item
 s" Picture"         ' gfx.aspect choice 0 1   s" fill the screen" s" 4:3" 2 names item
 s" Antialiasing"    ' gfx.msaa doubling 1 8 0 item
 s" Resolution scale" ' gfx.scale number 500 2000 250 item
@@ -176,6 +216,20 @@ s" Rim light"       ' gfx.rim number 0 1500 50 item
 s" Save as my default" ' save-graphics action 0 0 0 item
 s" Show a buffer"   ' gfx.debug choice 0 4   s" no" s" occlusion" s" bloom" s" depth" s" bloom mask" 5 names item
 
+\ the controls: an action a row, by its number (platform.c kActions); saved as they change
+: control-item ( addr len i -- )  control 0 0 0 item ;
+s" CONTROLS  (right: a new key, left: the second off)" ' noop action 0 0 0 item
+s" Move forward"   0 control-item   s" Move back"   1 control-item
+s" Move left"      2 control-item   s" Move right"  3 control-item
+s" Act (circle)"   4 control-item   s" Run (cross)" 5 control-item
+s" Kick / shove (square)"  6 control-item   s" Throw (triangle)" 7 control-item
+s" Crouch (L1)"    8 control-item   s" Flee (R1)"   9 control-item
+s" Pause (start)" 10 control-item   s" Items (select)" 11 control-item
+s" Hewie: go / attack" 12 control-item   s" Hewie: come back" 13 control-item
+s" Hewie: praise"  14 control-item   s" Hewie: scold" 15 control-item
+s" Hewie: stay / come (R3)" 16 control-item
+s" Controls as they were" ' controls-reset action 0 0 0 item
+
 \ ---- showing it ----
 variable selected  0 selected !
 
@@ -189,22 +243,29 @@ variable selected  0 selected !
 : f1-key  key: F1 key-pressed? if  menu-open @ 0= menu-open !  then ;
 
 variable row-h  variable col-w
+\ as many rows as the screen holds, scrolled to keep the one selected in the middle
+: shown-rows ( -- n )  screen-size nip 48 - row-h @ /  2 -  #items @ min ;
+: first-row ( -- i )  selected @ shown-rows 2/ -  #items @ shown-rows -  min  0 max ;
 : draw-menu
     menu-open @ 0= if  exit  then
     screen-size nip 900 >= if 3 else 2 then pen-scale
     char-size row-h ! col-w !
-    $0A0C10D8 pen-color  16 16  col-w @ 48 *  #items @ 2 + row-h @ * 16 +  draw-rect
-    $FFE070FF pen-color  s" Graphics   (arrows, F1 to close)" 28 24 draw-text
-    #items @ 0 ?do
-        i selected @ = if  $FFE070FF  else  $C8D0D8FF  then pen-color
-        i rec label  28  i 2 + row-h @ * 16 +  draw-text
-        i rec value-text  28 col-w @ 26 * +  i 2 + row-h @ * 16 +  draw-text
+    $0A0C10D8 pen-color  16 16  col-w @ 56 *  shown-rows 2 + row-h @ * 16 +  draw-rect
+    $FFE070FF pen-color  s" Settings   (arrows, F1 to close)" 28 24 draw-text
+    first-row {: top :}
+    shown-rows 0 ?do
+        i top + selected @ = if  $FFE070FF  else  $C8D0D8FF  then pen-color
+        i top + rec label  28  i 2 + row-h @ * 16 +  draw-text
+        i top + rec value-text  28 col-w @ 26 * +  i 2 + row-h @ * 16 +  draw-text
     loop ;
 
 ' f1-key on-tick
 ' menu-keys on-tick
+' watch-controls on-tick
 ' draw-menu on-draw
 
 look-enhanced
 : load-settings  settings-file file-exists? if  settings-file included  then ;
 ' load-settings catch drop
+: load-controls  controls-file file-exists? if  controls-file included  then ;
+' load-controls catch drop  keep-controls

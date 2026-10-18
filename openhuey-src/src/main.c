@@ -7,6 +7,7 @@
  *     --import disc.iso the disc imported into the library beside the executable, then out
  *     --mod folder|zip  a mod turned on (repeatable; with --test the only mods)
  *     --mods folder     the folder of mods (instead of mods/ beside the library)
+ *     --title           the title even without a window (its tests; else, hidden, a new game at once)
  *     --update          a release updated to the newest build (platform/update.c), then out
  *
  * The game data: a disc image or folder named (read as it is), else the library
@@ -48,6 +49,10 @@ static void p_exit_status(Forth *f, Word *w) {   /* ( n -- ) a test's exit statu
     (void)w;
     sTestStatus = (int)forth_pop(f);
 }
+static void p_error_count(Forth *f, Word *w) {   /* ( -- n ) errors raised (not in `catch`) so far */
+    (void)w;
+    forth_push(f, f->errors);
+}
 
 typedef struct Options {
     int hidden;
@@ -57,6 +62,7 @@ typedef struct Options {
     const char *data;
     const char *import; /* --import DISC: the disc imported into the library, then out */
     int update;         /* --update: updated to the newest release, then out */
+    int title;          /* --title: the title, hidden too (tests) */
     const char *test;   /* --test FILE: run it after the scripts, headless, and exit with its status */
     const char *mods[MAX_EVALS];   /* --mod DIR: a mod's folder, on (the tests' only mods) */
     const char *mods_folder;       /* --mods DIR: the folder of mods instead of <base>mods/ (the tests' too) */
@@ -77,6 +83,8 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->evals[o->nevals++] = argv[++i];
         } else if (strcmp(argv[i], "--import") == 0 && i + 1 < argc) {
             o->import = argv[++i];
+        } else if (strcmp(argv[i], "--title") == 0) {
+            o->title = 1;
         } else if (strcmp(argv[i], "--update") == 0) {
             o->update = 1;
         } else if (strcmp(argv[i], "--mods") == 0 && i + 1 < argc) {
@@ -87,7 +95,7 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->test = argv[++i];
             o->hidden = 1;
         } else if (argv[i][0] == '-') {
-            fprintf(stderr, "usage: openhuey [--hidden] [--frames N] [--eval code] [--test file.fs] [--mod folder|zip] [--mods folder] [--import disc.iso] [--update] [disc.iso | data folder]\n");
+            fprintf(stderr, "usage: openhuey [--hidden] [--frames N] [--eval code] [--test file.fs] [--mod folder|zip] [--mods folder] [--import disc.iso] [--update] [--title] [disc.iso | data folder]\n");
             return 0;
         } else {
             o->data = argv[i];
@@ -520,7 +528,8 @@ static void start_scripts(Engine *e, int hidden) {
     bind_mods(e->forth);
     bind_update(e->forth);
     forth_prim(e->forth, "exit-status", p_exit_status);
-    forth_constant(e->forth, "hidden?", hidden ? -1 : 0);   /* (no window: tests, screenshots - no opening movie) */
+    forth_prim(e->forth, "error-count", p_error_count);
+    forth_constant(e->forth, "hidden?", hidden ? -1 : 0);   /* (no window: tests, screenshots - no title, a new game at once; --title: the title even so) */
     if (!load_scripts(e->forth)) {
         fprintf(stderr, "openhuey: the scripts didn't load (see above); the console is open\n");
         e->console.open = 1;
@@ -567,6 +576,7 @@ int main(int argc, char **argv) {
     Uint64 last, lag = 0;
     const Uint64 tick_ns = 1000000000ull / TICKS_PER_SECOND;
     long frame = 0;
+    int fullscreen = 0;   /* (the window as it is) */
     int i;
 
     if (!parse_options(argc, argv, &opt)) {
@@ -614,7 +624,7 @@ int main(int argc, char **argv) {
     }
     e->testing = opt.test != NULL;
     movie_game_clock(opt.test != NULL || opt.frames > 0);   /* (headless runs: the same frames each run) */
-    start_scripts(e, opt.hidden);
+    start_scripts(e, opt.hidden && !opt.title);
     for (i = 0; i < opt.nevals; i++) {
         forth_eval(e->forth, opt.evals[i], strlen(opt.evals[i]), "--eval");
     }
@@ -645,6 +655,13 @@ int main(int argc, char **argv) {
         platform_poll(&e->input);
         if (e->input.quit) {
             break;
+        }
+        if (e->input.fullscreen_toggle) {
+            gRender.fullscreen = !gRender.fullscreen;
+        }
+        if (!opt.hidden && gRender.fullscreen != fullscreen) {   /* (the setting: F11, the menu, the saved one) */
+            fullscreen = gRender.fullscreen;
+            platform_fullscreen(fullscreen);
         }
         if (e->input.pressed[SDL_SCANCODE_GRAVE]) {
             e->console.open = !e->console.open;
@@ -678,7 +695,7 @@ int main(int argc, char **argv) {
             lag = 0;   /* far behind (a stall): don't try to catch up */
         }
         if (bind_engine_reset_wanted()) {   /* (between frames: no handler running) */
-            soft_reset(e, opt.hidden);
+            soft_reset(e, opt.hidden && !opt.title);
             continue;
         }
 
