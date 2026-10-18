@@ -33,6 +33,7 @@ struct DiscFile {
     FILE *fp;
     int64_t base;   /* where the file starts in fp */
     long size, pos;
+    unsigned char *mem;   /* (or the file in memory: a zipped mod's) */
 };
 
 typedef struct Entry {
@@ -363,6 +364,18 @@ DiscFile *disc_file_open_in(const char *folder, const char *name) {
     return open_in_folder(parent, path + 3);
 }
 
+DiscFile *disc_file_memory(unsigned char *data, long size) {
+    DiscFile *h = data != NULL ? calloc(1, sizeof(*h)) : NULL;
+
+    if (h == NULL) {
+        free(data);
+        return NULL;
+    }
+    h->mem = data;
+    h->size = size;
+    return h;
+}
+
 size_t disc_file_read(DiscFile *f, void *buf, size_t n) {
     size_t got;
 
@@ -371,6 +384,11 @@ size_t disc_file_read(DiscFile *f, void *buf, size_t n) {
     }
     if (n > (size_t)(f->size - f->pos)) {
         n = (size_t)(f->size - f->pos);
+    }
+    if (f->mem != NULL) {
+        memcpy(buf, f->mem + f->pos, n);
+        f->pos += (long)n;
+        return n;
     }
     if (fseek64(f->fp, f->base + f->pos, SEEK_SET) != 0) {
         return 0;
@@ -385,7 +403,10 @@ long disc_file_size(const DiscFile *f) { return f->size; }
 
 void disc_file_close(DiscFile *f) {
     if (f != NULL) {
-        fclose(f->fp);
+        if (f->fp != NULL) {
+            fclose(f->fp);
+        }
+        free(f->mem);
         free(f);
     }
 }

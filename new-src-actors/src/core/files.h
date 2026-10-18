@@ -18,6 +18,9 @@ DiscFile *files_open(const char *path);   /* (streamed: the movies) */
 /* a folder laid out as the library is (data/ in it, the disc's own files beside) over the
  * data; all of them taken away */
 void files_layer_add(const char *dir);
+/* the same in a zip: its `prefix`library/ ("" or "name/" - a zipped folder) */
+struct Zip;
+void files_layer_add_zip(const struct Zip *z, const char *prefix);
 void files_layers_clear(void);
 /* the file from the layers only (a mod's), NULL if none has it */
 uint8_t *files_read_layers(const char *path, size_t *size);

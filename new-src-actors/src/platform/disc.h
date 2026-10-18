@@ -23,6 +23,8 @@ const char *disc_error(void);
 DiscFile *disc_file_open(const char *path);
 /* the same in another folder laid out as the data is (a mod's: "../" its parent) */
 DiscFile *disc_file_open_in(const char *folder, const char *path);
+/* a file already in memory (malloc'd: taken, freed with it) */
+DiscFile *disc_file_memory(unsigned char *data, long size);
 size_t disc_file_read(DiscFile *f, void *buf, size_t n);
 void disc_file_seek(DiscFile *f, long pos);   /* from the start */
 long disc_file_size(const DiscFile *f);

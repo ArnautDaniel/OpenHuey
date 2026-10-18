@@ -74,6 +74,91 @@ static void put_png(const char *rel, int w, int h, uint32_t rgba) {
     free(px);
 }
 
+unsigned char *stbi_zlib_compress(unsigned char *data, int data_len, int *out_len, int quality);   /* (stb.c's, not in its header) */
+
+/* ---- a zip written: each file stored, or deflated (stb_image_write's zlib, its header and
+ * checksum taken off) ---- */
+static uint32_t crc32_of(const uint8_t *p, size_t n) {
+    uint32_t c = 0xFFFFFFFFu;
+    size_t i;
+    int k;
+
+    for (i = 0; i < n; i++) {
+        c ^= p[i];
+        for (k = 0; k < 8; k++) {
+            c = (c >> 1) ^ (0xEDB88320u & (0u - (c & 1)));
+        }
+    }
+    return ~c;
+}
+
+static void le(uint8_t *p, uint32_t v, int n) {
+    int i;
+
+    for (i = 0; i < n; i++) {
+        p[i] = (uint8_t)(v >> (8 * i));
+    }
+}
+
+static void put_zip(const char *rel, const char *const *names, const char *const *texts, int n, int deflate) {
+    char path[1300];
+    uint8_t cd[4096], h[46];
+    uint32_t at = 0, cdlen = 0;
+    FILE *f;
+    int i;
+
+    snprintf(path, sizeof(path), "%s%s", sScratch, rel);
+    if ((f = fopen(path, "wb")) == NULL) {
+        return;
+    }
+    for (i = 0; i < n; i++) {
+        uint32_t len = (uint32_t)strlen(texts[i]), nlen = (uint32_t)strlen(names[i]), plen = len;
+        const uint8_t *data = (const uint8_t *)texts[i];
+        uint8_t *z = NULL;
+
+        if (deflate) {
+            int zl;
+
+            z = stbi_zlib_compress((uint8_t *)texts[i], (int)len, &zl, 8);
+            data = z + 2;
+            plen = (uint32_t)zl - 6;
+        }
+        memset(h, 0, sizeof(h));
+        le(h, 0x04034b50, 4);
+        le(h + 4, 20, 2);
+        le(h + 8, deflate ? 8 : 0, 2);
+        le(h + 14, crc32_of((const uint8_t *)texts[i], len), 4);
+        le(h + 18, plen, 4);
+        le(h + 22, len, 4);
+        le(h + 26, nlen, 2);
+        fwrite(h, 1, 30, f);
+        fwrite(names[i], 1, nlen, f);
+        fwrite(data, 1, plen, f);
+        memmove(h + 16, h + 14, 14);   /* (the central record: the same fields two bytes on) */
+        le(h, 0x02014b50, 4);
+        le(h + 4, 20, 2);
+        le(h + 6, 20, 2);
+        le(h + 10, deflate ? 8 : 0, 2);
+        le(h + 12, 0, 4);
+        le(h + 30, 0, 16);
+        le(h + 42, at, 4);
+        memcpy(cd + cdlen, h, 46);
+        memcpy(cd + cdlen + 46, names[i], nlen);
+        cdlen += 46 + nlen;
+        at += 30 + nlen + plen;
+        free(z);
+    }
+    fwrite(cd, 1, cdlen, f);
+    memset(h, 0, 22);
+    le(h, 0x06054b50, 4);
+    le(h + 8, (uint32_t)n, 2);
+    le(h + 10, (uint32_t)n, 2);
+    le(h + 12, cdlen, 4);
+    le(h + 16, at, 4);
+    fwrite(h, 1, 22, f);
+    fclose(f);
+}
+
 static SDL_EnumerationResult remove_one(void *user, const char *dir, const char *name) {
     char path[1300];
     SDL_PathInfo info;
@@ -171,6 +256,41 @@ int main(int argc, char **argv) {
     free(text);
     CHECK(!files_exist("SYSTEM/GAMMA.TXT"), "an off mod's file is not seen");
     CHECK(files_exist(BANK ".TEX"), "the data's own file is still there");
+
+    /* ---- zipped mods: mod.fs at the top (stored), or in a folder (deflated) ---- */
+    {
+        static const char *const kNames[] = {"mod.fs", "library/data/SYSTEM/MODDED.TXT", "library/HELLO.TXT"};
+        static const char *const kTexts[] = {"mod: kappa\nafter: alpha\n", "kappa", "beside the data"};
+        static const char *const kNames2[] = {"lambda/mod.fs", "lambda/library/data/SYSTEM/LAMBDA.TXT"};
+        static const char *const kTexts2[] = {"mod: lambda\nversion: 2 1\n", "lambda's own, deflated"};
+        int i, on, found = 0;
+        const char *why;
+
+        put_zip("mods/kappa.zip", kNames, kTexts, 3, 0);
+        put_zip("mods/zipped-lambda.zip", kNames2, kTexts2, 2, 1);
+        put("mods/damaged.zip", "PK this isn't a zip");
+        mods_find(mods, NULL, 0);
+        for (i = 0; i < mods_count(); i++) {
+            const char *name = mods_name(i, &on, &why);
+
+            found |= (strcmp(name, "kappa") == 0 && on) | (strcmp(name, "lambda") == 0 && on) << 1 |
+                     (strcmp(name, "damaged") == 0) << 2;
+        }
+        CHECK(found == 3, "the zips found: kappa and lambda on, the damaged one not a mod (%d)", found);
+        text = files_read("SYSTEM/MODDED.TXT", &size);
+        CHECK(text != NULL && strcmp((char *)text, "kappa") == 0, "a zip's file over the folder mod's: %s",
+              text ? (char *)text : "none");
+        free(text);
+        text = files_read("system/lambda.txt", &size);   /* (in a zip, case doesn't matter at all) */
+        CHECK(text != NULL && strcmp((char *)text, "lambda's own, deflated") == 0, "a deflated file in a zip's folder");
+        free(text);
+        text = files_read("../HELLO.TXT", &size);
+        CHECK(text != NULL && strcmp((char *)text, "beside the data") == 0, "a zip's file beside the data");
+        free(text);
+        SDL_RemovePath(strcat(strcpy((char *)lib, mods), "kappa.zip"));
+        SDL_RemovePath(strcat(strcpy((char *)lib, mods), "zipped-lambda.zip"));
+        SDL_RemovePath(strcat(strcpy((char *)lib, mods), "damaged.zip"));
+    }
 
     /* ---- a texture: a bank as it is ---- */
     raw = files_read(BANK ".TEX", &size);

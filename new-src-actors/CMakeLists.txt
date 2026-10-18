@@ -50,7 +50,7 @@ endforeach()
 find_package(SDL3 REQUIRED CONFIG)
 add_executable(hga
     src/main.c
-    src/core/files.c
+    src/core/files.c src/core/zip.c
     src/platform/disc.c src/platform/library.c src/platform/gl.c src/platform/platform.c src/platform/sound.c src/platform/movie.c src/platform/music.c src/platform/seq.c src/platform/spu.c src/platform/snddrv.c
     src/render/render.c src/render/post.c
     src/data/pac.c src/data/tex.c src/data/texbank.c src/third_party/stb.c src/data/roommesh.c src/data/model.c src/data/navmesh.c src/data/exe.c src/data/soundbank.c
@@ -79,7 +79,7 @@ endforeach()
 
 # the textures' conversion: every bank of the developer's data converted and read back, the same pixels
 add_executable(texbank-check tests/texbank_check.c src/data/tex.c src/data/texbank.c src/third_party/stb.c
-    src/core/files.c src/platform/disc.c src/platform/library.c)
+    src/core/files.c src/core/zip.c src/platform/disc.c src/platform/library.c)
 target_link_libraries(texbank-check PRIVATE SDL3::SDL3 m)
 add_test(NAME texbank_check COMMAND texbank-check "${DEFAULT_DATA}" "${CMAKE_CURRENT_BINARY_DIR}/texbank-check.scratch")
 set_tests_properties(texbank_check PROPERTIES SKIP_RETURN_CODE 77)
@@ -90,7 +90,14 @@ add_test(NAME mods_room_tally COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/exa
 
 # mods' manifests and files: the order, what turns a mod off, the files layer, a mod's textures
 add_executable(mods-check tests/mods_check.c src/game/mods.c src/data/tex.c src/data/texbank.c src/third_party/stb.c
-    src/core/files.c src/platform/disc.c src/platform/library.c)
+    src/core/files.c src/core/zip.c src/platform/disc.c src/platform/library.c)
 target_link_libraries(mods-check PRIVATE forth SDL3::SDL3 m)
 add_test(NAME mods_check COMMAND mods-check "${DEFAULT_DATA}" "${CMAKE_CURRENT_BINARY_DIR}/mods-check.scratch")
 set_tests_properties(mods_check PROPERTIES SKIP_RETURN_CODE 77)
+# ... and zipped (the folder inside the zip, as zipping a folder makes it)
+add_test(NAME mods_zip_sample COMMAND ${CMAKE_COMMAND} -E tar cf "${CMAKE_CURRENT_BINARY_DIR}/room-tally.zip" --format=zip room-tally
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods")
+set_tests_properties(mods_zip_sample PROPERTIES FIXTURES_SETUP room_tally_zip)
+add_test(NAME mods_room_tally_zipped COMMAND hga --mod "${CMAKE_CURRENT_BINARY_DIR}/room-tally.zip"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/room-tally.fs")
+set_tests_properties(mods_room_tally_zipped PROPERTIES FIXTURES_REQUIRED room_tally_zip)

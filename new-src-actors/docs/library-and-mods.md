@@ -130,7 +130,10 @@ format that loses them.
 
 ## Mods
 
-A mod is a folder in `mods/` (beside `library/`; with `HGA_HOME`, in that folder). The sample,
+A mod is a folder in `mods/` (beside `library/`; with `HGA_HOME`, in that folder), or a `.zip`
+of one there: `mod.fs` at the zip's top, or in the one folder it holds (as zipping the folder
+makes it). A zip is read in place - nothing is unpacked; its files stored or deflated (no
+zip64, no encryption), and its paths' case never matters. The sample,
 `examples/mods/room-tally` (in the releases, `mod-examples/`), is turned on by copying it into
 `mods/`, or for one run with `hga --mod examples/mods/room-tally`.
 
@@ -195,17 +198,18 @@ after: better-textures   \ loaded after that mod, if it's on
 
 Later, if mods ask for it: replacing one of the game's script files outright (a mod's
 `scripts/story/rooms/castle-1f-4.fs` over the game's). It would break with every change to that
-file; the mods menu would mark such mods "replaces game scripts". Also later: the mods menu,
-mods as `.zip` files.
+file; the mods menu would mark such mods "replaces game scripts". Also later: the mods menu.
 
 ### Checked
 
 - `mods_room_tally` (ctest): the sample mod on - its actor there, counting rooms, answering
-  `rooms-seen?` by message.
+  `rooms-seen?` by message; `mods_room_tally_zipped` the same from a zip of it (cmake's own
+  zip: deflated, the folder inside).
 - `mods-check` (ctest): the order (order.txt, `after:`), every way a mod is turned off, the
   files layer (the later mod's file over the earlier's over the data, an off mod's unseen), a
   mod's PNG over a raw bank and over a converted one (its other palettes still the library's),
-  a PNG of another size.
+  a PNG of another size; zips with mod.fs at the top (stored) and in a folder (deflated), a
+  zip's file over a folder mod's and beside the data, a damaged zip passed over.
 
 ### New content (later)
 

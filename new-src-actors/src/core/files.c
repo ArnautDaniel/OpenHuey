@@ -3,16 +3,49 @@
 #include "files.h"
 
 #include <stdio.h>
+#include <string.h>
 
-#define LAYERS 32
+#include "zip.h"
 
-static char sLayers[LAYERS][1024];   /* each layer's data/ folder */
+#define LAYERS 64
+
+typedef struct Layer {
+    char dir[1024];    /* a folder's data/; or in the zip, its library/ */
+    const Zip *zip;
+} Layer;
+
+static Layer sLayers[LAYERS];
 static int sNLayers;
 
 void files_layer_add(const char *dir) {
     if (sNLayers < LAYERS) {
-        snprintf(sLayers[sNLayers++], sizeof(sLayers[0]), "%s/data", dir);
+        snprintf(sLayers[sNLayers].dir, sizeof(sLayers[0].dir), "%s/data", dir);
+        sLayers[sNLayers++].zip = NULL;
     }
+}
+
+void files_layer_add_zip(const Zip *z, const char *prefix) {
+    if (sNLayers < LAYERS) {
+        snprintf(sLayers[sNLayers].dir, sizeof(sLayers[0].dir), "%slibrary/", prefix);
+        sLayers[sNLayers++].zip = z;
+    }
+}
+
+static DiscFile *open_in_zip(const Layer *l, const char *path) {
+    char name[1300];
+    size_t size;
+    uint8_t *data;
+    int i;
+
+    if (strncmp(path, "../", 3) == 0 || strncmp(path, "..\\", 3) == 0) {
+        snprintf(name, sizeof(name), "%s%s", l->dir, path + 3);
+    } else {
+        snprintf(name, sizeof(name), "%sdata/%s", l->dir, path);
+    }
+    if ((i = zip_find(l->zip, name)) < 0 || (data = zip_read(l->zip, i, &size)) == NULL) {
+        return NULL;
+    }
+    return disc_file_memory(data, (long)size);
 }
 
 void files_layers_clear(void) { sNLayers = 0; }
@@ -22,7 +55,7 @@ static DiscFile *open_layers(const char *path) {
     int i;
 
     for (i = sNLayers - 1; i >= 0 && f == NULL; i--) {
-        f = disc_file_open_in(sLayers[i], path);
+        f = sLayers[i].zip != NULL ? open_in_zip(&sLayers[i], path) : disc_file_open_in(sLayers[i].dir, path);
     }
     return f;
 }

@@ -5,7 +5,7 @@
  *     --frames N        stop after N frames
  *     --eval "code"     run Forth after the scripts have loaded (repeatable)
  *     --import disc.iso the disc imported into the library beside the executable, then out
- *     --mod folder      a mod turned on (repeatable; with --test the only mods)
+ *     --mod folder|zip  a mod turned on (repeatable; with --test the only mods)
  *
  * The game data: a disc image or folder named (read as it is), else the library
  * (platform/library.c), else - with a window - the player is asked for the disc to import.
@@ -77,7 +77,7 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->test = argv[++i];
             o->hidden = 1;
         } else if (argv[i][0] == '-') {
-            fprintf(stderr, "usage: hga [--hidden] [--frames N] [--eval code] [--test file.fs] [--mod folder] [--import disc.iso] [disc.iso | data folder]\n");
+            fprintf(stderr, "usage: hga [--hidden] [--frames N] [--eval code] [--test file.fs] [--mod folder|zip] [--import disc.iso] [disc.iso | data folder]\n");
             return 0;
         } else {
             o->data = argv[i];

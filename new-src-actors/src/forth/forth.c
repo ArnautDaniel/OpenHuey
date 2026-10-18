@@ -1057,12 +1057,15 @@ static void evaluate(Forth *f, const char *text, size_t len, const char *name, c
     }
 }
 
-static char *read_file(const char *path, size_t *len) {
-    FILE *fp = fopen(path, "rb");
+static char *read_file(Forth *f, const char *path, size_t *len) {
+    FILE *fp;
     char *buf;
     long n;
 
-    if (fp == NULL) {
+    if (f->reader != NULL && (buf = f->reader(f->reader_ctx, path, len)) != NULL) {
+        return buf;
+    }
+    if ((fp = fopen(path, "rb")) == NULL) {
         return NULL;
     }
     fseek(fp, 0, SEEK_END);
@@ -1089,7 +1092,7 @@ static void include_file(Forth *f, const char *path, size_t plen) {
 
     memcpy(name, path, plen);
     name[plen] = 0;
-    text = read_file(name, &len);
+    text = read_file(f, name, &len);
     if (text == NULL) {
         forth_error(f, "include: can't read %s", name);
         /* (name leaks on this path: errors are rare and it is tiny) */
@@ -1623,12 +1626,18 @@ static int vocab_file(Forth *f, const char *name, size_t len, char *path, size_t
 
     for (r = 0; r < f->nroots; r++) {
         FILE *fp;
+        char *text;
+        size_t tlen;
         int k = snprintf(path, n, "%s/", f->roots[r]);
 
         for (i = 0; i < len && (size_t)k + 4 < n; i++) {
             path[k++] = name[i] == '.' ? '/' : name[i];
         }
         snprintf(path + k, n - (size_t)k, ".fs");
+        if (f->reader != NULL && (text = f->reader(f->reader_ctx, path, &tlen)) != NULL) {
+            free(text);
+            return 1;
+        }
         if ((fp = fopen(path, "rb")) != NULL) {
             fclose(fp);
             return 1;

@@ -10,7 +10,7 @@
 #define MODS_API_MINOR 0   /* `requires: hga 1 0`): the minor grows with additions */
 
 /* the mods turned on, decided at start-up: those in `folder` (NULL: none - the tests) as
- * mods/order.txt says, then the folders `named` (--mod); their files layered over the data */
+ * mods/order.txt says, then the folders or zips `named` (--mod); their files layered over the data */
 void mods_find(const char *folder, const char *const *named, int nnamed);
 /* each mod's scripts, after the game's (game.fs) */
 void mods_load_scripts(Forth *f, const char *game_scripts);

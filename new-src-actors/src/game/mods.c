@@ -2,7 +2,8 @@
  *
  *   mods/order.txt        on: <name> / off: <name>, a line each, in load order (the mods menu
  *                         will write it); a mod it doesn't name is on, after those it does
- *   mods/<folder>/mod.fs  mod: <name>  version: <major> <minor>
+ *   mods/<folder>/mod.fs  mod: <name>  version: <major> <minor>   (or mods/<name>.zip: mod.fs at
+ *                         its top, or in the one folder it holds)
  *                         requires: hga <major> <minor> (the mod API) / <mod> <major> <minor>
  *                         after: <mod> (loaded after it, if it's on)        \ comments
  */
@@ -17,6 +18,7 @@
 #include <SDL3/SDL.h>
 
 #include "../core/files.h"
+#include "../core/zip.h"
 
 #define MODS 64
 #define NEEDS 8
@@ -27,7 +29,9 @@ typedef struct Need {
 } Need;
 
 typedef struct Mod {
-    char name[64], dir[1024];
+    char name[64], dir[1024];   /* (a zip: the .zip's path) */
+    Zip *zip;
+    char prefix[256];           /* in the zip: where mod.fs is ("" or "folder/") */
     int major, minor;
     Need requires[NEEDS], after[NEEDS];
     int nrequires, nafter;
@@ -78,23 +82,82 @@ static void need(Need *list, int *n, char **w, int nw) {
     }
 }
 
-static void add_mod(const char *dir) {   /* (dir: no "/" at its end) */
-    char path[1100], line[512], *w[8];
+/* a file of the mod's (`rel` from where its mod.fs is), whole, or NULL */
+static char *mod_read(const Mod *m, const char *rel, size_t *size) {
+    char path[1400];
+
+    if (m->zip != NULL) {
+        snprintf(path, sizeof(path), "%s%s", m->prefix, rel);
+        return (char *)zip_read(m->zip, zip_find(m->zip, path), size);
+    }
+    snprintf(path, sizeof(path), "%s/%s", m->dir, rel);
+    return SDL_LoadFile(path, size);   /* (NUL-terminated past its end; SDL_free) */
+}
+
+static void mod_free(const Mod *m, char *text) {
+    if (m->zip != NULL) {
+        free(text);
+    } else {
+        SDL_free(text);
+    }
+}
+
+static int is_zip(const char *path) {
+    size_t len = strlen(path);
+
+    return len > 4 && strcasecmp(path + len - 4, ".zip") == 0;
+}
+
+/* where a zip's mod.fs is: at its top, else in a folder (the shortest such path) */
+static int zip_prefix(const Zip *z, char *prefix, size_t n) {
+    int i, best = -1;
+
+    for (i = 0; i < zip_count(z); i++) {
+        const char *name = zip_name(z, i), *slash = strrchr(name, '/');
+
+        if (strcasecmp(slash != NULL ? slash + 1 : name, "mod.fs") == 0 &&
+            (best < 0 || strlen(name) < strlen(zip_name(z, best)))) {
+            best = i;
+        }
+    }
+    if (best < 0) {
+        return 0;
+    }
+    snprintf(prefix, n, "%.*s", (int)(strlen(zip_name(z, best)) - 6), zip_name(z, best));
+    return 1;
+}
+
+static void add_mod(const char *dir) {   /* (a folder - no "/" at its end - or a .zip) */
+    char *w[8], *text, *line, *save = NULL;
     const char *base = strrchr(dir, '/');
     Mod *m;
-    FILE *f;
+    size_t size;
     int i;
 
-    snprintf(path, sizeof(path), "%s/mod.fs", dir);
-    if (sN == MODS || (f = fopen(path, "r")) == NULL) {
-        return;   /* (not a mod: no manifest) */
+    if (sN == MODS) {
+        return;
     }
     m = &sMods[sN];
     memset(m, 0, sizeof(*m));
     snprintf(m->dir, sizeof(m->dir), "%s", dir);
     snprintf(m->name, sizeof(m->name), "%s", base != NULL ? base + 1 : dir);
+    if (is_zip(dir)) {
+        m->name[strlen(m->name) - 4] = 0;
+        if ((m->zip = zip_open(dir)) == NULL) {
+            return;
+        }
+        if (!zip_prefix(m->zip, m->prefix, sizeof(m->prefix))) {
+            fprintf(stderr, "mods: %s has no mod.fs - not a mod\n", dir);
+            zip_close(m->zip);
+            return;
+        }
+    }
+    if ((text = mod_read(m, "mod.fs", &size)) == NULL) {
+        zip_close(m->zip);
+        return;   /* (not a mod: no manifest) */
+    }
     m->on = 1;
-    while (fgets(line, sizeof(line), f) != NULL) {
+    for (line = strtok_r(text, "\n", &save); line != NULL; line = strtok_r(NULL, "\n", &save)) {
         int n = words(line, w, 8);
 
         if (n == 0) {
@@ -110,17 +173,19 @@ static void add_mod(const char *dir) {   /* (dir: no "/" at its end) */
         } else if (strcmp(w[0], "after:") == 0) {
             need(m->after, &m->nafter, w, n);
         } else {
-            fprintf(stderr, "mods: %s: \"%s\" isn't a word mod.fs knows\n", path, w[0]);
+            fprintf(stderr, "mods: %s's mod.fs: \"%s\" isn't a word mod.fs knows\n", dir, w[0]);
         }
     }
-    fclose(f);
+    mod_free(m, text);
     if (!good_name(m->name) || strcasecmp(m->name, "hga") == 0) {
-        fprintf(stderr, "mods: %s: its name \"%s\" can't be a mod's (letters, digits and -)\n", path, m->name);
+        fprintf(stderr, "mods: %s: its name \"%s\" can't be a mod's (letters, digits and -)\n", dir, m->name);
+        zip_close(m->zip);
         return;
     }
     for (i = 0; i < sN; i++) {
         if (strcasecmp(sMods[i].name, m->name) == 0) {
             fprintf(stderr, "mods: %s and %s are both \"%s\" - the first is used\n", sMods[i].dir, dir, m->name);
+            zip_close(m->zip);
             return;
         }
     }
@@ -143,7 +208,8 @@ static SDL_EnumerationResult folder_one(void *user, const char *dir, const char 
     SDL_PathInfo info;
 
     snprintf(path, sizeof(path), "%s%s", dir, name);
-    if (name[0] != '.' && SDL_GetPathInfo(path, &info) && info.type == SDL_PATHTYPE_DIRECTORY) {
+    if (name[0] != '.' && SDL_GetPathInfo(path, &info) &&
+        (info.type == SDL_PATHTYPE_DIRECTORY || (info.type == SDL_PATHTYPE_FILE && is_zip(name)))) {
         add_mod(path);
     }
     return SDL_ENUM_CONTINUE;
@@ -259,7 +325,9 @@ static void layer_files(void) {   /* (the mods on: their library/ over the data,
     files_layers_clear();
     for (i = 0; i < sN; i++) {
         snprintf(dir, sizeof(dir), "%s/library", sMods[i].dir);
-        if (sMods[i].on && SDL_GetPathInfo(dir, NULL)) {
+        if (sMods[i].on && sMods[i].zip != NULL) {
+            files_layer_add_zip(sMods[i].zip, sMods[i].prefix);
+        } else if (sMods[i].on && SDL_GetPathInfo(dir, NULL)) {
             files_layer_add(dir);
         }
     }
@@ -269,6 +337,10 @@ void mods_find(const char *folder, const char *const *names, int nnamed) {
     char dir[1100];
     int i, from_folder;
 
+    for (i = 0; i < sN; i++) {   /* (found again: the tests) */
+        zip_close(sMods[i].zip);
+    }
+    files_layers_clear();
     sN = 0;
     if (folder != NULL) {
         SDL_EnumerateDirectory(folder, folder_one, NULL);
@@ -301,9 +373,27 @@ void mods_find(const char *folder, const char *const *names, int nnamed) {
     layer_files();
 }
 
+/* Forth's reader (forth.h): a zipped mod's scripts, "<the .zip>!/<path in it>" */
+static char *zip_reader(void *ctx, const char *path, size_t *len) {
+    int i;
+
+    (void)ctx;
+    for (i = 0; i < sN; i++) {
+        size_t n = strlen(sMods[i].dir);
+
+        if (sMods[i].zip != NULL && strncmp(path, sMods[i].dir, n) == 0 && strncmp(path + n, "!/", 2) == 0) {
+            return (char *)zip_read(sMods[i].zip, zip_find(sMods[i].zip, path + n + 2), len);
+        }
+    }
+    return NULL;
+}
+
 void mods_load_scripts(Forth *f, const char *game_scripts) {
-    char path[1300], line[200];
+    char path[1300], line[200], *text;
+    size_t size;
     int i, any = 0;
+
+    f->reader = zip_reader;
 
     for (i = 0; i < sN; i++) {
         Mod *m = &sMods[i];
@@ -312,11 +402,12 @@ void mods_load_scripts(Forth *f, const char *game_scripts) {
         if (!m->on) {
             continue;
         }
-        snprintf(path, sizeof(path), "%s/scripts/%s.fs", m->dir, m->name);
-        if (!SDL_GetPathInfo(path, NULL)) {
+        snprintf(path, sizeof(path), "scripts/%s.fs", m->name);
+        if ((text = mod_read(m, path, &size)) == NULL) {
             fprintf(stderr, "mods: %s %d.%d on (files only)\n", m->name, m->major, m->minor);
             continue;
         }
+        mod_free(m, text);
         for (v = f->vocabs; v != NULL && strcasecmp(v->name, m->name) != 0; v = v->next) {
         }
         snprintf(line, sizeof(line), "%s/%s.fs", game_scripts, m->name);
@@ -331,7 +422,11 @@ void mods_load_scripts(Forth *f, const char *game_scripts) {
             fprintf(stderr, "mods: a mod's scripts can do anything the game's can - load only mods you trust\n");
             any = 1;
         }
-        snprintf(path, sizeof(path), "%s/scripts", m->dir);
+        if (m->zip != NULL) {
+            snprintf(path, sizeof(path), "%s!/%sscripts", m->dir, m->prefix);
+        } else {
+            snprintf(path, sizeof(path), "%s/scripts", m->dir);
+        }
         forth_add_root(f, path);
         snprintf(line, sizeof(line), "USING: %s ;", m->name);   /* (as any vocabulary: from its file) */
         if (forth_eval(f, line, strlen(line), m->name) != 0) {
