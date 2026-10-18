@@ -141,8 +141,7 @@ message box), `lists.fs` (the item lists, an item's actions, the files), `map.fs
 a quarter off each fright and the recovery's reset three times in four; $8B a quarter off, her
 calming half again, the reset half the time; $8C half off, her calming doubled, never the reset,
 nor running's fright; **I2, I3 built**
-(`scripts/subscreen.fs`, `tests/items/test_subscreen.fs` (54)). Not yet: the buttons' glyphs in the
-help lines (hga's font has none: "?"), the parts' blendings (subtract / add: drawn plain), the
+(`scripts/subscreen.fs`, `tests/items/test_subscreen.fs` (54)). Not yet: the parts' blendings (subtract / add: drawn plain), the
 menu's sound turned down while open; the extras room's modes - the movies (8), the galleries
 ($B models, $D music, $E art, $F types). **The mini-game** (`subscreen/extras.fs`): its menu
 (mode $A: the introduction, challenges A..D - C and D once A and B are cleared, resident flags

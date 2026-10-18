@@ -81,5 +81,7 @@ The C facts it reads, added for it: bodies (`body-place`, `body-room`, `body-pos
 kernel), `route` / `route-door` (world.c `world_route`, RoutePlanner's search), `door-open?`,
 `door-exit-in`, `door-leads`, `exit-stand`.
 
-Left: nobody makes noises yet. Fiona, Hewie, the stalkers, doors and the story send `noise`
-once they are built. The summoner's copy of last frame's noises waits for the summoner.
+Who makes noises: Fiona (her steps, her doors, her voice and screams, being hurt, a slam, her
+commands to Hewie), Hewie (his steps, barks and actions), the stalkers, the doors, the things
+(a thrown ball, a powder), the obstacles, the creatures, and the rooms' scripts (the story's
+`noise`). The summoner hears last frame's noises (`noise-made`: `scripts/summoner.fs`).

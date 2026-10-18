@@ -127,8 +127,8 @@ overlays, neck, feet, sounds, the frame). Checked by `tests/hewie/test_hewie.fs`
 - she goes out by a door: he follows off screen and comes in after her;
 - parted, gone.
 
-Actions of the later phases fall back to the default (or to sniffing about). Left for H1:
-water steps (with the room effects), the story's use of `his-near` / `his-sub`.
+Actions of the later phases fall back to the default (or to sniffing about). His steps in water ripple and
+splash (`wet-feet`, `hewie/fight.fs`). Left for H1: the story's use of `his-near` / `his-sub`.
 
 **H2 built** (`scripts/hewie/commands.fs`; Fiona's side `scripts/fiona/commands.fs`): her
 commands taken (Hewie_FionaCommand / CommandAction / ActOnCommand: stay, come, come back, go

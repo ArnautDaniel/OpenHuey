@@ -61,7 +61,7 @@ Marked "PC: an approximation, not decompiled" in their comments.
 Not yet classified as decompilation errors or PC-only problems; check them before relying on
 the code involved.
 
-- **The drawer**: after checking a drawer Fiona stays frozen in place (the game keeps running).
+None open. (The drawer - Fiona frozen after checking one - is fixed.)
 
 ## Verification
 

@@ -118,7 +118,8 @@ what it was told (danger, panic, Fiona's mode, Hewie's action).
 From `event.c` (`Events_RunPhase`, `Events_CharEnter`, `Events_RunCharScripts`, the commands and
 conditions), `scene_game.c` (the order), `progress.c`.
 
-1. **Characters by slot:** 0 Fiona, 1 Hewie, 2.. the stalkers and the others (later); 0xFF the
+1. **Characters by slot:** 0 Fiona, 1 Hewie, 2 the stalker, 3.. the event characters' figures
+   (`cast-actor`: docs/subsystems/cast.md); 0xFF the
    script's own character; 0xFE the active stalker.
 2. **Areas entered / left** compare where a character was at the last frame's end with where
    it is now (the original's previous position).
@@ -152,6 +153,11 @@ conditions), `scene_game.c` (the order), `progress.c`.
   setup.
 
 ## Status
+
+The opening from a new game (no `free-play`): `tests/story/test_opening.fs` (7) - the cage room's
+entering script (Fiona's act01: the doors locked, the opening's music and figures, the fade in),
+then she is the player's: the world not held, walking, the room's first offered action ("Where
+am I?", area $11) taken. (`free-play` is a test and debug shortcut past it, not a stand-in.)
 
 **S1 built**: the story and room actors, the phases, the action scripts as coroutines; the
 words for flags, variables, bits, the counter, chance; the script context and its waits;
@@ -331,8 +337,9 @@ effects and the Hewie-controlled clock rooms ($D0..$E9, 42 stubs).
   machine (house-of-truth 1f-6 / 1f-4); a variable down by her hit (`var-down-by-hit`); things in
   an area aged out (`things-age-out-in`); the hatches of the water tower (`var0-ease`, with their
   sound kept on - id bit 31); the aiming cursor of water-tower-8f-1 (`cursor-step`,
-  `cursor-draw`: the room's texture $C on UI layer 15); a blow request at Fiona (Progress_Noise:
-  `fiona-request` kind 2 - Hewie's and the stalker's not taken yet); Fiona's flinch with nobody
+  `cursor-draw`: the room's texture $C on UI layer 15); a blow from a point at a
+  character (Progress_Noise: `fiona-request` kind 2 to Fiona, `blow-from` to Hewie and the stalker -
+  each reacting as to a blow with no one behind it, as Progress_OwnRequests / Pursuer_Hit do); Fiona's flinch with nobody
   holding her (`flinch`: action $B / $21); the screen darkened a frame at a time (`screen-fill`,
   UI layer 16 - now 18 layers).
 - **The falling debris and the traps** of house-of-truth-1f-9: kind-9 things carrying a room
@@ -413,11 +420,11 @@ back) go to the room `room-preload` or `exit-prepare` named (`docs/subsystems/ro
 The title's MINI-GAME starts the extras room's action 1 at once (its door 0's offer:
 `mini-game-asked?`).
 
-Next, by how much the scripts use them:
+The later stages, by how much the scripts use them (all built now):
 
 | Stage | Words |
 |---|---|
 | S4 | (built) The rest: scene changes (`scene-change`'s other scenes), endings, `movie-loop`, the half-black screen (op 11). |
-| S5b | Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`flame-in` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `specks`, `butterflies`, `shards-at`, `effects-arena-flip`). |
-| S5c | The rooms' own commands (`<room>.cmdNN`: their effects - wisps, smoke, drips, the mirror...). |
-| S6 | The stalkers' and creatures' words, with them (the stalker's: P4a, `docs/subsystems/stalker.md`; the creatures' later). |
+| S5b | (built: docs/subsystems/effects.md) Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`flame-in` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `specks`, `butterflies`, `shards-at`, `effects-arena-flip`). |
+| S5c | (built) The rooms' own commands (`<room>.cmdNN`: their effects - wisps, smoke, drips, the mirror...). |
+| S6 | (built) The stalkers' and creatures' words, with them (`docs/subsystems/stalker.md`, `creatures.md`). |

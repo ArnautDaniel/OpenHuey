@@ -90,7 +90,8 @@ behaviour.
 - Her phases share one actor. Each phase adds behaviours (`become`) and handlers. States the
   original runs as PTMFs are behaviours, or words a behaviour's tick runs.
 - The input is a fact (engine words). The controls are hers, so no input message.
-- Hewie-controlled play (the original's `+0x1FBEC1`): later, with Hewie.
+- Hewie-controlled play (the original's `+0x1FBEC1`): built with the mini-game - she is his
+  companion then (`fiona/companion.fs`).
 
 ## Status
 
@@ -126,10 +127,6 @@ voice; keeping clear of others (with Hewie).
 - turning to flee (Q: 0x403, fear up 10);
 - her looks follow the danger and the panic (the chased walk 0x208, the shaken and frightened
   blends).
-
-Found with Hewie's tests: placing her on front-garden-2's exit 0 spot (`0 0 exit-spot`) right
-after the room is entered puts her outside the exit's area (the spot is 64 above her floor), so
-the stand-in exit check doesn't fire; Fiona's own test reaches it after the door tests. To look at.
 
 Left for F2: the slow locked-door try; shaking the panic off faster while down (with the
 shake-free of F4); the flee's door slam and Hewie's reaction; charms (with items).

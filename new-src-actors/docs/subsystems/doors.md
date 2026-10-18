@@ -89,6 +89,8 @@ Fiona uses doors (docs/subsystems/fiona.md): she holds a door, opens or shuts it
 her animation, and lets it go as she steps out.
 
 Used by the stalker in her room too (`stalker/doorway.fs`: his door animation with `use-door`),
-and slammed or burst open by Fiona (`fiona/slam.fs`). Left: the event commands' door bits (with
-the story); a door used off-screen with no one to hear it; `Doors_SetOpened`; the stalkers'
-breaking a door; names for doors.
+and slammed or burst open by Fiona (`fiona/slam.fs`). Also built: the event
+commands' door bits (the story's `door-lock`, `door-close-off-lock`, `door-lock-for`,
+`room-doors-state`), `Doors_SetOpened` (`swing-door`), a stalker breaking a door open and
+pulling it shut behind him (his DoorBreak: `stalker/doorway.fs` `shut-behind`). Left: names for
+doors.

@@ -460,7 +460,8 @@ nearest her - within 50 of her, further than 20 from him, about his height, a st
 she and Hewie off the line to it - takes his shot instead of her: his point (Pursuer_AttackPoint,
 `body-point!`) there 3 frames, where the story's zones see it (it breaks).
 *Not yet*: the tints' flares (the renderer's layer
-$11 sprites drifting about them: the PC port of the original draws none either); **the mini-game's run** (Hewie played): she isn't always in the room played - after her
+$11 sprites drifting about them: the PC port of the original draws none either). Built:
+**the mini-game's run** (Hewie played): she isn't always in the room played - after her
 while she is elsewhere he goes out by the first door of his way to her room (Pursuer_Modes /
 BehaviourFollow) and travels after her; coming into the room played he waits 150 frames first
 (Pursuer_ThroughDoorEnding); doors are left open behind (Kind34_ExitArg, TintStalker_EndingDoor);

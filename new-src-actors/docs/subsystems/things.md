@@ -47,10 +47,8 @@ it is taken. The magnesias' bursts: the plain one the shove's puffs; the refined
 the prima's BurstB (`mag-burst-new`: a flash, a ring on the floor, pieces thrown and puffs rising
 - three of each across the view for the prima).
 
-## Not yet
-
-The stalker following a noise in the room being played (the original's leads, +0x16C9) - the
-doll draws him through its own message.
+The stalker following a noise in the room being played is his leads' (`stalker/leads.fs`:
+docs/subsystems/stalker.md); the doll draws him through its own message.
 
 ## Status
 

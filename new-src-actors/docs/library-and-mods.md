@@ -308,6 +308,9 @@ format that loses them.
 
 ## Mods
 
+(How to make one, step by step - the formats, the game's words and messages, hooks, testing,
+pitfalls: **`docs/modding.md`**. This section is the design.)
+
 A mod is a folder in `mods/` (beside `library/`; with `HGA_HOME`, in that folder), or a `.zip`
 of one there: `mod.fs` at the zip's top, or in the one folder it holds (as zipping the folder
 makes it). A zip is read in place - nothing is unpacked; its files stored or deflated (no
@@ -331,7 +334,7 @@ requires: hga 1 0        \ the mod API it is written for (mod-api); a mod, and i
 after: better-textures   \ loaded after that mod, if it's on
 ```
 
-- **Order.** `mods/order.txt` (the mods menu will write it) has `on: <name>` / `off: <name>`
+- **Order.** `mods/order.txt` (the title's MODS menu writes it) has `on: <name>` / `off: <name>`
   lines in load order; a mod it doesn't name is on, after those it does, by name. An `after:`
   moves a mod down below the one it names; `--mod` folders come last.
 - **Off.** `off:` in order.txt; a `requires:` not met (hga's mod API: the same major, a minor
@@ -378,6 +381,7 @@ after: better-textures   \ loaded after that mod, if it's on
    | Hook | Vocabulary | Since | What |
    |---|---|---|---|
    | `item-use-rule ( place -- result )` | `items` | 1.1 | what using the item at `place` (a held place: `id@`) does; the result as the game's rules' (`no-use`, `used-up` ...: bits 1 / 2 spend one; `done-quietly`: something happened, nothing spent) |
+   | `title-menu-hook ( -- )` | `opening` | 1.2 | the title's entries from mods: call what it replaced, then `title-entry ( addr len xt -- )` each (shown after the game's, before MODS / QUIT; picking one runs xt in the title's actor - `title-gone` first to leave the title) |
 
    The sample, `examples/mods/flower-scent`: the Fresh Flowers used where the game has no use for
    them calm Fiona a little (the game's `remedy` message) and are kept - asking the game's rule
@@ -385,10 +389,21 @@ after: better-textures   \ loaded after that mod, if it's on
 
 Later, if mods ask for it: replacing one of the game's script files outright (a mod's
 `scripts/story/rooms/castle-1f-4.fs` over the game's). It would break with every change to that
-file; the mods menu would mark such mods "replaces game scripts". Also later: the mods menu.
+file; the mods menu would mark such mods "replaces game scripts".
+
+### The mods menu
+
+The title shows MODS when `mods/` has any: each mod in load order, ON or OFF, and why one asked
+for didn't load this run (its `requires:`, a failed script ...). The cross turns one on or off,
+Left / Right (L1 / R1) move it in the order, the triangle goes back and writes `mods/order.txt`.
+Changes apply when hga next starts: mods load with the game's scripts. (`scripts/mods/menu.fs`,
+the list in `src/game/mods.c`; `--mods DIR` names another folder of mods - the tests use it.)
 
 ### Checked
 
+- `mods_menu`, `mods_menu_after` (ctest): the menu on a copy of the samples (`--mods`) - a mod
+  turned off and moved up, order.txt written, and in force when hga starts again.
+- `mods_free_play_entry` (ctest): the title hook's sample - FREE PLAY among the entries.
 - `mods_flower_scent` (ctest): the hook sample on - its rule set, the flowers calming her and
   kept, a remedy still the game's.
 - `mods_room_tally` (ctest): the sample mod on - its actor there, counting rooms, answering

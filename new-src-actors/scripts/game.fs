@@ -46,10 +46,10 @@ opening-spawn constant opening
 : start-headless ( -- )  hidden? if  opening:new-game  then ;   \ (no window - tests, screenshots: the
 start-headless                                                 \ new game at once, ahead of the tests' messages)
 
-\ free play (`hga --eval free-play`, or at the console): the world as the opening leaves it -
-\ a stand-in until the opening's scenes can play (cutscenes, the characters' scripted moves).
-\ The opening done, the grate open, the world not held (no scene playing), Hewie hers to
-\ command and with her.
+\ free play (`hga --eval free-play`, or at the console): a shortcut past the game's start, for the
+\ tests and debugging - the opening done, the grate open, the world not held, Hewie hers to command
+\ and with her (where the first rooms' story leaves her). The opening itself plays from a new game
+\ (the title, its movie, the cage room's script: tests/story/test_opening.fs).
 : free-play ( -- )   \ (the title and opening left out)
     s" opening" actor-named dup 0< if  drop  else  kill  then   \ (by name: its id may be another's by now)
     opening-done story-flag-set  grate-open story-flag-set  world-held state-flag-clear  hewie-commandable state-flag-set
