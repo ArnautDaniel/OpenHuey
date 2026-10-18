@@ -272,56 +272,72 @@ static void remove_tree(const char *dir) {   /* (dir ends with "/") */
     }
 }
 
-/* ---- the progress window (none headless: stderr) ---- */
+/* ---- the progress window (none headless: stderr). The import runs on a thread of its own
+ * (import_files) and only says how far it is; the window is drawn - and its events read, a close
+ * cancelling - here, so it answers while a big file is being converted ---- */
 
 typedef struct Progress {
     SDL_Window *win;
     SDL_Renderer *ren;
-    int headless, cancelled, last_pct;
+    int last_pct;
+    SDL_Mutex *lock;      /* (the rest: the import's thread writes, the window reads) */
     long long done, total;
-    Uint64 drawn;
+    char name[300];       /* the file at hand */
+    int converting;       /* read whole, being converted */
+    SDL_AtomicInt cancelled;
 } Progress;
 
 static void progress_open(Progress *pr, int headless) {
     memset(pr, 0, sizeof(*pr));
-    pr->headless = headless;
     pr->last_pct = -1;
+    pr->lock = SDL_CreateMutex();
     if (!headless && SDL_Init(SDL_INIT_VIDEO)) {
         SDL_CreateWindowAndRenderer("OpenHuey - importing the disc", 640, 160, 0, &pr->win, &pr->ren);
     }
 }
 
-static void progress_draw(Progress *pr, const char *name) {
-    int pct = pr->total > 0 ? (int)(pr->done * 100 / pr->total) : 0;
+/* (the import's thread) `bytes` more read of `name`; `converting`: it is being converted */
+static void progress_note(Progress *pr, long long bytes, const char *name, int converting) {
+    SDL_LockMutex(pr->lock);
+    pr->done += bytes;
+    pr->converting = converting;
+    snprintf(pr->name, sizeof(pr->name), "%s", name);
+    SDL_UnlockMutex(pr->lock);
+}
+
+static void progress_draw(Progress *pr) {
     SDL_Event e;
     SDL_FRect bar = {20, 90, 600, 28}, fill;
-    char line[200];
+    char line[400];
+    long long done, total;
+    int pct;
 
+    SDL_LockMutex(pr->lock);
+    done = pr->done;
+    total = pr->total;
+    snprintf(line, sizeof(line), "%s%.70s", pr->converting ? "converting " : "", pr->name);
+    SDL_UnlockMutex(pr->lock);
+    pct = total > 0 ? (int)(done * 100 / total) : 0;
     if (pr->win == NULL) {
-        if (pct != pr->last_pct && pct % 5 == 0) {
-            fprintf(stderr, "openhuey: importing the disc ... %d%%\n", pct);
+        if (pct / 5 != pr->last_pct / 5 || pr->last_pct < 0) {   /* (each 5% passed - looked at now and then) */
+            fprintf(stderr, "openhuey: importing the disc ... %d%%\n", pct / 5 * 5);
         }
         pr->last_pct = pct;
         return;
     }
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_EVENT_QUIT || e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
-            pr->cancelled = 1;
+            SDL_SetAtomicInt(&pr->cancelled, 1);
         }
     }
-    if (SDL_GetTicks() - pr->drawn < 33 && pct != 100) {
-        return;
-    }
-    pr->drawn = SDL_GetTicks();
     SDL_SetRenderDrawColor(pr->ren, 16, 14, 12, 255);
     SDL_RenderClear(pr->ren);
     SDL_SetRenderScale(pr->ren, 2, 2);
     SDL_SetRenderDrawColor(pr->ren, 216, 208, 200, 255);
     SDL_RenderDebugText(pr->ren, 10, 10, "Importing Haunting Ground");
     SDL_SetRenderScale(pr->ren, 1, 1);
-    snprintf(line, sizeof(line), "%.70s", name);
     SDL_RenderDebugText(pr->ren, 20, 60, line);
-    snprintf(line, sizeof(line), "%d%%  (%lld of %lld MB)", pct, pr->done >> 20, pr->total >> 20);
+    snprintf(line, sizeof(line), "%d%%  (%lld of %lld MB)", pct, done >> 20, total >> 20);
     SDL_RenderDebugText(pr->ren, 20, 130, line);
     SDL_SetRenderDrawColor(pr->ren, 70, 64, 58, 255);
     SDL_RenderRect(pr->ren, &bar);
@@ -339,6 +355,7 @@ static void progress_close(Progress *pr) {
     if (pr->win != NULL) {
         SDL_DestroyWindow(pr->win);
     }
+    SDL_DestroyMutex(pr->lock);
 }
 
 /* ---- the import ---- */
@@ -438,10 +455,8 @@ static int make_parent(const char *path) {
     return SDL_CreateDirectory(dir);
 }
 
-/* a kind of DATA.CVM's file the library holds converted, read whole: a .TEX bank (its PNGs,
- * texbank.h), an .ADX track (a FLAC) */
-static int convert_samples(const Item *it, const char *root, Items *made, const uint8_t *bd, size_t size, char *why,
-                           size_t n);
+/* the kinds the library holds converted (read whole, then copy_item hands each to its converter;
+ * one that turns out not to be its kind is copied as it is) */
 static int has_kind(const Item *it, const char *ext) {
     size_t len = strlen(it->path), elen = strlen(ext);
 
@@ -509,12 +524,11 @@ static int convert_movie(const Item *it, const char *root, Items *made, const ui
 
 /* the executable: its tables (exetables.h) in exe/, each a file - the executable itself not kept */
 static int convert_exe(const char *root, Items *made, const uint8_t *data, size_t size, char *why, size_t n) {
-    char rel[200], to[1300];
+    char rel[200];
     uint8_t *copy = malloc(size), *t;
     size_t tsize;
     Exe e;
     int i, ok = 1;
-    FILE *f;
 
     if (copy == NULL) {
         return 0;
@@ -531,18 +545,8 @@ static int convert_exe(const char *root, Items *made, const uint8_t *data, size_
             break;
         }
         snprintf(rel, sizeof(rel), "exe/%s.bin", exetables_name(i));
-        snprintf(to, sizeof(to), "%s%s", root, rel);
-        ok = make_parent(to) && (f = fopen(to, "wb")) != NULL;
-        if (ok) {
-            ok = fwrite(t, 1, tsize, f) == tsize;
-            ok = fclose(f) == 0 && ok;
-        }
+        ok = write_file(root, made, rel, t, tsize, why, n);
         free(t);
-        if (!ok) {
-            snprintf(why, n, "%s can't be written", to);
-        } else {
-            items_add(made, rel, (long)tsize);
-        }
     }
     exe_free(&e);
     return ok;
@@ -551,10 +555,9 @@ static int convert_exe(const char *root, Items *made, const uint8_t *data, size_
 /* a message table as text (msgtext.h): "data/<path less its extension><suffix>" */
 static int convert_messages(const Item *it, const char *root, Items *made, const uint8_t *table, size_t size,
                             const char *suffix, char *why, size_t n) {
-    char rel[700], to[1300], about[700];
+    char rel[700], about[700];
     char *text;
     size_t len;
-    FILE *f;
     int ok;
 
     snprintf(about, sizeof(about), "%s%s", it->path, strcmp(suffix, ".txt") == 0 ? "" : ": the room's text (section 10)");
@@ -562,32 +565,21 @@ static int convert_messages(const Item *it, const char *root, Items *made, const
         return -1;   /* (not a table: copied as it is) */
     }
     snprintf(rel, sizeof(rel), "data/%.*s%s", (int)strlen(it->path) - 4, it->path, suffix);
-    snprintf(to, sizeof(to), "%s%s", root, rel);
-    ok = make_parent(to) && (f = fopen(to, "wb")) != NULL;
-    if (ok) {
-        ok = fwrite(text, 1, len, f) == len;
-        ok = fclose(f) == 0 && ok;
-    }
+    ok = write_file(root, made, rel, (const uint8_t *)text, len, why, n);
     free(text);
-    if (!ok) {
-        snprintf(why, n, "%s can't be written", to);
-        return 0;
-    }
-    items_add(made, rel, (long)len);
-    return 1;
+    return ok;
 }
 
 /* an ADX as a FLAC beside where it was: the same samples, once through; its loop in tags */
 static int convert_music(const Item *it, const char *root, Items *made, const uint8_t *adx, size_t size, char *why,
                          size_t n) {
-    char rel[700], to[1300], start[48], end[48], stop[48];
+    char rel[700], start[48], end[48], stop[48];
     const char *tags[3] = {start, end, stop};
     int16_t *pcm;
     long frames, loop_start, loop_end, stop_at;
     int ch, rate, ok;
     uint8_t *flac;
     size_t flen;
-    FILE *f;
 
     if (!musicsrc_adx_pcm(adx, size, &pcm, &frames, &ch, &rate, &loop_start, &loop_end, &stop_at)) {
         return -1;   /* (not an ADX: copied as it is) */
@@ -598,19 +590,13 @@ static int convert_music(const Item *it, const char *root, Items *made, const ui
     flac = flacenc(pcm, frames, ch, rate, tags, 3, &flen);
     free(pcm);
     snprintf(rel, sizeof(rel), "data/%.*s.flac", (int)strlen(it->path) - 4, it->path);
-    snprintf(to, sizeof(to), "%s%s", root, rel);
-    ok = flac != NULL && make_parent(to) && (f = fopen(to, "wb")) != NULL;
-    if (ok) {
-        ok = fwrite(flac, 1, flen, f) == flen;
-        ok = fclose(f) == 0 && ok;
-    }
-    free(flac);
-    if (!ok) {
-        snprintf(why, n, "%s can't be written", to);
+    if (flac == NULL) {
+        snprintf(why, n, "%s couldn't be converted", it->path);
         return 0;
     }
-    items_add(made, rel, (long)flen);
-    return 1;
+    ok = write_file(root, made, rel, flac, flen, why, n);
+    free(flac);
+    return ok;
 }
 
 typedef struct Made {   /* the files written, for the manifest (paths in the library) */
@@ -822,9 +808,8 @@ static int copy_item(const Item *it, const char *root, Items *made, Progress *pr
             disc_file_close(f);
             return 0;
         }
-        pr->done += (long long)got;
-        progress_draw(pr, it->path);
-        if (pr->cancelled) {
+        progress_note(pr, (long long)got, it->path, 0);
+        if (SDL_GetAtomicInt(&pr->cancelled)) {
             snprintf(why, n, "the import was cancelled");
             if (out != NULL) {
                 fclose(out);
@@ -837,6 +822,8 @@ static int copy_item(const Item *it, const char *root, Items *made, Progress *pr
     disc_file_close(f);
     if (bank != NULL) {   /* (not one after all: copied as it is) */
         int ok = have == (size_t)it->size ? -1 : 0;
+
+        progress_note(pr, 0, it->path, 1);
 
         if (ok && has_kind(it, ".TEX") && tex_count(bank, have) > 0) {
             ok = convert_bank(it, root, made, bank, why, n);
@@ -907,6 +894,29 @@ static int write_manifest(const char *root, const Items *made) {
     return fclose(f) == 0;
 }
 
+/* the files copied and converted into library.new/ (its own thread: the window drawn meanwhile) */
+typedef struct Job {
+    const Items *l;
+    const char *fresh;
+    Items *made;
+    Progress *pr;
+    char *why;
+    size_t n;
+    int ok;
+    SDL_AtomicInt finished;
+} Job;
+
+static int SDLCALL import_files(void *data) {
+    Job *j = data;
+    int i;
+
+    for (i = 0; i < j->l->n && j->ok; i++) {
+        j->ok = copy_item(&j->l->e[i], j->fresh, j->made, j->pr, j->why, j->n);
+    }
+    SDL_SetAtomicInt(&j->finished, 1);
+    return 0;
+}
+
 /* the disc opened imported; the reason in `why` if not */
 static int import(int headless, char *why, size_t n) {
     char fresh[1200], old[1200];
@@ -931,8 +941,24 @@ static int import(int headless, char *why, size_t n) {
     for (i = 0; i < l.n; i++) {
         pr.total += l.e[i].size;
     }
-    for (i = 0; i < l.n && ok; i++) {
-        ok = copy_item(&l.e[i], fresh, &made, &pr, why, n);
+    {
+        Job job = {&l, fresh, &made, &pr, why, n, 1, {0}};
+        SDL_Thread *t = SDL_CreateThread(import_files, "import", &job);
+
+        if (t == NULL) {   /* (no thread: here, the window drawn only between files) */
+            for (i = 0; i < l.n && job.ok; i++) {
+                job.ok = copy_item(&l.e[i], fresh, &made, &pr, why, n);
+                progress_draw(&pr);
+            }
+        } else {
+            while (!SDL_GetAtomicInt(&job.finished)) {
+                progress_draw(&pr);
+                SDL_Delay(33);
+            }
+            SDL_WaitThread(t, NULL);
+        }
+        progress_draw(&pr);   /* (headless: its 100%) */
+        ok = job.ok;
     }
     progress_close(&pr);
     if (ok && !write_manifest(fresh, &made)) {

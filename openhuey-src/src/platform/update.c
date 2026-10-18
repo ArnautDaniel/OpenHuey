@@ -30,7 +30,10 @@
 enum { U_IDLE, U_CHECKING, U_DOWNLOADING, U_UNPACKING, U_INSTALLING, U_CURRENT, U_DONE, U_FAILED };
 
 static SDL_AtomicInt sState;
-static char sText[600];               /* the build found, or why it failed (set before the state) */
+/* what the page shows, each written by the update's thread before the state that shows it (the
+ * page reads them every frame: never one being written) */
+static char sFound[300];              /* the newest build: from "downloading" on, or "up to date" */
+static char sWhy[600];                /* why it failed */
 static char sDir[1024], sStage[1100]; /* the executable's folder; update/ in it */
 static char sArchive[1600];           /* the download */
 static long long sTotal;              /* its size (version.txt's) */
@@ -62,7 +65,7 @@ static void folders(void) {
 }
 
 static void say(const char *fmt, const char *arg) {
-    snprintf(sText, sizeof(sText), fmt, arg);
+    snprintf(sWhy, sizeof(sWhy), fmt, arg);
 }
 
 /* a program run and waited for: its exit status (Windows: no console window, so no status - what
@@ -234,7 +237,7 @@ static int install(const char *unpacked) {
 static void step(int state) {
     SDL_SetAtomicInt(&sState, state);
     if (sVerbose && state == U_DOWNLOADING) {
-        fprintf(stderr, "openhuey: downloading %s (%lld MB) ...\n", sText, sTotal >> 20);
+        fprintf(stderr, "openhuey: downloading %s (%lld MB) ...\n", sFound, sTotal >> 20);
     } else if (sVerbose && state == U_UNPACKING) {
         fprintf(stderr, "openhuey: unpacking it ...\n");
     } else if (sVerbose && state == U_INSTALLING) {
@@ -260,7 +263,7 @@ static int update(void) {
     if (!check(build, sizeof(build), archive, sizeof(archive))) {
         return U_FAILED;
     }
-    say("%s", build);
+    snprintf(sFound, sizeof(sFound), "%s", build);
     if (strcmp(build, HGA_BUILD) == 0) {
         remove_tree(sStage);
         return U_CURRENT;
@@ -284,7 +287,6 @@ static int update(void) {
         return U_FAILED;
     }
     SDL_RemovePath(sArchive);
-    say("%s", build);
     return U_DONE;
 }
 
@@ -311,11 +313,11 @@ int update_run(void) {
     fprintf(stderr, "openhuey: this is %s; looking for a newer one ...\n", HGA_BUILD);
     end = update();
     if (end == U_CURRENT) {
-        fprintf(stderr, "openhuey: up to date (%s is the newest)\n", sText);
+        fprintf(stderr, "openhuey: up to date (%s is the newest)\n", sFound);
     } else if (end == U_DONE) {
-        fprintf(stderr, "openhuey: updated to %s - start it again to play that one\n", sText);
+        fprintf(stderr, "openhuey: updated to %s - start it again to play that one\n", sFound);
     } else {
-        fprintf(stderr, "openhuey: it can't be updated: %s\n", sText);
+        fprintf(stderr, "openhuey: it can't be updated: %s\n", sWhy);
     }
     return end == U_FAILED;
 }
@@ -343,7 +345,7 @@ static void p_update_start(Forth *f, Word *w) {   /* ( -- ) the update begun, it
     if (!enabled() || (s != U_IDLE && s < U_CURRENT) || s == U_DONE) {   /* (updated: once is enough) */
         return;
     }
-    sText[0] = 0;
+    sFound[0] = sWhy[0] = 0;   /* (no thread running now) */
     SDL_SetAtomicInt(&sState, U_CHECKING);
     if ((t = SDL_CreateThread(update_thread, "update", NULL)) == NULL) {
         say("it can't be started (%s)", SDL_GetError());
@@ -370,10 +372,11 @@ static void p_update_progress(Forth *f, Word *w) {   /* ( -- done total ) the do
 
 static void p_update_text(Forth *f, Word *w) {   /* ( -- addr len ) the build found, or why it failed */
     int s = SDL_GetAtomicInt(&sState);
+    const char *text = s == U_FAILED ? sWhy : s >= U_DOWNLOADING && s <= U_DONE ? sFound : "";
 
     (void)w;
-    forth_push(f, (Cell)sText);
-    forth_push(f, (Cell)(s == U_CHECKING ? 0 : strlen(sText)));
+    forth_push(f, (Cell)text);
+    forth_push(f, (Cell)strlen(text));
 }
 
 static void p_update_restart(Forth *f, Word *w) {   /* ( -- flag ) the program updated started (then `bye`) */
