@@ -80,6 +80,8 @@ scripts/, docs/ and the like; library/, user/ and mods/ are left as they are.
 
 Keys: WASD move, Space (hold) run, C act, Z shove / kick, V throw, Q (hold) crouch, E flee,
 I J K L / F Hewie's commands, Return pause, Tab menu, \` the Forth console. A gamepad works too.
+F1: the settings - the picture, and the controls (any key for any action). F11 or Alt+Return:
+fullscreen.
 EOT
 }
 

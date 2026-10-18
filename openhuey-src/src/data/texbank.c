@@ -51,6 +51,17 @@ TexBank *texbank_wrap(const uint8_t *bank, size_t size) {
     return b;
 }
 
+TexBank *texbank_take(uint8_t *bank, size_t size) {
+    TexBank *b = texbank_wrap(bank, size);
+
+    if (b == NULL) {
+        free(bank);
+        return NULL;
+    }
+    b->owned = bank;
+    return b;
+}
+
 /* ---- the converted form ---- */
 
 static void folder_of_bank(char *out, size_t n, const char *path) {   /* "A/B.TEX" -> "A/B.texbank/" */

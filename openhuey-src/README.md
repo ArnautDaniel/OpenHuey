@@ -35,7 +35,8 @@ ctest --test-dir build/openhuey-src    # all the tests
 build/openhuey-src/openhuey --test openhuey-src/tests/acoustics/test_hearing.fs   # one subsystem's
 ```
 
-In the game: `` ` `` opens the Forth console (`scripts/debug.fs` has its helpers), F2 the debug
+In the game: `` ` `` opens the Forth console (`scripts/debug.fs` has its helpers), F1 the settings
+(the picture, fullscreen, the controls - saved in `user/`), F11 or Alt+Return fullscreen, F2 the debug
 overlay (Fiona's meters, the actors alive and their ids, OpenHuey's version), F3 the free camera. The
 version is CMake's `project(OpenHuey VERSION ...)`; the release builds carry it in their names.
 

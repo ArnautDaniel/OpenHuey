@@ -5,7 +5,7 @@
 \ file opens and closes it, gives the keys to what is showing and draws it. Also the tab that
 \ slides in when the story hands her an item (the scripts' 0xBE, SubScreen_DrawTab).
 IN: subscreen
-USING: engine game-state actors messages keys facts flag-names items items.tables ps2-screen subscreen.state subscreen.art subscreen.input subscreen.box subscreen.lists subscreen.map subscreen.options subscreen.plate subscreen.slots subscreen.saving subscreen.costumes subscreen.extras ;
+USING: engine game-state actors messages keys facts flag-names items items.tables ps2-screen subscreen.state subscreen.art subscreen.input subscreen.box subscreen.lists subscreen.map subscreen.options subscreen.plate subscreen.slots subscreen.saving subscreen.costumes subscreen.extras subscreen.galleries ;
 
 <PRIVATE
 \ ---- which art is in the background group: the menu's, the plate's, the slot machine's ----
@@ -29,6 +29,8 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 : open-options ( -- )  open-menu  pg-options page !  -1 options-only ! ;   \ (the title's: SceneTitle_SeqOptions)
 : open-extras ( -- )  open-menu  3 s" SUBSCR/SUBMG" background  on-extras mode !  start-extras ;   \ (the mini-game's menu: mode $A)
 : open-results ( -- )  open-menu  on-results mode !  start-results ;   \ (its results: mode $C)
+: open-gallery ( kind -- )   \ (the extras room's galleries: modes 8, $B, $D, $E, $F)
+    open-menu  4 over gallery-file background  start-gallery ;
 : open-played ( -- )  hewie-played? if  open-options  else  open-menu  then ;   \ (in the run, the options alone)
 : asked-open ( -- )   \ (the scripts' 0x6D: its mode; the rest - not built - shut at once)
     opened-as @ case
@@ -40,10 +42,16 @@ USING: engine game-state actors messages keys facts flag-names items items.table
         7 of  open-costumes  endof
         2 of  open-plate  endof
         3 of  open-slots  endof
+        8 of  gal-movies open-gallery  endof
+        $B of  gal-models open-gallery  endof
+        $D of  gal-music open-gallery  endof
+        $E of  gal-art open-gallery  endof
+        $F of  gal-types open-gallery  endof
         >r subscreen-wanted state-flag-clear r>
     endcase ;
 : shut-menu ( -- )   \ back to play: the world's frames again, the scripts' wait over
     options-only @ if  0 options-only !  pg-special page !  then
+    gal-kind @ if  gallery-shut  then
     shut stage !  0 openness !  0 pause!  subscreen-wanted state-flag-clear  art-layer ui-clear  word-layer ui-clear ;
 
 \ ---- what is showing: its keys and its drawing ----
@@ -58,6 +66,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
         on-costumes of  costumes-keys  endof
         on-extras of  extras-keys  endof
         on-results of  results-keys  endof
+        on-gallery of  gallery-keys  endof
         on-page of
             page @ case  pg-files of  files-keys  endof  pg-map of  map-keys  endof
                          pg-options of  options-keys  endof  >r list-keys r>  endcase  endof
@@ -66,6 +75,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 \ on a wider window, black - faded in with the page
 : window-black ( -- )  art-layer 0 0 screen-size  openness @ 2* 255 min  ui-rect ;
 : draw-page ( -- )
+    gal-kind @ if  gallery-view  mode @ on-box = if  box-view  then  exit  then
     mode @ on-plate = if  window-black  plate-view exit  then
     mode @ on-slots = if  window-black  slots-view exit  then
     mode @ on-saving = if  saving-view exit  then
@@ -93,7 +103,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
     1 frames +!
     stage @ case
         opening of  16 openness +!  openness @ 128 >= if  128 openness !  up stage !  then  endof
-        up of  menu-keys  select-button button-pressed? if  close-menu  then  endof
+        up of  menu-keys  select-button button-pressed? gal-kind @ 0= and if  close-menu  then  endof   \ (in a gallery select is its own)
         closing of
             openness @ 128 = quiet @ 0= and if  se-close  then
             -32 openness +!  openness @ 0> 0= if  shut-menu exit  then  endof

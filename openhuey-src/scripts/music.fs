@@ -271,7 +271,7 @@ create lost-lists  lost-1 , lost-2 , lost-3 , lost-4 ,
 behaviour playing-music
   on spawned ( -- )
       no-track bgm-cur !  no-track bgm-req !  1e bgm-level f!  -1 sm-stage !  255e sm-to f!  -1 sm-st !
-      self subscribe tick  self subscribe danger  self subscribe panic  self subscribe stalker-doing  self subscribe stalker-reach ;
+      self subscribe tick  self subscribe held-tick  self subscribe danger  self subscribe panic  self subscribe stalker-doing  self subscribe stalker-reach ;
   on bgm-want ( track pause level -- )   \ (BgmCtl_Want: no track - the playing one fades out)
       cell>f  bgm-pause !  dup bgm-req !  no-track <> if  bgm-level f!  else  fdrop  then ;
   on bgm-resume ( -- )  0 music-pause ;          \ (the ADX stream resumed)
@@ -283,6 +283,7 @@ behaviour playing-music
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )   \ (after her: he sees her)
       drop after-her = sm-seen !  2drop 2drop 2drop  sm-st-room !  sender sm-st ! ;
   on tick ( -- )  bgm-tick  sm-tick ;
+  on held-tick ( -- )  bgm-tick ;   \ (a menu up: the background track still changes - the music gallery's)
 end-behaviour
 
 : music-spawn ( -- id )  playing-music music-state s" music" spawn ;

@@ -26,6 +26,8 @@
 #include "../platform/seq.h"
 
 #include "../core/files.h"
+#include "../data/artpic.h"
+#include "../data/texbank.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -2521,6 +2523,41 @@ PRIM(p_key_hold) {   /* ( scancode flag -- ) hold a key down (or let it go) as i
 
     gEngine.held[k] = on != 0;
 }
+/* the controls (platform.h): the actions, each a key the scripts read, and the keys bound to them */
+PRIM(p_controls) { PUSH(platform_actions()); }   /* ( -- n ) */
+PRIM(p_control_key) { Cell i = POP(); PUSH(platform_action_key((int)i)); }   /* ( i -- scancode ) the scripts' key */
+PRIM(p_control_binding) {   /* ( i which -- scancode ) its first (0) or second (1) key; 0 none */
+    Cell which = POP(), i = POP();
+
+    PUSH(platform_binding((int)i, (int)which));
+}
+PRIM(p_control_bind) {   /* ( scancode i which -- ) (0 and which 1: its second cleared) */
+    Cell which = POP(), i = POP(), k = POP();
+
+    platform_bind((int)i, (int)which, (SDL_Scancode)k);
+}
+PRIM(p_controls_reset) { platform_bindings_reset(); }   /* ( -- ) the defaults */
+PRIM(p_control_bind_next) { platform_bind_next((int)POP()); }   /* ( i -- ) the next key pressed bound to i (Escape: not) */
+PRIM(p_control_waiting) { PUSH(platform_binding_wanted()); }   /* ( -- i ) the action waiting for a key; -1 none */
+PRIM(p_key_push) {   /* ( scancode -- ) (tests) the key pressed, as from the keyboard - through the
+                      * controls; the only one pressed now */
+    SDL_Event e;
+
+    memset(gEngine.input.pressed, 0, sizeof(gEngine.input.pressed));
+    memset(&e, 0, sizeof(e));
+    e.type = SDL_EVENT_KEY_DOWN;
+    e.key.scancode = (SDL_Scancode)POP();
+    e.key.down = true;
+    SDL_PushEvent(&e);
+    platform_poll(&gEngine.input);
+}
+PRIM(p_key_name) {   /* ( scancode -- addr len ) as the keyboard calls it ("" none) */
+    Cell k = POP();
+    const char *name = k > 0 && k < SDL_SCANCODE_COUNT ? SDL_GetScancodeName((SDL_Scancode)k) : "";
+
+    PUSH((Cell)name);
+    PUSH((Cell)strlen(name));
+}
 PRIM(p_key_pressed) {
     Cell k = scancode(f);
 
@@ -2656,6 +2693,12 @@ PRIM(p_f_to_s) {   /* ( places -- addr len ) ( F: x -- ) */
 PRIM(p_gfx) { PUSH(&gRender); }
 PRIM(p_look) { PUSH(&gRoomLook); }   /* ( -- addr ) the room's look, as it is now */
 PRIM(p_look_reset) { room_reset_look(&gEngine.room); }   /* back to the room file's */
+static RoomLook sKeptLook;
+PRIM(p_look_keep) { sKeptLook = gRoomLook; }   /* ( -- ) the room's look as it is, kept */
+PRIM(p_look_kept) { gRoomLook = sKeptLook; }   /* ( -- ) and put back */
+PRIM(p_look_plain) {   /* ( -- ) none of it: no fog, tint, bloom, depth of field (the model gallery's) */
+    gRoomLook.has_fog = gRoomLook.has_tint = gRoomLook.has_bloom = gRoomLook.has_dof = 0;
+}
 PRIM(p_look_get) {   /* ( slot addr -- n ) a look effect's parameters as last set, into addr (16 at most; 0 none) */
     Cell a = POP(), slot = POP();
 
@@ -2688,7 +2731,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its skinned parts sho
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.4") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.5") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
@@ -2842,6 +2885,9 @@ void engine_tick(Engine *e) {
     }
     if (e->paused) {   /* (a menu up: only its actors have a frame) */
         hactor_held_frame(e->forth);
+        if (e->alone > 0 && e->alone - 1 < MAX_ACTORS) {   /* (the menu's own model: it moves) */
+            actor_tick(&e->actors[e->alone - 1]);
+        }
         freecam_tick(e);
         render_look_tick();
         return;
@@ -2877,7 +2923,7 @@ void engine_tick(Engine *e) {
 
 /* ---- the retained 2D layer: what actors put on the screen (the message window, prompts),
  * kept until they change it and drawn each frame, layer by layer over the picture ---- */
-#define UI_LAYERS 19   /* (18: the mods' - scripts/mods.fs) */
+#define UI_LAYERS 20   /* (18: the mods' - scripts/mods.fs; 19 the galleries' fade) */
 #define UI_ITEMS 256
 typedef struct UiItem {
     int text;                 /* 0 a rectangle, 1 text, 2 the movie's picture, 3 a texture's part */
@@ -3045,6 +3091,64 @@ PRIM(p_tex_info) {   /* ( group id -- w h tex ) a cache texture's size and GPU n
     PUSH(tw);
     PUSH(th);
     PUSH(t);
+}
+/* ---- the extras room's galleries (scripts/subscreen/galleries.fs) ---- */
+static Camera sKeptCamera;
+PRIM(p_art_picture) {   /* ( picture group -- h flag ) an art gallery picture (SUBSCR/ARTnn.LEN) as the
+                         * group's one texture, 512 wide and h lines */
+    Cell group = POP(), k = POP();
+    char path[64];
+    size_t n = 0, size = 0;
+    uint8_t *file, *bank = NULL;
+    TexBank *b;
+    int h = 0;
+
+    snprintf(path, sizeof(path), "SUBSCR/ART%02d.LEN", (int)(k / 8));
+    if (k >= 0 && (file = files_read(path, &n)) != NULL) {
+        bank = artpic_bank(file, n, (int)k, &size, &h);
+        free(file);
+    }
+    b = bank != NULL ? texbank_take(bank, size) : NULL;
+    if (b != NULL) {
+        sprites_group_bank((int)group, b);
+    }
+    PUSH(h);
+    PUSH(b != NULL ? -1 : 0);
+}
+PRIM(p_thumbnail) {   /* ( movie group -- flag ) the movie's picture (SUBSCR/THUMBNAIL.TXS: a bank each,
+                       * after their offsets) as the group's texture */
+    static uint8_t *thumbs;
+    static size_t size;
+    Cell group = POP(), k = POP();
+    uint32_t at, end;
+    uint8_t *copy;
+    TexBank *b = NULL;
+
+    if (thumbs == NULL) {   /* (read once: kept) */
+        thumbs = files_read("SUBSCR/THUMBNAIL.TXS", &size);
+    }
+    if (thumbs != NULL && k >= 0 && (size_t)(k + 2) * 4 <= size) {
+        memcpy(&at, thumbs + (k + 1) * 4, 4);
+        memcpy(&end, thumbs + (k + 2) * 4, 4);
+        if (end <= at || end > size) {
+            end = (uint32_t)size;
+        }
+        if (at < end && (copy = malloc(end - at)) != NULL) {
+            memcpy(copy, thumbs + at, end - at);
+            b = texbank_take(copy, end - at);
+        }
+    }
+    if (b != NULL) {
+        sprites_group_bank((int)group, b);
+    }
+    PUSH(b != NULL ? -1 : 0);
+}
+PRIM(p_cam_keep) { sKeptCamera = gEngine.camera; }    /* ( -- ) the camera as it is, kept */
+PRIM(p_cam_kept) { gEngine.camera = sKeptCamera; }    /* ( -- ) and put back */
+PRIM(p_alone) {   /* ( id -- ) that model alone drawn, on the background (-1: the scene again) */
+    Cell id = POP();
+
+    gEngine.alone = id >= 0 && id < MAX_ACTORS ? (int)id + 1 : 0;
 }
 PRIM(p_tex_bank) {   /* ( addr len group -- flag ) a .TEX file into the texture cache's group (the menus) */
     Cell group = POP(), n = POP(), a = POP();
@@ -3252,13 +3356,13 @@ void bind_engine(Forth *f) {
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
         {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
-        {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
+        {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"controls", p_controls}, {"control-key", p_control_key}, {"control-binding", p_control_binding}, {"control-bind", p_control_bind}, {"controls-reset", p_controls_reset}, {"control-bind-next", p_control_bind_next}, {"control-waiting", p_control_waiting}, {"key-name", p_key_name}, {"art-picture", p_art_picture}, {"thumbnail", p_thumbnail}, {"alone", p_alone}, {"cam-keep", p_cam_keep}, {"cam-kept", p_cam_kept}, {"key-push", p_key_push}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"freecam?", p_freecam}, {"freecam!", p_freecam_set}, {"mouse-down?", p_mouse_down},
         {"on-tick", p_on_tick}, {"off-tick", p_off_tick}, {"ticks", p_ticks}, {"dt", p_dt},
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
         {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"h>s", p_h_to_s}, {"f>s$", p_f_to_s},
-        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"hga-version", p_hga_version}, {"actor-part-show", p_actor_part_show}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
+        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look-keep", p_look_keep}, {"look-kept", p_look_kept}, {"look-plain", p_look_plain}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"hga-version", p_hga_version}, {"actor-part-show", p_actor_part_show}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
         {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
         {"clear-color", p_clear_color}, {"out-of-view?", p_out_of_view}, {"screenshot", p_screenshot}, {"console!", p_console},
 
@@ -3360,5 +3464,6 @@ void bind_engine(Forth *f) {
     field(f, "gfx.room-tint", offsetof(RenderSettings, room_tint));
     field(f, "gfx.room-bloom", offsetof(RenderSettings, room_bloom));
     field(f, "gfx.game-font", offsetof(RenderSettings, game_font));
+    field(f, "gfx.fullscreen", offsetof(RenderSettings, fullscreen));
     f->m.current = saved;
 }

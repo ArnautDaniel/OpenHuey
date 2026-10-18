@@ -40,6 +40,8 @@ static void submit(Console *c, Forth *f) {
         c->nhistory++;
     }
     c->browse = c->nhistory;
+    f->said[0] = 0;   /* (what's typed: its error always said, even the last one again) */
+    f->repeats = 0;
     if (forth_eval(f, c->input, (size_t)c->len, "console") == 0 && !f->compiling) {
         if (c->col > 0) {
             console_output(c, " ", 1);
@@ -76,16 +78,16 @@ void console_update(Console *c, const Input *in, Forth *f) {
             c->input[c->len++] = *t;
         }
     }
-    if (in->pressed[SDL_SCANCODE_BACKSPACE] && c->len > 0) {
+    if (in->typed[SDL_SCANCODE_BACKSPACE] && c->len > 0) {
         c->len--;
     }
-    if (in->pressed[SDL_SCANCODE_UP]) {
+    if (in->typed[SDL_SCANCODE_UP]) {
         recall(c, -1);
     }
-    if (in->pressed[SDL_SCANCODE_DOWN]) {
+    if (in->typed[SDL_SCANCODE_DOWN]) {
         recall(c, 1);
     }
-    if (in->pressed[SDL_SCANCODE_RETURN] || in->pressed[SDL_SCANCODE_KP_ENTER]) {
+    if (in->typed[SDL_SCANCODE_RETURN] || in->typed[SDL_SCANCODE_KP_ENTER]) {
         submit(c, f);
     }
 }

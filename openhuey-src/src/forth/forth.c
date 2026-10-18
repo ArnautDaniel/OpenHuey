@@ -114,20 +114,42 @@ void forth_set_output(Forth *f, OutputFn out, void *ctx) {
     f->out_ctx = ctx;
 }
 
+#define ERROR_REPEATS_SAID 300   /* (a repeated error's count: each 300, ten seconds of frames) */
+
 _Noreturn void forth_error(Forth *f, const char *fmt, ...) {
     va_list ap;
 
     va_start(ap, fmt);
     vsnprintf(f->error, sizeof(f->error), fmt, ap);
     va_end(ap);
+    f->quiet = 0;
     if (f->silent > 0) {
         /* inside `catch`: the caller decides what to say */
-    } else if (f->nsrc > 0) {
-        Source *s = &f->src[f->nsrc - 1];
-
-        forth_printf(f, "\nerror: %s (%s:%d)\n", f->error, s->name, s->line);
     } else {
-        forth_printf(f, "\nerror: %s\n", f->error);
+        char line[sizeof(f->said) + 300];
+
+        f->errors++;
+        if (f->nsrc > 0) {
+            snprintf(line, sizeof(line), "error: %s (%s:%d)", f->error, f->src[f->nsrc - 1].name, f->src[f->nsrc - 1].line);
+        } else {
+            snprintf(line, sizeof(line), "error: %s", f->error);
+        }
+        /* the same error again and again (a handler failing each frame): said once, then a count
+         * now and then, and when another comes (the same message: where it is read from is only
+         * the outer source's line - a test's, the frames run from it) */
+        if (strcmp(f->error, f->said) == 0) {
+            f->quiet = 1;
+            if (++f->repeats % ERROR_REPEATS_SAID == 0) {
+                forth_printf(f, "(the error above: %ld times more)\n", f->repeats);
+            }
+        } else {
+            if (f->repeats > 0) {
+                forth_printf(f, "(the error above: %ld times more)\n", f->repeats);
+            }
+            snprintf(f->said, sizeof(f->said), "%s", f->error);
+            f->repeats = 0;
+            forth_printf(f, "\n%s\n", line);
+        }
     }
     if (f->catch == NULL) {
         abort();

@@ -16,6 +16,9 @@ USING: engine actors ;
 7 constant on-costumes    \ the wardrobe (the scripts' mode 7)
 8 constant on-extras      \ the mini-game's menu (the scripts' mode $A)
 9 constant on-results     \ its results (mode $C)
+10 constant on-gallery    \ one of the extras room's galleries (gal-kind: which - galleries.fs)
+\ the galleries: the movies (mode 8), the models ($B), the music ($D), the art ($E), the TYPE ranks ($F)
+1 constant gal-movies   2 constant gal-models   3 constant gal-music   4 constant gal-art   5 constant gal-types
 \ the pages, in the order L1 / R1 turn them: the three item lists, the map, the files, the options
 0 constant pg-special   1 constant pg-items   2 constant pg-other
 3 constant pg-files     4 constant pg-map     5 constant pg-options
@@ -85,6 +88,16 @@ state: subscreen-state
   \ (-1 none), a challenge newly unlocked, the banner's pulse and its way
   6 cells field mg-entries  cell field mg-n  cell field mg-at
   cell field res-step  cell field res-t  cell field res-rank  cell field res-new  cell field res-pulse  cell field res-up
+  \ the galleries: which (0 none), the cursor, the fade over it all (0..$80), the step it is at,
+  \ the movie whose thumbnail is in, the bars shown; the music's track playing and the next ($FF
+  \ none), frames before the stream is looked at; the model shown (-1 none), its motion, that
+  \ motion's flags (1 loops), the camera's distance, turn and height; the picture's lines (0
+  \ none), its middle, shown whole, its moves turned round, the help up
+  cell field gal-kind  cell field gal-at  cell field gal-fade  cell field gal-step  cell field gal-shown  cell field gal-bars
+  cell field gal-playing  cell field gal-next  cell field gal-wait
+  cell field gal-model  cell field gal-motion  cell field gal-loops
+  1 floats field gal-dist  1 floats field gal-turn  1 floats field gal-height
+  cell field art-h  cell field art-x  cell field art-y  cell field art-zoom  cell field art-turn  cell field art-help
 end-state
 
 \ the moves every page has
