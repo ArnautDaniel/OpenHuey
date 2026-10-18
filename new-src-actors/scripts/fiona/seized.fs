@@ -72,10 +72,15 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
     ended? if
         her-free @ if  shake-free-anim -1 play-table  ['] pulled-up her-act ! exit  then
         1 her-drags +!
-        her-drags @ 6 = if  fiona-occupied state-flag-set  dragged-off-anim -1 play-table  ['] dragged-off her-act ! exit  then
+        her-drags @ 6 = if
+            hewie-played? 0= if  fiona-occupied state-flag-set  then
+            dragged-off-anim -1 play-table  ['] dragged-off her-act ! exit
+        then
         dragged-anim -1 play-table
+        hewie-played? if  0.25e rnd f> if  help-cry 0 her-sound  then  then   \ (the run: she cries for him, now and then)
     else her-shakes @ -1 <> if
-        her-shakes @  her-panic-stage @ 0 max 5 min cells shakes-to-break + @  >= if
+        \ (out of her shakes - in the run, as many drags as her panic's stage)
+        hewie-played? if  her-drags @ her-panic-stage @ =  else  her-shakes @  her-panic-stage @ 0 max 5 min cells shakes-to-break + @  >=  then  if
             -1 her-shakes !  -1 her-free !  broke-away
         then
     then then
@@ -87,6 +92,7 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
 : led-by-hand ( -- )
     leader-gone? if  free! to-idle exit  then  tugged
     settled? if
+        hewie-played? if  0.25e rnd f> if  help-cry 0 her-sound  then  then   \ (the run: she may cry for him)
         led-arrive  0 her-free !  0 her-shakes !  0 her-drags !  -1 her-shake-rest !
         ['] at-his-hand her-act !
     else  led-step  then ;
@@ -96,7 +102,7 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
     ended? if  caught-for-good  then  root-move ;
 : led-walking ( -- )
     leader-gone? if  free! to-idle exit  then
-    settled? if  led-arrive  fiona-occupied state-flag-set  ['] carried her-act !
+    settled? if  led-arrive  hewie-played? 0= if  fiona-occupied state-flag-set  then  ['] carried her-act !
     else  led-step  then ;
 
 \ ---- taken (the request kind 9 answered): her gasp, led away by the hand ($1400) or walking

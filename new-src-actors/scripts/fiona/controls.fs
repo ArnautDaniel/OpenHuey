@@ -3,7 +3,7 @@
 \ sure, then until it moves), then she turns toward the old camera's heading while the stick
 \ holds within 15 degrees. On the keyboard: W A S D the stick, Shift the run button; a gamepad's left stick as it is pushed.
 IN: fiona.controls
-USING: engine keys common vectors messages fiona.state fiona.anims ;
+USING: engine keys common vectors messages facts fiona.state fiona.anims ;
 
 : hands-off? ( -- flag )  her-scripted @ her-reading @ or her-in-scene @ or ;   \ (a script or a cutscene has her, or a message is up)
 : sx ( F: -- x )  stick-x f@ ;   : sz ( F: -- z )  stick-z f@ ;
@@ -11,15 +11,10 @@ USING: engine keys common vectors messages fiona.state fiona.anims ;
 : read-stick ( -- )
     0e stick-x f!  0e stick-z f!
     hands-off? if  exit  then
-    key: D held? if  1e stick-x f!  then  key: A held? if  sx 1e f- stick-x f!  then
-    key: S held? if  1e stick-z f!  then  key: W held? if  sz 1e f- stick-z f!  then
-    pad-stick  fover f0= fdup f0= and if  fdrop fdrop exit  then   \ (a gamepad's stick: as far as it is pushed)
-    stick-z f!  stick-x f! ;
+    stick@ stick-z f!  stick-x f! ;
 : run-held? ( -- flag )  hands-off? 0=  cross button-down? and ;   \ (Fiona_Move: cross held)
 : cam-yaw ( F: -- a )  camera cam.yaw sf@ ;
-\ a stick direction turned into the room by a camera heading (0 looks along -z)
-: turned ( F: cam-yaw nx nz -- dx dz )
-    {: F: yaw x z :}  yaw fcos x f*  yaw fsin z f* f-   yaw fsin x f*  yaw fcos z f* f+ ;
+: turned ( F: cam-yaw nx nz -- dx dz )  stick-turned ;
 : small? ( F: x z -- flag )  fabs 0.5e f<= fabs 0.5e f<= and ;
 : dir! ( F: x z -- )  her-dir v.z sf!  0e her-dir v.y sf!  her-dir v.x sf! ;
 : dir-by ( F: yaw -- )  nx nz turned dir! ;
@@ -79,9 +74,9 @@ enum: direction-from  by-camera by-facing by-none by-steering ;
     run-held? her-run? ! ;
 
 \ ---- her struggling (Fiona_Shakes): this frame's shakes - the stick swung past 120 degrees, or out
-\ from rest; the buttons pressed ----
-: buttons-pressed ( -- n )  0  6 0 do  i start-button <> if  i button-pressed? if  1+  then  then  loop ;
-: shakes-now ( -- n )   \ (Fiona_Shakes: the stick swung past 120 degrees, or out from rest; the buttons)
+\ from rest; the buttons pressed (keys.fs) ----
+: shakes-now ( -- n )   \ (Fiona_Shakes: the stick swung past 120 degrees, or out from rest; the buttons - not in the run)
+    hewie-played? if  0 exit  then
     0  her-stick v.x sf@ her-stick v.z sf@ vlen                               ( n ) ( F: len )
     fdup 0.8e f<= if  0.2e f< if  -1 her-shake-rest !  then
     else
@@ -92,4 +87,4 @@ enum: direction-from  by-camera by-facing by-none by-steering ;
     buttons-pressed + ;
 \ the story's test of her shaking (Progress_FionaFlag: Fiona_Shakes as from rest) - the stick out
 \ past 0.8, or a button; her own count left as it is
-: shook-from-rest ( -- n )  her-stick v.x sf@ her-stick v.z sf@ vlen 0.8e f> 1 and  buttons-pressed + ;
+: shook-from-rest ( -- n )  hewie-played? if  0 exit  then  her-stick v.x sf@ her-stick v.z sf@ vlen 0.8e f> 1 and  buttons-pressed + ;

@@ -145,6 +145,15 @@ state: hewie-state
   /vec field his-jump-dir  1 floats field his-jump-y  1 floats field his-jump-fall  1 floats field his-jump-rise
   \ his pounce (hewie/pounce.fs): his height, its top, how fast he rises, the way he leaps
   1 floats field his-pounce-y  1 floats field his-pounce-top  1 floats field his-pounce-vy  1 floats field his-pounce-yaw
+  \ played (hewie/steered.fs - the original's +0xF3700..+0xF37A0): the stick's way in the room, how
+  \ it steers, frames the old camera still steers, frames without the stick, last frame's stick
+  \ and its way, the steering camera's heading, the heading last turned by, the run button; the
+  \ turn on the spot (toward, its rate); a camera cut since; this frame's gesture; square presses
+  \ while biting
+  1 floats field his-dir-x  1 floats field his-dir-z  cell field his-steer  cell field his-lock  cell field his-still
+  1 floats field his-stick-x  1 floats field his-stick-z  1 floats field his-last-x  1 floats field his-last-z
+  1 floats field his-steer-yaw  1 floats field his-rot-yaw  cell field his-sprint
+  1 floats field his-spin-to  1 floats field his-spin-rate  cell field his-cut  cell field his-gesture  cell field his-mash
 end-state
 
 \ what may break in on an action (his-cmd's bits; the top bit: nothing does, whatever the rest)

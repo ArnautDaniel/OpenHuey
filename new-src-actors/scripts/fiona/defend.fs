@@ -119,14 +119,18 @@ create ahead-pt /vec allot   \ (her radius ahead)
 : shove-sub ( -- n )  $1A ;   : kick-sub ( -- n )  $1B ;   \ (her sub defending)
 : start-kick ( -- )  kick-doing her-doing !  defend-mode her-mode !  kick-sub her-sub !  ['] kick-start her-act ! ;
 : start-shove ( -- )  shove-doing her-doing !  defend-mode her-mode !  shove-sub her-sub !  ['] shove-start her-act ! ;
-: try-defend ( -- )
-    square button-pressed? 0= if  exit  then
-    hands-off?  her-mode @ own-mode <> or  her-panic-stage @ panicking >= or  no-flee state-flag? or if  exit  then
-    her-doing @ flee-doing = if  start-kick exit  then   \ (fleeing: a kick)
-    group {: g :}   \ (standing, walking, resting - or just set off running, or running still frightened: a shove)
+\ a shove or a kick by her pose (Fiona_StateBlock 8): fleeing, a kick; standing, walking, resting -
+\ or just set off running, or running still frightened - a shove; running, a kick
+: defend-by-pose ( -- )
+    her-doing @ flee-doing = if  start-kick exit  then
+    group {: g :}
     g resting-group =  g walking-group = or  g standing-group = or
     g running-group =  her-recovery @ 0<> her-run-t @ $3D < or  and  or if  start-shove exit  then
     g running-group = if  start-kick  then ;
+: try-defend ( -- )
+    square button-pressed? 0= if  exit  then
+    hands-off?  her-mode @ own-mode <> or  her-panic-stage @ panicking >= or  no-flee state-flag? or if  exit  then
+    defend-by-pose ;
 \ her blow struck home (`blow-taken`): held still; her sound ($90 a kick, $8F a shove; Hewie
 \ counted as kicked - with his trust, H3)
 \ her shove's: costume 6 its own ($22), costume 7 none - its sparks instead (a blood spray at

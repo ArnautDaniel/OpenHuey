@@ -130,26 +130,31 @@ create unlocks resident-flags 8 / allot
 \ ---- the system data (the original's memory card system file): the unlocks, kept across runs -
 \ written whenever they change, read back as the game starts ----
 create written resident-flags 8 / allot   \ (the unlocks as last written)
+create records-written 36 allot          \ (and the mini-game's best times)
 : resident-word! ( v i -- )  4 * progress pr.resident + l! ;
+: record! ( h m s challenge i -- )  record {: a :}  a 2 + c!  a 1+ c!  a c! ;
 : write-system ( -- )
-    testing? if  progress pr.resident written resident-flags 8 / move exit  then   \ (a test's unlocks aren't kept)
+    testing? if  progress pr.resident written resident-flags 8 / move  run-records records-written 36 move exit  then   \ (a test's unlocks aren't kept)
     system-path to-file
     ." \ hga system data - the unlocks (the resident flags), kept across games" cr
     ." USING: saves ;" cr
     resident-flags 32 / 0 do
         i 4 * progress pr.resident + l@ ?dup if  . i . ." resident-word!" cr  then
     loop
+    4 0 do  3 0 do  j i record  dup c@ .  dup 1+ c@ .  2 + c@ .  j . i . ." record!" cr  loop  loop
     end-file
-    progress pr.resident written resident-flags 8 / move ;
-: unlocks-changed? ( -- flag )  progress pr.resident resident-flags 8 / written over compare 0<> ;
+    progress pr.resident written resident-flags 8 / move  run-records records-written 36 move ;
+: unlocks-changed? ( -- flag )
+    progress pr.resident resident-flags 8 / written over compare 0<>
+    run-records 36 records-written 36 compare 0<> or ;
 : read-system ( -- )
     system-path file-exists?  testing? 0= and if  system-path included  then
-    progress pr.resident written resident-flags 8 / move ;
+    progress pr.resident written resident-flags 8 / move  run-records records-written 36 move ;
 : keep-unlocks ( -- )  progress pr.resident unlocks resident-flags 8 / move ;
 : unlocks-back ( -- )  unlocks progress pr.resident resident-flags 8 / move ;
 : load-file ( -- )
     save-path file-exists? 0= if  ." no save at " save-path type cr exit  then
-    keep-unlocks  save-path included  unlocks-back
+    keep-unlocks  save-path included  unlocks-back  0 hewie-played !   \ (SceneGame_ctor: Fiona played)
     subscreen-wanted state-flag-clear   \ (a save point's save was made with the save screen up: not again)
     broadcast game-loaded
     was-room @ -1 s" rooms" actor-named send go-to-room  entering step ! ;

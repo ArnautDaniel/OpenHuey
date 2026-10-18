@@ -10,6 +10,18 @@ USING: game-state ;
 : bit-clear ( n base -- )  bit invert over l@ and swap l! ;
 : state-flag? ( n -- flag )  progress pr.state bit? ;    \ the state flags (control, panic, ...)
 : story-flag? ( n -- flag )  progress pr.story bit? ;    \ the scenario flags
+\ the one played: Fiona, or Hewie in the mini-game's run (the original's progress +0x1FBEC1 - not
+\ the saved state: set as the run's clock starts, clear as it stops and with each new game)
+variable hewie-played
+: hewie-played? ( -- flag )  hewie-played @ 0<> ;
+\ ... and its best times (the system data's +0x3C: each challenge A..D its three, hours minutes
+\ seconds; 99:59:59 none), kept across games; the time a run took (clock_save: its frames)
+create run-records 36 allot
+: record ( challenge i -- addr )  swap 3 * + 3 * run-records + ;
+: records-clear ( -- )  12 0 do  99 run-records i 3 * + c!  59 run-records i 3 * + 1+ c!  59 run-records i 3 * + 2 + c!  loop ;
+records-clear
+variable run-took
+variable mini-game-wanted   \ (the title's MINI-GAME: the extras room starts it at once - off-map-37's entry)
 $AF constant hard-mode-flag
 : hard-mode? ( -- flag )  hard-mode-flag story-flag? ;   \ a game started in hard mode (the original's progress +0x30 bit 15: the title's hard new game)
 : state-flag-clear ( n -- )  progress pr.state bit-clear ;   \ (its owner clears it: Hewie's trust clears 0x11 / 0x1D)

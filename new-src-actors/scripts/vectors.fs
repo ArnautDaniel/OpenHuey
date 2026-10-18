@@ -8,6 +8,11 @@ begin-structure /vec  sffield: v.x  sffield: v.y  sffield: v.z  end-structure
 \ scale a vector
 : v* ( F: x y z s -- x' y' z' )  {: F: x y z s :}  x s f*  y s f*  z s f* ;
 
+\ a stick direction turned into the room by a camera heading (0 looks along -z): the original's
+\ Mtx_TurnY of the heading applied to it, negated
+: stick-turned ( F: cam-yaw x z -- dx dz )
+    {: F: yaw x z :}  yaw fcos x f*  yaw fsin z f* f-   yaw fsin x f*  yaw fcos z f* f+ ;
+
 \ a 32-bit float field: read, write, add to
 : field@ ( addr -- ) ( F: -- x )  sf@ ;
 : field+! ( addr -- ) ( F: dx -- )  dup sf@ f+ sf! ;

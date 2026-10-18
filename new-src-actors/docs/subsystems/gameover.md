@@ -49,5 +49,6 @@ variable $2E) are left for when the story's scenes call for them.
 
 ## Status
 
-Built: kinds 1 / 2 / 3. `tests/gameover/test_gameover.fs` (5): begun and the world held, the
+Built: kinds 1 / 2 / 3. In the mini-game's run any kind is the run's own (GameOver_StateSpecial:
+faded out, its music by the challenge - A $A, B $B, C $F, D $C). `tests/gameover/test_gameover.fs` (5): begun and the world held, the
 tint to purple, a face button through the drift to its end, the story's end (kind 2) at once.

@@ -14,6 +14,8 @@ USING: engine actors ;
 5 constant on-slots       \ the slot machine (the scripts' mode 3)
 6 constant on-saving      \ the save slots (the scripts' mode 1: a save point)
 7 constant on-costumes    \ the wardrobe (the scripts' mode 7)
+8 constant on-extras      \ the mini-game's menu (the scripts' mode $A)
+9 constant on-results     \ its results (mode $C)
 \ the pages, in the order L1 / R1 turn them: the three item lists, the map, the files, the options
 0 constant pg-special   1 constant pg-items   2 constant pg-other
 3 constant pg-files     4 constant pg-map     5 constant pg-options
@@ -78,6 +80,11 @@ state: subscreen-state
   \ the tab (an item the story hands her)
   cell field tab          \ 0 none, 2 sliding in, 3 shown, 4 sliding out
   cell field tab-slide    cell field tab-asker
+  \ the mini-game's menu: its entries (0 the introduction, 1..4 the challenges, 5 exit), how many,
+  \ the cursor; its results: the step (30 frames each), the frames to the next, the time's rank
+  \ (-1 none), a challenge newly unlocked, the banner's pulse and its way
+  6 cells field mg-entries  cell field mg-n  cell field mg-at
+  cell field res-step  cell field res-t  cell field res-rank  cell field res-new  cell field res-pulse  cell field res-up
 end-state
 
 \ the moves every page has

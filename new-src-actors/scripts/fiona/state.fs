@@ -128,6 +128,19 @@ state: fiona-state
   cell field her-carried-t      \ frames since a homunculus in her room said it was holding (move 8)
   #creatures cells field her-creatures    \ each creature slot's actor, as it last told her (creature-doing; -1 none)
   cell field her-blow-n        \ her blows, numbered (a creature takes each once: Fiona_BlowCreatures' skip)
+  cell field her-st-came       \ the exit the stalker came in by (stalker-doing; -1 none)
+  cell field dog-way           \ the half of his room Hewie is on (hewie-doing: 2 either)
+  \ the run's companion (fiona/companion.fs - the original's +0x1AD718..+0x1AD73C): her mood, the
+  \ exit it is about and the one she went through; on her own (else with him), the turn's frames
+  \ left and its length; frames he has kept by her; him lying flat; frames to her next call to
+  \ him, to her next look at the stalker, waiting out of sight; along a link, gone so far; through
+  \ the door with him, from its far side; the exit she came in by; the door she is on (a link
+  \ between rooms) and how far is left of it (< 0: the next to choose); the doors not to try
+  cell field mate-mood  cell field mate-exit  cell field mate-exit2
+  cell field mate-alone  cell field mate-period  cell field mate-period-len  cell field mate-near-t  cell field mate-flat
+  cell field mate-say-t  cell field mate-look-t  cell field mate-away-t  1 floats field mate-gone
+  cell field mate-in  cell field mate-out  cell field mate-door  cell field mate-link  1 floats field mate-link-left
+  13 cells field mate-avoid  cell field mate-was-run
 end-state
 \ her-sub's that others test: pushing (fiona/push.fs), letting go of a thing (fiona/letgo.fs: how)
 5 constant pushing-sub

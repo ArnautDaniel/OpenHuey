@@ -34,6 +34,7 @@ variable hard   \ the new game chosen is a hard one (the title's HARD MODE; new-
 : costume-vars! ( fiona hewie -- )  progress pr.vars $27 + c!  progress pr.vars $26 + c! ;
 : flag-on ( n -- )  state-flag-set ;
 : new-game ( -- )   \ SceneGame_StateEntry, entry $2A (messages: from an actor or at load)
+    0 hewie-played !   \ (SceneGame_ctor: Fiona the one played)
     new-game-sounds flag-on  world-held flag-on  in-play flag-on
     hard @ if  hard-mode-flag story-flag-set  then   \ (entry $4000002A: progress +0x30 bit 15)
     1 0 costume-vars!
@@ -41,6 +42,7 @@ variable hard   \ the new game chosen is a hard one (the title's HARD MODE; new-
     front-garden-3 -1 s" rooms" actor-named send go-to-room ;
 
 : extras ( -- )   \ (SceneGame_StateEntry, entry $37: the extras room - Fiona in her clothes)
+    0 hewie-played !
     world-held flag-on  in-play flag-on
     0 0 costume-vars!
     0 s" fiona" actor-named send costume
@@ -77,13 +79,15 @@ create spot  -258e f, -10e f, 174e f,   \ (on the circle, between the scarecrows
 
 \ the menu, low on the left; the game's name above
 \ the entries: the last two only once a game has been cleared (the first clear's unlock)
-enum: menu-entry  e-new e-load e-options e-hard e-extras e-quit ;
+\ (MINI-GAME, hga's own: straight into the extras room's mini-game - its menu up, as at its door)
+enum: menu-entry  e-new e-load e-options e-hard e-extras e-mini e-quit ;
 : cleared? ( -- flag )  0 resident-flag? ;
 : entry ( i -- e )  dup e-hard >= cleared? 0= and if  drop e-quit  then ;
-: #items ( -- n )  cleared? if  6  else  4  then ;
+: #items ( -- n )  cleared? if  7  else  4  then ;
 : item ( i -- addr len )
     entry case  e-new of  s" NEW GAME"  endof  e-load of  s" LOAD GAME"  endof  e-options of  s" OPTIONS"  endof
-                e-hard of  s" HARD MODE"  endof  e-extras of  s" EXTRAS"  endof  >r s" QUIT" r>  endcase ;
+                e-hard of  s" HARD MODE"  endof  e-extras of  s" EXTRAS"  endof  e-mini of  s" MINI-GAME"  endof
+                >r s" QUIT" r>  endcase ;
 \ the save slots, to load one: each its number, place and time played
 : slot-colour ( i -- rgba )  dup slot-at @ = if  drop $FFFFFFFF  else  slot-used? if  $B0A8A0FF  else  $605C58FF  then  then ;
 : slot-draw ( n -- )   \ (a word of its own: a local inside a do loop would hide the loop's index)
@@ -125,6 +129,7 @@ enum: menu-entry  e-new e-load e-options e-hard e-extras e-quit ;
             e-load of  0 slot-at !  on-slots stage !  endof
             e-options of  5 s" subscreen" actor-named send menu-mode  subscreen-wanted flag-on  on-options stage !  endof
             e-extras of  title-end  started stage !  extras  self kill  endof
+            e-mini of  title-end  started stage !  -1 mini-game-wanted !  extras  self kill  endof
             >r bye r>
         endcase
     then ;

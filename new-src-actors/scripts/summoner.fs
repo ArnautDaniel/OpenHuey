@@ -155,6 +155,7 @@ create no-avoid 13 cells allot  no-avoid 13 cells 0 fill
     s-age @ if  exit  then   \ (told this frame)
     world-frozen state-flag? if  exit  then
     $18 state-flag? s-room @ her-room @ <> and if  exit  then
+    hewie-played? if  exit  then   \ (the mini-game's run: he isn't summoned)
     her-room @ 0< if  exit  then
     her-room @ closed-to-stalkers? if
         her-room @ s-room @ = s-in @ and if  exit  then

@@ -140,7 +140,7 @@ STALKERS = [
          moves=(0x42A4E0, 18), combos=(0x42A7A0, 20), gestures=(0x42A770, 6), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(0x42AB40, 0x42AB40), pursue=(0x42AAD0, 0x42AAD0, 0x42AAD0, 0x42AAD0), throws=(16, 17),
          grips=((-0.0389, 10.4049), (-0.0389, 10.4049), (0.7311, 13.251), (0.7311, 13.251),
-                (-1.1471, -2.5207), (-0.328, -2.3929))),
+                (-1.1471, -2.5207), (-0.328, -2.3929)), run={15: 0x42AAC0}),   # (TintStalker_AttackTable in the run)
     # kind 12 (lorenzo.c Kind12_*): unkillable, it seizes her seeing her; its temper with Hewie is in
     # memory the game fills (none), no throws, no grips of its own
     dict(name='Kind12', steps=(0x423BB0, 0x423CE0), knocks=0x423CE0, p='k12',
@@ -157,7 +157,7 @@ STALKERS = [
     dict(name='Kind34', steps=(0x43B700, 0x43B840), knocks=0x43B840, p='k34', tables=c_tables('sAttackTables1'),
          moves=(0x43B860, 13), combos=(0x43BA70, 20), gestures=(0x43BA40, 6), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(0x43C2F0, 0x43CCB0), pursue=(0x43C210, 0x43C260, 0x43CBD0, 0x43CC20), throws=(11, 12),
-         grips=DAN_GRIPS),
+         grips=DAN_GRIPS, run={15: 0x43C200, 14: 0x43C1F0}),   # (Kind34_AttackTable in the run: Kind34_Attack01_15 / _14)
     dict(name='Kind35', steps=(0x43CDE0, 0x43CF20), knocks=None, p='k35', tables=(lambda t: t[:17] * 2 + t[17:] * 2)(c_tables('sAttackTables2')),
          moves=(0x43CF20, 13), combos=(0x43D130, 20), gestures=(0x43D100, 6), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(0x43D650, 0x43DB50), pursue=(0x43D5E0, 0x43D5E0, 0x43DAE0, 0x43DAE0), throws=(11, 12),
@@ -203,6 +203,19 @@ for s in STALKERS:
         out.append('create %s  %s' % (names[t], '  '.join(rows)))
     out.append('create %s-tables  ' % p + ' '.join('%s ,' % names[t] for t in s['tables']) +
                '   \\ [hard][rage][situation]')
+    for t in s.get('run', {}).values():   # (the mini-game's run: its own for some situations)
+        if t in names:
+            continue
+        rows = []
+        while True:
+            k, a, pc = rd(t + 12 * len(rows), '<iif')
+            rows.append('$%X , %d , %s f,' % (k, a, f(pc)))
+            if pc >= 100 or len(rows) >= 12:
+                break
+        names[t] = '%s-table-%X' % (p, t)
+        out.append('create %s  %s' % (names[t], '  '.join(rows)))
+    out.append('create %s-run  ' % p + ' '.join('%d , %s ,' % (k, names[t]) for k, t in s.get('run', {}).items()) +
+               ' -1 ,   \\ (the run: situation, table)')
     va, nm = s['moves']
     rows = []
     for m in range(nm):
@@ -257,7 +270,7 @@ for s in STALKERS:
     out.append('    %d , %d , %s-grips ,' % (s['throws'][0], s['throws'][1], p))
     out.append(('    %s-waits-0 , %s-flurry-0 , %s-flurry-1 , %s-waits-1 , %s-waits-2 , %s-waits-3 ,' % ((p,) * 6))
                if 'waits' in s else '    0 , 0 , 0 , 0 , 0 , 0 ,')
-    out.append('    %s-knocks , %s-anim-sounds ,' % (p, p))
+    out.append('    %s-knocks , %s-anim-sounds , %s-run ,' % (p, p, p))
     out.append('')
 out += [
     '\\ ---- a kit: where his tables are (his `kit` field points at his). The tables by situation: 17,',
@@ -268,11 +281,16 @@ out += [
     '    field: k.pursue  field: k.pursue-rage  field: k.pursue-hard  field: k.pursue-hard-rage',
     '    field: k.throw-a  field: k.throw-b  field: k.grips',
     '    field: k.waits  field: k.flurry  field: k.flurry-hard  field: k.waits-hard  field: k.waits-hurt  field: k.waits-hard-hurt',
-    '    field: k.knocks  field: k.anim-sounds',
+    '    field: k.knocks  field: k.anim-sounds  field: k.run',
     'end-structure',
     ': my-kit ( -- kit )  kit @ ;',
     ': hard-set? ( -- flag )  hard-mode? ;',
-    ': table ( situation hard? -- addr )   \\ (raging or alerted: his rage\'s)',
+    '\\ his table for a situation (raging or alerted: his rage\'s; in the mini-game\'s run, his own for some)',
+    ': run-table ( situation -- addr | 0 )',
+    '    hewie-played? 0= if  drop 0 exit  then  my-kit k.run @',
+    '    begin  dup @ dup -1 <> while  2 pick = if  nip cell+ @ exit  then  2 cells +  repeat  2drop drop 0 ;',
+    ': table ( situation hard? -- addr )',
+    '    over run-table ?dup if  nip nip exit  then',
     '    if  34  else  0  then  raging @ alt-tables @ or if  17 +  then  +  cells my-kit k.tables @ + @ ;',
     ': moves ( -- addr )  my-kit k.moves @ ;',
     ': combos ( -- addr )  my-kit k.combos @ ;',

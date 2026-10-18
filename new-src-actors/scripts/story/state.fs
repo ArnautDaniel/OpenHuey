@@ -75,7 +75,7 @@ state: room-state
   #zones /zone-rect * field zone-rects   \ the zone rectangles (an id, x0 z0 x1 z1: for the scene effects)
   \ what the others tell (fiona-doing, hewie-doing, danger, panic)
   cell field fiona-busy  cell field fiona-mode  cell field fiona-sub
-  cell field fiona-cmd  cell field hewie-here  cell field hewie-act  cell field hewie-move-mode
+  cell field fiona-cmd  cell field hewie-gesture-now  cell field hewie-here  cell field hewie-act  cell field hewie-move-mode
   cell field the-danger  cell field the-panic  cell field the-panic-level
   \ their conditions (the original's +0xC4 each: 0 well, 1 hurt, 2 down), and the stalker as he
   \ tells it (stalker-doing: his room, how he moves and what, condition, health, his alert - his

@@ -5,7 +5,7 @@
 \ vibration and the volume take effect at once (SubScreen_ApplyOptions) - the sound out and the
 \ screen's position have nothing here to change.
 IN: subscreen.options
-USING: engine keys subscreen.state subscreen.art subscreen.input subscreen.box ;
+USING: engine keys facts subscreen.state subscreen.art subscreen.input subscreen.box ;
 
 \ each row: its icon (a part), its label (a menu message), its line
 create option-rows   $10 , $60 , $54 ,   $11 , $77 , $F4 ,   $12 , $7A , $114 ,   $13 , $7E , $134 ,   $14 , $81 , $154 ,
@@ -15,7 +15,11 @@ create option-rows   $10 , $60 , $54 ,   $11 , $77 , $F4 ,   $12 , $7A , $114 , 
 create layouts
     $61 , $6D , $6F , $70 , $71 , $75 , $76 ,   $62 , $70 , $6F , $6D , $71 , $75 , $76 ,
     $63 , $6D , $75 , $70 , $6F , $71 , $76 ,   $64 , $6F , $76 , $6D , $70 , $71 , $75 ,
-: action-name ( i -- msg )  layout @ 7 * + cells layouts + @ ;
+\ ... and Hewie's, played in the mini-game's run (D_0044B570's second set)
+create run-layouts
+    $61 , $4B , $4C , $4D , $71 , $4E , $4F ,   $62 , $4D , $4C , $4B , $71 , $4E , $4F ,
+    $63 , $4B , $4E , $4D , $4C , $71 , $4F ,   $64 , $4C , $4F , $4B , $4D , $71 , $4E ,
+: action-name ( i -- msg )  layout @ 7 * + cells  hewie-played? if  run-layouts  else  layouts  then  + @ ;
 : apply ( -- )   \ (SubScreen_ApplyOptions: the vibration on or off, everything heard at the volume)
     vibration @ 0<> rumble-allowed!  volume @ s>f 128e f/ game-volume! ;
 : defaults ( -- )  1 vibration !  1 sound-out !  128 volume !  0 pos-x !  0 pos-y !  0 layout !  apply ;

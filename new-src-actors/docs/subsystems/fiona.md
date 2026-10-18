@@ -406,5 +406,24 @@ none.) **Unseen in her camouflage** (item $89 in the equipment's slot 1; Fiona_L
 fades out, and once gone shows softened - layer $1C, drawn at half size and laid over the scene
 before the room's look (`post_soft_*`).
 
-Not yet: her own mind while Hewie is the one played (Fiona_MoodAI, Fiona_OffscreenFrame,
-Fiona_Timers - with Hewie's played section, H4).
+**The mini-game's run: the companion** (`scripts/fiona/companion.fs`; Fiona_MoodAI,
+Fiona_Timers, Fiona_OffscreenFrame, the run's parts of Fiona_MoveInput, Vt34 and Vt38,
+Fiona_StateBlock's 0xD). While Hewie is played she goes with him by herself. Her moods: by him,
+waiting, following him, fleeing (to an exit, through it), off by an exit at random, after him by
+an exit, sent to open an exit, at the stalker; out of sight: after him, waiting, wandering,
+fleeing. By turns she keeps with him (5..20 seconds) and goes off on her own (10..21) - the
+second shorter the longer he keeps by her, him lying flat (25 in 100) cutting it short. The
+stalker in sight she may run, by her panic (always past 80; one in five past 60 ... one in twenty
+past 10), out by the exit she reaches before him (not into his room on his half); panicking, at
+once. Running into his reach she goes at him (her shove or kick by her pose: `defend-by-pose`).
+Hewie barking low by a shut exit sends her to open it (at its front: her own door use); barking
+elsewhere she keeps with him longer. When he goes out by an exit and she is by him or following,
+she comes through with him if she is nearer its doorway than he is (or already in it), else
+after him out of sight. Out of sight she walks the house door by door at her pace (following or
+fleeing 0.75..1, waiting or wandering 0.3..0.45, by her fear; calming down 0.1): after him by his
+way, away from the stalker's room fleeing, at random wandering; a shut door on her way opened
+from afar (`open-from-afar`), a locked or held one waited at; her fear growing while she follows
+or flees, easing while she waits; into the room played by its door - in its doorway facing out,
+or opening it. The pad isn't hers: her calls to him (now and then: go, come back, stay) come from
+her mind and don't command him, she doesn't struggle (Fiona_Shakes 0); dragged off she breaks free
+after as many drags as her panic's stage, and cries for him now and then.

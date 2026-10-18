@@ -8,6 +8,7 @@ $1C constant muffled-sound         \ a cry under water (bank 6)
 $20 constant cowgirl-blow-sound    \ the special costumes' blows
 $21 constant illegal-blow-sound
 $22 constant illegal-hit-sound     \ ... landed
+$38 constant help-cry             \ her cry to Hewie (calling him; in the run, dragged off)
 $3C constant effort-sound          \ a throw, a shove
 $3D constant kick-sound
 $3E constant knocked-sound         \ struck

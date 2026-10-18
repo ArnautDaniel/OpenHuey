@@ -155,6 +155,9 @@ defer lost-her ( -- )   ' chase-start is lost-her
 \ room (2..5 stops); his route over he waits about - out of the room by an exit at random
 \ (Pursuer_GoAfterFiona); heading for her room he searches it once in; held off he's after her
 \ again when it runs out ----
+: run-pause? ( -- paused? )   \ (the run: coming in, he waits a while first - Pursuer_ThroughDoorEnding)
+    run-pause @ 0> 0= if  false exit  then  -1 run-pause +!  true ;
+defer after-her-elsewhere ( -- went? )   ' false is after-her-elsewhere   \ (the run: out after her - stalker/doorway.fs)
 : tick-down ( -- out? )  mode-t @ 0> if  -1 mode-t +!  then  mode-t @ 0= ;
 defer lead-taken? ( -- flag )   ' false is lead-taken?   \ (a lead he heard: stalker/leads.fs)
 defer starting? ( -- flag )   ' false is starting?      \ (starting at one)
@@ -184,6 +187,10 @@ create drawn-at /vec allot
         chasing? 0= if  chase-begin  then  after-t exit
     then
     chasing? if  lost-her  then   \ (lost sight of her: to where she is)
+    hewie-played? if   \ (the run: she is elsewhere - his chase follows her trail out, Pursuer_Modes / BehaviourFollow)
+        run-pause? if  exit  then
+        after-her-elsewhere if  exit  then
+    then
     lead-taken? if  exit  then
     my-mode @ case
         after-her of  tick-down if  search-again  then  endof

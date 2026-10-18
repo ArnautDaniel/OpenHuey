@@ -21,12 +21,19 @@ message noise-setting ( n -- )                \ 0..3: quiet noises quieter
 \ ---- rooms (docs/subsystems/rooms.md) ----
 message go-through ( exit -- )               \ I (the controlled one) went out by this exit
 message go-to-room ( room exit -- )          \ play that room, arriving by exit (-1: none)
+message room-preload ( room -- )              \ (the story) load that room ahead: a forced exit's ($80..) way
+message exit-prepare ( exit -- )              \ (the story) load the room behind that exit ahead
 message leaving-room ( room exit -- )        \ the played room is being left by this exit
 message arrived ( room exit -- )             \ the new room is in; arrivals come by this exit
 message entered-room ( room exit -- )        \ the room is in play
 
 \ ---- camera (docs/subsystems/camera.md) ----
 message camera-cut ( -- )                    \ it cut to a new set
+message hewie-told ( what arg -- )            \ (Hewie to Fiona, barking low: Hewie_StateLookLow) 0 a shut door at his exit `arg` - to open; 1 where he is
+message open-from-afar ( room exit kind source -- )   \ (to the doors) taken hold of and let go open, out of sight (DoorHold_Take / DoorHold_Open)
+message stalker-as ( kind -- )               \ (to a stalker, as the story loads him: partner-load) the kind he is
+message hewie-gesture ( g -- )               \ (Hewie, played: each frame) his gesture this frame (stick-gesture; the scripts' 0x21)
+message hewie-restart ( -- )                 \ (the run's clock starting: Hewie_Restart) him afresh - played, in the run
 message hewie-yelp ( time anim -- )          \ (Hewie) hidden away, the animation he plays while `time` counts (-1: as it is) (0x77)
 message hewie-play ( anim -- )               \ (Hewie) his motion plays `anim` (0xD7)
 message hewie-hold ( on -- )                 \ (Hewie) a 5-frame wait, and his next choice forced to sit (or not) (0xBB)

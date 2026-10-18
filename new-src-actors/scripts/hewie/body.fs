@@ -2,7 +2,7 @@
 \ operations), Fiona's and the others' bodies (facts), whom he is with, his way over the floor,
 \ chance, and the words that choose his next action (filled in by hewie.actions).
 IN: hewie.body
-USING: items engine game-state actors messages common facts paths vectors flag-names hewie-names hewie.state floor-flags ;
+USING: items engine keys game-state actors messages common facts paths vectors flag-names hewie-names hewie.state floor-flags ;
 
 8 constant through-mask       \ ... going through blocked floor
 
@@ -31,8 +31,9 @@ enum: dog-costume  own-coat shepherd-coat third-coat ;
 : hp! ( n -- )  his-hp ! ;
 : cond! ( n -- )  his-cond ! ;
 \ Hewie_TakeDamage: his health down by n (never below 0); in his third costume never knocked out
-\ - he keeps 1
+\ - he keeps 1; played as the black shepherd (the run), half as much again
 : hurt-by ( n -- )
+    hewie-played? black-shepherd? and if  s>f 1.5e f* f>s  then
     abs his-hp @ swap - 0 max
     dup 0= his-costume third-coat = and if  drop 1  then  hp! ;
 
@@ -91,6 +92,12 @@ defer adjust-action ( act -- act' ) ' noop is adjust-action    \ Hewie_AdjustAct
 : to-default ( -- )  choose-act 0 want ;       \ Hewie_ToDefault
 : start ( act -- )  adjust-action 0 set-action ;   \ Hewie_Start
 : behave ( xt -- )  his-act ! ;
+\ nothing to do (give_up): sniffing about - in the run (hewie-played?) himself again; and the
+\ stalker not to be gone for: in the run a run-up and a leap instead
+: give-up ( -- )  hewie-played? if  choose-act  else  sniff-act  then  0 want ;
+: steering? ( -- flag )   \ the player at the pad (Hewie_PlayerSteering): a button, the stick past 0.8, a gesture
+    buttons-pressed 0<>  stick@ vlen 0.8e f> or  his-gesture @ 0< 0= or ;
+: missed-pursuer ( -- )  hewie-played? if  run-up-jump-act  else  sniff-act  then  0 want ;
 : trust-of ( table -- n )  his-trust @ cells + @ ;
 : by-chance ( table -- flag )  trust-of 0 100 clamp  100 roll > ;
 \ the signals and noises he gives

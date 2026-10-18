@@ -12,7 +12,8 @@ The original's `Panic_*` (`fiona.c`, the object at SceneGame +0x7F8, progress +0
 | Message | Stack | Direction | Meaning |
 |---|---|---|---|
 | `fright` | `( amount -- )` | in | A fright (a float, `f>cell`): under 10 into this frame's fear, more half of it lasting 30 frames as well (`Panic_Fright`). |
-| `fear-in` | `( amount -- )` | in | This frame's fear (a float): the stalker's nearness (`Panic_FearInputs`). |
+| `fear-in` | `( amount -- )` | in | A fear amount (a float), as from the table: negative a fright. |
+| `stalker-doing` | `( room mode sub cond hp hp-max kind alert came -- )` | in | The stalker's kind, mode and condition, for his part of the fear. |
 | `fiona-doing` | `( mode sub cond -- )` | in | From Fiona each frame: what she's doing (standing still calms faster; panicking starts only on her feet). |
 | `panic-stage!` / `panic-level!` | `( stage -- )` / `( level -- )` | in | The story sets it (`Panic_SetStage`, `Panic_SetLevel`). |
 | `panic` | `( stage level -- )` | broadcast, each frame | Its stage (0 calm, 1..3 at 60 / 75 / 90, 4 panicking, 5 calming down) and level (a float). |
@@ -52,5 +53,10 @@ panic run, running on blindly); stumbles, and a fall (the dice loaded) that ends
 The panic hears Fiona's state as `fiona-doing` each frame. *Note:* she hears its stage a frame
 later than in the original (it broadcasts at the frame's end).
 
-Left: the stalker's fear (`fear-in`, from the stalkers), the story's commands (with the story),
-charms (items), the screen's shake and tint (effects).
+The stalker's part (`Panic_FearInputs`) it works out itself each frame: in the room played, by his
+kind and how near he is to her (the level distance and three times the rise; both on a ladder, by
+the rise alone - not checked that it is the same ladder), not while he is down nor under flag $21.
+In the mini-game's run she out of sight with him, her fear grows; away from the room played her
+panic stops at 99.
+
+Left: the story's commands (with the story), charms (items), the screen's shake and tint (effects).

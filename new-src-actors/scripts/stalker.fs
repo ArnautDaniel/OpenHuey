@@ -35,7 +35,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     well-cond cond !  0 reeling !  0 hits !
     route-clear  my-path path-clear  waiting-about mode!  stand-anim play-now  stand  pose
     -1 came-by !  -1 to-shut !  -1 at-ladder !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
-    out-over  -1 held-door !  -1 push-exit !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
+    out-over  -1 held-door !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
     away? 0= if  search-start  then ;
 : go-out ( -- )  let-her-go  let-door-go  out-over  forget-leads  0 in-game !  body-off  0 him act.visible l! ;
 
@@ -128,13 +128,24 @@ $1300 constant gesture-anims
               else  waiting-about mode!  route-clear  then  endof
     endcase ;
 : knocked-out ( -- )  played? 0= if  exit  then  let-door-go  out-over  0 hp !  knock-down ;
+: run-temper ( -- )   \ (the run: how much of Hewie he stands - Kind34_Activate 80, TintStalker_Reset 20,
+    my-kind @ case                     \ Debilitas3_Activate 16)
+        kind34-kind of  80 tolerance !  endof  tintstalker-kind of  20 tolerance !  endof
+        debilitas-7-kind of  16 tolerance !  endof
+    endcase ;
 : activated ( -- )
+    hewie-played? if  run-temper  then
     forget-leads  0 beaten !  -1 making-for !  0 down-t !  waiting-about mode!  900 mode-t !  0 raging !
     hp @ 0> 0= if  hp-max @ hp !  then ;
 : unload ( -- )  0 loaded !  in-game @ if  go-out  then  my-kind @ -1 cast-as ;
 create place-at /vec allot
 behaviour stalking
   on stalker-load ( slot -- )  load ;
+  \ the kind he is loaded as (Debilitas's: kind 7 is the Pursuer with his model, its chase the
+  \ Pursuer's - Debilitas3)
+  on stalker-as ( kind -- )
+      dup debilitas-7-kind = if  my-kind !  -1 base-chase ! exit  then  drop
+      my-kind @ debilitas-7-kind = if  debilitas-kind my-kind !  0 base-chase !  then ;   \ (himself again)
   on stalker-unload ( -- )  unload ;
   on stalker-in ( room tri -- )  come-in ;
   on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him)

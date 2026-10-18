@@ -47,6 +47,10 @@ From `SceneGame_LeaveRoom`, the play sub-state (`scene_game.c` ~1033-1095), `Sce
       the camera takes the room's sets and paths.
 4. The room's sounds (bank 6) are swapped on leaving and entering, unless `keep-room-sounds`
    says to keep them (*to name*).
+5. A forced exit ($80 and up: the scripts' cmd_exit with bit 7) goes to the room loaded ahead
+   into the spare slot - `room-preload` (event 0x3A) or `exit-prepare` (0x01: the room behind an
+   exit) - arriving by that same number (SceneGame_LeaveRoom). Without one it still takes exit
+   0's door (the original's spare slot would hold the room left: not kept here).
 
 ## Design notes
 

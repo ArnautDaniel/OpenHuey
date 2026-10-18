@@ -6,7 +6,7 @@
 \ dashing, the stance, barking, being down); praise and her commands. The stalkers and the
 \ story's moves are in the later files.
 IN: hewie.states
-USING: engine game-state actors messages common facts paths vectors hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving flag-names floor-flags ;
+USING: engine game-state actors messages common facts paths vectors doors hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving flag-names floor-flags ;
 
 \ ---- how he is treated: the progress's counters (for the dog's level at the end) ----
 : counter+ ( n addr -- )  tuck l@ + 0 10000 clamp swap l! ;
@@ -345,7 +345,16 @@ create kn-at /vec allot
     then  stand-pose keep-pose ;
 \ Hewie_StateLookLow / Bark (bark-act): a bark (low when calm), then the default action
 : look-target ( -- )  his-target @ 0< if  ahead-look  else  target-look  then  look! ;
-: st-look-low ( -- )  look-target  resting-pose step-to-pose if  exit  then  resting-pose keep-pose  to-default ;
+\ down low, he tells her (her within 100 in his room) of each shut exit he is at the front of - to
+\ open; told of none, where he is (Hewie_StateLookLow: her state block's 0xD - the run's companion)
+: at-front? ( exit -- flag )  dup door-here? 0= if  drop false exit  then
+    dup his-at vec@ door-near?  swap 0 his-at vec@ door-in-area? and ;
+: tell-her ( -- )
+    false  her-with?  her-dist 100e f< and if
+        8 0 do  i at-front?  room-id i exit-open? 0= and if  0 i her send hewie-told  drop true  then  loop
+    then
+    0= if  1 his-tri her send hewie-told  then ;
+: st-look-low ( -- )  look-target  resting-pose step-to-pose if  exit  then  resting-pose keep-pose  tell-her  to-default ;
 : st-bark ( -- )
     look-target
     his-danger @ calm = his-cond @ hurt-cond <> and if  resting-pose  else  stand-pose  then
@@ -354,16 +363,16 @@ create kn-at /vec allot
 \ ---- hurt, down ----
 : st-back-up ( -- )  stand-pose step-to-pose 0= if  0 his-2d !  stand-pose keep-pose  to-default  then ;   \ (Hewie_State1D18)
 \ Hewie_StateKnockedDown (knocked-down-act): lying down until he has health again; in a hard
-\ game, once he is down, the game is over (game over kind 3)
+\ game, once he is down, the game is over (game over kind 3); in the run, too (kind 1)
 : dies-in-hard-mode ( -- )   \ (a hard game: his end is hers - unless a scene has them, or the story keeps it from ending)
     caught state-flag? if  exit  then
     cutscene-active?  capture-no-end state-flag? or if  1 hp!  hurt-cond cond!  exit  then
-    3 s" gameover" actor-named send game-over-kind  caught state-flag-set ;
+    hewie-played? if  1  else  3  then  s" gameover" actor-named send game-over-kind  caught state-flag-set ;
 : st-knocked-down ( -- )
     his-wait @ 0= if  1 hp!  hurt-cond cond!  then
     ahead-look look!
     down-pose step-to-pose 0= if
-        hard-mode? if  dies-in-hard-mode  then
+        hard-mode? hewie-played? or if  dies-in-hard-mode  then
         anim@ down-anim = if  0 his-2d !  else  down-pose keep-pose  then
     then
     his-hp @ if  1 his-2d !  ['] st-back-up behave  then ;
@@ -459,7 +468,9 @@ create kn-at /vec allot
 \ Hewie_State2388 (ready-act): crouched low, readying to spring
 : st-readying ( -- )
     ahead-look look!
-    anim@ crouch-anim = if  his-t1 @ 0= if  1 his-ready !  else  -1 his-t1 +!  then
+    anim@ crouch-anim = if
+        hewie-played? steering? and if  to-default exit  then   \ (the run: the pad breaks it off)
+        his-t1 @ 0= if  1 his-ready !  else  -1 his-t1 +!  then
     else  stand-pose step-to-pose 0= if  crouch-anim play  then  then ;
 
 \ ---- walking to the spot she showed (go-there-act, then scramble-there-act about it) ----

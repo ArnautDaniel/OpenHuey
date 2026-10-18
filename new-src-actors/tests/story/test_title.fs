@@ -11,10 +11,10 @@ USING: tester engine game-state actors messages keys facts flag-names room-names
 : menu@ ( xt -- x )  game:subscreen enter  execute  leave-actor ;
 20 frames
 
-testing the entries: three, and quit; with the first clear two more (hard mode, extras)
+testing the entries: three, and quit; with the first clear three more (hard mode, extras, the mini-game)
 T{ #items  3 entry  -> 4 e-quit }T
 0 resident-flag-set
-T{ #items  3 entry  4 entry  5 entry -> 6 e-hard e-extras e-quit }T
+T{ #items  3 entry  4 entry  5 entry  6 entry -> 7 e-hard e-extras e-mini e-quit }T
 
 testing the options alone: the options page, no turning to the others; closed, the pages as before
 5 game:subscreen send menu-mode  subscreen-wanted state-flag-set  deliver  20 frames

@@ -2,7 +2,7 @@
 \ notices, his own decisions, his mode's behaviour (calm / wary / tense), what he does next by
 \ his trust (the weighted lists), and his body as it is shown (overlays, neck, feet, sounds).
 IN: hewie.mind
-USING: engine actors common facts paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.fetch hewie.exits flag-names floor-flags ;
+USING: engine actors common facts paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.fetch hewie.exits hewie.steered flag-names floor-flags ;
 
 $FF constant no-call   \ (his-call: nobody called him; 0 Fiona)
 \ report_fiona_near: how near she is, for the story (1 within 20, 2 within 50, 3 further)
@@ -451,7 +451,8 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     else  his-away @ if  dog-elsewhere  else  dog-with-her  then  his-action @ his-mode @ his-sub @ his-cond @ his-mood @ anim-group
           commandable? near-command? reachable? breakable? his-way @ his-trust @  then
     broadcast hewie-doing
-    his-hp @ broadcast hewie-health ;
+    his-hp @ broadcast hewie-health
+    hewie-played? if  his-gesture @ broadcast hewie-gesture  then ;
 : full-stop ( -- )   \ Hewie_FullStop: what a script's letting go clears
     0 his-broke !  0 his-hits !  -1 his-look-char !  0 his-scene-req !  0 his-look-pt? !
     hewie-hidden state-flag-clear ;
@@ -466,7 +467,7 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     turn-head  neck  anim-sounds  feet
     his-yaw his-yaw-was f!  his-action @ his-last-action !  show-him  tell-doing ;
 : frame ( -- )
-    his-busy @ if  -1 his-was-busy !  think exit  then
+    his-busy @ if  -1 his-was-busy !  gesture!  think exit  then
     his-was-busy @ if  0 his-was-busy !  full-stop  to-default  then   \ (the script let him go)
     upkeep  alert  his-cond @ down-cond <> if  report-near  then  obedience
     his-away @ if   \ out of the room being played
@@ -480,7 +481,9 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     his-2b @ if  through-mask  else  hewie-floor  then  body-mask!
     his-root-ok @ fit-floor
     0 his-no-root !  1 his-root-ok !
-    cutscene-active? if  standing-frame  else  own-decisions  then
+    hewie-played? if  gesture-bark  then   \ (last frame's gesture: Hewie_StateBlock's end)
+    cutscene-active? if  standing-frame  else  hewie-played? if  run-decisions  else  own-decisions  then  then
+    gesture!
     his-mood-act @ ?dup if  execute  then
     his-act @ ?dup if  execute  then
     turn-by-anim
@@ -489,6 +492,10 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     his-yaw his-yaw-was f!  his-action @ his-last-action !  his-alert @ his-alert-was !
     0 his-smells !  move-sub  show-him  tell-doing ;
 
+\ Hewie_StartScene: calm, his default action - in the run, played afresh (hewie/steered.fs)
+: restart ( -- )
+    hewie-played? if  played-afresh exit  then
+    ['] st-calm his-mood-act !  choose-act 0 set-action ;
 \ Hewie_Activate: his state as he comes into the game (calm, the default action)
 : fresh ( -- )
     -1 his-done !  0 his-busy !  -1 his-meet !  -1 his-target !  -1 his-target2 !  -1 his-look-char !  -1 his-door !  -1 his-noise-room !
@@ -498,5 +505,4 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     normal-mood -1 set-mood  0 add-trust
     obeys  1 his-pending !
     100 hp!  well-cond cond!  300 his-hurt-t !
-    ['] st-calm his-mood-act !
-    choose-act 0 set-action ;
+    restart ;
