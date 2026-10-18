@@ -90,7 +90,7 @@ both are complete and checked: its output must give the engine the same data the
 |---|---|---|---|
 | textures | TEX: swizzled, paletted, PS2 alpha | PNG (RGBA, alpha as 0..255), a sidecar for what PNG can't say (the palettes a texture switches between, its CLUT rows) | edit with anything; a texture pack is PNGs |
 | music | ADX (ADPCM, loop points) | FLAC (lossless: the samples the game plays), its loop points in the file's tags | replace a track |
-| sound banks | HD / BD / SDT (the SPU's programs and VAG samples) | a WAV or Ogg per sample, the bank as a text file (programs, tones, envelopes) | replace a sound |
+| sound banks | HD / BD / SDT (the SPU's programs and VAG samples) | a WAV per sample (built); the bank as a text file (programs, tones, envelopes: later - HD / SDT copied for now) | replace a sound |
 | movies | SFD (MPEG-1 video, ADX audio) | WebM (VP9 or AV1, Opus) | smaller, decoded by the GPU or a common library, re-encodable at a higher size |
 | the executable's tables | addresses in SLUS_210.75 | a file each, by name (`library/exe/doors.bin`): the table's bytes; readable forms (data files) as mods want them | no addresses at run time; mods can change a table |
 | messages | the message files (BIN), each room's text (a PAC section) | UTF-8 text files, one per table, ids kept | translation, new lines |
@@ -196,6 +196,27 @@ come table by table as mods want them; the rooms and doors will go with the room
 Checked: ctest from a library holding no executable (strace: none opened) - every subsystem's
 tests pass, the tables from `exe/`.
 
+### Sound banks
+
+A bank is NAME.HD (Sony's: programs, splits, samples, the samples' places), NAME.SDT (Capcom's
+sound table) and NAME.BD (the samples, PS-ADPCM). The BD becomes a folder of WAVs -
+`C_0000.BD` -> `C_0000.samples/`: `bank.txt` (each sample's index, its place in the BD, its rate)
+and `<i>.wav` (mono, 16-bit, at the HD's rate; a loop as a `smpl` chunk) for each of the HD's
+samples (its Vagi table). 134 banks, 1148 samples: 16 MB of ADPCM, 56 MB of WAV. The HD and SDT
+are copied as they are for now: a text form of them wants their fields named one by one, and the
+engine reads them in place (`snddrv.c`, `seq.c`) - next, as mods want to change a sound's
+envelope or pitch rather than its sound.
+
+The SPU's voices play either: `src/data/vag.h`'s cursor (the PS-ADPCM decoder moved out of
+`spu.c`) reads a sample's ADPCM, or its WAV's samples, a 28-sample block at a time. As with the
+music, ADPCM's prediction carries across a loop's jump, so a WAV holds the first pass and the
+second pass's start for as long as it differs (whole blocks), its loop that much in. A mod's
+WAV: mono 16-bit, its loop in a `smpl` chunk (or none: it stops at its end); its rate is the
+HD's (the pitch the game gives it), not the file's.
+
+`sound-check` (a ctest) converts every sample and plays both through the cursor: the same
+samples, block by block, through three passes of each loop (58 loop).
+
 Some formats carry engine behaviour in their layout (motion tables, a room's areas and
 cameras): those convert into the engine's own structures written plainly, not into a general
 format that loses them.
@@ -247,9 +268,8 @@ after: better-textures   \ loaded after that mod, if it's on
      palette. A PNG of another size is drawn as much as fits until the renderer takes new
      sizes. The rooms' textures inside their `.PAC` can't be replaced until rooms are
      converted.
-   - Nothing else is needed for texture packs, music (a FLAC at the track's path) and
-     translations (the messages' text files) now, and sound replacements once sound banks are
-     converted. The executable's tables, once they are data
+   - Nothing else is needed for texture packs, music (a FLAC at the track's path),
+     translations (the messages' text files) and sounds (a WAV in the bank's `.samples/`). The executable's tables, once they are data
      files in `library/exe/`, are overridden the same way.
 2. **Actors** (built). A mod's `scripts/<name>.fs` is loaded after the game's scripts as the
    vocabulary `<name>` (`IN: room-tally`); its folder is a root for `USING:`, so a bigger mod
@@ -313,4 +333,4 @@ from $1000 up, say, so they never collide with the game's).
    their own vocabularies. A sample mod in the repository as a test. (Built.)
 4. **Music, messages, the executable's tables** converted; the first hooks, as the sample mods
    ask. (Built: music, messages, the executable's tables; the first hook, item-use-rule.)
-5. Sound banks, movies; then rooms and models.
+5. Sound banks (samples built), movies; then rooms and models.

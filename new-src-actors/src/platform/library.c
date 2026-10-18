@@ -24,6 +24,7 @@
 #include "../data/musicsrc.h"
 #include "../data/pac.h"
 #include "../data/exetables.h"
+#include "../data/samples.h"
 
 #define MUSIC_FORMAT 1             /* "convert music 1": ADX to FLAC, LOOPSTART / LOOPEND / STOPAT (musicsrc.h) */
 
@@ -429,18 +430,22 @@ static int make_parent(const char *path) {
 
 /* a kind of DATA.CVM's file the library holds converted, read whole: a .TEX bank (its PNGs,
  * texbank.h), an .ADX track (a FLAC) */
+static int convert_samples(const Item *it, const char *root, Items *made, const uint8_t *bd, size_t size, char *why,
+                           size_t n);
 static int has_kind(const Item *it, const char *ext) {
-    size_t len = strlen(it->path);
+    size_t len = strlen(it->path), elen = strlen(ext);
 
-    return strncmp(it->path, "../", 3) != 0 && len > 4 && strcasecmp(it->path + len - 4, ext) == 0 && it->size > 0 &&
-           it->size < (64L << 20);
+    return strncmp(it->path, "../", 3) != 0 && len > elen && strcasecmp(it->path + len - elen, ext) == 0 &&
+           it->size > 0 && it->size < (64L << 20);
 }
 static int is_messages(const Item *it) { return has_kind(it, ".BIN") && strncasecmp(it->path, "SUBSCR/MSG_", 11) == 0; }
 /* (a room's .PAC is copied as it is, its text beside it as well) */
 static int is_exe(const Item *it) { return strcasecmp(it->path, "../" EXE_NAME) == 0; }
 static int is_converted(const Item *it) {
-    return has_kind(it, ".TEX") || has_kind(it, ".ADX") || has_kind(it, ".PAC") || is_messages(it) || is_exe(it);
+    return has_kind(it, ".TEX") || has_kind(it, ".ADX") || has_kind(it, ".PAC") || is_messages(it) || is_exe(it) ||
+           has_kind(it, ".BD");
 }
+
 
 /* the executable: its tables (exetables.h) in exe/, each a file - the executable itself not kept */
 static int convert_exe(const char *root, Items *made, const uint8_t *data, size_t size, char *why, size_t n) {
@@ -561,6 +566,29 @@ static void made_one(void *user, const char *name, long size) {
     items_add(m->l, rel, size);
 }
 
+/* a sound bank's samples (its .BD; the .HD says where each starts) as WAVs: NAME.samples/ */
+static int convert_samples(const Item *it, const char *root, Items *made, const uint8_t *bd, size_t size, char *why,
+                           size_t n) {
+    char hdp[600], to[1300];
+    Made m = {made, ""};
+    size_t hs, len = strlen(it->path) - 3;
+    uint8_t *hd;
+    int ok;
+
+    snprintf(hdp, sizeof(hdp), "%.*s.HD", (int)len, it->path);
+    if ((hd = disc_read_all(hdp, &hs)) == NULL) {
+        return -1;   /* (no .HD beside it: copied as it is) */
+    }
+    snprintf(m.dir, sizeof(m.dir), "data/%.*s.samples/", (int)len, it->path);
+    snprintf(to, sizeof(to), "%s%s", root, m.dir);
+    ok = make_parent(to) && samples_convert(hd, hs, bd, size, to, made_one, &m);
+    free(hd);
+    if (!ok) {
+        snprintf(why, n, "%s can't be written", to);
+    }
+    return ok;
+}
+
 static int convert_bank(const Item *it, const char *root, Items *made, uint8_t *bank, char *why, size_t n) {
     char to[1300];
     Made m = {made, ""};
@@ -627,6 +655,8 @@ static int copy_item(const Item *it, const char *root, Items *made, Progress *pr
             ok = convert_bank(it, root, made, bank, why, n);
         } else if (ok && has_kind(it, ".ADX")) {
             ok = convert_music(it, root, made, bank, have, why, n);
+        } else if (ok && has_kind(it, ".BD")) {
+            ok = convert_samples(it, root, made, bank, have, why, n);
         } else if (ok && is_exe(it)) {
             ok = convert_exe(root, made, bank, have, why, n);
         } else if (ok && is_messages(it)) {
@@ -682,6 +712,7 @@ static int write_manifest(const char *root, const Items *made) {
     fprintf(f, "convert music %d\n", MUSIC_FORMAT);
     fprintf(f, "convert messages %d\n", MSGTEXT_FORMAT);
     fprintf(f, "convert exe %d\n", EXETABLES_FORMAT);
+    fprintf(f, "convert samples %d\n", SAMPLES_FORMAT);
     for (i = 0; i < made->n; i++) {
         fprintf(f, "file %ld %s\n", made->e[i].size, made->e[i].path);
     }
