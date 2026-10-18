@@ -428,7 +428,7 @@ $80 constant grab-noise
     run-state  model @ 0< if  exit  then  footsteps  show keep ;
 
 : start ( -- )   \ its model, on the floor if in the room being played, facing as placed
-    s" O_HMB/HMB_000" actor-load dup model !  $42C730 motion-table   \ (D_0042C730: its motions)
+    s" O_HMB/HMB_000" actor-load dup model !  s" motions-homunculus" motion-table   \ (D_0042C730: its motions)
     0 actor@ act.visible l!  rest-anim play-now
     3e 6e body-size
     in-play? if  on-the-floor  else  body-off  then

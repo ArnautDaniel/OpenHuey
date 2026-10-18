@@ -41,9 +41,9 @@ file formats belong to C, behaviour to actors in Forth.
   scripts/            the game's scripts (shipped)
   library/            made by the import
     manifest.txt      what it was made from and how
-    SLUS_210.75 ...   the disc's own files (the executable, SYSTEM.CNF, MODULES/)
+    SYSTEM.CNF ...    the disc's own files (SYSTEM.CNF, MODULES/)
     data/             DATA.CVM's folders, each file converted or as it was
-    exe/              (later) the executable's tables, converted
+    exe/              the executable's tables, a file each (the executable itself not kept)
   mods/               the player's mods
   user/               saves, the system data (the unlocks, best times), settings
 ```
@@ -92,7 +92,7 @@ both are complete and checked: its output must give the engine the same data the
 | music | ADX (ADPCM, loop points) | FLAC (lossless: the samples the game plays), its loop points in the file's tags | replace a track |
 | sound banks | HD / BD / SDT (the SPU's programs and VAG samples) | a WAV or Ogg per sample, the bank as a text file (programs, tones, envelopes) | replace a sound |
 | movies | SFD (MPEG-1 video, ADX audio) | WebM (VP9 or AV1, Opus) | smaller, decoded by the GPU or a common library, re-encodable at a higher size |
-| the executable's tables | addresses in SLUS_210.75 | Forth data files (`library/exe/*.fs`) and binary blobs where a table is only ever read whole | no addresses at run time; mods can change a table |
+| the executable's tables | addresses in SLUS_210.75 | a file each, by name (`library/exe/doors.bin`): the table's bytes; readable forms (data files) as mods want them | no addresses at run time; mods can change a table |
 | messages | the message files (BIN), each room's text (a PAC section) | UTF-8 text files, one per table, ids kept | translation, new lines |
 | rooms, nav meshes | PAC | later: glTF for the meshes, the rest (nav mesh, exits, cameras, areas) as data files | the biggest modding payoff, the most work |
 | models, motions | PCK, MTN | later: glTF (skinned), motions as glTF animations | new costumes, new figures |
@@ -175,6 +175,26 @@ game's, so the game's code reads it unchanged. A translation is these files in a
 `messages-check` (a ctest) writes every table as text and reads it back: every message the same
 bytes, measured by its own copy of the game's reader (the decomp's `TextCursor_Step`) - which is
 how this was found to need a choice's two operand bytes (`include/text.h` said one).
+
+### The executable's tables
+
+The engine and the scripts read 22 tables out of SLUS_210.75: the doors and rooms (how the house
+connects), the obstacle kinds, the sounds' distance curves and stereo pan, the butterflies, the
+dealt maze rows, Fiona's meeting offsets and twelve models' motion tables (their fades and flags).
+`src/data/exetables.c` names each with its address and size; the import writes each to
+`library/exe/<name>.bin` and keeps no executable. The engine asks by name -
+`exetable("doors")`, `s" motions-hewie" motion-table`, `s" deal-rows" exe-table` - reading
+`../exe/<name>.bin` through `files_read` (so a mod's over the library's), else (no library: the
+developers') the executable at the table's address.
+
+They are the game's bytes as they are, but for one: the obstacle kinds are pointers to each
+kind's definition, so the file holds the definitions one after another instead. A motion table's
+size is its model's motion count - the most any model using it has (measured over the tests);
+a model with more gets no table entries past the file's end. Readable forms (text a mod edits)
+come table by table as mods want them; the rooms and doors will go with the rooms' conversion.
+
+Checked: ctest from a library holding no executable (strace: none opened) - every subsystem's
+tests pass, the tables from `exe/`.
 
 Some formats carry engine behaviour in their layout (motion tables, a room's areas and
 cameras): those convert into the engine's own structures written plainly, not into a general
@@ -281,5 +301,5 @@ from $1000 up, say, so they never collide with the game's).
 3. **Mods, files and actors**: the manifest, the load order, file overrides, mod scripts in
    their own vocabularies. A sample mod in the repository as a test. (Built.)
 4. **Music, messages, the executable's tables** converted; the first hooks, as the sample mods
-   ask. (Music and messages built.)
+   ask. (Music, messages and the executable's tables built.)
 5. Sound banks, movies; then rooms and models.

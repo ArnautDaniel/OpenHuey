@@ -1,6 +1,7 @@
 /* The game library (library.h, docs/library-and-mods.md). The import copies an opened disc
- * image's files - DATA.CVM's into library/data/, the disc's own (SLUS_210.75, SYSTEM.CNF,
- * MODULES/) into library/ - into library.new/ first, writes the manifest and only then takes
+ * image's files - DATA.CVM's into library/data/, the disc's own (SYSTEM.CNF, MODULES/) into
+ * library/, the executable's tables into library/exe/ (the executable itself not kept), the kinds
+ * with a converter converted - into library.new/ first, writes the manifest and only then takes
  * the place of library/: a failed or cancelled import leaves the old one (or none). Read back,
  * library/data/ is a folder of the game's files as the disc layer has always read them, its
  * "../" the library itself. */
@@ -22,6 +23,7 @@
 #include "../data/msgtext.h"
 #include "../data/musicsrc.h"
 #include "../data/pac.h"
+#include "../data/exetables.h"
 
 #define MUSIC_FORMAT 1             /* "convert music 1": ADX to FLAC, LOOPSTART / LOOPEND / STOPAT (musicsrc.h) */
 
@@ -435,8 +437,50 @@ static int has_kind(const Item *it, const char *ext) {
 }
 static int is_messages(const Item *it) { return has_kind(it, ".BIN") && strncasecmp(it->path, "SUBSCR/MSG_", 11) == 0; }
 /* (a room's .PAC is copied as it is, its text beside it as well) */
+static int is_exe(const Item *it) { return strcasecmp(it->path, "../" EXE_NAME) == 0; }
 static int is_converted(const Item *it) {
-    return has_kind(it, ".TEX") || has_kind(it, ".ADX") || has_kind(it, ".PAC") || is_messages(it);
+    return has_kind(it, ".TEX") || has_kind(it, ".ADX") || has_kind(it, ".PAC") || is_messages(it) || is_exe(it);
+}
+
+/* the executable: its tables (exetables.h) in exe/, each a file - the executable itself not kept */
+static int convert_exe(const char *root, Items *made, const uint8_t *data, size_t size, char *why, size_t n) {
+    char rel[200], to[1300];
+    uint8_t *copy = malloc(size), *t;
+    size_t tsize;
+    Exe e;
+    int i, ok = 1;
+    FILE *f;
+
+    if (copy == NULL) {
+        return 0;
+    }
+    memcpy(copy, data, size);
+    if (!exe_take(&e, copy, size)) {
+        snprintf(why, n, "the disc's " EXE_NAME " isn't an executable hga reads");
+        return 0;
+    }
+    for (i = 0; ok && exetables_name(i) != NULL; i++) {
+        if ((t = exetables_extract(&e, exetables_name(i), &tsize)) == NULL) {
+            snprintf(why, n, "the executable's table %s isn't where it should be", exetables_name(i));
+            ok = 0;
+            break;
+        }
+        snprintf(rel, sizeof(rel), "exe/%s.bin", exetables_name(i));
+        snprintf(to, sizeof(to), "%s%s", root, rel);
+        ok = make_parent(to) && (f = fopen(to, "wb")) != NULL;
+        if (ok) {
+            ok = fwrite(t, 1, tsize, f) == tsize;
+            ok = fclose(f) == 0 && ok;
+        }
+        free(t);
+        if (!ok) {
+            snprintf(why, n, "%s can't be written", to);
+        } else {
+            items_add(made, rel, (long)tsize);
+        }
+    }
+    exe_free(&e);
+    return ok;
 }
 
 /* a message table as text (msgtext.h): "data/<path less its extension><suffix>" */
@@ -583,6 +627,8 @@ static int copy_item(const Item *it, const char *root, Items *made, Progress *pr
             ok = convert_bank(it, root, made, bank, why, n);
         } else if (ok && has_kind(it, ".ADX")) {
             ok = convert_music(it, root, made, bank, have, why, n);
+        } else if (ok && is_exe(it)) {
+            ok = convert_exe(root, made, bank, have, why, n);
         } else if (ok && is_messages(it)) {
             ok = convert_messages(it, root, made, bank, have, ".txt", why, n);
         } else if (ok && has_kind(it, ".PAC")) {
@@ -635,6 +681,7 @@ static int write_manifest(const char *root, const Items *made) {
     fprintf(f, "convert textures %d\n", TEXBANK_FORMAT);
     fprintf(f, "convert music %d\n", MUSIC_FORMAT);
     fprintf(f, "convert messages %d\n", MSGTEXT_FORMAT);
+    fprintf(f, "convert exe %d\n", EXETABLES_FORMAT);
     for (i = 0; i < made->n; i++) {
         fprintf(f, "file %ld %s\n", made->e[i].size, made->e[i].path);
     }

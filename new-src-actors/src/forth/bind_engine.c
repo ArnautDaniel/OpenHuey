@@ -3,6 +3,7 @@
  * Structs are reached by address plus field words: `camera cam.yaw sf@` reads the camera's yaw
  * (a field word adds its offset). Floats in structs are 32-bit: sf@ / sf!. */
 #include "../game/engine.h"
+#include "../data/exetables.h"
 #include "../hactor/hactor.h"
 #include "../game/areas.h"
 #include "../game/camdirector.h"
@@ -1189,7 +1190,7 @@ PRIM(p_ash_new) { PUSH(particles_ash()); }   /* ( -- p ) ash flakes rising in th
 PRIM(p_butterflies_new) {   /* ( count F: x y z -- p ) butterflies making for the point (their colours: the executable's) */
     Vec3 at = fpop3(f);
 
-    PUSH(particles_butterflies(at, (int)POP(), world_exe(&gEngine.world, 0x412710, 32)));
+    PUSH(particles_butterflies(at, (int)POP(), exetable("butterflies", NULL)));
 }
 PRIM(p_butterflies_to) {   /* ( p count F: x y z -- ) somewhere new, and how many (0: as they are) */
     Vec3 at = fpop3(f);
@@ -1808,10 +1809,10 @@ static void sound_ready(void) {   /* the executable's tables, once */
     if (done) {
         return;
     }
-    c = world_exe(&gEngine.world, 0x41D820, 0x600);
-    r = world_exe(&gEngine.world, 0x3DF580, 0x1004);
-    l = world_exe(&gEngine.world, 0x3E0580, 0x1004);
-    pos = world_exe(&gEngine.world, 0x3D8990, 16);
+    c = exetable("sound-curves", NULL);
+    r = exetable("sound-pan-right", NULL);
+    l = exetable("sound-pan-left", NULL);
+    pos = exetable("sound-positioned", NULL);
     if (c != NULL && r != NULL && l != NULL && pos != NULL) {
         snddrv_tables(c, r, l, pos);
         done = 1;
@@ -2271,18 +2272,28 @@ PRIM(p_motion_index) {   /* ( id motion-id -- i | -1 ) its place in the model's 
 
     PUSH(a != NULL ? model_motion_pos(&a->model, model_motion_find(&a->model, (int)mid)) : -1);
 }
-PRIM(p_motion_table) {   /* ( id vaddr -- ) its motion table: in the executable at vaddr, an entry a motion */
-    Cell va = POP();
-    Actor *a = actor_arg(f, POP());
-    int n = model_motion_count(&a->model);
+PRIM(p_motion_table) {   /* ( id addr len -- ) its motion table: the executable's table of that name
+                          * (exetables.h: "motions-fiona" ...), an entry (6 bytes) a motion */
+    char name[64];
+    Actor *a;
+    size_t size = 0;
+    int n;
 
-    a->table = world_exe(&gEngine.world, (uint32_t)va, (size_t)n * 6);
-    a->ntable = a->table != NULL ? n : 0;
+    path_arg(f, name, sizeof(name));
+    a = actor_arg(f, POP());
+    n = model_motion_count(&a->model);
+    a->table = exetable(name, &size);
+    a->ntable = a->table != NULL ? (n < (int)(size / 6) ? n : (int)(size / 6)) : 0;   /* (its motions past the table's: none) */
 }
-PRIM(p_exe_bytes) {   /* ( vaddr n -- addr | 0 ) the executable's bytes there (read-only) */
-    Cell n = POP(), va = POP();
+PRIM(p_exe_table) {   /* ( addr len -- addr n | 0 0 ) the executable's table of that name (read-only) */
+    char name[64];
+    size_t size = 0;
+    const uint8_t *t;
 
-    PUSH(world_exe(&gEngine.world, (uint32_t)va, (size_t)n));
+    path_arg(f, name, sizeof(name));
+    t = exetable(name, &size);
+    PUSH(t);
+    PUSH(t != NULL ? (Cell)size : 0);
 }
 PRIM(p_root_delta) {   /* ( id -- ) ( F: -- turn dx dy dz ) its motion's root movement this frame
                          * (model space, scaled to the room) */
@@ -3239,7 +3250,7 @@ void bind_engine(Forth *f) {
         {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-back!", p_cloth_back}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
-        {"motion-table", p_motion_table}, {"exe-bytes", p_exe_bytes}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"freecam?", p_freecam}, {"freecam!", p_freecam_set}, {"mouse-down?", p_mouse_down},

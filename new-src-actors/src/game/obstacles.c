@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "engine.h"
+#include "../data/exetables.h"
 
 enum {
     BLOCKED = 0x20400000,    /* under it */
@@ -42,7 +43,6 @@ static const float kMove[] = {
 };
 #define MOVE_FRAMES ((int)(sizeof(kMove) / sizeof(kMove[0])))
 
-#define KINDS_AT 0x47A938u   /* ObstacleKinds: a pointer each */
 
 static NavMesh *nav(void) { return &gEngine.room.nav; }
 static Obstacle *get(int i) { return i >= 0 && i < OBSTACLES_MAX ? &sObst[i] : NULL; }
@@ -208,16 +208,20 @@ static int32_t s32_at(const uint8_t *p) {
 }
 int obstacle_make(int i, int kind, int a, int b) {   /* (obstacle_make) */
     Obstacle *o = get(i);
-    const uint8_t *ptr = world_exe(&gEngine.world, KINDS_AT + (uint32_t)kind * 4u, 4), *def;
-    int n, k;
+    size_t size = 0, at = 0;
+    const uint8_t *kinds = exetable("obstacle-kinds", &size), *def;   /* (ObstacleKinds: each kind's in turn) */
+    int n = 0, k;
 
-    if (o == NULL || kind < 0 || ptr == NULL || (def = world_exe(&gEngine.world, (uint32_t)s32_at(ptr), 12)) == NULL) {
+    if (o == NULL || kind < 0 || kinds == NULL) {
         return -1;
     }
-    n = s32_at(def + 8);
-    if (n < 1 || n > 3 || (def = world_exe(&gEngine.world, (uint32_t)s32_at(ptr), 12 + 16 * (size_t)n)) == NULL) {
-        return -1;
+    for (k = 0; k <= kind; k++) {   /* (a kind: two floats, n, then n parts of 16 bytes) */
+        if (at + 12 > size || (n = s32_at(kinds + at + 8)) < 1 || n > 3 || at + 12 + 16 * (size_t)n > size) {
+            return -1;
+        }
+        at += k < kind ? 12 + 16 * (size_t)n : 0;
     }
+    def = kinds + at;
     o->on = 1;
     memcpy(&o->ox, def, 4);
     memcpy(&o->oz, def + 4, 4);

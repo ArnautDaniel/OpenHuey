@@ -28,8 +28,9 @@ defer to-idle ( -- )
         >r drop 5 r>
     endcase ;
 : meet@ ( i -- ) ( F: -- x z deg )   \ (kFionaMeetOffsets, $3B2460: three floats a row)
-    12 * $3B2460 +  12 exe-bytes  dup 0= if  drop 0e 0e 0e exit  then
-    {: row :}  row sf@  row 4 + sf@  row 8 + sf@ ;
+    12 *  s" fiona-meet-offsets" exe-table  {: at addr n :}
+    at 12 + n > if  0e 0e 0e exit  then
+    addr at + {: row :}  row sf@  row 4 + sf@  row 8 + sf@ ;
 create mt-at /vec allot
 : spot-by ( who type -- tri | -1 )   \ (the spot, reachable straight from him and from her; her floor free; a way there)
     meet-index meet@ deg>rad  {: who F: x z turn :}

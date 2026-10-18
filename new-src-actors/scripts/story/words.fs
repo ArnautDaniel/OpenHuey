@@ -1683,11 +1683,11 @@ $27 constant knock-sound   $28 constant try-door-sound   \ (bank 5)
 \ stalker in them sent on; the exits rebuilt
 $100 constant first-maze-room   6 constant #maze-rooms   $95 constant first-maze-door
 $1F constant deals-var   $20 constant dealt-row-var   4 constant most-deals   79 constant #deal-rows
-$3D6B20 constant deal-rows   \ (D_003D6B20: three rooms a row)
+: deal-rows ( -- addr len )  s" deal-rows" exe-table ;   \ (D_003D6B20: three rooms a row)
 $109 constant maze-way-out   $10A constant maze-way-out-2
 : deal-var ( n -- addr )  progress pr.vars + ;
 : deal-row ( i -- room )   \ the dealt row's i-th room
-    dealt-row-var deal-var c@ 3 *  +  deal-rows +  1 exe-bytes c@ ;
+    dealt-row-var deal-var c@ 3 *  +  deal-rows {: at addr n :}  at n < if  addr at + c@  else  0  then ;
 : maze-door ( room side k -- door )  {: r side k :}  first-maze-door  r 12 * +  side 4 * +  k + ;
 : deal-room ( r -- )   \ room r's twelve doors - four on each of three sides: open where the row puts it, else closed off
     {: r :}

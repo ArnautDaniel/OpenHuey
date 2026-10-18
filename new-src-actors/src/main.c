@@ -21,6 +21,7 @@
 #include "game/things.h"
 #include "game/sprites.h"
 #include "game/mods.h"
+#include "data/exetables.h"
 #include "game/areas.h"
 #include "game/exits.h"
 #include "hactor/hactor.h"
@@ -86,13 +87,21 @@ static int parse_options(int argc, char **argv, Options *o) {
     return 1;
 }
 
-/* the game's executable, for the tables only it has: on the disc ($HG_EXE, or beside the data
- * folder), else the repository's baserom (the developers') */
+/* the tables only the game's executable has (data/exetables.h): the library's, else read from the
+ * executable - on the disc ($HG_EXE, or beside the data folder), else the repository's baserom
+ * (the developers') */
 static void load_world(World *w) {
-    DiscFile *f = disc_exe();
+    DiscFile *f = files_exist("../exe/doors.bin") ? NULL : disc_exe();
     uint8_t *data = NULL;
     size_t n = 0;
+    Exe exe;
 
+    if (files_exist("../exe/doors.bin")) {   /* (a library's: no executable wanted) */
+        if (!world_load(w)) {
+            fprintf(stderr, "hga: the library's exe/doors.bin or rooms.bin is damaged: rooms won't connect\n");
+        }
+        return;
+    }
     if (f != NULL) {
         n = (size_t)disc_file_size(f);
         data = malloc(n);
@@ -105,7 +114,10 @@ static void load_world(World *w) {
     if (data == NULL && HG2_DEFAULT_EXE[0] != 0) {
         data = SDL_LoadFile(HG2_DEFAULT_EXE, &n);
     }
-    if (!world_load(w, data, n)) {
+    if (exe_take(&exe, data, n)) {
+        exetables_use_exe(&exe);
+    }
+    if (!world_load(w)) {
         fprintf(stderr, "hga: no SLUS_210.75 found (set HG_EXE): rooms won't connect\n");
     }
 }

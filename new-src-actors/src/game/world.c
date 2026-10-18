@@ -1,12 +1,9 @@
 #include "world.h"
 #include "progress.h"
 
-#include "../data/exe.h"
+#include "../data/exetables.h"
 
 #include <string.h>
-
-#define DOOR_TABLE 0x003DCFC0u
-#define ROOM_TABLE 0x003D8BC0u
 
 static int s16(const uint8_t *p) {
     int16_t x;
@@ -22,23 +19,13 @@ static int u16(const uint8_t *p) {
     return x;
 }
 
-const uint8_t *world_exe(const World *w, uint32_t vaddr, size_t n) {
-    return w->exe.data != NULL ? exe_at(&w->exe, vaddr, n) : NULL;
-}
-
-int world_load(World *w, uint8_t *exe_data, size_t exe_size) {
-    Exe e;
-    const uint8_t *doors, *rooms;
+int world_load(World *w) {
+    size_t nd = 0, nr = 0;
+    const uint8_t *doors = exetable("doors", &nd), *rooms = exetable("rooms", &nr);
     int i, k, s;
 
     memset(w, 0, sizeof(*w));
-    if (!exe_take(&e, exe_data, exe_size)) {
-        return 0;
-    }
-    doors = exe_at(&e, DOOR_TABLE, WORLD_DOORS * 16);
-    rooms = exe_at(&e, ROOM_TABLE, WORLD_ROOMS * 0x40);
-    if (doors == NULL || rooms == NULL) {
-        exe_free(&e);
+    if (doors == NULL || rooms == NULL || nd < WORLD_DOORS * 16 || nr < WORLD_ROOMS * 0x40) {
         return 0;
     }
     for (i = 0; i < WORLD_ROOMS; i++) {
@@ -72,7 +59,6 @@ int world_load(World *w, uint8_t *exe_data, size_t exe_size) {
     }
     w->ndoors = i;
     w->loaded = 1;
-    w->exe = e;
     return 1;
 }
 

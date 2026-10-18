@@ -1,5 +1,5 @@
-/* The house: how rooms connect. From two tables in the game's executable
- * (src/game/room_map.c):
+/* The house: how rooms connect. From two of the game executable's tables (data/exetables.h:
+ * "doors", "rooms"; src/game/room_map.c):
  *   the door table (0x3DCFC0): 16-byte entries, two sides {u16 room, u8 exit, u8, s16 nav
  *     triangle} and u32 flags, ended by room 0xFFFF;
  *   the room table (0x3D8BC0): 0x40 bytes a room, 8 exits {s16 triangles: out, in, through;
@@ -8,7 +8,6 @@
 #define WORLD_H
 
 #include <stdint.h>
-#include "../data/exe.h"
 
 #define WORLD_DOORS 400
 #define WORLD_ROOMS 0x110
@@ -31,16 +30,13 @@ typedef struct RoomExit {
 
 typedef struct World {
     int loaded;
-    Exe exe;                /* the executable, kept: other tables are read from it as needed */
     Door doors[WORLD_DOORS];
     int ndoors;
     RoomExit exits[WORLD_ROOMS][ROOM_EXITS];
 } World;
 
-/* n bytes of the executable at a PS2 address (NULL: not there) */
-const uint8_t *world_exe(const World *w, uint32_t vaddr, size_t n);
-/* read the tables from the executable (its bytes, malloc'd: the world keeps them); 0 if it couldn't be read */
-int world_load(World *w, uint8_t *exe_data, size_t exe_size);
+/* read the doors and rooms (exetables.h); 0 if they can't be */
+int world_load(World *w);
 void world_rebuild_exits(World *w);   /* the exits through the doors not closed off (Rooms_Rebuild) */
 /* where exit `exit` of `room` leads: the room (and its exit in *to_exit), or -1 */
 int world_exit_leads(const World *w, int room, int exit, int *to_exit);

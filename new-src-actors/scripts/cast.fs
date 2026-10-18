@@ -28,14 +28,16 @@ USING: engine game-state actors messages common vectors facts floor-flags ;
     hanging-lorenzo = hard-mode? and if  s" O_LRM/LRM_000H"  else  0 0  then ;
 \ the kinds' motion tables - their fades (each model class's SecondaryMotion; the plain model's
 \ kinds have none): Fiona's doubles hers, the crows', Lorenzo's hanging figure's, kind 33's
-$3D5CC0 constant fiona-motions   $429C10 constant crow-motions
-$424250 constant hanging-lorenzo-motions   $42C730 constant kind33-motions
-: kind-motions ( kind -- vaddr | 0 )
+\ (the executable's tables by name: exe-table, motion-table)
+: fiona-motions ( -- addr len )  s" motions-fiona" ;     : crow-motions ( -- addr len )  s" motions-crow" ;
+: hanging-lorenzo-motions ( -- addr len )  s" motions-hanging-lorenzo" ;
+: kind33-motions ( -- addr len )  s" motions-homunculus" ;
+: kind-motions ( kind -- addr len | 0 0 )
     case
         fiona-double of  fiona-motions  endof   fiona-double-2 of  fiona-motions  endof
         crow of  crow-motions  endof           crow-2 of  crow-motions  endof
         hanging-lorenzo of  hanging-lorenzo-motions  endof   kind-33 of  kind33-motions  endof
-        >r 0 r>
+        >r 0 0 r>
     endcase ;
 : crow? ( kind -- flag )  dup crow = swap crow-2 = or ;
 
@@ -175,7 +177,7 @@ create who-at /vec allot
     kind-textures dup if  actor-load-textured  else  2drop actor-load  then ;
 : load ( file len id -- )
     {: id :}  unload  id model-load model !  id who !  id model @ cast-as
-    id kind-motions ?dup if  model @ swap motion-table  then
+    id kind-motions dup if  model @ -rot motion-table  else  2drop  then
     0 him act.visible l!  -1 shown !  -1 mv-done !  ['] still act !  0 play-now ;
 : dress ( model -- )   \ (another's model worn: its files loaded for this one)
     who @ 0< if  drop exit  then
