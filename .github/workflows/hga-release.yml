@@ -69,6 +69,7 @@ jobs:
           path: |
             dist/*.tar.gz
             dist/*.zip
+            dist/version.txt
 
       - name: Publish openhuey-latest
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
@@ -78,11 +79,11 @@ jobs:
           sha=$(git rev-parse --short HEAD)
           gh release delete hga-latest --cleanup-tag --yes || true   # (its old name)
           gh release delete openhuey-latest --cleanup-tag --yes || true
-          gh release create openhuey-latest dist/*.tar.gz dist/*.zip \
+          gh release create openhuey-latest dist/*.tar.gz dist/*.zip dist/version.txt \
             --prerelease --target "$GITHUB_SHA" \
             --title "OpenHuey ${{ steps.version.outputs.hga }} latest ($(date -u +%Y-%m-%d), $sha)" \
             --notes "OpenHuey ${{ steps.version.outputs.hga }}: the latest build, from $sha on master - replaced on each merge. Its version shows under the debug meters (F2).
 
-          You need your own copy of Haunting Ground (USA) for the PlayStation 2: its disc image (.iso). Start openhuey (Linux) or openhuey.exe (Windows); the first time it asks for the disc image and imports it. Mods: mods/ (docs/modding.md).
+          You need your own copy of Haunting Ground (USA) for the PlayStation 2: its disc image (.iso). Start openhuey (Linux) or openhuey.exe (Windows); the first time it asks for the disc image and imports it. Mods: mods/ (docs/modding.md). To update: the title's UPDATE, or openhuey --update.
 
           Linux: x86_64, glibc 2.31 or later. Windows: 64-bit."

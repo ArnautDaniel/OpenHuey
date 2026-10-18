@@ -9,6 +9,7 @@ game does. Read `README.md` first, then the doc for your task:
 | any gameplay change | `docs/design.md`, `docs/actors.md`, `docs/subsystems.md`, the subsystem's `docs/subsystems/<name>.md` |
 | writing Forth | `docs/forth.md` (the dialect: vocabularies, locals, structures, enums, quotations; its Pitfalls section) |
 | a mod, or the mods system | `docs/modding.md` (how), `docs/library-and-mods.md` (why) |
+| the release builds, the updater | `tools/hga_release.sh`, `.github/workflows/hga-release.yml`, `docs/library-and-mods.md` ("Updating") |
 | the game's data, the library, a file format | `docs/library-and-mods.md`, the header of the `src/data/*.h` for that format |
 
 **Names**: the program is `openhuey` (built from the CMake target `hga`), this folder

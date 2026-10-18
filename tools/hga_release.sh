@@ -3,6 +3,7 @@
 # Windows, into dist/:
 #   dist/openhuey-<version>-linux-x86_64.tar.gz    openhuey, scripts/, mod-examples/, docs/ (modding), lib/ (FFmpeg), licences
 #   dist/openhuey-<version>-windows-x64.zip        openhuey.exe, SDL3.dll, FFmpeg's DLLs, scripts/, mod-examples/, docs/ (modding), licences
+#   dist/version.txt                               the build's name and each archive's size (the updater's)
 # Neither holds anything of the game's: the player picks their own disc image when OpenHuey starts.
 #
 # What they need is built once into $HGA_DEPS (default ~/.cache/openhuey-hga-deps - not in the
@@ -74,6 +75,8 @@ Start $2; the first time it asks for the disc image and imports it into library/
 (or from a command line: $2 --import <disc.iso>). Saves and settings go in user/.
 Mods go in mods/ (the samples: mod-examples/; making one: docs/modding.md). The title's MODS
 menu turns them on and off.
+To update to the newest build: the title's UPDATE (or $2 --update). It replaces the program,
+scripts/, docs/ and the like; library/, user/ and mods/ are left as they are.
 
 Keys: WASD move, Space (hold) run, C act, Z shove / kick, V throw, Q (hold) crouch, E flee,
 I J K L / F Hewie's commands, Return pause, Tab menu, \` the Forth console. A gamepad works too.
@@ -120,7 +123,7 @@ linux() {
     ffmpeg_build linux --enable-pic --cc="$DEPS/zigcc"
     B="$ROOT/build/hga-release-linux"
     rm -rf "$B"
-    CC="$DEPS/zigcc" cmake -S openhuey-src -B "$B" -DCMAKE_BUILD_TYPE=Release -DHGA_RELEASE=ON -DCMAKE_LINK_DEPENDS_USE_LINKER=OFF \
+    CC="$DEPS/zigcc" cmake -S openhuey-src -B "$B" -DCMAKE_BUILD_TYPE=Release -DHGA_RELEASE=ON -DHGA_BUILD="$VERSION" -DCMAKE_LINK_DEPENDS_USE_LINKER=OFF \
         -DCMAKE_PREFIX_PATH="$SDLL" -DSDL3_DIR="$(dirname "$(find "$SDLL" -name SDL3Config.cmake | head -1)")"
     cmake --build "$B" --target hga -j"$JOBS"
     P="dist/openhuey-$VERSION-linux-x86_64"
@@ -145,7 +148,7 @@ windows() {
     ffmpeg_build windows --target-os=mingw32 --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- \
         --disable-pthreads --enable-w32threads --extra-ldflags=-static-libgcc
     B="$ROOT/build/hga-release-windows"
-    cmake -S openhuey-src -B "$B" -DCMAKE_BUILD_TYPE=Release -DHGA_RELEASE=ON \
+    cmake -S openhuey-src -B "$B" -DCMAKE_BUILD_TYPE=Release -DHGA_RELEASE=ON -DHGA_BUILD="$VERSION" \
         -DCMAKE_TOOLCHAIN_FILE="$ROOT/openhuey-src/cmake/mingw-x86_64.cmake" \
         -DSDL3_DIR="$WSDL/lib/cmake/SDL3" -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static"
     cmake --build "$B" --target hga -j"$JOBS"
@@ -171,3 +174,12 @@ case "$WANT" in
     windows) windows ;;
     *) linux; windows ;;
 esac
+
+# what the updater reads (src/platform/update.c): this build's name, then each archive and its size
+{
+    echo "openhuey-version $VERSION"
+    for a in dist/openhuey-"$VERSION"-*.tar.gz dist/openhuey-"$VERSION"-*.zip; do
+        [ -f "$a" ] && echo "$(basename "$a") $(wc -c < "$a" | tr -d ' ')"
+    done
+} > dist/version.txt
+echo "made dist/version.txt"
