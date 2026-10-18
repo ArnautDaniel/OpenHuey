@@ -2,6 +2,7 @@
 
 #include "../core/files.h"
 #include "../data/tex.h"
+#include "../data/texbank.h"
 #include "sprites.h"
 #include "../render/post.h"
 
@@ -20,23 +21,34 @@ int room_exists(int id) {
     return files_exist(path);
 }
 
-static void load_textures(Room *r) {
+/* a room's texture bank: the library's PNGs of it (ST_003.room/<name>.texbank/: data/texbank.h),
+ * else the PAC's own section */
+static TexBank *room_bank(Room *r, int section, const char *name) {
+    char path[96];
     size_t size;
-    const uint8_t *bank = pac_section(&r->pac, PAC_TEXTURES, &size);
-    int n = tex_count(bank, size), i;
+    const uint8_t *bank = pac_section(&r->pac, section, &size);
+
+    pac_room_part(r->id, name, path, sizeof(path));
+    return texbank_load_or_wrap(path, bank, bank != NULL ? size : 0);
+}
+
+static void load_textures(Room *r) {
+    TexBank *bank = room_bank(r, PAC_TEXTURES, "textures.TEX");
+    int n = texbank_count(bank), i;
 
     for (i = 0; i < n && i < ROOM_MAX_TEXTURES; i++) {
-        const TexEntry *t = tex_entry(bank, i);
-        uint8_t *rgba = malloc((size_t)t->w * t->h * 4 + 4);
+        int w = 0, h = 0, psm = 0;
+        uint8_t *rgba = texbank_info(bank, i, &w, &h, &psm) && w <= 2048 && h <= 2048 ? malloc((size_t)w * h * 4 + 4) : NULL;
 
-        if (rgba != NULL && t->w > 0 && t->h > 0 && t->w <= 2048 && t->h <= 2048 && tex_decode(bank, size, i, rgba)) {
-            r->textures[i] = render_texture(rgba, t->w, t->h);
+        if (rgba != NULL && texbank_rgba(bank, i, -1, rgba)) {
+            r->textures[i] = render_texture(rgba, w, h);
         } else {
-            fprintf(stderr, "room %03X: texture %d: format %02X not decoded\n", r->id, i, t->psm);
+            fprintf(stderr, "room %03X: texture %d: format %02X not decoded\n", r->id, i, psm);
         }
         free(rgba);
     }
     r->ntextures = n < ROOM_MAX_TEXTURES ? n : ROOM_MAX_TEXTURES;
+    texbank_free(bank);
 }
 
 /* a PS2 colour word (little-endian R, G, B, A) */
@@ -545,14 +557,9 @@ int room_load(Room *r, int id) {
         render_mesh_upload(&r->gpu, r->mesh.v, r->mesh.nv);
     }
     load_textures(r);
-    {   /* the effects' textures: groups 0 and 0x15 of the cache (RoomMgr_MakeCurrent) */
-        size_t tsize;
-        const uint8_t *bank = pac_section(&r->pac, PAC_TEXTURES, &tsize);
-
-        sprites_group(0, bank, bank != NULL ? tsize : 0);
-        bank = pac_section(&r->pac, PAC_TEXTURES2, &tsize);
-        sprites_group(0x15, bank, bank != NULL ? tsize : 0);
-    }
+    /* the effects' textures: groups 0 and 0x15 of the cache (RoomMgr_MakeCurrent) */
+    sprites_group_bank(0, room_bank(r, PAC_TEXTURES, "textures.TEX"));
+    sprites_group_bank(0x15, room_bank(r, PAC_TEXTURES2, "effects.TEX"));
     sec = pac_section(&r->pac, PAC_NAV, &size);
     navmesh_build(&r->nav, sec, size);
     sec = pac_section(&r->pac, PAC_NAV3, &size);

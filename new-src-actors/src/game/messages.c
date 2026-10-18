@@ -32,23 +32,27 @@ static const uint8_t *text_in(const uint8_t *table, size_t size, int id) {
     return off < size ? table + off : NULL;
 }
 
-/* a table: the library's text of it ("SUBSCR/MSG_BASE.BIN" -> "SUBSCR/MSG_BASE.txt", a room's
- * "ST_000/ST_003.PAC" -> "ST_000/ST_003.messages.txt": data/msgtext.h), else the file itself
- */
-static uint8_t *read_text(const char *path, size_t *size) {
-    char txt[300];
-    const char *dot = strrchr(path, '.');
+/* a table's text file read into a table (data/msgtext.h); NULL if there is none */
+static uint8_t *read_text_file(const char *txt, size_t *size) {
     uint8_t *text, *table;
     size_t len;
 
-    snprintf(txt, sizeof(txt), "%.*s%s", (int)(dot != NULL ? dot - path : (long)strlen(path)), path,
-             dot != NULL && strcmp(dot, ".PAC") == 0 ? ".messages.txt" : ".txt");
     if ((text = files_read(txt, &len)) == NULL) {
         return NULL;
     }
     table = msgtext_read((const char *)text, len, txt, size);
     free(text);
     return table;
+}
+
+/* a table: the library's text of it ("SUBSCR/MSG_BASE.BIN" -> "SUBSCR/MSG_BASE.txt"), else the
+ * file itself */
+static uint8_t *read_text(const char *path, size_t *size) {
+    char txt[300];
+    const char *dot = strrchr(path, '.');
+
+    snprintf(txt, sizeof(txt), "%.*s.txt", (int)(dot != NULL ? dot - path : (long)strlen(path)), path);
+    return read_text_file(txt, size);
 }
 
 static uint8_t *read_table(const char *path, size_t *size) {
@@ -66,8 +70,8 @@ static void load_tables(void) {
     }
 }
 
-/* the room's own table: its text file's, read when the room is first asked about; else the
- * room's .PAC section */
+/* the room's own table: the library's ST_000/ST_003.room/messages.txt, read when the room is
+ * first asked about; else the room's .PAC section */
 static const uint8_t *room_table(size_t *size) {
     static int room = -2;
     static uint8_t *text;
@@ -79,8 +83,8 @@ static const uint8_t *room_table(size_t *size) {
         free(text);
         text = NULL;
         if (room >= 0) {
-            pac_room_path(room, path, sizeof(path));
-            text = read_text(path, &text_size);
+            pac_room_part(room, "messages.txt", path, sizeof(path));
+            text = read_text_file(path, &text_size);
         }
     }
     if (text != NULL) {

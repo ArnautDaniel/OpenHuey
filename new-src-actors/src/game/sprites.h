@@ -44,6 +44,8 @@ typedef struct Sprite {
 
 /* the cache's group `group` from a texture bank (NULL: gone); the bank must stay while it's used */
 void sprites_group(int group, const uint8_t *bank, size_t size);
+struct TexBank;
+void sprites_group_bank(int group, struct TexBank *bank);   /* (taken: freed when the group changes) */
 void sprites_init(void);    /* GAME_FIX.TEX as group 0x10 */
 
 int sprites_new(void);      /* a batch (-1: none free) */

@@ -24,6 +24,9 @@ typedef struct TexBank TexBank;
 TexBank *texbank_load(const char *path);
 /* a .TEX bank in memory (kept by the caller while the TexBank is in use); NULL if it isn't one */
 TexBank *texbank_wrap(const uint8_t *bank, size_t size);
+/* the bank at `path` ("ST_000/ST_003.room/textures.TEX": a room's): its converted form if there is
+ * one, else `bank` in memory (a mod's PNGs over it, as over a file not converted); NULL if neither */
+TexBank *texbank_load_or_wrap(const char *path, const uint8_t *bank, size_t size);
 void texbank_free(TexBank *b);
 
 int texbank_count(const TexBank *b);

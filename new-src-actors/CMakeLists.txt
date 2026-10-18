@@ -133,3 +133,9 @@ add_executable(movie-check tests/movie_check.c src/data/sfd.c src/data/musicsrc.
 target_link_libraries(movie-check PRIVATE SDL3::SDL3 m)
 add_test(NAME movie_check COMMAND movie-check "${DEFAULT_DATA}")
 set_tests_properties(movie_check PROPERTIES SKIP_RETURN_CODE 77)
+
+# the rooms' conversion: each PAC less its converted sections - the rest the same bytes and sizes
+add_executable(room-check tests/room_check.c src/data/pac.c)
+target_link_libraries(room-check PRIVATE SDL3::SDL3)
+add_test(NAME room_check COMMAND room-check "${DEFAULT_DATA}")
+set_tests_properties(room_check PROPERTIES SKIP_RETURN_CODE 77)

@@ -654,6 +654,49 @@ static int convert_bank(const Item *it, const char *root, Items *made, uint8_t *
     return 1;
 }
 
+/* a room: its converted parts in "ST_000/ST_003.room/" - the texture banks (sections 9, 11) as
+ * PNGs (textures.texbank/, effects.texbank/), its text (10) as messages.txt - and the PAC less
+ * those sections (data/pac.h): what isn't converted yet */
+static int convert_room(const Item *it, const char *root, Items *made, const uint8_t *data, size_t size, char *why,
+                        size_t n) {
+    static const struct { int section; const char *name; } kBanks[] = {{PAC_TEXTURES, "textures"}, {PAC_TEXTURES2, "effects"}};
+    char to[1300], rel[800];
+    Pac pac = {(uint8_t *)data, size};
+    unsigned drop = 0;
+    size_t tsize, psize;
+    const uint8_t *sec;
+    uint8_t *stripped;
+    int base = (int)strlen(it->path) - 4, i, r;
+
+    for (i = 0; i < 2; i++) {
+        Made m = {made, ""};
+
+        if ((sec = pac_section(&pac, kBanks[i].section, &tsize)) == NULL || tex_count(sec, tsize) == 0) {
+            continue;
+        }
+        snprintf(m.dir, sizeof(m.dir), "data/%.*s.room/%s.texbank/", base, it->path, kBanks[i].name);
+        snprintf(to, sizeof(to), "%s%s", root, m.dir);
+        if (!make_parent(to) || !texbank_convert(sec, tsize, to, made_one, &m)) {
+            snprintf(why, n, "%s can't be written", to);
+            return 0;
+        }
+        drop |= 1u << kBanks[i].section;
+    }
+    if ((sec = pac_section(&pac, PAC_TEXT, &tsize)) != NULL) {
+        if ((r = convert_messages(it, root, made, sec, tsize, ".room/messages.txt", why, n)) == 0) {
+            return 0;
+        }
+        drop |= r > 0 ? 1u << PAC_TEXT : 0;
+    }
+    if ((stripped = pac_strip(&pac, drop, &psize)) == NULL) {
+        return -1;   /* (malformed: copied as it is) */
+    }
+    library_path(rel, sizeof(rel), "", it->path);
+    r = write_file(root, made, rel, stripped, psize, why, n);
+    free(stripped);
+    return r;
+}
+
 static int copy_item(const Item *it, const char *root, Items *made, Progress *pr, char *why, size_t n) {
     static uint8_t buf[1 << 20];
     char to[1300], rel[1300];
@@ -715,13 +758,7 @@ static int copy_item(const Item *it, const char *root, Items *made, Progress *pr
         } else if (ok && is_messages(it)) {
             ok = convert_messages(it, root, made, bank, have, ".txt", why, n);
         } else if (ok && has_kind(it, ".PAC")) {
-            Pac pac = {bank, have};
-            size_t tsize;
-            const uint8_t *table = pac_section(&pac, PAC_TEXT, &tsize);
-
-            if (table != NULL && convert_messages(it, root, made, table, tsize, ".messages.txt", why, n) == 0) {
-                ok = 0;
-            }
+            ok = convert_room(it, root, made, bank, have, why, n);
         }
         if (ok == 0 && have != (size_t)it->size) {
             snprintf(why, n, "the disc's %s can't be read whole", it->path);
@@ -767,6 +804,7 @@ static int write_manifest(const char *root, const Items *made) {
     fprintf(f, "convert exe %d\n", EXETABLES_FORMAT);
     fprintf(f, "convert samples %d\n", SAMPLES_FORMAT);
     fprintf(f, "convert movies 1\n");   /* (X.mpg, X.flac: data/sfd.h) */
+    fprintf(f, "convert rooms 1\n");    /* (X.room/: the textures, the text; the PAC less them) */
     for (i = 0; i < made->n; i++) {
         fprintf(f, "file %ld %s\n", made->e[i].size, made->e[i].path);
     }
