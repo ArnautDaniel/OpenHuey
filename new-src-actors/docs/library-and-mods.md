@@ -91,7 +91,7 @@ both are complete and checked: its output must give the engine the same data the
 | textures | TEX: swizzled, paletted, PS2 alpha | PNG (RGBA, alpha as 0..255), a sidecar for what PNG can't say (the palettes a texture switches between, its CLUT rows) | edit with anything; a texture pack is PNGs |
 | music | ADX (ADPCM, loop points) | FLAC (lossless: the samples the game plays), its loop points in the file's tags | replace a track |
 | sound banks | HD / BD / SDT (the SPU's programs and VAG samples) | a WAV per sample (built); the bank as a text file (programs, tones, envelopes: later - HD / SDT copied for now) | replace a sound |
-| movies | SFD (MPEG-1 video, ADX audio) | WebM (VP9 or AV1, Opus) | smaller, decoded by the GPU or a common library, re-encodable at a higher size |
+| movies | SFD (MPEG video, ADX audio) | `.mpg` (the same video packets) and `.flac` (the sound) - lossless, chosen over re-encoding to WebM | a plain MPEG file any player opens; a mod's movie any MPEG-1 / 2 video |
 | the executable's tables | addresses in SLUS_210.75 | a file each, by name (`library/exe/doors.bin`): the table's bytes; readable forms (data files) as mods want them | no addresses at run time; mods can change a table |
 | messages | the message files (BIN), each room's text (a PAC section) | UTF-8 text files, one per table, ids kept | translation, new lines |
 | rooms, nav meshes | PAC | later: glTF for the meshes, the rest (nav mesh, exits, cameras, areas) as data files | the biggest modding payoff, the most work |
@@ -217,6 +217,26 @@ HD's (the pitch the game gives it), not the file's.
 `sound-check` (a ctest) converts every sample and plays both through the cursor: the same
 samples, block by block, through three passes of each loop (58 loop).
 
+### Movies
+
+A movie (CRI Sofdec, `.SFD`) is an MPEG program stream: MPEG video and its sound as an ADX
+stream (stream 0xC0). The import splits it, re-encoding nothing: `X.SFD` -> `X.mpg` (the stream
+less its sound packets - every video packet byte for byte; a plain MPEG file ffmpeg, VLC or mpv
+open) and `X.flac` (the sound, decoded once through as the player decodes it; none for the 8
+silent ones). 135 movies: 894 MB of SFD, 588 MB of .mpg and 531 MB of FLAC. Re-encoding to
+WebM would be a third the size, but lossy, an hour of encoding at the import and two encoders
+built into hga - not worth it when the frames must stay the frames.
+
+The player (`platform/movie.c`) reads X.mpg with X.flac's sound when they are there (a mod's
+over the library's), else the SFD; the demux (`src/data/sfd.c`) is the one the import and the
+check use too. A mod's movie: an MPEG-1 / 2 program stream as X.mpg, its sound (or none) as
+X.flac.
+
+`movie-check` (a ctest) splits every movie and reads both as the player does: every video
+packet's payload the same bytes in the same order (299217), every sound sample the same as the
+player's own ADX decoding gives (283 million); 8 silent. And a frame of the opening, drawn from
+the SFD and from the library, is the same picture byte for byte.
+
 Some formats carry engine behaviour in their layout (motion tables, a room's areas and
 cameras): those convert into the engine's own structures written plainly, not into a general
 format that loses them.
@@ -333,4 +353,4 @@ from $1000 up, say, so they never collide with the game's).
    their own vocabularies. A sample mod in the repository as a test. (Built.)
 4. **Music, messages, the executable's tables** converted; the first hooks, as the sample mods
    ask. (Built: music, messages, the executable's tables; the first hook, item-use-rule.)
-5. Sound banks (samples built), movies; then rooms and models.
+5. Sound banks (samples built), movies (built); then rooms and models.

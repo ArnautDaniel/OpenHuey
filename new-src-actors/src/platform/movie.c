@@ -4,6 +4,8 @@
 
 #include "disc.h"
 #include "../core/files.h"
+#include "../data/musicsrc.h"
+#include "../data/sfd.h"
 #include "sound.h"
 
 #include <SDL3/SDL.h>
@@ -156,9 +158,9 @@ typedef struct Ply {
     DiscFile *f;
     int eof;          /* the file is read to its end (2: and the parser flushed) */
     int drained;      /* the decoder gave its last frame */
-    /* reading */
-    uint8_t buf[0x10000];
-    int bufPos, bufLen;
+    SfdReader rd;     /* reading (data/sfd.h) */
+    MusicSrc *flac;   /* the library's: the sound from X.flac (the stream, X.mpg, has none) */
+    int flacDone;     /* ... all of it decoded */
     /* video */
     void *ctx, *parser, *pkt, *frm;
     struct { uint8_t *data; int size; } *queue;   /* frames parsed, not yet taken by the decoder
@@ -190,39 +192,7 @@ typedef struct Ply {
 static Ply *sPlaying;   /* the one movie whose sound is mixed */
 
 
-static int rd_fill(Ply *p) {
-    if (p->bufPos < p->bufLen) {
-        return 1;
-    }
-    p->bufLen = (int)disc_file_read(p->f, p->buf, sizeof(p->buf));
-    p->bufPos = 0;
-    return p->bufLen > 0;
-}
-
-static int rd_byte(Ply *p) {
-    if (!rd_fill(p)) {
-        return -1;
-    }
-    return p->buf[p->bufPos++];
-}
-
-static int rd_bytes(Ply *p, uint8_t *dst, int n) {
-    int got = 0;
-
-    while (got < n && rd_fill(p)) {
-        int k = p->bufLen - p->bufPos;
-
-        if (k > n - got) {
-            k = n - got;
-        }
-        if (dst != NULL) {
-            memcpy(dst + got, p->buf + p->bufPos, (size_t)k);
-        }
-        p->bufPos += k;
-        got += k;
-    }
-    return got;
-}
+static size_t rd_file(void *user, uint8_t *buf, size_t n) { return disc_file_read(user, buf, n); }
 
 /* ---- sound ---- */
 
@@ -238,7 +208,7 @@ static void adx_head(Ply *p) {
     if (p->adxLen < 0x14) {
         return;
     }
-    if (be16(h) != 0x8000 || h[4] != 3 || h[5] != ADX_BLOCK || h[6] != 4 || h[7] < 1 || h[7] > 2) {
+    if (!sfd_adx_playable(h, (size_t)p->adxLen)) {
         fprintf(stderr, "sofdec: unsupported sound, the movie plays silent\n");
         p->adxHead = -1;
         return;
@@ -260,9 +230,34 @@ static void adx_head(Ply *p) {
 }
 
 /* decode the whole frames that have arrived into the ring (game thread, under the sound lock) */
+static void flac_pump(Ply *p) {   /* (the library's: as adx_pump, from X.flac) */
+    int16_t pcm[2][MUSICSRC_FRAME];
+    int n, i;
+
+    snd_lock();
+    while (!p->flacDone && p->wrPos - p->rdPos + MUSICSRC_FRAME <= AUD_RING) {
+        if ((n = musicsrc_next(p->flac, pcm)) <= 0) {
+            p->flacDone = 1;
+            break;
+        }
+        for (i = 0; i < n; i++) {
+            float *o = &p->ring[(p->wrPos % AUD_RING) * 2];
+
+            o[0] = pcm[0][i] / 32768.0f;
+            o[1] = pcm[p->adxCh > 1][i] / 32768.0f;
+            p->wrPos++;
+        }
+    }
+    snd_unlock();
+}
+
 static void adx_pump(Ply *p) {
     int n;
 
+    if (p->flac != NULL) {
+        flac_pump(p);
+        return;
+    }
     if (p->adxHead == 0) {
         adx_head(p);
     }
@@ -422,80 +417,18 @@ static void video_feed(Ply *p, const uint8_t *b, int n) {
 
 /* one PES packet's payload, or the stream's end; 0 at the end of the file */
 static int demux_one(Ply *p) {
-    for (;;) {
-        int c = rd_byte(p), id, len, hdr = 0;
-        uint8_t pes[0x10000];
+    const uint8_t *data;
+    int id, len;
 
-        if (c < 0) {
-            return 0;
-        }
-        if (c != 0) {
-            continue;
-        }
-        if ((c = rd_byte(p)) != 0) {
-            continue;
-        }
-        while ((c = rd_byte(p)) == 0) {
-        }
-        if (c != 1) {
-            continue;
-        }
-        if ((id = rd_byte(p)) < 0) {
-            return 0;
-        }
-        if (id == 0xB9) {   /* program end */
-            return 0;
-        }
-        if (id == 0xBA) {   /* pack header */
-            int b = rd_byte(p);
-
-            if ((b & 0xC0) == 0x40) {   /* MPEG-2 */
-                rd_bytes(p, NULL, 8);
-                rd_bytes(p, NULL, rd_byte(p) & 7);
-            } else {
-                rd_bytes(p, NULL, 7);
-            }
-            continue;
-        }
-        if (id < 0xBB) {
-            continue;
-        }
-        len = rd_byte(p) << 8;
-        len |= rd_byte(p);
-        if (len <= 0 || rd_bytes(p, pes, len) != len) {
-            return 0;
-        }
-        if (id != 0xC0 && id != 0xE0) {
-            continue;
-        }
-        /* the PES header */
-        if ((pes[0] & 0xC0) == 0x80) {   /* MPEG-2 */
-            hdr = 3 + pes[2];
-        } else {
-            while (hdr < len && pes[hdr] == 0xFF) {
-                hdr++;
-            }
-            if (hdr < len && (pes[hdr] & 0xC0) == 0x40) {
-                hdr += 2;
-            }
-            if (hdr < len && (pes[hdr] & 0xF0) == 0x20) {
-                hdr += 5;
-            } else if (hdr < len && (pes[hdr] & 0xF0) == 0x30) {
-                hdr += 10;
-            } else {
-                hdr++;
-            }
-        }
-        if (hdr >= len) {
-            continue;
-        }
-        if (id == 0xE0) {
-            video_feed(p, pes + hdr, len - hdr);
-        } else {
-            adx_append(p, pes + hdr, len - hdr);
-        }
-        return 1;
+    if (!sfd_next(&p->rd, &id, &data, &len)) {
+        return 0;
     }
+    if (id == 0xE0) {
+        video_feed(p, data, len);
+    } else if (p->flac == NULL) {
+        adx_append(p, data, len);
+    }
+    return 1;
 }
 
 /* the next decoded frame into frm (ready); 0 when there are no more */
@@ -596,6 +529,8 @@ static void ply_close(Ply *p) {
         disc_file_close(p->f);
         p->f = NULL;
     }
+    musicsrc_free(p->flac);
+    p->flac = NULL;
     if (p->parser != NULL) {
         av.parser_close(p->parser);
         p->parser = NULL;
@@ -644,7 +579,7 @@ static void ply_update(Ply *p, int ticks) {
         }
         if (!video_next(p)) {
             /* the end: once the sound is out too */
-            if (p->adxHead != 1 || p->rdPos == p->wrPos) {
+            if (p->adxHead != 1 || (p->rdPos == p->wrPos && (p->flac == NULL || p->flacDone))) {
                 p->stat = STAT_PLAYEND;
             }
             break;
@@ -701,7 +636,34 @@ int movie_open(const char *path) {
         return 0;
     }
     sPly->shownNo = -1;
-    sPly->f = files_open(path);
+    {   /* the library's: X.SFD as X.mpg (the picture) and X.flac (the sound), else the SFD */
+        char mpg[300], *dot;
+        size_t n = 0;
+        uint8_t *flac;
+
+        snprintf(mpg, sizeof(mpg), "%s", path);
+        dot = strrchr(mpg, '.');
+        if (dot != NULL && (size_t)(dot - mpg) + 6 < sizeof(mpg)) {
+            strcpy(dot, ".flac");
+            flac = files_read(mpg, &n);
+            strcpy(dot, ".mpg");
+            if ((sPly->f = files_open(mpg)) != NULL && flac != NULL) {   /* (no .flac: a silent one) */
+                sPly->flac = musicsrc_open(flac, n, 0);
+                if (sPly->flac != NULL) {
+                    sPly->adxCh = musicsrc_channels(sPly->flac);
+                    sPly->adxRate = musicsrc_rate(sPly->flac);
+                    sPly->adxHead = 1;
+                }
+            } else {
+                free(flac);
+            }
+        }
+    }
+    if (sPly->f == NULL) {
+        sPly->f = files_open(path);
+    }
+    sPly->rd.read = rd_file;
+    sPly->rd.user = sPly->f;
     if (sPly->f == NULL) {
         fprintf(stderr, "movie: can't open %s\n", path);
         movie_close();

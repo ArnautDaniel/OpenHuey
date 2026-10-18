@@ -25,6 +25,7 @@
 #include "../data/pac.h"
 #include "../data/exetables.h"
 #include "../data/samples.h"
+#include "../data/sfd.h"
 
 #define MUSIC_FORMAT 1             /* "convert music 1": ADX to FLAC, LOOPSTART / LOOPEND / STOPAT (musicsrc.h) */
 
@@ -436,14 +437,64 @@ static int has_kind(const Item *it, const char *ext) {
     size_t len = strlen(it->path), elen = strlen(ext);
 
     return strncmp(it->path, "../", 3) != 0 && len > elen && strcasecmp(it->path + len - elen, ext) == 0 &&
-           it->size > 0 && it->size < (64L << 20);
+           it->size > 0 && it->size < (256L << 20);   /* (read whole: the biggest, a movie, 123 MB) */
 }
 static int is_messages(const Item *it) { return has_kind(it, ".BIN") && strncasecmp(it->path, "SUBSCR/MSG_", 11) == 0; }
 /* (a room's .PAC is copied as it is, its text beside it as well) */
 static int is_exe(const Item *it) { return strcasecmp(it->path, "../" EXE_NAME) == 0; }
 static int is_converted(const Item *it) {
     return has_kind(it, ".TEX") || has_kind(it, ".ADX") || has_kind(it, ".PAC") || is_messages(it) || is_exe(it) ||
-           has_kind(it, ".BD");
+           has_kind(it, ".BD") || has_kind(it, ".SFD");
+}
+
+static int write_file(const char *root, Items *made, const char *rel, const uint8_t *data, size_t size, char *why,
+                      size_t n) {
+    char to[1300];
+    FILE *f = NULL;
+    int ok;
+
+    snprintf(to, sizeof(to), "%s%s", root, rel);
+    ok = make_parent(to) && (f = fopen(to, "wb")) != NULL;
+    if (ok) {
+        ok = fwrite(data, 1, size, f) == size;
+        ok = fclose(f) == 0 && ok;
+    }
+    if (!ok) {
+        snprintf(why, n, "%s can't be written", to);
+    } else {
+        items_add(made, rel, (long)size);
+    }
+    return ok;
+}
+
+/* a movie: X.mpg (the stream less its sound packets) and X.flac (its sound, decoded once
+ * through; none if the player plays it silent) */
+static int convert_movie(const Item *it, const char *root, Items *made, const uint8_t *sfd, size_t size, char *why,
+                         size_t n) {
+    char rel[700];
+    uint8_t *mpg, *adx, *flac = NULL;
+    int16_t *pcm;
+    size_t ms, as, fs = 0;
+    long frames, ls, le, stop;
+    int ch, rate, ok, base = (int)strlen(it->path) - 4;
+
+    if (!sfd_split(sfd, size, &mpg, &ms, &adx, &as)) {
+        return -1;   /* (not a program stream: copied as it is) */
+    }
+    if (sfd_adx_playable(adx, as) && musicsrc_adx_pcm(adx, as, &pcm, &frames, &ch, &rate, &ls, &le, &stop)) {
+        flac = flacenc(pcm, stop, ch, rate, NULL, 0, &fs);
+        free(pcm);
+    }
+    snprintf(rel, sizeof(rel), "data/%.*s.mpg", base, it->path);
+    ok = write_file(root, made, rel, mpg, ms, why, n);
+    if (ok && flac != NULL) {
+        snprintf(rel, sizeof(rel), "data/%.*s.flac", base, it->path);
+        ok = write_file(root, made, rel, flac, fs, why, n);
+    }
+    free(mpg);
+    free(adx);
+    free(flac);
+    return ok;
 }
 
 
@@ -655,6 +706,8 @@ static int copy_item(const Item *it, const char *root, Items *made, Progress *pr
             ok = convert_bank(it, root, made, bank, why, n);
         } else if (ok && has_kind(it, ".ADX")) {
             ok = convert_music(it, root, made, bank, have, why, n);
+        } else if (ok && has_kind(it, ".SFD")) {
+            ok = convert_movie(it, root, made, bank, have, why, n);
         } else if (ok && has_kind(it, ".BD")) {
             ok = convert_samples(it, root, made, bank, have, why, n);
         } else if (ok && is_exe(it)) {
@@ -713,6 +766,7 @@ static int write_manifest(const char *root, const Items *made) {
     fprintf(f, "convert messages %d\n", MSGTEXT_FORMAT);
     fprintf(f, "convert exe %d\n", EXETABLES_FORMAT);
     fprintf(f, "convert samples %d\n", SAMPLES_FORMAT);
+    fprintf(f, "convert movies 1\n");   /* (X.mpg, X.flac: data/sfd.h) */
     for (i = 0; i < made->n; i++) {
         fprintf(f, "file %ld %s\n", made->e[i].size, made->e[i].path);
     }
