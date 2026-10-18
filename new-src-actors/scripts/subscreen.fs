@@ -27,7 +27,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 : open-saving ( -- )  open-menu  on-saving mode !  start-saving ;
 : open-costumes ( -- )  open-menu  on-costumes mode !  start-costumes ;
 : open-options ( -- )  open-menu  pg-options page !  -1 options-only ! ;   \ (the title's: SceneTitle_SeqOptions)
-: open-extras ( -- )  open-menu  on-extras mode !  start-extras ;      \ (the mini-game's menu: mode $A)
+: open-extras ( -- )  open-menu  3 s" SUBSCR/SUBMG" background  on-extras mode !  start-extras ;   \ (the mini-game's menu: mode $A)
 : open-results ( -- )  open-menu  on-results mode !  start-results ;   \ (its results: mode $C)
 : open-played ( -- )  hewie-played? if  open-options  else  open-menu  then ;   \ (in the run, the options alone)
 : asked-open ( -- )   \ (the scripts' 0x6D: its mode; the rest - not built - shut at once)
@@ -70,8 +70,8 @@ USING: engine game-state actors messages keys facts flag-names items items.table
     mode @ on-slots = if  window-black  slots-view exit  then
     mode @ on-saving = if  saving-view exit  then
     mode @ on-costumes = if  costumes-view exit  then
-    mode @ on-extras = if  extras-view exit  then
-    mode @ on-results = if  results-view exit  then
+    mode @ on-extras = if  window-black  extras-view exit  then
+    mode @ on-results = if  window-black  results-view exit  then
     page @ case  pg-files of  files-view  endof  pg-map of  map-view  endof
                  pg-options of  options-view  endof  >r list-view r>  endcase
     mode @ on-actions = if  actions-view  then

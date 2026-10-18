@@ -7,8 +7,10 @@
 \ $53), the time taken placed among the challenge's three best; shown a step every 30 frames -
 \ the banner, the three times (the new one lit, a mark by a new best), then a challenge newly
 \ unlocked - the cross or the triangle ends it. The texts are the extras room's own messages
-\ ($60 + entry its name, $66 + entry its note). Drawn as the wardrobe is (a box, the words); the
-\ results' pictures are the avoid prompt's (SYSTEM/AVOID.TEX parts 0..4, as the original's).
+\ ($60 + entry its name, $66 + entry its note). The menu's art is SUBSCR/SUBMG (in the background
+\ group: the parts' textures 1..3 are its - the list's frame, the introduction's panel, each
+\ challenge's picture of its stage); the results' pictures are the avoid prompt's
+\ (SYSTEM/AVOID.TEX parts 0..4, as the original's).
 IN: subscreen.extras
 USING: engine game-state actors facts keys ps2-screen subscreen.state subscreen.art subscreen.input ;
 
@@ -41,8 +43,25 @@ $60 constant msg-entries   $66 constant msg-notes
         c i record dup none? if  drop s" -----"  $121  else  dup c@ over 1+ c@ rot 2 + c@ time$  $124  then
         y0 i $18 * +  i lit =  text
     loop ;
+: list-frame ( -- )   \ (its top, a piece a row, its foot: one more row past three)
+    $40 $10 $1D $80 part  0 $40 $20 $80 part
+    0 $70 $21 $80 part  0 $90 $21 $80 part  0 $B0 $21 $80 part
+    mg-n @ case
+        4 of  0 $D0 $22 $80 part  endof
+        5 of  0 $D0 $21 $80 part  0 $F0 $22 $80 part  endof
+        6 of  0 $D0 $21 $80 part  0 $F0 $21 $80 part  0 $110 $22 $80 part  endof
+    endcase ;
+: entry-art ( e -- )   \ (the introduction's panel; a challenge's picture and its times' frame)
+    dup intro-entry = if  drop
+        $160 $40 $23 $80 part  $C0 $40 $24 $80 part
+        6 0 do  $160 $80 i $20 * + $25 $80 part  $C0 $80 i $20 * + $26 $80 part  loop
+        $160 $140 $27 $80 part  $C0 $140 $28 $80 part  $160 $150 $29 $80 part  $C0 $150 $2A $80 part  exit
+    then
+    dup exit-entry < 0= if  drop exit  then
+    dup 1 = swap 3 = or if  $1E  else  $1F  then  $C0 $40 rot $80 part
+    $C0 $140 $20 $80 part  $C0 $170 $21 $80 part  $C0 $190 $22 $80 part ;
 : extras-view ( -- )
-    $100 $E0 $1E0 $190 shade
+    list-frame  mg-at @ entry entry-art
     mg-n @ 0 ?do
         i entry msg-entries + 0 room-line  $20  $68 i $20 * +  i mg-at @ =  text
     loop

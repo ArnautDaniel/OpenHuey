@@ -149,8 +149,8 @@ menu's sound turned down while open; the extras room's modes - the movies (8), t
 $52 / $53 - with their three best times, exit; the pick into variable $2E) and its results (mode
 $C: the unlock, the time placed among the challenge's best, shown a step every 30 frames with the
 avoid prompt's pictures); the best times kept with the unlocks in the system data (`facts.fs`
-`run-records`, saves.fs `record!`). Drawn as the wardrobe (a box and the words; not SUBMG.TEX's
-art). In the run the menu opens to the options alone, with Hewie's button names. **The wardrobe** (mode 7,
+`run-records`, saves.fs `record!`). Drawn with the original's art (SUBSCR/SUBMG in the
+background group: the parts' textures 1..3 resolve to it). In the run the menu opens to the options alone, with Hewie's button names. **The wardrobe** (mode 7,
 `subscreen/costumes.fs`, castle-2f-3 / castle-2f-5): Fiona's six costumes (7 locked until the
 first ending, 8 until the third), Hewie's three (when he is here: his third locked until a hard
 game cleared with the TYPE Top Breeder or Dog Lover); chosen ones into variables $26 / $27, what
