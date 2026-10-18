@@ -94,8 +94,8 @@ both are complete and checked: its output must give the engine the same data the
 | movies | SFD (MPEG video, ADX audio) | `.mpg` (the same video packets) and `.flac` (the sound) - lossless, chosen over re-encoding to WebM | a plain MPEG file any player opens; a mod's movie any MPEG-1 / 2 video |
 | the executable's tables | addresses in SLUS_210.75 | a file each, by name (`library/exe/doors.bin`): the table's bytes; readable forms (data files) as mods want them | no addresses at run time; mods can change a table |
 | messages | the message files (BIN), each room's text (a PAC section) | UTF-8 text files, one per table, ids kept | translation, new lines |
-| rooms, nav meshes | PAC | later: glTF for the meshes, the rest (nav mesh, exits, cameras, areas) as data files | the biggest modding payoff, the most work |
-| models, motions | PCK, MTN | later: glTF (skinned), motions as glTF animations | new costumes, new figures |
+| rooms | PAC | a folder: the mesh as glTF, the textures as PNG, the text, lights and cameras as text (built); the rest of the PAC (nav mesh, events, doors, placed objects, effects, obstacles) as it is for now | the biggest modding payoff, the most work |
+| models, motions | PCK, MTN | glTF, skinned (built); the motion bank and .MTN files as they are (glTF's animations can't play the game's keys exactly) | new costumes, new figures |
 
 Order: **textures** first (smallest, most asked for, easy to check), then **music**, **messages**,
 **the executable's tables**, **sound banks**, **movies**; rooms and models last. Until a kind's
@@ -149,9 +149,8 @@ through, and looped three passes - the same samples (63129 of second-pass starts
 ### Messages
 
 The message tables become text: `SUBSCR/MSG_BASE.BIN` -> `SUBSCR/MSG_BASE.txt` (and MSG_SUB,
-MSG_END), and each room's own text (section 10 of its `.PAC`) -> `ST_000/ST_003.messages.txt`
-beside the PAC. (The PAC itself is copied as it is until rooms are converted - its text section
-then unread.) 9520 messages in 171 tables, 211 KB.
+MSG_END), and each room's own text (section 10 of its `.PAC`) -> `ST_000/ST_003.room/messages.txt`
+(the room's folder: see Rooms). 9520 messages in 171 tables, 211 KB.
 
 ```
 \ ST_000/ST_002.PAC: the room's text (section 10)
@@ -216,6 +215,72 @@ HD's (the pitch the game gives it), not the file's.
 
 `sound-check` (a ctest) converts every sample and plays both through the cursor: the same
 samples, block by block, through three passes of each loop (58 loop).
+
+### Rooms
+
+A room's `.PAC` holds 17 sections. The converted ones go into a folder beside it -
+`ST_000/ST_003.PAC` -> `ST_000/ST_003.room/` - and the library's PAC keeps only the rest
+(`pac_strip`: their bytes and sizes as they were; 273 MB of PACs become 13 MB):
+
+```
+ST_000/ST_003.room/
+  mesh.gltf + mesh.bin    the mesh (section 3): glTF 2.0, textured - opens in Blender
+  textures.texbank/       the room's textures (section 9), effects.texbank/ the effects' (11)
+  messages.txt            its text (10)
+  lights.txt              its lights (4): ambient, then each light's position, colour, range ...
+  cameras.txt             its camera setups (5): eye, field of view, target
+```
+
+- **The mesh** (`src/data/roomgltf.h`) is written as the engine builds it: the still triangles in
+  room space, a primitive a draw (indexed: a strip's triangles share their vertices), and each
+  moving batch (parallax, billboards, flip books) a node of its own with its matrix, its strip
+  and the strip's breaks (`_NO_TRI`). The PS2's vertex colours are `COLOR_0` with 1.0 its 0x80
+  (so lit brighter than the texture goes past 1). What glTF has no word for - a draw's part,
+  blending, visibility group; a batch's movement; the bounds - is in `extras` ("hga"). Read back
+  with cgltf (vendored), it is the same `RoomMesh`. 167 meshes, 178 MB (the section's 156).
+- **Lights and cameras** (`src/data/roomtext.h`) are text, every word as the section has it (a
+  float, or `#xxxxxxxx` where a float can't say the bits), what follows the records as `tail`
+  hex. Read back, they are the section's bytes again, put back into the PAC as the room loads
+  (`pac_attach`): a mod's `lights.txt` relights a room, over the library's or the PAC's own.
+- **Not converted yet**: the nav meshes (0, 1, 16), the events and areas (2), the cameras'
+  paths (6), the doors (7, 8), the placed objects (12, 15), the effects (13), the obstacles (14).
+  Their formats are known only as far as the engine reads them; a text form of each needs its
+  every field named, or it would be a hex dump in a text file. They stay in the PAC.
+
+`room-check` (a ctest) builds every room's mesh and reads its glTF back (the same RoomMesh,
+valid glTF by cgltf's checks), reads every lights / cameras text back (the same bytes, 329
+sections), and strips every PAC (the rest the same bytes and sizes, 16-byte aligned).
+`texbank-check` covers the rooms' texture banks with the others'. A frame of the first room drawn
+from the library is the same picture as from the disc.
+
+### Models
+
+A model's `.PCK` (four resources: 0 the skeleton and meshes, 1 the morphing parts, 2 the shadow
+volumes, 3 the motion bank) becomes `O_FIN/FIN_000.model/`:
+
+```
+model.gltf + model.bin    the skinned mesh and its skeleton (resources 0, 1): glTF 2.0
+motions.bin               the motion bank (3), as it is
+shadows.bin               the shadow volumes (2), as they are (hga doesn't draw them yet)
+```
+
+`src/data/modelgltf.h`: the bones are nodes at rest (so a viewer shows the model standing), the
+mesh skinned by them (`JOINTS_0` / `WEIGHTS_0`, the inverse bind matrices as the game has them);
+each bone's exact rest angles, the bone table and the draws' engine words in `extras`. The
+materials point at the model's textures (`../FIN_000.texbank/`). The motions stay the game's:
+the engine plays its keys - Euler angles between keys, special tracks, parts - as the original
+does, which glTF's animations (quaternions, slerp) can't reproduce exactly; a readable form of
+them is for later. The two .PCKs the engine doesn't build as models (`DNT_200`, `WIR_200`) are
+copied as they are.
+
+`model-check` (a ctest) writes every model as glTF and reads it back: the same `Model` - bones,
+bone table, every vertex and draw (the draws in their passes' order: a draw's words say where its
+vertices go), the motion bank's bytes; valid glTF. 113 models: 107 MB of PCK, 87 MB of glTF and
+motions.
+
+What the converted forms keep is what the engine reads: a field it doesn't (a flag bit nothing
+uses, padding) isn't carried into the glTF. The disc keeps them: a later hga that needs one
+re-imports.
 
 ### Movies
 
@@ -353,4 +418,6 @@ from $1000 up, say, so they never collide with the game's).
    their own vocabularies. A sample mod in the repository as a test. (Built.)
 4. **Music, messages, the executable's tables** converted; the first hooks, as the sample mods
    ask. (Built: music, messages, the executable's tables; the first hook, item-use-rule.)
-5. Sound banks (samples built), movies (built); then rooms and models.
+5. Sound banks (samples built), movies (built); then rooms and models (built: the meshes,
+   textures, text, lights and cameras of rooms; models' meshes and skeletons - the rest of the
+   rooms' sections and the motions as they are, for now).

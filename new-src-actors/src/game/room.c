@@ -2,6 +2,9 @@
 
 #include "../core/files.h"
 #include "../data/tex.h"
+#include "../data/texbank.h"
+#include "../data/roomgltf.h"
+#include "../data/roomtext.h"
 #include "sprites.h"
 #include "../render/post.h"
 
@@ -20,23 +23,81 @@ int room_exists(int id) {
     return files_exist(path);
 }
 
-static void load_textures(Room *r) {
+/* a room's texture bank: the library's PNGs of it (ST_003.room/<name>.texbank/: data/texbank.h),
+ * else the PAC's own section */
+static TexBank *room_bank(Room *r, int section, const char *name) {
+    char path[96];
     size_t size;
-    const uint8_t *bank = pac_section(&r->pac, PAC_TEXTURES, &size);
-    int n = tex_count(bank, size), i;
+    const uint8_t *bank = pac_section(&r->pac, section, &size);
+
+    pac_room_part(r->id, name, path, sizeof(path));
+    return texbank_load_or_wrap(path, bank, bank != NULL ? size : 0);
+}
+
+/* the library's sections as text (ST_003.room/lights.txt ...: data/roomtext.h), read back into
+ * the PAC (a mod's over the library's, or over the PAC's own) */
+static void attach_texts(Room *r) {
+    char path[96];
+    int i;
+
+    for (i = 0; i < PAC_SECTIONS; i++) {
+        uint8_t *text, *sec;
+        size_t len, n;
+
+        if (roomtext_file(i) == NULL) {
+            continue;
+        }
+        pac_room_part(r->id, roomtext_file(i), path, sizeof(path));
+        if ((text = files_read(path, &len)) == NULL) {
+            continue;
+        }
+        if ((sec = roomtext_read(i, (const char *)text, len, path, &n)) != NULL) {
+            pac_attach(&r->pac, i, sec, n);
+        }
+        free(text);
+        free(sec);
+    }
+}
+
+/* the library's mesh: ST_003.room/mesh.gltf + mesh.bin (data/roomgltf.h); 0 if there is none */
+static int load_mesh_gltf(Room *r) {
+    char path[96];
+    uint8_t *json, *bin;
+    size_t len, bs;
+    int ok;
+
+    pac_room_part(r->id, "mesh.gltf", path, sizeof(path));
+    if ((json = files_read(path, &len)) == NULL) {
+        return 0;
+    }
+    pac_room_part(r->id, "mesh.bin", path, sizeof(path));
+    bin = files_read(path, &bs);
+    ok = bin != NULL && roomgltf_read(&r->mesh, (const char *)json, len, bin, bs);
+    if (!ok) {
+        fprintf(stderr, "room %03X: its mesh.gltf isn't one hga reads\n", r->id);
+    }
+    free(json);
+    free(bin);
+    return ok;
+}
+
+static void load_textures(Room *r) {
+    TexBank *bank = room_bank(r, PAC_TEXTURES, "textures.TEX");
+    int n = texbank_count(bank), i;
 
     for (i = 0; i < n && i < ROOM_MAX_TEXTURES; i++) {
-        const TexEntry *t = tex_entry(bank, i);
-        uint8_t *rgba = malloc((size_t)t->w * t->h * 4 + 4);
+        int w = 0, h = 0, psm = 0;
+        uint8_t *rgba = texbank_info(bank, i, &w, &h, &psm) && w <= 2048 && h <= 2048 ? malloc((size_t)w * h * 4 + 4) : NULL;
 
-        if (rgba != NULL && t->w > 0 && t->h > 0 && t->w <= 2048 && t->h <= 2048 && tex_decode(bank, size, i, rgba)) {
-            r->textures[i] = render_texture(rgba, t->w, t->h);
+        if (rgba != NULL && texbank_rgba(bank, i, -1, rgba)) {
+            r->textures[i] = render_texture(rgba, w, h);
         } else {
-            fprintf(stderr, "room %03X: texture %d: format %02X not decoded\n", r->id, i, t->psm);
+            fprintf(stderr, "room %03X: texture %d: format %02X not decoded\n", r->id, i, psm);
         }
         free(rgba);
     }
     r->ntextures = n < ROOM_MAX_TEXTURES ? n : ROOM_MAX_TEXTURES;
+    texbank_free(bank);
 }
 
 /* a PS2 colour word (little-endian R, G, B, A) */
@@ -537,22 +598,20 @@ int room_load(Room *r, int id) {
         return 0;
     }
     r->id = id;
-    sec = pac_section(&r->pac, PAC_MESH, &size);
-    if (sec != NULL && !roommesh_build(&r->mesh, sec, size)) {
-        fprintf(stderr, "room %03X: the mesh section is malformed\n", id);
+    attach_texts(r);
+    if (!load_mesh_gltf(r)) {   /* (else the PAC's own section) */
+        sec = pac_section(&r->pac, PAC_MESH, &size);
+        if (sec != NULL && !roommesh_build(&r->mesh, sec, size)) {
+            fprintf(stderr, "room %03X: the mesh section is malformed\n", id);
+        }
     }
     if (r->mesh.nv > 0) {
         render_mesh_upload(&r->gpu, r->mesh.v, r->mesh.nv);
     }
     load_textures(r);
-    {   /* the effects' textures: groups 0 and 0x15 of the cache (RoomMgr_MakeCurrent) */
-        size_t tsize;
-        const uint8_t *bank = pac_section(&r->pac, PAC_TEXTURES, &tsize);
-
-        sprites_group(0, bank, bank != NULL ? tsize : 0);
-        bank = pac_section(&r->pac, PAC_TEXTURES2, &tsize);
-        sprites_group(0x15, bank, bank != NULL ? tsize : 0);
-    }
+    /* the effects' textures: groups 0 and 0x15 of the cache (RoomMgr_MakeCurrent) */
+    sprites_group_bank(0, room_bank(r, PAC_TEXTURES, "textures.TEX"));
+    sprites_group_bank(0x15, room_bank(r, PAC_TEXTURES2, "effects.TEX"));
     sec = pac_section(&r->pac, PAC_NAV, &size);
     navmesh_build(&r->nav, sec, size);
     sec = pac_section(&r->pac, PAC_NAV3, &size);

@@ -126,6 +126,8 @@ static TexBank *load_converted(const char *path) {
     return b;
 }
 
+static void mod_pngs(TexBank *b, const char *path);
+
 TexBank *texbank_load(const char *path) {
     TexBank *b = load_converted(path);
     uint8_t *raw;
@@ -142,6 +144,20 @@ TexBank *texbank_load(const char *path) {
         return NULL;
     }
     b->owned = raw;
+    mod_pngs(b, path);
+    return b;
+}
+
+TexBank *texbank_load_or_wrap(const char *path, const uint8_t *bank, size_t size) {
+    TexBank *b = load_converted(path);
+
+    if (b == NULL && bank != NULL && (b = texbank_wrap(bank, size)) != NULL) {
+        mod_pngs(b, path);
+    }
+    return b;
+}
+
+static void mod_pngs(TexBank *b, const char *path) {
     {   /* (a mod's PNGs over a bank not converted: the developer's data, a library made before) */
         char dir[600], file[700];
         int i;
@@ -164,7 +180,6 @@ TexBank *texbank_load(const char *path) {
             }
         }
     }
-    return b;
 }
 
 void texbank_free(TexBank *b) {

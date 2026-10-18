@@ -10,12 +10,15 @@
 
 #include <SDL3/SDL.h>
 
+#include "../src/data/pac.h"
 #include "../src/data/tex.h"
 #include "../src/data/texbank.h"
 #include "../src/platform/disc.h"
 
 typedef struct Bank {
-    char path[512];   /* in the data folder: "SYSTEM/TITLE.TEX" */
+    char path[512];   /* in the data folder: "SYSTEM/TITLE.TEX" (a room's: "ST_000/ST_003.room/textures.TEX") */
+    char pac[512];    /* (a room's: its PAC, and the section) */
+    int section;
     uint8_t *raw;
     size_t size;
 } Bank;
@@ -37,13 +40,29 @@ static SDL_EnumerationResult find_one(void *user, const char *dir, const char *n
         strcat(path, "/");
         SDL_EnumerateDirectory(path, find_one, user);
     } else if (len > 4 && strcasecmp(name + len - 4, ".TEX") == 0) {
-        if (sN == sCap) {
+        if (sN + 2 >= sCap) {
             sCap = sCap ? sCap * 2 : 256;
             sBanks = realloc(sBanks, sizeof(*sBanks) * (size_t)sCap);
         }
         snprintf(sBanks[sN].path, sizeof(sBanks[sN].path), "%s", path + sRoot);
+        sBanks[sN].pac[0] = 0;
         sBanks[sN].raw = NULL;
         sN++;
+    } else if (len > 4 && strcasecmp(name + len - 4, ".PAC") == 0) {   /* (a room's two banks) */
+        int k;
+
+        if (sN + 2 >= sCap) {
+            sCap = sCap ? sCap * 2 : 256;
+            sBanks = realloc(sBanks, sizeof(*sBanks) * (size_t)sCap);
+        }
+        for (k = 0; k < 2; k++) {
+            snprintf(sBanks[sN].path, sizeof(sBanks[sN].path), "%.*s.room/%s.TEX", (int)(strlen(path + sRoot) - 4),
+                     path + sRoot, k == 0 ? "textures" : "effects");
+            snprintf(sBanks[sN].pac, sizeof(sBanks[sN].pac), "%s", path + sRoot);
+            sBanks[sN].section = k == 0 ? PAC_TEXTURES : PAC_TEXTURES2;
+            sBanks[sN].raw = NULL;
+            sN++;
+        }
     }
     return SDL_ENUM_CONTINUE;
 }
@@ -107,7 +126,20 @@ int main(int argc, char **argv) {
         Bank *b = &sBanks[i];
         size_t len = strlen(b->path) - 4;
 
-        b->raw = disc_read_all(b->path, &b->size);
+        if (b->pac[0] != 0) {   /* (a room's: its section, copied out) */
+            Pac pac;
+            const uint8_t *sec;
+
+            pac.data = disc_read_all(b->pac, &pac.size);
+            b->raw = NULL;
+            if (pac.data != NULL && (sec = pac_section(&pac, b->section, &b->size)) != NULL) {
+                b->raw = malloc(b->size);
+                memcpy(b->raw, sec, b->size);
+            }
+            free(pac.data);
+        } else {
+            b->raw = disc_read_all(b->path, &b->size);
+        }
         if (b->raw == NULL || tex_count(b->raw, b->size) == 0) {
             continue;   /* (not a bank: the import copies it as it is) */
         }

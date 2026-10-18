@@ -64,6 +64,14 @@ void sprites_group(int group, const uint8_t *bank, size_t size) {
     }
 }
 
+void sprites_group_bank(int group, TexBank *bank) {
+    if (group >= 0 && group < CACHE) {
+        set_group(group, bank);
+    } else {
+        texbank_free(bank);
+    }
+}
+
 void sprites_init(void) {
     TexBank *b = texbank_load("GAME_FIX.TEX");
 

@@ -26,6 +26,10 @@
 #include "../data/exetables.h"
 #include "../data/samples.h"
 #include "../data/sfd.h"
+#include "../data/roomgltf.h"
+#include "../data/roommesh.h"
+#include "../data/roomtext.h"
+#include "../data/modelgltf.h"
 
 #define MUSIC_FORMAT 1             /* "convert music 1": ADX to FLAC, LOOPSTART / LOOPEND / STOPAT (musicsrc.h) */
 
@@ -444,7 +448,7 @@ static int is_messages(const Item *it) { return has_kind(it, ".BIN") && strncase
 static int is_exe(const Item *it) { return strcasecmp(it->path, "../" EXE_NAME) == 0; }
 static int is_converted(const Item *it) {
     return has_kind(it, ".TEX") || has_kind(it, ".ADX") || has_kind(it, ".PAC") || is_messages(it) || is_exe(it) ||
-           has_kind(it, ".BD") || has_kind(it, ".SFD");
+           has_kind(it, ".BD") || has_kind(it, ".SFD") || has_kind(it, ".PCK");
 }
 
 static int write_file(const char *root, Items *made, const char *rel, const uint8_t *data, size_t size, char *why,
@@ -654,6 +658,133 @@ static int convert_bank(const Item *it, const char *root, Items *made, uint8_t *
     return 1;
 }
 
+/* a model: NAME.model/ - model.gltf + model.bin (its mesh and skeleton), motions.bin (its motion
+ * bank, as it is), shadows.bin (its shadow volumes, as they are); the .PCK not kept */
+static int convert_model(const Item *it, const char *root, Items *made, const uint8_t *data, size_t size, char *why,
+                         size_t n) {
+    char rel[800], tex[300];
+    const char *slash = strrchr(it->path, '/');
+    uint8_t *copy = malloc(size), *bin;
+    size_t bs, len;
+    char *json;
+    Model m;
+    uint32_t count, s2, s3;
+    int base = (int)strlen(it->path) - 4, ok;
+
+    if (copy == NULL) {
+        return 0;
+    }
+    memcpy(copy, data, size);
+    if (!model_build(&m, copy, size)) {   /* (takes copy) */
+        return -1;   /* (not a model the engine builds: copied as it is) */
+    }
+    snprintf(tex, sizeof(tex), "../%.*s.texbank/", base - (int)(slash != NULL ? slash + 1 - it->path : 0),
+             slash != NULL ? slash + 1 : it->path);
+    json = modelgltf_write(&m, "model.bin", tex, &bin, &bs, &len);
+    snprintf(rel, sizeof(rel), "data/%.*s.model/model.bin", base, it->path);
+    ok = write_file(root, made, rel, bin, bs, why, n);
+    snprintf(rel, sizeof(rel), "data/%.*s.model/model.gltf", base, it->path);
+    ok = ok && write_file(root, made, rel, (const uint8_t *)json, len, why, n);
+    if (ok && m.motions != NULL) {
+        snprintf(rel, sizeof(rel), "data/%.*s.model/motions.bin", base, it->path);
+        ok = write_file(root, made, rel, m.motions, m.motions_size, why, n);
+    }
+    memcpy(&count, data, 4);
+    memcpy(&s2, data + 12, 4);
+    memcpy(&s3, data + 16, 4);
+    if (ok && count > 2 && s2 != 0 && s2 < size) {   /* (resource 2: up to resource 3, or the end) */
+        size_t end = count > 3 && s3 > s2 && s3 <= size ? s3 : size;
+
+        snprintf(rel, sizeof(rel), "data/%.*s.model/shadows.bin", base, it->path);
+        ok = write_file(root, made, rel, data + s2, end - s2, why, n);
+    }
+    free(json);
+    free(bin);
+    model_free(&m);
+    return ok;
+}
+
+/* a room: its converted parts in "ST_000/ST_003.room/" - the texture banks (sections 9, 11) as
+ * PNGs (textures.texbank/, effects.texbank/), its text (10) as messages.txt, its lights and cameras
+ * (4, 5) as text, its mesh (3) as glTF - and the PAC less those sections (data/pac.h): what isn't
+ * converted yet */
+static int convert_room(const Item *it, const char *root, Items *made, const uint8_t *data, size_t size, char *why,
+                        size_t n) {
+    static const struct { int section; const char *name; } kBanks[] = {{PAC_TEXTURES, "textures"}, {PAC_TEXTURES2, "effects"}};
+    char to[1300], rel[800];
+    Pac pac = {(uint8_t *)data, size};
+    unsigned drop = 0;
+    size_t tsize, psize;
+    const uint8_t *sec;
+    uint8_t *stripped;
+    int base = (int)strlen(it->path) - 4, i, r;
+
+    for (i = 0; i < 2; i++) {
+        Made m = {made, ""};
+
+        if ((sec = pac_section(&pac, kBanks[i].section, &tsize)) == NULL || tex_count(sec, tsize) == 0) {
+            continue;
+        }
+        snprintf(m.dir, sizeof(m.dir), "data/%.*s.room/%s.texbank/", base, it->path, kBanks[i].name);
+        snprintf(to, sizeof(to), "%s%s", root, m.dir);
+        if (!make_parent(to) || !texbank_convert(sec, tsize, to, made_one, &m)) {
+            snprintf(why, n, "%s can't be written", to);
+            return 0;
+        }
+        drop |= 1u << kBanks[i].section;
+    }
+    if ((sec = pac_section(&pac, PAC_TEXT, &tsize)) != NULL) {
+        if ((r = convert_messages(it, root, made, sec, tsize, ".room/messages.txt", why, n)) == 0) {
+            return 0;
+        }
+        drop |= r > 0 ? 1u << PAC_TEXT : 0;
+    }
+    for (i = 0; i < PAC_SECTIONS; i++) {   /* the sections as text (data/roomtext.h) */
+        char *text;
+        size_t len;
+
+        if (roomtext_file(i) == NULL || (sec = pac_section(&pac, i, &tsize)) == NULL ||
+            (text = roomtext_write(i, sec, tsize, it->path, &len)) == NULL) {
+            continue;
+        }
+        snprintf(rel, sizeof(rel), "data/%.*s.room/%s", base, it->path, roomtext_file(i));
+        r = write_file(root, made, rel, (const uint8_t *)text, len, why, n);
+        free(text);
+        if (!r) {
+            return 0;
+        }
+        drop |= 1u << i;
+    }
+    if ((sec = pac_section(&pac, PAC_MESH, &tsize)) != NULL) {   /* the mesh: glTF (data/roomgltf.h) */
+        RoomMesh mesh;
+
+        if (roommesh_build(&mesh, sec, tsize)) {
+            uint8_t *bin;
+            size_t bs, len;
+            char *json = roomgltf_write(&mesh, "mesh.bin", &bin, &bs, &len);
+
+            snprintf(rel, sizeof(rel), "data/%.*s.room/mesh.bin", base, it->path);
+            r = write_file(root, made, rel, bin, bs, why, n);
+            snprintf(rel, sizeof(rel), "data/%.*s.room/mesh.gltf", base, it->path);
+            r = r && write_file(root, made, rel, (const uint8_t *)json, len, why, n);
+            free(json);
+            free(bin);
+            roommesh_free(&mesh);
+            if (!r) {
+                return 0;
+            }
+            drop |= 1u << PAC_MESH;
+        }
+    }
+    if ((stripped = pac_strip(&pac, drop, &psize)) == NULL) {
+        return -1;   /* (malformed: copied as it is) */
+    }
+    library_path(rel, sizeof(rel), "", it->path);
+    r = write_file(root, made, rel, stripped, psize, why, n);
+    free(stripped);
+    return r;
+}
+
 static int copy_item(const Item *it, const char *root, Items *made, Progress *pr, char *why, size_t n) {
     static uint8_t buf[1 << 20];
     char to[1300], rel[1300];
@@ -714,14 +845,10 @@ static int copy_item(const Item *it, const char *root, Items *made, Progress *pr
             ok = convert_exe(root, made, bank, have, why, n);
         } else if (ok && is_messages(it)) {
             ok = convert_messages(it, root, made, bank, have, ".txt", why, n);
+        } else if (ok && has_kind(it, ".PCK")) {
+            ok = convert_model(it, root, made, bank, have, why, n);
         } else if (ok && has_kind(it, ".PAC")) {
-            Pac pac = {bank, have};
-            size_t tsize;
-            const uint8_t *table = pac_section(&pac, PAC_TEXT, &tsize);
-
-            if (table != NULL && convert_messages(it, root, made, table, tsize, ".messages.txt", why, n) == 0) {
-                ok = 0;
-            }
+            ok = convert_room(it, root, made, bank, have, why, n);
         }
         if (ok == 0 && have != (size_t)it->size) {
             snprintf(why, n, "the disc's %s can't be read whole", it->path);
@@ -767,6 +894,8 @@ static int write_manifest(const char *root, const Items *made) {
     fprintf(f, "convert exe %d\n", EXETABLES_FORMAT);
     fprintf(f, "convert samples %d\n", SAMPLES_FORMAT);
     fprintf(f, "convert movies 1\n");   /* (X.mpg, X.flac: data/sfd.h) */
+    fprintf(f, "convert rooms 1\n");    /* (X.room/: the textures, the text, the mesh, lights, cameras; the PAC less them) */
+    fprintf(f, "convert models 1\n");   /* (X.model/: glTF, the motion bank, the shadows) */
     for (i = 0; i < made->n; i++) {
         fprintf(f, "file %ld %s\n", made->e[i].size, made->e[i].path);
     }

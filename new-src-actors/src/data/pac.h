@@ -29,5 +29,14 @@ typedef struct Pac {
 const uint8_t *pac_section(const Pac *p, int i, size_t *size);
 /* the path of room `id` ("ST_000/ST_003.PAC": rooms come in folders of eight) */
 void pac_room_path(int id, char *out, size_t n);
+/* the library's converted parts of a room are in a folder beside its PAC: "ST_000/ST_003.room/"
+ * + `name` (docs/library-and-mods.md) */
+void pac_room_part(int id, const char *name, char *out, size_t n);
+/* the import's: the PAC less the sections in `drop` (bit i: section i - converted, so the library
+ * holds them elsewhere), the others' bytes and sizes as they were (malloc'd); NULL if malformed */
+uint8_t *pac_strip(const Pac *p, unsigned drop, size_t *size);
+/* a section's bytes put back (the library's text of it read: data/roomtext.h), at the PAC's end
+ * (16-byte aligned); 0 if out of memory */
+int pac_attach(Pac *p, int section, const uint8_t *bytes, size_t n);
 
 #endif
