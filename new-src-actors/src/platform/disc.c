@@ -7,6 +7,7 @@
  * (After hg's native/platform/disc.c.) */
 #define _FILE_OFFSET_BITS 64
 #include "disc.h"
+#include "library.h"
 
 #include <dirent.h>
 #include <stdint.h>
@@ -32,6 +33,7 @@ struct DiscFile {
     FILE *fp;
     int64_t base;   /* where the file starts in fp */
     long size, pos;
+    unsigned char *mem;   /* (or the file in memory: a zipped mod's) */
 };
 
 typedef struct Entry {
@@ -345,6 +347,35 @@ DiscFile *disc_file_open(const char *name) {
     return open_in_folder(sFolder, path + 3);   /* (a DATA.CVM: the files beside it) */
 }
 
+DiscFile *disc_file_open_in(const char *folder, const char *name) {
+    char path[1024], parent[1100], *slash;
+
+    snprintf(path, sizeof(path), "%s", name);
+    norm(path);
+    if (strncmp(path, "../", 3) != 0) {
+        return open_in_folder(folder, path);
+    }
+    snprintf(parent, sizeof(parent), "%s", folder);
+    slash = strrchr(parent, '/');
+    if (slash == NULL) {
+        return NULL;
+    }
+    *slash = 0;
+    return open_in_folder(parent, path + 3);
+}
+
+DiscFile *disc_file_memory(unsigned char *data, long size) {
+    DiscFile *h = data != NULL ? calloc(1, sizeof(*h)) : NULL;
+
+    if (h == NULL) {
+        free(data);
+        return NULL;
+    }
+    h->mem = data;
+    h->size = size;
+    return h;
+}
+
 size_t disc_file_read(DiscFile *f, void *buf, size_t n) {
     size_t got;
 
@@ -353,6 +384,11 @@ size_t disc_file_read(DiscFile *f, void *buf, size_t n) {
     }
     if (n > (size_t)(f->size - f->pos)) {
         n = (size_t)(f->size - f->pos);
+    }
+    if (f->mem != NULL) {
+        memcpy(buf, f->mem + f->pos, n);
+        f->pos += (long)n;
+        return n;
     }
     if (fseek64(f->fp, f->base + f->pos, SEEK_SET) != 0) {
         return 0;
@@ -367,13 +403,17 @@ long disc_file_size(const DiscFile *f) { return f->size; }
 
 void disc_file_close(DiscFile *f) {
     if (f != NULL) {
-        fclose(f->fp);
+        if (f->fp != NULL) {
+            fclose(f->fp);
+        }
+        free(f->mem);
         free(f);
     }
 }
 
-unsigned char *disc_read_all(const char *path, size_t *size) {
-    DiscFile *f = disc_file_open(path);
+unsigned char *disc_read_all(const char *path, size_t *size) { return disc_file_read_all(disc_file_open(path), size); }
+
+unsigned char *disc_file_read_all(DiscFile *f, size_t *size) {
     unsigned char *buf;
     long n;
 
@@ -410,46 +450,36 @@ DiscFile *disc_exe(void) {
     return sImage[0] == 0 && sFolder[0] != 0 ? open_in_folder(sFolder, "SLUS_210.75") : NULL;
 }
 
+/* ---- the files there are (an image's: the import copies them) ---- */
+
+int disc_is_image(void) { return sImage[0] != 0; }
+int disc_entries(void) { return sInside.n + sBeside.n; }
+
+/* entry i: its path ("../" for the disc's own files, beside DATA.CVM) and size; 0 past them */
+int disc_entry(int i, char *path, size_t n, long *size) {
+    const Entry *e;
+
+    if (i < 0 || i >= sInside.n + sBeside.n) {
+        return 0;
+    }
+    if (i < sInside.n) {
+        e = &sInside.e[i];
+        snprintf(path, n, "%s", e->path);
+    } else {
+        e = &sBeside.e[i - sInside.n];
+        snprintf(path, n, "../%s", e->path);
+    }
+    *size = e->size;
+    return 1;
+}
+
+const char *disc_folder(void) { return sFolder; }   /* (a DATA.CVM's: the folder it is in) */
+
 /* ---- the player's folder ---- */
 
-const char *disc_user_dir(void) {
-    static char *dir;
+const char *disc_user_dir(void) { return library_user_dir(); }   /* (the library's user/: platform/library.c) */
 
-    if (dir == NULL) {
-        dir = SDL_GetPrefPath("hg2", "new-src");   /* (hga's settings and saves have always been here) */
-    }
-    return dir != NULL ? dir : "./";
-}
-
-/* ---- choosing the disc ---- */
-
-static const char *remembered(void) {   /* the disc last chosen (<user dir>/disc.txt) */
-    static char path[1024];
-    char file[1100];
-    FILE *f;
-
-    snprintf(file, sizeof(file), "%sdisc.txt", disc_user_dir());
-    if ((f = fopen(file, "r")) == NULL) {
-        return NULL;
-    }
-    if (fgets(path, sizeof(path), f) == NULL) {
-        path[0] = 0;
-    }
-    fclose(f);
-    path[strcspn(path, "\r\n")] = 0;
-    return path[0] != 0 ? path : NULL;
-}
-
-static void remember(const char *path) {
-    char file[1100];
-    FILE *f;
-
-    snprintf(file, sizeof(file), "%sdisc.txt", disc_user_dir());
-    if ((f = fopen(file, "w")) != NULL) {
-        fprintf(f, "%s\n", path);
-        fclose(f);
-    }
-}
+/* ---- choosing the disc (the library's import: platform/library.c) ---- */
 
 typedef struct Pick {
     SDL_AtomicInt done;
@@ -469,7 +499,7 @@ static void pick_cb(void *arg, const char *const *files, int filter) {   /* (may
 }
 
 /* ask the player for the disc image, until one works or they cancel; `why` (if set) said first */
-static int pick(const char *why) {
+int disc_pick(const char *why) {
     static const SDL_DialogFileFilter filters[] = {
         {"Haunting Ground disc image (.iso)", "iso;cvm"},
         {"All files", "*"},
@@ -480,8 +510,7 @@ static int pick(const char *why) {
     }
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Haunting Ground",
                              why != NULL ? why
-                                         : "Choose your copy of Haunting Ground (USA): its disc image (.iso).\n\n"
-                                           "It is remembered for next time.",
+                                         : "Choose your copy of Haunting Ground (USA): its disc image (.iso).",
                              NULL);
     for (;;) {
         SDL_PropertiesID props = SDL_CreateProperties();
@@ -503,41 +532,10 @@ static int pick(const char *why) {
             return 0;
         }
         if (disc_open(p.path)) {
-            remember(p.path);
             return 1;
         }
         snprintf(msg, sizeof(msg), "That file can't be used: %s.\n\nChoose the disc image (.iso) of Haunting Ground (USA).",
                  disc_error());
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Haunting Ground", msg, NULL);
     }
-}
-
-int disc_choose(const char *given, const char *fallback, int headless) {
-    const char *r;
-    char why[1400], *whyp = NULL;
-
-    if (given != NULL && given[0] != 0) {
-        if (disc_open(given)) {
-            return 1;
-        }
-        fprintf(stderr, "hga: %s\n", disc_error());
-        return 0;
-    }
-    if ((r = remembered()) != NULL) {
-        if (disc_open(r)) {
-            return 1;
-        }
-        fprintf(stderr, "hga: the disc used last time can't be read (%s)\n", disc_error());
-        snprintf(why, sizeof(why), "The disc image used last time isn't there any more:\n%s\n\nPlease choose it again.", r);
-        whyp = why;
-    }
-    if (fallback != NULL && fallback[0] != 0 && disc_open(fallback)) {
-        return 1;
-    }
-    if (!headless && pick(whyp)) {
-        return 1;
-    }
-    fprintf(stderr, "hga: no game data. Pass the Haunting Ground disc image (.iso), its DATA.CVM or the folder\n"
-                    "DATA.CVM was extracted to as the argument (or in $HG_DATA).\n");
-    return 0;
 }

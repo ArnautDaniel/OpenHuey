@@ -3,6 +3,8 @@
 #include "spu.h"
 
 #include "sound.h"
+#include "../data/samples.h"
+#include "../data/vag.h"
 
 #include <SDL3/SDL.h>
 #include <stddef.h>
@@ -12,18 +14,15 @@
 enum { ENV_OFF, ENV_ATTACK, ENV_DECAY, ENV_SUSTAIN, ENV_RELEASE };
 
 typedef struct Voice {
-    const uint8_t *mem;
-    size_t size;
-    size_t ssa, lsa, nax;       /* bytes into mem: the start, the loop, the block playing */
-    int lsa_set;
+    VagCursor c;                /* its sample (data/vag.h): the bank's ADPCM, or the library's WAV */
+    const void *owner;          /* (whose: spu_forget) */
     unsigned pitch;
     unsigned adsr1, adsr2;
     int vl, vr;
     int mix;                    /* dry L 1, dry R 2, wet L 4, wet R 8 */
     int env, level, counter;
     unsigned pos;               /* 12-bit fraction */
-    int16_t buf[28];
-    int s1, s2, idx, prev, cur;
+    int idx, prev, cur;
 } Voice;
 
 #define HOOKS 4
@@ -69,54 +68,6 @@ void spu_lock(void) {
 void spu_unlock(void) { SDL_UnlockMutex(S.lock); }
 
 /* ---- a voice ---- */
-
-static const int kFilter[5][2] = {{0, 0}, {60, 0}, {115, -52}, {98, -55}, {122, -60}};
-
-static void decode_block(Voice *v) {
-    const uint8_t *b;
-    int shift, f, i;
-
-    if (v->mem == NULL || v->nax + 16 > v->size) {
-        v->env = ENV_OFF;
-        v->level = 0;
-        return;
-    }
-    b = v->mem + (v->nax & ~(size_t)0xF);
-    shift = b[0] & 0xF;
-    f = (b[0] >> 4) & 7;
-    shift = shift > 12 ? 9 : shift;
-    f = f > 4 ? 0 : f;
-    if ((b[1] & 4) && !v->lsa_set) {   /* the loop's start */
-        v->lsa = v->nax;
-    }
-    for (i = 0; i < 28; i++) {
-        int n = (b[2 + i / 2] >> ((i & 1) * 4)) & 0xF;
-        int s = (int16_t)(n << 12) >> shift;
-
-        s += (v->s1 * kFilter[f][0] + v->s2 * kFilter[f][1]) / 64;
-        s = s > 32767 ? 32767 : s < -32768 ? -32768 : s;
-        v->buf[i] = (int16_t)s;
-        v->s2 = v->s1;
-        v->s1 = s;
-    }
-}
-
-static void next_block(Voice *v) {
-    const uint8_t *b = v->mem + (v->nax & ~(size_t)0xF);
-
-    if (b[1] & 1) {   /* the end: back to the loop, or silence */
-        if (b[1] & 2) {
-            v->nax = v->lsa;
-        } else {
-            v->env = ENV_OFF;
-            v->level = 0;
-            return;
-        }
-    } else {
-        v->nax += 16;
-    }
-    decode_block(v);
-}
 
 static void env_step(Voice *v, int exp, int dec, int shift, int step) {
     int cycles = 1 << (shift - 11 > 0 ? shift - 11 : 0);
@@ -167,18 +118,17 @@ static void env_tick(Voice *v) {
 }
 
 static void key_on(Voice *v) {
-    v->nax = v->ssa;
-    v->lsa = v->ssa;
-    v->lsa_set = 0;
-    v->s1 = v->s2 = 0;
     v->pos = 0;
     v->idx = 0;
     v->prev = 0;
     v->env = ENV_ATTACK;
     v->level = 0;
     v->counter = 0;
-    decode_block(v);
-    v->cur = v->buf[0];
+    vag_start(&v->c);
+    if (v->c.ended) {
+        v->env = ENV_OFF;
+    }
+    v->cur = v->c.buf[0];
 }
 
 static void key_off(Voice *v) {
@@ -192,9 +142,33 @@ static void key_off(Voice *v) {
 
 void spu_voice_sample(int v, const uint8_t *mem, size_t size, size_t ssa) {
     if (v >= 0 && v < SPU_VOICES) {
-        S.voice[v].mem = mem;
-        S.voice[v].size = size;
-        S.voice[v].ssa = ssa & ~(size_t)0xF;
+        memset(&S.voice[v].c, 0, sizeof(VagCursor));
+        S.voice[v].c.mem = mem;
+        S.voice[v].c.size = size;
+        S.voice[v].c.ssa = ssa & ~(size_t)0xF;
+        S.voice[v].owner = mem;
+    }
+}
+
+void spu_voice_pcm(int v, const void *owner, const int16_t *pcm, long frames, long loop_start) {
+    if (v >= 0 && v < SPU_VOICES) {
+        memset(&S.voice[v].c, 0, sizeof(VagCursor));
+        S.voice[v].c.pcm = pcm;
+        S.voice[v].c.frames = frames;
+        S.voice[v].c.loop_start = loop_start;
+        S.voice[v].owner = owner;
+    }
+}
+
+void spu_voice_from(int v, const Samples *s, const uint8_t *bd, size_t bd_size, size_t ssa) {
+    int k;
+
+    if (s == NULL) {
+        spu_voice_sample(v, bd, bd_size, ssa);
+    } else if ((k = samples_find(s, (uint32_t)ssa)) >= 0 && s->pcm[k] != NULL) {
+        spu_voice_pcm(v, s, s->pcm[k], s->frames[k], s->loop_start[k]);
+    } else {
+        spu_voice_pcm(v, s, NULL, 0, -1);   /* (none: silent) */
     }
 }
 
@@ -251,14 +225,15 @@ int spu_voice_busy(int v) {
     return v >= 0 && v < SPU_VOICES && S.voice[v].env != ENV_OFF && (S.voice[v].level > 0 || S.voice[v].env == ENV_ATTACK);
 }
 
-void spu_forget(const uint8_t *mem) {
+void spu_forget(const void *owner) {
     int v;
 
     for (v = 0; v < SPU_VOICES; v++) {
-        if (S.voice[v].mem == mem) {
+        if (S.voice[v].owner == owner) {
             S.voice[v].env = ENV_OFF;
             S.voice[v].level = 0;
-            S.voice[v].mem = NULL;
+            memset(&S.voice[v].c, 0, sizeof(VagCursor));
+            S.voice[v].owner = NULL;
         }
     }
 }
@@ -389,14 +364,16 @@ static void render(float *out, float wet[2][SLICE * 2], int frames) {
             while (v->pos >= 0x1000) {
                 v->pos -= 0x1000;
                 v->prev = v->cur;
-                if (++v->idx >= 28) {
+                if (++v->idx >= VAG_BLOCK) {
                     v->idx = 0;
-                    next_block(v);
-                    if (v->env == ENV_OFF) {
+                    vag_next(&v->c);
+                    if (v->c.ended) {
+                        v->env = ENV_OFF;
+                        v->level = 0;
                         break;
                     }
                 }
-                v->cur = v->buf[v->idx];
+                v->cur = v->c.buf[v->idx];
             }
             if (v->env == ENV_OFF) {
                 break;

@@ -155,7 +155,7 @@ create model-name 32 allot  create tex-name 32 allot  create marker-name 32 allo
     model-name her-costume @  her-costume @ 1 = if  0  else  worn  then  named
     tex-name her-costume @ 0 named  actor-load-textured dup her-model !
     dup 0< 0= if  0 over actor act.doorway-fade l!  then   \ (she never fades in doorways: Fiona_LightChange keeps her layer)
-    0 over cast-as  $3D5CC0 motion-table   \ (CharModel_SecondaryMotion: her fades and flags)
+    0 over cast-as  s" motions-fiona" motion-table   \ (CharModel_SecondaryMotion: her fades and flags)
     her-costume @ own-markers? if  marker-name her-costume @  her-costume @ 1 = if  0  else  worn  then  named
     else  marker-name 0 worn named  then
     her-model @ -rot actor-markers

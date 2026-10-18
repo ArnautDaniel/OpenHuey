@@ -13,11 +13,11 @@
  *   0x03 c colour       0x04 default colour       0x08 n parameter string n (gMessageParams)
  *   0x09 n wait n frames                          0x0A n position preset n (bit 7: no frame)
  *   0x0B w h fixed box size (w glyphs, h lines)   0x0C n speed       0x0D full speed
- *   0x0E f choice (options follow)                0x0F hi lo option leading to message hi:lo
+ *   0x0E f x choice (options follow; x unused)    0x0F hi lo option leading to message hi:lo
  *   0x10 n close after n frames                   0x11 hi lo continue with message hi:lo
  *   0x12 centred line   0x13 n name n (gMessageNames)   0x14 right-aligned line
  *   0x15 hi lo insert system message 0x100 + hi:lo   0x16 / 0x18 / 0x17 furigana: base text,
- *   reading, end   0x19 a b wait for the child task
+ *   reading, end   0x19 a b wait for the child task   0x07 n skipped (unused)
  */
 typedef struct TextCursor {
     /* 0x00 */ u8 *p;

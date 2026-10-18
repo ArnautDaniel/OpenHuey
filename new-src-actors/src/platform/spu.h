@@ -16,8 +16,14 @@
 void spu_lock(void);
 void spu_unlock(void);
 
-/* a voice's sample: `ssa` bytes into `mem` (the start of its 16-byte block) */
+/* a voice's sample: `ssa` bytes into `mem` (the start of its 16-byte block); or the samples
+ * themselves (the library's WAV: data/vag.h), `owner` whose they are */
 void spu_voice_sample(int v, const uint8_t *mem, size_t size, size_t ssa);
+void spu_voice_pcm(int v, const void *owner, const int16_t *pcm, long frames, long loop_start);
+/* the sample at `ssa` of a bank: the library's WAV of it if the bank has them (`s`), else its
+ * place in the bank's .BD */
+struct Samples;
+void spu_voice_from(int v, const struct Samples *s, const uint8_t *bd, size_t bd_size, size_t ssa);
 /* its pitch (0x1000: 48 kHz, up to 0x3FFF), envelope (the ADSR1 / ADSR2 words) and volumes
  * (-0x4000..0x3FFF a side, as the SPU's: 0x3FFF full, negative inverted) */
 void spu_voice_pitch(int v, unsigned pitch);
@@ -32,8 +38,8 @@ void spu_key_off(uint64_t mask);
 /* its envelope's level (the SPU's ENVX: 0 silent) and whether it is still sounding */
 int spu_voice_level(int v);
 int spu_voice_busy(int v);
-/* the voices playing from `mem` stopped dead (their bank is going) */
-void spu_forget(const uint8_t *mem);
+/* the voices playing from `owner`'s samples stopped dead (their bank is going) */
+void spu_forget(const void *owner);
 
 /* each core's reverb, the PS1's algorithm at half the rate: the presets as libsd has them (10
  * modes x 32 registers, dAPF1 .. vRIN; the work areas' sizes in 8-byte units), a core's mode

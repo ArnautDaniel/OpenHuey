@@ -1,7 +1,7 @@
 #!/bin/sh
 # hga's release builds, for 64-bit Linux and Windows, into dist/:
-#   dist/hga-<version>-linux-x86_64.tar.gz    hga, scripts/, lib/ (FFmpeg), licences
-#   dist/hga-<version>-windows-x64.zip        hga.exe, SDL3.dll, FFmpeg's DLLs, scripts/, licences
+#   dist/hga-<version>-linux-x86_64.tar.gz    hga, scripts/, mod-examples/, lib/ (FFmpeg), licences
+#   dist/hga-<version>-windows-x64.zip        hga.exe, SDL3.dll, FFmpeg's DLLs, scripts/, mod-examples/, licences
 # Neither holds anything of the game's: the player picks their own disc image when hga starts.
 #
 # What they need is built once into $HGA_DEPS (default ~/.cache/openhuey-hga-deps - not in the
@@ -112,6 +112,7 @@ linux() {
     cp "$B/hga" "$P/"
     strip "$P/hga"
     cp -r new-src-actors/scripts "$P/"
+    cp -r new-src-actors/examples/mods "$P/mod-examples"   # (off: a mod is on once copied into mods/)
     cp -L "$DEPS/ffmpeg-linux/lib/libavcodec.so.62" "$DEPS/ffmpeg-linux/lib/libavutil.so.60" "$P/lib/"
     strip "$P/lib/"*.so.*
     licences "$P" linux "$DEPS/SDL3-$SDL/LICENSE.txt"
@@ -138,6 +139,7 @@ windows() {
     cp "$WSDL/bin/SDL3.dll" "$P/"
     cp "$DEPS/ffmpeg-windows/bin/avcodec-62.dll" "$DEPS/ffmpeg-windows/bin/avutil-60.dll" "$P/"
     cp -r new-src-actors/scripts "$P/"
+    cp -r new-src-actors/examples/mods "$P/mod-examples"   # (off: a mod is on once copied into mods/)
     licences "$P" windows "$ROOT/tools/win/SDL3-$SDL/LICENSE.txt"
     readme "$P" "hga.exe"
     rm -f "$P.zip"

@@ -6,20 +6,19 @@
 #include <string.h>
 
 #include "../core/files.h"
-#include "../data/tex.h"
+#include "../data/texbank.h"
 #include "../render/render.h"
 
 #define CACHE 64
 #define DECODED 128
 
 typedef struct Group {
-    const uint8_t *bank;
-    size_t size;
+    TexBank *bank;
     int count;
 } Group;
 
 typedef struct Decoded {   /* a cache texture on the GPU, in one palette */
-    const uint8_t *bank;
+    const TexBank *bank;
     int i, csa;
     GpuTexture tex;
 } Decoded;
@@ -43,32 +42,33 @@ typedef struct Batch {
 static Group sGroups[CACHE];   /* by the group's first index */
 static Decoded sDecoded[DECODED];
 static Batch *sBatch[SPRITE_BATCHES];
-static uint8_t *sGameFix;
 static MeshVertex sVerts[SPRITES_PER_BATCH * 6];
 
-void sprites_group(int group, const uint8_t *bank, size_t size) {
+static void set_group(int group, TexBank *bank) {   /* (the group's bank taken) */
     int i;
 
-    if (group < 0 || group >= CACHE) {
-        return;
-    }
     for (i = 0; i < DECODED; i++) {   /* its textures gone from the GPU */
         if (sDecoded[i].tex != 0 && sDecoded[i].bank == sGroups[group].bank) {
             render_texture_free(sDecoded[i].tex);
             memset(&sDecoded[i], 0, sizeof(sDecoded[i]));
         }
     }
+    texbank_free(sGroups[group].bank);
     sGroups[group].bank = bank;
-    sGroups[group].size = size;
-    sGroups[group].count = bank != NULL ? tex_count(bank, size) : 0;
+    sGroups[group].count = texbank_count(bank);
+}
+
+void sprites_group(int group, const uint8_t *bank, size_t size) {
+    if (group >= 0 && group < CACHE) {
+        set_group(group, bank != NULL ? texbank_wrap(bank, size) : NULL);
+    }
 }
 
 void sprites_init(void) {
-    size_t size;
+    TexBank *b = texbank_load("GAME_FIX.TEX");
 
-    sGameFix = files_read("GAME_FIX.TEX", &size);
-    if (sGameFix != NULL) {
-        sprites_group(0x10, sGameFix, size);
+    if (b != NULL) {
+        set_group(0x10, b);
     }
 }
 
@@ -77,7 +77,7 @@ static GpuTexture texture(int group, int id, int csa) {
     int idx = group + id, g, i, free_i = -1;
     const Group *gr = NULL;
     uint8_t *rgba;
-    const TexEntry *t;
+    int w = 0, h = 0, psm;
 
     for (g = idx < CACHE - 1 ? idx : CACHE - 1; g >= 0 && idx < CACHE; g--) {
         if (sGroups[g].bank != NULL && idx - g < sGroups[g].count) {
@@ -99,13 +99,12 @@ static GpuTexture texture(int group, int id, int csa) {
     if (free_i < 0) {
         return 0;
     }
-    t = tex_entry(gr->bank, idx - g);
-    rgba = t != NULL && t->w > 0 && t->h > 0 && t->w <= 2048 && t->h <= 2048 ? malloc((size_t)t->w * t->h * 4) : NULL;
-    if (rgba == NULL || !tex_decode_csa(gr->bank, gr->size, idx - g, csa, rgba)) {
+    rgba = texbank_info(gr->bank, idx - g, &w, &h, &psm) && w <= 2048 && h <= 2048 ? malloc((size_t)w * h * 4) : NULL;
+    if (rgba == NULL || !texbank_rgba(gr->bank, idx - g, csa, rgba)) {
         free(rgba);
         return 0;
     }
-    sDecoded[free_i] = (Decoded){gr->bank, idx - g, csa, render_texture(rgba, t->w, t->h)};
+    sDecoded[free_i] = (Decoded){gr->bank, idx - g, csa, render_texture(rgba, w, h)};
     free(rgba);
     return sDecoded[free_i].tex;
 }
@@ -115,36 +114,21 @@ int sprites_texture_size(int group, int id, int *w, int *h) {
 
     for (g = idx < CACHE - 1 ? idx : CACHE - 1; g >= 0 && idx < CACHE; g--) {
         if (sGroups[g].bank != NULL && idx - g < sGroups[g].count) {
-            const TexEntry *t = tex_entry(sGroups[g].bank, idx - g);
+            int psm;
 
-            if (t == NULL) {
-                return 0;
-            }
-            *w = t->w;
-            *h = t->h;
-            return 1;
+            return texbank_info(sGroups[g].bank, idx - g, w, h, &psm);
         }
     }
     return 0;
 }
 
-static uint8_t *sOwned[CACHE];   /* the banks loaded from files (sprites_group_file) */
-
 int sprites_group_file(int group, const char *path) {
-    size_t size;
-    uint8_t *bank;
+    TexBank *b;
 
-    if (group < 0 || group >= CACHE) {
+    if (group < 0 || group >= CACHE || (b = texbank_load(path)) == NULL) {
         return 0;
     }
-    bank = files_read(path, &size);
-    if (bank == NULL || tex_count(bank, size) == 0) {
-        free(bank);
-        return 0;
-    }
-    sprites_group(group, bank, size);   /* (its old textures gone from the GPU) */
-    free(sOwned[group]);
-    sOwned[group] = bank;
+    set_group(group, b);   /* (its old textures gone from the GPU) */
     return 1;
 }
 
@@ -153,10 +137,11 @@ unsigned sprites_texture_of(int group, int id, int csa, int *w, int *h) {
 
     for (g = idx < CACHE - 1 ? idx : CACHE - 1; g >= 0 && idx < CACHE; g--) {
         if (sGroups[g].bank != NULL && idx - g < sGroups[g].count) {
-            const TexEntry *t = tex_entry(sGroups[g].bank, idx - g);
+            int psm;
 
-            *w = t != NULL ? t->w : 0;
-            *h = t != NULL ? t->h : 0;
+            if (!texbank_info(sGroups[g].bank, idx - g, w, h, &psm)) {
+                *w = *h = 0;
+            }
             return texture(group, id, csa < 0 ? 0 : csa & 0x1F);
         }
     }

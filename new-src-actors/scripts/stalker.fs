@@ -222,8 +222,8 @@ end-behaviour
 : fby-hardness ( F: normal hard -- f )  hard-mode? if  fnip  else  fdrop  then ;
 : ways ( kit pursuers? gives-up? -- ) ( F: turn-deg reach -- )   \ (his tables; the Pursuer's chase or his own; giving up)
     gives-up !  base-chase !  kit !  reach-k f!  deg>rad turn-k f! ;
-: dressed ( id table -- )   \ (his model loaded, its motion table: hidden till he comes in)
-    over my-model !  motion-table  0 him act.visible l! ;
+: dressed ( id addr len -- )   \ (his model loaded, its motion table by name: hidden till he comes in)
+    {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l! ;
 : model-file ( addr len -- id )  2dup file!  actor-load ;
 : health! ( n -- )  dup hp-max !  hp ! ;
 : hewie-temper ( tolerance dog-limit -- ) ( F: throw -- )  dog-limit !  tolerance !  throw-k f! ;
@@ -239,7 +239,7 @@ behaviour debilitas
   extends stalking
   on spawned ( -- )
       3e 16e  debilitas-kit false true ways
-      s" O_DB0/DB0_000" model-file $3D89A0 dressed
+      s" O_DB0/DB0_000" model-file s" motions-debilitas" dressed
       70 110 by-hardness health!  debilitas-kind my-kind !  -1 growls !  0 hear-threshold !  family-setup
       4500 away-base !  90 cool-secs !  $20 own-a !  $02 own-b !  796 own-a-tri !  794 own-b-tri !
       10e  20 1800 hewie-temper  leaves-doors door-manner !  debilitas-ladder ladder-offsets !
@@ -251,7 +251,7 @@ end-behaviour
 \ across, 17 tall; her model O_DNL/DNL_000, its textures DNL_000 (hard: DNL_000H), its motion
 \ table $419E60, her sounds (bank 7); the Pursuer's floor (NPC_BlockFlags); her frame without
 \ his growl ----
-$419E60 constant daniella-motions
+: daniella-motions ( -- addr len )  s" motions-daniella" ;
 \ her blow's mark (Daniella_BlowEffect), as the one struck cries out or at her blow's effect key:
 \ out along her hand (1.5, 3.5 for her third and fifth blows), big for her fourth and fifth; her
 \ grabs on Fiona, big
@@ -337,7 +337,7 @@ behaviour riccardo
   on spawned ( -- )
       4e 12e  riccardo-kit false true ways
       ['] cry-hit own-mark !  riccardo-chase  riccardo-acts own-acts !  ['] riccardo-frame own-frame !
-      s" O_RCG/RCG_000" model-file $41A2C0 dressed
+      s" O_RCG/RCG_000" model-file s" motions-riccardo" dressed
       100 125 by-hardness health!  riccardo-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       90 cool-secs !  9000 away-base !  no-own-rooms   \ (Riccardo_Setup)
       15e 10e fby-hardness  50 1800 hewie-temper  shuts-doors door-manner !  riccardo-ladder ladder-offsets !
@@ -352,7 +352,7 @@ behaviour lorenzo
   extends stalking
   on spawned ( -- )
       2e 12e  lorenzo-kit true true ways  18e attack-range f!
-      s" O_LRO/LRO_000" model-file $4246C0 dressed
+      s" O_LRO/LRO_000" model-file s" motions-lorenzo" dressed
       50 75 by-hardness health!  lorenzo-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       100 cool-secs !  3600 away-base !  no-own-rooms   \ (Lorenzo_Setup)
       0e  100 0 hewie-temper  leaves-doors door-manner !
@@ -368,7 +368,7 @@ behaviour lorenzo2
   on spawned ( -- )
       4e 60e  lorenzo2-kit lorenzo2h-kit by-hardness true true ways
       lorenzo2-acts own-acts !  ['] lorenzo2-frame own-frame !  70e attack-range f!
-      s" O_LRY/LRY_000" model-file $424490 dressed
+      s" O_LRY/LRY_000" model-file s" motions-lorenzo2" dressed
       250 400 by-hardness health!  lorenzo2-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       150 cool-secs !  9000 away-base !  no-own-rooms   \ (Lorenzo2_Setup)
       50e 25e fby-hardness  100 600 hewie-temper  leaves-doors door-manner !
@@ -383,7 +383,7 @@ behaviour kind39
   on spawned ( -- )
       4e 12e  kind39-kit kind39h-kit by-hardness true true ways
       lorenzo2-acts own-acts !  18e attack-range f!
-      s" O_LRY/LRY_000" model-file $424490 dressed
+      s" O_LRY/LRY_000" model-file s" motions-lorenzo2" dressed
       250 300 by-hardness health!  kind39-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       150 cool-secs !  9000 away-base !  no-own-rooms   \ (Kind39_Setup)
       30e 65e fby-hardness  40 75 by-hardness 300 360 by-hardness hewie-temper
@@ -400,7 +400,7 @@ behaviour kind37
   on spawned ( -- )
       4e 12e  kind37-kit false true ways
       riccardo-chase  ['] kind37-frame own-frame !
-      s" O_RCT/RCT_000" model-file $42AED0 dressed
+      s" O_RCT/RCT_000" model-file s" motions-tintstalker" dressed
       100 125 by-hardness health!  kind37-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       45 cool-secs !  5400 away-base !  no-own-rooms   \ (Kind37_Setup)
       10e  50 900 hewie-temper  leaves-doors door-manner !  riccardo-ladder ladder-offsets !
@@ -416,7 +416,7 @@ behaviour tintstalker
   on spawned ( -- )
       4e 12e  tintstalker-kit true true ways
       ['] tint-frame own-frame !  -1 tint-was !  -1 unseen !
-      s" O_RCT/RCT_000" model-file $42AED0 dressed
+      s" O_RCT/RCT_000" model-file s" motions-tintstalker" dressed
       100 125 by-hardness health!  tintstalker-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       45 cool-secs !  5400 away-base !  no-own-rooms   \ (TintStalker_Setup)
       15e 10e fby-hardness  50 0 hewie-temper  shuts-doors door-manner !  riccardo-ladder ladder-offsets !
@@ -432,7 +432,7 @@ behaviour kind12
   on spawned ( -- )
       4e 14e  kind12-kit true false ways  18e attack-range f!
       ['] kind12-frame own-frame !  -1 mark-id !
-      s" O_LRF/LRF_000" model-file $443FB0 dressed
+      s" O_LRF/LRF_000" model-file s" motions-kind12" dressed
       9999 health!  kind12-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       999 cool-secs !  3000 away-base !  no-own-rooms   \ (Kind12_Setup)
       0e  100 0 hewie-temper  leaves-doors door-manner !

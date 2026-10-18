@@ -30,7 +30,7 @@ create heel-at /vec allot
 : dress ( kind -- )
     him-model act.visible l@ >r
     model actor-free
-    coat-file s" O_HEW/HEW_000" actor-load-textured  dup his-model !  $3D5F90 motion-table
+    coat-file s" O_HEW/HEW_000" actor-load-textured  dup his-model !  s" motions-hewie" motion-table
     r> him-model act.visible l!
     along? if  1 model cast-as  then ;
 
@@ -39,7 +39,7 @@ create heel-at /vec allot
 behaviour hewie-own
   on spawned ( -- )
       6 0 do  16 i cells his-skill + !  loop   \ (Hewie_LoadState: his skills at fetching, middling)
-      s" O_HEW/HEW_000" actor-load dup his-model !  $3D5F90 motion-table   \ (his motion table: fades and flags)
+      s" O_HEW/HEW_000" actor-load dup his-model !  s" motions-hewie" motion-table   \ (his motion table: fades and flags)
       0 him-model act.visible l!
       2.5e 5e body-size  hewie-floor body-mask!  body-off
       s" fiona" actor-named his-fiona !

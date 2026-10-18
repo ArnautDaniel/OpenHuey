@@ -407,7 +407,7 @@ static void play_sound(int bank, uint32_t w, uint32_t arg, uint32_t place) {
             Layer *ly = &tone.l[l];
             int v = v0 + l, pan, note, fine, vol, L, R;
 
-            spu_voice_sample(v, b->bd, b->bd_size, ly->ssa);
+            spu_voice_from(v, b->samples, b->bd, b->bd_size, ly->ssa);
             /* pan */
             if (e.flags & 2) {
                 pan = e.pan;
@@ -564,10 +564,11 @@ int snddrv_bank(int k, const char *name) {
     }
     spu_lock();
     init();
-    if (b->b.bd != NULL) {
+    if (b->b.bd != NULL || b->b.samples != NULL) {
         int v;
 
         spu_forget(b->b.bd);
+        spu_forget(b->b.samples);
         for (v = 0; v < NV; v++) {
             if (D.v[v].bank == k) {
                 D.v[v].bank = D.v[v].entry = -1;

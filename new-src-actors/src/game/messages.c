@@ -2,6 +2,7 @@
 #include "messages.h"
 
 #include "../core/files.h"
+#include "../data/msgtext.h"
 #include "../data/pac.h"
 #include "engine.h"
 
@@ -31,13 +32,62 @@ static const uint8_t *text_in(const uint8_t *table, size_t size, int id) {
     return off < size ? table + off : NULL;
 }
 
+/* a table: the library's text of it ("SUBSCR/MSG_BASE.BIN" -> "SUBSCR/MSG_BASE.txt", a room's
+ * "ST_000/ST_003.PAC" -> "ST_000/ST_003.messages.txt": data/msgtext.h), else the file itself
+ */
+static uint8_t *read_text(const char *path, size_t *size) {
+    char txt[300];
+    const char *dot = strrchr(path, '.');
+    uint8_t *text, *table;
+    size_t len;
+
+    snprintf(txt, sizeof(txt), "%.*s%s", (int)(dot != NULL ? dot - path : (long)strlen(path)), path,
+             dot != NULL && strcmp(dot, ".PAC") == 0 ? ".messages.txt" : ".txt");
+    if ((text = files_read(txt, &len)) == NULL) {
+        return NULL;
+    }
+    table = msgtext_read((const char *)text, len, txt, size);
+    free(text);
+    return table;
+}
+
+static uint8_t *read_table(const char *path, size_t *size) {
+    uint8_t *t = read_text(path, size);
+
+    return t != NULL ? t : files_read(path, size);
+}
+
 static void load_tables(void) {
     if (sBase == NULL) {
-        sBase = files_read("SUBSCR/MSG_BASE.BIN", &sBaseSize);
+        sBase = read_table("SUBSCR/MSG_BASE.BIN", &sBaseSize);
     }
     if (sSub == NULL) {
-        sSub = files_read("SUBSCR/MSG_SUB.BIN", &sSubSize);
+        sSub = read_table("SUBSCR/MSG_SUB.BIN", &sSubSize);
     }
+}
+
+/* the room's own table: its text file's, read when the room is first asked about; else the
+ * room's .PAC section */
+static const uint8_t *room_table(size_t *size) {
+    static int room = -2;
+    static uint8_t *text;
+    static size_t text_size;
+    char path[64];
+
+    if (gEngine.room.id != room) {
+        room = gEngine.room.id;
+        free(text);
+        text = NULL;
+        if (room >= 0) {
+            pac_room_path(room, path, sizeof(path));
+            text = read_text(path, &text_size);
+        }
+    }
+    if (text != NULL) {
+        *size = text_size;
+        return text;
+    }
+    return pac_section(&gEngine.room.pac, PAC_TEXT, size);
 }
 
 const uint8_t *message_text(int id) {
@@ -54,14 +104,14 @@ const uint8_t *message_text(int id) {
     if (id & 0x2000) {
         return text_in(sExtra, sExtraSize, id & 0x1FFF);
     }
-    room = pac_section(&gEngine.room.pac, PAC_TEXT, &size);
+    room = room_table(&size);
     return text_in(room, size, id);
 }
 
 int message_file(const char *path) {
     free(sExtra);
     sExtraSize = 0;
-    sExtra = path != NULL ? files_read(path, &sExtraSize) : NULL;
+    sExtra = path != NULL ? read_table(path, &sExtraSize) : NULL;
     return sExtra != NULL;
 }
 

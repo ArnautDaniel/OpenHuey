@@ -2,6 +2,7 @@
 #include "seq.h"
 
 #include "../core/files.h"
+#include "../data/samples.h"
 #include "spu.h"
 
 #include <math.h>
@@ -44,6 +45,7 @@ typedef struct Voice {
 static struct {
     uint8_t *hd, *bd;
     size_t hd_size, bd_size;
+    Samples *samples;   /* (the library's WAVs of the .BD's samples: no .BD then) */
     Port port[NPORT];
     Voice voice[NVOICE];
     unsigned age;
@@ -161,7 +163,7 @@ static void note_on(Port *p, int ch, int note, int vel) {
         note_off(p, ch, note);
         return;
     }
-    if (h == NULL || S.bd == NULL) {
+    if (h == NULL || (S.bd == NULL && S.samples == NULL)) {
         return;
     }
     prog_off = rd32(h + 0x24);
@@ -219,7 +221,7 @@ static void note_on(Port *p, int ch, int note, int vel) {
             pan = (int8_t)(sm[0xD] - 0x40) + (int8_t)(pr[7] - 0x40) + (int8_t)(sp[0x11] - 0x40) + 0x40;
             S.voice[v].pan = pan < 0 ? 0 : pan > 127 ? 127 : pan;
             S.voice[v].age = ++S.age;
-            spu_voice_sample(v, S.bd, S.bd_size, rd32(vg));
+            spu_voice_from(v, S.samples, S.bd, S.bd_size, rd32(vg));
             spu_voice_adsr(v, rd16(sm + 0x12), rd16(sm + 0x14));
             spu_voice_mix(v, sm[0x29]);
             voice_pitch(v);
@@ -422,27 +424,34 @@ static void hook(void) {
 
 int seq_bank(const char *name) {
     char path[128];
-    uint8_t *hd, *bd;
-    size_t hs, bs;
+    uint8_t *hd, *bd = NULL;
+    size_t hs, bs = 0;
+    Samples *samples = samples_load(name);   /* (the library's: else the .BD) */
 
     snprintf(path, sizeof(path), "%s.HD", name);
     hd = files_read(path, &hs);
-    snprintf(path, sizeof(path), "%s.BD", name);
-    bd = files_read(path, &bs);
-    if (hd == NULL || bd == NULL) {
+    if (samples == NULL) {
+        snprintf(path, sizeof(path), "%s.BD", name);
+        bd = files_read(path, &bs);
+    }
+    if (hd == NULL || (bd == NULL && samples == NULL)) {
         free(hd);
         free(bd);
+        samples_free(samples);
         return 0;
     }
     lock();
     hook();
     spu_forget(S.bd);
+    spu_forget(S.samples);
     free(S.hd);
     free(S.bd);
+    samples_free(S.samples);
     S.hd = hd;
     S.hd_size = hs;
     S.bd = bd;
     S.bd_size = bs;
+    S.samples = samples;
     unlock();
     return 1;
 }
@@ -575,5 +584,6 @@ void seq_reset(void) {
         S.port[k].data = S.port[k].end = S.port[k].pos = NULL;
     }
     spu_forget(S.bd);
+    spu_forget(S.samples);
     unlock();
 }

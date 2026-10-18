@@ -122,7 +122,11 @@ struct Forth {
     Vocab *core;            /* `forth`: always visible */
     Manifest m;             /* the current source's view */
     Manifest listener;      /* the prompt's (kept between lines) */
-    char roots[4][512];     /* where vocabularies' files are looked for */
+    /* where source files come from besides the disc (a zipped mod's scripts): the file's text
+     * (malloc'd, NUL-terminated), NULL if it isn't one of its */
+    char *(*reader)(void *ctx, const char *path, size_t *len);
+    void *reader_ctx;
+    char roots[16][512];    /* where vocabularies' files are looked for (the game's, then mods') */
     int nroots;
     Cell compiling;         /* STATE: 0 interpreting, -1 compiling */
     /* the definition being compiled: its locals' names ({: ... :}); a quotation saves them */

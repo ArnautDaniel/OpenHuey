@@ -3,7 +3,7 @@
 #include <math.h>
 
 #include "../core/files.h"
-#include "../data/tex.h"
+#include "../data/texbank.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,24 +11,23 @@
 
 static void load_textures(Actor *a, const char *name) {
     char path[96];
-    size_t size;
-    uint8_t *bank;
+    TexBank *bank;
     int n, i;
 
     snprintf(path, sizeof(path), "%s.TEX", name);
-    bank = files_read(path, &size);
-    n = tex_count(bank, size);
+    bank = texbank_load(path);
+    n = texbank_count(bank);
     for (i = 0; i < n && i < ACTOR_MAX_TEXTURES; i++) {
-        const TexEntry *t = tex_entry(bank, i);
-        uint8_t *rgba = malloc((size_t)t->w * t->h * 4 + 4);
+        int w, h, psm;
+        uint8_t *rgba = texbank_info(bank, i, &w, &h, &psm) ? malloc((size_t)w * h * 4 + 4) : NULL;
 
-        if (rgba != NULL && t->w > 0 && t->h > 0 && tex_decode(bank, size, i, rgba)) {
-            a->textures[i] = render_texture(rgba, t->w, t->h);
+        if (rgba != NULL && texbank_rgba(bank, i, -1, rgba)) {
+            a->textures[i] = render_texture(rgba, w, h);
         }
         free(rgba);
     }
     a->ntextures = n < ACTOR_MAX_TEXTURES ? n : ACTOR_MAX_TEXTURES;
-    free(bank);
+    texbank_free(bank);
 }
 
 int actor_load(Actor *actors, const char *name) { return actor_load_textured(actors, name, name); }
@@ -43,29 +42,27 @@ void actor_texture_restore(Actor *a) {
 }
 
 int actor_texture_swap(Actor *a, int sel, const char *file) {
-    size_t size;
-    uint8_t *bank = files_read(file, &size), *rgba;
-    const TexEntry *t;
-    int ok = 0;
+    TexBank *bank = texbank_load(file);
+    uint8_t *rgba;
+    int ok = 0, w, h, psm;
 
-    if (bank == NULL || sel < 0 || sel >= ACTOR_MAX_TEXTURES || tex_count(bank, size) < 1) {
-        free(bank);
+    if (bank == NULL || sel < 0 || sel >= ACTOR_MAX_TEXTURES) {
+        texbank_free(bank);
         return 0;
     }
-    t = tex_entry(bank, 0);
-    rgba = t->w > 0 && t->h > 0 ? malloc((size_t)t->w * t->h * 4 + 4) : NULL;
-    if (rgba != NULL && tex_decode(bank, size, 0, rgba)) {
+    rgba = texbank_info(bank, 0, &w, &h, &psm) ? malloc((size_t)w * h * 4 + 4) : NULL;
+    if (rgba != NULL && texbank_rgba(bank, 0, -1, rgba)) {
         actor_texture_restore(a);
         a->swap_orig = a->textures[sel];
         a->swap_sel = sel;
-        a->textures[sel] = render_texture(rgba, t->w, t->h);
+        a->textures[sel] = render_texture(rgba, w, h);
         if (sel >= a->ntextures) {
             a->ntextures = sel + 1;
         }
         ok = 1;
     }
     free(rgba);
-    free(bank);
+    texbank_free(bank);
     return ok;
 }
 

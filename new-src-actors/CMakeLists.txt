@@ -50,12 +50,12 @@ endforeach()
 find_package(SDL3 REQUIRED CONFIG)
 add_executable(hga
     src/main.c
-    src/core/files.c
-    src/platform/disc.c src/platform/gl.c src/platform/platform.c src/platform/sound.c src/platform/movie.c src/platform/music.c src/platform/seq.c src/platform/spu.c src/platform/snddrv.c
+    src/core/files.c src/core/zip.c
+    src/platform/disc.c src/platform/library.c src/platform/gl.c src/platform/platform.c src/platform/sound.c src/platform/movie.c src/platform/music.c src/platform/seq.c src/platform/spu.c src/platform/snddrv.c
     src/render/render.c src/render/post.c
-    src/data/pac.c src/data/tex.c src/data/roommesh.c src/data/model.c src/data/navmesh.c src/data/exe.c src/data/soundbank.c
+    src/data/pac.c src/data/tex.c src/data/texbank.c src/data/musicsrc.c src/data/flacenc.c src/data/msgtext.c src/third_party/stb.c src/third_party/dr_flac.c src/data/roommesh.c src/data/model.c src/data/navmesh.c src/data/exe.c src/data/exetables.c src/data/soundbank.c src/data/vag.c src/data/samples.c src/data/sfd.c
     src/game/room.c src/game/console.c src/game/actor.c src/game/doglegs.c src/game/cloth.c src/game/world.c
-    src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c src/game/cutscene.c src/game/placed.c src/game/sprites.c src/game/particles.c src/game/things.c src/game/obstacles.c src/game/swimpath.c src/game/rumble.c
+    src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c src/game/cutscene.c src/game/placed.c src/game/sprites.c src/game/mods.c src/game/particles.c src/game/things.c src/game/obstacles.c src/game/swimpath.c src/game/rumble.c
     src/forth/bind_engine.c)
 target_link_libraries(hga PRIVATE forth gamestate hactor SDL3::SDL3)   # (GL through SDL_GL_GetProcAddress: platform/gl.c)
 target_compile_definitions(hga PRIVATE "HGA_VERSION=\"${PROJECT_VERSION}\"" "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\""
@@ -76,3 +76,60 @@ foreach(t ${GAME_TESTS})
     get_filename_component(sub "${dir}" NAME)
     add_test(NAME ${sub}_${name} COMMAND hga --test "${t}")
 endforeach()
+
+# the textures' conversion: every bank of the developer's data converted and read back, the same pixels
+add_executable(texbank-check tests/texbank_check.c src/data/tex.c src/data/texbank.c src/data/musicsrc.c src/data/flacenc.c src/data/msgtext.c src/data/pac.c src/data/exe.c src/data/exetables.c src/data/vag.c src/data/samples.c src/data/sfd.c src/third_party/stb.c src/third_party/dr_flac.c
+    src/core/files.c src/core/zip.c src/platform/disc.c src/platform/library.c)
+target_link_libraries(texbank-check PRIVATE SDL3::SDL3 m)
+add_test(NAME texbank_check COMMAND texbank-check "${DEFAULT_DATA}" "${CMAKE_CURRENT_BINARY_DIR}/texbank-check.scratch")
+set_tests_properties(texbank_check PROPERTIES SKIP_RETURN_CODE 77)
+
+# the sample mod, turned on: tests/mods/*.fs (not test_*.fs - the rest run without mods)
+add_test(NAME mods_room_tally COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods/room-tally"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/room-tally.fs")
+
+# mods' manifests and files: the order, what turns a mod off, the files layer, a mod's textures
+add_executable(mods-check tests/mods_check.c src/game/mods.c src/data/tex.c src/data/texbank.c src/data/musicsrc.c src/data/flacenc.c src/data/msgtext.c src/data/pac.c src/data/exe.c src/data/exetables.c src/data/vag.c src/data/samples.c src/data/sfd.c src/third_party/stb.c src/third_party/dr_flac.c
+    src/core/files.c src/core/zip.c src/platform/disc.c src/platform/library.c)
+target_link_libraries(mods-check PRIVATE forth SDL3::SDL3 m)
+add_test(NAME mods_check COMMAND mods-check "${DEFAULT_DATA}" "${CMAKE_CURRENT_BINARY_DIR}/mods-check.scratch")
+set_tests_properties(mods_check PROPERTIES SKIP_RETURN_CODE 77)
+# ... and zipped (the folder inside the zip, as zipping a folder makes it)
+add_test(NAME mods_zip_sample COMMAND ${CMAKE_COMMAND} -E tar cf "${CMAKE_CURRENT_BINARY_DIR}/room-tally.zip" --format=zip room-tally
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods")
+set_tests_properties(mods_zip_sample PROPERTIES FIXTURES_SETUP room_tally_zip)
+add_test(NAME mods_room_tally_zipped COMMAND hga --mod "${CMAKE_CURRENT_BINARY_DIR}/room-tally.zip"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/room-tally.fs")
+set_tests_properties(mods_room_tally_zipped PROPERTIES FIXTURES_REQUIRED room_tally_zip)
+
+# the music's conversion: every ADX made a FLAC and both played, looped too - the same samples
+add_executable(music-check tests/music_check.c src/data/musicsrc.c src/data/flacenc.c src/third_party/dr_flac.c)
+target_link_libraries(music-check PRIVATE SDL3::SDL3 m)
+add_test(NAME music_check COMMAND music-check "${DEFAULT_DATA}")
+set_tests_properties(music_check PROPERTIES SKIP_RETURN_CODE 77)
+
+# the codecs: optimized in every build (the import's encoding, the checks, the music's decoding)
+set_source_files_properties(src/data/flacenc.c src/data/musicsrc.c src/third_party/dr_flac.c src/third_party/stb.c
+    PROPERTIES COMPILE_OPTIONS "-O2")
+
+# the messages' conversion: every table written as text and read back - the same messages
+add_executable(messages-check tests/messages_check.c src/data/msgtext.c src/data/pac.c)
+target_link_libraries(messages-check PRIVATE SDL3::SDL3)
+add_test(NAME messages_check COMMAND messages-check "${DEFAULT_DATA}")
+set_tests_properties(messages_check PROPERTIES SKIP_RETURN_CODE 77)
+add_test(NAME mods_flower_scent COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods/flower-scent"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/flower-scent.fs")
+
+# the sound banks' conversion: every sample made a WAV and both played as the SPU plays them
+add_executable(sound-check tests/sound_check.c src/data/vag.c src/data/samples.c src/core/files.c src/core/zip.c
+    src/platform/disc.c src/platform/library.c src/data/tex.c src/data/texbank.c src/data/musicsrc.c src/data/flacenc.c
+    src/data/msgtext.c src/data/pac.c src/data/exe.c src/data/exetables.c src/data/sfd.c src/third_party/stb.c src/third_party/dr_flac.c)
+target_link_libraries(sound-check PRIVATE SDL3::SDL3 m)
+add_test(NAME sound_check COMMAND sound-check "${DEFAULT_DATA}")
+set_tests_properties(sound_check PROPERTIES SKIP_RETURN_CODE 77)
+
+# the movies' conversion: every SFD split as the import splits it - the same video packets, the same sound
+add_executable(movie-check tests/movie_check.c src/data/sfd.c src/data/musicsrc.c src/data/flacenc.c src/third_party/dr_flac.c)
+target_link_libraries(movie-check PRIVATE SDL3::SDL3 m)
+add_test(NAME movie_check COMMAND movie-check "${DEFAULT_DATA}")
+set_tests_properties(movie_check PROPERTIES SKIP_RETURN_CODE 77)

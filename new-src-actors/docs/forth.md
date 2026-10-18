@@ -153,6 +153,8 @@ Comments: `( ... )` and `\ to the end of the line`.
 | `screen-size`, `char-size` | `-- w h` | |
 | `n>s`, `f>s$` | `n -- addr len`, `places F: x -- addr len` | numbers as text |
 | `user-dir`, `file-exists?` | `-- addr len`, `addr len -- flag` | the player's settings folder |
+| `.mods`, `mod-on?`, `mod-api` | `--`, `addr len -- flag`, `-- n` | the mods in load order (on, or off and why); a mod on; the mod API (major * 100 + minor) - docs/library-and-mods.md |
+| `exe-table`, `motion-table` | `addr len -- addr n`, `id addr len --` | the executable's table of that name (src/data/exetables.c: "deal-rows" ...); a model's motion table by name ("motions-hewie" ...) |
 | `to-file`, `end-file` | `addr len --`, `--` | what Forth prints goes into a file in between |
 | `xt>name` | `xt -- addr len` | a word's name |
 | `act.shadow` | | an actor's contact-shadow radius (sf@ sf!) |

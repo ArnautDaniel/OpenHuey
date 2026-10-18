@@ -7,12 +7,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+struct Samples;
 typedef struct SoundBank {
     uint8_t *hd, *sdt, *bd;
     size_t hd_size, sdt_size, bd_size;
+    struct Samples *samples;   /* the library's WAVs of the .BD's samples (data/samples.h): no .BD then */
 } SoundBank;
 
-/* load NAME.HD / .SDT / .BD from the data folder ("C_0000": the common bank); 0 on failure */
+/* load NAME.HD / .SDT / .BD (or the library's NAME.samples/) from the data folder ("C_0000":
+ * the common bank); 0 on failure */
 int soundbank_load(SoundBank *b, const char *name);
 void soundbank_free(SoundBank *b);
 
