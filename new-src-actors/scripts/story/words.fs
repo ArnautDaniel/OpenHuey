@@ -283,16 +283,17 @@ $1F constant hewie-zone-var
 : exit-passable ( exit -- flag )  exit-door dup 0< if  drop false exit  then  door-state door-barred-bit and 0= ;
 : scripted? ( cs -- flag )  cells char-scripted + @ 0<> ;   \ (a script of this room has it)
 : fiona-scripted? ( -- flag )  fiona-cs scripted? ;
-\ take exit `exit` after this frame (with any-door: whatever its door; else if it is open to whoever is
+\ take exit `exit` after this frame (with any-door - forced - to the room loaded ahead, else whatever
+\ exit 0's door leads to; else if it is open to whoever is
 \ controlled - Fiona, free of scripts)
 $80 constant any-door
 : exit-check ( exit -- )
-    dup any-door and if  any-door 1- and dup exit-taken !  going !  -1 leaving !  exit  then
+    dup any-door and if  dup exit-taken !  going !  -1 leaving !  exit  then   \ (forced: rooms.fs)
     dup exit-door dup 0< 0= if  door-locked? if  drop exit  then  else  drop  then
     dup exit-passable 0= if  drop exit  then
     fiona-scripted? if  drop exit  then
     dup exit-taken !  going ! ;
-: exit-prepare ( exit -- )  drop ;   \ (the next room loaded ahead: rooms come in at once here)
+: exit-prepare ( exit -- )  s" rooms" actor-named send exit-prepare ;   \ (the room behind it loaded ahead: a forced exit's way)
 : exit-usable? ( exit -- flag )   \ Fiona free (no script, moving on her own or down), in the exit's
     fiona-scripted? if  drop false exit  then                     \ area, its door open and not held
     fiona-mode @ dup own-mode <> swap down-mode <> and if  drop false exit  then
@@ -1537,7 +1538,7 @@ $80001 constant step-or-doorway   \ (a floor's nav flags)
 : story-flag-var? ( var -- flag )  cells vars + @ story-flag? ;                                    \ cond 0x46
 : story-flag-set-var ( var -- )  cells vars + @ story-flag-set ;                                   \ 0x59 0F
 : door-locked? ( door -- flag )  doors:door-locked? ;   \ cond 0x0B (the doors' fact; Progress_DoorUnlocked's bit is the lock)
-: room-preload ( room -- )  drop ;   \ 0x3A (rooms come in at once here: nothing to load ahead)
+: room-preload ( room -- )  s" rooms" actor-named send room-preload ;   \ 0x3A: a forced exit's way
 : door-open-set ( door -- )  -1 doors-id send door-opened ;   \ 0x59 09: its open bit set
 : door-open-clear ( door -- )  0 doors-id send door-opened ;  \ 0x59 0A: cleared
 : fiona-calm-reset ( -- )  fiona-id send calm-reset ;          \ 0x4E: her fear and recovery's count to 0
