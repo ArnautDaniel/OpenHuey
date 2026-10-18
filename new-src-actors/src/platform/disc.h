@@ -11,9 +11,9 @@ typedef struct DiscFile DiscFile;
 /* find the game data at start-up: `given` (the command line / $HG_DATA) if set, else the disc
  * chosen last time, else `fallback`, else ask the player with a file dialog (not `headless`).
  * 0: none (a message said why) */
-int disc_choose(const char *given, const char *fallback, int headless);
 /* use the game data at `path` (an .iso, a DATA.CVM or an extracted folder): 1 if it is there */
 int disc_open(const char *path);
+int disc_pick(const char *why);   /* the player chooses the disc image (opened): 0 if they cancel */
 /* what was wrong with the last path disc_open refused */
 const char *disc_error(void);
 
@@ -34,5 +34,11 @@ DiscFile *disc_exe(void);
 
 /* the folder the player's files (saves, settings, the disc chosen) are kept in, ending with / */
 const char *disc_user_dir(void);
+
+/* the files of an opened image (the import's): how many, and each one's path and size */
+int disc_is_image(void);
+int disc_entries(void);
+int disc_entry(int i, char *path, size_t n, long *size);
+const char *disc_folder(void);
 
 #endif

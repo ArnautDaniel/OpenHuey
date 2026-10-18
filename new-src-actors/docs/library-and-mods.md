@@ -2,7 +2,7 @@
 
 Two pieces that build on each other: **importing** the player's disc once into a library of
 game data in friendlier formats, and **mods** layered over that library and over the scripts.
-This is a plan; nothing here is built yet. See `design.md` for the split it follows: assets and
+This is the plan; step 1 (the plain library) is built. See `design.md` for the split it follows: assets and
 file formats belong to C, behaviour to actors in Forth.
 
 ## Where we start
@@ -40,15 +40,18 @@ file formats belong to C, behaviour to actors in Forth.
   hga(.exe)
   scripts/            the game's scripts (shipped)
   library/            made by the import
-    manifest.fs       what it was made from and how
-    exe/              the executable's tables, converted (see below)
-    SYSTEM/ ...       the disc's folders, each file converted or as it was
+    manifest.txt      what it was made from and how
+    SLUS_210.75 ...   the disc's own files (the executable, SYSTEM.CNF, MODULES/)
+    data/             DATA.CVM's folders, each file converted or as it was
+    exe/              (later) the executable's tables, converted
   mods/               the player's mods
   user/               saves, the system data (the unlocks, best times), settings
 ```
 
-`user/` follows the library's choice and moves with the folder. (Today these are in
-`~/.local/share/hg2/new-src/`; the first run with a library offers to move them over.)
+`user/` follows the library's choice and moves with the folder. The first time it is made,
+the saves and settings hga kept in `~/.local/share/hg2/new-src/` are copied into it (once: a
+`.moved` mark). Where the executable's folder can't be written (an installed copy) both go to
+the user's folder for programs' data instead; `HGA_HOME` names another folder (tests, tools).
 
 ### The import
 
@@ -60,13 +63,15 @@ existing picker, then a progress window.
 2. **Unpack and convert**, file by file, into `library/` - converted where the kind has a
    converter, copied otherwise. Written to `library.new/` and renamed when done, so a failed or
    cancelled import leaves no half library.
-3. **Write the manifest**: the disc's hash, hga's converter version, each kind's format version,
-   and every file made (its name and size) - enough to check the library at start-up and say
-   what's wrong ("library/SYSTEM/TITLE.png is missing: import again").
+3. **Write the manifest** (plain text, read by the engine: `hga-library 1`, `disc <crc>`, then
+   `file <size> <path>` each - with conversions, each kind's format version too): enough to
+   check the library at start-up and say what's wrong ("the library's data/SYSTEM/TITLE.TEX is
+   missing or damaged" - and with a window, the player is asked for the disc again).
 
-At start-up the engine reads the library through the same `files_read` door; the disc code
-remains the import's reader, and the way to run straight from a disc image (`--disc`) for
-development.
+At start-up the engine reads the library through the same `files_read` door (the disc layer's
+folder form: `library/data/`, its `../` the library). The disc code remains the import's reader,
+and naming a disc image or an extracted folder on the command line still reads it as it is
+(development; the tests use the developer's extracted folder when there is no library).
 
 **The catch with "converted only"**: once the originals are gone, a newer converter can't be run
 on the library - improving a format means importing again from the disc. The manifest records

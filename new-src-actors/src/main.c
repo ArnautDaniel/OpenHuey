@@ -4,6 +4,10 @@
  *     --hidden          no window shown (tests, screenshots)
  *     --frames N        stop after N frames
  *     --eval "code"     run Forth after the scripts have loaded (repeatable)
+ *     --import disc.iso the disc imported into the library beside the executable, then out
+ *
+ * The game data: a disc image or folder named (read as it is), else the library
+ * (platform/library.c), else - with a window - the player is asked for the disc to import.
  *
  * Start-up: the window, the renderer, the Forth system with the engine's words, then
  * scripts/prelude.fs and scripts/game.fs - which decide everything else. Each frame: input,
@@ -19,6 +23,7 @@
 #include "game/exits.h"
 #include "hactor/hactor.h"
 #include "platform/disc.h"
+#include "platform/library.h"
 #include "platform/snddrv.h"
 #include "platform/sound.h"
 #include "platform/platform.h"
@@ -44,6 +49,7 @@ typedef struct Options {
     const char *evals[MAX_EVALS];
     int nevals;
     const char *data;
+    const char *import; /* --import DISC: the disc imported into the library, then out */
     const char *test;   /* --test FILE: run it after the scripts, headless, and exit with its status */
 } Options;
 
@@ -59,11 +65,13 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->frames = atol(argv[++i]);
         } else if (strcmp(argv[i], "--eval") == 0 && i + 1 < argc && o->nevals < MAX_EVALS) {
             o->evals[o->nevals++] = argv[++i];
+        } else if (strcmp(argv[i], "--import") == 0 && i + 1 < argc) {
+            o->import = argv[++i];
         } else if (strcmp(argv[i], "--test") == 0 && i + 1 < argc) {
             o->test = argv[++i];
             o->hidden = 1;
         } else if (argv[i][0] == '-') {
-            fprintf(stderr, "usage: hga [--hidden] [--frames N] [--eval code] [--test file.fs] [disc.iso | data folder]\n");
+            fprintf(stderr, "usage: hga [--hidden] [--frames N] [--eval code] [--test file.fs] [--import disc.iso] [disc.iso | data folder]\n");
             return 0;
         } else {
             o->data = argv[i];
@@ -531,7 +539,10 @@ int main(int argc, char **argv) {
     if (!parse_options(argc, argv, &opt)) {
         return 2;
     }
-    if (!disc_choose(opt.data, HG2_DEFAULT_DATA, opt.hidden)) {
+    if (opt.import != NULL) {   /* (hga --import <disc>: the library made, nothing played) */
+        return library_import_from(opt.import, opt.hidden) ? 0 : 1;
+    }
+    if (!library_choose(opt.data, HG2_DEFAULT_DATA, opt.hidden)) {
         return 1;
     }
     if (!platform_open("Haunting Ground (new-src)", 1280, 720, opt.hidden) || !render_init()) {
