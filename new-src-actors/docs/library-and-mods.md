@@ -89,7 +89,7 @@ both are complete and checked: its output must give the engine the same data the
 | Kind | On the disc | In the library | Why |
 |---|---|---|---|
 | textures | TEX: swizzled, paletted, PS2 alpha | PNG (RGBA, alpha as 0..255), a sidecar for what PNG can't say (the palettes a texture switches between, its CLUT rows) | edit with anything; a texture pack is PNGs |
-| music | ADX (ADPCM, loop points) | Ogg Vorbis or Opus, its loop points in the file's tags | replace a track |
+| music | ADX (ADPCM, loop points) | FLAC (lossless: the samples the game plays), its loop points in the file's tags | replace a track |
 | sound banks | HD / BD / SDT (the SPU's programs and VAG samples) | a WAV or Ogg per sample, the bank as a text file (programs, tones, envelopes) | replace a sound |
 | movies | SFD (MPEG-1 video, ADX audio) | WebM (VP9 or AV1, Opus) | smaller, decoded by the GPU or a common library, re-encodable at a higher size |
 | the executable's tables | addresses in SLUS_210.75 | Forth data files (`library/exe/*.fs`) and binary blobs where a table is only ever read whole | no addresses at run time; mods can change a table |
@@ -123,6 +123,28 @@ it as fits (a mod's higher-resolution textures need the renderer to know the siz
 its own, read as they are until the rooms are converted, and a library imported before the
 conversion keeps its `.TEX` files). `texbank-check` (a ctest) converts every bank of the
 developer's data and compares each texture in each palette with the bank's own decoding.
+
+### Music
+
+Each `.ADX` track becomes a FLAC beside where it was (`ADX00/AD_01.ADX` -> `ADX00/AD_01.flac`):
+16-bit, the ADX's rate and channels, written by hga's own encoder (`src/data/flacenc.c`: fixed
+predictors, Rice-coded, the best stereo coding each 4096 samples; within 2% of `flac -5`; a
+seek table, so a loop's jump is quick). FLAC because the conversion must change nothing: a lossy
+format couldn't give the same samples back. 117 MB of ADX become 205 MB of FLAC.
+
+Tags (Vorbis comments): `LOOPSTART` / `LOOPEND` (samples: after LOOPEND - 1 comes LOOPSTART) and
+`STOPAT` (where it ends played once, not looped). A track with no tags loops end to start.
+
+The catch, and why the FLAC is a little longer than the track: the player goes back by whole
+ADX blocks, and ADX's prediction carries on across the jump - so the loop doesn't start the
+second time as it did the first (differing for up to 3862 samples, by up to 11473: a click the
+original makes too). Passes after the first all start alike. So the FLAC holds the first pass,
+then the second pass's start for as long as it differs, and its LOOPSTART is that much into the
+loop: every pass the same samples as the ADX's, through `src/data/musicsrc.c`, which the player
+reads both with. A mod's track needs none of this - LOOPSTART and LOOPEND, or nothing.
+
+`music-check` (a ctest) converts every track of the developer's data and plays both: once
+through, and looped three passes - the same samples (63129 of second-pass starts kept in all).
 
 Some formats carry engine behaviour in their layout (motion tables, a room's areas and
 cameras): those convert into the engine's own structures written plainly, not into a general
@@ -175,8 +197,8 @@ after: better-textures   \ loaded after that mod, if it's on
      palette. A PNG of another size is drawn as much as fits until the renderer takes new
      sizes. The rooms' textures inside their `.PAC` can't be replaced until rooms are
      converted.
-   - Nothing else is needed for texture packs now, and translations, music and sound
-     replacements once those kinds are converted. The executable's tables, once they are data
+   - Nothing else is needed for texture packs and music (a FLAC at the track's path) now,
+     and translations and sound replacements once those kinds are converted. The executable's tables, once they are data
      files in `library/exe/`, are overridden the same way.
 2. **Actors** (built). A mod's `scripts/<name>.fs` is loaded after the game's scripts as the
    vocabulary `<name>` (`IN: room-tally`); its folder is a root for `USING:`, so a bigger mod
@@ -228,5 +250,5 @@ from $1000 up, say, so they never collide with the game's).
 3. **Mods, files and actors**: the manifest, the load order, file overrides, mod scripts in
    their own vocabularies. A sample mod in the repository as a test. (Built.)
 4. **Music, messages, the executable's tables** converted; the first hooks, as the sample mods
-   ask.
+   ask. (Music built.)
 5. Sound banks, movies; then rooms and models.

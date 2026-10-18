@@ -18,6 +18,10 @@
 
 #include "../data/tex.h"
 #include "../data/texbank.h"
+#include "../data/flacenc.h"
+#include "../data/musicsrc.h"
+
+#define MUSIC_FORMAT 1             /* "convert music 1": ADX to FLAC, LOOPSTART / LOOPEND / STOPAT (musicsrc.h) */
 
 #define LIBRARY_FORMAT 1           /* the manifest's first line: "hga-library 1" */
 #define EXE_NAME "SLUS_210.75"     /* Haunting Ground (USA) */
@@ -419,12 +423,50 @@ static int make_parent(const char *path) {
     return SDL_CreateDirectory(dir);
 }
 
-/* a .TEX bank of DATA.CVM's, read whole: the library holds its PNGs (texbank.h) instead */
-static int is_bank(const Item *it) {
+/* a kind of DATA.CVM's file the library holds converted, read whole: a .TEX bank (its PNGs,
+ * texbank.h), an .ADX track (a FLAC) */
+static int has_kind(const Item *it, const char *ext) {
     size_t len = strlen(it->path);
 
-    return strncmp(it->path, "../", 3) != 0 && len > 4 && strcasecmp(it->path + len - 4, ".TEX") == 0 &&
-           it->size > 0 && it->size < (64L << 20);
+    return strncmp(it->path, "../", 3) != 0 && len > 4 && strcasecmp(it->path + len - 4, ext) == 0 && it->size > 0 &&
+           it->size < (64L << 20);
+}
+static int is_converted(const Item *it) { return has_kind(it, ".TEX") || has_kind(it, ".ADX"); }
+
+/* an ADX as a FLAC beside where it was: the same samples, once through; its loop in tags */
+static int convert_music(const Item *it, const char *root, Items *made, const uint8_t *adx, size_t size, char *why,
+                         size_t n) {
+    char rel[700], to[1300], start[48], end[48], stop[48];
+    const char *tags[3] = {start, end, stop};
+    int16_t *pcm;
+    long frames, loop_start, loop_end, stop_at;
+    int ch, rate, ok;
+    uint8_t *flac;
+    size_t flen;
+    FILE *f;
+
+    if (!musicsrc_adx_pcm(adx, size, &pcm, &frames, &ch, &rate, &loop_start, &loop_end, &stop_at)) {
+        return -1;   /* (not an ADX: copied as it is) */
+    }
+    snprintf(start, sizeof(start), "LOOPSTART=%ld", loop_start);
+    snprintf(end, sizeof(end), "LOOPEND=%ld", loop_end);
+    snprintf(stop, sizeof(stop), "STOPAT=%ld", stop_at);
+    flac = flacenc(pcm, frames, ch, rate, tags, 3, &flen);
+    free(pcm);
+    snprintf(rel, sizeof(rel), "data/%.*s.flac", (int)strlen(it->path) - 4, it->path);
+    snprintf(to, sizeof(to), "%s%s", root, rel);
+    ok = flac != NULL && make_parent(to) && (f = fopen(to, "wb")) != NULL;
+    if (ok) {
+        ok = fwrite(flac, 1, flen, f) == flen;
+        ok = fclose(f) == 0 && ok;
+    }
+    free(flac);
+    if (!ok) {
+        snprintf(why, n, "%s can't be written", to);
+        return 0;
+    }
+    items_add(made, rel, (long)flen);
+    return 1;
 }
 
 typedef struct Made {   /* the files written, for the manifest (paths in the library) */
@@ -467,7 +509,7 @@ static int copy_item(const Item *it, const char *root, Items *made, Progress *pr
         return 0;
     }
     library_path(to, sizeof(to), root, it->path);
-    if (is_bank(it)) {
+    if (is_converted(it)) {
         bank = malloc((size_t)it->size);
     }
     if (bank == NULL && (!make_parent(to) || (out = fopen(to, "wb")) == NULL)) {
@@ -499,11 +541,18 @@ static int copy_item(const Item *it, const char *root, Items *made, Progress *pr
         }
     }
     disc_file_close(f);
-    if (bank != NULL) {   /* (not a bank after all: copied as it is) */
-        int ok = have == (size_t)it->size && tex_count(bank, have) > 0;
+    if (bank != NULL) {   /* (not one after all: copied as it is) */
+        int ok = have == (size_t)it->size ? -1 : 0;
 
-        if (ok) {
+        if (ok && has_kind(it, ".TEX") && tex_count(bank, have) > 0) {
             ok = convert_bank(it, root, made, bank, why, n);
+        } else if (ok && has_kind(it, ".ADX")) {
+            ok = convert_music(it, root, made, bank, have, why, n);
+        }
+        if (ok == 0 && have != (size_t)it->size) {
+            snprintf(why, n, "the disc's %s can't be read whole", it->path);
+        }
+        if (ok >= 0) {
             free(bank);
             return ok;
         }
@@ -539,6 +588,7 @@ static int write_manifest(const char *root, const Items *made) {
     fprintf(f, "hga-library %d\n", LIBRARY_FORMAT);
     fprintf(f, "disc %08X\n", EXE_CRC);
     fprintf(f, "convert textures %d\n", TEXBANK_FORMAT);
+    fprintf(f, "convert music %d\n", MUSIC_FORMAT);
     for (i = 0; i < made->n; i++) {
         fprintf(f, "file %ld %s\n", made->e[i].size, made->e[i].path);
     }
