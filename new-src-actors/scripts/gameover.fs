@@ -36,7 +36,10 @@ end-state
 : music-id ( -- id )  s" music" actor-named ;
 
 \ ---- its music (GameOver: by the story so far; the own-music kind's own) ----
+: challenge-track ( -- n )   \ (the mini-game's run - GameOver_StateSpecial: by its challenge, A..D)
+    progress pr.vars $2E + c@ case  1 of  $B  endof  2 of  $F  endof  3 of  $C  endof  >r $A r>  endcase ;
 : track ( -- n )
+    hewie-played? if  challenge-track exit  then
     kind @ own-music-death = if  $47 exit  then
     over-music-f story-flag? if  $F exit  then
     over-music-e story-flag? if  $E exit  then
@@ -141,6 +144,7 @@ behaviour ending-the-game
       step @ not-running = if
           caught state-flag? if
               caught state-flag-clear  0 held !
+              hewie-played? if  faded-out kind !  then   \ (the run: its own - GameOver_StateSpecial, faded out)
               kind @ story-end = if  over-done step !  broadcast the-ending  exit  then
               kind @ movie-death = if  movie-status 0<> if  movie-hold held !  then  then   \ (GameOver_StateStart: its last picture)
               music-out step !

@@ -32,8 +32,8 @@ create clock-text 5 allot
 : clock-start ( -- )   \ clock_start: Hewie played, afresh; the camera quicker along its paths; the time from 0
     -1 hewie-played !  s" hewie" actor-named send hewie-restart  14e cam-rate!  0 progress pr.play-frames l! ;
 : clock-draw ( -- )  time-played time$ show ;                  \ clock_draw
-: clock-save ( -- )                                            \ clock_save
-    time-played  0 over past-an-hour? 1 and var-set
+: clock-save ( -- )                                            \ clock_save (and for the results: subscreen/extras.fs)
+    time-played dup run-took !  0 over past-an-hour? 1 and var-set
     per-second /  1 over 60 / 60 mod var-set  2 swap 60 mod var-set ;
 : clock-draw-saved ( -- )                                      \ clock_draw_saved
     1 ebit? 0= if  clock-draw exit  then

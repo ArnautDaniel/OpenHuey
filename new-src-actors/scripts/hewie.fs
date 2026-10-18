@@ -120,7 +120,7 @@ behaviour hewie-own
   on hewie-stay ( -- )  300 his-pet-time ! ;
   on noclip ( on -- )  0<> 1 and his-2b ! ;
   on aside ( on -- )  0<> 1 and his-2d ! ;
-  on activate ( -- )  0 his-2b !  0 his-2d !  100 hp! ;   \ (the story's 0x15, Hewie_Activate: afresh, at full health)
+  on activate ( -- )  0 his-2b !  0 his-2d !  100 hp!  hewie-played? if  restart  then ;   \ (the story's 0x15, Hewie_Activate: afresh, at full health - in the run, played: Hewie_StartScene)
   on tick ( -- )  along? if  frame  else  tell-doing  then  -1 his-heard ! ;
   \ her commands (H2)
   on command ( code tri yaw x z -- )   \ (Hewie_StateBlock's 13)

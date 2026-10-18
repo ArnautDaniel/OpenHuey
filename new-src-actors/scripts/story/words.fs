@@ -177,7 +177,8 @@ $1F constant hewie-zone-var
 : panic-stage? ( stage -- flag )   \ ($FF: in a panic)
     dup $FF = if  drop the-panic @ panicking calming-down 1+ within  else  the-panic @ =  then ;
 : panic-stage ( stage -- )  s" panic" actor-named send panic-stage! ;
-: hewie-controlled? ( -- flag )  hewie-played? ;   \ cond 0x5D: Hewie is the one played (the mini-game's run)
+: hewie-controlled? ( -- flag )  hewie-played? ;
+: mini-game-asked? ( -- flag )  mini-game-wanted @  0 mini-game-wanted ! ;   \ (the title's MINI-GAME, once)   \ cond 0x5D: Hewie is the one played (the mini-game's run)
 
 \ ---- waiting (an action script's turn ends, each frame) ----
 : yield ( -- )  wait-frame ;

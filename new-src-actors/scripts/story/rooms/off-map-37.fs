@@ -30,6 +30,7 @@ defer off-map-37.act00
     0 1 track $D action
     1.0 sound-volume-scale
     0 part-shown
+    mini-game-asked? if  0 0 1 action  then   \ (hga's title MINI-GAME: as at door 0's offer - its action 1)
 ;
 
 : off-map-37.char-enter ( -- )   \ 00445C20
