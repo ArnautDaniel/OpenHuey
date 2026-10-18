@@ -28,6 +28,7 @@ cmake -S openhuey-src -B build/openhuey-src -G Ninja
 cmake --build build/openhuey-src
 build/openhuey-src/openhuey                       # the game: from its library (the first run imports the disc)
 build/openhuey-src/openhuey --import disc.iso     # import a disc into the library (library/ beside OpenHuey)
+build/openhuey-src/openhuey --update            # a release: updated to the newest build (the title's UPDATE too)
 build/openhuey-src/openhuey --mod path/to/mod     # with a mod on (mods/ beside OpenHuey holds the installed ones)
 build/openhuey-src/openhuey --hidden --frames 300 --eval "..."   # headless, for tests
 ctest --test-dir build/openhuey-src    # all the tests

@@ -7,6 +7,7 @@
  *     --import disc.iso the disc imported into the library beside the executable, then out
  *     --mod folder|zip  a mod turned on (repeatable; with --test the only mods)
  *     --mods folder     the folder of mods (instead of mods/ beside the library)
+ *     --update          a release updated to the newest build (platform/update.c), then out
  *
  * The game data: a disc image or folder named (read as it is), else the library
  * (platform/library.c), else - with a window - the player is asked for the disc to import.
@@ -29,6 +30,7 @@
 #include "platform/disc.h"
 #include "platform/library.h"
 #include "platform/snddrv.h"
+#include "platform/update.h"
 #include "platform/sound.h"
 #include "platform/platform.h"
 #include "platform/movie.h"
@@ -54,6 +56,7 @@ typedef struct Options {
     int nevals;
     const char *data;
     const char *import; /* --import DISC: the disc imported into the library, then out */
+    int update;         /* --update: updated to the newest release, then out */
     const char *test;   /* --test FILE: run it after the scripts, headless, and exit with its status */
     const char *mods[MAX_EVALS];   /* --mod DIR: a mod's folder, on (the tests' only mods) */
     const char *mods_folder;       /* --mods DIR: the folder of mods instead of <base>mods/ (the tests' too) */
@@ -74,6 +77,8 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->evals[o->nevals++] = argv[++i];
         } else if (strcmp(argv[i], "--import") == 0 && i + 1 < argc) {
             o->import = argv[++i];
+        } else if (strcmp(argv[i], "--update") == 0) {
+            o->update = 1;
         } else if (strcmp(argv[i], "--mods") == 0 && i + 1 < argc) {
             o->mods_folder = argv[++i];
         } else if (strcmp(argv[i], "--mod") == 0 && i + 1 < argc && o->nmods < MAX_EVALS) {
@@ -82,7 +87,7 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->test = argv[++i];
             o->hidden = 1;
         } else if (argv[i][0] == '-') {
-            fprintf(stderr, "usage: openhuey [--hidden] [--frames N] [--eval code] [--test file.fs] [--mod folder|zip] [--mods folder] [--import disc.iso] [disc.iso | data folder]\n");
+            fprintf(stderr, "usage: openhuey [--hidden] [--frames N] [--eval code] [--test file.fs] [--mod folder|zip] [--mods folder] [--import disc.iso] [--update] [disc.iso | data folder]\n");
             return 0;
         } else {
             o->data = argv[i];
@@ -513,6 +518,7 @@ static void start_scripts(Engine *e, int hidden) {
     bind_state(e->forth);
     bind_hactor(e->forth);
     bind_mods(e->forth);
+    bind_update(e->forth);
     forth_prim(e->forth, "exit-status", p_exit_status);
     forth_constant(e->forth, "hidden?", hidden ? -1 : 0);   /* (no window: tests, screenshots - no opening movie) */
     if (!load_scripts(e->forth)) {
@@ -566,6 +572,10 @@ int main(int argc, char **argv) {
     if (!parse_options(argc, argv, &opt)) {
         return 2;
     }
+    if (opt.update) {
+        return update_run();
+    }
+    update_cleanup();   /* (an update's leftovers) */
     if (opt.import != NULL) {   /* (hga --import <disc>: the library made, nothing played) */
         return library_import_from(opt.import, opt.hidden) ? 0 : 1;
     }

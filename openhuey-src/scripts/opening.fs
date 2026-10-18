@@ -3,7 +3,9 @@
 \ - The title: Hewie lying on the stone circle in the front garden (room $2D, its scenery only), by
 \   the menu - NEW GAME / LOAD GAME / OPTIONS, and once a game has been cleared HARD MODE (a new
 \   game in hard mode: story flag $AF) and EXTRAS (straight into the extras room, $37); QUIT
-\   (Up / Down, the cross; SceneTitle_SeqMenu). A new game: he gets up and barks.
+\   (Up / Down, the cross; SceneTitle_SeqMenu). OpenHuey's own: MINI-GAME (with EXTRAS), MODS (when
+\   there are mods), UPDATE (a release build's: updater.fs), and mods' entries (title-menu-hook).
+\   A new game: he gets up and barks.
 \   Load Game: the save slots (as the save point's: their places and times), the cross loads one
 \   in use, the triangle goes back.
 \ - The opening movie, as the original's title plays it after New Game (SceneTitle_StateNewGame:
@@ -13,13 +15,13 @@
 \   variable $26 = 1, Hewie's $27 = 0), room $2A - whose entering script does the rest.
 \ Without a window (tests, screenshots) the game starts at once.
 IN: opening
-USING: engine game-state actors messages keys vectors room-names facts flag-names ps2-screen saves subscreen.art subscreen.saving mods.menu ;
+USING: engine game-state actors messages keys vectors room-names facts flag-names ps2-screen saves subscreen.art subscreen.saving mods.menu updater ;
 
 6 constant movie-layer   7 constant menu-layer   \ (over everything)
 
 \ its stages: the menu; he gets up; he barks; the opening movie; the game started; the save slots;
-\ the options up
-enum: opening-stage  on-menu getting-up barking opening-movie started on-slots on-options on-mods ;
+\ the options up; the mods menu; the updater
+enum: opening-stage  on-menu getting-up barking opening-movie started on-slots on-options on-mods on-update ;
 
 state: opening-state
   cell field stage       \ (enum: opening-stage)
@@ -82,12 +84,13 @@ create spot  -258e f, -10e f, 174e f,   \ (on the circle, between the scarecrows
 \ the entries: the last two only once a game has been cleared (the first clear's unlock)
 \ (MINI-GAME, hga's own: straight into the extras room's mini-game - its menu up, as at its door)
 \ (MODS, hga's own: only when there are mods in mods/ - the mods menu, mods/menu.fs)
-enum: menu-entry  e-new e-load e-options e-hard e-extras e-mini e-mods e-quit e-mod ;
+\ (UPDATE, OpenHuey's own: a release build's only - updater.fs)
+enum: menu-entry  e-new e-load e-options e-hard e-extras e-mini e-mods e-update e-quit e-mod ;
 : cleared? ( -- flag )  0 resident-flag? ;
 create entries 16 cells allot   variable #entries
 : +entry ( e -- )  #entries @ 16 < if  entries #entries @ cells + !  1 #entries +!  else  drop  then ;
 
-\ ---- the hook (docs/library-and-mods.md): mods' own entries, after the game's (before MODS and
+\ ---- the hook (docs/library-and-mods.md): mods' own entries, after the game's (before MODS, UPDATE and
 \ QUIT). A mod sets its own with `is`, calls what it replaced (`action-of title-menu-hook`), and
 \ adds its entries with `title-entry`: a name, and what picking it does (run by the title's actor:
 \ `title-gone` first if it leaves the title) ----
@@ -106,13 +109,14 @@ defer title-menu-hook ( -- )
     cleared? if  e-hard +entry  e-extras +entry  e-mini +entry  then
     title-menu-hook
     mods-menu-count 0> if  e-mods +entry  then
+    updater? if  e-update +entry  then
     e-quit +entry ;
 : entry ( i -- e )  cells entries + @ ;
 : #items ( -- n )  #entries @ ;
 : item ( i -- addr len )
     entry case  e-new of  s" NEW GAME"  endof  e-load of  s" LOAD GAME"  endof  e-options of  s" OPTIONS"  endof
                 e-hard of  s" HARD MODE"  endof  e-extras of  s" EXTRAS"  endof  e-mini of  s" MINI-GAME"  endof
-                e-mods of  s" MODS"  endof
+                e-mods of  s" MODS"  endof  e-update of  s" UPDATE"  endof
                 e-quit of  s" QUIT"  endof
                 >r  r@ e-mod - 2 cells * mod-names + 2@  r>   \ (a mod's)
             endcase ;
@@ -135,19 +139,23 @@ defer title-menu-hook ( -- )
     2 pen-scale
     #slots 0 do  i slot-draw  loop
     menu-layer  s" >"  sw 10 / char-size drop 2* 2* -  sh 4 / slot-at @ char-size nip 2* * +  $FFFFFFFF 2 ui-text ;
+: entry-y ( i -- y )   \ (the pen's size set) from 7/10 down - higher when they wouldn't all fit
+    char-size nip 3 2 */ {: i h :}  screen-size nip {: sh :}
+    sh 7 * 10 /  sh #items 1+ h * -  min  i h * + ;
 : menu-draw ( -- )
     menu-layer ui-clear
     stage @ on-slots = if  slots-draw exit  then
     stage @ on-mods = if  menu-layer mods.menu:draw exit  then
+    stage @ on-update = if  menu-layer updater:draw exit  then
     stage @ on-menu <> if  exit  then
     screen-size {: sw sh :}  4 pen-scale
     menu-layer  s" HAUNTING GROUND"  sw 2/ 15 char-size drop * 2/ -  sh 8 /  $D8D0C8FF 4 ui-text
     3 pen-scale
     #items 0 do
-        menu-layer  i item  sw 10 /  sh 7 * 10 / i char-size nip 3 2 */ * +
+        menu-layer  i item  sw 10 /  i entry-y
         i picked @ = $FFFFFFFF $8C8880FF ?  3 ui-text
     loop
-    menu-layer  s" >"  sw 10 / char-size drop 2* -  sh 7 * 10 / picked @ char-size nip 3 2 */ * +  $FFFFFFFF 3 ui-text ;
+    menu-layer  s" >"  sw 10 / char-size drop 2* -  picked @ entry-y  $FFFFFFFF 3 ui-text ;
 : menu-keys ( -- )
     key: Up key-pressed? if  picked @ 1- 0 max picked !  then
     key: Down key-pressed? if  picked @ 1+ #items 1- min picked !  then
@@ -160,6 +168,7 @@ defer title-menu-hook ( -- )
             e-extras of  title-end  started stage !  extras  self kill  endof
             e-mini of  title-end  started stage !  -1 mini-game-wanted !  extras  self kill  endof
             e-mods of  mods.menu:open  on-mods stage !  endof
+            e-update of  updater:open  on-update stage !  endof
             e-quit of  bye  endof
             >r  r@ e-mod - cells mod-picks + @ execute  r>   \ (a mod's: what it said picking it does)
         endcase
@@ -194,6 +203,7 @@ behaviour opening-the-game
           on-menu of  menu-keys  endof
           on-slots of  slots-keys  endof
           on-mods of  mods.menu:keys if  on-menu stage !  then  endof
+          on-update of  updater:keys if  on-menu stage !  then  endof
           on-options of  subscreen-wanted state-flag? 0= if  on-menu stage !  then  endof   \ (back to the menu once they close)
           getting-up of  ended? if  m-bark 0 play  bark-sound common-sound  barking stage !  then  endof
           barking of  ended? if  movie-start  then  endof

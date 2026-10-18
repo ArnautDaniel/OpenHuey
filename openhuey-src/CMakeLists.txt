@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.1.1 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.1.2 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -12,6 +12,11 @@ add_compile_options(-Wall -Wextra -Wno-unused-parameter)
 # A release (-DHGA_RELEASE=ON) knows no paths of this machine: the scripts are found beside the
 # executable (scripts/), the game data is the player's own disc, chosen at start-up.
 option(HGA_RELEASE "build for distribution (no built-in paths; Windows: no console)" OFF)
+# the build's name, which the updater compares with the newest release's (src/platform/update.c):
+# a release's is the version and its commit (tools/hga_release.sh: "0.1.1-c6b7113")
+if(NOT HGA_BUILD)
+    set(HGA_BUILD "${PROJECT_VERSION}")
+endif()
 get_filename_component(SCRIPT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/scripts" ABSOLUTE)
 get_filename_component(DEFAULT_DATA "${CMAKE_CURRENT_SOURCE_DIR}/../../Haunting Ground (USA)/data" ABSOLUTE)
 set(DEFAULT_EXE "${CMAKE_CURRENT_SOURCE_DIR}/../baserom/SLUS_210.75")
@@ -60,16 +65,17 @@ target_link_libraries(hgadata PUBLIC SDL3::SDL3 m)
 
 add_executable(hga
     src/main.c
-    src/platform/gl.c src/platform/platform.c src/platform/sound.c src/platform/movie.c src/platform/music.c src/platform/seq.c src/platform/spu.c src/platform/snddrv.c
+    src/platform/gl.c src/platform/platform.c src/platform/update.c src/platform/sound.c src/platform/movie.c src/platform/music.c src/platform/seq.c src/platform/spu.c src/platform/snddrv.c
     src/render/render.c src/render/post.c
     src/game/room.c src/game/console.c src/game/actor.c src/game/doglegs.c src/game/cloth.c src/game/world.c
     src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c src/game/cutscene.c src/game/placed.c src/game/sprites.c src/game/mods.c src/game/particles.c src/game/things.c src/game/obstacles.c src/game/swimpath.c src/game/rumble.c
     src/forth/bind_engine.c)
 target_link_libraries(hga PRIVATE hgadata forth gamestate hactor SDL3::SDL3)
 set_target_properties(hga PROPERTIES OUTPUT_NAME openhuey)   # (the target keeps its old name: the tests' COMMAND hga)   # (GL through SDL_GL_GetProcAddress: platform/gl.c)
-target_compile_definitions(hga PRIVATE "HGA_VERSION=\"${PROJECT_VERSION}\"" "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\""
+target_compile_definitions(hga PRIVATE "HGA_VERSION=\"${PROJECT_VERSION}\"" "HGA_BUILD=\"${HGA_BUILD}\"" "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\""
     "HG2_DEFAULT_EXE=\"${DEFAULT_EXE}\"")
 if(HGA_RELEASE)
+    target_compile_definitions(hga PRIVATE HGA_UPDATER)   # (a release updates itself: --update, the title's UPDATE)
     if(WIN32)
         set_target_properties(hga PROPERTIES WIN32_EXECUTABLE ON)   # (SDL3 gives the WinMain)
     else()
@@ -162,5 +168,14 @@ set_tests_properties(mods_menu PROPERTIES FIXTURES_REQUIRED mods_menu_folder FIX
 add_test(NAME mods_menu_after COMMAND hga --mods "${CMAKE_CURRENT_BINARY_DIR}/mods-menu.scratch"
     --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/menu-after.fs")
 set_tests_properties(mods_menu_after PROPERTIES FIXTURES_REQUIRED "mods_menu_folder;mods_menu_saved")
+# the updater: against releases made in the test (file://), and the title's UPDATE page
+if(NOT WIN32)
+    add_test(NAME update_run COMMAND sh "${CMAKE_CURRENT_SOURCE_DIR}/tests/update/run.sh" $<TARGET_FILE:hga> "${HGA_BUILD}"
+        "${CMAKE_CURRENT_BINARY_DIR}")
+endif()
+string(REPLACE " " "%20" NO_RELEASE_URL "file://${CMAKE_CURRENT_BINARY_DIR}/no-release/")
+add_test(NAME update_title COMMAND hga --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/update/title.fs")
+set_tests_properties(update_title PROPERTIES ENVIRONMENT
+    "OPENHUEY_UPDATE_URL=${NO_RELEASE_URL};OPENHUEY_UPDATE_DIR=${CMAKE_CURRENT_BINARY_DIR}/update-title.scratch")
 add_test(NAME mods_free_play_entry COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods/free-play-entry"
     --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/free-play-entry.fs")

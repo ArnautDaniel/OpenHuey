@@ -130,6 +130,9 @@ create rise-fears   -1e f, 8e f, 6e f, 4e f, 2e f, 1e f,   \ (D_0041A0F0: both o
     {: lims n F: d :}  n 0 do  d lims i floats + f@ f< if  i unloop exit  then  loop  -1 ;
 create near-limits  10e f, 20e f, 40e f, 60e f, 100e f,
 create rise-limits  20e f, 30e f, 40e f, 50e f, 60e f, 100e f,
+: her-away-played? ( -- flag )   \ Hewie played, she out of his room (no body - the title: not)
+    hewie-played? 0=  fiona-id body? 0= or if  false exit  then
+    fiona-id body-room room-id <> ;
 : stalker-fear ( -- )
     stalker-in-game {: s :}  s 0<  st-cond @ 2 = or  fiona-id body? 0= or if  exit  then
     fiona-id body-room room-id <>  fiona-id body-room s body-room = and if
@@ -177,7 +180,7 @@ create weights   \ (fright, fear, calming)
         level-from-parts  cap-at-99
     then
     \ (under flag $15 - or in the run, she out of the room played - it stops at 99)
-    panic-can-max state-flag?  hewie-played? fiona-id body-room room-id <> and  or if
+    panic-can-max state-flag?  her-away-played? or if
         level f@ 100e f< 0= if  cap-at-99  0e passing f!  then
     then ;
 : update ( -- )

@@ -381,7 +381,7 @@ after: better-textures   \ loaded after that mod, if it's on
    | Hook | Vocabulary | Since | What |
    |---|---|---|---|
    | `item-use-rule ( place -- result )` | `items` | 1.1 | what using the item at `place` (a held place: `id@`) does; the result as the game's rules' (`no-use`, `used-up` ...: bits 1 / 2 spend one; `done-quietly`: something happened, nothing spent) |
-   | `title-menu-hook ( -- )` | `opening` | 1.2 | the title's entries from mods: call what it replaced, then `title-entry ( addr len xt -- )` each (shown after the game's, before MODS / QUIT; picking one runs xt in the title's actor - `title-gone` first to leave the title) |
+   | `title-menu-hook ( -- )` | `opening` | 1.2 | the title's entries from mods: call what it replaced, then `title-entry ( addr len xt -- )` each (shown after the game's, before MODS / UPDATE / QUIT; picking one runs xt in the title's actor - `title-gone` first to leave the title) |
 
    The sample, `examples/mods/flower-scent`: the Fresh Flowers used where the game has no use for
    them calm Fiona a little (the game's `remedy` message) and are kept - asking the game's rule
@@ -421,6 +421,41 @@ New rooms, items, costumes, figures and lines need tables a mod can add to, not 
 an item registry, the message tables, the room graph, the cast's kinds. Each comes with the
 converted format for its kind (a room as files can be a new room) and an id space for mods (ids
 from $1000 up, say, so they never collide with the game's).
+
+## Updating
+
+A release build updates itself to the newest build: the title's UPDATE (a release's only), or
+`openhuey --update` from a command line. The newest build is the rolling `openhuey-latest`
+release (whatever master built last), so any build other than this one counts as newer.
+
+- **What it reads**: the release's `version.txt` (made by `tools/hga_release.sh`):
+  `openhuey-version <build>` - the build's name, its version and commit (`0.1.2-c6b7113`, the
+  CMake `HGA_BUILD`, shown on the UPDATE page and compared with this build's) - then each
+  archive's name and size.
+- **How**: the system's `curl` downloads the archive into `update/` beside the executable and its
+  `tar` unpacks it (both come with Linux distributions and Windows 10 and later: OpenHuey has no
+  network code of its own). Each thing at the archive's top - the program, `scripts/`, `docs/`,
+  the libraries, the README - then takes the place of the one beside the executable, the old one
+  moved into `update/old/` first (a running program can be moved, on Windows too, though not
+  removed). If one can't be put in place, all go back. `library/`, `user/` and `mods/` are never
+  touched, even if an archive had them. The next start removes `update/`.
+- **After**: the UPDATE page's cross starts the new build and closes this one (`--update` says to
+  start it again). The library stays: a newer OpenHuey still reads an older library (above,
+  "The catch with converted only").
+- Developer builds don't update themselves (`updater?` false; `--update` says to pull and build).
+  `OPENHUEY_UPDATE_URL` (the release's folder) and `OPENHUEY_UPDATE_DIR` (the folder updated)
+  point it elsewhere: the tests.
+- The work is `src/platform/update.c` (on a thread of its own; `update-state`, `update-progress`
+  for the page), the page `scripts/updater.fs`.
+
+### Checked
+
+- `update_run` (ctest, `tests/update/run.sh`): releases made in the test (`file://`) - a newer
+  build put in place (the program, `scripts/` replaced whole, a new file added) with `user/`,
+  `library/` and `mods/` left be; this build up to date; a download without the program, a
+  short download and no release at all failing with nothing changed.
+- `update_title` (ctest): UPDATE among the title's entries before QUIT; its page drawn, the
+  update failing when there is no release and saying why, tried again.
 
 ## Order of work
 
