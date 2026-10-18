@@ -142,8 +142,27 @@ a quarter off each fright and the recovery's reset three times in four; $8B a qu
 calming half again, the reset half the time; $8C half off, her calming doubled, never the reset,
 nor running's fright; **I2, I3 built**
 (`scripts/subscreen.fs`, `tests/items/test_subscreen.fs` (54)). Not yet: the parts' blendings (subtract / add: drawn plain), the
-menu's sound turned down while open; the extras room's modes - the movies (8), the galleries
-($B models, $D music, $E art, $F types). **The mini-game** (`subscreen/extras.fs`): its menu
+menu's sound turned down while open. **The galleries** (`subscreen/galleries.fs`, the extras
+room's modes; their tables generated from the executable by `tools/gallerytables.py` into
+`subscreen/gallery-tables.fs`; `tests/items/test_galleries.fs` (35)): eight a page, "???" until the
+system data unlocks each (the resident flags: the original's +0x24 bits on), the extras room's
+own messages, each gallery's .TEX in the background group. The movies (8, SubScreen_StateMovies):
+each one's thumbnail (SUBSCR/THUMBNAIL.TXS, `thumbnail`); one seen picked into the story's $2A,
+the cursor into $2B - the room's script replays it. The models ($B, Gallery_*Model*): a figure
+unlocked loaded (its model, textures and markers, its kind's motion table) and drawn alone on the
+original's backdrop (`alone`; the room's look plain, `look-plain`) in an ambient light and one
+from the camera's way, 15 degrees up and 30 round; ✕ its motion again, R1 / L1 its next /
+previous, W / S nearer / further, A / D round, I / K up / down (the sticks), select the bars,
+start the help. The music ($D, Gallery_StateMusic): a track played (the music stopped, the track
+started once the stream is free - the music actor's background track now steps while the menu
+holds the world); △ stops it, or leaves. The art ($E, Gallery_StateArt*): a picture unpacked
+(SUBSCR/ARTnn.LEN's runs, `art-picture` - data/artpic.c) and looked over: the arrows a pixel, WASD
+eight, F (R3) whole size, the circle back to the middle (the original's L3: no key for it), ✕ the
+moves turned round. The TYPE ranks ($F, SubScreen_StateEntries): each one's message in the box,
+then - unlocked - the one after it. *Not yet* (the model gallery's figures as their classes make
+them): the second texture sets (`*_200`), Daniella's and the tint stalker's variants (entries 11 /
+12, 15 / 16), entries 3 / 4 (costumes 7 / 6) switching their state at $E00, the dogs' layered idles ($1F00,
+$2000, $2102), and the models' own cloth. **The mini-game** (`subscreen/extras.fs`): its menu
 (mode $A: the introduction, challenges A..D - C and D once A and B are cleared, resident flags
 $52 / $53 - with their three best times, exit; the pick into variable $2E) and its results (mode
 $C: the unlock, the time placed among the challenge's best, shown a step every 30 frames with the

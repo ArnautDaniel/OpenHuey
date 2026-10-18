@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.1.4 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.1.5 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -59,7 +59,7 @@ add_library(hgadata STATIC
     src/core/files.c src/core/zip.c src/platform/disc.c src/platform/library.c
     src/data/pac.c src/data/roommesh.c src/data/gltfio.c src/data/roomgltf.c src/data/modelgltf.c src/data/roomtext.c src/data/tex.c src/data/texbank.c src/data/musicsrc.c
     src/data/flacenc.c src/data/msgtext.c src/data/model.c src/data/navmesh.c src/data/exe.c src/data/exetables.c
-    src/data/soundbank.c src/data/vag.c src/data/samples.c src/data/sfd.c
+    src/data/soundbank.c src/data/vag.c src/data/samples.c src/data/sfd.c src/data/artpic.c
     src/third_party/stb.c src/third_party/dr_flac.c src/third_party/cgltf.c)
 target_link_libraries(hgadata PUBLIC SDL3::SDL3 m)
 

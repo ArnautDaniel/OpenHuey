@@ -55,8 +55,9 @@ build/native/cmake/hg [disc.iso | data folder]
 ```
 
 In `openhuey`: `` ` `` opens the Forth console (`free-play` skips the opening, `castle-2f-3 room!` goes
-to a room, more in `openhuey-src/scripts/debug.fs`); **F2** shows the debug meters, the actors
-and the version; **F3** frees the camera. In `hg`: **F5** / **F9** quicksave and load; `HG_EVLOG=1`
+to a room, more in `openhuey-src/scripts/debug.fs`); **F1** the settings (the picture, fullscreen,
+the controls); **F11** or Alt+Return fullscreen; **F2** shows the debug meters, the actors and the
+version; **F3** frees the camera. In `hg`: **F5** / **F9** quicksave and load; `HG_EVLOG=1`
 traces the room scripts, `HG_ROOM=2A` starts at a room, `HG_HEADLESS=1 HG_MAXFRAMES=n` runs
 without a window.
 

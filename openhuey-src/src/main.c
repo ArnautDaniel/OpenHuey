@@ -457,6 +457,12 @@ static void draw(Engine *e) {
     view = camera_view(&e->camera);
     vp = mat4_mul(proj, view);
     render_camera(&proj, &view, e->camera.pos, e->camera.znear, e->camera.zfar);
+    if (e->alone > 0) {   /* (one model on the background, nothing else: the extras' model gallery) */
+        if (e->alone - 1 < MAX_ACTORS && e->actors[e->alone - 1].used) {
+            draw_actor(e, &e->actors[e->alone - 1], &vp);
+        }
+        goto the_2d;
+    }
     room_draw(&e->room, &vp, e->camera.pos, camera_forward(&e->camera));
     for (i = 0; i < MAX_ACTORS; i++) {
         if (e->actors[i].used && e->actors[i].layer < 0x1E && e->actors[i].layer != 0x1C) {
@@ -498,6 +504,7 @@ static void draw(Engine *e) {
         }
         post_shine_end();
     }
+the_2d:
     render_post();
     engine_draw_2d(e);   /* scripts' 2D (on-draw hooks) */
     if (e->hud[0] != 0) {

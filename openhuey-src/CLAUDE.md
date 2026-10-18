@@ -25,6 +25,7 @@ break existing libraries), the save files `hga-*.fs` (players' saves). Mods may 
 cmake -S . -B build && cmake --build build -j
 cd build && SDL_AUDIO_DRIVER=dummy ctest -j8          # everything (needs the game's data)
 SDL_AUDIO_DRIVER=dummy ./openhuey --test ../tests/<sub>/test_<x>.fs   # one test file
+SDL_AUDIO_DRIVER=dummy ./openhuey --title --test ../tests/title/title.fs   # --title: the title too, without a window
 SDL_AUDIO_DRIVER=dummy ./openhuey --hidden --frames 3 --eval "..."    # headless; `screenshot` for a PNG
 ```
 
