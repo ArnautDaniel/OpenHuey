@@ -4,6 +4,9 @@
 IN: story.rooms.house-of-truth-b1-9
 USING: room-names story.words story.shared flag-names floor-flags ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant area0-reacted               \ (bit 0) her reaction in area 0 made (once a visit)
+
 \ room 0x97: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
 : house-of-truth-b1-9.cmd00 ( -- )  slam-shake ;
@@ -16,22 +19,17 @@ USING: room-names story.words story.shared flag-names floor-flags ;
 ;
 
 : house-of-truth-b1-9.char-enter ( -- )   \ 00437D80
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         2 2 player-camera
-    then then
+    then
     1 2 2 area-camera
 ;
 
 : house-of-truth-b1-9.phase1 ( -- )   \ 00437DC0
-    0 ebit? not if
+    area0-reacted ebit? not if
         fiona-who 0 char-in-area? if
-            0 ebit-set
+            area0-reacted ebit-set
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
             else
@@ -39,13 +37,9 @@ USING: room-names story.words story.shared flag-names floor-flags ;
             then
         then
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     8 0 0 1 chars-area-camera
     9 2 2 1 chars-area-camera
     fiona-who 4 char-entered-area? if

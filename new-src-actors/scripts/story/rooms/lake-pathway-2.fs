@@ -2,7 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.lake-pathway-2
-USING: room-names story.words story.shared story-names floor-flags ;
+USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits and script variables ----
+0 constant bridge-gone-remarked        \ (bit 0) its first remark made: "What!? The bridge is gone! It looks like it has disappeared!"
+1 constant hewie-zone0-noticed         \ (bit 1) Hewie has reacted to zone 0 (once a visit)
 
 \ (as Room2A_Cmd03) the 0x14-byte effect BackdropModel2_vtable started with byte 3 as a word
 : lake-pathway-2.cmd00 ( b0 -- )   \ (the water's light: BackdropModel2 - b0 nonzero 500 across at (0, 50) turning, else 1500 at (775, -420))
@@ -23,37 +27,22 @@ USING: room-names story.words story.shared story-names floor-flags ;
 
 : lake-pathway-2.char-enter ( -- )   \ 0043EAE0
     over-music-d story-flag? not if
-        hewie-controlled? not if
-            fiona-who self-is? 0 exit-taken? and if
-                fiona-who 0 char-to-exit
-                1 1 player-camera
-            then
-        else hewie-who self-is? 0 exit-taken? and if
-            hewie-who 0 char-to-exit
+        player-who self-is? 0 exit-taken? and if
+            player-who 0 char-to-exit
             1 1 player-camera
-        then then
+        then
         0 1 1 area-camera
     else
-        hewie-controlled? not if
-            fiona-who self-is? 0 exit-taken? and if
-                fiona-who 0 char-to-exit
-                2 2 player-camera
-            then
-        else hewie-who self-is? 0 exit-taken? and if
-            hewie-who 0 char-to-exit
+        player-who self-is? 0 exit-taken? and if
+            player-who 0 char-to-exit
             2 2 player-camera
-        then then
+        then
         0 2 2 area-camera
     then
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
 ;
 
@@ -61,13 +50,9 @@ USING: room-names story.words story.shared story-names floor-flags ;
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 1 1 1 chars-area-camera
     5 0 0 1 chars-area-camera
     fiona-who 2 char-entered-area? if
@@ -78,13 +63,13 @@ USING: room-names story.words story.shared story-names floor-flags ;
     then
     over-music-d story-flag? if
         0 -2.26 38.0 -25.57 $1E 15 0 zone
-        1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        1 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $1E chance? if
-                            $1F 0 var-set
+                            hewie-zone-var 0 var-set
                             0 hewie-who $88 action
                         then
                     then
@@ -106,20 +91,16 @@ USING: room-names story.words story.shared story-names floor-flags ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    0 ebit? not if
-        $A01 self-anim
-        self-frames-reset
-        $1E self-wait-frames
-        0 message   \ "What!? The bridge is gone! It looks like it has disappeared!"
-        wait-message
+    bridge-gone-remarked ebit? not if
+        look-low-anim self-anim
+        $1E wait-frames
+        0 say   \ "What!? The bridge is gone! It looks like it has disappeared!"
         self-wait-anim
-        0 ebit-set
+        bridge-gone-remarked ebit-set
     else
-        $1D02 self-anim
-        self-frames-reset
-        self-wait-16
-        1 message   \ "There's no going back now. I'll need to find a new way out now."
-        wait-message
+        hands-clasped-anim self-anim
+        16 wait-frames
+        1 say   \ "There's no going back now. I'll need to find a new way out now."
         self-wait-anim
     then
     self-idle-or-end

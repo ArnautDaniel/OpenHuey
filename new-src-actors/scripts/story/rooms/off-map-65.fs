@@ -5,35 +5,20 @@ IN: story.rooms.off-map-65
 USING: room-names story.words story.shared ;
 
 : off-map-65.char-enter ( -- )   \ 00429640
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 -1 player-camera
-    then then
+    then
     2 0 -1 area-camera
 ;
 

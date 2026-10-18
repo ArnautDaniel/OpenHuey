@@ -4,6 +4,9 @@
 IN: story.rooms.off-map-d4
 USING: room-names story.words story.shared story.clock ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant cond-was-off                \ (bit 0) the room's condition was false last frame: its hook waits a frame once it holds
+
 \ room 0xD4: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
 : off-map-d4.cmd00 ( -- )  clock-draw ;   \ (each frame: the clock)
@@ -11,77 +14,41 @@ USING: room-names story.words story.shared story.clock ;
 : off-map-d4.cond00? ( -- flag )  true ;
 
 : off-map-d4.char-enter ( -- )   \ 00447130
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         0 0 player-camera
-    then then
+    then
     3 0 0 area-camera
 ;
 
 : off-map-d4.phase1 ( -- )   \ 00447230
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     hewie-who 4 char-entered-area? if
         0 exit-prepare
     then
@@ -98,9 +65,9 @@ USING: room-names story.words story.shared story.clock ;
 
 : off-map-d4.phase3 ( -- )   \ 004472B0
     off-map-d4.cond00? not if
-        0 ebit-set
-    else 0 ebit? if
-        0 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-d4.cmd00
     then then

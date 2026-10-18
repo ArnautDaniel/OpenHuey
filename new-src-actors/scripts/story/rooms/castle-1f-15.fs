@@ -2,7 +2,18 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-15
-USING: engine room-names story.words story.shared flag-names story-names ;
+USING: engine room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant spear-remarked              \ (bit 0) its first remark made: "This spear decoration serves as an obvious conversation piec"
+1 constant armor-remarked              \ (bit 1) its first remark made: "A suit of armor forged from steel."
+2 constant handrail-remarked           \ (bit 2) its first remark made: "This section of handrail seems to be... gone. They always sa"
+3 constant will-find-her               \ (bit 3) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+4 constant hewie-zone0-noticed         \ (bit 4) Hewie has reacted to zone 0 (once a visit)
+7 constant encounter-done              \ (bit 7) the encounter in area $18 over (whichever way it went)
+8 constant sound-started               \ (bit 8) its sound started (then kept up)
+9 constant encounter-started           \ (bit 9) the encounter in area $18 begun
+8 constant room-loop-sound             \ (snd 8) its steady sound (started as it comes in, then kept up)
 
 \ room 0x19 (Room19_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) while
 \ Hewie is controlled: in another room, or 30 or more from the player
@@ -34,45 +45,25 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 : castle-1f-15.char-enter ( -- )   \ 003FB420
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         0 0 player-camera
-    then then
+    then
     3 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 4 exit-taken? and if
-            fiona-who 4 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 4 exit-taken? and if
-        hewie-who 4 char-to-exit
+    player-who self-is? 4 exit-taken? and if
+        player-who 4 char-to-exit
         1 1 player-camera
-    then then
+    then
     4 1 1 area-camera
     fiona-who self-is? if
         4 exit-taken? 3 exit-taken? or if
@@ -82,13 +73,13 @@ USING: engine room-names story.words story.shared flag-names story-names ;
 ;
 
 : castle-1f-15.phase1 ( -- )   \ 003FB520
-    8 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000008 6 -88.0 65.0 -95.0 0 0 sound
-            8 ebit-set
+            room-loop-sound volume-scaled 6 -88.0 65.0 -95.0 0 0 sound
+            sound-started ebit-set
         then
     else
-        $C0000008 6 -88.0 65.0 -95.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -88.0 65.0 -95.0 0 0 sound
     then
     0 exit-usable? if
         0 exit-check
@@ -130,13 +121,13 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         2 map-page
     then
     0 -88.0 50.0 -94.617 $1E 20 0 zone
-    4 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 0 9 char-zone-bits? if
-                    4 ebit-set
+                    hewie-zone0-noticed ebit-set
                     $1E chance? if
-                        $1F 0 var-set
+                        hewie-zone-var 0 var-set
                         0 hewie-who $88 action
                     then
                 then
@@ -147,8 +138,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 0 9 char-zone-bits? if
-                $1F 0 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 0 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then
@@ -156,8 +147,8 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then
@@ -165,13 +156,13 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         5 34.3 0.0 -13.7 $A 5 0 zone
         hewie-who 5 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 c1f-15-camomile-found var-set
-                $1A c1f-15-camomile var-set
-                $1B 0 var-set
-                $1C 34300 var-set
-                $1D 1000 var-set
-                $1E -13700 var-set
-                $1F 5 var-set
+                found-flag-var c1f-15-camomile-found var-set
+                taken-flag-var c1f-15-camomile var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var 34300 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var -13700 var-set
+                hewie-zone-var 5 var-set
                 0 hewie-who $8B action
             then
         then
@@ -180,13 +171,13 @@ USING: engine room-names story.words story.shared flag-names story-names ;
         6 56.3 50.0 -71.5 $A 5 0 zone
         hewie-who 6 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 c1f-15-medallion-found var-set
-                $1A c1f-15-medallion var-set
-                $1B 1 var-set
-                $1C 56300 var-set
-                $1D 51000 var-set
-                $1E -71500 var-set
-                $1F 6 var-set
+                found-flag-var c1f-15-medallion-found var-set
+                taken-flag-var c1f-15-medallion var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var 56300 var-set
+                sparkle-y-var 51000 var-set
+                sparkle-z-var -71500 var-set
+                hewie-zone-var 6 var-set
                 0 hewie-who $8B action
             then
         then
@@ -206,12 +197,12 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     fiona-who $14 char-in-area? fiona-who -45 $5A char-heading? and if
         4 unhurried offer-action
     then
-    7 ebit? not 9 ebit? not and if
+    encounter-done ebit? not encounter-started ebit? not and if
         fiona-who $18 char-in-area? if
             2 game-mode? in-panic? not and if
                 castle-1f-15.cond00? if
                     hewie-who char-here? not hewie-who 2 char-cond? or if
-                        9 ebit-set
+                        encounter-started ebit-set
                         panic-eased
                         fiona-who 0 char-action? if
                             0 fiona-who 5 action-force
@@ -219,26 +210,26 @@ USING: engine room-names story.words story.shared flag-names story-names ;
                             1 fiona-who 5 action-force
                         then
                     else
-                        3 ebit-clear
+                        will-find-her ebit-clear
                         7 0 pvar? if
                             0 chance? if
-                                3 ebit-set
+                                will-find-her ebit-set
                             then
                         else 7 1 pvar? if
                             $32 chance? if
-                                3 ebit-set
+                                will-find-her ebit-set
                             then
                         else 7 2 pvar? if
                             $5A chance? if
-                                3 ebit-set
+                                will-find-her ebit-set
                             then
                         else 7 3 pvar? if
                             $5A chance? if
-                                3 ebit-set
+                                will-find-her ebit-set
                             then
                         then then then then
-                        3 ebit? not if
-                            9 ebit-set
+                        will-find-her ebit? not if
+                            encounter-started ebit-set
                             panic-eased
                             fiona-who 0 char-action? if
                                 0 fiona-who 6 action-force
@@ -246,7 +237,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
                                 1 fiona-who 6 action-force
                             then
                         else
-                            9 ebit-set
+                            encounter-started ebit-set
                             panic-eased
                             fiona-who 0 char-action? if
                                 0 fiona-who 7 action-force
@@ -300,35 +291,29 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     self-wait-done
     $112 -0.195 -27.107 175 $FFFF 5 self-move-to
     self-wait-done
-    $A02 self-anim
-    self-wait-anim
-    0 message   \ "'Agnus Dei' Looks like that's the title of this diorama."
-    wait-message
+    look-close-anim play-out
+    0 say   \ "'Agnus Dei' Looks like that's the title of this diorama."
     self-idle-or-end
 ;
 
 : castle-1f-15.act02 ( -- )   \ 003FB9B0
     self-wait-done
-    0 ebit? not if
-        1 message   \ "This spear decoration serves as an obvious conversation piece. Hard to believe peop..."
-        wait-message
-        0 ebit-set
+    spear-remarked ebit? not if
+        1 say   \ "This spear decoration serves as an obvious conversation piece. Hard to believe peop..."
+        spear-remarked ebit-set
     else
-        2 message   \ "I could try using this to protect myself... Damn! No good, it's just too heavy."
-        wait-message
+        2 say   \ "I could try using this to protect myself... Damn! No good, it's just too heavy."
     then
     self-idle-or-end
 ;
 
 : castle-1f-15.act03 ( -- )   \ 003FB9D0
     self-wait-done
-    1 ebit? not if
-        3 message   \ "A suit of armor forged from steel."
-        wait-message
-        1 ebit-set
+    armor-remarked ebit? not if
+        3 say   \ "A suit of armor forged from steel."
+        armor-remarked ebit-set
     else
-        4 message   \ "I guess this room serves as a museum of sorts."
-        wait-message
+        4 say   \ "I guess this room serves as a museum of sorts."
     then
     self-idle-or-end
 ;
@@ -340,16 +325,13 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     world-frozen state-flag-set
     1 self-scripted
     1 20.0 50.0 15.0 0.0 event-camera
-    2 ebit? not if
-        5 message   \ "This section of handrail seems to be... gone. They always say 'never look down' in..."
-        wait-message
-        2 ebit-set
+    handrail-remarked ebit? not if
+        5 say   \ "This section of handrail seems to be... gone. They always say 'never look down' in..."
+        handrail-remarked ebit-set
     else
-        6 message   \ "If I fell here, there would be no coming back."
-        wait-message
+        6 say   \ "If I fell here, there would be no coming back."
     then
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     world-frozen state-flag-clear
     0 0.0 0.0 0.0 0.0 event-camera
     0 self-scripted
@@ -378,7 +360,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     then
     world-held state-flag-set
     fiona-who $169 60.358 52.0 180 char-to-xz
-    $B01 0 self-anim-blend
+    lying-anim 0 self-anim-blend
     camera-restart
     $FE $19 358 2 stalker-to-room
     stalker-who $166 55.085 70.506 180 char-to-xz
@@ -386,13 +368,12 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     hewie-who 0 char-visible
     hewie-who action-end
     stalkers-stay state-flag-clear
-    4 $1E self-anim-blend
-    self-wait-anim
+    hug-self-anim $1E blend-out
     $F $41 fade
     wait-fade
     stalkers-blind state-flag-clear
     $64 threat-raise
-    7 ebit-set
+    encounter-done ebit-set
     $1F resident-flag-set
     0 self-scripted
     self-idle-or-end
@@ -431,7 +412,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     stalkers-blind state-flag-clear
     10 hewie-trust
     $8278 item-give
-    7 ebit-set
+    encounter-done ebit-set
     $1D resident-flag-set
     0 self-scripted
     self-idle-or-end
@@ -456,7 +437,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     then
     world-held state-flag-set
     fiona-who $16C 63.054 67.67 -57 char-to-xz
-    $B01 0 self-anim-blend
+    lying-anim 0 self-anim-blend
     camera-restart
     hewie-who $166 62.709 59.408 -57 char-to-xz
     $FE $19 359 2 stalker-to-room
@@ -466,7 +447,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     $F $41 fade
     wait-fade
     stalkers-blind state-flag-clear
-    7 ebit-set
+    encounter-done ebit-set
     $1E resident-flag-set
     $8279 item-give
     0 self-scripted
@@ -477,14 +458,12 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $A02 $A self-anim-blend
-    self-wait-anim
-    7 message   \ "Creaks and pops crackle out of the dubious-looking hole. Everything about the hole-floor scre..."
-    wait-message
+    look-close-anim $A blend-out
+    7 say   \ "Creaks and pops crackle out of the dubious-looking hole. Everything about the hole scre..."
     0 answer? if
         $F 0 fade
         wait-fade
-        fiona-who $7E 5 char-sound
+        fiona-who slide-sound 5 char-sound
         world-held state-flag-set
         $FE exit-check
     else
@@ -498,7 +477,7 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     1 self-scripted
     self-wait-done
     camera-restart
-    fiona-who $7E 5 char-sound
+    fiona-who slide-sound 5 char-sound
     3 map-page
     $F 1 fade
     wait-fade
@@ -512,25 +491,20 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     34.3 -13.7 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-15-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -540,25 +514,20 @@ USING: engine room-names story.words story.shared flag-names story-names ;
     56.3 -71.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-15-medallion story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

@@ -18,7 +18,7 @@ FILES = [*sorted((ROOT / "scripts/story/rooms").glob("*.fs")), ROOT / "scripts/s
 # word: its character arguments' places, counted from the top of the data stack (0: the last)
 WHO = {
     "action": [1], "action-force": [1], "action-end": [0], "self-is?": [0], "char-here?": [0],
-    "char-busy?": [0], "char-in-area?": [1], "char-entered-area?": [1], "char-left-area?": [1],
+    "char-busy?": [0], "start-action": [1], "char-in-area?": [1], "char-entered-area?": [1], "char-left-area?": [1],
     "char-on-tri?": [1], "char-in-room?": [1], "char-heading?": [2], "char-to-exit": [1],
     "char-camera": [2], "camera-follow": [0], "char-sound": [2], "char-to-tri": [1],
     "char-to-tri-facing": [2], "char-to-xz": [2], "char-to-xyz": [1], "char-animal-go": [1],
@@ -40,7 +40,8 @@ WHO = {
     "char-layer": [1], "show-part": [2], "hide-part": [1], "daniella?": [0], "char-model-op": [1],
     "doorway-fade!": [1],
 }
-NAMES = {0: "fiona-who", 1: "hewie-who", 0xFE: "stalker-who", 0xFF: "self-who"}
+NAMES = {0: "fiona-who", 1: "hewie-who", 0xFE: "stalker-who", 0xFF: "self-who",
+         0xF9: "cutscene-track", 0xFA: "fade-track", **{0xF0 + n: f"{n} track" for n in range(9)}}
 
 TOKEN = re.compile(r"\S+")
 INT = re.compile(r"-?(\$[0-9A-Fa-f]+|\d+)$")

@@ -2,7 +2,16 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-13
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant came-in-forward             \ (bit 0) she came in this way: no going back (until he is here)
+1 constant stalker-scene-on            \ (bit 1) the scene with her (act01) under way
+2 constant wall-breaking               \ (bit 2) the stalker breaking through (at the room's end: broken)
+0 constant struggle-frames-var         \ (var 0) the struggle's frames (her cry at 12, over at 30)
+0 constant struggle-sound              \ (snd 0) her struggling
+1 constant smash-sound                 \ (snd 1) him smashing it
+5 constant smash-start-sound           \ (snd 5) him going to smash it
 
 \ room 0x6A (D_00438CE0): a lit quad at x 120, z 47 .. 39, from 4 to 21
 : old-mansion-2f-13.cmd00 ( b0 -- )  $1B $80  120.0e 21.0e 47.0e  120.0e 21.0e 39.0e  120.0e 4.0e 47.0e  120.0e 4.0e 39.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -38,45 +47,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : old-mansion-2f-13.char-enter ( -- )   \ 004387A0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         2 2 player-camera
-    then then
+    then
     2 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         0 0 player-camera
-    then then
+    then
     3 0 0 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -97,20 +86,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 exit-usable? if
         1 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     $A 2 2 1 chars-area-camera
     $B 1 1 1 chars-area-camera
     $C 0 0 1 chars-area-camera
@@ -141,7 +122,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         then
         3 exit-prepare
     then
-    1 ebit? not if
+    stalker-scene-on ebit? not if
         om2f-13-breakable-broken story-flag? not om2f-13-flag1 story-flag? and if
             3 stalker-kind? $22 stalker-kind? or if
                 stalker-who $E char-entered-area? stalker-who 0 char-action? and if
@@ -154,31 +135,31 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 88.5 0.0 71.56 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om2f-13-rubrum-medallion-found var-set
-                $1A om2f-13-rubrum-medallion var-set
-                $1B 0 var-set
-                $1C 88500 var-set
-                $1D 1000 var-set
-                $1E 71560 var-set
-                $1F 0 var-set
+                found-flag-var om2f-13-rubrum-medallion-found var-set
+                taken-flag-var om2f-13-rubrum-medallion var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var 88500 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 71560 var-set
+                hewie-zone-var 0 var-set
                 0 hewie-who $8B action
             then
         then
     then
-    0 ebit? if
+    came-in-forward ebit? if
         stalker-who char-here? if
-            0 ebit-clear
+            came-in-forward ebit-clear
         then
     then
 ;
 
 : old-mansion-2f-13.phase2 ( -- )   \ 004389F0
-    0 exit-door-open? not 0 ebit? and if
+    0 exit-door-open? not came-in-forward ebit? and if
         fiona-who 0 char-before-door? if
             0 examine-message   \ "Only a fool would even think of going back now!!"
         then
     then
-    2 ebit? not if
+    wall-breaking ebit? not if
         fiona-who $E char-in-area? fiona-who 45 $3C char-heading? and if
             om2f-13-breakable-broken story-flag? not if
                 stalker-who char-here? not if
@@ -194,10 +175,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         then
     else 3 stalker-kind? $22 stalker-kind? or if
         stalker-who char-busy? not if
-            2 ebit-clear
+            wall-breaking ebit-clear
         then
     else
-        2 ebit-clear
+        wall-breaking ebit-clear
     then then
     om2f-13-rubrum-medallion-found story-flag? om2f-13-rubrum-medallion story-flag? not and if
         0 0 5 5 0 zone-at-effect
@@ -208,7 +189,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : old-mansion-2f-13.phase5 ( -- )   \ 00438A70
-    2 ebit? if
+    wall-breaking ebit? if
         om2f-13-flag1 story-flag-set
         om2f-13-breakable-broken story-flag-set
         3 stalker-kind? $22 stalker-kind? or if
@@ -219,7 +200,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-2f-13.act00 ( -- )   \ 00438A90
     1 self-scripted
-    0 ebit-set
+    came-in-forward ebit-set
     $F $41 fade
     fiona-who $28 5 char-sound
     self-wait-done
@@ -230,76 +211,66 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-2f-13.act01 ( -- )   \ 00438AB0
     1 self-scripted
-    1 ebit-set
+    stalker-scene-on ebit-set
     self-wait-done
     fiona-who 0 char-file-load
     $F8 114.64 43.0 90 $FFFF 5 self-move-to
     self-wait-done
     fiona-who char-file-use
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     om2f-13-flag1 story-flag? not if
         0 old-mansion-2f-13.cmd00
-        0 0 var-set
-        $8000 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        struggle-frames-var 0 var-set
+        0 room-motion 5 self-anim-blend8
+        5 wait-frames
         begin
             0 old-mansion-2f-13.cmd01
             yield
-            0 12 var? if
-                fiona-who 0 6 char-sound
+            struggle-frames-var 12 var? if
+                fiona-who struggle-sound 6 char-sound
             then
-            0 30 var? not while
-            0 var-inc
+            struggle-frames-var 30 var? not while
+            struggle-frames-var var-inc
         repeat
         self-wait-anim
         2 old-mansion-2f-13.cmd01
         om2f-13-flag1 story-flag-set
     else
-        0 0 var-set
-        $8001 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        struggle-frames-var 0 var-set
+        1 room-motion 5 self-anim-blend8
+        5 wait-frames
         begin
             1 old-mansion-2f-13.cmd01
             yield
-            0 12 var? if
-                fiona-who 0 6 char-sound
+            struggle-frames-var 12 var? if
+                fiona-who struggle-sound 6 char-sound
             then
-            0 28 var? not while
-            0 var-inc
+            struggle-frames-var 28 var? not while
+            struggle-frames-var var-inc
         repeat
         self-wait-anim
         3 old-mansion-2f-13.cmd01
         om2f-13-flag1 story-flag-clear
         1 old-mansion-2f-13.cmd00
     then
-    1 ebit-clear
+    stalker-scene-on ebit-clear
     0 self-scripted
     self-idle-or-end
 ;
 
 : old-mansion-2f-13.act02 ( -- )   \ 00438B60
-    2 ebit-set
+    wall-breaking ebit-set
     self-wait-done
     stalker-who 1 char-file-load
     $F8 114.64 43.0 90 $FFFF 5 self-move-to
     self-wait-done
     stalker-who char-file-use
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
-    stalker-who 5 6 char-sound
-    $8000 5 self-anim-blend
-    self-wait-anim
+    [: 6 sound-bank-loaded? ;] wait-until
+    stalker-who smash-start-sound 6 char-sound
+    0 room-motion 5 blend-out
     $E00 5 self-anim-blend
-    self-frames-reset
-    $16 self-wait-frames
-    stalker-who 1 6 char-sound
+    $16 wait-frames
+    stalker-who smash-sound 6 char-sound
     om2f-13-breakable-broken story-flag-set
     stalker-who 1 stalker-rage
     0 part-hidden
@@ -313,7 +284,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     120.0 4.0 45.0 0 943208504 4 -3.5 shards-at
     120.0 4.0 41.0 0 943208504 4 -3.5 shards-at
     self-wait-anim
-    2 ebit-clear
+    wall-breaking ebit-clear
     self-idle-or-end
 ;
 
@@ -321,8 +292,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    6 message   \ "The glass has been shattered. This mirror is useless."
-    wait-message
+    6 say   \ "The glass has been shattered. This mirror is useless."
     self-idle-or-end
 ;
 
@@ -331,25 +301,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     88.5 71.56 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $73 message-param-room
         $73 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-13-rubrum-medallion story-flag-set
             0 effect-remove
             $73 1 item-give-count
             0 $73 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

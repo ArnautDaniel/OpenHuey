@@ -4,6 +4,11 @@
 IN: story.rooms.off-map-d7
 USING: room-names story.words story.shared story.clock story-names ;
 
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant figure-scene-on             \ (bit 0) the figure's scene begun
+1 constant cond-was-off                \ (bit 1) the room's condition was false last frame: its hook waits a frame once it holds
+10 constant figure-cry-sound           \ (snd 10) the figure's cry as it appears
+
 \ as Room107_Cmd00
 : off-map-d7.cmd00 ( b0 -- )  2e room-nudge ;   \ (as chaos-forest-9's)
 \ room 0xD7: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
@@ -19,46 +24,37 @@ USING: room-names story.words story.shared story.clock story-names ;
     $19 1.0 0 bgm
     x-d7-flag1 story-flag? not if
         $E 5 $FF char-load
-        0 $F1 0 action
+        0 1 track 0 action
     then
     off-map-d7.cmd02
 ;
 
 : off-map-d7.char-enter ( -- )   \ 00447A90
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
 ;
 
 : off-map-d7.phase1 ( -- )   \ 00447AD0
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    0 ebit? x-d7-flag1 story-flag? not and if
+    then
+    figure-scene-on ebit? x-d7-flag1 story-flag? not and if
         off-map-d7.cond01? if
             x-d7-flag1 story-flag-set
-            $F1 action-end
-            0 $F1 1 action
+            1 track action-end
+            0 1 track 1 action
         then
     then
 ;
 
 : off-map-d7.phase3 ( -- )   \ 00447B00
     off-map-d7.cond01? not if
-        1 ebit-set
-    else 1 ebit? if
-        1 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-d7.cmd01
     then then
@@ -88,10 +84,9 @@ USING: room-names story.words story.shared story.clock story-names ;
 ;
 
 : off-map-d7.act01 ( -- )   \ 00447B50
-    $E $A 6 char-sound
+    $E figure-cry-sound 6 char-sound
     $E $9002 1 0 char-anim-hold
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 off-map-d7.cmd00
     1 off-map-d7.cmd00
     $E action-end

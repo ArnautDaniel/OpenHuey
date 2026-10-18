@@ -2,10 +2,19 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-5
-USING: actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.sounds stalker.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
+1 constant will-find-her               \ (bit 1) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+2 constant came-while-hidden           \ (bit 2) the stalker came in while she was hiding
+0 constant fall-frames-var             \ (var 0) the falling thing's frames
+1 constant fall-fx-var                 \ (var 1) the falling thing's effect
+0 constant push-room-sound             \ (snd 0) her pushing
+3 constant shatter-sound               \ (snd 3) a breakable shattering
 
 \ a hanging thing (the room's +0x34 (byte 3 + 2) object) swinging, by byte 4: 0 / 2 set going
-\ (12 degrees) away from the partner / Fiona; 1 a step-floor (22.5 degrees of its swing, shrinking to
+\ (12 degrees) away from the partner / Fiona; 1 a step (22.5 degrees of its swing, shrinking to
 \ 0.4 at each end; under half a degree it stops) - 2 while it swings
 : swing-step ( a n -- settled? )   \ (on 22.5 degrees of its swing, shrinking near the middle)
     {: a n :}
@@ -36,19 +45,19 @@ fvariable sw-dx  fvariable sw-dz
 \ 160), by byte 3: 0 started (event var 0 the frame count); 1 a frame (2 while falling): it
 \ drifts 0.5 a frame in x and falls 0.05 x n(n+1)/2, gone below -10
 : front-garden-5.fall ( -- going? )   \ (cmd01's frame of falling: false once gone)
-    0 var @ 1+ {: n :}
+    fall-frames-var var @ 1+ {: n :}
     3e  0.05e n n 1+ * 2/ s>f f*  f-  fdup -10e f> 0= if
-        fdrop  1 var @ dup alive? if  kill  else  drop  then  false exit
+        fdrop  fall-fx-var var @ dup alive? if  kill  else  drop  then  false exit
     then
-    -276.5e 0.5e n s>f f* f+ f>cell  f>cell  160e f>cell  1 var @ dup alive? if  send effect-place  else  drop 2drop drop  then
-    0 n var-set  true ;
+    -276.5e 0.5e n s>f f* f+ f>cell  f>cell  160e f>cell  fall-fx-var var @ dup alive? if  send effect-place  else  drop 2drop drop  then
+    fall-frames-var n var-set  true ;
 : front-garden-5.cmd01 ( b0 -- )   \ (something dropped from (-276.5, 3, 160): b0 0 made - kept in variable 1, the frames in
     \ variable 0; 1 falls a frame at a time - on 0.5 in x, down 0.05 more each frame - till below
     \ -10, where it is gone)
-    0= if  0 0 var-set  1  -276.5e 3e 160e effects:loop-sprite  var-set  exit  then
+    0= if  fall-frames-var 0 var-set  1  -276.5e 3e 160e effects:loop-sprite  var-set  exit  then
     begin  front-garden-5.fall while  yield  repeat ;
 \ room 0x2D: two hanging things (the room's objects 4 and 5) that Fiona pushes as she walks by:
-\ past a step-floor total of 5 they swing for 20 frames and the first toggles event flag 3 with a
+\ past a step total of 5 they swing for 20 frames and the first toggles event flag 3 with a
 \ sound (hangers_swing).
 : front-garden-5.cmd02 ( b0 -- )  4 2 1 3 1 2  5e hangers-swing ;   \ (Fiona's step's length past 5; event flag 3)
 \ Hewie (in state 0x7F, +0xF3564) within 5 of the spot by byte 3: 0 (-259.5, 190), 1 (-276, 160)
@@ -97,31 +106,31 @@ fvariable sw-dx  fvariable sw-dz
 
 : front-garden-5.act09 ( -- )   \ 00406180
     stalker-who camera-follow
-    1 ebit-clear
+    will-find-her ebit-clear
     $A 0 pvar? if
         0 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $A 1 pvar? if
         $19 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $A 2 pvar? if
         $32 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $A 3 pvar? if
         $4B chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     2 creature-action? if
-        1 ebit-set
+        will-find-her ebit-set
     then
     4 stalker-alert? if
-        1 ebit-clear
+        will-find-her ebit-clear
     then
-    1 ebit? if
+    will-find-her ebit? if
         0 stalker-who $A action
     else
         $78 1 summoner-wait
@@ -131,34 +140,25 @@ fvariable sw-dx  fvariable sw-dz
 ;
 
 : front-garden-5.char-enter ( -- )   \ 00405B80
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            2 ebit-set
+            came-while-hidden ebit-set
             front-garden-5.act09
         else
-            2 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
 
 : front-garden-5.phase1 ( -- )   \ 00405BD0
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
+    then
     1 0 0 1 chars-area-camera
     2 1 1 1 chars-area-camera
     $A 0 0 1 chars-area-camera
@@ -242,22 +242,22 @@ fvariable sw-dx  fvariable sw-dz
     5 -276.0 -10.0 160.0 5 15 0 zone
     4 -259.5 -10.0 190.0 5 15 0 zone
     fiona-who 4 char-in-zone? if
-        0 $F1 $D action
+        0 1 track $D action
     then
     fiona-who 5 char-in-zone? if
-        0 $F1 $E action
+        0 1 track $E action
     then
     fg-5-medallion-found story-flag? not if
         3 -228.4 -10.0 103.2 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 fg-5-medallion-found var-set
-                $1A fg-5-medallion var-set
-                $1B 1 var-set
-                $1C -228400 var-set
-                $1D -9000 var-set
-                $1E 103200 var-set
-                $1F 3 var-set
+                found-flag-var fg-5-medallion-found var-set
+                taken-flag-var fg-5-medallion var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var -228400 var-set
+                sparkle-y-var -9000 var-set
+                sparkle-z-var 103200 var-set
+                hewie-zone-var 3 var-set
                 0 hewie-who $8B action
             then
         then
@@ -270,8 +270,8 @@ fvariable sw-dx  fvariable sw-dz
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 6 9 char-zone-bits? if
-                $1F 6 var-set
-                $1F 13.0 hewie-look-zone
+                hewie-zone-var 6 var-set
+                hewie-zone-var 13.0 hewie-look-zone
             then
         then
     then
@@ -279,8 +279,8 @@ fvariable sw-dx  fvariable sw-dz
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 7 9 char-zone-bits? if
-                $1F 7 var-set
-                $1F 13.0 hewie-look-zone
+                hewie-zone-var 7 var-set
+                hewie-zone-var 13.0 hewie-look-zone
             then
         then
     then
@@ -321,7 +321,7 @@ fvariable sw-dx  fvariable sw-dz
             0 part-hidden
             1 part-shown
             -14.0 -10.0 97.0 0 -2143272896 0 0.0 shards-at
-            3 6 -14.0 -10.0 97.0 0 0 sound
+            shatter-sound 6 -14.0 -10.0 97.0 0 0 sound
             $40 $10A noise
             2 -14.0 -9.0 97.0 flicker-sprite
         then
@@ -386,7 +386,7 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     hewie-bark
     self-wait-done
-    0 $F1 $B action
+    0 1 track $B action
     $1C -236.0 160.0 -90 $FFFF $A self-move-to
     self-wait-done
     1 self-scripted
@@ -400,7 +400,7 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     hewie-bark
     self-wait-done
-    0 $F1 $C action
+    0 1 track $C action
     $161 -220.0 190.0 -90 $FFFF $A self-move-to
     self-wait-done
     1 self-scripted
@@ -432,7 +432,7 @@ fvariable sw-dx  fvariable sw-dz
 ;
 
 : front-garden-5.act08 ( -- )   \ 00406150
-    0 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     fiona-hidden state-flag-clear
@@ -440,8 +440,7 @@ fvariable sw-dx  fvariable sw-dz
     stalkers-stay state-flag-set
     $C3 -67.3 79.93 89 $207 5 self-move-to
     self-wait-done
-    4 $14 self-anim-blend
-    self-wait-anim
+    4 $14 blend-out
     0 self-scripted
     0 self-noclip
     stalkers-stay state-flag-clear
@@ -450,37 +449,36 @@ fvariable sw-dx  fvariable sw-dz
 
 : front-garden-5.act07 ( -- )   \ 00406090
     stalkers-stay state-flag-set
-    2 ebit-clear
+    came-while-hidden ebit-clear
     1 self-scripted
-    0 ebit-clear
+    found-her ebit-clear
     self-wait-done
     $E5 -74.756 82.505 -90 $FFFF 5 self-move-to
     self-wait-done
     1 self-noclip
     1 self-scripted
-    $800 self-anim
-    self-wait-anim
+    crouch-down-anim play-out
     $D6 -100.488 79.931 -90 $803 5 self-move-to
     self-wait-done
     $D6 -100.488 79.931 90 $803 5 self-move-to
     self-wait-done
-    $801 self-anim
+    crouching-anim self-anim
     fiona-hidden state-flag-set
     stalkers-stay state-flag-clear
     0 avoid-prompt
     begin
         0 2 pad? not if
-            in-panic? 0 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] front-garden-5.act08 goto
             else
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                2 ebit? stalker-who char-here? not and if
-                    2 ebit-clear
+                came-while-hidden ebit? stalker-who char-here? not and if
+                    came-while-hidden ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -495,8 +493,7 @@ fvariable sw-dx  fvariable sw-dz
             stalkers-stay state-flag-set
             $E5 -74.756 82.505 90 $803 5 self-move-to
             self-wait-done
-            $802 self-anim
-            self-wait-anim
+            crouch-up-anim play-out
             0 self-scripted
             0 self-noclip
             stalkers-stay state-flag-clear
@@ -509,26 +506,19 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     $1E6 -45.859 82.656 -90 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
-    self-wait-anim
-    0 ebit-set
+    there-anim play-out
+    found-her ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
 
 : front-garden-5.act0B ( -- )   \ 00406200
-    begin
-        1 front-garden-5.cond00? not while
-        yield
-    repeat
-    hewie-who $6C 5 char-sound
+    [: 1 front-garden-5.cond00? ;] wait-until
+    hewie-who snap-sound 5 char-sound
     fg-5-flag1 story-flag? not if
-        0 $F2 $F action
+        0 2 track $F action
     then
     1 0 front-garden-5.cmd00
     1 1 front-garden-5.cmd00
@@ -536,25 +526,22 @@ fvariable sw-dx  fvariable sw-dz
 ;
 
 : front-garden-5.act0C ( -- )   \ 00406230
-    begin
-        0 front-garden-5.cond00? not while
-        yield
-    repeat
-    hewie-who $6C 5 char-sound
+    [: 0 front-garden-5.cond00? ;] wait-until
+    hewie-who snap-sound 5 char-sound
     0 0 front-garden-5.cmd00
     0 1 front-garden-5.cmd00
     self-idle-or-end
 ;
 
 : front-garden-5.act0D ( -- )   \ 00406250
-    fiona-who $8F 5 char-sound
+    fiona-who shove-hit-sound 5 char-sound
     0 2 front-garden-5.cmd00
     0 1 front-garden-5.cmd00
     self-idle-or-end
 ;
 
 : front-garden-5.act0E ( -- )   \ 00406270
-    fiona-who $8F 5 char-sound
+    fiona-who shove-hit-sound 5 char-sound
     1 2 front-garden-5.cmd00
     1 1 front-garden-5.cmd00
     self-idle-or-end
@@ -575,25 +562,20 @@ fvariable sw-dx  fvariable sw-dz
     -265.0 160.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $72 message-param-room
         $72 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-5-viola-medallion story-flag-set
             0 effect-remove
             $72 1 item-give-count
             0 $72 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -603,25 +585,20 @@ fvariable sw-dx  fvariable sw-dz
     -228.4 103.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-5-medallion story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -630,21 +607,15 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     $41 -190.101 72.001 180 $FFFF 5 self-move-to
     self-wait-done
-    self-frames-reset
-    4 self-wait-frames
-    $1200 self-anim
-    self-wait-anim
-    fiona-who 0 6 char-sound
-    $1203 self-anim
-    self-frames-reset
-    self-wait-16
-    $1202 self-anim
-    self-wait-anim
+    4 wait-frames
+    lean-anim play-out
+    fiona-who push-room-sound 6 char-sound
+    strain-anim self-anim
+    16 wait-frames
+    let-go-push-anim play-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
-    0 message   \ "The hinge is rusted solid. Try as I may, I can't open this door."
-    wait-message
+    7 wait-frames
+    0 say   \ "The hinge is rusted solid. Try as I may, I can't open this door."
     self-idle-or-end
 ;
 
@@ -653,25 +624,20 @@ fvariable sw-dx  fvariable sw-dz
     -14.0 97.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-5-beef-jerky story-flag-set
             2 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -681,25 +647,20 @@ fvariable sw-dx  fvariable sw-dz
     -180.0 176.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $90 message-param-room
         $90 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             got-ball story-flag-set
             3 effect-remove
             $90 1 item-give-count
             0 $90 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

@@ -2,12 +2,27 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-20
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+1 constant rotted-knob-remarked        \ (bit 1) its first remark made: "The knob has rotted off. I can't open the door like this."
+2 constant in-zone1                    \ (bit 2) someone in zone 1 (the figure's hops count)
+7 constant hewie-zone2-noticed         \ (bit 7) Hewie has reacted to zone 2 (once a visit)
+9 constant area0-reacted               \ (bit 9) her reaction on entering area 0 made (once a visit)
+0 constant hops-var                    \ (var 0) the figure's hops (5: away)
+1 constant still-var                   \ (var 1) the figure still (0) or hopping
+2 constant call-frames-var             \ (var 2) frames to the figure's next call (60)
+0 constant figure-hit1-sound           \ (snd 0) the figure as it strikes her / is struck
+1 constant figure-hit2-sound           \ (snd 1) the figure as it strikes her / is struck
+2 constant figure-call1-sound          \ (snd 2) the figure's call (now and then)
+3 constant figure-call2-sound          \ (snd 3) the figure's call (now and then)
+4 constant figure-call3-sound          \ (snd 4) the figure's call (now and then)
+5 constant break-sound                 \ (snd 5) the breakable giving way
 
 : old-mansion-1f-20.enter ( -- )   \ 00439160
     room-sounds
     $1C $18C char-to-tri
-    1 0 var-set
+    still-var 0 var-set
     3 $1C char-loaded? if
         $1C 3 $FF char-load
         3 char-start
@@ -15,7 +30,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $1C 12.0 0.0 0.0 -90 char-to-xyz
         $1C $900C 1 0 char-anim-hold
     then
-    0 $F1 3 action
+    0 1 track 3 action
     hunted state-flag-set
     om1f-20-breakable-broken story-flag? not if
         0 part-shown
@@ -42,45 +57,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : old-mansion-1f-20.char-enter ( -- )   \ 00439220
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         3 3 player-camera
-    then then
+    then
     2 3 3 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         0 0 player-camera
-    then then
+    then
     3 0 0 area-camera
     fiona-who self-is? if
         2 exit-taken? if
@@ -98,20 +93,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 exit-usable? if
         1 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     $A 0 0 1 chars-area-camera
     $B 2 2 1 chars-area-camera
     $C 2 2 1 chars-area-camera
@@ -139,7 +126,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     om1f-20-breakable-broken story-flag? not if
         0 -50.0 50.0 355.0 6 12 0 zone
         fiona-who 0 char-in-zone? if
-            fiona-who 5 6 char-sound
+            fiona-who break-sound 6 char-sound
             0 part-hidden
             1 part-shown
             0 barred-floor floor-off
@@ -156,31 +143,31 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     1 12.0 0.0 0.0 5 10 1 zone
     self-who 1 char-in-zone? if
-        2 ebit-set
+        in-zone1 ebit-set
     else
-        2 ebit-clear
+        in-zone1 ebit-clear
     then
-    1 0 var? not if
-        2 var-inc
-        2 60 var? if
+    still-var 0 var? not if
+        call-frames-var var-inc
+        call-frames-var 60 var? if
             $21 chance? if
-                $1C 2 6 char-sound
+                $1C figure-call1-sound 6 char-sound
             else $32 chance? if
-                $1C 3 6 char-sound
+                $1C figure-call2-sound 6 char-sound
             else
-                $1C 4 6 char-sound
+                $1C figure-call3-sound 6 char-sound
             then then
-            2 0 var-set
+            call-frames-var 0 var-set
         then
     then
     2 11.58 0.0 -0.41 $17 16 0 zone
-    7 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 2 9 char-zone-bits? if
-                    7 ebit-set
+                    hewie-zone2-noticed ebit-set
                     $50 chance? if
-                        $1F 2 var-set
+                        hewie-zone-var 2 var-set
                         0 hewie-who $8A action
                     then
                 then
@@ -191,8 +178,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? 1 game-mode? and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then
@@ -200,13 +187,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         5 0.34 0.0 62.0 $A 5 0 zone
         hewie-who 5 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-20-medallion-found var-set
-                $1A om1f-20-medallion var-set
-                $1B 1 var-set
-                $1C 340 var-set
-                $1D 1000 var-set
-                $1E 62000 var-set
-                $1F 5 var-set
+                found-flag-var om1f-20-medallion-found var-set
+                taken-flag-var om1f-20-medallion var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var 340 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 62000 var-set
+                hewie-zone-var 5 var-set
                 0 hewie-who $8B action
             then
         then
@@ -215,13 +202,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         6 13.99 0.0 94.5 $A 5 0 zone
         hewie-who 6 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-20-medallion-sniffed-2 var-set
-                $1A om1f-20-medallion-2 var-set
-                $1B 2 var-set
-                $1C 13990 var-set
-                $1D 1000 var-set
-                $1E 94500 var-set
-                $1F 6 var-set
+                found-flag-var om1f-20-medallion-sniffed-2 var-set
+                taken-flag-var om1f-20-medallion-2 var-set
+                sparkle-fx-var 2 var-set
+                sparkle-x-var 13990 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 94500 var-set
+                hewie-zone-var 6 var-set
                 0 hewie-who $8B action
             then
         then
@@ -230,13 +217,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         7 -13.99 0.0 126.99 $A 5 0 zone
         hewie-who 7 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-20-medallion-sniffed-3 var-set
-                $1A om1f-20-medallion-3 var-set
-                $1B 3 var-set
-                $1C -13990 var-set
-                $1D 1000 var-set
-                $1E 126990 var-set
-                $1F 7 var-set
+                found-flag-var om1f-20-medallion-sniffed-3 var-set
+                taken-flag-var om1f-20-medallion-3 var-set
+                sparkle-fx-var 3 var-set
+                sparkle-x-var -13990 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 126990 var-set
+                hewie-zone-var 7 var-set
                 0 hewie-who $8B action
             then
         then
@@ -245,20 +232,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         8 -42.23 50.0 236.98 $A 5 0 zone
         hewie-who 8 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-20-prima-magnesia-found var-set
-                $1A om1f-20-prima-magnesia var-set
-                $1B 4 var-set
-                $1C -42230 var-set
-                $1D 51000 var-set
-                $1E 236980 var-set
-                $1F 8 var-set
+                found-flag-var om1f-20-prima-magnesia-found var-set
+                taken-flag-var om1f-20-prima-magnesia var-set
+                sparkle-fx-var 4 var-set
+                sparkle-x-var -42230 var-set
+                sparkle-y-var 51000 var-set
+                sparkle-z-var 236980 var-set
+                hewie-zone-var 8 var-set
                 0 hewie-who $8B action
             then
         then
     then
-    om3f-1-flag2 story-flag? over-music-c story-flag? not and 9 ebit? not and if
+    om3f-1-flag2 story-flag? over-music-c story-flag? not and area0-reacted ebit? not and if
         fiona-who 0 char-entered-area? if
-            9 ebit-set
+            area0-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 9 action-force
@@ -322,20 +309,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    1 ebit? not if
-        2 message   \ "The knob has rotted off. I can't open the door like this."
-        wait-message
-        1 ebit-set
+    rotted-knob-remarked ebit? not if
+        2 say   \ "The knob has rotted off. I can't open the door like this."
+        rotted-knob-remarked ebit-set
     else
-        3 message   \ "The door is completely rotted through and through. A good kick should knock the doo..."
-        wait-message
-        1 ebit-clear
+        3 say   \ "The door is completely rotted through and through. A good kick should knock the doo..."
+        rotted-knob-remarked ebit-clear
     then
     self-idle-or-end
 ;
 
 : old-mansion-1f-20.act03 ( -- )   \ 004397A0
-    1 0 var-set
+    still-var 0 var-set
     3 $1C char-loaded? not if
         $1C 3 $FF char-load
         3 char-start
@@ -344,31 +329,30 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $1C $900C 1 0 char-anim-hold
     then
     begin
-        2 ebit? if
-            1 0 var-set
-            0 var-inc
-            0 3 var? if
+        in-zone1 ebit? if
+            still-var 0 var-set
+            hops-var var-inc
+            hops-var 3 var? if
                 $21 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 4 var? if
+            hops-var 4 var? if
                 $32 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            $1C 1 6 char-sound
-            fiona-who $8F 5 char-sound
+            $1C figure-hit2-sound 6 char-sound
+            fiona-who shove-hit-sound 5 char-sound
             $1C $900D 0 3 char-anim-hold
             $1C wait-char-anim
-            0 5 var? if
+            hops-var 5 var? if
                 $1C $900E 0 3 char-anim-hold
-                self-frames-reset
-                $10 self-wait-frames
-                0 0 var-set
+                $10 wait-frames
+                hops-var 0 var-set
                 1 7.0 11.0 0.0 5 10 0 zone
                 fiona-who 1 3 char-zone-bits? if
-                    $1C 0 6 char-sound
+                    $1C figure-hit1-sound 6 char-sound
                     $1C 1 fiona-thrown
                     3 panic-stage? if
                         4 panic-stage
@@ -379,16 +363,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
                 $1C wait-char-anim
             then
             $1C $900C 0 3 char-anim-hold
-            1 0 var-set
+            still-var 0 var-set
         then
         $1C char-at-motion-event? if
             $1C $900C 0 0 char-anim-hold
-            1 0 var-set
+            still-var 0 var-set
         else
-            1 var-inc
+            still-var var-inc
         then
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     again
 ;
 
@@ -397,25 +380,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     12.3 177.61 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $9B message-param-room
         $9B $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-20-weeping-stone story-flag-set
             0 effect-remove
             $9B 1 item-give-count
             0 $9B item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $903 self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -425,25 +403,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0.34 62.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-20-medallion story-flag-set
             1 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -453,25 +426,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     13.99 94.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-20-medallion-2 story-flag-set
             2 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -481,25 +449,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -13.99 126.99 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-20-medallion-3 story-flag-set
             3 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -509,25 +472,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -42.23 236.98 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $98 message-param-room
         $98 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-20-prima-magnesia story-flag-set
             4 effect-remove
             $98 1 item-give-count
             0 $98 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -553,8 +511,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     0.5 56.7 self-turn-to-xz
     self-wait-done
-    4 message   \ "A pair of scales lies in the center of the corridor. A balance in a corridor... Just on..."
-    wait-message
+    4 say   \ "A pair of scales lies in the center of the corridor. A balance in a corridor... Just on..."
     self-idle-or-end
 ;
 

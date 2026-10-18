@@ -2,7 +2,17 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-6
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant medicine-remarked           \ (bit 0) its first remark made: "There's some kind of medicine bottle on the shelf."
+1 constant chemicals-remarked          \ (bit 1) its first remark made: "Several bottles containing various chemicals have been left "
+2 constant rested                      \ (bit 2) she has rested here (her recovery: once a visit)
+3 constant hewie-away                  \ (bit 3) Hewie not here (or sent off) as the scene ends
+4 constant back-from-forest            \ (bit 4) she came back by exit $80 (after the forest)
+5 constant measuring-device-remarked   \ (bit 5) its first remark made: "There is a device which appears to be used for measuring thi"
+6 constant hiding-spot-remarked        \ (bit 6) its first remark made: "I wonder if this could serve as a hiding spot if I'm ever in"
+1 constant calm-sound                  \ (snd 1) the spot that calms her
 
 \ room 0x59 (Room59_Cmd00_ptmf): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0
 : old-mansion-2f-6.cmd00 ( b0 -- )  drop ;   \ (the stalker's model's springs (+0x9E0): not simulated here yet)
@@ -18,10 +28,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 part-hidden
     cf-13-flag1 story-flag? x-37-flag2 story-flag? not and if
         $80 exit-taken? if
-            4 ebit-set
+            back-from-forest ebit-set
         then
     then
-    4 ebit? not if
+    back-from-forest ebit? not if
         om2f-6-lavender story-flag? not if
             0 4.58 9.0 14.22 flicker-sprite
         then
@@ -29,18 +39,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : old-mansion-2f-6.char-enter ( -- )   \ 004100B0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     fiona-who self-is? if
-        4 ebit? if
+        back-from-forest ebit? if
             fiona-who $4B 0 char-to-tri-facing
             world-held state-flag-set
             0.0 sound-volume-scale
@@ -119,7 +124,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : old-mansion-2f-6.act00 ( -- )   \ 00410230
-    2 ebit? not if
+    rested ebit? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -127,44 +132,37 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $7A 30.0 40.5 0 $FFFF 5 self-move-to
         self-wait-done
         1 25.0 10.0 0.0 0.0 event-camera
-        7 message   \ "I hope this water won't make me sick if I drink it."
-        wait-message
+        7 say   \ "I hope this water won't make me sick if I drink it."
         fiona-who char-file-use
-        $8004 $A self-anim-blend
-        self-frames-reset
-        $16 self-wait-frames
-        fiona-who 1 6 char-sound
+        4 room-motion $A self-anim-blend
+        $16 wait-frames
+        fiona-who calm-sound 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
         fiona-calm-reset
         fiona-who $84 5 char-sound
         3 avoid-prompt
-        2 ebit-set
-        self-frames-reset
-        $1E self-wait-frames
+        rested ebit-set
+        $1E wait-frames
         got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
-            $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
-            wait-message
+            $40A8 say   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             $F 7 fade
             wait-fade
             got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
-            $801B message   \ "has been saved to your file."
-            wait-message
-            self-frames-reset
-            4 self-wait-frames
+            $801B say   \ "has been saved to your file."
+            4 wait-frames
         then
         0 0.0 0.0 0.0 0.0 event-camera
         stalkers-stay state-flag-clear
         0 self-scripted
     else
         self-wait-done
-        8 message   \ "Ahh. That hit the spot."
-        wait-message
+        8 say   \ "Ahh. That hit the spot."
     then
     self-idle-or-end
 ;
@@ -191,7 +189,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     wait-fade
     hewie-who char-here? if
-        3 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -199,13 +197,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             hewie-who char-done
         then
     else
-        3 ebit-set
+        hewie-away ebit-set
     then
     $10 $FF movie-param
     3 stalker-kind? $22 stalker-kind? or if
-        0 $F9 $D action
+        0 cutscene-track $D action
     else
-        0 $F9 $C action
+        0 cutscene-track $C action
     then
     panic-eased
     $FFFF message-prepare
@@ -235,7 +233,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     2 2 player-camera
     camera-restart
-    3 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -277,7 +275,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     wait-fade
     hewie-who char-here? if
-        3 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -285,12 +283,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             hewie-who char-done
         then
     else
-        3 ebit-set
+        hewie-away ebit-set
     then
     force-followed state-flag-set
     yield
     force-followed state-flag-clear
-    0 $F9 $C action
+    0 cutscene-track $C action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -300,7 +298,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     world-held state-flag-set
     9 1 object-hidden
     0 self-idle-anim
-    3 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -339,14 +337,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     32.0 -3.5 self-turn-to-xz
     self-wait-done
-    0 ebit? not if
-        3 message   \ "There's some kind of medicine bottle on the shelf."
-        wait-message
-        0 ebit-set
+    medicine-remarked ebit? not if
+        3 say   \ "There's some kind of medicine bottle on the shelf."
+        medicine-remarked ebit-set
     else
-        5 message   \ "The label says Acetic Acid on it."
-        wait-message
-        0 ebit-clear
+        5 say   \ "The label says Acetic Acid on it."
+        medicine-remarked ebit-clear
     then
     self-idle-or-end
 ;
@@ -355,14 +351,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -29.0 -1.0 self-turn-to-xz
     self-wait-done
-    1 ebit? not if
-        4 message   \ "Several bottles containing various chemicals have been left out."
-        wait-message
-        1 ebit-set
+    chemicals-remarked ebit? not if
+        4 say   \ "Several bottles containing various chemicals have been left out."
+        chemicals-remarked ebit-set
     else
-        6 message   \ "The words Sulfuric Acid are written on one bottle."
-        wait-message
-        1 ebit-clear
+        6 say   \ "The words Sulfuric Acid are written on one bottle."
+        chemicals-remarked ebit-clear
     then
     self-idle-or-end
 ;
@@ -372,25 +366,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     4.58 14.22 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-6-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $903 self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -426,21 +415,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who $A char-in-area? if
         -30 self-turn-angle
         self-wait-done
-        $A02 self-anim
+        look-close-anim self-anim
     else
         -16.0 -17.0 self-turn-to-xz
         self-wait-done
-        $A01 self-anim
+        look-low-anim self-anim
     then
-    self-frames-reset
-    $28 self-wait-frames
-    5 ebit? not if
-        5 ebit-set
-        9 message   \ "There is a device which appears to be used for measuring things... I wonder what th..."
-        wait-message
+    $28 wait-frames
+    measuring-device-remarked ebit? not if
+        measuring-device-remarked ebit-set
+        9 say   \ "There is a device which appears to be used for measuring things... I wonder what th..."
     else
-        $E message   \ "For some reason this room seems to contain comparatively modern equipment. Still t..."
-        wait-message
+        $E say   \ "For some reason this room seems to contain comparatively modern equipment. Still t..."
     then
     self-wait-anim
     self-idle-or-end
@@ -450,20 +436,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -70 self-turn-angle
     self-wait-done
-    6 ebit? not if
-        6 ebit-set
-        $A message   \ "I wonder if this could serve as a hiding spot if I'm ever in a pinch? Oh darn. It'..."
-        wait-message
+    hiding-spot-remarked ebit? not if
+        hiding-spot-remarked ebit-set
+        $A say   \ "I wonder if this could serve as a hiding spot if I'm ever in a pinch? Oh darn. It'..."
     else
-        $60A self-anim
-        self-frames-reset
-        $B self-wait-frames
+        rattle-front-slow-anim self-anim
+        $B wait-frames
         fiona-who $28 5 char-sound
         self-wait-anim
         $B message   \ "I don't think I'll be able to open it. Maybe they have locked some important chemi..."
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
         wait-message
     then
     self-idle-or-end
@@ -473,11 +456,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     2.0 45.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    $C message   \ "I wonder what's inside? It's not like it's going to explode or anything... right?"
-    wait-message
+    look-low-anim self-anim
+    $28 wait-frames
+    $C say   \ "I wonder what's inside? It's not like it's going to explode or anything... right?"
     self-wait-anim
     self-idle-or-end
 ;
@@ -486,11 +467,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     14.2 44.7 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    $D message   \ "Looks like plastic containers used to store chemicals. I can make out the word 'Ethano..."
-    wait-message
+    look-close-anim self-anim
+    $28 wait-frames
+    $D say   \ "Looks like plastic containers used to store chemicals. I can make out the word 'Ethano..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -499,19 +478,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     6.5 14.5 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    $F message   \ "A rather dirty and unsanitary operating table. No matter how serious the illness, you..."
-    wait-message
+    look-low-anim self-anim
+    $28 wait-frames
+    $F say   \ "A rather dirty and unsanitary operating table. No matter how serious the illness, you..."
     self-wait-anim
     self-idle-or-end
 ;
 
 : old-mansion-2f-6.act0C ( -- )   \ 004107D8
     0 exit-door-open? not if
-        self-frames-reset
-        $F self-wait-frames
+        $F wait-frames
         0 1 self-door-knock
     then
     self-idle-or-end
@@ -519,14 +495,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-2f-6.act0D ( -- )   \ 004107F0
     0 exit-door-open? not if
-        self-frames-reset
-        $F self-wait-frames
+        $F wait-frames
         0 1 self-door-knock
     then
-    begin
-        6 cutscene-shot? not while
-        yield
-    repeat
+    [: 6 cutscene-shot? ;] wait-until
     0 old-mansion-2f-6.cmd00
     self-idle-or-end
 ;
@@ -543,7 +515,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     scene-wait-ready
     $10 $FF movie-param
     3 4 0 char-model-op
-    0 $F9 $C action
+    0 cutscene-track $C action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -570,7 +542,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     scene-wait-ready
     3 4 0 char-model-op
     $10 $FF movie-param
-    0 $F9 $D action
+    0 cutscene-track $D action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -598,7 +570,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     scene-wait-ready
     $10 $FF movie-param
     3 5 0 char-model-op
-    0 $F9 $C action
+    0 cutscene-track $C action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -625,7 +597,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     scene-wait-ready
     3 5 0 char-model-op
     $10 $FF movie-param
-    0 $F9 $C action
+    0 cutscene-track $C action
     panic-eased
     $FFFF message-prepare
     1 result? if

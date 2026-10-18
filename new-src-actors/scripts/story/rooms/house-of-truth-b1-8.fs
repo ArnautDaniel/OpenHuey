@@ -4,6 +4,10 @@
 IN: story.rooms.house-of-truth-b1-8
 USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant all-four-done               \ (bit 0) all four rooms' flags set as she entered area 2 (the way on loaded)
+1 constant area0-reacted               \ (bit 1) her reaction in area 0 made (once a visit)
+
 \ room 0x96: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
 : house-of-truth-b1-8.cmd00 ( -- )  slam-shake ;
@@ -34,9 +38,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : house-of-truth-b1-8.phase1 ( -- )   \ 00444750
-    1 ebit? not if
+    area0-reacted ebit? not if
         fiona-who 0 char-in-area? if
-            1 ebit-set
+            area0-reacted ebit-set
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
             else
@@ -44,7 +48,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             then
         then
         fiona-who 1 char-in-area? if
-            1 ebit-set
+            area0-reacted ebit-set
             fiona-who 0 char-action? if
                 0 fiona-who 1 action-force
             else
@@ -56,10 +60,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     5 1 1 1 chars-area-camera
     fiona-who 2 char-entered-area? if
         htb1-5-flag1 story-flag? htb1-6-flag1 story-flag? and htb1-7-flag1 story-flag? and htb1-8-flag1 story-flag? and if
-            0 ebit-set
+            all-four-done ebit-set
             $88 room-preload
         else
-            0 ebit-clear
+            all-four-done ebit-clear
             $87 room-preload
         then
     then
@@ -82,7 +86,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : house-of-truth-b1-8.act00 ( -- )   \ 004447D0
     1 self-scripted
-    0 ebit? if
+    all-four-done ebit? if
         $FF 1.0 0 bgm
         keep-room-sounds state-flag-clear
     then
@@ -123,8 +127,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $F 6 fade
     wait-fade
-    4 message   \ "All colors must, in the end, form black. This is mankind's inevitable fate."
-    wait-message
+    4 say   \ "All colors must, in the end, form black. This is mankind's inevitable fate."
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear

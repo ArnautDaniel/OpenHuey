@@ -2,7 +2,20 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-2
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant rested                      \ (bit 0) she has rested here (her recovery: once a visit)
+1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
+2 constant sound-started               \ (bit 2) its sound started (then kept up)
+0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
+1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+1 constant calm-sound                  \ (snd 1) the spot that calms her
+8 constant room-loop-sound             \ (snd 8) its steady sound (started as it comes in, then kept up)
+9 constant ambient1-sound              \ (snd 9) its ambient sounds in turn (every 30 frames): the first
+10 constant ambient2-sound             \ (snd 10) its ambient sounds in turn (every 30 frames): the second
+11 constant ambient3-sound             \ (snd 11) its ambient sounds in turn (every 30 frames): the third
+12 constant ambient4-sound             \ (snd 12) its ambient sounds in turn (every 30 frames): the fourth
 
 \ room 0x88: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -58,15 +71,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : house-of-truth-1f-2.char-enter ( -- )   \ 00432DF0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            6 6 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         6 6 player-camera
-    then then
+    then
     0 6 6 area-camera
     fiona-who self-is? if
         $FE exit-taken? if
@@ -85,30 +93,30 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : house-of-truth-1f-2.phase1 ( -- )   \ 00432E90
-    2 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000008 6 -60.0 20.0 50.0 0 0 sound
-            2 ebit-set
+            room-loop-sound volume-scaled 6 -60.0 20.0 50.0 0 0 sound
+            sound-started ebit-set
         then
     else
-        $C0000008 6 -60.0 20.0 50.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -60.0 20.0 50.0 0 0 sound
     then
     6 sound-bank-loaded? if
-        1 var-inc
-        1 30 var? if
-            1 0 var-set
-            0 0 var? if
-                $40000009 6 -78.0 21.0 46.5 0 0 sound
-            else 0 1 var? if
-                $4000000A 6 -78.0 21.0 46.5 0 0 sound
-            else 0 2 var? if
-                $4000000B 6 -78.0 21.0 46.5 0 0 sound
-            else 0 3 var? if
-                $4000000C 6 -78.0 21.0 46.5 0 0 sound
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
+                ambient1-sound volume-scaled 6 -78.0 21.0 46.5 0 0 sound
+            else sound-step-var 1 var? if
+                ambient2-sound volume-scaled 6 -78.0 21.0 46.5 0 0 sound
+            else sound-step-var 2 var? if
+                ambient3-sound volume-scaled 6 -78.0 21.0 46.5 0 0 sound
+            else sound-step-var 3 var? if
+                ambient4-sound volume-scaled 6 -78.0 21.0 46.5 0 0 sound
             then then then then
-            0 var-inc
-            0 4 var? if
-                0 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -146,13 +154,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         2 map-page
     then
     1 -61.4 0.0 46.49 $14 18 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone1-noticed ebit-set
                     $1E chance? if
-                        $1F 1 var-set
+                        hewie-zone-var 1 var-set
                         0 hewie-who $88 action
                     then
                 then
@@ -163,8 +171,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 18.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 18.0 hewie-look-zone
             then
         then
     then
@@ -175,13 +183,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         3 35.0 70.0 33.0 $A 5 0 zone
         hewie-who 3 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 ht1f-2-prima-magnesia-found var-set
-                $1A ht1f-2-prima-magnesia var-set
-                $1B 2 var-set
-                $1C 35000 var-set
-                $1D 71000 var-set
-                $1E 33000 var-set
-                $1F 3 var-set
+                found-flag-var ht1f-2-prima-magnesia-found var-set
+                taken-flag-var ht1f-2-prima-magnesia var-set
+                sparkle-fx-var 2 var-set
+                sparkle-x-var 35000 var-set
+                sparkle-y-var 71000 var-set
+                sparkle-z-var 33000 var-set
+                hewie-zone-var 3 var-set
                 0 hewie-who $8B action
             then
         then
@@ -240,7 +248,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : house-of-truth-1f-2.act00 ( -- )   \ 004332B0
-    0 ebit? not if
+    rested ebit? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -248,36 +256,30 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $117 0.0 -1.1 0 $FFFF 5 self-move-to
         self-wait-done
         1 25.0 10.0 0.0 0.0 event-camera
-        0 message   \ "I hope this water is pure..."
-        wait-message
+        0 say   \ "I hope this water is pure..."
         fiona-who char-file-use
-        $8004 $A self-anim-blend
-        self-frames-reset
-        $16 self-wait-frames
-        fiona-who 1 6 char-sound
+        4 room-motion $A self-anim-blend
+        $16 wait-frames
+        fiona-who calm-sound 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
         fiona-calm-reset
         3 avoid-prompt
-        0 ebit-set
+        rested ebit-set
         fiona-who $84 5 char-sound
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
-            $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
-            wait-message
+            $40A8 say   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             $F 7 fade
             wait-fade
             got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
-            $801B message   \ "has been saved to your file."
-            wait-message
-            self-frames-reset
-            4 self-wait-frames
+            $801B say   \ "has been saved to your file."
+            4 wait-frames
         then
         0 0.0 0.0 0.0 0.0 event-camera
         stalkers-stay state-flag-clear
@@ -286,8 +288,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         self-wait-done
         0.0 5.0 self-turn-to-xz
         self-wait-done
-        1 message   \ "Ah, that tasted good."
-        wait-message
+        1 say   \ "Ah, that tasted good."
     then
     self-idle-or-end
 ;
@@ -298,14 +299,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -60.0 55.0 self-turn-to-xz
     self-wait-done
-    $A02 $A self-anim-blend
-    self-wait-anim
-    2 message   \ "Unsettling sounds and smells waft forth from the eerie hole. Enter the hole? YES NO"
-    wait-message
+    look-close-anim $A blend-out
+    2 say   \ "Unsettling sounds and smells waft forth from the eerie hole. Enter the hole? YES NO"
     0 answer? if
         $F 0 fade
         wait-fade
-        fiona-who $7E 5 char-sound
+        fiona-who slide-sound 5 char-sound
         world-held state-flag-set
         $FE exit-check
     else
@@ -319,7 +318,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-scripted
     self-wait-done
     camera-restart
-    fiona-who $7E 5 char-sound
+    fiona-who slide-sound 5 char-sound
     1 map-page
     $F 1 fade
     wait-fade
@@ -345,25 +344,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -33.17 33.19 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $95 message-param-room
         $95 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             ht1f-2-refined-magnesia story-flag-set
             0 effect-remove
             $95 1 item-give-count
             0 $95 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -373,25 +367,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -0.4 -123.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             ht1f-2-refined-antimony story-flag-set
             1 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -401,25 +390,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     35.0 33.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $98 message-param-room
         $98 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             ht1f-2-prima-magnesia story-flag-set
             2 effect-remove
             $98 1 item-give-count
             0 $98 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -428,11 +412,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    $402 self-anim
-    self-wait-anim
+    turn-round-anim play-out
     -1 self-idle-anim
-    3 message   \ "If I went back I'm sure I would get lost. Better to keep moving forward."
-    wait-message
+    3 say   \ "If I went back I'm sure I would get lost. Better to keep moving forward."
     self-idle-or-end
 ;
 

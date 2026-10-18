@@ -2,7 +2,21 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-4
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant transmuter-remarked         \ (bit 0) its first remark made: "Transmuter Synthesizing two objects together is a task any f"
+1 constant in-zone0                    \ (bit 1) someone in zone 0 (the figure's hops count)
+2 constant hewie-zone2-noticed         \ (bit 2) Hewie has reacted to zone 2 (once a visit)
+3 constant incubator-remarked          \ (bit 3) its first remark made: "Is this some kind of incubator? There is something inside..."
+0 constant hops-var                    \ (var 0) the figure's hops (5: away)
+1 constant used-item-var               \ (var 1) the item she used (8 .. 10)
+2 constant call-frames-var             \ (var 2) the figure's frames (its calls at 21 and 66)
+0 constant figure-hit1-sound           \ (snd 0) the figure as it strikes her / is struck
+1 constant figure-hit2-sound           \ (snd 1) the figure as it strikes her / is struck
+2 constant figure-call1-sound          \ (snd 2) the figure's call (now and then)
+3 constant change-sound                \ (snd 3) it transforming
+4 constant seize-sound                 \ (snd 4) it seizing her
 
 : old-mansion-1f-4.enter ( -- )   \ 004070F0
     room-sounds
@@ -13,7 +27,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         1 part-shown
     then
     $1C 3 char-to-tri
-    2 0 var-set
+    call-frames-var 0 var-set
     3 $1C char-loaded? if
         $1C 3 $FF char-load
         3 char-start
@@ -21,7 +35,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $1C 55.0 0.0 -20.0 90 char-to-xyz
         $1C $9000 1 0 char-anim-hold
     then
-    0 $F1 4 action
+    0 1 track 4 action
     hunted state-flag-set
     om1f-4-chicken-jerky story-flag? not if
         0 -51.07 1.0 19.59 flicker-sprite
@@ -83,15 +97,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : old-mansion-1f-4.char-enter ( -- )   \ 00407300
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
 ;
 
@@ -105,33 +114,33 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     4 2 2 1 chars-area-camera
     0 55.0 0.0 -20.0 5 10 1 zone
     self-who 0 char-in-zone? if
-        1 ebit-set
+        in-zone0 ebit-set
     else
-        1 ebit-clear
+        in-zone0 ebit-clear
     then
-    2 21 var? if
-        $1C 2 6 char-sound
+    call-frames-var 21 var? if
+        $1C figure-call1-sound 6 char-sound
     then
-    2 66 var? if
-        $1C 2 6 char-sound
+    call-frames-var 66 var? if
+        $1C figure-call1-sound 6 char-sound
     then
     1 45.1 0.0 31.88 $1C 18 0 zone
     hewie-who char-here? 1 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 18.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 18.0 hewie-look-zone
             then
         then
     then
     2 54.4 0.0 -20.46 $19 16 0 zone
-    2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 2 9 char-zone-bits? if
-                    2 ebit-set
+                    hewie-zone2-noticed ebit-set
                     $50 chance? if
-                        $1F 2 var-set
+                        hewie-zone-var 2 var-set
                         0 hewie-who $8A action
                     then
                 then
@@ -142,8 +151,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? 1 game-mode? and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then
@@ -192,14 +201,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : old-mansion-1f-4.act0E ( -- )   \ 00407A20
-    4 6 -30.0 10.0 20.0 0 0 sound
-    self-frames-reset
-    self-wait-16
-    fiona-who $43 5 char-sound
+    seize-sound 6 -30.0 10.0 20.0 0 0 sound
+    16 wait-frames
+    fiona-who seized-sound 5 char-sound
     $3C threat-raise
     1 $FF 8 rumble
-    $F04 self-anim
-    self-wait-anim
+    uneasy-2-anim play-out
     0 part-hidden
     1 part-shown
     $42 0 105 $80 5 -1 $68 40.0 creature-place
@@ -214,25 +221,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $E 38.0 18.0 20 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 3 6 char-sound
-    self-frames-reset
-    $78 self-wait-frames
-    $A02 self-anim
-    self-wait-anim
-    5 message   \ "Oh my! It actually transformed..."
-    wait-message
-    $902 self-anim
-    self-wait-anim
+    fiona-who change-sound 6 char-sound
+    $78 wait-frames
+    look-close-anim play-out
+    5 say   \ "Oh my! It actually transformed..."
+    reach-out-anim play-out
     $B item-use
     $C message-param-room
     $C 1 item-give-count
     0 $C item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
+    $8012 say   \ "You've obtained ."
     got-red-godstone story-flag-set
-    $903 self-anim
-    self-wait-anim
+    reach-back-anim play-out
     om1f-4-flag1 story-flag? not if
         old-mansion-1f-4.act0E
     then
@@ -247,48 +248,38 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $E 38.0 18.0 20 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 3 6 char-sound
-    self-frames-reset
-    $78 self-wait-frames
-    $A02 self-anim
-    self-wait-anim
-    $902 self-anim
-    self-wait-anim
-    1 8 var? if
+    fiona-who change-sound 6 char-sound
+    $78 wait-frames
+    look-close-anim play-out
+    reach-out-anim play-out
+    used-item-var 8 var? if
         8 message-param-room
         0 8 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-    else 1 9 var? if
+        $8012 say   \ "You've obtained ."
+    else used-item-var 9 var? if
         9 message-param-room
         0 9 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-    else 1 10 var? if
+        $8012 say   \ "You've obtained ."
+    else used-item-var 10 var? if
         $A message-param-room
         0 $A item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-    else 1 12 var? if
+        $8012 say   \ "You've obtained ."
+    else used-item-var 12 var? if
         $C message-param-room
         0 $C item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-    else 1 16 var? if
+        $8012 say   \ "You've obtained ."
+    else used-item-var 16 var? if
         $10 message-param-room
         0 $10 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     then then then then then
-    $903 self-anim
-    self-wait-anim
-    2 message   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
-    wait-message
+    reach-back-anim play-out
+    2 say   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
     om1f-4-flag1 story-flag? not if
         old-mansion-1f-4.act0E
     then
@@ -303,20 +294,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $E 38.0 18.0 20 $FFFF 5 self-move-to
     self-wait-done
-    0 ebit? not if
+    transmuter-remarked ebit? not if
         $F 6 fade
         wait-fade
-        0 message   \ "Transmuter Synthesizing two objects together is a task any fool could surely comple..."
-        wait-message
-        0 ebit-set
+        0 say   \ "Transmuter Synthesizing two objects together is a task any fool could surely comple..."
+        transmuter-remarked ebit-set
         $F 7 fade
         wait-fade
     else
-        $1D01 $A self-anim-blend
-        1 message   \ "A transmuter? I've never heard of such a device before... It appears you can insert..."
-        wait-message
+        hand-to-mouth-anim $A self-anim-blend
+        1 say   \ "A transmuter? I've never heard of such a device before... It appears you can insert..."
         self-wait-anim
-        0 ebit-clear
+        transmuter-remarked ebit-clear
     then
     $245 item-give
     stalkers-stay state-flag-clear
@@ -330,12 +319,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    3 message
-    wait-message
+    3 say
     $F 6 fade
     wait-fade
-    4 message
-    wait-message
+    4 say
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear
@@ -353,48 +340,47 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $1C 0 char-visible
     then
     begin
-        1 ebit? if
-            2 0 var-set
-            0 var-inc
-            0 3 var? if
+        in-zone0 ebit? if
+            call-frames-var 0 var-set
+            hops-var var-inc
+            hops-var 3 var? if
                 $21 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 4 var? if
+            hops-var 4 var? if
                 $32 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 5 var? if
+            hops-var 5 var? if
                 0 panic-stage? if
                     1 panic-stage
                 else
                     $F threat-raise
                 then
                 stalker-who 0 stalker-command
-                $1C 0 6 char-sound
+                $1C figure-hit1-sound 6 char-sound
             else
-                $1C 1 6 char-sound
+                $1C figure-hit2-sound 6 char-sound
             then
-            fiona-who $8F 5 char-sound
+            fiona-who shove-hit-sound 5 char-sound
             $1C $9001 0 3 char-anim-hold
             $1C wait-char-anim
             $1C $9000 0 3 char-anim-hold
-            2 0 var-set
-            0 5 var? if
+            call-frames-var 0 var-set
+            hops-var 5 var? if
                 $1C wait-char-anim
-                0 0 var-set
+                hops-var 0 var-set
             then
         then
         $1C char-at-motion-event? if
             $1C $9000 0 0 char-anim-hold
-            2 0 var-set
+            call-frames-var 0 var-set
         else
-            2 var-inc
+            call-frames-var var-inc
         then
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     again
 ;
 
@@ -403,25 +389,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -51.07 19.59 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $60 message-param-room
         $60 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-4-chicken-jerky story-flag-set
             0 effect-remove
             $60 1 item-give-count
             0 $60 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -430,26 +411,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     fiona-who $62 6.25 -23.4 173 char-to-xz
     self-who 3 -1 char-camera
-    self-frames-reset
-    4 self-wait-frames
-    $A02 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    3 ebit? not if
-        6 message   \ "Is this some kind of incubator? There is something inside..."
-        wait-message
-        3 ebit-set
+    4 wait-frames
+    look-close-anim self-anim
+    $28 wait-frames
+    incubator-remarked ebit? not if
+        6 say   \ "Is this some kind of incubator? There is something inside..."
+        incubator-remarked ebit-set
     else
-        7 message   \ "It just looks like a clump of meat. It's all fatty and gross."
-        wait-message
+        7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then
     self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     2 2 player-camera
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -460,16 +435,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -20.0 -40.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    3 ebit? not if
-        6 message   \ "Is this some kind of incubator? There is something inside..."
-        wait-message
-        3 ebit-set
+    look-close-anim self-anim
+    $28 wait-frames
+    incubator-remarked ebit? not if
+        6 say   \ "Is this some kind of incubator? There is something inside..."
+        incubator-remarked ebit-set
     else
-        7 message   \ "It just looks like a clump of meat. It's all fatty and gross."
-        wait-message
+        7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then
     self-wait-anim
     self-idle-or-end
@@ -479,16 +451,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -48.0 -40.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    3 ebit? not if
-        6 message   \ "Is this some kind of incubator? There is something inside..."
-        wait-message
-        3 ebit-set
+    look-close-anim self-anim
+    $28 wait-frames
+    incubator-remarked ebit? not if
+        6 say   \ "Is this some kind of incubator? There is something inside..."
+        incubator-remarked ebit-set
     else
-        7 message   \ "It just looks like a clump of meat. It's all fatty and gross."
-        wait-message
+        7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then
     self-wait-anim
     self-idle-or-end
@@ -498,16 +467,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -10.0 0.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    3 ebit? not if
-        6 message   \ "Is this some kind of incubator? There is something inside..."
-        wait-message
-        3 ebit-set
+    look-close-anim self-anim
+    $28 wait-frames
+    incubator-remarked ebit? not if
+        6 say   \ "Is this some kind of incubator? There is something inside..."
+        incubator-remarked ebit-set
     else
-        7 message   \ "It just looks like a clump of meat. It's all fatty and gross."
-        wait-message
+        7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then
     self-wait-anim
     self-idle-or-end
@@ -518,24 +484,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -40.0 0.0 self-turn-to-xz
     self-wait-done
     om1f-4-flag1 story-flag? not if
-        $A02 self-anim
-        self-frames-reset
-        $28 self-wait-frames
-        3 ebit? not if
-            6 message   \ "Is this some kind of incubator? There is something inside..."
-            wait-message
-            3 ebit-set
+        look-close-anim self-anim
+        $28 wait-frames
+        incubator-remarked ebit? not if
+            6 say   \ "Is this some kind of incubator? There is something inside..."
+            incubator-remarked ebit-set
         else
-            7 message   \ "It just looks like a clump of meat. It's all fatty and gross."
-            wait-message
+            7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
         then
         self-wait-anim
     else
-        $A02 self-anim
-        self-frames-reset
-        $28 self-wait-frames
-        8 message   \ "It's empty now. I can't believe that thing inside was alive..."
-        wait-message
+        look-close-anim self-anim
+        $28 wait-frames
+        8 say   \ "It's empty now. I can't believe that thing inside was alive..."
         self-wait-anim
     then
     self-idle-or-end
@@ -545,16 +506,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     8.0 40.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    3 ebit? not if
-        6 message   \ "Is this some kind of incubator? There is something inside..."
-        wait-message
-        3 ebit-set
+    look-close-anim self-anim
+    $28 wait-frames
+    incubator-remarked ebit? not if
+        6 say   \ "Is this some kind of incubator? There is something inside..."
+        incubator-remarked ebit-set
     else
-        7 message   \ "It just looks like a clump of meat. It's all fatty and gross."
-        wait-message
+        7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then
     self-wait-anim
     self-idle-or-end
@@ -565,36 +523,28 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         fiona-who $50 -17.5 26.5 -12 char-to-xz
         self-who 4 -1 char-camera
-        self-frames-reset
-        4 self-wait-frames
-        $A02 self-anim
-        self-frames-reset
-        $28 self-wait-frames
-        3 ebit? not if
-            6 message   \ "Is this some kind of incubator? There is something inside..."
-            wait-message
-            3 ebit-set
+        4 wait-frames
+        look-close-anim self-anim
+        $28 wait-frames
+        incubator-remarked ebit? not if
+            6 say   \ "Is this some kind of incubator? There is something inside..."
+            incubator-remarked ebit-set
         else
-            7 message   \ "It just looks like a clump of meat. It's all fatty and gross."
-            wait-message
+            7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
         then
         self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         1 1 player-camera
         stalkers-stay state-flag-clear
         0 self-scripted
     else
         self-wait-done
-        $A02 self-anim
-        self-frames-reset
-        $28 self-wait-frames
-        8 message   \ "It's empty now. I can't believe that thing inside was alive..."
-        wait-message
+        look-close-anim self-anim
+        $28 wait-frames
+        8 say   \ "It's empty now. I can't believe that thing inside was alive..."
         self-wait-anim
     then
     self-idle-or-end
@@ -604,16 +554,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -48.0 40.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    3 ebit? not if
-        6 message   \ "Is this some kind of incubator? There is something inside..."
-        wait-message
-        3 ebit-set
+    look-close-anim self-anim
+    $28 wait-frames
+    incubator-remarked ebit? not if
+        6 say   \ "Is this some kind of incubator? There is something inside..."
+        incubator-remarked ebit-set
     else
-        7 message   \ "It just looks like a clump of meat. It's all fatty and gross."
-        wait-message
+        7 say   \ "It just looks like a clump of meat. It's all fatty and gross."
     then
     self-wait-anim
     self-idle-or-end

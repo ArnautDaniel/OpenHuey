@@ -2,7 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-37
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+16 constant wrong-sound                \ (snd 16) not right (her answer)
 
 \ Room37_Cmd00
 : off-map-37.cmd00 ( -- )  fan-turn ;
@@ -24,7 +27,7 @@ defer off-map-37.act00
     $10C door-lock
     $10D door-lock
     1.0 sound-volume-scale
-    0 $F1 $D action
+    0 1 track $D action
     1.0 sound-volume-scale
     0 part-shown
 ;
@@ -383,8 +386,7 @@ defer off-map-37.act00
         self-wait-done
         1 40.0 10.0 160.0 0.0 event-camera
     then
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     $FF 1.0 0 bgm
     8 subscreen-open
     begin
@@ -456,10 +458,7 @@ defer off-map-37.act00
     self-wait-done
     $FF 1.0 0 bgm
     $A subscreen-open
-    begin
-        subscreen-wanted state-flag? while
-        yield
-    repeat
+    [: subscreen-wanted state-flag? ;] wait-while
     $2E 0 pvar? if
         $D9 room-preload
         7 partner-load
@@ -577,17 +576,13 @@ defer off-map-37.act00
     180 self-turn-angle
     self-wait-done
     1 20.0 10.0 0.0 0.0 event-camera
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     $FF 1.0 0 bgm
     7 subscreen-open
-    begin
-        subscreen-wanted state-flag? while
-        yield
-    repeat
+    [: subscreen-wanted state-flag? ;] wait-while
     0 0.0 0.0 0.0 0.0 event-camera
     $26 $28 pvars-equal? not $27 $29 pvars-equal? not or if
-        fiona-who $10 6 char-sound
+        fiona-who wrong-sound 6 char-sound
     then
     $26 $28 pvars-equal? not if
         $26 1 pvar? if
@@ -647,8 +642,7 @@ defer off-map-37.act00
             yield
             4 sound-bank-loaded? until
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     then
     $27 $29 pvars-equal? not if
         1 char-in
@@ -678,14 +672,10 @@ defer off-map-37.act00
     180 self-turn-angle
     self-wait-done
     1 20.0 10.0 0.0 0.0 event-camera
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     $FF 1.0 0 bgm
     $B subscreen-open
-    begin
-        subscreen-wanted state-flag? while
-        yield
-    repeat
+    [: subscreen-wanted state-flag? ;] wait-while
     $32 1.0 0 bgm
     0 self-scripted
     stalkers-stay state-flag-clear
@@ -700,16 +690,11 @@ defer off-map-37.act00
     self-wait-done
     1 20.0 10.0 0.0 0.0 event-camera
     $FF 1.0 0 bgm
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     $D subscreen-open
-    begin
-        subscreen-wanted state-flag? while
-        yield
-    repeat
+    [: subscreen-wanted state-flag? ;] wait-while
     $32 1.0 0 bgm
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 self-scripted
     stalkers-stay state-flag-clear
     self-idle-or-end
@@ -722,17 +707,12 @@ defer off-map-37.act00
     9 -41.0 -38.0 -90 $FFFF 5 self-move-to
     self-wait-done
     1 20.0 10.0 0.0 0.0 event-camera
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     $FF 1.0 0 bgm
     $E subscreen-open
-    begin
-        subscreen-wanted state-flag? while
-        yield
-    repeat
+    [: subscreen-wanted state-flag? ;] wait-while
     $32 1.0 0 bgm
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 self-scripted
     stalkers-stay state-flag-clear
     self-idle-or-end
@@ -745,17 +725,12 @@ defer off-map-37.act00
     $D7 45.0 -39.0 90 $FFFF 5 self-move-to
     self-wait-done
     1 20.0 10.0 0.0 0.0 event-camera
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     $FF 1.0 0 bgm
     $F subscreen-open
-    begin
-        subscreen-wanted state-flag? while
-        yield
-    repeat
+    [: subscreen-wanted state-flag? ;] wait-while
     $32 1.0 0 bgm
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 self-scripted
     stalkers-stay state-flag-clear
     self-idle-or-end
@@ -772,12 +747,8 @@ defer off-map-37.act00
     self-wait-done
     wait-fade
     world-held state-flag-set
-    begin
-        1 adx? not while
-        yield
-    repeat
-    self-frames-reset
-    $1E self-wait-frames
+    [: 1 adx? ;] wait-until
+    $1E wait-frames
     begin
         quit-wanted state-flag-set
         yield
@@ -812,8 +783,7 @@ defer off-map-37.act00
     $10 resident-flag? not if
         $F 6 fade
         wait-fade
-        $40AC message   \ "'Secret Room' Various extras, game info, and a mini-game are contained within...."
-        wait-message
+        $40AC say   \ "'Secret Room' Various extras, game info, and a mini-game are contained within...."
         $F 7 fade
         wait-fade
         $10 resident-flag-set
@@ -821,8 +791,7 @@ defer off-map-37.act00
         $AC 1 item-give-count
         $83 $85 0.0 0.0 0.0 0 0 sound
         $801B message   \ "has been saved to your file."
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         wait-message
     else
         $AC 1 item-give-count
@@ -913,7 +882,7 @@ defer off-map-37.act00
     0 panic-stage
     fiona-calm-reset
     fiona-who $13 -16.0 -66.5 0 char-to-xz
-    0 0 self-anim-blend
+    fiona.anims:stand-anim 0 self-anim-blend
     1 1 player-camera
     music-stage-end
     hewie-who $C4 -10.03 -61.53 0 char-to-xz

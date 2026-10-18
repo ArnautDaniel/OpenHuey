@@ -2,7 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d6
-USING: room-names story.words story.shared flag-names story.clock floor-flags ;
+USING: room-names story.words story.shared flag-names story.clock floor-flags fiona.anims fiona.sounds stalker.anims ;
+
+\ ---- this room's own event bits and script variables ----
+0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
+1 constant will-find-her               \ (bit 1) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+2 constant came-while-hidden           \ (bit 2) the stalker came in while she was hiding, heading for the exit
+4 constant cond-was-off                \ (bit 4) the room's condition was false last frame: its hook waits a frame once it holds
 
 \ (as Room105_Cmd00) pushed by the character slot byte 4 names
 : off-map-d6.cmd00 ( b0 b1 -- )  swing-three-by ;   \ (as chaos-forest-7's, pushed by character slot b1)
@@ -13,28 +19,28 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 : off-map-d6.cond00? ( -- flag )  true ;
 
 : off-map-d6.act02 ( -- )   \ 00447990
-    1 ebit-clear
+    will-find-her ebit-clear
     $2F 0 pvar? if
         $A chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $2F 1 pvar? if
         $19 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $2F 2 pvar? if
         $32 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $2F 3 pvar? if
         $4B chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     2 creature-action? if
-        1 ebit-set
+        will-find-her ebit-set
     then
-    1 ebit? if
+    will-find-her ebit? if
         0 stalker-who 3 action
     else
         $78 1 summoner-wait
@@ -44,85 +50,49 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 ;
 
 : off-map-d6.char-enter ( -- )   \ 00447680
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         0 0 player-camera
-    then then
+    then
     3 0 0 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? stalker-who 1 char-heading-for? and if
-            2 ebit-set
+            came-while-hidden ebit-set
             off-map-d6.act02
         else
-            2 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
 
 : off-map-d6.phase1 ( -- )   \ 00447790
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     hewie-who 4 char-entered-area? if
         0 exit-prepare
     then
@@ -159,9 +129,9 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 
 : off-map-d6.phase3 ( -- )   \ 00447890
     off-map-d6.cond00? not if
-        4 ebit-set
-    else 4 ebit? if
-        4 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-d6.cmd01
     then then
@@ -177,15 +147,14 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 ;
 
 : off-map-d6.act01 ( -- )   \ 00447960
-    0 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     fiona-hidden state-flag-clear
     stalkers-stay state-flag-set
     stalker-who self-look-at
     yield
-    4 $14 self-anim-blend
-    self-wait-anim
+    4 $14 blend-out
     self-who self-look-at
     yield
     0 self-scripted
@@ -202,28 +171,27 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     $19A 70.5 -5.5 90 $FFFF $A self-move-to
     self-wait-done
     0 floor-flag-40000 floor-on
-    2 ebit-clear
+    came-while-hidden ebit-clear
     1 self-noclip
-    0 ebit-clear
-    $800 self-anim
-    self-wait-anim
-    $801 self-anim
+    found-her ebit-clear
+    crouch-down-anim play-out
+    crouching-anim self-anim
     fiona-hidden state-flag-set
     stalkers-stay state-flag-clear
     0 avoid-prompt
     begin
         -1 control-action? if
-            in-panic? 0 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] off-map-d6.act01 goto
             else
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                2 ebit? stalker-who char-here? not and if
-                    2 ebit-clear
+                came-while-hidden ebit? stalker-who char-here? not and if
+                    came-while-hidden ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -235,8 +203,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
                 ['] off-map-d6.act01 goto
             then
             stalkers-stay state-flag-set
-            $802 self-anim
-            self-wait-anim
+            crouch-up-anim play-out
             0 self-scripted
             0 self-noclip
             stalkers-stay state-flag-clear
@@ -250,14 +217,10 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     self-wait-done
     $E7 90.5 -4.5 -90 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
-    self-wait-anim
-    0 ebit-set
+    there-anim play-out
+    found-her ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;

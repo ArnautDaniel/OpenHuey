@@ -2,7 +2,12 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-7
-USING: engine common room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine common room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+1 constant stalker-scene-on            \ (bit 1) his scene under way (the door locked against him)
+0 constant wait-var                    \ (var 0) frames to wait (counted down)
+1 constant loop-tick-sound             \ (snd 1) over and over in its loop?
 
 \ room 0x1D (Room1D_Cmd00_ptmf): script variable 0 = 2 .. 5 at random
 : castle-b1-7.cmd00 ( -- )  0  4 random 2 +  var-set ;   \ (script variable 0: 2 .. 5 at random)
@@ -58,15 +63,10 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 ;
 
 : castle-b1-7.char-enter ( -- )   \ 003FD420
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
     fiona-who self-is? if
         0 exit-taken? if
@@ -110,30 +110,30 @@ USING: engine common room-names story.words story.shared flag-names story-names 
             $26 door-lock
         then
     then
-    1 ebit? not if
+    stalker-scene-on ebit? not if
         $26 door-locked? if
             stalker-who $1C char-in-room? if
-                0 $F2 9 action
+                0 2 track 9 action
             then
         then
     else $26 door-locked? not if
-        $F2 action-end
+        2 track action-end
         0 castle-b1-7.cmd01
         stalker-who 1 stalker-command
         stalkers-stay state-flag-clear
-        1 ebit-clear
+        stalker-scene-on ebit-clear
     then then
     cb1-7-medallion-found story-flag? not if
         1 29.0 0.0 21.0 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 cb1-7-medallion-found var-set
-                $1A cb1-7-medallion-2 var-set
-                $1B 3 var-set
-                $1C 29000 var-set
-                $1D 1000 var-set
-                $1E 21000 var-set
-                $1F 1 var-set
+                found-flag-var cb1-7-medallion-found var-set
+                taken-flag-var cb1-7-medallion-2 var-set
+                sparkle-fx-var 3 var-set
+                sparkle-x-var 29000 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 21000 var-set
+                hewie-zone-var 1 var-set
                 0 hewie-who $8B action
             then
         then
@@ -200,8 +200,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     3 1 item-give-count
     0 3 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
+    $8012 say   \ "You've obtained ."
     40 hewie-trust
     $827C item-give
     counter-inc
@@ -211,8 +210,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 
 : castle-b1-7.act01 ( -- )   \ 0047AA88
     self-wait-done
-    2 message   \ "The furniture is covered with freshly washed sheets."
-    wait-message
+    2 say   \ "The furniture is covered with freshly washed sheets."
     self-idle-or-end
 ;
 
@@ -222,8 +220,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     self-wait-done
     $92 -17.0 -30.0 45 $FFFF 5 self-move-to
     self-wait-done
-    $1C03 self-anim
-    self-wait-anim
+    $1C03 play-out
     counter-inc
     3 wait-counter
     self-idle-or-end
@@ -232,14 +229,13 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 : castle-b1-7.act02 ( -- )   \ 003FD6C0
     self-wait-done
     hewie-who $FC 0 char-to-tri-facing
-    1 self-anim
-    self-wait-anim
+    sit-anim play-out
     fiona-who self-look-at
     yield
     begin
         35 fiona-started? 44 fiona-started? or 2 game-mode? not and fiona-who 6 char-in-area? and fiona-who -12 -25 $32 char-faces-xz? and if
             0 counter-set
-            0 $F1 6 action
+            0 1 track 6 action
             ['] castle-b1-7.act03 goto
         then
         yield
@@ -248,29 +244,20 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 
 : castle-b1-7.act05 ( -- )   \ 003FD740
     self-wait-done
-    $A01 $A self-anim-blend
-    self-wait-anim
-    0 message   \ "Looks like a key or something is lying on the ground. I can't reach it from here..."
-    wait-message
-    self-frames-reset
-    8 self-wait-frames
+    look-low-anim $A blend-out
+    0 say   \ "Looks like a key or something is lying on the ground. I can't reach it from here..."
+    8 wait-frames
     self-who 4 -1 char-camera
-    self-frames-reset
-    8 self-wait-frames
-    1 message   \ "There is a small hole-floor in the wall. That could be my way to the key..."
-    wait-message
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
+    1 say   \ "There is a small hole in the wall. That could be my way to the key..."
+    8 wait-frames
     3 1 player-camera
     camera-restart
     self-idle-or-end
 ;
 
 : castle-b1-7.act06 ( -- )   \ 003FD780
-    begin
-        fiona-free? not while
-        yield
-    repeat
+    [: fiona-free? ;] wait-until
     counter-inc
     panic-eased
     0 fiona-who 0 action-force
@@ -282,25 +269,20 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     31.0 13.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cb1-7-medallion story-flag-set
             2 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -309,42 +291,35 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    3 message   \ "All of this stuff is blocking the door and I can't get out."
-    wait-message
+    3 say   \ "All of this stuff is blocking the door and I can't get out."
     self-idle-or-end
 ;
 
 : castle-b1-7.act09 ( -- )   \ 003FD810
-    1 ebit-set
+    stalker-scene-on ebit-set
     stalkers-stay state-flag-set
-    self-frames-reset
-    $3C self-wait-frames
+    $3C wait-frames
     castle-b1-7.cmd00
     begin
-        1 6 -40.0 0.0 -20.0 0 0 sound
+        loop-tick-sound 6 -40.0 0.0 -20.0 0 0 sound
         1 castle-b1-7.cmd01
         yield
         0 castle-b1-7.cmd01
         $19 chance? if
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
         then
-        self-frames-reset
-        self-wait-16
-        1 6 -40.0 0.0 -20.0 0 0 sound
+        16 wait-frames
+        loop-tick-sound 6 -40.0 0.0 -20.0 0 0 sound
         1 castle-b1-7.cmd01
         yield
         0 castle-b1-7.cmd01
         $32 chance? if
-            self-frames-reset
-            self-wait-16
-            self-frames-reset
-            self-wait-16
+            16 wait-frames
+            16 wait-frames
         then
-        self-frames-reset
-        $3C self-wait-frames
-        0 0 var? not while
-        0 var-dec
+        $3C wait-frames
+        wait-var 0 var? not while
+        wait-var var-dec
         yield
     repeat
     $26 door-locked? if
@@ -359,7 +334,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         stalker-who 1 stalker-command
     then
     stalkers-stay state-flag-clear
-    1 ebit-clear
+    stalker-scene-on ebit-clear
     self-idle-or-end
 ;
 
@@ -368,25 +343,20 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     29.0 21.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cb1-7-medallion-2 story-flag-set
             3 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -396,23 +366,19 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     cb1-7-medallion-3 story-flag? not if
         0 self-turn-angle
         self-wait-done
-        4 message   \ "Huh? There is something in the drain."
-        wait-message
+        4 say   \ "Huh? There is something in the drain."
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cb1-7-medallion-3 story-flag-set
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
     else
-        5 message   \ "There's nothing particularly interesting here."
-        wait-message
+        5 say   \ "There's nothing particularly interesting here."
     then
     self-idle-or-end
 ;

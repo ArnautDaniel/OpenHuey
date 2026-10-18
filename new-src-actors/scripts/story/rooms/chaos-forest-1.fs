@@ -2,13 +2,26 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-1
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant in-zone0                    \ (bit 0) someone in zone 0
+1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
+2 constant figure-scene-on             \ (bit 2) the figure's scene begun (act00)
+0 constant hops-var                    \ (var 0) the figure's hops (5: away)
+1 constant still-var                   \ (var 1) the figure still (0) or hopping
+2 constant call-frames-var             \ (var 2) frames to the figure's next call (60)
+0 constant figure-hit1-sound           \ (snd 0) the figure as it strikes her / is struck
+1 constant figure-hit2-sound           \ (snd 1) the figure as it strikes her / is struck
+2 constant figure-call1-sound          \ (snd 2) the figure's call (now and then)
+3 constant figure-call2-sound          \ (snd 3) the figure's call (now and then)
+4 constant figure-call3-sound          \ (snd 4) the figure's call (now and then)
 
 : chaos-forest-1.enter ( -- )   \ 0041DD20
     room-sounds
-    0 $F2 3 action
+    0 2 track 3 action
     $1C $2F char-to-tri
-    1 0 var-set
+    still-var 0 var-set
     3 $1C char-loaded? if
         $1C 3 $FF char-load
         3 char-start
@@ -16,7 +29,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $1C 22.0 -16.0 145.0 0 char-to-xyz
         $1C $9008 1 0 char-anim-hold
     then
-    0 $F1 1 action
+    0 1 track 1 action
     hunted state-flag-set
     got-forest-map story-flag? not if
         0 part-shown
@@ -26,47 +39,29 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : chaos-forest-1.char-enter ( -- )   \ 0041DD90
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         3 3 player-camera
-    then then
+    then
     0 3 3 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
 ;
 
 : chaos-forest-1.phase1 ( -- )   \ 0041DE10
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
+    then
     found-file-247 story-flag? not if
         fiona-who 1 char-in-area? if
             0 fiona-who 0 action
         then
-    else hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
+    else player-who 1 char-in-area? player-who char-busy? not and if
             1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
-        1 exit-check
-    then then then
+        then then
     2 0 0 1 chars-area-camera
     3 1 1 1 chars-area-camera
     4 1 1 1 chars-area-camera
@@ -88,31 +83,31 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     0 22.0 -16.0 145.0 5 10 1 zone
     self-who 0 char-in-zone? if
-        0 ebit-set
+        in-zone0 ebit-set
     else
-        0 ebit-clear
+        in-zone0 ebit-clear
     then
-    1 0 var? not if
-        2 var-inc
-        2 60 var? if
+    still-var 0 var? not if
+        call-frames-var var-inc
+        call-frames-var 60 var? if
             $21 chance? if
-                $1C 2 6 char-sound
+                $1C figure-call1-sound 6 char-sound
             else $32 chance? if
-                $1C 3 6 char-sound
+                $1C figure-call2-sound 6 char-sound
             else
-                $1C 4 6 char-sound
+                $1C figure-call3-sound 6 char-sound
             then then
-            2 0 var-set
+            call-frames-var 0 var-set
         then
     then
     1 22.39 -16.0 144.46 $15 15 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone1-noticed ebit-set
                     $50 chance? if
-                        $1F 1 var-set
+                        hewie-zone-var 1 var-set
                         0 hewie-who $8A action
                     then
                 then
@@ -123,15 +118,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? 1 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 15.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 15.0 hewie-look-zone
             then
         then
     then
 ;
 
 : chaos-forest-1.phase5 ( -- )   \ 0041DF60
-    2 ebit? not if
+    figure-scene-on ebit? not if
         $1C action-end
         $1C char-done
     then
@@ -149,12 +144,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     stalkers-stay state-flag-set
     1 self-scripted
     3 0 char-remove
-    $F1 action-end
-    2 ebit-set
-    begin
-        loader-done? while
-        yield
-    repeat
+    1 track action-end
+    figure-scene-on ebit-set
+    [: loader-done? ;] wait-while
     $E 3 $FF char-load
     $F 4 figure-load
     $F $44 fade
@@ -175,48 +167,47 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $1C 0 char-visible
     then
     begin
-        0 ebit? if
-            1 0 var-set
-            0 var-inc
-            0 3 var? if
+        in-zone0 ebit? if
+            still-var 0 var-set
+            hops-var var-inc
+            hops-var 3 var? if
                 $21 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 4 var? if
+            hops-var 4 var? if
                 $32 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 5 var? if
+            hops-var 5 var? if
                 0 panic-stage? if
                     1 panic-stage
                 else
                     $F threat-raise
                 then
                 stalker-who 0 stalker-command
-                $1C 0 6 char-sound
+                $1C figure-hit1-sound 6 char-sound
             else
-                $1C 1 6 char-sound
+                $1C figure-hit2-sound 6 char-sound
             then
-            fiona-who $8F 5 char-sound
+            fiona-who shove-hit-sound 5 char-sound
             $1C $9009 0 3 char-anim-hold
             $1C wait-char-anim
             $1C $9008 0 3 char-anim-hold
-            1 0 var-set
-            0 5 var? if
+            still-var 0 var-set
+            hops-var 5 var? if
                 $1C wait-char-anim
-                0 0 var-set
+                hops-var 0 var-set
             then
         then
         $1C char-at-motion-event? if
             $1C $9008 0 0 char-anim-hold
-            1 0 var-set
+            still-var 0 var-set
         else
-            1 var-inc
+            still-var var-inc
         then
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     again
 ;
 
@@ -224,28 +215,21 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -324.0 322.0 self-turn-to-xz
     self-wait-done
-    $902 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-out-anim play-out
+    4 wait-frames
     got-forest-map story-flag-set
     0 part-hidden
     $1F message-param-room
     $1F 1 item-give-count
     0 $1F item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    $903 self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     self-idle-or-end
 ;
 
 : chaos-forest-1.act03 ( -- )   \ 0041E0D0
-    begin
-        3 $1C char-loaded? not while
-        yield
-    repeat
+    [: 3 $1C char-loaded? ;] wait-until
     $19 1.0 0 bgm
     self-idle-or-end
 ;

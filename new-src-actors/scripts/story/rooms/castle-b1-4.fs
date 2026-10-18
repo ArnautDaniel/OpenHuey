@@ -2,34 +2,32 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-4
-USING: room-names story.words story.shared ;
+USING: room-names story.words story.shared fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
+1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
 
 : castle-b1-4.enter ( -- )   \ 003F21E0
     room-sounds
-    0 0 var-set
-    1 0 var-set
+    sound-step-var 0 var-set
+    sound-frames-var 0 var-set
 ;
 
 : castle-b1-4.char-enter ( -- )   \ 003F21F0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
     fiona-who self-is? if
         1 exit-taken? if
@@ -48,13 +46,9 @@ USING: room-names story.words story.shared ;
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 0 1 chars-area-camera
     5 1 1 1 chars-area-camera
     fiona-who 2 char-entered-area? if
@@ -120,21 +114,21 @@ USING: room-names story.words story.shared ;
         stalker-who 4 char-effect-moving
     then
     6 sound-bank-loaded? if
-        1 var-inc
-        1 30 var? if
-            1 0 var-set
-            0 0 var? if
-                $40000005 6 -34.0 102.0 100.0 0 0 sound
-            else 0 1 var? if
-                $40000006 6 -34.0 102.0 100.0 0 0 sound
-            else 0 2 var? if
-                $40000007 6 -34.0 102.0 100.0 0 0 sound
-            else 0 3 var? if
-                $40000008 6 -34.0 102.0 100.0 0 0 sound
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
+                ambient1-sound volume-scaled 6 -34.0 102.0 100.0 0 0 sound
+            else sound-step-var 1 var? if
+                ambient2-sound volume-scaled 6 -34.0 102.0 100.0 0 0 sound
+            else sound-step-var 2 var? if
+                ambient3-sound volume-scaled 6 -34.0 102.0 100.0 0 0 sound
+            else sound-step-var 3 var? if
+                ambient4-sound volume-scaled 6 -34.0 102.0 100.0 0 0 sound
             then then then then
-            0 var-inc
-            0 4 var? if
-                0 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -153,9 +147,8 @@ USING: room-names story.words story.shared ;
     self-wait-done
     35.0 10.0 self-turn-to-xz
     self-wait-done
-    $1D01 $A self-anim-blend
-    0 message   \ "'The path beyond is the road of darkness. Go not without a guide, lest ye lose yourself..."
-    wait-message
+    hand-to-mouth-anim $A self-anim-blend
+    0 say   \ "'The path beyond is the road of darkness. Go not without a guide, lest ye lose yourself..."
     self-wait-anim
     self-idle-or-end
 ;

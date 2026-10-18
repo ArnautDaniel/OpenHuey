@@ -91,3 +91,28 @@ $1405 constant held-under-anim     \ down under the homunculi
 $1406 constant struggling-anim
 $1407 constant up-from-under-anim
 $1500 constant led-walking-anim
+\ ---- the story's own (the rooms' scripts play them; named from how they look when played -
+\ hga's renders - so ? where a guess) ----
+4 constant hug-self-anim           \ ? hugging herself, cold
+$10 constant hug-self-2-anim       \ ? the same
+$800 constant crouch-down-anim     \ crouching down (in a shadow: shared.act81)
+$801 constant crouching-anim
+$802 constant crouch-up-anim
+$900 constant pick-up-anim         \ squatting to something on the floor (an item taken)
+$901 constant up-from-pick-anim
+$902 constant reach-out-anim       \ reaching out at chest height
+$903 constant reach-back-anim
+$904 constant reach-up-anim        \ reaching up high
+$905 constant reach-down-anim
+$A00 constant look-at-anim         \ ? examining: looking at it
+$A01 constant look-low-anim        \ ? bending forward to look low
+$A02 constant look-close-anim      \ ? leaning in to look closely
+$F00 constant startled-anim        \ recoiling, arms up
+$F01 constant look-behind-anim     \ turning to look behind her
+$F03 constant uneasy-anim          \ ? hands drawn up in front
+$F04 constant uneasy-2-anim        \ ? the same, a hand to her face
+$1002 constant stagger-anim        \ ? staggering
+$1003 constant doubled-over-anim   \ ? doubled over, recovering
+$1D00 constant bent-hand-mouth-anim   \ ? bent over, a hand to her mouth
+$1D01 constant hand-to-mouth-anim  \ ? a hand to her mouth
+$1D02 constant hands-clasped-anim  \ ? hands clasped in front, head bowed

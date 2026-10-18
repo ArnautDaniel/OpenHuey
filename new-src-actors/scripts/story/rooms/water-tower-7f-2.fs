@@ -2,7 +2,15 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-7f-2
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
+1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
 
 : water-tower-7f-2.enter ( -- )   \ 00441170
     room-sounds
@@ -14,25 +22,15 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 : water-tower-7f-2.char-enter ( -- )   \ 004411A0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            3 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         3 1 player-camera
-    then then
+    then
     0 3 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -66,13 +64,9 @@ USING: room-names story.words story.shared flag-names story-names ;
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 -1 1 chars-area-camera
     5 1 -1 1 chars-area-camera
     6 1 -1 1 chars-area-camera
@@ -97,33 +91,33 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 -9.0 139.97 -10.23 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 wt7f-2-rubrum-medallion-found var-set
-                $1A wt7f-2-rubrum-medallion var-set
-                $1B 0 var-set
-                $1C -9000 var-set
-                $1D 140970 var-set
-                $1E -10230 var-set
-                $1F 0 var-set
+                found-flag-var wt7f-2-rubrum-medallion-found var-set
+                taken-flag-var wt7f-2-rubrum-medallion var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var -9000 var-set
+                sparkle-y-var 140970 var-set
+                sparkle-z-var -10230 var-set
+                hewie-zone-var 0 var-set
                 0 hewie-who $8B action
             then
         then
     then
     6 sound-bank-loaded? if
-        1 var-inc
-        1 30 var? if
-            1 0 var-set
-            0 0 var? if
-                $40000005 6 -127.0 1.7 10.0 0 0 sound
-            else 0 1 var? if
-                $40000006 6 -127.0 1.7 10.0 0 0 sound
-            else 0 2 var? if
-                $40000007 6 -127.0 1.7 10.0 0 0 sound
-            else 0 3 var? if
-                $40000008 6 -127.0 1.7 10.0 0 0 sound
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
+                ambient1-sound volume-scaled 6 -127.0 1.7 10.0 0 0 sound
+            else sound-step-var 1 var? if
+                ambient2-sound volume-scaled 6 -127.0 1.7 10.0 0 0 sound
+            else sound-step-var 2 var? if
+                ambient3-sound volume-scaled 6 -127.0 1.7 10.0 0 0 sound
+            else sound-step-var 3 var? if
+                ambient4-sound volume-scaled 6 -127.0 1.7 10.0 0 0 sound
             then then then then
-            0 var-inc
-            0 4 var? if
-                0 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -148,8 +142,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     yield
     camera-restart
     1 exit-prepare
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     world-held state-flag-clear
     $F $51 fade
     $828A item-give
@@ -173,25 +166,20 @@ USING: room-names story.words story.shared flag-names story-names ;
     -9.0 -10.23 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $73 message-param-room
         $73 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             wt7f-2-rubrum-medallion story-flag-set
             0 effect-remove
             $73 1 item-give-count
             0 $73 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -202,13 +190,11 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     0.0 -105.0 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    look-close-anim self-anim
+    $28 wait-frames
     $F 6 fade
     wait-fade
-    0 message   \ "All life on the surface of the planet stretches out below the stars' radiant light. All..."
-    wait-message
+    0 say   \ "All life on the surface of the planet stretches out below the stars' radiant light. All..."
     $F 7 fade
     wait-fade
     self-wait-anim

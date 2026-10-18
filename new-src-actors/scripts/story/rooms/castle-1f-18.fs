@@ -2,7 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-18
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant torn-picture-remarked       \ (bit 0) its first remark made: "This picture has been ripped out and discarded. I'm no criti"
+1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
+2 constant sound-started               \ (bit 2) its sound started (then kept up)
+0 constant room-loop-sound             \ (snd 0) its steady sound (started as it comes in, then kept up)
 
 \ room 0x1C (Room1C_Cmd00_ptmf): room effect 0x1C (a depth range) with the cutscene from frame
 \ 0x14A: near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230)
@@ -53,25 +59,15 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-1f-18.char-enter ( -- )   \ 003FCBC0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 0 player-camera
-    then then
+    then
     0 1 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
 ;
 
@@ -94,13 +90,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     flowers-laid story-flag? not if
         0 55.0 4.0 -30.0 $A 5 0 zone
         1 55.0 4.0 -30.0 $14 50 0 zone
-        1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 1 9 char-zone-bits? if
-                        1 ebit-set
+                        hewie-zone1-noticed ebit-set
                         $64 chance? if
-                            $1F 1 var-set
+                            hewie-zone-var 1 var-set
                             0 hewie-who $8A action
                         then
                     then
@@ -110,13 +106,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     else
         0 -34.0 0.0 -44.0 $A 5 0 zone
         1 -34.0 0.0 -44.0 $14 50 0 zone
-        1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 1 9 char-zone-bits? if
-                        1 ebit-set
+                        hewie-zone1-noticed ebit-set
                         $1E chance? if
-                            $1F 1 var-set
+                            hewie-zone-var 1 var-set
                             0 hewie-who $8A action
                         then
                     then
@@ -124,19 +120,19 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             then
         then
     then
-    2 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             flowers-laid story-flag? not if
-                $40000000 6 55.0 4.0 -30.0 0 0 sound
+                room-loop-sound volume-scaled 6 55.0 4.0 -30.0 0 0 sound
             else
-                $40000000 6 -34.0 0.0 -44.0 0 0 sound
+                room-loop-sound volume-scaled 6 -34.0 0.0 -44.0 0 0 sound
             then
-            2 ebit-set
+            sound-started ebit-set
         then
     else flowers-laid story-flag? not if
         castle-1f-18.cmd01
     else
-        $C0000000 6 -34.0 0.0 -44.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -34.0 0.0 -44.0 0 0 sound
     then then
 ;
 
@@ -171,7 +167,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     scene-wait-ready
     wait-fade
     0 part-shown
-    0 $F9 3 action
+    0 cutscene-track 3 action
     hewie-who char-here? hewie-who 2 char-cond? and if
         0 hewie-who $86 action
     then
@@ -210,16 +206,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         -34.0 -44.0 self-turn-to-xz
         self-wait-done
     then
-    $402 self-anim
-    self-wait-anim
+    turn-round-anim play-out
     -1 self-idle-anim
     flowers-laid story-flag? not if
-        1 message   \ "Yuck! Look at all those moths! I'm not going there. Looks like they are attracted t..."
-        wait-message
+        1 say   \ "Yuck! Look at all those moths! I'm not going there. Looks like they are attracted t..."
         $229 item-give
     else
-        4 message   \ "Guess I'll have to chalk that up to another strange occurrence here. Moths that are..."
-        wait-message
+        4 say   \ "Guess I'll have to chalk that up to another strange occurrence here. Moths that are..."
     then
     self-idle-or-end
 ;
@@ -229,12 +222,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $EC -32.523 -39.444 -130 $FFFF 5 self-move-to
     self-wait-done
     1 30.0 10.0 0.0 0.0 event-camera
-    $A01 $A self-anim-blend
-    0 message   \ "An empty flower vase."
-    wait-message
+    look-low-anim $A self-anim-blend
+    0 say   \ "An empty flower vase."
     self-wait-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -262,11 +253,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     8 $FF $E5 0 $E $FF $D8 0 7 effect-string
     9 $FF $E3 0 $F $FF $D8 0 7 effect-string
     $A $FF $E5 0 $C $FF $D7 0 7 effect-string
-    begin
-        $D2 cutscene-cue-reached? not while
-        yield
-    repeat
-    $C0000000 6 -34.0 0.0 -44.0 0 0 sound
+    [: $D2 cutscene-cue-reached? ;] wait-until
+    room-loop-sound kept-going volume-scaled 6 -34.0 0.0 -44.0 0 0 sound
     begin
         $14A cutscene-cue-reached? not while
         1.0 1.0 1.0 48.6 depth-range
@@ -287,14 +275,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-1f-18.act05 ( -- )   \ 003FD050
     self-wait-done
-    0 ebit? not if
-        2 message   \ "This picture has been ripped out and discarded. I'm no critic, but it doesn't seem..."
-        wait-message
-        0 ebit-set
+    torn-picture-remarked ebit? not if
+        2 say   \ "This picture has been ripped out and discarded. I'm no critic, but it doesn't seem..."
+        torn-picture-remarked ebit-set
     else
-        3 message   \ "Who would do such a thing?!"
-        wait-message
-        0 ebit-clear
+        3 say   \ "Who would do such a thing?!"
+        torn-picture-remarked ebit-clear
     then
     self-idle-or-end
 ;
@@ -319,12 +305,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     scene-wait-ready
     0 part-shown
-    0 $F9 8 action
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
-    $40000000 6 55.0 4.0 -30.0 0 0 sound
+    0 cutscene-track 8 action
+    [: 6 sound-bank-loaded? ;] wait-until
+    room-loop-sound volume-scaled 6 55.0 4.0 -30.0 0 0 sound
     castle-1f-18.cmd01
     panic-eased
     $FFFF message-prepare
@@ -366,7 +349,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         castle-1f-18.cmd01
         yield
     repeat
-    $C0000000 6 -34.0 0.0 -44.0 0 0 sound
+    room-loop-sound kept-going volume-scaled 6 -34.0 0.0 -44.0 0 0 sound
     yield
     begin
         $14A cutscene-cue-reached? not while

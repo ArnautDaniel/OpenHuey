@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py), renamed by
 \ tools/story_convert.py, once: edit by hand.
 IN: story.shared
-USING: story.words flag-names story-names ;
+USING: story.words flag-names story-names fiona.anims fiona.sounds hewie.anims hewie.sounds ;
 
 \ ---- the shared scripts (ids 0x80..) -----------------------------------------------------------
 
@@ -12,20 +12,16 @@ defer shared.act97
     self-wait-done
     stalker-who self-turn-to
     self-wait-done
-    $900 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    pick-up-anim play-out
+    4 wait-frames
     0 counter-set
     stalker-gift
     0 counter? not if
         $83 $85 0.0 0.0 0.0 0 0 sound
-        0 $F9 $8C action-force
+        0 cutscene-track $8C action-force
     then
-    self-frames-reset
-    8 self-wait-frames
-    $901 self-anim
-    self-wait-anim
+    8 wait-frames
+    up-from-pick-anim play-out
     wait-message
     self-idle-or-end
 ;
@@ -33,16 +29,13 @@ defer shared.act97
 : shared.act82 ( -- )   \ 003D63A0
     fiona-half-hidden state-flag-clear
     fiona-who camera-follow
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     stalker-who self-look-at
     yield
-    $802 5 self-anim-blend
-    self-frames-reset
-    8 self-wait-frames
-    fiona-who $43 5 char-sound
-    $F03 $A self-anim-blend
-    self-wait-anim
+    crouch-up-anim 5 self-anim-blend
+    8 wait-frames
+    fiona-who seized-sound 5 char-sound
+    uneasy-anim $A blend-out
     1 $7F $F rumble
     stalker-who self-turn-to
     self-wait-done
@@ -51,11 +44,10 @@ defer shared.act97
 
 : shared.act81 ( -- )   \ 003D6340
     self-wait-done
-    $800 self-anim
-    self-wait-anim
+    crouch-down-anim play-out
     fiona-half-hidden state-flag-set
     fiona-hewie-react
-    $801 self-anim
+    crouching-anim self-anim
     begin   \ (crouched till she shakes - Fiona_Shakes - or L1 is let go, as the PS2 plays it)
         $FF $FF pad?  2 1 pad? not or  not if
             fiona-unseen? if
@@ -80,8 +72,7 @@ defer shared.act97
         else
             fiona-half-hidden state-flag-clear
             fiona-who camera-follow
-            $802 self-anim
-            self-wait-anim
+            crouch-up-anim play-out
             self-idle-or-end
         then
     again
@@ -104,14 +95,10 @@ defer shared.act97
         hewie-who char-here? if
             0 hewie-who $94 action-force
         then
-        $8014 message   \ "The clock etches out moments in time... Save current game? YES NO"
-        wait-message
+        $8014 say   \ "The clock etches out moments in time... Save current game? YES NO"
         0 answer? if
             1 subscreen-open
-            begin
-                subscreen-wanted state-flag? while
-                yield
-            repeat
+            [: subscreen-wanted state-flag? ;] wait-while
             yield
         then
         counter-inc
@@ -132,14 +119,10 @@ defer shared.act97
         hewie-who char-here? if
             0 hewie-who $94 action-force
         then
-        $8017 message   \ "It's another clock... Save current game? YES NO"
-        wait-message
+        $8017 say   \ "It's another clock... Save current game? YES NO"
         0 answer? if
             1 subscreen-open
-            begin
-                subscreen-wanted state-flag? while
-                yield
-            repeat
+            [: subscreen-wanted state-flag? ;] wait-while
             yield
         then
         counter-inc
@@ -150,10 +133,7 @@ defer shared.act97
 ;
 
 : shared.act86 ( -- )   \ 003D6448
-    begin
-        hewie-who char-busy? not while
-        yield
-    repeat
+    [: hewie-who char-busy? ;] wait-until
     self-who 1 char-visible
     begin
         yield
@@ -162,20 +142,18 @@ defer shared.act97
 
 : shared.act87 ( -- )   \ 003D6458
     self-wait-done
-    $800 self-anim
-    self-frames-reset
-    5 self-wait-frames
-    $802 $A self-anim-blend
-    self-wait-anim
+    crouch-down-anim self-anim
+    5 wait-frames
+    crouch-up-anim $A blend-out
     self-idle-or-end
 ;
 
 : shared.act88 ( -- )   \ 003D6470
     self-wait-done
-    $1F self-face-zone
+    hewie-zone-var self-face-zone
     self-wait-done
     hewie-who 1 char-silent
-    $1B00 $A self-anim-blend
+    bark-anim $A self-anim-blend
     hewie-who 1 char-wait-motion
     hewie-who 0 char-silent
     hewie-who $5B 5 char-sound
@@ -183,69 +161,63 @@ defer shared.act97
     self-wait-anim
     10 self-idle-anim
     hewie-who 0 char-silent
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     hewie-stay-put
     self-idle-or-end
 ;
 
 : shared.act89 ( -- )   \ 003D64A0
     self-wait-done
-    $1F self-face-zone
+    hewie-zone-var self-face-zone
     self-wait-done
-    $1C03 $A self-anim-blend
-    self-wait-anim
+    sit-a-while-anim $A blend-out
     10 self-idle-anim
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     hewie-stay-put
     self-idle-or-end
 ;
 
 : shared.act8A ( -- )   \ 003D64C0
     self-wait-done
-    $1F 0 hewie-go-to-zone
+    hewie-zone-var 0 hewie-go-to-zone
     self-wait-done
-    4 self-anim
+    stance-anim self-anim
     yield
-    $1F 1 hewie-go-to-zone
-    self-frames-reset
-    $78 self-wait-frames
+    hewie-zone-var 1 hewie-go-to-zone
+    $78 wait-frames
     self-who self-look-at
     yield
     10 self-idle-anim
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     hewie-stay-put
     self-idle-or-end
 ;
 
 : shared.act8B ( -- )   \ 003D64E0
     self-wait-done
-    $1F self-face-zone
+    hewie-zone-var self-face-zone
     self-wait-done
     hewie-who 1 char-silent
-    $1B00 $A self-anim-blend
+    bark-anim $A self-anim-blend
     hewie-who 1 char-wait-motion
     hewie-who 0 char-silent
     hewie-who $5B 5 char-sound
     hewie-who 1 char-silent
     self-wait-anim
     hewie-who 0 char-silent
-    $100 self-anim
-    self-wait-anim
-    1 self-anim
+    sit-down-anim play-out
+    sit-anim self-anim
     yield
     fiona-who self-look-at
     yield
-    $19 story-flag-set-var
+    found-flag-var story-flag-set-var
     5 hewie-trust
-    $1B $1C $1D $1E flicker-sprite-var
-    $1F 0 var-set
+    sparkle-fx-var sparkle-x-var sparkle-y-var sparkle-z-var flicker-sprite-var
+    hewie-zone-var 0 var-set
     begin
         yield
-        $1F var-inc
-        $1A story-flag-var? not 2 game-mode? not and -1 control-action? and $1F 300 var? not and not until
+        hewie-zone-var var-inc
+        taken-flag-var story-flag-var? not 2 game-mode? not and -1 control-action? and hewie-zone-var 300 var? not and not until
     self-who self-look-at
     yield
     hewie-stay-put
@@ -266,7 +238,7 @@ defer shared.act97
 
 : shared.act8D ( -- )   \ 003D6560
     self-wait-done
-    $1D00 $A self-anim-blend
+    bent-hand-mouth-anim $A self-anim-blend
     fiona-who $23 5 char-sound
     fiona-who 2 char-wait-motion
     1 $60 8 rumble
@@ -275,34 +247,24 @@ defer shared.act97
     1 $60 8 rumble
     self-wait-anim
     10 self-idle-anim
-    self-frames-reset
-    9 self-wait-frames
+    9 wait-frames
     self-idle-or-end
 ;
 
 : shared.act8E ( -- )   \ 003D6590
     0 counter-set
     self-wait-done
-    begin
-        hewie-who char-busy? 0 counter? and while
-        yield
-    repeat
+    [: hewie-who char-busy? 0 counter? and ;] wait-while
     hewie-who self-turn-to
     self-wait-done
-    $900 self-anim
-    self-wait-anim
+    pick-up-anim play-out
     2 counter-set
-    $901 self-anim
-    self-wait-anim
+    up-from-pick-anim play-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     hewie-who self-look-at
     yield
-    begin
-        hewie-who char-busy? 2 counter? and while
-        yield
-    repeat
+    [: hewie-who char-busy? 2 counter? and ;] wait-while
     self-who self-look-at
     yield
     self-idle-or-end
@@ -315,17 +277,12 @@ defer shared.act97
     self-wait-done
     hewie-who 2 char-cond? if
         1 counter-set
-        begin
-            fiona-who char-busy? 1 counter? and while
-            yield
-        repeat
-        hewie-who $5A 5 char-sound
-        $1003 self-anim
-        self-wait-anim
+        [: fiona-who char-busy? 1 counter? and ;] wait-while
+        hewie-who bark-sound 5 char-sound
+        doubled-over-anim play-out
         0 self-scripted
         10 self-idle-anim
-        self-frames-reset
-        $A self-wait-frames
+        $A wait-frames
         hewie-who char-full-health? if
             1 hewie-mood
         then
@@ -334,20 +291,14 @@ defer shared.act97
         1 counter-set
         fiona-who self-turn-to
         self-wait-done
-        begin
-            fiona-who char-busy? 1 counter? and while
-            yield
-        repeat
-        $1C03 self-anim
-        self-wait-anim
+        [: fiona-who char-busy? 1 counter? and ;] wait-while
+        $1C03 play-out
         fiona-who self-look-at
         yield
         hewie-who 1 char-cond? if
-            $1B05 self-anim
-            self-wait-anim
+            $1B05 play-out
         else
-            $1B00 self-anim
-            self-wait-anim
+            $1B00 play-out
         then
         hewie-who char-full-health? if
             1 hewie-mood
@@ -363,37 +314,27 @@ defer shared.act97
     self-wait-done
     hewie-who 2 char-cond? if
         1 counter-set
-        begin
-            fiona-who char-busy? 1 counter? and while
-            yield
-        repeat
-        hewie-who $66 5 char-sound
+        [: fiona-who char-busy? 1 counter? and ;] wait-while
+        hewie-who yelp-sound 5 char-sound
         $2213 0 hewie-anim-root
         self-wait-anim
-        $1002 5 self-anim-blend
-        self-frames-reset
-        5 self-wait-frames
+        stagger-anim 5 self-anim-blend
+        5 wait-frames
         3 counter-set
     else
         1 counter-set
         fiona-who self-turn-to
         self-wait-done
-        begin
-            fiona-who char-busy? 0 counter? and while
-            yield
-        repeat
-        $1C03 self-anim
-        self-wait-anim
+        [: fiona-who char-busy? 0 counter? and ;] wait-while
+        $1C03 play-out
         fiona-who self-look-at
         yield
         hewie-who char-dead? hewie-who char-tri-free? and if
-            $1001 self-anim
-            self-wait-anim
+            $1001 play-out
             hewie-who 2 char-cond!
         else
-            hewie-who $65 5 char-sound
-            $1000 self-anim
-            self-wait-anim
+            hewie-who shoved-yelp 5 char-sound
+            $1000 play-out
         then
         3 counter-set
         self-who self-look-at
@@ -406,35 +347,25 @@ defer shared.act97
     self-wait-done
     hewie-who 2 char-cond? if
         1 counter-set
-        begin
-            fiona-who char-busy? 1 counter? and while
-            yield
-        repeat
-        hewie-who $66 5 char-sound
+        [: fiona-who char-busy? 1 counter? and ;] wait-while
+        hewie-who yelp-sound 5 char-sound
         $2213 0 hewie-anim-root
         self-wait-anim
-        $1002 5 self-anim-blend
-        self-frames-reset
-        5 self-wait-frames
+        stagger-anim 5 self-anim-blend
+        5 wait-frames
         3 counter-set
     else
         1 counter-set
         fiona-who self-turn-to
         self-wait-done
-        begin
-            fiona-who char-busy? 0 counter? and while
-            yield
-        repeat
-        $1C03 self-anim
-        self-wait-anim
+        [: fiona-who char-busy? 0 counter? and ;] wait-while
+        $1C03 play-out
         fiona-who self-look-at
         yield
         hewie-who 1 char-cond? if
-            $1B05 self-anim
-            self-wait-anim
+            $1B05 play-out
         else
-            $1B00 self-anim
-            self-wait-anim
+            $1B00 play-out
         then
         3 counter-set
         self-who self-look-at
@@ -445,32 +376,25 @@ defer shared.act97
 
 : shared.act92 ( -- )   \ 003D6710
     self-wait-done
-    $1F self-face-zone
+    hewie-zone-var self-face-zone
     self-wait-done
-    $1B03 $A self-anim-blend
-    self-wait-anim
-    $1B03 0 self-anim-blend
-    self-wait-anim
-    $1B03 0 self-anim-blend
-    self-wait-anim
+    bark-tense-anim $A blend-out
+    bark-tense-anim 0 blend-out
+    bark-tense-anim 0 blend-out
     10 self-idle-anim
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     hewie-stay-put
     self-idle-or-end
 ;
 
 : shared.act93 ( -- )   \ 003D6730
     self-wait-done
-    $1F self-face-zone
+    hewie-zone-var self-face-zone
     self-wait-done
-    $100 $A self-anim-blend
-    self-wait-anim
-    $1C01 0 self-anim-blend
-    self-wait-anim
-    1 0 self-anim-blend
-    self-frames-reset
-    $A self-wait-frames
+    sit-down-anim $A blend-out
+    refuse-anim 0 blend-out
+    sit-anim 0 self-anim-blend
+    $A wait-frames
     hewie-stay-put
     self-idle-or-end
 ;
@@ -484,24 +408,21 @@ defer shared.act97
 : shared.act95 ( -- )   \ 003D6750
     ht1f-9-flag2 story-flag? if
         over-music-f story-flag? found-file-257 story-flag? not and if
-            0 $F8 $97 action
+            0 8 track $97 action
         else
-            0 $F8 $96 action
+            0 8 track $96 action
         then
     then
     exit
 ;
 
 :noname   \ shared.act96 (003D6770; deferred: used before it is defined)
-    self-frames-reset
-    $3C self-wait-frames
+    $3C wait-frames
     $19 chance? if
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
     then
     $19 chance? if
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
     then
     self-frames-reset
     begin
@@ -551,21 +472,21 @@ defer shared.act97
 ; is shared.act97
 
 : shared.act98 ( -- )   \ 003D6820
-    fading? not world-held state-flag? not and $F8 char-busy? not and if
+    fading? not world-held state-flag? not and 8 track char-busy? not and if
         fiona-who char-busy? not fiona-half-hidden state-flag? or if
             shared-flag1 story-flag? not if
                 $708 room-frames-reached? 6 sound-bank-loaded? and if
-                    0 $F8 $99 action
+                    0 8 track $99 action
                     shared-flag1 story-flag-set
                 then
             else shared-flag2 story-flag? not if
                 $1194 room-frames-reached? if
-                    0 $F8 $9A action
+                    0 8 track $9A action
                     shared-flag2 story-flag-set
                 then
             else shared-flag3 story-flag? not if
                 $1C20 room-frames-reached? if
-                    0 $F8 $9B action
+                    0 8 track $9B action
                     shared-flag3 story-flag-set
                 then
             else shared-flag4 story-flag? not if
@@ -581,8 +502,7 @@ defer shared.act97
 : shared.act99 ( -- )   \ 003D6890
     scene-locked state-flag-set
     0 $86 0.0 0.0 0.0 0 0 sound
-    5 message
-    wait-message
+    5 say
     scene-locked state-flag-clear
     self-idle-or-end
 ;
@@ -590,8 +510,7 @@ defer shared.act97
 : shared.act9A ( -- )   \ 003D68C0
     scene-locked state-flag-set
     1 $86 0.0 0.0 0.0 0 0 sound
-    6 message
-    wait-message
+    6 say
     scene-locked state-flag-clear
     self-idle-or-end
 ;
@@ -599,8 +518,7 @@ defer shared.act97
 : shared.act9B ( -- )   \ 003D68F0
     scene-locked state-flag-set
     2 $86 0.0 0.0 0.0 0 0 sound
-    7 message
-    wait-message
+    7 say
     scene-locked state-flag-clear
     self-idle-or-end
 ;

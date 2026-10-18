@@ -2,7 +2,14 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-14
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags hewie.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant bridge-remarked             \ (bit 0) its first remark made: "It's a suspended bridge."
+1 constant hewie-zone0-noticed         \ (bit 1) Hewie has reacted to zone 0 (once a visit)
+2 constant statue-remarked             \ (bit 2) its first remark made: "The body of a beast and the head of a bird... What a strange"
+3 constant bridge-crossing             \ (bit 3) the stalker on the bridge (its floor opened for him)
+0 constant climb-down-sound            \ (snd 0) her climbing down (heard plainly, the screen faded)
 
 \ room 0x2F (Room2F_Cond00_ptmf): the pursuer's Pursuer_GrabHewieBehind
 : castle-2f-14.cond00? ( b0 -- flag )  drop grab-hewie-behind? ;   \ (the stalker's Pursuer_GrabHewieBehind)
@@ -21,15 +28,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-2f-14.char-enter ( -- )   \ 004129A0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     fiona-who self-is? if
         found-file-227 story-flag? not if
@@ -72,12 +74,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
                 0 hewie-who 5 action
             else stalker-who 2 char-cond? not stalker-who 8 char-in-area? and if
                 stalker-free? if
-                    3 ebit? not if
+                    bridge-crossing ebit? not if
                         0 solid-floor floor-off
                         0 keeps-fiona-off keeps-pursuers-off or floor-on
                         0 castle-2f-14.cond00? if
-                            3 ebit-set
-                            0 $F1 6 action
+                            bridge-crossing ebit-set
+                            0 1 track 6 action
                         else
                             0 solid-floor floor-on
                             0 keeps-fiona-off keeps-pursuers-off or floor-off
@@ -99,13 +101,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     c2f-13-medallion story-flag? not hewie-who 7 char-in-area? and if
         0 -149.92 60.0 -50.71 $36 36 0 zone
-        1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        1 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $64 chance? if
-                            $1F 0 var-set
+                            hewie-zone-var 0 var-set
                             0 hewie-who $88 action
                         then
                     then
@@ -117,8 +119,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 0 9 char-zone-bits? if
-                $1F 0 var-set
-                $1F 36.0 hewie-look-zone
+                hewie-zone-var 0 var-set
+                hewie-zone-var 36.0 hewie-look-zone
             then
         then
     then
@@ -170,16 +172,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-scripted
     8 room-preload
     self-wait-done
-    2 message   \ "If I choose my footing carefully, I should be able to get down this way... Climb down?..."
-    wait-message
+    2 say   \ "If I choose my footing carefully, I should be able to get down this way... Climb down?..."
     0 answer? if
         $F 4 fade
         wait-fade
         world-held state-flag-set
         scene-locked state-flag-set
-        0 $86 0.0 0.0 0.0 0 0 sound
-        self-frames-reset
-        $B4 self-wait-frames
+        climb-down-sound $86 0.0 0.0 0.0 0 0 sound
+        $B4 wait-frames
         hewie-who char-here? if
             $2F 0 288 hewie-to-room
         then
@@ -194,13 +194,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-2f-14.act02 ( -- )   \ 00412C50
     self-wait-done
-    0 ebit? not if
-        0 message   \ "It's a suspended bridge."
-        wait-message
-        0 ebit-set
+    bridge-remarked ebit? not if
+        0 say   \ "It's a suspended bridge."
+        bridge-remarked ebit-set
     else
-        1 message   \ "If I lower the bridge somehow, I can use it to cross."
-        wait-message
+        1 say   \ "If I lower the bridge somehow, I can use it to cross."
     then
     self-idle-or-end
 ;
@@ -214,7 +212,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     hewie-who char-file-use
     1 self-noclip
-    $8000 5 self-anim-blend8
+    0 room-motion 5 self-anim-blend8
     self-wait-anim
     0 keeps-fiona-off keeps-pursuers-off or floor-off
     0 self-noclip
@@ -226,15 +224,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
                 then
                 $70 message-param-room
                 $70 $63 item-count? if
-                    $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-                    wait-message
+                    $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
                 else
                     c2f-13-medallion story-flag-set
                     $70 1 item-give-count
                     0 $70 item-tab
                     item-fanfare
-                    $8011 message   \ "You've obtained ."
-                    wait-message
+                    $8011 say   \ "You've obtained ."
                 then
                 c2f-13-medallion story-flag? if
                     1 effect-remove
@@ -254,10 +250,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         1 counter-set
         $140 -149.0 -51.0 -90 $FFFF 5 self-move-to
         self-wait-done
-        $102 self-anim
-        self-wait-anim
-        2 self-anim
-        self-wait-anim
+        lie-down-anim play-out
+        lie-anim play-out
         5 2 hewie-anim
     then
     self-idle-or-end
@@ -273,7 +267,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     0 solid-floor floor-on
     0 keeps-fiona-off keeps-pursuers-off or floor-off
-    3 ebit-clear
+    bridge-crossing ebit-clear
     self-idle-or-end
 ;
 
@@ -294,16 +288,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-2f-14.act06 ( -- )   \ 00412E00
     $75 0 hewie-do
-    begin
-        117 hewie-action? while
-        yield
-    repeat
+    [: 117 hewie-action? ;] wait-while
     hewie-who $2B char-on-tri? hewie-who $140 char-on-tri? or hewie-who $1DF char-on-tri? or if
         0 hewie-who 4 action
     else
         0 solid-floor floor-on
         0 keeps-fiona-off keeps-pursuers-off or floor-off
-        3 ebit-clear
+        bridge-crossing ebit-clear
         5 hewie-trust
     then
     self-idle-or-end
@@ -313,14 +304,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    2 ebit? not if
-        3 message   \ "The body of a beast and the head of a bird... What a strange-looking statue."
-        wait-message
-        2 ebit-set
+    statue-remarked ebit? not if
+        3 say   \ "The body of a beast and the head of a bird... What a strange-looking statue."
+        statue-remarked ebit-set
     else
-        4 message   \ "Some ancient castles used to line their walls with gargoyles, as it was believed to..."
-        wait-message
-        2 ebit-clear
+        4 say   \ "Some ancient castles used to line their walls with gargoyles, as it was believed to..."
+        statue-remarked ebit-clear
     then
     self-idle-or-end
 ;

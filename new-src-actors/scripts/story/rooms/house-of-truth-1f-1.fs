@@ -2,7 +2,18 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-1
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant rested                      \ (bit 0) she has rested here (her recovery: once a visit)
+1 constant hewie-sent-off              \ (bit 1) Hewie was here and sent off for the scene
+2 constant key-used                    \ (bit 2) the key used: the door unlocked, the summoner off
+3 constant sound-started               \ (bit 3) its sound started (then kept up)
+4 constant sound2-started              \ (bit 4) its sound started (then kept up)
+5 constant flame-lit                   \ (bit 5) the flame lit
+1 constant calm-sound                  \ (snd 1) the spot that calms her
+2 constant room-loop-sound             \ (snd 2) its steady sound (started as it comes in, then kept up)
+6 constant room-loop2-sound           \ (snd 6) its steady sound (started as it comes in, then kept up)
 
 : house-of-truth-1f-1.enter ( -- )   \ 00430AB0
     room-sounds
@@ -22,7 +33,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         1 -78.0 1.0 39.0 flicker-sprite
     then
     ht1f-1-flag1 story-flag? if
-        5 ebit-set
+        flame-lit ebit-set
     then
     items-40-as-70 story-flag? if
         over-music-d story-flag? ht1f-1-flag2 story-flag? not and if
@@ -64,55 +75,30 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : house-of-truth-1f-1.char-enter ( -- )   \ 00430C40
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            4 4 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         4 4 player-camera
-    then then
+    then
     1 4 4 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            5 5 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         5 5 player-camera
-    then then
+    then
     2 5 5 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         0 0 player-camera
-    then then
+    then
     3 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 4 exit-taken? and if
-            fiona-who 4 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 4 exit-taken? and if
-        hewie-who 4 char-to-exit
+    player-who self-is? 4 exit-taken? and if
+        player-who 4 char-to-exit
         2 2 player-camera
-    then then
+    then
     4 2 2 area-camera
     fiona-who self-is? if
         0 exit-taken? 1 exit-taken? or 2 exit-taken? or 4 exit-taken? or if
@@ -131,20 +117,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     2 exit-usable? if
         2 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who $17 char-in-area? fiona-who char-busy? not and if
-            4 exit-check
-        then
-    else hewie-who $17 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who $17 char-in-area? player-who char-busy? not and if
         4 exit-check
-    then then
+    then
     7 0 0 1 chars-area-camera
     8 2 2 1 chars-area-camera
     9 1 1 1 chars-area-camera
@@ -194,33 +172,33 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 -78.0 0.0 39.0 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 ht1f-1-album-medallion-found var-set
-                $1A ht1f-1-album-medallion var-set
-                $1B 1 var-set
-                $1C -78000 var-set
-                $1D 1000 var-set
-                $1E 39000 var-set
-                $1F 0 var-set
+                found-flag-var ht1f-1-album-medallion-found var-set
+                taken-flag-var ht1f-1-album-medallion var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var -78000 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 39000 var-set
+                hewie-zone-var 0 var-set
                 0 hewie-who $8B action
             then
         then
     then
-    3 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000002 6 -24.6 22.1 -26.4 0 0 sound
-            3 ebit-set
+            room-loop-sound volume-scaled 6 -24.6 22.1 -26.4 0 0 sound
+            sound-started ebit-set
         then
     else
-        $C0000002 6 -24.6 22.1 -26.4 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -24.6 22.1 -26.4 0 0 sound
     then
-    5 ebit? if
-        4 ebit? not if
+    flame-lit ebit? if
+        sound2-started ebit? not if
             6 sound-bank-loaded? if
-                $40000006 6 -21.86 0.0 33.51 0 0 sound
-                4 ebit-set
+                room-loop2-sound volume-scaled 6 -21.86 0.0 33.51 0 0 sound
+                sound2-started ebit-set
             then
         else
-            $C0000006 6 -21.86 0.0 33.51 0 0 sound
+            room-loop2-sound kept-going volume-scaled 6 -21.86 0.0 33.51 0 0 sound
         then
     then
 ;
@@ -236,7 +214,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         fiona-who $1B char-in-area? fiona-who 45 $32 char-heading? and if
             3 unhurried offer-action
         then
-    else fiona-who $1C char-in-area? fiona-who 30 $32 char-heading? and 2 ebit? and if
+    else fiona-who $1C char-in-area? fiona-who 30 $32 char-heading? and key-used ebit? and if
         4 unhurried offer-action
     then then
     ht1f-1-album-medallion-found story-flag? ht1f-1-album-medallion story-flag? not and if
@@ -248,7 +226,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : house-of-truth-1f-1.phase5 ( -- )   \ 00430F90
-    2 ebit? if
+    key-used ebit? if
         force-calm state-flag-clear
         stalker-who action-end
         stalker-who action-end
@@ -267,7 +245,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : house-of-truth-1f-1.act00 ( -- )   \ 004310B0
-    0 ebit? not if
+    rested ebit? not if
         stalkers-stay state-flag-set
         1 self-scripted
         self-wait-done
@@ -275,36 +253,30 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $117 0.0 -1.1 0 $FFFF 5 self-move-to
         self-wait-done
         1 25.0 10.0 0.0 0.0 event-camera
-        3 message   \ "Life-giving water..."
-        wait-message
+        3 say   \ "Life-giving water..."
         fiona-who char-file-use
-        $8004 $A self-anim-blend
-        self-frames-reset
-        $16 self-wait-frames
-        fiona-who 1 6 char-sound
+        4 room-motion $A self-anim-blend
+        $16 wait-frames
+        fiona-who calm-sound 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
         fiona-calm-reset
         3 avoid-prompt
-        0 ebit-set
+        rested ebit-set
         fiona-who $84 5 char-sound
-        self-frames-reset
-        $1E self-wait-frames
+        $1E wait-frames
         got-doc-recovery story-flag? not if
             $F 6 fade
             wait-fade
-            $40A8 message   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
-            wait-message
+            $40A8 say   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
             $F 7 fade
             wait-fade
             got-doc-recovery story-flag-set
             $A8 message-param-room
             $A8 1 item-give-count
             $83 $85 0.0 0.0 0.0 0 0 sound
-            $801B message   \ "has been saved to your file."
-            wait-message
-            self-frames-reset
-            4 self-wait-frames
+            $801B say   \ "has been saved to your file."
+            4 wait-frames
         then
         0 0.0 0.0 0.0 0.0 event-camera
         stalkers-stay state-flag-clear
@@ -313,8 +285,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         self-wait-done
         0.0 5.0 self-turn-to-xz
         self-wait-done
-        4 message   \ "Ahh. Now that is some good water."
-        wait-message
+        4 say   \ "Ahh. Now that is some good water."
     then
     self-idle-or-end
 ;
@@ -327,7 +298,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     wait-fade
     hewie-who char-here? if
-        1 ebit-set
+        hewie-sent-off ebit-set
         hewie-who action-end
         hewie-who char-done
     then
@@ -338,7 +309,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     yield
     scene-wait-ready
-    0 $F9 5 action
+    0 cutscene-track 5 action
     $10 $FF movie-param
     0 effect-remove
     panic-eased
@@ -347,10 +318,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         scene-play
     then
     fiona-who $EF -71.08 32.24 50 char-to-xz
-    1 ebit? if
+    hewie-sent-off ebit? if
         hewie-who char-activate
         hewie-who $20F -2.73 -54.08 70 char-to-xz
-        1 ebit-clear
+        hewie-sent-off ebit-clear
     then
     stalker-who action-end
     stalker-who char-done
@@ -370,11 +341,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 part-shown
     $E0 door-unlock
     $24 item-use
-    2 ebit-set
+    key-used ebit-set
     summoner-on state-flag-clear
     force-calm state-flag-set
     0 -24.6 22.1 -26.4 1 flame-in
-    5 ebit-set
+    flame-lit ebit-set
     $F $51 fade
     wait-fade
     $44 resident-flag-set
@@ -388,11 +359,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -32.0 34.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
-    self-frames-reset
-    self-wait-16
-    1 message   \ "'Caution. Extremely Flammable' I wonder if there are explosives or the like inside. If..."
-    wait-message
+    look-low-anim self-anim
+    16 wait-frames
+    1 say   \ "'Caution. Extremely Flammable' I wonder if there are explosives or the like inside. If..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -401,11 +370,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $10C -30.0 -26.0 90 $FFFF 5 self-move-to
     self-wait-done
-    $A00 self-anim
-    self-frames-reset
-    self-wait-16
-    0 message   \ "The fire spouts showers of sparks into the air."
-    wait-message
+    look-at-anim self-anim
+    16 wait-frames
+    0 say   \ "The fire spouts showers of sparks into the air."
     self-wait-anim
     self-idle-or-end
 ;
@@ -414,26 +381,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -53.0 34.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
-    self-frames-reset
-    self-wait-16
-    2 message   \ "Wreckage from the wall lies in a mass on the floor. What a powerful explosion."
-    wait-message
+    look-low-anim self-anim
+    16 wait-frames
+    2 say   \ "Wreckage from the wall lies in a mass on the floor. What a powerful explosion."
     self-wait-anim
     self-idle-or-end
 ;
 
 : house-of-truth-1f-1.act05 ( -- )   \ 00431320
-    begin
-        6 cutscene-shot? not while
-        yield
-    repeat
+    [: 6 cutscene-shot? ;] wait-until
     0 part-hidden
     1 part-shown
-    begin
-        cutscene-near-end? not while
-        yield
-    repeat
+    [: cutscene-near-end? ;] wait-until
     self-idle-or-end
 ;
 
@@ -442,25 +401,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -78.0 39.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $71 message-param-room
         $71 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             ht1f-1-album-medallion story-flag-set
             1 effect-remove
             $71 1 item-give-count
             0 $71 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -470,7 +424,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     stalker-who 0 char-silent
     self-who 0 char-visible
-    $8000 self-anim
+    0 room-motion self-anim
     begin
         yield
     again
@@ -486,7 +440,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     yield
     scene-wait-ready
-    0 $F9 5 action
+    0 cutscene-track 5 action
     $10 $FF movie-param
     panic-eased
     $FFFF message-prepare

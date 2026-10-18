@@ -2,7 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-10
-USING: room-names story.words story.shared story-names floor-flags ;
+USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits and script variables ----
+0 constant bull-statue-remarked        \ (bit 0) its first remark made: "A bronze statue with a cow-like head. My Greek mythology is "
 
 : old-mansion-2f-10.enter ( -- )   \ 0041B130
     om2f-10-breakable-broken story-flag? not if
@@ -29,35 +32,20 @@ USING: room-names story.words story.shared story-names floor-flags ;
 ;
 
 : old-mansion-2f-10.char-enter ( -- )   \ 0041B1B0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
 ;
 
@@ -88,8 +76,8 @@ USING: room-names story.words story.shared story-names floor-flags ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 13.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 13.0 hewie-look-zone
             then
         then
     then
@@ -97,8 +85,8 @@ USING: room-names story.words story.shared story-names floor-flags ;
     hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 15.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 15.0 hewie-look-zone
             then
         then
     then
@@ -106,8 +94,8 @@ USING: room-names story.words story.shared story-names floor-flags ;
     hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 15.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 15.0 hewie-look-zone
             then
         then
     then
@@ -166,25 +154,20 @@ USING: room-names story.words story.shared story-names floor-flags ;
     -10.5 -0.4 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $9B message-param-room
         $9B $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-10-weeping-stone story-flag-set
             0 effect-remove
             $9B 1 item-give-count
             0 $9B item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -198,16 +181,13 @@ USING: room-names story.words story.shared story-names floor-flags ;
         -67.5 11.5 self-turn-to-xz
         self-wait-done
     then
-    $A00 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    0 ebit? not if
-        0 ebit-set
-        0 message   \ "A bronze statue with a cow-like head. My Greek mythology is kind of rusty, but I th..."
-        wait-message
+    look-at-anim self-anim
+    $28 wait-frames
+    bull-statue-remarked ebit? not if
+        bull-statue-remarked ebit-set
+        0 say   \ "A bronze statue with a cow-like head. My Greek mythology is kind of rusty, but I th..."
     else
-        1 message   \ "It looks like it could come to life at any second."
-        wait-message
+        1 say   \ "It looks like it could come to life at any second."
     then
     self-wait-anim
     self-idle-or-end

@@ -16,29 +16,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 part-shown
     1 0 1 effect-string
     1 part-hidden
-    0 $F1 2 action
+    0 1 track 2 action
 ;
 
 : castle-2f-4.char-enter ( -- )   \ 00429E60
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -70,7 +60,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     scene-wait-ready
     wait-fade
-    0 $F9 1 action
+    0 cutscene-track 1 action
     $21 room-preload
     movie-opaque state-flag-set
     panic-eased
@@ -85,38 +75,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-2f-4.act01 ( -- )   \ 00429FC0
-    begin
-        4 cutscene-shot? not while
-        yield
-    repeat
+    [: 4 cutscene-shot? ;] wait-until
     fiona-who $1E char-layer
-    begin
-        5 cutscene-shot? not while
-        yield
-    repeat
+    [: 5 cutscene-shot? ;] wait-until
     fiona-who $A char-layer
     fiona-who 1 char-no-shadow
-    begin
-        6 cutscene-shot? not while
-        yield
-    repeat
+    [: 6 cutscene-shot? ;] wait-until
     fiona-who 0 char-no-shadow
-    begin
-        9 cutscene-shot? not while
-        yield
-    repeat
+    [: 9 cutscene-shot? ;] wait-until
     2 castle-2f-4.cmd02
     fiona-who $1E char-layer
-    begin
-        $A cutscene-shot? not while
-        yield
-    repeat
+    [: $A cutscene-shot? ;] wait-until
     1 castle-2f-4.cmd02
     fiona-who $A char-layer
-    begin
-        0 cutscene-cue-reached? while
-        yield
-    repeat
+    [: 0 cutscene-cue-reached? ;] wait-while
     wait-fade
     self-idle-or-end
 ;
@@ -130,13 +102,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-2f-4.act03 ( -- )   \ 0042A010
     self-wait-done
-    0 $F1 2 action
+    0 1 track 2 action
     1 2 movie-play
     0 cutscene-start
     yield
     yield
     scene-wait-ready
-    0 $F9 1 action
+    0 cutscene-track 1 action
     movie-opaque state-flag-set
     panic-eased
     9 message-prepare   \ "No---------!! No...This isn't real... It's just a dream... This can't be happen..."

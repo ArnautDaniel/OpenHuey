@@ -2,7 +2,15 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-1
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant dial-in-use                 \ (bit 0) turning the device (the loop runs while it is set)
+1 constant dial-moving                 \ (bit 1) the device turning this frame
+2 constant device-remarked             \ (bit 2) its first remark made: "Huh? What is this? Looks like it pivots at the base..."
+3 constant puzzle-solved               \ (bit 3) the devices set right (progress variables 0 5, 1 2, 3 3): out the other way
+0 constant dial-stop-sound             \ (snd 0) the dial coming to rest
+1 constant dial-click-sound            \ (snd 1) the dial clicking on a number
 
 \ the dial pstr_syuukouki on progress var 3
 : castle-2f-1.cmd00 ( b0 -- )  s" syuukouki" 3 0 0 dial-step ;   \ (the dial on progress variable 3, from 0 degrees)
@@ -30,25 +38,15 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 : castle-2f-1.char-enter ( -- )   \ 003F3CF0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
     fiona-who self-is? if
         $80 exit-taken? $81 exit-taken? or if
@@ -84,13 +82,13 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 39.5 80.0 -38.8 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 c2f-1-refined-magnesia-found var-set
-                $1A c2f-1-refined-magnesia var-set
-                $1B 0 var-set
-                $1C 39500 var-set
-                $1D 81000 var-set
-                $1E -38800 var-set
-                $1F 0 var-set
+                found-flag-var c2f-1-refined-magnesia-found var-set
+                taken-flag-var c2f-1-refined-magnesia var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var 39500 var-set
+                sparkle-y-var 81000 var-set
+                sparkle-z-var -38800 var-set
+                hewie-zone-var 0 var-set
                 0 hewie-who $8B action
             then
         then
@@ -99,8 +97,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 12.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 12.0 hewie-look-zone
             then
         then
     then
@@ -108,8 +106,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 8.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 8.0 hewie-look-zone
             then
         then
     then
@@ -158,19 +156,17 @@ USING: room-names story.words story.shared flag-names story-names ;
         stalker-who self-touching? not if
             in-panic? not if
                 fiona-who $15 char-not-at-door? if
-                    $609 self-anim
+                    rattle-behind-anim self-anim
                 else
-                    $608 self-anim
+                    rattle-front-anim self-anim
                 then
-                self-frames-reset
-                $14 self-wait-frames
+                $14 wait-frames
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     $15 door-unlock
                     $8008 message   \ "You unlocked the door."
                     20 self-idle-anim
-                    self-frames-reset
-                    $14 self-wait-frames
+                    $14 wait-frames
                     wait-message
                 then
             then
@@ -205,7 +201,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     then
     world-held state-flag-set
     world-frozen state-flag-clear
-    3 ebit? if
+    puzzle-solved ebit? if
         $80 exit-check
     else
         $81 exit-check
@@ -219,33 +215,30 @@ USING: room-names story.words story.shared flag-names story-names ;
     1 self-scripted
     self-wait-done
     c1f-12-flag1 story-flag? if
-        1 message   \ "A device that attracts moonlight? How bizarre."
-        wait-message
+        1 say   \ "A device that attracts moonlight? How bizarre."
     else
-        2 ebit? not if
-            0 message   \ "Huh? What is this? Looks like it pivots at the base..."
-            wait-message
-            2 ebit-set
-            self-frames-reset
-            8 self-wait-frames
+        device-remarked ebit? not if
+            0 say   \ "Huh? What is this? Looks like it pivots at the base..."
+            device-remarked ebit-set
+            8 wait-frames
         then
         world-frozen state-flag-set
         fiona-who $E6 -43.61 1.45 62 char-to-xz
         1 11.0 0.0 0.0 0.0 event-camera
         2 message   \ "Rotate by pressing Right or Left on the left analog stick."
-        0 ebit-set
-        1 ebit-set
+        dial-in-use ebit-set
+        dial-moving ebit-set
         begin
-            0 ebit? while
-            1 ebit? if
+            dial-in-use ebit? while
+            dial-moving ebit? if
                 1 castle-2f-1.cmd00
-                1 ebit? not if
-                    0 6 -36.0 -102.0 5.0 0 0 sound
+                dial-moving ebit? not if
+                    dial-stop-sound 6 -36.0 -102.0 5.0 0 0 sound
                 then
             else
                 2 castle-2f-1.cmd00
-                1 ebit? 3 3 pvar? and if
-                    1 6 -36.0 -102.0 5.0 0 0 sound
+                dial-moving ebit? 3 3 pvar? and if
+                    dial-click-sound 6 -36.0 -102.0 5.0 0 0 sound
                     castle-2f-1.cmd01
                 then
             then
@@ -256,7 +249,7 @@ USING: room-names story.words story.shared flag-names story-names ;
         0 0.0 0.0 0.0 0.0 event-camera
         world-frozen state-flag-clear
         0 5 pvar? 1 2 pvar? and 3 3 pvar? and if
-            3 ebit-set
+            puzzle-solved ebit-set
             force-calm state-flag-set
             $F $44 fade
             ['] castle-2f-1.act02 goto
@@ -287,25 +280,20 @@ USING: room-names story.words story.shared flag-names story-names ;
     39.5 -38.8 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $95 message-param-room
         $95 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c2f-1-refined-magnesia story-flag-set
             0 effect-remove
             $95 1 item-give-count
             0 $95 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -314,8 +302,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     18.0 -16.0 self-turn-to-xz
     self-wait-done
-    4 message   \ "Tinkering out a few chords may soothe my nerves a bit... But now is hardly the time or..."
-    wait-message
+    4 say   \ "Tinkering out a few chords may soothe my nerves a bit... But now is hardly the time or..."
     self-idle-or-end
 ;
 
@@ -323,8 +310,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    3 message   \ "Loads of speakers line the walls in a haphazard fashion. I can feel a piercing stare co..."
-    wait-message
+    3 say   \ "Loads of speakers line the walls in a haphazard fashion. I can feel a piercing stare co..."
     self-idle-or-end
 ;
 
@@ -340,25 +326,20 @@ USING: room-names story.words story.shared flag-names story-names ;
     41.5 31.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c2f-1-lavender story-flag-set
             1 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

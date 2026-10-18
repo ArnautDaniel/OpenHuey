@@ -2,7 +2,12 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-10
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits and script variables ----
+0 constant hewie-sent-off              \ (bit 0) Hewie was here and sent off: she leaves by the other way
+1 constant doll-scene-done             \ (bit 1) the figure's doll scene played (act06)
+2 constant doll-to-take                \ (bit 2) the doll on show, to be taken
 
 \ the stalker in play is chasing (+0x153C 2, 6 or 7, not +0xC4 2) with the progress state 2: in
 \ this room, whether the camera sees it; elsewhere 1
@@ -34,21 +39,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     got-bisque-doll story-flag? if
         $93 1 item-count? not castle-1f-10.cond01? and if
             0 part-shown
-            2 ebit-set
+            doll-to-take ebit-set
         then
     then
 ;
 
 : castle-1f-10.char-enter ( -- )   \ 00404040
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 -1 player-camera
-    then then
+    then
     0 1 -1 area-camera
 ;
 
@@ -74,8 +74,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 9.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 9.0 hewie-look-zone
             then
         then
     then
@@ -106,7 +106,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         fiona-who 2 $14 0 $2D char-touching-facing? if
             c1f-10-flag2 story-flag? not if
                 2 unhurried offer-action
-            else 1 ebit? not if
+            else doll-scene-done ebit? not if
                 6 unhurried offer-action
             then then
         then
@@ -117,7 +117,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who 7 char-in-area? fiona-who 45 $32 char-heading? and if
         5 unhurried offer-action
     then
-    2 ebit? if
+    doll-to-take ebit? if
         fiona-who 8 $3C char-faces-area? if
             7 calm offer-action
         then
@@ -150,7 +150,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? if
         hewie-who action-end
         hewie-who char-done
-        0 ebit-set
+        hewie-sent-off ebit-set
     then
     $20 door-open-set
     doors-room-in
@@ -165,7 +165,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     world-held state-flag-set
     0 exit-prepare
     $20 door-open-clear
-    0 ebit? if
+    hewie-sent-off ebit? if
         $80 exit-check
     else
         $81 exit-check
@@ -181,12 +181,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $98 7.28 20.316 15 $FFFF 5 self-move-to
     self-wait-done
     1 20.0 10.0 20.0 0.0 event-camera
-    $A01 $A self-anim-blend
-    0 message   \ "A doll lies on display here. The owner must cherish it."
-    wait-message
+    look-low-anim $A self-anim-blend
+    0 say   \ "A doll lies on display here. The owner must cherish it."
     self-wait-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -226,8 +224,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     7 1 item-give-count
     0 7 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
+    $8012 say   \ "You've obtained ."
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -238,34 +235,28 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     11.0 -58.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-10-beef-jerky story-flag-set
             1 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $903 self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
 
 : castle-1f-10.act04 ( -- )   \ 00404428
     self-wait-done
-    $A01 $A self-anim-blend
-    1 message   \ "There is no way I would even consider lying down here."
-    wait-message
+    look-low-anim $A self-anim-blend
+    1 say   \ "There is no way I would even consider lying down here."
     self-wait-anim
     self-idle-or-end
 ;
@@ -276,12 +267,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 10.0 10.0 0.0 2.0 event-camera
     world-frozen state-flag-set
     1 self-scripted
-    self-frames-reset
-    self-wait-16
-    2 message   \ "It's sort of like a... Let's just forget it. 'Out of sight, out of mind.' Or so they say."
-    wait-message
-    self-frames-reset
-    4 self-wait-frames
+    16 wait-frames
+    2 say   \ "It's sort of like a... Let's just forget it. 'Out of sight, out of mind.' Or so they say."
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     world-frozen state-flag-clear
     0 self-scripted
@@ -294,7 +282,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     2 $9002 0 7 char-anim-hold
     2 wait-char-anim
     2 $9001 1 7 char-anim-hold
-    1 ebit-set
+    doll-scene-done ebit-set
     self-idle-or-end
 ;
 
@@ -302,25 +290,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     -3.61 2.23 self-turn-to-xz
     self-wait-done
-    $902 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-out-anim play-out
+    4 wait-frames
     $93 message-param-room
     $93 $63 item-count? if
-        $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-        wait-message
+        $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
     else
         $93 1 item-give-count
-        2 ebit-clear
+        doll-to-take ebit-clear
         0 part-hidden
         0 $93 item-tab
         item-fanfare
-        $8011 message   \ "You've obtained ."
-        wait-message
+        $8011 say   \ "You've obtained ."
     then
-    $903 self-anim
-    self-wait-anim
+    reach-back-anim play-out
     self-idle-or-end
 ;
 

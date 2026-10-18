@@ -2,7 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-1
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+
+\ ---- this room's own event bits and script variables ----
+0 constant hewie-arrival-on            \ (bit 0) Hewie's arrival scene started (her first time in); over once the stalker is here
+1 constant splash1-made                \ (bit 1) a splash played once someone steps into its zone (once a visit)
+2 constant splash2-made                \ (bit 2) a splash played once someone steps into its zone (once a visit)
+3 constant hewie-zone2-noticed         \ (bit 3) Hewie has reacted to zone 2 (once a visit)
 
 : castle-1f-1.enter ( -- )   \ 003EE770
     garden-door-done story-flag? c1f-1-flag1 story-flag? not and if
@@ -33,35 +39,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-1f-1.char-enter ( -- )   \ 003EE820
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 -1 player-camera
-    then then
+    then
     0 2 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 -1 player-camera
-    then then
+    then
     2 0 -1 area-camera
     fiona-who self-is? if
         c1f-3-bookshelf-examined story-flag? c1f-1-flag2 story-flag? not and if
@@ -73,8 +64,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
                 hewie-who $132 0 char-to-tri-facing
             then
             c1f-1-flag2 story-flag-set
-            0 ebit-set
-            0 $F1 1 action
+            hewie-arrival-on ebit-set
+            0 1 track 1 action
         then
     then
 ;
@@ -86,13 +77,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 exit-usable? if
         1 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     8 0 -1 1 chars-area-camera
     9 1 0 1 chars-area-camera
     $A 1 0 1 chars-area-camera
@@ -120,9 +107,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             2 exit-prepare
         then
     then
-    0 ebit? if
+    hewie-arrival-on ebit? if
         stalker-who char-here? if
-            0 ebit-clear
+            hewie-arrival-on ebit-clear
         then
     then
     c1f-1-refined-magnesia story-flag? not if
@@ -140,13 +127,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             then
         then
         2 -33.33 -16.93 69.69 $28 6 0 zone
-        3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 2 9 char-zone-bits? if
-                        3 ebit-set
+                        hewie-zone2-noticed ebit-set
                         $64 chance? if
-                            $1F 2 var-set
+                            hewie-zone-var 2 var-set
                             0 hewie-who $88 action
                         then
                     then
@@ -157,40 +144,40 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         hewie-who char-here? 0 game-mode? and if
             hewie-can-command? if
                 hewie-who 2 9 char-zone-bits? if
-                    $1F 2 var-set
-                    $1F 6.0 hewie-look-zone
+                    hewie-zone-var 2 var-set
+                    hewie-zone-var 6.0 hewie-look-zone
                 then
             then
         then
     then
-    1 ebit? not if
+    splash1-made ebit? not if
         0 -46.0 -16.0 70.0 $C 4 0 zone
         fiona-who 0 3 char-zone-bits? fiona-who 0 3 char-zone-bits-before? not and if
             fiona-who 5 -46.0 -16.0 70.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
         hewie-who 0 3 char-zone-bits? hewie-who 0 3 char-zone-bits-before? not and if
             hewie-who $A -46.0 -16.0 70.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
         stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
             stalker-who 5 -46.0 -16.0 70.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
     then
-    2 ebit? not if
+    splash2-made ebit? not if
         1 -23.0 -16.0 67.0 $C 4 0 zone
         fiona-who 1 3 char-zone-bits? fiona-who 1 3 char-zone-bits-before? not and if
             fiona-who 5 -23.0 -16.0 67.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
         hewie-who 1 3 char-zone-bits? hewie-who 1 3 char-zone-bits-before? not and if
             hewie-who $A -23.0 -16.0 67.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
         stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
             stalker-who 5 -23.0 -16.0 67.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
     then
     got-doc-crouch-evasion story-flag? not if
@@ -221,7 +208,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             0 unhurried offer-action
         then
     then
-    1 exit-door-open? not 0 ebit? and if
+    1 exit-door-open? not hewie-arrival-on ebit? and if
         fiona-who 1 char-before-door? if
             0 examine-message   \ "It's too dangerous to go back now..."
         then
@@ -233,7 +220,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-1f-1.phase5 ( -- )   \ 003EEC00
-    0 ebit? stalker-who char-here? not and stalker-who 2 char-cond? and if
+    hewie-arrival-on ebit? stalker-who char-here? not and stalker-who 2 char-cond? and if
         stalker-who action-end
         2 summon-take
     then
@@ -246,9 +233,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-1f-1.act00 ( -- )   \ 003EEC28
     self-wait-done
-    $1D02 $A self-anim-blend
-    1 message   \ "The gate is closed. There's no way through. I am going to have to find another way."
-    wait-message
+    hands-clasped-anim $A self-anim-blend
+    1 say   \ "The gate is closed. There's no way through. I am going to have to find another way."
     self-wait-anim
     self-idle-or-end
 ;
@@ -283,13 +269,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     hewie-who char-busy? not if
         0 hewie-who 4 action-force
-        $C00 self-anim
+        go-for-it-gesture-anim self-anim
         fiona-who 1 char-wait-motion
         fiona-who $2E 5 char-sound
         self-wait-anim
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
         stalkers-stay state-flag-clear
     then
@@ -309,23 +294,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $1BE -31.549 70.055 150 $FFFF 5 self-move-to
     self-wait-done
-    $1C03 $A self-anim-blend
-    self-wait-anim
+    sit-a-while-anim $A blend-out
     fiona-half-hidden state-flag? fiona-who char-busy? not or if
         $95 $63 item-count? not if
             10 hewie-trust
         then
         $95 message-param-room
         $95 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-1-refined-magnesia story-flag-set
             $95 1 item-give-count
             0 $95 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
     then
     $1C0 -42.94 81.76 176 $FFFF 5 self-move-to
@@ -345,16 +327,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     draw-when-frozen state-flag-set
     $F 6 fade
     wait-fade
-    $40AA message   \ "'Crouch Evasion' In addition to evasion points, you can avoid enemies by pressing t..."
-    wait-message
+    $40AA say   \ "'Crouch Evasion' In addition to evasion points, you can avoid enemies by pressing t..."
     $F 7 fade
     wait-fade
     got-doc-crouch-evasion story-flag-set
     $AA message-param-room
     $AA 1 item-give-count
     $83 $85 0.0 0.0 0.0 0 0 sound
-    $801B message   \ "has been saved to your file."
-    wait-message
+    $801B say   \ "has been saved to your file."
     draw-when-frozen state-flag-clear
     world-frozen state-flag-clear
     0 self-scripted

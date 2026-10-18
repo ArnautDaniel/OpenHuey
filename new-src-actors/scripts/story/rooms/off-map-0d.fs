@@ -5,26 +5,17 @@ IN: story.rooms.off-map-0d
 USING: room-names story.words story.shared ;
 
 : off-map-0d.char-enter ( -- )   \ 003F5490
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            5 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         5 -1 player-camera
-    then then
+    then
     1 5 -1 area-camera
 ;
 
 : off-map-0d.phase1 ( -- )   \ 003F54D0
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     fiona-who $BB char-on-tri? fiona-who $1C7 char-on-tri? or if
         2 -1 player-camera
     then

@@ -2,7 +2,37 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-9
-USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant smell-remarked              \ (bit 0) its first remark made: "There is an odd smell here..."
+1 constant pit-remarked                \ (bit 1) its first remark made: "If I fell in from here, I would be toast..."
+2 constant hewie-zone3-noticed         \ (bit 2) Hewie has reacted to zone 3 (once a visit)
+3 constant trap-started                \ (bit 3) the trap begun (track 2: act0B)
+4 constant area5-triggered             \ (bit 4) someone in area 5: its scene (track 3: act0C)
+5 constant area6-triggered             \ (bit 5) someone in area 6: its scene (track 4: act0D)
+6 constant area7-armed                 \ (bit 6) area 7's effect ready for her
+7 constant area8-armed                 \ (bit 7) area 8's effect ready for her
+8 constant sound-started               \ (bit 8) its sound started (then kept up)
+9 constant things-fell                 \ (bit 9) things fell through below (cmd05 counts them down variable 6)
+10 constant scene-effect-on            \ (bit 10) the scene's effect (cmd0C) on, from its cue
+11 constant drone-on                   \ (bit 11) the drone sound ($30, bank $47) going
+0 constant wisps-var                   \ (var 0) the wisp column's effect
+1 constant smoke-spot-var              \ (var 1) which of the five smoke spots next
+4 constant left-var                    \ (var 4) ? 3 as the trap is set
+5 constant right-var                   \ (var 5) ? 3 as the trap is set
+6 constant keri-var                    \ (var 6) the debris fallen (counted down as it goes)
+7 constant scene-var                   \ (var 7) the scene's stage (20)
+8 constant shake-frames-var            \ (var 8) frames of the camera's shake (10)
+9 constant shake2-frames-var           \ (var 9) frames of the camera's shake (30)
+10 constant haze-var                   \ (var 10) the heat haze's effect
+11 constant embers-var                 \ (var 11) the pit's embers' effect
+0 constant drone-high-sound            \ (snd 0) a drone overhead (kept up)
+1 constant drone-sound                 \ (snd 1) a drone (kept up)
+2 constant drone-left-sound            \ (snd 2) a drone to the left (kept up)
+3 constant drone2-sound                \ (snd 3) a second drone (kept up)
+5 constant area5-sound                 \ (snd 5) someone in area 5
+6 constant drone-right-sound           \ (snd 6) a drone to the right (kept up)
 
 \ ---- the debris falling from above ("keri0".."keri5", each carried by a kind-9 thing: free
 \ while hidden) and the traps set round the middle (kind 10) - the things actor's ----
@@ -55,10 +85,10 @@ fvariable dx  fvariable dz  fvariable dy
 \ the nav mesh (+0x3C)
 : house-of-truth-1f-9.cmd02 ( -- )   \ (more debris falling: 1..3 more, 6 out at most - variable 6 counts them - each
     \ carrying the first "keri" free)
-    6 var @ 6 >= if  exit  then
-    3 random 1+  6 6 var @ - min  0 ?do
+    keri-var var @ 6 >= if  exit  then
+    3 random 1+  6 keri-var var @ - min  0 ?do
         free-keri dup 0< if  drop leave  then
-        6 var-inc
+        keri-var var-inc
         drop-spot  xyz>cells  things-id send keri-drop
     loop ;
 \ the placed thing 10 brought back (list +0x14 / +0x8, its +0xC, +0x28 on) and put on one of
@@ -68,18 +98,18 @@ fvariable dx  fvariable dz  fvariable dy
 : house-of-truth-1f-9.cmd03 ( -- )   \ (a trap set down on one of five spots round the middle - variable 1, then on by
     \ 2 of 5: 72 degrees a spot, with a little random - 1.5..2 out, 2.1 up, on triangle $3B, smoke
     \ rising from it)
-    1.0053e rnd f*  1.2566e 1 var @ s>f f* f+  0.5027e f-  angle-wrap  ( F: a )
+    1.0053e rnd f*  1.2566e smoke-spot-var var @ s>f f* f+  0.5027e f-  angle-wrap  ( F: a )
     1.5e 0.5e rnd f* f+  fover fsin fover f* dx f!  fswap fcos f* dz f!
     $3B  dx f@ f>cell  2.1e f>cell  dz f@ f>cell  things-id send trap-place
-    1  1 var @ 2 + 5 mod  var-set ;
+    1  smoke-spot-var var @ 2 + right-var mod  var-set ;
 \ (as Room49_Cmd02) byte 3 0: the effect WispColumn_vtable spawned (told 1), its slot in event
 \ var 0; 1: it is told 0
 : house-of-truth-1f-9.cmd04 ( b0 -- )   \ (the column of wisps: b0 0 made - kept in variable 0; 1 fading out)
-    0= if  0 effects:wisp-column var-set  else  0 var @ dup alive? if  0 swap send effect-command  else  drop  then  then ;
+    0= if  wisps-var effects:wisp-column var-set  else  wisps-var var @ dup alive? if  0 swap send effect-command  else  drop  then  then ;
 \ the things that fell below -30: placed things of kind 9 are reset (+0x28) and each counts down
 \ script variable 6 (and the event manager's +0x5C); room objects 10..15 that did get +0 set
 : house-of-truth-1f-9.cmd05 ( -- )   \ (the debris fallen through since: each counts variable 6 down, event bit 9)
-    keri-fallen @ 0 ?do  6 var-dec  9 ebit-set  loop  0 keri-fallen ! ;
+    keri-fallen @ 0 ?do  keri-var var-dec  things-fell ebit-set  loop  0 keri-fallen ! ;
 \ the 0x20E0-byte effect SparkSpray_vtable (sent byte 3): byte 3 0 / 1 one made, its slot in
 \ script variable 2 / 3; 2 / 3 the one in variable 2 / 3 (if any) sent nothing
 : house-of-truth-1f-9.cmd06 ( b0 -- )   \ (the sparks sprayed across: b0 0 / 1 from the left / right - kept in variable 2 / 3;
@@ -121,15 +151,15 @@ fvariable dx  fvariable dz  fvariable dy
 \ Room92_Cmd0C
 : house-of-truth-1f-9.cmd0C ( b0 b1 -- )   \ (the heat haze: b0 0 made - kept in variable 10; 1 its wave easing to b1, 2 at once)
     swap case
-        0 of  drop  10 effects:heat-haze var-set  endof
-        1 of  10 var @ dup alive? if  send effect-command  else  2drop  then  endof
-        2 of  256 +  10 var @ dup alive? if  send effect-command  else  2drop  then  endof
+        0 of  drop  haze-var effects:heat-haze var-set  endof
+        1 of  haze-var var @ dup alive? if  send effect-command  else  2drop  then  endof
+        2 of  256 +  haze-var var @ dup alive? if  send effect-command  else  2drop  then  endof
         >r drop r>
     endcase ;
 \ Room92_Cmd0D
 : house-of-truth-1f-9.cmd0D ( b0 -- )   \ (the pit's embers: b0 0 with flames, 1 without - kept in variable 11; 2 off)
     dup 2 < if  11 swap 0= effects:pit-embers var-set  exit  then
-    drop  11 var @ dup alive? if  0 swap send effect-command  else  drop  then ;
+    drop  embers-var var @ dup alive? if  0 swap send effect-command  else  drop  then ;
 
 defer house-of-truth-1f-9.act0F
 : house-of-truth-1f-9.enter ( -- )   \ 00436CF0
@@ -138,9 +168,9 @@ defer house-of-truth-1f-9.act0F
     1 58.7 10.0 -29.9 1 flame-in
     ht1f-9-flag1 story-flag? if
         0 part-shown
-        0 $F1 9 action
-        4 3 var-set
-        5 3 var-set
+        0 1 track 9 action
+        left-var 3 var-set
+        right-var 3 var-set
     then
     tremor-warned story-flag? if
         5 1.0 0 bgm
@@ -153,7 +183,7 @@ defer house-of-truth-1f-9.act0F
             0 house-of-truth-1f-9.cmd0D
         then
     else
-        $B ebit-set
+        drone-on ebit-set
     then
     0 keeps-pursuers-off keeps-people-off or hole-floor or floor-on
     $A 1 object-hidden
@@ -165,15 +195,10 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.char-enter ( -- )   \ 00436D70
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -187,21 +212,21 @@ defer house-of-truth-1f-9.act0F
 
 : house-of-truth-1f-9.phase1 ( -- )   \ 00436DE0
     ht1f-9-flag1 story-flag? if
-        8 ebit? not if
+        sound-started ebit? not if
             6 sound-bank-loaded? if
-                $40000000 6 0.0 50.0 0.0 0 0 sound
-                $40000001 6 0.0 0.0 0.0 0 0 sound
-                8 ebit-set
+                drone-high-sound volume-scaled 6 0.0 50.0 0.0 0 0 sound
+                drone-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
+                sound-started ebit-set
             then
         else
-            $C0000000 6 0.0 50.0 0.0 0 0 sound
-            $C0000001 6 0.0 0.0 0.0 0 0 sound
-            $C0000003 6 0.0 0.0 0.0 0 0 sound
-            $C0000002 6 -70.0 15.0 0.0 0 0 sound
-            $C0000006 6 70.0 15.0 0.0 0 0 sound
+            drone-high-sound kept-going volume-scaled 6 0.0 50.0 0.0 0 0 sound
+            drone-sound kept-going volume-scaled 6 0.0 0.0 0.0 0 0 sound
+            drone2-sound kept-going volume-scaled 6 0.0 0.0 0.0 0 0 sound
+            drone-left-sound kept-going volume-scaled 6 -70.0 15.0 0.0 0 0 sound
+            drone-right-sound kept-going volume-scaled 6 70.0 15.0 0.0 0 0 sound
         then
     then
-    $B ebit? if
+    drone-on ebit? if
         $C0000030 $47 0.0 0.0 0.0 0 0 sound
     then
     0 exit-usable? if
@@ -229,18 +254,18 @@ defer house-of-truth-1f-9.act0F
     then
     ht1f-9-flag1 story-flag? ht1f-9-flag2 story-flag? not and if
         house-of-truth-1f-9.cmd05
-        3 ebit? not if
-            9 ebit? if
-                3 ebit-set
-                0 $F2 $B action
+        trap-started ebit? not if
+            things-fell ebit? if
+                trap-started ebit-set
+                0 2 track $B action
             then
         then
-        4 ebit? not if
+        area5-triggered ebit? not if
             fiona-who 5 char-in-area? hewie-who 5 char-in-area? or stalker-who 5 char-in-area? or if
-                4 ebit-set
-                0 $F3 $C action
+                area5-triggered ebit-set
+                0 3 track $C action
             then
-        else 6 ebit? if
+        else area7-armed ebit? if
             fiona-who 7 char-in-area? fiona-who 0 char-action? and if
                 0 0 house-of-truth-1f-9.cmd09
             then
@@ -251,12 +276,12 @@ defer house-of-truth-1f-9.act0F
                 0 2 house-of-truth-1f-9.cmd09
             then
         then then
-        5 ebit? not if
+        area6-triggered ebit? not if
             fiona-who 6 char-in-area? hewie-who 6 char-in-area? or stalker-who 6 char-in-area? or if
-                5 ebit-set
-                0 $F4 $D action
+                area6-triggered ebit-set
+                0 4 track $D action
             then
-        else 7 ebit? if
+        else area8-armed ebit? if
             fiona-who 8 char-in-area? fiona-who 0 char-action? and if
                 1 0 house-of-truth-1f-9.cmd09
             then
@@ -268,21 +293,21 @@ defer house-of-truth-1f-9.act0F
             then
         then then
     else
-        4 ebit? not if
+        area5-triggered ebit? not if
             fiona-who 5 char-in-area? hewie-who 5 char-in-area? or stalker-who 5 char-in-area? or if
-                5 6 -40.0 0.0 -40.0 0 0 sound
-                4 ebit-set
+                area5-sound 6 -40.0 0.0 -40.0 0 0 sound
+                area5-triggered ebit-set
             then
         else fiona-who 5 char-in-area? not hewie-who 5 char-in-area? not and stalker-who 5 char-in-area? not and if
-            4 ebit-clear
+            area5-triggered ebit-clear
         then then
-        5 ebit? not if
+        area6-triggered ebit? not if
             fiona-who 6 char-in-area? hewie-who 6 char-in-area? or stalker-who 6 char-in-area? or if
-                5 6 44.0 0.0 37.0 0 0 sound
-                5 ebit-set
+                area5-sound 6 44.0 0.0 37.0 0 0 sound
+                area6-triggered ebit-set
             then
         else fiona-who 6 char-in-area? not hewie-who 6 char-in-area? not and stalker-who 6 char-in-area? not and if
-            5 ebit-clear
+            area6-triggered ebit-clear
         then then
     then
     0 0 8 -4 0 zone-at-effect
@@ -307,13 +332,13 @@ defer house-of-truth-1f-9.act0F
     then
     found-file-255 story-flag? not if
         3 1.06 0.0 59.99 $1A 14 0 zone
-        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 3 9 char-zone-bits? if
-                        2 ebit-set
+                        hewie-zone3-noticed ebit-set
                         $64 chance? if
-                            $1F 3 var-set
+                            hewie-zone-var 3 var-set
                             0 hewie-who $88 action
                         then
                     then
@@ -325,8 +350,8 @@ defer house-of-truth-1f-9.act0F
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 4 9 char-zone-bits? if
-                $1F 4 var-set
-                $1F 0.0 hewie-look-zone
+                hewie-zone-var 4 var-set
+                hewie-zone-var 0.0 hewie-look-zone
             then
         then
     then
@@ -352,9 +377,9 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.phase3 ( -- )   \ 00437140
-    ht1f-9-flag2 story-flag? $B ebit? not and if
+    ht1f-9-flag2 story-flag? drone-on ebit? not and if
         $40000030 $47 0.0 0.0 0.0 0 0 sound
-        $B ebit-set
+        drone-on ebit-set
     then
 ;
 
@@ -366,8 +391,7 @@ defer house-of-truth-1f-9.act0F
     1 wait-counter
     found-file-255 story-flag-set
     50 hewie-trust
-    3 message   \ "Hewie? Have you picked up the scent boy?"
-    wait-message
+    3 say   \ "Hewie? Have you picked up the scent boy?"
     self-who self-look-at
     yield
     $255 item-give
@@ -384,77 +408,59 @@ defer house-of-truth-1f-9.act0F
             hewie-who char-here? hewie-who 2 char-cond? not and stalker-who char-here? not and if
                 stalkers-stay state-flag-set
                 1 self-scripted
-                self-frames-reset
-                8 self-wait-frames
+                8 wait-frames
                 fiona-who $31 0.0 58.0 0 char-to-xz
                 1 15.0 10.0 0.0 5.0 event-camera
                 world-frozen state-flag-set
-                self-frames-reset
-                8 self-wait-frames
-                2 message   \ "I wonder if there used to be something inserted here before? There is this..."
-                wait-message
-                self-frames-reset
-                8 self-wait-frames
+                8 wait-frames
+                2 say   \ "I wonder if there used to be something inserted here before? There is this..."
+                8 wait-frames
                 world-frozen state-flag-clear
                 0 0.0 0.0 0.0 0.0 event-camera
                 fiona-who $62 -10.0 54.0 140 char-to-xz
                 ['] house-of-truth-1f-9.act02 goto
-            else 0 ebit? not if
-                self-frames-reset
-                8 self-wait-frames
+            else smell-remarked ebit? not if
+                8 wait-frames
                 fiona-who $31 0.0 58.0 0 char-to-xz
                 1 15.0 10.0 0.0 5.0 event-camera
                 world-frozen state-flag-set
-                self-frames-reset
-                8 self-wait-frames
-                0 message   \ "A piece of a broken branch... Looks like something can be inserted here."
-                wait-message
-                self-frames-reset
-                8 self-wait-frames
+                8 wait-frames
+                0 say   \ "A piece of a broken branch... Looks like something can be inserted here."
+                8 wait-frames
                 world-frozen state-flag-clear
                 0 0.0 0.0 0.0 0.0 event-camera
-                0 ebit-set
+                smell-remarked ebit-set
             else
-                1 message   \ "There is an odd smell here. I can't put my finger on it."
-                wait-message
+                1 say   \ "There is an odd smell here. I can't put my finger on it."
             then then
         else
             0.0 65.0 self-turn-to-xz
             self-wait-done
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
             fiona-who $31 0.0 58.0 0 char-to-xz
             1 15.0 10.0 0.0 5.0 event-camera
             world-frozen state-flag-set
-            self-frames-reset
-            8 self-wait-frames
-            4 message   \ "So there was something inserted here before. Can you sniff it out for me?"
-            wait-message
-            self-frames-reset
-            8 self-wait-frames
+            8 wait-frames
+            4 say   \ "So there was something inserted here before. Can you sniff it out for me?"
+            8 wait-frames
             world-frozen state-flag-clear
             0 0.0 0.0 0.0 0.0 event-camera
         then
-    else 0 ebit? not if
-        self-frames-reset
-        8 self-wait-frames
+    else smell-remarked ebit? not if
+        8 wait-frames
         fiona-who $31 0.0 58.0 0 char-to-xz
         1 15.0 10.0 0.0 5.0 event-camera
         world-frozen state-flag-set
-        self-frames-reset
-        8 self-wait-frames
-        5 message   \ "The whole building is moaning and groaning as if it were alive. This cane acted as..."
-        wait-message
-        self-frames-reset
-        8 self-wait-frames
+        8 wait-frames
+        5 say   \ "The whole building is moaning and groaning as if it were alive. This cane acted as..."
+        8 wait-frames
         world-frozen state-flag-clear
         0 0.0 0.0 0.0 0.0 event-camera
-        0 ebit-set
+        smell-remarked ebit-set
     else
         0.0 65.0 self-turn-to-xz
         self-wait-done
-        7 message   \ "Something just doesn't seem right here. I'd better get out of here quick."
-        wait-message
+        7 say   \ "Something just doesn't seem right here. I'd better get out of here quick."
     then then
     self-idle-or-end
 ;
@@ -466,8 +472,7 @@ defer house-of-truth-1f-9.act0F
     self-wait-done
     0.0 65.0 self-turn-to-xz
     self-wait-done
-    $1C03 self-anim
-    self-wait-anim
+    sit-a-while-anim play-out
     fiona-who self-look-at
     yield
     hewie-bark
@@ -483,13 +488,12 @@ defer house-of-truth-1f-9.act0F
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $C04 self-anim
+    go-there-gesture-anim self-anim
     fiona-who 1 char-wait-motion
     fiona-who $2E 5 char-sound
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     ['] house-of-truth-1f-9.act02 goto
 ;
 
@@ -514,9 +518,9 @@ defer house-of-truth-1f-9.act0F
     0 part-shown
     $26 item-use
     0 creatures-clear
-    $A ebit-clear
+    scene-effect-on ebit-clear
     $10 $C8 movie-param
-    0 $F9 8 action
+    0 cutscene-track 8 action
     $FF 1.0 0 bgm
     panic-eased
     9 message-prepare   \ "Your effort is for naught. How long do you plan to keep this up? Let's finish t..."
@@ -524,7 +528,7 @@ defer house-of-truth-1f-9.act0F
         scene-play
     then
     wait-fade
-    $F9 action-end
+    cutscene-track action-end
     $1F $7B $32 $2A $64 $24 $2C $36 $4E 0 9 effect-string
     $8080805E 0 1 screen-blend
     0 self-idle-anim
@@ -542,19 +546,19 @@ defer house-of-truth-1f-9.act0F
     hewie-who $97 180 char-to-tri-facing
     4 0 object-hidden
     5 0 object-hidden
-    0 $F1 9 action
-    4 3 var-set
-    5 3 var-set
+    0 1 track 9 action
+    left-var 3 var-set
+    right-var 3 var-set
     $ED door-open-clear
     doors-room-in
     $ED door-lock
     ht1f-9-flag1 story-flag-set
     scene-5-pending state-flag-set
-    4 ebit-clear
-    5 ebit-clear
-    7 20 var-set
-    0 $F5 $F action
-    $A ebit? not if
+    area5-triggered ebit-clear
+    area6-triggered ebit-clear
+    scene-var 20 var-set
+    0 5 track $F action
+    scene-effect-on ebit? not if
         0 0 house-of-truth-1f-9.cmd0C
     then
     2 2 house-of-truth-1f-9.cmd0C
@@ -570,16 +574,16 @@ defer house-of-truth-1f-9.act0F
 
 : house-of-truth-1f-9.act05 ( -- )   \ 004374E0
     $FF 1.0 0 bgm
-    $F2 action-end
-    $F3 action-end
-    $F4 action-end
-    $F5 action-end
-    4 ebit-clear
-    5 ebit-clear
-    6 ebit-clear
-    7 ebit-clear
-    3 ebit-clear
-    9 ebit-clear
+    2 track action-end
+    3 track action-end
+    4 track action-end
+    5 track action-end
+    area5-triggered ebit-clear
+    area6-triggered ebit-clear
+    area7-armed ebit-clear
+    area8-armed ebit-clear
+    trap-started ebit-clear
+    things-fell ebit-clear
     stalkers-stay state-flag-set
     1 self-scripted
     $F $54 fade
@@ -599,8 +603,8 @@ defer house-of-truth-1f-9.act0F
     $D 1 object-hidden
     $E 1 object-hidden
     $F 1 object-hidden
-    4 3 var-set
-    5 3 var-set
+    left-var 3 var-set
+    right-var 3 var-set
     2 house-of-truth-1f-9.cmd0D
     $10 $C8 movie-param
     panic-eased
@@ -651,27 +655,21 @@ defer house-of-truth-1f-9.act0F
     self-wait-done
     0.0 0.0 self-turn-to-xz
     self-wait-done
-    1 ebit? not over-music-f story-flag? not and if
-        $A01 self-anim
-        self-frames-reset
-        $1E self-wait-frames
-        6 message   \ "If I fell in from here, I would be toast... Quite literally."
-        wait-message
+    pit-remarked ebit? not over-music-f story-flag? not and if
+        look-low-anim self-anim
+        $1E wait-frames
+        6 say   \ "If I fell in from here, I would be toast... Quite literally."
         self-wait-anim
-        1 ebit-set
+        pit-remarked ebit-set
     else
-        7 message   \ "Something just doesn't seem right here. I'd better get out of here quick."
-        wait-message
+        7 say   \ "Something just doesn't seem right here. I'd better get out of here quick."
     then
     self-idle-or-end
 ;
 
 : house-of-truth-1f-9.act08 ( -- )   \ 00437660
     depth-range-off
-    begin
-        $21C cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $21C cutscene-cue-reached? ;] wait-until
     begin
         $2ED cutscene-cue-reached? not while
         1.0 1.0 80.0 160.0 depth-range
@@ -683,42 +681,24 @@ defer house-of-truth-1f-9.act0F
         yield
     repeat
     depth-range-off
-    begin
-        4 cutscene-shot? not while
-        yield
-    repeat
+    [: 4 cutscene-shot? ;] wait-until
     depth-range-off
     $ED door-open-clear
     doors-room-in
     $1F $72 $96 $94 $6E $60 $56 $70 $3C 0 9 effect-string
     $9EEAEAFF 0 1 screen-blend
-    begin
-        5 cutscene-shot? not while
-        yield
-    repeat
+    [: 5 cutscene-shot? ;] wait-until
     $1F $7B $32 $2A $64 $24 $2C $36 $4E 0 9 effect-string
     $8080805E 0 1 screen-blend
-    begin
-        $47E cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $47E cutscene-cue-reached? ;] wait-until
     0 0 house-of-truth-1f-9.cmd0C
-    $A ebit-set
+    scene-effect-on ebit-set
     2 6 house-of-truth-1f-9.cmd0C
-    begin
-        $492 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $492 cutscene-cue-reached? ;] wait-until
     1 2 house-of-truth-1f-9.cmd0C
-    begin
-        8 cutscene-shot? not while
-        yield
-    repeat
+    [: 8 cutscene-shot? ;] wait-until
     1 0 house-of-truth-1f-9.cmd0C
-    begin
-        0 cutscene-cue-reached? while
-        yield
-    repeat
+    [: 0 cutscene-cue-reached? ;] wait-while
     self-idle-or-end
 ;
 
@@ -762,111 +742,93 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.act0B ( -- )   \ 004377C0
-    9 30 var-set
+    shake2-frames-var 30 var-set
     begin
-        9 var-dec
-        9 0 var? not while
+        shake2-frames-var var-dec
+        shake2-frames-var 0 var? not while
         0.3 camera-shake
         yield
     repeat
     0 house-of-truth-1f-9.cmd04
-    $40000003 6 0.0 0.0 0.0 0 0 sound
-    9 30 var-set
+    drone2-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
+    shake2-frames-var 30 var-set
     begin
-        9 var-dec
-        9 0 var? not while
+        shake2-frames-var var-dec
+        shake2-frames-var 0 var? not while
         1.0 camera-shake
         yield
     repeat
     house-of-truth-1f-9.cmd03
-    9 30 var-set
+    shake2-frames-var 30 var-set
     begin
-        9 var-dec
-        9 0 var? not while
+        shake2-frames-var var-dec
+        shake2-frames-var 0 var? not while
         1.0 camera-shake
         yield
     repeat
     house-of-truth-1f-9.cmd03
-    9 30 var-set
+    shake2-frames-var 30 var-set
     begin
-        9 var-dec
-        9 0 var? not while
+        shake2-frames-var var-dec
+        shake2-frames-var 0 var? not while
         1.0 camera-shake
         yield
     repeat
     house-of-truth-1f-9.cmd03
-    9 30 var-set
+    shake2-frames-var 30 var-set
     begin
-        9 var-dec
-        9 0 var? not while
+        shake2-frames-var var-dec
+        shake2-frames-var 0 var? not while
         1.0 camera-shake
         yield
     repeat
     1 house-of-truth-1f-9.cmd04
-    9 ebit-clear
-    3 ebit-clear
+    things-fell ebit-clear
+    trap-started ebit-clear
     self-idle-or-end
 ;
 
 : house-of-truth-1f-9.act0C ( -- )   \ 00437870
-    $40000002 6 -70.0 15.0 0.0 0 0 sound
-    4 2 var-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
+    drone-left-sound volume-scaled 6 -70.0 15.0 0.0 0 0 sound
+    left-var 2 var-set
+    $1E wait-frames
+    $1E wait-frames
     0 house-of-truth-1f-9.cmd06
-    self-frames-reset
-    $F self-wait-frames
-    6 ebit-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
-    4 0 var-set
+    $F wait-frames
+    area7-armed ebit-set
+    $1E wait-frames
+    $1E wait-frames
+    left-var 0 var-set
     2 house-of-truth-1f-9.cmd06
-    self-frames-reset
-    $F self-wait-frames
-    6 ebit-clear
-    self-frames-reset
-    $384 self-wait-frames
-    4 1 var-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
-    4 ebit-clear
+    $F wait-frames
+    area7-armed ebit-clear
+    $384 wait-frames
+    left-var 1 var-set
+    $1E wait-frames
+    $1E wait-frames
+    area5-triggered ebit-clear
     self-idle-or-end
 ;
 
 : house-of-truth-1f-9.act0D ( -- )   \ 004378D0
-    $40000006 6 70.0 15.0 0.0 0 0 sound
-    5 2 var-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
+    drone-right-sound volume-scaled 6 70.0 15.0 0.0 0 0 sound
+    right-var 2 var-set
+    $1E wait-frames
+    $1E wait-frames
     1 house-of-truth-1f-9.cmd06
-    self-frames-reset
-    $F self-wait-frames
-    7 ebit-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
-    5 0 var-set
+    $F wait-frames
+    area8-armed ebit-set
+    $1E wait-frames
+    $1E wait-frames
+    right-var 0 var-set
     3 house-of-truth-1f-9.cmd06
-    self-frames-reset
-    $F self-wait-frames
-    7 ebit-clear
-    self-frames-reset
-    $384 self-wait-frames
-    5 1 var-set
-    self-frames-reset
-    $1E self-wait-frames
-    self-frames-reset
-    $1E self-wait-frames
-    5 ebit-clear
+    $F wait-frames
+    area8-armed ebit-clear
+    $384 wait-frames
+    right-var 1 var-set
+    $1E wait-frames
+    $1E wait-frames
+    area6-triggered ebit-clear
     self-idle-or-end
 ;
 
@@ -875,37 +837,36 @@ defer house-of-truth-1f-9.act0F
 ;
 
 :noname   \ house-of-truth-1f-9.act0F (00437930; deferred: used before it is defined)
-    7 0 var? 7 1 var? or 7 2 var? or if
-        8 10 var-set
+    scene-var 0 var? scene-var 1 var? or scene-var 2 var? or if
+        shake-frames-var 10 var-set
         begin
             0.5 camera-shake
-            8 var-dec
-            8 0 var? not while
+            shake-frames-var var-dec
+            shake-frames-var 0 var? not while
             yield
         repeat
         house-of-truth-1f-9.cmd02
-        8 10 var-set
+        shake-frames-var 10 var-set
         begin
             1.0 camera-shake
-            8 var-dec
-            8 0 var? not while
+            shake-frames-var var-dec
+            shake-frames-var 0 var? not while
             yield
         repeat
-        8 10 var-set
+        shake-frames-var 10 var-set
         begin
             0.5 camera-shake
-            8 var-dec
-            8 0 var? not while
+            shake-frames-var var-dec
+            shake-frames-var 0 var? not while
             yield
         repeat
-        7 150 var-set
+        scene-var 150 var-set
     then
-    self-frames-reset
-    $1E self-wait-frames
-    7 var-dec
-    7 var-dec
+    $1E wait-frames
+    scene-var var-dec
+    scene-var var-dec
     $32 chance? if
-        7 var-dec
+        scene-var var-dec
     then
     ['] house-of-truth-1f-9.act0F goto
 ; is house-of-truth-1f-9.act0F
@@ -923,7 +884,7 @@ defer house-of-truth-1f-9.act0F
     scene-wait-ready
     0 part-shown
     $10 $C8 movie-param
-    0 $F9 8 action
+    0 cutscene-track 8 action
     panic-eased
     9 message-prepare   \ "Your effort is for naught. How long do you plan to keep this up? Let's finish t..."
     1 result? if

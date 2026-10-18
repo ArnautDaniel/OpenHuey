@@ -2,7 +2,28 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-15
-USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant shelves-moving              \ (bit 0) the shelves moving back
+1 constant books-remarked              \ (bit 1) its first remark made: "The books have been arranged by author. The books are all wr"
+2 constant hewie-zone3-noticed         \ (bit 2) Hewie has reacted to zone 3 (once a visit)
+3 constant hewie-zone4-noticed         \ (bit 3) Hewie has reacted to zone 4 (once a visit)
+4 constant hewie-away                  \ (bit 4) Hewie not here (or sent off) as the scene ends
+5 constant hewie-zone4-noticed-2       \ (bit 5) Hewie has reacted to zone 4 (once a visit)
+0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
+1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+3 constant ambient1-sound              \ (snd 3) its ambient sounds in turn (every 30 frames): the first
+4 constant ambient2-sound              \ (snd 4) its ambient sounds in turn (every 30 frames): the second
+5 constant ambient3-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the third
+6 constant ambient4-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the fourth
+8 constant ambient12-sound            \ (snd 8) its ambient sounds in turn (every 30 frames): the first
+9 constant ambient22-sound            \ (snd 9) its ambient sounds in turn (every 30 frames): the second
+10 constant ambient32-sound           \ (snd 10) its ambient sounds in turn (every 30 frames): the third
+11 constant ambient42-sound           \ (snd 11) its ambient sounds in turn (every 30 frames): the fourth
+13 constant shelves-stop-sound         \ (snd 13) the shelves coming to rest
+14 constant place-books-sound          \ (snd 14) her placing the books
+12 constant shelves-sound              \ (snd 12) the shelves moving
 
 \ the moving bookshelves (Room54_GroupStep): group g's four (the colour's book and its three
 \ shelves) - op 0 at their stop; 1 / 2 back 0.25 a frame in x / z to it (event bit 0 cleared
@@ -23,7 +44,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         g 4 * i + shelf to n to a
         a n object-here? if
             -0.25e a n off object+!
-            a n off object@  g off shelf-stop  f< if  g off shelf-stop a n off object!  0 ebit-clear  then
+            a n off object@  g off shelf-stop  f< if  g off shelf-stop a n off object!  shelves-moving ebit-clear  then
         then
     loop ;
 : shelves-at-stop ( g -- )
@@ -48,8 +69,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
 
 : old-mansion-1f-15.enter ( -- )   \ 00426D80
     room-sounds
-    0 0 var-set
-    1 0 var-set
+    sound-step-var 0 var-set
+    sound-frames-var 0 var-set
     got-cathedral-secrets story-flag? not if
         1 part-shown
     then
@@ -127,45 +148,25 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
 ;
 
 : old-mansion-1f-15.char-enter ( -- )   \ 00426EF0
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 -1 player-camera
-    then then
+    then
     1 1 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 -1 player-camera
-    then then
+    then
     2 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         0 -1 player-camera
-    then then
+    then
     3 0 -1 area-camera
     fiona-who self-is? if
         2 exit-taken? 3 exit-taken? or if
@@ -212,13 +213,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         1 39.16 0.0 -38.76 $A 5 0 zone
         hewie-who 1 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-15-antimony-tube-found var-set
-                $1A om1f-15-antimony-tube var-set
-                $1B 1 var-set
-                $1C 39160 var-set
-                $1D 1000 var-set
-                $1E -38760 var-set
-                $1F 1 var-set
+                found-flag-var om1f-15-antimony-tube-found var-set
+                taken-flag-var om1f-15-antimony-tube var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var 39160 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var -38760 var-set
+                hewie-zone-var 1 var-set
                 0 hewie-who $8B action
             then
         then
@@ -227,26 +228,26 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         2 -23.61 50.0 -61.37 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om1f-15-rubrum-medallion-found var-set
-                $1A om1f-15-rubrum-medallion var-set
-                $1B 2 var-set
-                $1C -23610 var-set
-                $1D 51000 var-set
-                $1E -61370 var-set
-                $1F 2 var-set
+                found-flag-var om1f-15-rubrum-medallion-found var-set
+                taken-flag-var om1f-15-rubrum-medallion var-set
+                sparkle-fx-var 2 var-set
+                sparkle-x-var -23610 var-set
+                sparkle-y-var 51000 var-set
+                sparkle-z-var -61370 var-set
+                hewie-zone-var 2 var-set
                 0 hewie-who $8B action
             then
         then
     then
     got-occult-philosophy story-flag? not if
         3 -31.67 0.0 -62.5 $B 10 0 zone
-        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 3 9 char-zone-bits? if
-                        2 ebit-set
+                        hewie-zone3-noticed ebit-set
                         $64 chance? if
-                            $1F 3 var-set
+                            hewie-zone-var 3 var-set
                             0 hewie-who $89 action
                         then
                     then
@@ -254,13 +255,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             then
         then
         4 -15.49 0.0 -61.46 $B 10 0 zone
-        3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone4-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 4 9 char-zone-bits? if
-                        3 ebit-set
+                        hewie-zone4-noticed ebit-set
                         $64 chance? if
-                            $1F 4 var-set
+                            hewie-zone-var 4 var-set
                             0 hewie-who $89 action
                         then
                     then
@@ -268,13 +269,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             then
         then
         4 -15.49 0.0 -61.46 $B 10 0 zone
-        5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone4-noticed-2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 4 9 char-zone-bits? if
-                        5 ebit-set
+                        hewie-zone4-noticed-2 ebit-set
                         $64 chance? if
-                            $1F 4 var-set
+                            hewie-zone-var 4 var-set
                             0 hewie-who $88 action
                         then
                     then
@@ -283,25 +284,25 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         then
     then
     6 sound-bank-loaded? if
-        1 var-inc
-        1 30 var? if
-            1 0 var-set
-            0 0 var? if
-                $40000003 6 24.15 0.0 76.38 0 0 sound
-                $40000008 6 -44.0 70.0 22.0 0 0 sound
-            else 0 1 var? if
-                $40000004 6 24.15 0.0 76.38 0 0 sound
-                $40000009 6 -44.0 70.0 22.0 0 0 sound
-            else 0 2 var? if
-                $40000005 6 24.15 0.0 76.38 0 0 sound
-                $4000000A 6 -44.0 70.0 22.0 0 0 sound
-            else 0 3 var? if
-                $40000006 6 24.15 0.0 76.38 0 0 sound
-                $4000000B 6 -44.0 70.0 22.0 0 0 sound
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
+                ambient1-sound volume-scaled 6 24.15 0.0 76.38 0 0 sound
+                ambient12-sound volume-scaled 6 -44.0 70.0 22.0 0 0 sound
+            else sound-step-var 1 var? if
+                ambient2-sound volume-scaled 6 24.15 0.0 76.38 0 0 sound
+                ambient22-sound volume-scaled 6 -44.0 70.0 22.0 0 0 sound
+            else sound-step-var 2 var? if
+                ambient3-sound volume-scaled 6 24.15 0.0 76.38 0 0 sound
+                ambient32-sound volume-scaled 6 -44.0 70.0 22.0 0 0 sound
+            else sound-step-var 3 var? if
+                ambient4-sound volume-scaled 6 24.15 0.0 76.38 0 0 sound
+                ambient42-sound volume-scaled 6 -44.0 70.0 22.0 0 0 sound
             then then then then
-            0 var-inc
-            0 4 var? if
-                0 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -435,7 +436,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
     hewie-who char-here? 0 hewie-side? and if
-        4 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -443,32 +444,24 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             hewie-who char-done
         then
     else
-        4 ebit-set
+        hewie-away ebit-set
     then
-    $904 self-anim
-    self-wait-anim
-    fiona-who $E 6 char-sound
+    reach-up-anim play-out
+    fiona-who place-books-sound 6 char-sound
     8 0 object-hidden
     books-placed story-flag-set
     $15 item-use
-    $905 self-anim
-    self-wait-anim
-    0 ebit-set
+    reach-down-anim play-out
+    shelves-moving ebit-set
     2 3 old-mansion-1f-15.cmd00
-    begin
-        2 1 old-mansion-1f-15.cmd00
-        2 4 old-mansion-1f-15.cmd00
-        0 ebit? while
-        yield
-    repeat
-    $C 6 sound-stop
-    $D 6 0.0 -52.5 10.0 0 0 sound
+    [: 2 1 old-mansion-1f-15.cmd00 2 4 old-mansion-1f-15.cmd00 shelves-moving ebit? ;] wait-while
+    shelves-sound 6 sound-stop
+    shelves-stop-sound 6 0.0 -52.5 10.0 0 0 sound
     4 barred-floor floor-off
     5 barred-floor floor-on
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
-    4 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -490,16 +483,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $36 35.0 -52.0 -90 $FFFF 5 self-move-to
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
-    $904 self-anim
-    self-wait-anim
-    fiona-who $E 6 char-sound
+    reach-up-anim play-out
+    fiona-who place-books-sound 6 char-sound
     $B part-shown
     lectern-0-book-1 story-flag-set
     $16 item-use
-    $905 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-down-anim play-out
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -513,16 +503,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $36 35.0 -52.0 -90 $FFFF 5 self-move-to
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
-    $904 self-anim
-    self-wait-anim
-    fiona-who $E 6 char-sound
+    reach-up-anim play-out
+    fiona-who place-books-sound 6 char-sound
     $A part-shown
     lectern-0-book-2 story-flag-set
     $17 item-use
-    $905 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-down-anim play-out
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -536,16 +523,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C5 30.0 49.0 90 $FFFF 5 self-move-to
     self-wait-done
     1 25.0 20.0 50.0 2.0 event-camera
-    $904 self-anim
-    self-wait-anim
-    fiona-who $E 6 char-sound
+    reach-up-anim play-out
+    fiona-who place-books-sound 6 char-sound
     9 part-shown
     lectern-1-book-0 story-flag-set
     $15 item-use
-    $905 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-down-anim play-out
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -567,7 +551,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $1D1 hole-floor tri-floor-on
     1 25.0 20.0 50.0 2.0 event-camera
     hewie-who char-here? 0 hewie-side? and if
-        4 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -575,34 +559,26 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             hewie-who char-done
         then
     else
-        4 ebit-set
+        hewie-away ebit-set
     then
-    $904 self-anim
-    self-wait-anim
-    fiona-who $E 6 char-sound
+    reach-up-anim play-out
+    fiona-who place-books-sound 6 char-sound
     4 0 object-hidden
     lectern-1-book-1 story-flag-set
     $16 item-use
-    $905 self-anim
-    self-wait-anim
+    reach-down-anim play-out
     40.0 15.0 25.0 self-look-at-point
     yield
-    0 ebit-set
+    shelves-moving ebit-set
     1 3 old-mansion-1f-15.cmd00
-    begin
-        1 2 old-mansion-1f-15.cmd00
-        1 4 old-mansion-1f-15.cmd00
-        0 ebit? while
-        yield
-    repeat
-    $C 6 sound-stop
-    $D 6 39.0 21.0 10.0 0 0 sound
+    [: 1 2 old-mansion-1f-15.cmd00 1 4 old-mansion-1f-15.cmd00 shelves-moving ebit? ;] wait-while
+    shelves-sound 6 sound-stop
+    shelves-stop-sound 6 39.0 21.0 10.0 0 0 sound
     2 barred-floor floor-off
     3 barred-floor floor-on
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
-    4 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -626,16 +602,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C5 30.0 49.0 90 $FFFF 5 self-move-to
     self-wait-done
     1 25.0 20.0 50.0 2.0 event-camera
-    $904 self-anim
-    self-wait-anim
-    fiona-who $E 6 char-sound
+    reach-up-anim play-out
+    fiona-who place-books-sound 6 char-sound
     8 part-shown
     lectern-1-book-2 story-flag-set
     $17 item-use
-    $905 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-down-anim play-out
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -649,16 +622,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C6 0.0 43.0 180 $FFFF 5 self-move-to
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
-    $904 self-anim
-    self-wait-anim
-    fiona-who $E 6 char-sound
+    reach-up-anim play-out
+    fiona-who place-books-sound 6 char-sound
     6 part-shown
     lectern-2-book-0 story-flag-set
     $15 item-use
-    $905 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-down-anim play-out
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -672,16 +642,13 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     $C6 0.0 43.0 180 $FFFF 5 self-move-to
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
-    $904 self-anim
-    self-wait-anim
-    fiona-who $E 6 char-sound
+    reach-up-anim play-out
+    fiona-who place-books-sound 6 char-sound
     7 part-shown
     lectern-2-book-1 story-flag-set
     $16 item-use
-    $905 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-down-anim play-out
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -696,7 +663,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
     hewie-who char-here? 0 hewie-side? and if
-        4 ebit-clear
+        hewie-away ebit-clear
         hewie-who 2 char-cond? if
             0 hewie-who $86 action
         else
@@ -704,34 +671,26 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
             hewie-who char-done
         then
     else
-        4 ebit-set
+        hewie-away ebit-set
     then
-    $904 self-anim
-    self-wait-anim
-    fiona-who $E 6 char-sound
+    reach-up-anim play-out
+    fiona-who place-books-sound 6 char-sound
     0 0 object-hidden
     lectern-2-book-2 story-flag-set
     $17 item-use
-    $905 self-anim
-    self-wait-anim
-    0 ebit-set
+    reach-down-anim play-out
+    shelves-moving ebit-set
     0 3 old-mansion-1f-15.cmd00
-    begin
-        0 2 old-mansion-1f-15.cmd00
-        0 4 old-mansion-1f-15.cmd00
-        0 ebit? while
-        yield
-    repeat
-    $C 6 sound-stop
-    $D 6 0.0 0.0 10.0 0 0 sound
+    [: 0 2 old-mansion-1f-15.cmd00 0 4 old-mansion-1f-15.cmd00 shelves-moving ebit? ;] wait-while
+    shelves-sound 6 sound-stop
+    shelves-stop-sound 6 0.0 0.0 10.0 0 0 sound
     0 barred-floor floor-off
     1 barred-floor floor-on
     6 floor-flag-200 floor-on
     old-mansion-1f-15.cmd01
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
-    4 ebit? not if
+    hewie-away ebit? not if
         hewie-who 2 char-cond? if
             hewie-who 0 char-visible
             hewie-who action-end
@@ -750,22 +709,17 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     -35.0 66.0 self-turn-to-xz
     self-wait-done
-    0 message   \ "There is a book lying on the table."
-    wait-message
-    $902 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    0 say   \ "There is a book lying on the table."
+    reach-out-anim play-out
+    4 wait-frames
     1 part-hidden
     got-cathedral-secrets story-flag-set
     $15 message-param-room
     $15 1 item-give-count
     0 $15 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    $903 self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     self-idle-or-end
 ;
 
@@ -773,22 +727,17 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     -25.0 -60.0 self-turn-to-xz
     self-wait-done
-    1 message   \ "There is a book below the stand..."
-    wait-message
-    $900 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    1 say   \ "There is a book below the stand..."
+    pick-up-anim play-out
+    4 wait-frames
     2 part-hidden
     got-occult-philosophy story-flag-set
     $16 message-param-room
     $16 1 item-give-count
     0 $16 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    $901 self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    up-from-pick-anim play-out
     self-idle-or-end
 ;
 
@@ -796,22 +745,17 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1.0 -30.0 self-turn-to-xz
     self-wait-done
-    2 message   \ "One of the books stands out from the rest."
-    wait-message
-    $902 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    2 say   \ "One of the books stands out from the rest."
+    reach-out-anim play-out
+    4 wait-frames
     0 part-hidden
     got-wisemans-crafts story-flag-set
     $17 message-param-room
     $17 1 item-give-count
     0 $17 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    $903 self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     self-idle-or-end
 ;
 
@@ -823,39 +767,32 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
     lectern-0-book-1 story-flag? lectern-0-book-2 story-flag? or if
-        $904 self-anim
-        self-wait-anim
+        reach-up-anim play-out
         lectern-0-book-1 story-flag? if
             $B part-hidden
             lectern-0-book-1 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $16 message-param-room
             $16 1 item-give-count
             0 $16 item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
         else
             $A part-hidden
             lectern-0-book-2 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $17 message-param-room
             $17 1 item-give-count
             0 $17 item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
         then
-        self-frames-reset
-        self-wait-16
-        self-frames-reset
-        self-wait-16
+        16 wait-frames
+        16 wait-frames
         self-wait-anim
     else
-        $A message   \ "The books have been arranged by author. The shelf is full of books written by some..."
-        wait-message
-        self-frames-reset
-        4 self-wait-frames
+        $A say   \ "The books have been arranged by author. The shelf is full of books written by some..."
+        4 wait-frames
     then
     0 0.0 0.0 0.0 0.0 event-camera
     stalkers-stay state-flag-clear
@@ -871,39 +808,32 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 25.0 20.0 50.0 2.0 event-camera
     lectern-1-book-0 story-flag? lectern-1-book-2 story-flag? or if
-        $904 self-anim
-        self-wait-anim
+        reach-up-anim play-out
         lectern-1-book-0 story-flag? if
             9 part-hidden
             lectern-1-book-0 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $15 message-param-room
             $15 1 item-give-count
             0 $15 item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
         else
             8 part-hidden
             lectern-1-book-2 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $17 message-param-room
             $17 1 item-give-count
             0 $17 item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
         then
-        self-frames-reset
-        self-wait-16
-        self-frames-reset
-        self-wait-16
+        16 wait-frames
+        16 wait-frames
         self-wait-anim
     else
-        $B message   \ "The books have been arranged by author. The books are all written by a person name..."
-        wait-message
-        self-frames-reset
-        4 self-wait-frames
+        $B say   \ "The books have been arranged by author. The books are all written by a person name..."
+        4 wait-frames
     then
     0 0.0 0.0 0.0 0.0 event-camera
     stalkers-stay state-flag-clear
@@ -919,39 +849,32 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
     lectern-2-book-0 story-flag? lectern-2-book-1 story-flag? or if
-        $904 self-anim
-        self-wait-anim
+        reach-up-anim play-out
         lectern-2-book-0 story-flag? if
             6 part-hidden
             lectern-2-book-0 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $15 message-param-room
             $15 1 item-give-count
             0 $15 item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
         else
             7 part-hidden
             lectern-2-book-1 story-flag-clear
-            $905 self-anim
+            reach-down-anim self-anim
             $16 message-param-room
             $16 1 item-give-count
             0 $16 item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
         then
-        self-frames-reset
-        self-wait-16
-        self-frames-reset
-        self-wait-16
+        16 wait-frames
+        16 wait-frames
         self-wait-anim
     else
-        $C message   \ "The books have been arranged by author. The shelf seems to contain books by Nichol..."
-        wait-message
-        self-frames-reset
-        4 self-wait-frames
+        $C say   \ "The books have been arranged by author. The shelf seems to contain books by Nichol..."
+        4 wait-frames
     then
     0 0.0 0.0 0.0 0.0 event-camera
     stalkers-stay state-flag-clear
@@ -963,8 +886,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    3 message   \ "The books have been arranged by author. This shelf is full of books written by someone..."
-    wait-message
+    3 say   \ "The books have been arranged by author. This shelf is full of books written by someone..."
     self-idle-or-end
 ;
 
@@ -972,8 +894,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    3 message   \ "The books have been arranged by author. This shelf is full of books written by someone..."
-    wait-message
+    3 say   \ "The books have been arranged by author. This shelf is full of books written by someone..."
     self-idle-or-end
 ;
 
@@ -981,8 +902,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    4 message   \ "The books have been arranged by author. These books are all written by a person named A..."
-    wait-message
+    4 say   \ "The books have been arranged by author. These books are all written by a person named A..."
     self-idle-or-end
 ;
 
@@ -990,8 +910,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    5 message   \ "The books have been arranged by author. This shelf seems to contain books by Nicholai F..."
-    wait-message
+    5 say   \ "The books have been arranged by author. This shelf seems to contain books by Nicholai F..."
     self-idle-or-end
 ;
 
@@ -999,8 +918,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    5 message   \ "The books have been arranged by author. This shelf seems to contain books by Nicholai F..."
-    wait-message
+    5 say   \ "The books have been arranged by author. This shelf seems to contain books by Nicholai F..."
     self-idle-or-end
 ;
 
@@ -1008,8 +926,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    6 message   \ "The books have been arranged by author. Sangerman is the author of these books."
-    wait-message
+    6 say   \ "The books have been arranged by author. Sangerman is the author of these books."
     self-idle-or-end
 ;
 
@@ -1017,8 +934,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    6 message   \ "The books have been arranged by author. Sangerman is the author of these books."
-    wait-message
+    6 say   \ "The books have been arranged by author. Sangerman is the author of these books."
     self-idle-or-end
 ;
 
@@ -1026,8 +942,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     -90 self-turn-angle
     self-wait-done
-    7 message   \ "The books have been arranged by author. These books are authored by Paraculeus."
-    wait-message
+    7 say   \ "The books have been arranged by author. These books are authored by Paraculeus."
     self-idle-or-end
 ;
 
@@ -1035,8 +950,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     90 self-turn-angle
     self-wait-done
-    7 message   \ "The books have been arranged by author. These books are authored by Paraculeus."
-    wait-message
+    7 say   \ "The books have been arranged by author. These books are authored by Paraculeus."
     self-idle-or-end
 ;
 
@@ -1044,8 +958,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    7 message   \ "The books have been arranged by author. These books are authored by Paraculeus."
-    wait-message
+    7 say   \ "The books have been arranged by author. These books are authored by Paraculeus."
     self-idle-or-end
 ;
 
@@ -1053,28 +966,24 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    7 message   \ "The books have been arranged by author. These books are authored by Paraculeus."
-    wait-message
+    7 say   \ "The books have been arranged by author. These books are authored by Paraculeus."
     self-idle-or-end
 ;
 
 : old-mansion-1f-15.act1A ( -- )   \ 00427E40
     self-wait-done
-    1 ebit? not if
+    books-remarked ebit? not if
         180 self-turn-angle
         self-wait-done
-        8 message   \ "The books have been arranged by author. The books are all written by a person named..."
-        wait-message
-        1 ebit-set
+        8 say   \ "The books have been arranged by author. The books are all written by a person named..."
+        books-remarked ebit-set
     else
         0.0 -80.0 self-turn-to-xz
         self-wait-done
-        $A00 self-anim
-        self-frames-reset
-        self-wait-16
-        9 message   \ "There is a door atop this bookshelf... Why would anyone build a door of all things..."
-        wait-message
-        1 ebit-clear
+        look-at-anim self-anim
+        16 wait-frames
+        9 say   \ "There is a door atop this bookshelf... Why would anyone build a door of all things..."
+        books-remarked ebit-clear
         self-wait-anim
     then
     self-idle-or-end
@@ -1085,25 +994,20 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     36.86 -27.91 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-15-refined-antimony story-flag-set
             0 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -1113,25 +1017,20 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     39.16 -38.76 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $97 message-param-room
         $97 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-15-antimony-tube story-flag-set
             1 effect-remove
             $97 1 item-give-count
             0 $97 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -1141,25 +1040,20 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     -23.61 -61.37 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $73 message-param-room
         $73 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-15-rubrum-medallion story-flag-set
             2 effect-remove
             $73 1 item-give-count
             0 $73 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

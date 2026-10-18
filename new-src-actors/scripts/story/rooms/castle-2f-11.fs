@@ -4,15 +4,18 @@
 IN: story.rooms.castle-2f-11
 USING: room-names story.words story.shared ;
 
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant turn-sound                  \ (snd 0) the objects turned back
+
 \ two wheels (Room1F_ObjectNames) rocking 4 degrees (+0x18) through their phase +0x30, 6 degrees
-\ a step-floor (byte 3 1; 0 reset), the first one's creak (-366, 30, -25) at each turn
-: castle-2f-11.cmd00 ( b0 -- )   \ (the two wheels rocking 4 degrees, 6 a step-floor (1; 0 reset), the first creaking at each turn)
+\ a step (byte 3 1; 0 reset), the first one's creak (-366, 30, -25) at each turn
+: castle-2f-11.cmd00 ( b0 -- )   \ (the two wheels rocking 4 degrees, 6 a step (1; 0 reset), the first creaking at each turn)
     {: op | a n :}
     2 0 do  i room-object to n to a  a n object-here? if
-        op 0= if  0e a n $30 object!  0e a n turn-z object!  i 0= if  0 6 0 0 -366e 30e -25e sound  then  then
+        op 0= if  0e a n $30 object!  0e a n turn-z object!  i 0= if  turn-sound 6 0 0 -366e 30e -25e sound  then  then
         op 1 = if
             6e a n $30 object+!
-            a n $30 object@ 360e f< 0= if  -360e a n $30 object+!  i 0= if  0 6 0 0 -366e 30e -25e sound  then  then
+            a n $30 object@ 360e f< 0= if  -360e a n $30 object+!  i 0= if  turn-sound 6 0 0 -366e 30e -25e sound  then  then
             a n $30 object@ deg>rad fsin 4e f* deg>rad a n turn-z object!
         then
     then  loop ;
@@ -20,7 +23,7 @@ USING: room-names story.words story.shared ;
 : castle-2f-11.enter ( -- )   \ 003FE300
     room-sounds
     0 castle-2f-11.cmd00
-    0 $F1 1 action
+    0 1 track 1 action
     $A -33.7 23.2 -126.0 $C $60 $60 $60 $20 specks
     $C -92.2 23.2 -92.0 $C $60 $60 $60 $20 specks
     $A -118.0 23.2 -48.5 $C $60 $60 $60 $20 specks
@@ -28,25 +31,15 @@ USING: room-names story.words story.shared ;
 ;
 
 : castle-2f-11.char-enter ( -- )   \ 003FE350
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
 ;
 
@@ -67,8 +60,8 @@ USING: room-names story.words story.shared ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 0 9 char-zone-bits? if
-                $1F 0 var-set
-                $1F 29.0 hewie-look-zone
+                hewie-zone-var 0 var-set
+                hewie-zone-var 29.0 hewie-look-zone
             then
         then
     then
@@ -84,8 +77,7 @@ USING: room-names story.words story.shared ;
     self-wait-done
     60 self-turn-angle
     self-wait-done
-    0 message   \ "This crest... Why is it slanted like this?"
-    wait-message
+    0 say   \ "This crest... Why is it slanted like this?"
     self-idle-or-end
 ;
 

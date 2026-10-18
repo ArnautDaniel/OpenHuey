@@ -2,7 +2,20 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-4f-1
-USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+1 constant lift-scene-on               \ (bit 1) the lift's scene (act00) under way
+2 constant lift-down                   \ (bit 2) the lift down (its floor the other way)
+3 constant lift-done                   \ (bit 3) the lift's move done (act02 waits for it)
+4 constant summoner-was-on             \ (bit 4) the summoner was on as she came in (back on as she leaves)
+5 constant stalker-due                 \ (bit 5) the stalker's arrival counting down (variable 1 from 1800)
+6 constant hewie-zone1-noticed         \ (bit 6) Hewie has reacted to zone 1 (once a visit)
+0 constant lift-frames-var             \ (var 0) the lift's frames (to 120)
+1 constant stalker-frames-var          \ (var 1) frames to the stalker's arrival (from 1800)
+0 constant shut-sound                  \ (snd 0) it closing
+1 constant open-sound                  \ (snd 1) it opening
+2 constant lift-sound                  \ (snd 2) the lift moving
 
 \ (as RoomC2_Cmd00, the room object named RoomC3_ObjectNames, opening to -pi/2)
 : water-tower-4f-1.cmd00 ( b0 -- )   \ (as water-tower-2f-1's, opening the other way: -90 degrees)
@@ -65,7 +78,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         no-stalker-camera state-flag-set
     then
     summoner-on state-flag? if
-        4 ebit-set
+        summoner-was-on ebit-set
         summoner-on state-flag-clear
     then
     stalker-who action-end
@@ -88,25 +101,15 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 ;
 
 : water-tower-4f-1.char-enter ( -- )   \ 0043F9F0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 3 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 3 player-camera
-    then then
+    then
     0 0 3 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            3 2 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         3 2 player-camera
-    then then
+    then
     1 3 2 area-camera
     fiona-who self-is? if
         1 exit-taken? if
@@ -116,20 +119,12 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 ;
 
 : water-tower-4f-1.phase1 ( -- )   \ 0043FA80
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 3 1 chars-area-camera
     5 1 0 1 chars-area-camera
     6 0 3 1 chars-area-camera
@@ -169,29 +164,29 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
                 then
                 fiona-who $D char-entered-area? fiona-who $E char-entered-area? or if
                     wt4f-1-flag2 story-flag-set
-                    0 $F1 1 action
+                    0 1 track 1 action
                 then
             else wt4f-1-flag1 story-flag? if
-                5 ebit? not if
-                    1 1800 var-set
+                stalker-due ebit? not if
+                    stalker-frames-var 1800 var-set
                     stalker-active? not if
-                        5 ebit-set
+                        stalker-due ebit-set
                     then
                 else stalker-active? if
-                    5 ebit-clear
-                else 1 0 var? not if
-                    1 var-dec
-                else 1 ebit? not stalkers-stay state-flag? not and if
+                    stalker-due ebit-clear
+                else stalker-frames-var 0 var? not if
+                    stalker-frames-var var-dec
+                else lift-scene-on ebit? not stalkers-stay state-flag? not and if
                     wt4f-1-flag3 story-flag? not if
                         $FE $C3 249 2 stalker-to-room
                         stalker-who 0 stalker-command
                         summoner-own-cooldown
-                        5 ebit-clear
+                        stalker-due ebit-clear
                     else
                         $FE $C3 944 2 stalker-to-room
                         stalker-who 0 stalker-command
                         summoner-own-cooldown
-                        5 ebit-clear
+                        stalker-due ebit-clear
                     then
                 then then then then
             then then
@@ -209,13 +204,13 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     then
     wt4f-1-flag4 story-flag? not if
         1 -47.23 142.0 1.87 $26 10 0 zone
-        6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 1 9 char-zone-bits? if
-                        6 ebit-set
+                        hewie-zone1-noticed ebit-set
                         $64 chance? if
-                            $1F 1 var-set
+                            hewie-zone-var 1 var-set
                             0 hewie-who $88 action
                         then
                     then
@@ -227,7 +222,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 
 : water-tower-4f-1.phase2 ( -- )   \ 0043FC10
     fiona-who $C char-in-area? fiona-who 90 $32 char-heading? and if
-        1 ebit? not if
+        lift-scene-on ebit? not if
             0 unhurried offer-action
         then
     then
@@ -258,7 +253,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 
 : water-tower-4f-1.phase5 ( -- )   \ 0043FCC0
     no-stalker-camera state-flag-clear
-    4 ebit? if
+    summoner-was-on ebit? if
         summoner-on state-flag-set
     then
 ;
@@ -266,25 +261,25 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 : water-tower-4f-1.act00 ( -- )   \ 0043FCD0
     stalkers-stay state-flag-set
     1 self-scripted
-    1 ebit-set
-    3 ebit-clear
+    lift-scene-on ebit-set
+    lift-done ebit-clear
     wt4f-1-flag3 story-flag? not if
-        2 ebit-clear
+        lift-down ebit-clear
         1 keeps-fiona-off keeps-pursuers-off or hole-floor or floor-on
         hewie-who char-here? hewie-who 1 char-in-nav-group? and if
             0 hewie-who 2 action-force
         else
             1 keeps-hewie-off floor-on
-            3 ebit-set
+            lift-done ebit-set
         then
     else
-        2 ebit-set
+        lift-down ebit-set
         0 keeps-fiona-off keeps-pursuers-off or hole-floor or floor-on
         hewie-who char-here? hewie-who 0 char-in-nav-group? and if
             0 hewie-who 2 action-force
         else
             0 keeps-hewie-off floor-on
-            3 ebit-set
+            lift-done ebit-set
         then
     then
     self-wait-done
@@ -294,22 +289,19 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     self-wait-done
     fiona-who char-file-use
     wt4f-1-flag3 story-flag? not if
-        $8004 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        4 room-motion 5 self-anim-blend8
+        5 wait-frames
         0 part-hidden
         1 part-hidden
         2 1 object-hidden
         3 0 object-hidden
         3 0 object-anim
-        self-frames-reset
-        $19 self-wait-frames
-        fiona-who 1 6 char-sound
-        self-frames-reset
-        $37 self-wait-frames
-        fiona-who 0 6 char-sound
+        $19 wait-frames
+        fiona-who open-sound 6 char-sound
+        $37 wait-frames
+        fiona-who shut-sound 6 char-sound
         self-wait-anim
-        0 $F3 3 action
+        0 3 track 3 action
         wt4f-1-flag3 story-flag-set
         2 1 object-hidden
         3 1 object-hidden
@@ -323,22 +315,19 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         $C3 0 615 $A 6 -1 0 0.0 creature-place
         wt4f-1-flag4 story-flag-set
     else
-        $8003 5 self-anim-blend8
-        self-frames-reset
-        5 self-wait-frames
+        3 room-motion 5 self-anim-blend8
+        5 wait-frames
         0 part-hidden
         1 part-hidden
         2 0 object-hidden
         3 1 object-hidden
         2 0 object-anim
-        self-frames-reset
-        $19 self-wait-frames
-        fiona-who 1 6 char-sound
-        self-frames-reset
-        $37 self-wait-frames
-        fiona-who 0 6 char-sound
+        $19 wait-frames
+        fiona-who open-sound 6 char-sound
+        $37 wait-frames
+        fiona-who shut-sound 6 char-sound
         self-wait-anim
-        0 $F3 3 action
+        0 3 track 3 action
         wt4f-1-flag3 story-flag-clear
         2 1 object-hidden
         3 1 object-hidden
@@ -352,13 +341,11 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 
 : water-tower-4f-1.act01 ( -- )   \ 0043FE40
     4 0 object-anim
-    self-frames-reset
-    $11 self-wait-frames
+    $11 wait-frames
     1 $FF 8 rumble
     water-tower-4f-1.cmd01
     water-tower-4f-1.cmd02
-    self-frames-reset
-    $3C self-wait-frames
+    $3C wait-frames
     wt4f-1-flag1 story-flag? not if
         $13 7 54.0 112.0 -56.0 0 0 sound
         $FE $C3 830 2 stalker-to-room
@@ -372,7 +359,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 : water-tower-4f-1.act02 ( -- )   \ 0043FE80
     1 self-scripted
     self-wait-done
-    2 ebit? not if
+    lift-down ebit? not if
         $260 9.39 -18.29 180 $FFFF $A self-move-to
         self-wait-done
     else
@@ -380,25 +367,22 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         self-wait-done
     then
     0 self-scripted
-    begin
-        3 ebit? not while
-        yield
-    repeat
+    [: lift-done ebit? ;] wait-until
     self-idle-or-end
 ;
 
 : water-tower-4f-1.act03 ( -- )   \ 0043FEC0
-    0 0 var-set
-    2 ebit? not if
-        2 6 0.0 142.0 45.0 0 0 sound
+    lift-frames-var 0 var-set
+    lift-down ebit? not if
+        lift-sound 6 0.0 142.0 45.0 0 0 sound
         begin
-            0 120 var? not while
-            0 var-inc
+            lift-frames-var 120 var? not while
+            lift-frames-var var-inc
             2 water-tower-4f-1.cmd00
-            3 ebit? not if
+            lift-done ebit? not if
                 hewie-who 1 char-in-nav-group? not if
                     1 keeps-hewie-off floor-on
-                    3 ebit-set
+                    lift-done ebit-set
                 then
             then
             yield
@@ -414,15 +398,15 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         1 keeps-fiona-off keeps-pursuers-off or floor-off
         1 water-tower-4f-1.cmd00
     else
-        2 6 -45.0 142.0 0.0 0 0 sound
+        lift-sound 6 -45.0 142.0 0.0 0 0 sound
         begin
-            0 120 var? not while
-            0 var-inc
+            lift-frames-var 120 var? not while
+            lift-frames-var var-inc
             3 water-tower-4f-1.cmd00
-            3 ebit? not if
+            lift-done ebit? not if
                 hewie-who 1 char-in-nav-group? not if
                     0 keeps-hewie-off floor-on
-                    3 ebit-set
+                    lift-done ebit-set
                 then
             then
             yield
@@ -445,7 +429,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         $FF door-unlock
         $101 door-unlock
     then
-    1 ebit-clear
+    lift-scene-on ebit-clear
     self-idle-or-end
 ;
 
@@ -454,25 +438,20 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     -71.41 -7.67 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             wt4f-1-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -482,25 +461,20 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
     -86.45 -8.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             wt4f-1-camomile story-flag-set
             1 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

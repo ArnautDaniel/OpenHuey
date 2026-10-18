@@ -4,6 +4,10 @@
 IN: story.rooms.off-map-d9
 USING: room-names story.words story.shared flag-names story.clock ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant started                     \ (bit 0) the run begun (the world let go; Hewie played)
+1 constant cond-was-off                \ (bit 1) the room's condition was false last frame: its hook waits a frame once it holds
+
 \ room 0xD9: starts the countdown clock (clock_start: progress +0x1FBEC1 on, Hewie restarted,
 \ the camera director +0x40 14, the time zeroed).
 : off-map-d9.cmd00 ( -- )  clock-start ;
@@ -18,20 +22,15 @@ USING: room-names story.words story.shared flag-names story.clock ;
 : off-map-d9.enter ( -- )   \ 00447E80
     $19 1.0 0 bgm
     hewie-controlled? if
-        0 ebit-set
+        started ebit-set
     then
 ;
 
 : off-map-d9.char-enter ( -- )   \ 00447E90
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     hewie-controlled? not if
         fiona-who self-is? if
@@ -64,20 +63,16 @@ USING: room-names story.words story.shared flag-names story.clock ;
 ;
 
 : off-map-d9.phase1 ( -- )   \ 00447F40
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
+    then
 ;
 
 : off-map-d9.phase3 ( -- )   \ 00447F60
     off-map-d9.cond00? not if
-        1 ebit-set
-    else 1 ebit? if
-        1 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-d9.cmd01
     then then
@@ -89,7 +84,7 @@ USING: room-names story.words story.shared flag-names story.clock ;
     world-held state-flag-clear
     $F 1 fade
     wait-fade
-    0 ebit-set
+    started ebit-set
     self-idle-or-end
 ;
 

@@ -2,7 +2,15 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-3
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits and script variables ----
+0 constant bookshelf-remarked          \ (bit 0) its first remark made: "A wealth of information, right before your fingertips... A l"
+1 constant harp-remarked               \ (bit 1) its first remark made: "This harp is so large and bulky... It's hard to imagine peop"
+2 constant chase-scene-on              \ (bit 2) the chase scene under way: at the room's end the stalkers let go
+3 constant item-scene-on               \ (bit 3) the item's scene (act05) under way
+4 constant hewie-zone3-noticed         \ (bit 4) Hewie has reacted to zone 3 (once a visit)
+5 constant creepy-thing-remarked       \ (bit 5) its first remark made: "W-What is this thing? It is really giving me the creeps. Why"
 
 \ room 0x09 (Room09_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) is in
 \ another room than 9 (the player about too)
@@ -42,15 +50,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-1f-3.char-enter ( -- )   \ 003F32D0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
     fiona-who self-is? if
         c1f-3-bookshelf-examined story-flag? not if
@@ -85,13 +88,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         then
     then
     3 13.13 0.0 -30.63 $1C 11 0 zone
-    4 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 3 9 char-zone-bits? if
-                    4 ebit-set
+                    hewie-zone3-noticed ebit-set
                     $32 chance? if
-                        $1F 3 var-set
+                        hewie-zone-var 3 var-set
                         0 hewie-who $8A action
                     then
                 then
@@ -102,8 +105,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 11.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 11.0 hewie-look-zone
             then
         then
     then
@@ -111,8 +114,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 22.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 22.0 hewie-look-zone
             then
         then
     then
@@ -157,16 +160,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-1f-3.phase5 ( -- )   \ 003F34D8
-    2 ebit? if
+    chase-scene-on ebit? if
         stalkers-stay state-flag-clear
         force-chased state-flag-clear
     then
 ;
 
 : castle-1f-3.act00 ( -- )   \ 003F34F0
-    2 ebit? if
+    chase-scene-on ebit? if
         stalkers-stay state-flag-clear
-        $F1 action-end
+        1 track action-end
     then
     1 self-scripted
     c1f-3-bookshelf-examined story-flag-set
@@ -191,7 +194,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         scene-wait-ready
     then
     wait-fade
-    0 $F9 3 action
+    0 cutscene-track 3 action
     hewie-who char-here? if
         0 hewie-who 2 action-force
         c1f-3-flag2 story-flag-set
@@ -232,8 +235,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-1f-3.act01 ( -- )   \ 003F3618
     castle-1f-3.cond00? not if
-        0 message   \ "A book shelf of fine design. It has a rather sturdy look to it."
-        wait-message
+        0 say   \ "A book shelf of fine design. It has a rather sturdy look to it."
     else
         ['] castle-1f-3.act00 goto
     then
@@ -279,7 +281,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-1f-3.act05 ( -- )   \ 003F36B0
-    3 ebit-set
+    item-scene-on ebit-set
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
@@ -292,7 +294,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         scene-wait-ready
         wait-fade
         fiona-who 1 char-no-shadow
-        0 $F2 $E action
+        0 2 track $E action
         panic-eased
         7 message-prepare   \ "Fiona. I see you've finally awakened... There's something that I've wanted..."
         1 result? if
@@ -301,7 +303,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $FF 1.0 0 bgm
         wait-fade
         fiona-who 0 char-no-shadow
-        $F2 action-end
+        2 track action-end
         1 part-hidden
         2 part-shown
         2 0 object-hidden
@@ -315,45 +317,36 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     else
         10.0 -17.0 self-turn-to-xz
         self-wait-done
-        $902 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         got-garden-key story-flag-set
         3 part-hidden
         $14 message-param-room
         $14 1 item-give-count
         0 $14 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-        $903 self-anim
-        self-wait-anim
+        $8012 say   \ "You've obtained ."
+        reach-back-anim play-out
     then
-    2 ebit? not if
+    chase-scene-on ebit? not if
         stalkers-stay state-flag-clear
     then
     0 self-scripted
-    3 ebit-clear
+    item-scene-on ebit-clear
     self-idle-or-end
 ;
 
 : castle-1f-3.act06 ( -- )   \ 003F37E0
-    begin
-        fiona-who char-busy? not while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-until
     1 message   \ "If I just apply enough force, I might be able to knock it over..."
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     wait-message
     self-idle-or-end
 ;
 
 : castle-1f-3.act07 ( -- )   \ 0047A9B8
-    0 message   \ "A book shelf of fine design. It has a rather sturdy look to it."
-    wait-message
+    0 say   \ "A book shelf of fine design. It has a rather sturdy look to it."
     self-idle-or-end
 ;
 
@@ -364,8 +357,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 self-scripted
     fiona-who $DA -26.45 -13.04 0 char-to-xz
     1 20.0 -18.0 8.0 0.0 event-camera
-    0 message   \ "A book shelf of fine design. It has a rather sturdy look to it."
-    wait-message
+    0 say   \ "A book shelf of fine design. It has a rather sturdy look to it."
     0 0.0 0.0 0.0 0.0 event-camera
     world-frozen state-flag-clear
     stalkers-stay state-flag-clear
@@ -377,38 +369,31 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -6.0 -46.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-3-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $903 self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
 
 : castle-1f-3.act0A ( -- )   \ 003F38B0
     self-wait-done
-    0 ebit? not if
-        2 message   \ "A wealth of information, right before your fingertips... A lot of the books seem to..."
-        wait-message
-        0 ebit-set
+    bookshelf-remarked ebit? not if
+        2 say   \ "A wealth of information, right before your fingertips... A lot of the books seem to..."
+        bookshelf-remarked ebit-set
     else
-        3 message   \ "Maybe they wouldn't mind if I took a few of these books... Nah, I'm sure they would..."
-        wait-message
+        3 say   \ "Maybe they wouldn't mind if I took a few of these books... Nah, I'm sure they would..."
     then
     self-idle-or-end
 ;
@@ -418,22 +403,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     $77 24.585 26.685 90 $FFFF 5 self-move-to
     self-wait-done
     1 20.0 60.0 -45.0 30.0 event-camera
-    self-frames-reset
-    $10 self-wait-frames
-    $A00 self-anim
-    self-frames-reset
-    $37 self-wait-frames
-    1 ebit? not if
-        4 message   \ "This harp is so large and bulky... It's hard to imagine people actually play these..."
-        wait-message
-        1 ebit-set
+    $10 wait-frames
+    look-at-anim self-anim
+    $37 wait-frames
+    harp-remarked ebit? not if
+        4 say   \ "This harp is so large and bulky... It's hard to imagine people actually play these..."
+        harp-remarked ebit-set
     else
-        5 message   \ "Trying to play that for long stints of time would probably give even the most exper..."
-        wait-message
+        5 say   \ "Trying to play that for long stints of time would probably give even the most exper..."
     then
     self-wait-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
@@ -443,41 +423,31 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     force-chased state-flag-set
     1 self-scripted
     c1f-3-bookshelf-hint story-flag-set
-    2 ebit-set
+    chase-scene-on ebit-set
     self-wait-done
-    1 $A self-anim-blend
+    rest-anim $A self-anim-blend
     6 message   \ "That bookshelf... I wonder if I can hide behind it?"
     self-wait-anim
     10 self-idle-anim
     wait-message
     0 self-scripted
-    0 $F1 $D action
+    0 1 track $D action
     self-idle-or-end
 ;
 
 : castle-1f-3.act0D ( -- )   \ 003F3960
-    self-frames-reset
-    $F0 self-wait-frames
-    begin
-        3 ebit? while
-        yield
-    repeat
+    $F0 wait-frames
+    [: item-scene-on ebit? ;] wait-while
     stalkers-stay state-flag-clear
     force-chased state-flag-clear
-    2 ebit-clear
+    chase-scene-on ebit-clear
     self-idle-or-end
 ;
 
 : castle-1f-3.act0E ( -- )   \ 003F3980
-    begin
-        $64 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $64 cutscene-cue-reached? ;] wait-until
     $FF 1.0 0 bgm
-    begin
-        4 cutscene-shot? not while
-        yield
-    repeat
+    [: 4 cutscene-shot? ;] wait-until
     1 part-hidden
     2 part-shown
     self-idle-or-end
@@ -489,18 +459,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     fiona-who $13B 20.181 -28.363 -90 char-to-xz
     1 10.0 20.0 -30.0 0.0 event-camera
     c1f-3-flag1 story-flag? not if
-        8 message   \ "What... is this? I probably shouldn't go snooping around things I know nothing about."
-        wait-message
-    else 5 ebit? not if
-        9 message   \ "W-What is this thing? It is really giving me the creeps. Why would anyone in their..."
-        wait-message
-        5 ebit-set
+        8 say   \ "What... is this? I probably shouldn't go snooping around things I know nothing about."
+    else creepy-thing-remarked ebit? not if
+        9 say   \ "W-What is this thing? It is really giving me the creeps. Why would anyone in their..."
+        creepy-thing-remarked ebit-set
     else
-        $A message   \ "I think I'll refrain from touching it... Heck, even looking at it makes my skin cr..."
-        wait-message
+        $A say   \ "I think I'll refrain from touching it... Heck, even looking at it makes my skin cr..."
     then then
-    self-frames-reset
-    $10 self-wait-frames
+    $10 wait-frames
     world-frozen state-flag-clear
     0 self-scripted
     0 0.0 0.0 0.0 0.0 event-camera
@@ -519,7 +485,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     scene-wait-ready
     fiona-who 1 char-no-shadow
-    0 $F2 $E action
+    0 2 track $E action
     panic-eased
     7 message-prepare   \ "Fiona. I see you've finally awakened... There's something that I've wanted to s..."
     1 result? if
@@ -527,7 +493,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     $FF 1.0 0 bgm
     fiona-who 0 char-no-shadow
-    $F2 action-end
+    2 track action-end
     $80 exit-check
     events-held state-flag-clear
     hewie-who action-end
@@ -546,7 +512,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     yield
     scene-wait-ready
-    0 $F9 3 action
+    0 cutscene-track 3 action
     fiona-who 1 char-no-shadow
     stalker-who 1 char-no-shadow
     panic-eased
@@ -572,7 +538,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     yield
     scene-wait-ready
-    0 $F9 3 action
+    0 cutscene-track 3 action
     fiona-who 1 char-no-shadow
     stalker-who 1 char-no-shadow
     panic-eased

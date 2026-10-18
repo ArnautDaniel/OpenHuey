@@ -2,7 +2,23 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-4
-USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant generator-remarked          \ (bit 0) its first remark made: "Looks like a power generator. The switch is turned on, but i"
+1 constant generator-on                \ (bit 1) the generator started (act06)
+2 constant stalker-reacted             \ (bit 2) her reaction to the stalker in area $B made
+3 constant hewie-path-open             \ (bit 3) Hewie's way kept open (until he is off it)
+4 constant locked-remarked             \ (bit 4) its first remark made: "The door is locked."
+6 constant demolisher-remarked         \ (bit 6) its first remark made: "This looks like a demolisher. These things are used to smash"
+7 constant door-effect-pending         \ (bit 7) the door's effect (cmd04) to come as she enters area 6
+0 constant generator-var               \ (var 0) ? the generator's state (3: done)
+1 constant run-frames-var              \ (var 1) the generator's frames (to 240)
+2 constant hewie-hp-var                \ (var 2) Hewie's health kept (cmd03)
+0 constant generator-start-sound       \ (snd 0) the generator started (rumble)
+1 constant generator-stop-sound        \ (snd 1) the generator running down
+2 constant generator-sound             \ (snd 2) the generator running
+3 constant key-turn-sound              \ (snd 3) her key in the lock
 
 \ (as RoomC7_Cmd01)
 : house-of-truth-1f-4.cmd00 ( b0 -- )  var-down-by-hit ;
@@ -10,7 +26,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
 \ +0x34 0, amplitude +0x3C 1); 1 steps the phase back 60 degrees and the amplitude down 0.25,
 \ height +0x28 = +0x38 + amplitude * sin, waiting (2) until it has died out
 : house-of-truth-1f-4.cmd01 ( b0 -- )   \ ("dynamo" shaken in z: b0 0 starts it - rest where it is (+0x38), phase
-    \ (+0x34) 0, size (+0x3C) 1; 1 a step-floor each frame - the phase back 60 degrees, the size down
+    \ (+0x34) 0, size (+0x3C) 1; 1 a step each frame - the phase back 60 degrees, the size down
     \ 0.25, z the rest's + size x sin - till it dies out)
     {: b0 :}  s" dynamo" object-here? 0= if  exit  then
     b0 0= if
@@ -53,7 +69,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
 : house-of-truth-1f-4.cmd03 ( b0 -- )   \ (Hewie's health kept in variable 2 - b0 0 - or put back from it: 1, 0 there gives 10)
     case
         0 of  2 hewie-hp @ var-set  endof
-        1 of  2 var @ ?dup 0= if  10  then  hewie-id send set-hp  endof
+        1 of  hewie-hp-var var @ ?dup 0= if  10  then  hewie-id send set-hp  endof
     endcase ;
 \ the placed things of kinds 0, 2, 3, 5, 7 and 8 the event manager finds in area 0xB (+0x10):
 \ their timer (+0xE4) to 300000
@@ -62,7 +78,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
 : house-of-truth-1f-4.enter ( -- )   \ 00433CC0
     room-sounds
     found-file-250 story-flag? not ht1f-4-flag1 story-flag? not and if
-        0 3 var-set
+        generator-var 3 var-set
         7 1 object-hidden
         8 0 object-hidden
         9 0 object-hidden
@@ -108,25 +124,15 @@ USING: engine common actors messages story.state room-names story.words story.sh
 ;
 
 : house-of-truth-1f-4.char-enter ( -- )   \ 00433D80
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            3 3 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         3 3 player-camera
-    then then
+    then
     1 3 3 area-camera
 ;
 
@@ -150,17 +156,17 @@ USING: engine common actors messages story.state room-names story.words story.sh
         1 exit-prepare
     then
     ht1f-4-flag1 story-flag? not if
-        1 ebit? not if
+        generator-on ebit? not if
             0 50.0 0.0 -28.0 5 11 0 zone
             fiona-who 0 char-in-zone? if
-                0 $F1 1 action
+                0 1 track 1 action
             then
         then
     then
     found-file-250 story-flag? ht1f-4-flag1 story-flag? not and if
-        1 ebit? 2 ebit? not and if
+        generator-on ebit? stalker-reacted ebit? not and if
             stalker-who $B char-in-area? if
-                2 ebit-set
+                stalker-reacted ebit-set
                 panic-eased
                 fiona-who 0 char-action? if
                     0 fiona-who 4 action-force
@@ -168,7 +174,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
                     1 fiona-who 4 action-force
                 then
             else fiona-who $B char-entered-area? if
-                2 ebit-set
+                stalker-reacted ebit-set
                 panic-eased
                 fiona-who 0 char-action? if
                     0 fiona-who 3 action-force
@@ -177,7 +183,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
                 then
             then then
         then
-        3 ebit? if
+        hewie-path-open ebit? if
             fiona-who 6 char-entered-area? if
                 0 house-of-truth-1f-4.cmd03
                 hewie-who action-end
@@ -193,16 +199,16 @@ USING: engine common actors messages story.state room-names story.words story.sh
                     hewie-who $11C char-to-tri
                 then then
                 0 keeps-hewie-off floor-on
-                3 ebit-clear
+                hewie-path-open ebit-clear
             else hewie-who 0 char-in-nav-group? not if
                 0 keeps-hewie-off floor-on
-                3 ebit-clear
+                hewie-path-open ebit-clear
             then then
         then
-        7 ebit? if
+        door-effect-pending ebit? if
             fiona-who 6 char-entered-area? if
                 house-of-truth-1f-4.cmd04
-                7 ebit-clear
+                door-effect-pending ebit-clear
             then
         then
     then
@@ -210,13 +216,13 @@ USING: engine common actors messages story.state room-names story.words story.sh
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 10.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 10.0 hewie-look-zone
             then
         then
     then
-    1 ebit? if
-        $C0000002 6 24.0 5.0 65.0 0 0 sound
+    generator-on ebit? if
+        generator-sound kept-going volume-scaled 6 24.0 5.0 65.0 0 0 sound
     then
 ;
 
@@ -244,38 +250,31 @@ USING: engine common actors messages story.state room-names story.words story.sh
     self-wait-done
     50.0 -32.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
-    self-frames-reset
-    self-wait-16
+    look-low-anim self-anim
+    16 wait-frames
     ht1f-4-flag1 story-flag? not if
-        0 ebit? not if
-            0 message   \ "Looks like a power generator. The switch is turned on, but it's not getting any..."
-            wait-message
-            0 ebit-set
+        generator-remarked ebit? not if
+            0 say   \ "Looks like a power generator. The switch is turned on, but it's not getting any..."
+            generator-remarked ebit-set
         else
-            1 message   \ "Maybe something is wrong with the contacts? A good jolt might knock it back int..."
-            wait-message
+            1 say   \ "Maybe something is wrong with the contacts? A good jolt might knock it back int..."
         then
     else
-        2 message   \ "It looks completely and utterly dead. I don't think physical abuse is going to make..."
-        wait-message
+        2 say   \ "It looks completely and utterly dead. I don't think physical abuse is going to make..."
     then
     self-wait-anim
     self-idle-or-end
 ;
 
 : house-of-truth-1f-4.act01 ( -- )   \ 00433FD0
-    fiona-who 0 6 char-sound
+    fiona-who generator-start-sound 6 char-sound
     1 $FF 4 rumble
     0 house-of-truth-1f-4.cmd00
     0 house-of-truth-1f-4.cmd01
     1 house-of-truth-1f-4.cmd01
-    0 0 var? if
+    generator-var 0 var? if
         found-file-250 story-flag? not if
-            begin
-                fiona-free? not while
-                yield
-            repeat
+            [: fiona-free? ;] wait-until
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 2 action-force
@@ -283,11 +282,10 @@ USING: engine common actors messages story.state room-names story.words story.sh
                 1 fiona-who 2 action-force
             then
         else
-            0 $F2 6 action
+            0 2 track 6 action
         then
     then
-    self-frames-reset
-    $1E self-wait-frames
+    $1E wait-frames
     self-idle-or-end
 ;
 
@@ -297,8 +295,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     stalkers-stay state-flag-set
     1 self-scripted
     house-of-truth-1f-4.cmd04
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     $F $54 fade
     self-wait-done
     wait-fade
@@ -311,7 +308,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     yield
     yield
     scene-wait-ready
-    0 $F9 9 action
+    0 cutscene-track 9 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -357,7 +354,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     stalkers-stay state-flag-clear
     scene-locked state-flag-clear
     0 self-scripted
-    0 $F2 6 action
+    0 2 track 6 action
     self-idle-or-end
 ;
 
@@ -367,12 +364,11 @@ USING: engine common actors messages story.state room-names story.words story.sh
     scene-locked state-flag-set
     1 self-scripted
     house-of-truth-1f-4.cmd04
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     $F $54 fade
     self-wait-done
     wait-fade
-    $F2 action-end
+    2 track action-end
     hewie-who action-end
     hewie-who char-done
     stalker-who action-end
@@ -399,13 +395,12 @@ USING: engine common actors messages story.state room-names story.words story.sh
     scene-locked state-flag-set
     1 self-scripted
     house-of-truth-1f-4.cmd04
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     $F $54 fade
     self-wait-done
     wait-fade
-    $40000001 6 sound-stop
-    $F2 action-end
+    generator-stop-sound volume-scaled 6 sound-stop
+    2 track action-end
     hewie-who action-end
     hewie-who char-done
     stalker-who action-end
@@ -467,19 +462,15 @@ USING: engine common actors messages story.state room-names story.words story.sh
     self-wait-done
     0.0 65.0 self-turn-to-xz
     self-wait-done
-    $900 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    pick-up-anim play-out
+    4 wait-frames
     0 effect-remove
     $25 message-param-room
     $25 1 item-give-count
     0 $25 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    $901 self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    up-from-pick-anim play-out
     got-sol-key story-flag-set
     0 self-scripted
     self-idle-or-end
@@ -487,25 +478,24 @@ USING: engine common actors messages story.state room-names story.words story.sh
 
 : house-of-truth-1f-4.act06 ( -- )   \ 004343A0
     0 part-shown
-    $40000002 6 24.0 5.0 65.0 0 0 sound
-    1 ebit-set
+    generator-sound volume-scaled 6 24.0 5.0 65.0 0 0 sound
+    generator-on ebit-set
     0 part-shown
-    3 ebit-set
-    7 ebit-set
-    1 0 var-set
+    hewie-path-open ebit-set
+    door-effect-pending ebit-set
+    run-frames-var 0 var-set
     0 house-of-truth-1f-4.cmd02
     begin
         1 house-of-truth-1f-4.cmd02
-        self-frames-reset
-        1 self-wait-frames
-        1 var-inc
-        1 240 var? until
-    $40000001 6 24.0 5.0 65.0 0 0 sound
-    1 ebit-clear
+        1 wait-frames
+        run-frames-var var-inc
+        run-frames-var 240 var? until
+    generator-stop-sound volume-scaled 6 24.0 5.0 65.0 0 0 sound
+    generator-on ebit-clear
     0 part-hidden
     2 house-of-truth-1f-4.cmd02
     0 keeps-hewie-off floor-off
-    0 3 var-set
+    generator-var 3 var-set
     0 part-hidden
     self-idle-or-end
 ;
@@ -517,40 +507,31 @@ USING: engine common actors messages story.state room-names story.words story.sh
         self-wait-done
         0 self-through-exit
         self-wait-done
-        4 ebit? not 2 game-mode? or in-panic? or if
+        locked-remarked ebit? not 2 game-mode? or in-panic? or if
             in-panic? 2 game-mode? or if
-                $60A self-anim
-                self-wait-anim
+                rattle-front-slow-anim play-out
                 -1 self-idle-anim
-                self-frames-reset
-                7 self-wait-frames
+                7 wait-frames
             else
-                $608 self-anim
-                self-wait-anim
+                rattle-front-anim play-out
                 -1 self-idle-anim
-                self-frames-reset
-                7 self-wait-frames
-                4 message   \ "The door is locked."
-                wait-message
+                7 wait-frames
+                4 say   \ "The door is locked."
             then
-            4 ebit-set
+            locked-remarked ebit-set
         else
-            self-frames-reset
-            4 self-wait-frames
+            4 wait-frames
             fiona-who $BF 90.5 0.0 90 char-to-xz
             world-frozen state-flag-set
             1 self-scripted
             1 20.0 0.0 0.0 2.0 event-camera
-            self-frames-reset
-            4 self-wait-frames
-            5 message   \ "A strange symbol is carved into the door. I wonder what this symbol means?"
-            wait-message
-            self-frames-reset
-            4 self-wait-frames
+            4 wait-frames
+            5 say   \ "A strange symbol is carved into the door. I wonder what this symbol means?"
+            4 wait-frames
             0 0.0 0.0 0.0 0.0 event-camera
             world-frozen state-flag-clear
             0 self-scripted
-            4 ebit-clear
+            locked-remarked ebit-clear
         then
         $251 item-give
     then
@@ -563,19 +544,16 @@ USING: engine common actors messages story.state room-names story.words story.sh
     0 self-through-exit
     self-wait-done
     $608 self-anim
-    self-frames-reset
-    $14 self-wait-frames
-    fiona-who 3 6 char-sound
+    $14 wait-frames
+    fiona-who key-turn-sound 6 char-sound
     $25 message-param-room
     $E2 door-locked? not if
         $25 item-use
     then
     $E6 door-unlock
     20 self-idle-anim
-    self-frames-reset
-    $14 self-wait-frames
-    $8019 message   \ "Used ."
-    wait-message
+    $14 wait-frames
+    $8019 say   \ "Used ."
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -583,129 +561,60 @@ USING: engine common actors messages story.state room-names story.words story.sh
 
 : house-of-truth-1f-4.act09 ( -- )   \ 004344F0
     0 part-hidden
-    begin
-        $F cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $F cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $12 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $12 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $13 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $13 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $14 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $14 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $17 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $17 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $28 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $28 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $29 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $29 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $2A cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $2A cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $2B cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $2B cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $2C cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $2C cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $31 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $31 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $37 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $37 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $38 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $38 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $39 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $39 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $3A cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $3A cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $3B cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $3B cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $3C cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $3C cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $53 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $53 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $54 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $54 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        $63 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $63 cutscene-cue-reached? ;] wait-until
     0 part-hidden
-    begin
-        $64 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $64 cutscene-cue-reached? ;] wait-until
     0 part-shown
-    begin
-        cutscene-near-end? not while
-        yield
-    repeat
+    [: cutscene-near-end? ;] wait-until
     self-idle-or-end
 ;
 
 : house-of-truth-1f-4.act0A ( -- )   \ 00434600
     self-wait-done
-    6 ebit? not if
-        6 message   \ "This looks like a demolisher. These things are used to smash large rocks into bits..."
-        wait-message
-        6 ebit-set
+    demolisher-remarked ebit? not if
+        6 say   \ "This looks like a demolisher. These things are used to smash large rocks into bits..."
+        demolisher-remarked ebit-set
     else
-        $1D01 $A self-anim-blend
-        self-wait-anim
-        7 message   \ "It's not running right now... Maybe there is a power switch somewhere that needs to..."
-        wait-message
+        hand-to-mouth-anim $A blend-out
+        7 say   \ "It's not running right now... Maybe there is a power switch somewhere that needs to..."
     then
     self-idle-or-end
 ;
@@ -720,7 +629,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     yield
     yield
     scene-wait-ready
-    0 $F9 9 action
+    0 cutscene-track 9 action
     panic-eased
     $FFFF message-prepare
     1 result? if

@@ -2,7 +2,28 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-12
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+1 constant synthesizer-remarked        \ (bit 1) its first remark made: "Synthesizer By separating the platinum half-piece and then s"
+2 constant dials-on                    \ (bit 2) the dials being set (cleared when right)
+3 constant dial-turned                 \ (bit 3) a dial turned this frame
+4 constant dials-right                 \ (bit 4) the dials set right
+5 constant locked-remarked             \ (bit 5) its first remark made: "It's locked. I can't open it..."
+6 constant dial-picked                 \ (bit 6) another dial picked this frame
+0 constant picked-dial-var             \ (var 0) the dial picked
+1 constant used-item-var               \ (var 1) the item she used (8 .. 11)
+2 constant sound-step-var              \ (var 2) which of its sounds next (0..3)
+3 constant sound-frames-var            \ (var 3) frames to the next sound (30)
+0 constant dial-pick-sound             \ (snd 0) a dial picked
+1 constant dial-turn-sound             \ (snd 1) a dial turned
+2 constant dials-right-sound           \ (snd 2) the dials right (rumble)
+3 constant unlocked-sound              \ (snd 3) the door unlocked
+4 constant change-sound                \ (snd 4) it transforming
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
 
 \ room 0x69 (D_004386F8): the three-dial lock by byte 3 - 0 the dials (and their lit twins) set
 \ to their settings; 1 the player at it: up / down pick the dial (event variable 0; its lit twin
@@ -18,30 +39,30 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : pick-dial ( old sel -- )   \ (the lit twin of the picked one shown instead)
     {: old sel :}  0 old dial object-hidden!  1 old 3 + dial object-hidden!
     1 sel dial object-hidden!  0 sel 3 + dial object-hidden!
-    0 sel var-set  6 ebit-set ;
+    picked-dial-var sel var-set  dial-picked ebit-set ;
 : turn-dial ( sel -- )   \ (left / right: its setting 0..3 round, sound bit 3)
     {: sel | v :}  sel dial-var progress-var@ to v
     3 menu-repeat? if  v 0= if  3  else  v 1-  then  to v
     else  1 menu-repeat? if  v 3 < if  v 1+  else  0  then  to v  then  then
-    v sel dial-var progress-var@ <> if  sel dial-var v progress-var!  3 ebit-set  then
-    6 ebit-clear ;
+    v sel dial-var progress-var@ <> if  sel dial-var v progress-var!  dial-turned ebit-set  then
+    dial-picked ebit-clear ;
 : dials-step ( -- )   \ (2: the picked dial turning 4 degrees a frame to its setting; there, opened if 1 0 2)
-    {: | sel :}  0 var @ to sel
+    {: | sel :}  picked-dial-var var @ to sel
     sel dial object-here? 0= sel 3 + dial object-here? 0= or if  exit  then
     sel dial turn-y object@ sel dial-angle f- angle-wrap                ( F: d )
     fdup 4e deg>rad f> if  fdrop  -4e deg>rad sel dial turn-y object+!  -4e deg>rad sel 3 + dial turn-y object+!  exit  then
     -4e deg>rad f< if  4e deg>rad sel dial turn-y object+!  4e deg>rad sel 3 + dial turn-y object+!  exit  then
     sel dial-angle sel dial turn-y object!  sel dial-angle sel 3 + dial turn-y object!
     0 dial-var progress-var@ 1 =  1 dial-var progress-var@ 0= and  2 dial-var progress-var@ 2 = and if
-        2 ebit-clear  4 ebit-set
-    else  3 ebit-clear  then ;
+        dials-on ebit-clear  dials-right ebit-set
+    else  dial-turned ebit-clear  then ;
 \ bits 2 off, 4)
 : old-mansion-2f-12.cmd00 ( b0 -- )   \ (0 the dials set; 1 the player at it: up / down pick, left / right turn, cancel leaves
     \ (event flag 2 off); 2 the picked one turning to its setting)
     case
         0 of  6 0 do  i dial object-here? if  i 3 mod dial-angle i dial turn-y object!  then  loop  endof
-        1 of  menu-cancel? if  2 ebit-clear  exit  then
-              0 var @  dup  0 menu-pressed? if  dup 0= if  drop 2  else  1-  then
+        1 of  menu-cancel? if  dials-on ebit-clear  exit  then
+              picked-dial-var var @  dup  0 menu-pressed? if  dup 0= if  drop 2  else  1-  then
               else  2 menu-pressed? if  dup 2 < if  1+  else  drop 0  then  then  then   ( old sel )
               2dup <> if  pick-dial  else  nip turn-dial  then  endof
         2 of  dials-step  endof
@@ -87,25 +108,15 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : old-mansion-2f-12.char-enter ( -- )   \ 00437F50
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            3 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         3 -1 player-camera
-    then then
+    then
     0 3 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 -1 player-camera
-    then then
+    then
     1 1 -1 area-camera
 ;
 
@@ -113,13 +124,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 2 1 1 chars-area-camera
     5 3 -1 1 chars-area-camera
     6 0 0 1 chars-area-camera
@@ -136,13 +143,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         2 82.73 30.0 -85.2 $A 5 0 zone
         hewie-who 2 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om2f-12-antimony-powder-found var-set
-                $1A om2f-12-antimony-powder var-set
-                $1B 0 var-set
-                $1C 82730 var-set
-                $1D 31000 var-set
-                $1E -85200 var-set
-                $1F 2 var-set
+                found-flag-var om2f-12-antimony-powder-found var-set
+                taken-flag-var om2f-12-antimony-powder var-set
+                sparkle-fx-var 0 var-set
+                sparkle-x-var 82730 var-set
+                sparkle-y-var 31000 var-set
+                sparkle-z-var -85200 var-set
+                hewie-zone-var 2 var-set
                 0 hewie-who $8B action
             then
         then
@@ -151,8 +158,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 18.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 18.0 hewie-look-zone
             then
         then
     then
@@ -160,8 +167,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 4 9 char-zone-bits? if
-                $1F 4 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 4 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then
@@ -190,21 +197,21 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         then
     then
     6 sound-bank-loaded? if
-        3 var-inc
-        3 30 var? if
-            3 0 var-set
-            2 0 var? if
-                $40000005 6 74.0 30.0 -110.0 0 0 sound
-            else 2 1 var? if
-                $40000006 6 74.0 30.0 -110.0 0 0 sound
-            else 2 2 var? if
-                $40000007 6 74.0 30.0 -110.0 0 0 sound
-            else 2 3 var? if
-                $40000008 6 74.0 30.0 -110.0 0 0 sound
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
+                ambient1-sound volume-scaled 6 74.0 30.0 -110.0 0 0 sound
+            else sound-step-var 1 var? if
+                ambient2-sound volume-scaled 6 74.0 30.0 -110.0 0 0 sound
+            else sound-step-var 2 var? if
+                ambient3-sound volume-scaled 6 74.0 30.0 -110.0 0 0 sound
+            else sound-step-var 3 var? if
+                ambient4-sound volume-scaled 6 74.0 30.0 -110.0 0 0 sound
             then then then then
-            2 var-inc
-            2 4 var? if
-                2 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -244,24 +251,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     $7F -103.0 -75.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 4 6 char-sound
-    self-frames-reset
-    $78 self-wait-frames
-    $A02 self-anim
-    self-wait-anim
-    6 message   \ "Its composition has changed!"
-    wait-message
-    $902 self-anim
-    self-wait-anim
+    fiona-who change-sound 6 char-sound
+    $78 wait-frames
+    look-close-anim play-out
+    6 say   \ "Its composition has changed!"
+    reach-out-anim play-out
     $A item-use
     $B message-param-room
     $B 1 item-give-count
     0 $B item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    $903 self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -271,35 +272,26 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     0 self-through-exit
     self-wait-done
-    5 ebit? not 2 game-mode? or in-panic? or if
+    locked-remarked ebit? not 2 game-mode? or in-panic? or if
         in-panic? 2 game-mode? or if
-            $60A self-anim
-            self-wait-anim
+            rattle-front-slow-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
+            7 wait-frames
         else
-            $608 self-anim
-            self-wait-anim
+            rattle-front-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
-            9 message   \ "It's locked. I can't open it... Now how am I going to get this open?"
-            wait-message
+            7 wait-frames
+            9 say   \ "It's locked. I can't open it... Now how am I going to get this open?"
         then
-        5 ebit-set
+        locked-remarked ebit-set
     else
-        $800 self-anim
-        self-wait-anim
-        $801 self-anim
-        $A message   \ "Water is spilling out from the edge of the door frame. The room on the other side..."
-        wait-message
-        $802 self-anim
-        self-wait-anim
+        crouch-down-anim play-out
+        crouching-anim self-anim
+        $A say   \ "Water is spilling out from the edge of the door frame. The room on the other side..."
+        crouch-up-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
-        5 ebit-clear
+        7 wait-frames
+        locked-remarked ebit-clear
     then
     self-idle-or-end
 ;
@@ -309,30 +301,29 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 self-scripted
     self-wait-done
     om2f-12-flag1 story-flag? not if
-        1 message   \ "There's a dial connected to what looks like a water pipe... Operate the dial? YES NO"
-        wait-message
+        1 say   \ "There's a dial connected to what looks like a water pipe... Operate the dial? YES NO"
         0 answer? if
             fiona-who $4B 293.136 -95.0 180 char-to-xz
             world-frozen state-flag-set
             1 5.0 0.0 0.0 2.0 event-camera
             2 message   \ "Push the left analog stick, up or down to change the dial setting. right or lef..."
-            2 ebit-set
-            0 0 var-set
+            dials-on ebit-set
+            picked-dial-var 0 var-set
             0 1 object-hidden
             3 0 object-hidden
             begin
-                3 ebit? not if
+                dial-turned ebit? not if
                     1 old-mansion-2f-12.cmd00
-                    3 ebit? if
-                        1 6 293.0 12.0 -102.0 0 0 sound
+                    dial-turned ebit? if
+                        dial-turn-sound 6 293.0 12.0 -102.0 0 0 sound
                     then
-                    6 ebit? if
-                        0 6 293.0 12.0 -102.0 0 0 sound
+                    dial-picked ebit? if
+                        dial-pick-sound 6 293.0 12.0 -102.0 0 0 sound
                     then
                 else
                     2 old-mansion-2f-12.cmd00
                 then
-                2 ebit? while
+                dials-on ebit? while
                 yield
             repeat
             2 message-close
@@ -344,25 +335,21 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             3 1 object-hidden
             4 1 object-hidden
             5 1 object-hidden
-            4 ebit? if
-                2 6 318.0 12.0 -80.0 0 0 sound
+            dials-right ebit? if
+                dials-right-sound 6 318.0 12.0 -80.0 0 0 sound
                 1 $FF $D2 rumble
-                1 self-anim
-                self-wait-anim
-                0 self-anim
-                self-frames-reset
-                $32 self-wait-frames
+                rest-anim play-out
+                fiona.anims:stand-anim self-anim
+                $32 wait-frames
                 318.0 10.0 -80.0 self-look-at-point
                 yield
                 $72 5 318.0 12.0 -80.0 0 0 sound
                 $74 door-unlock
                 $62 door-unlock
                 om2f-12-flag1 story-flag-set
-                self-frames-reset
-                $1E self-wait-frames
-                fiona-who 3 6 char-sound
-                self-frames-reset
-                $5A self-wait-frames
+                $1E wait-frames
+                fiona-who unlocked-sound 6 char-sound
+                $5A wait-frames
                 self-who self-look-at
                 yield
             else om1f-14-flag1 story-flag? if
@@ -372,8 +359,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             $23B item-give
         then then
     else
-        7 message   \ "There's a device for draining water here."
-        wait-message
+        7 say   \ "There's a device for draining water here."
     then
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -386,20 +372,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     $7F -103.0 -75.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    1 ebit? not if
+    synthesizer-remarked ebit? not if
         $F 6 fade
         wait-fade
-        3 message   \ "Synthesizer By separating the platinum half-piece and then synthesizing it with the..."
-        wait-message
-        1 ebit-set
+        3 say   \ "Synthesizer By separating the platinum half-piece and then synthesizing it with the..."
+        synthesizer-remarked ebit-set
         $F 7 fade
         wait-fade
     else
-        $1D01 $A self-anim-blend
-        4 message   \ "A synthesizer? What a peculiar device. It appears you can insert an item here..."
-        wait-message
+        hand-to-mouth-anim $A self-anim-blend
+        4 say   \ "A synthesizer? What a peculiar device. It appears you can insert an item here..."
         self-wait-anim
-        1 ebit-clear
+        synthesizer-remarked ebit-clear
     then
     $244 item-give
     stalkers-stay state-flag-clear
@@ -413,48 +397,38 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     $7F -103.0 -75.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 4 6 char-sound
-    self-frames-reset
-    $78 self-wait-frames
-    $A02 self-anim
-    self-wait-anim
-    $902 self-anim
-    self-wait-anim
-    1 8 var? if
+    fiona-who change-sound 6 char-sound
+    $78 wait-frames
+    look-close-anim play-out
+    reach-out-anim play-out
+    used-item-var 8 var? if
         8 message-param-room
         0 8 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-    else 1 9 var? if
+        $8012 say   \ "You've obtained ."
+    else used-item-var 9 var? if
         9 message-param-room
         0 9 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-    else 1 11 var? if
+        $8012 say   \ "You've obtained ."
+    else used-item-var 11 var? if
         $B message-param-room
         0 $B item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-    else 1 12 var? if
+        $8012 say   \ "You've obtained ."
+    else used-item-var 12 var? if
         $C message-param-room
         0 $C item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-    else 1 16 var? if
+        $8012 say   \ "You've obtained ."
+    else used-item-var 16 var? if
         $10 message-param-room
         0 $10 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     then then then then then
-    $903 self-anim
-    self-wait-anim
-    5 message   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
-    wait-message
+    reach-back-anim play-out
+    5 say   \ "No transformation occurred. I guess it didn't work. Maybe I should try a different item?"
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -465,25 +439,20 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     82.73 -85.2 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $91 message-param-room
         $91 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-12-antimony-powder story-flag-set
             0 effect-remove
             $91 1 item-give-count
             0 $91 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -492,11 +461,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     -69.5 -46.5 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    8 message   \ "There are books spread out on the table. They seem to pertain to complex formulas, but..."
-    wait-message
+    look-low-anim self-anim
+    $28 wait-frames
+    8 say   \ "There are books spread out on the table. They seem to pertain to complex formulas, but..."
     self-wait-anim
     self-idle-or-end
 ;

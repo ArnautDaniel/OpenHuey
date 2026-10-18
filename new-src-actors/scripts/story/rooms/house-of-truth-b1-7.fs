@@ -2,7 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-7
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits and script variables ----
+0 constant area0-reacted               \ (bit 0) her reaction in area 0 made (once a visit)
 
 \ room 0x95: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -37,9 +40,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : house-of-truth-b1-7.phase1 ( -- )   \ 00444570
-    0 ebit? not if
+    area0-reacted ebit? not if
         fiona-who 0 char-in-area? if
-            0 ebit-set
+            area0-reacted ebit-set
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
             else
@@ -47,7 +50,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             then
         then
         fiona-who 1 char-in-area? if
-            0 ebit-set
+            area0-reacted ebit-set
             fiona-who 0 char-action? if
                 0 fiona-who 1 action-force
             else
@@ -126,8 +129,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $F 6 fade
     wait-fade
-    3 message   \ "The colors, like the unique memories of the mind, may only come once in a lifetime."
-    wait-message
+    3 say   \ "The colors, like the unique memories of the mind, may only come once in a lifetime."
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear
@@ -140,25 +142,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -119.22 -96.82 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             htb1-7-beef-jerky story-flag-set
             0 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

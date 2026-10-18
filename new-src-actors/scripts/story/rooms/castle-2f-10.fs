@@ -2,7 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-10
-USING: room-names story.words story.shared flag-names ;
+USING: room-names story.words story.shared flag-names fiona.anims ;
+
+\ ---- this room's own event bits and script variables ----
+0 constant stopped-var                 \ (var 0) obstacles stopped on their squares
 
 : castle-2f-10.enter ( -- )   \ 00414390
     room-sounds
@@ -14,25 +17,15 @@ USING: room-names story.words story.shared flag-names ;
 ;
 
 : castle-2f-10.char-enter ( -- )   \ 004143B0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
 ;
 
@@ -61,24 +54,24 @@ USING: room-names story.words story.shared flag-names ;
     then
     5 0 0 1 chars-area-camera
     6 1 1 1 chars-area-camera
-    0 0 var-set
+    stopped-var 0 var-set
     0 $455 obstacle-on? 0 $459 obstacle-on? or if
         0 obstacle-stop
-        0 var-inc
+        stopped-var var-inc
     then
     1 $455 obstacle-on? 1 $459 obstacle-on? or if
         1 obstacle-stop
-        0 var-inc
+        stopped-var var-inc
     then
     2 $473 obstacle-on? if
         2 obstacle-stop
-        0 var-inc
+        stopped-var var-inc
     then
     3 $4B8 obstacle-on? if
         3 obstacle-stop
-        0 var-inc
+        stopped-var var-inc
     then
-    0 4 var? if
+    stopped-var 4 var? if
         0 fiona-who 0 action
     then
 ;
@@ -89,20 +82,14 @@ USING: room-names story.words story.shared flag-names ;
 : castle-2f-10.act00 ( -- )   \ 004144C0
     stalkers-stay state-flag-set
     1 self-scripted
-    begin
-        fiona-who char-busy? not while
-        yield
-    repeat
-    $1202 0 self-anim-blend
-    self-wait-anim
+    [: fiona-who char-busy? ;] wait-until
+    let-go-push-anim 0 blend-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     0.0 0.0 self-turn-to-xz
     self-wait-done
-    1 self-anim
-    self-frames-reset
-    $3C self-wait-frames
+    rest-anim self-anim
+    $3C wait-frames
     $F $44 fade
     1 1 movie-play
     0 cutscene-start

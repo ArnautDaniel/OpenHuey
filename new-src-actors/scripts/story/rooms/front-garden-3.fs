@@ -2,7 +2,25 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-3
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant tree-remarked               \ (bit 0) its first remark made: "A large tree is sprawled out here."
+1 constant stalkers-held               \ (bit 1) the stalkers held while Hewie's scene runs
+2 constant next-scene                  \ (bit 2) ? on to act0E (the scene after Hewie is in place)
+3 constant hewie-zone1-noticed         \ (bit 3) Hewie has reacted to zone 1 (once a visit)
+4 constant zone2-reached               \ (bit 4) she reached zone 2 (the opening's next part)
+5 constant opening-started             \ (bit 5) the opening begun (act01: its music, its scripts)
+6 constant hewie-zone3-noticed         \ (bit 6) Hewie has reacted to zone 3 (once a visit)
+7 constant figures-kept                \ (bit 7) ? the opening's figures kept while unset
+8 constant hewie-zone4-noticed         \ (bit 8) Hewie has reacted to zone 4 (once a visit)
+9 constant hewie-scene-on              \ (bit 9) his scripted scene under way here (hewie): at the room's end he is put back
+10 constant hewie-in-place             \ (bit 10) Hewie at his place (act0B)
+0 constant whine-frames-var            \ (var 0) frames to Hewie's next whine (from 30, then 180)
+0 constant hewie-effort-sound          \ (snd 0) Hewie at work?
+1 constant hewie-whine-sound           \ (snd 1) Hewie's whine (now and then, caught in the wire)
+2 constant effort-room-sound           \ (snd 2) her at work?
+10 constant figure-cry-sound           \ (snd 10) the figure's cry as it appears
 
 \ the box and the grate, by byte 3: 0 the box's +0x28 on by 0.4; the grate's +0x14 (an angle) 1
 \ back 1.5 degrees, 2 on 0.5, 3 back 0.5
@@ -85,7 +103,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     4 part-hidden
     c2f-3-flag1 story-flag? if
         hewie-found-in-wire story-flag? not if
-            0 30 var-set
+            whine-frames-var 30 var-set
             $2A 0 360 hewie-to-room
             0 hewie-who 3 action
             3 part-shown
@@ -125,83 +143,46 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 ;
 
 : front-garden-3.char-enter ( -- )   \ 004048E0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 0 player-camera
-    then then
+    then
     0 1 0 area-camera
     c2f-2-flag1 story-flag? not if
-        hewie-controlled? not if
-            fiona-who self-is? 1 exit-taken? and if
-                fiona-who 1 char-to-exit
-                2 1 player-camera
-            then
-        else hewie-who self-is? 1 exit-taken? and if
-            hewie-who 1 char-to-exit
+        player-who self-is? 1 exit-taken? and if
+            player-who 1 char-to-exit
             2 1 player-camera
-        then then
+        then
         1 2 1 area-camera
     else
-        hewie-controlled? not if
-            fiona-who self-is? 1 exit-taken? and if
-                fiona-who 1 char-to-exit
-                6 5 player-camera
-            then
-        else hewie-who self-is? 1 exit-taken? and if
-            hewie-who 1 char-to-exit
+        player-who self-is? 1 exit-taken? and if
+            player-who 1 char-to-exit
             6 5 player-camera
-        then then
+        then
         1 6 5 area-camera
     then
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            5 4 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         5 4 player-camera
-    then then
+    then
     2 5 4 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            3 2 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         3 2 player-camera
-    then then
+    then
     3 3 2 area-camera
 ;
 
 : front-garden-3.phase1 ( -- )   \ 00404A20
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 4 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 4 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 4 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     fiona-who 5 char-in-area? fiona-who char-busy? not and if
         $1A 3 3 char-load
         3 exit-check
@@ -252,49 +233,49 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
             then then
         then
     then
-    9 ebit? hewie-who char-busy? not and if
-        1 ebit-clear
+    hewie-scene-on ebit? hewie-who char-busy? not and if
+        stalkers-held ebit-clear
         stalkers-stay state-flag-clear
     then
-    5 ebit? 4 ebit? not and if
+    opening-started ebit? zone2-reached ebit? not and if
         2 225.0 0.0 -44.0 $19 10 0 zone
         fiona-who 2 2 char-zone-bits? if
-            4 ebit-set
-            $F3 action-end
-            0 $F3 $14 action
+            zone2-reached ebit-set
+            3 track action-end
+            0 3 track $14 action
         then
     then
-    4 ebit? 7 ebit? not and if
+    zone2-reached ebit? figures-kept ebit? not and if
         fiona-who $B char-entered-area? if
-            7 ebit-clear
+            figures-kept ebit-clear
             3 0 char-remove
             4 0 char-remove
-            $F1 action-end
-            $F3 action-end
+            1 track action-end
+            3 track action-end
         then
     then
     c2f-3-flag1 story-flag? if
         hewie-found-in-wire story-flag? not if
-            0 0 var? if
+            whine-frames-var 0 var? if
                 $1E chance? if
-                    hewie-who 1 6 char-sound
-                    0 180 var-set
+                    hewie-who hewie-whine-sound 6 char-sound
+                    whine-frames-var 180 var-set
                 else
-                    0 60 var-set
+                    whine-frames-var 60 var-set
                 then
             else
-                0 var-dec
+                whine-frames-var var-dec
             then
         then
     then
     1 244.4 11.0 82.19 $2C 13 0 zone
-    3 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone1-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 1 9 char-zone-bits? if
-                    3 ebit-set
+                    hewie-zone1-noticed ebit-set
                     $32 chance? if
-                        $1F 1 var-set
+                        hewie-zone-var 1 var-set
                         0 hewie-who $8A action
                     then
                 then
@@ -305,21 +286,21 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then
     grate-open story-flag? not if
         hewie-who $1A char-in-area? if
             3 -23.45 -10.0 138.0 $28 20 0 zone
-            6 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+            hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 3 9 char-zone-bits? if
-                            6 ebit-set
+                            hewie-zone3-noticed ebit-set
                             $64 chance? if
-                                $1F 3 var-set
+                                hewie-zone-var 3 var-set
                                 0 hewie-who $88 action
                             then
                         then
@@ -330,13 +311,13 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     then
     fg-3-refined-magnesia story-flag? not if
         4 252.44 0.0 -156.9 $30 20 0 zone
-        8 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone4-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 4 9 char-zone-bits? if
-                        8 ebit-set
+                        hewie-zone4-noticed ebit-set
                         $64 chance? if
-                            $1F 4 var-set
+                            hewie-zone-var 4 var-set
                             0 hewie-who $88 action
                         then
                     then
@@ -347,8 +328,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         hewie-who char-here? 0 game-mode? and if
             hewie-can-command? if
                 hewie-who 4 9 char-zone-bits? if
-                    $1F 4 var-set
-                    $1F 0.0 hewie-look-zone
+                    hewie-zone-var 4 var-set
+                    hewie-zone-var 0.0 hewie-look-zone
                 then
             then
         then
@@ -415,7 +396,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     then
     fg-3-flag1 story-flag-set
     fg-3-flag2 story-flag-set
-    1 ebit? if
+    stalkers-held ebit? if
         stalkers-stay state-flag-clear
     then
     hewie-who char-busy? if
@@ -435,11 +416,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     228.1 77.57 self-turn-to-xz
     self-wait-done
-    $C0A $A self-anim-blend
-    self-wait-anim
-    $C message   \ "Unforgivable! A wire is bound to the poor animal. It is digging deeply into the dog's..."
-    wait-message
-    $C0B $A self-anim-blend
+    tend-start-anim $A blend-out
+    $C say   \ "Unforgivable! A wire is bound to the poor animal. It is digging deeply into the dog's..."
+    tend-lead-in-anim $A self-anim-blend
     1 0 movie-play
     0 cutscene-start
     yield
@@ -462,8 +441,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     $16 1.0 0 bgm
     $F $51 fade
     wait-fade
-    $B message   \ "I can't believe there are people out there that would do this to a poor helpless anima..."
-    wait-message
+    $B say   \ "I can't believe there are people out there that would do this to a poor helpless anima..."
     $205 item-give
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -488,9 +466,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     0 music-stage
     2 0 0 music
     4 0 0 music
-    5 ebit-set
-    0 $F1 $12 action
-    0 $F3 $13 action
+    opening-started ebit-set
+    0 1 track $12 action
+    0 3 track $13 action
     opening-done story-flag-set
     $16 1.0 0 bgm
     in-play state-flag-clear
@@ -505,21 +483,17 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     250.0 87.0 self-turn-to-xz
     self-wait-done
     c2f-3-flag1 story-flag? not if
-        $A00 self-anim
-        self-frames-reset
-        $1E self-wait-frames
-        0 ebit? not if
-            3 message   \ "A large tree is sprawled out here."
-            wait-message
-            0 ebit-set
+        look-at-anim self-anim
+        $1E wait-frames
+        tree-remarked ebit? not if
+            3 say   \ "A large tree is sprawled out here."
+            tree-remarked ebit-set
         else
-            4 message   \ "The branches are well kempt. Looks like someone has put a lot of time and energ..."
-            wait-message
+            4 say   \ "The branches are well kempt. Looks like someone has put a lot of time and energ..."
         then
         self-wait-anim
     else
-        5 message   \ "There is a thick wire encircling the trunk of the tree."
-        wait-message
+        5 say   \ "There is a thick wire encircling the trunk of the tree."
     then
     self-idle-or-end
 ;
@@ -536,12 +510,10 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 
 : front-garden-3.act04 ( -- )   \ 00404FF0
     self-wait-done
-    1 self-anim
-    self-wait-anim
+    rest-anim play-out
     -1 self-idle-anim
     6 message   \ "Where am I?"
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     wait-message
     fg-3-flag1 story-flag-set
     self-idle-or-end
@@ -549,8 +521,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 
 : front-garden-3.act05 ( -- )   \ 00405008
     self-wait-done
-    7 message   \ "It's kind of cold... The air smells... funny."
-    wait-message
+    7 say   \ "It's kind of cold... The air smells... funny."
     fg-3-flag2 story-flag-set
     self-idle-or-end
 ;
@@ -559,8 +530,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     65.64 70.94 self-turn-to-xz
     self-wait-done
-    8 message   \ "A fountain... Looks like it is quite the antique."
-    wait-message
+    8 say   \ "A fountain... Looks like it is quite the antique."
     self-idle-or-end
 ;
 
@@ -568,11 +538,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     120 self-turn-angle
     self-wait-done
-    $402 self-anim
-    self-wait-anim
+    turn-round-anim play-out
     -1 self-idle-anim
-    2 message   \ "I just want to put the terrible things I saw back there behind me. I am not going back."
-    wait-message
+    2 say   \ "I just want to put the terrible things I saw back there behind me. I am not going back."
     self-idle-or-end
 ;
 
@@ -581,49 +549,40 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     185.7 -35.4 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $92 message-param-room
         $92 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-3-magnesia story-flag-set
             0 effect-remove
             $92 1 item-give-count
             0 $92 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
 
 : front-garden-3.act0E ( -- )   \ 00405230
     1 self-scripted
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     counter-inc
     -90 self-turn-angle
     self-wait-done
     2 wait-counter
-    self-frames-reset
-    8 self-wait-frames
-    hewie-who 0 6 char-sound
+    8 wait-frames
+    hewie-who hewie-effort-sound 6 char-sound
     begin
         3 counter? not while
         0 front-garden-3.cmd00
         yield
     repeat
     4 wait-counter
-    fiona-who 2 6 char-sound
+    fiona-who effort-room-sound 6 char-sound
     begin
         5 counter? not while
         1 front-garden-3.cmd00
@@ -640,7 +599,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         yield
     repeat
     8 wait-counter
-    $A ebit-clear
+    hewie-in-place ebit-clear
     $8275 item-give
     0 self-scripted
     self-idle-or-end
@@ -648,23 +607,19 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 
 : front-garden-3.act09 ( -- )   \ 004050B0
     self-wait-done
-    $A ebit? if
+    hewie-in-place ebit? if
         0 counter-set
-        2 ebit-set
+        next-scene ebit-set
         ['] front-garden-3.act0E goto
     then
-    self-frames-reset
-    4 self-wait-frames
+    4 wait-frames
     world-frozen state-flag-set
     1 self-scripted
     fiona-who $2A7 -25.0 168.0 -80 char-to-xz
     1 13.0 20.0 0.0 0.0 event-camera
-    self-frames-reset
-    self-wait-16
-    9 message   \ "This door is being blocked by that wooden box. There's got to be something I can do..."
-    wait-message
-    self-frames-reset
-    4 self-wait-frames
+    16 wait-frames
+    9 say   \ "This door is being blocked by that wooden box. There's got to be something I can do..."
+    4 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     fiona-who $21D -21.0 168.0 -90 char-to-xz
     world-frozen state-flag-clear
@@ -676,13 +631,10 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     $DC -12.99 136.933 -90 $FFFF 5 self-move-to
     self-wait-done
-    $800 self-anim
-    self-wait-anim
-    $801 self-anim
-    $A message   \ "There is a hole-floor here, but it's far too small for me."
-    wait-message
-    $802 self-anim
-    self-wait-anim
+    crouch-down-anim play-out
+    crouching-anim self-anim
+    $A say   \ "There is a hole here, but it's far too small for me."
+    crouch-up-anim play-out
     -1 self-idle-anim
     self-idle-or-end
 ;
@@ -698,7 +650,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     -1 self-idle-anim
     stalkers-stay state-flag-clear
     0 self-scripted
-    1 ebit-clear
+    stalkers-held ebit-clear
     self-idle-or-end
 ;
 
@@ -714,28 +666,23 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     counter-inc
     $194 -33.905 165.0 0 $204 5 self-move-to
     self-wait-done
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     counter-inc
     $34D $FFFF 6 self-move-tri
     self-wait-done
     counter-inc
-    self-frames-reset
-    $40 self-wait-frames
+    $40 wait-frames
     counter-inc
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     counter-inc
-    self-frames-reset
-    $10 self-wait-frames
+    $10 wait-frames
     counter-inc
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     2 barred-floor floor-off
     $2F door-unlock
     5 4 player-camera
     stalkers-stay state-flag-clear
-    1 ebit-clear
+    stalkers-held ebit-clear
     grate-open story-flag-set
     counter-inc
     1 self-doorway-fade
@@ -749,38 +696,36 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 
 : front-garden-3.act0B ( -- )   \ 00405150
     1 self-scripted
-    9 ebit-set
-    1 ebit-set
-    2 ebit-clear
+    hewie-scene-on ebit-set
+    stalkers-held ebit-set
+    next-scene ebit-clear
     stalkers-stay state-flag-set
     self-wait-done
     hewie-bark
     self-wait-done
     $DC -12.99 136.933 -90 $FFFF $A self-move-to
     self-wait-done
-    9 ebit-clear
-    $A ebit-set
+    hewie-scene-on ebit-clear
+    hewie-in-place ebit-set
     1 self-noclip
     $359 -30.0 137.0 -90 $204 5 self-move-to
     self-wait-done
-    $100 self-anim
-    self-wait-anim
-    1 self-anim
-    self-wait-anim
+    sit-down-anim play-out
+    sit-anim play-out
     begin
         fiona-who $19 char-in-area? if
             44 fiona-started? if
-                $A ebit-clear
+                hewie-in-place ebit-clear
                 ['] front-garden-3.act0C goto
             then
         then
         fiona-who $17 char-in-area? if
             44 fiona-started? 35 fiona-started? or 45 fiona-started? or if
                 0 counter-set
-                0 $F2 $D action
+                0 2 track $D action
                 ['] front-garden-3.act0F goto
             then
-            2 ebit? if
+            next-scene ebit? if
                 ['] front-garden-3.act0F goto
             then
         then
@@ -789,10 +734,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 ;
 
 : front-garden-3.act0D ( -- )   \ 00405210
-    begin
-        fiona-free? not while
-        yield
-    repeat
+    [: fiona-free? ;] wait-until
     panic-eased
     0 fiona-who $E action-force
     self-idle-or-end
@@ -804,13 +746,12 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     hewie-who char-busy? not if
         0 hewie-who $11 action-force
-        $C00 self-anim
+        go-for-it-gesture-anim self-anim
         fiona-who 1 char-wait-motion
         fiona-who $2E 5 char-sound
         self-wait-anim
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
         stalkers-stay state-flag-clear
     then
@@ -832,23 +773,20 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     fg-3-refined-magnesia story-flag? not if
         $37 $FFFF 6 self-move-tri
         self-wait-done
-        $1C03 self-anim
-        self-wait-anim
+        sit-a-while-anim play-out
         fiona-half-hidden state-flag? fiona-who char-busy? not or if
             $95 $63 item-count? not if
                 10 hewie-trust
             then
             $95 message-param-room
             $95 $63 item-count? if
-                $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-                wait-message
+                $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
             else
                 fg-3-refined-magnesia story-flag-set
                 $95 1 item-give-count
                 0 $95 item-tab
                 item-fanfare
-                $8011 message   \ "You've obtained ."
-                wait-message
+                $8011 say   \ "You've obtained ."
             then
         then
     then
@@ -891,10 +829,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 ;
 
 : front-garden-3.act14 ( -- )   \ 00405480
-    $F $A 6 char-sound
+    $F figure-cry-sound 6 char-sound
     $F $9002 1 0 char-anim-hold
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 front-garden-3.cmd01
     1 front-garden-3.cmd01
     self-idle-or-end
@@ -904,12 +841,9 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     228.1 77.57 self-turn-to-xz
     self-wait-done
-    $800 $A self-anim-blend
-    self-wait-anim
-    $D message   \ "The wire looks like it got snagged on something. So many wounds... So much blood... Yo..."
-    wait-message
-    $802 $A self-anim-blend
-    self-wait-anim
+    crouch-down-anim $A blend-out
+    $D say   \ "The wire looks like it got snagged on something. So many wounds... So much blood... Yo..."
+    crouch-up-anim $A blend-out
     self-idle-or-end
 ;
 

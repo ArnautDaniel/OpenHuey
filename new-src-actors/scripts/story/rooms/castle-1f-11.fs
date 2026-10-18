@@ -2,7 +2,14 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-11
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant stalker-scene-on            \ (bit 0) his scripted scene under way here (stalker): at the room's end he is put back
+0 constant clamp-hits-var              \ (var 0) the clamp struck so far (the wire loosens at 2)
+1 constant shove-frames-var            \ (var 1) his shove's frames (dust at 89)
+0 constant clamp-hit-sound             \ (snd 0) her striking the clamp
+11 constant shove-thud-sound           \ (snd 11) his shove landing (dust)
 
 \ room 0x03 (Room03_Cmd00_ptmf): three objects turned (-60, -60 degrees about x; -90 about z)
 : castle-1f-11.cmd00 ( -- )   \ (the drawbridge's two halves -60 degrees about x, the lever -90 about z)
@@ -65,26 +72,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-1f-11.char-enter ( -- )   \ 003F0540
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
 ;
 
 : castle-1f-11.phase1 ( -- )   \ 003F0580
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
+    then
     c1f-11-flag1 story-flag? not if
         3 1 1 1 chars-area-camera
         4 1 1 1 chars-area-camera
@@ -113,11 +111,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         fiona-who 3 char-in-zone? if
             1 castle-1f-11.cmd01
             1 $FF 4 rumble
-            0 2 var? if
-                0 var-inc
-                0 $F2 $A action
+            clamp-hits-var 2 var? if
+                clamp-hits-var var-inc
+                0 2 track $A action
             else
-                0 $F1 3 action
+                0 1 track 3 action
             then
         then
     then
@@ -143,8 +141,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         hewie-who char-here? 0 game-mode? and if
             hewie-can-command? if
                 hewie-who 4 9 char-zone-bits? if
-                    $1F 4 var-set
-                    $1F 6.0 hewie-look-zone
+                    hewie-zone-var 4 var-set
+                    hewie-zone-var 6.0 hewie-look-zone
                 then
             then
         then
@@ -215,9 +213,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         hewie-who $CC 32.509 56.979 60 char-to-xz
         stalkers-stay state-flag-clear
     then
-    stalker-who char-busy? 0 ebit? and if
+    stalker-who char-busy? stalker-scene-on ebit? and if
         stalker-who $8F 2.4 -76.445 90 char-to-xz
-        0 ebit-clear
+        stalker-scene-on ebit-clear
     then
 ;
 
@@ -232,8 +230,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     stalker-who char-done
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     $F $44 fade
     $FF 1.0 0 bgm
     1 1 movie-play
@@ -276,18 +273,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     stalkers-stay state-flag-clear
     0 self-scripted
     stalker-who 3 0 room-doors-state
-    0 ebit-clear
+    stalker-scene-on ebit-clear
     self-idle-or-end
 ;
 
 : castle-1f-11.act01 ( -- )   \ 003F09C0
     self-wait-done
     c1f-11-flag1 story-flag? not if
-        3 message
-        wait-message
+        3 say
     else
-        2 message   \ "The clamp has already come off..."
-        wait-message
+        2 say   \ "The clamp has already come off..."
     then
     self-idle-or-end
 ;
@@ -299,32 +294,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         1 self-scripted
         fiona-who $8E -6.625 -82.651 -144 char-to-xz
         1 10.0 15.0 0.0 0.0 event-camera
-        0 0 var? if
-            0 message   \ "A clamp is fixed to a wire winding device. It's rusted solid-floor but if I hit it wi..."
-            wait-message
+        clamp-hits-var 0 var? if
+            0 say   \ "A clamp is fixed to a wire winding device. It's rusted solid but if I hit it wi..."
         else
-            1 message   \ "The wire seems to have loosened a bit."
-            wait-message
+            1 say   \ "The wire seems to have loosened a bit."
         then
-        self-frames-reset
-        self-wait-16
+        16 wait-frames
         world-frozen state-flag-clear
         0 self-scripted
     else
-        2 message   \ "The clamp has already come off..."
-        wait-message
+        2 say   \ "The clamp has already come off..."
     then
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
 ;
 
 : castle-1f-11.act03 ( -- )   \ 003F0A30
-    fiona-who 0 6 char-sound
-    begin
-        fiona-free? not while
-        yield
-    repeat
-    0 var-inc
+    fiona-who clamp-hit-sound 6 char-sound
+    [: fiona-free? ;] wait-until
+    clamp-hits-var var-inc
     self-idle-or-end
 ;
 
@@ -333,31 +321,26 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     53.0 -113.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $92 message-param-room
         $92 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-11-magnesia story-flag-set
             1 effect-remove
             $92 1 item-give-count
             0 $92 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
 
 : castle-1f-11.act05 ( -- )   \ 003F0AA0
-    0 ebit-set
+    stalker-scene-on ebit-set
     self-wait-done
     stalker-who char-file-use
     1 self-noclip
@@ -371,25 +354,25 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     stalker-who 0 char-silent
     $13C -45.739 -73.201 90 $FFFF $A self-move-to
     self-wait-done
-    $8000 5 self-anim-blend8
-    1 0 var-set
+    0 room-motion 5 self-anim-blend8
+    shove-frames-var 0 var-set
     begin
         fiona-who self-touching? if
             stalker-who 0 fiona-thrown
         then
-        1 89 var? if
+        shove-frames-var 89 var? if
             0 5.0 115.0 -70.0 0 0 0 0 dust
             0 5.0 115.0 -76.0 0 0 0 0 dust
-            stalker-who $B 6 char-sound
+            stalker-who shove-thud-sound 6 char-sound
         then
-        1 var-inc
+        shove-frames-var var-inc
         self-at-motion-event? not while
         yield
     repeat
     stalker-who 0 stalker-command
     0 self-noclip
     0 self-scripted
-    0 ebit-clear
+    stalker-scene-on ebit-clear
     summoner-own-cooldown
     self-idle-or-end
 ;
@@ -400,13 +383,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     hewie-who char-busy? not if
         0 hewie-who 7 action-force
-        $C00 self-anim
+        go-for-it-gesture-anim self-anim
         fiona-who 1 char-wait-motion
         fiona-who $2E 5 char-sound
         self-wait-anim
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
         stalkers-stay state-flag-clear
     then
@@ -426,8 +408,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $145 9.804 32.761 180 $FFFF 5 self-move-to
     self-wait-done
-    $1C03 $A self-anim-blend
-    self-wait-anim
+    sit-a-while-anim $A blend-out
     c1f-11-medallion story-flag? not if
         fiona-half-hidden state-flag? fiona-who char-busy? not or if
             $70 $63 item-count? not if
@@ -435,15 +416,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             then
             $70 message-param-room
             $70 $63 item-count? if
-                $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-                wait-message
+                $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
             else
                 c1f-11-medallion story-flag-set
                 $70 1 item-give-count
                 0 $70 item-tab
                 item-fanfare
-                $8011 message   \ "You've obtained ."
-                wait-message
+                $8011 say   \ "You've obtained ."
             then
             c1f-11-medallion story-flag? if
                 2 effect-remove
@@ -465,25 +444,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     72.5 8.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $61 message-param-room
         $61 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-11-beef-jerky story-flag-set
             0 effect-remove
             $61 1 item-give-count
             0 $61 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -512,11 +486,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : castle-1f-11.act0A ( -- )   \ 003F0D30
     stalkers-stay state-flag-set
-    fiona-who 0 6 char-sound
-    begin
-        fiona-free? not while
-        yield
-    repeat
+    fiona-who clamp-hit-sound 6 char-sound
+    [: fiona-free? ;] wait-until
     panic-eased
     fiona-who 0 char-action? if
         0 fiona-who 0 action-force

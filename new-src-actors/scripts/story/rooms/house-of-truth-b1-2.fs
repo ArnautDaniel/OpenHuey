@@ -2,7 +2,15 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-2
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
+1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+3 constant ambient1-sound              \ (snd 3) its ambient sounds in turn (every 30 frames): the first
+4 constant ambient2-sound              \ (snd 4) its ambient sounds in turn (every 30 frames): the second
+5 constant ambient3-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the third
+6 constant ambient4-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the fourth
 
 \ room 0x85: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -10,33 +18,23 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : house-of-truth-b1-2.enter ( -- )   \ 00432700
     room-sounds
-    0 0 var-set
-    1 0 var-set
+    sound-step-var 0 var-set
+    sound-frames-var 0 var-set
     htb1-2-lavender story-flag? not if
         0 -45.77 5.75 19.99 flicker-sprite
     then
 ;
 
 : house-of-truth-b1-2.char-enter ( -- )   \ 00432730
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         2 2 player-camera
-    then then
+    then
     1 2 2 area-camera
     fiona-who self-is? if
         found-file-252 story-flag? not $80 exit-taken? and if
@@ -68,21 +66,21 @@ USING: room-names story.words story.shared flag-names story-names ;
     then
     house-of-truth-b1-2.cmd00
     6 sound-bank-loaded? if
-        1 var-inc
-        1 30 var? if
-            1 0 var-set
-            0 0 var? if
-                $40000003 6 -41.0 20.0 25.0 0 0 sound
-            else 0 1 var? if
-                $40000004 6 -41.0 20.0 25.0 0 0 sound
-            else 0 2 var? if
-                $40000005 6 -41.0 20.0 25.0 0 0 sound
-            else 0 3 var? if
-                $40000006 6 -41.0 20.0 25.0 0 0 sound
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
+                ambient1-sound volume-scaled 6 -41.0 20.0 25.0 0 0 sound
+            else sound-step-var 1 var? if
+                ambient2-sound volume-scaled 6 -41.0 20.0 25.0 0 0 sound
+            else sound-step-var 2 var? if
+                ambient3-sound volume-scaled 6 -41.0 20.0 25.0 0 0 sound
+            else sound-step-var 3 var? if
+                ambient4-sound volume-scaled 6 -41.0 20.0 25.0 0 0 sound
             then then then then
-            0 var-inc
-            0 4 var? if
-                0 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -161,25 +159,20 @@ USING: room-names story.words story.shared flag-names story-names ;
     -45.77 19.99 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             htb1-2-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $903 self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -189,19 +182,14 @@ USING: room-names story.words story.shared flag-names story-names ;
     0 self-through-exit
     self-wait-done
     in-panic? 2 game-mode? or if
-        $60A self-anim
-        self-wait-anim
+        rattle-front-slow-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
-        $608 self-anim
-        self-wait-anim
+        rattle-front-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
-        1 message   \ "It's locked. I can't open it. I guess they have no intention of letting me go home..."
-        wait-message
+        7 wait-frames
+        1 say   \ "It's locked. I can't open it. I guess they have no intention of letting me go home..."
     then
     self-idle-or-end
 ;

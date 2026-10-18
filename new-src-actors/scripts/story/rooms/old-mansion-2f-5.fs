@@ -2,12 +2,26 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-5
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant in-zone2                    \ (bit 0) someone in zone 2 (the figure's hops count)
+1 constant found-her                   \ (bit 1) he has found her hiding: she must flee (the avoid prompt)
+2 constant will-find-her               \ (bit 2) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+3 constant came-while-hidden           \ (bit 3) the stalker came in while she was hiding
+4 constant hewie-zone3-noticed         \ (bit 4) Hewie has reacted to zone 3 (once a visit)
+0 constant hops-var                    \ (var 0) the figure's hops (5: away)
+1 constant still-var                   \ (var 1) the figure still (0) or hopping
+3 constant sound-step-var              \ (var 3) which of its sounds next (0..3)
+4 constant sound-frames-var            \ (var 4) frames to the next sound (30)
+0 constant figure-hit1-sound           \ (snd 0) the figure as it strikes her / is struck
+1 constant figure-hit2-sound           \ (snd 1) the figure as it strikes her / is struck
+2 constant figure-hit3-sound           \ (snd 2) the figure as it strikes her / is struck
 
 : old-mansion-2f-5.enter ( -- )   \ 0040F910
     room-sounds
-    3 0 var-set
-    4 0 var-set
+    sound-step-var 0 var-set
+    sound-frames-var 0 var-set
     om2f-5-breakable1-broken story-flag? not if
         0 keeps-people-off floor-on
         0 part-shown
@@ -31,7 +45,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     0 3 0.0 0.5 0.312 0.187 zone-rect
     $1C $17F char-to-tri
-    1 0 var-set
+    still-var 0 var-set
     3 $1C char-loaded? if
         $1C 3 $FF char-load
         3 char-start
@@ -39,7 +53,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $1C -3.0 0.0 43.0 -45 char-to-xyz
         $1C $9004 1 0 char-anim-hold
     then
-    0 $F1 0 action
+    0 1 track 0 action
     hunted state-flag-set
     om3f-1-flag2 story-flag? if
         om2f-5-flag1 story-flag? not if
@@ -56,29 +70,29 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : old-mansion-2f-5.act03 ( -- )   \ 0040FEC0
-    3 ebit-set
-    2 ebit-clear
+    came-while-hidden ebit-set
+    will-find-her ebit-clear
     $15 0 pvar? if
         $A chance? if
-            2 ebit-set
+            will-find-her ebit-set
         then
     else $15 1 pvar? if
         $19 chance? if
-            2 ebit-set
+            will-find-her ebit-set
         then
     else $15 2 pvar? if
         $32 chance? if
-            2 ebit-set
+            will-find-her ebit-set
         then
     else $15 3 pvar? if
         $4B chance? if
-            2 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     2 creature-action? if
-        2 ebit-set
+        will-find-her ebit-set
     then
-    2 ebit? if
+    will-find-her ebit? if
         0 stalker-who 4 action
     else
         $78 1 summoner-wait
@@ -88,32 +102,22 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : old-mansion-2f-5.char-enter ( -- )   \ 0040FA20
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 6 exit-taken? and if
-            fiona-who 6 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 6 exit-taken? and if
-        hewie-who 6 char-to-exit
+    player-who self-is? 6 exit-taken? and if
+        player-who 6 char-to-exit
         1 -1 player-camera
-    then then
+    then
     6 1 -1 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            3 ebit-set
+            came-while-hidden ebit-set
             old-mansion-2f-5.act03
         else
-            3 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
@@ -147,21 +151,21 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     2 -3.0 0.0 43.0 5 10 1 zone
     self-who 2 char-in-zone? if
-        0 ebit-set
+        in-zone2 ebit-set
     else
-        0 ebit-clear
+        in-zone2 ebit-clear
     then
-    1 1 var? if
-        $1C 2 6 char-sound
+    still-var 1 var? if
+        $1C figure-hit3-sound 6 char-sound
     then
     3 -2.18 0.0 42.94 $20 11 0 zone
-    4 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 3 9 char-zone-bits? if
-                    4 ebit-set
+                    hewie-zone3-noticed ebit-set
                     $50 chance? if
-                        $1F 3 var-set
+                        hewie-zone-var 3 var-set
                         0 hewie-who $8A action
                     then
                 then
@@ -172,8 +176,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? 1 game-mode? and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 11.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 11.0 hewie-look-zone
             then
         then
     then
@@ -181,29 +185,29 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         4 7.38 0.0 20.58 $A 5 0 zone
         hewie-who 4 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 om2f-5-viride-medallion-found var-set
-                $1A om2f-5-viride-medallion var-set
-                $1B 1 var-set
-                $1C 7380 var-set
-                $1D 1000 var-set
-                $1E 20580 var-set
-                $1F 4 var-set
+                found-flag-var om2f-5-viride-medallion-found var-set
+                taken-flag-var om2f-5-viride-medallion var-set
+                sparkle-fx-var 1 var-set
+                sparkle-x-var 7380 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 20580 var-set
+                hewie-zone-var 4 var-set
                 0 hewie-who $8B action
             then
         then
     then
     6 sound-bank-loaded? if
-        4 var-inc
-        4 30 var? if
-            4 0 var-set
-            3 0 var? if
-            else 3 1 var? if
-            else 3 2 var? if
-            else 3 3 var? if
+        sound-frames-var var-inc
+        sound-frames-var 30 var? if
+            sound-frames-var 0 var-set
+            sound-step-var 0 var? if
+            else sound-step-var 1 var? if
+            else sound-step-var 2 var? if
+            else sound-step-var 3 var? if
             then then then then
-            3 var-inc
-            3 4 var? if
-                3 0 var-set
+            sound-step-var var-inc
+            sound-step-var 4 var? if
+                sound-step-var 0 var-set
             then
         then
     then
@@ -253,64 +257,62 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $1C 0 char-visible
     then
     begin
-        0 ebit? if
-            1 0 var-set
-            0 var-inc
-            0 3 var? if
+        in-zone2 ebit? if
+            still-var 0 var-set
+            hops-var var-inc
+            hops-var 3 var? if
                 $21 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 4 var? if
+            hops-var 4 var? if
                 $32 chance? if
-                    0 5 var-set
+                    hops-var 5 var-set
                 then
             then
-            0 5 var? if
+            hops-var 5 var? if
                 0 panic-stage? if
                     1 panic-stage
                 else
                     $F threat-raise
                 then
                 stalker-who 0 stalker-command
-                $1C 0 6 char-sound
+                $1C figure-hit1-sound 6 char-sound
             else
-                $1C 1 6 char-sound
+                $1C figure-hit2-sound 6 char-sound
             then
-            fiona-who $8F 5 char-sound
+            fiona-who shove-hit-sound 5 char-sound
             $1C $9005 0 3 char-anim-hold
             $1C wait-char-anim
             $1C $9004 0 3 char-anim-hold
-            1 0 var-set
-            0 5 var? if
+            still-var 0 var-set
+            hops-var 5 var? if
                 $1C wait-char-anim
-                0 0 var-set
+                hops-var 0 var-set
             then
         then
         $1C char-at-motion-event? if
             $1C $9004 0 0 char-anim-hold
-            1 0 var-set
+            still-var 0 var-set
         else
-            1 var-inc
+            still-var var-inc
         then
-        self-frames-reset
-        1 self-wait-frames
+        1 wait-frames
     again
 ;
 
 : old-mansion-2f-5.act02 ( -- )   \ 0040FE90
-    1 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     1 self-scripted
     fiona-who camera-follow
     fiona-hidden state-flag-clear
     1 self-noclip
-    fiona-who $7E 5 char-sound
-    $8003 $A self-anim-blend
-    self-wait-anim
+    fiona-who slide-sound 5 char-sound
+    3 room-motion $A blend-out
     0 self-noclip
-    1 ebit? not if
+    found-her ebit? not if
         stalker-who action-end
     then
     0 self-scripted
@@ -319,7 +321,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-2f-5.act01 ( -- )   \ 0040FDF0
     stalkers-stay state-flag-set
-    3 ebit-clear
+    came-while-hidden ebit-clear
     1 self-scripted
     fiona-who 0 char-file-load
     self-wait-done
@@ -328,29 +330,29 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     1 self-noclip
     1 self-scripted
-    fiona-who $7E 5 char-sound
-    $8005 $A self-anim-blend8
+    fiona-who slide-sound 5 char-sound
+    5 room-motion $A self-anim-blend8
     self-wait-anim
-    $8001 $A self-anim-blend
+    1 room-motion $A self-anim-blend
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
-    1 ebit-clear
+    found-her ebit-clear
     0 avoid-prompt
     self-who 2 -1 char-camera
     begin
         0 2 pad? not if
-            in-panic? 1 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] old-mansion-2f-5.act02 goto
             else
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                3 ebit? stalker-who char-here? not and if
-                    3 ebit-clear
+                came-while-hidden ebit? stalker-who char-here? not and if
+                    came-while-hidden ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -362,10 +364,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             fiona-who camera-follow
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-blend8
-            self-frames-reset
-            5 self-wait-frames
-            fiona-who $7E 5 char-sound
+            2 room-motion 5 self-anim-blend8
+            5 wait-frames
+            fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -392,19 +393,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     3 self-is? $22 self-is? or if
         stalker-who char-file-use
         4 stalker-who 1 char-model-op
-        $8000 self-anim
-        self-wait-anim
+        0 room-motion play-out
         4 stalker-who 0 char-model-op
     else
-        $1601 self-anim
-        self-wait-anim
+        there-anim play-out
     then
-    1 ebit-set
+    found-her ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;
@@ -414,25 +410,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     10.5 -28.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-5-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -442,25 +433,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     7.38 20.58 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $74 message-param-room
         $74 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om2f-5-viride-medallion story-flag-set
             1 effect-remove
             $74 1 item-give-count
             0 $74 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

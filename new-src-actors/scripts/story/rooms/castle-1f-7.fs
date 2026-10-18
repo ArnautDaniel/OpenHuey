@@ -2,7 +2,17 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-7
-USING: engine common room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine common room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant sound-started               \ (bit 0) its sound started (then kept up)
+1 constant area17-reacted              \ (bit 1) her reaction on entering the area made (once a visit)
+0 constant breaker-var                 \ (var 0) ? the breaker's state (0 / 1)
+7 constant doll-looks-var              \ (var 7) how often she has looked at the doll (her remarks in turn)
+0 constant breaker-sound               \ (snd 0) the breaker lowered
+1 constant room-loop-sound             \ (snd 1) its steady sound (started as it comes in, then kept up)
+2 constant lid-fall-sound              \ (snd 2) the lid falling shut
+3 constant room-loop2-sound           \ (snd 3) its steady sound (started as it comes in, then kept up)
 
 \ a lid (pstr_kousi_2, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
 \ bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
@@ -14,7 +24,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     lid-y -25.3e f< if
         s" kousi" $30 object@ f0> if
             -1e s" kousi" $30 object!  c1f-4-flag2 story-flag-clear
-            cam-scene? 0= if  2 6 0 0  0e 30e 30e sound  then
+            cam-scene? 0= if  lid-fall-sound 6 0 0  0e 30e 30e sound  then
         then
         -25.3e s" kousi" place-y object!  s" kousi" $34 object@ -0.2e f* s" kousi" $34 object!
     then
@@ -40,7 +50,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 
 : castle-1f-7.enter ( -- )   \ 003FA090
     room-sounds
-    0 0 var-set
+    breaker-var 0 var-set
     $80 exit-taken? if
         1 castle-1f-7.cmd00
         c1f-4-flag1 story-flag-clear
@@ -59,7 +69,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         else
             c1f-4-flag1 story-flag-set
             0 barred-floor floor-off
-            0 1 var-set
+            breaker-var 1 var-set
             0 castle-1f-7.cmd00
         then
     then
@@ -76,31 +86,21 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 ;
 
 : castle-1f-7.char-enter ( -- )   \ 003FA110
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
             fiona-who $C7 -60 char-to-tri-facing
             1 30.0 15.0 0.0 0.0 event-camera
-            0 $F0 7 action
+            0 0 track 7 action
         then
     then
     hewie-who self-is? if
@@ -113,27 +113,23 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 ;
 
 : castle-1f-7.phase1 ( -- )   \ 003FA1C0
-    0 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
             breaker-lowered story-flag? not if
-                $40000003 6 -10.0 15.0 0.0 0 0 sound
+                room-loop2-sound volume-scaled 6 -10.0 15.0 0.0 0 0 sound
             then
-            0 ebit-set
+            sound-started ebit-set
         then
     else
-        $C0000003 6 -10.0 15.0 0.0 0 0 sound
-        $C0000001 6 0.0 30.0 30.0 0 0 sound
+        room-loop2-sound kept-going volume-scaled 6 -10.0 15.0 0.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 0.0 30.0 30.0 0 0 sound
     then
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 0 1 chars-area-camera
     5 1 -1 1 chars-area-camera
     6 1 -1 1 chars-area-camera
@@ -145,25 +141,25 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         1 exit-prepare
     then
     c1f-4-flag1 story-flag? not if
-        0 0 var-set
+        breaker-var 0 var-set
     else castle-1f-7.cond00? not if
-        0 0 var-set
+        breaker-var 0 var-set
     then then
     hewie-who $15 0 room-doors-state
     c1f-4-flag1 story-flag? if
-        0 0 var? if
+        breaker-var 0 var? if
             fiona-who 0 char-in-nav-group? hewie-who 0 char-in-nav-group? or stalker-who 0 char-in-nav-group? or if
                 hewie-who $15 1 room-doors-state
             else
                 c1f-4-flag1 story-flag-clear
                 0 barred-floor floor-on
-                0 $F1 3 action
+                0 1 track 3 action
             then
         then
     then
     breaker-lowered story-flag? not if
-        fiona-who $11 char-entered-area? 1 ebit? not and if
-            1 ebit-set
+        fiona-who $11 char-entered-area? area17-reacted ebit? not and if
+            area17-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
@@ -212,8 +208,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     1 self-scripted
     stalker-who action-end
     stalker-who char-done
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     yield
     $F $54 fade
     1 1 movie-play
@@ -231,7 +226,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         movie-loop
         scene-play-through
     then
-    3 6 sound-stop
+    room-loop2-sound 6 sound-stop
     1.0 sound-volume-scale
     $1C resident-flag-set
     0 game-over-flag
@@ -246,16 +241,14 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         $BF -39.071 35.745 -90 $FFFF 5 self-move-to
         self-wait-done
         1 20.0 -10.0 0.0 0.0 event-camera
-        0 message   \ "It's a breaker box. Lower the handle? YES NO"
-        wait-message
+        0 say   \ "It's a breaker box. Lower the handle? YES NO"
         fiona-who char-file-use
         0 answer? if
             2 0 object-anim
-            $8000 $A self-anim-blend
-            self-frames-reset
-            $32 self-wait-frames
-            0 6 -44.0 18.0 36.0 0 0 sound
-            3 6 sound-stop
+            0 room-motion $A self-anim-blend
+            $32 wait-frames
+            breaker-sound 6 -44.0 18.0 36.0 0 0 sound
+            room-loop2-sound 6 sound-stop
             1 part-hidden
             breaker-lowered story-flag-set
             40 hewie-trust
@@ -265,12 +258,10 @@ USING: engine common room-names story.words story.shared flag-names story-names 
             self-wait-anim
             $8277 item-give
         then
-        self-frames-reset
-        self-wait-16
+        16 wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
     else
-        1 message   \ "The handle has been lowered."
-        wait-message
+        1 say   \ "The handle has been lowered."
     then
     self-idle-or-end
 ;
@@ -281,32 +272,28 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 
 : castle-1f-7.act03 ( -- )   \ 003FA4F0
     c1f-4-flag2 story-flag-set
-    $40000001 6 0.0 30.0 30.0 0 0 sound
+    room-loop-sound volume-scaled 6 0.0 30.0 30.0 0 0 sound
     2 castle-1f-7.cmd00
     self-idle-or-end
 ;
 
 : castle-1f-7.act04 ( -- )   \ 0047AA30
     self-wait-done
-    5 message   \ "It's closed. I wonder if there isn't a way for me to raise this?"
-    wait-message
+    5 say   \ "It's closed. I wonder if there isn't a way for me to raise this?"
     self-idle-or-end
 ;
 
 : castle-1f-7.act05 ( -- )   \ 003FA510
     self-wait-done
-    7 0 var? if
-        2 message   \ "The doll has been stabbed with small iron sticks... This place is so freakish."
-        wait-message
-        7 1 var-set
-    else 7 1 var? if
-        3 message   \ "Is someone just trying to scare me?"
-        wait-message
-        7 2 var-set
+    doll-looks-var 0 var? if
+        2 say   \ "The doll has been stabbed with small iron sticks... This place is so freakish."
+        doll-looks-var 1 var-set
+    else doll-looks-var 1 var? if
+        3 say   \ "Is someone just trying to scare me?"
+        doll-looks-var 2 var-set
     else
-        4 message   \ "I just want to get out of this room as quickly as possible."
-        wait-message
-        7 0 var-set
+        4 say   \ "I just want to get out of this room as quickly as possible."
+        doll-looks-var 0 var-set
     then then
     self-idle-or-end
 ;
@@ -316,19 +303,14 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     9 self-through-door
     self-wait-done
     in-panic? 2 game-mode? or if
-        $60A self-anim
-        self-wait-anim
+        rattle-front-slow-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
     else
-        $608 self-anim
-        self-wait-anim
+        rattle-front-anim play-out
         -1 self-idle-anim
-        self-frames-reset
-        7 self-wait-frames
-        6 message   \ "It's locked and won't open. Now, how am I going to get you open?"
-        wait-message
+        7 wait-frames
+        6 say   \ "It's locked and won't open. Now, how am I going to get you open?"
     then
     self-idle-or-end
 ;
@@ -338,21 +320,17 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     world-held state-flag-clear
     $F 1 fade
     wait-fade
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     $F room-preload
-    $40000001 6 0.0 30.0 30.0 0 0 sound
+    room-loop-sound volume-scaled 6 0.0 30.0 30.0 0 0 sound
     3 castle-1f-7.cmd00
-    2 6 0.0 30.0 30.0 0 0 sound
-    self-frames-reset
-    $1E self-wait-frames
+    lid-fall-sound 6 0.0 30.0 30.0 0 0 sound
+    $1E wait-frames
     $F 0 fade
     wait-fade
     world-held state-flag-set
     0 0.0 0.0 0.0 0.0 event-camera
-    3 6 sound-stop
+    room-loop2-sound 6 sound-stop
     $80 exit-check
     self-idle-or-end
 ;
@@ -362,34 +340,26 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     $F5 -9.214 -23.873 -40 $FFFF $A self-move-to
     self-wait-done
     breaker-lowered story-flag? not if
-        4 self-anim
-        self-frames-reset
-        $3C self-wait-frames
+        stance-anim self-anim
+        $3C wait-frames
         c1f-7-flag1 story-flag-set
         breaker-lowered story-flag? not if
-            $1B03 self-anim
-            self-wait-anim
+            bark-tense-anim play-out
             breaker-lowered story-flag? not if
-                $1B03 self-anim
-                self-wait-anim
+                bark-tense-anim play-out
                 breaker-lowered story-flag? not if
-                    $1B03 self-anim
-                    self-wait-anim
+                    bark-tense-anim play-out
                     breaker-lowered story-flag? not if
-                        $1B03 self-anim
-                        self-wait-anim
+                        bark-tense-anim play-out
                         breaker-lowered story-flag? not if
-                            $1B03 self-anim
-                            self-wait-anim
+                            bark-tense-anim play-out
                             breaker-lowered story-flag? not if
-                                $1B03 self-anim
-                                self-wait-anim
+                                bark-tense-anim play-out
                                 breaker-lowered story-flag? not if
                                     fiona-who self-look-at
                                     yield
-                                    4 self-anim
-                                    self-frames-reset
-                                    $28 self-wait-frames
+                                    stance-anim self-anim
+                                    $28 wait-frames
                                     self-who self-look-at
                                     yield
                                 then

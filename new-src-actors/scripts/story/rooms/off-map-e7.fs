@@ -2,7 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e7
-USING: room-names story.words story.shared flag-names story.clock floor-flags ;
+USING: room-names story.words story.shared flag-names story.clock floor-flags fiona.sounds stalker.anims ;
+
+\ ---- this room's own event bits and script variables ----
+0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
+1 constant will-find-her               \ (bit 1) he will find her hiding (by chance, as he searches: more likely by the progress variable)
+2 constant came-while-hidden           \ (bit 2) the stalker came in while she was hiding
+3 constant cond-was-off                \ (bit 3) the room's condition was false last frame: its hook waits a frame once it holds
 
 \ room 0xE7: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
 \ (clock_draw; a frame hook).
@@ -20,28 +26,28 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 ;
 
 : off-map-e7.act02 ( -- )   \ 00449E00
-    1 ebit-clear
+    will-find-her ebit-clear
     $33 0 pvar? if
         0 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $33 1 pvar? if
         $19 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $33 2 pvar? if
         $32 chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     else $33 3 pvar? if
         $4B chance? if
-            1 ebit-set
+            will-find-her ebit-set
         then
     then then then then
     2 creature-action? if
-        1 ebit-set
+        will-find-her ebit-set
     then
-    1 ebit? if
+    will-find-her ebit? if
         0 stalker-who 3 action
     else
         $78 1 summoner-wait
@@ -51,32 +57,22 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 ;
 
 : off-map-e7.char-enter ( -- )   \ 00449B20
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 0 player-camera
-    then then
+    then
     1 1 0 area-camera
     stalker-who self-is? if
         fiona-hidden state-flag? if
-            2 ebit-set
+            came-while-hidden ebit-set
             off-map-e7.act02
         else
-            2 ebit-clear
+            came-while-hidden ebit-clear
         then
     then
 ;
@@ -154,9 +150,9 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 
 : off-map-e7.phase3 ( -- )   \ 00449CE0
     off-map-e7.cond00? not if
-        3 ebit-set
-    else 3 ebit? if
-        3 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-e7.cmd00
     then then
@@ -172,17 +168,16 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
 ;
 
 : off-map-e7.act01 ( -- )   \ 00449DD0
-    0 ebit? if
+    found-her ebit? if
         2 avoid-prompt
     then
     1 self-scripted
     fiona-hidden state-flag-clear
     1 self-noclip
-    fiona-who $7E 5 char-sound
-    $8003 $A self-anim-blend
-    self-wait-anim
+    fiona-who slide-sound 5 char-sound
+    3 room-motion $A blend-out
     0 self-noclip
-    0 ebit? not if
+    found-her ebit? not if
         stalker-who action-end
     then
     0 self-scripted
@@ -196,34 +191,34 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     self-wait-done
     $141 -0.12 -19.4 180 $FFFF $A self-move-to
     self-wait-done
-    2 ebit-clear
+    came-while-hidden ebit-clear
     fiona-who char-file-use
     $141 $8004 5 -0.803 -15.664 180 self-walk-anim
     self-wait-done
     1 self-noclip
     1 self-scripted
-    fiona-who $7E 5 char-sound
-    $8005 $A self-anim-blend8
+    fiona-who slide-sound 5 char-sound
+    5 room-motion $A self-anim-blend8
     self-wait-anim
-    $8001 $A self-anim-blend
+    1 room-motion $A self-anim-blend
     0 self-noclip
     stalkers-stay state-flag-clear
     fiona-hidden state-flag-set
-    0 ebit-clear
+    found-her ebit-clear
     0 avoid-prompt
     begin
         -1 control-action? if
-            in-panic? 0 ebit? or if
+            in-panic? found-her ebit? or if
                 in-panic? not if
-                    fiona-who $43 5 char-sound
+                    fiona-who seized-sound 5 char-sound
                 then
                 ['] off-map-e7.act01 goto
             else
                 2 panic-calm-in
                 6 fiona-calm
                 $1E fiona-recovery-lower
-                2 ebit? stalker-who char-here? not and if
-                    2 ebit-clear
+                came-while-hidden ebit? stalker-who char-here? not and if
+                    came-while-hidden ebit-clear
                     1 avoid-prompt
                 then
                 yield
@@ -234,10 +229,9 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
             then
             fiona-hidden state-flag-clear
             1 self-noclip
-            $8002 5 self-anim-blend8
-            self-frames-reset
-            5 self-wait-frames
-            fiona-who $7E 5 char-sound
+            2 room-motion 5 self-anim-blend8
+            5 wait-frames
+            fiona-who slide-sound 5 char-sound
             self-wait-anim
             0 self-noclip
             0 self-scripted
@@ -258,14 +252,10 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     then
     $B2 0.866 0.417 180 $FFFF 5 self-move-to
     self-wait-done
-    $1601 self-anim
-    self-wait-anim
-    0 ebit-set
+    there-anim play-out
+    found-her ebit-set
     10 self-idle-anim
-    begin
-        fiona-who char-busy? while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-while
     stalker-who 0 stalker-command
     self-idle-or-end
 ;

@@ -2,7 +2,16 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-6
-USING: room-names story.words story.shared flag-names story-names ;
+USING: room-names story.words story.shared flag-names story-names fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant massive-book-remarked       \ (bit 0) its first remark made: "A massive book stands stalwart. It looks quite old. Perhaps "
+1 constant shelves-remarked            \ (bit 1) its first remark made: "Old scholarly masterpieces fill up the shelves. It's almost "
+2 constant hewie-zone0-noticed         \ (bit 2) Hewie has reacted to zone 0 (once a visit)
+0 constant open-sound                  \ (snd 0) it opened?
+1 constant obtained-sound              \ (snd 1) as she takes it
+2 constant strike-sound                \ (snd 2) her striking it (twice)?
+3 constant reach-sound                 \ (snd 3) her reaching out
 
 : castle-2f-6.enter ( -- )   \ 00400C60
     got-lunar-refractor story-flag? not if
@@ -17,15 +26,10 @@ USING: room-names story.words story.shared flag-names story-names ;
 ;
 
 : castle-2f-6.char-enter ( -- )   \ 00400C90
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 -1 player-camera
-    then then
+    then
     0 1 -1 area-camera
 ;
 
@@ -39,13 +43,13 @@ USING: room-names story.words story.shared flag-names story-names ;
     4 2 -1 1 chars-area-camera
     got-lunar-refractor story-flag? not if
         0 3.5 0.0 33.0 $1E 20 0 zone
-        2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        2 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $64 chance? if
-                            $1F 0 var-set
+                            hewie-zone-var 0 var-set
                             0 hewie-who $88 action
                         then
                     then
@@ -57,8 +61,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 35.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 35.0 hewie-look-zone
             then
         then
     then
@@ -66,8 +70,8 @@ USING: room-names story.words story.shared flag-names story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 12.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 12.0 hewie-look-zone
             then
         then
     then
@@ -121,26 +125,20 @@ USING: room-names story.words story.shared flag-names story-names ;
 : castle-2f-6.act00 ( -- )   \ 00400E50
     2 0 char-remove
     7 partner-load
-    $902 self-anim
-    self-wait-anim
-    fiona-who 3 6 char-sound
-    $903 self-anim
-    self-wait-anim
+    reach-out-anim play-out
+    fiona-who reach-sound 6 char-sound
+    reach-back-anim play-out
     3 message-param-room
-    $8019 message   \ "Used ."
-    wait-message
+    $8019 say   \ "Used ."
     fiona-who $55 3.622 32.279 0 char-to-xz
     1 -17.0 -10.0 30.0 0.0 event-camera
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 0 object-anim
-    $8000 $A self-anim-blend
-    self-frames-reset
-    $14 self-wait-frames
-    fiona-who 0 6 char-sound
+    0 room-motion $A self-anim-blend
+    $14 wait-frames
+    fiona-who open-sound 6 char-sound
     self-wait-anim
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     2 char-start
     got-lunar-refractor story-flag-set
     3 item-use
@@ -148,15 +146,12 @@ USING: room-names story.words story.shared flag-names story-names ;
     4 1 item-give-count
     0 4 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
+    $8012 say   \ "You've obtained ."
     1 0 0 music
-    fiona-who 1 6 char-sound
+    fiona-who obtained-sound 6 char-sound
     0 1 object-anim
-    $8001 0 self-anim-blend
-    self-wait-anim
-    self-frames-reset
-    self-wait-16
+    1 room-motion 0 blend-out
+    16 wait-frames
     0 0.0 0.0 0.0 0.0 event-camera
     summoner-on state-flag-set
     stalkers-stay state-flag-clear
@@ -168,22 +163,18 @@ USING: room-names story.words story.shared flag-names story-names ;
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    $C message   \ "There is something scribbled on the board..."
-    wait-message
+    $C say   \ "There is something scribbled on the board..."
     $F 6 fade
     wait-fade
-    $F message   \ "'Luminessants' Luminessants are tiny creatures that respond to the ethereal energies g..."
-    wait-message
+    $F say   \ "'Luminessants' Luminessants are tiny creatures that respond to the ethereal energies g..."
     $F 7 fade
     wait-fade
     got-doc-luminessants story-flag? not if
-        $1D01 $A self-anim-blend
-        $D message   \ "'Luminessants'...'Azoth'... No clue what any of this means."
-        wait-message
+        hand-to-mouth-anim $A self-anim-blend
+        $D say   \ "'Luminessants'...'Azoth'... No clue what any of this means."
         self-wait-anim
     else
-        $E message   \ "Luminessants... judging by the ring of that, I'll bet these are those lightning bu..."
-        wait-message
+        $E say   \ "Luminessants... judging by the ring of that, I'll bet these are those lightning bu..."
     then
     stalkers-stay state-flag-clear
     0 self-scripted
@@ -192,13 +183,11 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-2f-6.act02 ( -- )   \ 00400F50
     self-wait-done
-    1 ebit? not if
-        8 message   \ "Old scholarly masterpieces fill up the shelves. It's almost as if someone has been..."
-        wait-message
-        1 ebit-set
+    shelves-remarked ebit? not if
+        8 say   \ "Old scholarly masterpieces fill up the shelves. It's almost as if someone has been..."
+        shelves-remarked ebit-set
     else
-        9 message   \ "Not to state the obvious, but this is clearly the castle study."
-        wait-message
+        9 say   \ "Not to state the obvious, but this is clearly the castle study."
     then
     self-idle-or-end
 ;
@@ -211,19 +200,15 @@ USING: room-names story.words story.shared flag-names story-names ;
     $55 3.622 32.279 0 $FFFF 5 self-move-to
     self-wait-done
     fiona-who char-file-use
-    $8002 $A self-anim-blend
-    self-frames-reset
-    $16 self-wait-frames
-    fiona-who 2 6 char-sound
-    self-frames-reset
-    $B self-wait-frames
-    fiona-who 2 6 char-sound
-    self-frames-reset
-    8 self-wait-frames
-    fiona-who 2 6 char-sound
+    2 room-motion $A self-anim-blend
+    $16 wait-frames
+    fiona-who strike-sound 6 char-sound
+    $B wait-frames
+    fiona-who strike-sound 6 char-sound
+    8 wait-frames
+    fiona-who strike-sound 6 char-sound
     self-wait-anim
-    3 message   \ "The desk is locked."
-    wait-message
+    3 say   \ "The desk is locked."
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -231,14 +216,12 @@ USING: room-names story.words story.shared flag-names story-names ;
 
 : castle-2f-6.act04 ( -- )   \ 00400FC0
     self-wait-done
-    0 ebit? not if
-        $A message   \ "A massive book stands stalwart. It looks quite old. Perhaps it's an antique?"
-        wait-message
-        0 ebit-set
+    massive-book-remarked ebit? not if
+        $A say   \ "A massive book stands stalwart. It looks quite old. Perhaps it's an antique?"
+        massive-book-remarked ebit-set
     else
-        $A01 $A self-anim-blend
-        $B message   \ "The script looks almost Latin in nature... But unfortunately, it's all Greek to me."
-        wait-message
+        look-low-anim $A self-anim-blend
+        $B say   \ "The script looks almost Latin in nature... But unfortunately, it's all Greek to me."
         self-wait-anim
     then
     self-idle-or-end
@@ -259,8 +242,7 @@ USING: room-names story.words story.shared flag-names story-names ;
     self-wait-done
     -135 self-turn-angle
     self-wait-done
-    $10 message   \ "Various formulae and computations have been scribbled on the desktop. This goes way b..."
-    wait-message
+    $10 say   \ "Various formulae and computations have been scribbled on the desktop. This goes way b..."
     self-idle-or-end
 ;
 
@@ -269,25 +251,20 @@ USING: room-names story.words story.shared flag-names story-names ;
     -22.26 -41.95 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c2f-6-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $903 self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;

@@ -2,7 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-5
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits and script variables ----
+0 constant all-four-done               \ (bit 0) all four rooms' flags set as she entered area 3 (the way on loaded)
+1 constant area0-reacted               \ (bit 1) her reaction in area 0 made (once a visit)
 
 \ Room93_Cmd00
 : house-of-truth-b1-5.cmd00 ( -- )  slam-shake ;
@@ -36,9 +40,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : house-of-truth-b1-5.phase1 ( -- )   \ 00444200
-    1 ebit? not if
+    area0-reacted ebit? not if
         fiona-who 0 char-in-area? if
-            1 ebit-set
+            area0-reacted ebit-set
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
             else
@@ -46,7 +50,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             then
         then
         fiona-who 1 char-in-area? if
-            1 ebit-set
+            area0-reacted ebit-set
             fiona-who 0 char-action? if
                 0 fiona-who 1 action-force
             else
@@ -65,10 +69,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     then
     fiona-who 3 char-entered-area? if
         htb1-5-flag1 story-flag? htb1-6-flag1 story-flag? and htb1-7-flag1 story-flag? and htb1-8-flag1 story-flag? and if
-            0 ebit-set
+            all-four-done ebit-set
             $88 room-preload
         else
-            0 ebit-clear
+            all-four-done ebit-clear
             $87 room-preload
         then
     then
@@ -101,7 +105,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : house-of-truth-b1-5.act01 ( -- )   \ 004442B0
     1 self-scripted
-    0 ebit? if
+    all-four-done ebit? if
         $FF 1.0 0 bgm
         keep-room-sounds state-flag-clear
     then
@@ -131,8 +135,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $F 6 fade
     wait-fade
-    1 message   \ "For the next step, be it red or blue, the answers will make themselves known one by one."
-    wait-message
+    1 say   \ "For the next step, be it red or blue, the answers will make themselves known one by one."
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear
@@ -145,25 +148,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     -117.05 101.81 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             htb1-5-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;

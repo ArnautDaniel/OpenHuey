@@ -2,7 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-12
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)
+1 constant was-panicking               \ (bit 1) she was in a panic (as she came in, then each frame)
+2 constant figure-scene-on             \ (bit 2) the figure's scene begun (act00)
+10 constant figure-cry-sound           \ (snd 10) the figure's cry as it appears
 
 \ room 0x10A: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 1 a frame (room_nudge).
@@ -16,13 +22,13 @@ USING: room-names story.words story.shared story-names ;
     $19 1.0 0 bgm
     cf-12-flag1 story-flag? not if
         $E 5 $FF char-load
-        0 $F1 0 action
+        0 1 track 0 action
     then
     $1F 0 pvar? if
         deal-things
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     then
     cf-12-camomile story-flag? not if
         0 -253.83 5.54 -217.28 flicker-sprite
@@ -30,76 +36,44 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 : chaos-forest-12.char-enter ( -- )   \ 00419770
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         0 0 player-camera
-    then then
+    then
     3 0 0 area-camera
 ;
 
 : chaos-forest-12.phase1 ( -- )   \ 00419870
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     fiona-who 2 char-in-area? fiona-who char-busy? not and if
         found-file-247 story-flag? cf-13-flag1 story-flag? not and if
             $17 3 2 char-load
         then
         2 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 3 char-in-area? fiona-who char-busy? not and if
-            3 exit-check
-        then
-    else hewie-who 3 char-in-area? hewie-who char-busy? not and if
+    player-who 3 char-in-area? player-who char-busy? not and if
         3 exit-check
-    then then
+    then
     $C 0 0 1 chars-area-camera
     $D 1 1 1 chars-area-camera
     fiona-who 4 char-entered-area? if
@@ -122,22 +96,22 @@ USING: room-names story.words story.shared story-names ;
             3 0 char-remove
         then
     then
-    0 ebit? not if
-        1 ebit? not in-panic? and if
-            0 ebit-set
+    maze-dealt ebit? not if
+        was-panicking ebit? not in-panic? and if
+            maze-dealt ebit-set
             deal-things
         then
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     else
-        1 ebit-clear
+        was-panicking ebit-clear
     then
-    2 ebit? cf-12-flag1 story-flag? not and if
+    figure-scene-on ebit? cf-12-flag1 story-flag? not and if
         chaos-forest-12.cond00? if
             cf-12-flag1 story-flag-set
-            $F1 action-end
-            0 $F1 2 action
+            1 track action-end
+            0 1 track 2 action
         then
     then
 ;
@@ -153,7 +127,7 @@ USING: room-names story.words story.shared story-names ;
 
 : chaos-forest-12.act00 ( -- )   \ 00419970
     5 char-start
-    2 ebit-set
+    figure-scene-on ebit-set
     $E char-activate
     $E $9000 1 0 char-anim-hold
     $E -25.61 38.13 -136.96 0 char-to-xyz
@@ -172,34 +146,28 @@ USING: room-names story.words story.shared story-names ;
     -253.83 -217.28 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $40 message-param-room
         $40 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cf-12-camomile story-flag-set
             0 effect-remove
             $40 1 item-give-count
             0 $40 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
 
 : chaos-forest-12.act02 ( -- )   \ 00419A10
-    $E $A 6 char-sound
+    $E figure-cry-sound 6 char-sound
     $E $9002 1 0 char-anim-hold
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 chaos-forest-12.cmd00
     1 chaos-forest-12.cmd00
     $E action-end

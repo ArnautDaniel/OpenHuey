@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-6
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 : castle-1f-6.enter ( -- )   \ 003F7920
     0 1.2 15.55 -24.813 0 flame-in
@@ -32,25 +32,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-1f-6.char-enter ( -- )   \ 003F7A20
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
     fiona-who self-is? if
         $80 exit-taken? if
@@ -93,13 +83,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         0 34.2 0.0 60.5 $A 5 0 zone
         hewie-who 0 3 char-zone-bits? if
             19 hewie-action? 100 hewie-action? or if
-                $19 c1f-6-medallion-found var-set
-                $1A c1f-6-medallion var-set
-                $1B 14 var-set
-                $1C 34200 var-set
-                $1D 1000 var-set
-                $1E 60500 var-set
-                $1F 0 var-set
+                found-flag-var c1f-6-medallion-found var-set
+                taken-flag-var c1f-6-medallion var-set
+                sparkle-fx-var 14 var-set
+                sparkle-x-var 34200 var-set
+                sparkle-y-var 1000 var-set
+                sparkle-z-var 60500 var-set
+                hewie-zone-var 0 var-set
                 0 hewie-who $8B action
             then
         then
@@ -266,11 +256,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 : castle-1f-6.act00 ( -- )   \ 003F7E80
     self-wait-done
     c2f-3-flag1 story-flag? not if
-        6 message   \ "Why are there so many candlesticks on this table?"
-        wait-message
+        6 say   \ "Why are there so many candlesticks on this table?"
     else
-        7 message   \ "There are just so many candlesticks on this table... I don't think I'm imagining th..."
-        wait-message
+        7 say   \ "There are just so many candlesticks on this table... I don't think I'm imagining th..."
     then
     self-idle-or-end
 ;
@@ -279,20 +267,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     4.0 -20.0 self-turn-to-xz
     self-wait-done
-    $902 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-out-anim play-out
+    4 wait-frames
     got-cracked-plate-key-2 story-flag-set
     1 part-hidden
     $13 message-param-room
     $13 1 item-give-count
     0 $13 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    $903 self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     self-idle-or-end
 ;
 
@@ -336,25 +320,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     34.2 60.5 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-6-medallion story-flag-set
             $E effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -363,15 +342,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    $402 self-anim
-    self-wait-anim
+    turn-round-anim play-out
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
-    $A00 self-anim
-    self-wait-anim
-    8 message   \ "A large tapestry is suspended here. I wonder if this is an embroidery of one of the cas..."
-    wait-message
+    7 wait-frames
+    look-at-anim play-out
+    8 say   \ "A large tapestry is suspended here. I wonder if this is an embroidery of one of the cas..."
     self-idle-or-end
 ;
 
@@ -383,19 +358,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         stalker-who self-touching? not if
             in-panic? not if
                 fiona-who 3 char-not-at-door? if
-                    $609 self-anim
+                    rattle-behind-anim self-anim
                 else
-                    $608 self-anim
+                    rattle-front-anim self-anim
                 then
-                self-frames-reset
-                $14 self-wait-frames
+                $14 wait-frames
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     3 door-unlock
                     $8008 message   \ "You unlocked the door."
                     20 self-idle-anim
-                    self-frames-reset
-                    $14 self-wait-frames
+                    $14 wait-frames
                     wait-message
                 then
             then

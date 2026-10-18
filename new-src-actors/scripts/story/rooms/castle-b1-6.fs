@@ -2,21 +2,30 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-6
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant pulley-remarked             \ (bit 0) its first remark made: "A pulley system used to wind up rope... Looks like this is u"
+1 constant chandelier-remarked         \ (bit 1) its first remark made: "What a fancy chandelier. It must have been quite expensive."
+2 constant area7-reacted               \ (bit 2) her reaction on entering area 7 made (once a visit)
+0 constant jar1-var                    \ (var 0) the first jar's strength (25: broken at 0)
+1 constant jar2-var                    \ (var 1) the second jar's strength (25: broken at 0)
+0 constant jar-hit-sound               \ (snd 0) the jar struck
+1 constant jar-break-sound             \ (snd 1) the jar broken
 
 \ room 0x0C (Room0C_Cmd01_ptmf): script variable byte 3 down by the player's hit (byte 4: 1 from
 \ the weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0
 : castle-b1-6.cmd01 ( b0 b1 -- )   \ (script variable b0 down by the hit: b1 Fiona's - 1 from her weak blow ($1A), else 5;
     \ else the stalker's - his attack's blow under way, if any - not below 0)
     if  fiona-move-sub $1A = if  1  else  5  then  else  stalker-blow?  then        ( var k )
-    dup 0> if  over var @ swap - 0 max var-set  else  2drop  then ;
+    dup 0> if  over var @ swap - jar1-var max var-set  else  2drop  then ;
 \ room 0x0C (Room0C_Cmd02_ptmf): the screen darkened as the cutscene runs past frame 0x4AE (32 a
 \ frame, up to 0x80)
 : castle-b1-6.cmd02 ( -- )   \ (the screen darkened as the scene runs past frame $4AE: 32 a frame, to $80 - full
     \ before it, as the original's unsigned count gives)
     cutscene-frame $4AE - dup 0< if  drop $80  else  5 lshift $80 min  then  screen-fill ;
 \ room 0x0C (Room0C_Cmd03_ptmf): three objects (pair byte 4) swing: byte 3 0 set up (rest +0x30,
-\ phase +0x34 half a turn apart, swing +0x3C 0.75 / 0.5), 1 a step-floor (phase on 60 degrees, the
+\ phase +0x34 half a turn apart, swing +0x3C 0.75 / 0.5), 1 a step (phase on 60 degrees, the
 \ swing down 0.1, x = rest + swing x sin(phase); 2 once still), 2 all to x 10. 2 while any
 : swings-step ( pair -- still? )   \ (Room0C_Cmd03 1: each on 60 degrees, its swing down 0.1; still - to x 10)
     {: pair | moving a n :}  0 to moving
@@ -47,13 +56,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 part-shown
     6 1 object-hidden
     cb1-6-flag4 story-flag? not if
-        0 25 var-set
+        jar1-var 25 var-set
     else
         $D 1 object-hidden
         5 part-shown
     then
     cb1-6-flag5 story-flag? not if
-        1 25 var-set
+        jar2-var 25 var-set
     else
         $E 1 object-hidden
         3 part-shown
@@ -76,15 +85,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-b1-6.char-enter ( -- )   \ 003F46E0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
 ;
 
@@ -100,8 +104,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     9 1 0 1 chars-area-camera
     $A 0 -1 1 chars-area-camera
     $B 1 0 1 chars-area-camera
-    got-saturnus-key story-flag? cb1-6-flag1 story-flag? not and cb1-6-flag2 story-flag? not and fiona-who 7 char-entered-area? and 2 ebit? not and if
-        2 ebit-set
+    got-saturnus-key story-flag? cb1-6-flag1 story-flag? not and cb1-6-flag2 story-flag? not and fiona-who 7 char-entered-area? and area7-reacted ebit? not and if
+        area7-reacted ebit-set
         panic-eased
         fiona-who 0 char-action? if
             0 fiona-who 0 action-force
@@ -112,13 +116,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     cb1-6-flag4 story-flag? not if
         0 10.0 0.0 -37.0 7 20 0 zone
         stalker-who 0 char-in-zone? fiona-who 0 char-in-zone? or if
-            0 $F1 8 action
+            0 1 track 8 action
         then
     then
     cb1-6-flag5 story-flag? not if
         1 10.0 0.0 37.0 7 20 0 zone
         stalker-who 1 char-in-zone? fiona-who 1 char-in-zone? or if
-            0 $F2 9 action
+            0 2 track 9 action
         then
     then
     cb1-6-flag1 story-flag? cb1-6-flag2 story-flag? not and if
@@ -149,8 +153,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 2 9 char-zone-bits? if
-                $1F 2 var-set
-                $1F 36.0 hewie-look-zone
+                hewie-zone-var 2 var-set
+                hewie-zone-var 36.0 hewie-look-zone
             then
         then
     then
@@ -309,7 +313,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     wait-fade
     hewie-who action-end
     hewie-who char-done
-    0 $F9 7 action
+    0 cutscene-track 7 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -327,14 +331,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who char-done
     stalker-who action-end
     stalker-who char-done
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     3 0 movie-play
     2 cutscene-start
     yield
     yield
     scene-wait-ready
-    0 $F9 $A action
+    0 cutscene-track $A action
     panic-eased
     2 message-prepare   \ "It's OK, Hewie... He can't come after us anymore... Good boy. Calm down, Hewie..."
     1 result? if
@@ -382,22 +385,17 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     160.0 0.0 self-turn-to-xz
     self-wait-done
-    $A01 $A self-anim-blend
-    self-wait-anim
-    6 message   \ "There are some letters engraved here..."
-    wait-message
+    look-low-anim $A blend-out
+    6 say   \ "There are some letters engraved here..."
     $F 6 fade
     wait-fade
-    7 message   \ "To the seeker of the sacred technique of Ars, Obey the will of Hermes' divine cane and..."
-    wait-message
+    7 say   \ "To the seeker of the sacred technique of Ars, Obey the will of Hermes' divine cane and..."
     $F 7 fade
     wait-fade
-    $A00 self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    look-at-anim self-anim
+    $28 wait-frames
     got-saturnus-key story-flag? not if
-        8 message   \ "A cane? Hmm, curious. I'll bet this is related to that goddess statue... Search mor..."
-        wait-message
+        8 say   \ "A cane? Hmm, curious. I'll bet this is related to that goddess statue... Search mor..."
         self-wait-anim
         1 self-scripted
         0 answer? if
@@ -445,14 +443,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             6 1 item-give-count
             0 6 item-tab
             item-fanfare
-            $8012 message   \ "You've obtained ."
-            wait-message
+            $8012 say   \ "You've obtained ."
             30 hewie-trust
         then
         0 self-scripted
     else
-        $A message   \ "If this is the chapel... This statue must symbolize the deity worshipped here."
-        wait-message
+        $A say   \ "If this is the chapel... This statue must symbolize the deity worshipped here."
         self-wait-anim
     then
     stalkers-stay state-flag-clear
@@ -460,14 +456,12 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-b1-6.act05 ( -- )   \ 003F4E30
-    1 ebit? not if
-        $F message   \ "What a fancy chandelier. It must have been quite expensive."
-        wait-message
-        1 ebit-set
+    chandelier-remarked ebit? not if
+        $F say   \ "What a fancy chandelier. It must have been quite expensive."
+        chandelier-remarked ebit-set
     else
-        $A01 $A self-anim-blend
-        $10 message   \ "I-I could have been killed... I guess fate was smiling on me today... for now."
-        wait-message
+        look-low-anim $A self-anim-blend
+        $10 say   \ "I-I could have been killed... I guess fate was smiling on me today... for now."
         self-wait-anim
     then
     self-idle-or-end
@@ -476,34 +470,25 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : castle-b1-6.act06 ( -- )   \ 003F4E50
     self-wait-done
     found-file-20b story-flag? if
-        $E message   \ "It's broken beyond repair..."
-        wait-message
-    else 0 ebit? not if
-        $C message   \ "A pulley system used to wind up rope... Looks like this is used to raise and lower..."
-        wait-message
-        0 ebit-set
+        $E say   \ "It's broken beyond repair..."
+    else pulley-remarked ebit? not if
+        $C say   \ "A pulley system used to wind up rope... Looks like this is used to raise and lower..."
+        pulley-remarked ebit-set
     else
-        $D message   \ "It is tightly fastened... Must be to make sure the chandelier doesn't accidentally..."
-        wait-message
-        0 ebit-clear
+        $D say   \ "It is tightly fastened... Must be to make sure the chandelier doesn't accidentally..."
+        pulley-remarked ebit-clear
     then then
     self-idle-or-end
 ;
 
 : castle-b1-6.act07 ( -- )   \ 003F4E70
-    begin
-        3 cutscene-shot? not while
-        yield
-    repeat
+    [: 3 cutscene-shot? ;] wait-until
     begin
         4 cutscene-shot? not while
         46.0 46.0 116.5 116.5 depth-range
         yield
     repeat
-    begin
-        $4AE cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $4AE cutscene-cue-reached? ;] wait-until
     begin
         0 cutscene-cue-reached? while
         castle-b1-6.cmd02
@@ -521,19 +506,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             0 1 castle-b1-6.cmd01
         then
     then
-    0 0 var? if
+    jar1-var 0 var? if
         10.0 10.0 -35.0 0 -2144325584 3 -9.0 shards-at
         $D 1 object-hidden
         5 part-shown
         cb1-6-flag4 story-flag-set
-        1 6 10.0 10.0 -40.0 0 0 sound
+        jar-break-sound 6 10.0 10.0 -40.0 0 0 sound
     else
-        0 6 10.0 10.0 -40.0 0 0 sound
+        jar-hit-sound 6 10.0 10.0 -40.0 0 0 sound
     then
     0 0 castle-b1-6.cmd03
     1 0 castle-b1-6.cmd03
-    self-frames-reset
-    $14 self-wait-frames
+    $14 wait-frames
     self-idle-or-end
 ;
 
@@ -545,19 +529,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             1 1 castle-b1-6.cmd01
         then
     then
-    1 0 var? if
+    jar2-var 0 var? if
         10.0 10.0 35.0 0 -2144325584 3 -9.0 shards-at
         $E 1 object-hidden
         3 part-shown
         cb1-6-flag5 story-flag-set
-        1 6 10.0 10.0 40.0 0 0 sound
+        jar-break-sound 6 10.0 10.0 40.0 0 0 sound
     else
-        0 6 10.0 10.0 40.0 0 0 sound
+        jar-hit-sound 6 10.0 10.0 40.0 0 0 sound
     then
     0 1 castle-b1-6.cmd03
     1 1 castle-b1-6.cmd03
-    self-frames-reset
-    $14 self-wait-frames
+    $14 wait-frames
     self-idle-or-end
 ;
 
@@ -577,9 +560,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-b1-6.act0B ( -- )   \ 003F4FC8
     self-wait-done
-    $1D02 $A self-anim-blend
-    $11 message   \ "He's not moving... I-I think he's dead..."
-    wait-message
+    hands-clasped-anim $A self-anim-blend
+    $11 say   \ "He's not moving... I-I think he's dead..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -593,9 +575,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $A 1 object-hidden
     0 8 0.0 0.0 0.25 0.25 zone-rect
     6 part-hidden
-    $A00 self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    look-at-anim self-anim
+    $28 wait-frames
     1 1 movie-play
     0 cutscene-start
     yield
@@ -668,7 +649,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 7 action
+    0 cutscene-track 7 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -699,14 +680,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who char-done
     stalker-who action-end
     stalker-who char-done
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     3 0 movie-play
     2 cutscene-start
     yield
     yield
     scene-wait-ready
-    0 $F9 $A action
+    0 cutscene-track $A action
     panic-eased
     2 message-prepare   \ "It's OK, Hewie... He can't come after us anymore... Good boy. Calm down, Hewie..."
     1 result? if

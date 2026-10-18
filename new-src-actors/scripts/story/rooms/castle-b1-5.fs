@@ -2,7 +2,11 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-5
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags hewie.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant wait-sound                  \ (snd 0) ?
+1 constant caught-room-sound           \ (snd 1) caught (game over)
 
 \ room 0x0B (Room0B_Cond00_ptmf): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6
 : castle-b1-5.cond00? ( b0 b1 b2 b3 -- flag )   \ (x, z: s16 bytes 3..4, 5..6)
@@ -19,25 +23,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-b1-5.char-enter ( -- )   \ 003F43E0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
     hewie-who self-is? if
         cb1-5-flag1 story-flag? not hewie-who 0 char-heading-for? and if
@@ -88,23 +82,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 : castle-b1-5.act00 ( -- )   \ 003F4500
     capture-no-end state-flag-set
     1 self-scripted
-    begin
-        fiona-who char-busy? not while
-        yield
-    repeat
+    [: fiona-who char-busy? ;] wait-until
     fiona-who char-file-use
-    0 $F2 6 action
-    $8000 self-anim
-    self-wait-anim
-    self-frames-reset
-    $3C self-wait-frames
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
-    fiona-who 1 6 char-sound
-    self-frames-reset
-    self-wait-16
+    0 2 track 6 action
+    0 room-motion play-out
+    $3C wait-frames
+    [: 6 sound-bank-loaded? ;] wait-until
+    fiona-who caught-room-sound 6 char-sound
+    16 wait-frames
     0 game-over-flag
     caught state-flag-set
     self-idle-or-end
@@ -118,7 +103,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     fiona-who self-turn-to
     self-wait-done
-    0 $F1 4 action
+    0 1 track 4 action
     self-idle-or-end
 ;
 
@@ -130,7 +115,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     fiona-who self-turn-to
     self-wait-done
-    0 $F1 4 action
+    0 1 track 4 action
     self-idle-or-end
 ;
 
@@ -142,15 +127,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     fiona-who self-turn-to
     self-wait-done
-    0 $F1 4 action
+    0 1 track 4 action
     self-idle-or-end
 ;
 
 : castle-b1-5.act04 ( -- )   \ 003F45A0
-    begin
-        hewie-who char-busy? while
-        yield
-    repeat
+    [: hewie-who char-busy? ;] wait-while
     $1D $29 hewie-do
     self-idle-or-end
 ;
@@ -159,38 +141,27 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $A4 -55.0 0.0 90 $FFFF $A self-move-to
     self-wait-done
-    4 self-anim
-    self-frames-reset
-    $3C self-wait-frames
-    $1B03 self-anim
-    self-wait-anim
-    $1B03 self-anim
-    self-wait-anim
-    $1B03 self-anim
-    self-wait-anim
-    $1B03 self-anim
-    self-wait-anim
-    $1B03 self-anim
-    self-wait-anim
-    $1B03 self-anim
-    self-wait-anim
+    stance-anim self-anim
+    $3C wait-frames
+    bark-tense-anim play-out
+    bark-tense-anim play-out
+    bark-tense-anim play-out
+    bark-tense-anim play-out
+    bark-tense-anim play-out
+    bark-tense-anim play-out
     fiona-who self-look-at
     yield
     cb1-5-flag1 story-flag-set
-    4 self-anim
-    self-frames-reset
-    $28 self-wait-frames
+    stance-anim self-anim
+    $28 wait-frames
     self-who self-look-at
     yield
     self-idle-or-end
 ;
 
 : castle-b1-5.act06 ( -- )   \ 003F4608
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
-    fiona-who 0 6 char-sound
+    [: 6 sound-bank-loaded? ;] wait-until
+    fiona-who wait-sound 6 char-sound
     self-idle-or-end
 ;
 

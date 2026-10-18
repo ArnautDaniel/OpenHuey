@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-3
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names fiona.anims ;
 
 : castle-b1-3.enter ( -- )   \ 003FA780
     1 $2300 sound-volume
@@ -21,15 +21,10 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 : castle-b1-3.char-enter ( -- )   \ 003FA7C0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
 ;
 
@@ -70,45 +65,36 @@ USING: room-names story.words story.shared story-names ;
         self-wait-done
         -2.0 -2.0 self-turn-to-xz
         self-wait-done
-        $902 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         0 effect-remove
         got-metal-boots story-flag-set
         $81 message-param-room
         $81 1 item-give-count
         0 $81 item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
-        $903 self-anim
-        self-wait-anim
+        $8012 say   \ "You've obtained ."
+        reach-back-anim play-out
         wait-message
     else
         self-wait-done
         -2.0 -2.0 self-turn-to-xz
         self-wait-done
         in-panic? not if
-            $902 self-anim
-            self-wait-anim
-            self-frames-reset
-            4 self-wait-frames
+            reach-out-anim play-out
+            4 wait-frames
             $75 message-param-room
             $75 $63 item-count? if
-                $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-                wait-message
+                $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
             else
                 got-metal-boots story-flag-set
                 0 effect-remove
                 $75 1 item-give-count
                 0 $75 item-tab
                 item-fanfare
-                $8011 message   \ "You've obtained ."
-                wait-message
+                $8011 say   \ "You've obtained ."
             then
-            $903 self-anim
-            self-wait-anim
+            reach-back-anim play-out
         then
     then
     self-idle-or-end
@@ -118,20 +104,16 @@ USING: room-names story.words story.shared story-names ;
     self-wait-done
     -6.0 3.0 self-turn-to-xz
     self-wait-done
-    $902 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    reach-out-anim play-out
+    4 wait-frames
     got-castle-gate-key story-flag-set
     1 effect-remove
     $28 message-param-room
     $28 1 item-give-count
     0 $28 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    $903 self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     self-idle-or-end
 ;
 

@@ -2,7 +2,14 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-9
-USING: room-names story.words story.shared story-names floor-flags ;
+USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)
+1 constant was-panicking               \ (bit 1) she was in a panic (as she came in, then each frame)
+2 constant figure-scene-on             \ (bit 2) the figure's scene begun (act00)
+3 constant lake-remarked               \ (bit 3) its first remark made: "It's... a lake, I think. Looks like there some kind of a... "
+10 constant figure-cry-sound           \ (snd 10) the figure's cry as it appears
 
 \ room 0x107: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 2 a frame (room_nudge).
@@ -21,7 +28,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
         deal-things
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     then
     cf-9-breakable-broken story-flag? not if
         0 keeps-people-off floor-on
@@ -38,48 +45,39 @@ USING: room-names story.words story.shared story-names floor-flags ;
     0 $B 0.812 0.687 0.187 0.312 zone-rect
     cf-9-flag1 story-flag? not if
         $E 5 $FF char-load
-        0 $F1 0 action
+        0 1 track 0 action
     then
     chaos-forest-9.cmd01
 ;
 
 : chaos-forest-9.char-enter ( -- )   \ 00418B60
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
 ;
 
 : chaos-forest-9.phase1 ( -- )   \ 00418BA0
-    hewie-controlled? not if
-        fiona-who 0 char-in-area? fiona-who char-busy? not and if
-            0 exit-check
-        then
-    else hewie-who 0 char-in-area? hewie-who char-busy? not and if
+    player-who 0 char-in-area? player-who char-busy? not and if
         0 exit-check
-    then then
-    0 ebit? not if
-        1 ebit? not in-panic? and if
-            0 ebit-set
+    then
+    maze-dealt ebit? not if
+        was-panicking ebit? not in-panic? and if
+            maze-dealt ebit-set
             deal-things
         then
     then
     in-panic? if
-        1 ebit-set
+        was-panicking ebit-set
     else
-        1 ebit-clear
+        was-panicking ebit-clear
     then
-    2 ebit? cf-9-flag1 story-flag? not and if
+    figure-scene-on ebit? cf-9-flag1 story-flag? not and if
         chaos-forest-9.cond00? if
             cf-9-flag1 story-flag-set
-            $F1 action-end
-            0 $F1 2 action
+            1 track action-end
+            0 1 track 2 action
         then
     then
 ;
@@ -110,7 +108,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
 
 : chaos-forest-9.act00 ( -- )   \ 00418C90
     5 char-start
-    2 ebit-set
+    figure-scene-on ebit-set
     $E char-activate
     $E $9000 1 0 char-anim-hold
     $E -339.86 125.95 -391.22 0 char-to-xyz
@@ -129,34 +127,28 @@ USING: room-names story.words story.shared story-names floor-flags ;
     -298.4 -365.4 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $94 message-param-room
         $94 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             cf-9-refined-antimony story-flag-set
             0 effect-remove
             $94 1 item-give-count
             0 $94 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
 
 : chaos-forest-9.act02 ( -- )   \ 00418D30
-    $E $A 6 char-sound
+    $E figure-cry-sound 6 char-sound
     $E $9002 1 0 char-anim-hold
-    self-frames-reset
-    8 self-wait-frames
+    8 wait-frames
     0 chaos-forest-9.cmd00
     1 chaos-forest-9.cmd00
     $E action-end
@@ -166,17 +158,13 @@ USING: room-names story.words story.shared story-names floor-flags ;
 
 : chaos-forest-9.act03 ( -- )   \ 00418D50
     self-wait-done
-    3 ebit? not if
-        $A02 5 self-anim-blend
-        self-wait-anim
-        0 message   \ "It's... a lake, I think. Looks like there some kind of a... tower erected in the ce..."
-        wait-message
-        3 ebit-set
+    lake-remarked ebit? not if
+        look-close-anim 5 blend-out
+        0 say   \ "It's... a lake, I think. Looks like there some kind of a... tower erected in the ce..."
+        lake-remarked ebit-set
     else
-        $1D02 5 self-anim-blend
-        self-wait-anim
-        1 message   \ "I'm not going to be able to go any further this way. Better go back and find a way..."
-        wait-message
+        hands-clasped-anim 5 blend-out
+        1 say   \ "I'm not going to be able to go any further this way. Better go back and find a way..."
     then
     self-idle-or-end
 ;

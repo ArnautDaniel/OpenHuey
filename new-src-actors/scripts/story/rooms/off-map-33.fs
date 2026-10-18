@@ -34,7 +34,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     yield
     scene-wait-ready
-    0 $F9 1 action
+    0 cutscene-track 1 action
     panic-eased
     $FFFF message-prepare
     1 result? if
@@ -51,8 +51,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : off-map-33.act01 ( -- )   \ 00442E80
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     begin
         4 cutscene-shot? if
             0 part-hidden
@@ -76,7 +75,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     yield
     scene-wait-ready
-    0 $F9 1 action
+    0 cutscene-track 1 action
     panic-eased
     $FFFF message-prepare
     1 result? if

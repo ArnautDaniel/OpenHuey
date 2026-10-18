@@ -2,7 +2,10 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-9
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names fiona.anims ;
+
+\ ---- this room's own event bits and script variables ----
+1 constant hewie-zone0-noticed         \ (bit 1) Hewie has reacted to zone 0 (once a visit)
 
 : old-mansion-2f-9.enter ( -- )   \ 00412410
     got-sylvesta-esca story-flag? not if
@@ -11,35 +14,20 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 : old-mansion-2f-9.char-enter ( -- )   \ 00412430
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         2 2 player-camera
-    then then
+    then
     1 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
     hewie-who self-is? if
         2 hewie-mood
@@ -68,13 +56,13 @@ USING: room-names story.words story.shared story-names ;
         1 exit-prepare
     then
     0 43.86 50.0 6.98 $15 16 0 zone
-    1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 0 9 char-zone-bits? if
-                    1 ebit-set
+                    hewie-zone0-noticed ebit-set
                     $1E chance? if
-                        $1F 0 var-set
+                        hewie-zone-var 0 var-set
                         0 hewie-who $92 action
                     then
                 then
@@ -85,8 +73,8 @@ USING: room-names story.words story.shared story-names ;
     hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
             hewie-who 0 9 char-zone-bits? if
-                $1F 0 var-set
-                $1F 16.0 hewie-look-zone
+                hewie-zone-var 0 var-set
+                hewie-zone-var 16.0 hewie-look-zone
             then
         then
     then
@@ -94,8 +82,8 @@ USING: room-names story.words story.shared story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 29.43 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 29.43 hewie-look-zone
             then
         then
     then
@@ -118,25 +106,20 @@ USING: room-names story.words story.shared story-names ;
     42.0 6.6 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $65 message-param-room
         $65 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             got-sylvesta-esca story-flag-set
             0 effect-remove
             $65 1 item-give-count
             0 $65 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $903 self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -145,11 +128,9 @@ USING: room-names story.words story.shared story-names ;
     self-wait-done
     50.0 9.0 self-turn-to-xz
     self-wait-done
-    $A00 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    0 message   \ "A stuffed chimera is showing off its fierce gaze. Why would anyone ever decorate a room..."
-    wait-message
+    look-at-anim self-anim
+    $28 wait-frames
+    0 say   \ "A stuffed chimera is showing off its fierce gaze. Why would anyone ever decorate a room..."
     self-wait-anim
     self-idle-or-end
 ;

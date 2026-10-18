@@ -2,7 +2,16 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-8
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant earth-doll-remarked         \ (bit 0) its first remark made: "A huge doll made of earth blocks the door. There is a slot-s"
+1 constant sound-started               \ (bit 1) its sound started (then kept up)
+2 constant hewie-zone2-noticed         \ (bit 2) Hewie has reacted to zone 2 (once a visit)
+3 constant calmed-remarked             \ (bit 3) its first remark made: "...... That got my mind off things. I feel a little better n"
+0 constant figure-var                  \ (var 0) ? the figure's dance (cmd02)
+0 constant try-sound                   \ (snd 0) trying it ("Nothing happened.")
+9 constant room-loop-sound             \ (snd 9) its steady sound (started as it comes in, then kept up)
 
 \ Room24_Cmd00
 : castle-2f-8.cmd00 ( b0 -- )   \ (the kiln's glow - "jimen", "kama", "sumi" - pulsing: their blend 0.5 + 0.5 cos(phase),
@@ -78,37 +87,27 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-2f-8.char-enter ( -- )   \ 00401950
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 -1 player-camera
-    then then
+    then
     0 1 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
-    0 $F1 4 action
+    0 1 track 4 action
 ;
 
 : castle-2f-8.phase1 ( -- )   \ 004019D0
-    1 ebit? not if
+    sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000009 6 57.0 0.0 -2.0 0 0 sound
-            1 ebit-set
+            room-loop-sound volume-scaled 6 57.0 0.0 -2.0 0 0 sound
+            sound-started ebit-set
         then
     else
-        $C0000009 6 57.0 0.0 -2.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 57.0 0.0 -2.0 0 0 sound
     then
     0 exit-usable? if
         0 exit-check
@@ -140,13 +139,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     c2f-8-flag3 story-flag? if
         c2f-8-flag2 story-flag? if
             2 43.743 0.0 -29.309 $F 20 0 zone
-            2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+            hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 2 9 char-zone-bits? if
-                            2 ebit-set
+                            hewie-zone2-noticed ebit-set
                             $1E chance? if
-                                $1F 2 var-set
+                                hewie-zone-var 2 var-set
                                 0 hewie-who $89 action
                             then
                         then
@@ -156,13 +155,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         else c2f-8-flag1 story-flag? if
             hewie-who 0 char-in-area? not if
                 2 10.0 0.0 -25.0 $A 20 0 zone
-                2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+                hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                     2 game-mode? not if
                         hewie-can-command? if
                             hewie-who 2 9 char-zone-bits? if
-                                2 ebit-set
+                                hewie-zone2-noticed ebit-set
                                 $1E chance? if
-                                    $1F 2 var-set
+                                    hewie-zone-var 2 var-set
                                     0 hewie-who $89 action
                                 then
                             then
@@ -176,8 +175,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 18.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 18.0 hewie-look-zone
             then
         then
     then
@@ -218,16 +217,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     world-frozen state-flag-set
     1 self-scripted
     1 10.0 -40.0 0.0 0.0 event-camera
-    0 ebit? not if
-        0 message   \ "A huge doll made of earth blocks the door. There is a slot-shaped hole-floor in its chest..."
-        wait-message
-        0 ebit-set
+    earth-doll-remarked ebit? not if
+        0 say   \ "A huge doll made of earth blocks the door. There is a slot-shaped hole in its chest..."
+        earth-doll-remarked ebit-set
     else
-        3 message   \ "It looks like there is a recess that something thin and flat will fit into."
-        wait-message
+        3 say   \ "It looks like there is a recess that something thin and flat will fit into."
     then
-    self-frames-reset
-    self-wait-16
+    16 wait-frames
     world-frozen state-flag-clear
     0 0.0 0.0 0.0 0.0 event-camera
     0 self-scripted
@@ -238,11 +234,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     6.0 4.0 self-turn-to-xz
     self-wait-done
-    $A01 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    6 message   \ "What kind of equipment is this? It looks old, but someone has taken painstakingly good..."
-    wait-message
+    look-low-anim self-anim
+    $28 wait-frames
+    6 say   \ "What kind of equipment is this? It looks old, but someone has taken painstakingly good..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -251,22 +245,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     56.58 -1.5 self-turn-to-xz
     self-wait-done
-    $A02 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    7 message   \ "Such tremendous heat... With heat like this, I'm sure it's used for refining."
-    wait-message
+    look-close-anim self-anim
+    $28 wait-frames
+    7 say   \ "Such tremendous heat... With heat like this, I'm sure it's used for refining."
     self-wait-anim
     self-idle-or-end
 ;
 
 : castle-2f-8.act03 ( -- )   \ 00401C68
     self-wait-done
-    $A00 self-anim
-    self-frames-reset
-    $28 self-wait-frames
-    8 message   \ "What a strange mark... There is something about it that makes me feel uncomfortable."
-    wait-message
+    look-at-anim self-anim
+    $28 wait-frames
+    8 say   \ "What a strange mark... There is something about it that makes me feel uncomfortable."
     self-wait-anim
     self-idle-or-end
 ;
@@ -276,8 +266,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     begin
         1 castle-2f-8.cmd00
         1 2 1.1 light
-        self-frames-reset
-        2 self-wait-frames
+        2 wait-frames
         1 castle-2f-8.cmd00
         0 2 0.0 light
         2 2 1.5 light
@@ -286,12 +275,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-2f-8.act05 ( -- )   \ 00401CB0
-    fiona-who 0 6 char-sound
+    fiona-who try-sound 6 char-sound
     self-wait-done
-    self-frames-reset
-    $1E self-wait-frames
-    9 message   \ "Nothing happened."
-    wait-message
+    $1E wait-frames
+    9 say   \ "Nothing happened."
     self-idle-or-end
 ;
 
@@ -299,22 +286,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $D6 7.826 -7.168 0 $FFFF 5 self-move-to
     self-wait-done
-    $A message   \ "There is some kind of file here."
-    wait-message
-    $902 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    $A say   \ "There is some kind of file here."
+    reach-out-anim play-out
+    4 wait-frames
     5 part-hidden
     got-old-parchment story-flag-set
     $A0 message-param-room
     $A0 1 item-give-count
     0 $A0 item-tab
     item-fanfare
-    $8012 message   \ "You've obtained ."
-    wait-message
-    $903 self-anim
-    self-wait-anim
+    $8012 say   \ "You've obtained ."
+    reach-back-anim play-out
     self-idle-or-end
 ;
 
@@ -322,10 +304,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     10.0 -25.0 self-turn-to-xz
     self-wait-done
-    $900 self-anim
-    self-wait-anim
-    self-frames-reset
-    4 self-wait-frames
+    pick-up-anim play-out
+    4 wait-frames
     $8D 1 item-count? not if
         0 effect-remove
         got-obsidian-choker story-flag-set
@@ -333,43 +313,33 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         $8D 1 item-give-count
         0 $8D item-tab
         item-fanfare
-        $8012 message   \ "You've obtained ."
-        wait-message
+        $8012 say   \ "You've obtained ."
     else
         $75 message-param-room
         $75 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             got-obsidian-choker story-flag-set
             0 effect-remove
             $75 1 item-give-count
             0 $75 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
     then
-    $901 self-anim
-    self-wait-anim
+    up-from-pick-anim play-out
     wait-message
     self-idle-or-end
 ;
 
 : castle-2f-8.act08 ( -- )   \ 00401DC0
-    begin
-        fiona-who char-busy? not while
-        yield
-    repeat
-    $1203 0 self-anim-blend
-    self-frames-reset
-    self-wait-16
-    $1202 self-anim
-    self-wait-anim
+    [: fiona-who char-busy? ;] wait-until
+    strain-anim 0 self-anim-blend
+    16 wait-frames
+    let-go-push-anim play-out
     1 message   \ "Well, I guess you never know until you try but I figured as much. There is no way someo..."
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     wait-message
     self-idle-or-end
 ;
@@ -378,8 +348,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     45.0 -30.0 self-turn-to-xz
     self-wait-done
-    2 message   \ "Whatever mechanism moved it seems to have run its course. I think it's here to stay..."
-    wait-message
+    2 say   \ "Whatever mechanism moved it seems to have run its course. I think it's here to stay..."
     self-idle-or-end
 ;
 
@@ -559,16 +528,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 barred-floor floor-on
     5 pushable floor-on
     1 keeps-stalkers-off floor-on
-    begin
-        0 adx? not while
-        yield
-    repeat
+    [: 0 adx? ;] wait-until
     $F 1 fade
     8 $1300 0 0 char-anim-hold
-    0 0 var-set
+    figure-var 0 var-set
     castle-2f-8.cmd02
-    self-frames-reset
-    $A self-wait-frames
+    $A wait-frames
     0 0.0 $FF bgm
     begin
         8 char-at-motion-event? not while
@@ -588,21 +553,18 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     no-pause state-flag-clear
     $F $41 fade
     wait-fade
-    3 ebit? not if
-        $1D01 self-anim
-        $B message   \ "...... That got my mind off things. I feel a little better now."
-        wait-message
+    calmed-remarked ebit? not if
+        hand-to-mouth-anim self-anim
+        $B say   \ "...... That got my mind off things. I feel a little better now."
         self-wait-anim
         $E4 panic-calm-in
         fiona-calm-reset
         3 avoid-prompt
         fiona-who $84 5 char-sound
-        3 ebit-set
-        self-frames-reset
-        $1E self-wait-frames
+        calmed-remarked ebit-set
+        $1E wait-frames
     else
-        $C message   \ "...... Just staring at this all day isn't going to get me out of this place any so..."
-        wait-message
+        $C say   \ "...... Just staring at this all day isn't going to get me out of this place any so..."
     then
     stalkers-stay state-flag-clear
     0 self-scripted

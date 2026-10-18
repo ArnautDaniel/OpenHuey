@@ -2,7 +2,17 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-19
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant hole-remarked               \ (bit 0) its first remark made: "There is a hole in the wall. I think I can see light on the "
+1 constant splash1-made                \ (bit 1) a splash played once someone steps into its zone (once a visit)
+2 constant splash2-made                \ (bit 2) a splash played once someone steps into its zone (once a visit)
+3 constant splash3-made                \ (bit 3) a splash played once someone steps into its zone (once a visit)
+4 constant splash4-made                \ (bit 4) a splash played once someone steps into its zone (once a visit)
+5 constant hewie-zone4-noticed         \ (bit 5) Hewie has reacted to zone 4 (once a visit)
+6 constant splash5-made                \ (bit 6) a splash played once someone steps into its zone (once a visit)
+0 constant hewie-rouse-sound           \ (snd 0) Hewie getting up from his rest (a bark?)
 
 : castle-1f-19.enter ( -- )   \ 003FD9C0
     room-sounds
@@ -26,35 +36,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-1f-19.char-enter ( -- )   \ 003FDA40
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         0 0 player-camera
-    then then
+    then
     2 0 0 area-camera
 ;
 
@@ -62,20 +57,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    then
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     $A 0 0 1 chars-area-camera
     $B 1 1 1 chars-area-camera
     fiona-who 6 char-entered-area? if
@@ -90,13 +77,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? if
         118 hewie-action? not if
             4 -11.187 5.0 -117.743 $1E 20 0 zone
-            5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+            hewie-zone4-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
                     hewie-can-command? if
                         hewie-who 4 9 char-zone-bits? if
-                            5 ebit-set
+                            hewie-zone4-noticed ebit-set
                             $1E chance? if
-                                $1F 4 var-set
+                                hewie-zone-var 4 var-set
                                 0 hewie-who $88 action
                             then
                         then
@@ -147,84 +134,84 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 6 9 char-zone-bits? if
-                $1F 6 var-set
-                $1F 6.0 hewie-look-zone
+                hewie-zone-var 6 var-set
+                hewie-zone-var 6.0 hewie-look-zone
             then
         then
     then
-    1 ebit? not if
+    splash1-made ebit? not if
         0 46.0 0.0 -280.0 $10 4 0 zone
         fiona-who 0 3 char-zone-bits? fiona-who 0 3 char-zone-bits-before? not and if
             fiona-who 5 46.0 0.0 -280.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
         hewie-who 0 3 char-zone-bits? hewie-who 0 3 char-zone-bits-before? not and if
             hewie-who $A 46.0 0.0 -280.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
         stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
             stalker-who 5 46.0 0.0 -280.0 2 $40 $50 $40 $80 splash
-            1 ebit-set
+            splash1-made ebit-set
         then
     then
-    2 ebit? not if
+    splash2-made ebit? not if
         1 52.0 0.0 -240.0 $10 4 0 zone
         fiona-who 1 3 char-zone-bits? fiona-who 1 3 char-zone-bits-before? not and if
             fiona-who 5 52.0 0.0 -240.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
         hewie-who 1 3 char-zone-bits? hewie-who 1 3 char-zone-bits-before? not and if
             hewie-who $A 52.0 0.0 -240.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
         stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
             stalker-who 5 52.0 0.0 -240.0 2 $40 $50 $40 $80 splash
-            2 ebit-set
+            splash2-made ebit-set
         then
     then
-    3 ebit? not if
+    splash3-made ebit? not if
         2 50.0 0.0 -300.0 $10 4 0 zone
         fiona-who 2 3 char-zone-bits? fiona-who 2 3 char-zone-bits-before? not and if
             fiona-who 5 50.0 0.0 -300.0 2 $40 $50 $40 $80 splash
-            3 ebit-set
+            splash3-made ebit-set
         then
         hewie-who 2 3 char-zone-bits? hewie-who 2 3 char-zone-bits-before? not and if
             hewie-who $A 50.0 0.0 -300.0 2 $40 $50 $40 $80 splash
-            3 ebit-set
+            splash3-made ebit-set
         then
         stalker-who 2 3 char-zone-bits? stalker-who 2 3 char-zone-bits-before? not and if
             stalker-who 5 50.0 0.0 -300.0 2 $40 $50 $40 $80 splash
-            3 ebit-set
+            splash3-made ebit-set
         then
     then
-    4 ebit? not if
+    splash4-made ebit? not if
         3 70.0 0.0 -260.0 $10 4 0 zone
         fiona-who 3 3 char-zone-bits? fiona-who 3 3 char-zone-bits-before? not and if
             fiona-who 5 70.0 0.0 -260.0 2 $40 $50 $40 $80 splash
-            4 ebit-set
+            splash4-made ebit-set
         then
         hewie-who 3 3 char-zone-bits? hewie-who 3 3 char-zone-bits-before? not and if
             hewie-who $A 70.0 0.0 -260.0 2 $40 $50 $40 $80 splash
-            4 ebit-set
+            splash4-made ebit-set
         then
         stalker-who 3 3 char-zone-bits? stalker-who 3 3 char-zone-bits-before? not and if
             stalker-who 5 70.0 0.0 -260.0 2 $40 $50 $40 $80 splash
-            4 ebit-set
+            splash4-made ebit-set
         then
     then
-    6 ebit? not if
+    splash5-made ebit? not if
         5 73.0 0.0 -282.0 $10 4 0 zone
         fiona-who 5 3 char-zone-bits? fiona-who 5 3 char-zone-bits-before? not and if
             fiona-who 5 73.0 0.0 -282.0 2 $40 $50 $40 $80 splash
-            6 ebit-set
+            splash5-made ebit-set
         then
         hewie-who 5 3 char-zone-bits? hewie-who 5 3 char-zone-bits-before? not and if
             hewie-who $A 73.0 0.0 -282.0 2 $40 $50 $40 $80 splash
-            6 ebit-set
+            splash5-made ebit-set
         then
         stalker-who 5 3 char-zone-bits? stalker-who 5 3 char-zone-bits-before? not and if
             stalker-who 5 73.0 0.0 -282.0 2 $40 $50 $40 $80 splash
-            6 ebit-set
+            splash5-made ebit-set
         then
     then
 ;
@@ -289,7 +276,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     force-calm state-flag-set
     yield
     force-calm state-flag-clear
-    0 $F9 9 action
+    0 cutscene-track 9 action
     $10 $28 movie-param
     panic-eased
     $FFFF message-prepare
@@ -339,27 +326,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $32 -10.776 -128.378 0 $FFFF 5 self-move-to
     self-wait-done
-    $800 self-anim
-    self-wait-anim
-    $801 self-anim
-    self-frames-reset
-    4 self-wait-frames
+    crouch-down-anim play-out
+    crouching-anim self-anim
+    4 wait-frames
     hewie-who char-here? 118 hewie-action? and hewie-who 0 char-in-nav-group? and if
-        2 message   \ "Hewie's eyes glimmer through the thick shadow that surrounds him."
-        wait-message
-    else 0 ebit? not if
-        0 message   \ "There is a hole-floor in the wall. I think I can see light on the other end. This must le..."
-        wait-message
-        0 ebit-set
+        2 say   \ "Hewie's eyes glimmer through the thick shadow that surrounds him."
+    else hole-remarked ebit? not if
+        0 say   \ "There is a hole in the wall. I think I can see light on the other end. This must le..."
+        hole-remarked ebit-set
     else
-        1 message   \ "I'm sure I can use this somehow... But I'm just too big and will never fit in there."
-        wait-message
-        0 ebit-clear
+        1 say   \ "I'm sure I can use this somehow... But I'm just too big and will never fit in there."
+        hole-remarked ebit-clear
     then then
-    self-frames-reset
-    4 self-wait-frames
-    $802 self-anim
-    self-wait-anim
+    4 wait-frames
+    crouch-up-anim play-out
     -1 self-idle-anim
     self-idle-or-end
 ;
@@ -377,13 +357,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     else
         stalkers-stay state-flag-clear
     then
-    $C04 self-anim
+    go-there-gesture-anim self-anim
     fiona-who 1 char-wait-motion
     fiona-who $2E 5 char-sound
     self-wait-anim
     -1 self-idle-anim
-    self-frames-reset
-    7 self-wait-frames
+    7 wait-frames
     0 self-scripted
     self-idle-or-end
 ;
@@ -395,32 +374,28 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $118 39.008 -266.892 100 $204 5 self-move-to
     self-wait-done
-    $1C03 $A self-anim-blend
-    self-wait-anim
+    sit-a-while-anim $A blend-out
     1 self-noclip
-    hewie-who 0 6 char-sound
+    hewie-who hewie-rouse-sound 6 char-sound
     $13F 68.224 -274.752 100 $204 5 self-move-to
     self-wait-done
-    $1C03 $A self-anim-blend
-    self-wait-anim
+    sit-a-while-anim $A blend-out
     fiona-half-hidden state-flag? fiona-who char-busy? not or if
         $73 $63 item-count? not if
             10 hewie-trust
         then
         $73 message-param-room
         $73 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-19-rubrum-medallion story-flag-set
             $73 1 item-give-count
             0 $73 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
     then
-    hewie-who 0 6 char-sound
+    hewie-who hewie-rouse-sound 6 char-sound
     $118 39.008 -266.892 -80 $FFFF $A self-move-to
     self-wait-done
     0 self-noclip
@@ -430,20 +405,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : castle-1f-19.act09 ( -- )   \ 003FE1C0
-    begin
-        0 cutscene-shot? not while
-        yield
-    repeat
+    [: 0 cutscene-shot? ;] wait-until
     begin
         0 cutscene-shot? while
         hewie-who $C8000000 1 char-tint
         yield
     repeat
     hewie-who 0 0 char-tint
-    begin
-        $1E3 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $1E3 cutscene-cue-reached? ;] wait-until
     2 3 0.5 light
     self-idle-or-end
 ;
@@ -460,7 +429,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     yield
     scene-wait-ready
     self-who 1 char-visible
-    0 $F9 9 action
+    0 cutscene-track 9 action
     $10 $28 movie-param
     panic-eased
     $FFFF message-prepare

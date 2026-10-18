@@ -2,7 +2,16 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-3f-2
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant on-group1                   \ (bit 0) she stepped onto nav group 1 this frame
+4 constant armor-scene-on              \ (bit 4) the armour's scene (act01) under way
+5 constant hewie-zone0-noticed         \ (bit 5) Hewie has reacted to zone 0 (once a visit)
+0 constant steps-var                   \ (var 0) ? how far along the floor's groups she is (0..2)
+1 constant group-var                   \ (var 1) the nav group she was on last frame
+1 constant armor-sound                 \ (snd 1) the armor
+2 constant button-sound                \ (snd 2) the armor's button pushed
 
 \ room 0x63: the script's character walks to Fiona's nav triangle (character move 6, with
 \ 0x204).
@@ -38,25 +47,15 @@ defer old-mansion-3f-2.act07
 ;
 
 : old-mansion-3f-2.char-enter ( -- )   \ 004211D0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         1 1 player-camera
-    then then
+    then
     0 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
 ;
 
@@ -96,41 +95,41 @@ defer old-mansion-3f-2.act07
             then
         then
         fiona-who 1 char-in-nav-group? if
-            1 1 var? not if
-                0 ebit-set
+            group-var 1 var? not if
+                on-group1 ebit-set
             then
-            1 1 var-set
+            group-var 1 var-set
         else fiona-who 2 char-in-nav-group? if
-            1 2 var? not if
-                0 ebit-set
+            group-var 2 var? not if
+                on-group1 ebit-set
             then
-            1 2 var-set
+            group-var 2 var-set
         else fiona-who 3 char-in-nav-group? if
-            1 3 var? not if
-                0 ebit-set
+            group-var 3 var? not if
+                on-group1 ebit-set
             then
-            1 3 var-set
+            group-var 3 var-set
         else
-            1 0 var-set
+            group-var 0 var-set
         then then then
-        0 ebit? if
-            4 ebit? not if
-                fiona-who 1 6 char-sound
-                0 0 var? if
+        on-group1 ebit? if
+            armor-scene-on ebit? not if
+                fiona-who armor-sound 6 char-sound
+                steps-var 0 var? if
                     panic-eased
                     fiona-who 0 char-action? if
                         0 fiona-who 1 action-force
                     else
                         1 fiona-who 1 action-force
                     then
-                else 0 1 var? if
+                else steps-var 1 var? if
                     panic-eased
                     fiona-who 0 char-action? if
                         0 fiona-who 2 action-force
                     else
                         1 fiona-who 2 action-force
                     then
-                else 0 2 var? if
+                else steps-var 2 var? if
                     panic-eased
                     fiona-who 0 char-action? if
                         0 fiona-who 3 action-force
@@ -138,25 +137,25 @@ defer old-mansion-3f-2.act07
                         1 fiona-who 3 action-force
                     then
                 then then then
-                0 var-inc
-                4 ebit-set
+                steps-var var-inc
+                armor-scene-on ebit-set
             then
-            0 ebit-clear
+            on-group1 ebit-clear
         then
     then
     armor-button-pushed story-flag? not if
-        5 ebit? if
+        hewie-zone0-noticed ebit? if
             $23C item-give
             $8281 item-give
         then
         0 -0.27 0.0 10.71 $51 8 0 zone
-        5 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        5 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $64 chance? if
-                            $1F 0 var-set
+                            hewie-zone-var 0 var-set
                             0 hewie-who $92 action
                         then
                     then
@@ -168,8 +167,8 @@ defer old-mansion-3f-2.act07
     hewie-who char-here? 2 game-mode? not and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 19.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 19.0 hewie-look-zone
             then
         then
     then
@@ -249,7 +248,7 @@ defer old-mansion-3f-2.act07
 : old-mansion-3f-2.act01 ( -- )   \ 00421500
     stalkers-stay state-flag-set
     1 self-scripted
-    4 ebit-set
+    armor-scene-on ebit-set
     $F $44 fade
     self-wait-done
     3 1 movie-play
@@ -280,7 +279,7 @@ defer old-mansion-3f-2.act07
     old-mansion-3f-2.act04
     $F $41 fade
     wait-fade
-    4 ebit-clear
+    armor-scene-on ebit-clear
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -289,7 +288,7 @@ defer old-mansion-3f-2.act07
 : old-mansion-3f-2.act02 ( -- )   \ 004215C0
     stalkers-stay state-flag-set
     1 self-scripted
-    4 ebit-set
+    armor-scene-on ebit-set
     $F $44 fade
     self-wait-done
     5 1 movie-play
@@ -320,7 +319,7 @@ defer old-mansion-3f-2.act07
     old-mansion-3f-2.act04
     $F $41 fade
     wait-fade
-    4 ebit-clear
+    armor-scene-on ebit-clear
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -331,7 +330,7 @@ defer old-mansion-3f-2.act07
     stalkers-stay state-flag-set
     1 self-scripted
     no-pause state-flag-set
-    4 ebit-set
+    armor-scene-on ebit-set
     $F $44 fade
     self-wait-done
     7 1 movie-play
@@ -377,7 +376,7 @@ defer old-mansion-3f-2.act07
                     ['] old-mansion-3f-2.act06 goto
                 then
             then
-            39 fiona-started? 4 ebit? or if
+            39 fiona-started? armor-scene-on ebit? or if
                 self-idle
                 self-wait-done
                 ['] old-mansion-3f-2.act07 goto
@@ -402,7 +401,7 @@ defer old-mansion-3f-2.act07
     $11F $204 6 self-move-tri
     begin
         self-done? not if
-            39 fiona-started? 4 ebit? or if
+            39 fiona-started? armor-scene-on ebit? or if
                 self-idle
                 self-wait-done
                 ['] old-mansion-3f-2.act07 goto
@@ -422,8 +421,7 @@ defer old-mansion-3f-2.act07
 
 :noname   \ old-mansion-3f-2.act07 (004217D0; deferred: used before it is defined)
     self-wait-done
-    $100 self-anim
-    self-wait-anim
+    $100 play-out
     1 self-anim
     self-wait-done
     fiona-who self-look-at
@@ -433,16 +431,14 @@ defer old-mansion-3f-2.act07
             fiona-who 0 -55 $32 char-faces-xz? fiona-who 0 -100 $32 char-faces-xz? and if
                 self-who self-look-at
                 yield
-                $101 self-anim
-                self-wait-anim
+                $101 play-out
                 -1 self-idle-anim
                 ['] old-mansion-3f-2.act05 goto
             then
             fiona-who 0 55 $32 char-faces-xz? fiona-who 0 110 $32 char-faces-xz? and if
                 self-who self-look-at
                 yield
-                $101 self-anim
-                self-wait-anim
+                $101 play-out
                 -1 self-idle-anim
                 ['] old-mansion-3f-2.act06 goto
             then
@@ -450,8 +446,7 @@ defer old-mansion-3f-2.act07
         44 fiona-started? if
             self-who self-look-at
             yield
-            $101 self-anim
-            self-wait-anim
+            $101 play-out
             -1 self-idle-anim
             ['] old-mansion-3f-2.act08 goto
         then
@@ -467,7 +462,7 @@ defer old-mansion-3f-2.act07
     $187 $204 6 self-move-tri
     begin
         self-done? not if
-            39 fiona-started? 4 ebit? or if
+            39 fiona-started? armor-scene-on ebit? or if
                 self-idle
                 self-wait-done
                 ['] old-mansion-3f-2.act07 goto
@@ -490,28 +485,23 @@ defer old-mansion-3f-2.act07
     0.0 -68.0 self-turn-to-xz
     self-wait-done
     armor-button-pushed story-flag? not if
-        $A00 self-anim
-        self-frames-reset
-        self-wait-16
-        0 message   \ "There is a button located on the back of the armor. Push the button? YES NO"
-        wait-message
+        look-at-anim self-anim
+        16 wait-frames
+        0 say   \ "There is a button located on the back of the armor. Push the button? YES NO"
         self-wait-anim
         0 answer? if
-            $904 self-anim
-            self-wait-anim
-            fiona-who 2 6 char-sound
+            reach-up-anim play-out
+            fiona-who button-sound 6 char-sound
             armor-button-pushed story-flag-set
             30 hewie-trust
             0 keeps-hewie-off floor-off
             1 keeps-hewie-off floor-off
             2 keeps-hewie-off floor-off
             3 keeps-hewie-off floor-off
-            $905 self-anim
-            self-wait-anim
+            reach-down-anim play-out
         then
     else
-        1 message   \ "Looks like the button was the activation switch for a booby-trap."
-        wait-message
+        1 say   \ "Looks like the button was the activation switch for a booby-trap."
     then
     self-idle-or-end
 ;

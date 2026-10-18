@@ -2,7 +2,12 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-17
-USING: room-names story.words story.shared story-names ;
+USING: room-names story.words story.shared story-names fiona.anims ;
+
+\ ---- this room's own event bits and script variables ----
+0 constant insects-remarked            \ (bit 0) its first remark made: "There are miniature insect models here, too."
+1 constant pool-table-remarked         \ (bit 1) its first remark made: "Looks like an ordinary pool table."
+2 constant hewie-zone2-noticed         \ (bit 2) Hewie has reacted to zone 2 (once a visit)
 
 \ five pendulums (Room1B_ObjectNames[byte 3]) of their own periods and swings: byte 4 0 still at
 \ a phase offset (+0x34) 60 x the index, 1 swinging on (+0x30, +0x14)
@@ -31,29 +36,19 @@ USING: room-names story.words story.shared story-names ;
     1 1 castle-1f-17.cmd00
     3 1 castle-1f-17.cmd00
     4 1 castle-1f-17.cmd00
-    0 $F1 6 action
+    0 1 track 6 action
 ;
 
 : castle-1f-17.char-enter ( -- )   \ 003FC6F0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 -1 player-camera
-    then then
+    then
     0 0 -1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 -1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 -1 player-camera
-    then then
+    then
     1 0 -1 area-camera
 ;
 
@@ -76,19 +71,19 @@ USING: room-names story.words story.shared story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 1 9 char-zone-bits? if
-                $1F 1 var-set
-                $1F 17.0 hewie-look-zone
+                hewie-zone-var 1 var-set
+                hewie-zone-var 17.0 hewie-look-zone
             then
         then
     then
     2 20.64 0.0 11.01 9 10 0 zone
-    2 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+    hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
         2 game-mode? not if
             hewie-can-command? if
                 hewie-who 2 9 char-zone-bits? if
-                    2 ebit-set
+                    hewie-zone2-noticed ebit-set
                     $1E chance? if
-                        $1F 2 var-set
+                        hewie-zone-var 2 var-set
                         0 hewie-who $89 action
                     then
                 then
@@ -99,8 +94,8 @@ USING: room-names story.words story.shared story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 3 9 char-zone-bits? if
-                $1F 3 var-set
-                $1F 11.0 hewie-look-zone
+                hewie-zone-var 3 var-set
+                hewie-zone-var 11.0 hewie-look-zone
             then
         then
     then
@@ -108,8 +103,8 @@ USING: room-names story.words story.shared story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 4 9 char-zone-bits? if
-                $1F 4 var-set
-                $1F 13.0 hewie-look-zone
+                hewie-zone-var 4 var-set
+                hewie-zone-var 13.0 hewie-look-zone
             then
         then
     then
@@ -117,8 +112,8 @@ USING: room-names story.words story.shared story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 5 9 char-zone-bits? if
-                $1F 5 var-set
-                $1F 13.0 hewie-look-zone
+                hewie-zone-var 5 var-set
+                hewie-zone-var 13.0 hewie-look-zone
             then
         then
     then
@@ -126,8 +121,8 @@ USING: room-names story.words story.shared story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 6 9 char-zone-bits? if
-                $1F 6 var-set
-                $1F 11.0 hewie-look-zone
+                hewie-zone-var 6 var-set
+                hewie-zone-var 11.0 hewie-look-zone
             then
         then
     then
@@ -135,8 +130,8 @@ USING: room-names story.words story.shared story-names ;
     hewie-who char-here? 0 game-mode? and if
         hewie-can-command? if
             hewie-who 7 9 char-zone-bits? if
-                $1F 7 var-set
-                $1F 11.0 hewie-look-zone
+                hewie-zone-var 7 var-set
+                hewie-zone-var 11.0 hewie-look-zone
             then
         then
     then
@@ -183,19 +178,17 @@ USING: room-names story.words story.shared story-names ;
         stalker-who self-touching? not if
             in-panic? not if
                 fiona-who $19 char-not-at-door? if
-                    $609 self-anim
+                    rattle-behind-anim self-anim
                 else
-                    $608 self-anim
+                    rattle-front-anim self-anim
                 then
-                self-frames-reset
-                $14 self-wait-frames
+                $14 wait-frames
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     $19 door-unlock
                     $8008 message   \ "You unlocked the door."
                     20 self-idle-anim
-                    self-frames-reset
-                    $14 self-wait-frames
+                    $14 wait-frames
                     wait-message
                 then
             then
@@ -206,9 +199,8 @@ USING: room-names story.words story.shared story-names ;
 
 : castle-1f-17.act01 ( -- )   \ 003FC9B0
     self-wait-done
-    $A01 $A self-anim-blend
-    0 message   \ "Is this real? Poor little thing. Being stepped and walked on all day..."
-    wait-message
+    look-low-anim $A self-anim-blend
+    0 say   \ "Is this real? Poor little thing. Being stepped and walked on all day..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -218,9 +210,8 @@ USING: room-names story.words story.shared story-names ;
     0 self-turn-angle
     self-wait-done
     1 40.0 20.0 0.0 0.0 event-camera
-    $A00 $A self-anim-blend
-    1 message   \ "It's an anatomically correct model of the human body. It looks so real. Almost as if it..."
-    wait-message
+    look-at-anim $A self-anim-blend
+    1 say   \ "It's an anatomically correct model of the human body. It looks so real. Almost as if it..."
     self-wait-anim
     0 0.0 0.0 0.0 0.0 event-camera
     self-idle-or-end
@@ -228,34 +219,28 @@ USING: room-names story.words story.shared story-names ;
 
 : castle-1f-17.act03 ( -- )   \ 003FCA00
     self-wait-done
-    0 ebit? not if
-        2 message   \ "There are miniature insect models here, too."
-        wait-message
-        0 ebit-set
+    insects-remarked ebit? not if
+        2 say   \ "There are miniature insect models here, too."
+        insects-remarked ebit-set
     else
-        3 message   \ "What type of a person would decorate a room with these things?"
-        wait-message
+        3 say   \ "What type of a person would decorate a room with these things?"
     then
     self-idle-or-end
 ;
 
 : castle-1f-17.act04 ( -- )   \ 003FCA20
     self-wait-done
-    1 ebit? not if
-        4 message   \ "Looks like an ordinary pool table."
-        wait-message
-        1 self-anim
-        self-wait-anim
+    pool-table-remarked ebit? not if
+        4 say   \ "Looks like an ordinary pool table."
+        rest-anim play-out
         -1 self-idle-anim
         6 message   \ "Why would someone put something like this in here?"
-        self-frames-reset
-        7 self-wait-frames
+        7 wait-frames
         wait-message
-        1 ebit-set
+        pool-table-remarked ebit-set
     else
-        5 message   \ "So maybe whoever lives here likes to play pool while looking at all of these gross..."
-        wait-message
-        1 ebit-clear
+        5 say   \ "So maybe whoever lives here likes to play pool while looking at all of these gross..."
+        pool-table-remarked ebit-clear
     then
     self-idle-or-end
 ;
@@ -265,25 +250,20 @@ USING: room-names story.words story.shared story-names ;
     -6.0 -5.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $41 message-param-room
         $41 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             c1f-17-lavender story-flag-set
             0 effect-remove
             $41 1 item-give-count
             0 $41 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $903 self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;

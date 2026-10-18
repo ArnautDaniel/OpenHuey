@@ -2,7 +2,12 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-16
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant locked-remarked             \ (bit 0) its first remark made: "The door is locked..."
+1 constant area2-reacted               \ (bit 1) her reaction in area 2 made (once a visit)
+0 constant unlock-sound                \ (snd 0) a door unlocked with its key
 
 \ Room55_Cmd00
 : old-mansion-1f-16.cmd00 ( b0 -- )   \ (Room55: b0 0 the ceiling's glass reflecting (60 x 60 at 45) and the light rippling
@@ -31,55 +36,30 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : old-mansion-1f-16.char-enter ( -- )   \ 00420B80
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         1 1 player-camera
-    then then
+    then
     2 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 3 exit-taken? and if
-            fiona-who 3 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 3 exit-taken? and if
-        hewie-who 3 char-to-exit
+    player-who self-is? 3 exit-taken? and if
+        player-who 3 char-to-exit
         1 1 player-camera
-    then then
+    then
     3 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 4 exit-taken? and if
-            fiona-who 4 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 4 exit-taken? and if
-        hewie-who 4 char-to-exit
+    player-who self-is? 4 exit-taken? and if
+        player-who 4 char-to-exit
         1 1 player-camera
-    then then
+    then
     4 1 1 area-camera
     fiona-who self-is? if
         0 exit-taken? 2 exit-taken? or if
@@ -98,9 +78,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 exit-usable? if
         1 exit-check
     then
-    om3f-2-flag1 story-flag? not 1 ebit? not and if
+    om3f-2-flag1 story-flag? not area2-reacted ebit? not and if
         fiona-who 2 char-in-area? if
-            1 ebit-set
+            area2-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
@@ -195,38 +175,29 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : old-mansion-1f-16.act01 ( -- )   \ 00420DF0
     self-wait-done
-    0 ebit? not 2 game-mode? or in-panic? or if
+    locked-remarked ebit? not 2 game-mode? or in-panic? or if
         4 self-through-exit
         self-wait-done
         in-panic? 2 game-mode? or if
-            $60B self-anim
-            self-wait-anim
+            rattle-behind-slow-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
+            7 wait-frames
         else
-            $609 self-anim
-            self-wait-anim
+            rattle-behind-anim play-out
             -1 self-idle-anim
-            self-frames-reset
-            7 self-wait-frames
-            0 message   \ "The door is locked..."
-            wait-message
+            7 wait-frames
+            0 say   \ "The door is locked..."
         then
-        0 ebit-set
+        locked-remarked ebit-set
     else
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
         fiona-who $18C -64.3 0.0 -89 char-to-xz
         world-frozen state-flag-set
         1 self-scripted
         1 20.0 5.0 0.0 4.0 event-camera
-        self-frames-reset
-        4 self-wait-frames
-        1 message   \ "There's an odd marking on the door. What could it mean?"
-        wait-message
-        self-frames-reset
-        4 self-wait-frames
+        4 wait-frames
+        1 say   \ "There's an odd marking on the door. What could it mean?"
+        4 wait-frames
         0 0.0 0.0 0.0 0.0 event-camera
         fiona-who $18C -64.3 1.25 -89 char-to-xz
         world-frozen state-flag-clear
@@ -242,17 +213,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     4 self-through-exit
     self-wait-done
     $609 self-anim
-    self-frames-reset
-    $14 self-wait-frames
-    fiona-who 0 6 char-sound
+    $14 wait-frames
+    fiona-who unlock-sound 6 char-sound
     $11 message-param-room
     $11 item-use
     $63 door-unlock
     20 self-idle-anim
-    self-frames-reset
-    $14 self-wait-frames
-    $8019 message   \ "Used ."
-    wait-message
+    $14 wait-frames
+    $8019 say   \ "Used ."
     stalkers-stay state-flag-clear
     0 self-scripted
     self-idle-or-end
@@ -263,25 +231,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     65.56 19.77 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $902 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        reach-out-anim play-out
+        4 wait-frames
         $95 message-param-room
         $95 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             om1f-16-refined-magnesia story-flag-set
             0 effect-remove
             $95 1 item-give-count
             0 $95 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $903 self-anim
-        self-wait-anim
+        reach-back-anim play-out
     then
     self-idle-or-end
 ;
@@ -296,10 +259,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     world-frozen state-flag-set
     fiona-who $19E -4.65 24.47 166 char-to-xz
     1 35.0 55.0 0.0 0.0 event-camera
-    2 message   \ "A large amount of water is pooled below. I wonder if this room is used as a reservoir o..."
-    wait-message
-    self-frames-reset
-    self-wait-16
+    2 say   \ "A large amount of water is pooled below. I wonder if this room is used as a reservoir o..."
+    16 wait-frames
     0 self-scripted
     0 self-noclip
     yield

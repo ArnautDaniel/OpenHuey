@@ -4,6 +4,9 @@
 IN: story.rooms.off-map-e6
 USING: room-names story.words story.shared story.clock floor-flags ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant cond-was-off                \ (bit 0) the room's condition was false last frame: its hook waits a frame once it holds
+
 \ the room object named by RoomE6_ObjectNames[0]: +0x24 -25.3, +0x34 0
 : off-map-e6.cmd00 ( -- )  s" kousi" object-here? 0= if  exit  then  -25.3e s" kousi" place-y object!  0e s" kousi" $34 object! ;   \ (the lattice down out of the way)
 \ room 0xE6: draws the countdown clock at (431, 395): "MM:SS", or "59:59" once time is up
@@ -21,25 +24,15 @@ USING: room-names story.words story.shared story.clock floor-flags ;
 ;
 
 : off-map-e6.char-enter ( -- )   \ 00449910
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
 ;
 
@@ -47,13 +40,9 @@ USING: room-names story.words story.shared story.clock floor-flags ;
     0 exit-usable? if
         0 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 1 char-in-area? fiona-who char-busy? not and if
-            1 exit-check
-        then
-    else hewie-who 1 char-in-area? hewie-who char-busy? not and if
+    player-who 1 char-in-area? player-who char-busy? not and if
         1 exit-check
-    then then
+    then
     4 0 0 1 chars-area-camera
     5 1 -1 1 chars-area-camera
     6 1 -1 1 chars-area-camera
@@ -68,9 +57,9 @@ USING: room-names story.words story.shared story.clock floor-flags ;
 
 : off-map-e6.phase3 ( -- )   \ 004499E0
     off-map-e6.cond00? not if
-        0 ebit-set
-    else 0 ebit? if
-        0 ebit-clear
+        cond-was-off ebit-set
+    else cond-was-off ebit? if
+        cond-was-off ebit-clear
     else
         off-map-e6.cmd01
     then then

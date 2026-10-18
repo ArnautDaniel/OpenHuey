@@ -4,6 +4,9 @@
 IN: story.rooms.house-of-truth-b1-4
 USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
+\ ---- this room's own event bits and script variables ----
+0 constant area0-reacted               \ (bit 0) her reaction in area 0 made (once a visit)
+
 \ room 0x87: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
 : house-of-truth-b1-4.cmd00 ( -- )  slam-shake ;
@@ -52,9 +55,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : house-of-truth-b1-4.phase1 ( -- )   \ 00432BC0
-    0 ebit? not if
+    area0-reacted ebit? not if
         fiona-who 0 char-in-area? if
-            0 ebit-set
+            area0-reacted ebit-set
             fiona-who 0 char-action? if
                 0 fiona-who 0 action-force
             else
@@ -62,7 +65,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
             then
         then
         fiona-who 1 char-in-area? if
-            0 ebit-set
+            area0-reacted ebit-set
             fiona-who 0 char-action? if
                 0 fiona-who 1 action-force
             else
@@ -132,8 +135,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     $F 6 fade
     wait-fade
-    0 message   \ "All things begin pure of color."
-    wait-message
+    0 say   \ "All things begin pure of color."
     $F 7 fade
     wait-fade
     stalkers-stay state-flag-clear

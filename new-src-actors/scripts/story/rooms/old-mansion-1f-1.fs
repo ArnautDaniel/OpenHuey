@@ -2,7 +2,13 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-1
-USING: engine room-names story.words story.shared flag-names story-names floor-flags ;
+USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant area8-reacted               \ (bit 0) her reaction on entering area 8 made (once a visit)
+1 constant hewie-zone0-noticed         \ (bit 1) Hewie has reacted to zone 0 (once a visit)
+2 constant mad-scene-on                \ (bit 2) "She's gone utterly mad..." (act03) under way
+5 constant presence-sound              \ (snd 5) his sound while he's here (kept up)
 
 \ a lit quad at x -15.96, z -2 .. 6, height 111 / 91
 : old-mansion-1f-1.cmd00 ( b0 -- )  $1B $80  -15.959e 111.0e -2.0e  -15.959e 111.0e 6.0e  -15.959e 91.0e -2.0e  -15.959e 91.0e 6.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -38,25 +44,15 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : old-mansion-1f-1.char-enter ( -- )   \ 0041D330
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         0 0 player-camera
-    then then
+    then
     0 0 0 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            0 0 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         0 0 player-camera
-    then then
+    then
     1 0 0 area-camera
     fiona-who self-is? if
         1 exit-taken? if
@@ -100,9 +96,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         then
     then
     found-file-233 story-flag? not if
-        0 ebit? not if
+        area8-reacted ebit? not if
             fiona-who 8 char-entered-area? if
-                0 ebit-set
+                area8-reacted ebit-set
                 panic-eased
                 fiona-who 0 char-action? if
                     0 fiona-who 0 action-force
@@ -112,20 +108,20 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             then
         then
     else found-file-234 story-flag? not if
-        fiona-who 9 char-entered-area? 2 ebit? not and if
+        fiona-who 9 char-entered-area? mad-scene-on ebit? not and if
             panic-eased
             0 fiona-who 3 action-force
         then
     then then
     found-file-234 story-flag? not found-file-233 story-flag? and if
         0 -3.91 90.0 3.23 $50 26 0 zone
-        1 ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
+        hewie-zone0-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
                 hewie-can-command? if
                     hewie-who 0 9 char-zone-bits? if
-                        1 ebit-set
+                        hewie-zone0-noticed ebit-set
                         $64 chance? if
-                            $1F 0 var-set
+                            hewie-zone-var 0 var-set
                             0 hewie-who $8A action
                         then
                     then
@@ -136,14 +132,14 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         hewie-who char-here? 1 game-mode? and if
             hewie-can-command? if
                 hewie-who 0 9 char-zone-bits? if
-                    $1F 0 var-set
-                    $1F 15.0 hewie-look-zone
+                    hewie-zone-var 0 var-set
+                    hewie-zone-var 15.0 hewie-look-zone
                 then
             then
         then
     then
     6 sound-bank-loaded? stalker-who char-here? and if
-        stalker-who $80000005 6 char-sound
+        stalker-who presence-sound kept-going 6 char-sound
     then
 ;
 
@@ -174,7 +170,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     hewie-who 0 char-cond!
     $2E 0 49 hewie-to-room
     0 hewie-who $86 action
-    0 $F9 2 action
+    0 cutscene-track 2 action
     3 4 0 char-model-op
     panic-eased
     $FFFF message-prepare
@@ -218,50 +214,30 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     force-followed state-flag-set
     stalker-no-fear state-flag-set
     3 char-file-use
-    begin
-        6 sound-bank-loaded? not while
-        yield
-    repeat
+    [: 6 sound-bank-loaded? ;] wait-until
     stalker-who 0 char-silent
     0 barred-floor floor-on
     1 counter-set
-    stalker-who 5 6 char-sound
+    stalker-who presence-sound 6 char-sound
     begin
-        $8000 self-anim
-        self-wait-anim
+        0 room-motion play-out
     again
 ;
 
 : old-mansion-1f-1.act02 ( -- )   \ 0041D670
     depth-range-off
-    begin
-        $10E cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $10E cutscene-cue-reached? ;] wait-until
     0 old-mansion-1f-1.cmd04
-    begin
-        $1E0 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $1E0 cutscene-cue-reached? ;] wait-until
     1 old-mansion-1f-1.cmd04
-    begin
-        5 cutscene-shot? not while
-        yield
-    repeat
+    [: 5 cutscene-shot? ;] wait-until
     2 old-mansion-1f-1.cmd00
     2 old-mansion-1f-1.cmd04
-    self-frames-reset
-    1 self-wait-frames
+    1 wait-frames
     1 old-mansion-1f-1.cmd04
-    begin
-        $3A2 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $3A2 cutscene-cue-reached? ;] wait-until
     0 old-mansion-1f-1.cmd00
-    begin
-        $4B0 cutscene-cue-reached? not while
-        yield
-    repeat
+    [: $4B0 cutscene-cue-reached? ;] wait-until
     begin
         $4EC cutscene-cue-reached? not while
         1.0 21.0 40.0 80.0 depth-range
@@ -277,20 +253,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : old-mansion-1f-1.act03 ( -- )   \ 0041D6E0
-    2 ebit-set
+    mad-scene-on ebit-set
     1 self-scripted
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    $402 self-anim
-    self-wait-anim
+    turn-round-anim play-out
     3 self-look-at
     yield
-    0 message   \ "She's gone utterly mad. Best to keep my distance..."
-    wait-message
+    0 say   \ "She's gone utterly mad. Best to keep my distance..."
     self-who self-look-at
     yield
-    2 ebit-clear
+    mad-scene-on ebit-clear
     0 self-scripted
     self-idle-or-end
 ;
@@ -305,7 +279,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     yield
     yield
     scene-wait-ready
-    0 $F9 2 action
+    0 cutscene-track 2 action
     3 4 0 char-model-op
     panic-eased
     $FFFF message-prepare

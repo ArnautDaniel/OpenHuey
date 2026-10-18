@@ -2,7 +2,12 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-2
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant area0-reacted               \ (bit 0) her reaction on entering the area made (once a visit)
+0 constant whine-frames-var            \ (var 0) frames to Hewie's next whine (from 30, then 180)
+15 constant hewie-whine-sound          \ (snd 15) Hewie's whine (now and then, caught in the wire)
 
 \ room 0x13: the grate ("kousi"): byte 3 0 shut (turn 0), else swung open a quarter turn.
 : front-garden-2.cmd00 ( b0 -- )  if  pi f2/ fnegate  else  0e  then  s" kousi" turn-y object! ;
@@ -32,8 +37,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         7 part-shown
     then
     c2f-3-flag1 story-flag? hewie-found-in-wire story-flag? not and if
-        0 30 var-set
-        0 $F1 6 action
+        whine-frames-var 30 var-set
+        0 1 track 6 action
     then
     fg-2-breakable1-broken story-flag? not if
         2 keeps-people-off floor-on
@@ -69,35 +74,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 ;
 
 : front-garden-2.char-enter ( -- )   \ 003F92E0
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 1 exit-taken? and if
-            fiona-who 1 char-to-exit
-            1 1 player-camera
-        then
-    else hewie-who self-is? 1 exit-taken? and if
-        hewie-who 1 char-to-exit
+    player-who self-is? 1 exit-taken? and if
+        player-who 1 char-to-exit
         1 1 player-camera
-    then then
+    then
     1 1 1 area-camera
-    hewie-controlled? not if
-        fiona-who self-is? 2 exit-taken? and if
-            fiona-who 2 char-to-exit
-            3 -1 player-camera
-        then
-    else hewie-who self-is? 2 exit-taken? and if
-        hewie-who 2 char-to-exit
+    player-who self-is? 2 exit-taken? and if
+        player-who 2 char-to-exit
         3 -1 player-camera
-    then then
+    then
     2 3 -1 area-camera
     stalker-who self-is? if
     then
@@ -111,13 +101,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     1 exit-usable? if
         1 exit-check
     then
-    hewie-controlled? not if
-        fiona-who 2 char-in-area? fiona-who char-busy? not and if
-            2 exit-check
-        then
-    else hewie-who 2 char-in-area? hewie-who char-busy? not and if
+    player-who 2 char-in-area? player-who char-busy? not and if
         2 exit-check
-    then then
+    then
     7 0 0 1 chars-area-camera
     8 1 1 1 chars-area-camera
     9 2 2 1 chars-area-camera
@@ -148,8 +134,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         then
     then
     c2f-3-flag2 story-flag? not hewie-found-in-wire story-flag? and hewie-freed story-flag? not and if
-        fiona-who 0 char-entered-area? 0 ebit? not and if
-            0 ebit-set
+        fiona-who 0 char-entered-area? area0-reacted ebit? not and if
+            area0-reacted ebit-set
             panic-eased
             fiona-who 0 char-action? if
                 0 fiona-who 2 action-force
@@ -224,9 +210,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
 : front-garden-2.act00 ( -- )   \ 003F96E8
     self-wait-done
-    $1D02 $A self-anim-blend
-    0 message   \ "It is bolted shut from the other side. I'm not going to be able to open this..."
-    wait-message
+    hands-clasped-anim $A self-anim-blend
+    0 say   \ "It is bolted shut from the other side. I'm not going to be able to open this..."
     self-wait-anim
     self-idle-or-end
 ;
@@ -282,8 +267,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     70.0 -160.0 self-turn-to-xz
     self-wait-done
-    1 message   \ "I wonder what kind of a room is on the other side? I can see the light flicker from can..."
-    wait-message
+    1 say   \ "I wonder what kind of a room is on the other side? I can see the light flicker from can..."
     self-idle-or-end
 ;
 
@@ -291,8 +275,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     self-wait-done
     100.0 -210.0 self-turn-to-xz
     self-wait-done
-    1 message   \ "I wonder what kind of a room is on the other side? I can see the light flicker from can..."
-    wait-message
+    1 say   \ "I wonder what kind of a room is on the other side? I can see the light flicker from can..."
     self-idle-or-end
 ;
 
@@ -301,25 +284,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     130.0 -237.0 self-turn-to-xz
     self-wait-done
     in-panic? not if
-        $900 self-anim
-        self-wait-anim
-        self-frames-reset
-        4 self-wait-frames
+        pick-up-anim play-out
+        4 wait-frames
         $70 message-param-room
         $70 $63 item-count? if
-            $8010 message   \ "It's a . Unfortunately you can't carry anymore items."
-            wait-message
+            $8010 say   \ "It's a . Unfortunately you can't carry anymore items."
         else
             fg-2-medallion story-flag-set
             0 effect-remove
             $70 1 item-give-count
             0 $70 item-tab
             item-fanfare
-            $8011 message   \ "You've obtained ."
-            wait-message
+            $8011 say   \ "You've obtained ."
         then
-        $901 self-anim
-        self-wait-anim
+        up-from-pick-anim play-out
     then
     self-idle-or-end
 ;
@@ -327,13 +305,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
 : front-garden-2.act06 ( -- )   \ 003F9870
     begin
         yield
-        0 var-dec
-        0 0 var? if
+        whine-frames-var var-dec
+        whine-frames-var 0 var? if
             $1E chance? if
-                $F 6 228.0 5.0 78.0 0 0 sound
-                0 180 var-set
+                hewie-whine-sound 6 228.0 5.0 78.0 0 0 sound
+                whine-frames-var 180 var-set
             else
-                0 60 var-set
+                whine-frames-var 60 var-set
             then
         then
     again

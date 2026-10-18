@@ -11,15 +11,10 @@ USING: room-names story.words story.shared story-names floor-flags ;
 ;
 
 : old-mansion-2f-1.char-enter ( -- )   \ 00407E90
-    hewie-controlled? not if
-        fiona-who self-is? 0 exit-taken? and if
-            fiona-who 0 char-to-exit
-            2 2 player-camera
-        then
-    else hewie-who self-is? 0 exit-taken? and if
-        hewie-who 0 char-to-exit
+    player-who self-is? 0 exit-taken? and if
+        player-who 0 char-to-exit
         2 2 player-camera
-    then then
+    then
     0 2 2 area-camera
 ;
 
@@ -47,8 +42,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
     self-wait-done
     0 self-turn-angle
     self-wait-done
-    0 message   \ "The floor has collapsed! But I literally just crossed through here seconds ago..."
-    wait-message
+    0 say   \ "The floor has collapsed! But I literally just crossed through here seconds ago..."
     self-idle-or-end
 ;
 
@@ -56,8 +50,7 @@ USING: room-names story.words story.shared story-names floor-flags ;
     self-wait-done
     180 self-turn-angle
     self-wait-done
-    0 message   \ "The floor has collapsed! But I literally just crossed through here seconds ago..."
-    wait-message
+    0 say   \ "The floor has collapsed! But I literally just crossed through here seconds ago..."
     self-idle-or-end
 ;
 
