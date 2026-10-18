@@ -16,6 +16,9 @@
 
 #include <SDL3/SDL.h>
 
+#include "../data/tex.h"
+#include "../data/texbank.h"
+
 #define LIBRARY_FORMAT 1           /* the manifest's first line: "hga-library 1" */
 #define EXE_NAME "SLUS_210.75"     /* Haunting Ground (USA) */
 #define EXE_CRC 0xA295AF2Bu
@@ -170,7 +173,8 @@ static int disc_is_ours(char *why, size_t n) {   /* (the disc opened) */
     return 1;
 }
 
-/* ---- the manifest: "hga-library 1", "disc <crc>", then "file <size> <path>" each ---- */
+/* ---- the manifest: "hga-library 1", "disc <crc>", "convert <kind> <format>" each converter
+ * used, then "file <size> <path>" each ---- */
 
 static int library_ok(char *why, size_t n) {
     char path[2200], line[1200];
@@ -408,25 +412,68 @@ static int make_parent(const char *path) {
     return SDL_CreateDirectory(dir);
 }
 
-static int copy_item(const Item *it, const char *root, Progress *pr, char *why, size_t n) {
-    static uint8_t buf[1 << 20];
+/* a .TEX bank of DATA.CVM's, read whole: the library holds its PNGs (texbank.h) instead */
+static int is_bank(const Item *it) {
+    size_t len = strlen(it->path);
+
+    return strncmp(it->path, "../", 3) != 0 && len > 4 && strcasecmp(it->path + len - 4, ".TEX") == 0 &&
+           it->size > 0 && it->size < (64L << 20);
+}
+
+typedef struct Made {   /* the files written, for the manifest (paths in the library) */
+    Items *l;
+    char dir[600];
+} Made;
+
+static void made_one(void *user, const char *name, long size) {
+    Made *m = user;
+    char rel[1200];
+
+    snprintf(rel, sizeof(rel), "%s%s", m->dir, name);
+    items_add(m->l, rel, size);
+}
+
+static int convert_bank(const Item *it, const char *root, Items *made, uint8_t *bank, char *why, size_t n) {
     char to[1300];
+    Made m = {made, ""};
+    size_t len = strlen(it->path) - 4;
+
+    snprintf(m.dir, sizeof(m.dir), "data/%.*s.texbank/", (int)len, it->path);
+    snprintf(to, sizeof(to), "%s%s", root, m.dir);
+    if (!make_parent(to) || !texbank_convert(bank, (size_t)it->size, to, made_one, &m)) {
+        snprintf(why, n, "%s can't be written", to);
+        return 0;
+    }
+    return 1;
+}
+
+static int copy_item(const Item *it, const char *root, Items *made, Progress *pr, char *why, size_t n) {
+    static uint8_t buf[1 << 20];
+    char to[1300], rel[1300];
     DiscFile *f = disc_file_open(it->path);
-    FILE *out;
-    size_t got;
+    FILE *out = NULL;
+    uint8_t *bank = NULL;
+    size_t got, have = 0;
 
     if (f == NULL) {
         snprintf(why, n, "the disc's %s can't be read", it->path);
         return 0;
     }
     library_path(to, sizeof(to), root, it->path);
-    if (!make_parent(to) || (out = fopen(to, "wb")) == NULL) {
+    if (is_bank(it)) {
+        bank = malloc((size_t)it->size);
+    }
+    if (bank == NULL && (!make_parent(to) || (out = fopen(to, "wb")) == NULL)) {
         snprintf(why, n, "%s can't be written", to);
         disc_file_close(f);
         return 0;
     }
     while ((got = disc_file_read(f, buf, sizeof(buf))) > 0) {
-        if (fwrite(buf, 1, got, out) != got) {
+        if (bank != NULL) {
+            got = got < (size_t)it->size - have ? got : (size_t)it->size - have;
+            memcpy(bank + have, buf, got);
+            have += got;
+        } else if (fwrite(buf, 1, got, out) != got) {
             snprintf(why, n, "%s can't be written (is the disc full?)", to);
             fclose(out);
             disc_file_close(f);
@@ -436,21 +483,45 @@ static int copy_item(const Item *it, const char *root, Progress *pr, char *why, 
         progress_draw(pr, it->path);
         if (pr->cancelled) {
             snprintf(why, n, "the import was cancelled");
-            fclose(out);
+            if (out != NULL) {
+                fclose(out);
+            }
+            free(bank);
             disc_file_close(f);
             return 0;
         }
     }
     disc_file_close(f);
+    if (bank != NULL) {   /* (not a bank after all: copied as it is) */
+        int ok = have == (size_t)it->size && tex_count(bank, have) > 0;
+
+        if (ok) {
+            ok = convert_bank(it, root, made, bank, why, n);
+            free(bank);
+            return ok;
+        }
+        if (!make_parent(to) || (out = fopen(to, "wb")) == NULL || fwrite(bank, 1, have, out) != have) {
+            snprintf(why, n, "%s can't be written", to);
+            if (out != NULL) {
+                fclose(out);
+            }
+            free(bank);
+            return 0;
+        }
+        free(bank);
+    }
     if (fclose(out) != 0) {
         snprintf(why, n, "%s can't be written", to);
         return 0;
     }
+    library_path(rel, sizeof(rel), "", it->path);
+    items_add(made, rel, it->size);
     return 1;
 }
 
-static int write_manifest(const char *root, const Items *l) {
-    char path[1300], rel[1300];
+/* the manifest: "convert <kind> <format>" for each converter used */
+static int write_manifest(const char *root, const Items *made) {
+    char path[1300];
     FILE *f;
     int i;
 
@@ -460,9 +531,9 @@ static int write_manifest(const char *root, const Items *l) {
     }
     fprintf(f, "hga-library %d\n", LIBRARY_FORMAT);
     fprintf(f, "disc %08X\n", EXE_CRC);
-    for (i = 0; i < l->n; i++) {
-        library_path(rel, sizeof(rel), "", l->e[i].path);
-        fprintf(f, "file %ld %s\n", l->e[i].size, rel);
+    fprintf(f, "convert textures %d\n", TEXBANK_FORMAT);
+    for (i = 0; i < made->n; i++) {
+        fprintf(f, "file %ld %s\n", made->e[i].size, made->e[i].path);
     }
     return fclose(f) == 0;
 }
@@ -470,7 +541,7 @@ static int write_manifest(const char *root, const Items *l) {
 /* the disc opened imported; the reason in `why` if not */
 static int import(int headless, char *why, size_t n) {
     char fresh[1200], old[1200];
-    Items l = {0};
+    Items l = {0}, made = {0};
     Progress pr;
     int i, ok = 1;
 
@@ -492,14 +563,15 @@ static int import(int headless, char *why, size_t n) {
         pr.total += l.e[i].size;
     }
     for (i = 0; i < l.n && ok; i++) {
-        ok = copy_item(&l.e[i], fresh, &pr, why, n);
+        ok = copy_item(&l.e[i], fresh, &made, &pr, why, n);
     }
     progress_close(&pr);
-    if (ok && !write_manifest(fresh, &l)) {
+    if (ok && !write_manifest(fresh, &made)) {
         snprintf(why, n, "the library's manifest can't be written");
         ok = 0;
     }
     free(l.e);
+    free(made.e);
     if (!ok) {
         remove_tree(fresh);
         return 0;

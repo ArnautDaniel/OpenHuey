@@ -2,7 +2,7 @@
 
 Two pieces that build on each other: **importing** the player's disc once into a library of
 game data in friendlier formats, and **mods** layered over that library and over the scripts.
-This is the plan; step 1 (the plain library) is built. See `design.md` for the split it follows: assets and
+This is the plan; steps 1 (the plain library) and 2 (textures to PNG) are built. See `design.md` for the split it follows: assets and
 file formats belong to C, behaviour to actors in Forth.
 
 ## Where we start
@@ -63,8 +63,9 @@ existing picker, then a progress window.
 2. **Unpack and convert**, file by file, into `library/` - converted where the kind has a
    converter, copied otherwise. Written to `library.new/` and renamed when done, so a failed or
    cancelled import leaves no half library.
-3. **Write the manifest** (plain text, read by the engine: `hga-library 1`, `disc <crc>`, then
-   `file <size> <path>` each - with conversions, each kind's format version too): enough to
+3. **Write the manifest** (plain text, read by the engine: `hga-library 1`, `disc <crc>`,
+   `convert <kind> <format>` for each converter used, then `file <size> <path>` for each file
+   written): enough to
    check the library at start-up and say what's wrong ("the library's data/SYSTEM/TITLE.TEX is
    missing or damaged" - and with a window, the player is asked for the disc again).
 
@@ -99,6 +100,29 @@ both are complete and checked: its output must give the engine the same data the
 Order: **textures** first (smallest, most asked for, easy to check), then **music**, **messages**,
 **the executable's tables**, **sound banks**, **movies**; rooms and models last. Until a kind's
 turn its files are copied as they are and read by today's loaders.
+
+### Textures
+
+Each `.TEX` bank of DATA.CVM becomes a folder beside where it was, the bank's name with
+`.texbank` for `.TEX` (`SYSTEM/TITLE.TEX` -> `SYSTEM/TITLE.texbank/`):
+
+```
+bank.txt     hga-texbank 1
+             textures 2
+             texture 0 512 512 19 1          (index, width, height, the PS2 pixel format, images)
+             texture 1 512 256 20 5
+             palettes 1 0 1 2 3 4 4 4 ...    (a 16-colour texture: the image for each of its 32 palettes)
+0.png        texture 0
+1.png 1-1.png 1-2.png 1-3.png 1-4.png        texture 1: one PNG per palette that looks different
+```
+
+The PNGs are the pixels the game decodes (RGBA, the PS2's alpha 0..128 as 0..255), so a texture
+pack edits them with anything and keeps the same names. A PNG of another size is drawn as much of
+it as fits (a mod's higher-resolution textures need the renderer to know the size: later).
+`src/data/texbank.c` reads either form (the engine still meets raw banks: a room's `.PAC` holds
+its own, read as they are until the rooms are converted, and a library imported before the
+conversion keeps its `.TEX` files). `texbank-check` (a ctest) converts every bank of the
+developer's data and compares each texture in each palette with the bank's own decoding.
 
 Some formats carry engine behaviour in their layout (motion tables, a room's areas and
 cameras): those convert into the engine's own structures written plainly, not into a general
@@ -162,7 +186,8 @@ from $1000 up, say, so they never collide with the game's).
 1. **The library, plain**: `user/`, `library/` and `mods/` beside the executable; the import
    copying every file as it is, with the manifest and the checks; the engine reading
    `library/`; the first-run flow. No conversion yet - this alone ends reading from the disc.
-2. **Textures to PNG** - the converter, the loader, the comparison test.
+   (Built.)
+2. **Textures to PNG** - the converter, the loader, the comparison test. (Built.)
 3. **Mods, files and actors**: the manifest, the load order, file overrides, mod scripts in
    their own vocabularies. A sample mod in the repository as a test.
 4. **Music, messages, the executable's tables** converted; the first hooks, as the sample mods

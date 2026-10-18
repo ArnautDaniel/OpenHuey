@@ -53,7 +53,7 @@ add_executable(hga
     src/core/files.c
     src/platform/disc.c src/platform/library.c src/platform/gl.c src/platform/platform.c src/platform/sound.c src/platform/movie.c src/platform/music.c src/platform/seq.c src/platform/spu.c src/platform/snddrv.c
     src/render/render.c src/render/post.c
-    src/data/pac.c src/data/tex.c src/data/roommesh.c src/data/model.c src/data/navmesh.c src/data/exe.c src/data/soundbank.c
+    src/data/pac.c src/data/tex.c src/data/texbank.c src/third_party/stb.c src/data/roommesh.c src/data/model.c src/data/navmesh.c src/data/exe.c src/data/soundbank.c
     src/game/room.c src/game/console.c src/game/actor.c src/game/doglegs.c src/game/cloth.c src/game/world.c
     src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c src/game/cutscene.c src/game/placed.c src/game/sprites.c src/game/particles.c src/game/things.c src/game/obstacles.c src/game/swimpath.c src/game/rumble.c
     src/forth/bind_engine.c)
@@ -76,3 +76,10 @@ foreach(t ${GAME_TESTS})
     get_filename_component(sub "${dir}" NAME)
     add_test(NAME ${sub}_${name} COMMAND hga --test "${t}")
 endforeach()
+
+# the textures' conversion: every bank of the developer's data converted and read back, the same pixels
+add_executable(texbank-check tests/texbank_check.c src/data/tex.c src/data/texbank.c src/third_party/stb.c
+    src/core/files.c src/platform/disc.c src/platform/library.c)
+target_link_libraries(texbank-check PRIVATE SDL3::SDL3 m)
+add_test(NAME texbank_check COMMAND texbank-check "${DEFAULT_DATA}" "${CMAKE_CURRENT_BINARY_DIR}/texbank-check.scratch")
+set_tests_properties(texbank_check PROPERTIES SKIP_RETURN_CODE 77)
