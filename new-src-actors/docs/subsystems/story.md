@@ -337,8 +337,9 @@ effects and the Hewie-controlled clock rooms ($D0..$E9, 42 stubs).
   machine (house-of-truth 1f-6 / 1f-4); a variable down by her hit (`var-down-by-hit`); things in
   an area aged out (`things-age-out-in`); the hatches of the water tower (`var0-ease`, with their
   sound kept on - id bit 31); the aiming cursor of water-tower-8f-1 (`cursor-step`,
-  `cursor-draw`: the room's texture $C on UI layer 15); a blow request at Fiona (Progress_Noise:
-  `fiona-request` kind 2 - Hewie's and the stalker's not taken yet); Fiona's flinch with nobody
+  `cursor-draw`: the room's texture $C on UI layer 15); a blow from a point at a
+  character (Progress_Noise: `fiona-request` kind 2 to Fiona, `blow-from` to Hewie and the stalker -
+  each reacting as to a blow with no one behind it, as Progress_OwnRequests / Pursuer_Hit do); Fiona's flinch with nobody
   holding her (`flinch`: action $B / $21); the screen darkened a frame at a time (`screen-fill`,
   UI layer 16 - now 18 layers).
 - **The falling debris and the traps** of house-of-truth-1f-9: kind-9 things carrying a room
