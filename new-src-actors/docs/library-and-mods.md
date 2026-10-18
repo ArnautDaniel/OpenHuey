@@ -93,7 +93,7 @@ both are complete and checked: its output must give the engine the same data the
 | sound banks | HD / BD / SDT (the SPU's programs and VAG samples) | a WAV or Ogg per sample, the bank as a text file (programs, tones, envelopes) | replace a sound |
 | movies | SFD (MPEG-1 video, ADX audio) | WebM (VP9 or AV1, Opus) | smaller, decoded by the GPU or a common library, re-encodable at a higher size |
 | the executable's tables | addresses in SLUS_210.75 | Forth data files (`library/exe/*.fs`) and binary blobs where a table is only ever read whole | no addresses at run time; mods can change a table |
-| messages | the message files (BIN) | UTF-8 text files, one per table, ids kept | translation, new lines |
+| messages | the message files (BIN), each room's text (a PAC section) | UTF-8 text files, one per table, ids kept | translation, new lines |
 | rooms, nav meshes | PAC | later: glTF for the meshes, the rest (nav mesh, exits, cameras, areas) as data files | the biggest modding payoff, the most work |
 | models, motions | PCK, MTN | later: glTF (skinned), motions as glTF animations | new costumes, new figures |
 
@@ -146,6 +146,36 @@ reads both with. A mod's track needs none of this - LOOPSTART and LOOPEND, or no
 `music-check` (a ctest) converts every track of the developer's data and plays both: once
 through, and looped three passes - the same samples (63129 of second-pass starts kept in all).
 
+### Messages
+
+The message tables become text: `SUBSCR/MSG_BASE.BIN` -> `SUBSCR/MSG_BASE.txt` (and MSG_SUB,
+MSG_END), and each room's own text (section 10 of its `.PAC`) -> `ST_000/ST_003.messages.txt`
+beside the PAC. (The PAC itself is copied as it is until rooms are converted - its text section
+then unread.) 9520 messages in 171 tables, 211 KB.
+
+```
+\ ST_000/ST_002.PAC: the room's text (section 10)
+#0
+Looks like this is used to
+open the gate.
+{page}Pull the lever?{choice 0 0}
+#1
+The lever has already been pulled.
+
+```
+
+`#id` then the message's lines: a line break in the file is the game's, and blank lines count
+(message 1 above ends with one). The text is UTF-8 as the game's font draws it - ASCII, "®",
+the accented letters ("risqué") - its buttons and symbols as `{cross}`, `{start}`, `{sun}`...,
+the control codes as `{page}`, `{colour 5}`...`{/colour}`, `{option $4012}`...; any other byte
+`{$xx}`. The whole list is in `src/data/msgtext.h`; a character the font hasn't, or a word it
+doesn't know, is said with the file and line. Read back, a file becomes a table laid out as the
+game's, so the game's code reads it unchanged. A translation is these files in a mod.
+
+`messages-check` (a ctest) writes every table as text and reads it back: every message the same
+bytes, measured by its own copy of the game's reader (the decomp's `TextCursor_Step`) - which is
+how this was found to need a choice's two operand bytes (`include/text.h` said one).
+
 Some formats carry engine behaviour in their layout (motion tables, a room's areas and
 cameras): those convert into the engine's own structures written plainly, not into a general
 format that loses them.
@@ -197,8 +227,9 @@ after: better-textures   \ loaded after that mod, if it's on
      palette. A PNG of another size is drawn as much as fits until the renderer takes new
      sizes. The rooms' textures inside their `.PAC` can't be replaced until rooms are
      converted.
-   - Nothing else is needed for texture packs and music (a FLAC at the track's path) now,
-     and translations and sound replacements once those kinds are converted. The executable's tables, once they are data
+   - Nothing else is needed for texture packs, music (a FLAC at the track's path) and
+     translations (the messages' text files) now, and sound replacements once sound banks are
+     converted. The executable's tables, once they are data
      files in `library/exe/`, are overridden the same way.
 2. **Actors** (built). A mod's `scripts/<name>.fs` is loaded after the game's scripts as the
    vocabulary `<name>` (`IN: room-tally`); its folder is a root for `USING:`, so a bigger mod
@@ -250,5 +281,5 @@ from $1000 up, say, so they never collide with the game's).
 3. **Mods, files and actors**: the manifest, the load order, file overrides, mod scripts in
    their own vocabularies. A sample mod in the repository as a test. (Built.)
 4. **Music, messages, the executable's tables** converted; the first hooks, as the sample mods
-   ask. (Music built.)
+   ask. (Music and messages built.)
 5. Sound banks, movies; then rooms and models.

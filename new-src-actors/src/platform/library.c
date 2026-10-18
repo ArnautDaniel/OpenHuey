@@ -19,7 +19,9 @@
 #include "../data/tex.h"
 #include "../data/texbank.h"
 #include "../data/flacenc.h"
+#include "../data/msgtext.h"
 #include "../data/musicsrc.h"
+#include "../data/pac.h"
 
 #define MUSIC_FORMAT 1             /* "convert music 1": ADX to FLAC, LOOPSTART / LOOPEND / STOPAT (musicsrc.h) */
 
@@ -431,7 +433,40 @@ static int has_kind(const Item *it, const char *ext) {
     return strncmp(it->path, "../", 3) != 0 && len > 4 && strcasecmp(it->path + len - 4, ext) == 0 && it->size > 0 &&
            it->size < (64L << 20);
 }
-static int is_converted(const Item *it) { return has_kind(it, ".TEX") || has_kind(it, ".ADX"); }
+static int is_messages(const Item *it) { return has_kind(it, ".BIN") && strncasecmp(it->path, "SUBSCR/MSG_", 11) == 0; }
+/* (a room's .PAC is copied as it is, its text beside it as well) */
+static int is_converted(const Item *it) {
+    return has_kind(it, ".TEX") || has_kind(it, ".ADX") || has_kind(it, ".PAC") || is_messages(it);
+}
+
+/* a message table as text (msgtext.h): "data/<path less its extension><suffix>" */
+static int convert_messages(const Item *it, const char *root, Items *made, const uint8_t *table, size_t size,
+                            const char *suffix, char *why, size_t n) {
+    char rel[700], to[1300], about[700];
+    char *text;
+    size_t len;
+    FILE *f;
+    int ok;
+
+    snprintf(about, sizeof(about), "%s%s", it->path, strcmp(suffix, ".txt") == 0 ? "" : ": the room's text (section 10)");
+    if ((text = msgtext_write(table, size, about, &len)) == NULL) {
+        return -1;   /* (not a table: copied as it is) */
+    }
+    snprintf(rel, sizeof(rel), "data/%.*s%s", (int)strlen(it->path) - 4, it->path, suffix);
+    snprintf(to, sizeof(to), "%s%s", root, rel);
+    ok = make_parent(to) && (f = fopen(to, "wb")) != NULL;
+    if (ok) {
+        ok = fwrite(text, 1, len, f) == len;
+        ok = fclose(f) == 0 && ok;
+    }
+    free(text);
+    if (!ok) {
+        snprintf(why, n, "%s can't be written", to);
+        return 0;
+    }
+    items_add(made, rel, (long)len);
+    return 1;
+}
 
 /* an ADX as a FLAC beside where it was: the same samples, once through; its loop in tags */
 static int convert_music(const Item *it, const char *root, Items *made, const uint8_t *adx, size_t size, char *why,
@@ -548,6 +583,16 @@ static int copy_item(const Item *it, const char *root, Items *made, Progress *pr
             ok = convert_bank(it, root, made, bank, why, n);
         } else if (ok && has_kind(it, ".ADX")) {
             ok = convert_music(it, root, made, bank, have, why, n);
+        } else if (ok && is_messages(it)) {
+            ok = convert_messages(it, root, made, bank, have, ".txt", why, n);
+        } else if (ok && has_kind(it, ".PAC")) {
+            Pac pac = {bank, have};
+            size_t tsize;
+            const uint8_t *table = pac_section(&pac, PAC_TEXT, &tsize);
+
+            if (table != NULL && convert_messages(it, root, made, table, tsize, ".messages.txt", why, n) == 0) {
+                ok = 0;
+            }
         }
         if (ok == 0 && have != (size_t)it->size) {
             snprintf(why, n, "the disc's %s can't be read whole", it->path);
@@ -589,6 +634,7 @@ static int write_manifest(const char *root, const Items *made) {
     fprintf(f, "disc %08X\n", EXE_CRC);
     fprintf(f, "convert textures %d\n", TEXBANK_FORMAT);
     fprintf(f, "convert music %d\n", MUSIC_FORMAT);
+    fprintf(f, "convert messages %d\n", MSGTEXT_FORMAT);
     for (i = 0; i < made->n; i++) {
         fprintf(f, "file %ld %s\n", made->e[i].size, made->e[i].path);
     }
