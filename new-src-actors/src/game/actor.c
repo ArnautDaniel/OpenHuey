@@ -4,6 +4,7 @@
 
 #include "../core/files.h"
 #include "../data/texbank.h"
+#include "../data/modelgltf.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +29,31 @@ static void load_textures(Actor *a, const char *name) {
     }
     a->ntextures = n < ACTOR_MAX_TEXTURES ? n : ACTOR_MAX_TEXTURES;
     texbank_free(bank);
+}
+
+/* the library's model: NAME.model/model.gltf, model.bin and motions.bin (data/modelgltf.h); 0 if
+ * there is none */
+static int load_model_gltf(Model *m, const char *name) {
+    char path[160];
+    uint8_t *json, *bin, *motions;
+    size_t len, bs, ms = 0;
+    int ok;
+
+    snprintf(path, sizeof(path), "%s.model/model.gltf", name);
+    if ((json = files_read(path, &len)) == NULL) {
+        return 0;
+    }
+    snprintf(path, sizeof(path), "%s.model/model.bin", name);
+    bin = files_read(path, &bs);
+    snprintf(path, sizeof(path), "%s.model/motions.bin", name);
+    motions = files_read(path, &ms);
+    ok = bin != NULL && modelgltf_read(m, (const char *)json, len, bin, bs, motions, motions != NULL ? ms : 0);
+    if (!ok) {
+        fprintf(stderr, "actor: %s.model/model.gltf isn't one hga reads\n", name);
+    }
+    free(json);
+    free(bin);
+    return ok;
 }
 
 int actor_load(Actor *actors, const char *name) { return actor_load_textured(actors, name, name); }
@@ -79,14 +105,13 @@ int actor_load_textured(Actor *actors, const char *name, const char *tex) {
         return -1;
     }
     a = &actors[i];
-    snprintf(path, sizeof(path), "%s.PCK", name);
-    pck = files_read(path, &size);
-    if (pck == NULL) {
-        return -1;
-    }
     memset(a, 0, sizeof(*a));
-    if (!model_build(&a->model, pck, size)) {
-        return -1;
+    if (!load_model_gltf(&a->model, name)) {   /* (else the .PCK) */
+        snprintf(path, sizeof(path), "%s.PCK", name);
+        pck = files_read(path, &size);
+        if (pck == NULL || !model_build(&a->model, pck, size)) {
+            return -1;
+        }
     }
     a->used = 1;
     snprintf(a->name, sizeof(a->name), "%s", name);

@@ -3,6 +3,8 @@
 #include "../core/files.h"
 #include "../data/tex.h"
 #include "../data/texbank.h"
+#include "../data/roomgltf.h"
+#include "../data/roomtext.h"
 #include "sprites.h"
 #include "../render/post.h"
 
@@ -30,6 +32,53 @@ static TexBank *room_bank(Room *r, int section, const char *name) {
 
     pac_room_part(r->id, name, path, sizeof(path));
     return texbank_load_or_wrap(path, bank, bank != NULL ? size : 0);
+}
+
+/* the library's sections as text (ST_003.room/lights.txt ...: data/roomtext.h), read back into
+ * the PAC (a mod's over the library's, or over the PAC's own) */
+static void attach_texts(Room *r) {
+    char path[96];
+    int i;
+
+    for (i = 0; i < PAC_SECTIONS; i++) {
+        uint8_t *text, *sec;
+        size_t len, n;
+
+        if (roomtext_file(i) == NULL) {
+            continue;
+        }
+        pac_room_part(r->id, roomtext_file(i), path, sizeof(path));
+        if ((text = files_read(path, &len)) == NULL) {
+            continue;
+        }
+        if ((sec = roomtext_read(i, (const char *)text, len, path, &n)) != NULL) {
+            pac_attach(&r->pac, i, sec, n);
+        }
+        free(text);
+        free(sec);
+    }
+}
+
+/* the library's mesh: ST_003.room/mesh.gltf + mesh.bin (data/roomgltf.h); 0 if there is none */
+static int load_mesh_gltf(Room *r) {
+    char path[96];
+    uint8_t *json, *bin;
+    size_t len, bs;
+    int ok;
+
+    pac_room_part(r->id, "mesh.gltf", path, sizeof(path));
+    if ((json = files_read(path, &len)) == NULL) {
+        return 0;
+    }
+    pac_room_part(r->id, "mesh.bin", path, sizeof(path));
+    bin = files_read(path, &bs);
+    ok = bin != NULL && roomgltf_read(&r->mesh, (const char *)json, len, bin, bs);
+    if (!ok) {
+        fprintf(stderr, "room %03X: its mesh.gltf isn't one hga reads\n", r->id);
+    }
+    free(json);
+    free(bin);
+    return ok;
 }
 
 static void load_textures(Room *r) {
@@ -549,9 +598,12 @@ int room_load(Room *r, int id) {
         return 0;
     }
     r->id = id;
-    sec = pac_section(&r->pac, PAC_MESH, &size);
-    if (sec != NULL && !roommesh_build(&r->mesh, sec, size)) {
-        fprintf(stderr, "room %03X: the mesh section is malformed\n", id);
+    attach_texts(r);
+    if (!load_mesh_gltf(r)) {   /* (else the PAC's own section) */
+        sec = pac_section(&r->pac, PAC_MESH, &size);
+        if (sec != NULL && !roommesh_build(&r->mesh, sec, size)) {
+            fprintf(stderr, "room %03X: the mesh section is malformed\n", id);
+        }
     }
     if (r->mesh.nv > 0) {
         render_mesh_upload(&r->gpu, r->mesh.v, r->mesh.nv);
