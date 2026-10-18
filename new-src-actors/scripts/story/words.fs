@@ -1225,7 +1225,8 @@ strings: stalker-actor-name  2 debilitas daniella riccardo  6 debilitas debilita
 : summoner-id ( -- id )  s" summoner" actor-named ;
 : partner-load ( id -- )   \ 0x11: kind `id` into slot 2, loaded and started (CharLoad_Partner); the summoner afresh
     slot2 @ dup 0< 0= if  send stalker-unload  else  drop  then
-    dup slot2-kind !  stalker-actor dup slot2 !  dup 0< if  drop exit  then  stalker-cs swap send stalker-load
+    dup slot2-kind !  dup stalker-actor dup slot2 !  dup 0< if  2drop exit  then
+    tuck send stalker-as  stalker-cs swap send stalker-load
     summoner-id send summoner-reset ;
 \ the summoner (docs/subsystems/summoner.md)
 : summon-take ( kind -- )  summoner-id send summoner-take ;          \ 0x84: take the stalker out (Summoner_Take)

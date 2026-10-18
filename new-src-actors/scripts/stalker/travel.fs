@@ -96,8 +96,9 @@ variable in-tri
 : placed-anywhere ( -- )   \ (Actor_TeleportRandom: no exit to stand at)
     random-tri dup 0< if  drop fiona body-tri  then
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place ;
-: in-play ( -- )   \ in the room being played now: his search there, or after her
+: in-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first)
     0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
+    hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
     my-mode @ held-off = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
         own-tri dup tri-center goal-at vec!  goal-at plan 0> if  walk-slow play  ['] walking step!  then  exit
     then
@@ -125,7 +126,8 @@ variable in-tri
 \ DoorHold_Shut); Daniella in her rage leaves it open (Daniella_ExitArg). Debilitas, Lorenzo and
 \ the rest leave doors as they are ----
 0 constant leaves-doors   1 constant shuts-doors   2 constant shuts-doors-calm
-: shuts? ( -- flag )
+: shuts? ( -- flag )   \ (in the mini-game's run they leave them open: Kind34_ExitArg, TintStalker_EndingDoor)
+    hewie-played? if  false exit  then
     door-manner @ case
         shuts-doors of  true  endof
         shuts-doors-calm of  raging @ 0=  endof

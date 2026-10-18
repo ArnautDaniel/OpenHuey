@@ -128,13 +128,24 @@ $1300 constant gesture-anims
               else  waiting-about mode!  route-clear  then  endof
     endcase ;
 : knocked-out ( -- )  played? 0= if  exit  then  let-door-go  out-over  0 hp !  knock-down ;
+: run-temper ( -- )   \ (the run: how much of Hewie he stands - Kind34_Activate 80, TintStalker_Reset 20,
+    my-kind @ case                     \ Debilitas3_Activate 16)
+        kind34-kind of  80 tolerance !  endof  tintstalker-kind of  20 tolerance !  endof
+        debilitas-7-kind of  16 tolerance !  endof
+    endcase ;
 : activated ( -- )
+    hewie-played? if  run-temper  then
     forget-leads  0 beaten !  -1 making-for !  0 down-t !  waiting-about mode!  900 mode-t !  0 raging !
     hp @ 0> 0= if  hp-max @ hp !  then ;
 : unload ( -- )  0 loaded !  in-game @ if  go-out  then  my-kind @ -1 cast-as ;
 create place-at /vec allot
 behaviour stalking
   on stalker-load ( slot -- )  load ;
+  \ the kind he is loaded as (Debilitas's: kind 7 is the Pursuer with his model, its chase the
+  \ Pursuer's - Debilitas3)
+  on stalker-as ( kind -- )
+      dup debilitas-7-kind = if  my-kind !  -1 base-chase ! exit  then  drop
+      my-kind @ debilitas-7-kind = if  debilitas-kind my-kind !  0 base-chase !  then ;   \ (himself again)
   on stalker-unload ( -- )  unload ;
   on stalker-in ( room tri -- )  come-in ;
   on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him)

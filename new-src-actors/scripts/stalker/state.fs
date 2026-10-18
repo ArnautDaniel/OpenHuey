@@ -164,4 +164,7 @@ state: stalker-state
   cell field blows  cell field blow-move  cell field blow-aim   \ (Riccardo's flurry: blows left, the move, his aim)
   \ (Lorenzo's other class: under the floor - frames left, where he comes up, how; whom his sweep struck)
   cell field under-t  /vec field rise-at  cell field rise-tri  cell field rise-anim  cell field rise-xt  cell field swept
+  \ the mini-game's run (Hewie played): frames he waits on coming into the room played
+  \ (Pursuer_ThroughDoorEnding's +0x17B4)
+  cell field run-pause
 end-state

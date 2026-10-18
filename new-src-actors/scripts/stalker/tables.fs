@@ -51,6 +51,7 @@ create deb-table-3AFED0  $1 , -1 , 100e f,
 create deb-table-3AFEE0  $17 , 1 , 100e f,
 create deb-table-3AFEA0  $9 , -1 , 50e f,  $17 , 1 , 70e f,  $17 , 3 , 90e f,  $17 , 5 , 100e f,
 create deb-tables  deb-table-3AF780 , deb-table-3AF800 , deb-table-3AF7C0 , deb-table-3AF840 , deb-table-3AF880 , deb-table-3AF8A0 , deb-table-3AF8C0 , deb-table-3AF900 , deb-table-3AF930 , deb-table-3AF978 , deb-table-3AF990 , deb-table-3AF9D0 , deb-table-3AF9E0 , deb-table-3AFA10 , deb-table-3AFA70 , deb-table-3AFA80 , deb-table-3AFA40 , deb-table-3AF780 , deb-table-3AF800 , deb-table-3AF7C0 , deb-table-3AF840 , deb-table-3AF880 , deb-table-3AF8A0 , deb-table-3AF8C0 , deb-table-3AF900 , deb-table-3AF930 , deb-table-3AF978 , deb-table-3AF990 , deb-table-3AF9D0 , deb-table-3AF9E0 , deb-table-3AFA10 , deb-table-3AFA70 , deb-table-3AFA80 , deb-table-3AFA40 , deb-table-3AFBA0 , deb-table-3AFC40 , deb-table-3AFBF0 , deb-table-3AFC80 , deb-table-3AFCB0 , deb-table-3AFCF0 , deb-table-3AFD10 , deb-table-3AFD50 , deb-table-3AFD80 , deb-table-3AFDC0 , deb-table-3AFDD0 , deb-table-3AFE00 , deb-table-3AFE10 , deb-table-3AFE50 , deb-table-3AFED0 , deb-table-3AFEE0 , deb-table-3AFEA0 , deb-table-3AFBA0 , deb-table-3AFC40 , deb-table-3AFBF0 , deb-table-3AFC80 , deb-table-3AFCB0 , deb-table-3AFCF0 , deb-table-3AFD10 , deb-table-3AFD50 , deb-table-3AFD80 , deb-table-3AFDC0 , deb-table-3AFDD0 , deb-table-3AFE00 , deb-table-3AFE10 , deb-table-3AFE50 , deb-table-3AFED0 , deb-table-3AFEE0 , deb-table-3AFEA0 ,   \ [hard][rage][situation]
+create deb-run   -1 ,   \ (the run: situation, table)
 create deb-moves
     $E00 , $12 , 20 , 5e f, 2 , 15 , 10e f, 0e f, 1 , $B , 1 ,
     $E01 , $1C , 30 , 5e f, 2 , 30 , 15e f, 0e f, 1 , $B , 0 ,
@@ -85,7 +86,7 @@ create debilitas-kit  deb-tables , deb-moves , deb-combos , deb-gestures , deb-c
     deb-lunge-chances , deb-temper-0 , deb-temper-1 , deb-pursue-0 , deb-pursue-1 , deb-pursue-2 , deb-pursue-3 ,
     13 , 14 , deb-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    deb-knocks , deb-anim-sounds ,
+    deb-knocks , deb-anim-sounds , deb-run ,
 
 \ ==== Riccardo ====
 create ric-table-414D50  $1000 , -1 , 50e f,  $13 , 4 , 65e f,  $13 , 6 , 80e f,  $13 , 16 , 90e f,  $13 , 15 , 100e f,
@@ -123,6 +124,7 @@ create ric-table-4154E0  $1 , -1 , 100e f,
 create ric-table-4154F0  $D , -1 , 100e f,
 create ric-table-4154B0  $9 , -1 , 75e f,  $17 , 0 , 85e f,  $17 , 2 , 90e f,  $17 , 1 , 100e f,
 create ric-tables  ric-table-414D50 , ric-table-414DC0 , ric-table-414D90 , ric-table-414DF0 , ric-table-414E20 , ric-table-414E40 , ric-table-414E58 , ric-table-414E68 , ric-table-414E80 , ric-table-414EB0 , ric-table-414EC0 , ric-table-414EE0 , ric-table-414F10 , ric-table-414F40 , ric-table-414FA0 , ric-table-414FB0 , ric-table-414F70 , ric-table-414D50 , ric-table-414DC0 , ric-table-414D90 , ric-table-414DF0 , ric-table-414E20 , ric-table-414E40 , ric-table-414E58 , ric-table-414E68 , ric-table-414E80 , ric-table-414EB0 , ric-table-414EC0 , ric-table-414EE0 , ric-table-414F10 , ric-table-414F40 , ric-table-414FA0 , ric-table-414FB0 , ric-table-414F70 , ric-table-415150 , ric-table-415200 , ric-table-4151C0 , ric-table-415250 , ric-table-415280 , ric-table-4152B0 , ric-table-4152D0 , ric-table-415340 , ric-table-415360 , ric-table-4153A0 , ric-table-4153B0 , ric-table-4153F0 , ric-table-415420 , ric-table-415450 , ric-table-4154E0 , ric-table-4154F0 , ric-table-4154B0 , ric-table-415150 , ric-table-415200 , ric-table-4151C0 , ric-table-415250 , ric-table-415280 , ric-table-4152B0 , ric-table-4152D0 , ric-table-415340 , ric-table-415360 , ric-table-4153A0 , ric-table-4153B0 , ric-table-4153F0 , ric-table-415420 , ric-table-415450 , ric-table-4154E0 , ric-table-4154F0 , ric-table-4154B0 ,   \ [hard][rage][situation]
+create ric-run   -1 ,   \ (the run: situation, table)
 create ric-moves
     $E00 , $2E , -1 , 5e f, 4 , 30 , 80e f, 0e f, 1 , -1 , 0 ,
     $E06 , $2E , -1 , 5e f, 4 , 30 , 20e f, 0e f, 1 , -1 , 0 ,
@@ -166,7 +168,7 @@ create riccardo-kit  ric-tables , ric-moves , ric-combos , ric-gestures , ric-ch
     ric-lunge-chances , ric-temper-0 , ric-temper-1 , ric-pursue-0 , ric-pursue-1 , ric-pursue-2 , ric-pursue-3 ,
     16 , 17 , ric-grips ,
     ric-waits-0 , ric-flurry-0 , ric-flurry-1 , ric-waits-1 , ric-waits-2 , ric-waits-3 ,
-    ric-knocks , ric-anim-sounds ,
+    ric-knocks , ric-anim-sounds , ric-run ,
 
 \ ==== Lorenzo ====
 create lor-table-41A870  $13 , 0 , 20e f,  $13 , 1 , 35e f,  $13 , 2 , 49e f,  $13 , 3 , 50e f,  $13 , 5 , 65e f,  $17 , 2 , 90e f,  $14 , -1 , 100e f,
@@ -204,6 +206,7 @@ create lor-table-41AF98  $1 , -1 , 100e f,
 create lor-table-41AFA8  $1 , -1 , 100e f,
 create lor-table-41AF70  $9 , -1 , 75e f,  $17 , 2 , 90e f,  $17 , 1 , 100e f,
 create lor-tables  lor-table-41A870 , lor-table-41A930 , lor-table-41A8D0 , lor-table-41A980 , lor-table-41A9A0 , lor-table-41A9F0 , lor-table-41AA20 , lor-table-41AA70 , lor-table-41AAC0 , lor-table-41AAF0 , lor-table-41AB08 , lor-table-41AB20 , lor-table-41AB40 , lor-table-41AB60 , lor-table-41ABA8 , lor-table-41ABB8 , lor-table-41AB80 , lor-table-41A870 , lor-table-41A930 , lor-table-41A8D0 , lor-table-41A980 , lor-table-41A9A0 , lor-table-41A9F0 , lor-table-41AA20 , lor-table-41AA70 , lor-table-41AAC0 , lor-table-41AAF0 , lor-table-41AB08 , lor-table-41AB20 , lor-table-41AB40 , lor-table-41AB60 , lor-table-41ABA8 , lor-table-41ABB8 , lor-table-41AB80 , lor-table-41AC50 , lor-table-41AD10 , lor-table-41ACB0 , lor-table-41AD60 , lor-table-41AD80 , lor-table-41ADD0 , lor-table-41AE00 , lor-table-41AE50 , lor-table-41AEA0 , lor-table-41AED0 , lor-table-41AEF0 , lor-table-41AF10 , lor-table-41AF30 , lor-table-41AF50 , lor-table-41AF98 , lor-table-41AFA8 , lor-table-41AF70 , lor-table-41AC50 , lor-table-41AD10 , lor-table-41ACB0 , lor-table-41AD60 , lor-table-41AD80 , lor-table-41ADD0 , lor-table-41AE00 , lor-table-41AE50 , lor-table-41AEA0 , lor-table-41AED0 , lor-table-41AEF0 , lor-table-41AF10 , lor-table-41AF30 , lor-table-41AF50 , lor-table-41AF98 , lor-table-41AFA8 , lor-table-41AF70 ,   \ [hard][rage][situation]
+create lor-run   -1 ,   \ (the run: situation, table)
 create lor-moves
     $E00 , $21 , -1 , 5e f, 1 , 20 , 15e f, 0e f, 1 , $B , 0 ,
     $E01 , $21 , -1 , 5e f, 1 , 25 , 20e f, 0e f, 1 , $B , 0 ,
@@ -228,7 +231,7 @@ create lorenzo-kit  lor-tables , lor-moves , lor-combos , lor-gestures , lor-cha
     lor-lunge-chances , lor-temper-0 , lor-temper-1 , lor-pursue-0 , lor-pursue-1 , lor-pursue-2 , lor-pursue-3 ,
     -1 , -1 , lor-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    lor-knocks , lor-anim-sounds ,
+    lor-knocks , lor-anim-sounds , lor-run ,
 
 \ ==== Lorenzo2 ====
 create ly0-table-422A70  $1002 , -1 , 20e f,  $13 , 4 , 45e f,  $13 , 5 , 70e f,  $17 , 0 , 85e f,  $1000 , -1 , 95e f,  $1001 , -1 , 100e f,
@@ -290,6 +293,7 @@ create ly0-table-423840  $18 , 0 , 60e f,  $18 , 2 , 100e f,
 create ly0-table-423860  $18 , 1 , 35e f,  $18 , 0 , 70e f,  $18 , 2 , 100e f,
 create ly0-table-423890  $17 , 4 , 80e f,  $17 , 0 , 100e f,
 create ly0-tables  ly0-table-422A70 , ly0-table-422B10 , ly0-table-422AC0 , ly0-table-422B50 , ly0-table-422B80 , ly0-table-422BC0 , ly0-table-422BE0 , ly0-table-422C30 , ly0-table-422C70 , ly0-table-422CA0 , ly0-table-422CD0 , ly0-table-422D00 , ly0-table-422D10 , ly0-table-422D20 , ly0-table-422D58 , ly0-table-422D68 , ly0-table-422D40 , ly0-table-422D80 , ly0-table-422E40 , ly0-table-422DE0 , ly0-table-422EA0 , ly0-table-422B80 , ly0-table-422BC0 , ly0-table-422ED0 , ly0-table-422C30 , ly0-table-422F30 , ly0-table-422F60 , ly0-table-422F90 , ly0-table-422FC0 , ly0-table-422FD0 , ly0-table-422FE0 , ly0-table-422D58 , ly0-table-422D68 , ly0-table-423000 , ly0-table-423140 , ly0-table-423230 , ly0-table-4231C0 , ly0-table-423290 , ly0-table-4232C0 , ly0-table-423320 , ly0-table-423350 , ly0-table-4233C0 , ly0-table-423420 , ly0-table-423450 , ly0-table-423480 , ly0-table-4234D0 , ly0-table-4234F0 , ly0-table-423510 , ly0-table-423558 , ly0-table-423568 , ly0-table-423540 , ly0-table-423580 , ly0-table-423670 , ly0-table-423600 , ly0-table-4236D0 , ly0-table-4232C0 , ly0-table-423320 , ly0-table-423700 , ly0-table-4233C0 , ly0-table-423770 , ly0-table-4237A0 , ly0-table-4237D0 , ly0-table-423820 , ly0-table-423840 , ly0-table-423860 , ly0-table-423558 , ly0-table-423568 , ly0-table-423890 ,   \ [hard][rage][situation]
+create ly0-run   -1 ,   \ (the run: situation, table)
 create ly0-moves
     $E03 , $15 , -1 , 4e f, 1 , 20 , 15e f, 0e f, 1 , $B , 0 ,
     $E00 , $32 , -1 , 4.5e f, 4 , 30 , 25e f, 5e f, 1 , $C , 1 ,
@@ -320,7 +324,7 @@ create lorenzo2-kit  ly0-tables , ly0-moves , ly0-combos , ly0-gestures , ly0-ch
     ly0-lunge-chances , ly0-temper-0 , ly0-temper-1 , ly0-pursue-0 , ly0-pursue-1 , ly0-pursue-2 , ly0-pursue-3 ,
     9 , 10 , ly0-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    ly0-knocks , ly0-anim-sounds ,
+    ly0-knocks , ly0-anim-sounds , ly0-run ,
 
 \ ==== Lorenzo2H ====
 create ly1-table-422A70  $1002 , -1 , 20e f,  $13 , 4 , 45e f,  $13 , 5 , 70e f,  $17 , 0 , 85e f,  $1000 , -1 , 95e f,  $1001 , -1 , 100e f,
@@ -382,6 +386,7 @@ create ly1-table-423840  $18 , 0 , 60e f,  $18 , 2 , 100e f,
 create ly1-table-423860  $18 , 1 , 35e f,  $18 , 0 , 70e f,  $18 , 2 , 100e f,
 create ly1-table-423890  $17 , 4 , 80e f,  $17 , 0 , 100e f,
 create ly1-tables  ly1-table-422A70 , ly1-table-422B10 , ly1-table-422AC0 , ly1-table-422B50 , ly1-table-422B80 , ly1-table-422BC0 , ly1-table-422BE0 , ly1-table-422C30 , ly1-table-422C70 , ly1-table-422CA0 , ly1-table-422CD0 , ly1-table-422D00 , ly1-table-422D10 , ly1-table-422D20 , ly1-table-422D58 , ly1-table-422D68 , ly1-table-422D40 , ly1-table-422D80 , ly1-table-422E40 , ly1-table-422DE0 , ly1-table-422EA0 , ly1-table-422B80 , ly1-table-422BC0 , ly1-table-422ED0 , ly1-table-422C30 , ly1-table-422F30 , ly1-table-422F60 , ly1-table-422F90 , ly1-table-422FC0 , ly1-table-422FD0 , ly1-table-422FE0 , ly1-table-422D58 , ly1-table-422D68 , ly1-table-423000 , ly1-table-423140 , ly1-table-423230 , ly1-table-4231C0 , ly1-table-423290 , ly1-table-4232C0 , ly1-table-423320 , ly1-table-423350 , ly1-table-4233C0 , ly1-table-423420 , ly1-table-423450 , ly1-table-423480 , ly1-table-4234D0 , ly1-table-4234F0 , ly1-table-423510 , ly1-table-423558 , ly1-table-423568 , ly1-table-423540 , ly1-table-423580 , ly1-table-423670 , ly1-table-423600 , ly1-table-4236D0 , ly1-table-4232C0 , ly1-table-423320 , ly1-table-423700 , ly1-table-4233C0 , ly1-table-423770 , ly1-table-4237A0 , ly1-table-4237D0 , ly1-table-423820 , ly1-table-423840 , ly1-table-423860 , ly1-table-423558 , ly1-table-423568 , ly1-table-423890 ,   \ [hard][rage][situation]
+create ly1-run   -1 ,   \ (the run: situation, table)
 create ly1-moves
     $E03 , $15 , -1 , 5e f, 1 , 20 , 30e f, 5e f, 1 , $B , 0 ,
     $E00 , $32 , -1 , 6e f, 4 , 30 , 50e f, 35e f, 1 , $C , 1 ,
@@ -412,7 +417,7 @@ create lorenzo2h-kit  ly1-tables , ly1-moves , ly1-combos , ly1-gestures , ly1-c
     ly1-lunge-chances , ly1-temper-0 , ly1-temper-1 , ly1-pursue-0 , ly1-pursue-1 , ly1-pursue-2 , ly1-pursue-3 ,
     9 , 10 , ly1-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    ly1-knocks , ly1-anim-sounds ,
+    ly1-knocks , ly1-anim-sounds , ly1-run ,
 
 \ ==== Kind39 ====
 create k39-table-4450C0  $13 , 1 , 10e f,  $13 , 3 , 25e f,  $13 , 4 , 35e f,  $13 , 6 , 40e f,  $13 , 8 , 55e f,  $17 , 0 , 60e f,  $1001 , -1 , 75e f,  $13 , 0 , 90e f,  $17 , 5 , 95e f,  $14 , -1 , 100e f,
@@ -450,6 +455,7 @@ create k39-table-445968  $1 , -1 , 100e f,
 create k39-table-445978  $1 , -1 , 100e f,
 create k39-table-445950  $17 , 4 , 80e f,  $17 , 0 , 100e f,
 create k39-tables  k39-table-4450C0 , k39-table-4451A0 , k39-table-445140 , k39-table-445200 , k39-table-445230 , k39-table-445290 , k39-table-4452C0 , k39-table-445330 , k39-table-445390 , k39-table-4453C0 , k39-table-4453E0 , k39-table-445430 , k39-table-445450 , k39-table-445470 , k39-table-4454B8 , k39-table-4454C8 , k39-table-4454A0 , k39-table-4450C0 , k39-table-4451A0 , k39-table-445140 , k39-table-445200 , k39-table-445230 , k39-table-445290 , k39-table-4452C0 , k39-table-445330 , k39-table-445390 , k39-table-4453C0 , k39-table-4453E0 , k39-table-445430 , k39-table-445450 , k39-table-445470 , k39-table-4454B8 , k39-table-4454C8 , k39-table-4454A0 , k39-table-4455B0 , k39-table-445690 , k39-table-445630 , k39-table-4456F0 , k39-table-445720 , k39-table-445780 , k39-table-4457B0 , k39-table-445820 , k39-table-445870 , k39-table-4458A0 , k39-table-4458C0 , k39-table-445900 , k39-table-445918 , k39-table-445930 , k39-table-445968 , k39-table-445978 , k39-table-445950 , k39-table-4455B0 , k39-table-445690 , k39-table-445630 , k39-table-4456F0 , k39-table-445720 , k39-table-445780 , k39-table-4457B0 , k39-table-445820 , k39-table-445870 , k39-table-4458A0 , k39-table-4458C0 , k39-table-445900 , k39-table-445918 , k39-table-445930 , k39-table-445968 , k39-table-445978 , k39-table-445950 ,   \ [hard][rage][situation]
+create k39-run   -1 ,   \ (the run: situation, table)
 create k39-moves
     $E03 , $15 , -1 , 4e f, 1 , 20 , 15e f, 0e f, 1 , $B , 0 ,
     $E00 , $32 , -1 , 4.5e f, 4 , 30 , 25e f, 5e f, 1 , $C , 1 ,
@@ -480,7 +486,7 @@ create kind39-kit  k39-tables , k39-moves , k39-combos , k39-gestures , k39-chas
     k39-lunge-chances , k39-temper-0 , k39-temper-1 , k39-pursue-0 , k39-pursue-1 , k39-pursue-2 , k39-pursue-3 ,
     9 , 10 , k39-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k39-knocks , k39-anim-sounds ,
+    k39-knocks , k39-anim-sounds , k39-run ,
 
 \ ==== Kind39H ====
 create k39h-table-4450C0  $13 , 1 , 10e f,  $13 , 3 , 25e f,  $13 , 4 , 35e f,  $13 , 6 , 40e f,  $13 , 8 , 55e f,  $17 , 0 , 60e f,  $1001 , -1 , 75e f,  $13 , 0 , 90e f,  $17 , 5 , 95e f,  $14 , -1 , 100e f,
@@ -518,6 +524,7 @@ create k39h-table-445968  $1 , -1 , 100e f,
 create k39h-table-445978  $1 , -1 , 100e f,
 create k39h-table-445950  $17 , 4 , 80e f,  $17 , 0 , 100e f,
 create k39h-tables  k39h-table-4450C0 , k39h-table-4451A0 , k39h-table-445140 , k39h-table-445200 , k39h-table-445230 , k39h-table-445290 , k39h-table-4452C0 , k39h-table-445330 , k39h-table-445390 , k39h-table-4453C0 , k39h-table-4453E0 , k39h-table-445430 , k39h-table-445450 , k39h-table-445470 , k39h-table-4454B8 , k39h-table-4454C8 , k39h-table-4454A0 , k39h-table-4450C0 , k39h-table-4451A0 , k39h-table-445140 , k39h-table-445200 , k39h-table-445230 , k39h-table-445290 , k39h-table-4452C0 , k39h-table-445330 , k39h-table-445390 , k39h-table-4453C0 , k39h-table-4453E0 , k39h-table-445430 , k39h-table-445450 , k39h-table-445470 , k39h-table-4454B8 , k39h-table-4454C8 , k39h-table-4454A0 , k39h-table-4455B0 , k39h-table-445690 , k39h-table-445630 , k39h-table-4456F0 , k39h-table-445720 , k39h-table-445780 , k39h-table-4457B0 , k39h-table-445820 , k39h-table-445870 , k39h-table-4458A0 , k39h-table-4458C0 , k39h-table-445900 , k39h-table-445918 , k39h-table-445930 , k39h-table-445968 , k39h-table-445978 , k39h-table-445950 , k39h-table-4455B0 , k39h-table-445690 , k39h-table-445630 , k39h-table-4456F0 , k39h-table-445720 , k39h-table-445780 , k39h-table-4457B0 , k39h-table-445820 , k39h-table-445870 , k39h-table-4458A0 , k39h-table-4458C0 , k39h-table-445900 , k39h-table-445918 , k39h-table-445930 , k39h-table-445968 , k39h-table-445978 , k39h-table-445950 ,   \ [hard][rage][situation]
+create k39h-run   -1 ,   \ (the run: situation, table)
 create k39h-moves
     $E03 , $15 , -1 , 5e f, 1 , 20 , 30e f, 5e f, 1 , $B , 0 ,
     $E00 , $32 , -1 , 6e f, 4 , 30 , 50e f, 35e f, 1 , $C , 1 ,
@@ -548,7 +555,7 @@ create kind39h-kit  k39h-tables , k39h-moves , k39h-combos , k39h-gestures , k39
     k39h-lunge-chances , k39h-temper-0 , k39h-temper-1 , k39h-pursue-0 , k39h-pursue-1 , k39h-pursue-2 , k39h-pursue-3 ,
     9 , 10 , k39h-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k39h-knocks , k39h-anim-sounds ,
+    k39h-knocks , k39h-anim-sounds , k39h-run ,
 
 \ ==== Kind37 ====
 create k37-table-441CF0  $13 , 0 , 25e f,  $13 , 13 , 50e f,  $14 , -1 , 85e f,  $17 , 3 , 100e f,
@@ -616,6 +623,7 @@ create k37-table-442810  $18 , 4 , 75e f,  $18 , 3 , 100e f,
 create k37-table-442830  $18 , 4 , 50e f,  $13 , 2 , 60e f,  $13 , 19 , 80e f,  $13 , 9 , 100e f,
 create k37-table-442860  $9 , -1 , 100e f,
 create k37-tables  k37-table-441CF0 , k37-table-441D60 , k37-table-441D20 , k37-table-441DA0 , k37-table-441DC0 , k37-table-441E00 , k37-table-441E30 , k37-table-441E60 , k37-table-441E80 , k37-table-441EB0 , k37-table-441EC0 , k37-table-441EE0 , k37-table-441F00 , k37-table-441F20 , k37-table-441F48 , k37-table-441F58 , k37-table-441F38 , k37-table-441F70 , k37-table-441FF0 , k37-table-441FC0 , k37-table-442020 , k37-table-442030 , k37-table-442060 , k37-table-442080 , k37-table-4420B0 , k37-table-4420E0 , k37-table-442110 , k37-table-442120 , k37-table-442130 , k37-table-442160 , k37-table-442178 , k37-table-441F48 , k37-table-441F58 , k37-table-442188 , k37-table-4422D0 , k37-table-442350 , k37-table-442310 , k37-table-4423A0 , k37-table-4423D0 , k37-table-442410 , k37-table-442430 , k37-table-442480 , k37-table-4424C0 , k37-table-442500 , k37-table-442510 , k37-table-442530 , k37-table-442550 , k37-table-442580 , k37-table-4425D0 , k37-table-4425E0 , k37-table-4425C0 , k37-table-4425F0 , k37-table-442670 , k37-table-442630 , k37-table-4426B8 , k37-table-4426D0 , k37-table-442700 , k37-table-442720 , k37-table-442760 , k37-table-442790 , k37-table-4427D0 , k37-table-4427E0 , k37-table-4427F0 , k37-table-442810 , k37-table-442830 , k37-table-4425D0 , k37-table-4425E0 , k37-table-442860 ,   \ [hard][rage][situation]
+create k37-run   -1 ,   \ (the run: situation, table)
 create k37-moves
     $E00 , $2A , -1 , 5e f, 4 , 30 , 80e f, 0e f, 1 , -1 , 0 ,
     $E06 , $2A , -1 , 5e f, 4 , 30 , 20e f, 0e f, 1 , -1 , 0 ,
@@ -659,7 +667,7 @@ create kind37-kit  k37-tables , k37-moves , k37-combos , k37-gestures , k37-chas
     k37-lunge-chances , k37-temper-0 , k37-temper-1 , k37-pursue-0 , k37-pursue-1 , k37-pursue-2 , k37-pursue-3 ,
     16 , 17 , k37-grips ,
     k37-waits-0 , k37-flurry-0 , k37-flurry-1 , k37-waits-1 , k37-waits-2 , k37-waits-3 ,
-    k37-knocks , k37-anim-sounds ,
+    k37-knocks , k37-anim-sounds , k37-run ,
 
 \ ==== TintStalker ====
 create ts-table-42A7F0  $13 , 1 , 10e f,  $13 , 2 , 30e f,  $13 , 0 , 55e f,  $13 , 13 , 75e f,  $14 , -1 , 100e f,
@@ -697,6 +705,8 @@ create ts-table-42AEA8  $1 , -1 , 100e f,
 create ts-table-42AEB8  $D , -1 , 100e f,
 create ts-table-42AE80  $9 , -1 , 75e f,  $17 , 4 , 90e f,  $17 , 2 , 100e f,
 create ts-tables  ts-table-42A7F0 , ts-table-42A860 , ts-table-42A830 , ts-table-42A8A0 , ts-table-42A8D0 , ts-table-42A900 , ts-table-42A930 , ts-table-42A960 , ts-table-42A990 , ts-table-42A9C0 , ts-table-42A9D0 , ts-table-42AA00 , ts-table-42AA20 , ts-table-42AA50 , ts-table-42AAA0 , ts-table-42AAB0 , ts-table-42AA70 , ts-table-42A7F0 , ts-table-42A860 , ts-table-42A830 , ts-table-42A8A0 , ts-table-42A8D0 , ts-table-42A900 , ts-table-42A930 , ts-table-42A960 , ts-table-42A990 , ts-table-42A9C0 , ts-table-42A9D0 , ts-table-42AA00 , ts-table-42AA20 , ts-table-42AA50 , ts-table-42AAA0 , ts-table-42AAB0 , ts-table-42AA70 , ts-table-42ABA0 , ts-table-42AC20 , ts-table-42ABE0 , ts-table-42AC70 , ts-table-42ACA0 , ts-table-42ACD0 , ts-table-42ACF0 , ts-table-42AD40 , ts-table-42AD80 , ts-table-42ADC0 , ts-table-42ADD0 , ts-table-42AE00 , ts-table-42AE20 , ts-table-42AE50 , ts-table-42AEA8 , ts-table-42AEB8 , ts-table-42AE80 , ts-table-42ABA0 , ts-table-42AC20 , ts-table-42ABE0 , ts-table-42AC70 , ts-table-42ACA0 , ts-table-42ACD0 , ts-table-42ACF0 , ts-table-42AD40 , ts-table-42AD80 , ts-table-42ADC0 , ts-table-42ADD0 , ts-table-42AE00 , ts-table-42AE20 , ts-table-42AE50 , ts-table-42AEA8 , ts-table-42AEB8 , ts-table-42AE80 ,   \ [hard][rage][situation]
+create ts-table-42AAC0  $1 , -1 , 100e f,
+create ts-run  15 , ts-table-42AAC0 , -1 ,   \ (the run: situation, table)
 create ts-moves
     $E00 , $2A , -1 , 5e f, 4 , 30 , 80e f, 0e f, 1 , -1 , 0 ,
     $E06 , $2A , -1 , 5e f, 4 , 30 , 20e f, 0e f, 1 , -1 , 0 ,
@@ -734,7 +744,7 @@ create tintstalker-kit  ts-tables , ts-moves , ts-combos , ts-gestures , ts-chas
     ts-lunge-chances , ts-temper-0 , ts-temper-1 , ts-pursue-0 , ts-pursue-1 , ts-pursue-2 , ts-pursue-3 ,
     16 , 17 , ts-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    ts-knocks , ts-anim-sounds ,
+    ts-knocks , ts-anim-sounds , ts-run ,
 
 \ ==== Kind12 ====
 create k12-table-423D90  $13 , 0 , 75e f,  $13 , 1 , 100e f,
@@ -772,6 +782,7 @@ create k12-table-4241C8  $1 , -1 , 100e f,
 create k12-table-4241D8  $1 , -1 , 100e f,
 create k12-table-4241B0  $17 , 1 , 60e f,  $17 , 0 , 100e f,
 create k12-tables  k12-table-423D90 , k12-table-423DE0 , k12-table-423DB0 , k12-table-423DF8 , k12-table-423E10 , k12-table-423E38 , k12-table-423E50 , k12-table-423E70 , k12-table-423E88 , k12-table-423E98 , k12-table-423EB0 , k12-table-423EC8 , k12-table-423EE0 , k12-table-423F00 , k12-table-423F38 , k12-table-423F48 , k12-table-423F20 , k12-table-423D90 , k12-table-423DE0 , k12-table-423DB0 , k12-table-423DF8 , k12-table-423E10 , k12-table-423E38 , k12-table-423E50 , k12-table-423E70 , k12-table-423E88 , k12-table-423E98 , k12-table-423EB0 , k12-table-423EC8 , k12-table-423EE0 , k12-table-423F00 , k12-table-423F38 , k12-table-423F48 , k12-table-423F20 , k12-table-423FE0 , k12-table-424040 , k12-table-424010 , k12-table-424060 , k12-table-424080 , k12-table-4240B0 , k12-table-4240C0 , k12-table-4240F0 , k12-table-424108 , k12-table-424118 , k12-table-424130 , k12-table-424158 , k12-table-424170 , k12-table-424190 , k12-table-4241C8 , k12-table-4241D8 , k12-table-4241B0 , k12-table-423FE0 , k12-table-424040 , k12-table-424010 , k12-table-424060 , k12-table-424080 , k12-table-4240B0 , k12-table-4240C0 , k12-table-4240F0 , k12-table-424108 , k12-table-424118 , k12-table-424130 , k12-table-424158 , k12-table-424170 , k12-table-424190 , k12-table-4241C8 , k12-table-4241D8 , k12-table-4241B0 ,   \ [hard][rage][situation]
+create k12-run   -1 ,   \ (the run: situation, table)
 create k12-moves
     $2300 , $3 , -1 , 25e f, 6 , 0 , 50e f, 0e f, 0 , -1 , 0 ,
     $E04 , $19 , 16 , 5e f, 3 , 50 , 50e f, 0e f, 1 , $D , 0 ,
@@ -794,7 +805,7 @@ create kind12-kit  k12-tables , k12-moves , k12-combos , k12-gestures , k12-chas
     k12-lunge-chances , k12-temper-0 , k12-temper-1 , k12-pursue-0 , k12-pursue-1 , k12-pursue-2 , k12-pursue-3 ,
     -1 , -1 , k12-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k12-knocks , k12-anim-sounds ,
+    k12-knocks , k12-anim-sounds , k12-run ,
 
 \ ==== Kind34 ====
 create k34-table-43BAC0  $14 , -1 , 10e f,  $13 , 2 , 25e f,  $13 , 10 , 35e f,  $13 , 9 , 45e f,  $13 , 7 , 60e f,  $13 , 11 , 70e f,  $17 , 4 , 75e f,  $17 , 5 , 95e f,  $17 , 0 , 100e f,
@@ -866,6 +877,7 @@ create k34-table-43CBB0  $1 , -1 , 100e f,
 create k34-table-43CBC0  $1 , -1 , 100e f,
 create k34-table-43CB80  $17 , 3 , 20e f,  $17 , 2 , 35e f,  $17 , 1 , 60e f,  $17 , 0 , 100e f,
 create k34-tables  k34-table-43BAC0 , k34-table-43BBA0 , k34-table-43BB30 , k34-table-43BC00 , k34-table-43BC30 , k34-table-43BC90 , k34-table-43BCD0 , k34-table-43BD30 , k34-table-43BD90 , k34-table-43BDC0 , k34-table-43BDF0 , k34-table-43BE40 , k34-table-43BE60 , k34-table-43BE90 , k34-table-43BEF0 , k34-table-43BF00 , k34-table-43BEC0 , k34-table-43BF10 , k34-table-43BF90 , k34-table-43BF50 , k34-table-43BFC0 , k34-table-43BFF0 , k34-table-43C030 , k34-table-43C070 , k34-table-43C0B0 , k34-table-43C0F0 , k34-table-43C110 , k34-table-43C130 , k34-table-43C158 , k34-table-43C170 , k34-table-43C1A0 , k34-table-43C1F0 , k34-table-43C200 , k34-table-43C1C0 , k34-table-43C360 , k34-table-43C440 , k34-table-43C3D0 , k34-table-43C4A0 , k34-table-43C4D0 , k34-table-43C530 , k34-table-43C560 , k34-table-43C5D0 , k34-table-43C630 , k34-table-43C660 , k34-table-43C690 , k34-table-43C6E0 , k34-table-43C710 , k34-table-43C740 , k34-table-43C7A0 , k34-table-43C7B0 , k34-table-43C770 , k34-table-43C7D0 , k34-table-43C890 , k34-table-43C830 , k34-table-43C8F0 , k34-table-43C920 , k34-table-43C980 , k34-table-43C9D0 , k34-table-43CA30 , k34-table-43CA90 , k34-table-43CAC0 , k34-table-43CAE0 , k34-table-43CB10 , k34-table-43CB40 , k34-table-43CB68 , k34-table-43CBB0 , k34-table-43CBC0 , k34-table-43CB80 ,   \ [hard][rage][situation]
+create k34-run  15 , k34-table-43C200 , 14 , k34-table-43C1F0 , -1 ,   \ (the run: situation, table)
 create k34-moves
     $E00 , $2C , -1 , 3.5e f, 2 , 35 , 30e f, 35e f, 1 , $C , 1 ,
     $E01 , $1C , -1 , 3.5e f, 1 , 15 , 15e f, 0e f, 1 , $B , 0 ,
@@ -898,7 +910,7 @@ create kind34-kit  k34-tables , k34-moves , k34-combos , k34-gestures , k34-chas
     k34-lunge-chances , k34-temper-0 , k34-temper-1 , k34-pursue-0 , k34-pursue-1 , k34-pursue-2 , k34-pursue-3 ,
     11 , 12 , k34-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k34-knocks , k34-anim-sounds ,
+    k34-knocks , k34-anim-sounds , k34-run ,
 
 \ ==== Kind35 ====
 create k35-table-43D180  $13 , 0 , 10e f,  $13 , 2 , 15e f,  $13 , 1 , 25e f,  $13 , 11 , 30e f,  $14 , -1 , 35e f,  $17 , 1 , 40e f,  $17 , 3 , 45e f,  $17 , 5 , 65e f,  $17 , 0 , 80e f,  $13 , 9 , 100e f,
@@ -936,6 +948,7 @@ create k35-table-43DAC0  $D , -1 , 100e f,
 create k35-table-43DAD0  $D , -1 , 100e f,
 create k35-table-43DA90  $9 , -1 , 60e f,  $17 , 0 , 80e f,  $17 , 4 , 85e f,  $17 , 1 , 100e f,
 create k35-tables  k35-table-43D180 , k35-table-43D270 , k35-table-43D200 , k35-table-43D2D0 , k35-table-43D310 , k35-table-43D370 , k35-table-43D3C0 , k35-table-43D420 , k35-table-43D480 , k35-table-43D4B0 , k35-table-43D4D0 , k35-table-43D510 , k35-table-43D530 , k35-table-43D560 , k35-table-43D5C0 , k35-table-43D5D0 , k35-table-43D590 , k35-table-43D180 , k35-table-43D270 , k35-table-43D200 , k35-table-43D2D0 , k35-table-43D310 , k35-table-43D370 , k35-table-43D3C0 , k35-table-43D420 , k35-table-43D480 , k35-table-43D4B0 , k35-table-43D4D0 , k35-table-43D510 , k35-table-43D530 , k35-table-43D560 , k35-table-43D5C0 , k35-table-43D5D0 , k35-table-43D590 , k35-table-43D6B0 , k35-table-43D770 , k35-table-43D710 , k35-table-43D7E0 , k35-table-43D820 , k35-table-43D880 , k35-table-43D8D0 , k35-table-43D930 , k35-table-43D990 , k35-table-43D9C0 , k35-table-43D9E0 , k35-table-43DA10 , k35-table-43DA30 , k35-table-43DA60 , k35-table-43DAC0 , k35-table-43DAD0 , k35-table-43DA90 , k35-table-43D6B0 , k35-table-43D770 , k35-table-43D710 , k35-table-43D7E0 , k35-table-43D820 , k35-table-43D880 , k35-table-43D8D0 , k35-table-43D930 , k35-table-43D990 , k35-table-43D9C0 , k35-table-43D9E0 , k35-table-43DA10 , k35-table-43DA30 , k35-table-43DA60 , k35-table-43DAC0 , k35-table-43DAD0 , k35-table-43DA90 ,   \ [hard][rage][situation]
+create k35-run   -1 ,   \ (the run: situation, table)
 create k35-moves
     $E00 , $2C , -1 , 3.5e f, 2 , 35 , 30e f, 35e f, 1 , $C , 1 ,
     $E01 , $1C , -1 , 3.5e f, 1 , 15 , 15e f, 0e f, 1 , $B , 0 ,
@@ -968,7 +981,7 @@ create kind35-kit  k35-tables , k35-moves , k35-combos , k35-gestures , k35-chas
     k35-lunge-chances , k35-temper-0 , k35-temper-1 , k35-pursue-0 , k35-pursue-1 , k35-pursue-2 , k35-pursue-3 ,
     11 , 12 , k35-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k35-knocks , k35-anim-sounds ,
+    k35-knocks , k35-anim-sounds , k35-run ,
 
 \ ==== Kind36 ====
 create k36-table-43E010  $13 , 0 , 10e f,  $13 , 2 , 15e f,  $13 , 1 , 25e f,  $13 , 11 , 30e f,  $14 , -1 , 35e f,  $17 , 1 , 40e f,  $17 , 3 , 45e f,  $17 , 5 , 65e f,  $17 , 0 , 80e f,  $13 , 9 , 100e f,
@@ -1006,6 +1019,7 @@ create k36-table-43E970  $D , -1 , 100e f,
 create k36-table-43E980  $D , -1 , 100e f,
 create k36-table-43E940  $9 , -1 , 60e f,  $17 , 0 , 80e f,  $17 , 4 , 85e f,  $17 , 1 , 100e f,
 create k36-tables  k36-table-43E010 , k36-table-43E100 , k36-table-43E090 , k36-table-43E160 , k36-table-43E1A0 , k36-table-43E200 , k36-table-43E250 , k36-table-43E2B0 , k36-table-43E310 , k36-table-43E340 , k36-table-43E360 , k36-table-43E3A0 , k36-table-43E3C0 , k36-table-43E3F0 , k36-table-43E450 , k36-table-43E460 , k36-table-43E420 , k36-table-43E010 , k36-table-43E100 , k36-table-43E090 , k36-table-43E160 , k36-table-43E1A0 , k36-table-43E200 , k36-table-43E250 , k36-table-43E2B0 , k36-table-43E310 , k36-table-43E340 , k36-table-43E360 , k36-table-43E3A0 , k36-table-43E3C0 , k36-table-43E3F0 , k36-table-43E450 , k36-table-43E460 , k36-table-43E420 , k36-table-43E540 , k36-table-43E630 , k36-table-43E5C0 , k36-table-43E690 , k36-table-43E6D0 , k36-table-43E730 , k36-table-43E770 , k36-table-43E7D0 , k36-table-43E830 , k36-table-43E860 , k36-table-43E880 , k36-table-43E8B0 , k36-table-43E8E0 , k36-table-43E910 , k36-table-43E970 , k36-table-43E980 , k36-table-43E940 , k36-table-43E540 , k36-table-43E630 , k36-table-43E5C0 , k36-table-43E690 , k36-table-43E6D0 , k36-table-43E730 , k36-table-43E770 , k36-table-43E7D0 , k36-table-43E830 , k36-table-43E860 , k36-table-43E880 , k36-table-43E8B0 , k36-table-43E8E0 , k36-table-43E910 , k36-table-43E970 , k36-table-43E980 , k36-table-43E940 ,   \ [hard][rage][situation]
+create k36-run   -1 ,   \ (the run: situation, table)
 create k36-moves
     $E00 , $2C , -1 , 3.5e f, 2 , 35 , 30e f, 35e f, 1 , $C , 1 ,
     $E01 , $1C , -1 , 3.5e f, 1 , 15 , 15e f, 0e f, 1 , $B , 0 ,
@@ -1038,7 +1052,7 @@ create kind36-kit  k36-tables , k36-moves , k36-combos , k36-gestures , k36-chas
     k36-lunge-chances , k36-temper-0 , k36-temper-1 , k36-pursue-0 , k36-pursue-1 , k36-pursue-2 , k36-pursue-3 ,
     11 , 12 , k36-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k36-knocks , k36-anim-sounds ,
+    k36-knocks , k36-anim-sounds , k36-run ,
 
 \ ==== Daniella ====
 create dan-table-3D77B0  $13 , 0 , 15e f,  $13 , 6 , 20e f,  $13 , 2 , 35e f,  $13 , 1 , 55e f,  $17 , 0 , 65e f,  $17 , 1 , 75e f,  $14 , -1 , 90e f,  $13 , 5 , 100e f,
@@ -1110,6 +1124,7 @@ create dan-table-3D8790  $1 , -1 , 100e f,
 create dan-table-3D87A0  $1 , -1 , 100e f,
 create dan-table-3D8760  $17 , 3 , 20e f,  $17 , 2 , 35e f,  $17 , 1 , 60e f,  $17 , 0 , 100e f,
 create dan-tables  dan-table-3D77B0 , dan-table-3D7880 , dan-table-3D7810 , dan-table-3D78B0 , dan-table-3D78E0 , dan-table-3D7940 , dan-table-3D7970 , dan-table-3D79C0 , dan-table-3D7A20 , dan-table-3D7A50 , dan-table-3D7A70 , dan-table-3D7AA0 , dan-table-3D7AC0 , dan-table-3D7AF0 , dan-table-3D7B40 , dan-table-3D7B50 , dan-table-3D7B10 , dan-table-3D7B60 , dan-table-3D7BE0 , dan-table-3D7BA0 , dan-table-3D7C10 , dan-table-3D7C40 , dan-table-3D7C80 , dan-table-3D7CC0 , dan-table-3D7D00 , dan-table-3D7D40 , dan-table-3D7D60 , dan-table-3D7D80 , dan-table-3D7DA8 , dan-table-3D7DC0 , dan-table-3D7DF0 , dan-table-3D7E40 , dan-table-3D7E50 , dan-table-3D7E10 , dan-table-3D7FB0 , dan-table-3D8080 , dan-table-3D8020 , dan-table-3D80D0 , dan-table-3D8100 , dan-table-3D8160 , dan-table-3D8190 , dan-table-3D81F0 , dan-table-3D8250 , dan-table-3D8280 , dan-table-3D82A0 , dan-table-3D82D0 , dan-table-3D8300 , dan-table-3D8330 , dan-table-3D8390 , dan-table-3D83A0 , dan-table-3D8360 , dan-table-3D83B0 , dan-table-3D8470 , dan-table-3D8410 , dan-table-3D84D0 , dan-table-3D8500 , dan-table-3D8560 , dan-table-3D85B0 , dan-table-3D8610 , dan-table-3D8670 , dan-table-3D86A0 , dan-table-3D86C0 , dan-table-3D86F0 , dan-table-3D8720 , dan-table-3D8748 , dan-table-3D8790 , dan-table-3D87A0 , dan-table-3D8760 ,   \ [hard][rage][situation]
+create dan-run   -1 ,   \ (the run: situation, table)
 create dan-moves
     $E00 , $2C , -1 , 3.5e f, 2 , 35 , 30e f, 35e f, 1 , $C , 1 ,
     $E01 , $1C , -1 , 3.5e f, 1 , 15 , 15e f, 0e f, 1 , $B , 0 ,
@@ -1142,7 +1157,7 @@ create daniella-kit  dan-tables , dan-moves , dan-combos , dan-gestures , dan-ch
     dan-lunge-chances , dan-temper-0 , dan-temper-1 , dan-pursue-0 , dan-pursue-1 , dan-pursue-2 , dan-pursue-3 ,
     11 , 12 , dan-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    dan-knocks , dan-anim-sounds ,
+    dan-knocks , dan-anim-sounds , dan-run ,
 
 \ ---- a kit: where his tables are (his `kit` field points at his). The tables by situation: 17,
 \ his rage's 17, the hard setting's 17 and 17 ----
@@ -1152,11 +1167,16 @@ begin-structure /kit
     field: k.pursue  field: k.pursue-rage  field: k.pursue-hard  field: k.pursue-hard-rage
     field: k.throw-a  field: k.throw-b  field: k.grips
     field: k.waits  field: k.flurry  field: k.flurry-hard  field: k.waits-hard  field: k.waits-hurt  field: k.waits-hard-hurt
-    field: k.knocks  field: k.anim-sounds
+    field: k.knocks  field: k.anim-sounds  field: k.run
 end-structure
 : my-kit ( -- kit )  kit @ ;
 : hard-set? ( -- flag )  hard-mode? ;
-: table ( situation hard? -- addr )   \ (raging or alerted: his rage's)
+\ his table for a situation (raging or alerted: his rage's; in the mini-game's run, his own for some)
+: run-table ( situation -- addr | 0 )
+    hewie-played? 0= if  drop 0 exit  then  my-kit k.run @
+    begin  dup @ dup -1 <> while  2 pick = if  nip cell+ @ exit  then  2 cells +  repeat  2drop drop 0 ;
+: table ( situation hard? -- addr )
+    over run-table ?dup if  nip nip exit  then
     if  34  else  0  then  raging @ alt-tables @ or if  17 +  then  +  cells my-kit k.tables @ + @ ;
 : moves ( -- addr )  my-kit k.moves @ ;
 : combos ( -- addr )  my-kit k.combos @ ;

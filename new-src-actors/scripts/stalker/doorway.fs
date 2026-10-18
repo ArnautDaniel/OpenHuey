@@ -126,6 +126,16 @@ create re-list 8 cells allot
     out-by if  -1 wandering-out !  else  stand  then ; is leave-at-random
 :noname ( -- )  let-door-go  out-over ; is out-cancelled
 
+\ ---- the run (Hewie played): after her while she is in another room, out by the first door of
+\ his way to it (Pursuer_BehaviourFollow's 0x27 / 0xE: to the exit, through it) ----
+:noname ( -- went? )
+    out-going @ if  false exit  then
+    her-room dup 0<  over my-room = or if  drop false exit  then
+    my-mode @ dup after-her = swap heading-for-her = or 0= if  drop false exit  then
+    avoid-clear  route! 0> 0= if  false exit  then
+    next-door door-exit dup 0< if  drop false exit  then
+    out-by ; is after-her-elsewhere
+
 \ ---- the doors' answers to his asking ----
 : held-answer ( exit -- )   \ (`door-held`: his to open; else the door he came in by - swung open)
     dup asked @ = if  drop got-door exit  then  swing-open ;
