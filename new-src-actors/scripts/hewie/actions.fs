@@ -2,10 +2,9 @@
 \ his move mode, where he looks, what may break in (his-cmd), the timers and the behaviour that
 \ carries it out. The actions by name: hewie-names.fs.
 IN: hewie.actions
-USING: engine game-state actors common facts paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.scripted hewie.fight hewie.more hewie.pounce hewie.fetch hewie.exits flag-names ;
+USING: engine game-state actors common facts paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.model hewie.moving hewie.states hewie.offscreen hewie.scripted hewie.fight hewie.more hewie.pounce hewie.fetch hewie.exits hewie.steered flag-names ;
 
 : mode! ( n -- )  his-mode ! ;
-: give-up ( -- )  sniff-act 0 want ;    \ nothing to do: sniffing about
 : trust-wait ( -- n )  his-trust @ 60 * 300 + ;
 \ (Hewie_PickTarget: hewie/fight.fs)
 \ Hewie_IdleAction: a trick at random (not the last one), on plain floor
@@ -32,7 +31,7 @@ create idle-tricks  sit-trick-act , sit-trick-2-act , lie-down-trick-act , stand
 : after-coming-out ( -- )   \ Hewie_AfterComingOut (her "go"; at the stalker: his leg when charged
     \ and coming at him head on, else a flank)
     go-for case
-        0 of  sniff-act 0 want  endof
+        0 of  hewie-played? if  run-up-jump-act  else  sniff-act  then  0 want  endof   \ (in the run: a leap)
         2 of  his-ready @ attack-side 0= and if  at-leg-act  else  at-flank-act  then  0 want  endof
     endcase ;
 \ Hewie_After4D (show-off-act): by his pose - standing: sitting for her, hurt a roll over; sitting:
@@ -211,10 +210,15 @@ create idle-tricks  sit-trick-act , sit-trick-2-act , lie-down-trick-act , stand
     whine-act of  whine  endof
     whine-praise-act of  whine  endof
     smell-act of  his-scent look-at his-look-yaw f!  his-look-pitch f!  held-look breaks-any on-waiting but ['] st-hold-low holding  endof
-    bark-act of
+    bark-act of   \ (at her within 150, else the stalker within 150)
         free-mode mode!  -1 his-target !
         her-with? her-dist 150e f< and if  her his-target !  then
+        his-target @ 0<  pursuer with? and if  his-at pursuer body-at vec-dist 150e f< if  pursuer his-target !  then  then
         0 his-cmd !  ['] st-bark behave  endof
+    \ the run (hewie/steered.fs)
+    steered-act of  free-mode mode!  ahead-look look!  on-command his-cmd !  ['] st-steered behave  endof
+    steered-2-act of  lie-flat  endof
+    run-up-jump-act of  run-up-jump  endof
     \ the story's moves (Hewie_Requests): animations with their root motion, walks, turns, a bark, the leap
     story-anim-act of  ahead-look 0 anim-setup  his-to-tri @ play  done!  ['] st-root-motion behave  endof
     story-blend-act of  ahead-look 0 anim-setup  his-to-tri @ his-to-anim @ play-blend  done!  ['] st-root-motion behave  endof
@@ -266,6 +270,7 @@ create idle-tricks  sit-trick-act , sit-trick-2-act , lie-down-trick-act , stand
     dup at-flank-act away-from-her-act within  over after-coming-out-act random-idle-act within or
     over harry-act = or  over harry-stalker-act = or  swap tackle-act = or ;
 : adjust ( act -- act' )
+    hewie-played? if  exit  then   \ (the run: as asked)
     his-busy @ 0=  over choose-act = and  his-hp @ 0= and  his-cond @ down-cond = and if  drop knocked-down-act  then
     dup knocked-down-act = if
         here?  his-tri nav-flags self body-mask and 0<> and if   \ (down where he can't lie: up again)

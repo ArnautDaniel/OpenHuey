@@ -10,6 +10,10 @@ USING: game-state ;
 : bit-clear ( n base -- )  bit invert over l@ and swap l! ;
 : state-flag? ( n -- flag )  progress pr.state bit? ;    \ the state flags (control, panic, ...)
 : story-flag? ( n -- flag )  progress pr.story bit? ;    \ the scenario flags
+\ the one played: Fiona, or Hewie in the mini-game's run (the original's progress +0x1FBEC1 - not
+\ the saved state: set as the run's clock starts, clear as it stops and with each new game)
+variable hewie-played
+: hewie-played? ( -- flag )  hewie-played @ 0<> ;
 $AF constant hard-mode-flag
 : hard-mode? ( -- flag )  hard-mode-flag story-flag? ;   \ a game started in hard mode (the original's progress +0x30 bit 15: the title's hard new game)
 : state-flag-clear ( n -- )  progress pr.state bit-clear ;   \ (its owner clears it: Hewie's trust clears 0x11 / 0x1D)

@@ -29,6 +29,8 @@ message entered-room ( room exit -- )        \ the room is in play
 
 \ ---- camera (docs/subsystems/camera.md) ----
 message camera-cut ( -- )                    \ it cut to a new set
+message hewie-gesture ( g -- )               \ (Hewie, played: each frame) his gesture this frame (stick-gesture; the scripts' 0x21)
+message hewie-restart ( -- )                 \ (the run's clock starting: Hewie_Restart) him afresh - played, in the run
 message hewie-yelp ( time anim -- )          \ (Hewie) hidden away, the animation he plays while `time` counts (-1: as it is) (0x77)
 message hewie-play ( anim -- )               \ (Hewie) his motion plays `anim` (0xD7)
 message hewie-hold ( on -- )                 \ (Hewie) a 5-frame wait, and his next choice forced to sit (or not) (0xBB)

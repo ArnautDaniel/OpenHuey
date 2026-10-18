@@ -7,7 +7,7 @@
 \ Every word the rooms use is written (char-load still says so for a figure outside slots
 \ 3..5 - stub-step: said once, then nothing).
 IN: story.words
-USING: engine game-state actors messages common keys vectors doors obstacles room-names flag-names story-names stalker-names hewie-names story.state story.strings effects items items.names ;
+USING: engine game-state facts actors messages common keys vectors doors obstacles room-names flag-names story-names stalker-names hewie-names story.state story.strings effects items items.names ;
 
 \ ---- the registered scripts (data: each room's phases and actions, the shared ones) ----
 $110 constant #rooms
@@ -177,7 +177,7 @@ $1F constant hewie-zone-var
 : panic-stage? ( stage -- flag )   \ ($FF: in a panic)
     dup $FF = if  drop the-panic @ panicking calming-down 1+ within  else  the-panic @ =  then ;
 : panic-stage ( stage -- )  s" panic" actor-named send panic-stage! ;
-: hewie-controlled? ( -- flag )  false ;   \ (the Hewie-controlled sections: H4)
+: hewie-controlled? ( -- flag )  hewie-played? ;   \ cond 0x5D: Hewie is the one played (the mini-game's run)
 
 \ ---- waiting (an action script's turn ends, each frame) ----
 : yield ( -- )  wait-frame ;
@@ -287,18 +287,27 @@ $1F constant hewie-zone-var
 \ exit 0's door leads to; else if it is open to whoever is
 \ controlled - Fiona, free of scripts)
 $80 constant any-door
+: hewie-scripted? ( -- flag )  hewie-cs scripted? ;
+: player-free? ( -- flag )   \ (cmd_exit: the one played free - Fiona, or Hewie at his own pace)
+    hewie-controlled? if  hewie-scripted? 0=  hewie-move-mode @ 0= and  else  fiona-scripted? 0=  then ;
 : exit-check ( exit -- )
     dup any-door and if  dup exit-taken !  going !  -1 leaving !  exit  then   \ (forced: rooms.fs)
     dup exit-door dup 0< 0= if  door-locked? if  drop exit  then  else  drop  then
     dup exit-passable 0= if  drop exit  then
-    fiona-scripted? if  drop exit  then
+    player-free? 0= if  drop exit  then
     dup exit-taken !  going ! ;
 : exit-prepare ( exit -- )  s" rooms" actor-named send exit-prepare ;   \ (the room behind it loaded ahead: a forced exit's way)
-: exit-usable? ( exit -- flag )   \ Fiona free (no script, moving on her own or down), in the exit's
-    fiona-scripted? if  drop false exit  then                     \ area, its door open and not held
-    fiona-mode @ dup own-mode <> swap down-mode <> and if  drop false exit  then
-    fiona-cs char-here 0= if  drop false exit  then
-    fiona-cs over exit-area char-in-area 0= if  drop false exit  then
+: exit-usable? ( exit -- flag )   \ the one played free (Fiona: no script, moving on her own or down;
+    hewie-controlled? if                                          \ Hewie: no script, at his own pace), in
+        player-free? 0= if  drop false exit  then                 \ the exit's area, its door open, not held
+        hewie-cs char-here 0= if  drop false exit  then
+        hewie-cs over exit-area char-in-area 0= if  drop false exit  then
+    else
+        fiona-scripted? if  drop false exit  then
+        fiona-mode @ dup own-mode <> swap down-mode <> and if  drop false exit  then
+        fiona-cs char-here 0= if  drop false exit  then
+        fiona-cs over exit-area char-in-area 0= if  drop false exit  then
+    then
     dup exit-open 0= if  drop false exit  then
     exit-door door-held? 0= ;
 : exit-taken? ( exit -- flag )  exit-taken @ = ;
@@ -446,7 +455,8 @@ $1C constant depth-slot   $1D constant fog-slot   $1E constant blend-slot   $1F 
 : message-param-room ( n -- )  0 swap script-item message-param! ;   \ (parameter 0: that system message)
 
 \ ---- what she does with the pad (the scripts' 0x21: her command; 0x15: a button) ----
-: control-action? ( v -- flag )  fiona-cmd @ = ;   \ (her gesture this frame: 0 up .. 4 left)
+: control-action? ( v -- flag )   \ (the gesture this frame of the one played: 0 up .. 4 left)
+    hewie-controlled? if  hewie-gesture-now @  else  fiona-cmd @  then  = ;
 : pad? ( button how -- flag )   \ (how: 1 held, 2 just pressed; button bit 7: she shook - the stick
     over $80 and if  2drop  fiona-shakes-now @ 0<> exit  then   \ swung or a button: Fiona_Shakes)
     2 and if  button-pressed?  else  button-down?  then ;

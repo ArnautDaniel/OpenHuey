@@ -7,7 +7,7 @@
 \ closing in); struck (Hewie_TakeBlow: by the stalker, by her, by a door) - his yelp, pushed back
 \ (StateMoveAlong), then down or on (Hewie_AfterYelp).
 IN: hewie.fight
-USING: engine game-state actors messages common facts paths vectors flag-names stalker-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states floor-flags ;
+USING: engine keys game-state actors messages common facts paths vectors flag-names stalker-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states floor-flags ;
 
 \ ---- his fight's animations: the leap, the bite, letting go - at the near flank, the far one,
 \ head on, his leg; thrown off at a flank (hanging on), held on again or flung, at the top of
@@ -170,7 +170,7 @@ defer after-yelp ( -- )   \ (yelped, below)
     endcase  bite-him ;
 : shake-roll ( -- )
     his-bites @ 1- dup his-bites !
-    if  his-hold @  his-biting @ first-hold = if  still-holding his-biting !  30 +  then  else  0  then
+    if  his-hold @  his-biting @ first-hold = if  still-holding his-biting !  30 +  0 his-mash !  then  else  0  then
     100 roll > if  his-hold @ 10 - 0 max his-hold !  else  shake-off  then ;
 : let-go ( -- )  first-hold his-biting !  0e his-fly-h f!  let-go-anim play-cut  ['] st-clamped behave ;
 : hang-on ( -- )   \ (thrown off at a flank: hanging on; else he lets go)
@@ -189,9 +189,16 @@ defer after-yelp ( -- )   \ (yelped, below)
         endcase
         bite-again
     else
-        his-biting @ letting-go < if   \ (her command this frame: come / come back - let go; attack now - his grip anew)
+        his-biting @ letting-go < hewie-played? 0= and if   \ (her command this frame: come / come back - let go; attack now - his grip anew)
             his-heard @ dup come-cmd = swap come-back-cmd = or  st-hp @ 0= or if  shake-off
             else  his-biting @ still-holding = his-heard @ attack-now-cmd = and if  first-hold his-biting !  then  then
+        then
+        his-biting @ letting-go < hewie-played? and if   \ (the run: cross held lets go; square five times, his grip anew)
+            cross button-down?  st-hp @ 0= or if  shake-off
+            else
+                square button-pressed? if  1 his-mash +!  then
+                his-biting @ still-holding = his-mash @ 5 >= and if  first-hold his-biting !  then
+            then
         then
     then
     slide-root  at-his-height ;
@@ -213,7 +220,7 @@ defer after-yelp ( -- )   \ (yelped, below)
         first-bite  bite-sound make-sound
         his-to vec@ his-place  his-leap-yaw f@ his-yaw!
         bite-anim play-cut  still-holding his-biting !
-        feel @ 10 + 5 * his-hold !
+        feel @ 10 + 5 * his-hold !  0 his-mash !
         ['] st-bite-hold behave
     else
         his-leap-yaw f@ his-leap-turn f@ body-turn-toward fdrop
@@ -279,8 +286,8 @@ defer after-yelp ( -- )   \ (yelped, below)
     stride if  run-anim  else  trot-anim  then  play-if-not ;
 \ at-flank-act .. at-leg-2-act set up (Hewie_SetAction): seeing him, not off screen, not bitten or down
 : at-pursuer ( -- )
-    pursuer dup with? 0= if  drop sniff-act 0 want exit  then
-    mode-of unreachable-mode =  st-sub @ dup bitten-sub = swap down-sub = or  or if  sniff-act 0 want exit  then
+    pursuer dup with? 0= if  drop missed-pursuer exit  then
+    mode-of unreachable-mode =  st-sub @ dup bitten-sub = swap down-sub = or  or if  missed-pursuer exit  then
     engaged-mode his-mode !  going-for-sub his-sub !  pursuer his-target !  no-grip his-grip !  first-hold his-biting !  on-command his-cmd !
     his-path path-clear  ['] st-run-at-pursuer behave ;
 
@@ -328,8 +335,8 @@ defer close-by ( F: rest -- done? )   :noname fdrop false ; is close-by   \ (hew
     rest fdup 30e f< if  close-by if  exit  then  else  fdrop  then
     stride drop ;
 : close-on ( -- )
-    his-target @ dup with? 0= if  drop sniff-act 0 want exit  then
-    mode-of dup unreachable-mode = swap struck-mode = or if  sniff-act 0 want exit  then
+    his-target @ dup with? 0= if  drop give-up exit  then
+    mode-of dup unreachable-mode = swap struck-mode = or if  give-up exit  then
     his-target @ body-at his-at vec-dist 10e f<= if  harried exit  then
     engaged-mode his-mode !  90 his-t1 !  on-command his-cmd !  ['] st-close-on behave ;
 : harry ( -- )   \ (whom he goes for - near him, then at him)
@@ -347,7 +354,7 @@ defer close-by ( F: rest -- done? )   :noname fdrop false ; is close-by   \ (hew
         knocked-down-act 0 want exit
     then
     0 his-2d !
-    his-by @ her =  her-with? and  his-hits @ 0> and if   \ (cowering from her)
+    his-by @ her =  her-with? and  his-hits @ 0> and  hewie-played? 0= and if   \ (cowering from her - not in the run)
         his-hits @ 1 = if  wait-for-her-act  else  bark-at-her-act  then  0 want exit
     then
     to-default ;

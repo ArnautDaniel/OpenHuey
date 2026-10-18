@@ -75,7 +75,7 @@ behaviour playing-room
       over room-id <> if  2drop exit  then  -1 entered !
       dup came-by !  exit-taken !  this-room !
       self subscribe tick  self subscribe frame-end
-      self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe moving
+      self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe hewie-gesture  self subscribe moving
       self subscribe stalker-doing  self subscribe stalker-blow  self subscribe item-event  self subscribe item-var  self subscribe item-event-bit  100 st-age !  -1 st-blow !
       self subscribe creature-doing  self subscribe noise-was  self subscribe summoner-cooldown-is  self subscribe fiona-struck-by  self subscribe fiona-shakes  self subscribe fiona-shaking  self subscribe hewie-health  self subscribe keri-fell  self subscribe fiona-unseen  self subscribe fiona-message  #creatures 0 do  100 i cells cr-ages + !  loop
       0 phase
@@ -125,6 +125,7 @@ behaviour playing-room
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       hewie-trust-lv !  hewie-way !  hewie-breakable !  hewie-reach !  hewie-near !  hewie-cmdable !
       2drop hewie-cond !  drop  hewie-move-mode !  hewie-act !  hewie-here ! ;
+  on hewie-gesture ( g -- )  hewie-gesture-now ! ;
   on fiona-unseen ( on -- )  fiona-unseen ! ;
   on summoner-cooldown-is ( secs -- )  summoner-secs ! ;
   on fiona-struck-by ( who -- )  fiona-hit-by ! ;

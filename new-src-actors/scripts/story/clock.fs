@@ -3,10 +3,10 @@
 \ and shown at the foot of the screen as MM:SS - "59:59" once an hour has gone - by each room's
 \ frame hook (clock_draw). At the end the time is kept in event variables 0..2 (clock_save) and
 \ shown from them while event flag 1 is set (clock_draw_saved). The run's camera follows its paths
-\ quicker (the director's rate 14). (The original's clock_start also hands the player Hewie -
-\ progress +$1FBEC1: with the Hewie-played sections, not here yet.)
+\ quicker (the director's rate 14). Its start hands the player Hewie (facts.fs hewie-played:
+\ progress +$1FBEC1) and restarts him, played; its stop gives Fiona back.
 IN: story.clock
-USING: engine game-state story.words ps2-screen ;   \ (ps2-screen last: its sx / sy, not the story's)
+USING: engine game-state actors messages facts story.words ps2-screen ;   \ (ps2-screen last: its sx / sy, not the story's)
 
 17 constant clock-layer   \ (the UI layers: ... 16 the cursor's fill; 17 this)
 30 constant per-second
@@ -29,7 +29,8 @@ create clock-text 5 allot
     {: a n :}  frame!  clock-layer ui-clear  clock-layer a n  431 sx 395 sy  clock-colour pen ui-text ;
 : clock-off ( -- )  clock-layer ui-clear ;   \ (each frame before the rooms' hooks draw it again)
 
-: clock-start ( -- )  0 progress pr.play-frames l!  14e cam-rate! ;   \ clock_start (the camera quicker along its paths)
+: clock-start ( -- )   \ clock_start: Hewie played, afresh; the camera quicker along its paths; the time from 0
+    -1 hewie-played !  s" hewie" actor-named send hewie-restart  14e cam-rate!  0 progress pr.play-frames l! ;
 : clock-draw ( -- )  time-played time$ show ;                  \ clock_draw
 : clock-save ( -- )                                            \ clock_save
     time-played  0 over past-an-hour? 1 and var-set
@@ -38,4 +39,4 @@ create clock-text 5 allot
     1 ebit? 0= if  clock-draw exit  then
     0 var @ if  s" 59:59" show exit  then
     1 var @ 2 var @ mm:ss show ;
-: clock-stop ( -- )  -1e cam-rate! ;   \ clock_stop: the camera at its usual pace (the Hewie-played run over: nothing else yet)
+: clock-stop ( -- )  0 hewie-played !  -1e cam-rate! ;   \ clock_stop: Fiona played again; the camera at its usual pace

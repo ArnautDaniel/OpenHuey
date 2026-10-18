@@ -6,7 +6,7 @@
 \ He is spawned with the game but comes in only when told (`join-fiona`: the story, or the
 \ console); `part-from-fiona` sends him off.
 IN: hewie
-USING: engine actors messages common paths vectors saves hewie-names hewie.state hewie.body hewie.anims hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted hewie.fetch floor-flags ;
+USING: engine facts actors messages common paths vectors saves hewie-names hewie.state hewie.body hewie.anims hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted hewie.fetch hewie.steered floor-flags ;
 
 \ at heel: behind her and a little to her side (where she is when that isn't floor), her way
 create heel-at /vec allot
@@ -45,7 +45,7 @@ behaviour hewie-own
       s" fiona" actor-named his-fiona !
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe write-save
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end
-      self subscribe stalker-doing  self subscribe creature-doing  self subscribe scene  -1 st-id !  100 st-age !  -1 his-grip !
+      self subscribe stalker-doing  self subscribe creature-doing  self subscribe scene  self subscribe camera-cut  -1 st-id !  100 st-age !  -1 his-grip !
       #creatures 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop ;
   on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
   on part-from-fiona ( -- )  part  1 -1 cast-as ;
@@ -72,9 +72,12 @@ behaviour hewie-own
   on place ( x y z yaw -- )   \ (the story puts him)
       along? 0= if  2drop 2drop exit  then
       >r cells>xyz  his-place  r> cell>f his-yaw! ;
-  on leaving-room ( room exit -- )   \ (the old room still in)
+  on leaving-room ( room exit -- )   \ (the old room still in; played, he goes with it)
+      hewie-played? along? and if  2drop played-through exit  then
       2dup room-exit-leads drop fiona-room !  nip  along? if  fiona-left  else  drop  then ;
-  on arrived ( room exit -- )  drop fiona-room !
+  on arrived ( room exit -- )
+      hewie-played? along? and if  nip played-arrive exit  then
+      drop fiona-room !
       his-joining @ if  s" fiona" actor-named his-fiona !  join  then ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
   \ a scene starting (the scripts' 0x61: Hewie_LeftBehind) - out of the room after an attack
   \ (0x38): his default; his mood back to normal
@@ -110,6 +113,9 @@ behaviour hewie-own
       cells>xyz  his-scent vec!  1 his-smells ! ;
   on hewie-place ( room tri side -- )   \ (his +0x64, Hewie_PlaceInRoom)
       his-way !  over room-id = >r  place-on  r> if  to-default  then ;
+  on to-exit ( exit -- )  his-door ! ;   \ (the story's char-to-exit, Character_ChooseExit: the exit he came in by)
+  on hewie-restart ( -- )  along? if  restart  then ;   \ (the run's clock: Hewie_Restart)
+  on camera-cut ( -- )  -1 his-cut ! ;
   on hewie-side! ( side -- )  dup 3 u< 0= if  drop -1  then  his-way ! ;
   on hewie-stay ( -- )  300 his-pet-time ! ;
   on noclip ( on -- )  0<> 1 and his-2b ! ;

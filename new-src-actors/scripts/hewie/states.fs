@@ -354,16 +354,16 @@ create kn-at /vec allot
 \ ---- hurt, down ----
 : st-back-up ( -- )  stand-pose step-to-pose 0= if  0 his-2d !  stand-pose keep-pose  to-default  then ;   \ (Hewie_State1D18)
 \ Hewie_StateKnockedDown (knocked-down-act): lying down until he has health again; in a hard
-\ game, once he is down, the game is over (game over kind 3)
+\ game, once he is down, the game is over (game over kind 3); in the run, too (kind 1)
 : dies-in-hard-mode ( -- )   \ (a hard game: his end is hers - unless a scene has them, or the story keeps it from ending)
     caught state-flag? if  exit  then
     cutscene-active?  capture-no-end state-flag? or if  1 hp!  hurt-cond cond!  exit  then
-    3 s" gameover" actor-named send game-over-kind  caught state-flag-set ;
+    hewie-played? if  1  else  3  then  s" gameover" actor-named send game-over-kind  caught state-flag-set ;
 : st-knocked-down ( -- )
     his-wait @ 0= if  1 hp!  hurt-cond cond!  then
     ahead-look look!
     down-pose step-to-pose 0= if
-        hard-mode? if  dies-in-hard-mode  then
+        hard-mode? hewie-played? or if  dies-in-hard-mode  then
         anim@ down-anim = if  0 his-2d !  else  down-pose keep-pose  then
     then
     his-hp @ if  1 his-2d !  ['] st-back-up behave  then ;
@@ -459,7 +459,9 @@ create kn-at /vec allot
 \ Hewie_State2388 (ready-act): crouched low, readying to spring
 : st-readying ( -- )
     ahead-look look!
-    anim@ crouch-anim = if  his-t1 @ 0= if  1 his-ready !  else  -1 his-t1 +!  then
+    anim@ crouch-anim = if
+        hewie-played? steering? and if  to-default exit  then   \ (the run: the pad breaks it off)
+        his-t1 @ 0= if  1 his-ready !  else  -1 his-t1 +!  then
     else  stand-pose step-to-pose 0= if  crouch-anim play  then  then ;
 
 \ ---- walking to the spot she showed (go-there-act, then scramble-there-act about it) ----

@@ -244,12 +244,7 @@ create ch-at /vec allot
     anim@ call-anim? if  plain-commands state-flag? if  $33 line  else  call-line  then  then ;
 
 \ ---- the gestures (Gesture_Update; Fiona_ReadsPad) ----
-: gesture ( -- g )
-    \ (the right stick - I up, K down, L right, J left - and R3, F: as hg's keys for them)
-    key: I pressed? if  go-gesture exit  then  key: K pressed? if  back-gesture exit  then
-    key: F pressed? if  stay-gesture exit  then  key: L pressed? if  praise-gesture exit  then
-    key: J pressed? if  scold-gesture exit  then
-    key: L held? if  praise-gesture exit  then  no-gesture ;   \ (held: as the stick held over - the praise's repeats)
+: gesture ( -- g )  gesture@ ;   \ (keys.fs: the right stick - I up, K down, L right, J left - and R3, F)
 : reads-pad? ( -- flag )
     hewie-commandable state-flag? 0=  fiona-occupied state-flag? or  her-busy-t @ 0<> or if  false exit  then
     her-mode @ dup command-mode = swap down-mode = or if  true exit  then
