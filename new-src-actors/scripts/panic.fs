@@ -2,7 +2,7 @@
 \ a lasting and a passing part, its stage, Fiona's breath and scream. Frights and fear come in
 \ as messages; each frame's end it updates and tells everyone its stage and level.
 IN: panic
-USING: engine actors messages facts flag-names items items.names ;
+USING: engine vectors common actors messages facts flag-names stalker-names items items.names ;
 
 state: panic-state
   cell field stage           \ (enum: panic-stage, messages.fs)
@@ -23,6 +23,7 @@ state: panic-state
   1 floats field scale       \ the fear's scale (1)
   cell field the-danger      \ (told)
   cell field her-mode  cell field her-sub  cell field her-cond   \ (told by Fiona each frame)
+  cell field st-room  cell field st-mode  cell field st-sub  cell field st-cond  cell field st-kind   \ (told by the stalker)
 end-state
 
 : fiona-id ( -- id )  s" fiona" actor-named ;
@@ -108,6 +109,40 @@ create breaths   \ (shaken .. calming down)
     the-danger @ calm = if  calm-b2 f@ 0.0999998e f+ calm-b2 f!
     else her-mode @ 0= her-sub @ 0= and if  calm-b2 f@ 0.0333333e f+ calm-b2 f!  then then
     hold @ 0= if  recovering f@ 0.1666653e f+ recovering f!  then ;
+\ the stalker's part (Panic_FearInputs): by his kind and how near he is - the level distance and
+\ three times the rise between them (both on a ladder, by the rise alone); a negative amount is a
+\ fright (held 30 frames, 50 lasting and passing). In the mini-game's run, she out of sight with
+\ him, her fear grows; not while he is down, nor under flag $21
+: fear-add ( F: amount -- )
+    fdup f0< if  fdrop 30 hold !  fear-d f@ 50e f+ fear-d f!  fright-a f@ 50e f+ fright-a f!  exit  then
+    0.0333333e f* fear-d2 f@ f+ fear-d2 f! ;
+: fear-kind ( kind -- row | -1 )   \ (pursuer_kind)
+    case
+        5 of  3  endof  4 of  2  endof
+        $24 of  1  endof  $23 of  1  endof  $22 of  1  endof  3 of  1  endof
+        $1B of  0  endof  7 of  0  endof  6 of  0  endof  2 of  0  endof
+        >r -1 r>
+    endcase ;
+create near-fears   4e f, 2e f, 1.5e f, 1e f, 0.5e f,   \ (D_0041A0A0: within 10, 20, 40, 60, 100; the
+    2e f, 1.8e f, 1.5e f, 1e f, 0.75e f,   2e f, 1.8e f, 1.5e f, 1e f, 0.75e f,   2e f, 1.8e f, 1.5e f, 1e f, 0.75e f,   \ rows by kind)
+create rise-fears   -1e f, 8e f, 6e f, 4e f, 2e f, 1e f,   \ (D_0041A0F0: both on a ladder - a rise within 20, 30, 40, 50, 60, 100; every kind's alike)
+: band ( F: d -- ) ( limits n -- i | -1 )   \ (the first limit d is under; past them all -1)
+    {: lims n F: d :}  n 0 do  d lims i floats + f@ f< if  i unloop exit  then  loop  -1 ;
+create near-limits  10e f, 20e f, 40e f, 60e f, 100e f,
+create rise-limits  20e f, 30e f, 40e f, 50e f, 60e f, 100e f,
+: stalker-fear ( -- )
+    stalker-in-game {: s :}  s 0<  st-cond @ 2 = or  fiona-id body? 0= or if  exit  then
+    fiona-id body-room room-id <>  fiona-id body-room s body-room = and if
+        hewie-played? if  0.0666667e fear-d2 f@ f+ fear-d2 f!  then  exit
+    then
+    s body-room room-id <>  stalker-no-fear state-flag? or if  exit  then
+    st-kind @ fear-kind {: row :}  row 0< if  exit  then
+    s body-at fiona-id body-at  {: a b :}
+    a v.x sf@ b v.x sf@ f-  a v.z sf@ b v.z sf@ f-  vlen  a v.y sf@ b v.y sf@ f- fabs {: F: level F: rise :}
+    level rise 3e f* f+  near-limits 5 band  dup 0< 0= if  row 5 * + floats near-fears + f@ fear-add  else  drop  then
+    her-mode @ 3 =  her-sub @ 7 = and  st-mode @ 3 = and  st-sub @ 7 = and 0= if  exit  then
+    rise rise-limits 6 band  dup 0< 0= if  floats rise-fears + f@ fear-add  else  drop  then ;
+
 \ the fear's scale: Torva's doubling while it lasts (the progress' +0x9E8); the calming by her
 \ earrings (Panic_Update: the Inquisitor's and the Philosopher's 1.25, the Alchemist's 2)
 : fear-scale ( F: -- k )  fear-boost boost-on? if  fear-boost boost-value  else  scale f@  then ;
@@ -141,17 +176,21 @@ create weights   \ (fright, fear, calming)
     else
         level-from-parts  cap-at-99
     then
-    panic-can-max state-flag? if  level f@ 100e f< 0= if  cap-at-99  0e passing f!  then  then ;
+    \ (under flag $15 - or in the run, she out of the room played - it stops at 99)
+    panic-can-max state-flag?  hewie-played? fiona-id body-room room-id <> and  or if
+        level f@ 100e f< 0= if  cap-at-99  0e passing f!  then
+    then ;
 : update ( -- )
     staging
     hold @ if  -1 hold +!  then
-    level f@ 100e f< if  time-inputs  weigh-inputs  then
+    level f@ 100e f< if  time-inputs  stalker-fear  weigh-inputs  then
     inputs-clear ;
 
 : updating? ( -- flag )  cam-scene? 0=  panic-held state-flag? 0= and ;
 
 behaviour measuring
-  on spawned ( -- )  1e scale f!  self subscribe tick  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing ;
+  on spawned ( -- )  1e scale f!  2 st-cond !  self subscribe tick  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing  self subscribe stalker-doing ;
+  on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop st-kind !  2drop st-cond !  st-sub !  st-mode !  st-room ! ;
   on danger ( level -- )  the-danger ! ;
   on fiona-doing ( mode sub cond cmd doing -- )  2drop her-cond !  her-sub !  her-mode ! ;
   \ the story's (the scripts' 0x43, 0xC0, 0x93, 0xC9): the threat (Threat_Raise: as a fright, into
@@ -169,9 +208,7 @@ behaviour measuring
   on fright-raw ( amount -- )  cell>f add-fright ;            \ Panic_FrightRaw
   on panic-shorten ( frames -- )  negate length +! ;           \ (+0x7BA: her shaking as she gets up)
   on fear-set ( amount -- )  cell>f fear-d f! ;               \ (+0x7D8 = 1000: running into a wall, flung down panicking)
-  on fear-in ( amount -- )   \ (a negative one is a fright: held 30, 50 lasting and passing)
-      cell>f fdup f0< if  fdrop 30 hold !  fear-d f@ 50e f+ fear-d f!  fright-a f@ 50e f+ fright-a f!  exit  then
-      0.0333333e f* fear-d2 f@ f+ fear-d2 f! ;
+  on fear-in ( amount -- )  cell>f fear-add ;   \ (a negative one is a fright: held 30, 50 lasting and passing)
   on panic-stage! ( stage -- )  set-stage ;
   \ the items' remedies (b5_add_7E0, the progress' +0x7D8): calming at once - past the lasting
   \ part it eases the recovering too - and fear

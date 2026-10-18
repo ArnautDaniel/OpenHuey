@@ -165,6 +165,8 @@ variable take-type
 T{ ' led? 60 soon  [: [: leading @ -1 = ;] his ;] 5 soon  [: her-sub @ ;] hers -> -1 -1 9 }T
 T{ ' over? 1500 soon  [: taunts @ ;] his  [: her-drags @ ;] hers -> -1 6 6 }T
 unover  debug:debilitas-out  10 frames  [: free! 0 her-mode ! ;] hers
+\ (from here on he doesn't frighten her - flag $21: her panic isn't what's tested)
+stalker-no-fear state-flag-set  0 s" panic" actor-named send panic-stage!  2 frames
 testing ... shaking free: she breaks away, he lets go
 6 take  ' led? 60 soon drop
 : dragging? ( -- flag )  [: anim@ $1401 = ;] hers ;
