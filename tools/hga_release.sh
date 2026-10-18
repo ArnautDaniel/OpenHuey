@@ -1,8 +1,9 @@
 #!/bin/sh
-# hga's release builds, for 64-bit Linux and Windows, into dist/:
-#   dist/hga-<version>-linux-x86_64.tar.gz    hga, scripts/, mod-examples/, docs/ (modding), lib/ (FFmpeg), licences
-#   dist/hga-<version>-windows-x64.zip        hga.exe, SDL3.dll, FFmpeg's DLLs, scripts/, mod-examples/, docs/ (modding), licences
-# Neither holds anything of the game's: the player picks their own disc image when hga starts.
+# OpenHuey's release builds (the engine openhuey-src/, once called hga), for 64-bit Linux and
+# Windows, into dist/:
+#   dist/openhuey-<version>-linux-x86_64.tar.gz    openhuey, scripts/, mod-examples/, docs/ (modding), lib/ (FFmpeg), licences
+#   dist/openhuey-<version>-windows-x64.zip        openhuey.exe, SDL3.dll, FFmpeg's DLLs, scripts/, mod-examples/, docs/ (modding), licences
+# Neither holds anything of the game's: the player picks their own disc image when OpenHuey starts.
 #
 # What they need is built once into $HGA_DEPS (default ~/.cache/openhuey-hga-deps - not in the
 # repository: FFmpeg's configure can't take a path with spaces):
@@ -65,11 +66,13 @@ EOT
 
 readme() {   # into $1 (the executable's name $2)
     cat > "$1/README.txt" <<EOT
-hga - Haunting Ground, rebuilt (OpenHuey, https://github.com/ArnautDaniel/OpenHuey)
+OpenHuey - Haunting Ground, rebuilt (https://github.com/ArnautDaniel/OpenHuey)
 
 You need your own copy of Haunting Ground (USA) for the PlayStation 2: its disc image (.iso).
-Start $2; the first time it asks for the disc image, and remembers it.
-(The data can also be given as an argument: a .iso, a DATA.CVM, or the folder it was extracted to.)
+Start $2; the first time it asks for the disc image and imports it into library/ beside it
+(or from a command line: $2 --import <disc.iso>). Saves and settings go in user/.
+Mods go in mods/ (the samples: mod-examples/; making one: docs/modding.md). The title's MODS
+menu turns them on and off.
 
 Keys: WASD move, Space (hold) run, C act, Z shove / kick, V throw, Q (hold) crouch, E flee,
 I J K L / F Hewie's commands, Return pause, Tab menu, \` the Forth console. A gamepad works too.
@@ -103,21 +106,21 @@ linux() {
     ffmpeg_build linux --enable-pic --cc="$DEPS/zigcc"
     B="$ROOT/build/hga-release-linux"
     rm -rf "$B"
-    CC="$DEPS/zigcc" cmake -S new-src-actors -B "$B" -DCMAKE_BUILD_TYPE=Release -DHGA_RELEASE=ON -DCMAKE_LINK_DEPENDS_USE_LINKER=OFF \
+    CC="$DEPS/zigcc" cmake -S openhuey-src -B "$B" -DCMAKE_BUILD_TYPE=Release -DHGA_RELEASE=ON -DCMAKE_LINK_DEPENDS_USE_LINKER=OFF \
         -DCMAKE_PREFIX_PATH="$DEPS/sdl3-linux" -DSDL3_DIR="$(dirname "$(find "$DEPS/sdl3-linux" -name SDL3Config.cmake | head -1)")"
     cmake --build "$B" --target hga -j"$JOBS"
-    P="dist/hga-$VERSION-linux-x86_64"
+    P="dist/openhuey-$VERSION-linux-x86_64"
     rm -rf "$P"
     mkdir -p "$P/lib"
-    cp "$B/hga" "$P/"
-    strip "$P/hga"
-    cp -r new-src-actors/scripts "$P/"
-    cp -r new-src-actors/examples/mods "$P/mod-examples"   # (off: a mod is on once copied into mods/)
-    mkdir -p "$P/docs" && cp new-src-actors/docs/modding.md new-src-actors/docs/forth.md new-src-actors/docs/actors.md new-src-actors/docs/library-and-mods.md "$P/docs/"   # (for modders)
+    cp "$B/openhuey" "$P/"
+    strip "$P/openhuey"
+    cp -r openhuey-src/scripts "$P/"
+    cp -r openhuey-src/examples/mods "$P/mod-examples"   # (off: a mod is on once copied into mods/)
+    mkdir -p "$P/docs" && cp openhuey-src/docs/modding.md openhuey-src/docs/forth.md openhuey-src/docs/actors.md openhuey-src/docs/library-and-mods.md "$P/docs/"   # (for modders)
     cp -L "$DEPS/ffmpeg-linux/lib/libavcodec.so.62" "$DEPS/ffmpeg-linux/lib/libavutil.so.60" "$P/lib/"
     strip "$P/lib/"*.so.*
     licences "$P" linux "$DEPS/SDL3-$SDL/LICENSE.txt"
-    readme "$P" "./hga"
+    readme "$P" "./openhuey"
     tar czf "$P.tar.gz" -C dist "$(basename "$P")"
     echo "made $P.tar.gz"
 }
@@ -128,22 +131,22 @@ windows() {
     ffmpeg_build windows --target-os=mingw32 --arch=x86_64 --cross-prefix=x86_64-w64-mingw32- \
         --disable-pthreads --enable-w32threads --extra-ldflags=-static-libgcc
     B="$ROOT/build/hga-release-windows"
-    cmake -S new-src-actors -B "$B" -DCMAKE_BUILD_TYPE=Release -DHGA_RELEASE=ON \
-        -DCMAKE_TOOLCHAIN_FILE="$ROOT/new-src-actors/cmake/mingw-x86_64.cmake" \
+    cmake -S openhuey-src -B "$B" -DCMAKE_BUILD_TYPE=Release -DHGA_RELEASE=ON \
+        -DCMAKE_TOOLCHAIN_FILE="$ROOT/openhuey-src/cmake/mingw-x86_64.cmake" \
         -DSDL3_DIR="$WSDL/lib/cmake/SDL3" -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static"
     cmake --build "$B" --target hga -j"$JOBS"
-    P="dist/hga-$VERSION-windows-x64"
+    P="dist/openhuey-$VERSION-windows-x64"
     rm -rf "$P"
     mkdir -p "$P"
-    cp "$B/hga.exe" "$P/"
-    x86_64-w64-mingw32-strip "$P/hga.exe"
+    cp "$B/openhuey.exe" "$P/"
+    x86_64-w64-mingw32-strip "$P/openhuey.exe"
     cp "$WSDL/bin/SDL3.dll" "$P/"
     cp "$DEPS/ffmpeg-windows/bin/avcodec-62.dll" "$DEPS/ffmpeg-windows/bin/avutil-60.dll" "$P/"
-    cp -r new-src-actors/scripts "$P/"
-    cp -r new-src-actors/examples/mods "$P/mod-examples"   # (off: a mod is on once copied into mods/)
-    mkdir -p "$P/docs" && cp new-src-actors/docs/modding.md new-src-actors/docs/forth.md new-src-actors/docs/actors.md new-src-actors/docs/library-and-mods.md "$P/docs/"   # (for modders)
+    cp -r openhuey-src/scripts "$P/"
+    cp -r openhuey-src/examples/mods "$P/mod-examples"   # (off: a mod is on once copied into mods/)
+    mkdir -p "$P/docs" && cp openhuey-src/docs/modding.md openhuey-src/docs/forth.md openhuey-src/docs/actors.md openhuey-src/docs/library-and-mods.md "$P/docs/"   # (for modders)
     licences "$P" windows "$ROOT/tools/win/SDL3-$SDL/LICENSE.txt"
-    readme "$P" "hga.exe"
+    readme "$P" "openhuey.exe"
     rm -f "$P.zip"
     (cd dist && python3 -c 'import shutil, sys; shutil.make_archive(sys.argv[1], "zip", ".", sys.argv[1])' "$(basename "$P")")
     echo "made $P.zip"
