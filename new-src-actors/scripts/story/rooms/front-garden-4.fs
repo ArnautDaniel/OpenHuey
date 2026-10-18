@@ -4,10 +4,12 @@
 IN: story.rooms.front-garden-4
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant stalker-scene-on            \ (bit 0) his scene under way: at the room's end he is let go
 1 constant cages-remarked              \ (bit 1) its first remark made: "Empty cages litter the area. Maybe this was some kind of ken"
 2 constant figure-in-zone3             \ (bit 2) the figure ($1A) in zone 3: its sound made
+0 constant push-room-sound             \ (snd 0) her pushing
+3 constant figure-zone-sound           \ (snd 3) the figure reaching zone 3
 
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveToB(2, -290, 42); else waits (2) until
 \ Kind26_MoveDoneB says done
@@ -106,7 +108,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         3 -304.86 0.0 49.5 $14 5 0 zone
         $1A 3 8 char-zone-bits? if
             figure-in-zone3 ebit-set
-            $1A 3 6 char-sound
+            $1A figure-zone-sound 6 char-sound
         then
     then
 ;
@@ -233,7 +235,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         self-wait-done
         4 wait-frames
         lean-anim play-out
-        fiona-who 0 6 char-sound
+        fiona-who push-room-sound 6 char-sound
         strain-anim self-anim
         16 wait-frames
         let-go-push-anim play-out

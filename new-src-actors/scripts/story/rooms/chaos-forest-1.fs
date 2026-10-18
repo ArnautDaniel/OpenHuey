@@ -4,13 +4,18 @@
 IN: story.rooms.chaos-forest-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant in-zone0                    \ (bit 0) someone in zone 0
 1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
 2 constant figure-scene-on             \ (bit 2) the figure's scene begun (act00)
 0 constant hops-var                    \ (var 0) the figure's hops (5: away)
 1 constant still-var                   \ (var 1) the figure still (0) or hopping
 2 constant call-frames-var             \ (var 2) frames to the figure's next call (60)
+0 constant figure-hit1-sound           \ (snd 0) the figure as it strikes her / is struck
+1 constant figure-hit2-sound           \ (snd 1) the figure as it strikes her / is struck
+2 constant figure-call1-sound          \ (snd 2) the figure's call (now and then)
+3 constant figure-call2-sound          \ (snd 3) the figure's call (now and then)
+4 constant figure-call3-sound          \ (snd 4) the figure's call (now and then)
 
 : chaos-forest-1.enter ( -- )   \ 0041DD20
     room-sounds
@@ -86,11 +91,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         call-frames-var var-inc
         call-frames-var 60 var? if
             $21 chance? if
-                $1C 2 6 char-sound
+                $1C figure-call1-sound 6 char-sound
             else $32 chance? if
-                $1C 3 6 char-sound
+                $1C figure-call2-sound 6 char-sound
             else
-                $1C 4 6 char-sound
+                $1C figure-call3-sound 6 char-sound
             then then
             call-frames-var 0 var-set
         then
@@ -182,9 +187,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                     $F threat-raise
                 then
                 stalker-who 0 stalker-command
-                $1C 0 6 char-sound
+                $1C figure-hit1-sound 6 char-sound
             else
-                $1C 1 6 char-sound
+                $1C figure-hit2-sound 6 char-sound
             then
             fiona-who shove-hit-sound 5 char-sound
             $1C $9009 0 3 char-anim-hold

@@ -4,6 +4,9 @@
 IN: story.rooms.off-map-37
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
+\ ---- this room's own event bits, script variables and sounds ----
+16 constant wrong-sound                \ (snd 16) not right (her answer)
+
 \ Room37_Cmd00
 : off-map-37.cmd00 ( -- )  fan-turn ;
 
@@ -579,7 +582,7 @@ defer off-map-37.act00
     [: subscreen-wanted state-flag? ;] wait-while
     0 0.0 0.0 0.0 0.0 event-camera
     $26 $28 pvars-equal? not $27 $29 pvars-equal? not or if
-        fiona-who $10 6 char-sound
+        fiona-who wrong-sound 6 char-sound
     then
     $26 $28 pvars-equal? not if
         $26 1 pvar? if

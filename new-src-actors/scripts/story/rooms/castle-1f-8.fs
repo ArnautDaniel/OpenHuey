@@ -4,12 +4,13 @@
 IN: story.rooms.castle-1f-8
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
 1 constant will-find-her               \ (bit 1) he will find her hiding (by chance, as he searches: more likely by the progress variable)
 2 constant came-while-hidden           \ (bit 2) the stalker came in while she was hiding
 3 constant hewie-away                  \ (bit 3) Hewie not here (or sent off) as the scene ends
 4 constant stalker-scene-on            \ (bit 4) his scene (act0A) under way
+0 constant uneasy-sound                \ (snd 0) her unease (before the scene)
 
 \ room 0x18 (Room18_Cmd00_ptmf): object byte 3's PlacedObject_ToDef
 : castle-1f-8.cmd00 ( b0 -- )   \ (Room18_ObjectNames[b0] back as defined: the telephones' receivers, 4 / 5)
@@ -227,7 +228,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 self-scripted
     self-wait-done
     [: 6 sound-bank-loaded? ;] wait-until
-    0 6 22.0 10.0 -24.0 0 0 sound
+    uneasy-sound 6 22.0 10.0 -24.0 0 0 sound
     uneasy-anim $A blend-out
     $F $44 fade
     $19 3 $FF char-load

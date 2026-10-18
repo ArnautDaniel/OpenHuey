@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-b1-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant locked-remarked             \ (bit 0) its first remark made: "The door is locked..."
 1 constant locked2-remarked            \ (bit 1) its first remark made: "The door is locked..." (the other door)
 2 constant stalker-scene-on            \ (bit 2) the scene with her (act06) under way
@@ -15,6 +15,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 7 constant hewie-zone6-noticed         \ (bit 7) Hewie has reacted to zone 6 (once a visit)
 0 constant struggle-frames-var         \ (var 0) the struggle's frames (her cry at 12, over at 30)
 1 constant reads-var                   \ (var 1) the book read (the file given at 2)
+0 constant struggle-sound              \ (snd 0) her struggling
+1 constant smash-sound                 \ (snd 1) him smashing it
+2 constant key-turn-sound              \ (snd 2) her key in the lock
+5 constant smash-start-sound           \ (snd 5) him going to smash it
 
 \ room 0x4B (D_00409910): a lit quad at x -63.65 .. -55.65, z 104.5, from 4 to 21
 : old-mansion-b1-2.cmd00 ( b0 -- )  $1B $80  -63.65e 21.0e 104.5e  -55.65e 21.0e 104.5e  -63.65e 4.0e 104.5e  -55.65e 4.0e 104.5e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -431,7 +435,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $609 self-anim
     $14 wait-frames
-    fiona-who 2 6 char-sound
+    fiona-who key-turn-sound 6 char-sound
     $D message-param-room
     $52 door-locked? not if
         $D item-use
@@ -485,7 +489,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $609 self-anim
     $14 wait-frames
-    fiona-who 2 6 char-sound
+    fiona-who key-turn-sound 6 char-sound
     $D message-param-room
     $51 door-locked? not if
         $D item-use
@@ -561,7 +565,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             yield
             struggle-frames-var 30 var? not while
             struggle-frames-var 12 var? if
-                fiona-who 0 6 char-sound
+                fiona-who struggle-sound 6 char-sound
             then
             struggle-frames-var var-inc
         repeat
@@ -577,7 +581,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             yield
             struggle-frames-var 28 var? not while
             struggle-frames-var 12 var? if
-                fiona-who 0 6 char-sound
+                fiona-who struggle-sound 6 char-sound
             then
             struggle-frames-var var-inc
         repeat
@@ -599,12 +603,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     stalker-who char-file-use
     [: 6 sound-bank-loaded? ;] wait-until
-    stalker-who 5 6 char-sound
+    stalker-who smash-start-sound 6 char-sound
     0 room-motion 5 blend-out
     $E00 5 self-anim-blend
     $16 wait-frames
     omb1-2-breakable3-broken story-flag-set
-    stalker-who 1 6 char-sound
+    stalker-who smash-sound 6 char-sound
     stalker-who 1 stalker-rage
     4 part-shown
     5 part-hidden

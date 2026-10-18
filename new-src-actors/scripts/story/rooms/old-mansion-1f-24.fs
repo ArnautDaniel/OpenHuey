@@ -4,10 +4,12 @@
 IN: story.rooms.old-mansion-1f-24
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 4 constant stalker-waiting             \ (bit 4) the stalker here, not yet about: the encounter to come
 5 constant hewie-zone1-noticed         \ (bit 5) Hewie has reacted to zone 1 (once a visit)
 6 constant struggle-on                 \ (bit 6) the struggle with him under way (act06 / act07)
+0 constant presence-sound              \ (snd 0) his sound while he's here (kept up)
+1 constant presence2-sound             \ (snd 1) his second sound while he's here (kept up)
 
 defer old-mansion-1f-24.act02
 : old-mansion-1f-24.enter ( -- )   \ 0043B020
@@ -124,8 +126,8 @@ defer old-mansion-1f-24.act02
         then
     then
     6 sound-bank-loaded? if
-        stalker-who $80000000 6 char-sound
-        stalker-who $80000001 6 char-sound
+        stalker-who presence-sound kept-going 6 char-sound
+        stalker-who presence2-sound kept-going 6 char-sound
     then
 ;
 
@@ -263,7 +265,7 @@ defer old-mansion-1f-24.act02
     struggle-on ebit-set
     [: struggle-on ebit? ;] wait-while
     $1D 1 item-count? not if
-        stalker-who 0 6 char-sound
+        stalker-who presence-sound 6 char-sound
         0 message   \ "Oh my. What a filthy little princess. A small present from the lord of the manor..."
         $1E wait-frames
         wait-message
@@ -274,7 +276,7 @@ defer old-mansion-1f-24.act02
         $8012 say   \ "You've obtained ."
         got-hebels-perfume story-flag-set
     else
-        stalker-who 1 6 char-sound
+        stalker-who presence2-sound 6 char-sound
         1 message   \ "Miss... It's cleaning time now."
         $5A wait-frames
         wait-message

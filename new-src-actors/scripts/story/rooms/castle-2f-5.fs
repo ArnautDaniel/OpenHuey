@@ -4,7 +4,7 @@
 IN: story.rooms.castle-2f-5
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant portrait-1-remarked         \ (bit 0) its first remark made: "I wonder whose portrait this is?"
 1 constant portrait-2-remarked         \ (bit 1) its first remark made: "The man pictured here has a noble air about him. I wonder ho"
 2 constant portrait-3-remarked         \ (bit 2) its first remark made: "What a powerful piece of art. The eyes really feel like they"
@@ -18,6 +18,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 11 constant came-while-hidden          \ (bit 11) the stalker came in while she was hiding
 0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
 1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+0 constant tv-on-sound                 \ (snd 0) her switching the TV on
+1 constant tv-static-sound             \ (snd 1) the TV's static
+2 constant tv-off-sound                \ (snd 2) her switching the TV off
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
+9 constant room-loop-sound             \ (snd 9) its steady sound (started as it comes in, then kept up)
+12 constant tired-sound                \ (snd 12) her "I don't feel so hot"
+16 constant wrong-sound                \ (snd 16) not right (her answer)
 
 \ room 0x32: room effect slot 1 made anew as the first TV screen (TvScreenA).
 : castle-2f-5.cmd00 ( -- )  1 0 tv-in ;   \ (room effect 1 the TV showing the screen)
@@ -148,9 +158,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     sound-started ebit? not if
         6 sound-bank-loaded? if
             c2f-3-tv-examined story-flag? if
-                $40000001 6 0.0 3.0 7.0 0 0 sound
+                tv-static-sound volume-scaled 6 0.0 3.0 7.0 0 0 sound
             then
-            $40000009 6 -42.0 4.0 -63.0 0 0 sound
+            room-loop-sound volume-scaled 6 -42.0 4.0 -63.0 0 0 sound
             sound-started ebit-set
         then
     else
@@ -158,22 +168,22 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 -47.0 12.0 -28.0 0 0 sound
+                ambient1-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 -47.0 12.0 -28.0 0 0 sound
+                ambient2-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 -47.0 12.0 -28.0 0 0 sound
+                ambient3-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 -47.0 12.0 -28.0 0 0 sound
+                ambient4-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
                 sound-step-var 0 var-set
             then
         then
-        $C0000001 6 0.0 3.0 7.0 0 0 sound
-        $C0000009 6 -42.0 4.0 -63.0 0 0 sound
-        fiona-who $8000000C 6 char-sound
+        tv-static-sound kept-going volume-scaled 6 0.0 3.0 7.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -42.0 4.0 -63.0 0 0 sound
+        fiona-who tired-sound kept-going 6 char-sound
     then
     0 exit-usable? if
         0 exit-check
@@ -365,14 +375,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     5 0 pvar? 5 1 pvar? or if
         c2f-3-tv-examined story-flag? not if
             c2f-3-tv-examined story-flag-set
-            fiona-who 0 6 char-sound
-            $40000001 6 0.0 3.0 7.0 0 0 sound
+            fiona-who tv-on-sound 6 char-sound
+            tv-static-sound volume-scaled 6 0.0 3.0 7.0 0 0 sound
             $40 $6A noise
             1 noise-level
         else
             c2f-3-tv-examined story-flag-clear
-            fiona-who 2 6 char-sound
-            1 6 sound-stop
+            fiona-who tv-off-sound 6 char-sound
+            tv-static-sound 6 sound-stop
             0 noise-level
         then
         reach-back-anim play-out
@@ -546,8 +556,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $602 self-anim
     $12 wait-frames
-    stalker-who 2 6 char-sound
-    1 6 sound-stop
+    stalker-who tv-off-sound 6 char-sound
+    tv-static-sound 6 sound-stop
     0 noise-level
     c2f-3-tv-examined story-flag-clear
     5 pvar-inc
@@ -865,7 +875,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-2f-5.act19 ( -- )   \ 0042BD20
     self-wait-done
     knocked-anim self-anim
-    fiona-who $C 6 char-sound
+    fiona-who tired-sound 6 char-sound
     $14 wait-frames
     tired-remarked ebit? not if
         $2F message   \ "I... I don't feel so hot. It's like I have no energy all of a sudden."
@@ -895,7 +905,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 castle-2f-5.cmd03
     wait-fade
     c2f-3-tv-examined story-flag-clear
-    1 6 sound-stop
+    tv-static-sound 6 sound-stop
     0 noise-level
     hewie-who action-end
     hewie-who char-done
@@ -1011,7 +1021,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         [: subscreen-wanted state-flag? ;] wait-while
         0 0.0 0.0 0.0 0.0 event-camera
         $26 $28 pvars-equal? not $27 $29 pvars-equal? not or if
-            fiona-who $10 6 char-sound
+            fiona-who wrong-sound 6 char-sound
         then
         $26 $28 pvars-equal? not if
             $26 1 pvar? if

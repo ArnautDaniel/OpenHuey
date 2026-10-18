@@ -4,10 +4,11 @@
 IN: story.rooms.castle-1f-18
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant torn-picture-remarked       \ (bit 0) its first remark made: "This picture has been ripped out and discarded. I'm no criti"
 1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
 2 constant sound-started               \ (bit 2) its sound started (then kept up)
+0 constant room-loop-sound             \ (snd 0) its steady sound (started as it comes in, then kept up)
 
 \ room 0x1C (Room1C_Cmd00_ptmf): room effect 0x1C (a depth range) with the cutscene from frame
 \ 0x14A: near 1 .. 1 + 1.4 t (at most 67.6), far 48.6 + 4 t (at most 230)
@@ -122,16 +123,16 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     sound-started ebit? not if
         6 sound-bank-loaded? if
             flowers-laid story-flag? not if
-                $40000000 6 55.0 4.0 -30.0 0 0 sound
+                room-loop-sound volume-scaled 6 55.0 4.0 -30.0 0 0 sound
             else
-                $40000000 6 -34.0 0.0 -44.0 0 0 sound
+                room-loop-sound volume-scaled 6 -34.0 0.0 -44.0 0 0 sound
             then
             sound-started ebit-set
         then
     else flowers-laid story-flag? not if
         castle-1f-18.cmd01
     else
-        $C0000000 6 -34.0 0.0 -44.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -34.0 0.0 -44.0 0 0 sound
     then then
 ;
 
@@ -253,7 +254,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     9 $FF $E3 0 $F $FF $D8 0 7 effect-string
     $A $FF $E5 0 $C $FF $D7 0 7 effect-string
     [: $D2 cutscene-cue-reached? ;] wait-until
-    $C0000000 6 -34.0 0.0 -44.0 0 0 sound
+    room-loop-sound kept-going volume-scaled 6 -34.0 0.0 -44.0 0 0 sound
     begin
         $14A cutscene-cue-reached? not while
         1.0 1.0 1.0 48.6 depth-range
@@ -306,7 +307,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     0 part-shown
     0 cutscene-track 8 action
     [: 6 sound-bank-loaded? ;] wait-until
-    $40000000 6 55.0 4.0 -30.0 0 0 sound
+    room-loop-sound volume-scaled 6 55.0 4.0 -30.0 0 0 sound
     castle-1f-18.cmd01
     panic-eased
     $FFFF message-prepare
@@ -348,7 +349,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         castle-1f-18.cmd01
         yield
     repeat
-    $C0000000 6 -34.0 0.0 -44.0 0 0 sound
+    room-loop-sound kept-going volume-scaled 6 -34.0 0.0 -44.0 0 0 sound
     yield
     begin
         $14A cutscene-cue-reached? not while

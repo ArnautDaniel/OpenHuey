@@ -4,9 +4,10 @@
 IN: story.rooms.off-map-d8
 USING: room-names story.words story.shared story.clock story-names ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant figure-scene-on             \ (bit 0) the figure's scene begun (act00)
 1 constant cond-was-off                \ (bit 1) the room's condition was false last frame: its hook waits a frame once it holds
+10 constant figure-cry-sound           \ (snd 10) the figure's cry as it appears
 
 \ as Room109_Cmd01
 : off-map-d8.cmd00 ( b0 -- )  1e room-nudge ;   \ (as chaos-forest-11's)
@@ -122,7 +123,7 @@ USING: room-names story.words story.shared story.clock story-names ;
 ;
 
 : off-map-d8.act01 ( -- )   \ 00447E00
-    $E $A 6 char-sound
+    $E figure-cry-sound 6 char-sound
     $E $9002 1 0 char-anim-hold
     8 wait-frames
     0 off-map-d8.cmd00

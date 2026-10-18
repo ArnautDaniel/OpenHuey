@@ -4,7 +4,7 @@
 IN: story.rooms.castle-1f-5
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant stalker-entrance-on         \ (bit 0) his entrance here under way (followed; Hewie not to attack)
 1 constant box-remarked                \ (bit 1) its first remark made: "There is nothing inside."
 2 constant in-area2                    \ (bit 2) someone in the area (entered, not yet left)
@@ -13,6 +13,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 5 constant stalker-scene-on            \ (bit 5) his scripted scene under way here (stalker): at the room's end he is put back
 6 constant stalker-sent                \ (bit 6) the stalker sent on (action 4), once
 0 constant shove-frames-var            \ (var 0) his shove's frames (dust at 60)
+0 constant tired-sound                 \ (snd 0) her "I don't feel so hot"
+11 constant shove-thud-sound           \ (snd 11) his shove landing (dust)
 
 \ room 0x10 (Room10_Cond00_ptmf): the stalker is there, not about, in mode 2, 6 or 7
 : castle-1f-5.cond00? ( -- flag )  stalker-there? stalker-told? 0= and debilitas? and ;
@@ -183,7 +185,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         2 map-page
     then
     6 sound-bank-loaded? if
-        fiona-who $80000000 6 char-sound
+        fiona-who tired-sound kept-going 6 char-sound
     then
 ;
 
@@ -314,7 +316,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         shove-frames-var 60 var? if
             0 29.0 19.0 25.0 0 0 0 0 dust
             0 36.0 19.0 25.0 0 0 0 0 dust
-            stalker-who $B 6 char-sound
+            stalker-who shove-thud-sound 6 char-sound
         then
         shove-frames-var var-inc
         0 camera-mode? not if
@@ -455,7 +457,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-5.act06 ( -- )   \ 003F77A0
     self-wait-done
     knocked-anim self-anim
-    fiona-who 0 6 char-sound
+    fiona-who tired-sound 6 char-sound
     $14 wait-frames
     tired-remarked ebit? not if
         5 message   \ "I... I don't feel so hot. It's like I have no energy all of a sudden."

@@ -4,12 +4,18 @@
 IN: story.rooms.house-of-truth-1f-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant rested                      \ (bit 0) she has rested here (her recovery: once a visit)
 1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
 2 constant sound-started               \ (bit 2) its sound started (then kept up)
 0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
 1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+1 constant calm-sound                  \ (snd 1) the spot that calms her
+8 constant room-loop-sound             \ (snd 8) its steady sound (started as it comes in, then kept up)
+9 constant ambient1-sound              \ (snd 9) its ambient sounds in turn (every 30 frames): the first
+10 constant ambient2-sound             \ (snd 10) its ambient sounds in turn (every 30 frames): the second
+11 constant ambient3-sound             \ (snd 11) its ambient sounds in turn (every 30 frames): the third
+12 constant ambient4-sound             \ (snd 12) its ambient sounds in turn (every 30 frames): the fourth
 
 \ room 0x88: when the stalker is Lorenzo (kind 0xA) and his slam lands this frame, a camera
 \ shake of 0.5 (slam_shake; a frame hook).
@@ -89,24 +95,24 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : house-of-truth-1f-2.phase1 ( -- )   \ 00432E90
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000008 6 -60.0 20.0 50.0 0 0 sound
+            room-loop-sound volume-scaled 6 -60.0 20.0 50.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000008 6 -60.0 20.0 50.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -60.0 20.0 50.0 0 0 sound
     then
     6 sound-bank-loaded? if
         sound-frames-var var-inc
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000009 6 -78.0 21.0 46.5 0 0 sound
+                ambient1-sound volume-scaled 6 -78.0 21.0 46.5 0 0 sound
             else sound-step-var 1 var? if
-                $4000000A 6 -78.0 21.0 46.5 0 0 sound
+                ambient2-sound volume-scaled 6 -78.0 21.0 46.5 0 0 sound
             else sound-step-var 2 var? if
-                $4000000B 6 -78.0 21.0 46.5 0 0 sound
+                ambient3-sound volume-scaled 6 -78.0 21.0 46.5 0 0 sound
             else sound-step-var 3 var? if
-                $4000000C 6 -78.0 21.0 46.5 0 0 sound
+                ambient4-sound volume-scaled 6 -78.0 21.0 46.5 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
@@ -254,7 +260,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-who char-file-use
         4 room-motion $A self-anim-blend
         $16 wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who calm-sound 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
         fiona-calm-reset

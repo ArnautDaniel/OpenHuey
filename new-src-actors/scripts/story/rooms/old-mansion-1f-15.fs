@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-1f-15
 USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant shelves-moving              \ (bit 0) the shelves moving back
 1 constant books-remarked              \ (bit 1) its first remark made: "The books have been arranged by author. The books are all wr"
 2 constant hewie-zone3-noticed         \ (bit 2) Hewie has reacted to zone 3 (once a visit)
@@ -13,6 +13,17 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 5 constant hewie-zone4-noticed-2       \ (bit 5) Hewie has reacted to zone 4 (once a visit)
 0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
 1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+3 constant ambient1-sound              \ (snd 3) its ambient sounds in turn (every 30 frames): the first
+4 constant ambient2-sound              \ (snd 4) its ambient sounds in turn (every 30 frames): the second
+5 constant ambient3-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the third
+6 constant ambient4-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the fourth
+8 constant ambient12-sound            \ (snd 8) its ambient sounds in turn (every 30 frames): the first
+9 constant ambient22-sound            \ (snd 9) its ambient sounds in turn (every 30 frames): the second
+10 constant ambient32-sound           \ (snd 10) its ambient sounds in turn (every 30 frames): the third
+11 constant ambient42-sound           \ (snd 11) its ambient sounds in turn (every 30 frames): the fourth
+13 constant shelves-stop-sound         \ (snd 13) the shelves coming to rest
+14 constant place-books-sound          \ (snd 14) her placing the books
+12 constant shelves-sound              \ (snd 12) the shelves moving
 
 \ the moving bookshelves (Room54_GroupStep): group g's four (the colour's book and its three
 \ shelves) - op 0 at their stop; 1 / 2 back 0.25 a frame in x / z to it (event bit 0 cleared
@@ -277,17 +288,17 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000003 6 24.15 0.0 76.38 0 0 sound
-                $40000008 6 -44.0 70.0 22.0 0 0 sound
+                ambient1-sound volume-scaled 6 24.15 0.0 76.38 0 0 sound
+                ambient12-sound volume-scaled 6 -44.0 70.0 22.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000004 6 24.15 0.0 76.38 0 0 sound
-                $40000009 6 -44.0 70.0 22.0 0 0 sound
+                ambient2-sound volume-scaled 6 24.15 0.0 76.38 0 0 sound
+                ambient22-sound volume-scaled 6 -44.0 70.0 22.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000005 6 24.15 0.0 76.38 0 0 sound
-                $4000000A 6 -44.0 70.0 22.0 0 0 sound
+                ambient3-sound volume-scaled 6 24.15 0.0 76.38 0 0 sound
+                ambient32-sound volume-scaled 6 -44.0 70.0 22.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000006 6 24.15 0.0 76.38 0 0 sound
-                $4000000B 6 -44.0 70.0 22.0 0 0 sound
+                ambient4-sound volume-scaled 6 24.15 0.0 76.38 0 0 sound
+                ambient42-sound volume-scaled 6 -44.0 70.0 22.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
@@ -436,7 +447,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         hewie-away ebit-set
     then
     reach-up-anim play-out
-    fiona-who $E 6 char-sound
+    fiona-who place-books-sound 6 char-sound
     8 0 object-hidden
     books-placed story-flag-set
     $15 item-use
@@ -444,8 +455,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     shelves-moving ebit-set
     2 3 old-mansion-1f-15.cmd00
     [: 2 1 old-mansion-1f-15.cmd00 2 4 old-mansion-1f-15.cmd00 shelves-moving ebit? ;] wait-while
-    $C 6 sound-stop
-    $D 6 0.0 -52.5 10.0 0 0 sound
+    shelves-sound 6 sound-stop
+    shelves-stop-sound 6 0.0 -52.5 10.0 0 0 sound
     4 barred-floor floor-off
     5 barred-floor floor-on
     16 wait-frames
@@ -473,7 +484,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
     reach-up-anim play-out
-    fiona-who $E 6 char-sound
+    fiona-who place-books-sound 6 char-sound
     $B part-shown
     lectern-0-book-1 story-flag-set
     $16 item-use
@@ -493,7 +504,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 25.0 20.0 -50.0 2.0 event-camera
     reach-up-anim play-out
-    fiona-who $E 6 char-sound
+    fiona-who place-books-sound 6 char-sound
     $A part-shown
     lectern-0-book-2 story-flag-set
     $17 item-use
@@ -513,7 +524,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 25.0 20.0 50.0 2.0 event-camera
     reach-up-anim play-out
-    fiona-who $E 6 char-sound
+    fiona-who place-books-sound 6 char-sound
     9 part-shown
     lectern-1-book-0 story-flag-set
     $15 item-use
@@ -551,7 +562,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         hewie-away ebit-set
     then
     reach-up-anim play-out
-    fiona-who $E 6 char-sound
+    fiona-who place-books-sound 6 char-sound
     4 0 object-hidden
     lectern-1-book-1 story-flag-set
     $16 item-use
@@ -561,8 +572,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     shelves-moving ebit-set
     1 3 old-mansion-1f-15.cmd00
     [: 1 2 old-mansion-1f-15.cmd00 1 4 old-mansion-1f-15.cmd00 shelves-moving ebit? ;] wait-while
-    $C 6 sound-stop
-    $D 6 39.0 21.0 10.0 0 0 sound
+    shelves-sound 6 sound-stop
+    shelves-stop-sound 6 39.0 21.0 10.0 0 0 sound
     2 barred-floor floor-off
     3 barred-floor floor-on
     16 wait-frames
@@ -592,7 +603,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 25.0 20.0 50.0 2.0 event-camera
     reach-up-anim play-out
-    fiona-who $E 6 char-sound
+    fiona-who place-books-sound 6 char-sound
     8 part-shown
     lectern-1-book-2 story-flag-set
     $17 item-use
@@ -612,7 +623,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
     reach-up-anim play-out
-    fiona-who $E 6 char-sound
+    fiona-who place-books-sound 6 char-sound
     6 part-shown
     lectern-2-book-0 story-flag-set
     $15 item-use
@@ -632,7 +643,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     self-wait-done
     1 30.0 0.0 0.0 2.0 event-camera
     reach-up-anim play-out
-    fiona-who $E 6 char-sound
+    fiona-who place-books-sound 6 char-sound
     7 part-shown
     lectern-2-book-1 story-flag-set
     $16 item-use
@@ -663,7 +674,7 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
         hewie-away ebit-set
     then
     reach-up-anim play-out
-    fiona-who $E 6 char-sound
+    fiona-who place-books-sound 6 char-sound
     0 0 object-hidden
     lectern-2-book-2 story-flag-set
     $17 item-use
@@ -671,8 +682,8 @@ create shelf-stops  0e f, 0e f,  39e f, 21e f,  0e f, -52.5e f,   \ (x, z by gro
     shelves-moving ebit-set
     0 3 old-mansion-1f-15.cmd00
     [: 0 2 old-mansion-1f-15.cmd00 0 4 old-mansion-1f-15.cmd00 shelves-moving ebit? ;] wait-while
-    $C 6 sound-stop
-    $D 6 0.0 0.0 10.0 0 0 sound
+    shelves-sound 6 sound-stop
+    shelves-stop-sound 6 0.0 0.0 10.0 0 0 sound
     0 barred-floor floor-off
     1 barred-floor floor-on
     6 floor-flag-200 floor-on

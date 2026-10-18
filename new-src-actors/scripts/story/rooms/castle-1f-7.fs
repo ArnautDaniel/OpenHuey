@@ -4,11 +4,15 @@
 IN: story.rooms.castle-1f-7
 USING: engine common room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant sound-started               \ (bit 0) its sound started (then kept up)
 1 constant area17-reacted              \ (bit 1) her reaction on entering the area made (once a visit)
 0 constant breaker-var                 \ (var 0) ? the breaker's state (0 / 1)
 7 constant doll-looks-var              \ (var 7) how often she has looked at the doll (her remarks in turn)
+0 constant breaker-sound               \ (snd 0) the breaker lowered
+1 constant room-loop-sound             \ (snd 1) its steady sound (started as it comes in, then kept up)
+2 constant lid-fall-sound              \ (snd 2) the lid falling shut
+3 constant room-loop2-sound           \ (snd 3) its steady sound (started as it comes in, then kept up)
 
 \ a lid (pstr_kousi_2, +0x24 its height, +0x34 its speed): byte 3 0 up, 1 shut; 2 falling and
 \ bouncing shut (the first landing clears progress flag 0x50 and, unless the director says no,
@@ -20,7 +24,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     lid-y -25.3e f< if
         s" kousi" $30 object@ f0> if
             -1e s" kousi" $30 object!  c1f-4-flag2 story-flag-clear
-            cam-scene? 0= if  2 6 0 0  0e 30e 30e sound  then
+            cam-scene? 0= if  lid-fall-sound 6 0 0  0e 30e 30e sound  then
         then
         -25.3e s" kousi" place-y object!  s" kousi" $34 object@ -0.2e f* s" kousi" $34 object!
     then
@@ -112,13 +116,13 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     sound-started ebit? not if
         6 sound-bank-loaded? if
             breaker-lowered story-flag? not if
-                $40000003 6 -10.0 15.0 0.0 0 0 sound
+                room-loop2-sound volume-scaled 6 -10.0 15.0 0.0 0 0 sound
             then
             sound-started ebit-set
         then
     else
-        $C0000003 6 -10.0 15.0 0.0 0 0 sound
-        $C0000001 6 0.0 30.0 30.0 0 0 sound
+        room-loop2-sound kept-going volume-scaled 6 -10.0 15.0 0.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 0.0 30.0 30.0 0 0 sound
     then
     0 exit-usable? if
         0 exit-check
@@ -222,7 +226,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         movie-loop
         scene-play-through
     then
-    3 6 sound-stop
+    room-loop2-sound 6 sound-stop
     1.0 sound-volume-scale
     $1C resident-flag-set
     0 game-over-flag
@@ -243,8 +247,8 @@ USING: engine common room-names story.words story.shared flag-names story-names 
             2 0 object-anim
             0 room-motion $A self-anim-blend
             $32 wait-frames
-            0 6 -44.0 18.0 36.0 0 0 sound
-            3 6 sound-stop
+            breaker-sound 6 -44.0 18.0 36.0 0 0 sound
+            room-loop2-sound 6 sound-stop
             1 part-hidden
             breaker-lowered story-flag-set
             40 hewie-trust
@@ -268,7 +272,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 
 : castle-1f-7.act03 ( -- )   \ 003FA4F0
     c1f-4-flag2 story-flag-set
-    $40000001 6 0.0 30.0 30.0 0 0 sound
+    room-loop-sound volume-scaled 6 0.0 30.0 30.0 0 0 sound
     2 castle-1f-7.cmd00
     self-idle-or-end
 ;
@@ -318,15 +322,15 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     wait-fade
     [: 6 sound-bank-loaded? ;] wait-until
     $F room-preload
-    $40000001 6 0.0 30.0 30.0 0 0 sound
+    room-loop-sound volume-scaled 6 0.0 30.0 30.0 0 0 sound
     3 castle-1f-7.cmd00
-    2 6 0.0 30.0 30.0 0 0 sound
+    lid-fall-sound 6 0.0 30.0 30.0 0 0 sound
     $1E wait-frames
     $F 0 fade
     wait-fade
     world-held state-flag-set
     0 0.0 0.0 0.0 0.0 event-camera
-    3 6 sound-stop
+    room-loop2-sound 6 sound-stop
     $80 exit-check
     self-idle-or-end
 ;

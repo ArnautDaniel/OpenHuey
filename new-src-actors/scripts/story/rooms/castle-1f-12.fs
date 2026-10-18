@@ -4,11 +4,13 @@
 IN: story.rooms.castle-1f-12
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant dial-in-use                 \ (bit 0) turning the device (the loop runs while it is set)
 1 constant dial-moving                 \ (bit 1) the device turning this frame
 2 constant device-remarked             \ (bit 2) its first remark made: "Hmm, wonder what this device is for? Looks like it pivots at"
 3 constant wall-remarked               \ (bit 3) its first remark made: "This part of the wall has been designed differently from the"
+0 constant dial-stop-sound             \ (snd 0) the dial coming to rest
+1 constant dial-click-sound            \ (snd 1) the dial clicking on a number
 
 \ two dials (byte 3: pstr_syuukouki2 on var 0, pstr_syuukouki1 on var 1, from -90 degrees), byte
 \ 4 the step
@@ -267,12 +269,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             dial-moving ebit? if
                 0 1 castle-1f-12.cmd00
                 dial-moving ebit? not if
-                    0 6 54.0 -90.0 49.0 0 0 sound
+                    dial-stop-sound 6 54.0 -90.0 49.0 0 0 sound
                 then
             else
                 0 2 castle-1f-12.cmd00
                 dial-moving ebit? 0 5 pvar? and if
-                    1 6 54.0 -90.0 49.0 0 0 sound
+                    dial-click-sound 6 54.0 -90.0 49.0 0 0 sound
                     0 castle-1f-12.cmd03
                 then
             then
@@ -399,12 +401,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             dial-moving ebit? if
                 1 1 castle-1f-12.cmd00
                 dial-moving ebit? not if
-                    0 6 30.0 -90.0 -51.0 0 0 sound
+                    dial-stop-sound 6 30.0 -90.0 -51.0 0 0 sound
                 then
             else
                 1 2 castle-1f-12.cmd00
                 dial-moving ebit? 1 2 pvar? and if
-                    1 6 30.0 -90.0 -51.0 0 0 sound
+                    dial-click-sound 6 30.0 -90.0 -51.0 0 0 sound
                     1 castle-1f-12.cmd03
                 then
             then

@@ -4,7 +4,7 @@
 IN: story.rooms.front-garden-3
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant tree-remarked               \ (bit 0) its first remark made: "A large tree is sprawled out here."
 1 constant stalkers-held               \ (bit 1) the stalkers held while Hewie's scene runs
 2 constant next-scene                  \ (bit 2) ? on to act0E (the scene after Hewie is in place)
@@ -17,6 +17,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 9 constant hewie-scene-on              \ (bit 9) his scripted scene under way here (hewie): at the room's end he is put back
 10 constant hewie-in-place             \ (bit 10) Hewie at his place (act0B)
 0 constant whine-frames-var            \ (var 0) frames to Hewie's next whine (from 30, then 180)
+0 constant hewie-effort-sound          \ (snd 0) Hewie at work?
+1 constant hewie-whine-sound           \ (snd 1) Hewie's whine (now and then, caught in the wire)
+2 constant effort-room-sound           \ (snd 2) her at work?
+10 constant figure-cry-sound           \ (snd 10) the figure's cry as it appears
 
 \ the box and the grate, by byte 3: 0 the box's +0x28 on by 0.4; the grate's +0x14 (an angle) 1
 \ back 1.5 degrees, 2 on 0.5, 3 back 0.5
@@ -254,7 +258,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         hewie-found-in-wire story-flag? not if
             whine-frames-var 0 var? if
                 $1E chance? if
-                    hewie-who 1 6 char-sound
+                    hewie-who hewie-whine-sound 6 char-sound
                     whine-frames-var 180 var-set
                 else
                     whine-frames-var 60 var-set
@@ -571,14 +575,14 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     2 wait-counter
     8 wait-frames
-    hewie-who 0 6 char-sound
+    hewie-who hewie-effort-sound 6 char-sound
     begin
         3 counter? not while
         0 front-garden-3.cmd00
         yield
     repeat
     4 wait-counter
-    fiona-who 2 6 char-sound
+    fiona-who effort-room-sound 6 char-sound
     begin
         5 counter? not while
         1 front-garden-3.cmd00
@@ -825,7 +829,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 ;
 
 : front-garden-3.act14 ( -- )   \ 00405480
-    $F $A 6 char-sound
+    $F figure-cry-sound 6 char-sound
     $F $9002 1 0 char-anim-hold
     8 wait-frames
     0 front-garden-3.cmd01

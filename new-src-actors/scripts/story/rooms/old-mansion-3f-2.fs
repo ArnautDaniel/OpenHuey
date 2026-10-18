@@ -4,12 +4,14 @@
 IN: story.rooms.old-mansion-3f-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant on-group1                   \ (bit 0) she stepped onto nav group 1 this frame
 4 constant armor-scene-on              \ (bit 4) the armour's scene (act01) under way
 5 constant hewie-zone0-noticed         \ (bit 5) Hewie has reacted to zone 0 (once a visit)
 0 constant steps-var                   \ (var 0) ? how far along the floor's groups she is (0..2)
 1 constant group-var                   \ (var 1) the nav group she was on last frame
+1 constant armor-sound                 \ (snd 1) the armor
+2 constant button-sound                \ (snd 2) the armor's button pushed
 
 \ room 0x63: the script's character walks to Fiona's nav triangle (character move 6, with
 \ 0x204).
@@ -112,7 +114,7 @@ defer old-mansion-3f-2.act07
         then then then
         on-group1 ebit? if
             armor-scene-on ebit? not if
-                fiona-who 1 6 char-sound
+                fiona-who armor-sound 6 char-sound
                 steps-var 0 var? if
                     panic-eased
                     fiona-who 0 char-action? if
@@ -489,7 +491,7 @@ defer old-mansion-3f-2.act07
         self-wait-anim
         0 answer? if
             reach-up-anim play-out
-            fiona-who 2 6 char-sound
+            fiona-who button-sound 6 char-sound
             armor-button-pushed story-flag-set
             30 hewie-trust
             0 keeps-hewie-off floor-off

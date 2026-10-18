@@ -4,12 +4,15 @@
 IN: story.rooms.old-mansion-1f-11
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant water-remarked              \ (bit 0) its first remark made: "The path is obstructed by water..."
 1 constant stalker-scene-on            \ (bit 1) the scene with her (act03) under way
 2 constant wall-breaking               \ (bit 2) the stalker breaking through (at the room's end: broken)
 4 constant hewie-zone0-noticed         \ (bit 4) Hewie has reacted to zone 0 (once a visit)
 0 constant struggle-frames-var         \ (var 0) the struggle's frames (her cry at 12, over at 30)
+0 constant struggle-sound              \ (snd 0) her struggling
+1 constant smash-sound                 \ (snd 1) him smashing it
+5 constant smash-start-sound           \ (snd 5) him going to smash it
 
 \ room 0x4E (D_0040B4D8): a lit quad at x -44 .. -36, z 60, from 54 to 71
 : old-mansion-1f-11.cmd00 ( b0 -- )  $1B $80  -44.0e 71.0e 60.0e  -36.0e 71.0e 60.0e  -44.0e 54.0e 60.0e  -36.0e 54.0e 60.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -279,7 +282,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             yield
             struggle-frames-var 30 var? not while
             struggle-frames-var 12 var? if
-                fiona-who 0 6 char-sound
+                fiona-who struggle-sound 6 char-sound
             then
             struggle-frames-var var-inc
         repeat
@@ -295,7 +298,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             yield
             struggle-frames-var 28 var? not while
             struggle-frames-var 12 var? if
-                fiona-who 0 6 char-sound
+                fiona-who struggle-sound 6 char-sound
             then
             struggle-frames-var var-inc
         repeat
@@ -317,12 +320,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     stalker-who char-file-use
     [: 6 sound-bank-loaded? ;] wait-until
-    stalker-who 5 6 char-sound
+    stalker-who smash-start-sound 6 char-sound
     0 room-motion 5 blend-out
     $E00 5 self-anim-blend
     $16 wait-frames
     om1f-11-breakable-broken story-flag-set
-    stalker-who 1 6 char-sound
+    stalker-who smash-sound 6 char-sound
     stalker-who 1 stalker-rage
     2 part-shown
     3 part-hidden

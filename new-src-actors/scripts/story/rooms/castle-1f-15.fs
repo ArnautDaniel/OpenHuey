@@ -4,7 +4,7 @@
 IN: story.rooms.castle-1f-15
 USING: engine room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant spear-remarked              \ (bit 0) its first remark made: "This spear decoration serves as an obvious conversation piec"
 1 constant armor-remarked              \ (bit 1) its first remark made: "A suit of armor forged from steel."
 2 constant handrail-remarked           \ (bit 2) its first remark made: "This section of handrail seems to be... gone. They always sa"
@@ -13,6 +13,7 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
 7 constant encounter-done              \ (bit 7) the encounter in area $18 over (whichever way it went)
 8 constant sound-started               \ (bit 8) its sound started (then kept up)
 9 constant encounter-started           \ (bit 9) the encounter in area $18 begun
+8 constant room-loop-sound             \ (snd 8) its steady sound (started as it comes in, then kept up)
 
 \ room 0x19 (Room19_Cond00_ptmf): the pursuer (about, not in state 2, in mode 2, 6 or 7) while
 \ Hewie is controlled: in another room, or 30 or more from the player
@@ -74,11 +75,11 @@ USING: engine room-names story.words story.shared flag-names story-names fiona.a
 : castle-1f-15.phase1 ( -- )   \ 003FB520
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000008 6 -88.0 65.0 -95.0 0 0 sound
+            room-loop-sound volume-scaled 6 -88.0 65.0 -95.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000008 6 -88.0 65.0 -95.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -88.0 65.0 -95.0 0 0 sound
     then
     0 exit-usable? if
         0 exit-check

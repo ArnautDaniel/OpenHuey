@@ -4,9 +4,10 @@
 IN: story.rooms.old-mansion-1f-16
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant locked-remarked             \ (bit 0) its first remark made: "The door is locked..."
 1 constant area2-reacted               \ (bit 1) her reaction in area 2 made (once a visit)
+0 constant unlock-sound                \ (snd 0) a door unlocked with its key
 
 \ Room55_Cmd00
 : old-mansion-1f-16.cmd00 ( b0 -- )   \ (Room55: b0 0 the ceiling's glass reflecting (60 x 60 at 45) and the light rippling
@@ -213,7 +214,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $609 self-anim
     $14 wait-frames
-    fiona-who 0 6 char-sound
+    fiona-who unlock-sound 6 char-sound
     $11 message-param-room
     $11 item-use
     $63 door-unlock

@@ -4,13 +4,16 @@
 IN: story.rooms.house-of-truth-1f-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant rested                      \ (bit 0) she has rested here (her recovery: once a visit)
 1 constant hewie-sent-off              \ (bit 1) Hewie was here and sent off for the scene
 2 constant key-used                    \ (bit 2) the key used: the door unlocked, the summoner off
 3 constant sound-started               \ (bit 3) its sound started (then kept up)
 4 constant sound2-started              \ (bit 4) its sound started (then kept up)
 5 constant flame-lit                   \ (bit 5) the flame lit
+1 constant calm-sound                  \ (snd 1) the spot that calms her
+2 constant room-loop-sound             \ (snd 2) its steady sound (started as it comes in, then kept up)
+6 constant room-loop2-sound           \ (snd 6) its steady sound (started as it comes in, then kept up)
 
 : house-of-truth-1f-1.enter ( -- )   \ 00430AB0
     room-sounds
@@ -182,20 +185,20 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000002 6 -24.6 22.1 -26.4 0 0 sound
+            room-loop-sound volume-scaled 6 -24.6 22.1 -26.4 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000002 6 -24.6 22.1 -26.4 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -24.6 22.1 -26.4 0 0 sound
     then
     flame-lit ebit? if
         sound2-started ebit? not if
             6 sound-bank-loaded? if
-                $40000006 6 -21.86 0.0 33.51 0 0 sound
+                room-loop2-sound volume-scaled 6 -21.86 0.0 33.51 0 0 sound
                 sound2-started ebit-set
             then
         else
-            $C0000006 6 -21.86 0.0 33.51 0 0 sound
+            room-loop2-sound kept-going volume-scaled 6 -21.86 0.0 33.51 0 0 sound
         then
     then
 ;
@@ -254,7 +257,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-who char-file-use
         4 room-motion $A self-anim-blend
         $16 wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who calm-sound 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
         fiona-calm-reset

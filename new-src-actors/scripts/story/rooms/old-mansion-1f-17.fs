@@ -4,9 +4,10 @@
 IN: story.rooms.old-mansion-1f-17
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant blue-flame-remarked         \ (bit 0) its first remark made: "'Blue Flame, Secret Ways' Strange title for a picture. Unles"
 1 constant hewie-zone4-noticed         \ (bit 1) Hewie has reacted to zone 4 (once a visit)
+3 constant shatter-sound               \ (snd 3) a breakable shattering
 
 \ room 0x5D (Room5D_Cmd00_ptmf): four objects 60 to the left
 : old-mansion-1f-17.cmd00 ( -- )   \ (four objects - the room's strings 2..5 - 60 to the left)
@@ -247,7 +248,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             0 part-hidden
             1 part-shown
             43.0 0.0 -40.0 0 -2145904616 0 0.0 shards-at
-            3 6 43.0 0.0 -40.0 0 0 sound
+            shatter-sound 6 43.0 0.0 -40.0 0 0 sound
             $40 $126 noise
             1 43.0 1.0 -40.0 flicker-sprite
         then

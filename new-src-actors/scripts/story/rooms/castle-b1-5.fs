@@ -4,6 +4,10 @@
 IN: story.rooms.castle-b1-5
 USING: room-names story.words story.shared flag-names story-names floor-flags hewie.anims ;
 
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant wait-sound                  \ (snd 0) ?
+1 constant caught-room-sound           \ (snd 1) caught (game over)
+
 \ room 0x0B (Room0B_Cond00_ptmf): the player is 20 .. 120 from (x, z) = s16 bytes 3..4, 5..6
 : castle-b1-5.cond00? ( b0 b1 b2 b3 -- flag )   \ (x, z: s16 bytes 3..4, 5..6)
     swap 8 lshift or s16>  >r  swap 8 lshift or s16>  r>
@@ -84,7 +88,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
     0 room-motion play-out
     $3C wait-frames
     [: 6 sound-bank-loaded? ;] wait-until
-    fiona-who 1 6 char-sound
+    fiona-who caught-room-sound 6 char-sound
     16 wait-frames
     0 game-over-flag
     caught state-flag-set
@@ -157,7 +161,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags he
 
 : castle-b1-5.act06 ( -- )   \ 003F4608
     [: 6 sound-bank-loaded? ;] wait-until
-    fiona-who 0 6 char-sound
+    fiona-who wait-sound 6 char-sound
     self-idle-or-end
 ;
 

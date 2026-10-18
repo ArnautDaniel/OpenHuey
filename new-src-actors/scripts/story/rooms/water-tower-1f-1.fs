@@ -4,10 +4,15 @@
 IN: story.rooms.water-tower-1f-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant rested                      \ (bit 0) she has rested here (her recovery: once a visit)
 1 constant sound-step-var              \ (var 1) which of its sounds next (0..3)
 2 constant sound-frames-var            \ (var 2) frames to the next sound (30)
+1 constant calm-sound                  \ (snd 1) the spot that calms her
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
 
 \ room 0xC1: the summoner's countdown (progress +0x764) has run out.
 : water-tower-1f-1.cond00? ( -- flag )  summoner-done? ;
@@ -98,13 +103,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 25.0 10.0 136.5 0 0 sound
+                ambient1-sound volume-scaled 6 25.0 10.0 136.5 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 25.0 10.0 136.5 0 0 sound
+                ambient2-sound volume-scaled 6 25.0 10.0 136.5 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 25.0 10.0 136.5 0 0 sound
+                ambient3-sound volume-scaled 6 25.0 10.0 136.5 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 25.0 10.0 136.5 0 0 sound
+                ambient4-sound volume-scaled 6 25.0 10.0 136.5 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
@@ -146,7 +151,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-who char-file-use
         4 room-motion $A self-anim-blend
         $16 wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who calm-sound 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
         fiona-calm-reset

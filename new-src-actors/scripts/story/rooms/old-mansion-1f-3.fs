@@ -4,12 +4,15 @@
 IN: story.rooms.old-mansion-1f-3
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant in-zone0                    \ (bit 0) someone in zone 0 (the figure's hops count)
 1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
 2 constant hewie-zone2-noticed         \ (bit 2) Hewie has reacted to zone 2 (once a visit)
 0 constant hops-var                    \ (var 0) the figure's hops (5: away)
 1 constant call-frames-var             \ (var 1) the figure's frames (its calls at 7 and 47)
+0 constant figure-hit1-sound           \ (snd 0) the figure as it strikes her / is struck
+1 constant figure-hit2-sound           \ (snd 1) the figure as it strikes her / is struck
+2 constant figure-call1-sound          \ (snd 2) the figure's call (now and then)
 
 : old-mansion-1f-3.enter ( -- )   \ 0041CA90
     room-sounds
@@ -97,10 +100,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         in-zone0 ebit-clear
     then
     call-frames-var 7 var? if
-        $1C 2 6 char-sound
+        $1C figure-call1-sound 6 char-sound
     then
     call-frames-var 47 var? if
-        $1C 2 6 char-sound
+        $1C figure-call1-sound 6 char-sound
     then
     om1f-3-refined-antimony-found story-flag? not if
         4 -19.52 0.0 -13.68 $A 5 0 zone
@@ -251,9 +254,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                     $F threat-raise
                 then
                 stalker-who 0 stalker-command
-                $1C 0 6 char-sound
+                $1C figure-hit1-sound 6 char-sound
             else
-                $1C 1 6 char-sound
+                $1C figure-hit2-sound 6 char-sound
             then
             fiona-who shove-hit-sound 5 char-sound
             $1C $9003 0 3 char-anim-hold

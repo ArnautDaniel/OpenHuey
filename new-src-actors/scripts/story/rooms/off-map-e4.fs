@@ -4,11 +4,16 @@
 IN: story.rooms.off-map-e4
 USING: room-names story.words story.shared story.clock floor-flags ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant cond-was-off                \ (bit 0) the room's condition was false last frame: its hook waits a frame once it holds
 0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
 1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
 2 constant called-var                  \ (var 2) Hewie or she in area $D (his call made)
+0 constant came-in-sound               \ (snd 0) whoever came into area $D (a call?)
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
 
 \ (as Room0F_Cmd00) the room object RoomE4_ObjectNames by event variable 2
 : off-map-e4.cmd00 ( b0 -- )  s" fumi_yuka" 2 var-fade ;   \ (as castle-1f-4's, by event variable 2)
@@ -85,13 +90,13 @@ USING: room-names story.words story.shared story.clock floor-flags ;
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 -17.0 22.0 -9.0 0 0 sound
+                ambient1-sound volume-scaled 6 -17.0 22.0 -9.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 -17.0 22.0 -9.0 0 0 sound
+                ambient2-sound volume-scaled 6 -17.0 22.0 -9.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 -17.0 22.0 -9.0 0 0 sound
+                ambient3-sound volume-scaled 6 -17.0 22.0 -9.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 -17.0 22.0 -9.0 0 0 sound
+                ambient4-sound volume-scaled 6 -17.0 22.0 -9.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
@@ -102,13 +107,13 @@ USING: room-names story.words story.shared story.clock floor-flags ;
     called-var 0 var? if
         hewie-who $D char-in-area? if
             called-var 1 var-set
-            hewie-who 0 6 char-sound
+            hewie-who came-in-sound 6 char-sound
         else fiona-who $D char-in-area? if
             called-var 1 var-set
-            fiona-who 0 6 char-sound
+            fiona-who came-in-sound 6 char-sound
         else stalker-who $D char-in-area? if
             called-var 1 var-set
-            stalker-who 0 6 char-sound
+            stalker-who came-in-sound 6 char-sound
         then then then
     else hewie-who $D char-in-area? not fiona-who $D char-in-area? not and stalker-who $D char-in-area? not and if
         called-var 0 var-set

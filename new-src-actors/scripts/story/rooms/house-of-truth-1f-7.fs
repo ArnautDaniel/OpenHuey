@@ -4,7 +4,7 @@
 IN: story.rooms.house-of-truth-1f-7
 USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant hewie-scene-on              \ (bit 0) his scripted scene under way here (hewie): at the room's end he is put back
 1 constant pushed                      \ (bit 1) the push done (act03 waits for it)
 3 constant found-her                   \ (bit 3) he has found her hiding: she must flee (the avoid prompt)
@@ -15,6 +15,8 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 8 constant search-started              \ (bit 8) his search begun (phase 1 starts act08)
 9 constant drone-on                    \ (bit 9) the drone sound ($30, bank $47) going
 1 constant push-var                    \ (var 1) ? the push's count down
+0 constant trap-start-sound            \ (snd 0) the trap set going
+1 constant trap-close-sound            \ (snd 1) the trap closing on her
 
 \ a struggle: byte 3 0 resets Fiona's shake tracking (+0x1AD710 / +0x1AD714); 1 adds her shakes
 \ to script variable byte 4, with a grunt (voice 0x3D or 0x45 at random) when the cool-down
@@ -405,7 +407,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     0 1 house-of-truth-1f-7.cmd00
     0 room-motion self-anim
     4 0 object-anim
-    $40000000 6 -37.0 0.0 63.0 0 0 sound
+    trap-start-sound volume-scaled 6 -37.0 0.0 63.0 0 0 sound
     stalker-who char-here? if
         stalker-who action-end
     then
@@ -650,7 +652,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
     1 fiona-who $E action-force
     4 2 object-anim
     $1B wait-frames
-    $40000001 6 -37.0 0.0 63.0 0 0 sound
+    trap-close-sound volume-scaled 6 -37.0 0.0 63.0 0 0 sound
     begin
         yield
     again

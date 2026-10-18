@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-1f-12
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant wrong-plate-remarked        \ (bit 0) its first remark made: "Nothing happened. This must not be the correct plate..."
 1 constant locked-remarked             \ (bit 1) its first remark made: "The door is locked..."
 3 constant lever-down                  \ (bit 3) the lever (cmd00) all the way down
@@ -12,6 +12,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 5 constant hewie-zone1-noticed         \ (bit 5) Hewie has reacted to zone 1 (once a visit)
 6 constant box-turned                  \ (bit 6) the box ("sikakebox") turned all the way
 7 constant sound-started               \ (bit 7) its sound started (then kept up)
+0 constant box-turn-sound              \ (snd 0) the box turned
+1 constant lever-sound                 \ (snd 1) the lever
+2 constant plate-sound                 \ (snd 2) her setting the plate
+3 constant unlock-sound                \ (snd 3) a door unlocked with its key
+4 constant room-loop-sound             \ (snd 4) its steady sound (started as it comes in, then kept up)
+5 constant answer-sound                \ (snd 5) as she answers yes
 
 \ room 0x4F (Room4F_Cmd00_ptmf): object byte 3 by byte 4: 0 up (+0x10 0), 1 down (-0.65), 2
 \ lowered a step (0.02, not during a movie); once down, events bit 3
@@ -110,11 +116,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     om1f-12-flag1 story-flag? not if
         sound-started ebit? not if
             6 sound-bank-loaded? if
-                $40000004 6 38.0 5.0 -10.0 0 0 sound
+                room-loop-sound volume-scaled 6 38.0 5.0 -10.0 0 0 sound
                 sound-started ebit-set
             then
         else
-            $C0000004 6 38.0 5.0 -10.0 0 0 sound
+            room-loop-sound kept-going volume-scaled 6 38.0 5.0 -10.0 0 0 sound
         then
     then
     0 exit-usable? if
@@ -302,7 +308,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $609 self-anim
     $14 wait-frames
-    fiona-who 3 6 char-sound
+    fiona-who unlock-sound 6 char-sound
     $F message-param-room
     $F item-use
     $6C door-unlock
@@ -360,7 +366,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         0 answer? if
             $F 4 fade
             wait-fade
-            fiona-who 5 6 char-sound
+            fiona-who answer-sound 6 char-sound
             fiona-who $10C 180 char-to-tri-facing
             0 0 player-camera
             camera-restart
@@ -384,7 +390,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     0 answer? if
         $F 4 fade
         wait-fade
-        fiona-who 5 6 char-sound
+        fiona-who answer-sound 6 char-sound
         fiona-who $141 0 char-to-tri-facing
         1 1 player-camera
         camera-restart
@@ -452,7 +458,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         1 part-shown
         6 part-shown
         old-mansion-1f-12.cmd01
-        4 6 sound-stop
+        room-loop-sound 6 sound-stop
         om1f-12-flag1 story-flag-set
     else
         2 part-shown
@@ -478,13 +484,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     12.0 -24.0 self-turn-to-xz
     self-wait-done
     reach-out-anim play-out
-    2 6 12.0 10.0 -25.0 0 0 sound
+    plate-sound 6 12.0 10.0 -25.0 0 0 sound
     16 wait-frames
     reach-back-anim play-out
     wrong-plate-remarked ebit? if
         0 effect-remove
         lever-down ebit-clear
-        1 6 12.0 10.0 -25.0 0 0 sound
+        lever-sound 6 12.0 10.0 -25.0 0 0 sound
         [: 2 2 old-mansion-1f-12.cmd00 lever-down ebit? ;] wait-until
         om1f-12-flag2 story-flag-set
     else
@@ -503,12 +509,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     -12.0 -24.0 self-turn-to-xz
     self-wait-done
     reach-out-anim play-out
-    2 6 -12.0 10.0 -25.0 0 0 sound
+    plate-sound 6 -12.0 10.0 -25.0 0 0 sound
     16 wait-frames
     reach-back-anim play-out
     wrong-plate-remarked ebit? if
         lever-down ebit-clear
-        1 6 -12.0 10.0 -25.0 0 0 sound
+        lever-sound 6 -12.0 10.0 -25.0 0 0 sound
         [: 0 2 old-mansion-1f-12.cmd00 lever-down ebit? ;] wait-until
         om1f-12-flag3 story-flag-set
     else
@@ -523,7 +529,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-1f-12.act08 ( -- )   \ 0040BDF0
     [: $44C cutscene-cue-reached? ;] wait-until
     lever-down ebit-clear
-    1 6 0.0 30.0 -27.0 0 0 sound
+    lever-sound 6 0.0 30.0 -27.0 0 0 sound
     [: 1 2 old-mansion-1f-12.cmd00 lever-down ebit? ;] wait-until
     self-idle-or-end
 ;
@@ -574,7 +580,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-1f-12.act0C ( -- )   \ 0040BEB0
     16 wait-frames
     0 part-shown
-    0 6 -38.0 5.0 -8.0 0 0 sound
+    box-turn-sound 6 -38.0 5.0 -8.0 0 0 sound
     box-turned ebit-clear
     [: old-mansion-1f-12.cmd03 box-turned ebit? ;] wait-until
     self-idle-or-end

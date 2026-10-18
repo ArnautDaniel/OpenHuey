@@ -4,7 +4,7 @@
 IN: story.rooms.water-tower-7f-1
 USING: actors messages room-names story.words story.shared flag-names story-names fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant gear0-turning               \ (bit 0) ? the first gear's step (cmd00 7) pending
 1 constant gear1-turning               \ (bit 1) ? the gears' step (cmd00 6 / 7)
 2 constant gear2-turning               \ (bit 2) ? the gears' step (cmd00 5 / 6)
@@ -29,6 +29,18 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 10 constant gear10-var                 \ (var 10) ? a gear's state (-1 none)
 11 constant sound-step-var             \ (var 11) which of its sounds next (0..3)
 12 constant sound-frames-var           \ (var 12) frames to the next sound (30)
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
+10 constant setting8-sound             \ (snd 10) her setting 8
+11 constant setting7-sound             \ (snd 11) her setting 7
+12 constant setting6-sound             \ (snd 12) her setting 6
+13 constant setting5-sound             \ (snd 13) her setting 5
+14 constant setting4-sound             \ (snd 14) her setting 4
+15 constant setting3-sound             \ (snd 15) her setting 3
+16 constant setting2-sound             \ (snd 16) her setting 2
+17 constant setting1-sound             \ (snd 17) her setting 1
 
 \ the 0x10-byte effect ObjectGlow_vtable on room object k + 1 (byte 4 = k, 1..8; script variable
 \ 11 - k keeps its slot): made on first use when byte 3 is set, then sent (on byte 3, index 8 -
@@ -90,13 +102,13 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 -127.0 1.7 10.0 0 0 sound
+                ambient1-sound volume-scaled 6 -127.0 1.7 10.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 -127.0 1.7 10.0 0 0 sound
+                ambient2-sound volume-scaled 6 -127.0 1.7 10.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 -127.0 1.7 10.0 0 0 sound
+                ambient3-sound volume-scaled 6 -127.0 1.7 10.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 -127.0 1.7 10.0 0 0 sound
+                ambient4-sound volume-scaled 6 -127.0 1.7 10.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
@@ -199,39 +211,39 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         then
         first-idle ebit? her-setting-var 0 var? not and if
             her-setting-var 1 var? if
-                fiona-who $11 6 char-sound
+                fiona-who setting1-sound 6 char-sound
             else her-setting-var 2 var? if
-                fiona-who $10 6 char-sound
+                fiona-who setting2-sound 6 char-sound
             else her-setting-var 3 var? if
-                fiona-who $F 6 char-sound
+                fiona-who setting3-sound 6 char-sound
             else her-setting-var 4 var? if
-                fiona-who $E 6 char-sound
+                fiona-who setting4-sound 6 char-sound
             else her-setting-var 5 var? if
-                fiona-who $D 6 char-sound
+                fiona-who setting5-sound 6 char-sound
             else her-setting-var 6 var? if
-                fiona-who $C 6 char-sound
+                fiona-who setting6-sound 6 char-sound
             else her-setting-var 7 var? if
-                fiona-who $B 6 char-sound
+                fiona-who setting7-sound 6 char-sound
             else her-setting-var 8 var? if
-                fiona-who $A 6 char-sound
+                fiona-who setting8-sound 6 char-sound
             then then then then then then then then
         else second-idle ebit? his-setting-var 0 var? not and if
             his-setting-var 1 var? if
-                hewie-who $11 6 char-sound
+                hewie-who setting1-sound 6 char-sound
             else his-setting-var 2 var? if
-                hewie-who $10 6 char-sound
+                hewie-who setting2-sound 6 char-sound
             else his-setting-var 3 var? if
-                hewie-who $F 6 char-sound
+                hewie-who setting3-sound 6 char-sound
             else his-setting-var 4 var? if
-                hewie-who $E 6 char-sound
+                hewie-who setting4-sound 6 char-sound
             else his-setting-var 5 var? if
-                hewie-who $D 6 char-sound
+                hewie-who setting5-sound 6 char-sound
             else his-setting-var 6 var? if
-                hewie-who $C 6 char-sound
+                hewie-who setting6-sound 6 char-sound
             else his-setting-var 7 var? if
-                hewie-who $B 6 char-sound
+                hewie-who setting7-sound 6 char-sound
             else his-setting-var 8 var? if
-                hewie-who $A 6 char-sound
+                hewie-who setting8-sound 6 char-sound
             then then then then then then then then
         then then
         first-idle ebit? not her-setting-var 0 var? and if

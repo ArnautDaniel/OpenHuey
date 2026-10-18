@@ -4,7 +4,7 @@
 IN: story.rooms.castle-1f-13
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant balcony-remarked            \ (bit 0) its first remark made: "I can't believe the balcony collapsed. It's like something o"
 1 constant false-door-remarked         \ (bit 1) its first remark made: "A door?"
 2 constant false-door-2-remarked       \ (bit 2) its first remark made: "A door?"
@@ -13,6 +13,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 5 constant came-while-hidden           \ (bit 5) the stalker came in while she was hiding
 6 constant stalker-scene-on            \ (bit 6) his scripted scene under way here (stalker): at the room's end he is put back
 0 constant shove-frames-var            \ (var 0) his shove's frames (dust at 60)
+11 constant shove-thud-sound           \ (snd 11) his shove landing (dust)
 
 \ room 0x08 (Room08_Cmd00_ptmf): the cutscene director's +0x6C 3 (byte 3 0) or 2
 : castle-1f-13.cmd00 ( b0 -- )   \ (the scene's cast leaves actor 3 (b0 0) or 2 be: Cutscene_Mark82)
@@ -425,7 +426,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         shove-frames-var 60 var? if
             0 -283.0 1.0 37.0 0 0 0 0 dust
             0 -280.0 1.0 42.0 0 0 0 0 dust
-            stalker-who $B 6 char-sound
+            stalker-who shove-thud-sound 6 char-sound
         then
         shove-frames-var var-inc
         self-at-motion-event? not while

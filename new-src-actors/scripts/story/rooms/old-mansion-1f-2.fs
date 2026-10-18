@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-1f-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant medallion-placed            \ (bit 0) the medallion placed (act00): the door unlocked, its sparkle shown
 1 constant scales-remarked             \ (bit 1) its first remark made: "A pair of scales hangs mysteriously from the statue's hand. "
 2 constant inscription-read            \ (bit 2) the inscription read (act05: a file given)
@@ -13,6 +13,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 0 constant used-item-var               \ (var 0) the item she used (8 .. 11)
 1 constant sound-step-var              \ (var 1) which of its sounds next (0..3)
 2 constant sound-frames-var            \ (var 2) frames to the next sound (30)
+0 constant room-loop-sound             \ (snd 0) its steady sound (started as it comes in, then kept up)
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
+10 constant ambient12-sound           \ (snd 10) its ambient sounds in turn (every 30 frames): the first
+11 constant ambient22-sound           \ (snd 11) its ambient sounds in turn (every 30 frames): the second
+12 constant ambient32-sound           \ (snd 12) its ambient sounds in turn (every 30 frames): the third
+13 constant ambient42-sound           \ (snd 13) its ambient sounds in turn (every 30 frames): the fourth
 
 \ the scales ("tenbin") and their pans ("sara_l", "sara_r"): level (byte 3 0) or tipped
 : old-mansion-1f-2.cmd00 ( b0 -- )   \ (the scales, "tenbin", and their pans: level (0) or tipped 25 degrees)
@@ -145,11 +154,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     medallion-40-done story-flag? if
         sound-started ebit? not if
             6 sound-bank-loaded? if
-                $40000000 6 0.0 0.0 130.0 0 0 sound
+                room-loop-sound volume-scaled 6 0.0 0.0 130.0 0 0 sound
                 sound-started ebit-set
             then
         else
-            $C0000000 6 0.0 0.0 130.0 0 0 sound
+            room-loop-sound kept-going volume-scaled 6 0.0 0.0 130.0 0 0 sound
         then
     then
     6 sound-bank-loaded? if
@@ -157,17 +166,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 -109.95 50.0 -5.34 0 0 sound
-                $4000000A 6 -42.0 20.0 117.0 0 0 sound
+                ambient1-sound volume-scaled 6 -109.95 50.0 -5.34 0 0 sound
+                ambient12-sound volume-scaled 6 -42.0 20.0 117.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 -109.95 50.0 -5.34 0 0 sound
-                $4000000B 6 -42.0 20.0 117.0 0 0 sound
+                ambient2-sound volume-scaled 6 -109.95 50.0 -5.34 0 0 sound
+                ambient22-sound volume-scaled 6 -42.0 20.0 117.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 -109.95 50.0 -5.34 0 0 sound
-                $4000000C 6 -42.0 20.0 117.0 0 0 sound
+                ambient3-sound volume-scaled 6 -109.95 50.0 -5.34 0 0 sound
+                ambient32-sound volume-scaled 6 -42.0 20.0 117.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 -109.95 50.0 -5.34 0 0 sound
-                $4000000D 6 -42.0 20.0 117.0 0 0 sound
+                ambient4-sound volume-scaled 6 -109.95 50.0 -5.34 0 0 sound
+                ambient42-sound volume-scaled 6 -42.0 20.0 117.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if

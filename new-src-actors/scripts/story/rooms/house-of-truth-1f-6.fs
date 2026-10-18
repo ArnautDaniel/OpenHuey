@@ -4,7 +4,7 @@
 IN: story.rooms.house-of-truth-1f-6
 USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant door-opened-bit             \ (bit 0) the door opened (act00)
 1 constant half-hid                    \ (bit 1) she half-hid (stage 16)
 2 constant defended                    \ (bit 2) she defended herself (stage 17)
@@ -24,6 +24,9 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 2 constant time-var                    \ (var 2) its time (to 450, 1800, 2250, 2700)
 3 constant tries-var                   \ (var 3) her tries at the door
 4 constant still-frames-var            \ (var 4) her frames standing still (300)
+0 constant rumble-sound                \ (snd 0) the room shaking
+1 constant heave-sound                 \ (snd 1) her heaving it
+2 constant drop-sound                  \ (snd 2) it dropping?
 
 \ door 0 swung by script variable 0: byte 3 0 sets it to -90; 1 opens it 10 degrees a step to 0
 \ (doors +0x74), waiting (2) until there
@@ -448,7 +451,7 @@ defer house-of-truth-1f-6.act02
 : house-of-truth-1f-6.act06 ( -- )   \ 00435700
     0 house-of-truth-1f-6.cmd01
     1 house-of-truth-1f-6.cmd01
-    fiona-who 0 6 char-sound
+    fiona-who rumble-sound 6 char-sound
     1 $FF 8 rumble
     1 counter-set
     stage-var 8 var-set
@@ -497,9 +500,9 @@ defer house-of-truth-1f-6.act02
     3 1 object-anim
     4 1 object-anim
     $E wait-frames
-    fiona-who 1 6 char-sound
+    fiona-who heave-sound 6 char-sound
     $3C wait-frames
-    fiona-who 2 6 char-sound
+    fiona-who drop-sound 6 char-sound
     self-wait-anim
     0 self-noclip
     stalkers-stay state-flag-clear
@@ -525,9 +528,9 @@ defer house-of-truth-1f-6.act02
     4 2 object-anim
     2 room-motion 0 self-anim-blend
     $10 wait-frames
-    fiona-who 1 6 char-sound
+    fiona-who heave-sound 6 char-sound
     $38 wait-frames
-    fiona-who 2 6 char-sound
+    fiona-who drop-sound 6 char-sound
     self-wait-anim
     0 self-noclip
     0 self-scripted

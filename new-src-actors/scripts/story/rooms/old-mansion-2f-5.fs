@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-2f-5
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant in-zone2                    \ (bit 0) someone in zone 2 (the figure's hops count)
 1 constant found-her                   \ (bit 1) he has found her hiding: she must flee (the avoid prompt)
 2 constant will-find-her               \ (bit 2) he will find her hiding (by chance, as he searches: more likely by the progress variable)
@@ -14,6 +14,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 1 constant still-var                   \ (var 1) the figure still (0) or hopping
 3 constant sound-step-var              \ (var 3) which of its sounds next (0..3)
 4 constant sound-frames-var            \ (var 4) frames to the next sound (30)
+0 constant figure-hit1-sound           \ (snd 0) the figure as it strikes her / is struck
+1 constant figure-hit2-sound           \ (snd 1) the figure as it strikes her / is struck
+2 constant figure-hit3-sound           \ (snd 2) the figure as it strikes her / is struck
 
 : old-mansion-2f-5.enter ( -- )   \ 0040F910
     room-sounds
@@ -153,7 +156,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         in-zone2 ebit-clear
     then
     still-var 1 var? if
-        $1C 2 6 char-sound
+        $1C figure-hit3-sound 6 char-sound
     then
     3 -2.18 0.0 42.94 $20 11 0 zone
     hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
@@ -274,9 +277,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                     $F threat-raise
                 then
                 stalker-who 0 stalker-command
-                $1C 0 6 char-sound
+                $1C figure-hit1-sound 6 char-sound
             else
-                $1C 1 6 char-sound
+                $1C figure-hit2-sound 6 char-sound
             then
             fiona-who shove-hit-sound 5 char-sound
             $1C $9005 0 3 char-anim-hold

@@ -69,8 +69,10 @@ The animations a script plays itself are by name - Fiona's, Hewie's or the stalk
 script's character is known from the room's calls; tools/story_anims.py), Fiona's story ones
 named from how they look played (fiona/anims.fs) - and a room's own motion file's are `i
 room-motion`. The variables the rooms hand Hewie for his finds and looks are `found-flag-var`
-.. `hewie-zone-var`. A room's own event bits and variables 0..12 stay numbers: each means
-something only in its room.
+.. `hewie-zone-var`. A room's own event bits, script variables and sounds (bank 6, loaded for
+it) are named in a block after its USING: line, with what each is for (tools/story_room_names.py;
+a `?` where the evidence was thin). A sound's flag bits are words: `kept-going` (one already playing
+is moved, not restarted) and `volume-scaled` (by the story's volume setting).
 
 The converter's long-hand is said by words (tools/story_flow.py): `N wait-frames`, `anim
 play-out` / `anim b blend-out` (played to its end), `msg say` (shown and waited out), `[: cond ;]

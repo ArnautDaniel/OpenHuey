@@ -4,13 +4,17 @@
 IN: story.rooms.old-mansion-2f-11
 USING: engine actors messages vectors story.state room-names story.words story.shared flag-names story-names fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant ladder-remarked             \ (bit 0) its first remark made: "There is a rusty stepladder here..."
 1 constant hewie-zone4-noticed         \ (bit 1) Hewie has reacted to zone 4 (once a visit)
 0 constant tries-var                   \ (var 0) its tries (3: on)
 1 constant books-looks-var             \ (var 1) her remarks on the books in turn
 2 constant sound-step-var              \ (var 2) which of its sounds next (0..3)
 3 constant sound-frames-var            \ (var 3) frames to the next sound (30)
+3 constant ambient1-sound              \ (snd 3) its ambient sounds in turn (every 30 frames): the first
+4 constant ambient2-sound              \ (snd 4) its ambient sounds in turn (every 30 frames): the second
+5 constant ambient3-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the third
+6 constant ambient4-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the fourth
 
 \ room 0x62 (Room62_Cmd00_ptmf): object byte 4 swings: byte 3 0 starts it (phase +0x30 0, size
 \ +0x34 0.01; object 0 with sound 7), else a step (+0x10 = size x sin(phase), phase on 60
@@ -139,13 +143,13 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000003 6 37.86 0.0 -38.87 0 0 sound
+                ambient1-sound volume-scaled 6 37.86 0.0 -38.87 0 0 sound
             else sound-step-var 1 var? if
-                $40000004 6 37.86 0.0 -38.87 0 0 sound
+                ambient2-sound volume-scaled 6 37.86 0.0 -38.87 0 0 sound
             else sound-step-var 2 var? if
-                $40000005 6 37.86 0.0 -38.87 0 0 sound
+                ambient3-sound volume-scaled 6 37.86 0.0 -38.87 0 0 sound
             else sound-step-var 3 var? if
-                $40000006 6 37.86 0.0 -38.87 0 0 sound
+                ambient4-sound volume-scaled 6 37.86 0.0 -38.87 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if

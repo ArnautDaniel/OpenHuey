@@ -4,8 +4,9 @@
 IN: story.rooms.old-mansion-1f-13
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant hewie-away                  \ (bit 0) Hewie not here (or sent off) as the scene ends
+2 constant obtained-sound              \ (snd 2) as she takes it
 
 : old-mansion-1f-13.cmd00 ( -- )  effects:drips ;   \ (water dripping, rippling)
 \ 1 unless the object at +0x18 exists and its byte +0x28 is 1.
@@ -336,7 +337,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         item-fanfare
         $8012 say   \ "You've obtained ."
         $3C threat-add
-        fiona-who 2 6 char-sound
+        fiona-who obtained-sound 6 char-sound
         reach-back-anim play-out
         old-mansion-1f-13.act0A
     then
@@ -362,7 +363,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $8012 say   \ "You've obtained ."
         got-yellow-mandragora story-flag-set
         $3C threat-add
-        fiona-who 2 6 char-sound
+        fiona-who obtained-sound 6 char-sound
         reach-back-anim play-out
         old-mansion-1f-13.act0A
     then
@@ -388,7 +389,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $8012 say   \ "You've obtained ."
         got-red-mandragora story-flag-set
         $3C threat-add
-        fiona-who 2 6 char-sound
+        fiona-who obtained-sound 6 char-sound
         reach-back-anim play-out
         old-mansion-1f-13.act0A
     then
@@ -414,7 +415,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $8012 say   \ "You've obtained ."
         got-blue-mandragora story-flag-set
         $3C threat-add
-        fiona-who 2 6 char-sound
+        fiona-who obtained-sound 6 char-sound
         reach-back-anim play-out
         old-mansion-1f-13.act0A
     then
@@ -440,7 +441,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $8012 say   \ "You've obtained ."
         got-purple-mandragora story-flag-set
         $3C threat-add
-        fiona-who 2 6 char-sound
+        fiona-who obtained-sound 6 char-sound
         reach-back-anim play-out
         old-mansion-1f-13.act0A
     then

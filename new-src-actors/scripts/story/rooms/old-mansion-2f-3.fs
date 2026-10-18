@@ -4,12 +4,15 @@
 IN: story.rooms.old-mansion-2f-3
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant draught-remarked            \ (bit 0) its first remark made: "I can distinctly feel air coming from inside. I wonder where"
 1 constant hewie-zone1-noticed         \ (bit 1) Hewie has reacted to zone 1 (once a visit)
 2 constant decomposer-remarked         \ (bit 2) its first remark made: "Decomposer The initial step in this grand process begins wit"
 3 constant research-gear-remarked      \ (bit 3) its first remark made: "Shoddy-looking research equipment has been left here."
 0 constant used-item-var               \ (var 0) the item she used (8 .. 10)
+0 constant zone-sound                  \ (snd 0) her stepping into zone 0
+1 constant fade-sound                  \ (snd 1) as the screen fades
+3 constant change-sound                \ (snd 3) it transforming
 
 \ room 0x56 (Room56_Cmd00_ptmf): creatures 7..9 in the current room on a live triangle
 \ gRoomEventObj says yes to: +0x10, then the creature list's +0x28
@@ -57,7 +60,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     om2f-3-flag1 story-flag? not if
         0 35.0 0.0 0.0 8 4 0 zone
         fiona-who 0 2 char-zone-bits? fiona-who 0 2 char-zone-bits-before? not and if
-            fiona-who 0 6 char-sound
+            fiona-who zone-sound 6 char-sound
         then
     then
     over-music-c story-flag? om2f-3-flag1 story-flag? not and if
@@ -186,7 +189,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     wait-fade
     things-clear
     $FFFF message-close
-    fiona-who 1 6 char-sound
+    fiona-who fade-sound 6 char-sound
     world-held state-flag-set
     $3C wait-frames
     $80 exit-check
@@ -214,14 +217,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-2f-3.act04 ( -- )   \ 0040F080
     stalkers-stay state-flag-set
     1 self-scripted
-    stalker-who 0 6 char-sound
+    stalker-who zone-sound 6 char-sound
     $F $44 fade
     self-wait-done
     wait-fade
     things-clear
     $FFFF message-close
     old-mansion-2f-3.cmd00
-    stalker-who 1 6 char-sound
+    stalker-who fade-sound 6 char-sound
     stalker-who action-end
     3 summon-take
     $3C wait-frames
@@ -314,7 +317,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $A0 29.5 34.5 0 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 3 6 char-sound
+    fiona-who change-sound 6 char-sound
     $78 wait-frames
     look-close-anim play-out
     1 say   \ "Oh my! It actually transformed..."
@@ -337,7 +340,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $A0 29.5 34.5 0 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 3 6 char-sound
+    fiona-who change-sound 6 char-sound
     $78 wait-frames
     look-close-anim play-out
     reach-out-anim play-out

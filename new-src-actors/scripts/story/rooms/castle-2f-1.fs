@@ -4,11 +4,13 @@
 IN: story.rooms.castle-2f-1
 USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant dial-in-use                 \ (bit 0) turning the device (the loop runs while it is set)
 1 constant dial-moving                 \ (bit 1) the device turning this frame
 2 constant device-remarked             \ (bit 2) its first remark made: "Huh? What is this? Looks like it pivots at the base..."
 3 constant puzzle-solved               \ (bit 3) the devices set right (progress variables 0 5, 1 2, 3 3): out the other way
+0 constant dial-stop-sound             \ (snd 0) the dial coming to rest
+1 constant dial-click-sound            \ (snd 1) the dial clicking on a number
 
 \ the dial pstr_syuukouki on progress var 3
 : castle-2f-1.cmd00 ( b0 -- )  s" syuukouki" 3 0 0 dial-step ;   \ (the dial on progress variable 3, from 0 degrees)
@@ -231,12 +233,12 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
             dial-moving ebit? if
                 1 castle-2f-1.cmd00
                 dial-moving ebit? not if
-                    0 6 -36.0 -102.0 5.0 0 0 sound
+                    dial-stop-sound 6 -36.0 -102.0 5.0 0 0 sound
                 then
             else
                 2 castle-2f-1.cmd00
                 dial-moving ebit? 3 3 pvar? and if
-                    1 6 -36.0 -102.0 5.0 0 0 sound
+                    dial-click-sound 6 -36.0 -102.0 5.0 0 0 sound
                     castle-2f-1.cmd01
                 then
             then

@@ -4,13 +4,16 @@
 IN: story.rooms.off-map-27
 USING: actors messages items room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant gave-first                  \ (bit 0) the first item ($91) given
 1 constant gave-second                 \ (bit 1) the second item ($92) given
 2 constant nothing-left                \ (bit 2) taken: "There is nothing here." from now on
 3 constant something-lacking           \ (bit 3) she lacks one of the items (to be given)
 0 constant lacking-var                 \ (var 0) the items she lacks (each a byte)
 1 constant used-item-var               \ (var 1) the item she used
+0 constant wrong-sound                 \ (snd 0) not right (her answer)
+4 constant reach-sound                 \ (snd 4) her reaching out
+5 constant reach-back-sound            \ (snd 5) her drawing back
 
 \ the items 0x91 / 0x92, by byte 3: 0 which of them Fiona lacks (one each) kept in event var 0
 \ (0x91 low byte, 0x92 the next), and event +0x5C(3) when any; 1 they are given back, event
@@ -134,7 +137,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
             $F $44 fade
             wait-fade
             world-held state-flag-set
-            fiona-who 0 6 char-sound
+            fiona-who wrong-sound 6 char-sound
             $3C wait-frames
             new-game-sounds state-flag-set
             1 sound-set
@@ -156,7 +159,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
             $F $44 fade
             wait-fade
             world-held state-flag-set
-            fiona-who 0 6 char-sound
+            fiona-who wrong-sound 6 char-sound
             $3C wait-frames
             new-game-sounds state-flag-set
             1 sound-set
@@ -237,7 +240,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
         [: subscreen-wanted state-flag? ;] wait-while
         0 0.0 0.0 0.0 0.0 event-camera
         $26 $28 pvars-equal? not $27 $29 pvars-equal? not or if
-            fiona-who 0 6 char-sound
+            fiona-who wrong-sound 6 char-sound
         then
         $26 $28 pvars-equal? not if
             $26 1 pvar? if
@@ -341,10 +344,10 @@ USING: actors messages items room-names story.words story.shared flag-names stor
     $46 -9.0 -13.0 -160 $FFFF 5 self-move-to
     self-wait-done
     reach-out-anim play-out
-    fiona-who 4 6 char-sound
+    fiona-who reach-sound 6 char-sound
     4 wait-frames
     reach-back-anim play-out
-    fiona-who 5 6 char-sound
+    fiona-who reach-back-sound 6 char-sound
     1 -11.0 3.0 -17.0 flicker-sprite
     16 wait-frames
     $1E wait-frames
@@ -420,7 +423,7 @@ USING: actors messages items room-names story.words story.shared flag-names stor
     $46 -9.0 -13.0 -160 $FFFF 5 self-move-to
     self-wait-done
     reach-out-anim play-out
-    fiona-who 4 6 char-sound
+    fiona-who reach-sound 6 char-sound
     4 wait-frames
     reach-back-anim play-out
     $1E wait-frames

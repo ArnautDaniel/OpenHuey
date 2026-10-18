@@ -4,7 +4,7 @@
 IN: story.rooms.castle-2f-3
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant portrait-1-remarked         \ (bit 0) its first remark made: "I wonder whose portrait this is?"
 1 constant portrait-2-remarked         \ (bit 1) its first remark made: "The man pictured here has a noble air about him. I wonder ho"
 2 constant portrait-3-remarked         \ (bit 2) its first remark made: "What a powerful piece of art. The eyes really feel like they"
@@ -21,6 +21,16 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
 1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
 2 constant whine-frames-var            \ (var 2) frames to Hewie's next whine (from 30, then 180)
+0 constant tv-on-sound                 \ (snd 0) her switching the TV on
+1 constant tv-static-sound             \ (snd 1) the TV's static
+2 constant tv-off-sound                \ (snd 2) her switching the TV off
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
+9 constant room-loop-sound             \ (snd 9) its steady sound (started as it comes in, then kept up)
+15 constant hewie-whine-sound          \ (snd 15) Hewie's whine (now and then, caught in the wire)
+16 constant wrong-sound                \ (snd 16) not right (her answer)
 
 : castle-2f-3.cmd00 ( -- )  1 0 tv-in ;   \ (room effect 1 the TV showing the screen)
 \ room 0x21 (D_00400B98): the fan turns, except while a movie plays
@@ -192,9 +202,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     sound-started ebit? not if
         6 sound-bank-loaded? if
             c2f-3-tv-examined story-flag? if
-                $40000001 6 0.0 3.0 7.0 0 0 sound
+                tv-static-sound volume-scaled 6 0.0 3.0 7.0 0 0 sound
             then
-            $40000009 6 -42.0 4.0 -63.0 0 0 sound
+            room-loop-sound volume-scaled 6 -42.0 4.0 -63.0 0 0 sound
             sound-started ebit-set
         then
     else
@@ -202,21 +212,21 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 -47.0 12.0 -28.0 0 0 sound
+                ambient1-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 -47.0 12.0 -28.0 0 0 sound
+                ambient2-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 -47.0 12.0 -28.0 0 0 sound
+                ambient3-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 -47.0 12.0 -28.0 0 0 sound
+                ambient4-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
                 sound-step-var 0 var-set
             then
         then
-        $C0000001 6 0.0 3.0 7.0 0 0 sound
-        $C0000009 6 -42.0 4.0 -63.0 0 0 sound
+        tv-static-sound kept-going volume-scaled 6 0.0 3.0 7.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -42.0 4.0 -63.0 0 0 sound
     then
     0 exit-usable? if
         0 exit-check
@@ -471,14 +481,14 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     5 0 pvar? 5 1 pvar? or if
         c2f-3-tv-examined story-flag? not if
             c2f-3-tv-examined story-flag-set
-            fiona-who 0 6 char-sound
-            $40000001 6 0.0 3.0 7.0 0 0 sound
+            fiona-who tv-on-sound 6 char-sound
+            tv-static-sound volume-scaled 6 0.0 3.0 7.0 0 0 sound
             $40 $6A noise
             1 noise-level
         else
             c2f-3-tv-examined story-flag-clear
-            fiona-who 2 6 char-sound
-            1 6 sound-stop
+            fiona-who tv-off-sound 6 char-sound
+            tv-static-sound 6 sound-stop
             0 noise-level
         then
         reach-back-anim play-out
@@ -663,8 +673,8 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     $602 self-anim
     $12 wait-frames
-    stalker-who 2 6 char-sound
-    1 6 sound-stop
+    stalker-who tv-off-sound 6 char-sound
+    tv-static-sound 6 sound-stop
     0 noise-level
     c2f-3-tv-examined story-flag-clear
     5 pvar-inc
@@ -1190,7 +1200,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         whine-frames-var var-dec
         whine-frames-var 0 var? if
             $1E chance? if
-                $F 6 228.0 5.0 78.0 0 0 sound
+                hewie-whine-sound 6 228.0 5.0 78.0 0 0 sound
                 whine-frames-var 180 var-set
             else
                 whine-frames-var 60 var-set
@@ -1352,7 +1362,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         [: subscreen-wanted state-flag? ;] wait-while
         0 0.0 0.0 0.0 0.0 event-camera
         $26 $28 pvars-equal? not $27 $29 pvars-equal? not or if
-            fiona-who $10 6 char-sound
+            fiona-who wrong-sound 6 char-sound
         then
         $26 $28 pvars-equal? not if
             $26 1 pvar? if

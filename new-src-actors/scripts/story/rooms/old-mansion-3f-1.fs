@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-3f-1
 USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant obstacle0-stopped           \ (bit 0) the first obstacle stopped (on its square)
 1 constant obstacle1-stopped           \ (bit 1) the second obstacle stopped (on its square)
 2 constant obstacle2-stopped           \ (bit 2) the third obstacle stopped (on its square)
@@ -16,6 +16,9 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 0 constant stopped-var                 \ (var 0) obstacles stopped on their squares (the glow's strength)
 1 constant glow-var                    \ (var 1) the floor's glow effect
 6 constant wait-var                    \ (var 6) frames waited (60)
+1 constant stop-sound                  \ (snd 1) an obstacle stopping
+2 constant loop-sound                  \ (snd 2) the room's loop
+3 constant his-sound                   \ (snd 3) him in the scene
 
 \ room 0x60 (D_00429148): the floor light (room effect 0x1B, 20 x 20 at y -0.2) by byte 3 - 1
 \ removed with its glow effect (event variable 1); 0 made, with the glow (FloorGlow_vtable);
@@ -144,17 +147,17 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     3 1 1 1 chars-area-camera
     4 2 2 1 chars-area-camera
     6 sound-bank-loaded? if
-        $C0000002 6 0.0 0.0 0.0 0 0 sound
+        loop-sound kept-going volume-scaled 6 0.0 0.0 0.0 0 0 sound
     then
     obstacle0-stopped ebit? not if
         0 $20A obstacle-on? if
             0 obstacle-stop
             obstacle0-stopped ebit-set
             stopped-var 0 var? if
-                $40000002 6 0.0 0.0 0.0 0 0 sound
+                loop-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
             then
             stopped-var var-inc
-            fiona-who 1 6 char-sound
+            fiona-who stop-sound 6 char-sound
             0 0 old-mansion-3f-1.cmd02
         then
     then
@@ -163,10 +166,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             1 obstacle-stop
             obstacle1-stopped ebit-set
             stopped-var 0 var? if
-                $40000002 6 0.0 0.0 0.0 0 0 sound
+                loop-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
             then
             stopped-var var-inc
-            fiona-who 1 6 char-sound
+            fiona-who stop-sound 6 char-sound
             1 0 old-mansion-3f-1.cmd02
         then
     then
@@ -175,10 +178,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             2 obstacle-stop
             obstacle2-stopped ebit-set
             stopped-var 0 var? if
-                $40000002 6 0.0 0.0 0.0 0 0 sound
+                loop-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
             then
             stopped-var var-inc
-            fiona-who 1 6 char-sound
+            fiona-who stop-sound 6 char-sound
             2 0 old-mansion-3f-1.cmd02
         then
     then
@@ -187,10 +190,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             3 obstacle-stop
             obstacle3-stopped ebit-set
             stopped-var 0 var? if
-                $40000002 6 0.0 0.0 0.0 0 0 sound
+                loop-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
             then
             stopped-var var-inc
-            fiona-who 1 6 char-sound
+            fiona-who stop-sound 6 char-sound
             3 0 old-mansion-3f-1.cmd02
         then
     then
@@ -465,7 +468,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         scene-play
     then
     wait-fade
-    2 6 sound-stop
+    loop-sound 6 sound-stop
     $1E 1 object-hidden
     scene-5-pending state-flag-clear
     hewie-no-attack state-flag-clear
@@ -556,7 +559,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     1 1 old-mansion-3f-1.cmd02
     2 1 old-mansion-3f-1.cmd02
     3 1 old-mansion-3f-1.cmd02
-    2 6 sound-stop
+    loop-sound 6 sound-stop
     [: 7 cutscene-shot? ;] wait-until
     2 0 old-mansion-3f-1.cmd02
     3 0 old-mansion-3f-1.cmd02
@@ -678,7 +681,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         scene-play
     then
     wait-fade
-    2 6 sound-stop
+    loop-sound 6 sound-stop
     $1E 1 object-hidden
     fiona-who 0 char-visible
     scene-5-pending state-flag-clear
@@ -760,7 +763,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     stalker-who $1AB 0.25 0.25 -90 char-to-xz
     0 room-motion self-anim
     $96 wait-frames
-    stalker-who 3 6 char-sound
+    stalker-who his-sound 6 char-sound
     $F7 wait-frames
     self-wait-anim
     counter-inc
@@ -917,7 +920,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     1 result? if
         scene-play
     then
-    2 6 sound-stop
+    loop-sound 6 sound-stop
     $1E 1 object-hidden
     2 0 char-remove
     7 part-shown

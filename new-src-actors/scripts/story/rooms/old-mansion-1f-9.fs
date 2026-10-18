@@ -4,11 +4,12 @@
 IN: story.rooms.old-mansion-1f-9
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant plate-press-remarked        \ (bit 0) its first remark made: "It's a plate pressing machine."
 1 constant hewie-sent-off              \ (bit 1) Hewie was here and sent off for the scene
 2 constant rested                      \ (bit 2) she has rested here (her recovery: once a visit)
 4 constant effect-on                   \ (bit 4) the scene's effect (cmd02) on between its cues
+3 constant calm-sound                  \ (snd 3) the spot that calms her
 
 \ a lit quad at x -43, z -15.12 .. 5.07, height 30.05 / 10.05
 : old-mansion-1f-9.cmd00 ( b0 -- )  $1B $40  -43.0e 30.053e -15.124e  -43.0e 30.053e 5.068e  -43.0e 10.053e -15.124e  -43.0e 10.053e 5.068e  lit-quad ;   \ (a reflecting window: b0 1 removed, 2 over the whole picture)
@@ -245,7 +246,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         fiona-who char-file-use
         4 room-motion $A self-anim-blend
         $16 wait-frames
-        fiona-who 3 6 char-sound
+        fiona-who calm-sound 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
         fiona-calm-reset

@@ -4,10 +4,11 @@
 IN: story.rooms.old-mansion-1f-1
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant area8-reacted               \ (bit 0) her reaction on entering area 8 made (once a visit)
 1 constant hewie-zone0-noticed         \ (bit 1) Hewie has reacted to zone 0 (once a visit)
 2 constant mad-scene-on                \ (bit 2) "She's gone utterly mad..." (act03) under way
+5 constant presence-sound              \ (snd 5) his sound while he's here (kept up)
 
 \ a lit quad at x -15.96, z -2 .. 6, height 111 / 91
 : old-mansion-1f-1.cmd00 ( b0 -- )  $1B $80  -15.959e 111.0e -2.0e  -15.959e 111.0e 6.0e  -15.959e 91.0e -2.0e  -15.959e 91.0e 6.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -138,7 +139,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         then
     then
     6 sound-bank-loaded? stalker-who char-here? and if
-        stalker-who $80000005 6 char-sound
+        stalker-who presence-sound kept-going 6 char-sound
     then
 ;
 
@@ -217,7 +218,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     stalker-who 0 char-silent
     0 barred-floor floor-on
     1 counter-set
-    stalker-who 5 6 char-sound
+    stalker-who presence-sound 6 char-sound
     begin
         0 room-motion play-out
     again

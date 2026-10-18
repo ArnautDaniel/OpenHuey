@@ -4,12 +4,14 @@
 IN: story.rooms.front-garden-5
 USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
 1 constant will-find-her               \ (bit 1) he will find her hiding (by chance, as he searches: more likely by the progress variable)
 2 constant came-while-hidden           \ (bit 2) the stalker came in while she was hiding
 0 constant fall-frames-var             \ (var 0) the falling thing's frames
 1 constant fall-fx-var                 \ (var 1) the falling thing's effect
+0 constant push-room-sound             \ (snd 0) her pushing
+3 constant shatter-sound               \ (snd 3) a breakable shattering
 
 \ a hanging thing (the room's +0x34 (byte 3 + 2) object) swinging, by byte 4: 0 / 2 set going
 \ (12 degrees) away from the partner / Fiona; 1 a step (22.5 degrees of its swing, shrinking to
@@ -319,7 +321,7 @@ fvariable sw-dx  fvariable sw-dz
             0 part-hidden
             1 part-shown
             -14.0 -10.0 97.0 0 -2143272896 0 0.0 shards-at
-            3 6 -14.0 -10.0 97.0 0 0 sound
+            shatter-sound 6 -14.0 -10.0 97.0 0 0 sound
             $40 $10A noise
             2 -14.0 -9.0 97.0 flicker-sprite
         then
@@ -607,7 +609,7 @@ fvariable sw-dx  fvariable sw-dz
     self-wait-done
     4 wait-frames
     lean-anim play-out
-    fiona-who 0 6 char-sound
+    fiona-who push-room-sound 6 char-sound
     strain-anim self-anim
     16 wait-frames
     let-go-push-anim play-out

@@ -4,7 +4,7 @@
 IN: story.rooms.castle-b1-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 1 constant china-remarked              \ (bit 1) its first remark made: "Varied ornate, high-class china lines the shelf."
 2 constant wine-rack-remarked          \ (bit 2) its first remark made: "Numerous expensive spirits stretch along the wine rack."
 3 constant may-hide                    \ (bit 3) the stalker not here or not seeing: her hiding offered
@@ -17,6 +17,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 10 constant area5-reacted              \ (bit 10) her reaction on entering the area made (once a visit)
 11 constant search-started             \ (bit 11) his search begun (phase 1 starts act10)
 12 constant pot-remarked               \ (bit 12) its first remark made: "The pot is filled with what look like tendrils. Wait a secon"
+0 constant break-sound                 \ (snd 0) the breakable giving way (rumble)
+1 constant room-loop-sound             \ (snd 1) its steady sound (started as it comes in, then kept up)
+3 constant shatter-sound               \ (snd 3) a breakable shattering
 
 \ room 0x12 (Room12_Cmd00_ptmf): byte 3 0: the smoke puffs (SmokePuffs_vtable), their slot in
 \ script variable 0; else that slot started
@@ -230,11 +233,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then then
         sound-started ebit? not if
             6 sound-bank-loaded? if
-                $40000001 6 15.0 12.0 22.0 0 0 sound
+                room-loop-sound volume-scaled 6 15.0 12.0 22.0 0 0 sound
                 sound-started ebit-set
             then
         else
-            $C0000001 6 15.0 12.0 22.0 0 0 sound
+            room-loop-sound kept-going volume-scaled 6 15.0 12.0 22.0 0 0 sound
         then
         4 16.5 0.0 16.5 $19 10 0 zone
         hewie-zone4-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
@@ -269,7 +272,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     cb1-1-breakable2-broken story-flag? not if
         5 22.0 -40.0 -32.0 6 12 0 zone
         fiona-who 5 char-in-zone? if
-            fiona-who 0 6 char-sound
+            fiona-who break-sound 6 char-sound
             1 $FF 4 rumble
             3 part-hidden
             4 part-shown
@@ -313,7 +316,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             1 part-hidden
             2 part-shown
             -52.5 -60.05 -1.5 0 -2146424784 0 0.0 shards-at
-            3 6 -52.5 -60.05 -1.5 0 0 sound
+            shatter-sound 6 -52.5 -60.05 -1.5 0 0 sound
             $40 $209 noise
             1 -52.5 -59.05 -1.5 flicker-sprite
         then

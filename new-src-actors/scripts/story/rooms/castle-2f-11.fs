@@ -4,15 +4,18 @@
 IN: story.rooms.castle-2f-11
 USING: room-names story.words story.shared ;
 
+\ ---- this room's own event bits, script variables and sounds ----
+0 constant turn-sound                  \ (snd 0) the objects turned back
+
 \ two wheels (Room1F_ObjectNames) rocking 4 degrees (+0x18) through their phase +0x30, 6 degrees
 \ a step (byte 3 1; 0 reset), the first one's creak (-366, 30, -25) at each turn
 : castle-2f-11.cmd00 ( b0 -- )   \ (the two wheels rocking 4 degrees, 6 a step (1; 0 reset), the first creaking at each turn)
     {: op | a n :}
     2 0 do  i room-object to n to a  a n object-here? if
-        op 0= if  0e a n $30 object!  0e a n turn-z object!  i 0= if  0 6 0 0 -366e 30e -25e sound  then  then
+        op 0= if  0e a n $30 object!  0e a n turn-z object!  i 0= if  turn-sound 6 0 0 -366e 30e -25e sound  then  then
         op 1 = if
             6e a n $30 object+!
-            a n $30 object@ 360e f< 0= if  -360e a n $30 object+!  i 0= if  0 6 0 0 -366e 30e -25e sound  then  then
+            a n $30 object@ 360e f< 0= if  -360e a n $30 object+!  i 0= if  turn-sound 6 0 0 -366e 30e -25e sound  then  then
             a n $30 object@ deg>rad fsin 4e f* deg>rad a n turn-z object!
         then
     then  loop ;

@@ -4,10 +4,11 @@
 IN: story.rooms.chaos-forest-11
 USING: room-names story.words story.shared story-names ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)
 1 constant was-panicking               \ (bit 1) she was in a panic (as she came in, then each frame)
 2 constant figure-scene-on             \ (bit 2) the figure's scene begun (act01)
+10 constant figure-cry-sound           \ (snd 10) the figure's cry as it appears
 
 \ character kind 0x1A: byte 3 0 starts Kind26_MoveTo(2, -6, 257); else waits (2) until
 \ Kind26_MoveDone says done
@@ -158,7 +159,7 @@ USING: room-names story.words story.shared story-names ;
 ;
 
 : chaos-forest-11.act02 ( -- )   \ 004196C0
-    $E $A 6 char-sound
+    $E figure-cry-sound 6 char-sound
     $E $9002 1 0 char-anim-hold
     8 wait-frames
     0 chaos-forest-11.cmd01

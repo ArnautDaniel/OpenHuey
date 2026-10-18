@@ -4,10 +4,11 @@
 IN: story.rooms.chaos-forest-10
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)
 1 constant was-panicking               \ (bit 1) she was in a panic (as she came in, then each frame)
 0 constant whine-frames-var            \ (var 0) frames to Hewie's next whine (180 / 60)
+1 constant hewie-whine-sound           \ (snd 1) Hewie's whine (now and then, caught in the wire)
 
 \ byte 3: 0 / 1 a named progress call; 2 waits (2) for Progress_Speak(1, 0), then the partner's
 \ message slot shows progress +0x73EDC0; else Progress_SpeechCall and the slot is closed
@@ -123,14 +124,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     found-file-247 story-flag? cf-13-flag1 story-flag? not and if
         whine-frames-var 0 var? if
             $1E chance? if
-                hewie-who $40000001 6 char-sound
+                hewie-who hewie-whine-sound volume-scaled 6 char-sound
                 whine-frames-var 180 var-set
             else
                 whine-frames-var 60 var-set
             then
         else
             whine-frames-var var-dec
-            hewie-who $C0000001 6 char-sound
+            hewie-who hewie-whine-sound kept-going volume-scaled 6 char-sound
         then
     then
 ;

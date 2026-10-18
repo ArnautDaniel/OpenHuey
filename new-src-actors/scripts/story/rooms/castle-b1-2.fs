@@ -4,7 +4,7 @@
 IN: story.rooms.castle-b1-2
 USING: room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant rested                      \ (bit 0) she has rested here (her recovery: once a visit)
 1 constant locked-remarked             \ (bit 1) its first remark made: "The door is locked..."
 2 constant found-her                   \ (bit 2) he has found her hiding: she must flee (the avoid prompt)
@@ -12,6 +12,8 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 4 constant found-her-2                 \ (bit 4) he has found her hiding: she must flee
 5 constant came-while-hidden           \ (bit 5) the stalker came in while she was hiding
 0 constant crawl-frames-var            \ (var 0) her crawl's frames (to 28)
+1 constant calm-sound                  \ (snd 1) the spot that calms her
+2 constant unlock-sound                \ (snd 2) a door unlocked with its key
 
 \ room 0x14: the curtain ("Cartain") animated by event variable 0 (var0_obj_anim: byte 3 picks
 \ the frame range and direction).
@@ -177,7 +179,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
         fiona-who char-file-use
         4 room-motion $A self-anim-blend
         $16 wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who calm-sound 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
         fiona-calm-reset
@@ -268,7 +270,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     self-wait-done
     $608 self-anim
     $14 wait-frames
-    fiona-who 2 6 char-sound
+    fiona-who unlock-sound 6 char-sound
     7 message-param-room
     7 item-use
     $A door-unlock

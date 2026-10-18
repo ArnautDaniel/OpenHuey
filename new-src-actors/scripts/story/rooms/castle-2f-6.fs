@@ -4,10 +4,14 @@
 IN: story.rooms.castle-2f-6
 USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant massive-book-remarked       \ (bit 0) its first remark made: "A massive book stands stalwart. It looks quite old. Perhaps "
 1 constant shelves-remarked            \ (bit 1) its first remark made: "Old scholarly masterpieces fill up the shelves. It's almost "
 2 constant hewie-zone0-noticed         \ (bit 2) Hewie has reacted to zone 0 (once a visit)
+0 constant open-sound                  \ (snd 0) it opened?
+1 constant obtained-sound              \ (snd 1) as she takes it
+2 constant strike-sound                \ (snd 2) her striking it (twice)?
+3 constant reach-sound                 \ (snd 3) her reaching out
 
 : castle-2f-6.enter ( -- )   \ 00400C60
     got-lunar-refractor story-flag? not if
@@ -122,7 +126,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     2 0 char-remove
     7 partner-load
     reach-out-anim play-out
-    fiona-who 3 6 char-sound
+    fiona-who reach-sound 6 char-sound
     reach-back-anim play-out
     3 message-param-room
     $8019 say   \ "Used ."
@@ -132,7 +136,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     0 0 object-anim
     0 room-motion $A self-anim-blend
     $14 wait-frames
-    fiona-who 0 6 char-sound
+    fiona-who open-sound 6 char-sound
     self-wait-anim
     16 wait-frames
     2 char-start
@@ -144,7 +148,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     item-fanfare
     $8012 say   \ "You've obtained ."
     1 0 0 music
-    fiona-who 1 6 char-sound
+    fiona-who obtained-sound 6 char-sound
     0 1 object-anim
     1 room-motion 0 blend-out
     16 wait-frames
@@ -198,11 +202,11 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     fiona-who char-file-use
     2 room-motion $A self-anim-blend
     $16 wait-frames
-    fiona-who 2 6 char-sound
+    fiona-who strike-sound 6 char-sound
     $B wait-frames
-    fiona-who 2 6 char-sound
+    fiona-who strike-sound 6 char-sound
     8 wait-frames
-    fiona-who 2 6 char-sound
+    fiona-who strike-sound 6 char-sound
     self-wait-anim
     3 say   \ "The desk is locked."
     stalkers-stay state-flag-clear

@@ -4,7 +4,7 @@
 IN: story.rooms.castle-1f-2
 USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant bark-scene-on               \ (bit 0) Hewie's bark scene (act03) under way: the stalkers held
 1 constant flowers-remarked            \ (bit 1) its first remark made: "There are beautiful flowers blooming here."
 2 constant ori-raised                  \ (bit 2) the gate's "ori" raised all the way
@@ -30,6 +30,15 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 23 constant sound4-playing             \ (bit 23) sound 4 playing (75 frames: act18)
 0 constant embers-var                  \ (var 0) the embers' effect
 1 constant shove-frames-var            \ (var 1) his shove's frames (dust at 49)
+0 constant gate-open-sound             \ (snd 0) the gate opening
+1 constant room-loop-sound             \ (snd 1) its steady sound (started as it comes in, then kept up)
+2 constant crank-sound                 \ (snd 2) the mechanism turning (in its loop)?
+3 constant shatter-sound               \ (snd 3) a breakable shattering
+4 constant machine-sound               \ (snd 4) a sound left to play out (bit sound4-playing)?
+5 constant lever-pull-sound            \ (snd 5) the lever pulled
+6 constant room-loop2-sound           \ (snd 6) its steady sound (started as it comes in, then kept up)
+7 constant zone-sound                  \ (snd 7) someone reaching zone 4?
+11 constant shove-thud-sound           \ (snd 11) his shove landing (dust)
 
 \ the room object pstr_ori's +0x24 by byte 3: 0 set (37.978 with progress flag 0x12, else 11), 1
 \ up 0.25 to 37.978 (then event +0x5C (2)), 2 up 0.25, else down 0.25
@@ -247,12 +256,12 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 : castle-1f-2.phase1 ( -- )   \ 003EF0D0
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000006 6 276.0 5.0 -146.0 0 0 sound
+            room-loop2-sound volume-scaled 6 276.0 5.0 -146.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000001 6 110.0 -10.0 142.0 0 0 sound
-        $C0000006 6 276.0 5.0 -146.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 110.0 -10.0 142.0 0 0 sound
+        room-loop2-sound kept-going volume-scaled 6 276.0 5.0 -146.0 0 0 sound
     then
     found-file-20b story-flag? c1f-10-flag1 story-flag? not and if
         0 exit-usable? if
@@ -333,7 +342,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     in-zone4 ebit? not if
         self-who 4 char-in-zone? if
             in-zone4 ebit-set
-            $40000007 6 276.0 5.0 -146.0 0 0 sound
+            zone-sound volume-scaled 6 276.0 5.0 -146.0 0 0 sound
             2 castle-1f-2.cmd03
             1 castle-1f-2.cmd02
             2 castle-1f-2.cmd02
@@ -540,7 +549,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             1 part-hidden
             2 part-shown
             215.5 -1.0 2.6 0 -2145378272 0 0.0 shards-at
-            3 6 215.5 -1.0 2.6 0 0 sound
+            shatter-sound 6 215.5 -1.0 2.6 0 0 sound
             $40 $377 noise
             0 215.5 0.0 2.6 flicker-sprite
         then
@@ -624,9 +633,9 @@ USING: actors messages room-names story.words story.shared flag-names story-name
             2 0 object-anim
             0 room-motion $A self-anim-blend
             $20 wait-frames
-            $40000005 6 50.0 -5.0 171.0 0 0 sound
+            lever-pull-sound volume-scaled 6 50.0 -5.0 171.0 0 0 sound
             $3E wait-frames
-            $40000000 6 50.0 -5.0 171.0 0 0 sound
+            gate-open-sound volume-scaled 6 50.0 -5.0 171.0 0 0 sound
             self-wait-anim
             $14 door-unlock
             -1 self-idle-anim
@@ -860,7 +869,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 : castle-1f-2.act0A ( -- )   \ 003EFD50
-    $40000001 6 110.0 -10.0 142.0 0 0 sound
+    room-loop-sound volume-scaled 6 110.0 -10.0 142.0 0 0 sound
     self-frames-reset
     begin
         $40 frames? not while
@@ -873,7 +882,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         1 castle-1f-2.cmd00
         yield
     repeat
-    $40000002 6 110.0 -10.0 142.0 0 0 sound
+    crank-sound volume-scaled 6 110.0 -10.0 142.0 0 0 sound
     2 castle-1f-2.cmd00
     4 wait-frames
     3 castle-1f-2.cmd00
@@ -1042,7 +1051,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         shove-frames-var 49 var? if
             0 153.0 -3.7 -51.0 0 0 0 0 dust
             0 148.0 -4.0 -51.0 0 0 0 0 dust
-            stalker-who $B 6 char-sound
+            stalker-who shove-thud-sound 6 char-sound
         then
         shove-frames-var var-inc
         self-at-motion-event? not while
@@ -1113,7 +1122,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         shove-frames-var 54 var? if
             0 306.0 23.0 -79.0 0 0 0 0 dust
             0 306.0 23.0 -85.0 0 0 0 0 dust
-            stalker-who $B 6 char-sound
+            stalker-who shove-thud-sound 6 char-sound
         then
         shove-frames-var var-inc
         self-at-motion-event? not while
@@ -1212,7 +1221,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 
 : castle-1f-2.act18 ( -- )   \ 003F02F0
     sound4-playing ebit-set
-    $40000004 6 -142.0 12.0 179.0 0 0 sound
+    machine-sound volume-scaled 6 -142.0 12.0 179.0 0 0 sound
     $4B wait-frames
     sound4-playing ebit-clear
     self-idle-or-end

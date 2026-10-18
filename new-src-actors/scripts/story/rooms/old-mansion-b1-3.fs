@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-b1-3
 USING: engine actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant on-plate1                   \ (bit 0) someone on the first plate
 1 constant on-plate2                   \ (bit 1) someone on the second plate
 2 constant on-plate3                   \ (bit 2) someone on the third plate
@@ -40,6 +40,15 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 0 constant flames-out-var              \ (var 0) flames put out so far
 1 constant threat-frames-var           \ (var 1) frames to the next threat (12)
 2 constant cry-frames-var              \ (var 2) frames since her cry (60)
+0 constant shut-sound                  \ (snd 0) it closing
+1 constant open-sound                  \ (snd 1) it opening
+2 constant climb-sound                 \ (snd 2) her climbing
+3 constant hide-sound                  \ (snd 3) her hiding
+4 constant room-loop-sound             \ (snd 4) its steady sound (started as it comes in, then kept up)
+5 constant step-sound                  \ (snd 5) ?
+7 constant shut2-sound                 \ (snd 7) ?
+8 constant plate-sound                 \ (snd 8) a plate held while a flame is out
+9 constant flame-out-sound             \ (snd 9) a flame going out
 
 \ four room objects (Room4C_ObjectNames) pressed in (+0x24 down 0.2 to -0.7, a sound as each
 \ starts) while event flag i is set, else back up 0.2 to 0; byte 3 0 all reset
@@ -214,7 +223,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                     flames-out-var var-inc
                 then
                 flame1-out ebit-set
-                9 6 -0.5 18.5 -35.5 0 0 sound
+                flame-out-sound 6 -0.5 18.5 -35.5 0 0 sound
                 0 effect-remove
             then
             plates23-held ebit-set
@@ -227,7 +236,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                     flames-out-var var-inc
                 then
                 flame2-out ebit-set
-                9 6 9.5 18.5 -35.0 0 0 sound
+                flame-out-sound 6 9.5 18.5 -35.0 0 0 sound
                 1 effect-remove
             then
             plates14-held ebit-set
@@ -240,7 +249,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                     flames-out-var var-inc
                 then
                 flame3-out ebit-set
-                9 6 4.8 25.5 -37.5 0 0 sound
+                flame-out-sound 6 4.8 25.5 -37.5 0 0 sound
                 2 effect-remove
             then
             plates24-held ebit-set
@@ -253,7 +262,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
                     flames-out-var var-inc
                 then
                 flame4-out ebit-set
-                9 6 4.8 6.2 -33.4 0 0 sound
+                flame-out-sound 6 4.8 6.2 -33.4 0 0 sound
                 3 effect-remove
             then
             plates13-held ebit-set
@@ -263,7 +272,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         on-plate1 ebit? on-plate2 ebit? and if
             plates12-held ebit? not if
                 flame1-out ebit? flame2-out ebit? or flame3-out ebit? or flame4-out ebit? or if
-                    8 6 4.8 6.2 -33.4 0 0 sound
+                    plate-sound 6 4.8 6.2 -33.4 0 0 sound
                 then
                 flame1-out ebit-clear
                 flame2-out ebit-clear
@@ -282,7 +291,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         on-plate3 ebit? on-plate4 ebit? and if
             plates34-held ebit? not if
                 flame1-out ebit? flame2-out ebit? or flame3-out ebit? or flame4-out ebit? or if
-                    8 6 4.8 6.2 -33.4 0 0 sound
+                    plate-sound 6 4.8 6.2 -33.4 0 0 sound
                 then
                 flame1-out ebit-clear
                 flame2-out ebit-clear
@@ -440,11 +449,11 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     then
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000004 6 40.0 5.0 -26.0 0 0 sound
+            room-loop-sound volume-scaled 6 40.0 5.0 -26.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000004 6 40.0 5.0 -26.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 40.0 5.0 -26.0 0 0 sound
     then
 ;
 
@@ -605,7 +614,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             $11 $9000 0 0 char-anim-hold
             2 room-motion 5 self-anim-blend
             $17 wait-frames
-            fiona-who 5 6 char-sound
+            fiona-who step-sound 6 char-sound
             self-wait-anim
         else
             1 27.0 10.0 -40.0 0.0 event-camera
@@ -756,7 +765,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
     1 self-noclip
     2 room-motion 5 self-anim-blend8
     5 wait-frames
-    fiona-who 2 6 char-sound
+    fiona-who climb-sound 6 char-sound
     $E 2 object-anim
     self-wait-anim
     0 self-noclip
@@ -792,7 +801,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $E 0 object-hidden
         $E 0 object-anim
         $24 wait-frames
-        fiona-who 2 6 char-sound
+        fiona-who climb-sound 6 char-sound
         self-wait-anim
         -1 self-idle-anim
         0 self-noclip
@@ -801,7 +810,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         found-her ebit-clear
         0 avoid-prompt
         $18 1 item-count? $19 1 item-count? or $1A 1 item-count? or $1B 1 item-count? or $1C 1 item-count? or if
-            fiona-who 3 6 char-sound
+            fiona-who hide-sound 6 char-sound
         then
         self-who 3 -1 char-camera
         begin
@@ -834,7 +843,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         1 self-noclip
         1 room-motion 5 self-anim-blend8
         5 wait-frames
-        fiona-who 2 6 char-sound
+        fiona-who climb-sound 6 char-sound
         $E 1 object-anim
         self-wait-anim
         0 self-noclip
@@ -861,9 +870,9 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $B 0 object-anim
         $10 0 object-anim
         $19 wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who open-sound 6 char-sound
         $37 wait-frames
-        fiona-who 0 6 char-sound
+        fiona-who shut-sound 6 char-sound
         self-wait-anim
         omb1-3-flag3 story-flag-set
     else
@@ -876,11 +885,11 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $A 0 object-anim
         $F 0 object-anim
         $19 wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who open-sound 6 char-sound
         $37 wait-frames
-        fiona-who 0 6 char-sound
+        fiona-who shut-sound 6 char-sound
         5 wait-frames
-        fiona-who 7 6 char-sound
+        fiona-who shut2-sound 6 char-sound
         self-wait-anim
         omb1-3-flag3 story-flag-clear
     then

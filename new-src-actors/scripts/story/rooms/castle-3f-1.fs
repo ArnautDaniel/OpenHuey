@@ -4,8 +4,9 @@
 IN: story.rooms.castle-3f-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant locked-remarked             \ (bit 0) its first remark made: "The door is locked."
+0 constant unlock-sound                \ (snd 0) a door unlocked with its key
 
 \ room 0x06 (Room06_Cmd00_ptmf): its four objects (the name's 6th letter counting) to their
 \ places
@@ -199,7 +200,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     else
         $609 self-anim
         $14 wait-frames
-        fiona-who 0 6 char-sound
+        fiona-who unlock-sound 6 char-sound
         6 message-param-room
         6 item-use
         $34 door-unlock

@@ -4,13 +4,15 @@
 IN: story.rooms.old-mansion-1f-7
 USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant extractor-remarked          \ (bit 0) its first remark made: "Extractor Born from the swirling sands of chaos, the primord"
 1 constant caught-remarked             \ (bit 1) its first remark made: "Why is this happening to me?!..."
 2 constant hewie-zone0-noticed         \ (bit 2) Hewie has reacted to zone 0 (once a visit)
 3 constant large-device-remarked       \ (bit 3) its first remark made: "It's quite a large and complicated device. It looks like nut"
 4 constant sound-started               \ (bit 4) its sound started (then kept up)
 0 constant used-item-var               \ (var 0) the item she used (9 .. 11)
+0 constant room-loop-sound             \ (snd 0) its steady sound (started as it comes in, then kept up)
+3 constant change-sound                \ (snd 3) it transforming
 
 : old-mansion-1f-7.enter ( -- )   \ 00424B50
     room-sounds
@@ -46,11 +48,11 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
 : old-mansion-1f-7.phase1 ( -- )   \ 00424C10
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000000 6 0.0 11.0 0.0 0 0 sound
+            room-loop-sound volume-scaled 6 0.0 11.0 0.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000000 6 0.0 11.0 0.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 0.0 11.0 0.0 0 0 sound
     then
     0 exit-usable? if
         0 exit-check
@@ -194,7 +196,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     self-wait-done
     $50 -57.0 55.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 3 6 char-sound
+    fiona-who change-sound 6 char-sound
     $78 wait-frames
     look-close-anim play-out
     6 say   \ "The composition of this item has changed!"
@@ -217,7 +219,7 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims ;
     self-wait-done
     $50 -57.0 55.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 3 6 char-sound
+    fiona-who change-sound 6 char-sound
     $78 wait-frames
     look-close-anim play-out
     reach-out-anim play-out

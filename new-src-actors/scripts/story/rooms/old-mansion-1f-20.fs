@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-1f-20
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 1 constant rotted-knob-remarked        \ (bit 1) its first remark made: "The knob has rotted off. I can't open the door like this."
 2 constant in-zone1                    \ (bit 2) someone in zone 1 (the figure's hops count)
 7 constant hewie-zone2-noticed         \ (bit 7) Hewie has reacted to zone 2 (once a visit)
@@ -12,6 +12,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 0 constant hops-var                    \ (var 0) the figure's hops (5: away)
 1 constant still-var                   \ (var 1) the figure still (0) or hopping
 2 constant call-frames-var             \ (var 2) frames to the figure's next call (60)
+0 constant figure-hit1-sound           \ (snd 0) the figure as it strikes her / is struck
+1 constant figure-hit2-sound           \ (snd 1) the figure as it strikes her / is struck
+2 constant figure-call1-sound          \ (snd 2) the figure's call (now and then)
+3 constant figure-call2-sound          \ (snd 3) the figure's call (now and then)
+4 constant figure-call3-sound          \ (snd 4) the figure's call (now and then)
+5 constant break-sound                 \ (snd 5) the breakable giving way
 
 : old-mansion-1f-20.enter ( -- )   \ 00439160
     room-sounds
@@ -120,7 +126,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     om1f-20-breakable-broken story-flag? not if
         0 -50.0 50.0 355.0 6 12 0 zone
         fiona-who 0 char-in-zone? if
-            fiona-who 5 6 char-sound
+            fiona-who break-sound 6 char-sound
             0 part-hidden
             1 part-shown
             0 barred-floor floor-off
@@ -145,11 +151,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         call-frames-var var-inc
         call-frames-var 60 var? if
             $21 chance? if
-                $1C 2 6 char-sound
+                $1C figure-call1-sound 6 char-sound
             else $32 chance? if
-                $1C 3 6 char-sound
+                $1C figure-call2-sound 6 char-sound
             else
-                $1C 4 6 char-sound
+                $1C figure-call3-sound 6 char-sound
             then then
             call-frames-var 0 var-set
         then
@@ -336,7 +342,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                     hops-var 5 var-set
                 then
             then
-            $1C 1 6 char-sound
+            $1C figure-hit2-sound 6 char-sound
             fiona-who shove-hit-sound 5 char-sound
             $1C $900D 0 3 char-anim-hold
             $1C wait-char-anim
@@ -346,7 +352,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 hops-var 0 var-set
                 1 7.0 11.0 0.0 5 10 0 zone
                 fiona-who 1 3 char-zone-bits? if
-                    $1C 0 6 char-sound
+                    $1C figure-hit1-sound 6 char-sound
                     $1C 1 fiona-thrown
                     3 panic-stage? if
                         4 panic-stage

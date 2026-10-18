@@ -4,9 +4,10 @@
 IN: story.rooms.front-garden-2
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant area0-reacted               \ (bit 0) her reaction on entering the area made (once a visit)
 0 constant whine-frames-var            \ (var 0) frames to Hewie's next whine (from 30, then 180)
+15 constant hewie-whine-sound          \ (snd 15) Hewie's whine (now and then, caught in the wire)
 
 \ room 0x13: the grate ("kousi"): byte 3 0 shut (turn 0), else swung open a quarter turn.
 : front-garden-2.cmd00 ( b0 -- )  if  pi f2/ fnegate  else  0e  then  s" kousi" turn-y object! ;
@@ -307,7 +308,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         whine-frames-var var-dec
         whine-frames-var 0 var? if
             $1E chance? if
-                $F 6 228.0 5.0 78.0 0 0 sound
+                hewie-whine-sound 6 228.0 5.0 78.0 0 0 sound
                 whine-frames-var 180 var-set
             else
                 whine-frames-var 60 var-set

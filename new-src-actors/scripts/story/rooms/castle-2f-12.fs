@@ -4,7 +4,7 @@
 IN: story.rooms.castle-2f-12
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant caged-doll-remarked         \ (bit 0) its first remark made: "Why is there a doll... in a cage? Maybe someone is just tryi"
 1 constant rocking-horse-remarked      \ (bit 1) its first remark made: "It's a child's rocking horse."
 2 constant box-remarked                \ (bit 2) its first remark made: "It's a box, but I can't open it."
@@ -21,6 +21,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 2 constant search-result-var           \ (var 2) his search's outcome by chance: 0, 1 or 2
 3 constant searched-var                \ (var 3) ? his search done (0 / 1)
 4 constant crank-var                   \ (var 4) the crank's frames (to 180)
+0 constant hide-open-sound             \ (snd 0) the hiding place opened
+1 constant hide-shut-sound             \ (snd 1) the hiding place closed on her
+3 constant glint-sound                 \ (snd 3) the glint shown
+4 constant place-sound                 \ (snd 4) the items set in place?
 
 \ the two doors ("left", "right") opening: byte 3 0 at once (2.25), else a step (0.075)
 : castle-2f-12.cmd00 ( b0 -- )   \ (the two doors opening: 0 at once - 2.25 - else a step of 0.075)
@@ -324,9 +328,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     1 2 object-anim
     2 room-motion 0 self-anim-blend
     $10 wait-frames
-    fiona-who 0 6 char-sound
+    fiona-who hide-open-sound 6 char-sound
     $38 wait-frames
-    fiona-who 1 6 char-sound
+    fiona-who hide-shut-sound 6 char-sound
     self-wait-anim
     0 self-noclip
     stalker-who char-here? if
@@ -355,7 +359,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     1 4 object-anim
     4 room-motion 0 self-anim-blend
     7 wait-frames
-    fiona-who 0 6 char-sound
+    fiona-who hide-open-sound 6 char-sound
     self-wait-anim
     0 self-noclip
     stalker-who char-here? if
@@ -414,7 +418,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         0 0 object-anim
         1 0 object-anim
         $28 wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who hide-shut-sound 6 char-sound
         self-wait-anim
     else
         1 room-motion 5 self-anim-blend8
@@ -425,9 +429,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         0 1 object-anim
         1 1 object-anim
         $E wait-frames
-        fiona-who 0 6 char-sound
+        fiona-who hide-open-sound 6 char-sound
         $3C wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who hide-shut-sound 6 char-sound
         self-wait-anim
     then
     0 self-noclip
@@ -472,9 +476,9 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             1 2 object-anim
             2 room-motion 0 self-anim-blend
             $10 wait-frames
-            fiona-who 0 6 char-sound
+            fiona-who hide-open-sound 6 char-sound
             $38 wait-frames
-            fiona-who 1 6 char-sound
+            fiona-who hide-shut-sound 6 char-sound
             self-wait-anim
             0 self-noclip
             stalker-who char-here? if
@@ -519,7 +523,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
                 hiding-left ebit? if
                     4 room-motion 0 self-anim-blend
                     7 wait-frames
-                    fiona-who 0 6 char-sound
+                    fiona-who hide-open-sound 6 char-sound
                     self-wait-anim
                 else stage-var 0 var? if
                     2 room-motion 0 blend-out
@@ -536,7 +540,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
             hiding-left ebit? if
                 4 room-motion 0 self-anim-blend
                 7 wait-frames
-                fiona-who 0 6 char-sound
+                fiona-who hide-open-sound 6 char-sound
                 self-wait-anim
             else stage-var 0 var? if
                 2 room-motion 0 blend-out
@@ -572,7 +576,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
         1 3 object-anim
         1 room-motion $A self-anim-blend
         $C wait-frames
-        stalker-who 0 6 char-sound
+        stalker-who hide-open-sound 6 char-sound
         4 wait-frames
         stage-var 2 var-set
         self-wait-anim
@@ -697,13 +701,13 @@ fvariable tip  fvariable tip-yaw  fvariable reach
     fiona-who $35 0.0 -31.5 180 char-to-xz
     1 7.0 30.0 0.0 0.0 event-camera
     world-frozen state-flag-set
-    4 6 0.0 5.0 -39.0 0 0 sound
+    place-sound 6 0.0 5.0 -39.0 0 0 sound
     $10 wait-frames
     has-both-items ebit? if
         0 0.0 3.0 -39.0 flicker-sprite
     then
     self-frames-reset
-    fiona-who 3 6 char-sound
+    fiona-who glint-sound 6 char-sound
     begin
         $1E frames? not while
         1 castle-2f-12.cmd00
@@ -745,7 +749,7 @@ fvariable tip  fvariable tip-yaw  fvariable reach
 
 : castle-2f-12.act0C ( -- )   \ 00403660
     self-wait-done
-    4 6 0.0 5.0 -39.0 0 0 sound
+    place-sound 6 0.0 5.0 -39.0 0 0 sound
     $1E wait-frames
     8 say   \ "Nothing happened. Nothing at all."
     self-idle-or-end

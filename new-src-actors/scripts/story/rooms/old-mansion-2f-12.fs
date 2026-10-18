@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-2f-12
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 1 constant synthesizer-remarked        \ (bit 1) its first remark made: "Synthesizer By separating the platinum half-piece and then s"
 2 constant dials-on                    \ (bit 2) the dials being set (cleared when right)
 3 constant dial-turned                 \ (bit 3) a dial turned this frame
@@ -15,6 +15,15 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 1 constant used-item-var               \ (var 1) the item she used (8 .. 11)
 2 constant sound-step-var              \ (var 2) which of its sounds next (0..3)
 3 constant sound-frames-var            \ (var 3) frames to the next sound (30)
+0 constant dial-pick-sound             \ (snd 0) a dial picked
+1 constant dial-turn-sound             \ (snd 1) a dial turned
+2 constant dials-right-sound           \ (snd 2) the dials right (rumble)
+3 constant unlocked-sound              \ (snd 3) the door unlocked
+4 constant change-sound                \ (snd 4) it transforming
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
 
 \ room 0x69 (D_004386F8): the three-dial lock by byte 3 - 0 the dials (and their lit twins) set
 \ to their settings; 1 the player at it: up / down pick the dial (event variable 0; its lit twin
@@ -192,13 +201,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 74.0 30.0 -110.0 0 0 sound
+                ambient1-sound volume-scaled 6 74.0 30.0 -110.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 74.0 30.0 -110.0 0 0 sound
+                ambient2-sound volume-scaled 6 74.0 30.0 -110.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 74.0 30.0 -110.0 0 0 sound
+                ambient3-sound volume-scaled 6 74.0 30.0 -110.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 74.0 30.0 -110.0 0 0 sound
+                ambient4-sound volume-scaled 6 74.0 30.0 -110.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
@@ -242,7 +251,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     $7F -103.0 -75.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 4 6 char-sound
+    fiona-who change-sound 6 char-sound
     $78 wait-frames
     look-close-anim play-out
     6 say   \ "Its composition has changed!"
@@ -306,10 +315,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                 dial-turned ebit? not if
                     1 old-mansion-2f-12.cmd00
                     dial-turned ebit? if
-                        1 6 293.0 12.0 -102.0 0 0 sound
+                        dial-turn-sound 6 293.0 12.0 -102.0 0 0 sound
                     then
                     dial-picked ebit? if
-                        0 6 293.0 12.0 -102.0 0 0 sound
+                        dial-pick-sound 6 293.0 12.0 -102.0 0 0 sound
                     then
                 else
                     2 old-mansion-2f-12.cmd00
@@ -327,7 +336,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             4 1 object-hidden
             5 1 object-hidden
             dials-right ebit? if
-                2 6 318.0 12.0 -80.0 0 0 sound
+                dials-right-sound 6 318.0 12.0 -80.0 0 0 sound
                 1 $FF $D2 rumble
                 rest-anim play-out
                 fiona.anims:stand-anim self-anim
@@ -339,7 +348,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
                 $62 door-unlock
                 om2f-12-flag1 story-flag-set
                 $1E wait-frames
-                fiona-who 3 6 char-sound
+                fiona-who unlocked-sound 6 char-sound
                 $5A wait-frames
                 self-who self-look-at
                 yield
@@ -388,7 +397,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     $7F -103.0 -75.0 -90 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 4 6 char-sound
+    fiona-who change-sound 6 char-sound
     $78 wait-frames
     look-close-anim play-out
     reach-out-anim play-out

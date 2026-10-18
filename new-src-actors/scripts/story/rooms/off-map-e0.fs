@@ -4,7 +4,7 @@
 IN: story.rooms.off-map-e0
 USING: room-names story.words story.shared flag-names story.clock floor-flags fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant sound-started               \ (bit 0) its sound started (then kept up)
 1 constant found-her                   \ (bit 1) he has found her hiding: she must flee (the avoid prompt)
 2 constant will-find-her               \ (bit 2) he will find her hiding (by chance, as he searches: more likely by the progress variable)
@@ -13,6 +13,11 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
 7 constant cond-was-off                \ (bit 7) the room's condition was false last frame: its hook waits a frame once it holds
 0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
 1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
+9 constant room-loop-sound             \ (snd 9) its steady sound (started as it comes in, then kept up)
 
 \ RoomE0_Cmd00
 : off-map-e0.cmd00 ( -- )  fiona-who 0 char-to-exit ;   \ (Fiona to exit 0: Character_ChooseExit)
@@ -146,7 +151,7 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
 : off-map-e0.phase1 ( -- )   \ 00448200
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000009 6 -42.0 4.0 -63.0 0 0 sound
+            room-loop-sound volume-scaled 6 -42.0 4.0 -63.0 0 0 sound
             sound-started ebit-set
         then
     else
@@ -154,20 +159,20 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags fi
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 -47.0 12.0 -28.0 0 0 sound
+                ambient1-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 -47.0 12.0 -28.0 0 0 sound
+                ambient2-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 -47.0 12.0 -28.0 0 0 sound
+                ambient3-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 -47.0 12.0 -28.0 0 0 sound
+                ambient4-sound volume-scaled 6 -47.0 12.0 -28.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
                 sound-step-var 0 var-set
             then
         then
-        $C0000009 6 -42.0 4.0 -63.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -42.0 4.0 -63.0 0 0 sound
     then
     0 exit-usable? if
         0 exit-check

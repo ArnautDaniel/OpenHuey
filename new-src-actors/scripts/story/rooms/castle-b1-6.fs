@@ -4,12 +4,14 @@
 IN: story.rooms.castle-b1-6
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant pulley-remarked             \ (bit 0) its first remark made: "A pulley system used to wind up rope... Looks like this is u"
 1 constant chandelier-remarked         \ (bit 1) its first remark made: "What a fancy chandelier. It must have been quite expensive."
 2 constant area7-reacted               \ (bit 2) her reaction on entering area 7 made (once a visit)
 0 constant jar1-var                    \ (var 0) the first jar's strength (25: broken at 0)
 1 constant jar2-var                    \ (var 1) the second jar's strength (25: broken at 0)
+0 constant jar-hit-sound               \ (snd 0) the jar struck
+1 constant jar-break-sound             \ (snd 1) the jar broken
 
 \ room 0x0C (Room0C_Cmd01_ptmf): script variable byte 3 down by the player's hit (byte 4: 1 from
 \ the weak blow 0x1A, else 5) or the pursuer's (+0x108), not below 0
@@ -509,9 +511,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $D 1 object-hidden
         5 part-shown
         cb1-6-flag4 story-flag-set
-        1 6 10.0 10.0 -40.0 0 0 sound
+        jar-break-sound 6 10.0 10.0 -40.0 0 0 sound
     else
-        0 6 10.0 10.0 -40.0 0 0 sound
+        jar-hit-sound 6 10.0 10.0 -40.0 0 0 sound
     then
     0 0 castle-b1-6.cmd03
     1 0 castle-b1-6.cmd03
@@ -532,9 +534,9 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         $E 1 object-hidden
         3 part-shown
         cb1-6-flag5 story-flag-set
-        1 6 10.0 10.0 40.0 0 0 sound
+        jar-break-sound 6 10.0 10.0 40.0 0 0 sound
     else
-        0 6 10.0 10.0 40.0 0 0 sound
+        jar-hit-sound 6 10.0 10.0 40.0 0 0 sound
     then
     0 1 castle-b1-6.cmd03
     1 1 castle-b1-6.cmd03

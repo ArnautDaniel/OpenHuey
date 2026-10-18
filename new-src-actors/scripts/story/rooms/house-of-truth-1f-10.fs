@@ -4,7 +4,7 @@
 IN: story.rooms.house-of-truth-1f-10
 USING: room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
 1 constant will-find-her               \ (bit 1) he will find her hiding (by chance, as he searches: more likely by the progress variable)
 2 constant came-while-hidden           \ (bit 2) the stalker came in while she was hiding
@@ -12,6 +12,11 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 5 constant sound-started               \ (bit 5) its sound started (then kept up)
 0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
 1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+8 constant room-loop-sound             \ (snd 8) its steady sound (started as it comes in, then kept up)
+10 constant ambient1-sound             \ (snd 10) its ambient sounds in turn (every 30 frames): the first
+11 constant ambient2-sound             \ (snd 11) its ambient sounds in turn (every 30 frames): the second
+12 constant ambient3-sound             \ (snd 12) its ambient sounds in turn (every 30 frames): the third
+13 constant ambient4-sound             \ (snd 13) its ambient sounds in turn (every 30 frames): the fourth
 
 \ (as Room2D_Cmd02) three hanging things (+0x34 0..2), pushed by the square of Fiona's step past
 \ 1, event flag 4 with sounds 4 / 5
@@ -86,24 +91,24 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
 : house-of-truth-1f-10.phase1 ( -- )   \ 00443910
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000008 6 60.0 20.0 50.0 0 0 sound
+            room-loop-sound volume-scaled 6 60.0 20.0 50.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000008 6 60.0 20.0 50.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 60.0 20.0 50.0 0 0 sound
     then
     6 sound-bank-loaded? if
         sound-frames-var var-inc
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $4000000A 6 58.0 21.0 -76.0 0 0 sound
+                ambient1-sound volume-scaled 6 58.0 21.0 -76.0 0 0 sound
             else sound-step-var 1 var? if
-                $4000000B 6 58.0 21.0 -76.0 0 0 sound
+                ambient2-sound volume-scaled 6 58.0 21.0 -76.0 0 0 sound
             else sound-step-var 2 var? if
-                $4000000C 6 58.0 21.0 -76.0 0 0 sound
+                ambient3-sound volume-scaled 6 58.0 21.0 -76.0 0 0 sound
             else sound-step-var 3 var? if
-                $4000000D 6 58.0 21.0 -76.0 0 0 sound
+                ambient4-sound volume-scaled 6 58.0 21.0 -76.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if

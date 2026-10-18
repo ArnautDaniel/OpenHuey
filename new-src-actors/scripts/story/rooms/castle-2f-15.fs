@@ -4,10 +4,11 @@
 IN: story.rooms.castle-2f-15
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant hewie-zone0-noticed         \ (bit 0) Hewie has reacted to zone 0 (once a visit)
 1 constant statue-remarked             \ (bit 1) its first remark made: "The body of a beast and the head of a bird... What a strange"
 2 constant bridge-crossing             \ (bit 2) the stalker on the bridge (its floor opened for him)
+0 constant climb-down-sound            \ (snd 0) her climbing down (heard plainly, the screen faded)
 
 \ room 0x30 (Room30_Cond00_ptmf): the pursuer's Pursuer_GrabHewieBehind
 : castle-2f-15.cond00? ( b0 -- flag )  drop grab-hewie-behind? ;   \ (the stalker's Pursuer_GrabHewieBehind)
@@ -195,7 +196,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         wait-fade
         world-held state-flag-set
         scene-locked state-flag-set
-        0 $86 0.0 0.0 0.0 0 0 sound
+        climb-down-sound $86 0.0 0.0 0.0 0 0 sound
         $B4 wait-frames
         hewie-who char-here? if
             $30 0 288 hewie-to-room

@@ -4,7 +4,7 @@
 IN: story.rooms.castle-1f-19
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant hole-remarked               \ (bit 0) its first remark made: "There is a hole in the wall. I think I can see light on the "
 1 constant splash1-made                \ (bit 1) a splash played once someone steps into its zone (once a visit)
 2 constant splash2-made                \ (bit 2) a splash played once someone steps into its zone (once a visit)
@@ -12,6 +12,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 4 constant splash4-made                \ (bit 4) a splash played once someone steps into its zone (once a visit)
 5 constant hewie-zone4-noticed         \ (bit 5) Hewie has reacted to zone 4 (once a visit)
 6 constant splash5-made                \ (bit 6) a splash played once someone steps into its zone (once a visit)
+0 constant hewie-rouse-sound           \ (snd 0) Hewie getting up from his rest (a bark?)
 
 : castle-1f-19.enter ( -- )   \ 003FD9C0
     room-sounds
@@ -375,7 +376,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     sit-a-while-anim $A blend-out
     1 self-noclip
-    hewie-who 0 6 char-sound
+    hewie-who hewie-rouse-sound 6 char-sound
     $13F 68.224 -274.752 100 $204 5 self-move-to
     self-wait-done
     sit-a-while-anim $A blend-out
@@ -394,7 +395,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             $8011 say   \ "You've obtained ."
         then
     then
-    hewie-who 0 6 char-sound
+    hewie-who hewie-rouse-sound 6 char-sound
     $118 39.008 -266.892 -80 $FFFF $A self-move-to
     self-wait-done
     0 self-noclip

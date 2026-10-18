@@ -4,11 +4,14 @@
 IN: story.rooms.old-mansion-2f-13
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant came-in-forward             \ (bit 0) she came in this way: no going back (until he is here)
 1 constant stalker-scene-on            \ (bit 1) the scene with her (act01) under way
 2 constant wall-breaking               \ (bit 2) the stalker breaking through (at the room's end: broken)
 0 constant struggle-frames-var         \ (var 0) the struggle's frames (her cry at 12, over at 30)
+0 constant struggle-sound              \ (snd 0) her struggling
+1 constant smash-sound                 \ (snd 1) him smashing it
+5 constant smash-start-sound           \ (snd 5) him going to smash it
 
 \ room 0x6A (D_00438CE0): a lit quad at x 120, z 47 .. 39, from 4 to 21
 : old-mansion-2f-13.cmd00 ( b0 -- )  $1B $80  120.0e 21.0e 47.0e  120.0e 21.0e 39.0e  120.0e 4.0e 47.0e  120.0e 4.0e 39.0e  lit-quad ;   \ (a reflecting glass: b0 1 removed, 2 over the whole picture)
@@ -224,7 +227,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             0 old-mansion-2f-13.cmd01
             yield
             struggle-frames-var 12 var? if
-                fiona-who 0 6 char-sound
+                fiona-who struggle-sound 6 char-sound
             then
             struggle-frames-var 30 var? not while
             struggle-frames-var var-inc
@@ -240,7 +243,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             1 old-mansion-2f-13.cmd01
             yield
             struggle-frames-var 12 var? if
-                fiona-who 0 6 char-sound
+                fiona-who struggle-sound 6 char-sound
             then
             struggle-frames-var 28 var? not while
             struggle-frames-var var-inc
@@ -263,11 +266,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     stalker-who char-file-use
     [: 6 sound-bank-loaded? ;] wait-until
-    stalker-who 5 6 char-sound
+    stalker-who smash-start-sound 6 char-sound
     0 room-motion 5 blend-out
     $E00 5 self-anim-blend
     $16 wait-frames
-    stalker-who 1 6 char-sound
+    stalker-who smash-sound 6 char-sound
     om2f-13-breakable-broken story-flag-set
     stalker-who 1 stalker-rage
     0 part-hidden

@@ -368,6 +368,8 @@ $80 constant any-door
 : char-sound ( who id bank -- )   \ (Actor_PlaySound: at the character)
     rot who>cs dup char-here 0= if  drop 2drop exit  then
     char-at vec@  0 0 sound-at ;
+: kept-going ( id -- id' )  $80000000 or ;      \ (a sound already playing is kept going - moved, not restarted)
+: volume-scaled ( id -- id' )  $40000000 or ;   \ (a sound scaled by the story's volume setting)
 : acoustics-id ( -- id )  s" acoustics" actor-named ;
 : noise ( loud tri -- )  this-room @ swap -1 world-noise acoustics-id send noise ;
 : room-sounds ( -- )  0 $1B0C00 sound-stop-voices  6 sound-load ;   \ (Progress_LoadRoomSounds)

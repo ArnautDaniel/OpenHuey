@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-2f-8
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant camera-scene-done           \ (bit 0) its scene begun, once
 1 constant found-her                   \ (bit 1) he has found her hiding: she must flee (the avoid prompt)
 2 constant will-find-her               \ (bit 2) he will find her hiding (by chance, as he searches: more likely by the progress variable)
@@ -15,6 +15,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 0 constant curtain-var                 \ (var 0) the curtain's frames
 1 constant sound-step-var              \ (var 1) which of its sounds next (0..3)
 2 constant sound-frames-var            \ (var 2) frames to the next sound (30)
+0 constant curtain-sound               \ (snd 0) the curtain
+1 constant hide-sound                  \ (snd 1) her hiding
+3 constant ambient1-sound              \ (snd 3) its ambient sounds in turn (every 30 frames): the first
+4 constant ambient2-sound              \ (snd 4) its ambient sounds in turn (every 30 frames): the second
+5 constant ambient3-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the third
+6 constant ambient4-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the fourth
+8 constant room-loop-sound             \ (snd 8) its steady sound (started as it comes in, then kept up)
+9 constant room-loop2-sound           \ (snd 9) its steady sound (started as it comes in, then kept up)
 
 \ room 0x5C (Room5C_Cmd00_ptmf): the dial (+0x7C, 0..1) from script variable 0 by byte 3: 0
 \ 0x2B..0x38 (/ 13, +0x74 0 / +0x78 1), 1 0xC..0x20 (/ 20), 2 7..0x12 (/ 11) (+0x74 1 / +0x78 0)
@@ -139,16 +147,16 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-2f-8.phase1 ( -- )   \ 00411180
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000008 6 5.0 18.0 -125.0 0 0 sound
+            room-loop-sound volume-scaled 6 5.0 18.0 -125.0 0 0 sound
             om2f-12-flag1 story-flag? not if
-                $40000009 6 -120.0 10.0 -105.0 0 0 sound
+                room-loop2-sound volume-scaled 6 -120.0 10.0 -105.0 0 0 sound
             then
             sound-started ebit-set
         then
     else
-        $C0000008 6 5.0 18.0 -125.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 5.0 18.0 -125.0 0 0 sound
         om2f-12-flag1 story-flag? not if
-            $C0000009 6 -120.0 10.0 -105.0 0 0 sound
+            room-loop2-sound kept-going volume-scaled 6 -120.0 10.0 -105.0 0 0 sound
         then
     then
     0 exit-usable? if
@@ -264,13 +272,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000003 6 45.32 0.0 23.5 0 0 sound
+                ambient1-sound volume-scaled 6 45.32 0.0 23.5 0 0 sound
             else sound-step-var 1 var? if
-                $40000004 6 45.32 0.0 23.5 0 0 sound
+                ambient2-sound volume-scaled 6 45.32 0.0 23.5 0 0 sound
             else sound-step-var 2 var? if
-                $40000005 6 45.32 0.0 23.5 0 0 sound
+                ambient3-sound volume-scaled 6 45.32 0.0 23.5 0 0 sound
             else sound-step-var 3 var? if
-                $40000006 6 45.32 0.0 23.5 0 0 sound
+                ambient4-sound volume-scaled 6 45.32 0.0 23.5 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
@@ -448,7 +456,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         yield
         curtain-var 18 var? not while
         curtain-var 6 var? if
-            fiona-who 0 6 char-sound
+            fiona-who curtain-sound 6 char-sound
         then
         curtain-var var-inc
     repeat
@@ -482,7 +490,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         yield
         curtain-var 56 var? not while
         curtain-var 44 var? if
-            fiona-who 0 6 char-sound
+            fiona-who curtain-sound 6 char-sound
         then
         curtain-var var-inc
     repeat
@@ -494,7 +502,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     found-her ebit-clear
     0 avoid-prompt
     $18 1 item-count? $19 1 item-count? or $1A 1 item-count? or $1B 1 item-count? or $1C 1 item-count? or if
-        fiona-who 1 6 char-sound
+        fiona-who hide-sound 6 char-sound
     then
     begin
         0 2 pad? not if
@@ -528,7 +536,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 yield
                 curtain-var 32 var? not while
                 curtain-var 13 var? if
-                    fiona-who 0 6 char-sound
+                    fiona-who curtain-sound 6 char-sound
                 then
                 curtain-var var-inc
             repeat

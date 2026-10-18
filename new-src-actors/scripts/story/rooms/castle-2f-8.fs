@@ -4,12 +4,14 @@
 IN: story.rooms.castle-2f-8
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant earth-doll-remarked         \ (bit 0) its first remark made: "A huge doll made of earth blocks the door. There is a slot-s"
 1 constant sound-started               \ (bit 1) its sound started (then kept up)
 2 constant hewie-zone2-noticed         \ (bit 2) Hewie has reacted to zone 2 (once a visit)
 3 constant calmed-remarked             \ (bit 3) its first remark made: "...... That got my mind off things. I feel a little better n"
 0 constant figure-var                  \ (var 0) ? the figure's dance (cmd02)
+0 constant try-sound                   \ (snd 0) trying it ("Nothing happened.")
+9 constant room-loop-sound             \ (snd 9) its steady sound (started as it comes in, then kept up)
 
 \ Room24_Cmd00
 : castle-2f-8.cmd00 ( b0 -- )   \ (the kiln's glow - "jimen", "kama", "sumi" - pulsing: their blend 0.5 + 0.5 cos(phase),
@@ -101,11 +103,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-2f-8.phase1 ( -- )   \ 004019D0
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000009 6 57.0 0.0 -2.0 0 0 sound
+            room-loop-sound volume-scaled 6 57.0 0.0 -2.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000009 6 57.0 0.0 -2.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 57.0 0.0 -2.0 0 0 sound
     then
     0 exit-usable? if
         0 exit-check
@@ -273,7 +275,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-2f-8.act05 ( -- )   \ 00401CB0
-    fiona-who 0 6 char-sound
+    fiona-who try-sound 6 char-sound
     self-wait-done
     $1E wait-frames
     9 say   \ "Nothing happened."

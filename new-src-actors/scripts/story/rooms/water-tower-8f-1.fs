@@ -4,7 +4,7 @@
 IN: story.rooms.water-tower-8f-1
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant lying-down                  \ (bit 0) she lies down (act00)
 1 constant stalker-near                \ (bit 1) the stalker came into area 8 while she lay
 2 constant got-up                      \ (bit 2) she got up (her command)
@@ -23,6 +23,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 5 constant model-var                   \ (var 5) the model being set (0..2)
 7 constant cursor-x-var                \ (var 7) the cursor's x
 8 constant cursor-y-var                \ (var 8) the cursor's y
+0 constant model-set-sound             \ (snd 0) the model set in place
+7 constant model-sound                 \ (snd 7) the model (dust)
+8 constant model2-sound                \ (snd 8) the model (dust)
+1 constant cant-set-sound              \ (snd 1) not a spot the model can be set in (heard plainly)
 
 \ the screen fade (renderer +0x70) by script variable 1 with Hewie's light 0xF: byte 3 0 clear
 \ (0x808080), 2 full (0x80808080); 1 fades in by 0x10 a call and 3 back out, waiting (2),
@@ -636,10 +640,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         1 water-tower-8f-1.cmd02
         spot-chosen ebit? if
             second-model ebit? not water-tower-8f-1.cond00? not or if
-                1 $86 0.0 0.0 0.0 0 0 sound
+                cant-set-sound $86 0.0 0.0 0.0 0 0 sound
                 yield
             else
-                0 6 -1.0 632.0 31.0 0 0 sound
+                model-set-sound 6 -1.0 632.0 31.0 0 0 sound
                 0 part-shown
                 $23 item-use
                 model-set ebit-set
@@ -687,13 +691,13 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : water-tower-8f-1.act06 ( -- )   \ 00430000
-    fiona-who 7 6 char-sound
+    fiona-who model-sound 6 char-sound
     model-var 0 var? if
         2 water-tower-8f-1.cmd01
         0 -1.0 623.0 77.0 0 0 0 0 dust
         0 4.0 623.0 77.0 0 0 0 0 dust
         model1-var 0 var? if
-            fiona-who 8 6 char-sound
+            fiona-who model2-sound 6 char-sound
             0 water-tower-8f-1.cmd04
             3 water-tower-8f-1.cmd04
             2 part-hidden
@@ -705,7 +709,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         0 -59.0 623.0 50.0 0 0 0 0 dust
         0 -55.0 623.0 54.0 0 0 0 0 dust
         model2-var 0 var? if
-            fiona-who 8 6 char-sound
+            fiona-who model2-sound 6 char-sound
             1 water-tower-8f-1.cmd04
             4 water-tower-8f-1.cmd04
             4 part-hidden
@@ -717,7 +721,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         0 -8.0 623.0 -77.0 0 0 0 0 dust
         0 -2.0 623.0 -77.0 0 0 0 0 dust
         model3-var 0 var? if
-            fiona-who 8 6 char-sound
+            fiona-who model2-sound 6 char-sound
             2 water-tower-8f-1.cmd04
             5 water-tower-8f-1.cmd04
             6 part-hidden

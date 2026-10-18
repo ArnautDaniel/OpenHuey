@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-2f-6
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant medicine-remarked           \ (bit 0) its first remark made: "There's some kind of medicine bottle on the shelf."
 1 constant chemicals-remarked          \ (bit 1) its first remark made: "Several bottles containing various chemicals have been left "
 2 constant rested                      \ (bit 2) she has rested here (her recovery: once a visit)
@@ -12,6 +12,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 4 constant back-from-forest            \ (bit 4) she came back by exit $80 (after the forest)
 5 constant measuring-device-remarked   \ (bit 5) its first remark made: "There is a device which appears to be used for measuring thi"
 6 constant hiding-spot-remarked        \ (bit 6) its first remark made: "I wonder if this could serve as a hiding spot if I'm ever in"
+1 constant calm-sound                  \ (snd 1) the spot that calms her
 
 \ room 0x59 (Room59_Cmd00_ptmf): character 0xFE's model +0x9E0 = 0.1 (byte 3 0) or 0
 : old-mansion-2f-6.cmd00 ( b0 -- )  drop ;   \ (the stalker's model's springs (+0x9E0): not simulated here yet)
@@ -135,7 +136,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         fiona-who char-file-use
         4 room-motion $A self-anim-blend
         $16 wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who calm-sound 6 char-sound
         self-wait-anim
         $E4 panic-calm-in
         fiona-calm-reset

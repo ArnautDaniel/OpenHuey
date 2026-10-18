@@ -4,7 +4,7 @@
 IN: story.rooms.house-of-truth-1f-9
 USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant smell-remarked              \ (bit 0) its first remark made: "There is an odd smell here..."
 1 constant pit-remarked                \ (bit 1) its first remark made: "If I fell in from here, I would be toast..."
 2 constant hewie-zone3-noticed         \ (bit 2) Hewie has reacted to zone 3 (once a visit)
@@ -27,6 +27,12 @@ USING: engine common actors messages story.state room-names story.words story.sh
 9 constant shake2-frames-var           \ (var 9) frames of the camera's shake (30)
 10 constant haze-var                   \ (var 10) the heat haze's effect
 11 constant embers-var                 \ (var 11) the pit's embers' effect
+0 constant drone-high-sound            \ (snd 0) a drone overhead (kept up)
+1 constant drone-sound                 \ (snd 1) a drone (kept up)
+2 constant drone-left-sound            \ (snd 2) a drone to the left (kept up)
+3 constant drone2-sound                \ (snd 3) a second drone (kept up)
+5 constant area5-sound                 \ (snd 5) someone in area 5
+6 constant drone-right-sound           \ (snd 6) a drone to the right (kept up)
 
 \ ---- the debris falling from above ("keri0".."keri5", each carried by a kind-9 thing: free
 \ while hidden) and the traps set round the middle (kind 10) - the things actor's ----
@@ -208,16 +214,16 @@ defer house-of-truth-1f-9.act0F
     ht1f-9-flag1 story-flag? if
         sound-started ebit? not if
             6 sound-bank-loaded? if
-                $40000000 6 0.0 50.0 0.0 0 0 sound
-                $40000001 6 0.0 0.0 0.0 0 0 sound
+                drone-high-sound volume-scaled 6 0.0 50.0 0.0 0 0 sound
+                drone-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
                 sound-started ebit-set
             then
         else
-            $C0000000 6 0.0 50.0 0.0 0 0 sound
-            $C0000001 6 0.0 0.0 0.0 0 0 sound
-            $C0000003 6 0.0 0.0 0.0 0 0 sound
-            $C0000002 6 -70.0 15.0 0.0 0 0 sound
-            $C0000006 6 70.0 15.0 0.0 0 0 sound
+            drone-high-sound kept-going volume-scaled 6 0.0 50.0 0.0 0 0 sound
+            drone-sound kept-going volume-scaled 6 0.0 0.0 0.0 0 0 sound
+            drone2-sound kept-going volume-scaled 6 0.0 0.0 0.0 0 0 sound
+            drone-left-sound kept-going volume-scaled 6 -70.0 15.0 0.0 0 0 sound
+            drone-right-sound kept-going volume-scaled 6 70.0 15.0 0.0 0 0 sound
         then
     then
     drone-on ebit? if
@@ -289,7 +295,7 @@ defer house-of-truth-1f-9.act0F
     else
         area5-triggered ebit? not if
             fiona-who 5 char-in-area? hewie-who 5 char-in-area? or stalker-who 5 char-in-area? or if
-                5 6 -40.0 0.0 -40.0 0 0 sound
+                area5-sound 6 -40.0 0.0 -40.0 0 0 sound
                 area5-triggered ebit-set
             then
         else fiona-who 5 char-in-area? not hewie-who 5 char-in-area? not and stalker-who 5 char-in-area? not and if
@@ -297,7 +303,7 @@ defer house-of-truth-1f-9.act0F
         then then
         area6-triggered ebit? not if
             fiona-who 6 char-in-area? hewie-who 6 char-in-area? or stalker-who 6 char-in-area? or if
-                5 6 44.0 0.0 37.0 0 0 sound
+                area5-sound 6 44.0 0.0 37.0 0 0 sound
                 area6-triggered ebit-set
             then
         else fiona-who 6 char-in-area? not hewie-who 6 char-in-area? not and stalker-who 6 char-in-area? not and if
@@ -744,7 +750,7 @@ defer house-of-truth-1f-9.act0F
         yield
     repeat
     0 house-of-truth-1f-9.cmd04
-    $40000003 6 0.0 0.0 0.0 0 0 sound
+    drone2-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
     shake2-frames-var 30 var-set
     begin
         shake2-frames-var var-dec
@@ -783,7 +789,7 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.act0C ( -- )   \ 00437870
-    $40000002 6 -70.0 15.0 0.0 0 0 sound
+    drone-left-sound volume-scaled 6 -70.0 15.0 0.0 0 0 sound
     left-var 2 var-set
     $1E wait-frames
     $1E wait-frames
@@ -805,7 +811,7 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.act0D ( -- )   \ 004378D0
-    $40000006 6 70.0 15.0 0.0 0 0 sound
+    drone-right-sound volume-scaled 6 70.0 15.0 0.0 0 0 sound
     right-var 2 var-set
     $1E wait-frames
     $1E wait-frames

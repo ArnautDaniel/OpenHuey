@@ -4,7 +4,7 @@
 IN: story.rooms.house-of-truth-1f-4
 USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant generator-remarked          \ (bit 0) its first remark made: "Looks like a power generator. The switch is turned on, but i"
 1 constant generator-on                \ (bit 1) the generator started (act06)
 2 constant stalker-reacted             \ (bit 2) her reaction to the stalker in area $B made
@@ -15,6 +15,10 @@ USING: engine common actors messages story.state room-names story.words story.sh
 0 constant generator-var               \ (var 0) ? the generator's state (3: done)
 1 constant run-frames-var              \ (var 1) the generator's frames (to 240)
 2 constant hewie-hp-var                \ (var 2) Hewie's health kept (cmd03)
+0 constant generator-start-sound       \ (snd 0) the generator started (rumble)
+1 constant generator-stop-sound        \ (snd 1) the generator running down
+2 constant generator-sound             \ (snd 2) the generator running
+3 constant key-turn-sound              \ (snd 3) her key in the lock
 
 \ (as RoomC7_Cmd01)
 : house-of-truth-1f-4.cmd00 ( b0 -- )  var-down-by-hit ;
@@ -218,7 +222,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
         then
     then
     generator-on ebit? if
-        $C0000002 6 24.0 5.0 65.0 0 0 sound
+        generator-sound kept-going volume-scaled 6 24.0 5.0 65.0 0 0 sound
     then
 ;
 
@@ -263,7 +267,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
 ;
 
 : house-of-truth-1f-4.act01 ( -- )   \ 00433FD0
-    fiona-who 0 6 char-sound
+    fiona-who generator-start-sound 6 char-sound
     1 $FF 4 rumble
     0 house-of-truth-1f-4.cmd00
     0 house-of-truth-1f-4.cmd01
@@ -395,7 +399,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     $F $54 fade
     self-wait-done
     wait-fade
-    $40000001 6 sound-stop
+    generator-stop-sound volume-scaled 6 sound-stop
     2 track action-end
     hewie-who action-end
     hewie-who char-done
@@ -474,7 +478,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
 
 : house-of-truth-1f-4.act06 ( -- )   \ 004343A0
     0 part-shown
-    $40000002 6 24.0 5.0 65.0 0 0 sound
+    generator-sound volume-scaled 6 24.0 5.0 65.0 0 0 sound
     generator-on ebit-set
     0 part-shown
     hewie-path-open ebit-set
@@ -486,7 +490,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
         1 wait-frames
         run-frames-var var-inc
         run-frames-var 240 var? until
-    $40000001 6 24.0 5.0 65.0 0 0 sound
+    generator-stop-sound volume-scaled 6 24.0 5.0 65.0 0 0 sound
     generator-on ebit-clear
     0 part-hidden
     2 house-of-truth-1f-4.cmd02
@@ -541,7 +545,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     self-wait-done
     $608 self-anim
     $14 wait-frames
-    fiona-who 3 6 char-sound
+    fiona-who key-turn-sound 6 char-sound
     $25 message-param-room
     $E2 door-locked? not if
         $25 item-use

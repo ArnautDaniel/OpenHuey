@@ -4,11 +4,12 @@
 IN: story.rooms.chaos-forest-9
 USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)
 1 constant was-panicking               \ (bit 1) she was in a panic (as she came in, then each frame)
 2 constant figure-scene-on             \ (bit 2) the figure's scene begun (act00)
 3 constant lake-remarked               \ (bit 3) its first remark made: "It's... a lake, I think. Looks like there some kind of a... "
+10 constant figure-cry-sound           \ (snd 10) the figure's cry as it appears
 
 \ room 0x107: byte 3 0 starts a 90-frame count; while it runs, character 0xE drifts up 3 and
 \ sideways 2 a frame (room_nudge).
@@ -145,7 +146,7 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
 ;
 
 : chaos-forest-9.act02 ( -- )   \ 00418D30
-    $E $A 6 char-sound
+    $E figure-cry-sound 6 char-sound
     $E $9002 1 0 char-anim-hold
     8 wait-frames
     0 chaos-forest-9.cmd00

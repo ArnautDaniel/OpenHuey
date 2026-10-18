@@ -4,7 +4,7 @@
 IN: story.rooms.castle-1f-4
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant no-knob-remarked            \ (bit 0) its first remark made: "What? There's no knob... Now what do I do? Wait... There is "
 1 constant locked-remarked             \ (bit 1) its first remark made: "It won't open. Maybe I need a key or something?"
 2 constant chair-remarked              \ (bit 2) its first remark made: "Why in the world is there a chair here?"
@@ -17,6 +17,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 2 constant shakes-var                  \ (var 2) the trap shaken so far (it gives at 2)
 3 constant sound-step-var              \ (var 3) which of its sounds next (0..3)
 4 constant sound-frames-var            \ (var 4) frames to the next sound (30)
+0 constant came-in-sound               \ (snd 0) whoever came into area $D (a call?)
+1 constant broken-marionette-sound     \ (snd 1) the room's loop once the broken marionette is used
+2 constant broken-marionette-stop-sound   \ (snd 2) its loop stopping
+3 constant marionette-sound            \ (snd 3) the room's loop before the broken marionette is used
+4 constant marionette-stop-sound       \ (snd 4) its loop stopping
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
+9 constant trap-shake-sound            \ (snd 9) the trap shaking (rumble, dust)
+10 constant trap-fall-sound            \ (snd 10) the trap's part falling (dust)
+11 constant trap-creak-sound           \ (snd 11) the trap creaking?
+12 constant reach-sound                \ (snd 12) her reaching up
 
 \ room 0x0F: the floor plate ("fumi_yuka") fading: its +0x24 toward 1 while event variable 0 is
 \ unset, toward 0 once set; byte 3 0 at once, else by 0.2 a step (var_fade).
@@ -152,9 +165,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-4.phase1 ( -- )   \ 003F6120
     6 sound-bank-loaded? if
         broken-marionette-used story-flag? not if
-            $C0000003 6 -72.0 10.0 15.0 0 0 sound
+            marionette-sound kept-going volume-scaled 6 -72.0 10.0 15.0 0 0 sound
         else
-            $C0000001 6 -72.0 10.0 15.0 0 0 sound
+            broken-marionette-sound kept-going volume-scaled 6 -72.0 10.0 15.0 0 0 sound
         then
     then
     0 exit-usable? if
@@ -200,12 +213,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         hewie-who $D char-in-area? if
             c1f-4-flag1 story-flag-set
             way-in-var 1 var-set
-            hewie-who 0 6 char-sound
+            hewie-who came-in-sound 6 char-sound
             0 1 track $D action
         else fiona-who $D char-in-area? if
             c1f-4-flag1 story-flag-set
             way-in-var 1 var-set
-            fiona-who 0 6 char-sound
+            fiona-who came-in-sound 6 char-sound
             broken-marionette-used story-flag? c1f-4-flag3 story-flag? not and breaker-lowered story-flag? not and if
                 0 fiona-who $A action
             else
@@ -214,7 +227,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         else stalker-who $D char-in-area? if
             c1f-4-flag1 story-flag-set
             way-in-var 1 var-set
-            stalker-who 0 6 char-sound
+            stalker-who came-in-sound 6 char-sound
             0 1 track $D action
         then then then
     else hewie-who $D char-in-area? not fiona-who $D char-in-area? not and stalker-who $D char-in-area? not and if
@@ -246,13 +259,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 -17.0 22.0 -9.0 0 0 sound
+                ambient1-sound volume-scaled 6 -17.0 22.0 -9.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 -17.0 22.0 -9.0 0 0 sound
+                ambient2-sound volume-scaled 6 -17.0 22.0 -9.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 -17.0 22.0 -9.0 0 0 sound
+                ambient3-sound volume-scaled 6 -17.0 22.0 -9.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 -17.0 22.0 -9.0 0 0 sound
+                ambient4-sound volume-scaled 6 -17.0 22.0 -9.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
@@ -512,7 +525,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-4.act08 ( -- )   \ 003F67A0
     1 $FF 4 rumble
     shaking ebit-set
-    fiona-who 9 6 char-sound
+    fiona-who trap-shake-sound 6 char-sound
     0 139.0 -9.0 91.5 0 0 0 0 dust
     0 139.0 -9.0 94.5 0 0 0 0 dust
     [: fiona-free? ;] wait-until
@@ -584,9 +597,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     [: 6 sound-bank-loaded? ;] wait-until
     c1f-4-flag2 story-flag-set
     broken-marionette-used story-flag? not if
-        $40000003 6 -72.0 10.0 15.0 0 0 sound
+        marionette-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
     else
-        $40000001 6 -72.0 10.0 15.0 0 0 sound
+        broken-marionette-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
     then
     c1f-4-flag1 story-flag? not if
         begin
@@ -596,11 +609,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         repeat
         c1f-4-flag1 story-flag? not if
             broken-marionette-used story-flag? not if
-                3 6 sound-stop
-                $40000004 6 -72.0 10.0 15.0 0 0 sound
+                marionette-sound 6 sound-stop
+                marionette-stop-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
             else
-                1 6 sound-stop
-                $40000002 6 -72.0 10.0 15.0 0 0 sound
+                broken-marionette-sound 6 sound-stop
+                broken-marionette-stop-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
             then
             c1f-4-flag2 story-flag-clear
         then
@@ -612,11 +625,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         repeat
         c1f-4-flag1 story-flag? if
             broken-marionette-used story-flag? not if
-                3 6 sound-stop
-                $40000004 6 -72.0 10.0 15.0 0 0 sound
+                marionette-sound 6 sound-stop
+                marionette-stop-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
             else
-                1 6 sound-stop
-                $40000002 6 -72.0 10.0 15.0 0 0 sound
+                broken-marionette-sound 6 sound-stop
+                broken-marionette-stop-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
             then
             c1f-4-flag2 story-flag-clear
         then
@@ -638,11 +651,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-4.act0F ( -- )   \ 003F6980
     $29 wait-frames
-    $4000000B 6 120.0 -10.0 92.0 0 0 sound
+    trap-creak-sound volume-scaled 6 120.0 -10.0 92.0 0 0 sound
     $2E wait-frames
-    $4000000B 6 120.0 -10.0 92.0 0 0 sound
+    trap-creak-sound volume-scaled 6 120.0 -10.0 92.0 0 0 sound
     $25 wait-frames
-    $4000000B 6 120.0 -10.0 92.0 0 0 sound
+    trap-creak-sound volume-scaled 6 120.0 -10.0 92.0 0 0 sound
     c1f-4-refined-antimony story-flag? not if
         1 140.0 -9.0 94.0 flicker-sprite
     then
@@ -730,7 +743,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     4 wait-frames
     reach-out-anim play-out
-    fiona-who $C 6 char-sound
+    fiona-who reach-sound 6 char-sound
     5 part-shown
     $1E wait-frames
     fiona-who $72 5 char-sound
@@ -784,7 +797,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     4 wait-frames
     reach-out-anim play-out
-    fiona-who $C 6 char-sound
+    fiona-who reach-sound 6 char-sound
     16 wait-frames
     reach-back-anim play-out
     $1E wait-frames
@@ -862,8 +875,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-4.act1B ( -- )   \ 003F6DA0
     1 $FF 4 rumble
     c1f-4-flag4 story-flag-set
-    fiona-who 9 6 char-sound
-    $4000000A 6 140.0 -10.0 92.0 0 0 sound
+    fiona-who trap-shake-sound 6 char-sound
+    trap-fall-sound volume-scaled 6 140.0 -10.0 92.0 0 0 sound
     1 part-hidden
     2 part-shown
     0 139.0 -9.0 91.5 0 0 0 0 dust

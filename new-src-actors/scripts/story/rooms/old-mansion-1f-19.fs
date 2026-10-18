@@ -4,12 +4,13 @@
 IN: story.rooms.old-mansion-1f-19
 USING: room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 3 constant found-her                   \ (bit 3) he has found her hiding: she must flee (the avoid prompt)
 4 constant will-find-her               \ (bit 4) he will find her hiding (by chance, as he searches: more likely by the progress variable)
 5 constant came-while-hidden           \ (bit 5) the stalker came in while she was hiding
 6 constant hewie-zone2-noticed         \ (bit 6) Hewie has reacted to zone 2 (once a visit)
 7 constant sound-started               \ (bit 7) its sound started (then kept up)
+8 constant room-loop-sound             \ (snd 8) its steady sound (started as it comes in, then kept up)
 
 : old-mansion-1f-19.enter ( -- )   \ 00438D30
     room-sounds
@@ -128,11 +129,11 @@ USING: room-names story.words story.shared flag-names story-names fiona.anims fi
     then
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000008 6 0.0 9.0 -125.0 0 0 sound
+            room-loop-sound volume-scaled 6 0.0 9.0 -125.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000008 6 0.0 9.0 -125.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 0.0 9.0 -125.0 0 0 sound
     then
 ;
 

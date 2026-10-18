@@ -4,9 +4,11 @@
 IN: story.rooms.old-mansion-1f-5
 USING: room-names story.words story.shared story-names floor-flags fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant items-missing               \ (bit 0) she lacks the items here: their sparkles shown
 1 constant sound-started               \ (bit 1) its sound started (then kept up)
+0 constant room-loop-sound             \ (snd 0) its steady sound (started as it comes in, then kept up)
+1 constant sizzle-sound                \ (snd 1) the cooking
 
 \ the effect BigFire_vtable (three quad drawers) started with parameter 0
 : old-mansion-1f-5.cmd00 ( -- )  effects:big-fire ;   \ (the fire: smoke, flames, glow)
@@ -55,11 +57,11 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims f
 : old-mansion-1f-5.phase1 ( -- )   \ 00407C00
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000000 6 -138.0 11.0 11.0 0 0 sound
+            room-loop-sound volume-scaled 6 -138.0 11.0 11.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000000 6 -138.0 11.0 11.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -138.0 11.0 11.0 0 0 sound
     then
     3 exit-usable? if
         3 exit-check
@@ -111,7 +113,7 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims f
         $21 pvar-inc
         $11 say   \ "Smells like burnt meat. A dreadful odor indeed... They must be cooking an animal'..."
     else $21 1 pvar? if
-        1 6 -138.0 5.0 5.0 0 0 sound
+        sizzle-sound 6 -138.0 5.0 5.0 0 0 sound
         $10 wait-frames
         fiona-who seized-sound 5 char-sound
         startled-anim self-anim

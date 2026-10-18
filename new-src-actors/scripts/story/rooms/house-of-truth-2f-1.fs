@@ -4,9 +4,10 @@
 IN: story.rooms.house-of-truth-2f-1
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 1 constant locked-remarked             \ (bit 1) its first remark made: "The door is locked."
 2 constant area0-reacted               \ (bit 2) her reaction on entering the area made (once a visit)
+3 constant key-turn-sound              \ (snd 3) her key in the lock
 
 : house-of-truth-2f-1.enter ( -- )   \ 004314B0
     ht2f-1-breakable1-broken story-flag? not if
@@ -333,7 +334,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $609 self-anim
     $14 wait-frames
-    fiona-who 3 6 char-sound
+    fiona-who key-turn-sound 6 char-sound
     $25 message-param-room
     $E6 door-locked? not if
         $25 item-use

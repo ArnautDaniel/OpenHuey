@@ -4,7 +4,7 @@
 IN: story.rooms.castle-2f-2
 USING: engine actors room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant fled-scene-done             \ (bit 0) the scene that sends her out played (file $209 given)
 1 constant dool-landed                 \ (bit 1) the falling thing ("dool") has landed
 2 constant hewie-zone0-noticed         \ (bit 2) Hewie has reacted to zone 0 (once a visit)
@@ -15,6 +15,10 @@ USING: engine actors room-names story.words story.shared flag-names story-names 
 8 constant area23-reacted              \ (bit 8) her reaction on entering the area made (once a visit)
 0 constant sound-frames-var            \ (var 0) frames to the next sound (180)
 1 constant next-sound-var              \ (var 1) the frames to the next sound, picked by chance (31, 61, 1)
+1 constant wheel-sound                 \ (snd 1) the wheel going round (its loop)
+2 constant wheel-start-sound           \ (snd 2) its loop until c2f-2-flag1
+3 constant tick-sound                  \ (snd 3) every 30 frames
+4 constant doll-land-sound             \ (snd 4) the doll landing
 
 \ ---- the doll ("dool") that falls: +$30 its velocity, +$3C its triangle ($80000000: landed; -1
 \ none) ----
@@ -55,7 +59,7 @@ create dl-at 12 allot
     op 0= if  0e a n $30 object!  exit  then
     op 1 <> if  exit  then
     2e a n $30 object+!
-    a n $30 object@ 360e f< 0= if  -360e a n $30 object+!  1 6 0 0  -85e 30e 90e sound  then
+    a n $30 object@ 360e f< 0= if  -360e a n $30 object+!  wheel-sound 6 0 0  -85e 30e 90e sound  then
     a n $30 object@ deg>rad fsin 15e f* deg>rad
     fdup pi f> if  2e pi f* f-  then  a n turn-y object! ;
 \ room 0x20 (Room20_Cmd03_ptmf): the falling object falls (gravity 0.2 a frame on its velocity
@@ -276,7 +280,7 @@ create dl-at 12 allot
     got-bisque-doll story-flag? not if
         dool-landed ebit? if
             castle-2f-2.cond00? if
-                fiona-who 4 6 char-sound
+                fiona-who doll-land-sound 6 char-sound
                 dool-landed ebit-clear
                 dool-falling ebit-clear
                 1 track action-end
@@ -354,9 +358,9 @@ create dl-at 12 allot
     then
     6 sound-bank-loaded? if
         c2f-2-flag1 story-flag? not if
-            $C0000002 6 -82.0 0.0 92.0 0 0 sound
+            wheel-start-sound kept-going volume-scaled 6 -82.0 0.0 92.0 0 0 sound
         then
-        $C0000001 6 -85.0 30.0 90.0 0 0 sound
+        wheel-sound kept-going volume-scaled 6 -85.0 30.0 90.0 0 0 sound
     then
 ;
 
@@ -598,7 +602,7 @@ create dl-at 12 allot
         6 sound-bank-loaded? if
             sound-frames-var 180 var? if
                 sound-frames-var 0 var-set
-                $40000002 6 -82.0 0.0 92.0 0 0 sound
+                wheel-start-sound volume-scaled 6 -82.0 0.0 92.0 0 0 sound
             else
                 sound-frames-var var-inc
             then
@@ -688,7 +692,7 @@ create dl-at 12 allot
         yield
         next-sound-var var-dec
         next-sound-var 0 var? next-sound-var 30 var? or next-sound-var 60 var? or next-sound-var 90 var? or if
-            3 6 -145.0 10.0 150.0 0 0 sound
+            tick-sound 6 -145.0 10.0 150.0 0 0 sound
             next-sound-var 0 var? if
                 sound-chosen ebit-clear
             then

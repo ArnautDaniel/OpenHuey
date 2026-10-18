@@ -4,10 +4,12 @@
 IN: story.rooms.castle-1f-11
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant stalker-scene-on            \ (bit 0) his scripted scene under way here (stalker): at the room's end he is put back
 0 constant clamp-hits-var              \ (var 0) the clamp struck so far (the wire loosens at 2)
 1 constant shove-frames-var            \ (var 1) his shove's frames (dust at 89)
+0 constant clamp-hit-sound             \ (snd 0) her striking the clamp
+11 constant shove-thud-sound           \ (snd 11) his shove landing (dust)
 
 \ room 0x03 (Room03_Cmd00_ptmf): three objects turned (-60, -60 degrees about x; -90 about z)
 : castle-1f-11.cmd00 ( -- )   \ (the drawbridge's two halves -60 degrees about x, the lever -90 about z)
@@ -308,7 +310,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-11.act03 ( -- )   \ 003F0A30
-    fiona-who 0 6 char-sound
+    fiona-who clamp-hit-sound 6 char-sound
     [: fiona-free? ;] wait-until
     clamp-hits-var var-inc
     self-idle-or-end
@@ -361,7 +363,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         shove-frames-var 89 var? if
             0 5.0 115.0 -70.0 0 0 0 0 dust
             0 5.0 115.0 -76.0 0 0 0 0 dust
-            stalker-who $B 6 char-sound
+            stalker-who shove-thud-sound 6 char-sound
         then
         shove-frames-var var-inc
         self-at-motion-event? not while
@@ -484,7 +486,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-11.act0A ( -- )   \ 003F0D30
     stalkers-stay state-flag-set
-    fiona-who 0 6 char-sound
+    fiona-who clamp-hit-sound 6 char-sound
     [: fiona-free? ;] wait-until
     panic-eased
     fiona-who 0 char-action? if

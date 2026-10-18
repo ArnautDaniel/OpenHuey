@@ -4,9 +4,13 @@
 IN: story.rooms.castle-b1-4
 USING: room-names story.words story.shared fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
 1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
 
 : castle-b1-4.enter ( -- )   \ 003F21E0
     room-sounds
@@ -114,13 +118,13 @@ USING: room-names story.words story.shared fiona.anims ;
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 -34.0 102.0 100.0 0 0 sound
+                ambient1-sound volume-scaled 6 -34.0 102.0 100.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 -34.0 102.0 100.0 0 0 sound
+                ambient2-sound volume-scaled 6 -34.0 102.0 100.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 -34.0 102.0 100.0 0 0 sound
+                ambient3-sound volume-scaled 6 -34.0 102.0 100.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 -34.0 102.0 100.0 0 0 sound
+                ambient4-sound volume-scaled 6 -34.0 102.0 100.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if

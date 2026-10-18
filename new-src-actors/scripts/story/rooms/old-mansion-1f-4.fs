@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-1f-4
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant transmuter-remarked         \ (bit 0) its first remark made: "Transmuter Synthesizing two objects together is a task any f"
 1 constant in-zone0                    \ (bit 1) someone in zone 0 (the figure's hops count)
 2 constant hewie-zone2-noticed         \ (bit 2) Hewie has reacted to zone 2 (once a visit)
@@ -12,6 +12,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 0 constant hops-var                    \ (var 0) the figure's hops (5: away)
 1 constant used-item-var               \ (var 1) the item she used (8 .. 10)
 2 constant call-frames-var             \ (var 2) the figure's frames (its calls at 21 and 66)
+0 constant figure-hit1-sound           \ (snd 0) the figure as it strikes her / is struck
+1 constant figure-hit2-sound           \ (snd 1) the figure as it strikes her / is struck
+2 constant figure-call1-sound          \ (snd 2) the figure's call (now and then)
+3 constant change-sound                \ (snd 3) it transforming
+4 constant seize-sound                 \ (snd 4) it seizing her
 
 : old-mansion-1f-4.enter ( -- )   \ 004070F0
     room-sounds
@@ -114,10 +119,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         in-zone0 ebit-clear
     then
     call-frames-var 21 var? if
-        $1C 2 6 char-sound
+        $1C figure-call1-sound 6 char-sound
     then
     call-frames-var 66 var? if
-        $1C 2 6 char-sound
+        $1C figure-call1-sound 6 char-sound
     then
     1 45.1 0.0 31.88 $1C 18 0 zone
     hewie-who char-here? 1 game-mode? and if
@@ -196,7 +201,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : old-mansion-1f-4.act0E ( -- )   \ 00407A20
-    4 6 -30.0 10.0 20.0 0 0 sound
+    seize-sound 6 -30.0 10.0 20.0 0 0 sound
     16 wait-frames
     fiona-who seized-sound 5 char-sound
     $3C threat-raise
@@ -216,7 +221,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $E 38.0 18.0 20 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 3 6 char-sound
+    fiona-who change-sound 6 char-sound
     $78 wait-frames
     look-close-anim play-out
     5 say   \ "Oh my! It actually transformed..."
@@ -243,7 +248,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $E 38.0 18.0 20 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 3 6 char-sound
+    fiona-who change-sound 6 char-sound
     $78 wait-frames
     look-close-anim play-out
     reach-out-anim play-out
@@ -355,9 +360,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                     $F threat-raise
                 then
                 stalker-who 0 stalker-command
-                $1C 0 6 char-sound
+                $1C figure-hit1-sound 6 char-sound
             else
-                $1C 1 6 char-sound
+                $1C figure-hit2-sound 6 char-sound
             then
             fiona-who shove-hit-sound 5 char-sound
             $1C $9001 0 3 char-anim-hold

@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-b1-6
 USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant plate-press-remarked        \ (bit 0) its first remark made: "It's a plate pressing machine."
 1 constant running                     \ (bit 1) the figure running (its run animation, its footsteps' sound)
 2 constant turned                      \ (bit 2) the figure turned round this frame
@@ -25,6 +25,12 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 7 constant fire-var                    \ (var 7) the fire's effect
 8 constant fire2-var                   \ (var 8) the second fire's effect
 9 constant figure-var                  \ (var 9) ? the figure's dance
+3 constant creature-sound              \ (snd 3) the creature (8)
+7 constant room-loop-sound             \ (snd 7) its steady sound (started as it comes in, then kept up)
+8 constant room-loop2-sound           \ (snd 8) its steady sound (started as it comes in, then kept up)
+9 constant creature2-sound             \ (snd 9) the creature (8), before omb1-6-flag5
+10 constant creature3-sound            \ (snd 10) the creature (8)
+6 constant unlocked-sound              \ (snd 6) the door unlocked (heard plainly)
 
 \ Room66_Cmd00
 : old-mansion-b1-6.cmd00 ( b0 -- )   \ (character 8 wading, moved by its animation - the cast does that; as a
@@ -221,32 +227,32 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     sound-started ebit? not if
         6 sound-bank-loaded? if
             omb1-6-flag2 story-flag? not if
-                $40000007 6 -185.0 10.0 20.0 0 0 sound
+                room-loop-sound volume-scaled 6 -185.0 10.0 20.0 0 0 sound
             else omb1-6-flag3 story-flag? not if
-                $40000007 6 30.0 10.0 -42.0 0 0 sound
+                room-loop-sound volume-scaled 6 30.0 10.0 -42.0 0 0 sound
             then then
             omb1-6-flag4 story-flag? not if
-                $40000008 6 -20.0 10.0 10.0 0 0 sound
+                room-loop2-sound volume-scaled 6 -20.0 10.0 10.0 0 0 sound
             else omb1-6-flag5 story-flag? not if
-                $40000008 6 -40.0 10.0 -110.0 0 0 sound
+                room-loop2-sound volume-scaled 6 -40.0 10.0 -110.0 0 0 sound
             then then
             sound-started ebit-set
         then
     else
         omb1-6-flag2 story-flag? not omb1-6-flag3 story-flag? not or if
             in-area17 ebit? omb1-6-flag2 story-flag? not and omb1-6-flag3 story-flag? or if
-                $C0000007 6 -185.0 10.0 20.0 0 0 sound
+                room-loop-sound kept-going volume-scaled 6 -185.0 10.0 20.0 0 0 sound
             then
             in-area17 ebit? not omb1-6-flag3 story-flag? not and omb1-6-flag2 story-flag? or if
-                $C0000007 6 30.0 10.0 -42.0 0 0 sound
+                room-loop-sound kept-going volume-scaled 6 30.0 10.0 -42.0 0 0 sound
             then
         then
         omb1-6-flag4 story-flag? not omb1-6-flag5 story-flag? not or if
             in-area4 ebit? not omb1-6-flag4 story-flag? not and omb1-6-flag5 story-flag? or if
-                $C0000008 6 -20.0 10.0 10.0 0 0 sound
+                room-loop2-sound kept-going volume-scaled 6 -20.0 10.0 10.0 0 0 sound
             then
             in-area4 ebit? omb1-6-flag5 story-flag? not and omb1-6-flag4 story-flag? or if
-                $C0000008 6 -40.0 10.0 -110.0 0 0 sound
+                room-loop2-sound kept-going volume-scaled 6 -40.0 10.0 -110.0 0 0 sound
             then
         then
     then
@@ -376,7 +382,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 ;
 
 : old-mansion-b1-6.act05 ( -- )   \ 0041EB40
-    8 3 6 char-sound
+    8 creature-sound 6 char-sound
     8 $400 0 $A char-anim-hold
     begin
         self-at-motion-event? not while
@@ -401,20 +407,20 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     omb1-6-flag5 story-flag? not if
         3 1 old-mansion-b1-6.cmd01
     then
-    8 3 6 char-sound
+    8 creature-sound 6 char-sound
     8 0 1 8 char-anim-hold
     8 wait-frames
     omb1-6-flag4 story-flag? if
-        8 6 sound-stop
+        room-loop2-sound 6 sound-stop
     then
     omb1-6-flag5 story-flag? not if
-        8 9 6 char-sound
+        8 creature2-sound 6 char-sound
     then
-    8 $A 6 char-sound
+    8 creature3-sound 6 char-sound
     3 old-mansion-b1-6.cmd02
     omb1-6-flag5 story-flag? not if
         $76 door-unlock
-        6 $86 0.0 0.0 0.0 0 0 sound
+        unlocked-sound $86 0.0 0.0 0.0 0 0 sound
         $5A wait-frames
     then
     omb1-6-flag5 story-flag-set
@@ -425,7 +431,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 
 : old-mansion-b1-6.act04 ( -- )   \ 0041EA90
     in-area4 ebit-set
-    8 3 6 char-sound
+    8 creature-sound 6 char-sound
     8 $400 0 $A char-anim-hold
     begin
         self-at-motion-event? not while
@@ -467,7 +473,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then
     6 message-close
     3 0 old-mansion-b1-6.cmd03
-    8 $A 6 char-sound
+    8 creature3-sound 6 char-sound
     begin
         1 $FF $FD $B6 $10 old-mansion-b1-6.cond01? while
         2 old-mansion-b1-6.cmd00
@@ -480,7 +486,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 
 : old-mansion-b1-6.act03 ( -- )   \ 0041E9A0
     in-area17 ebit-set
-    8 3 6 char-sound
+    8 creature-sound 6 char-sound
     8 $401 0 $A char-anim-hold
     begin
         self-at-motion-event? not while
@@ -520,20 +526,20 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     omb1-6-flag2 story-flag? not if
         0 1 old-mansion-b1-6.cmd01
     then
-    8 3 6 char-sound
+    8 creature-sound 6 char-sound
     8 0 1 8 char-anim-hold
     8 wait-frames
     omb1-6-flag3 story-flag? if
-        7 6 sound-stop
+        room-loop-sound 6 sound-stop
     then
     omb1-6-flag2 story-flag? not if
-        8 9 6 char-sound
+        8 creature2-sound 6 char-sound
     then
-    8 $A 6 char-sound
+    8 creature3-sound 6 char-sound
     0 old-mansion-b1-6.cmd02
     omb1-6-flag2 story-flag? not if
         $5E door-unlock
-        6 $86 0.0 0.0 0.0 0 0 sound
+        unlocked-sound $86 0.0 0.0 0.0 0 0 sound
         $5A wait-frames
     then
     omb1-6-flag2 story-flag-set
@@ -543,7 +549,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 ;
 
 : old-mansion-b1-6.act07 ( -- )   \ 0041ECE0
-    8 3 6 char-sound
+    8 creature-sound 6 char-sound
     8 $400 0 $A char-anim-hold
     begin
         self-at-motion-event? not while
@@ -571,20 +577,20 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     omb1-6-flag4 story-flag? not if
         2 1 old-mansion-b1-6.cmd01
     then
-    8 3 6 char-sound
+    8 creature-sound 6 char-sound
     8 0 1 8 char-anim-hold
     8 wait-frames
     omb1-6-flag5 story-flag? if
-        8 6 sound-stop
+        room-loop2-sound 6 sound-stop
     then
     omb1-6-flag4 story-flag? not if
-        8 9 6 char-sound
+        8 creature2-sound 6 char-sound
     then
-    8 $A 6 char-sound
+    8 creature3-sound 6 char-sound
     2 old-mansion-b1-6.cmd02
     omb1-6-flag4 story-flag? not if
         $7B door-unlock
-        6 $86 0.0 0.0 0.0 0 0 sound
+        unlocked-sound $86 0.0 0.0 0.0 0 0 sound
         $5A wait-frames
     then
     omb1-6-flag4 story-flag-set
@@ -594,7 +600,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 ;
 
 : old-mansion-b1-6.act06 ( -- )   \ 0041EC00
-    8 3 6 char-sound
+    8 creature-sound 6 char-sound
     8 $400 0 $A char-anim-hold
     begin
         self-at-motion-event? not while
@@ -631,19 +637,19 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     omb1-6-flag3 story-flag? not if
         1 1 old-mansion-b1-6.cmd01
     then
-    8 3 6 char-sound
+    8 creature-sound 6 char-sound
     8 0 1 8 char-anim-hold
     8 wait-frames
     omb1-6-flag2 story-flag? if
-        7 6 sound-stop
+        room-loop-sound 6 sound-stop
     then
     omb1-6-flag3 story-flag? not if
-        8 9 6 char-sound
+        8 creature2-sound 6 char-sound
     then
-    8 $A 6 char-sound
+    8 creature3-sound 6 char-sound
     1 old-mansion-b1-6.cmd02
     omb1-6-flag3 story-flag? not if
-        6 $86 0.0 0.0 0.0 0 0 sound
+        unlocked-sound $86 0.0 0.0 0.0 0 0 sound
         $5A wait-frames
     then
     omb1-6-flag3 story-flag-set
@@ -653,7 +659,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 ;
 
 : old-mansion-b1-6.act02 ( -- )   \ 0041E8D0
-    8 3 6 char-sound
+    8 creature-sound 6 char-sound
     8 $400 0 $A char-anim-hold
     begin
         self-at-motion-event? not while
@@ -704,7 +710,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then
     6 message-close
     2 0 old-mansion-b1-6.cmd03
-    8 $A 6 char-sound
+    8 creature3-sound 6 char-sound
     begin
         1 $FF $FE $C7 $80 old-mansion-b1-6.cond01? while
         2 old-mansion-b1-6.cmd00
@@ -716,7 +722,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
 ;
 
 : old-mansion-b1-6.act01 ( -- )   \ 0041E830
-    8 3 6 char-sound
+    8 creature-sound 6 char-sound
     8 $400 0 $A char-anim-hold
     begin
         self-at-motion-event? not while
@@ -755,7 +761,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then
     6 message-close
     1 0 old-mansion-b1-6.cmd03
-    8 $A 6 char-sound
+    8 creature3-sound 6 char-sound
     begin
         0 $FF $FE $52 $50 old-mansion-b1-6.cond01? while
         2 old-mansion-b1-6.cmd00
@@ -799,7 +805,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then
     6 message-close
     0 0 old-mansion-b1-6.cmd03
-    8 $A 6 char-sound
+    8 creature3-sound 6 char-sound
     begin
         1 0 1 $AD $B0 old-mansion-b1-6.cond01? not while
         2 old-mansion-b1-6.cmd00

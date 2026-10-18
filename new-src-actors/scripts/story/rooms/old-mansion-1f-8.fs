@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-1f-8
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant items-missing               \ (bit 0) she lacks the items here: their sparkles shown
 1 constant hewie-bark-on               \ (bit 1) Hewie's bark (act09) under way
 2 constant grave1-read                 \ (bit 2) the first grave read (act0E)
@@ -27,6 +27,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 19 constant hewie-scene-on-2           \ (bit 19) his scripted scene under way here (hewie): at the room's end he is put back
 0 constant graves-var                  \ (var 0) the graves read
 1 constant looks-var                   \ (var 1) ? her remarks in turn (0 .. 2)
+0 constant room-loop-sound             \ (snd 0) its steady sound (started as it comes in, then kept up)
+4 constant hangers-sound               \ (snd 4) the hangers swinging
+5 constant hangers2-sound              \ (snd 5) the hangers swinging (the other)
 
 \ room 0x48 (D_004267F8): the handler's objects 2 and 3 swing (phases 60 degrees apart) - byte 3
 \ 0 sets them still; 1: while slower than 5, Hewie's movement (the squared length of his last
@@ -43,7 +46,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 1 char-step fdup f* a n $3C object+!
                 a n $3C object@ 1e f> if
                     20e a n $38 object!  0e a n $3C object!
-                    i 0= if  hangers-flag ebit? if  hangers-flag ebit-clear  fiona-who 4 6 char-sound  else  hangers-flag ebit-set  fiona-who 5 6 char-sound  then  then
+                    i 0= if  hangers-flag ebit? if  hangers-flag ebit-clear  fiona-who hangers-sound 6 char-sound  else  hangers-flag ebit-set  fiona-who hangers2-sound 6 char-sound  then  then
                 then
             then
             a n $38 object@ f0> if
@@ -175,11 +178,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-1f-8.phase1 ( -- )   \ 00425520
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000000 6 -138.0 8.0 12.0 0 0 sound
+            room-loop-sound volume-scaled 6 -138.0 8.0 12.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000000 6 -138.0 8.0 12.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -138.0 8.0 12.0 0 0 sound
     then
     0 exit-usable? if
         0 exit-check

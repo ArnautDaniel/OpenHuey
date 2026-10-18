@@ -4,10 +4,11 @@
 IN: story.rooms.castle-1f-9
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant stairs-remarked             \ (bit 0) its first remark made: "Why do the stairs stop halfway?"
 1 constant sound-started               \ (bit 1) its sound started (then kept up)
 2 constant hewie-zone4-noticed         \ (bit 2) Hewie has reacted to zone 4 (once a visit)
+0 constant room-loop-sound             \ (snd 0) its steady sound (started as it comes in, then kept up)
 
 \ the rising motes started
 : castle-1f-9.cmd00 ( -- )  effects:rising-motes ;
@@ -167,11 +168,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000000 6 0.0 71.0 35.0 0 0 sound
+            room-loop-sound volume-scaled 6 0.0 71.0 35.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000000 6 0.0 71.0 35.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 0.0 71.0 35.0 0 0 sound
     then
     c1f-9-album-medallion story-flag? not if
         4 -33.85 42.7 15.04 $2C 30 0 zone

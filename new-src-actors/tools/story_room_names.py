@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""story_room_names.py - each room's own event bits and script variables by name.
+"""story_room_names.py - each room's own event bits, script variables and sounds by name.
 
-A room's event bits (0..31: `ebit?`, `ebit-set`, `ebit-clear`) and script variables (0..$18:
-`var-set`, `var?`, `var`, `var-inc`, `var-dec`, ...) mean something only in that room. The names
-are in a table - `room kind number name | comment` (kind: bit or var) - and this puts them in
-each room's file: a block of constants after its USING: line (with the comments), and every
+A room's event bits (0..31: `ebit?`, `ebit-set`, `ebit-clear`), script variables (0..$18:
+`var-set`, `var?`, `var`, `var-inc`, `var-dec`, ...) and sounds (bank 6, loaded for it) mean
+something only in that room. The names are in a table - `room kind number name | comment` (kind:
+bit, var or snd; a sound's flag bits stay as words, `kept-going` and `volume-scaled`) - and this
+puts them in each room's file: a block of constants after its USING: line (with the comments), and every
 literal use of one replaced by its name. A name the room already sees (a story word, an item, a
 flag) or one used twice in a room gets a suffix.
 
@@ -36,6 +37,24 @@ def visible_words():
     return out
 
 
+def suffixed(name, kind):
+    if kind == "snd":
+        return name[:-len("-sound")] + "-room-sound"
+    return name + ("-bit" if kind == "bit" else "-local")
+
+
+FLAGS = ((0x80000000, "kept-going"), (0x40000000, "volume-scaled"))
+
+
+def sound_id(sounds, t):
+    """A bank-6 sound's id by name, with its flag bits as words; or as it was."""
+    n = number(t)
+    name = sounds.get(n & 0xFFFF)
+    if name is None or n & ~0xC000FFFF:
+        return t
+    return " ".join([name] + [w for bit, w in FLAGS if n & bit])
+
+
 def table(paths):
     rooms = collections.defaultdict(dict)
     for p in paths:
@@ -59,11 +78,16 @@ def main(args):
         used, final = collections.Counter(), {}
         for key in sorted(names):
             name, comment = names[key]
-            base = name if name not in taken and name not in own else name + ("-bit" if key[0] == "bit" else "-local")
+            base = name if name not in taken and name not in own else suffixed(name, key[0])
             used[base] += 1
             final[key] = (base if used[base] == 1 else f"{base}-{used[base]}", comment)
         bits = {n: v[0] for (k, n), v in final.items() if k == "bit"}
         vars_ = {n: v[0] for (k, n), v in final.items() if k == "var"}
+
+        sounds = {n: v[0] for (k, n), v in final.items() if k == "snd"}
+
+        def snd(m):
+            return sound_id(sounds, m.group(1)) + m.group(2)
 
         def bit(m):
             return bits.get(number(m.group(1)), m.group(1)) + m.group(2)
@@ -81,14 +105,21 @@ def main(args):
             code = re.sub(r"(?<!\S)" + NUM + r"(\s+ebit(?:\?|-set|-clear))(?!\S)", bit, code)
             code = re.sub(r"(?<!\S)" + NUM + r"(\s+\S+\s+(?:var-set|var\?))(?!\S)", var2, code)
             code = re.sub(r"(?<!\S)" + NUM + r"(\s+(?:var|var-inc|var-dec|thousandths|effect-out|zone-point))(?!\S)", var2, code)
+            code = re.sub(r"(?<!\S)" + NUM + r"(\s+(?:6|\$86)\s+(?:char-sound|sound-stop|(?:\S+\s+){5}sound))(?!\S)", snd, code)
             out.append(code + sep + com)
         text = "\n".join(out)
-        # the block after USING:
-        block = ["", "\\ ---- this room's own event bits and script variables ----"]
+        # the block after USING: (or added to the one already there)
+        heading = "\\ ---- this room's own event bits, script variables and sounds ----"
+        text = text.replace("\\ ---- this room's own event bits and script variables ----", heading)
+        block = []
         for (k, n), (name, comment) in sorted(final.items()):
             c = f"   \\ ({k} {n}) {comment}" if comment else f"   \\ ({k} {n})"
             block.append((f"{n} constant {name}").ljust(36) + c)
-        text = re.sub(r"^(USING:[^\n]*\n)", lambda m: m.group(1) + "\n".join(block) + "\n", text, count=1, flags=re.M)
+        if heading in text:
+            text = re.sub(re.escape(heading) + r"\n(?:[^\n]+\n)*", lambda m: m.group(0) + "\n".join(block) + "\n", text, count=1)
+        else:
+            block = ["", heading] + block
+            text = re.sub(r"^(USING:[^\n]*\n)", lambda m: m.group(1) + "\n".join(block) + "\n", text, count=1, flags=re.M)
         f.write_text(text, encoding="latin-1")
     print(f"{sum(len(v) for v in rooms.values())} names in {len(rooms)} rooms")
 

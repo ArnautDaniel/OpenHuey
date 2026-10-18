@@ -4,9 +4,10 @@
 IN: story.rooms.castle-2f-7
 USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant plate-press-remarked        \ (bit 0) its first remark made: "It's a plate pressing machine."
 0 constant looked-var                  \ (var 0) she has looked at the cage (her remarks in turn)
+1 constant cue-sound                   \ (snd 1) at the cutscene's cue $69
 
 \ room 0x23 (Room23_Cmd00_ptmf): Fiona's model +0x9A0 / +0x9A8: 0 (byte 3 1) or 0.12 / 0.2
 : castle-2f-7.cmd00 ( b0 -- )  drop ;   \ (Daniella's hair force (her model's springs: not simulated here yet))
@@ -243,7 +244,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-2f-7.act04 ( -- )   \ 00401500
     [: $69 cutscene-cue-reached? ;] wait-until
-    1 6 35.0 10.0 25.0 0 0 sound
+    cue-sound 6 35.0 10.0 25.0 0 0 sound
     self-idle-or-end
 ;
 

@@ -4,7 +4,7 @@
 IN: story.rooms.castle-1f-16
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
 1 constant will-find-her               \ (bit 1) he will find her hiding (by chance, as he searches: more likely by the progress variable)
 2 constant sound-started               \ (bit 2) its sound started (then kept up)
@@ -12,6 +12,14 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 4 constant came-while-hidden           \ (bit 4) the stalker came in while she was hiding
 0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)
 1 constant sound-frames-var            \ (var 1) frames to the next sound (30)
+0 constant switch-on-sound             \ (snd 0) her switching it on (it makes a noise the room hears)
+1 constant running-sound               \ (snd 1) it running
+2 constant switch-off-sound            \ (snd 2) her switching it off
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
+3 constant first-on-sound              \ (snd 3) switching it on the first time (heard plainly)
 
 \ room 0x1A (D_003FC660): the fan turns
 : castle-1f-16.cmd00 ( -- )  fan-turn ;
@@ -101,7 +109,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     sound-started ebit? not if
         6 sound-bank-loaded? if
             c1f-16-flag2 story-flag? if
-                $40000001 6 23.0 11.0 9.0 0 0 sound
+                running-sound volume-scaled 6 23.0 11.0 9.0 0 0 sound
             then
             sound-started ebit-set
         then
@@ -110,13 +118,13 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 27.0 15.0 -6.0 0 0 sound
+                ambient1-sound volume-scaled 6 27.0 15.0 -6.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 27.0 15.0 -6.0 0 0 sound
+                ambient2-sound volume-scaled 6 27.0 15.0 -6.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 27.0 15.0 -6.0 0 0 sound
+                ambient3-sound volume-scaled 6 27.0 15.0 -6.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 27.0 15.0 -6.0 0 0 sound
+                ambient4-sound volume-scaled 6 27.0 15.0 -6.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if
@@ -124,7 +132,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
         c1f-16-flag1 story-flag? if
-            $C0000001 6 23.0 11.0 9.0 0 0 sound
+            running-sound kept-going volume-scaled 6 23.0 11.0 9.0 0 0 sound
         then
     then
     0 exit-usable? if
@@ -225,17 +233,17 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     9 0 pvar? 9 1 pvar? or if
         c1f-16-flag2 story-flag? not if
             c1f-16-flag2 story-flag-set
-            fiona-who 0 6 char-sound
+            fiona-who switch-on-sound 6 char-sound
             c1f-16-flag1 story-flag? not if
-                3 $86 0.0 0.0 0.0 0 0 sound
+                first-on-sound $86 0.0 0.0 0.0 0 0 sound
             else
-                $40000001 6 23.0 11.0 9.0 0 0 sound
+                running-sound volume-scaled 6 23.0 11.0 9.0 0 0 sound
             then
             $40 7 noise
             1 noise-level
         else
-            fiona-who 2 6 char-sound
-            1 6 sound-stop
+            fiona-who switch-off-sound 6 char-sound
+            running-sound 6 sound-stop
             c1f-16-flag2 story-flag-clear
             0 noise-level
         then
@@ -248,7 +256,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             -1 self-idle-anim
             7 wait-frames
             reach-out-anim play-out
-            $40000001 6 23.0 11.0 9.0 0 0 sound
+            running-sound volume-scaled 6 23.0 11.0 9.0 0 0 sound
             reach-back-anim play-out
             c1f-16-flag1 story-flag-set
             0 self-scripted
@@ -370,8 +378,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $602 self-anim
     $12 wait-frames
-    stalker-who 2 6 char-sound
-    1 6 sound-stop
+    stalker-who switch-off-sound 6 char-sound
+    running-sound 6 sound-stop
     c1f-16-flag2 story-flag-clear
     0 noise-level
     9 pvar-inc

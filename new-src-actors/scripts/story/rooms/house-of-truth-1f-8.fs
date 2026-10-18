@@ -4,13 +4,17 @@
 IN: story.rooms.house-of-truth-1f-8
 USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant snagged-remarked            \ (bit 0) its first remark made: "Something seems to be snagged on the other side..."
 1 constant area6-reacted               \ (bit 1) her reaction on entering the area made (once a visit)
 2 constant drone-on                    \ (bit 2) the drone sound ($30, bank $47) going
 0 constant tremor-var                  \ (var 0) ? 5 once the tremor has come
 1 constant sound-step-var              \ (var 1) which of its sounds next (0..3)
 2 constant sound-frames-var            \ (var 2) frames to the next sound (30)
+5 constant ambient1-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the first
+6 constant ambient2-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the second
+7 constant ambient3-sound              \ (snd 7) its ambient sounds in turn (every 30 frames): the third
+8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
 
 \ room 0x91 (Room91_Cmd00_ptmf): door 0's +0x68 (0)
 : house-of-truth-1f-8.cmd00 ( -- )  0 true -1 doors-id send swing-door ;   \ (door 0 set opening, Doors_SetOpened: swung open here)
@@ -182,13 +186,13 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         sound-frames-var 30 var? if
             sound-frames-var 0 var-set
             sound-step-var 0 var? if
-                $40000005 6 48.0 0.0 115.0 0 0 sound
+                ambient1-sound volume-scaled 6 48.0 0.0 115.0 0 0 sound
             else sound-step-var 1 var? if
-                $40000006 6 48.0 0.0 115.0 0 0 sound
+                ambient2-sound volume-scaled 6 48.0 0.0 115.0 0 0 sound
             else sound-step-var 2 var? if
-                $40000007 6 48.0 0.0 115.0 0 0 sound
+                ambient3-sound volume-scaled 6 48.0 0.0 115.0 0 0 sound
             else sound-step-var 3 var? if
-                $40000008 6 48.0 0.0 115.0 0 0 sound
+                ambient4-sound volume-scaled 6 48.0 0.0 115.0 0 0 sound
             then then then then
             sound-step-var var-inc
             sound-step-var 4 var? if

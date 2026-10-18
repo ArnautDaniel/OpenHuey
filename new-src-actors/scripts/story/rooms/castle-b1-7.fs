@@ -4,9 +4,10 @@
 IN: story.rooms.castle-b1-7
 USING: engine common room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 1 constant stalker-scene-on            \ (bit 1) his scene under way (the door locked against him)
 0 constant wait-var                    \ (var 0) frames to wait (counted down)
+1 constant loop-tick-sound             \ (snd 1) over and over in its loop?
 
 \ room 0x1D (Room1D_Cmd00_ptmf): script variable 0 = 2 .. 5 at random
 : castle-b1-7.cmd00 ( -- )  0  4 random 2 +  var-set ;   \ (script variable 0: 2 .. 5 at random)
@@ -300,7 +301,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     $3C wait-frames
     castle-b1-7.cmd00
     begin
-        1 6 -40.0 0.0 -20.0 0 0 sound
+        loop-tick-sound 6 -40.0 0.0 -20.0 0 0 sound
         1 castle-b1-7.cmd01
         yield
         0 castle-b1-7.cmd01
@@ -308,7 +309,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
             16 wait-frames
         then
         16 wait-frames
-        1 6 -40.0 0.0 -20.0 0 0 sound
+        loop-tick-sound 6 -40.0 0.0 -20.0 0 0 sound
         1 castle-b1-7.cmd01
         yield
         0 castle-b1-7.cmd01

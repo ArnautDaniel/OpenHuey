@@ -4,7 +4,7 @@
 IN: story.rooms.old-mansion-b1-4
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.sounds stalker.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant first-time                  \ (bit 0) the story flag not yet set (the first time here)
 1 constant hiding-left                 \ (bit 1) she has come out of hiding (act0A)
 2 constant hewie-along                 \ (bit 2) Hewie came along with her (near, commandable)
@@ -18,6 +18,12 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 1 constant held-var                    \ (var 1) ? she is held (1)
 2 constant search-result-var           \ (var 2) his search's outcome by chance: 0, 1 or 2
 3 constant searched-var                \ (var 3) ? his search done (0 / 1)
+0 constant hide-open-sound             \ (snd 0) the hiding place opened
+1 constant hide-shut-sound             \ (snd 1) the hiding place closed on her
+2 constant hide-sound                  \ (snd 2) her hiding
+3 constant room-loop-sound             \ (snd 3) its steady sound (started as it comes in, then kept up)
+4 constant presence-sound              \ (snd 4) its sound while here (kept up)
+5 constant grab-sound                  \ (snd 5) him grabbing her
 
 : old-mansion-b1-4.cmd00 ( -- )  $651 $238 file-once-flag ;
 
@@ -167,7 +173,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             then
         then
         6 sound-bank-loaded? 3 stalker-kind? and if
-            3 $C0000004 6 char-sound
+            3 presence-sound kept-going volume-scaled 6 char-sound
         then
     then
     2 19.24 0.0 -32.32 $16 18 0 zone
@@ -199,11 +205,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     sound-started ebit? not if
         6 sound-bank-loaded? if
-            $40000003 6 -32.0 0.0 -21.0 0 0 sound
+            room-loop-sound volume-scaled 6 -32.0 0.0 -21.0 0 0 sound
             sound-started ebit-set
         then
     else
-        $C0000003 6 -32.0 0.0 -21.0 0 0 sound
+        room-loop-sound kept-going volume-scaled 6 -32.0 0.0 -21.0 0 0 sound
     then
 ;
 
@@ -403,9 +409,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 2 object-anim
     2 room-motion 0 self-anim-blend
     $10 wait-frames
-    fiona-who 0 6 char-sound
+    fiona-who hide-open-sound 6 char-sound
     $38 wait-frames
-    fiona-who 1 6 char-sound
+    fiona-who hide-shut-sound 6 char-sound
     self-wait-anim
     0 self-noclip
     stalker-who char-here? if
@@ -434,7 +440,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     1 4 object-anim
     4 room-motion 0 self-anim-blend
     7 wait-frames
-    fiona-who 0 6 char-sound
+    fiona-who hide-open-sound 6 char-sound
     self-wait-anim
     0 self-noclip
     stalker-who char-here? if
@@ -493,7 +499,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         0 0 object-anim
         1 0 object-anim
         $28 wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who hide-shut-sound 6 char-sound
         self-wait-anim
     else
         1 room-motion 5 self-anim-blend8
@@ -504,9 +510,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         0 1 object-anim
         1 1 object-anim
         $E wait-frames
-        fiona-who 0 6 char-sound
+        fiona-who hide-open-sound 6 char-sound
         $3C wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who hide-shut-sound 6 char-sound
         self-wait-anim
     then
     0 self-noclip
@@ -515,7 +521,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-hidden state-flag-set
     0 avoid-prompt
     $18 1 item-count? $19 1 item-count? or $1A 1 item-count? or $1B 1 item-count? or $1C 1 item-count? or if
-        fiona-who 2 6 char-sound
+        fiona-who hide-sound 6 char-sound
     then
     begin
         0 2 pad? not held-var 1 var? or if
@@ -554,9 +560,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             1 2 object-anim
             2 room-motion 0 self-anim-blend
             $10 wait-frames
-            fiona-who 0 6 char-sound
+            fiona-who hide-open-sound 6 char-sound
             $38 wait-frames
-            fiona-who 1 6 char-sound
+            fiona-who hide-shut-sound 6 char-sound
             self-wait-anim
             0 self-noclip
             stalker-who char-here? if
@@ -601,7 +607,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 hiding-left ebit? if
                     4 room-motion 0 self-anim-blend
                     7 wait-frames
-                    fiona-who 0 6 char-sound
+                    fiona-who hide-open-sound 6 char-sound
                     self-wait-anim
                 else stage-var 0 var? if
                     2 room-motion 0 blend-out
@@ -618,7 +624,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             hiding-left ebit? if
                 4 room-motion 0 self-anim-blend
                 7 wait-frames
-                fiona-who 0 6 char-sound
+                fiona-who hide-open-sound 6 char-sound
                 self-wait-anim
             else stage-var 0 var? if
                 2 room-motion 0 blend-out
@@ -645,10 +651,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     held-var 1 var-set
     2 room-motion $A self-anim-blend
     $19 wait-frames
-    stalker-who 5 6 char-sound
+    stalker-who grab-sound 6 char-sound
     $28 threat-raise
     9 wait-frames
-    stalker-who 5 6 char-sound
+    stalker-who grab-sound 6 char-sound
     $14 threat-raise
     self-wait-anim
     held-var 0 var-set
@@ -684,7 +690,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $10 wait-frames
         stage-var 2 var-set
         $A wait-frames
-        stalker-who 0 6 char-sound
+        stalker-who hide-open-sound 6 char-sound
         self-wait-anim
         step-back-anim play-out
         0 self-scripted
@@ -715,7 +721,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalker-who char-file-use
     2 stalker-who 1 char-model-op
     begin
-        3 $40000004 6 char-sound
+        3 presence-sound volume-scaled 6 char-sound
         0 room-motion play-out
     again
 ;

@@ -4,7 +4,7 @@
 IN: story.rooms.water-tower-4f-1
 USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 1 constant lift-scene-on               \ (bit 1) the lift's scene (act00) under way
 2 constant lift-down                   \ (bit 2) the lift down (its floor the other way)
 3 constant lift-done                   \ (bit 3) the lift's move done (act02 waits for it)
@@ -13,6 +13,9 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 6 constant hewie-zone1-noticed         \ (bit 6) Hewie has reacted to zone 1 (once a visit)
 0 constant lift-frames-var             \ (var 0) the lift's frames (to 120)
 1 constant stalker-frames-var          \ (var 1) frames to the stalker's arrival (from 1800)
+0 constant shut-sound                  \ (snd 0) it closing
+1 constant open-sound                  \ (snd 1) it opening
+2 constant lift-sound                  \ (snd 2) the lift moving
 
 \ (as RoomC2_Cmd00, the room object named RoomC3_ObjectNames, opening to -pi/2)
 : water-tower-4f-1.cmd00 ( b0 -- )   \ (as water-tower-2f-1's, opening the other way: -90 degrees)
@@ -294,9 +297,9 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         3 0 object-hidden
         3 0 object-anim
         $19 wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who open-sound 6 char-sound
         $37 wait-frames
-        fiona-who 0 6 char-sound
+        fiona-who shut-sound 6 char-sound
         self-wait-anim
         0 3 track 3 action
         wt4f-1-flag3 story-flag-set
@@ -320,9 +323,9 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         3 1 object-hidden
         2 0 object-anim
         $19 wait-frames
-        fiona-who 1 6 char-sound
+        fiona-who open-sound 6 char-sound
         $37 wait-frames
-        fiona-who 0 6 char-sound
+        fiona-who shut-sound 6 char-sound
         self-wait-anim
         0 3 track 3 action
         wt4f-1-flag3 story-flag-clear
@@ -371,7 +374,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 : water-tower-4f-1.act03 ( -- )   \ 0043FEC0
     lift-frames-var 0 var-set
     lift-down ebit? not if
-        2 6 0.0 142.0 45.0 0 0 sound
+        lift-sound 6 0.0 142.0 45.0 0 0 sound
         begin
             lift-frames-var 120 var? not while
             lift-frames-var var-inc
@@ -395,7 +398,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         1 keeps-fiona-off keeps-pursuers-off or floor-off
         1 water-tower-4f-1.cmd00
     else
-        2 6 -45.0 142.0 0.0 0 0 sound
+        lift-sound 6 -45.0 142.0 0.0 0 0 sound
         begin
             lift-frames-var 120 var? not while
             lift-frames-var var-inc

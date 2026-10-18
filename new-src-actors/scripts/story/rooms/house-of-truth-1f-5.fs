@@ -4,7 +4,7 @@
 IN: story.rooms.house-of-truth-1f-5
 USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 1 constant stalkers-held               \ (bit 1) the stalkers held until she enters area $B
 2 constant sound-started               \ (bit 2) its sound started (then kept up)
 3 constant music-changed               \ (bit 3) the room's music changed (act01)
@@ -13,6 +13,11 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 1 constant shrink-var                  \ (var 1) the marker shrinking by it (334)
 2 constant sound-step-var              \ (var 2) which of its sounds next (0..3)
 3 constant sound-frames-var            \ (var 3) frames to the next sound (30)
+0 constant room-loop-sound             \ (snd 0) its steady sound (started as it comes in, then kept up)
+3 constant ambient1-sound              \ (snd 3) its ambient sounds in turn (every 30 frames): the first
+4 constant ambient2-sound              \ (snd 4) its ambient sounds in turn (every 30 frames): the second
+5 constant ambient3-sound              \ (snd 5) its ambient sounds in turn (every 30 frames): the third
+6 constant ambient4-sound              \ (snd 6) its ambient sounds in turn (every 30 frames): the fourth
 
 \ room 0x8D: three grey smoke effects (Effect79B00, size 60) at the room's spots 7, 4, 3
 \ (grey_three).
@@ -92,11 +97,11 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         over-music-f story-flag? if
             sound-started ebit? not if
                 6 sound-bank-loaded? if
-                    $40000000 6 0.0 20.0 100.0 0 0 sound
+                    room-loop-sound volume-scaled 6 0.0 20.0 100.0 0 0 sound
                     sound-started ebit-set
                 then
             else
-                $C0000000 6 -60.0 20.0 50.0 0 0 sound
+                room-loop-sound kept-going volume-scaled 6 -60.0 20.0 50.0 0 0 sound
             then
         then
     then
@@ -141,13 +146,13 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
             sound-frames-var 30 var? if
                 sound-frames-var 0 var-set
                 sound-step-var 0 var? if
-                    $40000003 6 28.0 20.0 -71.0 0 0 sound
+                    ambient1-sound volume-scaled 6 28.0 20.0 -71.0 0 0 sound
                 else sound-step-var 1 var? if
-                    $40000004 6 28.0 20.0 -71.0 0 0 sound
+                    ambient2-sound volume-scaled 6 28.0 20.0 -71.0 0 0 sound
                 else sound-step-var 2 var? if
-                    $40000005 6 28.0 20.0 -71.0 0 0 sound
+                    ambient3-sound volume-scaled 6 28.0 20.0 -71.0 0 0 sound
                 else sound-step-var 3 var? if
-                    $40000006 6 28.0 20.0 -71.0 0 0 sound
+                    ambient4-sound volume-scaled 6 28.0 20.0 -71.0 0 0 sound
                 then then then then
                 sound-step-var var-inc
                 sound-step-var 4 var? if
@@ -285,11 +290,11 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         wait-fade
         music-changed ebit-set
         $30 7 sound-stop
-        0 6 sound-stop
-        3 6 sound-stop
-        4 6 sound-stop
-        5 6 sound-stop
-        6 6 sound-stop
+        room-loop-sound 6 sound-stop
+        ambient1-sound 6 sound-stop
+        ambient2-sound 6 sound-stop
+        ambient3-sound 6 sound-stop
+        ambient4-sound 6 sound-stop
         [: 0 adx? ;] wait-until
         1.0 sound-volume-scale
         0 0.0 $FF bgm

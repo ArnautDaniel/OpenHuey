@@ -4,8 +4,9 @@
 IN: story.rooms.castle-2f-9
 USING: room-names story.words story.shared flag-names story-names floor-flags ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant hewie-zone0-noticed         \ (bit 0) Hewie has reacted to zone 0 (once a visit)
+0 constant presence-sound              \ (snd 0) his sound while he's here (kept up)
 
 : castle-2f-9.enter ( -- )   \ 003F1800
     c1f-14-flag2 story-flag? c3f-2-flag1 story-flag? not and if
@@ -98,7 +99,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
         then
     then
     6 sound-bank-loaded? stalker-who char-here? and if
-        stalker-who $80000000 6 char-sound
+        stalker-who presence-sound kept-going 6 char-sound
     then
 ;
 
@@ -176,7 +177,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags ;
     4 room-motion $14 blend-out
     3 room-motion 7 self-anim-blend
     [: 6 sound-bank-loaded? ;] wait-until
-    stalker-who 0 6 char-sound
+    stalker-who presence-sound 6 char-sound
     0 say   \ "Miss... It's cleaning time now."
     self-wait-anim
     5 room-motion 7 blend-out

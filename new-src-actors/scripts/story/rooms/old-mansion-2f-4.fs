@@ -4,9 +4,10 @@
 IN: story.rooms.old-mansion-2f-4
 USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
-\ ---- this room's own event bits and script variables ----
+\ ---- this room's own event bits, script variables and sounds ----
 0 constant purifier-remarked           \ (bit 0) its first remark made: "Purifier The impure yellow mass of filth will set free the s"
 1 constant used-item-var               \ (var 1) the item she used (8 .. 11)
+3 constant change-sound                \ (snd 3) it transforming
 
 : old-mansion-2f-4.enter ( -- )   \ 0040F490
     room-sounds
@@ -90,7 +91,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $A4 -36.0 41.0 -35 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 3 6 char-sound
+    fiona-who change-sound 6 char-sound
     $78 wait-frames
     look-close-anim play-out
     6 say   \ "Oh my! It actually transformed..."
@@ -162,7 +163,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $A4 -36.0 41.0 -35 $FFFF 5 self-move-to
     self-wait-done
-    fiona-who 3 6 char-sound
+    fiona-who change-sound 6 char-sound
     $78 wait-frames
     look-close-anim play-out
     reach-out-anim play-out
