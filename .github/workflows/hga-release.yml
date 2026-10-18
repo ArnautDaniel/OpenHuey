@@ -47,7 +47,7 @@ jobs:
       # SDL3, FFmpeg and Zig, built once per version (the script's SDL= FFMPEG= ZIG= GLIBC= lines)
       - name: Dependency versions
         id: deps
-        run: echo "key=hga-deps-$(grep -E '^(SDL|FFMPEG|ZIG|GLIBC)=' tools/hga_release.sh | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+        run: echo "key=hga-deps-$(grep -E '^(SDL|SDL_BUILD|FFMPEG|ZIG|GLIBC)=' tools/hga_release.sh | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4
         with:
           path: |

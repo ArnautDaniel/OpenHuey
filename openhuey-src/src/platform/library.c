@@ -1016,13 +1016,17 @@ int library_choose(const char *given, const char *fallback, int headless) {
                                    : "Choose your copy of Haunting Ground (USA): its disc image (.iso).\n\n"
                                      "Its files are imported into the game's folder once; the disc isn't "
                                      "needed after that.")) {
+            if (SDL_WasInit(SDL_INIT_VIDEO)) {   /* (no window at all: disc_pick said so) */
+                fprintf(stderr, "openhuey: no disc chosen - the game needs your disc image once.\n"
+                                "It can also be imported from here: openhuey --import <your Haunting Ground disc image.iso>\n");
+            }
             return 0;
         }
         if (import(0, why, sizeof(why)) && open_library()) {
             return 1;
         }
         snprintf(msg, sizeof(msg), "The disc couldn't be imported: %s.", why);
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Haunting Ground", msg, NULL);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "OpenHuey", msg, NULL);
         say = "Choose the disc image (.iso) of Haunting Ground (USA).";
     }
 }
