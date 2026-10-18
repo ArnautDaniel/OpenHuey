@@ -263,11 +263,20 @@ after: better-textures   \ loaded after that mod, if it's on
    subsystem pages document them, and they become a promise - renamed only with a new major.
    A soft reset (the game over's return to the title) loads the mods' scripts again with the
    game's. There is no sandbox: hga says so when it loads a mod's scripts.
-3. **Hooks.** Where a mod needs to be asked, not told, the game offers named hooks: deferred
-   words with a default, each documented as part of the API - for instance a room's entry
-   (`room-entered-hook`), an item used (`item-use-hook`: the mod may claim it), the title's
-   menu entries, the sub screen's pages, the clock of the mini-game. They are added as mods need
-   them, not all at once. A mod sets a hook with `is` and calls what it replaced for the rest.
+3. **Hooks** (the first built). Where a mod needs to be asked, not told, the game offers named
+   hooks: deferred words with the game's own as the default, each part of the API (a new one
+   raises the mod API's minor). A mod keeps what it replaces (`action-of`), sets its own with
+   `is`, and calls the kept one for the rest - so mods setting the same hook chain in load order.
+   They are added as mods need them, not all at once; candidates: a room's entry, the title's
+   menu entries, the sub screen's pages, the mini-game's clock.
+
+   | Hook | Vocabulary | Since | What |
+   |---|---|---|---|
+   | `item-use-rule ( place -- result )` | `items` | 1.1 | what using the item at `place` (a held place: `id@`) does; the result as the game's rules' (`no-use`, `used-up` ...: bits 1 / 2 spend one; `done-quietly`: something happened, nothing spent) |
+
+   The sample, `examples/mods/flower-scent`: the Fresh Flowers used where the game has no use for
+   them calm Fiona a little (the game's `remedy` message) and are kept - asking the game's rule
+   first, so the flowers' own use (the vase) is untouched. `mods_flower_scent` (ctest) runs it.
 
 Later, if mods ask for it: replacing one of the game's script files outright (a mod's
 `scripts/story/rooms/castle-1f-4.fs` over the game's). It would break with every change to that
@@ -275,6 +284,8 @@ file; the mods menu would mark such mods "replaces game scripts". Also later: th
 
 ### Checked
 
+- `mods_flower_scent` (ctest): the hook sample on - its rule set, the flowers calming her and
+  kept, a remedy still the game's.
 - `mods_room_tally` (ctest): the sample mod on - its actor there, counting rooms, answering
   `rooms-seen?` by message; `mods_room_tally_zipped` the same from a zip of it (cmake's own
   zip: deflated, the folder inside).
@@ -301,5 +312,5 @@ from $1000 up, say, so they never collide with the game's).
 3. **Mods, files and actors**: the manifest, the load order, file overrides, mod scripts in
    their own vocabularies. A sample mod in the repository as a test. (Built.)
 4. **Music, messages, the executable's tables** converted; the first hooks, as the sample mods
-   ask. (Music, messages and the executable's tables built.)
+   ask. (Built: music, messages, the executable's tables; the first hook, item-use-rule.)
 5. Sound banks, movies; then rooms and models.

@@ -53,10 +53,12 @@ IN: forth
 : (to)  ( x addr -- ) ! ;
 : to    ' >body state @ if postpone literal postpone (to) else (to) then ; immediate
 : fto   ' >body state @ if postpone literal postpone f! else f! then ; immediate
-\ deferred words: `defer name`, later `' word is name`
+\ deferred words: `defer name`, later `' word is name`; `action-of name` what it does now (a mod
+\ setting a hook keeps it, to call for the rest)
 : noop ;
 : defer  create ['] noop , does> @ execute ;
 : is     ' >body state @ if postpone literal postpone ! else ! then ; immediate
+: action-of ( "name" -- xt )  ' >body @ ;
 \ a run of memory with a name: `16 cells buffer: name`
 : buffer: create allot ;
 \ records (Forth 2012's structures): a name for each field's offset, and the size -

@@ -117,3 +117,5 @@ add_executable(messages-check tests/messages_check.c src/data/msgtext.c src/data
 target_link_libraries(messages-check PRIVATE SDL3::SDL3)
 add_test(NAME messages_check COMMAND messages-check "${DEFAULT_DATA}")
 set_tests_properties(messages_check PROPERTIES SKIP_RETURN_CODE 77)
+add_test(NAME mods_flower_scent COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods/flower-scent"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/flower-scent.fs")

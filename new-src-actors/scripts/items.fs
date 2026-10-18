@@ -84,6 +84,7 @@ begin-structure /boost  sffield: b.value  lfield: b.left  end-structure
 \ started, she / Hewie act, the word plate's event, a hint filed (bits 1 / 2: one spent)
 0 constant no-use   1 constant used-up   2 constant marked   4 constant event-started
 5 constant acted   6 constant plate-used   8 constant hinted
+$10 constant done-quietly   \ (a mod's: something happened, nothing spent - back to the list)
 
 <PRIVATE
 state: items-state
@@ -397,6 +398,12 @@ create swap-buf /held allot
 : swap-places ( a b -- )  {: a b :}  a swap-buf /held move  b a /held move  swap-buf b /held move ;   \ (move: from, to)
 PRIVATE>
 
+\ ---- the hook (docs/library-and-mods.md): what using the item at a place does - the game's
+\ rule (Items_Use), unless a mod set another (`' its-rule is item-use-rule`, calling what it
+\ replaced - `action-of item-use-rule` - for the rest). Its answer as the rules': bits 1 / 2
+\ spend one ----
+defer item-use-rule ( place -- result )   ' use-rule is item-use-rule
+
 behaviour keeping-items
   on spawned ( -- )
       3 0 do  #places 0 do  j i held-at empty  loop  loop
@@ -414,7 +421,7 @@ behaviour keeping-items
   on use-item ( list held-at -- )   \ (Items_Use: its rule; bits 1 / 2 spend one)
       held-at {: place :}
       place empty? if  -1 no-use sender send item-used exit  then
-      place id@ {: id :}  place use-rule {: r :}
+      place id@ {: id :}  place item-use-rule {: r :}
       r 3 and  place id@ id = and if  place spend  then   \ (still there: a rule may have moved it)
       id r sender send item-used ;
   on discard-item ( list held-at -- )  held-at dup id@ 0< if  drop  else  spend  then ;

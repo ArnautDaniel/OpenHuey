@@ -7,7 +7,7 @@
 #include "../forth/forth.h"
 
 #define MODS_API_MAJOR 1   /* the mod API: the game's messages, broadcasts and hooks (a mod's */
-#define MODS_API_MINOR 0   /* `requires: hga 1 0`): the minor grows with additions */
+#define MODS_API_MINOR 1   /* `requires: hga 1 0`): the minor grows with additions (1.1: item-use-rule) */
 
 /* the mods turned on, decided at start-up: those in `folder` (NULL: none - the tests) as
  * mods/order.txt says, then the folders or zips `named` (--mod); their files layered over the data */
