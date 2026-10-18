@@ -539,6 +539,6 @@ int disc_pick(const char *why) {
         }
         snprintf(msg, sizeof(msg), "That file can't be used: %s.\n\nChoose the disc image (.iso) of Haunting Ground (USA).",
                  disc_error());
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Haunting Ground", msg, NULL);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "OpenHuey", msg, NULL);
     }
 }
