@@ -167,4 +167,6 @@ state: stalker-state
   \ the mini-game's run (Hewie played): frames he waits on coming into the room played
   \ (Pursuer_ThroughDoorEnding's +0x17B4)
   cell field run-pause
+  \ ... gone after Hewie instead (his room, the one played: Pursuer_Modes' mode 3 out of sight)
+  cell field hunting-dog
 end-state

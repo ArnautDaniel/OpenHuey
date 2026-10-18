@@ -97,7 +97,7 @@ variable in-tri
     random-tri dup 0< if  drop fiona body-tri  then
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place ;
 : in-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first)
-    0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
+    0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
     my-mode @ held-off = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
         own-tri dup tri-center goal-at vec!  goal-at plan 0> if  walk-slow play  ['] walking step!  then  exit
@@ -155,7 +155,9 @@ variable in-tri
     then
     route-over? if
         my-mode @ heading-for-her = my-room goal-room @ = and if  searching mode!  then
-        my-mode @ searching held-off within if  search-stops 150 * away-search !  then  exit
+        my-mode @ searching held-off within if  search-stops 150 * away-search !  then
+        hewie-played? my-mode @ searching = and if  1 away-search !  then   \ (the run: Pursuer_Timer15s, 1)
+        exit
     then
     next-door door-exit making-for !  stretch to-door f! ;
 
@@ -221,8 +223,8 @@ create fs-a /vec allot  create fs-b /vec allot
     her-room dup 0< if  drop false exit  then
     dup my-room = if  drop true exit  then
     8 0 do  my-room i room-exit-leads drop over = if  drop true unloop exit  then  loop  drop false ;
-: head-for-her ( -- )
-    her-room dup 0< if  drop exit  then
+: head-for-her ( -- )   \ (in the run, after Hewie: his room)
+    hunting-dog @ if  room-id  else  her-room  then  dup 0< if  drop exit  then
     dup goal-room @ = route-over? 0= and if  drop exit  then
     avoid-clear  route! drop ;
 : wander ( -- )   \ (Pursuer_Plan170: an exit at random he can go by)
@@ -253,7 +255,9 @@ create fs-a /vec allot  create fs-b /vec allot
     my-mode @ case
         after-her of  head-for-her  tick-down if  heading-for-her mode!  then  endof
         heading-for-her of  head-for-her  endof
-        searching of  route-over? if  away-search @ if  -1 away-search +!  else  waiting-about mode!  then  then  endof
+        searching of  route-over? if  away-search @ if  -1 away-search +!
+                  else  hewie-played? if  next-to-hers? 0= if  -1 hunting-dog !  heading-for-her mode!  head-for-her  then   \ (the run: nothing
+                  else  waiting-about mode!  then  then  then  endof   \ near her - after Hewie instead)
         waiting-about of  route-over? if
                   tick-down if  next-to-hers? if  wander  else  heading-for-her mode!  head-for-her  then  900 mode-t !  then
               then  endof

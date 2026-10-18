@@ -466,7 +466,8 @@ BehaviourFollow) and travels after her; coming into the room played he waits 150
 (Pursuer_ThroughDoorEnding); doors are left open behind (Kind34_ExitArg, TintStalker_EndingDoor);
 Kind34 and the TintStalker take the run's attack rows for situations 14 / 15 (`run-table`);
 their tempers with Hewie are the run's (80, 20, Debilitas3's 16); kind 7 (`stalker-as`) is the
-Pursuer with Debilitas's model and the Pursuer's chase. Not modelled: his giving her up for Hewie
-(Pursuer_Modes' mode 3 out of sight: the target Hewie), the mode clock of 1 (Pursuer_Timer15s),
-the summoner's room start skipped in the run. The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,
+Pursuer with Debilitas's model and the Pursuer's chase. Searching out of sight his clock is 1
+(Pursuer_Timer15s), and done with it - she not in his room nor next to it - he goes after Hewie
+instead (Pursuer_Modes' mode 3: SetTarget(Hewie) - here, to the room played, Hewie's, to search
+it: `hunting-dog`). The summoner doesn't bring him in during the run (Summoner_RoomStart). The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,
 `char-loaded?`) is the event characters' (`docs/subsystems/cast.md`).
