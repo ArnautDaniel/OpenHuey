@@ -56,7 +56,9 @@ the user's folder for programs' data instead; `OPENHUEY_HOME` names another fold
 ### The import
 
 `openhuey --import <disc.iso>` from a command line, or on the first run with no library: the
-existing picker, then a progress window.
+existing picker, then a progress window (the file at hand and how much is done; the import runs
+on a thread of its own, so the window keeps answering while a big file is converted, and closing
+it cancels the import).
 
 1. **Check the disc**: the executable's hash says it is SLUS_210.75 (Haunting Ground, USA).
    Anything else is refused by name ("this is the PAL disc", "not Haunting Ground").
