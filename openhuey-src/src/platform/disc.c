@@ -505,10 +505,13 @@ int disc_pick(const char *why) {
         {"All files", "*"},
     };
 
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {   /* (no display: say so - nothing else could) */
+        fprintf(stderr, "openhuey: can't open a window to ask for the disc (%s).\n"
+                        "Import it from here instead: openhuey --import <your Haunting Ground disc image.iso>\n",
+                SDL_GetError());
         return 0;
     }
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Haunting Ground",
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "OpenHuey",
                              why != NULL ? why
                                          : "Choose your copy of Haunting Ground (USA): its disc image (.iso).",
                              NULL);

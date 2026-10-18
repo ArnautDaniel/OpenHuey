@@ -20,6 +20,7 @@ set -e
 cd "$(dirname "$0")/.."
 ROOT="$PWD"
 SDL=3.4.18
+SDL_BUILD=2      # (SDL configured anew: its cached build is keyed by this - 2: X11 required)
 FFMPEG=8.1.3
 ZIG=0.15.2
 GLIBC=2.31   # (the Linux build runs on this glibc and later: Ubuntu 20.04, Debian 11 on)
@@ -94,20 +95,33 @@ EOT
 linux() {
     zig_cc
     fetch "https://github.com/libsdl-org/SDL/releases/download/release-$SDL/SDL3-$SDL.tar.gz" "SDL3-$SDL"
-    if [ ! -f "$DEPS/sdl3-linux/done" ]; then
+    SDLL="$DEPS/sdl3-linux-$SDL_BUILD"
+    if [ ! -f "$SDLL/done" ]; then
         rm -rf "$DEPS/build-sdl3-linux"
+        # X11 and Wayland both required (SDL opens their libraries itself at run time): zig cc
+        # doesn't tell CMake the distribution's multiarch folder (/usr/lib/x86_64-linux-gnu on
+        # Debian / Ubuntu), so it's given - without it SDL found no libX11 and left X11 out, and
+        # the game couldn't open a window on an X11 desktop
         CC="$DEPS/zigcc" cmake -S "$DEPS/SDL3-$SDL" -B "$DEPS/build-sdl3-linux" -DCMAKE_BUILD_TYPE=Release \
             -DSDL_SHARED=OFF -DSDL_STATIC=ON -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF \
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="$DEPS/sdl3-linux"
+            -DSDL_X11=ON -DSDL_WAYLAND=ON \
+            -DCMAKE_LIBRARY_ARCHITECTURE="$(gcc -print-multiarch 2>/dev/null)" \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX="$SDLL"
         nice -n 19 cmake --build "$DEPS/build-sdl3-linux" -j"$JOBS"
+        for driver in X11 WAYLAND; do   # (built with both, or no release)
+            if ! grep -rqs "define SDL_VIDEO_DRIVER_$driver 1" "$DEPS/build-sdl3-linux"; then
+                echo "SDL was configured without its $driver video driver" >&2
+                exit 1
+            fi
+        done
         cmake --install "$DEPS/build-sdl3-linux"
-        touch "$DEPS/sdl3-linux/done"
+        touch "$SDLL/done"
     fi
     ffmpeg_build linux --enable-pic --cc="$DEPS/zigcc"
     B="$ROOT/build/hga-release-linux"
     rm -rf "$B"
     CC="$DEPS/zigcc" cmake -S openhuey-src -B "$B" -DCMAKE_BUILD_TYPE=Release -DHGA_RELEASE=ON -DCMAKE_LINK_DEPENDS_USE_LINKER=OFF \
-        -DCMAKE_PREFIX_PATH="$DEPS/sdl3-linux" -DSDL3_DIR="$(dirname "$(find "$DEPS/sdl3-linux" -name SDL3Config.cmake | head -1)")"
+        -DCMAKE_PREFIX_PATH="$SDLL" -DSDL3_DIR="$(dirname "$(find "$SDLL" -name SDL3Config.cmake | head -1)")"
     cmake --build "$B" --target hga -j"$JOBS"
     P="dist/openhuey-$VERSION-linux-x86_64"
     rm -rf "$P"
