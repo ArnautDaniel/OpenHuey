@@ -27,7 +27,7 @@
 /* ---- where things are: beside the executable (a portable game folder); if that can't be
  * written, the user's own folder for programs' data ---- */
 
-static char sBase[1024], sLibrary[1100], sUser[1100];
+static char sBase[1024], sLibrary[1100], sUser[1100], sMods[1100];
 
 static void folders(void) {
     char probe[1100];
@@ -51,6 +51,13 @@ static void folders(void) {
     }
     snprintf(sLibrary, sizeof(sLibrary), "%slibrary/", sBase);
     snprintf(sUser, sizeof(sUser), "%suser/", sBase);
+    snprintf(sMods, sizeof(sMods), "%smods/", sBase);
+}
+
+const char *library_mods_dir(void) {
+    folders();
+    SDL_CreateDirectory(sMods);
+    return sMods;
 }
 
 const char *library_dir(void) {

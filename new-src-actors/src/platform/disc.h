@@ -21,12 +21,15 @@ const char *disc_error(void);
  * doesn't matter), NULL if it isn't there. A name starting "../" is beside DATA.CVM on the disc
  * ("../MODULES/LIBSD.IRX", "../SLUS_210.75"). */
 DiscFile *disc_file_open(const char *path);
+/* the same in another folder laid out as the data is (a mod's: "../" its parent) */
+DiscFile *disc_file_open_in(const char *folder, const char *path);
 size_t disc_file_read(DiscFile *f, void *buf, size_t n);
 void disc_file_seek(DiscFile *f, long pos);   /* from the start */
 long disc_file_size(const DiscFile *f);
 void disc_file_close(DiscFile *f);
 /* the whole file (malloc'd, NUL-terminated past its end), or NULL; its size in *size */
 unsigned char *disc_read_all(const char *path, size_t *size);
+unsigned char *disc_file_read_all(DiscFile *f, size_t *size);   /* (closes it) */
 
 /* the game's executable, SLUS_210.75 (on the disc; beside a DATA.CVM or the folder; $HG_EXE),
  * NULL if there is none */

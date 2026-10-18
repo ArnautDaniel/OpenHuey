@@ -2,7 +2,7 @@
 
 Two pieces that build on each other: **importing** the player's disc once into a library of
 game data in friendlier formats, and **mods** layered over that library and over the scripts.
-This is the plan; steps 1 (the plain library) and 2 (textures to PNG) are built. See `design.md` for the split it follows: assets and
+This is the plan; steps 1 (the plain library), 2 (textures to PNG) and 3 (mods: files and actors) are built. See `design.md` for the split it follows: assets and
 file formats belong to C, behaviour to actors in Forth.
 
 ## Where we start
@@ -130,49 +130,82 @@ format that loses them.
 
 ## Mods
 
-A mod is a folder (or a `.zip` of one) in `mods/`:
+A mod is a folder in `mods/` (beside `library/`; with `HGA_HOME`, in that folder). The sample,
+`examples/mods/room-tally` (in the releases, `mod-examples/`), is turned on by copying it into
+`mods/`, or for one run with `hga --mod examples/mods/room-tally`.
 
 ```
-mods/darker-castle/
-  mod.fs          its manifest: name, version, what it needs, what it loads
-  library/        files over the library's (same paths)
-  scripts/        its Forth
+mods/room-tally/
+  mod.fs              its manifest
+  library/            files over the library's: library/data/SYSTEM/TITLE.texbank/0.png ...
+  scripts/            its Forth: scripts/room-tally.fs, the vocabulary named after the mod
 ```
 
-`mod.fs`:
+`mod.fs` - read by hga, not run (`\` and `( )` comments):
 
 ```forth
-mod: darker-castle  1 0 version
-requires: hga 2 0
-after: better-textures        \ (load order: after this mod, if it's there)
-loads: darker-castle.fs       \ (its scripts, in order)
+mod: room-tally          \ its name: letters, digits, - (the vocabulary of its scripts)
+version: 1 0
+requires: hga 1 0        \ the mod API it is written for (mod-api); a mod, and its version
+after: better-textures   \ loaded after that mod, if it's on
 ```
 
-`mods/order.fs` (written by the mods menu) lists the mods turned on, in order; a mod's
-`after:` reorders, a missing `requires:` turns the mod off with a message naming it.
+- **Order.** `mods/order.txt` (the mods menu will write it) has `on: <name>` / `off: <name>`
+  lines in load order; a mod it doesn't name is on, after those it does, by name. An `after:`
+  moves a mod down below the one it names; `--mod` folders come last.
+- **Off.** `off:` in order.txt; a `requires:` not met (hga's mod API: the same major, a minor
+  no newer - or a mod missing, off or older); a name that is one of the game's vocabularies;
+  scripts that fail to load (what they made before the error stays). Each is said on stderr
+  with the reason, and `.mods` at the console lists them all.
+- **The tests** see only `--mod` folders, never `mods/`.
 
 ### Three layers
 
-1. **Files.** `files_read` looks in each mod's `library/` (last in the order first), then in the
-   library. A mod's texture is a PNG at the same path. The executable's tables, being data
-   files in `library/exe/`, are overridden the same way. Nothing else is needed for texture
-   packs, translations, music and sound replacements.
-2. **Actors.** A mod's scripts are loaded after the game's, in its own vocabulary (`IN:
-   mod.darker-castle`), and may `USING:` any of the game's. The way to change what happens is
-   an actor of the mod's own: it subscribes to the game's broadcasts (`entered-room`,
-   `fiona-doing`, `stalker-doing`, `hewie-doing`, `danger`, `panic` ...) and sends the game's
-   messages (`do-action`, `go-to-room`, `fright`, `stalker-order` ...). It never pokes another
-   actor's state. The game's messages are the mod API; `messages.fs` and the subsystem
-   pages document them, and they become a promise - renamed only with a version bump.
+1. **Files** (built). `files_read` (and the movies' stream) looks in each mod's `library/`,
+   the last in the order first, then in the library. The paths are the library's: under
+   `library/data/` DATA.CVM's files, the folders named as the game names them (`SYSTEM`, not
+   `system`; a file's own name may be in any case), and `library/` itself for the disc's own.
+   - **Textures.** A mod's PNG at the converted path stands for that texture
+     (`<bank>.texbank/<i>.png`; for a 16-colour texture `<i>-<k>.png` are its other palettes'
+     pictures, as bank.txt maps them). Over a bank not converted (the developer's extracted
+     data, a library imported before step 2) `<i>.png` stands for the texture in every
+     palette. A PNG of another size is drawn as much as fits until the renderer takes new
+     sizes. The rooms' textures inside their `.PAC` can't be replaced until rooms are
+     converted.
+   - Nothing else is needed for texture packs now, and translations, music and sound
+     replacements once those kinds are converted. The executable's tables, once they are data
+     files in `library/exe/`, are overridden the same way.
+2. **Actors** (built). A mod's `scripts/<name>.fs` is loaded after the game's scripts as the
+   vocabulary `<name>` (`IN: room-tally`); its folder is a root for `USING:`, so a bigger mod
+   splits into `room-tally.words` (`scripts/room-tally/words.fs`) and so on. It may `USING:` any
+   of the game's vocabularies and `mods` (scripts/mods.fs: `mod-layer`, the UI layer for mods).
+   The way to change what happens is an actor of the mod's own: it subscribes to the game's
+   broadcasts (`entered-room`, `fiona-doing`, `stalker-doing`, `hewie-doing`, `danger`,
+   `panic` ...) and sends the game's messages (`do-action`, `go-to-room`, `fright`,
+   `stalker-order` ...). It never pokes another actor's state. The game's messages are the mod
+   API (`mod-api`, `MODS_API_MAJOR/MINOR` in src/game/mods.h); `messages.fs` and the
+   subsystem pages document them, and they become a promise - renamed only with a new major.
+   A soft reset (the game over's return to the title) loads the mods' scripts again with the
+   game's. There is no sandbox: hga says so when it loads a mod's scripts.
 3. **Hooks.** Where a mod needs to be asked, not told, the game offers named hooks: deferred
    words with a default, each documented as part of the API - for instance a room's entry
    (`room-entered-hook`), an item used (`item-use-hook`: the mod may claim it), the title's
    menu entries, the sub screen's pages, the clock of the mini-game. They are added as mods need
    them, not all at once. A mod sets a hook with `is` and calls what it replaced for the rest.
 
-Replacing one of the game's script files outright (a mod's `scripts/story/rooms/castle-1f-4.fs`
-over the game's) also works - the loader looks in the mods' `scripts/` first - but breaks with
-every change to that file; the mods menu marks such mods "replaces game scripts".
+Later, if mods ask for it: replacing one of the game's script files outright (a mod's
+`scripts/story/rooms/castle-1f-4.fs` over the game's). It would break with every change to that
+file; the mods menu would mark such mods "replaces game scripts". Also later: the mods menu,
+mods as `.zip` files.
+
+### Checked
+
+- `mods_room_tally` (ctest): the sample mod on - its actor there, counting rooms, answering
+  `rooms-seen?` by message.
+- `mods-check` (ctest): the order (order.txt, `after:`), every way a mod is turned off, the
+  files layer (the later mod's file over the earlier's over the data, an off mod's unseen), a
+  mod's PNG over a raw bank and over a converted one (its other palettes still the library's),
+  a PNG of another size.
 
 ### New content (later)
 
@@ -189,7 +222,7 @@ from $1000 up, say, so they never collide with the game's).
    (Built.)
 2. **Textures to PNG** - the converter, the loader, the comparison test. (Built.)
 3. **Mods, files and actors**: the manifest, the load order, file overrides, mod scripts in
-   their own vocabularies. A sample mod in the repository as a test.
+   their own vocabularies. A sample mod in the repository as a test. (Built.)
 4. **Music, messages, the executable's tables** converted; the first hooks, as the sample mods
    ask.
 5. Sound banks, movies; then rooms and models.

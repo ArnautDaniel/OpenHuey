@@ -122,7 +122,7 @@ struct Forth {
     Vocab *core;            /* `forth`: always visible */
     Manifest m;             /* the current source's view */
     Manifest listener;      /* the prompt's (kept between lines) */
-    char roots[4][512];     /* where vocabularies' files are looked for */
+    char roots[16][512];    /* where vocabularies' files are looked for (the game's, then mods') */
     int nroots;
     Cell compiling;         /* STATE: 0 interpreting, -1 compiling */
     /* the definition being compiled: its locals' names ({: ... :}); a quotation saves them */

@@ -346,6 +346,23 @@ DiscFile *disc_file_open(const char *name) {
     return open_in_folder(sFolder, path + 3);   /* (a DATA.CVM: the files beside it) */
 }
 
+DiscFile *disc_file_open_in(const char *folder, const char *name) {
+    char path[1024], parent[1100], *slash;
+
+    snprintf(path, sizeof(path), "%s", name);
+    norm(path);
+    if (strncmp(path, "../", 3) != 0) {
+        return open_in_folder(folder, path);
+    }
+    snprintf(parent, sizeof(parent), "%s", folder);
+    slash = strrchr(parent, '/');
+    if (slash == NULL) {
+        return NULL;
+    }
+    *slash = 0;
+    return open_in_folder(parent, path + 3);
+}
+
 size_t disc_file_read(DiscFile *f, void *buf, size_t n) {
     size_t got;
 
@@ -373,8 +390,9 @@ void disc_file_close(DiscFile *f) {
     }
 }
 
-unsigned char *disc_read_all(const char *path, size_t *size) {
-    DiscFile *f = disc_file_open(path);
+unsigned char *disc_read_all(const char *path, size_t *size) { return disc_file_read_all(disc_file_open(path), size); }
+
+unsigned char *disc_file_read_all(DiscFile *f, size_t *size) {
     unsigned char *buf;
     long n;
 

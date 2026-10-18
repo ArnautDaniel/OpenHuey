@@ -246,7 +246,7 @@ void forth_set_current(Forth *f, Vocab *v) {
 }
 
 void forth_add_root(Forth *f, const char *dir) {
-    if (f->nroots < 4) {
+    if (f->nroots < (int)(sizeof(f->roots) / sizeof(f->roots[0]))) {
         snprintf(f->roots[f->nroots++], sizeof(f->roots[0]), "%s", dir);
     }
 }

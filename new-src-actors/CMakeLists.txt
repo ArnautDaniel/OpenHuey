@@ -55,7 +55,7 @@ add_executable(hga
     src/render/render.c src/render/post.c
     src/data/pac.c src/data/tex.c src/data/texbank.c src/third_party/stb.c src/data/roommesh.c src/data/model.c src/data/navmesh.c src/data/exe.c src/data/soundbank.c
     src/game/room.c src/game/console.c src/game/actor.c src/game/doglegs.c src/game/cloth.c src/game/world.c
-    src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c src/game/cutscene.c src/game/placed.c src/game/sprites.c src/game/particles.c src/game/things.c src/game/obstacles.c src/game/swimpath.c src/game/rumble.c
+    src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c src/game/cutscene.c src/game/placed.c src/game/sprites.c src/game/mods.c src/game/particles.c src/game/things.c src/game/obstacles.c src/game/swimpath.c src/game/rumble.c
     src/forth/bind_engine.c)
 target_link_libraries(hga PRIVATE forth gamestate hactor SDL3::SDL3)   # (GL through SDL_GL_GetProcAddress: platform/gl.c)
 target_compile_definitions(hga PRIVATE "HGA_VERSION=\"${PROJECT_VERSION}\"" "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\""
@@ -83,3 +83,14 @@ add_executable(texbank-check tests/texbank_check.c src/data/tex.c src/data/texba
 target_link_libraries(texbank-check PRIVATE SDL3::SDL3 m)
 add_test(NAME texbank_check COMMAND texbank-check "${DEFAULT_DATA}" "${CMAKE_CURRENT_BINARY_DIR}/texbank-check.scratch")
 set_tests_properties(texbank_check PROPERTIES SKIP_RETURN_CODE 77)
+
+# the sample mod, turned on: tests/mods/*.fs (not test_*.fs - the rest run without mods)
+add_test(NAME mods_room_tally COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods/room-tally"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/room-tally.fs")
+
+# mods' manifests and files: the order, what turns a mod off, the files layer, a mod's textures
+add_executable(mods-check tests/mods_check.c src/game/mods.c src/data/tex.c src/data/texbank.c src/third_party/stb.c
+    src/core/files.c src/platform/disc.c src/platform/library.c)
+target_link_libraries(mods-check PRIVATE forth SDL3::SDL3 m)
+add_test(NAME mods_check COMMAND mods-check "${DEFAULT_DATA}" "${CMAKE_CURRENT_BINARY_DIR}/mods-check.scratch")
+set_tests_properties(mods_check PROPERTIES SKIP_RETURN_CODE 77)

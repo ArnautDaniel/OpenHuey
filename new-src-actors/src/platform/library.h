@@ -15,5 +15,6 @@ int library_import_from(const char *disc, int headless);
 
 const char *library_dir(void);        /* "<base>library/" */
 const char *library_user_dir(void);   /* "<base>user/" (made when first asked for) */
+const char *library_mods_dir(void);   /* "<base>mods/" (made when first asked for) */
 
 #endif

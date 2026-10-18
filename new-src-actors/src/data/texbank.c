@@ -33,6 +33,7 @@ struct TexBank {
     uint8_t *owned;       /* ... read here (freed with it) */
     int n;
     Texture *t;           /* the converted form's textures */
+    Image *over;          /* a raw bank's textures a mod gives as PNGs (each palette's) */
 };
 
 /* ---- the .TEX bank as it is ---- */
@@ -141,6 +142,28 @@ TexBank *texbank_load(const char *path) {
         return NULL;
     }
     b->owned = raw;
+    {   /* (a mod's PNGs over a bank not converted: the developer's data, a library made before) */
+        char dir[600], file[700];
+        int i;
+
+        folder_of_bank(dir, sizeof(dir), path);
+        for (i = 0; i < b->n; i++) {
+            uint8_t *png;
+            size_t n;
+
+            snprintf(file, sizeof(file), "%s%d.png", dir, i);
+            if ((png = files_read_layers(file, &n)) != NULL) {
+                if (b->over == NULL) {
+                    b->over = calloc((size_t)b->n, sizeof(Image));
+                }
+                if (b->over == NULL) {
+                    free(png);
+                    break;
+                }
+                b->over[i] = (Image){png, n};
+            }
+        }
+    }
     return b;
 }
 
@@ -157,6 +180,10 @@ void texbank_free(TexBank *b) {
         free(b->t[i].images);
     }
     free(b->t);
+    for (i = 0; b->over != NULL && i < b->n; i++) {
+        free(b->over[i].png);
+    }
+    free(b->over);
     free(b->owned);
     free(b);
 }
@@ -181,42 +208,46 @@ int texbank_info(const TexBank *b, int i, int *w, int *h, int *psm) {
     return *w > 0 && *h > 0;
 }
 
-int texbank_rgba(const TexBank *b, int i, int csa, uint8_t *rgba) {
-    const Texture *t;
-    const Image *im;
+static int decode_png(const Image *im, int tw, int th, uint8_t *rgba) {   /* into tw x th */
     uint8_t *px;
     int w, h, ch;
 
-    if (b == NULL || i < 0 || i >= b->n) {
+    if (im->png == NULL || (px = stbi_load_from_memory(im->png, (int)im->size, &w, &h, &ch, 4)) == NULL) {
         return 0;
     }
-    if (b->t == NULL) {
-        return tex_decode_csa(b->raw, b->size, i, csa, rgba);
-    }
-    t = &b->t[i];
-    if (t->nimages == 0) {
-        return 0;
-    }
-    im = &t->images[t->palette[csa < 0 ? 0 : csa & (PALETTES - 1)]];
-    if (im->png == NULL) {
-        return 0;
-    }
-    px = stbi_load_from_memory(im->png, (int)im->size, &w, &h, &ch, 4);
-    if (px == NULL) {
-        return 0;
-    }
-    if (w != t->w || h != t->h) {   /* (a mod's of another size: what fits, the rest clear) */
-        int y, cw = w < t->w ? w : t->w;
+    if (w != tw || h != th) {   /* (a mod's of another size: what fits, the rest clear) */
+        int y, cw = w < tw ? w : tw;
 
-        memset(rgba, 0, (size_t)t->w * t->h * 4);
-        for (y = 0; y < h && y < t->h; y++) {
-            memcpy(rgba + (size_t)y * t->w * 4, px + (size_t)y * w * 4, (size_t)cw * 4);
+        memset(rgba, 0, (size_t)tw * th * 4);
+        for (y = 0; y < h && y < th; y++) {
+            memcpy(rgba + (size_t)y * tw * 4, px + (size_t)y * w * 4, (size_t)cw * 4);
         }
     } else {
         memcpy(rgba, px, (size_t)w * h * 4);
     }
     stbi_image_free(px);
     return 1;
+}
+
+int texbank_rgba(const TexBank *b, int i, int csa, uint8_t *rgba) {
+    const Texture *t;
+
+    if (b == NULL || i < 0 || i >= b->n) {
+        return 0;
+    }
+    if (b->t == NULL) {
+        if (b->over != NULL && b->over[i].png != NULL) {
+            const TexEntry *e = tex_entry(b->raw, i);
+
+            return decode_png(&b->over[i], e->w, e->h, rgba);
+        }
+        return tex_decode_csa(b->raw, b->size, i, csa, rgba);
+    }
+    t = &b->t[i];
+    if (t->nimages == 0) {
+        return 0;
+    }
+    return decode_png(&t->images[t->palette[csa < 0 ? 0 : csa & (PALETTES - 1)]], t->w, t->h, rgba);
 }
 
 /* ---- the import's conversion ---- */

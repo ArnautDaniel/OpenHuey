@@ -3,6 +3,7 @@
 #include "movie.h"
 
 #include "disc.h"
+#include "../core/files.h"
 #include "sound.h"
 
 #include <SDL3/SDL.h>
@@ -700,7 +701,7 @@ int movie_open(const char *path) {
         return 0;
     }
     sPly->shownNo = -1;
-    sPly->f = disc_file_open(path);
+    sPly->f = files_open(path);
     if (sPly->f == NULL) {
         fprintf(stderr, "movie: can't open %s\n", path);
         movie_close();

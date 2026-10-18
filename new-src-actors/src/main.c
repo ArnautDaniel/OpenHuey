@@ -5,6 +5,7 @@
  *     --frames N        stop after N frames
  *     --eval "code"     run Forth after the scripts have loaded (repeatable)
  *     --import disc.iso the disc imported into the library beside the executable, then out
+ *     --mod folder      a mod turned on (repeatable; with --test the only mods)
  *
  * The game data: a disc image or folder named (read as it is), else the library
  * (platform/library.c), else - with a window - the player is asked for the disc to import.
@@ -19,6 +20,7 @@
 #include "game/progress.h"
 #include "game/things.h"
 #include "game/sprites.h"
+#include "game/mods.h"
 #include "game/areas.h"
 #include "game/exits.h"
 #include "hactor/hactor.h"
@@ -51,6 +53,8 @@ typedef struct Options {
     const char *data;
     const char *import; /* --import DISC: the disc imported into the library, then out */
     const char *test;   /* --test FILE: run it after the scripts, headless, and exit with its status */
+    const char *mods[MAX_EVALS];   /* --mod DIR: a mod's folder, on (the tests' only mods) */
+    int nmods;
 } Options;
 
 static int parse_options(int argc, char **argv, Options *o) {
@@ -67,11 +71,13 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->evals[o->nevals++] = argv[++i];
         } else if (strcmp(argv[i], "--import") == 0 && i + 1 < argc) {
             o->import = argv[++i];
+        } else if (strcmp(argv[i], "--mod") == 0 && i + 1 < argc && o->nmods < MAX_EVALS) {
+            o->mods[o->nmods++] = argv[++i];
         } else if (strcmp(argv[i], "--test") == 0 && i + 1 < argc) {
             o->test = argv[++i];
             o->hidden = 1;
         } else if (argv[i][0] == '-') {
-            fprintf(stderr, "usage: hga [--hidden] [--frames N] [--eval code] [--test file.fs] [--import disc.iso] [disc.iso | data folder]\n");
+            fprintf(stderr, "usage: hga [--hidden] [--frames N] [--eval code] [--test file.fs] [--mod folder] [--import disc.iso] [disc.iso | data folder]\n");
             return 0;
         } else {
             o->data = argv[i];
@@ -131,7 +137,11 @@ static int load_scripts(Forth *f) {
     }
     forth_add_root(f, dir);   /* where USING: finds vocabularies */
     snprintf(path, sizeof(path), "%s/game.fs", dir);
-    return forth_include(f, path) == 0;
+    if (forth_include(f, path) != 0) {
+        return 0;
+    }
+    mods_load_scripts(f, dir);   /* (a mod's failing is said, the game goes on) */
+    return 1;
 }
 
 /* the room's lights for an actor; its shadow from the strongest (a view from the light, fitted
@@ -486,6 +496,7 @@ static void start_scripts(Engine *e, int hidden) {
     bind_engine(e->forth);
     bind_state(e->forth);
     bind_hactor(e->forth);
+    bind_mods(e->forth);
     forth_prim(e->forth, "exit-status", p_exit_status);
     forth_constant(e->forth, "hidden?", hidden ? -1 : 0);   /* (no window: tests, screenshots - no opening movie) */
     if (!load_scripts(e->forth)) {
@@ -545,6 +556,7 @@ int main(int argc, char **argv) {
     if (!library_choose(opt.data, HG2_DEFAULT_DATA, opt.hidden)) {
         return 1;
     }
+    mods_find(opt.test != NULL ? NULL : library_mods_dir(), opt.mods, opt.nmods);   /* (tests: only --mod's) */
     if (!platform_open("Haunting Ground (new-src)", 1280, 720, opt.hidden) || !render_init()) {
         return 1;
     }
