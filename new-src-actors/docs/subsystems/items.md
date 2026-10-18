@@ -144,7 +144,13 @@ nor running's fright; **I2, I3 built**
 (`scripts/subscreen.fs`, `tests/items/test_subscreen.fs` (54)). Not yet: the buttons' glyphs in the
 help lines (hga's font has none: "?"), the parts' blendings (subtract / add: drawn plain), the
 menu's sound turned down while open; the extras room's modes - the movies (8), the galleries
-($B models, $D music, $E art, $F types), a challenge's results ($C). **The wardrobe** (mode 7,
+($B models, $D music, $E art, $F types). **The mini-game** (`subscreen/extras.fs`): its menu
+(mode $A: the introduction, challenges A..D - C and D once A and B are cleared, resident flags
+$52 / $53 - with their three best times, exit; the pick into variable $2E) and its results (mode
+$C: the unlock, the time placed among the challenge's best, shown a step every 30 frames with the
+avoid prompt's pictures); the best times kept with the unlocks in the system data (`facts.fs`
+`run-records`, saves.fs `record!`). Drawn as the wardrobe (a box and the words; not SUBMG.TEX's
+art). In the run the menu opens to the options alone, with Hewie's button names. **The wardrobe** (mode 7,
 `subscreen/costumes.fs`, castle-2f-3 / castle-2f-5): Fiona's six costumes (7 locked until the
 first ending, 8 until the third), Hewie's three (when he is here: his third locked until a hard
 game cleared with the TYPE Top Breeder or Dog Lover); chosen ones into variables $26 / $27, what

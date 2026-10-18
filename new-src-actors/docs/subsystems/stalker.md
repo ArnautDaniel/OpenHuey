@@ -460,6 +460,13 @@ nearest her - within 50 of her, further than 20 from him, about his height, a st
 she and Hewie off the line to it - takes his shot instead of her: his point (Pursuer_AttackPoint,
 `body-point!`) there 3 frames, where the story's zones see it (it breaks).
 *Not yet*: the tints' flares (the renderer's layer
-$11 sprites drifting about them: the PC port of the original draws none either); the Hewie-controlled mode's ways (+0x1FBEC1: kind 34's tables 14 / 15 and its tolerance 80,
-the TintStalker's table 15 and doors, the summoner's) - left with that mode. The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,
+$11 sprites drifting about them: the PC port of the original draws none either); **the mini-game's run** (Hewie played): she isn't always in the room played - after her
+while she is elsewhere he goes out by the first door of his way to her room (Pursuer_Modes /
+BehaviourFollow) and travels after her; coming into the room played he waits 150 frames first
+(Pursuer_ThroughDoorEnding); doors are left open behind (Kind34_ExitArg, TintStalker_EndingDoor);
+Kind34 and the TintStalker take the run's attack rows for situations 14 / 15 (`run-table`);
+their tempers with Hewie are the run's (80, 20, Debilitas3's 16); kind 7 (`stalker-as`) is the
+Pursuer with Debilitas's model and the Pursuer's chase. Not modelled: his giving her up for Hewie
+(Pursuer_Modes' mode 3 out of sight: the target Hewie), the mode clock of 1 (Pursuer_Timer15s),
+the summoner's room start skipped in the run. The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,
 `char-loaded?`) is the event characters' (`docs/subsystems/cast.md`).

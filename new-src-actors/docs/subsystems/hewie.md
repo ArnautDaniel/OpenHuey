@@ -19,7 +19,7 @@ and `hewie/sounds.fs`, the bits of what may break in on an action in `hewie/stat
 | **H1** | His body and model (legs fitted to the floor; head, ears and tail overlays; his neck turned where he looks); moving (strides, turning with his head leading, the freest heading); his mind: the danger's moods (calm / wary / tense), what he does next by his trust (the weighted lists), his own decisions; being with Fiona (keeping near, coming to her, stepping away, waiting by her); roaming, sniffing, tricks, barking; his upkeep (health, mood, obedience); his sounds and steps (heard); going from room to room with her and finding his way off-screen | Fiona F1-F2, rooms, doors, acoustics, danger, panic |
 | H2 | Fiona's side (F3): her calls, gestures and commands (come, wait, attack, praise, scold, pet), trust and obedience as she treats him | — |
 | **H3** | The stalkers: noticing them, growling, going for them, leaps, bites, tackles; being struck, knocked down, yelping | stalkers |
-| H4 | The story's moves (walk to a spot, turn, an animation, a leap), fetching, being steered (the Hewie-control sections) | story |
+| **H4** | The story's moves (walk to a spot, turn, an animation, a leap), fetching, played (the mini-game's run) | story |
 
 ## API (H1)
 
@@ -46,6 +46,9 @@ Declared in `scripts/messages.fs`.
 | `meet-me` / `meet-at` / `meet-refused` | `( type )` / `( tri x y z face )` / `( )` | in / out | The meeting by his side, first part (type 0 scold, 2 praise, 4 stay): he finds her place and turns to her (0x48), or refuses. |
 | `meet-now` / `meet-on` / `meet-refused` | `( type )` / `( )` / `( )` | in / out | Second part (1 / 3 / 5): sitting, settled, facing the agreed way: scolded close up (0x49), petted (0x4A), patted (0x4B). |
 | `meet-off` | `( -- )` | in | She gave it up. |
+| `hewie-restart` | `( -- )` | in (the run's clock) | Him afresh - played, in the mini-game's run (Hewie_Restart). |
+| `hewie-gesture` | `( g -- )` | broadcast, each frame while played | His gesture this frame (the scripts' 0x21). |
+| `hewie-told` | `( what arg -- )` | to Fiona | Barking low (Hewie_StateLookLow): 0 a shut exit `arg` he is at the front of, to open; 1 where he is (`arg` his triangle). |
 
 **Facts he reads:** his own body (moved by the engine's body operations: `body-move-local`,
 `body-turn-toward`, `body-free`, `body-tri-to`, `path-plan`), Fiona's body (`body-at`,
@@ -258,11 +261,33 @@ there first); in its gap, or in front of it while it swings, he squeezes out to 
 stands on his side ($65, Hewie_StateSqueeze: 90 frames at most, done once off the gap or away
 from the door). `tests/hewie/test_exits.fs` (9).
 
-Not yet:
-- The Hewie-controlled mode (progress +0x1FBEC1, switched on by the off-map rooms 0xD9 /
-  0xE0's native commands, still stubs): the countdown clock, Hewie steered by the stick and
-  her gestures (0x83 Hewie_StateSteered, 0x84, 0x87 the run-up jump, Hewie_Think's gestures),
-  the camera on him, Fiona's own AI meanwhile.
+**H4: Hewie played** (`scripts/hewie/steered.fs`; `tests/hewie/test_played.fs` (9),
+`test_run.fs` (8)). The mini-game's run - the extras room's door 0, or the title's MINI-GAME:
+Hewie guiding Fiona through the rooms $D0..$E9 against the clock - is the one section where he is
+the one played (the original's progress +0x1FBEC1, `facts.fs` `hewie-played`: set by the run's
+clock as it starts - `story/clock.fs` `clock-start`, which restarts him: `hewie-restart` - and
+cleared as it stops). Played:
+- the stick runs him camera-relative, as it walks her (Hewie_LeftStick: after a camera cut the
+  old camera steers while the stick is held, then he turns on the spot toward its heading, a
+  little faster each frame up to 3 degrees, while the stick holds within 15 degrees); still,
+  he stands low (pose 4); cross held he runs flat out (`steered-act`, Hewie_StateSteered);
+- the right stick's gesture is read each frame (`keys.fs` `gesture@`) and told the story
+  (`hewie-gesture`: the scripts' 0x21); any one, with what he does open to her commands, barks
+  (`bark-act`: at her within 150, else the stalker within 150). Barking low he tells her
+  (`hewie-told`, Hewie_StateLookLow): each shut exit he is at the front of - for her to open -
+  or, none, where he is (she keeps with him longer);
+- his mode's behaviour is Hewie_StatePending (asked to choose: steered again), not calm / wary
+  / tense; his own decisions are only: down while steered, knocked down; in the sweep of a door
+  swinging, off it to the exit's far point ($86);
+- where he would have gone for the stalker and couldn't, a run-up and a leap (`run-up-jump-act`,
+  $87: hewie/pounce.fs's tackle from 5 above him, 20 ahead); nothing to do, himself again (not
+  sniffing about); lying flat ($84) until the pad is touched (a face button or shoulder, the
+  stick past 0.8, a gesture: Hewie_PlayerSteering) - as crouched readying (Hewie_State2388);
+- biting, cross held lets go, five squares bite anew; his actions are taken as asked
+  (Hewie_AdjustAction keeps them); he takes half as much again as the black shepherd; he never
+  cowers from her; down, the game is over (kind 1);
+- out by an exit he goes with the room, arriving at the exit he came in by (his Hewie_Vt34 /
+  Vt38 in the run); `to-exit` (the scripts' Character_ChooseExit) only sets that exit.
 - In tests, front-garden-2's floor is mostly closed to him (flag 8) till its room script is
   written; tests that need him to plan their way use castle-1f-1 / castle-1f-2.
 

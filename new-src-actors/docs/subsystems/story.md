@@ -403,7 +403,15 @@ strength $55 / $AA / $FF - Cutscene_Signal2 / Signals34) and op 0xCC's 3 correct
 +0x78 is Cutscene_Mark83 - the model left as it is when the scene takes it (`cutscene-keep-model`;
 the cast runs the models' own hooks, Daniella's parts, as the original).
 
-Not yet: the Hewie-controlled clock rooms.
+**The mini-game's run** (the clock rooms $D0..$E9): `hewie-controlled?` (cond 0x5D) is
+`facts.fs` `hewie-played?`; `player-who` and `player-camera` give Hewie then; the exit words
+(`exit-check`, `exit-usable?` - cond 0x07) go by him (free of scripts, at his own pace) and the
+controlled one's gesture (`control-action?`, cond 0x21) is his. The clock's start hands him the
+player and restarts him; its stop gives Fiona back; its save keeps the time for the results
+(`run-took`). Forced exits ($80 and up: the extras room's door to a challenge, the run's way
+back) go to the room `room-preload` or `exit-prepare` named (`docs/subsystems/rooms.md`).
+The title's MINI-GAME starts the extras room's action 1 at once (its door 0's offer:
+`mini-game-asked?`).
 
 Next, by how much the scripts use them:
 
