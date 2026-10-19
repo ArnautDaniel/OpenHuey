@@ -4,7 +4,7 @@
 
 The panic meter: a level 0..100 that frights and the stalker's nearness raise and time lowers.
 Its stage drives Fiona: frightened at 2, panicking at 4, when she screams and runs blindly for
-a while. Her breath and heartbeat follow it, the screen shakes and tints (*with effects*).
+a while. Her breath and heartbeat follow it, the screen shakes and greys, and flashes as she panics.
 The original's `Panic_*` (`fiona.c`, the object at SceneGame +0x7F8, progress +0x7B8).
 
 ## API
@@ -49,6 +49,15 @@ the small motor with it - `rumble-step`, the rumble's sequence). Checked by `tes
 (half lasting, half passing); out of breath from stage 2; panicking (stage 4: her scream, the
 panic run, running on blindly); stumbles, and a fall (the dice loaded) that ends it early
 (stage 5) - down until it passes, then up and free; whatever happens, it passes.
+
+**The screen** (ScreenFade_Frame, its level full in play; hg's glr_negative / glr_zoom_blur /
+glr_panic, OpenHuey's post.c): as she starts to panic (its first 30 frames) the screen's negative
+(0x80 less each channel); at each breath the frame held and blended in again (the frame blend,
+`frame-blend` - Renderer_Additive: the new frame by the pulse / 128, the pulse 0 at the breath and
+back to $80 by 4 a frame), its first frames also drawn 16 pixels bigger each side over themselves
+at half; and a grey by the shake (1.5 a point of level past 60, $50 panicking, $90 calming down) -
+each pixel black whose green is under $30 of 255, else grey $C0, over the screen at shake / 256.
+Not while a scene has the camera.
 
 The panic hears Fiona's state as `fiona-doing` each frame. *Note:* she hears its stage a frame
 later than in the original (it broadcasts at the frame's end).

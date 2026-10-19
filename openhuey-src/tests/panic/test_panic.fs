@@ -57,4 +57,12 @@ testing turning to flee (Q): she whips round (0x403), her fear up 10
 T{ fear f>s  key: E press  60 $403 seen  -> 0 -1 }T
 T{ 60 frames  fear 2.95e about  [: her-doing @ ;] her@ -> -1 0 }T   \ (10 up, then calming 0.15 a frame standing)
 
+testing the screen's heartbeat (ScreenFade_Frame): at each breath the pulse 0, back to $80 by 4 a frame; the grey with the level
+: pulse ( -- n )  game:panic enter  panic:pulse @  leave-actor ;
+: grey ( -- n )  game:panic enter  panic:shake @  leave-actor ;
+: beat-seen ( -- flag )  120 0 do  game-tick  pulse 4 < if  true unloop exit  then  loop  false ;
+T{ 85 game:panic send panic-level!  beat-seen -> -1 }T
+T{ 10 frames  pulse 36 49 within  grey 0> -> -1 -1 }T   \ (4 a frame)
+T{ 30 frames  pulse -> $80 }T
+
 test-summary

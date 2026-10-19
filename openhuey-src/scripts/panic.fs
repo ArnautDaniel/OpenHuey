@@ -18,7 +18,8 @@ state: panic-state
   1 floats field calm-b     1 floats field calm-b2
   1 floats field recovering
   cell field beat            \ frames to her next breath
-  cell field shake
+  cell field pulse           \ the heartbeat on the screen: 0 at each breath, back to $80 by 4 a frame (+0x38)
+  cell field shake           \ the screen's grey (+0x40): with the level past 60; panicking $50, calming down $90
   cell field jolting         \ the camera shaken by her panic (Panic_Stage: 0.2 past its first stretch)
   1 floats field scale       \ the fear's scale (1)
   cell field the-danger      \ (told)
@@ -83,18 +84,19 @@ create breaths   \ (shaken .. calming down)
     stage @ composed = if  shake @ 8 - 0 max shake !  then
     by-level
     stage @ panicking = if  exit  then
-    stage @ composed <> beat @ 0= and if  panicking stage @ - 30 * beat !  breath  then
+    stage @ composed <> beat @ 0= and if  panicking stage @ - 30 * beat !  0 pulse !  breath  then
     level f@ 60e f< if  exit  then
     level f@ 60e f- 1.5e f* f>s shake-toward ;
 : panic-length ( -- frames )   \ longer hurt or down
     panic-frames  her-cond @ case  1 of  300 +  endof  3 of  150 +  endof  endcase ;
 : staging ( -- )
     0 jolting !
+    pulse @ $80 < if  4 pulse +!  pulse @ $80 min pulse !  then
     beat @ if  -1 beat +!  then
     stage @ panicking < if  uneasy exit  then
     stage @ panicking = if
         length @ 0< if   \ its start: then its length
-            1 length +!  length @ 0= if  panic-length length !  then  exit
+            1 length +!  length @ 0= if  panic-length length !  then  $80 pulse !  exit
         then
         fear-d f@ 500e f< 0= if  length @ 150 + panic-frames min length !  calming-down stage !  then
     then
@@ -102,7 +104,16 @@ create breaths   \ (shaken .. calming down)
     length @ 0< if  composed stage !  50e level f!  50e lasting f!  0e passing f!  exit  then
     stage @ panicking <> if  $90  -1 jolting !  else  $50  then  shake !
     beat @ if  exit  then
-    6 stage @ - 7 * beat !  breath ;
+    6 stage @ - 7 * beat !  0 pulse !  breath ;
+
+\ ---- the screen (ScreenFade_Frame, its level full in play): at the panic's start the negative; each
+\ heartbeat the frame held and blended in again as the pulse comes back (the first frames also
+\ blurred bigger over itself); the grey by the shake - the dark black, the rest pale ----
+$30 constant grey-limit
+: screens ( -- )
+    stage @ panicking =  length @ 0< and if  panic-negative  then
+    pulse @ $80 <> if  pulse @ frame-blend  pulse @ $10 <= if  zoom-blur  then  then
+    shake @ if  grey-limit shake @ panic-tint  then ;
 
 \ ---- Panic_FearInputs (calm with time; the stalker's part comes as fear-in) and Panic_Update ----
 : time-inputs ( -- )
@@ -192,7 +203,7 @@ create weights   \ (fright, fear, calming)
 : updating? ( -- flag )  cam-scene? 0=  panic-held state-flag? 0= and ;
 
 behaviour measuring
-  on spawned ( -- )  1e scale f!  2 st-cond !  self subscribe tick  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing  self subscribe stalker-doing ;
+  on spawned ( -- )  1e scale f!  2 st-cond !  $80 pulse !  self subscribe tick  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing  self subscribe stalker-doing ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop st-kind !  2drop st-cond !  st-sub !  st-mode !  st-room ! ;
   on danger ( level -- )  the-danger ! ;
   on fiona-doing ( mode sub cond cmd doing -- )  2drop her-cond !  her-sub !  her-mode ! ;
@@ -222,7 +233,9 @@ behaviour measuring
   \ (SceneGame_PlayStart: not while a cutscene has the camera nor under flag $F; first in the frame,
   \ so the camera is still unless her panic - or the story, after it - shakes it)
   on tick ( -- )  updating? if  jolting @ if  0.2e  else  0e  then  cam-shake!  then ;
-  on frame-end ( -- )  updating? if  update  then  stage @ level f@ f>cell broadcast panic ;
+  on frame-end ( -- )
+      updating? if  update  screens  else  $80 pulse !  then   \ (a scene's: the screen as it is)
+      stage @ level f@ f>cell broadcast panic ;
 end-behaviour
 
 : panic-spawn ( -- id )  measuring panic-state s" panic" spawn ;
