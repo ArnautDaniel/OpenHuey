@@ -14,8 +14,18 @@ void post_init(void);
 /* make the scene target current (sized w x h, `msaa` samples) and clear it */
 void post_begin(int w, int h, int msaa, Vec3 clear_linear);
 /* resolve the scene, run the effects and draw the result into the window's rectangle */
-/* the next frame blended with the last by a (0..1; 0 none) - for that frame only */
+/* the frames blended with the last (the original's final packet, Renderer_Additive): the new
+ * frame's weight `a` (0..1; 1 the frame as it is, 0 the last one held) - from now on, until
+ * post_trail_off (a fresh game) */
 void post_trail(float a);
+void post_trail_off(void);
+/* the panic's screens this frame (ScreenFade_Frame, layer 0x2A; hg's glr_negative / glr_zoom_blur /
+ * glr_panic): the negative (0x80 less each channel, as the frame holds them), the frame drawn back
+ * 16 pixels bigger each side over itself at half, and the threshold tint - each pixel black whose
+ * green (with the frame's alpha bits) is below `limit`, else grey 0xC0, over it at amount / 256 */
+void post_negative(void);
+void post_zoom_blur(void);
+void post_panic_tint(int limit, int amount);
 /* a TV's picture (TvScreen): the frame, grey, at half size - made at this frame's end when wanted
  * (each frame); its texture for the next (0 none yet) */
 void post_tv_want(void);

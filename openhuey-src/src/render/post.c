@@ -44,6 +44,7 @@ typedef struct Targets {
 static Targets T;
 static GLuint sEmptyVao, sLinear, sAoProg, sBlurProg, sDownProg, sUpProg, sCompositeProg;
 static GLuint sTrailProg;
+static GLuint sPanicProg;   /* (the panic's screens: below) */
 
 /* ---- shaders ---- */
 
@@ -139,7 +140,7 @@ static const char *kDownFs =
     "    o_color = vec4(c, 1.0);\n"
     "}\n";
 
-static const char *kTrailFs =   /* the last frame over this one, at u_a (the original's frame blend) */
+static const char *kTrailFs =   /* the last frame over this one, at u_a (1 - the original's frame blend) */
     "#version 460 core\n"
     "in vec2 v_uv;\n"
     "layout(binding = 0) uniform sampler2D u_src;\n"
@@ -147,6 +148,32 @@ static const char *kTrailFs =   /* the last frame over this one, at u_a (the ori
     "out vec4 o_color;\n"
     "void main() {\n"
     "    o_color = vec4(texture(u_src, v_uv).rgb, u_a);\n"
+    "}\n";
+
+/* the panic's screens (post.h), on the frame's display values (the PS2's 0..255: x 255) */
+static const char *kPanicFs =
+    "#version 460 core\n"
+    "in vec2 v_uv;\n"
+    "layout(binding = 0) uniform sampler2D u_src;\n"
+    "layout(location = 0) uniform int u_mode;\n"     /* 1 negative, 2 zoom blur, 3 tint */
+    "layout(location = 1) uniform float u_limit;\n"
+    "layout(location = 2) uniform float u_amount;\n"
+    "out vec4 o_color;\n"
+    "void main() {\n"
+    "    vec3 d = floor(texture(u_src, v_uv).rgb * 255.0 + 0.5);\n"
+    "    vec3 c;\n"
+    "    if (u_mode == 1) {\n"
+    "        c = max(vec3(0.0), 128.0 - d);\n"
+    "    } else if (u_mode == 2) {\n"   /* (-16 .. 528 x -16 .. 464 from the whole of it) */
+    "        vec2 uv = 0.5 + (v_uv - 0.5) * vec2(512.0 / 544.0, 448.0 / 480.0);\n"
+    "        vec3 z = floor(texture(u_src, uv).rgb * 255.0 + 0.5);\n"
+    "        c = d + floor((z - d) * 64.0 / 128.0);\n"
+    "    } else {\n"   /* (the frame's alpha 0x80 where drawn: its low six bits none) */
+    "        float idx = floor(d.g / 64.0) * 64.0;\n"
+    "        vec3 cs = idx < u_limit ? vec3(0.0) : vec3(192.0);\n"
+    "        c = d + floor((cs - d) * u_amount / 256.0);\n"
+    "    }\n"
+    "    o_color = vec4(c / 255.0, 1.0);\n"
     "}\n";
 
 static const char *kUpFs =   /* a 3 x 3 tent of the smaller level, added onto the larger */
@@ -511,6 +538,7 @@ void post_init(void) {
     sUpProg = gl_program(kFullscreenVs, kUpFs, "bloom up");
     sCompositeProg = gl_program(kFullscreenVs, kCompositeFs, "composite");
     sTrailProg = gl_program(kFullscreenVs, kTrailFs, "frame blend");
+    sPanicProg = gl_program(kFullscreenVs, kPanicFs, "panic screens");
     sGreyProg = gl_program(kFullscreenVs, kGreyFs, "tv grey");
     sHazeProg = gl_program(kFullscreenVs, kHazeFs, "haze");
     sGlowStepProg = gl_program(kFullscreenVs, kGlowStepFs, "glow step");
@@ -559,13 +587,18 @@ static void bind(GLuint unit, GLuint texture, GLuint sampler) {
 /* the frame blend (Renderer_Additive: the scripts' 0xCD): this frame's picture with the last at
  * sTrail, for one frame; the last frame kept while it is wanted */
 static GLuint sTrailTex;
-static int sTrailW, sTrailH, sTrailValid;
-static float sTrail;
+static int sTrailW, sTrailH, sTrailValid, sTrailOn;
+static float sTrail;   /* the last frame's weight */
 
-void post_trail(float a) { sTrail = a < 0.0f ? 0.0f : a > 1.0f ? 1.0f : a; }
+void post_trail(float a) {
+    a = a < 0.0f ? 0.0f : a > 1.0f ? 1.0f : a;
+    sTrail = 1.0f - a;
+    sTrailOn = 1;
+}
+void post_trail_off(void) { sTrailOn = 0; }
 
 static void trail(int x, int y, int w, int h) {
-    if (sTrail <= 0.0f) {
+    if (!sTrailOn) {
         sTrailValid = 0;
         return;
     }
@@ -590,7 +623,49 @@ static void trail(int x, int y, int w, int h) {
     }
     glCopyTextureSubImage2D(sTrailTex, 0, 0, 0, x, y, w, h);
     sTrailValid = 1;
-    sTrail = 0.0f;
+}
+
+/* ---- the panic's screens (post.h): each the screen so far copied, drawn back through kPanicFs ---- */
+static GLuint sPanicTex;
+static int sPanicW, sPanicH, sPanicNeg, sPanicZoom, sPanicLimit, sPanicAmount;
+
+void post_negative(void) { sPanicNeg = 1; }
+void post_zoom_blur(void) { sPanicZoom = 1; }
+void post_panic_tint(int limit, int amount) {
+    sPanicLimit = limit;
+    sPanicAmount = amount;
+}
+
+static void panic_pass(int mode, int x, int y, int w, int h) {
+    if (sPanicTex == 0 || sPanicW != w || sPanicH != h) {
+        if (sPanicTex != 0) {
+            glDeleteTextures(1, &sPanicTex);
+        }
+        glCreateTextures(GL_TEXTURE_2D, 1, &sPanicTex);
+        glTextureStorage2D(sPanicTex, 1, GL_RGBA8, w, h);
+        sPanicW = w;
+        sPanicH = h;
+    }
+    glCopyTextureSubImage2D(sPanicTex, 0, 0, 0, x, y, w, h);
+    glProgramUniform1i(sPanicProg, 0, mode);
+    glProgramUniform1f(sPanicProg, 1, (float)sPanicLimit);
+    glProgramUniform1f(sPanicProg, 2, (float)sPanicAmount);
+    bind(0, sPanicTex, sLinear);
+    glUseProgram(sPanicProg);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+static void panic_screens(int x, int y, int w, int h) {   /* (in ScreenFade_Frame's order) */
+    if (sPanicNeg) {
+        panic_pass(1, x, y, w, h);
+    }
+    if (sPanicZoom) {
+        panic_pass(2, x, y, w, h);
+    }
+    if (sPanicAmount > 0) {
+        panic_pass(3, x, y, w, h);
+    }
+    sPanicNeg = sPanicZoom = sPanicAmount = 0;
 }
 
 void post_tv_want(void) { sTvWanted = 1; }
@@ -951,6 +1026,7 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
     }
     glUseProgram(sCompositeProg);
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    panic_screens(x, y, w, h);
     trail(x, y, w, h);
     for (i = 0; i < 10; i++) {
         bind((GLuint)i, 0, 0);
