@@ -713,7 +713,8 @@ s32 *RoomMesh_WriteBatch0(u8 *o, s32 *batch) {
 /* mode 1 (the lit layout) batch writer, with OpenGL: the vertex count (+0x7C; count & 3 the
  * padding) locates its sections - texture coordinates (s, t, q floats), colours (two words a
  * vertex, not decoded yet: drawn grey), positions (x, y, z, w with the GS flags) - drawn unless
- * hidden as in mode 0. No surveyed room uses it. Returns the next batch. */
+ * hidden as in mode 0. Never reached: the mode (+0x68) is only ever set to 0 (RoomMesh_Reset;
+ * nothing in the game sets it otherwise). Returns the next batch. */
 /* 0x0025DD80 */
 s32 *RoomMesh_WriteBatchLit(u8 *o, s32 *batch) {
     static f32 *st;
@@ -1065,7 +1066,7 @@ static void gl_placed_object(u8 *o) {
  * none), flags (bits 0..7 the GS PRIM ABE etc., 24..31 a group shown by the mask +0x90) }, a
  * 4 x 4 matrix (columns), then the vertices in the room's mode 0 layout (RoomMesh_WriteBatch0); -1
  * ends it. The object stands at +0x70 turned by +0x80. Mode +0x68 1 (the lit layout) isn't
- * read yet. */
+ * read: never reached - the doors set +0x68 only to 0 (doors.c, the placed mesh's setup). */
 /* 0x0025F0A0 */
 s32 PlacedMesh_Draw(u8 *o) {
     VObject *cam = gCamera;
