@@ -20,6 +20,7 @@ state: eyes-state
   cell field holding             \ the mouse held
   cell field had                 \ its camera had the view last frame (back from a scene: facing her way again)
   1 floats field yaw  1 floats field pitch
+  1 floats field drawn-y         \ her feet's height when her head was last drawn
 end-state
 
 : fiona ( -- id )  s" fiona" actor-named ;
@@ -33,17 +34,19 @@ end-state
     key: Up key-down? if  pitch f@ key-turn f+ pitch f!  then
     key: Down key-down? if  pitch f@ key-turn f- pitch f!  then
     pitch f@ steepest fnegate fmax steepest fmin pitch f! ;
-: place ( -- )   \ at her eyes: her head, a little ahead the way she faces
-    fiona body-head {: v :}  fiona body-yaw {: F: face :}
-    v v.x sf@  face fsin ahead f* f+  cam cam.x sf!
-    v v.y sf@                         cam cam.y sf!
-    v v.z sf@  face fcos ahead f* f-  cam cam.z sf!
+: place ( -- )   \ at her eyes: where she is now, her head's height, a little ahead the way she faces
+    \ (her head as last drawn lags her as she walks: only its height above her feet is taken)
+    fiona body-head {: v :}  fiona body-at {: b :}  fiona body-yaw {: F: face :}
+    v v.y sf@ drawn-y f@ f-  b v.y sf@ f+  cam cam.y sf!   \ (her head's height over her feet as drawn)
+    b v.x sf@  face fsin ahead f* f+  cam cam.x sf!
+    b v.z sf@  face fcos ahead f* f+  cam cam.z sf!   \ (she faces x by sin, z by +cos of her yaw)
+    b v.y sf@ drawn-y f!
     yaw f@ cam cam.yaw sf!  pitch f@ cam cam.pitch sf!
     1.15e cam cam.fov sf!  nearest cam cam.near sf! ;   \ (a wider view than the game's shots: about 66 degrees up and down)
 : hold ( flag -- )   \ the mouse held in the window while it looks
     dup holding @ = if  drop exit  then  dup holding !  mouse-capture ;
-: face-her-way ( -- )   \ (her yaw and the camera's turn the same way: x by sin, z by -cos)
-    fiona body-yaw yaw f!  0e pitch f! ;
+: face-her-way ( -- )   \ (she faces x by sin, z by +cos of her yaw; the camera x by sin, z by -cos)
+    pi fiona body-yaw f- yaw f!  0e pitch f! ;
 : start ( -- )  -1 mod-camera!  0 had ! ;
 : frame ( -- )
     key: F4 key-pressed? if  through-her-eyes @ 0= through-her-eyes !  through-her-eyes @ if  start  else  0 mod-camera!  then  then
@@ -53,8 +56,8 @@ end-state
     mod-camera? if  look place  then ;
 
 behaviour seeing
-  on spawned ( -- )  -1 through-her-eyes !  0 holding !  start  self subscribe tick ;
-  on tick ( -- )  frame ;
+  on spawned ( -- )  -1 through-her-eyes !  0 holding !  start  self subscribe frame-end ;
+  on frame-end ( -- )  frame ;   \ (after everyone's tick: she has moved this frame - not a frame behind her)
 end-behaviour
 
 seeing eyes-state s" first-person" spawn drop
