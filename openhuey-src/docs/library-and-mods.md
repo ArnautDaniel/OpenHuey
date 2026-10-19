@@ -406,6 +406,8 @@ the list in `src/game/mods.c`; `--mods DIR` names another folder of mods - the t
 - `mods_menu`, `mods_menu_after` (ctest): the menu on a copy of the samples (`--mods`) - a mod
   turned off and moved up, order.txt written, and in force when OpenHuey starts again.
 - `mods_free_play_entry` (ctest): the title hook's sample - FREE PLAY among the entries.
+- `mods_first_person` (ctest): the mods' camera's sample - the camera at Fiona's eyes and her
+  yaw, her walking where it looks, an event's shot taking it and giving it back, F4.
 - `mods_flower_scent` (ctest): the hook sample on - its rule set, the flowers calming her and
   kept, a remedy still the game's.
 - `mods_room_tally` (ctest): the sample mod on - its actor there, counting rooms, answering

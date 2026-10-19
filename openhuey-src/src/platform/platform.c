@@ -291,6 +291,12 @@ void platform_poll(Input *in) {
     in->mouse_buttons = SDL_GetMouseState(NULL, NULL);
 }
 
+void platform_mouse_capture(int on) {
+    if (sWindow != NULL) {
+        SDL_SetWindowRelativeMouseMode(sWindow, on != 0);
+    }
+}
+
 void platform_fullscreen(int on) {
     if (sWindow != NULL) {
         SDL_SetWindowFullscreen(sWindow, on != 0);   /* (no mode set: the desktop's, borderless) */

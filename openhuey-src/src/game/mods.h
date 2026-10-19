@@ -7,7 +7,7 @@
 #include "../forth/forth.h"
 
 #define MODS_API_MAJOR 1   /* the mod API: the game's messages, broadcasts and hooks (a mod's */
-#define MODS_API_MINOR 2   /* `requires: openhuey 1 0`): the minor grows with additions (1.1: item-use-rule, 1.2: title-menu-hook) */
+#define MODS_API_MINOR 3   /* `requires: openhuey 1 0`): the minor grows with additions (1.1: item-use-rule, 1.2: title-menu-hook, 1.3: the mods' camera) */
 
 /* the mods turned on, decided at start-up: those in `folder` (NULL: none - the tests) as
  * mods/order.txt says, then the folders or zips `named` (--mod); their files layered over the data */

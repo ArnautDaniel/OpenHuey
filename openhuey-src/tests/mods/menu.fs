@@ -8,13 +8,13 @@ USING: tester engine game-state actors messages keys facts opening mods.menu ;
 : step ( key -- done? )  tap  mods.menu:keys  game-tick ;
 game-tick game-tick
 
-testing the folder's mods (the three samples), all on, by name; the title offers MODS
-T{ mods-menu-count  0 mods-menu-mod nip nip  2 mods-menu-mod nip nip -> 3 -1 -1 }T
-T{ 0 mods-menu-mod drop s" flower-scent" compare  2 mods-menu-mod drop s" room-tally" compare -> 0 0 }T
+testing the folder's mods (the four samples), all on, by name; the title offers MODS
+T{ mods-menu-count  0 mods-menu-mod nip nip  3 mods-menu-mod nip nip -> 4 -1 -1 }T
+T{ 0 mods-menu-mod drop s" first-person" compare  3 mods-menu-mod drop s" room-tally" compare -> 0 0 }T
 T{ entries!  #items 2 - entry -> e-mods }T
 testing down to room-tally, off, moved up to the top: changed, and kept so in the menu
 mods.menu:open
-T{ key: Down step  key: Down step  key: X step  key: Left step  key: Left step  mods-menu-changed? -> 0 0 0 0 0 -1 }T
+T{ key: Down step  key: Down step  key: Down step  key: X step  key: Left step  key: Left step  key: Left step  mods-menu-changed? -> 0 0 0 0 0 0 0 -1 }T
 T{ 0 mods-menu-mod nip  swap drop  -> 0 }T
 T{ 0 mods-menu-mod drop s" room-tally" compare -> 0 }T
 testing back: mods/order.txt written, the menu done
