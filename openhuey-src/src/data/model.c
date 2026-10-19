@@ -798,7 +798,9 @@ void model_pose_hook(ModelPoseHook hook, void *user) {
 
 void model_pose_turns(const ModelTurn *t, int n) {
     sNTurns = n < 8 ? n : 8;
-    memcpy(sTurns, t, (size_t)sNTurns * sizeof(*t));
+    if (sNTurns > 0) {   /* (none: t may be NULL) */
+        memcpy(sTurns, t, (size_t)sNTurns * sizeof(*t));
+    }
 }
 
 /* bone i's world matrix turned about its own place: by `pitch` about model x, then `yaw` about

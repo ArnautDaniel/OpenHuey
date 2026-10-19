@@ -694,9 +694,17 @@ static void *addr(Forth *f, Cell a) {
     }
     return (void *)a;
 }
-PRIM(p_fetch) { Cell a = POP(); PUSH(*(Cell *)addr(f, a)); }
-PRIM(p_store) { Cell a = POP(), x = POP(); *(Cell *)addr(f, a) = x; }
-PRIM(p_pstore) { Cell a = POP(), x = POP(); *(Cell *)addr(f, a) += x; }
+/* (cells anywhere: an address needn't be aligned - a structure's field, a byte table's) */
+PRIM(p_fetch) { Cell a = POP(), x; memcpy(&x, addr(f, a), sizeof(x)); PUSH(x); }
+PRIM(p_store) { Cell a = POP(), x = POP(); memcpy(addr(f, a), &x, sizeof(x)); }
+PRIM(p_pstore) {
+    Cell a = POP(), x = POP(), y;
+    void *p = addr(f, a);
+
+    memcpy(&y, p, sizeof(y));
+    y += x;
+    memcpy(p, &y, sizeof(y));
+}
 PRIM(p_cfetch) { Cell a = POP(); PUSH(*(uint8_t *)addr(f, a)); }
 PRIM(p_cstore) { Cell a = POP(), x = POP(); *(uint8_t *)addr(f, a) = (uint8_t)x; }
 PRIM(p_wfetch) { Cell a = POP(); uint16_t v; memcpy(&v, addr(f, a), 2); PUSH(v); }

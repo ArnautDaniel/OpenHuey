@@ -673,7 +673,11 @@ static int convert_model(const Item *it, const char *root, Items *made, const ui
              slash != NULL ? slash + 1 : it->path);
     json = modelgltf_write(&m, "model.bin", tex, &bin, &bs, &len);
     snprintf(rel, sizeof(rel), "data/%.*s.model/model.bin", base, it->path);
-    ok = write_file(root, made, rel, bin, bs, why, n);
+    ok = json != NULL && bin != NULL;
+    if (!ok) {
+        snprintf(why, n, "%s couldn't be converted (no memory)", it->path);
+    }
+    ok = ok && write_file(root, made, rel, bin, bs, why, n);
     snprintf(rel, sizeof(rel), "data/%.*s.model/model.gltf", base, it->path);
     ok = ok && write_file(root, made, rel, (const uint8_t *)json, len, why, n);
     if (ok && m.motions != NULL) {
@@ -755,7 +759,11 @@ static int convert_room(const Item *it, const char *root, Items *made, const uin
             char *json = roomgltf_write(&mesh, "mesh.bin", &bin, &bs, &len);
 
             snprintf(rel, sizeof(rel), "data/%.*s.room/mesh.bin", base, it->path);
-            r = write_file(root, made, rel, bin, bs, why, n);
+            r = json != NULL && bin != NULL;
+            if (!r) {
+                snprintf(why, n, "%s couldn't be converted (no memory)", it->path);
+            }
+            r = r && write_file(root, made, rel, bin, bs, why, n);
             snprintf(rel, sizeof(rel), "data/%.*s.room/mesh.gltf", base, it->path);
             r = r && write_file(root, made, rel, (const uint8_t *)json, len, why, n);
             free(json);

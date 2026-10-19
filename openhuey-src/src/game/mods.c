@@ -1,7 +1,7 @@
 /* Mods (mods.h, docs/library-and-mods.md).
  *
  *   mods/order.txt        on: <name> / off: <name>, a line each, in load order (the mods menu
- *                         will write it); a mod it doesn't name is on, after those it does
+ *                         writes it); a mod it doesn't name is on, after those it does
  *   mods/<folder>/mod.fs  mod: <name>  version: <major> <minor>   (or mods/<name>.zip: mod.fs at
  *                         its top, or in the one folder it holds)
  *                         requires: openhuey <major> <minor> (the mod API; also `hga`) / <mod> <major> <minor>
@@ -45,7 +45,7 @@ static int sN;
 static char sFolder[1024];   /* mods/ (empty: none - the tests) */
 
 /* the mods menu's list (the title's MODS): the folder's mods in the order order.txt will have,
- * each on or off as the player set it - applied when hga next starts */
+ * each on or off as the player set it - applied when OpenHuey next starts */
 typedef struct MenuMod {
     char name[64], why[160];
     int on, was_on, ok;   /* ok: it loaded this run (was_on and nothing turned it off) */
@@ -267,7 +267,7 @@ static void read_order(const char *folder) {
 static void check_needs(void) {
     int changed = 1, i, k;
 
-    for (i = 0; i < sN; i++) {   /* (hga's first: a mod off for it is off for those needing it) */
+    for (i = 0; i < sN; i++) {   /* (OpenHuey's first: a mod off for it is off for those needing it) */
         Mod *m = &sMods[i];
 
         for (k = 0; k < m->nrequires && m->on; k++) {
@@ -600,7 +600,7 @@ static void p_menu_save(Forth *f, Word *w) {   /* ( -- flag ) mods/order.txt wri
         forth_push(f, 0);
         return;
     }
-    fprintf(o, "\\ the mods' load order, each on or off (written by hga's mods menu; docs/library-and-mods.md)\n");
+    fprintf(o, "\\ the mods' load order, each on or off (written by OpenHuey's mods menu; docs/library-and-mods.md)\n");
     for (i = 0; i < sNMenu; i++) {
         fprintf(o, "%s %s\n", sMenu[i].on ? "on:" : "off:", sMenu[i].name);
     }

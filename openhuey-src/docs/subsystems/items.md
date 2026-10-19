@@ -159,10 +159,11 @@ holds the world); △ stops it, or leaves. The art ($E, Gallery_StateArt*): a pi
 (SUBSCR/ARTnn.LEN's runs, `art-picture` - data/artpic.c) and looked over: the arrows a pixel, WASD
 eight, F (R3) whole size, the circle back to the middle (the original's L3: no key for it), ✕ the
 moves turned round. The TYPE ranks ($F, SubScreen_StateEntries): each one's message in the box,
-then - unlocked - the one after it. *Not yet* (the model gallery's figures as their classes make
-them): the second texture sets (`*_200`), Daniella's and the tint stalker's variants (entries 11 /
-12, 15 / 16), entries 3 / 4 (costumes 7 / 6) switching their state at $E00, the dogs' layered idles ($1F00,
-$2000, $2102), and the models' own cloth. **The mini-game** (`subscreen/extras.fs`): its menu
+then - unlocked - the one after it. The dogs idle with Hewie's mouth, ears and tail overlays ($1F00, $2000, $2102); the costumes,
+Daniella and the rest hang their cloth as in play (picked by their model). *Not kept*: the
+variants' per-part draw settings (Daniella's and the tint stalker's entries 11 / 12, 15 / 16;
+costumes 7 / 6 at $E00) - as the cast's, none are kept; the second texture sets (`*_200`) no
+figure shows without. **The mini-game** (`subscreen/extras.fs`): its menu
 (mode $A: the introduction, challenges A..D - C and D once A and B are cleared, resident flags
 $52 / $53 - with their three best times, exit; the pick into variable $2E) and its results (mode
 $C: the unlock, the time placed among the challenge's best, shown a step every 30 frames with the

@@ -273,6 +273,9 @@ create second-ones  15 , 17 , 19 , 21 , 23 ,                               \ (bi
     gal-at @ floats model-nearest + f@ 10e f+ gal-dist f!  0e gal-turn f!
     gal-at @ 3 * floats model-heights + float+ f@ gal-height f!
     0 gal-motion !  0 play
+    gal-at @ 6 9 within if   \ (the dogs: mouth, ears and tail idling, as Hewie's overlays)
+        gal-model @ $1F00 motion-overlay  gal-model @ $2000 motion-overlay  gal-model @ $2102 motion-overlay
+    then
     1 stage-lights  55e 55e 50e stage-ambient   \ (Gallery_StateModelChosen: one everywhere, one from the camera's way - model-camera)
     0.19e 0.35e 0.48e clear-color ;   \ (the backdrop: $5C503C at the PS2's half - 120 160 184 - in linear light)
 : model-out ( -- )   \ (gallery_leave: the figure gone, the camera, lights and background back)

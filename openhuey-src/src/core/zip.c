@@ -101,7 +101,9 @@ Zip *zip_open(const char *path) {
             return refuse(z, f, buf, path, "is encrypted");
         }
         if (nlen > 0 && p[46 + nlen - 1] != '/') {   /* (a folder's own entry: left out) */
-            e->name = malloc((size_t)nlen + 1);
+            if ((e->name = malloc((size_t)nlen + 1)) == NULL) {
+                return refuse(z, f, buf, path, "is too big to read");
+            }
             memcpy(e->name, p + 46, (size_t)nlen);
             e->name[nlen] = 0;
             for (j = 0; j < nlen; j++) {

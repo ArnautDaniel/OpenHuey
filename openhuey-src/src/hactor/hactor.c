@@ -126,7 +126,9 @@ static void enqueue(int from, int to, int kind, const Cell *args, int n) {
     m->from = from;
     m->to = to;
     m->n = n;
-    memcpy(m->a, args, (size_t)n * sizeof(Cell));
+    if (n > 0) {   /* (none: args may be NULL) */
+        memcpy(m->a, args, (size_t)n * sizeof(Cell));
+    }
 }
 
 void hactor_send(int from, int to, int kind, const Cell *args, int n) {

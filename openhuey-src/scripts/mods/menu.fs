@@ -1,7 +1,7 @@
 \ mods/menu.fs - the mods menu (the title's MODS, shown when there are mods; docs/library-and-mods.md):
 \ the mods in mods/ in their load order, each on or off, and why one asked for didn't load this
 \ run. Up / Down pick one; the cross turns it on or off; Left / Right (or L1 / R1) move it in the
-\ order; the triangle goes back, writing mods/order.txt if anything changed - it applies when hga
+\ order; the triangle goes back, writing mods/order.txt if anything changed - it applies when OpenHuey
 \ next starts (a mod's scripts load with the game's). The engine keeps the list (src/game/mods.c).
 IN: mods.menu
 USING: engine keys ;

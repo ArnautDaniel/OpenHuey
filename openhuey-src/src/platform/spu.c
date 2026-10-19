@@ -71,7 +71,7 @@ void spu_unlock(void) { SDL_UnlockMutex(S.lock); }
 
 static void env_step(Voice *v, int exp, int dec, int shift, int step) {
     int cycles = 1 << (shift - 11 > 0 ? shift - 11 : 0);
-    int delta = (dec ? -8 + step : 7 - step) << (11 - shift > 0 ? 11 - shift : 0);
+    int delta = (dec ? -8 + step : 7 - step) * (1 << (11 - shift > 0 ? 11 - shift : 0));   /* (the PS2's shift, as a multiply: defined for the negative steps) */
 
     if (exp && !dec && v->level > 0x6000) {
         cycles *= 4;
