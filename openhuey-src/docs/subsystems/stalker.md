@@ -154,9 +154,11 @@ $1803) with his health back; in a doorway he's left at 1. A stumble ($8000, or h
 roll by how worn he is: his health over its most above 0.8 none, 0.6 2 in 100, 0.4 5, else 10)
 hurts him 900 frames: he stands 2, walks $202 / $203, turns $405.., and growls ($1F) after
 it. At his flinch's key, her blow, he may strike back: his table 8 (her in front) or 9.
-After a blow's reaction, 20 damage or more (not held off, not in a doorway, a way out): he
-gives up - his cry ($20), held off (mode 4, 900 frames), out by a door he can go by, the
-damage count back to 0.
+At the end of each step - a blow's reaction, his striking back, any move of his chase
+(Pursuer_FrameUpdate) - 20 damage or more (not held off, not in a doorway) and a way home: he
+gives up - his cry ($20), held off (mode 4, 900 frames), the damage count back to 0 - and goes
+out by the first door of his route to the nearer of his own rooms ($20, $02; in one of them, to
+its spot: Debilitas_PickDestination). No route home: he doesn't give up.
 
 **Taking her** (P2b, `stalker/grab.fs`; Pursuer_StateFaceFiona / StateWalkOn, Pursuer_CloseOnFiona):
 her floor not free for him (flags $80001) - his attack tables 6 / 7 instead (7 from the panic's

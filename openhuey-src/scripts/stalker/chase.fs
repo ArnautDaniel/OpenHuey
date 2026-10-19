@@ -198,10 +198,13 @@ create family-acts  ' wander , ' turn-at-her , ' lunge , ' grab-dog ,
     her-plight @ dup unreachable-plight = if  drop exit  then   \ (out of reach: struck already, hidden)
     dup free-plight calming-plight 1+ within 0= if  drop free-plight  then  choose ;
 : moving-act? ( -- flag )  chase-act @ dup watch-act =  over walk-at-act = or  swap stalk-act = or ;
+\ (Pursuer_FrameUpdate: each step he finishes, first whether he gives up - stalker/struck.fs)
+defer gave-up? ( -- flag )   ' false is gave-up?
 : chase-run ( -- )
     1 chase-t +!
     hold-off @ if  -1 hold-off +!  then
     act-xt @ execute
+    step-done @ if  gave-up? if  exit  then  then
     chase-act @ case
         watch-act of  standing-choice  endof
         walk-at-act of  walking-choice  endof
