@@ -224,6 +224,13 @@ T{ [: [: away? ;] his ;] 900 soon -> -1 }T
 testing ... (P3b) by its door: lined up, his animation ($602), the door swung open with it - left open
 T{ room-id 0 room-exit-door door-open?  room-id 0 room-exit-door door-held? -> -1 0 }T
 false blind  debug:debilitas-out  2 frames
+testing ... seeing her - striking back at her shove - he gives up all the same, at the end of that
+testing ... step (Pursuer_FrameUpdate); out by the first door of his way home (Debilitas_PickDestination)
+settled  close-up  false blind  [: 70 hp !  25 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press
+T{ [: [: my-mode @ 4 = ;] his ;] 300 soon  [: hits @ ;] his -> -1 0 }T
+T{ [: goal-room @ dup $20 = swap $02 = or  making-for @ 0< 0= ;] his -> -1 -1 }T
+T{ [: [: away? ;] his ;] 900 soon -> -1 }T
+debug:debilitas-out  2 frames
 
 testing a door slammed on him (P3b): Fiona beside the open door, him in its way - shut, 3 damage, knocked through and out (stunned 150)
 : door0 ( -- door )  room-id 0 room-exit-door ;

@@ -14,30 +14,30 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 : at-door? ( -- flag )
     8 0 do  i door-here? if  i 0 my-at vec@ door-in-area? if  true unloop exit  then  then  loop  false ;
 
-\ ---- after a blow's reaction (Pursuer_FrameUpdate's end of step): gives up, or on ----
-: way-out ( -- exit | -1 )   \ (an exit he can go by: a usable door with a way to it)
-    8 0 do
-        my-room i room-exit-door dup 0< 0= if
-            door-kind usable-kind? if
-                i 0 exit-spot dup 0< 0= if  goal-at vec!  goal-at plan 0> if  i unloop exit  then  else  drop fdrop fdrop fdrop  then
-            then
-        else  drop  then
-    loop  -1 ;
+\ ---- each step he finishes (Pursuer_FrameUpdate) and after a blow's reaction: gives up, or on ----
 : leave-by ( exit -- )   \ (out by the door he made for: stalker/doorway.fs)
     out-by 0= if  stand  then ;
-: give-up? ( -- flag )   \ (Debilitas_GivesUp: 20 damage, not held off already, not in a doorway, a way out;
-    gives-up @ 0= if  false exit  then   \ the Pursuer's: never)
+: way-home ( -- found? )   \ (Debilitas_PickDestination: in one of his rooms, there; else the nearer of
+    \ them he has a route to - its first door his way out, making-for; none: -1)
+    own-a @ 0< if  false exit  then
+    own-room? if  -1 making-for !  true exit  then
+    head-home  route-over? 0= ;
+: give-up? ( -- flag )   \ (Debilitas_GivesUp: 20 damage, not held off already, not in a doorway, and a way
+    gives-up @ 0= if  false exit  then   \ home - else on after her; the Pursuer's: never)
     hits @ 20 <  my-mode @ held-off = or  at-door? or if  false exit  then
-    way-out dup 0< if  drop false exit  then  making-for !  true ;
-: give-up ( -- )
-    0 hits !  give-up-cry 7 sound  held-off mode!  no-search search-phase !  making-for @ leave-by ;
+    way-home ;
+: give-up ( -- )   \ (out by the first door of his way home; in one of his rooms, to its spot)
+    0 hits !  give-up-cry 7 sound  held-off mode!  no-search search-phase !
+    making-for @ 0< if  in-play  else  making-for @ leave-by  then ;
+:noname ( -- flag )  give-up? dup if  give-up  then ; is gave-up?
 : recovered ( -- )
     0 reeling !
     hp @ 0> 0= if  hp-max @ hp !  then
     give-up? if  give-up exit  then
     growl-after @ my-mode @ held-off <> and if  stumble-growl 7 sound  then  0 growl-after !
-    my-mode @ held-off = if   \ (held off already: on out)
-        way-out dup 0< if  drop stand exit  then  leave-by exit
+    my-mode @ held-off = if   \ (held off already: on home)
+        way-home 0= if  stand exit  then
+        making-for @ 0< if  in-play  else  making-for @ leave-by  then  exit
     then
     sees-fiona @ if  chase-begin  else  my-mode @ after-her = if  chase-start  else  search-again  then  then ;
 
