@@ -26,6 +26,8 @@ void platform_size(int *w, int *h);
 void platform_swap(void);
 /* text input on (the console) or off */
 void platform_text_input(int on);
+/* the mouse held in the window, unseen, its motion relative (a first-person look) or not */
+void platform_mouse_capture(int on);
 /* the window fullscreen (the desktop's mode) or not */
 void platform_fullscreen(int on);
 

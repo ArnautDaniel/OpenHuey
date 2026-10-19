@@ -891,9 +891,29 @@ PRIM(p_cam_ease) { camdir_ease(&gCamDir); }
 PRIM(p_cam_event) { PUSH(gCamDir.event ? -1 : 0); }   /* ( -- flag ) an event's shot has the camera (the director idle) */
 PRIM(p_cam_event_set) { gCamDir.event = POP() != 0; }  /* ( flag -- ) an event's shot takes the camera, or gives it back */
 PRIM(p_cam_track) { camdir_track(&gCamDir); }
+/* ---- the mods' camera (docs/modding.md): a mod's own, over the director's in play - not in a
+ * cutscene's shot or an event's (those keep theirs) ---- */
+static struct {
+    Camera cam;
+    int on;
+} sModCam = {{{0, 0, 0}, 0, 0, 1.0471976f, 5.0f, 20000.0f, 1.0f, 0.0f}, 0};
+static int mod_camera_has(void) { return sModCam.on && !gCamDir.event && !gCamDir.scene; }
+PRIM(p_mod_camera) { PUSH(&sModCam.cam); }   /* ( -- addr ) the mods' camera (cam.x cam.yaw cam.fov ...: set it) */
+PRIM(p_mod_camera_set) {   /* ( on -- ) the mods' camera on (from the camera as it is now) or off */
+    int on = POP() != 0;
+
+    if (on && !sModCam.on) {
+        sModCam.cam = gEngine.camera;
+    }
+    sModCam.on = on;
+}
+PRIM(p_mod_camera_has) { PUSH(mod_camera_has() ? -1 : 0); }   /* ( -- flag ) it has the camera now */
+PRIM(p_mouse_capture) { platform_mouse_capture((int)POP()); }   /* ( on -- ) the mouse held: its motion all look */
 PRIM(p_cam_update) {   /* ( -- ) the camera placed, and the engine's camera made the director's */
     camdir_update(&gCamDir);
-    camdir_apply(&gCamDir, &gEngine.camera);
+    if (!mod_camera_has()) {   /* (a mod's has it: the director follows on, unseen) */
+        camdir_apply(&gCamDir, &gEngine.camera);
+    }
 }
 PRIM(p_cam_restart) { camdir_restart(&gCamDir); }
 PRIM(p_cam_place) {   /* ( F: ex ey ez lx ly lz -- ) the camera put here, looking there, a 60 degree view (an event's shot) */
@@ -2731,7 +2751,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its skinned parts sho
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.6") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.7") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
@@ -2885,6 +2905,9 @@ void engine_tick(Engine *e) {
     }
     if (e->paused) {   /* (a menu up: only its actors have a frame) */
         hactor_held_frame(e->forth);
+        if (mod_camera_has()) {
+            e->camera = sModCam.cam;
+        }
         if (e->alone > 0 && e->alone - 1 < MAX_ACTORS) {   /* (the menu's own model: it moves) */
             actor_tick(&e->actors[e->alone - 1]);
         }
@@ -2903,7 +2926,9 @@ void engine_tick(Engine *e) {
     }
     particles_tick(e->camera.pos);   /* (the effects' sprites move) */
     rumble_tick();
-    cutscene_camera(&e->camera);   /* a cutscene's shot with the camera in it has it */
+    if (!cutscene_camera(&e->camera) && mod_camera_has()) {   /* a cutscene's shot with the camera in it has it; else a mod's */
+        e->camera = sModCam.cam;
+    }
     camdir_shake(&gCamDir, &e->camera);   /* (shaken, whoever placed it) */
     room_tick(&e->room);
     for (i = 0; i < ROOM_DOORS; i++) {   /* (Door_PlaySound: at the door, common sounds) */
@@ -3356,7 +3381,7 @@ void bind_engine(Forth *f) {
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
         {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
-        {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"controls", p_controls}, {"control-key", p_control_key}, {"control-binding", p_control_binding}, {"control-bind", p_control_bind}, {"controls-reset", p_controls_reset}, {"control-bind-next", p_control_bind_next}, {"control-waiting", p_control_waiting}, {"key-name", p_key_name}, {"art-picture", p_art_picture}, {"thumbnail", p_thumbnail}, {"alone", p_alone}, {"cam-keep", p_cam_keep}, {"cam-kept", p_cam_kept}, {"key-push", p_key_push}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
+        {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"controls", p_controls}, {"control-key", p_control_key}, {"control-binding", p_control_binding}, {"control-bind", p_control_bind}, {"controls-reset", p_controls_reset}, {"control-bind-next", p_control_bind_next}, {"control-waiting", p_control_waiting}, {"key-name", p_key_name}, {"mod-camera", p_mod_camera}, {"mod-camera!", p_mod_camera_set}, {"mod-camera?", p_mod_camera_has}, {"mouse-capture", p_mouse_capture}, {"art-picture", p_art_picture}, {"thumbnail", p_thumbnail}, {"alone", p_alone}, {"cam-keep", p_cam_keep}, {"cam-kept", p_cam_kept}, {"key-push", p_key_push}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"freecam?", p_freecam}, {"freecam!", p_freecam_set}, {"mouse-down?", p_mouse_down},
         {"on-tick", p_on_tick}, {"off-tick", p_off_tick}, {"ticks", p_ticks}, {"dt", p_dt},
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},

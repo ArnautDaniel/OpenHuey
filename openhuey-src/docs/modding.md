@@ -35,14 +35,14 @@ OpenHuey reads it (it isn't run): a word per line, `\` and `( )` comments.
 ```forth
 mod: my-mod              \ its name: letters, digits, - ; also its scripts' vocabulary
 version: 1 0             \ major, minor
-requires: openhuey 1 2        \ the mod API it was written for (below)
+requires: openhuey 1 3        \ the mod API it was written for (below)
 requires: other-mod 1 0  \ another mod it needs, at least this version
 after: other-mod         \ load after that one, if it's on
 ```
 
 - **The mod API** (`requires: openhuey M m`): the game's messages, broadcasts and hooks a mod uses.
-  OpenHuey has 1.2 (`mod-api` at the console: 102). A mod needs the same major and a minor no newer.
-  1.1 added `item-use-rule`, 1.2 `title-menu-hook`.
+  OpenHuey has 1.3 (`mod-api` at the console: 103). A mod needs the same major and a minor no newer.
+  1.1 added `item-use-rule`, 1.2 `title-menu-hook`, 1.3 the mods' camera.
 - A mod is **turned off** (and the reason shown in the MODS menu and on stderr) when: a
   `requires:` isn't met; its name is one of the game's vocabularies (`fiona`, `items` ...); its
   scripts fail to load. Nothing else stops the game.
@@ -178,6 +178,18 @@ it and draw each `frame-end` (as `room-tally` does). `ui-text ( layer addr len x
 `$C2` square, `$C3` cross, `$C4` L1, `$C6` R1), `ui-rect ( layer x y w h rgba -- )`,
 `screen-size ( -- w h )`, `char-size ( -- w h )` at the pen's scale (`pen-scale ( n -- )`).
 
+### The mods' camera (API 1.3)
+
+A mod can take the camera: `mod-camera ( -- addr )` is its own camera (set its fields each tick:
+`cam.x cam.y cam.z` the eye, `cam.yaw` - 0 looks along -z, positive turns right, as the
+characters' yaw - `cam.pitch` positive up, `cam.fov` the vertical view in radians, `cam.near`),
+`mod-camera! ( on -- )` gives it the view (from the camera as it is) or gives it back, and
+`mod-camera? ( -- flag )` says whether it has it now: a cutscene's or an event's shot keeps the
+game's camera and the mod's has it again after. Fiona walks by the camera, so she goes where the
+mod's camera looks. `mouse-capture ( on -- )` holds the mouse in the window, its motion all look
+(`mouse-dx`, `mouse-dy`: pixels this tick). The sample: `examples/mods/first-person` (through her
+eyes - `body-head` her head, `body-yaw` her facing - the mouse or the arrows looking; F4 off).
+
 ## Hooks: when the game must ask
 
 Where a mod needs to change what the game decides (not just react), the game offers a hook: a
@@ -242,8 +254,11 @@ SDL_AUDIO_DRIVER=dummy openhuey --mod path/to/my-mod --test tests/my-mod.fs
 - **Your own words win over the game's.** A file's own definitions shadow every vocabulary it
   uses - the core too. A mod that defines `move` breaks the core `move` (copying bytes) for the
   rest of its file. Name things after what they mean in your mod (`reorder`, `shift-mod`).
-- **Two used vocabularies with the same word**: the later in `USING:` wins; `vocab:word` reaches
-  the other. If a word does something unexpected, check `see word` and which vocabulary has it.
+- **Two used vocabularies with the same word**: in a file, the later in `USING:` wins; `vocab:word`
+  reaches the other. At the console and in `--eval` the order is kept from line to line, and a
+  vocabulary already in it keeps its place - say `vocab:word` there (`vectors` has a `pitch`,
+  `game` a `camera`: `first-person:pitch`, `engine:camera`). If a word does something unexpected,
+  check `see word` and which vocabulary has it.
 - **Control words only inside a definition.** `if`, `?do`, `do`, `case` can't run at the top level
   of a file or at `--eval`: wrap them in a `: word ... ;`.
 - **Locals**: the first `{: :}` of a definition can't be inside an `if` or a loop (later ones

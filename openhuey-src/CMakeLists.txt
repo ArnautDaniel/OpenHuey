@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.1.6 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.1.7 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -180,5 +180,7 @@ string(REPLACE " " "%20" NO_RELEASE_URL "file://${CMAKE_CURRENT_BINARY_DIR}/no-r
 add_test(NAME update_title COMMAND hga --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/update/title.fs")
 set_tests_properties(update_title PROPERTIES ENVIRONMENT
     "OPENHUEY_UPDATE_URL=${NO_RELEASE_URL};OPENHUEY_UPDATE_DIR=${CMAKE_CURRENT_BINARY_DIR}/update-title.scratch")
+add_test(NAME mods_first_person COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods/first-person"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/first-person.fs")
 add_test(NAME mods_free_play_entry COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods/free-play-entry"
     --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/free-play-entry.fs")
