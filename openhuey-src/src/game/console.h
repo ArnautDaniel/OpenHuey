@@ -1,5 +1,7 @@
 /* The Forth console: ` opens it over the game. Lines typed are evaluated; everything Forth
- * prints goes to its log (and to stdout). Up/down walk the history. */
+ * prints goes to its log (and to stdout). Up/down walk the history. Ctrl+V (or Shift+Insert)
+ * pastes - each whole line run; Ctrl+C copies the line typed, or with none what the last line
+ * printed; Ctrl+Shift+C the whole log; Ctrl+X cuts the line. */
 #ifndef CONSOLE_H
 #define CONSOLE_H
 

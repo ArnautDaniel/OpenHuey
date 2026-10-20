@@ -67,16 +67,96 @@ static void recall(Console *c, int step) {
     c->len = (int)strlen(c->input);
 }
 
+/* ---- the clipboard: Ctrl+V pastes (each line ended by a newline run, the rest left typed),
+ * Ctrl+C copies the line being typed - or, with none, what the last line run printed - and
+ * Ctrl+Shift+C the whole log; Ctrl+X cuts the line ---- */
+
+static void paste(Console *c, Forth *f) {
+    char *text = SDL_GetClipboardText(), *t;
+
+    if (text == NULL) {
+        return;
+    }
+    for (t = text; *t != 0; t++) {
+        if (*t == '\n') {
+            submit(c, f);
+        } else if (*t == '\t' && c->len < CONSOLE_COLS - 1) {
+            c->input[c->len++] = ' ';
+        } else if (*t >= 32 && *t < 127 && c->len < CONSOLE_COLS - 1) {
+            c->input[c->len++] = *t;
+        }
+    }
+    SDL_free(text);
+}
+
+/* the log's line i back from the newest written (1: the last whole line) */
+static const char *log_line(const Console *c, int i) {
+    return c->log[(c->head - i + CONSOLE_LINES) % CONSOLE_LINES];
+}
+
+static void copy_log(const Console *c, int last_run) {
+    static char text[CONSOLE_LINES * CONSOLE_COLS];
+    size_t n = 0;
+    int first = CONSOLE_LINES - 1, i;
+
+    if (last_run) {   /* (from the last "> " line - what was typed - on) */
+        for (first = 1; first < CONSOLE_LINES - 1 && strncmp(log_line(c, first), "> ", 2) != 0; first++) {
+        }
+    }
+    for (i = first; i >= 1; i--) {
+        const char *line = log_line(c, i);
+        size_t k = strlen(line);
+
+        if (n == 0 && k == 0) {   /* (the empty lines before the log's start) */
+            continue;
+        }
+        memcpy(text + n, line, k);
+        n += k;
+        text[n++] = '\n';
+    }
+    text[n] = 0;
+    SDL_SetClipboardText(text);
+}
+
+static void clipboard(Console *c, const Input *in, Forth *f) {
+    int shift = (SDL_GetModState() & SDL_KMOD_SHIFT) != 0;
+
+    if (in->typed[SDL_SCANCODE_V]) {
+        paste(c, f);
+    } else if (in->typed[SDL_SCANCODE_C] && shift) {
+        copy_log(c, 0);
+    } else if (in->typed[SDL_SCANCODE_C] || in->typed[SDL_SCANCODE_X]) {
+        if (c->len > 0) {
+            c->input[c->len] = 0;
+            SDL_SetClipboardText(c->input);
+            if (in->typed[SDL_SCANCODE_X]) {
+                c->len = 0;
+            }
+        } else if (in->typed[SDL_SCANCODE_C]) {
+            copy_log(c, 1);
+        }
+    }
+}
+
 void console_update(Console *c, const Input *in, Forth *f) {
     const char *t;
+    int ctrl;
 
     if (!c->open) {
         return;
     }
-    for (t = in->text; *t != 0; t++) {
-        if (*t != '`' && *t >= 32 && *t < 127 && c->len < CONSOLE_COLS - 1) {
-            c->input[c->len++] = *t;
+    ctrl = (SDL_GetModState() & (SDL_KMOD_CTRL | SDL_KMOD_GUI)) != 0;   /* (the modifiers themselves: the keys may be bound) */
+    if (ctrl) {
+        clipboard(c, in, f);
+    } else {
+        for (t = in->text; *t != 0; t++) {
+            if (*t != '`' && *t >= 32 && *t < 127 && c->len < CONSOLE_COLS - 1) {
+                c->input[c->len++] = *t;
+            }
         }
+    }
+    if (in->typed[SDL_SCANCODE_INSERT] && (SDL_GetModState() & SDL_KMOD_SHIFT)) {
+        paste(c, f);
     }
     if (in->typed[SDL_SCANCODE_BACKSPACE] && c->len > 0) {
         c->len--;
