@@ -65,7 +65,7 @@ void render_look_tick(void) {
 
 enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_COLOR, U_AMBIENT, U_EYE, U_RIM, U_MASK,
        U_ROOM_LIT, U_LPOS = 12, U_LCOL = 15, U_LRANGE = 18, U_AMBIENT128 = 21, U_NSHADOWS = 22, U_SHADOW_VP = 23,
-       U_SHADOW_INFO = 27, U_SHADOW_STRENGTH = 31, U_RECEIVE = 35, U_CHAR_LIGHT = 36, U_ALPHA = 37 };
+       U_SHADOW_INFO = 35, U_SHADOW_STRENGTH = 47, U_RECEIVE = 59, U_CHAR_LIGHT = 60, U_ALPHA = 61 };   /* (12 shadows) */
 
 static const char *kMeshVs =
     "#version 460 core\n"
@@ -111,12 +111,12 @@ static const char *kMeshFs =
     "layout(location = 18) uniform float u_lrange[3];\n"
     "layout(location = 21) uniform vec3 u_ambient128;\n"
     "layout(location = 22) uniform int u_nshadows;\n"
-    "layout(location = 23) uniform mat4 u_shadow_vp[4];\n"
-    "layout(location = 27) uniform vec4 u_shadow_info[4];\n"   /* the caster's middle, its size */
-    "layout(location = 31) uniform float u_shadow_strength[4];\n"
-    "layout(location = 35) uniform int u_receive;\n"
-    "layout(location = 36) uniform float u_char_light;\n"
-    "layout(location = 37) uniform vec4 u_tint;\n"   /* the whole draw tinted and faded (a character: 1 1 1 1 as it is) */
+    "layout(location = 23) uniform mat4 u_shadow_vp[12];\n"
+    "layout(location = 35) uniform vec4 u_shadow_info[12];\n"   /* the caster's middle, its size */
+    "layout(location = 47) uniform float u_shadow_strength[12];\n"
+    "layout(location = 59) uniform int u_receive;\n"
+    "layout(location = 60) uniform float u_char_light;\n"
+    "layout(location = 61) uniform vec4 u_tint;\n"   /* the whole draw tinted and faded (a character: 1 1 1 1 as it is) */
     "layout(binding = 1) uniform sampler2DArrayShadow u_shadow;\n"
     "layout(location = 0) out vec4 o_color;\n"
     "layout(location = 1) out float o_mask;\n"
@@ -153,7 +153,7 @@ static const char *kMeshFs =
     "    }\n"
     "    if (u_receive != 0) {\n"   /* characters' shadows: PCF over 3 x 3, fading with distance */
     "        vec2 texel = 1.0 / vec2(textureSize(u_shadow, 0).xy);\n"
-    "        for (int i = 0; i < 4; i++) {\n"
+    "        for (int i = 0; i < 12; i++) {\n"
     "            if (i >= u_nshadows) break;\n"
     /* (characters receive too - each other's shadows and their own: the point is moved out along
      * the surface's normal first so a surface doesn't shadow itself) */
