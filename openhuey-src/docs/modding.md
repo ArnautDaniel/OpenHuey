@@ -65,7 +65,7 @@ The library holds the game's files converted to common formats (an import of the
 
 | What | Path (under `library/data/`) | Format |
 |---|---|---|
-| a texture | `<folder>/<NAME>.texbank/<i>.png` (texture i of bank NAME.TEX); a room's: `ST_xxx/ST_yyy.room/textures.texbank/<i>.png` (effects: `effects.texbank/`) | PNG, RGBA, the same size (another size is cropped / padded for now). A 16-colour texture's other palettes are `<i>-<k>.png`, mapped in the bank's `bank.txt` (`src/data/texbank.h`) |
+| a texture | `<folder>/<NAME>.texbank/<i>.png` (texture i of bank NAME.TEX); a room's: `ST_xxx/ST_yyy.room/textures.texbank/<i>.png` (effects: `effects.texbank/`) | PNG, RGBA, any size up to 8192 a side: a bigger one (an HD pack: 2x, 4x) is drawn whole over the same surface. A 16-colour texture's other palettes are `<i>-<k>.png`, mapped in the bank's `bank.txt` (`src/data/texbank.h`) |
 | a music track | `ADX00/AD_01.flac` (for `ADX00/AD_01.ADX`) | FLAC, 16-bit; loop with Vorbis comments `LOOPSTART` / `LOOPEND` (samples), or none: it loops end to start (`src/data/musicsrc.h`) |
 | a sound effect | `<bank>.samples/<i>.wav` (sample i of the bank `<bank>.BD`; `bank.txt` lists them) | WAV, mono, 16-bit PCM; a loop as a `smpl` chunk; its pitch is the game's (the HD's), not the file's rate (`src/data/samples.h`) |
 | text | `SUBSCR/MSG_BASE.txt`, `MSG_SUB.txt`, `MSG_END.txt`; a room's `ST_xxx/ST_yyy.room/messages.txt` | UTF-8 text: `#id` then the message's lines; the game's control codes as `{page}`, `{colour 5}` ...; buttons as `{cross}`, `{triangle}` ... (the full list: `src/data/msgtext.h`). A translation is these files |
@@ -274,7 +274,7 @@ SDL_AUDIO_DRIVER=dummy openhuey --mod path/to/my-mod --test tests/my-mod.fs
   on each actor being the only one changing its state.
 - **Folder case** in `library/`: the game's (`SYSTEM/`, `ST_000/`); file names any case.
 - **Exactness**: the game's data reads back exactly in the library's formats; a mod's replacement
-  needn't, but keep the shape the reader expects (a WAV mono 16-bit, a texture the same size,
+  needn't, but keep the shape the reader expects (a WAV mono 16-bit, a texture the same shape (bigger is fine),
   message ids in order ...). OpenHuey says on stderr what it couldn't read.
 
 ## For an assistant starting here

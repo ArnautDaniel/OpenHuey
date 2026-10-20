@@ -355,9 +355,9 @@ after: better-textures   \ loaded after that mod, if it's on
      (`<bank>.texbank/<i>.png`; for a 16-colour texture `<i>-<k>.png` are its other palettes'
      pictures, as bank.txt maps them). Over a bank not converted (the developer's extracted
      data, a library imported before step 2) `<i>.png` stands for the texture in every
-     palette. A PNG of another size is drawn as much as fits until the renderer takes new
-     sizes. The rooms' textures inside their `.PAC` can't be replaced until rooms are
-     converted.
+     palette. A PNG of another size is drawn at its own size, filling the same surface, so an
+     HD texture pack is PNGs 2x or 4x the originals (a 16-colour texture's palettes may differ
+     in size; up to 8192 pixels a side). The rooms' are in `ST_xxx.room/textures.texbank/`.
    - Nothing else is needed for texture packs, music (a FLAC at the track's path),
      translations (the messages' text files) and sounds (a WAV in the bank's `.samples/`). The executable's tables, once they are data
      files in `library/exe/`, are overridden the same way.

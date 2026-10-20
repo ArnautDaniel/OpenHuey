@@ -37,6 +37,11 @@ int texbank_info(const TexBank *b, int i, int *w, int *h, int *psm);
 /* texture i decoded to RGBA8 (w*h*4 bytes) in palette `csa` (0..31, a 16-colour texture's; -1
  * the first): 1 on success */
 int texbank_rgba(const TexBank *b, int i, int csa, uint8_t *rgba);
+/* ... the same at the picture's own size, for drawing: a mod's bigger PNG (an HD texture pack) as
+ * it is, not cut to the original's (texture coordinates run 0..1, so it covers the same). The
+ * pixels malloc'd (free them) and its size in w, h; NULL on failure */
+#define TEXBANK_MAX_SIZE 8192
+uint8_t *texbank_image(const TexBank *b, int i, int csa, int *w, int *h);
 
 /* the import's conversion: the .TEX bank into the folder `dir` (made; ends with "/"), each file
  * written told to `wrote` (its name in the folder, its size); 0 if it isn't a bank or a file

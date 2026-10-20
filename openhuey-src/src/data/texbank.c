@@ -276,6 +276,49 @@ int texbank_rgba(const TexBank *b, int i, int csa, uint8_t *rgba) {
     return decode_png(&t->images[t->palette[csa < 0 ? 0 : csa & (PALETTES - 1)]], t->w, t->h, rgba);
 }
 
+/* a PNG at its own size (malloc'd), NULL if it isn't one or is too big */
+static uint8_t *png_own(const Image *im, int *w, int *h) {
+    uint8_t *px, *out;
+    int ch;
+
+    if (im->png == NULL || (px = stbi_load_from_memory(im->png, (int)im->size, w, h, &ch, 4)) == NULL) {
+        return NULL;
+    }
+    if (*w > TEXBANK_MAX_SIZE || *h > TEXBANK_MAX_SIZE || (out = malloc((size_t)*w * *h * 4 + 4)) == NULL) {
+        stbi_image_free(px);
+        return NULL;
+    }
+    memcpy(out, px, (size_t)*w * *h * 4);
+    stbi_image_free(px);
+    return out;
+}
+
+uint8_t *texbank_image(const TexBank *b, int i, int csa, int *w, int *h) {
+    const Texture *t;
+    uint8_t *rgba;
+    int psm;
+
+    if (b == NULL || i < 0 || i >= b->n) {
+        return NULL;
+    }
+    if (b->t == NULL && b->over != NULL && b->over[i].png != NULL) {   /* (a mod's over a bank not converted) */
+        return png_own(&b->over[i], w, h);
+    }
+    if (b->t != NULL) {
+        t = &b->t[i];
+        return t->nimages == 0 ? NULL : png_own(&t->images[t->palette[csa < 0 ? 0 : csa & (PALETTES - 1)]], w, h);
+    }
+    if (!texbank_info(b, i, w, h, &psm) || *w > TEXBANK_MAX_SIZE || *h > TEXBANK_MAX_SIZE ||
+        (rgba = malloc((size_t)*w * *h * 4 + 4)) == NULL) {
+        return NULL;
+    }
+    if (!texbank_rgba(b, i, csa, rgba)) {
+        free(rgba);
+        return NULL;
+    }
+    return rgba;
+}
+
 /* ---- the import's conversion ---- */
 
 typedef struct Sink {

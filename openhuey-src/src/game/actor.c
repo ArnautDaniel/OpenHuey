@@ -19,10 +19,10 @@ static void load_textures(Actor *a, const char *name) {
     bank = texbank_load(path);
     n = texbank_count(bank);
     for (i = 0; i < n && i < ACTOR_MAX_TEXTURES; i++) {
-        int w, h, psm;
-        uint8_t *rgba = texbank_info(bank, i, &w, &h, &psm) ? malloc((size_t)w * h * 4 + 4) : NULL;
+        int w, h;
+        uint8_t *rgba = texbank_image(bank, i, -1, &w, &h);   /* (at its own size: a texture pack's bigger) */
 
-        if (rgba != NULL && texbank_rgba(bank, i, -1, rgba)) {
+        if (rgba != NULL) {
             a->textures[i] = render_texture(rgba, w, h);
         }
         free(rgba);
@@ -70,14 +70,14 @@ void actor_texture_restore(Actor *a) {
 int actor_texture_swap(Actor *a, int sel, const char *file) {
     TexBank *bank = texbank_load(file);
     uint8_t *rgba;
-    int ok = 0, w, h, psm;
+    int ok = 0, w, h;
 
     if (bank == NULL || sel < 0 || sel >= ACTOR_MAX_TEXTURES) {
         texbank_free(bank);
         return 0;
     }
-    rgba = texbank_info(bank, 0, &w, &h, &psm) ? malloc((size_t)w * h * 4 + 4) : NULL;
-    if (rgba != NULL && texbank_rgba(bank, 0, -1, rgba)) {
+    rgba = texbank_image(bank, 0, -1, &w, &h);
+    if (rgba != NULL) {
         actor_texture_restore(a);
         a->swap_orig = a->textures[sel];
         a->swap_sel = sel;
