@@ -136,7 +136,7 @@ void render_draw_lights(Vec3 ambient, const DrawLight *lights, int n);
 
 /* shadows: each frame, before render_begin, casters are drawn from their light into a shadow
  * map; the room's draws then darken where a caster hides the light */
-#define RENDER_MAX_SHADOWS 4
+#define RENDER_MAX_SHADOWS 12   /* (the scene's shader has as many: render.c) */
 /* a reflection on the quad q (corners 0 1 2 3): between these two, what is drawn shows only on
  * the quad, in front of what was there (its depth pushed back), which is put back after */
 void render_reflect_begin(const Mat4 *vp, const Vec3 q[4]);

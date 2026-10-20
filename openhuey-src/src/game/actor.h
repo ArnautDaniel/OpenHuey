@@ -66,6 +66,9 @@ typedef struct Actor {
                              * shines (post_shine), $1E and up drawn after the reflections */
     Vec3 lo, hi;            /* the model's bounds (bind pose, model units) */
     int lights[3];          /* this frame: the room lights on it */
+    float shadow_share[16]; /* each room light's share of the light on it, eased (its shadows: main.c light_actor) */
+    float shadow_shown[16]; /* each light's shadow as dark as it is drawn (it follows the wanted, a little a frame) */
+    int shadow_room;        /* the room those are for, + 1 (0: none yet - taken at once, not eased) */
     /* a cutscene's motion file driving it (NULL: its own motion): its animation 0x8000 at
      * drive_frame, whose root bone is in room space (pos is then set from it) */
     const uint8_t *drive;

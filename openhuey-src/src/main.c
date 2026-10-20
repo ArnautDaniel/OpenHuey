@@ -173,48 +173,149 @@ static int load_scripts(Forth *f) {
     return 1;
 }
 
-/* the room's lights for an actor; its shadow from the strongest (a view from the light, fitted
- * round the actor and reaching the floor beyond) */
-static void light_actor(Engine *e, Actor *a) {
-    const Room *r = &e->room;
-    Vec3 center = actor_center(a);
-    float radius = actor_radius(a);
-    const RoomLight *l;
-    Vec3 dir, up;
-    float dist, lum, fall = 1.0f;
+/* the room's lights for an actor, and its shadows: from its two lights with the most of the light
+ * on it, each as dark as its share. The shares ease from frame to frame (SHARE_EASE), so walking
+ * from one light to the next one shadow fades as the other comes - not one put out and another
+ * cast at once where the brightest changes, or where a nav triangle's lights do */
+#define SHADOWS_PER_ACTOR 2
+#define SHADOWS_DRAWN 3    /* (one fading out as two are wanted) */
+#define SHARE_EASE 0.15f   /* (of the way to the new share each frame: most of it in half a second) */
+#define SHARE_LEAST 0.04f  /* (less: no shadow) */
+#define SHOWN_STEP 0.05f   /* (a shadow's darkness changes at most this a frame: a fade, never a jump) */
+
+/* a light's brightness at a point, as room_lights_at weighs it (0: none there) */
+static float light_score(const Room *r, int i, Vec3 at, uint32_t mask) {
+    const RoomLight *l = &r->lights[i];
+    float score = (0.3f * l->color.x + 0.6f * l->color.y + 0.1f * l->color.z) * l->intensity, d;
+
+    if (!(mask >> i & 1)) {
+        return 0.0f;
+    }
+    if (l->range > 0.0f) {
+        d = vec3_len(vec3_sub(at, l->pos));
+        score = d < l->range ? score * (l->range - d) / l->range : 0.0f;
+    }
+    return fmaxf(score, 0.0f);
+}
+
+/* a shadow from light l (a view from it, fitted round the actor and reaching the floor beyond) */
+static void cast_shadow(Actor *a, const RoomLight *l, Vec3 center, float radius, float strength) {
+    Vec3 dir = vec3_sub(center, l->pos), up;
+    float dist = vec3_len(dir);
     Mat4 proj, view, vp;
     int slot;
 
-    if (e->nstage > 0) {   /* (a stage: its lights, and no shadow map - there is nothing to fall on) */
-        a->lights[0] = 0;
-        a->lights[1] = e->nstage > 1 ? 1 : -1;
-        a->lights[2] = e->nstage > 2 ? 2 : -1;
-        return;
-    }
-    room_lights_at(r, center, a->lights);
-    if (a->lights[0] < 0) {
-        return;
-    }
-    l = &r->lights[a->lights[0]];
-    dir = vec3_sub(center, l->pos);
-    dist = vec3_len(dir);
     if (dist < radius * 1.5f) {
         return;   /* the light is inside it */
     }
-    if (l->range > 0.0f) {
-        fall = fmaxf(0.0f, 1.0f - dist / l->range);
-    }
-    lum = (0.3f * l->color.x + 0.6f * l->color.y + 0.1f * l->color.z) * l->intensity / 128.0f;
     dir = vec3_scale(dir, 1.0f / dist);
     up = fabsf(dir.y) > 0.95f ? vec3(1, 0, 0) : vec3(0, 1, 0);
     proj = mat4_perspective(2.0f * atanf(radius * 1.25f / dist), 1.0f, fmaxf(1.0f, dist - radius * 2.0f),
                             dist + radius * 6.0f + 200.0f);
     view = mat4_look(l->pos, dir, up);
     vp = mat4_mul(proj, view);
-    slot = render_shadow_add(&vp, center, radius, gRender.shadow_strength * fminf(1.0f, fmaxf(0.6f, lum * fall * 4.0f)) *
-                                                      (e->extra.on ? fminf(1.0f, e->extra.scale) : 1.0f));   /* (a scene's dimmed lights cast less) */
+    slot = render_shadow_add(&vp, center, radius, strength);
     if (slot >= 0 && !a->shadow_off) {
         render_shadow_mesh(&a->gpu, a->model.d, a->model.nd);
+    }
+}
+
+static void light_actor(Engine *e, Actor *a) {
+    const Room *r = &e->room;
+    Vec3 center = actor_center(a);
+    float radius = actor_radius(a), score[16] = {0}, wanted[16], total = 0.0f, base, lum, fall = 1.0f, h, cut, sum;
+    const RoomLight *l;
+    int pick[SHADOWS_PER_ACTOR + 1], drawn[SHADOWS_DRAWN], tri, i, j, k, n = r->nlights < 16 ? r->nlights : 16;
+    uint32_t mask;
+
+    if (e->nstage > 0) {   /* (a stage: its lights, and no shadow map - there is nothing to fall on) */
+        a->lights[0] = 0;
+        a->lights[1] = e->nstage > 1 ? 1 : -1;
+        a->lights[2] = e->nstage > 2 ? 2 : -1;
+        a->shadow_room = 0;
+        return;
+    }
+    room_lights_at(r, center, a->lights);
+    tri = navmesh_find(&r->nav, center, 10.0f, &h);
+    mask = tri >= 0 ? r->nav.tris[tri].lights : (r->nlights > 0 ? 1u : 0u);
+    for (i = 0; i < n; i++) {
+        score[i] = light_score(r, i, center, mask);
+        total += score[i];
+    }
+    if (a->shadow_room != r->id + 1) {   /* (a new room, or new to it: the shares as they are) */
+        for (i = 0; i < 16; i++) {
+            a->shadow_share[i] = total > 0.0f && i < n ? score[i] / total : 0.0f;
+        }
+    } else {
+        for (i = 0; i < 16; i++) {
+            float want = total > 0.0f && i < n ? score[i] / total : 0.0f;
+
+            a->shadow_share[i] += (want - a->shadow_share[i]) * SHARE_EASE;
+        }
+    }
+    /* the shares' top two, and the next: the two wanted by how far each is above that third, so a
+     * light taking over second place starts from nothing as the one it passes goes to nothing */
+    for (k = 0; k <= SHADOWS_PER_ACTOR; k++) {
+        pick[k] = -1;
+        for (i = 0; i < n; i++) {
+            int taken = 0, j;
+
+            for (j = 0; j < k; j++) {
+                taken |= pick[j] == i;
+            }
+            if (!taken && (pick[k] < 0 || a->shadow_share[i] > a->shadow_share[pick[k]])) {
+                pick[k] = i;
+            }
+        }
+    }
+    for (i = 0; i < 16; i++) {
+        wanted[i] = 0.0f;
+    }
+    cut = pick[SHADOWS_PER_ACTOR] >= 0 ? a->shadow_share[pick[SHADOWS_PER_ACTOR]] : 0.0f;
+    for (sum = 0.0f, k = 0; k < SHADOWS_PER_ACTOR; k++) {
+        sum += pick[k] >= 0 ? fmaxf(0.0f, a->shadow_share[pick[k]] - cut) : 0.0f;
+    }
+    if (pick[0] >= 0 && a->shadow_share[pick[0]] >= SHARE_LEAST && sum > 0.0f) {
+        /* as dark as before from the brightest (a dim room's shadows lighter), times each one's part */
+        l = &r->lights[pick[0]];
+        if (l->range > 0.0f) {
+            fall = fmaxf(0.0f, 1.0f - vec3_len(vec3_sub(center, l->pos)) / l->range);
+        }
+        lum = (0.3f * l->color.x + 0.6f * l->color.y + 0.1f * l->color.z) * l->intensity / 128.0f;
+        base = gRender.shadow_strength * fminf(1.0f, fmaxf(0.6f, lum * fall * 4.0f)) *
+               (e->extra.on ? fminf(1.0f, e->extra.scale) : 1.0f);   /* (a scene's dimmed lights cast less) */
+        for (k = 0; k < SHADOWS_PER_ACTOR; k++) {
+            if (pick[k] >= 0) {   /* (two lights alike: each a little lighter than one alone) */
+                wanted[pick[k]] = base * fminf(1.0f, fmaxf(0.0f, a->shadow_share[pick[k]] - cut) / sum * 1.5f);
+            }
+        }
+    }
+    for (i = 0; i < 16; i++) {
+        if (a->shadow_room != r->id + 1) {
+            a->shadow_shown[i] = wanted[i];
+        } else {
+            a->shadow_shown[i] += fmaxf(-SHOWN_STEP, fminf(SHOWN_STEP, wanted[i] - a->shadow_shown[i]));
+        }
+    }
+    a->shadow_room = r->id + 1;
+    /* drawn: the darkest few as they are shown */
+    for (k = 0; k < SHADOWS_DRAWN; k++) {
+        int best = -1;
+
+        for (i = 0; i < n; i++) {
+            if (a->shadow_shown[i] > 0.01f && (best < 0 || a->shadow_shown[i] > a->shadow_shown[best])) {
+                best = i;
+            }
+        }
+        if (best < 0) {
+            break;
+        }
+        cast_shadow(a, &r->lights[best], center, radius, a->shadow_shown[best]);
+        drawn[k] = best;
+        a->shadow_shown[best] = -a->shadow_shown[best];   /* (taken: not again this frame) */
+    }
+    for (j = 0; j < k; j++) {
+        a->shadow_shown[drawn[j]] = -a->shadow_shown[drawn[j]];
     }
 }
 
