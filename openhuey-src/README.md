@@ -35,7 +35,9 @@ ctest --test-dir build/openhuey-src    # all the tests
 build/openhuey-src/openhuey --test openhuey-src/tests/acoustics/test_hearing.fs   # one subsystem's
 ```
 
-In the game: `` ` `` opens the Forth console (`scripts/debug.fs` has its helpers), F1 the settings
+In the game: `` ` `` opens the Forth console (`scripts/debug.fs` has its helpers; Ctrl+V pastes,
+each whole line run, Ctrl+C copies the line typed or, with none, what the last one printed,
+Ctrl+Shift+C the whole log, Ctrl+X cuts), F1 the settings
 (the picture, fullscreen, the controls - saved in `user/`), F11 or Alt+Return fullscreen, F2 the debug
 overlay (Fiona's meters, the actors alive and their ids, OpenHuey's version), F3 the free camera,
 F12 a bug report: the moment kept in `user/bugs/<date>_<time>/` (report.txt - where she is, every
