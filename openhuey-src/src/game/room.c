@@ -87,11 +87,12 @@ static void load_textures(Room *r) {
 
     for (i = 0; i < n && i < ROOM_MAX_TEXTURES; i++) {
         int w = 0, h = 0, psm = 0;
-        uint8_t *rgba = texbank_info(bank, i, &w, &h, &psm) && w <= 2048 && h <= 2048 ? malloc((size_t)w * h * 4 + 4) : NULL;
+        uint8_t *rgba = texbank_image(bank, i, -1, &w, &h);   /* (at its own size: a texture pack's bigger) */
 
-        if (rgba != NULL && texbank_rgba(bank, i, -1, rgba)) {
+        if (rgba != NULL) {
             r->textures[i] = render_texture(rgba, w, h);
         } else {
+            texbank_info(bank, i, &w, &h, &psm);
             fprintf(stderr, "room %03X: texture %d: format %02X not decoded\n", r->id, i, psm);
         }
         free(rgba);

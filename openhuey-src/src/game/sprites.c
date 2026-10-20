@@ -85,7 +85,7 @@ static GpuTexture texture(int group, int id, int csa) {
     int idx = group + id, g, i, free_i = -1;
     const Group *gr = NULL;
     uint8_t *rgba;
-    int w = 0, h = 0, psm;
+    int w = 0, h = 0;
 
     for (g = idx < CACHE - 1 ? idx : CACHE - 1; g >= 0 && idx < CACHE; g--) {
         if (sGroups[g].bank != NULL && idx - g < sGroups[g].count) {
@@ -107,9 +107,8 @@ static GpuTexture texture(int group, int id, int csa) {
     if (free_i < 0) {
         return 0;
     }
-    rgba = texbank_info(gr->bank, idx - g, &w, &h, &psm) && w <= 2048 && h <= 2048 ? malloc((size_t)w * h * 4) : NULL;
-    if (rgba == NULL || !texbank_rgba(gr->bank, idx - g, csa, rgba)) {
-        free(rgba);
+    rgba = texbank_image(gr->bank, idx - g, csa, &w, &h);   /* (its own size; where it is drawn: the original's, sprites_texture_size) */
+    if (rgba == NULL) {
         return 0;
     }
     sDecoded[free_i] = (Decoded){gr->bank, idx - g, csa, render_texture(rgba, w, h)};

@@ -339,6 +339,22 @@ int main(int argc, char **argv) {
     CHECK(texbank_rgba(b, 0, 0, rgba) && all_of(rgba, 4, 1, kGreen) && rgba[(size_t)w * 4 * 2 + 3] == 0,
           "a PNG of another size: as much as fits, the rest clear");
     texbank_free(b);
+    {   /* ---- an HD texture pack's: drawn at its own size (texbank_image), the bank's left as it is ---- */
+        int iw = 0, ih = 0;
+        uint8_t *own;
+
+        put_png("mods/alpha/library/data/" BANK ".texbank/0.png", w * 4, h * 4, kGreen);
+        mods_find(mods, NULL, 0);
+        b = texbank_load(BANK ".TEX");
+        own = texbank_image(b, 0, 0, &iw, &ih);
+        CHECK(own != NULL && iw == w * 4 && ih == h * 4 && all_of(own, iw, ih, kGreen), "a bigger PNG drawn whole, at its own size");
+        free(own);
+        own = texbank_image(b, 0, csa < 32 ? csa : 1, &iw, &ih);
+        CHECK(own != NULL && iw == w && ih == h, "another palette's picture: the library's, its size");
+        free(own);
+        CHECK(texbank_info(b, 0, &iw, &ih, &psm) && iw == w && ih == h, "the texture's own size still the original's");
+        texbank_free(b);
+    }
 
     printf("mods-check: %d checks, %d failed\n", sChecks, sBad);
     free(raw);
