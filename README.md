@@ -8,7 +8,8 @@ Another kind of Hewie (Discord setup at https://discord.gg/7sMGvfBAE)
 (Linux and Windows, rebuilt on every merge) · [all releases](https://github.com/ArnautDaniel/OpenHuey/releases).
 You need your own copy of Haunting Ground (USA) for the PS2: start `openhuey` and pick its disc
 image (`.iso`) the first time - it is imported once into `library/` beside it. **No game data is
-included.** Mods: `mods/` beside it ([`openhuey-src/docs/modding.md`](openhuey-src/docs/modding.md)).
+included.** To update: UPDATE on the title (or `openhuey --update`). Mods: `mods/` beside it
+([`openhuey-src/docs/modding.md`](openhuey-src/docs/modding.md)).
 
 OpenHuey rebuilds **Haunting Ground** (Capcom, PS2, 2005, `SLUS_210.75`) for PC, in three parts:
 
@@ -19,8 +20,9 @@ OpenHuey rebuilds **Haunting Ground** (Capcom, PS2, 2005, `SLUS_210.75`) for PC,
 | `openhuey` (once `hga`) | `openhuey-src/` (once `new-src-actors/`) | The game rewritten for clarity and modding: a C engine, with Fiona, Hewie, the stalkers and the story as actors passing messages, written in Forth. A console runs Forth live. [`openhuey-src/README.md`](openhuey-src/README.md) |
 
 `openhuey` plays the whole story: the title, the rooms and their scripts and cutscenes, Fiona,
-Hewie, the stalkers, items and the menu, saving, the game over and the endings, and the mini-game
-where you play as Hewie. Not yet: the extras' movie and gallery menus.
+Hewie, the stalkers, items and the menu, saving, the game over and the endings, the mini-game
+where you play as Hewie, and the extras room's movies and galleries. Not yet: a few of the model
+gallery's details (some figures' second textures and idles).
 
 ## Building
 
@@ -45,9 +47,12 @@ build/native/cmake/hg [disc.iso | data folder]
 ```
 
 In `openhuey`: `` ` `` opens the Forth console (`free-play` skips the opening, `castle-2f-3 room!` goes
-to a room, more in `openhuey-src/scripts/debug.fs`); **F1** the settings (the picture, fullscreen,
-the controls); **F11** or Alt+Return fullscreen; **F2** shows the debug meters, the actors and the
-version; **F3** frees the camera. In `hg`: **F5** / **F9** quicksave and load; `HG_EVLOG=1`
+to a room, more in `openhuey-src/scripts/debug.fs`; Ctrl+V pastes, Ctrl+C copies the line or the
+last output, Ctrl+Shift+C the whole log); **F1** the settings (the picture, fullscreen, the
+controls); **F11** or Alt+Return fullscreen; **F2** shows the debug meters, the actors and the
+version; **F3** frees the camera; **F5** / **F9** quicksave and load; **F12** keeps a bug report
+(in `user/bugs/`: a report, a screenshot and a save, and the console opened for a note - or
+`bug <what happened>` at the console). In `hg`: **F5** / **F9** quicksave and load; `HG_EVLOG=1`
 traces the room scripts, `HG_ROOM=2A` starts at a room, `HG_HEADLESS=1 HG_MAXFRAMES=n` runs
 without a window.
 
