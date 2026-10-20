@@ -512,9 +512,8 @@ the_2d:
 
         render_text(16, (float)e->height - render_line_height(scale) - 16, scale, 0xF0E8C0FF, e->hud, (int)strlen(e->hud));
     }
-    console_draw(&e->console, e->width, e->height);
     render_end();
-    if (e->screenshot[0] != 0) {
+    if (e->screenshot[0] != 0) {   /* (the game's picture: before the console goes over it) */
         if (render_screenshot(e->screenshot)) {
             forth_printf(e->forth, "saved %s\n", e->screenshot);
         } else {
@@ -522,6 +521,8 @@ the_2d:
         }
         e->screenshot[0] = 0;
     }
+    console_draw(&e->console, e->width, e->height);
+    render_end();
     platform_swap();
 }
 
@@ -582,6 +583,7 @@ int main(int argc, char **argv) {
     Engine *e = &gEngine;
     Options opt;
     Uint64 last, lag = 0;
+    int typing = 0;   /* SDL's text input on (the console open) */
     const Uint64 tick_ns = 1000000000ull / TICKS_PER_SECOND;
     long frame = 0;
     int fullscreen = 0;   /* (the window as it is) */
@@ -658,7 +660,7 @@ int main(int argc, char **argv) {
     last = SDL_GetTicksNS();
     while (!e->forth->bye) {
         Uint64 now = SDL_GetTicksNS();
-        int was_open = e->console.open, ticks = 0;
+        int ticks = 0;
 
         platform_poll(&e->input);
         if (e->input.quit) {
@@ -675,8 +677,9 @@ int main(int argc, char **argv) {
             e->console.open = !e->console.open;
             e->input.pressed[SDL_SCANCODE_GRAVE] = false;   /* (taken here, once) */
         }
-        if (e->console.open != was_open) {
-            platform_text_input(e->console.open);
+        if (e->console.open != typing) {   /* (opened or shut by ` or by a script: console!) */
+            typing = e->console.open;
+            platform_text_input(typing);
         }
         if (e->console.open) {
             console_update(&e->console, &e->input, e->forth);

@@ -43,8 +43,12 @@ create slot-frames  #slots cells allot
     ." USING: saves ;" cr
     #slots 0 do  i slot-used? if  i . i slot-place@ . i slot-frames@ . ." slot-was" cr  then  loop
     end-file ;
-variable save-path-n   \ (the file being written or read: -1 the quick save)
-: save-path ( -- addr len )  save-path-n @ 0< if  quick-path  else  save-path-n @ slot-path  then ;
+variable save-path-n   \ (the file being written or read: -1 the quick save, -2 one named: file-path)
+create file-path 256 allot   variable file-path-len
+: save-path ( -- addr len )
+    save-path-n @ -2 = if  file-path file-path-len @ exit  then
+    save-path-n @ 0< if  quick-path  else  save-path-n @ slot-path  then ;
+: path-named ( addr len -- )  255 min  dup file-path-len !  file-path swap move  -2 save-path-n ! ;
 : system-path ( -- addr len )  s" hga-system.fs" in-user-dir ;   \ (the system data: the unlocks)
 
 \ ---- what a save read back says: its lines run these ----
@@ -168,6 +172,8 @@ behaviour saving
       step @ writing = if  saved  then ;
   on save-to-slot ( n place -- )  sender sender-asked !  save-slot ;
   on load-from-slot ( n -- )  load-slot ;
+  on save-to-file ( addr len -- )  path-named  -1 sender-asked !  write-save-file ;
+  on load-from-file ( addr len -- )  path-named  load-file ;
   on tick ( -- )
       unlocks-changed? if  write-system  then
       step @ case

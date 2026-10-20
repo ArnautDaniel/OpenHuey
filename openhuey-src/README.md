@@ -37,7 +37,11 @@ build/openhuey-src/openhuey --test openhuey-src/tests/acoustics/test_hearing.fs 
 
 In the game: `` ` `` opens the Forth console (`scripts/debug.fs` has its helpers), F1 the settings
 (the picture, fullscreen, the controls - saved in `user/`), F11 or Alt+Return fullscreen, F2 the debug
-overlay (Fiona's meters, the actors alive and their ids, OpenHuey's version), F3 the free camera. The
+overlay (Fiona's meters, the actors alive and their ids, OpenHuey's version), F3 the free camera,
+F12 a bug report: the moment kept in `user/bugs/<date>_<time>/` (report.txt - where she is, every
+actor's state, the last messages, the console's lines - screenshot.png and save.fs), the console
+opened with `bug-note ` typed for what happened (into note.txt). At the console `bug <what
+happened>` does both at once; `s" <folder>/save.fs" bug-load` plays the moment again. The
 version is CMake's `project(OpenHuey VERSION ...)`; the release builds carry it in their names.
 
 Tests: `tests/test_*.fs` are the language and the kernel (the `forth` tool, no game data);

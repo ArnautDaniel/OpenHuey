@@ -8,7 +8,7 @@
 \   circle press                    a button pressed for a frame   .here                      where she is
 \   0 act                           the room's action script 0, as Fiona's (a scene: try front-garden-3's)
 IN: debug
-USING: engine actors messages keys room-names flag-names story.words ;
+USING: engine game-state actors messages keys room-names flag-names story.words ;
 
 : fiona-id ( -- id )  s" fiona" actor-named ;
 : rooms-id ( -- id )  s" rooms" actor-named ;
@@ -111,14 +111,80 @@ variable m-stage  variable m-level  variable m-fear  variable m-breathless  vari
 \ which OpenHuey this is, under the meters
 : version-line ( -- )  s" OpenHuey " 12 118 dim-colour say  hga-version 120 118 dim-colour say ;
 
+\ ---- bug reports: F12 (or `bug <what happened>` at the console) keeps the moment in a folder of
+\ its own, user/bugs/<date>_<time>/ - report.txt (where she is, every actor's state, the messages
+\ and the console's last lines), screenshot.png (the game, no console over it) and save.fs (the
+\ game then: `s" <folder>/save.fs" bug-load`). F12 opens the console with `bug-note ` typed:
+\ what happened, added to note.txt ----
+create bug-dir 256 allot   variable bug-dir-len
+create bug-path 256 allot   variable bug-path-len
+: bug-dir+ ( addr len -- )  {: a n :}  a  bug-dir bug-dir-len @ +  n move  n bug-dir-len +! ;
+: in-bug-dir ( name len -- addr len )   \ <the report's folder>/name
+    {: a n :}  bug-dir bug-path bug-dir-len @ move  a  bug-path bug-dir-len @ +  n move
+    bug-dir-len @ n + bug-path-len !  bug-path bug-path-len @ ;
+: file-safe ( addr len -- )   \ (no spaces or colons: a folder's name anywhere)
+    over + swap ?do
+        i c@ 32 = if  [char] _ i c!  then  i c@ [char] : = if  [char] - i c!  then
+    loop ;
+: new-bug-dir ( -- )   \ (named by the time: 2026-10-19_14-03-22)
+    0 bug-dir-len !  user-dir bug-dir+  testing? if  s" test-bugs"  else  s" bugs"  then  bug-dir+
+    bug-dir bug-dir-len @ make-dir drop
+    s" /" bug-dir+  bug-dir bug-dir-len @ +  date-time bug-dir+  date-time nip file-safe
+    bug-dir bug-dir-len @ make-dir drop  s" /" bug-dir+ ;
+create bug-text 256 allot   variable bug-text-len   \ (a note waiting for its report)
+: add-note ( addr len -- )   \ (into the last report's note.txt)
+    {: a n :}  bug-dir-len @ 0= if  ." no bug report yet: F12, or bug <what happened>" cr exit  then
+    s" note.txt" in-bug-dir append-file  date-time type ."   " a n type cr  end-file
+    ." noted in " s" note.txt" in-bug-dir type cr ;
+: .actor ( id -- )
+    dup .  dup actor-name type  dup body? if
+        ."   room " dup body-room h>s type space  ." tri " dup body-tri .  ." at " dup body-pos frot f. fswap f. f.
+    then  cr  .state ;
+: write-report ( -- )
+    s" report.txt" in-bug-dir to-file
+    ." OpenHuey bug report  " date-time type  ."   (OpenHuey " hga-version type ." )" cr
+    ." frame " actors-frames .  ." played " progress pr.play-frames l@ .  ." mods:" cr  .mods
+    cr ." ---- where" cr
+    room-id 0< if  ." (no room: the title)" cr  else  fiona-id 0< 0= if  .here  then  then
+    ." camera set " cam-set@ .  ." followed " cam-followed .  ." scene? " cam-scene? .  ." event? " cam-event? .  cr
+    cr ." ---- the actors" cr  .actors
+    cr ." ---- each actor's state" cr
+    most-actors 0 do  i alive? if  i .actor  then  loop
+    cr ." ---- the last messages (oldest first; not the every-frame ones)" cr  256 .recent
+    cr ." ---- the console's last lines" cr  120 console-log
+    end-file ;
+variable bug-step   \ (0 none; 1 the report wanted; 2 its save, once the screenshot is drawn)
+: bug-capture ( -- )
+    new-bug-dir  s" screenshot.png" in-bug-dir screenshot  write-report
+    bug-text-len @ if  bug-text bug-text-len @ add-note  0 bug-text-len !  then
+    2 bug-step ! ;
+: bug-save ( -- )   \ (not over the title)
+    0 bug-step !
+    room-id 0< fiona-id 0< or if  ." bug report in " bug-dir bug-dir-len @ type cr  exit  then
+    s" save.fs" in-bug-dir  s" saves" actor-named send save-to-file
+    ." bug report in " bug-dir bug-dir-len @ type cr ;
+: bug-steps ( -- )   \ (each frame, held or not)
+    bug-step @ 1 = if  bug-capture exit  then
+    bug-step @ 2 = screenshot-pending? 0= testing? or and if  bug-save  then ;   \ (a test draws nothing)
+: bug ( "what happened" -- )   \ the moment kept, with a note
+    parse-line 255 min  dup bug-text-len !  bug-text swap move  1 bug-step ! ;
+: bug-note ( "what happened" -- )  parse-line add-note ;
+: bug-key ( -- )   \ F12: kept now; the console open for the note
+    key: F12 key-pressed? 0= if  exit  then
+    0 bug-text-len !  1 bug-step !  -1 console!  s" bug-note " console-type ;
+\ a report's save back (the progress, the room, everyone where they were)
+: bug-load ( addr len -- )  s" saves" actor-named send load-from-file ;
+
 state: label-state  cell field label-unused  end-state
 behaviour labelling
-  on spawned ( -- )  self subscribe frame-end  self subscribe panic  self subscribe entered-room ;
+  on spawned ( -- )  self subscribe frame-end  self subscribe held-tick  self subscribe panic  self subscribe entered-room ;
+  on held-tick ( -- )  bug-key  bug-steps ;   \ (a menu up: a report all the same)
   on entered-room ( room exit -- )  2drop jump-camera ;
   on panic ( stage level -- )  cell>f f>s m-level !  m-stage ! ;   \ (its level a float, as a cell)
   on her-meters ( fear breathless run -- )  m-run !  m-breathless !  m-fear ! ;
   on frame-end ( -- )
       label-layer ui-clear
+      bug-key  bug-steps
       key: F2 key-pressed? if  debug? @ 0= debug? !  then
       debug? @ if  meters  actors-list  version-line  then   \ (asked for: anywhere)
       room-id 0< in-play state-flag? 0= or if  exit  then   \ (the label: not over the title)

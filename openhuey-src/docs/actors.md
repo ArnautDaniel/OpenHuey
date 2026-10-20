@@ -85,6 +85,12 @@ sender  ( -- id )          \ who sent the message being handled (-1: the kernel)
 - `trace-on` / `trace-off`: print every message as it is delivered (`frame  from -> to  kind
   args`).
 - `.actors`: every actor with its behaviour, its state type and its mailbox count.
+- `.state ( id -- )`: every field of an actor's state, by name (a cell as a whole number or, when
+  it reads as one, a float `1.5e`; a 12-byte vector as its three floats; other sizes as bytes).
+- `.recent ( n -- )`: the last n messages delivered (the kernel keeps 256), oldest first, as
+  `frame  from -> to  kind args`. Not the frames' own (`tick`, `frame-end`, `held-tick`), and not a
+  message the same as its sender's last of that kind: the every-frame broadcasts show their
+  changes, once (not a copy per subscriber).
 - `enter ( id -- )` / `leave-actor`: the console inside an actor. (Not `leave`: that is the
   loop word.) Its fields, `self`, `become`
   and sends are that actor's, so `fiona enter  fear f@ f.` reads Fiona's own fear. (Later the

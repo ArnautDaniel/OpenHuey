@@ -160,8 +160,11 @@ Each of these has cost someone time:
 | `on-tick`, `off-tick` | `xt --` | run a word every tick |
 | `ticks`, `dt` | `-- n`, `F: -- seconds` | |
 | `clear-color` | `F: r g b --` | |
-| `screenshot` | `addr len --` | save the next frame as a PNG |
+| `screenshot` | `addr len --` | save the next frame as a PNG (the game's picture: the console isn't in it) |
+| `screenshot-pending?` | `-- flag` | one asked for, not yet drawn |
 | `console!` | `flag --` | open or close the console |
+| `console-type` | `addr len --` | put text in the console's line, as if typed |
+| `console-log` | `n --` | print the console's last n lines |
 | `gfx` | `-- addr` | the picture's settings: `gfx.msaa gfx.aspect gfx.ssao gfx.bloom gfx.fog gfx.shadows gfx.tonemap gfx.debug gfx.room-fog gfx.room-tint gfx.room-bloom gfx.room-lights gfx.shadow-maps` (l@ l!), `gfx.scale gfx.anisotropy gfx.ssao-radius gfx.ssao-strength gfx.bloom-threshold gfx.bloom-strength gfx.fog-density gfx.fog-start gfx.fog-r/g/b gfx.exposure gfx.saturation gfx.contrast gfx.vignette gfx.grain gfx.light-x/y/z gfx.light-r/g/b gfx.ambient-r/g/b gfx.rim gfx.character-light gfx.shadow-strength` (sf@ sf!) |
 | `room-look`, `room-look-reset` | `-- addr` | the room's look now (`look.fog look.tint look.bloom look.dof look.bloom-mode` l@, `look.fog-near look.fog-far` sf@, `look.fog-near-color look.fog-far-color look.tint-glow look.tint-contrast look.bloom-color look.dof-range`: 4 floats); back to the file's |
 | `on-draw`, `off-draw` | `xt --` | run a word every frame to draw 2D |
@@ -173,6 +176,9 @@ Each of these has cost someone time:
 | `.mods`, `mod-on?`, `mod-api` | `--`, `addr len -- flag`, `-- n` | the mods in load order (on, or off and why); a mod on; the mod API (major * 100 + minor) - docs/library-and-mods.md |
 | `exe-table`, `motion-table` | `addr len -- addr n`, `id addr len --` | the executable's table of that name (src/data/exetables.c: "deal-rows" ...); a model's motion table by name ("motions-hewie" ...) |
 | `to-file`, `end-file` | `addr len --`, `--` | what Forth prints goes into a file in between |
+| `append-file` | `addr len --` | the same, added to the file's end |
+| `make-dir` | `addr len -- flag` | a folder made (there already: true) |
+| `date-time` | `-- addr len` | the local time now: `2026-10-19 14:03:22` |
 | `xt>name` | `xt -- addr len` | a word's name |
 | `act.shadow` | | an actor's contact-shadow radius (sf@ sf!) |
 
@@ -184,7 +190,7 @@ rest; each file is a vocabulary of the same name. Shared words: `common.fs`, `ve
 subsystem is its own file (`fiona.fs`, `stalker.fs`, ... - the map: `docs/subsystems.md`), with a
 folder of the same name when it is bigger (`fiona/`, `hewie/`, `stalker/`, `story/`). Also
 `graphics.fs` (the presets and the options menu, saved), `debug.fs` (the console's helpers, F2's
-overlay).
+overlay, F12's bug reports).
 
 The console (`` ` ``) evaluates whatever is typed, so any of this can be changed while the game
 runs: redefine a word and the next tick uses it (words already compiled into others keep the
