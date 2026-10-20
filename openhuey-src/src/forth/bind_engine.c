@@ -2759,7 +2759,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its skinned parts sho
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.10") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.11") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
@@ -2792,21 +2792,42 @@ static void *sSavedCtx;
 static void file_output(void *ctx, const char *s, size_t n) {
     fwrite(s, 1, n, (FILE *)ctx);
 }
-PRIM(p_to_file) {   /* ( addr len -- ) what Forth prints goes into this file until end-file */
+static void output_to(Forth *f, const char *mode, const char *what) {
     Cell n = POP(), a = POP();
     char path[1024];
 
     if (sOutFile != NULL) {
-        forth_error(f, "to-file: already writing a file");
+        forth_error(f, "%s: already writing a file", what);
     }
     snprintf(path, sizeof(path), "%.*s", (int)n, (const char *)a);
-    sOutFile = fopen(path, "w");
+    sOutFile = fopen(path, mode);
     if (sOutFile == NULL) {
-        forth_error(f, "to-file: can't write %s", path);
+        forth_error(f, "%s: can't write %s", what, path);
     }
     sSavedOut = f->out;
     sSavedCtx = f->out_ctx;
     forth_set_output(f, file_output, sOutFile);
+}
+PRIM(p_to_file) { output_to(f, "w", "to-file"); }   /* ( addr len -- ) what Forth prints goes into this file until end-file */
+PRIM(p_append_file) { output_to(f, "a", "append-file"); }   /* ( addr len -- ) the same, added at its end */
+PRIM(p_make_dir) {   /* ( addr len -- flag ) a folder made (there already: true) */
+    Cell n = POP(), a = POP();
+    char path[1024];
+
+    snprintf(path, sizeof(path), "%.*s", (int)n, (const char *)a);
+    PUSH(SDL_CreateDirectory(path) ? -1 : 0);
+}
+PRIM(p_date_time) {   /* ( -- addr len ) the local time now: 2026-10-19 14:03:22 */
+    static char buf[32];
+    SDL_Time t = 0;
+    SDL_DateTime dt;
+
+    if (!SDL_GetCurrentTime(&t) || !SDL_TimeToDateTime(t, &dt, true)) {
+        memset(&dt, 0, sizeof(dt));
+    }
+    snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d", dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second);
+    PUSH(buf);
+    PUSH(strlen(buf));
 }
 PRIM(p_end_file) {
     if (sOutFile != NULL) {
@@ -2834,7 +2855,28 @@ PRIM(p_screenshot) {   /* ( addr len -- ) save the frame as a PNG once drawn */
 
     snprintf(gEngine.screenshot, sizeof(gEngine.screenshot), "%.*s", (int)n, (const char *)a);
 }
+PRIM(p_screenshot_pending) { PUSH(gEngine.screenshot[0] != 0 ? -1 : 0); }   /* ( -- flag ) one asked for, not yet drawn */
 PRIM(p_console) { gEngine.console.open = (int)POP() != 0; }   /* ( flag -- ) */
+PRIM(p_console_type) {   /* ( addr len -- ) put in the console's line, as if typed */
+    Cell n = POP(), a = POP();
+    Console *c = &gEngine.console;
+
+    snprintf(c->input, sizeof(c->input), "%.*s", (int)n, (const char *)a);
+    c->len = (int)strlen(c->input);
+}
+PRIM(p_console_log) {   /* ( n -- ) the console's last n lines printed (up to its 200) */
+    const Console *c = &gEngine.console;
+    int n = (int)POP(), i;
+
+    if (n > CONSOLE_LINES - 1) {
+        n = CONSOLE_LINES - 1;
+    }
+    for (i = n; i >= 1; i--) {   /* (the line being written, head, is left out) */
+        const char *line = c->log[(c->head - i + CONSOLE_LINES) % CONSOLE_LINES];
+
+        forth_printf(f, "%s\n", line);
+    }
+}
 
 /* ---- the free camera (hga's own, for looking about and filming): F3 takes the camera from
  * wherever it is and gives it back; while it is free the arrows move it along the floor (up /
@@ -3395,9 +3437,9 @@ void bind_engine(Forth *f) {
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
         {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"h>s", p_h_to_s}, {"f>s$", p_f_to_s},
-        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look-keep", p_look_keep}, {"look-kept", p_look_kept}, {"look-plain", p_look_plain}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"hga-version", p_hga_version}, {"actor-part-show", p_actor_part_show}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file},
+        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look-keep", p_look_keep}, {"look-kept", p_look_kept}, {"look-plain", p_look_plain}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"hga-version", p_hga_version}, {"actor-part-show", p_actor_part_show}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file}, {"append-file", p_append_file}, {"make-dir", p_make_dir}, {"date-time", p_date_time},
         {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
-        {"clear-color", p_clear_color}, {"out-of-view?", p_out_of_view}, {"screenshot", p_screenshot}, {"console!", p_console},
+        {"clear-color", p_clear_color}, {"out-of-view?", p_out_of_view}, {"screenshot", p_screenshot}, {"screenshot-pending?", p_screenshot_pending}, {"console!", p_console}, {"console-type", p_console_type}, {"console-log", p_console_log},
 
     };
     size_t i;

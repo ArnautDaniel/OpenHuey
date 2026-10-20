@@ -27,9 +27,16 @@ struct HBehaviour {
     int unhandled;
 };
 
+typedef struct HField {
+    char name[WORD_NAME_MAX + 1];
+    int off, size;
+} HField;
+
 typedef struct HStateType {
     char name[HNAME_MAX + 1];
     size_t size;
+    HField *fields;         /* its fields, in order (for `.state`) */
+    int nfields;
 } HStateType;
 
 typedef struct HActor {
@@ -65,6 +72,11 @@ static int sDelivering;
 static int sTrace;
 static long sFrame;
 static long sDeadLetters;   /* messages to actors no longer there */
+#define RECENT_MAX 256         /* the messages last delivered, kept for `.recent` (bug reports) */
+static struct { long frame; HMessage m; } sRecent[RECENT_MAX];
+static long sNRecent;
+static uint32_t sLastSaid[HKINDS_MAX][HACTOR_MAX + 1];   /* per kind and sender (+1: the engine's): its last
+                                                           * arguments' hash - the same again isn't kept */
 
 /* ---- kinds ---- */
 
@@ -165,6 +177,31 @@ static void trace(Forth *f, const HMessage *m) {
     forth_printf(f, "\n");
 }
 
+/* kept for `.recent`: a message unlike the last of its kind from its sender (so the every-frame
+ * broadcasts show their changes, once, and not each copy to each subscriber) */
+static void remember(const HMessage *m) {
+    uint32_t h = 2166136261u, *last;
+    int i;
+
+    for (i = 0; i < m->n; i++) {   /* (FNV-1a over the arguments) */
+        const uint8_t *b = (const uint8_t *)&m->a[i];
+        size_t k;
+
+        for (k = 0; k < sizeof(Cell); k++) {
+            h = (h ^ b[k]) * 16777619u;
+        }
+    }
+    h |= 1;   /* (0: nothing said yet) */
+    last = &sLastSaid[m->kind][m->from >= 0 && m->from < HACTOR_MAX ? m->from + 1 : 0];
+    if (*last == h) {
+        return;
+    }
+    *last = h;
+    sRecent[sNRecent % RECENT_MAX].frame = sFrame;
+    sRecent[sNRecent % RECENT_MAX].m = *m;
+    sNRecent++;
+}
+
 static void destroy(HActor *a, int id);
 
 static void dispatch(Forth *f, const HMessage *m) {
@@ -179,6 +216,9 @@ static void dispatch(Forth *f, const HMessage *m) {
     }
     for (b = a->beh; b != NULL && h == NULL; b = b->parent) {
         h = b->on[m->kind];
+    }
+    if (m->kind != HK_TICK && m->kind != HK_FRAME_END && m->kind != HK_HELD_TICK) {
+        remember(m);
     }
     if (sTrace) {
         trace(f, m);
@@ -548,6 +588,20 @@ PRIM(p_field) {
     off = (off + 7) & ~(Cell)7;   /* (every field 8-aligned: cells and floats) */
     snprintf(cname, sizeof(cname), "%.*s", (int)len, name);
     forth_constant(f, cname, type * 0x10000 + off)->code = dofield;
+    {
+        HStateType *t = &sTypes[type];
+        int i;
+
+        for (i = 0; i < t->nfields && strcmp(t->fields[i].name, cname) != 0; i++) {
+        }
+        if (i == t->nfields) {   /* (not one again: a script reloaded) */
+            t->fields = realloc(t->fields, (size_t)(t->nfields + 1) * sizeof(HField));
+            t->nfields++;
+        }
+        snprintf(t->fields[i].name, sizeof(t->fields[i].name), "%s", cname);
+        t->fields[i].off = (int)off;
+        t->fields[i].size = (int)size;
+    }
     PUSH(type);
     PUSH(off + size);
 }
@@ -778,6 +832,87 @@ PRIM(p_dot_actors) {
     }
     forth_printf(f, "%ld dead letters\n", sDeadLetters);
 }
+/* a cell as it reads best: a whole number, or a float (a field's cell holds either) */
+static void print_cell(Forth *f, Cell c) {
+    double d;
+
+    memcpy(&d, &c, sizeof(d));
+    if (c > -0x10000000000LL && c < 0x10000000000LL) {
+        forth_printf(f, " %ld", (long)c);
+    } else if (d == d && d > -1e12 && d < 1e12) {
+        forth_printf(f, " %ge", d);
+    } else {
+        forth_printf(f, " $%lX", (unsigned long)c);
+    }
+}
+PRIM(p_dot_state) {   /* ( id -- ) every field of its state, by name */
+    HActor *a = live(f, POP(), ".state");
+    HStateType *t;
+    int i, k;
+
+    if (a->type < 0) {
+        forth_printf(f, "  (no state)\n");
+        return;
+    }
+    t = &sTypes[a->type];
+    for (i = 0; i < t->nfields; i++) {
+        const HField *fd = &t->fields[i];
+        int cells = fd->size / (int)sizeof(Cell);
+
+        forth_printf(f, "  %s", fd->name);
+        if (fd->size % 4 == 0 && fd->size % (int)sizeof(Cell) != 0) {   /* (32-bit words: a vector's floats) */
+            for (k = 0; k < fd->size / 4 && k < 8; k++) {
+                int32_t v;
+                float x;
+
+                memcpy(&v, a->state + fd->off + k * 4, 4);
+                memcpy(&x, &v, 4);
+                if (v > -0x100000 && v < 0x100000) {
+                    forth_printf(f, " %d", v);
+                } else {
+                    forth_printf(f, " %ge", x);
+                }
+            }
+        } else if (fd->size % (int)sizeof(Cell) != 0 || cells == 0) {   /* (bytes: shown as such) */
+            for (k = 0; k < fd->size && k < 32; k++) {
+                forth_printf(f, " %02X", a->state[fd->off + k]);
+            }
+        } else {
+            for (k = 0; k < cells && k < 8; k++) {
+                Cell c;
+
+                memcpy(&c, a->state + fd->off + k * (int)sizeof(Cell), sizeof(c));
+                print_cell(f, c);
+            }
+        }
+        if (fd->size > (fd->size % 4 == 0 ? 8 * (fd->size % (int)sizeof(Cell) == 0 ? (int)sizeof(Cell) : 4) : 32)) {
+            forth_printf(f, " ...");
+        }
+        forth_printf(f, "\n");
+    }
+}
+PRIM(p_dot_recent) {   /* ( n -- ) the last n messages delivered (up to 256: not the frames' own, nor
+                         * one the same as its sender's last of that kind), oldest first */
+    long n = (long)POP(), i;
+
+    if (n > RECENT_MAX) {
+        n = RECENT_MAX;
+    }
+    if (n > sNRecent) {
+        n = sNRecent;
+    }
+    for (i = sNRecent - n; i < sNRecent; i++) {
+        const HMessage *m = &sRecent[i % RECENT_MAX].m;
+        int k;
+
+        forth_printf(f, "%ld  %s -> %s  %s", sRecent[i % RECENT_MAX].frame, actor_name(m->from), actor_name(m->to),
+                     sKinds[m->kind].name);
+        for (k = 0; k < m->n; k++) {
+            print_cell(f, m->a[k]);
+        }
+        forth_printf(f, "\n");
+    }
+}
 PRIM(p_dot_unhandled) {
     int i;
 
@@ -849,6 +984,7 @@ void bind_hactor(Forth *f) {
         {"actors-frame", p_frame, 0}, {"deliver", p_deliver, 0}, {"actors-reset", p_reset, 0},
         {"trace-on", p_trace_on, 0}, {"trace-off", p_trace_off, 0}, {"queued", p_queued, 0},
         {"actors-frames", p_actor_frame, 0}, {".actors", p_dot_actors, 0}, {".unhandled", p_dot_unhandled, 0},
+        {".state", p_dot_state, 0}, {".recent", p_dot_recent, 0},
         {"f>cell", p_f_to_cell, 0}, {"cell>f", p_cell_to_f, 0},
         {"xyz>cells", p_xyz_to_cells, 0}, {"cells>xyz", p_cells_to_xyz, 0}, {"xyzw>cells", p_xyzw_to_cells, 0}, {"cells>xyzw", p_cells_to_xyzw, 0},
         {"body-place", p_body_place, 0}, {"body-turn", p_body_turn, 0}, {"body-size", p_body_size, 0},
