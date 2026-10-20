@@ -54,7 +54,8 @@ anything else (a scene playing, the room's own script state) starts afresh, as i
 
 ## Not yet
 
-The extras' menus (the movies, the galleries). (The sections where Hewie is the one played -
-the mini-game - are built.)
+A few of the model gallery's details: some figures' second textures (the `*_200` sets), Daniella's
+and the tint stalker's variants, the dogs' layered idles and the models' cloth. (The extras' menus
+and the mini-game, where Hewie is the one played, are built.)
 Two story stubs are left (they print "not written yet" when reached): a room command of the
 unused off-map-5a, and `char-load` of a figure outside slots 3..5.
