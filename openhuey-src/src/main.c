@@ -20,6 +20,7 @@
 #include "core/files.h"
 #include "forth/forth.h"
 #include "game/engine.h"
+#include "game/particles.h"
 #include "game/progress.h"
 #include "game/things.h"
 #include "game/sprites.h"
@@ -647,7 +648,7 @@ static void start_scripts(Engine *e, int hidden) {
 
 /* a fresh game (`soft-reset`: the game over's return to the title, as the original makes its
  * title scene anew): everything the scripts made let go - the actors and their models, the
- * room, the effects, the 2D, sounds, music, movie; the progress cleared but for its unlocks - and the scripts
+ * room, the effects and particles, the 2D, sounds, music, movie; the progress cleared but for its unlocks - and the scripts
  * started again */
 static void soft_reset(Engine *e, int hidden) {
     int i;
@@ -662,6 +663,7 @@ static void soft_reset(Engine *e, int hidden) {
     }
     room_free(&e->room);
     e->room.id = -1;
+    particles_free_all();   /* (before the sprites: each system lets go of its own batches) */
     sprites_free_all();
     bind_engine_reset();
     progress_clear();   /* (the unlocks kept) */
