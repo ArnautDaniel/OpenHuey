@@ -75,6 +75,19 @@ The library holds the game's files converted to common formats (an import of the
 | a character model | `O_XXX/XXX_000.model/model.gltf` + `model.bin` | glTF 2.0, skinned, as OpenHuey writes it (`src/data/modelgltf.h`); the motions (`motions.bin`) stay the game's |
 | one of the executable's tables | `library/exe/<name>.bin` (not under data/) | the table's bytes (`src/data/exetables.c` names them) |
 
+**An HD texture pack made for PCSX2** (a `replacements/` folder of `.dds` / `.png` named by
+PCSX2's hashes) becomes a mod with `tools/hdpack.py`: it matches the pack's pictures to the
+library's textures by what they show, tile by tile (a PCSX2 picture is the PS2's memory at the
+texture's place, so it can hold other textures in a room's unused parts), and writes the mod with
+a report of what it matched. It needs Pillow and numpy:
+
+```sh
+python3 -m venv venv && venv/bin/pip install pillow numpy
+venv/bin/python -I tools/hdpack.py <library> <pack>/SLUS-21075/replacements mods/hd-textures
+```
+
+`--max N` sets the largest a texture is written (default 2048 a side: 8x a room's 256).
+
 The best start for any of these: import a disc (`openhuey --import disc.iso`), open the file in the
 library, copy it into the mod at the same path, change it. For glTF, keep what Blender or another
 tool round-trips: the `extras` and the accessor layout OpenHuey wrote; a mesh must still be one OpenHuey
