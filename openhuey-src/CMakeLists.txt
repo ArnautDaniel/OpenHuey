@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.1.15 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.1.17 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -171,6 +171,11 @@ set_tests_properties(mods_menu_after PROPERTIES FIXTURES_REQUIRED "mods_menu_fol
 # the title as a player meets it: --title brings it up headless too (not a test_*.fs: those run
 # without it, straight into a new game)
 add_test(NAME title_title COMMAND hga --title --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/title/title.fs")
+# back to the title from a game (pause.fs's quit, the game over, the ending all `soft-reset`): the
+# game's particle systems must go with the sprites they draw into, or the title's next tick crashes
+add_test(NAME title_back_to_title COMMAND hga --hidden --title --frames 300 --eval
+    "variable n  : back  1 n +!  n @ 30 = if free-play then  n @ 200 = if soft-reset then ;  ' back on-tick")
+set_tests_properties(title_back_to_title PROPERTIES ENVIRONMENT "OPENHUEY_HOME=${CMAKE_CURRENT_BINARY_DIR}/back-to-title.scratch")
 # the updater: against releases made in the test (file://), and the title's UPDATE page
 if(NOT WIN32)
     add_test(NAME update_run COMMAND sh "${CMAKE_CURRENT_SOURCE_DIR}/tests/update/run.sh" $<TARGET_FILE:hga> "${HGA_BUILD}"

@@ -2759,7 +2759,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its skinned parts sho
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.15") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.17") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
