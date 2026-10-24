@@ -200,6 +200,11 @@ void actor_free(Actor *a) {
     memset(a, 0, sizeof(*a));
 }
 
+void actor_face_clear(Actor *a) {
+    memset(&a->face, 0, sizeof(a->face));
+    a->blink = 0;
+}
+
 int actor_motion_done(const Actor *a) {
     return a->motion >= 0 && !a->loop && a->frame >= (float)(model_motion_frames(&a->model, a->motion) - 1);
 }

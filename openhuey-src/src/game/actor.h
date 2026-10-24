@@ -102,7 +102,7 @@ typedef struct Actor {
      * each hand's two shapes and the way between them - set by its motion's channels (tracks -7..-12:
      * the scenes' mouths and hands, Motion_ExtraChannels), and when `alive` by its blinks and its
      * motions' hand poses (Motion_Eyes / Motion_Hands: Fiona's and the stalkers' models, out of
-     * scenes); kept till something sets them again */
+     * scenes); kept till something sets them again - cleared as a scene takes it and gives it back */
     ModelFace face;
     int32_t alive;
     int32_t blink;          /* frames into its blink (+0x870) */
@@ -136,6 +136,9 @@ float actor_radius(const Actor *a);
 void actor_draw(Actor *a, const Mat4 *view_proj);
 /* the motion has played to its end (non-looping) */
 int actor_motion_done(const Actor *a);
+/* its face and hands at rest and its blink from the start (taken by a scene and given back:
+ * Character_Disable's Motion_Disable, Character_Enable's Model_ClearDraw) */
+void actor_face_clear(Actor *a);
 /* motion `index` from its start, cross-faded over `blend` ticks, with `flags` (see mflags): its
  * body, and its share of the parts (or theirs back to their own) */
 void actor_motion_start(Actor *a, int index, int flags, float blend);

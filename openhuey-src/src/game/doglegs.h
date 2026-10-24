@@ -18,6 +18,8 @@ typedef struct DogLegs {
 } DogLegs;
 
 void doglegs_reset(DogLegs *d);
+/* put somewhere (DogModel_FeetReplace): the feet placed afresh at the next pose, none held where it was */
+void doglegs_replace(DogLegs *d);
 /* the legs fitted to the feet, on the posed skeleton (model space; place: model -> room,
  * unplace its inverse) */
 void doglegs_pose(DogLegs *d, const Model *m, Mat4 *world, const Mat4 *place, const Mat4 *unplace);

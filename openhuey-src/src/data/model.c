@@ -432,8 +432,18 @@ void model_free(Model *m) {
  * rest, the mouth (1) and the eyelids (7, 8) - the rest what the others leave, a face of 8 shapes
  * or fewer only its rest (func_001BC8D0); a hand its pose's two shapes, (1 - w) of the first and
  * w of the second (func_001BD280), shape 0 if they aren't its */
-static int morph_shapes(const ModelMorph *mo, const ModelFace *f, int sh[4], float w[4]) {
-    if (mo->face) {
+static int morph_shapes(const ModelMorph *mo, const ModelFace *f, int sh[16], float w[16]) {
+    if (mo->face && f->all) {   /* (func_001BCD30: each shape by its weight, the rest what is left) */
+        int k, n = 0;
+
+        for (k = 1; k < 16 && k < mo->nshapes; k++) {
+            sh[n] = k;
+            w[n] = f->w[k];
+            n++;
+        }
+        return n;
+    }
+    if (mo->face) {   /* (func_001BC8D0: the mouth and the eyelids; with no eyelids, the rest alone) */
         if (mo->nshapes <= 8) {
             return 0;
         }
@@ -457,8 +467,8 @@ void model_morph(const Model *m, const ModelFace *f, SkinVertex *v) {
 
     for (i = 0; i < m->nmorphs; i++) {
         const ModelMorph *mo = &m->morphs[i];
-        int sh[4], n;
-        float w[4];
+        int sh[16], n;
+        float w[16];
 
         n = morph_shapes(mo, f, sh, w);
         for (k = 0; k < mo->count; k++) {   /* (the rest, and each shape's way from it by its share) */

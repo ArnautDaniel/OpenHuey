@@ -256,7 +256,12 @@ and the kneel around the message).
   `movie-playing?`. The room draws a drawn class's picture on UI layer 0 (`ui-movie`).
 - **Cutscenes** are the C director's, cast from the characters' models: each character says
   which it is (`cast-as`: Fiona at her spawn, Hewie as he joins and parts). `cutscene-start`
-  loads the room's scene and broadcasts `scene` on (Fiona is hands-off); `cutscene-control`'s 13
+  loads the room's scene and broadcasts `scene` on (Fiona is hands-off). The characters the scene
+  casts (Cutscene_Cast: Character_Disable) wait - their own frames don't run (`scene-has? ( model
+  -- flag )`): the scene's motion moves their models, their places following it (Fiona_FollowAnim);
+  their faces cleared and drawn with all their shapes. Given back (Cutscene_ReleaseActors:
+  Character_Enable) Hewie's feet are planted afresh and he is at his default action, a stalker's way
+  is forgotten. `cutscene-control`'s 13
   ops step it, its cues, the movie, the subtitles (op 12 turns the prepared message's pages -
   drawn on layer 4), and op 8 ends it (`scene` off, the camera back). The conditions:
   `cutscene-mode?`, `-cue-reached?`, `-event?`, `-passed?`, `-near-end?`, `-shot?`.

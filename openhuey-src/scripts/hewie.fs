@@ -14,7 +14,7 @@ create heel-at /vec allot
     her body-yaw {: F: a :}  fiona-at vec@ {: F: x y z :}
     x  a fsin -14e f*  a fcos 8e f* f+  f+   y   z  a fcos -14e f*  a fsin -8e f* f+  f+  heel-at vec!
     heel-at hewie-floor v-tri-in dup 0< if  drop  heel-at fiona-at vec-copy  her body-tri  then  {: tri :}
-    room-id tri heel-at vec@ body-place  a his-yaw! ;
+    room-id tri heel-at vec@ body-place  a his-yaw!  model actor-settle ;   \ (Hewie_PlaceOn: his feet afresh)
 : along? ( -- flag )  self body? ;   \ in the game (his body in the house)
 : join ( -- )
     her active? 0= if  -1 his-joining !  exit  then   \ (she isn't in yet: when she arrives)
@@ -35,7 +35,7 @@ create heel-at /vec allot
     along? if  1 model cast-as  then ;
 
 : place-on ( room tri -- )   \ (Hewie_PlaceInRoom: triangle -1 is that room, on none)
-    dup 0< if  0e 0e 0e  else  dup tri-center  then  body-place ;
+    dup 0< if  0e 0e 0e  else  dup tri-center  then  body-place  model actor-settle ;
 behaviour hewie-own
   on spawned ( -- )
       6 0 do  16 i cells his-skill + !  loop   \ (Hewie_LoadState: his skills at fetching, middling)
@@ -75,7 +75,7 @@ behaviour hewie-own
   on hewie-met ( m0 m1 m2 m3 -- )  0 3 do  i cells his-met + !  -1 +loop ;
   on place ( x y z yaw -- )   \ (the story puts him)
       along? 0= if  2drop 2drop exit  then
-      >r cells>xyz  his-place  r> cell>f his-yaw! ;
+      >r cells>xyz  his-place  r> cell>f his-yaw!  model actor-settle ;
   on leaving-room ( room exit -- )   \ (the old room still in; played, he goes with it)
       hewie-played? along? and if  2drop played-through exit  then
       2dup room-exit-leads drop fiona-room !  nip  along? if  fiona-left  else  drop  then ;
@@ -85,8 +85,8 @@ behaviour hewie-own
       his-joining @ if  s" fiona" actor-named his-fiona !  join  then ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
   \ a scene starting (the scripts' 0x61: Hewie_LeftBehind) - out of the room after an attack
   \ (0x38): his default; his mood back to normal
-  on scene ( on -- )
-      0= if  exit  then
+  on scene ( on -- )   \ (given back - Hewie_Halt: his feet afresh, his default action)
+      0= if  his-in-cast @ along? and if  0 his-in-cast !  model actor-settle  to-default  then  exit  then
       his-away @  his-action @ after-attack-act = and if  to-default  then  normal-mood -1 set-mood ;
   on danger ( level -- )  his-danger ! ;
   on panic ( stage level -- )  drop his-panic ! ;
@@ -125,7 +125,9 @@ behaviour hewie-own
   on noclip ( on -- )  0<> 1 and his-2b ! ;
   on aside ( on -- )  0<> 1 and his-2d ! ;
   on activate ( -- )  0 his-2b !  0 his-2d !  100 hp!  hewie-played? if  restart  then ;   \ (the story's 0x15, Hewie_Activate: afresh, at full health - in the run, played: Hewie_StartScene)
-  on tick ( -- )  along? if  frame  else  tell-doing  then  -1 his-heard !  0 his-signals ! ;
+  on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model)
+      along? if  model scene-has? dup his-in-cast !  if  tell-doing  else  frame  then  else  tell-doing  then
+      -1 his-heard !  0 his-signals ! ;
   \ what he hears (the acoustics, each frame's end), the danger's signals, who has hold of her
   on heard ( loud room tri door source -- )  his-heard-src !  2drop  his-heard-room !  drop ;
   on heard-nothing ( -- )  -1 his-heard-src ! ;

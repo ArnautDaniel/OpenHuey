@@ -288,6 +288,8 @@ static void cast(void) {
         }
         s->in = 1;
         s->was_visible = gEngine.actors[s->actor].visible;
+        actor_face_clear(&gEngine.actors[s->actor]);   /* (taken: Character_Disable - Motion_Disable - */
+        gEngine.actors[s->actor].face.all = 1;         /* its face drawn with every shape) */
         if (!C.keep_model[i]) {
             model_taken(&gEngine.actors[s->actor]);
         }
@@ -314,6 +316,7 @@ static void release(void) {
         if (a != NULL) {
             a->drive = NULL;
             a->visible = C.slots[i].was_visible;
+            actor_face_clear(a);   /* (given back: Character_Enable - Model_ClearDraw) */
             if (C.keep_model[i]) {   /* (as the original: the given-back hook only for these) */
                 model_given_back(a);
             }
@@ -825,6 +828,17 @@ int cutscene_active(void) {
 
 /* (drawn by the camera director's mode while a scene has it - CamDirector_Remember - from the
  * scene's start of play to its signal 8, the scene over or not) */
+int cutscene_has(int actor) {
+    int i;
+
+    for (i = 1; C.cast && i < SLOTS; i++) {
+        if (C.slots[i].in && C.slots[i].actor == actor) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int cutscene_letterbox(void) {
     return gCamDir.scene && !C.letterbox_off;
 }

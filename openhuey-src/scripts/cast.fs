@@ -66,6 +66,7 @@ state: cast-state
   cell field look-on  cell field look-who  /vec field look-pt  1 floats field head-yaw
 end-state
 : him ( -- a )  model @ actor ;
+: placed ( -- )  model @ dup 0< if  drop  else  actor-settle  then ;   \ (Pursuer_Place: its feet afresh, not eased from where it was)
 : shown! ( on -- )  0<> dup shown !  broadcast figure-shown ;   \ (told: the obstacles leave a hidden one out)
 : my-at ( -- v )  self body-at ;
 : yaw ( F: -- a )  self body-yaw ;
@@ -290,17 +291,18 @@ behaviour figure
   on cast-unload ( -- )  unload ;
   on cast-dress ( model -- )  dress ;
   on cast-out ( -- )  body-off ;
-  on tick ( -- )  model @ 0< 0= self body? and if  act @ execute  look  then  pose  fit-legs ;
+  on tick ( -- )   \ (a scene having it - Character_Disable - its frame waits: the scene moves its model)
+      model @ 0< 0= self body? and  model @ scene-has? 0= and if  act @ execute  look  then  pose  fit-legs ;
   on frame-end ( -- )
       model @ 0< 0= self body? and if  mv-done @  ended?  model @ 0 0 1 motion-events  broadcast moving  then ;
   on scene ( on -- )  in-scene ! ;
   \ the story's
   on place ( x y z yaw -- )
       cell>f mv-yaw f!  cells>xyz mv-at vec!
-      room-id  mv-at pursuer-floor v-tri-in  mv-at vec@ body-place  mv-yaw f@ body-turn ;
+      room-id  mv-at pursuer-floor v-tri-in  mv-at vec@ body-place  mv-yaw f@ body-turn  placed ;
   on to-exit ( exit -- )
       0 exit-spot dup 0< if  drop fdrop fdrop fdrop exit  then      ( tri ) ( F: x y z )
-      room-id swap body-place ;
+      room-id swap body-place  placed ;
   on show ( on -- )  shown! ;
   on scripted ( on -- )  0<> held ! ;
   on activate ( -- )   \ (the story's 0x15: Character_Activate - a script's hold and its way through blocked floor gone)

@@ -38,6 +38,9 @@ int cutscene_signal_total(int bit);     /* its count so far, less one (Cutscene_
 /* the camera this frame, if the shot keys it: 1 and the engine camera set */
 int cutscene_camera(Camera *c);
 int cutscene_active(void);              /* playing (cast, not over or ended) */
+/* the scene has taken model `actor` (its cast, Cutscene_Cast .. ReleaseActors: the character
+ * disabled - +0xE2 - its own frame not run, its model the scene's) */
+int cutscene_has(int actor);
 int cutscene_letterbox(void);           /* bars at the top and bottom */
 void cutscene_set_letterbox_off(int off);
 void cutscene_leave_alone(int i);       /* actor i left to its own motion by the cast (Cutscene_Mark82) */

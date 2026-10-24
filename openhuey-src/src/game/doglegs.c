@@ -220,6 +220,17 @@ void doglegs_reset(DogLegs *d) {
     memset(d, 0, sizeof(*d));
 }
 
+void doglegs_replace(DogLegs *d) {
+    int i;
+
+    d->init = 0;   /* (+0x950) */
+    for (i = 0; i < 4; i++) {   /* (DogModel_FeetUp: no foot down) */
+        d->down[i] = 0;
+        d->down_was[i] = 0;
+        d->left[i] = 0;
+    }
+}
+
 void doglegs_pose(DogLegs *d, const Model *m, Mat4 *world, const Mat4 *place, const Mat4 *unplace) {
     int i;
 

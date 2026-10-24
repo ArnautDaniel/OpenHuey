@@ -339,7 +339,11 @@ falling off it, the story's step while through blocked floor; `feet-off-acts`):
 Off her feet her model is at her place, unfitted; off the nav mesh, at her place (Model_BodyFrames).
 The engine's words: `human-legs ( id right left -- )` (the bone chains; at load), `legs-fit ( id tri
 mask plant -- ) ( F: back front -- )` each frame after she is placed, `legs-height` (her body's
-height). Checked by `tests/fiona/test_legs.fs`.
+height). Put somewhere - into a room by an exit, by the story (Fiona_PlaceOn: `put`) - her body is
+at her feet's height at once, not eased from where she was (the model's FeetUp: the engine's
+`actor-settle`, as for the stalkers' Pursuer_Place, the figures' and Hewie's Hewie_PlaceOn - his
+feet planted afresh): coming out of a door into a room on another level nobody rises through the
+floor or comes down from above. Checked by `tests/fiona/test_legs.fs`, `tests/fiona/test_arrive.fs`.
 
 Her head (`fiona/looks.fs`) turns as her model is posed as the human models' do
 (HumanModel_AdjustBone; the engine's `head-bones`, `head-turn`: `humanhead_adjust`): the head bone
@@ -438,8 +442,13 @@ out of sight (8 a frame; back in when she moves) and `fiona-unseen` is told. Her
   curve, another from 30 frames on at random, surely by 150) and her hands take her motions' poses
   (Motion_Hands: the motion table's pose, shaped over the five frames its events say); in a scene
   its motion's channels move her mouth and hands (Motion_ExtraChannels: tracks -7..-12). Her
-  hands' own shape is 1 (CharModel_Loaded). Drawn as the original's: the face its rest, mouth and
-  eyelids blended (shapes 0, 1, 7, 8), a hand from one shape to another.
+  hands' own shape is 1 (CharModel_Loaded). Drawn as the original's: out of scenes the face its
+  rest, mouth and eyelids blended (shapes 0, 1, 7, 8: func_001BC8D0); while a scene has her every
+  one of its 16 shapes by its weight, the rest what is left (the model's +0x30 set by
+  Motion_Disable: func_001BCD30 - the brows, eyes and mouth the scene's tracks move); a hand from
+  one shape to another. Taken by a scene and given back her face, hands and blink are cleared
+  (Motion_Disable, Model_ClearDraw: no blink left half shut through a scene). Checked by
+  `tests/story/test_scene_faces.fs`.
 - **Her shove and the special strikes** (Fiona_StateStrike): costume 6's strike 6 ahead of bone
   $21 (reach 3, damage 5, its own sound $22), costume 7's 10 aside of bone $23 (reach 10, a hard
   blow of 10, a blood spray on whom it meets); her boots in slot 0 - metal ($81: 1 in 10 a

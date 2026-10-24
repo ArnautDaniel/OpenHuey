@@ -3012,12 +3012,18 @@ PRIM(p_doorway_faded) {   /* ( model -- ) ( F: -- f ) how far it has faded going
 
     FPUSH(id >= 0 && id < MAX_ACTORS && gEngine.actors[id].used ? doorway_faded(&gEngine, &gEngine.actors[id]) : 0.0f);
 }
-PRIM(p_actor_settle) {   /* ( model -- ) its hanging parts settled afresh at its next pose (put somewhere:
-                          * Fiona_PlaceOn / Pursuer_Place's +0x850) */
+PRIM(p_actor_settle) {   /* ( model -- ) put somewhere (Fiona_PlaceOn, Pursuer_Place, Hewie_PlaceOn): its
+                          * hanging parts settled afresh at its next pose (+0x850), a human's body set
+                          * at its feet's height at once, not eased from where it was (the model's
+                          * +0x54 FeetUp), a dog's feet planted afresh (+0x50 FeetReplace) */
     Cell id = POP();
 
     if (id >= 0 && id < MAX_ACTORS && gEngine.actors[id].used) {
-        cloth_settle(gEngine.actors[id].cloth);
+        Actor *a = &gEngine.actors[id];
+
+        cloth_settle(a->cloth);
+        humanlegs_feet_up(&a->hlegs);
+        doglegs_replace(&a->legs);
     }
 }
 PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its parts shown or hidden (skinned, rigid or
@@ -3035,7 +3041,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its parts shown or hi
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.4") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.5") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
@@ -3374,6 +3380,11 @@ PRIM(p_cast_as) {   /* ( id model -- ) the character with script id `id` (0 Fion
     sCastOwner[i] = hactor_self();
     cutscene_on_place(cast_placed);
     cutscene_on_follow(cast_followed);
+}
+PRIM(p_scene_has) {   /* ( model -- flag ) the scene has taken it (its cast: its own frame waits) */
+    Cell id = POP();
+
+    PUSH(id >= 0 && cutscene_has((int)id) ? -1 : 0);
 }
 PRIM(p_cast_model) {   /* ( id -- model | -1 ) the model cast as script id `id` (cast-as) */
     Cell id = POP();
@@ -3735,7 +3746,7 @@ void bind_engine(Forth *f) {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-sides", p_route_sides}, {"exit-way", p_exit_way}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"world-exits-rebuild", p_exits_rebuild}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
         {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"room-ambient", p_room_ambient}, {"lights-at", p_lights_at}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
-        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"text-width", p_text_width}, {"ui-movie", p_ui_movie}, {"ui-held", p_ui_held}, {"movie-hold", p_movie_hold}, {"movie-unhold", p_movie_unhold}, {"cast-as", p_cast_as}, {"chars-hide", p_chars_hide}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
+        {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"text-width", p_text_width}, {"ui-movie", p_ui_movie}, {"ui-held", p_ui_held}, {"movie-hold", p_movie_hold}, {"movie-unhold", p_movie_unhold}, {"cast-as", p_cast_as}, {"chars-hide", p_chars_hide}, {"cast-model", p_cast_model}, {"scene-has?", p_scene_has}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
         {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-climb", p_body_climb}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-on", p_cam_on}, {"cam-followed", p_cam_followed}, {"cam-followed!", p_cam_followed_set}, {"cam-target", p_cam_target_id}, {"cam-player!", p_cam_player}, {"cam-char-setup", p_cam_char_setup}, {"cam-forget-setups", p_cam_forget_setups}, {"cam-setup-of", p_cam_setup_of}, {"cam-take-followed", p_cam_take_followed}, {"cam-scene!", p_cam_scene}, {"cam-scene?", p_cam_scene_q}, {"cam-next-set", p_cam_next_set}, {"cam-rate!", p_cam_rate}, {"cam-shake!", p_cam_shake}, {"cam-cut?", p_cam_cut}, {"cam-remember", p_cam_remember}, {"cam-started?", p_cam_started}, {"cam-stop", p_cam_stop}, {"cam-angle", p_cam_angle}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-event!", p_cam_event_set}, {"cam-track", p_cam_track}, {"push-out", p_push_out},
@@ -3820,6 +3831,7 @@ void bind_engine(Forth *f) {
     field(f, "act.alive", offsetof(Actor, alive));      /* 32-bit: blinks, its hands posed by its motions (on: l!) */
     field(f, "act.face", offsetof(Actor, face));        /* 16 sf: the face's shapes' weights; then each hand's two
                                                          * shapes (32-bit) and its way between (sf) */
+    field(f, "act.face-all", offsetof(Actor, face.all));   /* 32-bit: a scene has it - its face drawn with every shape */
     field(f, "act.hand-default", offsetof(Actor, hand_default));   /* 2 x 32-bit: each hand's own shape (+0x87C / +0x880) */
     /* the picture's settings (render.h RenderSettings): flags and counts are 32-bit (l@ l!),
      * the rest floats (sf@ sf!) */
