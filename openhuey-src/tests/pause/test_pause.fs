@@ -2,7 +2,7 @@
 \ screen; Start goes back; Select the menu - back / quit, quitting asked. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/pause/test_pause.fs
 IN: test-pause
-USING: tester engine game-state actors messages room-names game debug pause ;
+USING: tester engine game-state actors messages room-names game debug pause music ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : press ( key -- )  dup true key-hold  game-tick  false key-hold  game-tick ;
@@ -19,9 +19,12 @@ testing Start: open (5 frames), the world held - she doesn't move
 key: Return press  6 frames
 T{ stage? -> open }T
 T{ still? -> -1 }T
+testing the stream turned down with it, back as it closes (pause.c duck: Bgm +0x114)
+: ducked ( -- n )  game:music enter  music:bgm-duck f@ 100e f* fround f>s  leave-actor ;
+T{ ducked -> 0 }T
 testing Start again: closed, the world going on
 key: Return press  6 frames
-T{ stage? still? -> closed 0 }T
+T{ stage? still? ducked -> closed 0 100 }T
 
 testing Select on it: the menu; "back" closes it
 key: Return press  6 frames  key: Tab press

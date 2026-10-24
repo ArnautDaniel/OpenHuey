@@ -92,6 +92,8 @@ group; `ui-image` draws a part of one of its textures.
 1. **Opening** (SceneGame_SubPlay): Select while the menu isn't locked, the world isn't held, no
    scene runs, the panic is below 4 and Fiona is free; or the scripts' 0x6D. The world is held
    (`pause!`) and the menu has the held frames: it fades in over 8 frames, out over 4.
+   The sound goes down with it and back up as it closes (sub_set_volume: 1 - its fade / 255 -
+   the effects' master, the stream by `music-duck`, the stage music; about half while open).
 2. **Its pages**: the three item lists (16 to a page, columns of 8), then the files (two to a
    page); L1 / R1 turn them round. (The original's map and options pages come between: I3.)
 3. **An item** (SubScreen_StateItemActions): its picture slides in with its name, count and

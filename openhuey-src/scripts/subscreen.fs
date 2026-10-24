@@ -98,15 +98,21 @@ USING: engine game-state actors messages keys facts flag-names items items.table
     stage @ shut <> if  draw-page exit  then
     tab @ if  $80 openness !  draw-tab  0 openness !  then ;
 
+\ ---- the sound turned down as it opens, back up as it closes (sub_set_volume: by the fade -
+\ 1 - fade / 255 - the effects' master, the stream, the stage music) ----
+: sub-volume ( -- )
+    255 openness @ - s>f 255e f/  {: F: v :}
+    1e v sound-volume!  v f>cell s" music" actor-named send music-duck  v stage-music-volume! ;
+
 \ ---- a frame with the world held ----
 : held-frame ( -- )
     1 frames +!
     stage @ case
-        opening of  16 openness +!  openness @ 128 >= if  128 openness !  up stage !  then  endof
+        opening of  16 openness +!  openness @ 128 >= if  128 openness !  up stage !  then  sub-volume  endof
         up of  menu-keys  select-button button-pressed? gal-kind @ 0= and if  close-menu  then  endof   \ (in a gallery select is its own)
         closing of
             openness @ 128 = quiet @ 0= and if  se-close  then
-            -32 openness +!  openness @ 0> 0= if  shut-menu exit  then  endof
+            -32 openness +!  openness @ 0 max openness !  sub-volume  openness @ 0> 0= if  shut-menu exit  then  endof
     endcase
     draw ;
 

@@ -293,6 +293,7 @@ message fade-done ( -- )                     \ (to who faded) it's over
 message bgm-want ( track pause level -- )    \ (the music) background track wanted ($FF none), paused, its level (f>cell)
 message bgm-resume ( -- )                    \ (the music) the streamed track resumed
 message music-op ( op a b -- )               \ (the music) the stage music: 0 over a frames to volume b, 2 hold, 4 release, 5 silence
+message music-duck ( v -- )                   \ (the music) the stream turned down to v (f>cell, 0..1) - the pause, the sub screen (Bgm +0x114)
 message music-stage ( stage -- )             \ (the music) the stage set's music made (-1: ended)
 \ ---- scenes (the cutscene director: docs/subsystems/story.md S4) ----
 message scene ( on -- )                      \ broadcast: a cutscene has the characters (on) / gives them back (off)

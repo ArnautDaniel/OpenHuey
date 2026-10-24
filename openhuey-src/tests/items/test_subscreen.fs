@@ -3,7 +3,7 @@
 \ tab the story slides in with an item. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/items/test_subscreen.fs
 IN: test-subscreen
-USING: tester engine game-state actors messages keys facts flag-names story-names game items items.names subscreen subscreen.state fiona.state debug saves room-names ;
+USING: tester engine game-state actors messages keys facts flag-names story-names game items items.names subscreen subscreen.state fiona.state debug saves room-names music ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : tap ( key -- )  dup true key-hold  game-tick  false key-hold  game-tick ;
@@ -24,6 +24,9 @@ key: Tab tap  10 frames
 T{ stage@  [: page @ ;] menu@ -> 2 0 }T
 key: W true key-hold  20 frames  key: W false key-hold
 T{ moved 0.01e f< -> -1 }T
+testing the stream turned down with it (sub_set_volume: 1 - 128 / 255)
+: ducked ( -- n )  game:music enter  music:bgm-duck f@ 1000e f* fround f>s  leave-actor ;
+T{ ducked -> 498 }T
 
 testing R1 turns to the next list; the cross opens the item's actions (on its first: use)
 key: E tap
@@ -72,7 +75,7 @@ T{ [: volume @ ;] menu@ -> 128 }T
 key: E tap
 testing triangle closes it: the world goes on
 key: V tap  10 frames
-T{ stage@ -> 0 }T
+T{ stage@ ducked -> 0 1000 }T
 key: W true key-hold  20 frames  key: W false key-hold
 T{ moved 0.5e f> -> -1 }T
 
