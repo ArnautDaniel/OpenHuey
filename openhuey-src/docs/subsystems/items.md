@@ -164,8 +164,7 @@ message box), `lists.fs` (the item lists, an item's actions, the files), `map.fs
 a quarter off each fright and the recovery's reset three times in four; $8B a quarter off, her
 calming half again, the reset half the time; $8C half off, her calming doubled, never the reset,
 nor running's fright; **I2, I3 built**
-(`scripts/subscreen.fs`, `tests/items/test_subscreen.fs` (62)). Not yet: the
-menu's sound turned down while open; the words' fades by the task's alpha (the gallery bars' and
+(`scripts/subscreen.fs`, `tests/items/test_subscreen.fs` (62)). Not yet: the words' fades by the task's alpha (the gallery bars' and
 page counts' `0x80 - fade`: drawn at the menu's). **The galleries** (`subscreen/galleries.fs`, the extras
 room's modes; their tables generated from the executable by `tools/gallerytables.py` into
 `subscreen/gallery-tables.fs`; `tests/items/test_galleries.fs` (35)): eight a page, "???" until the
