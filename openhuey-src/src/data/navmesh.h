@@ -79,6 +79,17 @@ int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach);
 /* from a (on `from`) straight toward b: whether a triangle on the way (from's too, up to b's or
  * a wall) has all of `mask`'s flags (Fiona_Voice: her mouth behind the water's surface) */
 int navmesh_crosses(const NavMesh *n, int from, Vec3 a, Vec3 b, uint32_t mask);
+/* walking straight from a (on `from`) toward b (on `to`), stopping on the first triangle with
+ * any of `mask`'s flags, from's too (Actor_WalkMesh): that triangle, or NAV_WALK_REACHED (b
+ * reached on `to`), NAV_WALK_STUCK (b on another triangle), NAV_WALK_OFF (the mesh's edge
+ * first), NAV_WALK_FAIL (no such triangle; no way through). (The original's corner cases - a
+ * walk starting or ending on a corner - are not kept.) */
+enum { NAV_WALK_REACHED = -2, NAV_WALK_STUCK = -3, NAV_WALK_OFF = -4, NAV_WALK_FAIL = -5 };
+int navmesh_walk_between(const NavMesh *n, int from, Vec3 a, int to, Vec3 b, uint32_t mask);
+/* can one walk between a (on ta) and b (on tb) (Actor_CanWalkBetween): straight from a to b
+ * within mask (0: $40080) and $4000; stopped by a triangle of the $4000 only, from b back to a
+ * stopped by one too (or ending elsewhere when the first didn't) */
+int navmesh_can_walk_between(const NavMesh *n, int ta, Vec3 a, int tb, Vec3 b, uint32_t mask);
 /* triangle t's surface height at (x, z) (its plane), and its up-facing normal */
 float navmesh_height(const NavMesh *n, int t, float x, float z);
 Vec3 navmesh_normal(const NavMesh *n, int t);

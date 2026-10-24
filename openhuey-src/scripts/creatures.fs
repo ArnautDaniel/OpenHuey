@@ -46,10 +46,11 @@ end-state
 enum: which-creatures  all-creatures spirits-only homunculi-only ;   \ (creatures-clear's)
 5 constant scattered-after-load
 
-\ ---- the story's count (0x99, SceneGame_RoomCreatures): as each room comes in, each of the
-\ first `scatter` slots that is free gets a new spirit in a room next to hers (within two open
-\ doors, SceneGame_RoomsNear; a room more likely the more of her exits lead to it), sent after
-\ her. (The homunculi's kind no room's script asks for: not built) ----
+\ ---- the story's count (0x99, SceneGame_RoomCreatures): each frame of play (SceneGame_PlayStart,
+\ from SceneGame_SubPlay), each of the first `scatter` slots that is free gets a new spirit in a
+\ room next to hers (within two open doors, SceneGame_RoomsNear; a room more likely the more of
+\ her exits lead to it), sent after her - one gone, another takes its slot. (The homunculi's kind
+\ no room's script asks for: not built) ----
 65 constant most-rooms
 create near-rooms most-rooms cells allot  create next-rooms most-rooms cells allot  variable next-n
 : next-room+ ( room -- )  next-n @ most-rooms < if  next-n @ cells next-rooms + !  1 next-n +!  else  drop  then ;
@@ -79,7 +80,7 @@ behaviour keeping-creatures
   on spawned ( -- )  slots #creatures cells -1 fill  self subscribe game-loaded  self subscribe entered-room
       self subscribe stalker-doing  self subscribe tick  100 st-age ! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop 2drop 2drop 2drop  st-room !  0 st-age ! ;
-  on tick ( -- )  st-age @ 100 < if  1 st-age +!  then ;
+  on tick ( -- )  st-age @ 100 < if  1 st-age +!  then  creatures-on state-flag? if  scatter-about  then ;
   on entered-room ( room exit -- )  2drop  creatures-on state-flag? if  scatter-about  then ;
   on creature-place ( room level tri kind reach which yaw height -- )  place ;
   on creatures-clear ( which -- )   \ all-creatures, the spirits, the homunculi

@@ -50,12 +50,13 @@ of 30, the push). The places and spots kept. Its kinds come from the executable
    the ring of squares round each part is marked - its sides $20800000 (walls too, and the
    pushable floor $800000 Fiona pushes from), its corners $20000000.
 4. **Can it go** (Obstacle_CanPush) along a direction: not stopped; no other character (Hewie,
-   the stalkers) on the ring round it moved two squares along, nor one; and every triangle two
+   the stalkers, the story's figures - not those hidden, +0x29: `figure-shown`) on the ring
+   round it moved two squares along, nor one; and every triangle two
    squares along, its own blocks lifted, walkable floor ($100) without $440080.
 5. **Pushed** (Fiona's): the square two along is its target; its blocks and ring lifted, the
    others' rings marked again, then its blocks and ring two squares along. Over the 30 frames
    its middle moves by the move's steps along the push; at the sixth its scrape (sound 6, bank
-   0) and a noise ($1F, hers) at its square. At the last frame its target is its reference
+   0) and a noise ($1F, hers) where it was before that frame's step, at its square. At the last frame its target is its reference
    square, its parts and middle follow.
 6. **Its model** follows it each frame: its middle by its offset.
 7. **A room left**: all gone; the next room's scripts place its own.
@@ -70,11 +71,12 @@ of 30, the push). The places and spots kept. Its kinds come from the executable
 ## Status
 
 **Built**: the geometry and the move in C (`src/game/obstacles.c`, from room_map.c's Obstacle_*); the actor (`scripts/obstacles.fs`) places, pushes, sounds, moves the models (`placed-at`). Checked by
-`tests/obstacles/test_obstacles.fs` (13): placed in castle-b1-7 (its square, its place, the floor
+`tests/obstacles/test_obstacles.fs`: placed in castle-b1-7 (its square, its place, the floor
 blocked, its ring marked); which ways it can go; Fiona walking into it, leaning on it and
 pushing it twice, straining at the end, letting go; its square after; stopped; its place kept
 across a visit; gone with the room; the story's words; each push felt on the pad (Fiona's `fiona-jolt`); a model put back at the kept
-spot (`obstacle-model-back`).
+spot (`obstacle-model-back`); a hidden figure on the ring not in its way; no push but in her own
+moves (19 in all).
 
 With it, two fixes to the engine's moving over the floor (`navmesh_move`): a step may go no
 more than its climb up as well as down (the game's y runs down: blocked under her, she used to

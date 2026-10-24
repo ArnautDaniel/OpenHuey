@@ -82,7 +82,8 @@ holds $8D; she hidden and busy - idle; else after a door it may use (CreatureA_F
 one leads her way, else after her (from afar with $8D only within 40).
 
 **After her** (_StateAfterFiona, _StraightAtFiona): straight at her at its speed when her
-triangle is reachable (not when she is held right by it); on another level it gives up after
+triangle is reachable over its paths' mask ($40080 - coming for her, `reaches-her?` with no mask)
+(not when she is held right by it); on another level it gives up after
 its tries while within 2; on a triangle flagged $20000 that it can't cross it gives up at once
 (its time ends); else along a path to her triangle.
 
@@ -98,7 +99,12 @@ place, blue ones a level $80 noise in their room; gone.
 leads on); unless she is just beyond it, it goes off screen: its route to her room, each leg's
 length counted down at its speed (2/3 with company); at each door, through it if the way is
 open, else that door marked closed and the trip ends. Into the room being played: at the exit's
-spot, facing in.
+spot, facing in. Only the first leg is at 2/3 (CreatureA_Travel clears its company as a leg
+ends); while state flag $18 (`stalkers-stay`) is set it doesn't travel at all.
+
+**Put at random** (CreatureA_PlaceRandom; in by a door with no spot, or placed with none): a
+triangle not flagged 8, on its floor of a split room, its middle outside every exit's area
+(`off-the-doors?`, creatures/trip.fs).
 
 **Drawn** (CreatureA_Draw; GAME_FIX 32 x 32 cells): its core (cell $40,64: white, 2.5), its colour
 (cell $A0,64: red / blue, 2.5 + its glow), three trail points fading and shrinking, its body
@@ -114,7 +120,16 @@ saved and as rooms change; an empty slot cleared.
 6, kept off triangles $04020028): kind $80.. (the story's `kind`; bit 7 set), its sight (`reach`
 x 10), its heading, and - placed with a height (the story's `f`) - dropped from that high.
 Strength by kind (D_0042C460): $80 5, $81 6, $82 7, the rest 5; its time out 9000 frames for
-all. Kinds $88 / $89 walk anywhere (no blocked triangles; paths kept off $40080).
+all. Kinds $88 / $89, not yet awake, walk anywhere (no blocked triangles; paths kept off $40080)
+until they come to their spot (state $E, out of reach of blows on the way), then $04020028 again
+(CreatureB_SetupKind, _StateWalkSpot). Put in the room being played with no triangle
+(CreatureB_EnterRoom, Actor_TeleportRandom): a random triangle not of its mask's floor, on its
+level (0 / 1: off the other half; else where both meet), off the exits' areas; state 0.
+
+**Seeing her** (Actor_CanWalkBetween, mask 0 - in states 0 / 1, $10 and after her): straight from
+it to her and back over $40080 and $4000 (the engine's `can-walk-between?`; the original's
+corner cases left out). Noticing her or Hewie, its own mask (Actor_TriTo); straight at her, its
+paths' mask.
 
 **Waking** (_Distances, _Notices): resting, it notices Fiona on a triangle it reaches within its
 sight, Hewie in its room on his within 30, a blow, or anything at all with no sight: a cry
@@ -125,7 +140,8 @@ sound 5 - then up, $1800, a sound at frame 34) and wakes once it notices her.
 **Its states** (+0x69 the wanted one, +0x62 the one running; each with its first animation):
 - 0 / 1 **watching** her (idle 0 quiet / $1C00, a chatter - sound 2 - every 44 frames), turning to
   face her; every 150 frames with state flag 9 set - 9, her caught - $C, out of her sight - $10;
-  in sight every 90 frames - 5 (or, having held off before, 7 or the other watch by a coin).
+  in sight every 90 frames - 5 (or, having held off before, 7 or the other watch by a coin -
+  never, as it is: settling clears that unless it has held her, and it settles as it holds off).
 - 5 **after her** (walking, $200): flag 9 - 9; her caught - $C; she hidden or busy (no flag $A)
   - $F; across the divider - $12; her in move 4 / 3 - 7. Straight at her when it can (not on
   another level after 30 tries close by); within 10 on her triangle it grabs (3) - not when
@@ -155,6 +171,12 @@ sound 5 - then up, $1800, a sound at frame 34) and wakes once it notices her.
 **Following her out** (_FionaLeft, _Travel): as the spirits, at 0.35 a frame; a way shut for
 kind 2 sends it back to its room's start (+0x8 2).
 
+**Kept** (CreatureB_Save / _Load): as a spirit's, and its strength, the state it is in, its
+heading and how high it still is (the progress' `creature-states`, apart from the spirits'
+records so older saves load: their homunculi come back at full strength, watching); leaving
+(state 4), its slot not in use. Back from a loaded game it is in that state again - reeling, it
+starts afresh; not awake and high up, dropping.
+
 **Drawn**: its model (lit as the room; dimmed while leaving). Resting and not out: drawn.
 
 ## Status
@@ -182,14 +204,18 @@ through after whoever used it. A homunculus after her holds off while the stalke
 front of a door it is by ($11, CreatureB_StateDoor). A homunculus's footsteps (CreatureB_Footsteps):
 walking, sound 6 / 7 as each foot comes down. Leaving, it fades and bubbles well up where it sinks
 - 64 bubbles, 32 drops thrown up, a stain on the floor at frame 100 (the engine's `welling`,
-Cr19Bubbles). The story's count (0x99, SceneGame_RoomCreatures; `creatures-on`): as each room
-comes in (and after a loaded game, 5), each free slot of the first `n` gets a spirit of any kind
-in a room next to hers (within two open doors), sent after her - out, resting 1..4 minutes, then
-on its way; with company (the stalker or a figure of the story up in her room) at 2/3 the pace. Checked by `tests/creatures/test_spirits.fs` (28) and
-`test_homunculi.fs` (21), Hewie's in `tests/hewie/test_pounce.fs`; seen on screen.
+Cr19Bubbles). The story's count (0x99, SceneGame_RoomCreatures; `creatures-on`): each frame of
+play (and after a loaded game, 5), each free slot of the first `n` gets a spirit of any kind in a
+room next to hers (within two open doors), sent after her - out, resting 1..4 minutes, then on
+its way; with company (the stalker or a figure of the story up in her room) at 2/3 the pace for
+its first leg. One gone, the next frame another takes its slot. Checked by
+`tests/creatures/test_spirits.fs` (35) and `test_homunculi.fs` (27), Hewie's in
+`tests/hewie/test_pounce.fs`; seen on screen.
 
 Not yet:
 - The special spots of rooms $8F / $91 checked only by the numbers.
-- Spirits: heading for her exit only when it can reach it; placing at random away from the
-  doors' event spots. The story's count of homunculi (0x99 with bit 7: no room asks for it).
+- Spirits: heading for her exit only when it can reach it. The story's count of homunculi (0x99
+  with bit 7: no room asks for it).
+- A homunculus coming into the room on a triangle of its mask's floor put elsewhere
+  (CreatureB_RoomEntered's re-placing).
 - Kind $19 (an event character); room $4F's commands.

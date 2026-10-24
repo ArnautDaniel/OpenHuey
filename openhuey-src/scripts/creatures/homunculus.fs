@@ -42,6 +42,7 @@ state: homunculus-state
   cell field gave-up  cell field tries
   cell field move-mode            \ (+0xF8) creature-move
   cell field untouchable          \ (+0x2D) out of reach of blows
+  cell field to-spot-free         \ (kinds 8 / 9, till they come to their spot) blocking nothing, its paths $40080
   /vec field target  cell field target-tri  1 floats field target-d   \ a spot by her to make for
   cell field grab-spot            \ which of the four spots round her next
   1 floats field her-dist  1 floats field hewie-dist
@@ -59,9 +60,11 @@ end-state
 : in-play? ( -- flag )  trip in-play? ;
 : my-at ( -- v )  self body-at ;
 : k ( -- n )  kind @ homunculus-kind xor ;
-: walks-anywhere? ( -- flag )  k 8 10 within ;   \ (kinds 8 / 9)
-: path-mask ( -- m )  walks-anywhere? if  creature-path-floor  else  creature-floor  then ;
-: stand-mask ( -- m )  walks-anywhere? if  0  else  creature-floor  then ;
+: walks-to-a-spot? ( -- flag )  k 8 10 within ;   \ (kinds 8 / 9: awake, to their spot first)
+\ its masks (CreatureB_SetupKind: kinds 8 / 9 not yet awake block nothing, plan as kind 6, till
+\ they come to their spot - CreatureB_StateWalkSpot; the others $04020028)
+: path-mask ( -- m )  to-spot-free @ if  creature-path-floor  else  creature-floor  then ;
+: stand-mask ( -- m )  to-spot-free @ if  0  else  creature-floor  then ;
 : full-strength ( -- n )  k case  1 of 6 endof  2 of 7 endof  >r 5 r>  endcase ;   \ (D_0042C460)
 5 minutes constant time-out
 
@@ -85,8 +88,8 @@ fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
 : faces? ( v deg -- flag )  s>f deg>rad  turn-left f> ;   \ ( within `deg` of it )
 
 \ ---- its states: entered afresh (cr19_enter: settled, a wait of 150 / 300 / 450) ----
-: settle ( -- )
-    0 step !  0 sub !  0 frames !  my-path path-clear
+: settle ( -- )   \ (+0x6B cleared unless it has held her: held off no more)
+    0 step !  0 sub !  0 frames !  my-path path-clear  grabbed @ 0= if  0 held-off !  then
     16 random 3 mod 1+ 150 * wait !  -1 target-tri ! ;
 : become ( st -- )  want !  creature-free move-mode !  settle ;
 : become-move ( st move -- )  move-mode !  want !  settle ;
@@ -95,9 +98,11 @@ fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
 
 \ ---- seeing her ----
 : hidden-or-busy? ( -- flag )  hidden? her-doing @ 0<> or ;
-: reaches? ( v tri -- flag )   \ straight from it onto that triangle
-    >r  self body-tri my-at rot path-mask v-walk  r> = ;
-: sees-her? ( -- flag )  her-at her-tri reaches? ;   \ (Actor_CanWalkBetween)
+: reaches? ( v tri mask -- flag )   \ straight from it onto that triangle, kept off the mask's floor (Actor_TriTo)
+    {: v tri m :}  self body-tri my-at v m v-walk  tri = ;
+: straight-to-her? ( -- flag )  her-at her-tri path-mask reaches? ;   \ (its paths' mask)
+: sees-her? ( -- flag )   \ (Actor_CanWalkBetween, mask 0: both ways over $40080 / $4000)
+    self body-tri my-at her-tri her-at 0 can-walk-between? ;
 : divided? ( -- flag )  her-tri self body-tri across-divider? ;
 
 : x-z-of ( v -- ) ( F: -- x z )  dup v.x sf@  v.z sf@ ;
@@ -115,7 +120,7 @@ fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
 \ another level it gives up after 30 tries close by ----
 : another-level? ( -- flag )  my-at v.y sf@  her-at v.y sf@  f= 0= ;
 : straight-at-her ( -- tri | -1 )
-    sees-her? 0= if  -1 exit  then
+    straight-to-her? 0= if  -1 exit  then
     my-path path-clear
     another-level? if
         her-dist f@ 2e f< if  1 tries +!  then
@@ -214,12 +219,14 @@ fvariable try-turn
     walk-anim first  her-tri nav-flags creature-floor and if  5e approach  else  watching become  then ;
 : circle-her ( -- )  walk-anim first  her-unseen @ if  20e approach  else  chasing become  then ;
 : turn-to-her ( -- )  walk-anim first  her-at 20 faces? if  chasing become  else  her-at turn-to  then ;
-: go-to-its-spot ( -- )   \ to its spot in rooms $8F / $91 (a triangle by kind), then to her
-    walk-anim first
+: go-to-its-spot ( -- )   \ to its spot in rooms $8F / $91 (a triangle by kind), out of reach of
+    walk-anim first                \ blows; there its masks $04020028 again; then to her
     sub @ if  turn-to-her exit  then
+    true untouchable !
     my-room @ $91 = if  k 8 = if  $D0  else  $9F  then  else  $E  then  {: tri :}
     my-path path-left? 0= if  tri dup tri-center target vec!  target plan 0= if  exit  then  then
-    walk-path 0= if  1 sub !  then ;
+    walk-path if  exit  then
+    1 sub !  0 untouchable !  false to-spot-free !  stand-mask body-mask! ;
 : bide ( -- )   \ she's hidden or busy
     rest-anim first
     hidden? if  hanging-back creature-about become-move exit  then
@@ -363,11 +370,15 @@ $80 constant grab-noise
 
 \ ---- kept in the progress (CreatureB_Save / _Load) ----
 : record ( -- addr )  slot @ /kept-creature *  progress pr.creatures + ;
-: keep ( -- )
+: kept-state ( -- addr )  slot @ /kept-state *  progress pr.creature-states + ;
+: keep ( -- )   \ (leaving, not in use: it doesn't come back)
     in-play? if  self body-tri my-tri !  then
-    1 record kc.used l!  kind @ record kc.kind l!  sight @ record kc.reach l!  level @ record kc.level l!
+    want @ leaving <> 1 and record kc.used l!
+    kind @ record kc.kind l!  sight @ record kc.reach l!  level @ record kc.level l!
     my-room @ record kc.room l!  my-tri @ record kc.tri l!  time @ record kc.time l!
-    0 record kc.out l!  awake @ record kc.come l! ;
+    0 record kc.out l!  awake @ record kc.come l!
+    strength @ kept-state ks.strength l!  running @ kept-state ks.state l!
+    fall f@ kept-state ks.fall sf!  self body? if  self body-yaw kept-state ks.heading sf!  then ;
 : unkeep ( -- )  record /kept-creature 0 fill ;
 
 \ ---- waking (CreatureB_Distances, _Notices): her on a triangle it reaches within its sight,
@@ -378,25 +389,37 @@ $80 constant grab-noise
     my-at her-at vec-dist-xz her-dist f!
     -1e hewie-dist f!
     hewie dup body? if  dup body-room my-room @ = if  body-at my-at vec-dist-xz hewie-dist f!  exit  then  then  drop ;
-: notices? ( hewie? -- flag )
-    sees-her? her-dist f@ sight @ s>f f<= and if  drop true exit  then
+: notices? ( hewie? -- flag )   \ (reached over its own mask)
+    her-at her-tri stand-mask reaches?  her-dist f@ sight @ s>f f<= and if  drop true exit  then
     if  hewie-dist f@ f0< 0=  hewie-dist f@ 30e f<= and
-        hewie body? and if  hewie body-at hewie body-tri reaches? if  true exit  then  then  then
+        hewie body? and if  hewie body-at hewie body-tri stand-mask reaches? if  true exit  then  then  then
     blow-pending @ if  true exit  then
     sight @ 0= ;
 : wake ( -- )
     in-play? 0= awake @ or if  exit  then
     fall f@ f0= if
-        true notices? if  wake-cry sound  true awake !  walks-anywhere? if  to-its-spot  else  facing-her  then  become  then
+        true notices? if  wake-cry sound  true awake !  walks-to-a-spot? if  to-its-spot  else  facing-her  then  become  then
     else
         true untouchable !  false notices? if  true awake !  then   \ (high up: it drops once it notices her)
     then ;
 
 \ ---- each frame (CreatureB_Frame, _States) ----
-: on-the-floor ( -- )   \ in the room being played: on its triangle, or somewhere it may stand
-    stand-mask body-mask!
-    my-tri @ dup 0< if  drop  nav-tris random  then
-    dup my-tri !  room-id swap dup tri-center body-place ;
+: on-its-level? ( flags -- flag )   \ (Actor_TeleportRandom: level 0 / 1 off the other half; else both halves)
+    level @ case
+        0 of  one-half and 0=  endof
+        1 of  other-half and 0=  endof
+        >r both-halves and both-halves = r>
+    endcase ;
+: may-be-put? ( tri -- flag )   \ not its mask's floor, on its level, off the doors' spots
+    dup nav-flags {: tri fl :}
+    fl stand-mask and if  false exit  then  fl on-its-level? 0= if  false exit  then  tri off-the-doors? ;
+: somewhere ( -- tri | -1 )
+    nav-tris 0= if  -1 exit  then
+    1000 0 do  nav-tris random  dup may-be-put? if  unloop exit  then  drop  loop  -1 ;
+: on-the-floor ( -- )   \ in the room being played: on its triangle, or (none: CreatureB_EnterRoom) put
+    stand-mask body-mask!                                  \ somewhere at random, watching her
+    my-tri @ dup 0< if  drop somewhere  watching want !  watching running !  then
+    dup my-tri !  dup 0< if  drop exit  then  room-id swap dup tri-center body-place ;
 : blow-taken ( -- )   \ (CreatureB_ActionState) a blow: struck
     blow-pending @ 0= if  exit  then  0 blow-pending !
     move-mode @ creature-struck = if  exit  then
@@ -428,6 +451,7 @@ $80 constant grab-noise
     run-state  model @ 0< if  exit  then  footsteps  show keep ;
 
 : start ( -- )   \ its model, on the floor if in the room being played, facing as placed
+    walks-to-a-spot? awake @ 0= and to-spot-free !
     s" O_HMB/HMB_000" actor-load dup model !  s" motions-homunculus" motion-table   \ (D_0042C730: its motions)
     0 actor@ act.visible l!  rest-anim play-now
     3e 6e body-size
@@ -447,10 +471,18 @@ behaviour homunculus
   on homunculus-setup ( slot room level tri kind sight yaw height -- )
       cell>f fall f!  >r  10 * sight !  kind !  my-tri !  level !  my-room !  slot !
       start  in-play? if  r@ s>f deg>rad angle-wrap body-turn  then  r> drop ;
-  on homunculus-kept ( slot -- )
+  on homunculus-kept ( slot -- )   \ (CreatureB_Load: its state as it was - reeling, it starts afresh;
+      \ not awake and high up, dropping)
       slot !  record kc.kind l@ kind !  record kc.reach l@ sight !  record kc.level l@ level !
       record kc.room l@ my-room !  record kc.tri l@ my-tri !  record kc.time l@ time !
-      record kc.come l@ 0<> awake !  start  awake @ if  chasing become  then ;
+      record kc.come l@ 0<> awake !  kept-state ks.fall sf@ fall f!
+      kept-state ks.strength sl@  kept-state ks.state sl@  kept-state ks.heading sf@  {: str st F: yaw :}
+      start   \ (which keeps it afresh)
+      str ?dup if  strength !  then   \ (a save from before it was kept: full)
+      st dup want !  running !
+      running @ reeling = if  watching become  then
+      awake @ 0= fall f@ f0> and if  dropped want !  dropped running !  then
+      yaw body-turn  keep ;
   on tick ( -- )  model @ 0< if  exit  then  frame ;
   on fiona-doing ( mode sub cond cmd doing -- )  her-doing !  drop drop  her-sub !  her-mode ! ;
   on fiona-unseen ( on -- )  her-unseen ! ;

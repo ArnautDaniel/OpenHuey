@@ -58,14 +58,23 @@ off). The hand-over (0xBA) waits in hg while the other's files load; OpenHuey lo
 
 ## Moves
 
-The story's (`scripted-move` kinds): 7 / 8 / 9 an animation, 16 its idle (b), done at once,
-moved by its root motion; 5 / 10 walking ($200), 6 / 11 running ($202), 17 its own animation, to
-the spot - turning toward it 10 degrees a frame, moved by the animation's root motion (a slow step
-when it has none), there: put on it, facing the move's way, done; 14 / 15 turning to the move's
-heading; 1 standing; the looks and the doors' uses: done. `hold-anim`: in it, done.
+The story's (`scripted-move` kinds; Pursuer_EventCommand): 7 an animation (a), 8 blended (a over b
+frames), 9 the same with no time of its own, 16 its stand (0) over b frames - done at once,
+moved by its root motion; 5 / 10 walking to the spot, 6 / 11 to triangle a (its middle) - 5 / 6
+in b if it is one of the $2xx walks, else $200, 10 / 11 in $201 (Pursuer_ScriptMove,
+Pursuer_SlowWalkAnim: its +0x16C8 is 2 from Pursuer_Reset) - turning toward it 10 degrees a
+frame, moved by the animation's root motion (a slow step when it has none). To a triangle: done
+once on it; at the spot, standing. To the spot (Pursuer_StateArrive): put on it, then turning to
+the move's heading at 4 degrees a frame (Pursuer_TurnRate), standing, done. 14 / 15 turning to
+the move's heading in $200 at 4 degrees a frame, then standing (0) and done once that has faded
+in (Pursuer_StateTurnThenWait); 17 its own animation to the spot (put on it, facing the move's
+way, done); 1 standing; the looks and the doors' uses: done. `hold-anim`: in it, done.
+
+As the story shows or hides it (`show`) a figure tells (`figure-shown`): the obstacles leave a
+hidden one out of their way.
 
 ## Status
 
-**Built** (`scripts/cast.fs`). Checked by `tests/cast/test_cast.fs` (14) and
+**Built** (`scripts/cast.fs`). Checked by `tests/cast/test_cast.fs` (23) and
 `tests/cast/test_animal.fs` (4). *Not kept*: the models' own cloth (kind 9's strands, Fiona's
 doubles' springs, kind 18's per-part draw settings) and kind 33's raised body frames.

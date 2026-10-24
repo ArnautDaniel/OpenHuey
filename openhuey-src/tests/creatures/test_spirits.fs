@@ -3,7 +3,7 @@
 \ hanging about her while she hides, following her out, kept in the progress. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/creatures/test_spirits.fs
 IN: test-spirits
-USING: tester engine game-state actors messages room-names flag-names facts paths saves game fiona.state story.state story.words creatures creatures.state creatures.spirit ;
+USING: tester engine game-state actors messages room-names flag-names facts paths saves game fiona.state story.state story.words creatures creatures.trip creatures.state creatures.spirit ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
@@ -84,6 +84,8 @@ T{ [: my-room @ in-play? ;] of0  was-room swap -> was-room was-room 0 }T
 T{ 3000 arrives? -> -1 }T
 T{ spirit0 body?  spirit0 body-room room-id = -> -1 -1 }T
 
+testing put at random: off the doors' spots (CreatureA_PlaceRandom)
+T{ [: true  50 0 do  anywhere dup 0< if  drop  else  off-the-doors? and  then  loop ;] of0 -> -1 }T
 testing kept: saved, cleared, and back from a loaded game
 ' saves:quick-save game:saves enter execute leave-actor  deliver  2 frames
 1 game:creatures send creatures-clear  deliver  1 frames
@@ -126,6 +128,17 @@ front-garden-2 -1 game:rooms send go-to-room  5 frames
     spirit dup alive? 0= if  drop false exit  then
     enter  my-room @ dup room-id <> swap next-to-hers? and  out @ and  come @ 0= and  rest @ 0> and  leave-actor ;
 T{ 0 scattered?  1 scattered?  2 scattered?  3 scattered?  4 scattered?  5 spirit alive? -> -1 -1 -1 -1 -1 0 }T
+testing one gone, the next frame of play another takes its slot (SceneGame_RoomCreatures each frame)
+T{ 0 game:creatures send creature-clear  deliver  0 spirit alive? -> 0 }T
+2 frames
+T{ 0 scattered? -> -1 }T
+testing off screen with company: 2/3 its pace for the first leg only; held while the stalkers stay
+: s1 ( xt -- )  1 spirit enter  execute  leave-actor ;
+: leg ( -- n )  trip t.leg sf@ 100e f* fround f>s ;
+T{ [: 0 rest !  true come !  true company !  trip trip-reset  travel  trip t.n @ 0> ;] s1 -> -1 }T
+T{ [: 10e trip t.leg sf!  travel  10e trip t.leg sf@ f-  speed 1.5e f/ f- fabs 0.0001e f<  company @ ;] s1 -> -1 -1 }T
+T{ [: 0.01e trip t.leg sf!  travel  company @ ;] s1 -> 0 }T
+T{ [: 10e trip t.leg sf!  stalkers-stay state-flag-set  travel  stalkers-stay state-flag-clear  leg ;] s1 -> 1000 }T
 0 game:creatures send creatures-clear  deliver  creatures-on state-flag-clear  1 frames
 
 test-summary

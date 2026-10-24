@@ -28,6 +28,18 @@ T{ 0 $1ED obstacle-on-square?  0 $245 obstacle-on-square?  obst-x obst-z -> -1 -
 T{ $1ED nav-flags $20400000 and  ring-tri dup 0< 0=  swap nav-flags $20800000 and -> $20400000 -1 $20800000 }T
 testing which ways it can go: along -z here, not along +x (no floor for it)
 T{ 0e -1e 0 can-push?  1e 0e 0 can-push?  0e -1e 1 can-push? -> -1 0 0 }T
+testing the others counted: a story's figure in the room, not when it is hidden (Obstacle_RingClear: +0x29)
+$1C 3 $FF story.words:char-load  2 frames
+: put3 ( F: x y z yaw -- )  f>cell >r f>cell >r f>cell >r f>cell r> r> r>  game:cast3 send place ;
+ring-tri tri-center 0e put3  2 frames
+T{ 0 game:cast3 other-tri  -> 1 }T
+0 game:cast3 send show  deliver  1 frames
+T{ 0 game:cast3 other-tri  game:cast3 hidden-figure? -> 0 -1 }T
+1 game:cast3 send show  deliver  1 frames
+T{ 0 game:cast3 other-tri -> 1 }T
+3 0 story.words:char-remove  2 frames
+testing pushing only in her own moves (Fiona_FindPushable: her move mode 0)
+T{ [: 3 her-mode !  true 3e fiona.push:find-pushable  0 her-mode ! ;] hers -> 0 }T
 
 testing Fiona walking into it from +z: she turns to it and leans on it ($1200), then pushes ($1201)
 -32.5e  0 obstacle-at fdrop fswap fdrop  6e 180e tp-facing  5 frames

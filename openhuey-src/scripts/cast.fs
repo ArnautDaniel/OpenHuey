@@ -61,28 +61,54 @@ state: cast-state
   cell field st-actor  cell field st-room-is   \ (the stalker, as he tells: stalker-doing)
 end-state
 : him ( -- a )  model @ actor ;
+: shown! ( on -- )  0<> dup shown !  broadcast figure-shown ;   \ (told: the obstacles leave a hidden one out)
 : my-at ( -- v )  self body-at ;
 : yaw ( F: -- a )  self body-yaw ;
 : play-now ( anim -- )   \ (Motion_PlayTable; one it hasn't: as it is)
     model @ over has-motion? 0= if  drop exit  then
     dup anim !  model @ swap  2dup motion-entry nip  motion-play ;
+: play-blend ( anim blend more-flags -- )   \ (Motion_PlayBlend / _PlayBlend8: its table's flags, and these, over
+    {: a bl more :}                           \ blend frames)
+    model @ a has-motion? 0= if  exit  then
+    a anim !  model @ a bl  model @ a motion-entry nip nip more or  motion-play ;
 : ended? ( -- flag )  him act.mflags l@ $20 and 0<> ;
+: faded-in? ( -- flag )  him act.fade sf@ 0e f<= ;
+: play ( anim -- )   \ (Pursuer_PlayAnim: not again while it plays)
+    dup anim @ = ended? 0= and if  drop exit  then  play-now ;
 : done ( -- )  -1 mv-done ! ;
 : still ( -- ) ;
 : settle ( -- )  done  ['] still act ! ;
 \ its root motion this frame: the turn, and the step across and ahead
 : root@ ( F: -- turn x z )  model @ root-delta  fswap fdrop ;   \ (no rise)
 : root-move ( -- )  root@ {: F: turn x z :}  yaw turn f+ angle-wrap body-turn  x z body-move-local ;
-\ ---- the story's moves ----
-: turning ( -- )   \ to its heading, 10 degrees a frame
-    mv-yaw f@ 10e deg>rad body-turn-toward f0= if  settle  then ;
+\ ---- the story's moves (Pursuer_EventCommand) ----
+$200 constant walk-anim
+$201 constant other-walk-anim   \ (Pursuer_SlowWalkAnim: $201 with its +0x16C8 set - Pursuer_Reset leaves it 2,
+                                \ and nothing of these kinds clears it)
+0 constant stand-anim           \ (Pursuer_WalkAnim's, these kinds standing)
+: turned? ( -- flag )  mv-yaw f@ 4e deg>rad body-turn-toward f0= ;   \ (Npc_TurnToward at Pursuer_TurnRate: 4 degrees a frame)
+: arrive-turning ( -- )   \ (Pursuer_StateArrive) on its spot, turning to the move's heading; then standing
+    turned? if  stand-anim play-now  settle  then ;
+: turning ( -- )   \ (Pursuer_StateTurnThenWait) to the heading in its walk; then standing, done once that has faded in
+    turned? 0= if  exit  then
+    model @ stand-anim has-motion? 0= if  settle exit  then
+    anim @ 4 u< if  faded-in? if  settle  then  else  stand-anim play  then ;
+: to-a-triangle? ( -- flag )  mv-kind @ dup run-move = swap run-path-move = or ;   \ (6 / 11: Pursuer_StateRunToTri)
 : walking ( -- )   \ toward the spot, by its walk's root motion (a slow step if it has none)
     root@ fnip fnip  fdup fabs 0.01e f< if  fdrop 0.6e  then  {: F: step :}
+    to-a-triangle? self body-tri mv-a @ = and if  done  then   \ (to a triangle: done once on it)
     self mv-at body-heading-to 10e deg>rad body-turn-toward fdrop
     my-at mv-at vec-dist-xz step f< if
-        mv-at vec@ body-place-at  mv-yaw f@ body-turn  0 play-now  settle exit
+        mv-at vec@ body-place-at
+        mv-kind @ walk-anim-move = if  mv-yaw f@ body-turn  stand-anim play-now  settle exit  then
+        to-a-triangle? if  stand-anim play-now  settle exit  then
+        ['] arrive-turning act !  exit
     then
     0e step body-move-local ;
+: walk-anim-for ( -- anim )   \ (Pursuer_ScriptMove: 5 / 6 its b if one of the $2xx walks, else $200; 10 / 11 $201)
+    mv-kind @ dup walk-move = swap run-move = or if
+        mv-b @ $FF00 and walk-anim = if  mv-b @  else  walk-anim  then
+    else  other-walk-anim  then ;
 \ ---- an animal (Kind26_Behaviour, animal_step): grazing (turned to whom it watches, 1..2 s),
 \ looking up, turning home and back to grazing; someone within 30 - alert (turning away; the
 \ original takes the point's y for its z, kept); within 20 - off it runs to its spot, there its
@@ -154,15 +180,15 @@ create who-at /vec allot
     0 mv-done !  dup mv-kind !
     case
         anim-move of  mv-a @ play-now  done  ['] root-move act !  endof
-        blend-move of  mv-a @ play-now  done  ['] root-move act !  endof
-        blend8-move of  mv-a @ play-now  done  ['] root-move act !  endof
-        idle-anim-move of  mv-b @ play-now  done  ['] root-move act !  endof
-        turn-to-who-move of  ['] turning act !  endof
-        turn-to-heading-move of  ['] turning act !  endof
-        walk-move of  $200 play-now  ['] walking act !  endof
-        run-move of  $202 play-now  ['] walking act !  endof
-        walk-path-move of  $200 play-now  ['] walking act !  endof
-        run-path-move of  $202 play-now  ['] walking act !  endof
+        blend-move of  mv-a @ mv-b @ 0 play-blend  done  ['] root-move act !  endof
+        blend8-move of  mv-a @ mv-b @ 8 play-blend  done  ['] root-move act !  endof
+        idle-anim-move of  stand-anim mv-b @ 0 play-blend  done  ['] root-move act !  endof   \ (its stand, over b frames)
+        turn-to-who-move of  walk-anim play  ['] turning act !  endof
+        turn-to-heading-move of  walk-anim play  ['] turning act !  endof
+        walk-move of  walk-anim-for play  ['] walking act !  endof
+        run-move of  walk-anim-for play  ['] walking act !  endof
+        walk-path-move of  walk-anim-for play  ['] walking act !  endof
+        run-path-move of  walk-anim-for play  ['] walking act !  endof
         walk-anim-move of  mv-a @ play-now  ['] walking act !  endof
         stand-move of  0 play-now  settle  endof
         >r done r>   \ (the looks, the doors' uses: nothing for it)
@@ -178,7 +204,7 @@ create who-at /vec allot
 : load ( file len id -- )
     {: id :}  unload  id model-load model !  id who !  id model @ cast-as
     id kind-motions dup if  model @ -rot motion-table  else  2drop  then
-    0 him act.visible l!  -1 shown !  -1 mv-done !  ['] still act !  0 play-now ;
+    0 him act.visible l!  true shown!  -1 mv-done !  ['] still act !  0 play-now ;
 : dress ( model -- )   \ (another's model worn: its files loaded for this one)
     who @ 0< if  drop exit  then
     model-file  who @ load ;
@@ -221,7 +247,7 @@ behaviour figure
   on to-exit ( exit -- )
       0 exit-spot dup 0< if  drop fdrop fdrop fdrop exit  then      ( tri ) ( F: x y z )
       room-id swap body-place ;
-  on show ( on -- )  0<> shown ! ;
+  on show ( on -- )  shown! ;
   on scripted ( on -- )  drop ;
   on scripted-move ( kind a b x y z yaw -- )
       cell>f mv-yaw f!  cells>xyz mv-at vec!

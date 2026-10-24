@@ -3,7 +3,7 @@
 \ no strength left, dropped from a height, kept in the progress. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/creatures/test_homunculi.fs
 IN: test-homunculi
-USING: tester engine game-state actors messages room-names flag-names facts paths saves game debug fiona.state story.state story.words creatures creatures.homunculus ;
+USING: tester engine game-state actors messages room-names flag-names facts paths saves game debug fiona.state story.state story.words creatures creatures.trip creatures.homunculus ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
@@ -34,6 +34,25 @@ T{ h7 alive?  [: awake @  model @ actor act.visible l@  strength @ ;] of7 -> -1 
 T{ [: awake @ ;] of7 -> 0 }T
 T{ progress pr.creatures 7 /kept-creature * + kc.kind l@ -> $80 }T
 
+testing held off no more once settled (cr19_settle: +0x6B kept only once it has held her)
+T{ [: true held-off !  settle  held-off @  true grabbed !  true held-off !  settle  held-off @  false grabbed !  false held-off ! ;] of7 -> 0 -1 }T
+testing seeing her (Actor_CanWalkBetween: both ways); from her place to itself, plainly
+T{ game:fiona body-tri game:fiona body-at  game:fiona body-tri game:fiona body-at  0 can-walk-between? -> -1 }T
+testing its masks: $04020028; kinds $88 / $89 till they come to their spot none ($40080 its paths)
+T{ [: to-spot-free @  path-mask  stand-mask ;] of7 -> 0 $04020028 $04020028 }T
+testing with no triangle in the room being played: put somewhere at random on its level, off the doors' spots, watching (CreatureB_EnterRoom)
+T{ [: 0 level !  -1 my-tri !  chasing want !  chasing running !  on-the-floor
+      my-tri @ 0< 0=  my-tri @ off-the-doors?  my-tri @ nav-flags $04020028 and  running @ want @ ;] of7 -> -1 -1 0 0 0 }T
+testing kept: leaving, not in use
+T{ [: leaving want !  keep  record kc.used l@  watching want !  keep  record kc.used l@ ;] of7 -> 0 1 }T
+2 game:creatures send creatures-clear  deliver  1 frames
+testing kind $88 placed: blocking nothing, its paths $40080
+2 game:creatures send creatures-clear  deliver  1 frames
+: place-88 ( -- )  [: room-id 0 far-tri $88 1 -1 0 0e creature-place ;] in-room  deliver  1 frames ;
+place-88
+T{ [: to-spot-free @  path-mask  stand-mask  k ;] of7 -> -1 $40080 0 8 }T
+2 game:creatures send creatures-clear  deliver  1 frames
+0e far-tri 1 place-one
 testing her call while followed (danger 1): one 3..9 ahead of her - "go for it" ($2D); turned from it, "go there" ($23)
 : code ( -- n )  game:fiona enter  1 fiona.state:her-danger !  0 fiona.commands:command-code  leave-actor ;
 fvariable turned-by
@@ -79,9 +98,14 @@ T{ [: running @ ;] of7 -> $B }T
 T{ [: [: running @ $B <> ;] of7 ;] 300 soon -> -1 }T
 
 testing kept: saved, cleared, back from a loaded game
+: yaw7 ( -- deg )  h7 body-yaw 180e f* pi f/ fround f>s ;
+2 game:creatures send creatures-clear  deliver  1 frames
+0e far-tri 1 place-one   \ (resting: not turning)
+[: 3 strength !  1.0e body-turn ;] of7  1 frames
+yaw7 constant saved-yaw
 ' saves:quick-save game:saves enter execute leave-actor  deliver  2 frames
 2 game:creatures send creatures-clear  deliver  1 frames
 T{ h7 alive? -> 0 }T
-' saves:quick-load game:saves enter execute leave-actor  deliver  20 frames
-T{ h7 alive?  [: kind @ awake @ ;] of7 -> -1 $80 -1 }T
+' saves:quick-load game:saves enter execute leave-actor  deliver  1 frames
+T{ h7 alive?  [: kind @ awake @  strength @ ;] of7  yaw7 saved-yaw - abs 2 < -> -1 $80 0 3 -1 }T
 test-summary

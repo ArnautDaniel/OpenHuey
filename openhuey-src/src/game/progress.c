@@ -94,6 +94,12 @@ void bind_state(Forth *f) {
     field(f, "kc.time", offsetof(struct KeptCreature, time));
     field(f, "kc.out", offsetof(struct KeptCreature, out));
     field(f, "kc.come", offsetof(struct KeptCreature, come));
+    field(f, "pr.creature-states", offsetof(Progress, creature_states));
+    forth_constant(f, "/kept-state", (Cell)sizeof(struct KeptState));
+    field(f, "ks.strength", offsetof(struct KeptState, strength));
+    field(f, "ks.state", offsetof(struct KeptState, state));
+    field(f, "ks.heading", offsetof(struct KeptState, heading));
+    field(f, "ks.fall", offsetof(struct KeptState, fall));
     forth_constant(f, "door-count", DOORS);
     /* EventState: 32-bit (sl@ l!) */
     field(f, "ev.room", offsetof(EventState, room));
