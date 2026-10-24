@@ -47,7 +47,7 @@ testing calmer (0x94: n / 30 off her fear), her recovery shorter (0x95: 60 / n)
 T{ [: her-fear f@ 40.5e f< her-fear f@ 39e f> and  her-recovery @ 570 <= ;] hers -> -1 -1 }T
 testing the threat (0x43) raises the panic; calming (0x93); set to a level it hasn't passed (0xC9)
 [: 60 threat-raise ;] in-room  1 frames
-T{ game:panic enter  panic:level f@ f>s  leave-actor -> 60 }T   \ (half lasting, half passing: it eases to 30)
+T{ game:panic enter  panic:level f@ f>s  leave-actor -> 36 }T   \ (half lasting, half passing - each x0.6 with Hewie within 20 of her)
 [: 80 panic-level ;] in-room  2 frames
 T{ game:panic enter  panic:level f@ 79e f>  panic:stage @  leave-actor -> -1 2 }T   \ (80, easing)
 [: 40 panic-level ;] in-room  2 frames

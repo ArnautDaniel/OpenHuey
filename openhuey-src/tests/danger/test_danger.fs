@@ -49,4 +49,9 @@ T{ 450 frames  -1 creature  2 frames  level -> 1 }T
 T{ up-a-while  level -> 1 }T
 T{ 0 creature  460 frames  level -> 0 }T
 
+testing a cutscene has the camera: nothing decided until it gives it back (SceneGame_Danger)
+T{ true cam-scene!  force-chased true flag  3 frames  level -> 0 }T
+T{ false cam-scene!  2 frames  level -> 2 }T
+force-chased false flag  2 frames
+
 test-summary

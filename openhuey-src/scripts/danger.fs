@@ -52,6 +52,7 @@ end-state
         chased of  from-chased  endof
     endcase
     hold @ if  -1 hold +!  then ;
+: frame-forgotten ( -- )  0 signals !  0 s-here !  0 creature-here ! ;
 : decide ( -- )
     hunted-next @ if  being-hunted signal  0 hunted-next !  then
     s-here @ 0= if  no-stalker signal  then
@@ -63,7 +64,7 @@ end-state
     else  by-rooms  then then then
     last @ level @ <> if  last @ prev !  level @ broadcast danger  then
     fiona-struck signal? level @ calm = and hunted-next !
-    0 signals !  0 s-here !  0 creature-here ! ;
+    frame-forgotten ;
 
 behaviour judging
   on spawned ( -- )  self subscribe frame-end  self subscribe entered-room  self subscribe creature-doing ;
@@ -71,7 +72,7 @@ behaviour judging
   on danger-signal ( signal -- )  signal ;
   on stalker-here ( room mode down -- )  s-down !  s-mode !  s-room !  -1 s-here ! ;
   on entered-room ( room exit -- )  2drop  level @ broadcast danger ;
-  on frame-end ( -- )  decide ;
+  on frame-end ( -- )  cam-scene? if  frame-forgotten  else  decide  then ;   \ (SceneGame_Danger: not while a cutscene has the camera)
 end-behaviour
 
 : danger-spawn ( -- id )  judging danger-state s" danger" spawn ;

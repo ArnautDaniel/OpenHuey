@@ -8,7 +8,7 @@ $FF constant no-call   \ (his-call: nobody called him; 0 Fiona)
 \ report_fiona_near: how near she is, for the story (1 within 20, 2 within 50, 3 further)
 : report-near ( -- )
     her-with? 0= if  exit  then
-    her-dist  fdup 20e f<= if  fdrop 1  else  50e f<= if  2  else  3  then  then  his-near ! ;
+    her-dist  fdup 20e f<= if  fdrop 1  else  50e f<= if  2  else  3  then  then  dup his-near !  broadcast hewie-near ;   \ (the panic weighs by it)
 \ Hewie_Alert: the stalker in his room within 200, ahead of his head (125 degrees): the danger
 \ is told
 : alert ( -- )

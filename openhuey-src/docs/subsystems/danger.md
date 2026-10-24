@@ -38,14 +38,16 @@ From `SceneGame_Danger` (`scene_game.c`). Each frame, at its end:
    The hold counts down by one each frame.
 4. The signals are the frame's: forgotten after. Struck (1) while calm signals hunted (6) for the
    next frame (*quirk:* the original sets it after clearing).
-5. The camera director's event mode skips it (*with cutscenes*).
+5. Nothing is decided while a cutscene has the camera (`SceneGame_Danger` only `if
+   (!camdir_busy)`): the level and its hold stay, the frame's signals are forgotten.
 
 ## Status
 
-**Built** (`scripts/danger.fs`). Checked by `tests/danger/test_danger.fs` (13 tests): calm at
+**Built** (`scripts/danger.fs`). Checked by `tests/danger/test_danger.fs` (18 tests): calm at
 the start, Fiona told; the story's flags forcing it (0x1F chased, 7 tense, 0x1B calm first);
 the stalker in her room (chased), next door after her (chased while the hold lasts, then
-followed), gone (calm once the hold is over); `hunted` (tense, then calm after its hold).
+followed), gone (calm once the hold is over); `hunted` (tense, then calm after its hold); a creature up in her room; nothing decided under a
+cutscene, decided once it gives the camera back.
 
 The stalkers send `stalker-here` each frame (`scripts/stalker.fs`; the tests send it by hand); the
 creatures tell it when one is up in her room (`creature-here`).

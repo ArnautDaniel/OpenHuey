@@ -49,10 +49,30 @@ int sound_open(void) {
     return 1;
 }
 
-void sound_gain(float g) {   /* (everything heard: the options' volume) */
+static float sGain = 1.0f, sFade = 1.0f;   /* the options' volume; the game's fade over it */
+
+static float clamp01(float v) {
+    return v < 0.0f ? 0.0f : v > 1.0f ? 1.0f : v;
+}
+
+static void apply_gain(void) {
     if (sStream != NULL) {
-        SDL_SetAudioStreamGain(sStream, g < 0.0f ? 0.0f : g > 1.0f ? 1.0f : g);
+        SDL_SetAudioStreamGain(sStream, sGain * sFade);
     }
+}
+
+void sound_gain(float g) {   /* (everything heard: the options' volume) */
+    sGain = clamp01(g);
+    apply_gain();
+}
+
+void sound_fade_all(float v) {
+    sFade = clamp01(v);
+    apply_gain();
+}
+
+float sound_fade_level(void) {
+    return sFade;
 }
 
 void sound_close(void) {
