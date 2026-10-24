@@ -142,6 +142,10 @@ create slot-chars  #chars cells allot  slot-chars #chars cells -1 fill
     loop ;
 : who>cs ( who -- cs | -1 )   \ (a character argument: self-who its own)
     dup self-who = if  drop self-char  else  char-slot  then ;
+\ a condition's character (cond_char, Progress_SlotOfId): self-who is nobody to the conditions -
+\ the original never makes $FF the script's own there (only self-is? and the self- words ask
+\ about it; char-in-zone? takes it as anyone)
+: cond-slot ( who -- cs | -1 )  dup self-who = if  drop -1  else  char-slot  then ;
 
 \ ---- 0x00 .. : flags, variables, bits, the counter, chance ----
 : story-flag? ( n -- flag )  progress pr.story bit? ;
@@ -231,6 +235,8 @@ $1F constant hewie-zone-var
     over scene-id? if
         over slot-of slot-task @ 0=  r> or  if  start-action  else  2drop  then  exit
     then
+    \ (a forced action for Fiona ends her panic's start for the scripts: SceneGame_SetFlag3 0)
+    over fiona-who =  r@ and if  0 panic-onset-on !  then
     swap char-slot dup 0< if  2drop r> drop exit  then    ( act cs )
     swap  r> if  char-action exit  then
     over cells char-scripted + @ 0= if  char-action  else  2drop  then ;
@@ -258,25 +264,25 @@ $1F constant hewie-zone-var
     dup stalker-who = if
         drop stalker-cs char-actor 0< if  false exit  then  stalker-cs cs>id
     then  ctx-id @ = ;
-: char-here? ( id -- flag )  char-slot char-here ;
+: char-here? ( id -- flag )  cond-slot char-here ;   \ cond 0x16
 : char-busy? ( who -- flag )   \ (a scene's slot running, or a character in a scripted action)
     dup scene-id? if  slot-of slot-task @ 0<> exit  then
-    char-slot dup 0< if  drop false exit  then  cells char-scripted + @ 0<> ;
+    cond-slot dup 0< if  drop false exit  then  cells char-scripted + @ 0<> ;
 : char-in-area? ( who area -- flag )
-    swap char-slot dup char-here 0= if  2drop false exit  then  swap char-in-area ;
+    swap cond-slot dup char-here 0= if  2drop false exit  then  swap char-in-area ;
 : char-entered-area? ( who area -- flag )
-    swap char-slot dup char-here 0= if  2drop false exit  then  swap char-cross 1 = ;
+    swap cond-slot dup char-here 0= if  2drop false exit  then  swap char-cross 1 = ;
 : char-left-area? ( who area -- flag )
-    swap char-slot dup char-here 0= if  2drop false exit  then  swap char-cross -1 = ;
+    swap cond-slot dup char-here 0= if  2drop false exit  then  swap char-cross -1 = ;
 : char-on-tri? ( who tri -- flag )
-    swap char-slot dup char-here 0= if  2drop false exit  then  char-actor body-tri = ;
+    swap cond-slot dup char-here 0= if  2drop false exit  then  char-actor body-tri = ;
 : char-in-room? ( who room -- flag )
-    swap char-slot dup 0< if  2drop false exit  then  char-actor dup 0< if  2drop false exit  then  body-room = ;
+    swap cond-slot dup 0< if  2drop false exit  then  char-actor dup 0< if  2drop false exit  then  body-room = ;
 \ faces heading dir x 2 degrees (a signed byte), within `within` degrees
 : s8 ( b -- n )  $FF and  dup $80 and if  $100 -  then ;   \ (a signed byte)
 : char-active ( cs -- flag )  char-actor 0< 0= ;   \ (in the game, in whichever room: cond_char)
 : char-heading? ( who dir within -- flag )   \ cond 0x05
-    {: who dir within :}  who char-slot dup char-active 0= if  drop false exit  then
+    {: who dir within :}  who cond-slot dup char-active 0= if  drop false exit  then
     char-actor body-yaw angle-wrap deg  dir s8 2* s>f f-  fabs
     fdup 180e f> if  360e fswap f-  then  within s>f f<= ;
 
@@ -480,14 +486,14 @@ fvariable fx  fvariable fz
     fz f@ fswap f-  fswap fx f@ fswap f-  fswap fatan2             ( id ) ( F: heading )
     body-yaw f- angle-wrap deg fabs ;
 : char-faces-xz? ( who x z within -- flag )
-    >r  s>f s>f fswap  char-slot dup char-here 0= if  drop fdrop fdrop r> drop false exit  then
+    >r  s>f s>f fswap  cond-slot dup char-here 0= if  drop fdrop fdrop r> drop false exit  then
     faces-off  r> s>f f<= ;
 : char-faces-area? ( who area within -- flag )   \ cond 0x06 (inside the area, facing its middle)
-    rot char-slot dup char-active 0= if  drop 2drop false exit  then        ( area within cs )
+    rot cond-slot dup char-active 0= if  drop 2drop false exit  then        ( area within cs )
     rot 2dup char-in-area 0= if  2drop drop false exit  then                ( within cs area )
     area-middle drop  fswap fdrop  faces-off  s>f f<= ;
 : char-action? ( who v -- flag )   \ (its move mode: +0xF8)
-    swap char-slot case
+    swap cond-slot case
         0 of  fiona-mode @ =  endof
         1 of  hewie-move-mode @ =  endof
         >r drop false r>
@@ -525,10 +531,10 @@ overlap-height overlap-across or constant overlapping
     d2  a z.r sf@ r f+ fdup f*  f<= if  overlap-across or  then
     d2  a z.r sf@ fdup f*  f<= if  centre-inside or  then ;
 : char-zone-bits? ( who zone bits -- flag )   \ (its radius and height against the zone: all of bits)
-    rot char-slot dup char-here 0= if  drop 2drop false exit  then
+    rot cond-slot dup char-here 0= if  drop 2drop false exit  then
     dup char-at vec@  char-actor body-dims  swap zone-test over and = ;
 : char-zone-bits-before? ( who zone bits -- flag )   \ (as it was at the last frame's end)
-    rot char-slot dup char-here 0= if  drop 2drop false exit  then
+    rot cond-slot dup char-here 0= if  drop 2drop false exit  then
     dup char-was vec@  char-actor body-dims  swap zone-test over and = ;
 \ whose point of interest (Fiona's blow, Hewie's bite: body-point!) is inside the zone (overlapping in height and
 \ across); self-who anyone's in this room (Zone_HasAnyChar)
@@ -537,7 +543,7 @@ overlap-height overlap-across or constant overlapping
     >r body-point 0= if  r> drop false exit  then  vec@ 0e 0e r> zone-test overlapping and overlapping = ;
 : char-in-zone? ( who zone -- flag )
     swap dup self-who <> if
-        char-slot dup char-here 0= if  2drop false exit  then  char-actor swap point-in-zone? exit
+        cond-slot dup char-here 0= if  2drop false exit  then  char-actor swap point-in-zone? exit
     then  drop
     #chars 0 do
         i char-here if  i char-actor over point-in-zone? if  drop true unloop exit  then  then
@@ -554,7 +560,9 @@ enum: offer-when  unhurried always calm calm-hewie-up ;
 $8016 constant no-time-message   \ ("I have to get away! I don't have time for this!")
 $80000005 constant read-message
 \ what is going on (SceneGame_Busy, as bits): 1 chased or a stalker or figure (slot 2..) in this
-\ room, 2 Hewie held by a script, 4 another held (+0xE0)
+\ room, 2 Hewie held by a script, 4 another held (+0xE0) or the frame flags' low bits: her panic's
+\ start (bit 3: panic-onset). (Bit 0, the room changing - set on its loading frames - the scripts
+\ never see: OpenHuey loads a room at once, as loader-busy?.)
 1 constant busy-pressed   2 constant busy-hewie-held   4 constant busy-other-held
 : busy-bits ( -- bits )
     0  the-danger @ chased = if  busy-pressed or  then
@@ -563,7 +571,8 @@ $80000005 constant read-message
             i scripted? if  i hewie-cs = if  busy-hewie-held  else  busy-other-held  then  or  then
             i stalker-cs >=  i char-here and if  busy-pressed or  then
         then
-    loop ;
+    loop
+    panic-onset-on @ if  busy-other-held or  then ;
 : too-busy? ( -- flag )  busy-bits dup 0<>  swap busy-hewie-held <> and ;   \ (nothing, or only Hewie held: not)
 : no-time ( -- )  read-message no-time-message 0 prepare ;
 : scene-change ( scene arg kind -- )
@@ -762,8 +771,9 @@ variable mv-kind  variable mv-a  variable mv-b  create mv-at /vec allot  fvariab
 \ volume ramp, Progress +0x1120, that nothing in the original reads: left out.)
 \ The original drives a fade by a step script it starts for the fade's kind (Event_StartStep in
 \ slot $FA: D_003D6A40 - kinds 0 2 6 the shared $B8, 1 3 7 $B9, 4 $BC, 5 $BD); the screen actor
-\ drives ours, so only those scripts' other doing is kept: $B9 and $BD let go of the world
-\ (world-held cleared) as the fade starts - the opening's fade-in hands Fiona to the player
+\ runs ours as they go (screen.fs: their steps, the panic's overlay level), so only their other
+\ doing is here: $B9 and $BD let go of the world (world-held cleared) as the fade starts - the
+\ opening's fade-in hands Fiona to the player
 \ the fade's music: how fast the stage music follows it (none, at once, over 90 frames), and where to
 $80 constant music-cut     \ (kind bit: the music cut with the fade)
 $40 constant music-eased   \ (kind bit: the music eased with it, over 90 frames)
@@ -779,8 +789,8 @@ $40 constant music-eased   \ (kind bit: the music eased with it, over 90 frames)
 : fade ( frames kind -- )
     dup fade-music  $F and  dup 8 <  over 1 and 0<> and if  world-held state-flag-clear  then   \ (1 3 5 7)
     over 0> fading !  screen-id send fade ;
-: fade-finish ( -- )  0 fading !  screen-id send fade-finish ;   \ 0x5D
-: fade-over ( -- )  fade-finish ;                                \ 0x5E
+: fade-finish ( -- )  screen-id send fade-step ;   \ 0x5D: the fade a frame on (its step scripts' doing; a fade's frame)
+: fade-over ( -- )  0 fading !  screen-id send fade-stop ;   \ 0x5E: over where it is
 : wait-fade ( -- )   \ 0x5F (a phase script looks once)
     in-slot? 0= if  exit  then  begin  fading @ while  yield  repeat ;
 
@@ -864,7 +874,7 @@ $B constant opaque-signal  8 constant page-signal   \ (the director's signals: m
 \ ---- motion events (a character's motion's event keys, as it last told: the mark key) ----
 $20 constant mark-key
 : char-at-motion-event? ( id -- flag )   \ cond 0x56
-    char-slot dup char-here 0= if  drop false exit  then  events-of char-flag mark-key and 0<> ;
+    cond-slot dup char-here 0= if  drop false exit  then  events-of char-flag mark-key and 0<> ;
 : self-at-motion-event? ( -- flag )   \ cond 0x48: no move going, at the mark - its move done
     self-char dup char-here 0= if  drop false exit  then
     dup move-done-of char-flag 0= if  drop false exit  then
@@ -1392,7 +1402,7 @@ $1AD constant kept-kinds   300000 constant past-keeping
 
 \ a character's condition (+0xC4), health, the exit it came in by (conds 0x41, 0x1E, 0x52, 0x30)
 : char-cond? ( who v -- flag )
-    swap who>cs case
+    swap cond-slot case
         fiona-cs of  fiona-cond @ =  endof
         hewie-cs of  hewie-here @ 0<> if  hewie-cond @ =  else  drop false  then  endof
         stalker-cs of  stalker-told? if  st-cond @ =  else  drop false  then  endof
@@ -1400,9 +1410,9 @@ $1AD constant kept-kinds   300000 constant past-keeping
     endcase ;
 100 constant hewie-full-hp
 : char-dead? ( who -- flag )   \ (out of health: Hewie or the stalker)
-    who>cs case  hewie-cs of  hewie-here @ 0<> hewie-hp @ 0= and  endof  stalker-cs of  stalker-told? st-hp @ 0= and  endof  >r false r>  endcase ;
+    cond-slot case  hewie-cs of  hewie-here @ 0<> hewie-hp @ 0= and  endof  stalker-cs of  stalker-told? st-hp @ 0= and  endof  >r false r>  endcase ;
 : char-full-health? ( who -- flag )
-    who>cs case  hewie-cs of  hewie-here @ 0<> hewie-hp @ hewie-full-hp = and  endof
+    cond-slot case  hewie-cs of  hewie-here @ 0<> hewie-hp @ hewie-full-hp = and  endof
         stalker-cs of  stalker-told? st-hp @ st-hp-max @ = and  endof  >r false r>  endcase ;
 \ (RoomC2 / RoomC3) event variable 0's 0..120 frames eased by a sine: 0..2
 : var0-ease ( F: -- e )  0 var @ s>f 120e f/ 180e f* 90e f- deg>rad fsin 1e f+ ;
@@ -1415,7 +1425,7 @@ $1A constant weak-blow-sub   \ (her move's sub for the weak blow)
 : var-down-by-hit ( v -- )
     {: v :}  v var @  fiona-move-sub weak-blow-sub = if  1  else  5  then  -  0 max  v swap var-set ;
 : char-heading-for? ( who exit -- flag )   \ cond 0x30: in this room, came in by that exit
-    swap who>cs case
+    swap cond-slot case
         fiona-cs of  came-by @ =  endof
         stalker-cs of  stalker-here? swap st-came @ = and  endof
         >r drop false r>
@@ -1425,7 +1435,7 @@ $1A constant weak-blow-sub   \ (her move's sub for the weak blow)
 : on-camera? ( F: x y z -- flag )  out-of-view? 0= ;
 : point-on-camera? ( x y z -- flag )  >r >r s>f r> s>f r> s>f on-camera? ;
 : char-unseen? ( id -- flag )
-    char-slot dup char-here 0= if  drop true exit  then  char-at vec@ on-camera? 0= ;
+    cond-slot dup char-here 0= if  drop true exit  then  char-at vec@ on-camera? 0= ;
 
 \ the commands: to Hewie or the stalker (Fiona and the cast later)
 : char-id ( who -- id | -1 )   \ (Hewie or the stalker in the game)
@@ -1534,7 +1544,7 @@ create zp /vec allot
 : heading-between ( a b -- ) ( F: -- yaw )   \ from character a toward b
     {: a b :}  b x-of a x-of f-  b z-of a z-of f-  fatan2 ;
 : cond-char ( who -- id | -1 )   \ a condition's character: in the game and in this room
-    who>cs dup char-here if  char-actor  else  drop -1  then ;
+    cond-slot dup char-here if  char-actor  else  drop -1  then ;
 : self-touching? ( who -- flag )   \ cond 0x47: this script's character and `who` close (by its margins)
     self-char char-actor  swap cond-char  {: me them :}
     me 0< them 0< or if  false exit  then  me them  them radius-of them height-of  touching-by? ;   \ (its +0xC8 / +0xCC)
@@ -1566,9 +1576,13 @@ $80001 constant step-or-doorway   \ (a floor's nav flags)
     id body-tri dup 0< if  drop false exit  then  nav-flags step-or-doorway and if  false exit  then
     8 0 do  i door-here? if  i 0 id body-pos door-in-area?  i 1 id body-pos door-in-area? or if  false unloop exit  then  then  loop
     true ;
+\ the stalker in a pending relation with another slot (Progress_IsLinked) - STUB: OpenHuey's
+\ stalker doesn't tell it yet (the stalker side's link model is being added); wire it to that
+\ message or field, and stalker-free? holds him by it as the original
+: stalker-linked? ( -- flag )  false ;
 : stalker-free? ( -- flag )   \ cond 0x65: here, not held (Character_Held: struck - his +0xF8 4 -, or a
-    stalker-here? 0= if  false exit  then                        \ script's), not leading her, his floor free
-    st-mode @ struck-mode =  stalker-cs scripted? or if  false exit  then
+    stalker-here? 0= if  false exit  then                        \ script's), not linked, not leading her, his floor free
+    st-mode @ struck-mode =  stalker-cs scripted? or  stalker-linked? or if  false exit  then
     st-mode @ engaged-mode = st-sub @ leading-sub dup 2 + within and if  false exit  then
     stalker-who char-tri-free? ;
 : self-done? ( -- flag )  self-char dup 0< if  drop false exit  then  move-done-of char-flag 0<> ;   \ cond 0x4D

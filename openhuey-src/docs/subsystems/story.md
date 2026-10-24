@@ -440,8 +440,14 @@ Hewie's side, the hiding places' offer while busy, `char-camera` $FF, `self-touc
 other's margins, `stalker-free?` (not held by a script or struck; his floor free), the facing
 conditions anywhere, `loader-busy?` (cond 0x62: the loader's busy flag - never, the waits on it
 end at once), `spirit-request-pending?` (cond 0x64). `tests/story/test_story_rules.fs` (22).
-Left: `stalker-free?`'s other hold (Progress_IsLinked: a pending relation between the slots,
-which OpenHuey's messages don't keep) and SceneGame_Busy's +0xF6CD24 bits.
+Also (2026-10-24, `tests/story/test_story_fades.fs`): $FF in a condition is nobody (cond_char,
+`cond-slot`: Progress_SlotOfId gives none - `char-in-zone?` takes it as anyone, Zone_HasAnyChar);
+SceneGame_Busy's +0xF6CD24 bits: bit 3, her panic's start (`panic-onset` from the panic, cleared
+by phase 0 and a forced action for Fiona, 0x92 for 0) is busy and holds the action scripts; bit 0
+(the room's loading frames) the scripts never see, OpenHuey loading at once. The fades' 0x5D /
+0x5E are a step and an over where it is (screen.md).
+Left: `stalker-free?`'s other hold (Progress_IsLinked): `stalker-linked?` is a stub (false) until
+the stalker tells its link.
 
 The later stages, by how much the scripts use them (all built now):
 

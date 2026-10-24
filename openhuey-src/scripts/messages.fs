@@ -112,6 +112,8 @@ message panic-shorten ( frames -- )          \ (the panic) its time left shorten
 message fear-set ( amount -- )               \ the fear this frame set outright (the progress' +0x7D8 =: f>cell)
 message fear-in ( amount -- )
 message panic-overlay ( thousandths -- )       \ (the panic) its screen overlay's level (ScreenFade_Level, the panic's +0x34): her breath only at 1000, its tint scaled by it; the game over sets it full and fades it with its tints
+message overlay-held ( -- )                  \ (the panic) the screen's fade stepped this frame (Events_ScenePlaying, +0x11F3): its overlay level not set back to full
+message panic-onset ( on -- )                \ broadcast by the panic: her panic's start - her scream, its first 30 frames (SceneGame +0xF6CD24 bit 3) - begun (-1) or over (0)
 message panic-stage! ( stage -- )
 message panic-level! ( level -- )
 message hewie-near ( near -- )               \ broadcast by Hewie each frame she is with him: 1 within 20, 2 within 50, 3 further (the progress' +0x7B9: how the panic weighs its inputs)
@@ -295,7 +297,8 @@ message show ( on -- )                       \ (to a character) shown or hidden 
 
 \ ---- the screen and the music (docs/subsystems/screen.md, music.md) ----
 message fade ( frames kind -- )              \ (the screen) fade in (kind 0 / 1) or out over frames
-message fade-finish ( -- )                   \ (the screen) the fade counts as over
+message fade-step ( -- )                     \ (the screen) the scripts' 0x5D: the fade a frame on (ScreenFade_Step), a fade's frame for the panic
+message fade-stop ( -- )                     \ (the screen) the scripts' 0x5E: the fade counts as over where it is
 message fade-done ( -- )                     \ (to who faded) it's over
 message bgm-want ( track pause level -- )    \ (the music) background track wanted ($FF none), paused, its level (f>cell)
 message bgm-resume ( -- )                    \ (the music) the streamed track resumed
