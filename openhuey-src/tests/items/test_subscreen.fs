@@ -65,6 +65,13 @@ castle-map-held story-flag-set  key: Right tap
 T{ [: map-at @ map-pg @ ;] menu@ -> 0 1 }T
 key: Left tap  key: Left tap
 T{ [: map-at @ map-pg @ ;] menu@ -> 0 4 }T
+testing the arrow in the forest's maze: by the room's place in the dealt row (Events_ThingPlace)
+: var! ( v n -- )  progress pr.vars + c! ;
+: row-room ( i -- room )  s" deal-rows" exe-table drop  5 3 * + + c@ $100 + ;   \ (row 5's)
+0 $1F var!  T{ 0 row-room subscreen.map:maze-place -> -1 }T
+1 $1F var!  5 $20 var!
+T{ 0 row-room subscreen.map:maze-place  2 row-room subscreen.map:maze-place  $10B subscreen.map:maze-place -> 0 2 -1 }T
+0 $1F var!  0 $20 var!
 testing the options: the cross edits a row, the arrows change it; the square puts them back
 key: E tap  key: E tap
 T{ [: page @ ;] menu@ -> 5 }T

@@ -1,9 +1,10 @@
 \ subscreen/map.fs - the map page (src/game/subscreen.c Map_*): the maps she holds (a sketch
 \ used for each: the castle, the mansion, the forest, the tower, the mystery), page by page with
-\ the arrows; it opens on her room's page with an arrow where she stands. Each room as it is
+\ the arrows; it opens on her room's page with an arrow where she stands, turned to her heading
+\ (in the forest's maze, where the dealt row puts her room). Each room as it is
 \ entered is found on the maps (Map_FindRoom); the story can show it on another page (0xD1).
 IN: subscreen.map
-USING: engine actors facts story-names subscreen.state subscreen.art subscreen.input subscreen.tables ;
+USING: engine game-state actors facts story-names ps2-screen subscreen.state subscreen.art subscreen.input subscreen.tables ;
 
 $28 constant map-group   \ (the page's picture in the texture cache)
 
@@ -62,15 +63,39 @@ begin-structure /map-room  field: room-of-e  field: page-of-e
     map-at @ held? 0= if  exit  then
     map-at @ 16 * map-pg @ +  dup map-loaded @ = if  drop exit  then  map-loaded !
     map-at @ map-pg @ map-page drop  map-group load-bank ;
-: here-arrow ( -- )   \ the arrow where she stands (not turned to her heading here)
+\ the forest's maze rooms ($100..$105): placed by where the dealt row puts the room (Events_ThingPlace:
+\ its place 0..2 in the row, while rooms are dealt), on one of three spots of their own
+$100 constant first-maze-room   $1F constant deals-var   $20 constant dealt-row-var
+: var@ ( n -- v )  progress pr.vars + c@ ;
+: maze-place ( room -- i | -1 )
+    {: room :}  deals-var var@ 0= if  -1 exit  then
+    s" deal-rows" exe-table {: addr n :}
+    3 0 do  dealt-row-var var@ 3 * i +  dup n < if  addr + c@  else  drop -1  then
+        first-maze-room + room = if  i unloop exit  then
+    loop  -1 ;
+: arrow-entry ( -- e | 0 )
+    her-map @ her-room @ her-pg @ entry-for  dup 0= if  exit  then
+    her-map @ 2 =  her-room @ first-maze-room dup 6 + within and if
+        drop  her-room @ maze-place  dup 0< if  drop 0 exit  then  /map-room * maze-spots +
+    then ;
+\ a corner (cx, cy) of the 32 x 32 arrow turned by her heading (s, c its sine and cosine), x
+\ squeezed 512 / 640, in the window (the texels' top left is (-16, 16), top right (16, 16),
+\ bottom left (-16, -16), bottom right (16, -16))
+: corner ( cx cy -- x y ) ( F: ay ax s c -- ay ax s c )
+    {: cx cy F: ay ax s c :}
+    ax  cx s>f c f*  cy s>f s f* f-  512e f* 640e f/  f+ f>s sx
+    ay  cy s>f c f*  cx s>f s f* f+  f+ f>s sy
+    ay ax s c ;
+: here-arrow ( -- )   \ the arrow where she stands, turned to her heading (Map_HereArrow)
     map-at @ her-map @ <>  map-pg @ her-pg @ <> or if  exit  then
-    her-map @ her-room @ her-pg @ entry-for ?dup 0= if  exit  then  {: e :}
-    s" fiona" actor-named body-pos  fswap fdrop  {: F: x z :}
+    arrow-entry ?dup 0= if  exit  then  {: e :}
+    s" fiona" actor-named {: her :}  her body-pos  fswap fdrop  {: F: x z :}
     z e z-scale f@ f/  e y-off f@ f+  128e f+                 \ (z down the page, from its line 128)
     x e x-scale f@ f/ 512e f* 640e f/  e x-off f@ f+          \ (x across, squeezed 512 / 640)
-    {: F: ay ax :}
-    ax f>s 16 -  ay f>s 16 -  32 32 picture
-    base-group 0 -1  $1C0 $60 32 32  $80 from ;
+    her body-yaw fnegate  fdup fsin fswap fcos                \ ( F: ay ax s c )
+    art-layer  -16 16 corner  16 16 corner  -16 -16 corner  16 -16 corner
+    fdrop fdrop fdrop fdrop
+    base-group 0 6  $1C0 $60 32 32  $80 faded  ui-image4 ;
 : map-view ( -- )
     1 page-art  load-page
     map-at @ held? if

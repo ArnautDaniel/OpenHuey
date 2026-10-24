@@ -118,8 +118,11 @@ message box), `lists.fs` (the item lists, an item's actions, the files), `map.fs
 
 1. **The map** (Map_*): the maps she holds - a sketch used for each (story flags
    `castle-map-held` ..) - page by page with left / right, past the ends to the next map she
-   holds; it opens on her room's page with an arrow where she stands (not turned to her heading
-   here). Each room entered is found on the maps (`arrived`); the story's 0xD1 (`map-turn-to`)
+   holds; it opens on her room's page with an arrow where she stands, turned to her heading
+   (Map_HereArrow: base texture 0 at $1C0, $60, palette 6, on four corners - `ui-image4`); in the
+   forest's maze rooms ($100..$105) placed by the room's place in the dealt row
+   (Events_ThingPlace: one of three spots of their own, none while no rows are dealt). The page
+   she is on is kept in a save (its +0x18F0) and turned to on loading. Each room entered is found on the maps (`arrived`); the story's 0xD1 (`map-turn-to`)
    shows her room on another page of her map.
 2. **The options** (Options_*): the controller type (its button names; the keyboard here),
    vibration, the sound out, the volume, the screen's position - the cross edits a row, the square
