@@ -38,7 +38,9 @@ build/openhuey-src/openhuey --test openhuey-src/tests/acoustics/test_hearing.fs 
 In the game: `` ` `` opens the Forth console (`scripts/debug.fs` has its helpers; Ctrl+V pastes,
 each whole line run, Ctrl+C copies the line typed or, with none, what the last one printed,
 Ctrl+Shift+C the whole log, Ctrl+X cuts), F1 the settings
-(the picture, fullscreen, the controls - saved in `user/`), F11 or Alt+Return fullscreen, F2 the debug
+(the picture - two presets: *enhanced*, the default, the game with some modern polish, and *as on
+the PS2*, the original's picture exactly, its characters lit by its own formula - fullscreen, the
+controls - saved in `user/`), F11 or Alt+Return fullscreen, F2 the debug
 overlay (Fiona's meters, the actors alive and their ids, OpenHuey's version), F3 the free camera,
 F12 a bug report: the moment kept in `user/bugs/<date>_<time>/` (report.txt - where she is, every
 actor's state, the last messages, the console's lines - screenshot.png and save.fs), the console

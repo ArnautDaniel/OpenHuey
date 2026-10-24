@@ -57,7 +57,11 @@ typedef struct RenderSettings {
     Vec3 ambient;            /* linear */
     float rim;               /* rim light on characters' edges */
     int32_t room_lights;     /* characters lit by the room's lights (as the game does) */
-    float character_light;   /* ... that light's strength */
+    float character_light;   /* ... that light's strength (OpenHuey's lighting only) */
+    int32_t ps2_lighting;    /* ... as the PS2 did it (src/game/model.c light_rgba): one direction a
+                              * light from the model's root, its falloff along it, the sum clamped
+                              * at 0x80 - 1 per vertex (the original), 2 per pixel (smooth); 0:
+                              * OpenHuey's point lights, times character_light, unclamped */
     int32_t shadow_maps;     /* characters cast shadows from the room's lights onto it */
     float shadow_strength;   /* 0 .. 1 */
     int32_t room_fog;        /* the room's own fog, tint and bloom (part of the original look) */
@@ -134,13 +138,17 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
                  int ntextures, const uint32_t groups[8]);
 
 /* the lights for the next lit draws (characters): the room's ambient and up to 3 point lights,
- * colours on the game's 0..128 scale (times intensity); n < 0: the fixed key light instead */
+ * colours on the game's 0..128 scale (times intensity); n < 0: the fixed key light instead.
+ * `root`: the model's root bone in the room, where the PS2's lighting (gfx.ps2-lighting) takes
+ * each light's direction from (Lights_ForModel, light_slot) */
 typedef struct DrawLight {
     Vec3 pos;
     Vec3 color;
-    float range;    /* 0: no falloff */
+    float range;    /* 0: no falloff (OpenHuey's lighting) */
+    float fall;     /* the PS2's falloff along the light's direction (the light's +0x24: 1 / its
+                     * range; 0 none) */
 } DrawLight;
-void render_draw_lights(Vec3 ambient, const DrawLight *lights, int n);
+void render_draw_lights(Vec3 ambient, const DrawLight *lights, int n, Vec3 root);
 
 /* shadows: each frame, before render_begin, casters are drawn from their light into a shadow
  * map; the room's draws then darken where a caster hides the light */

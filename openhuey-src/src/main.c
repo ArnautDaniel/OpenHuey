@@ -329,6 +329,15 @@ static Vec3 turn_about(Vec3 v, Vec3 axis, float angle) {
                     vec3_scale(axis, vec3_dot(axis, v) * (1.0f - c)));
 }
 
+/* where the PS2 took a model's light directions from (light_setup: its root bone) */
+static Vec3 light_root(const Actor *a) {
+    int b;
+
+    for (b = 0; b < a->model.nbones && a->model.bones[b].parent >= 0; b++) {
+    }
+    return b < a->model.nbones ? actor_bone(a, b) : actor_center(a);
+}
+
 static void use_lights(Engine *e, const Actor *a) {
     DrawLight lights[3];
     Vec3 ambient = e->nstage > 0 ? e->stage_ambient : e->room.ambient;
@@ -341,6 +350,7 @@ static void use_lights(Engine *e, const Actor *a) {
             lights[n].pos = l->pos;
             lights[n].color = vec3_scale(l->color, l->intensity);
             lights[n].range = l->range;
+            lights[n].fall = l->reach;
             n++;
         }
     }
@@ -355,6 +365,7 @@ static void use_lights(Engine *e, const Actor *a) {
             lights[n].pos = eye;
             lights[n].color = vec3(0, 0, 0);
             lights[n].range = 0.0f;
+            lights[n].fall = 0.0f;
         }
         ambient = vec3_add(ambient, e->extra.ambient);
         for (k = 0; k < 2; k++) {
@@ -369,13 +380,14 @@ static void use_lights(Engine *e, const Actor *a) {
             lights[slot].pos = vec3_add(eye, vec3_scale(d, 100000.0f));   /* (a direction: far off, no falloff) */
             lights[slot].color = e->extra.cam[k].color;
             lights[slot].range = 0.0f;
+            lights[slot].fall = 0.0f;   /* (Lights_Scripted: no falloff) */
             slot--;
         }
     }
     if (e->nstage > 0) {
-        render_draw_lights(ambient, lights, n);
+        render_draw_lights(ambient, lights, n, light_root(a));
     } else {
-        render_draw_lights(ambient, lights, e->room.nlights > 0 || e->extra.on ? n : -1);
+        render_draw_lights(ambient, lights, e->room.nlights > 0 || e->extra.on ? n : -1, light_root(a));
     }
 }
 

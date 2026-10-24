@@ -2209,7 +2209,8 @@ PRIM(p_stage_light) {   /* ( i -- ) ( F: x y z r g b range -- ) light i (0..2) o
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
 
     if (i >= 0 && i < 3) {
-        gEngine.stage[i] = (RoomLight){vec3(x, y, z), vec3(r, g, b), 1.0f, range, 0.0f, 0.0f, 0.0f};
+        /* (its falloff for the PS2's lighting as a room light's: +0x24 is 1 / the range) */
+        gEngine.stage[i] = (RoomLight){vec3(x, y, z), vec3(r, g, b), 1.0f, range, 0.0f, range > 0.0f ? 1.0f / range : 0.0f, 0.0f};
     }
 }
 PRIM(p_stage_lights) { gEngine.nstage = (int)POP(); }   /* ( n -- ) how many (0: the room's again) */
@@ -3811,6 +3812,7 @@ void bind_engine(Forth *f) {
     field(f, "look.dof-range", offsetof(RoomLook, dof));
     field(f, "gfx.room-lights", offsetof(RenderSettings, room_lights));
     field(f, "gfx.character-light", offsetof(RenderSettings, character_light));
+    field(f, "gfx.ps2-lighting", offsetof(RenderSettings, ps2_lighting));
     field(f, "gfx.shadow-maps", offsetof(RenderSettings, shadow_maps));
     field(f, "gfx.shadow-strength", offsetof(RenderSettings, shadow_strength));
     field(f, "gfx.room-tint", offsetof(RenderSettings, room_tint));
