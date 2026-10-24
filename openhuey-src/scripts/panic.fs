@@ -115,7 +115,7 @@ $30 constant grey-limit
 : screens ( -- )
     stage @ panicking =  length @ 0< and if  panic-negative  then
     pulse @ $80 <> if  pulse @ frame-blend  pulse @ $10 <= if  zoom-blur  then  then
-    shake @ if  grey-limit shake @ panic-tint  then ;
+    shake @ if  grey-limit shake @ s>f fade f@ f* f>s panic-tint  then ;   \ (the overlay tinted by its level: ScreenFade_Frame)
 
 \ ---- Panic_FearInputs (calm with time; the stalker's part comes as fear-in) and Panic_Update ----
 : time-inputs ( -- )
@@ -210,7 +210,7 @@ behaviour measuring
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop st-kind !  2drop st-cond !  st-sub !  st-mode !  st-room ! ;
   on danger ( level -- )  the-danger ! ;
   on hewie-near ( near -- )  weighing ! ;   \ (report_fiona_near: Hewie with her - 1 within 20, 2 within 50, 3 further)
-  on panic-fade ( level -- )  cell>f 0e fmax 1e fmin fade f! ;   \ (ScreenFade_Level: the game over's fade, the story's)
+  on panic-overlay ( thousandths -- )  s>f 1000e f/ 0e fmax 1e fmin fade f! ;   \ (ScreenFade_Level: the game over's fade)
   on fiona-doing ( mode sub cond cmd doing -- )  2drop her-cond !  her-sub !  her-mode ! ;
   \ the story's (the scripts' 0x43, 0xC0, 0x93, 0xC9): the threat (Threat_Raise: as a fright, into
   \ the weighted parts), its accumulator, calming (bit $80: 128 at once; else v / 30), the level

@@ -14,7 +14,7 @@ builds its title scene anew.
 | `caught` (state flag $C) | | fact, set by Fiona (`fiona/seized.fs`) or the story | The game ends: it starts (the flag taken at once). |
 | `game-over-kind` | `( kind -- )` | in (the story's 0x8B, `game-over-flag`) | How the next one goes: 0 the movie's, 1 faded out (the default: caught), 2 the story's end - none, the ending follows (`the-ending`, `ending.md`), 3 faded out with its own music. |
 | `music-op`, `bgm-want` | | out, to music | The stage music faded; its own track. |
-| `panic-overlay` | `( thousandths -- )` | out, to the panic | Its screen overlay's level (ScreenFade_Level of the progress' +0x7B8): full as the tints start, fading with them; 0 when a movie death keeps its picture. (The panic's handler is another change's: until it is in, the message is dropped.) |
+| `panic-overlay` | `( thousandths -- )` | out, to the panic | Its screen overlay's level (ScreenFade_Level of the progress' +0x7B8): full as the tints start, fading with them; 0 when a movie death keeps its picture. |
 | `panic-stage!`, `door-opened`, `lock-room-for`, `hewie-place`, `go-to-room` | | out | The mini-game's run started again in place (below). |
 
 Engine words it uses: `still!` (the models and the room stand still, the actors running),

@@ -20,7 +20,7 @@ The original's `Panic_*` (`fiona.c`, the object at SceneGame +0x7F8, progress +0
 | `danger` | | in | Calm (0) calms faster. |
 | `hewie-near` | `( near -- )` | in, from Hewie each frame she is with him | How near: 1 within 20, 2 within 50, 3 further (`report_fiona_near`, the progress' +0x7B9) - how the inputs weigh. |
 | `calm-add` | `( amount -- )` | in | Calming this frame, weighed as the story's (+0x7E4): Lavender's, from the items. |
-| `panic-fade` | `( level -- )` | in | The screen fade's level 0..1 (`ScreenFade_Level`, +0x34; a float): her breath only at 1. |
+| `panic-overlay` | `( thousandths -- )` | in | The screen overlay's level, 0..1000 (`ScreenFade_Level`, +0x34): her breath only when full, the overlay's tint scaled by it (`ScreenFade_Frame`). The game over sets it full and fades it with its tints. |
 
 ## State
 
@@ -80,10 +80,9 @@ the rise alone - not checked that it is the same ladder), not while he is down n
 In the mini-game's run she out of sight with him, her fear grows; away from the room played her
 panic stops at 99.
 
-*Not yet*: the screen fade's level is told (`panic-fade`) by nobody yet - the story's fades
-(`ScreenFade_Step`, while a scene plays it is not set back to 1) and the game over's
-(`gameover.c`) are to send it; nor does the level scale the screen's grey or stop the shake
-(`ScreenFade_Frame`).
+*Not yet*: the screen overlay's level (`panic-overlay`) is sent by the game over only - the
+story's fades (`ScreenFade_Step`; while a scene plays it is not set back to full) don't yet; nor
+does a level under full stop the camera's shake (`ScreenFade_Frame`).
 
 Also built: the story's commands (`panic-level` and the rooms' frights), the charms (the earrings
 and chokers: `earrings`, `fiona/moving.fs`), the camera's shake (`jolting`), and with each breath

@@ -110,11 +110,10 @@ message fright-raw ( amount -- )             \ (Panic_FrightRaw: as it is)
 message panic-shorten ( frames -- )          \ (the panic) its time left shortened (the progress' +0x7BA: her shaking as she gets up)
 message fear-set ( amount -- )               \ the fear this frame set outright (the progress' +0x7D8 =: f>cell)
 message fear-in ( amount -- )
-message panic-overlay ( thousandths -- )       \ (the panic) its screen overlay's level (ScreenFade_Level of the progress' +0x7B8): the game over sets it full and fades it with its tints
+message panic-overlay ( thousandths -- )       \ (the panic) its screen overlay's level (ScreenFade_Level, the panic's +0x34): her breath only at 1000, its tint scaled by it; the game over sets it full and fades it with its tints
 message panic-stage! ( stage -- )
 message panic-level! ( level -- )
 message hewie-near ( near -- )               \ broadcast by Hewie each frame she is with him: 1 within 20, 2 within 50, 3 further (the progress' +0x7B9: how the panic weighs its inputs)
-message panic-fade ( level -- )              \ (the panic) the screen fade's level, 0..1 (ScreenFade_Level, its +0x34; f>cell): her breath only at 1
 message calm-add ( amount -- )               \ (the panic) calming this frame, weighed as the story's (the progress' +0x7E4; f>cell)
 message panic ( stage level -- )             \ broadcast each frame
 \ the panic's stages: under 60, from 60 / 75 / 90, panicking (at 100), calming down after
