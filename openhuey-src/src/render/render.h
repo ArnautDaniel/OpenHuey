@@ -183,6 +183,12 @@ void render_image_uv(GpuTexture t, float x, float y, float w, float h, float u0,
                      uint32_t rgba);
 /* ... on four corners xy[8] (the part's top left, top right, bottom left, bottom right: turned) */
 void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, float u1, float v1, uint32_t rgba);
+/* how the pictures (render_image*) from now are blended, as the GS's ALPHA register with C the
+ * fixed FIX (`fix` / 128): RENDER_BLEND_NORMAL over the screen by their alpha times the colour's
+ * (the default); SUBTRACT Cd - Cs * FIX (GS 0x62), MIX (Cs - Cd) * FIX + Cd (0x64), ADD
+ * Cd + Cs * FIX (0x68) - in these the texture's alpha only tests: nothing drawn where it is 0 */
+enum { RENDER_BLEND_NORMAL, RENDER_BLEND_SUBTRACT, RENDER_BLEND_MIX, RENDER_BLEND_ADD };
+void render_blend_2d(int mode, int fix);
 /* a texture (re)filled with a w x h RGBA picture each time (a movie); made anew when the size
  * changes (*tw / *th: its size) */
 GpuTexture render_texture_stream(GpuTexture t, const uint8_t *rgba, int w, int h, int *tw, int *th);

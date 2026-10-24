@@ -120,8 +120,9 @@ create symbol-palettes  6 , 3 , 4 , 5 , 0 , 7 ,
     blink-t @ 1+ 60 mod blink-t !
     blink-t @ 30 - abs 64 * 30 / $40 + $80 min  {: alpha :}
     $1B8 $100 $40 $30 picture  back-group 4 8 $1A0 0 $40 $30 alpha from ;
+7 constant forged-ink   \ (what came out: palette 7, added - SlotMachine_Draw)
 : say ( msg -- )   \ the machine's line (the room's own messages), in a box at the bottom
-    $100 $172 $1C0 $40 shade  0 0 line-of  $50 $164 false text ;
+    $100 $172 $1C0 $40 shade  0 0 line-of  $50 $164 box-ink inked ;
 : medal-list ( -- )   \ the medallions she has, with how many; the one at the cursor lit
     {: | k y :}
     $2 say
@@ -130,8 +131,9 @@ create symbol-palettes  6 , 3 , 4 , 5 , 0 , 7 ,
     0 $70 offered 1- 0 max $20 * + $F8 $20 picture  back-group 4 2 $108 $70 $F8 $20 $80 from
     6 0 do  i held-of if
         k $20 * $60 + to y
-        i medallion-id name  $20 y  k slot-cursor @ =  text
-        i held-of n>s  $B1 y  false text
+        k slot-cursor @ = 2 and {: c :}   \ (the cursor's palette 2, added: SlotMachine's)
+        i medallion-id name  $20 y  c inked
+        i held-of n>s  $B1 y  c inked
         k 1+ to k
     then  loop ;
 \ the panels as what came out shows: over the rows (in 3 frames, out over 12), then the item's
@@ -153,9 +155,9 @@ create symbol-palettes  6 , 3 , 4 , 5 , 0 , 7 ,
     found-panels drop if
         result @ 0< if  5 say  else
             found-heard @ 0= if  3 6 bank-sound  -1 found-heard !  then
-            $100 $172 $100 $28 shade  4 0 0 line-of  $60 $164 false text
-            forged @ name  $A8 $164 true text
-            amount @ 1 <> if  amount @ count$  $140 $164 false text  then
+            $100 $172 $100 $28 shade  4 0 0 line-of  $60 $164 box-ink inked
+            forged @ name  $A8 $164 forged-ink inked
+            amount @ 1 <> if  amount @ count$  $140 $164 box-ink inked  then
         then
     then
     found-t @ 50 < if  1 found-t +!  then ;

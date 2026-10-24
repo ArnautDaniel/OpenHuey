@@ -189,6 +189,8 @@ UI layers are drawn in order over the picture; a mod draws on `mod-layer` (from 
 it and draw each `frame-end` (as `room-tally` does). `ui-text ( layer addr len x y rgba scale -- )`
 (the game's own font; bytes from `$C0` are the pad's buttons: `$C0` circle, `$C1` triangle,
 `$C2` square, `$C3` cross, `$C4` L1, `$C6` R1), `ui-rect ( layer x y w h rgba -- )`,
+`ui-blend ( layer mode fix -- )` (the layer's last text or picture blended as the PS2 does with a
+fixed alpha, 128 = 1: mode 0 by its own alpha - the default -, 1 subtracted, 2 mixed, 3 added),
 `screen-size ( -- w h )`, `char-size ( -- w h )` at the pen's scale (`pen-scale ( n -- )`).
 
 ### The mods' camera (API 1.3)

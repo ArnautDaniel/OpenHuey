@@ -66,23 +66,28 @@ $42 constant msg-rows   $45 constant msg-names   $4E constant msg-notes
     confirm? right? or next-page? or if  1 cost-open !  se-decide  exit  then
     back? if  row-exit cost-row !  se-cancel  then ;
 
-\ ---- drawing: the rows on the left, the row's costumes (the cursor's lit, the worn one marked),
-\ the note of the one under the cursor ----
+\ ---- drawing: the rows on the left, the row's costumes, the note of the one under the cursor;
+\ in the font's palettes, added (Costumes_State): the cursor's 2 (its row 1 while the list is
+\ open), the chosen costume 1, the rest 0 ----
+: row-ink ( row -- colour )
+    cost-row @ <> if  0 exit  then
+    cost-open @ cost-row @ row-exit <> and if  1  else  2  then ;
+: name-ink ( i at worn -- colour )
+    {: i at worn :}  i at = cost-open @ and if  2 exit  then  i worn = if  1  else  0  then ;
 : wardrobe-rows ( -- )
     0 {: y :}
-    msg-rows 0 room-line  $30 $40  cost-row @ row-her = text
-    cost-his-worn @ 0< 0= if  msg-rows 1+ 0 room-line  $30 $60  cost-row @ row-his = text  $20 to y  then
-    msg-rows 2 + 0 room-line  $30 $60 y +  cost-row @ row-exit = text ;
+    msg-rows 0 room-line  $30 $40  row-her row-ink inked
+    cost-his-worn @ 0< 0= if  msg-rows 1+ 0 room-line  $30 $60  row-his row-ink inked  $20 to y  then
+    msg-rows 2 + 0 room-line  $30 $60 y +  row-exit row-ink inked ;
 : wardrobe-list ( first n locked-xt at worn -- )
     {: first n locked at worn | y :}  $48 to y
     n 0 do
         i locked execute 0= if
-            msg-names first + i + 0 room-line  $C0 y  i at = cost-open @ and  text
-            i worn = if  s" *"  $B0 y  false text  then
+            msg-names first + i + 0 room-line  $C0 y  i at worn name-ink inked
             y $20 + to y
         then
     loop
-    cost-open @ if  3 0 do  msg-notes first + at + i room-line  $30  $150 i 18 * +  false text  loop  then ;
+    cost-open @ if  3 0 do  msg-notes first + at + i room-line  $30  $150 i 18 * +  box-ink inked  loop  then ;
 : costumes-view ( -- )
     $100 $E0 $1E0 $190 shade
     wardrobe-rows

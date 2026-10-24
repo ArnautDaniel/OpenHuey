@@ -69,8 +69,8 @@ create one-letter 1 allot
 : plate-view ( -- )
     4 page-art
     8 0 do  word i + c@ ?dup if   \ the word, in large letters
-        one-letter c!  word-layer one-letter 1  $68 i $28 * + sx  $54 sy  $E8E0D0FF  scale 2*  ui-text
+        one-letter c!  word-layer one-letter 1  $68 i $28 * + sx  $54 sy  box-ink  scale 2*  glyphs
     then  loop
     word-len @ 8 < if  word-len @ 40 * $60 +  $50 $F $80 part  then   \ where the next letter goes
     key-at @ key  dup cell+ @  swap 2 cells + @  $E $40 part           \ the key lit
-    $180 $140 $D $80 part  10 plates - n>s  $198 $148 false text ;    \ the plates left
+    $180 $140 $D $80 part  10 plates - n>s  $198 $148 box-ink inked ;    \ the plates left

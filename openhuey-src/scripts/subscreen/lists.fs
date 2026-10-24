@@ -23,8 +23,9 @@ USING: engine actors messages keys facts items items.names items.tables subscree
     {: list k x y | id :}  list k item-at to id
     x $20 +  y $5E +  id item-kind  $80 part
     id word-plate-key = if  3  list k held-at letters 8  message-param$  then   \ (a plate: its word)
-    id name  x $46 +  y $64 +  list k equip-state worn =  text
-    id stacks? if  list k held-at n@ count$  x $DE +  y $64 +  false text  then ;
+    list k equip-state worn = ink {: c :}   \ (its count in its colour too)
+    id name  x $46 +  y $64 +  c inked
+    id stacks? if  list k held-at n@ count$  x $DE +  y $64 +  c inked  then ;
 : grid ( -- )
     list-page list-pages 1- > if  in-list 1- 0 max cursor !  then
     list-page 1+ list-pages of$  $186 $176 false text
@@ -69,10 +70,10 @@ create acts 4 cells allot   variable #acts
     under-cursor name  $38 $49 false text
     under-cursor stacks? if  list cursor @ held-at n@ count$  $D2 $49 false text  then
     $100 $16E $19C $66 shade
-    note dup message-layout 0> if  0 message-lines 0 ?do  dup 0 i line-of  $32  $142 i 22 * +  false text  loop  then  drop
+    note dup message-layout 0> if  0 message-lines 0 ?do  dup 0 i line-of  $32  $142 i 22 * +  box-ink inked  loop  then  drop
     $1A9  #acts @ 10 * $DD +  $46  #acts @ 20 *  shade
-    #acts @ 0 ?do  i act@ act-word menu-line  $190  $D8 i $14 * +  i action @ =  text  loop
-    s" >"  $17C  action @ 20 * $D8 +  true text ;
+    #acts @ 0 ?do  i act@ act-word menu-line  $190  $D8 i $14 * +  box-ink inked  loop
+    hand 1  $17C  action @ 20 * $D8 +  cursor-ink inked ;   \ (the hand before the action picked)
 
 \ ---- using (item_use) ----
 : back ( answer -- )  drop  back-to-page ;

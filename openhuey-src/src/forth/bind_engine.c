@@ -3220,6 +3220,7 @@ typedef struct UiItem {
     int group, id, csa;       /* (3) the texture cache's group + id, its palette */
     float u, v, uw, vh;       /* (3) the part of it, in texels */
     float corners[8];         /* (5: a part on four corners) x, y each */
+    int blend, fix;           /* (1, 3, 5: text, pictures) how blended: RENDER_BLEND_*, at FIX (ui-blend) */
 } UiItem;
 static UiItem sUi[UI_LAYERS][UI_ITEMS];
 static int sUiN[UI_LAYERS];
@@ -3369,6 +3370,17 @@ PRIM(p_ui_text_in) {   /* ( layer addr len x y rgba scale palette -- ) in the ga
         *u = (UiItem){.text = 1, .x = (float)x, .y = (float)y, .w = (float)(scale < 1 ? 1 : scale), .rgba = (uint32_t)rgba,
                       .csa = (int)csa};
         snprintf(u->s, sizeof(u->s), "%.*s", (int)(n > 0 ? n : 0), n > 0 ? (const char *)a : "");
+    }
+}
+PRIM(p_ui_blend) {   /* ( layer mode fix -- ) the layer's last text or picture blended as the GS's
+                       * ALPHA with FIX `fix` (128 = 1): mode 0 by its alpha (as drawn), 1 subtracted
+                       * (Cd - Cs * FIX), 2 mixed ((Cs - Cd) * FIX + Cd), 3 added (Cd + Cs * FIX) */
+    Cell fix = POP(), mode = POP();
+    int l = ui_layer(f, POP());
+
+    if (sUiN[l] > 0) {
+        sUi[l][sUiN[l] - 1].blend = mode >= 0 && mode <= 3 ? (int)mode : 0;
+        sUi[l][sUiN[l] - 1].fix = (int)fix;
     }
 }
 PRIM(p_ui_image4) {   /* ( layer x0 y0 x1 y1 x2 y2 x3 y3 group id csa u v uw vh rgba -- ) a cache texture's part
@@ -3571,6 +3583,7 @@ static void ui_draw(void) {
         for (i = 0; i < sUiN[l]; i++) {
             const UiItem *u = &sUi[l][i];
 
+            render_blend_2d(u->blend, u->fix);
             if (u->text == 3) {
                 int tw, th;
                 unsigned t = sprites_texture_of(u->group, u->id, u->csa, &tw, &th);
@@ -3601,6 +3614,7 @@ static void ui_draw(void) {
             }
         }
     }
+    render_blend_2d(RENDER_BLEND_NORMAL, 0);
 }
 
 void engine_draw_2d(Engine *e) {
@@ -3684,7 +3698,7 @@ void bind_engine(Forth *f) {
         {"message-layout", p_message_layout}, {"message-file", p_message_file}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
         {"message-options", p_message_options}, {"message-option-at", p_message_option_at}, {"message-option-leads", p_message_option_leads},
         {"message-choice-flags", p_message_choice_flags}, {"message-typed", p_message_typed}, {"message-skip", p_message_skip},
-        {"message-close-after", p_message_close_after}, {"message-run", p_message_run}, {"message-place", p_message_place}, {"message-align", p_message_align}, {"ui-text-in", p_ui_text_in}, {"ui-image4", p_ui_image4}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
+        {"message-close-after", p_message_close_after}, {"message-run", p_message_run}, {"message-place", p_message_place}, {"message-align", p_message_align}, {"ui-text-in", p_ui_text_in}, {"ui-blend", p_ui_blend}, {"ui-image4", p_ui_image4}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-back!", p_cloth_back}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
         {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
