@@ -1524,6 +1524,51 @@ PRIM(p_door_near) {   /* ( exit -- flag ) ( F: x y z -- ) within 20 of where it 
 
     PUSH(room_door_near(&gEngine.room, (int)exit, vec3(x, y, z)) ? -1 : 0);
 }
+PRIM(p_walkable) {   /* ( tri v out mask -- tri' ) Npc_NearestWalkable: on triangle `tri`, the point
+                      * `v`; for one of `mask` (whose floor that isn't), the walkable point nearest it -
+                      * from the far side of the room's exit whose door area (0) it is in (not one
+                      * back into the room: Rooms_ExitLoops, Rooms_ExitTriThrough), else from the
+                      * nearest triangle free of them (Npc_TriIfStandable), on toward it while
+                      * the floor is free (0.1 short) - into `out`; -1 off the mesh. Else (or no
+                      * free triangle) v itself */
+    uint32_t mask = (uint32_t)POP();
+    float *out = vec_arg(f), *v = vec_arg(f);
+    Cell tri = POP();
+    NavMesh *n = &gEngine.room.nav;
+    Vec3 p = vec3(v[0], v[1], v[2]), at;
+    int t = (int)tri, i, room = gEngine.room.id;
+
+    n->block = 0;
+    if (tri < 0 || tri >= n->ntris || !(n->tris[tri].flags & mask)) {
+        out[0] = p.x; out[1] = p.y; out[2] = p.z;
+        PUSH(tri);
+        return;
+    }
+    for (i = 0; i < ROOM_EXITS; i++) {
+        int to_exit = -1;
+
+        if (world_exit_leads(&gEngine.world, room, i, &to_exit) == room) {
+            continue;
+        }
+        if (room_door_in_area(&gEngine.room, i, 0, p)) {
+            t = world_exit_tri(&gEngine.world, room, i, 2);
+            break;
+        }
+    }
+    if (t == tri) {
+        t = navmesh_nearest_free(n, t, mask);
+    }
+    if (t < 0 || t >= n->ntris) {   /* (none: as it is) */
+        out[0] = p.x; out[1] = p.y; out[2] = p.z;
+        PUSH(tri);
+        return;
+    }
+    t = navmesh_free_toward(n, t, p, mask, &at);
+    if (t >= 0) {
+        out[0] = at.x; out[1] = at.y; out[2] = at.z;
+    }
+    PUSH(t);
+}
 PRIM(p_door_in_area) {   /* ( exit kind -- flag ) ( F: x y z -- ) in its area `kind` (Doors_InArea) */
     Cell kind = POP(), exit = POP();
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
@@ -3755,7 +3800,7 @@ void bind_engine(Forth *f) {
         {"v-path", p_v_path}, {"v-path-curved", p_v_path_curved}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
         {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-crosses?", p_nav_crosses}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {"placed-at", p_placed_at}, {"placed-f@", p_placed_f_fetch}, {"placed-f!", p_placed_f_store}, {"placed-l@", p_placed_l_fetch}, {"placed-l!", p_placed_l_store}, {"placed-here?", p_placed_here}, {"placed-shown?", p_placed_shown}, {"nav-square-step", p_nav_square_step}, {"obstacles-reset", p_obstacles_reset}, {"obstacle-placed?", p_obstacle_placed}, {"obstacle-make", p_obstacle_make}, {"obstacle-stop", p_obstacle_stop}, {"obstacle-square", p_obstacle_square}, {"obstacle-at", p_obstacle_at}, {"obstacle-middle", p_obstacle_middle}, {"obstacles-ring-mask", p_obstacles_ring_mask}, {"obstacle-on-square?", p_obstacle_on_square}, {"obstacle-can-push?", p_obstacle_can_push}, {"obstacle-push", p_obstacle_push}, {"obstacle-step", p_obstacle_step}, {"obstacle-moved", p_obstacle_moved}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"door-shades", p_door_shades}, {"door-shade", p_door_shade}, {"light-blocker", p_light_blocker}, {"light-blockers", p_light_blockers}, {"light-blocked?", p_light_blocked}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
-        {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area},
+        {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area}, {"walkable", p_walkable},
         {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"door-set-opened", p_door_set_opened}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"door-turn", p_door_turn}, {"door-angle", p_door_angle}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"placed-draws", p_placed_draws}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end}, {"cutscene-leave-alone", p_cutscene_leave_alone}, {"cutscene-keep-model", p_cutscene_keep_model}, {"soft-reset", p_soft_reset},

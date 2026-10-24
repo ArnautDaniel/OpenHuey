@@ -104,9 +104,9 @@ shut-door-move 0 -1  no-place move
 T{ [: door-use @ 1 and ;] his -> 1 }T
 T{ ' done? 900 soon  door0 door-open?  door0 door-held? -> -1 0 0 }T
 
-testing let go: held no more, on as before (not seeing her: searching the room again)
+testing let go: held no more, on as before (sensing her: after her; else searching the room again)
 0 deb send scripted  deliver  5 frames
-T{ held?  [: my-mode @  search-phase @ 0<> ;] his -> 0 searching -1 }T
+T{ held?  [: sees-fiona @ if  my-mode @ after-her =  else  my-mode @ searching =  search-phase @ 0<> and  then ;] his -> 0 -1 }T
 
 testing posed (the scripts' 0x9D): held in its animation, shown; a script letting go doesn't free him, starting afresh does
 look-about-anim 1 0 deb send hold-anim  deliver  3 frames

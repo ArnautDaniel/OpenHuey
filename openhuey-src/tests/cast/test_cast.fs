@@ -3,7 +3,7 @@
 \ wearing another's model (0xBA), removed. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/cast/test_cast.fs
 IN: test-cast
-USING: tester engine game-state actors messages room-names game debug story.words story.state ;
+USING: tester engine game-state actors messages room-names game debug story.words story.state vectors ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
@@ -33,15 +33,7 @@ T{ 3 char-actor game:cast3 =  game:cast3 body-room room-id =  model3 actor act.v
 testing the story's moves: an animation (7) - done at once
 7 0 -1  0e 0e 0e 0e move3  3 frames
 T{ anim3  [: cast.private:mv-done @ ;] c3 -> 0 -1 }T
-testing walking to a spot (5): there, facing the move's way, done
-5 -1 -1  fx f@ 10e f+  game:fiona body-pos fdrop fswap fdrop  fz f@ 8e f+  0e move3  1 frames
-T{ [: cast.private:mv-done @ ;] c3 -> 0 }T
-T{ [: [: cast.private:mv-done @ ;] c3 ;] 300 soon  game:cast3 body-pos frot fdrop fswap fdrop  fz f@ 8e f+ f- fabs 1e f< -> -1 -1 }T
-testing there, it turns to the move's heading (Pursuer_StateArrive: 4 degrees a frame), then stands
 : yaw3 ( -- deg )  game:cast3 body-yaw 180e f* pi f/ fround f>s ;
-5 -1 -1  fx f@ 10e f+  game:fiona body-pos fdrop fswap fdrop  fz f@ 16e f+  pi f2/ move3  1 frames
-T{ [: [: cast.private:act @ ['] cast.private:arrive-turning = ;] c3 ;] 300 soon -> -1 }T
-T{ [: [: cast.private:mv-done @ ;] c3 ;] 100 soon  yaw3 -> -1 90 }T
 testing blended (8): a faded in over b frames, done at once
 7 $9000 -1  0e 0e 0e 0e move3  2 frames   \ (playing something first: a fade needs one to fade from)
 8 $9001 12  0e 0e 0e 0e move3  1 frames
@@ -58,6 +50,29 @@ testing the walks' animations (Pursuer_ScriptMove): 5 / 6 b if one of the $2xx, 
 T{ [: walk-move cast.private:mv-kind !  $204 cast.private:mv-b !  cast.private:walk-anim-for
       -1 cast.private:mv-b !  cast.private:walk-anim-for
       run-path-move cast.private:mv-kind !  $204 cast.private:mv-b !  cast.private:walk-anim-for ;] c3 -> $204 $200 $201 }T
+
+testing walking (5, 6, 11: Pursuer_WalkToGoal / CloseInGoal / StateArrive - as the stalkers'): the golem (8: its
+testing ... walks $200 / $201) along its way to the spot - there turned to the move's heading at 4 degrees a frame,
+testing ... then standing, done once its stance has faded in
+: c5 ( xt -- x )  game:cast5 enter  execute  leave-actor ;
+: put5 ( F: x y z yaw -- )  f>cell >r f>cell >r f>cell >r f>cell r> r> r>  game:cast5 send place ;
+: move5 ( kind a b F: x y z yaw -- )
+    f>cell >r f>cell >r f>cell >r f>cell r> r> r>  game:cast5 send scripted-move ;
+: done5? ( -- flag )  [: cast.private:mv-done @ ;] c5 ;
+: anim5 ( -- a )  [: cast.private:anim @ ;] c5 ;
+: yaw5 ( -- deg )  game:cast5 body-yaw 180e f* pi f/ fround f>s ;
+variable spot-tri  create spot /vec allot
+8 5 $FF char-load  2 frames
+fx f@ 10e f+  game:fiona body-pos fdrop fswap fdrop  fz f@  0e put5  3 frames
+fx f@ 10e f+  game:fiona body-pos fdrop fswap fdrop  fz f@ 20e f+  spot vec!  spot v-tri spot-tri !
+5 spot-tri @ -1  spot vec@  pi f2/ move5  5 frames
+T{ done5?  anim5 $FF00 and  dup $200 = swap $400 = or -> 0 -1 }T
+T{ ' done5? 600 soon  game:cast5 body-at spot vec-dist-xz 1e f<  yaw5 -> -1 -1 90 }T
+testing ... to a triangle slowly (11): done as soon as it is on it
+11 game:fiona body-tri -1  0e 0e 0e 0e move5  5 frames
+T{ done5?  anim5 $FF00 and dup $201 = swap $400 = or -> 0 -1 }T
+T{ ' done5? 600 soon  game:cast5 body-tri game:fiona body-tri = -> -1 -1 }T
+5 slot-clear  2 frames
 
 testing the scripts' 0x14: out of the scene - gone from the room, still loaded
 $1C char-done  2 frames

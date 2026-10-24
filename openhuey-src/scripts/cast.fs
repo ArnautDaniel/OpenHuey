@@ -6,7 +6,7 @@
 \ walking to a spot, turning; `hold-anim`), reporting each frame's end (`moving`). Given another's
 \ model (`cast-dress`: the scripts' hand-over, Pursuer_GiveMotionBanks) it wears that.
 IN: cast
-USING: engine game-state actors messages common vectors facts floor-flags ;
+USING: engine game-state actors messages common vectors facts floor-flags paths ;
 
 \ ---- the kinds' figures (their ModelFiles: the first file, its name less the extension) ----
 : kind-file ( kind -- addr len | 0 0 )
@@ -64,6 +64,11 @@ state: cast-state
   \ its head (Pursuer_Think): a scripted look on (+0x16F9), at whom the moves last said (+0x100:
   \ 0 Fiona, 1 Hewie, else the point), the point (+0x1700); the head's turn (its motion's +0x858)
   cell field look-on  cell field look-who  /vec field look-pt  1 floats field head-yaw
+  \ its walks (Pursuer_WalkToGoal ..): its way, the goal (+0x15A4 / +0x15B0), the walk the move
+  \ plays (+0x104 [1]), its way planned again once the goal lay straight ahead (+0x1628), where
+  \ the way turns
+  /path field my-path  cell field goal-tri  /vec field goal-at  cell field walk-with  cell field replanned
+  /vec field turn-at
 end-state
 : him ( -- a )  model @ actor ;
 : placed ( -- )  model @ dup 0< if  drop  else  actor-settle  then ;   \ (Pursuer_Place: its feet afresh, not eased from where it was)
@@ -93,24 +98,94 @@ $201 constant other-walk-anim   \ (Pursuer_SlowWalkAnim: $201 with its +0x16C8 s
                                 \ and nothing of these kinds clears it)
 0 constant stand-anim           \ (Pursuer_WalkAnim's, these kinds standing)
 : turned? ( -- flag )  mv-yaw f@ 4e deg>rad body-turn-toward f0= ;   \ (Npc_TurnToward at Pursuer_TurnRate: 4 degrees a frame)
-: arrive-turning ( -- )   \ (Pursuer_StateArrive) on its spot, turning to the move's heading; then standing
-    turned? if  stand-anim play-now  settle  then ;
+: stood ( -- )  faded-in? if  settle  then ;   \ (Pursuer_StateStand: its stance, done once faded in)
+: stand-done ( -- )  stand-anim play-now  ['] stood act ! ;
 : turning ( -- )   \ (Pursuer_StateTurnThenWait) to the heading in its walk; then standing, done once that has faded in
     turned? 0= if  exit  then
     model @ stand-anim has-motion? 0= if  settle exit  then
     anim @ 4 u< if  faded-in? if  settle  then  else  stand-anim play  then ;
 : to-a-triangle? ( -- flag )  mv-kind @ dup run-move = swap run-path-move = or ;   \ (6 / 11: Pursuer_StateRunToTri)
-: walking ( -- )   \ toward the spot, by its walk's root motion (a slow step if it has none)
+\ the walk with an animation (17): toward the spot by the animation's root motion (a slow step if it
+\ has none), put on it, facing the move's way
+: walking-straight ( -- )
     root@ fnip fnip  fdup fabs 0.01e f< if  fdrop 0.6e  then  {: F: step :}
-    to-a-triangle? self body-tri mv-a @ = and if  done  then   \ (to a triangle: done once on it)
     self mv-at body-heading-to 10e deg>rad body-turn-toward fdrop
     my-at mv-at vec-dist-xz step f< if
-        mv-at vec@ body-place-at
-        mv-kind @ walk-anim-move = if  mv-yaw f@ body-turn  stand-anim play-now  settle exit  then
-        to-a-triangle? if  stand-anim play-now  settle exit  then
-        ['] arrive-turning act !  exit
+        mv-at vec@ body-place-at  mv-yaw f@ body-turn  stand-anim play-now  settle exit
     then
     0e step body-move-local ;
+\ ---- walking to the spot or to a triangle (5 / 10, 6 / 11: Pursuer_ScriptMove and its action 4 -
+\ Pursuer_WalkToGoal, StepBack, CloseInGoal - as the stalkers': stalker/scripted.fs): its way
+\ planned to the goal - the walkable point nearest it when its floor isn't the figure's
+\ (Npc_NearestWalkable), curved round its corners (Character_WaypointsCurve) - and walked stride
+\ by stride by its walk's root motion (Npc_WalkPathStride: turned toward the point a stride on at
+\ its turn rate, twice that and only turning when 45 degrees off with 4 or more left), turned on
+\ the spot ($400..) toward the way past 80 degrees once its walk has faded in, its way planned
+\ again once the goal lies straight ahead; no way: on by its motion, never done ----
+: turn-rate ( F: -- r )  4e deg>rad ;   \ (Pursuer_TurnRate)
+: plan ( tri v -- n )
+    {: tri v :}  tri v goal-at self body-mask walkable dup 0< if  drop 0 exit  then  {: t :}
+    my-path self body-tri my-at t goal-at self body-mask path-plan-curved ;
+: way-left ( F: -- d )  my-path path-left? if  my-path my-at path-rest  else  0e  then ;
+: stride ( F: -- d )  root@ fnip fnip ;
+: heading-off ( v -- ) ( F: -- d )  self swap body-heading-to yaw f- angle-wrap ;
+: put-at ( v -- )   \ (off the floor: its triangle kept)
+    {: v :}  self body-tri {: tri :}
+    v vec@ body-place-at  self body-tri 0< if  room-id tri v vec@ body-place  then ;
+: walk-stride ( -- end? )
+    my-path path-left? 0= if  true exit  then
+    stride fdup f0< if  fdrop false exit  then  0.01e fmax
+    my-path my-at path-ahead {: i :}
+    ahead heading-off fabs 45e deg>rad f< 0=  way-left 4e f< 0= and if
+        self ahead body-heading-to turn-rate 2e f* body-turn-toward fdrop  false exit
+    then
+    self ahead body-heading-to turn-rate body-turn-toward fdrop
+    ahead put-at  i my-path path-i!
+    my-path path-left? 0= ;
+$FF constant no-turn
+: turn-way ( -- way )   \ (Npc_TurnWayTo toward the way's point 0.1 on: past 80 degrees, 160 a half turn)
+    0.1e my-path my-at path-ahead drop  turn-at ahead vec-copy
+    turn-at heading-off {: F: d :}
+    d fabs 80e deg>rad f<= if  no-turn exit  then
+    d f0< if  0  else  1  then  d fabs 160e deg>rad f> if  2 or  then ;
+$400 constant turn-anims
+defer walk-start ( -- )
+defer arrived ( -- )
+: turning-on ( -- )   \ (CloseInGoal's turn on the spot: by it till it ends or it faces the way, then on afresh)
+    root-move  faded-in? 0= if  exit  then
+    ended?  turn-at heading-off fabs 0.1e f< or if  walk-with @ play  walk-start  then ;
+: turns? ( way -- flag )  turn-anims +  model @ swap has-motion? ;   \ (its kind has that turn: else none plays)
+: turn-on-spot ( way -- )  turn-anims + play-now  ['] turning-on act ! ;   \ (Pursuer_TurnOnSpot)
+: turn-wanted ( -- way | no-turn )   \ (past 80 degrees, one its kind has)
+    turn-way  dup no-turn = if  exit  then  dup turns? 0= if  drop no-turn  then ;
+: straight? ( -- flag )  self body-tri my-at goal-at self body-mask v-walk goal-tri @ = ;
+: walking ( -- )
+    to-a-triangle? self body-tri mv-a @ = and if  done  then   \ (to a triangle: done once on it)
+    way-left 4e f< 0=  faded-in? and if  turn-wanted dup no-turn <> if  turn-on-spot exit  then  drop  then
+    replanned @ 0= straight? and if  goal-tri @ goal-at plan drop  1 replanned !  then
+    walk-stride if  arrived  then ;
+: no-way ( -- )  root-move ;
+:noname ( -- )
+    goal-tri @ goal-at plan 0> 0= if  ['] no-way act ! exit  then
+    0 replanned !
+    way-left 4e f< 0= if  turn-wanted  else  no-turn  then
+    dup no-turn = if  drop  walk-with @ play  ['] walking act !  exit  then
+    turn-on-spot ;
+is walk-start
+\ there (Pursuer_StateArrive): on another triangle a way under 0.1 long left - put on the goal -,
+\ longer - on afresh; on it, turned to the move's heading at its turn rate, then standing (done
+\ once its stance has faded in). To a triangle (Pursuer_StateRunToTri): done once on it, walking
+\ on the spot at the way's end till the next move
+: turned-there ( -- )  turned? if  stand-done  then ;
+: at-goal ( -- )
+    self body-tri goal-tri @ = if  ['] turned-there act !  turned-there exit  then
+    goal-tri @ goal-at plan 0> if  way-left  else  -1e  then
+    fdup f0< 0=  fswap 0.1e f< and if  room-id goal-tri @ goal-at vec@ body-place exit  then
+    walk-start ;
+: goal! ( tri -- )   \ (NPC_GoTo: the move's point on it, else its middle)
+    dup goal-tri !  dup mv-at mv-at 0 v-walk over = if  drop goal-at mv-at vec-copy  else  tri-center goal-at vec!  then ;
+: to-spot ( -- )  mv-a @ goal!  ['] at-goal is arrived  walk-start ;
+: to-tri ( -- )  mv-a @ dup goal-tri !  tri-center goal-at vec!  ['] still is arrived  walk-start ;
 \ ---- its head (Pursuer_Think, Pursuer_LookAt; Motion_LookAt, Motion_EaseTilt, Model_EaseTilt):
 \ a scripted look on, turned toward whom the moves last named - Fiona, Hewie, else the look's
 \ point (the original's +0x100: the looks, the turns to a character, the doors' and the walk
@@ -216,11 +291,11 @@ create who-at /vec allot
         idle-anim-move of  stand-anim mv-b @ 0 play-blend  done  ['] root-move act !  endof   \ (its stand, over b frames)
         turn-to-who-move of  mv-a @ who-was  walk-anim play  ['] turning act !  endof
         turn-to-heading-move of  walk-anim play  ['] turning act !  endof
-        walk-move of  walk-anim-for play  ['] walking act !  endof
-        run-move of  walk-anim-for play  ['] walking act !  endof
-        walk-path-move of  walk-anim-for play  ['] walking act !  endof
-        run-path-move of  walk-anim-for play  ['] walking act !  endof
-        walk-anim-move of  mv-a @ who-was  mv-a @ play-now  ['] walking act !  endof
+        walk-move of  walk-anim-for walk-with !  to-spot  endof
+        run-move of  walk-anim-for walk-with !  to-tri  endof
+        walk-path-move of  walk-anim-for walk-with !  to-spot  endof
+        run-path-move of  walk-anim-for walk-with !  to-tri  endof
+        walk-anim-move of  mv-a @ who-was  mv-a @ play-now  ['] walking-straight act !  endof
         stand-move of  0 play-now  settle  endof
         look-move of  mv-b @ dup who-was  $FF = if  0 look-on !  else  mv-a @ 0< 0= if  1 look-on !  then  then  done  endof
         look-point-move of  look-pt mv-at vec-copy  1 look-on !  done  endof

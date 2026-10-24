@@ -148,7 +148,13 @@ $FF constant no-turn
 : way-to ( v -- way )  80e deg>rad 160e deg>rad way-past ;
 
 \ ---- along his way: planned to (tri, v) over his floor; how far is left ----
-: plan ( tri v -- n )  {: tri v :}  my-path self body-tri my-at tri v self body-mask path-plan ;
+\ (curved round its corners - Character_WaypointsCurve - to the walkable point nearest it when its
+\ floor isn't his: NPC_PathLengthGoal / Spot / To's
+\ Npc_NearestWalkable - none: no way)
+create plan-to /vec allot
+: plan ( tri v -- n )
+    {: tri v :}  tri v plan-to self body-mask walkable dup 0< if  drop 0 exit  then  {: t :}
+    my-path self body-tri my-at t plan-to self body-mask path-plan-curved ;
 : way-left ( F: -- d )  my-path path-left? if  my-path my-at path-rest  else  0e  then ;
 \ Npc_WalkPathStride: the point a stride on; well off his heading (45 degrees, with 4 or more
 \ left) he only turns, twice as fast; else turned to it and put there. True at the end

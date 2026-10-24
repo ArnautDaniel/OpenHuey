@@ -62,10 +62,16 @@ The story's (`scripted-move` kinds; Pursuer_EventCommand): 7 an animation (a), 8
 frames), 9 the same with no time of its own, 16 its stand (0) over b frames - done at once,
 moved by its root motion; 5 / 10 walking to the spot, 6 / 11 to triangle a (its middle) - 5 / 6
 in b if it is one of the $2xx walks, else $200, 10 / 11 in $201 (Pursuer_ScriptMove,
-Pursuer_SlowWalkAnim: its +0x16C8 is 2 from Pursuer_Reset) - turning toward it 10 degrees a
-frame, moved by the animation's root motion (a slow step when it has none). To a triangle: done
-once on it; at the spot, standing. To the spot (Pursuer_StateArrive): put on it, then turning to
-the move's heading at 4 degrees a frame (Pursuer_TurnRate), standing, done. 14 / 15 turning to
+Pursuer_SlowWalkAnim: its +0x16C8 is 2 from Pursuer_Reset) - along its way as the stalkers'
+(Pursuer_WalkToGoal, StepBack, CloseInGoal: planned to the goal - NPC_GoTo: the move's point on its
+triangle, else its middle; on floor not the figure's the walkable point nearest it, `walkable` - and
+curved round its corners; stride by stride by the walk's root motion turning 4 degrees a frame
+(Pursuer_TurnRate; 8 and only turning 45 degrees off); turned on the spot past 80 degrees, $400..,
+its kind having that turn; planned again once the goal is straight ahead; no way, or no walk of its
+kind: on by its motion, never done). To a triangle (Pursuer_StateRunToTri): done once on it, walking
+on the spot at the way's end. To the spot (Pursuer_StateArrive): on another triangle under 0.1 from
+it, put on it; then turned to the move's heading at 4 degrees a frame, standing (0), done once that
+has faded in. 14 / 15 turning to
 the move's heading in $200 at 4 degrees a frame, then standing (0) and done once that has faded
 in (Pursuer_StateTurnThenWait); 17 its own animation to the spot (put on it, facing the move's
 way, done); 1 standing; the doors' uses: done. `hold-anim`: in it, done.
