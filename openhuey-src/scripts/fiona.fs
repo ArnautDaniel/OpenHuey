@@ -10,9 +10,10 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
 \ ---- arriving (by an exit: on its outside spot - Rooms_ExitPointOut - her heading kept from
 \ going through, as the original's: Fiona_Vt34 saves it, the scripts' 0x04 places without
 \ turning) ----
-: put ( F: x y z yaw -- )
+: put ( F: x y z yaw -- )   \ (Fiona_PlaceOn: her hanging parts settled there afresh)
     fdup her-yaw f!  her-heading f!
     her-at vec!
+    her-model @ dup 0< if  drop  else  actor-settle  then
     her-at blocked-floor v-tri-in dup 0< if  drop her-at v-tri  then  her-tri !
     her-at her-was-at /vec move  her-tri @ her-was-tri !
     show-her ;
@@ -128,6 +129,29 @@ create ap-at /vec allot
     footsteps
     show-her ;
 
+\ her earrings and choker on the costumes that have them (Fiona_ShowEquipment, by the model's
+\ ShowParts: EventHumanModel_ShowParts for her clothes, Costume2Model_ShowParts for O_FIH): the pair
+\ of earrings she wears ($86..$89, the equipment's slot 1) shown and the others hidden; the choker's
+\ parts ($8A..$8D, slot 3) the same - with none, her bare neck's. A look's parts: two, -1 none
+create clothes-earrings  32 , 36 , 37 , 33 ,
+create clothes-necks     3 , 4 ,   5 , -1 ,   22 , -1 ,   6 , 7 ,   23 , 24 ,
+create fih-earrings      43 , 47 , 48 , 44 ,
+create fih-necks         1 , 2 ,   3 , -1 ,   40 , -1 ,   4 , 5 ,   41 , 42 ,
+: equipped-in ( slot -- id )  4 * progress pr.equipped + sl@ ;
+: earrings-worn ( -- 0..4 )   \ (0 none)
+    1 equipped-in  dup $86 $8A within if  $85 -  else  drop 0  then ;
+: choker-worn ( -- 0..4 )   \ (0 none: the bare neck)
+    3 equipped-in  dup $8A $8E within if  $89 -  else  drop 0  then ;
+: costume-looks ( -- earrings necks | 0 0 )
+    her-costume @ case  0 of  clothes-earrings clothes-necks  endof  2 of  fih-earrings fih-necks  endof  >r 0 0 r>  endcase ;
+: look-parts ( model addr on -- )   \ (a look's two parts shown or hidden)
+    {: m a on :}  2 0 do  a i cells + @  dup 0< if  drop  else  m swap on actor-part-show  then  loop ;
+: show-equipment ( -- )
+    her-model @  costume-looks  {: m ears necks :}
+    m 0< ears 0= or if  exit  then
+    4 0 do  m  ears i cells + @  i 1+ earrings-worn =  actor-part-show  loop
+    5 0 do  m  necks i 2 * cells +  i choker-worn =  look-parts  loop ;
+
 \ her model by costume (progress variable $26, the story's 0x97: event.c fiona_model) - 0 her
 \ clothes (O_FIN), 1 the slip she wakes in (O_FIS), 2 O_FIH, 3 O_FIO, 6 O_FIB, 7 O_FIC, 8 O_FIF -
 \ and by how far the story has gone, worn and torn (Fiona_LoadFiles: the last of story flags $41,
@@ -155,10 +179,12 @@ create model-name 32 allot  create tex-name 32 allot  create marker-name 32 allo
     model-name her-costume @  her-costume @ 1 = if  0  else  worn  then  named
     tex-name her-costume @ 0 named  actor-load-textured dup her-model !
     dup 0< 0= if  0 over actor act.doorway-fade l!  then   \ (she never fades in doorways: Fiona_LightChange keeps her layer)
+    dup 0< 0= if  1 over actor act.alive l!  then   \ (she blinks, her hands posed by her motions: Fiona_AnimUpdate)
     0 over cast-as  s" motions-fiona" motion-table   \ (CharModel_SecondaryMotion: her fades and flags)
     her-costume @ own-markers? if  marker-name her-costume @  her-costume @ 1 = if  0  else  worn  then  named
     else  marker-name 0 worn named  then
     her-model @ -rot actor-markers
+    show-equipment
     self body? 0<> 1 and her act.visible l!  0 -1 play-table ;   \ (shown once she is in a room)
 
 \ out of sight (Fiona_Frame's area fade, +0x1AD630): wearing item $89 in the equipment's slot 1 and
@@ -201,7 +227,8 @@ behaviour free
   on spawned ( -- )  self cam-player!
       -1 her-model !  -1 her-hit-who !  -1 her-shake-count !  her-creatures #creatures cells -1 fill  progress pr.vars $26 + c@ wear  2e 15e body-size
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe camera-cut  self subscribe write-save  self subscribe creature-doing
-      self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene  self subscribe stalker-doing ;
+      self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene  self subscribe stalker-doing
+      self subscribe equipment ;
   on leaving-room ( room exit -- )  hewie-played? if  nip fiona.companion:he-left exit  then  2drop  through-door ;
   on arrived ( room exit -- )   \ (the story's scripts place her too; in the run, she comes with him or not)
       hewie-played? if  fiona.companion:room-came exit  then  nip arrive  1 her act.visible l! ;
@@ -230,6 +257,7 @@ behaviour free
       her-costume @ .  self body-pos .at  self body-yaw .f  ." fiona-was" cr
       self cam-setup-of swap . . ." fiona-camera" cr ;   \ (the new game; the story's 0x97)
   on text-shown ( on -- )  her-reading ! ;
+  on equipment ( boots earrings costume choker -- )  2drop 2drop  show-equipment ;   \ (the sub screen: Fiona_ShowEquipment)
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  her-st-came !  2drop 2drop  her-st-cond !  drop her-st-mode !  drop ;
   on scene ( on -- )  her-in-scene ! ;   \ (a cutscene has her)
   on go-to ( x y z -- )  cells>xyz  go-to-point ;

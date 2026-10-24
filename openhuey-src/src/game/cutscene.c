@@ -50,10 +50,23 @@ static struct {
     int rumble_small, rumble_large;   /* the scene's rumble as last set (+0x298 / +0x299) */
 } C;
 
-/* a model's own answer to being taken by a scene and given back (its vtable +0x2C / +0x30): only
- * Daniella's - two of her parts hidden when taken, the first shown again when given back */
-#define DANIELLA_PART_A 17
-#define DANIELLA_PART_B 31
+/* a model's own answer to being taken by a scene and given back (its vtable +0x2C / +0x30): parts
+ * of it hidden while the scene has it, shown again after - Daniella's two (one shown again: the
+ * one she had, by her right hand's shape - DaniellaModel_Vt30 sets 1 for the first, 2 the second),
+ * Riccardo's, the tint stalker's (never shown again: Kind23Model_Vt30 is empty), and those of
+ * Fiona's costumes 6 and 7 */
+static const struct {
+    const char *prefix;
+    int part, other;   /* (other: a second part, -1 none) */
+    int back;          /* shown again when given back */
+} kTaken[] = {
+    {"O_DNL", 17, 31, 1},   /* DaniellaModel_Vt2C / Vt30 */
+    {"O_RCG", 17, -1, 1},   /* RiccardoModel_Vt2C / Vt30 */
+    {"O_RCT", 15, -1, 0},   /* Kind23Model_Vt2C */
+    {"O_FIB", 25, -1, 1},   /* Costume6Model_Vt2C / Vt30 */
+    {"O_FIC", 35, -1, 1},   /* Costume7Model_Vt2C / Vt30 */
+};
+#define NTAKEN (int)(sizeof(kTaken) / sizeof(kTaken[0]))
 static void part_shown(Actor *a, int part, int on) {
     unsigned g = (unsigned)part + 1;
 
@@ -63,17 +76,40 @@ static void part_shown(Actor *a, int part, int on) {
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-static int daniellas(const Actor *a) { return strncmp(a->name, "O_DNL", 5) == 0; }
-static void model_taken(Actor *a) {   /* (DaniellaModel_Vt2C) */
-    if (daniellas(a)) {
-        part_shown(a, DANIELLA_PART_A, 0);
-        part_shown(a, DANIELLA_PART_B, 0);
+static int taken_kind(const Actor *a) {
+    int k;
+
+    for (k = 0; k < NTAKEN; k++) {
+        if (strncmp(a->name, kTaken[k].prefix, strlen(kTaken[k].prefix)) == 0) {
+            return k;
+        }
+    }
+    return -1;
+}
+static void model_taken(Actor *a) {
+    int k = taken_kind(a);
+
+    if (k >= 0) {
+        part_shown(a, kTaken[k].part, 0);
+        if (kTaken[k].other >= 0) {
+            part_shown(a, kTaken[k].other, 0);
+        }
     }
 }
-static void model_given_back(Actor *a) {   /* (DaniellaModel_Vt30) */
-    if (daniellas(a)) {
-        model_taken(a);
-        part_shown(a, DANIELLA_PART_A, 1);
+static void model_given_back(Actor *a) {
+    int k = taken_kind(a);
+
+    if (k < 0 || !kTaken[k].back) {
+        return;
+    }
+    model_taken(a);
+    if (kTaken[k].other >= 0 && a->hand_default[1] == 2) {   /* (Daniella's second) */
+        part_shown(a, kTaken[k].other, 1);
+    } else {
+        part_shown(a, kTaken[k].part, 1);
+        if (kTaken[k].other >= 0) {
+            a->hand_default[1] = 1;
+        }
     }
 }
 
@@ -631,6 +667,16 @@ void cutscene_update(void) {
         if (C.last != C.frame && sOnFollow != NULL &&
             actor_drive_place(a, a->drive, a->drive_size, a->drive_frame, &pos, &yaw)) {
             sOnFollow(C.slots[i].actor, pos);
+        }
+    }
+    if (cutscene_signal_count(0) > 0) {   /* (a cut: its characters' hanging parts settled afresh -
+                                           * Fiona_FollowAnim, Pursuer_PlaceModel) */
+        for (i = 1; i < SLOTS; i++) {
+            Actor *a = slot_actor(&C.slots[i]);
+
+            if (a != NULL && C.slots[i].animated) {
+                cloth_settle(a->cloth);
+            }
         }
     }
     group_door_keys(t);

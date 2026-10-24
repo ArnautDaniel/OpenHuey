@@ -29,6 +29,18 @@ typedef struct SkinVertex {
     float weights[4];
 } SkinVertex;
 
+/* a morphing part (resource 1: a face, a hand) - its draw's vertices moved between its shapes
+ * (the original's func_001BD650): the face by the model's face weights (data/model.h's
+ * model_morph), a hand from one of its shapes to another by the model's hand pose */
+typedef struct ModelMorph {
+    int first, count;        /* its draw's vertices in v (a triangle list, in their rest shape) */
+    int face;                /* 1 the face (record kind 1), 0 a hand */
+    int hand;                /* (a hand) the hand pose that moves it: 0 for the second part, else 1
+                              * (the original's +0x38 / +0x48) */
+    int nshapes;             /* shape 0 the rest */
+    Vec3 *dpos, *dnrm;       /* nshapes x count: each shape's vertices less the rest (shape 0's: 0) */
+} ModelMorph;
+
 typedef struct Model {
     uint8_t *pck;            /* the file (motions are read from it as they play) */
     size_t size;
@@ -39,6 +51,8 @@ typedef struct Model {
     int nv;
     MeshDraw *d;
     int nd;
+    ModelMorph *morphs;      /* its faces and hands (none: the library's older models) */
+    int nmorphs;
     const uint8_t *motions;  /* the motion bank (resource 3), or NULL */
     size_t motions_size;
     /* a second bank, looked in after its own (the original's +0x4C8: a room's motions for a
@@ -47,6 +61,20 @@ typedef struct Model {
     size_t motions2_size;
 } Model;
 #define MODEL_SECOND 0x10000
+
+/* a model's face and hands (the original's model +0x58 / +0x38 / +0x48): the face's weight for
+ * each shape (16; the drawn face is the rest, the mouth (1) and the eyelids (7, 8)), each hand
+ * from one shape to another by w */
+typedef struct ModelFace {
+    float w[16];
+    struct {
+        int a, b;
+        float w;
+    } hand[2];
+} ModelFace;
+/* the morphing parts' vertices in `v` (a copy of the model's: nv of them) moved into the face's
+ * shapes, from their rest shape; the other vertices are left as they are */
+void model_morph(const Model *m, const ModelFace *f, SkinVertex *v);
 
 /* build from a .PCK (takes ownership of the buffer); 0 if malformed */
 int model_build(Model *m, uint8_t *pck, size_t size);
@@ -77,6 +105,10 @@ void model_pose_blend(const Model *m, int index, float frame, int prev, float pr
 int model_track_raw(const Model *m, int index, int code, float frame, float out[3]);
 /* ... converted as the original's Track_Sample (a place track's keys / 256) */
 int model_track(const Model *m, int index, int code, float frame, float out[3]);
+/* a track exactly as Track_Sample gives it (all its formats: a key a frame, blended between
+ * frames for rotations and places, the others stepped; format 5's first two the s16s' bits as an
+ * int): which of out[0..7] it set (bit i: out[i]; 0 the motion hasn't it) */
+int model_track_sample(const Model *m, int index, int code, float frame, float out[8]);
 /* the bones' origins (model space) of the last pose model_pose_blend / model_pose_root made */
 const Vec3 *model_pose_origins(void);
 const Vec3 (*model_pose_axes(void))[3];   /* the last pose's bones' axes (x, y, z; model space) */

@@ -86,7 +86,6 @@ typedef struct Cloth {
                                 * bone's Z axis (her hair under her head) */
     int reset;                 /* settle afresh (30 steps) at the next pose */
     int pending;               /* game frames to step at the next pose */
-    Vec3 root;                 /* where the model was at the last steps */
     int settle_steps;          /* steps to settle afresh (30; Daniella's 50) */
     int back, crawl_set;       /* (Daniella) her back's five capsules, her hair's set (-1 none) */
     int back_pose;             /* those capsules: 0 standing, 1 flat, 2 bent (DaniellaModel +0x1578) */
@@ -102,6 +101,9 @@ void cloth_back(Cloth *c, int pose);
  * back's capsules bent and her hair falling forward (0.4 along her facing, yaw); off it, bent
  * ones standing again and her hair let go */
 void cloth_watch(Cloth *c, int anim, float yaw);
+/* settle afresh at the next pose (+0x850: the character put somewhere - Fiona_PlaceOn,
+ * Pursuer_Place - or a scene's cut, its signal 0) */
+void cloth_settle(Cloth *c);
 /* a game frame has passed */
 void cloth_tick(Cloth *c);
 /* on the posed bones (`world`, model space; place: model -> room, unplace its inverse): the

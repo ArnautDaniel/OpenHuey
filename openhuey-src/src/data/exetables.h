@@ -11,7 +11,7 @@
 
 #include "exe.h"
 
-#define EXETABLES_FORMAT 1
+#define EXETABLES_FORMAT 2
 
 /* table `name`: its bytes (kept: valid while the program runs) and how many; NULL if there is
  * no such table, or it can't be read */

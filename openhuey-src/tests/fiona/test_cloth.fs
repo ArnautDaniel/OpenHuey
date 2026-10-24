@@ -22,4 +22,11 @@ T{ $B $E xz-apart  0.5e f> -> -1 }T
 key: W false key-hold  60 frames
 testing standing again, it hangs back down
 T{ $B $E xz-apart  1e f< -> -1 }T
+testing put somewhere by the story mid-stride (Fiona_PlaceOn), it is settled afresh there, coming
+\ in with her pose as her stride fades (1.1 apart by the third frame) - not flung on from where it
+\ was (on out to 1.8, unsettled)
+: put-by ( F: dx -- )   \ (a few units over, as the story's scripts place her)
+    fiona body-pos {: F: dx x y z :}  x dx f+ y z 0e  f>cell >r f>cell >r f>cell >r f>cell r> r> r>  game:fiona send place ;
+key: W true key-hold  20 frames  key: W false key-hold
+T{ 5e put-by  deliver  3 frames  $B $E xz-apart  1.5e f< -> -1 }T
 test-summary

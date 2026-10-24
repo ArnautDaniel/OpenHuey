@@ -2745,7 +2745,16 @@ PRIM(p_doorway_faded) {   /* ( model -- ) ( F: -- f ) how far it has faded going
 
     FPUSH(id >= 0 && id < MAX_ACTORS && gEngine.actors[id].used ? doorway_faded(&gEngine, &gEngine.actors[id]) : 0.0f);
 }
-PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its skinned parts shown or hidden */
+PRIM(p_actor_settle) {   /* ( model -- ) its hanging parts settled afresh at its next pose (put somewhere:
+                          * Fiona_PlaceOn / Pursuer_Place's +0x850) */
+    Cell id = POP();
+
+    if (id >= 0 && id < MAX_ACTORS && gEngine.actors[id].used) {
+        cloth_settle(gEngine.actors[id].cloth);
+    }
+}
+PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its parts shown or hidden (skinned, rigid or
+                             * morphing: numbered as the original's draw flags) */
     Cell on = POP(), part = POP(), id = POP();
     Actor *a = id >= 0 && id < MAX_ACTORS ? &gEngine.actors[id] : NULL;
     unsigned g = (unsigned)part + 1;
@@ -2759,7 +2768,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its skinned parts sho
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.17") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.18") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
@@ -3437,7 +3446,7 @@ void bind_engine(Forth *f) {
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
         {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"h>s", p_h_to_s}, {"f>s$", p_f_to_s},
-        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look-keep", p_look_keep}, {"look-kept", p_look_kept}, {"look-plain", p_look_plain}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"hga-version", p_hga_version}, {"actor-part-show", p_actor_part_show}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file}, {"append-file", p_append_file}, {"make-dir", p_make_dir}, {"date-time", p_date_time},
+        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look-keep", p_look_keep}, {"look-kept", p_look_kept}, {"look-plain", p_look_plain}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"hga-version", p_hga_version}, {"actor-part-show", p_actor_part_show}, {"actor-settle", p_actor_settle}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file}, {"append-file", p_append_file}, {"make-dir", p_make_dir}, {"date-time", p_date_time},
         {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
         {"clear-color", p_clear_color}, {"out-of-view?", p_out_of_view}, {"screenshot", p_screenshot}, {"screenshot-pending?", p_screenshot_pending}, {"console!", p_console}, {"console-type", p_console_type}, {"console-log", p_console_log},
 
@@ -3480,6 +3489,10 @@ void bind_engine(Forth *f) {
     field(f, "act.layer", offsetof(Actor, layer));      /* 32-bit: its draw layer (0: $A) */
     field(f, "act.doorway-fade", offsetof(Actor, doorway_fade));   /* 32-bit: fades going through a doorway (on) */
     field(f, "act.parts-shown", offsetof(Actor, parts_shown));   /* 8 x 32-bit: its parts shown (bit: part + 1) */
+    field(f, "act.alive", offsetof(Actor, alive));      /* 32-bit: blinks, its hands posed by its motions (on: l!) */
+    field(f, "act.face", offsetof(Actor, face));        /* 16 sf: the face's shapes' weights; then each hand's two
+                                                         * shapes (32-bit) and its way between (sf) */
+    field(f, "act.hand-default", offsetof(Actor, hand_default));   /* 2 x 32-bit: each hand's own shape (+0x87C / +0x880) */
     /* the picture's settings (render.h RenderSettings): flags and counts are 32-bit (l@ l!),
      * the rest floats (sf@ sf!) */
     field(f, "gfx.msaa", offsetof(RenderSettings, msaa));

@@ -151,7 +151,7 @@ behaviour stalking
   on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him)
       in-game @ 0= if  2drop 2drop exit  then
       {: yaw :}  cells>xyz place-at vec!
-      room-id  place-at my-floor @ v-tri-in  place-at vec@ body-place  yaw cell>f body-turn ;
+      room-id  place-at my-floor @ v-tri-in  place-at vec@ body-place  yaw cell>f body-turn  settle ;
   on stalker-out ( -- )  go-out ;
   on write-save ( -- )   \ (saves.fs) loaded: his kind, in the game or not, his place, health and mode
       loaded @ 0=  my-slot @ play-slot <> or if  exit  then   \ (a scene's figure isn't the stalker in play)
@@ -222,8 +222,9 @@ end-behaviour
 : fby-hardness ( F: normal hard -- f )  hard-mode? if  fnip  else  fdrop  then ;
 : ways ( kit pursuers? gives-up? -- ) ( F: turn-deg reach -- )   \ (his tables; the Pursuer's chase or his own; giving up)
     gives-up !  base-chase !  kit !  reach-k f!  deg>rad turn-k f! ;
-: dressed ( id addr len -- )   \ (his model loaded, its motion table by name: hidden till he comes in)
-    {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l! ;
+: dressed ( id addr len -- )   \ (his model loaded, its motion table by name: hidden till he comes in;
+    \ he blinks, his hands posed by his motions - Pursuer_ModelUpdate's Motion_Eyes / Motion_Hands)
+    {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l!  1 him act.alive l! ;
 : model-file ( addr len -- id )  2dup file!  actor-load ;
 : health! ( n -- )  dup hp-max !  hp ! ;
 : hewie-temper ( tolerance dog-limit -- ) ( F: throw -- )  dog-limit !  tolerance !  throw-k f! ;

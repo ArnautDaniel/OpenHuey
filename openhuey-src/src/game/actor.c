@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "../core/files.h"
+#include "../data/exetables.h"
 #include "../data/texbank.h"
 #include "../data/modelgltf.h"
 
@@ -118,6 +119,15 @@ int actor_load_textured(Actor *actors, const char *name, const char *tex) {
     load_textures(a, tex);
     a->cloth = cloth_for(name);
     a->posed = malloc((size_t)a->model.nv * sizeof(MeshVertex));
+    if (a->model.nmorphs > 0) {   /* (its face and hands moved from their rest each frame) */
+        a->shaped = malloc((size_t)a->model.nv * sizeof(SkinVertex));
+        memcpy(a->shaped, a->model.v, (size_t)a->model.nv * sizeof(SkinVertex));
+    }
+    if (strncmp(name, "O_FI", 4) == 0) {   /* (CharModel_Loaded: Fiona's models' hands; RiccardoModel_Loaded) */
+        a->hand_default[0] = a->hand_default[1] = 1;
+    } else if (strncmp(name, "O_RCG", 5) == 0) {
+        a->hand_default[1] = 8;
+    }
     a->scale = 1.0f;
     a->rate = 1.0f;   /* (a motion frame a tick: the game ran its motions at its own 30 fps) */
     a->motion = -1;
@@ -182,6 +192,7 @@ void actor_free(Actor *a) {
     render_mesh_free(&a->shadow);
     model_free(&a->model);
     free(a->posed);
+    free(a->shaped);
     free(a->events);
     free(a->cloth);
     free(a->loaded_motions);
@@ -266,6 +277,103 @@ static void part_tick(Actor *a, struct ActorPart *p) {
     }
 }
 
+/* ---- the face and hands ---- */
+
+/* 0 <= r < 1 (the blinks' odds: the original's gRandom) */
+static float face_random(void) {
+    static uint32_t seed = 0x2545F491u;
+
+    seed = seed * 1103515245u + 12345u;
+    return (float)(seed >> 8 & 0xFFFF) / 65536.0f;
+}
+
+/* a blink: the eyelids (shapes 7 and 8) down and up again over 14 frames by the game's curve;
+ * from 30 frames on another starts at random, surely by 150 (Motion_Eyes) */
+static void blink(Actor *a) {
+    size_t n = 0;
+    const uint8_t *curve = exetable("blink-curve", &n);
+
+    if (a->blink < 14 && curve != NULL && n >= 14 * 4) {
+        memcpy(&a->face.w[7], curve + a->blink * 4, 4);
+        a->face.w[8] = a->face.w[7];
+    }
+    if (a->blink >= 30 && (int)((float)(150 - a->blink) * face_random()) == 0) {
+        a->blink = 0;
+    }
+    a->blink++;
+}
+
+/* the hands posed by the motion (Motion_Hands): its table's pose (left << 4 | right), each hand
+ * shaped over five frames to come as its events say (bit 4 the left, 8 the right) - its pose's
+ * keys forward, or back the way it came; a pose of 7 and up with no shape there has the hand's
+ * own. A motion started again (its time 0) has the hands as they were made */
+static void pose_hands(Actor *a) {
+    size_t n = 0;
+    const uint8_t *keys = exetable("hand-poses", &n);
+    int blend, pose, flags, hand, i;
+    int ev[5];
+
+    if (a->motion < 0 || a->frame == a->hand_frame) {
+        return;
+    }
+    if (a->frame == 0.0f) {
+        a->hand_on[0] = a->hand_on[1] = 0;
+        for (hand = 0; hand < 2; hand++) {
+            a->face.hand[hand].a = a->face.hand[hand].b = a->hand_default[hand];
+            a->face.hand[hand].w = 0.0f;
+        }
+    }
+    if (a->table == NULL || !actor_motion_entry(a, a->motion, &blend, &pose, &flags) || pose == 0 || keys == NULL ||
+        n < 16 * 60) {
+        return;
+    }
+    for (i = 0; i < 5; i++) {
+        ev[i] = actor_event_flags(a, 0, i, -2);
+    }
+    for (hand = 0; hand < 2; hand++) {
+        int on = a->hand_on[hand], bit = hand == 0 ? 4 : 8, which = hand == 0 ? pose >> 4 & 0xF : pose & 0xF;
+
+        for (i = 0; i < 5; i++) {
+            const uint8_t *e = keys + which * 60 + (on ? i : 4 - i) * 12;
+            int32_t sa, sb;
+
+            if (!(ev[i] & bit)) {
+                continue;
+            }
+            memcpy(&sa, e, 4);
+            memcpy(&sb, e + 4, 4);
+            a->face.hand[hand].a = which < 7 || sa != 0 ? sa : a->hand_default[hand];
+            a->face.hand[hand].b = which < 7 || sb != 0 ? sb : a->hand_default[hand];
+            memcpy(&a->face.hand[hand].w, e + 8, 4);
+            if (i == 0) {
+                on = !on;
+            }
+        }
+        a->hand_on[hand] = (uint8_t)on;
+    }
+}
+
+/* the motion's channels for the face and hands at its time (Motion_ExtraChannels): tracks -7..-10
+ * into the face's weights from shape 0, 1, 2, 3 on - each as many as it has, so a later one
+ * overwrites what an earlier set beyond its own (the scenes': four values, the mouth the second
+ * one's first), -11 / -12 the hands' shapes and way between */
+static void face_channels(Actor *a, const Model *m, int index, float frame) {
+    int i, j;
+
+    for (i = 0; i < 6; i++) {
+        float out[8];
+        int set = model_track_sample(m, index, -7 - i, frame, out);
+        float *to = i < 4 ? &a->face.w[i] : (float *)&a->face.hand[i - 4];
+        int room = i < 4 ? 16 - i : 3;
+
+        for (j = 0; j < 8 && j < room; j++) {
+            if (set & (1 << j)) {
+                memcpy(&to[j], &out[j], 4);
+            }
+        }
+    }
+}
+
 void actor_tick(Actor *a) {
     int frames, loop, i;
     float s0, s1;
@@ -273,6 +381,11 @@ void actor_tick(Actor *a) {
     if (!a->used) {
         return;
     }
+    if (a->alive && a->drive == NULL) {   /* (Fiona_AnimUpdate / Pursuer_ModelUpdate; a scene's own channels) */
+        pose_hands(a);
+        blink(a);
+    }
+    a->hand_frame = a->frame;
     for (i = 0; i < 3; i++) {
         part_tick(a, &a->parts[i]);
     }
@@ -662,6 +775,7 @@ static void skin(Actor *a) {
         }
         model_pose_root(m, model_motion_find(m, 0x8000), a->drive_frame, skin_m, &root);
         model_pose_hook(NULL, NULL);
+        face_channels(a, m, model_motion_find(m, 0x8000), a->drive_frame);
         m->motions = own;
         m->motions_size = own_size;
         m->motions2 = second;
@@ -710,6 +824,12 @@ static void skin(Actor *a) {
         model_pose_layers(m, l, nl, skin_m, NULL);
         model_pose_hook(NULL, NULL);
         model_pose_turns(NULL, 0);
+        if (a->motion >= 0) {
+            face_channels(a, m, a->motion, a->frame);
+        }
+    }
+    if (a->shaped != NULL) {
+        model_morph(m, &a->face, a->shaped);
     }
     for (i = 0; i < m->nbones; i++) {   /* the bones' origins and axes, placed */
         Vec3 o = mat4_point(&place, vec3(0.0f, 0.0f, 0.0f));
@@ -721,7 +841,7 @@ static void skin(Actor *a) {
         }
     }
     for (i = 0; i < m->nv; i++) {
-        const SkinVertex *v = &m->v[i];
+        const SkinVertex *v = a->shaped != NULL ? &a->shaped[i] : &m->v[i];
         MeshVertex *o = &a->posed[i];
         Vec3 p = vec3(0, 0, 0), n = vec3(0, 0, 0);
 

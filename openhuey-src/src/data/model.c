@@ -72,6 +72,10 @@ typedef struct Builder {
     SkinVertex *strip;   /* one part's vertices, in strip order */
     uint8_t *no_tri;     /* per strip vertex: no triangle ends here */
     int nstrip, capstrip;
+    int *order;          /* the last draw's vertices: the strip vertex each is */
+    int norder, caporder;
+    int part;            /* the next part's number (skinned, then rigid, then morphing: the
+                          * original's draw flags go by it) */
 } Builder;
 
 static void strip_reset(Builder *b, int n) {
@@ -96,6 +100,7 @@ static void strip_flush(Builder *b, int texture, int second_pass) {
     }
     d = &m->d[m->nd++];
     memset(d, 0, sizeof(*d));
+    b->norder = 0;
     d->first = m->nv;
     d->texture = texture;
     d->blend = (uint8_t)second_pass;      /* cut-outs: fur, lashes, torn cloth */
@@ -112,6 +117,11 @@ static void strip_flush(Builder *b, int texture, int second_pass) {
                 b->capv = b->capv * 2 + 4096;
                 m->v = realloc(m->v, (size_t)b->capv * sizeof(SkinVertex));
             }
+            if (b->norder == b->caporder) {
+                b->caporder = b->caporder * 2 + 1024;
+                b->order = realloc(b->order, (size_t)b->caporder * sizeof(int));
+            }
+            b->order[b->norder++] = j;
             m->v[m->nv++] = b->strip[j];
         }
     }
@@ -119,6 +129,21 @@ static void strip_flush(Builder *b, int texture, int second_pass) {
     if (d->count == 0) {
         m->nd--;
     }
+}
+
+/* the strip as the draw of part b->part (its group: the part's number from 1, so a model shows
+ * or hides parts); 1 if it drew anything */
+static int part_flush(Builder *b, int texture, int second_pass) {
+    int before = b->m->nd, part = b->part++;
+
+    strip_flush(b, texture, second_pass);
+    if (b->m->nd == before) {
+        return 0;
+    }
+    if (part < 255) {
+        b->m->d[b->m->nd - 1].group = (uint8_t)(part + 1);
+    }
+    return 1;
 }
 
 /* positions: a 16-byte header (3 x s32 start), then 3 x s16 deltas a vertex */
@@ -168,6 +193,7 @@ static void read_skinned(Reader *r, Builder *b, size_t table) {
         size_t fl = rec + u32(r, rec + 0x18);
 
         if (n <= 0 || n > 0x100000 || infl < 1 || infl > 4) {
+            b->part++;
             continue;
         }
         strip_reset(b, n);
@@ -188,14 +214,7 @@ static void read_skinned(Reader *r, Builder *b, size_t table) {
             }
             b->no_tri[k] = u8(r, fl + k) != 0;
         }
-        {   /* (its draw keeps its part number - from 1 - as its group: a model shows or hides parts) */
-            int before = b->m->nd;
-
-            strip_flush(b, (int)texture, flags & 1);
-            if (b->m->nd > before && i < 255) {
-                b->m->d[b->m->nd - 1].group = (uint8_t)(i + 1);
-            }
-        }
+        part_flush(b, (int)texture, flags & 1);
     }
 }
 
@@ -209,6 +228,7 @@ static void read_rigid(Reader *r, Builder *b, size_t table) {
         int n = (int)u32(r, rec), k;
 
         if (n <= 0 || n > 0x100000) {
+            b->part++;
             continue;
         }
         strip_reset(b, n);
@@ -218,7 +238,47 @@ static void read_rigid(Reader *r, Builder *b, size_t table) {
         for (k = 0; k < n; k++) {
             b->no_tri[k] = u8(r, rec + u32(r, rec + 0x10) + k) != 0;
         }
-        strip_flush(b, (int)u32(r, rec + 0x14), 0);
+        part_flush(b, (int)u32(r, rec + 0x14), 0);
+    }
+}
+
+/* a morphing part's shapes, for the draw just made (record `rec`, the `index`th): each one's
+ * vertices less the rest's - the shapes' s16 keys less shape 0's, so the rest plus one is the
+ * shape exactly (base + key) / 4096 */
+static void read_shapes(Reader *r, Builder *b, size_t rec, uint32_t index, int face) {
+    Model *m = b->m;
+    const MeshDraw *d = &m->d[m->nd - 1];
+    size_t table = rec + u32(r, rec + 0x10);
+    int nshapes = (int)u32(r, rec), s, k, j;
+    ModelMorph *mo;
+
+    if (nshapes > 64) {
+        return;
+    }
+    m->morphs = realloc(m->morphs, (size_t)(m->nmorphs + 1) * sizeof(ModelMorph));
+    mo = &m->morphs[m->nmorphs++];
+    mo->first = d->first;
+    mo->count = d->count;
+    mo->face = face;
+    mo->hand = index == 1 ? 0 : 1;
+    mo->nshapes = nshapes;
+    mo->dpos = calloc((size_t)nshapes * (size_t)d->count, sizeof(Vec3));
+    mo->dnrm = calloc((size_t)nshapes * (size_t)d->count, sizeof(Vec3));
+    for (s = 1; s < nshapes; s++) {
+        size_t e = table + (size_t)s * 8, e0 = table, pos = e + u32(r, e), nrm = e + u32(r, e + 4);
+        size_t pos0 = e0 + u32(r, e0), nrm0 = e0 + u32(r, e0 + 4);
+
+        for (k = 0; k < d->count; k++) {
+            size_t q = (size_t)b->order[k] * 6;
+            float dp[3], dn[3];
+
+            for (j = 0; j < 3; j++) {
+                dp[j] = (float)(s16(r, pos + q + j * 2) - s16(r, pos0 + q + j * 2)) * POS_SCALE;
+                dn[j] = (float)(s16(r, nrm + q + j * 2) - s16(r, nrm0 + q + j * 2)) * UNIT;
+            }
+            mo->dpos[s * d->count + k] = vec3(dp[0], dp[1], dp[2]);
+            mo->dnrm[s * d->count + k] = vec3(dn[0], dn[1], dn[2]);
+        }
     }
 }
 
@@ -235,6 +295,7 @@ static void read_morphs(Reader *r, Builder *b, size_t res) {
         int32_t base[3];
 
         if (n <= 0 || n > 0x100000 || u32(r, rec) == 0) {
+            b->part++;
             continue;
         }
         for (j = 0; j < 3; j++) {
@@ -252,8 +313,18 @@ static void read_morphs(Reader *r, Builder *b, size_t res) {
             b->no_tri[k] = kind != 0 ? (u32(r, fl + k * 4) & 0x8000) != 0 : (u8(r, fl + k) & 1) != 0;
         }
         one_bone(b, n, (int)u32(r, rec + 0x14));
-        strip_flush(b, (int)u32(r, rec + 0x18), u32(r, rec + 0x20) & 1);
+        if (part_flush(b, (int)u32(r, rec + 0x18), u32(r, rec + 0x20) & 1)) {
+            read_shapes(r, b, rec, i, kind != 0);
+        }
     }
+}
+
+static int draw_at(const Model *m, int first) {   /* (the draw whose vertices start there) */
+    int i;
+
+    for (i = 0; i < m->nd && m->d[i].first != first; i++) {
+    }
+    return i;
 }
 
 /* draws in the second pass (blended) go after the others */
@@ -270,6 +341,20 @@ static void order_draws(Model *m) {
     }
     memcpy(m->d, sorted, (size_t)n * sizeof(MeshDraw));
     free(sorted);
+}
+
+/* the morphing parts in their draws' order (as the library's glTF has them) */
+static void order_morphs(Model *m) {
+    int i, j;
+
+    for (i = 1; i < m->nmorphs; i++) {
+        for (j = i; j > 0 && draw_at(m, m->morphs[j].first) < draw_at(m, m->morphs[j - 1].first); j--) {
+            ModelMorph t = m->morphs[j];
+
+            m->morphs[j] = m->morphs[j - 1];
+            m->morphs[j - 1] = t;
+        }
+    }
 }
 
 int model_build(Model *m, uint8_t *pck, size_t size) {
@@ -319,19 +404,75 @@ int model_build(Model *m, uint8_t *pck, size_t size) {
     }
     free(b.strip);
     free(b.no_tri);
+    free(b.order);
     if (r.bad) {
         model_free(m);
         return 0;
     }
     order_draws(m);
+    order_morphs(m);
     return 1;
 }
 
 void model_free(Model *m) {
+    int i;
+
+    for (i = 0; i < m->nmorphs; i++) {
+        free(m->morphs[i].dpos);
+        free(m->morphs[i].dnrm);
+    }
+    free(m->morphs);
     free(m->pck);
     free(m->v);
     free(m->d);
     memset(m, 0, sizeof(*m));
+}
+
+/* the shapes a morphing part is drawn from, and how much of each (func_001BD650): the face the
+ * rest, the mouth (1) and the eyelids (7, 8) - the rest what the others leave, a face of 8 shapes
+ * or fewer only its rest (func_001BC8D0); a hand its pose's two shapes, (1 - w) of the first and
+ * w of the second (func_001BD280), shape 0 if they aren't its */
+static int morph_shapes(const ModelMorph *mo, const ModelFace *f, int sh[4], float w[4]) {
+    if (mo->face) {
+        if (mo->nshapes <= 8) {
+            return 0;
+        }
+        sh[0] = 1;  w[0] = f->w[1];
+        sh[1] = 7;  w[1] = f->w[7];
+        sh[2] = 8;  w[2] = f->w[8];
+        return 3;
+    }
+    sh[0] = f->hand[mo->hand].a;
+    sh[1] = f->hand[mo->hand].b;
+    if (sh[0] < 0 || sh[0] >= mo->nshapes || sh[1] < 0 || sh[1] >= mo->nshapes) {
+        return 0;
+    }
+    w[1] = f->hand[mo->hand].w;
+    w[0] = 1.0f - w[1];
+    return 2;
+}
+
+void model_morph(const Model *m, const ModelFace *f, SkinVertex *v) {
+    int i, k, j;
+
+    for (i = 0; i < m->nmorphs; i++) {
+        const ModelMorph *mo = &m->morphs[i];
+        int sh[4], n;
+        float w[4];
+
+        n = morph_shapes(mo, f, sh, w);
+        for (k = 0; k < mo->count; k++) {   /* (the rest, and each shape's way from it by its share) */
+            const SkinVertex *rest = &m->v[mo->first + k];
+            Vec3 p = rest->pos, nn = rest->normal;
+
+            for (j = 0; j < n; j++) {
+                p = vec3_add(p, vec3_scale(mo->dpos[sh[j] * mo->count + k], w[j]));
+                nn = vec3_add(nn, vec3_scale(mo->dnrm[sh[j] * mo->count + k], w[j]));
+            }
+            v[mo->first + k].pos = p;
+            v[mo->first + k].normal = nn;
+        }
+    }
 }
 
 /* ---- motions ----
@@ -707,6 +848,129 @@ static int track_read(const Model *m, int index, int code, float frame, float ou
                 out[j] = va + (vb - va) * t;
             }
             return 1;
+        }
+    }
+    return 0;
+}
+
+/* Track_Sample's constants, to the bit: 2 pi / 65536, its unit (~1 / 32767), pi, 2 pi */
+static float bits_f(uint32_t u) {
+    float f;
+
+    memcpy(&f, &u, 4);
+    return f;
+}
+#define TRK_ROT bits_f(0x38C90FDBu)
+#define TRK_UNIT bits_f(0x38000100u)
+#define TRK_PI bits_f(0x40490FDBu)
+#define TRK_TWO_PI bits_f(0x40C90FDBu)
+
+/* a key's values as Track_Sample reads them (format `kind`): which of out it set */
+static int key_values(Reader *r, size_t keys, uint32_t kind, int k, float out[8]) {
+    int j;
+
+    switch (kind) {
+    case 0: case 1:
+        for (j = 0; j < 3; j++) {
+            out[j] = (float)s16(r, keys + (size_t)k * 6 + j * 2) * (kind == 0 ? TRK_ROT : 0.00390625f);
+        }
+        return 0x07;
+    case 3:
+        for (j = 0; j < 4; j++) {
+            out[j] = (float)s16(r, keys + (size_t)k * 8 + j * 2) * TRK_UNIT;
+        }
+        return 0x0F;
+    case 2: case 4:
+        for (j = 0; j < 3; j++) {
+            out[j] = (float)s16(r, keys + (size_t)k * 12 + j * 2) * TRK_ROT;
+            out[4 + j] = (float)s16(r, keys + (size_t)k * 12 + 6 + j * 2) * 0.00390625f;
+        }
+        return 0x77;
+    case 5: {   /* (x and y the s16s as they are - their bits, as an int: the original's) */
+        int32_t x = s16(r, keys + (size_t)k * 6), y = s16(r, keys + (size_t)k * 6 + 2);
+
+        memcpy(&out[0], &x, 4);
+        memcpy(&out[1], &y, 4);
+        out[2] = (float)s16(r, keys + (size_t)k * 6 + 4) * TRK_UNIT;
+        return 0x07;
+    }
+    case 6:
+        for (j = 0; j < 8; j++) {
+            out[j] = f32(r, keys + (size_t)k * 32 + j * 4);
+        }
+        return 0xFF;
+    case 7:
+        for (j = 0; j < 3; j++) {
+            out[j] = f32(r, keys + (size_t)k * 24 + j * 4);
+            out[4 + j] = f32(r, keys + (size_t)k * 24 + 12 + j * 4);
+        }
+        return 0x77;
+    case 8: case 9:
+        for (j = 0; j < 3; j++) {
+            out[j] = f32(r, keys + (size_t)k * 12 + j * 4);
+        }
+        return 0x07;
+    }
+    return 0;
+}
+
+int model_track_sample(const Model *m, int index, int code, float frame, float out[8]) {
+    Reader r;
+    size_t rec;
+    int p;
+
+    if (!motion_at(m, index, &r, &rec)) {
+        return 0;
+    }
+    for (p = 0; p < 5; p++) {
+        size_t part = rec + u32(&r, rec + p * 4);
+        uint32_t ntracks, k;
+
+        if (part == rec) {
+            continue;
+        }
+        ntracks = u32(&r, part);
+        for (k = 0; k < ntracks && !r.bad; k++) {
+            size_t track = part + u32(&r, part + 8) + k * 12, keys;
+            uint32_t type, kind;
+            int fixed, count, a, b, mask, j;
+            float base, frac, nx[8];
+
+            if ((int32_t)u32(&r, track) != code) {
+                continue;
+            }
+            type = u32(&r, track + 4);
+            kind = type & 0xFFFF;
+            fixed = (type >> 16) & 1;
+            keys = track + u32(&r, track + 8);
+            count = (int)u32(&r, part + 4);   /* (a key a frame: the part's frames) */
+            base = fixed ? 0.0f : (float)(int)frame;
+            a = (int)base;
+            if (a < 0 || (!fixed && a >= count)) {
+                return 0;
+            }
+            mask = key_values(&r, keys, kind, a, out);
+            if (frame == base || fixed || !(kind == 0 || kind == 1 || kind == 2 || kind == 4 || kind == 7)) {
+                return r.bad ? 0 : mask;   /* (the others stepped: Track_Sample blends only these) */
+            }
+            frac = frame - base;
+            b = a + 1 < count ? a + 1 : 0;
+            key_values(&r, keys, kind, b, nx);
+            for (j = 0; j < 8; j++) {
+                if (mask & (1 << j)) {
+                    float n = nx[j];
+
+                    if ((kind == 0 || kind == 2 || kind == 4) && j < 3) {   /* (angles the short way round) */
+                        float d = n - out[j];
+
+                        if (!((d <= 0.0f ? -d : d) <= TRK_PI)) {
+                            n += d <= 0.0f ? TRK_TWO_PI : -TRK_TWO_PI;
+                        }
+                    }
+                    out[j] = out[j] + frac * (n - out[j]);
+                }
+            }
+            return r.bad ? 0 : mask;
         }
     }
     return 0;

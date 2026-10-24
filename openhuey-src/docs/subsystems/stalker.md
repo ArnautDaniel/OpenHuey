@@ -265,7 +265,11 @@ model and her later kinds' - O_DNL/ - alike): her hair, two strands of five side
 (HairPoint: each follows its root's moves by its stiffness, 0.8 at the root to 0, kept about
 0.44 from the one beside it, off her back's five capsules); what hangs from her waist, two
 strands of three drawn along bone $1F (HangingPart, off two capsules and two spheres); a part
-sprung to bone $17; two bones hanging ($2F, $30); 50 steps to settle afresh. Down on her back
+sprung to bone $17; two bones hanging ($2F, $30); 50 steps to settle afresh - as he is loaded,
+put somewhere (`settle` in `stalker/travel.fs`: Pursuer_Place's +0x850 - through an exit, anywhere,
+or by the story's `place`) and at a scene's cuts. Like Fiona he blinks and his hands take his
+motions' poses (`act.alive`, on as he is dressed: Pursuer_ModelUpdate's Motion_Eyes / Motion_Hands);
+Riccardo's right hand's own shape is 8, Daniella's 1 or 2 by which of her parts 17 / 31 she has. Down on her back
 ($1800..$1803) her back's capsules bend and her hair falls forward, each frame by her animation
 (the engine's `cloth_watch`; DaniellaModel_Vt3C); the story sets them flat or standing for its
 own moves (its 0xCC op 4, `cloth-back!`; DaniellaModel_BackCapsules). The others' hanging parts likewise (by their model files): Debilitas

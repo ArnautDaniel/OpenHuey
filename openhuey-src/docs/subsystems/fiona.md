@@ -309,8 +309,11 @@ bone is aimed at it before the model is skinned (the pose hook, as Hewie's legs)
 - **Her clothes** (`O_FIN`): the skirt's six pairs from her hips; her hair ($25..$28); two bones
   hanging ($29, $30); her chest ($19).
 
-Settled afresh (30 steps) when the model is loaded and when it is put somewhere more than 30
-away (OpenHuey's own: the original's points start at the origin and settle from there).
+Settled afresh (30 steps) when the model is loaded, when she is put somewhere (`put`: the story's
+`place`, an exit - Fiona_PlaceOn's +0x850; the engine's `actor-settle`) and at a scene's cuts (its
+signal 0: Fiona_FollowAnim - the cutscene does it for everyone it drives). Settling puts the parts
+at rest under their anchors first (OpenHuey's own: the original's points start at the origin and
+its 30 steps bring them in).
 Her other costumes' sets are there too (`costume_hang16` / `costume_hang3`: O_FIH, O_FIO; O_FIB,
 O_FIC), and the stalkers' (Daniella, Debilitas, Riccardo, Lorenzo's two). Not yet: the cast's
 (Lorenzo's hanging figure's strands, her doubles' springs).
@@ -363,8 +366,20 @@ out of sight (8 a frame; back in when she moves) and `fiona-unseen` is told. Her
 - **Her costumes** (`wear`; the story's 0x97, event.c fiona_model): 0 O_FIN (her clothes), 1 O_FIS
   (the slip), 2 O_FIH, 3 O_FIO, 6 O_FIB, 7 O_FIC, 8 O_FIF; worn by the story - variants 1..6 by the
   last of story flags $41, $6F, $82, $88, $94, $95 (Fiona_LoadFiles); textures their _000's; the
-  markers their own (0, 6, 7) or her clothes'. (Equipment isn't shown on her model in this build:
-  CharModel_ShowParts is empty.)
+  markers their own (0, 6, 7) or her clothes'.
+- **Her earrings and choker** (`show-equipment`; Fiona_ShowEquipment, as she is dressed and as the
+  sub screen changes what she wears - the `equipment` broadcast): on her clothes (O_FIN:
+  EventHumanModel_ShowParts) and O_FIH (Costume2Model_ShowParts) the earrings she wears ($86..$89,
+  slot 1) shown - parts 32 / 36 / 37 / 33 (O_FIH 43 / 47 / 48 / 44) - and the other pairs hidden;
+  her choker's ($8A..$8D, slot 3) parts the same, with none her bare neck's (3, 4; O_FIH 1, 2). Her
+  other costumes have no such parts (their ShowParts is empty).
+- **Her face and hands** (the engine's, `actor.c`; `act.alive` on as she is dressed): out of
+  scenes she blinks (Motion_Eyes: her eyelids' shapes down and up over 14 frames by the game's
+  curve, another from 30 frames on at random, surely by 150) and her hands take her motions' poses
+  (Motion_Hands: the motion table's pose, shaped over the five frames its events say); in a scene
+  its motion's channels move her mouth and hands (Motion_ExtraChannels: tracks -7..-12). Her
+  hands' own shape is 1 (CharModel_Loaded). Drawn as the original's: the face its rest, mouth and
+  eyelids blended (shapes 0, 1, 7, 8), a hand from one shape to another.
 - **Her shove and the special strikes** (Fiona_StateStrike): costume 6's strike 6 ahead of bone
   $21 (reach 3, damage 5, its own sound $22), costume 7's 10 aside of bone $23 (reach 10, a hard
   blow of 10, a blood spray on whom it meets); her boots in slot 0 - metal ($81: 1 in 10 a

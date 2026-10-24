@@ -79,7 +79,11 @@ and naming a disc image or an extracted folder on the command line still reads i
 **The catch with "converted only"**: once the originals are gone, a newer converter can't be run
 on the library - improving a format means importing again from the disc. The manifest records
 the converter versions, and a library made by an older OpenHuey is still read (each loader keeps
-reading its format's older versions) and offered a re-import, not demanded one.
+reading its format's older versions) and offered a re-import, not demanded one: at the start, a
+library whose models or executable tables are older than this OpenHuey's (`kNewer` in
+`library.c`) brings up a box saying what it lacks, with "Import again now" (the disc picked, imported
+over it; saves and settings kept) and "Later" (asked again next time). Headless, a line says so and
+how: `openhuey --import <disc image>`.
 
 ### Converted formats
 
@@ -268,6 +272,10 @@ shadows.bin               the shadow volumes (2), as they are (OpenHuey doesn't 
 
 `src/data/modelgltf.h`: the bones are nodes at rest (so a viewer shows the model standing), the
 mesh skinned by them (`JOINTS_0` / `WEIGHTS_0`, the inverse bind matrices as the game has them);
+the faces and hands (resource 1's morphing parts) each a mesh of its own, skinned the same, its
+shapes glTF morph targets (shape keys in Blender: each shape less the rest, exact - the game's keys
+are 1/4096 steps) - format 2 (format 1, before them, is still read: faces and hands that don't
+move);
 each bone's exact rest angles, the bone table and the draws' engine words in `extras`. The
 materials point at the model's textures (`../FIN_000.texbank/`). The motions stay the game's:
 the engine plays its keys - Euler angles between keys, special tracks, parts - as the original
@@ -277,8 +285,8 @@ copied as they are.
 
 `model-check` (a ctest) writes every model as glTF and reads it back: the same `Model` - bones,
 bone table, every vertex and draw (the draws in their passes' order: a draw's words say where its
-vertices go), the motion bank's bytes; valid glTF. 113 models: 107 MB of PCK, 87 MB of glTF and
-motions.
+vertices go), the faces' and hands' every shape, the motion bank's bytes; valid glTF. 113 models
+(280 faces and hands): 107 MB of PCK, 115 MB of glTF and motions.
 
 What the converted forms keep is what the engine reads: a field it doesn't (a flag bit nothing
 uses, padding) isn't carried into the glTF. The disc keeps them: a later OpenHuey that needs one

@@ -79,11 +79,12 @@ enum: door-way  2 held-way barred-way open-way shut-way ;
 \ facing it (Pursuer_BackOnMesh); after her and not seeing her, or come to her room, he
 \ searches it ----
 create in-at /vec allot  create out-at /vec allot
+: settle ( -- )  my-model @ dup 0< if  drop  else  actor-settle  then ;   \ (put somewhere: his hanging parts afresh - Pursuer_Place's +0x850)
 : place-at-exit ( exit facing-in? -- ok? )
     {: e facing-in :}
     e 2 exit-spot dup 0< if  drop fdrop fdrop fdrop false exit  then  {: tri :}
     in-at vec!  e 0 exit-spot drop out-at vec!
-    room-id tri in-at vec@ body-place
+    room-id tri in-at vec@ body-place  settle
     facing-in if  out-at in-at  else  in-at out-at  then  vec-heading body-turn  true ;
 variable in-tri
 \ through a door into her room he comes from its doorway - the exit's spot 12 beyond it - turned
@@ -91,11 +92,11 @@ variable in-tri
 : come-through ( exit -- ok? )
     {: e :}  e 1 exit-spot dup 0< if  drop fdrop fdrop fdrop false exit  then  {: tri :}
     out-at vec!  e 2 exit-spot in-tri !  in-at vec!
-    room-id tri out-at vec@ body-place
+    room-id tri out-at vec@ body-place  settle
     out-at in-at vec-heading body-turn  true ;
 : placed-anywhere ( -- )   \ (Actor_TeleportRandom: no exit to stand at)
     random-tri dup 0< if  drop fiona body-tri  then
-    dup 0< if  drop exit  then  room-id swap dup tri-center body-place ;
+    dup 0< if  drop exit  then  room-id swap dup tri-center body-place  settle ;
 : in-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first)
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then

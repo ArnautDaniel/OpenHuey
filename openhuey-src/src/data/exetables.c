@@ -39,6 +39,8 @@ static Table sTables[] = {
     {"motions-hanging-lorenzo", 0x424250, 5 * 6, NULL, 0, 0},
     {"motions-crow", 0x429C10, 16 * 6, NULL, 0, 0},
     {"motions-homunculus", 0x42C730, 10 * 6, NULL, 0, 0},
+    {"hand-poses", 0x4157A0, 16 * 5 * 12, NULL, 0, 0},     /* D_004157A0: a pose's 5 keys { shape, shape, weight } (Motion_Hands) */
+    {"blink-curve", 0x415B60, 14 * 4, NULL, 0, 0},         /* D_00415B60: the eyelids through a blink (Motion_Eyes) */
 };
 #define NTABLES (int)(sizeof(sTables) / sizeof(sTables[0]))
 

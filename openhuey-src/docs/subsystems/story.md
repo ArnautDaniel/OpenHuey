@@ -398,7 +398,8 @@ Checked by `tests/story/test_stalker_blow.fs` (5).
 
 **The last story words** (2026-10-13): `movie-loop` (0x52: the movie held on its last frame at its
 end), `char-model-op` (0xCC: 3 a cutscene actor's model left as it is; Daniella's model parts 17 /
-31 by 0 / 1 - `actor-part-show`, the models' skinned parts shown or hidden by number),
+31 by 0 / 1 - `actor-part-show`, the models' parts shown or hidden by number: skinned, then rigid,
+then morphing, as the original's draw flags count them),
 `self-doorway-fade` (0xAC: a character fading out through a doorway - `doorway_faded`, by its depth
 past the exit area's middle; Fiona never), `self-noclip` for the stalker and the figures (their
 floor mask), `char-activate` for Fiona and Hewie (`activate`: afresh); the hidden model parts of
