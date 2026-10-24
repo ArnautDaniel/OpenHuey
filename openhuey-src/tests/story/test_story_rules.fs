@@ -51,6 +51,8 @@ T{ [: busy-bits busy-pressed and 0<>  too-busy? ;] in-room -> -1 -1 }T
 T{ [: -1 prep-scene !  5 1 calm-hewie-up scene-change  prep-scene @ prep-arg @ ;] in-room -> read-message no-time-message }T
 testing the stalker free (0x65): not while a script of the room has him
 T{ [: stalker-free?  -1 stalker-cs cells char-scripted + !  stalker-free?  0 stalker-cs cells char-scripted + ! ;] in-room -> -1 0 }T
+testing ... nor while a joint action with him is pending (Progress_IsLinked: his stalker-ties' linked)
+T{ [: -1 st-linked !  stalker-free?  0 st-linked !  stalker-free? ;] in-room -> 0 -1 }T
 [: slot-unload ;] in-room  5 frames
 
 testing nobody about: offered; only Hewie held is not busy; in hard mode with Hewie down, none

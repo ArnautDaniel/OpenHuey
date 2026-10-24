@@ -447,8 +447,8 @@ SceneGame_Busy's +0xF6CD24 bits: bit 3, her panic's start (`panic-onset` from th
 by phase 0 and a forced action for Fiona, 0x92 for 0) is busy and holds the action scripts; bit 0
 (the room's loading frames) the scripts never see, OpenHuey loading at once. The fades' 0x5D /
 0x5E are a step and an over where it is (screen.md).
-Left: `stalker-free?`'s other hold (Progress_IsLinked): `stalker-linked?` is a stub (false) until
-the stalker tells its link.
+`stalker-free?`'s other hold (Progress_IsLinked): `stalker-linked?`, the stalker's `stalker-ties`
+kept by the room (his seize of her awaiting her answer, Hewie's attack or tackle being taken).
 
 The later stages, by how much the scripts use them (all built now):
 

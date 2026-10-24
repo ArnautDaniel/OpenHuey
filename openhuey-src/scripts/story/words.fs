@@ -1576,10 +1576,9 @@ $80001 constant step-or-doorway   \ (a floor's nav flags)
     id body-tri dup 0< if  drop false exit  then  nav-flags step-or-doorway and if  false exit  then
     8 0 do  i door-here? if  i 0 id body-pos door-in-area?  i 1 id body-pos door-in-area? or if  false unloop exit  then  then  loop
     true ;
-\ the stalker in a pending relation with another slot (Progress_IsLinked) - STUB: OpenHuey's
-\ stalker doesn't tell it yet (the stalker side's link model is being added); wire it to that
-\ message or field, and stalker-free? holds him by it as the original
-: stalker-linked? ( -- flag )  false ;
+\ the stalker in a pending relation with another slot (Progress_IsLinked): his seize of her
+\ awaiting her answer, Hewie's attack or tackle being taken (his stalker-ties, kept by the room)
+: stalker-linked? ( -- flag )  st-linked @ 0<> ;
 : stalker-free? ( -- flag )   \ cond 0x65: here, not held (Character_Held: struck - his +0xF8 4 -, or a
     stalker-here? 0= if  false exit  then                        \ script's), not linked, not leading her, his floor free
     st-mode @ struck-mode =  stalker-cs scripted? or  stalker-linked? or if  false exit  then

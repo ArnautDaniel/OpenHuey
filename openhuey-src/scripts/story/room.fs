@@ -94,7 +94,7 @@ behaviour playing-room
       dup came-by !  exit-taken !  this-room !
       self subscribe tick  self subscribe frame-end
       self subscribe danger  self subscribe panic  self subscribe panic-onset  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe hewie-gesture  self subscribe moving
-      self subscribe stalker-doing  self subscribe stalker-blow  self subscribe item-event  self subscribe item-var  self subscribe item-event-bit  100 st-age !  -1 st-blow !
+      self subscribe stalker-doing  self subscribe stalker-ties  self subscribe stalker-blow  self subscribe item-event  self subscribe item-var  self subscribe item-event-bit  100 st-age !  -1 st-blow !
       self subscribe creature-doing  self subscribe noise-was  self subscribe summoner-cooldown-is  self subscribe fiona-struck-by  self subscribe fiona-shakes  self subscribe fiona-shaking  self subscribe hewie-health  self subscribe keri-fell  self subscribe fiona-unseen  self subscribe fiona-message  self subscribe fiona-requested  #creatures 0 do  100 i cells cr-ages + !  loop
       0 phase
       #chars 0 do  i char-enter  loop
@@ -164,6 +164,8 @@ behaviour playing-room
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       st-came !  st-alert !  drop  st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  0 st-age !
       sender slot2 @ =  entered @ and if  stalker-told-in  then ;
+  on stalker-ties ( scripted apart linked -- )   \ (the one in slot 2's: stalker-free?'s Progress_IsLinked)
+      sender slot2 @ = if  st-linked !  2drop  else  2drop drop  then ;
   on stalker-blow ( n -- )  st-blow ! ;
 end-behaviour
 

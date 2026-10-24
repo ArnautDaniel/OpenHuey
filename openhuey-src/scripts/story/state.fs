@@ -87,6 +87,7 @@ state: room-state
   cell field hewie-way  cell field hewie-trust-lv
   cell field st-room  cell field st-mode  cell field st-sub  cell field st-cond  cell field st-hp
   cell field st-hp-max  cell field st-alert  cell field st-came  cell field st-age
+  cell field st-linked   \ (his stalker-ties: a joint action with him asked and not settled - Progress_IsLinked)
   cell field st-blow   \ (his attack's blow under way, -1 none: stalker-blow)
   \ the creatures tell it (creature-doing, each frame): each slot's room and move mode, and frames since
   4 cells field arrows-held     \ the menu arrows held (frames: the pad's repeat, for the rooms' dials)
