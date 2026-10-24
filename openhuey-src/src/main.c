@@ -206,8 +206,8 @@ static void cast_shadow(Actor *a, const RoomLight *l, Vec3 center, float radius,
     Mat4 proj, view, vp;
     int slot;
 
-    if (dist < radius * 1.5f) {
-        return;   /* the light is inside it */
+    if (l->shadow < 1.0f || dist < radius * 1.5f) {
+        return;   /* (a light whose shadows reach under 1 casts none: Shadow_Draw; or the light is inside it) */
     }
     dir = vec3_scale(dir, 1.0f / dist);
     up = fabsf(dir.y) > 0.95f ? vec3(1, 0, 0) : vec3(0, 1, 0);
