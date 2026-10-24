@@ -21,10 +21,11 @@ testing a new game: the cage room's opening - its stage music made, the backgrou
 T{ bgm-playing  game:music enter sm-stage @ sm-step @ leave-actor -> $16 0 4 }T
 T{ screen-level [: story.state:fading @ ;] in-room -> 0 0 }T
 
-testing a fade out from the room's scripts: black after its frames, the room told it is over
+testing a fade out from the room's scripts: black after its frames, the room told it is over (kind 4: 15 frames later, $BC)
 [: 20 4 story.words:fade ;] in-room
 T{ 10 frames  screen-level dup 0> swap 1000 < and  [: story.state:fading @ ;] in-room -> -1 -1 }T
-T{ 15 frames  screen-level [: story.state:fading @ ;] in-room -> 1000 0 }T
+T{ 15 frames  screen-level [: story.state:fading @ ;] in-room -> 1000 -1 }T
+T{ 15 frames  [: story.state:fading @ ;] in-room -> 0 }T
 [: 0 1 story.words:fade ;] in-room  2 frames
 T{ screen-level -> 0 }T
 testing the other kinds: 0 out (to black), 6 to half dark and 7 back (the instructions' pages)

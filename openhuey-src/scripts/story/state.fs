@@ -78,6 +78,7 @@ state: room-state
   cell field fiona-busy  cell field fiona-mode  cell field fiona-sub
   cell field fiona-cmd  cell field hewie-gesture-now  cell field hewie-here  cell field hewie-act  cell field hewie-move-mode
   cell field the-danger  cell field the-panic  cell field the-panic-level
+  cell field panic-onset-on   \ her panic's start (SceneGame +0xF6CD24 bit 3): the action scripts held, busy
   \ their conditions (the original's +0xC4 each: 0 well, 1 hurt, 2 down), and the stalker as he
   \ tells it (stalker-doing: his room, how he moves and what, condition, health, his alert - his
   \ mode, +0x16C8 - and the exit he came in by, +0x14D4; frames since he told: in the game)
