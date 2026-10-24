@@ -808,12 +808,39 @@ void render_image(GpuTexture t, float x, float y, float w, float h, uint32_t rgb
     render_image_uv(t, x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f, rgba);
 }
 
+static void image_draw(GpuTexture t);
 void render_image_uv(GpuTexture t, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
                      uint32_t rgba) {
-    Mat4 proj = mat4_ortho2d((float)R.w, (float)R.h);
-
     flush_2d();   /* (what was drawn before stays under it) */
     quad(x, y, x + w, y + h, u0, v0, u1, v1, rgba);
+    image_draw(t);
+}
+
+void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, float u1, float v1, uint32_t rgba) {
+    static const int kOrder[6] = {0, 1, 3, 0, 3, 2};   /* (top left, top right, bottom right; top left, bottom right, bottom left) */
+    const float uv[8] = {u0, v0, u1, v0, u0, v1, u1, v1};
+    int i;
+
+    flush_2d();
+    if (R.n2d + 6 > R.cap2d) {
+        R.cap2d = R.cap2d * 2 + 6 * 256;
+        R.v2d = realloc(R.v2d, (size_t)R.cap2d * sizeof(Vertex2d));
+    }
+    for (i = 0; i < 6; i++) {
+        int k = kOrder[i];
+        Vertex2d *v = &R.v2d[R.n2d++];
+
+        *v = (Vertex2d){xy[k * 2], xy[k * 2 + 1], uv[k * 2], uv[k * 2 + 1], {0}};
+        v->rgba[0] = (uint8_t)(rgba >> 24);
+        v->rgba[1] = (uint8_t)(rgba >> 16);
+        v->rgba[2] = (uint8_t)(rgba >> 8);
+        v->rgba[3] = (uint8_t)rgba;
+    }
+    image_draw(t);
+}
+
+static void image_draw(GpuTexture t) {
+    Mat4 proj = mat4_ortho2d((float)R.w, (float)R.h);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, R.w, R.h);
     glNamedBufferData(R.vbo2d, (GLsizeiptr)(R.n2d * sizeof(Vertex2d)), R.v2d, GL_STREAM_DRAW);

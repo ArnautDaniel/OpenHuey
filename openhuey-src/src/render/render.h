@@ -162,6 +162,8 @@ void render_image(GpuTexture t, float x, float y, float w, float h, uint32_t rgb
 /* ... a part of it: texture coordinates u0, v0 .. u1, v1 (0..1) */
 void render_image_uv(GpuTexture t, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
                      uint32_t rgba);
+/* ... on four corners xy[8] (the part's top left, top right, bottom left, bottom right: turned) */
+void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, float u1, float v1, uint32_t rgba);
 /* a texture (re)filled with a w x h RGBA picture each time (a movie); made anew when the size
  * changes (*tw / *th: its size) */
 GpuTexture render_texture_stream(GpuTexture t, const uint8_t *rgba, int w, int h, int *tw, int *th);

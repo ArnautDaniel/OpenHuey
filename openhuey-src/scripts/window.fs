@@ -1,9 +1,12 @@
 \ window.fs - messages on screen (docs/subsystems/window.md): the message window (the original's
 \ text Task, src/game/text.c) and the action prompt (SceneGame_ActionPrompt). A message is laid
-\ out by C (game/messages.c: pages of lines, its options); the window shows a page at a time,
-\ the action button turns the page; on the last page of a choice the arrows pick an option and
-\ the button answers it - the window then shows the message the option leads to, or closes.
-\ Closing, it tells whoever showed it, with the option chosen. Drawn on the retained UI layer.
+\ out by C (game/messages.c: pages of lines, its options, each character's colour and the frame
+\ it is typed on); the window types a page out (Task_StateType: holding cancel - the triangle -
+\ types up to the next pause), then any face button, a shoulder or Select turns it; on the last
+\ page of a choice the arrows pick an option and the cross answers it - the window then shows the
+\ message the option leads to, or closes; a message may close itself some frames after it is
+\ typed (0x10). Closing, it tells whoever showed it, with the option chosen. Drawn on the
+\ retained UI layer.
 IN: window
 USING: engine actors messages keys ;
 
@@ -24,6 +27,7 @@ state: window-state
   cell field prompt-kind    \ the action prompt (0: none)
   cell field prompt-age     \ frames since it was last offered
   cell field blink          \ frames drawn (the page mark blinks)
+  cell field typed          \ frames the page has been typing (game/messages.c: each glyph's frame)
   \ the panel, measured each frame for the page shown (window pixels)
   cell field scale  cell field line-height  cell field pad
   cell field box-x  cell field box-y  cell field box-w  cell field box-h
@@ -34,7 +38,7 @@ end-state
 : choosing? ( -- flag )  last-page? message-options 0> and ;
 : last-option ( -- i )  message-options 1- 0 max ;
 : lay-out ( msg -- )
-    dup shown !  message-layout pages !  0 page !
+    dup shown !  message-layout pages !  0 page !  0 typed !
     message-choice-flags starts-on-last and if  last-option  else  0  then  picked ! ;
 
 \ ---- drawing: a panel low in the picture, sized to the page's lines, the words scaled with the
@@ -67,6 +71,14 @@ $F0EBE0FF constant words-colour   $C8B48CFF constant mark-colour
         x i +  y i +  scale @ 6 * i 2* - 1 max  1  mark-colour rect
     loop ;
 : indent ( line col -- px )  {: line col :}  page @ line message-line drop  col scale @ text-width ;
+: page-typed? ( -- flag )  typed @  page @ message-typed  >= ;
+: palette-words ( addr len x y palette -- )   \ (the message's colour: the font's palette n)
+    {: a n x y c :}  text-layer a n x y  c if  $FFFFFFFF  else  words-colour  then  scale @ c ui-text-in ;
+: typed-line ( line -- )   \ what of it is typed so far, run by run of a colour
+    {: ln | col :}
+    begin  page @ ln col typed @ message-run  {: a n c :}  n 0>  while
+        a n  line-x ln col indent +  ln line-y  c palette-words  n col + to col
+    repeat ;
 : cursor ( -- )   \ the arrow before the option picked
     picked @ message-option-at  {: pg line col :}
     s" >"  line-x line col indent +  scale @ 6 * -  line line-y  mark-colour words ;
@@ -75,7 +87,8 @@ $F0EBE0FF constant words-colour   $C8B48CFF constant mark-colour
     open? 0= if  exit  then
     shown @ message-layout drop   \ (the C layout is one at a time: lay it out again to read it)
     page @ message-lines measure  panel
-    page @ message-lines 0 ?do  page @ i message-line  line-x i line-y  words-colour words  loop
+    page @ message-lines 0 ?do  i typed-line  loop
+    page-typed? 0= if  exit  then
     choosing? if  cursor  then
     last-page? 0= if  more-mark  then ;
 
@@ -97,17 +110,46 @@ create look-text 8 allot
     picked @ chosen !
     picked @ message-option-leads  dup no-message = if  drop close exit  then
     shown @ message-table-bits and or lay-out ;
-: pick-up ( -- )    picked @ 1- 0 max picked ! ;
-: pick-down ( -- )  picked @ 1+ last-option min picked ! ;
-: keys ( -- )
-    choosing? if
-        key: Up key-pressed?  key: Left key-pressed? or if  pick-up  then
-        key: Down key-pressed?  key: Right key-pressed? or if  pick-down  then
+\ ---- choosing (Task_StateChoice): the cross answers; the triangle, when the choice allows it,
+\ goes to the last option; up / down round the options, left / right round those on the same
+\ line (one alone there: as down / up). The menu's sounds ----
+: se ( id -- )  5 bank-sound ;
+$2A constant cursor-sound   $2B constant decide-sound   $2C constant cancel-sound
+: may-cancel? ( -- flag )  message-choice-flags 1 and 0= ;   \ (the flags' bit 0 clear)
+: option-line ( i -- line )  message-option-at drop nip ;
+: options ( -- n )  message-options ;
+: round ( i -- i' )  options + options mod ;
+: row-count ( line -- n )  0  options 0 ?do  over i option-line = if  1+  then  loop  nip ;
+: along-row ( d -- )   \ to the next / last option on the picked one's line, round
+    {: d | ln :}  picked @ option-line to ln
+    ln row-count 2 < if  picked @ d + round picked !  exit  then
+    picked @  begin  d + round  dup option-line ln =  until  picked ! ;
+: choice-keys ( -- )
+    cross button-pressed? if  answer  decide-sound se  exit  then
+    may-cancel? triangle button-pressed? and if
+        picked @ last-option <> if  last-option picked !  cancel-sound se  then  exit
     then
-    cross button-pressed? if   \ (the menus' confirm: cross - Pads_FaceButtons' menu bit 4)
-        choosing? if  answer exit  then
-        last-page? if  close  else  1 page +!  then
-    then ;
+    picked @  {: was :}
+    key: Right key-pressed? if  1 along-row
+    else key: Left key-pressed? if  -1 along-row
+    else key: Up key-pressed? if  picked @ 1- round picked !
+    else key: Down key-pressed? if  picked @ 1+ round picked !  then then then then
+    picked @ was <> if  cursor-sound se  then ;
+
+\ ---- a page turned or the message closed (Task_StateNextPage / WaitButton: Select, L1, R1 and
+\ the face buttons - the pad's 0xFC01) ----
+: page-button? ( -- flag )
+    false  select-button 1+ 0 do  i start-button <> if  i button-pressed? or  then  loop ;
+: next-page ( -- )  1 page +!  0 typed ! ;
+: closes-itself ( -- )   \ (0x10 n: n frames after it is typed; 0: left up, no button closes it)
+    message-close-after ?dup if  typed @  page @ message-typed -  <= if  close  then  then ;
+: keys ( -- )
+    page-typed? 0= if   \ (typing: holding cancel types up to the next pause)
+        triangle button-pressed? if  page @ typed @ message-skip typed !  then  exit
+    then
+    last-page? message-close-after 0< 0= and if  closes-itself exit  then
+    choosing? if  choice-keys exit  then
+    page-button? if  last-page? if  close  else  next-page  then  then ;
 
 behaviour showing
   on spawned ( -- )  none shown !  self subscribe tick  self subscribe frame-end ;
@@ -119,7 +161,7 @@ behaviour showing
       dup no-message = swap shown @ = or if  close  then ;
   on prompt ( kind -- )  prompt-kind !  0 prompt-age ! ;
   on tick ( -- )
-      open? if  shown @ message-layout drop  keys  then
+      open? if  shown @ message-layout drop  keys  1 typed +!  then
       1 prompt-age +!  prompt-age @ 2 > if  0 prompt-kind !  then ;
   on frame-end ( -- )  1 blink +!  draw  draw-prompt ;
 end-behaviour
