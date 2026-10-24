@@ -41,6 +41,8 @@ Declared in `scripts/messages.fs`.
 | `fiona-struck-by` | `( who -- )` | in (Fiona's broadcast) | Who has hold of her (her +0x100): held by the stalker he harries him; held down by another, he rushes whom he picks. |
 | `stalker-doing` | `( room mode sub cond hp hp-max kind -- )` | in (the stalker's broadcast) | The stalker in the game, as he tells it each frame (`pursuer`). |
 | `dog-attack` | `( kind -- )` | to the stalker | His attack asked (10..15); answered `dog-grip ( tri x y z yaw )` or `dog-refused`. |
+| `dog-tackle` | `( -- )` | to the stalker | The story's tackle (0x75) asked: answered `dog-grip` (the spot by his leg) or `dog-refused`. |
+| `stalker-ties` | `( scripted apart linked -- )` | in (the stalker's broadcast) | A script or a scene has him (+0xE0): no scuffle off screen. |
 | `bite` / `shaken-off` / `snap` | | to the stalker | A bite while holding on; he let go; growled or barked at him. |
 | `blow` | `( kind damage how -- )` | in | Struck: by the stalker (his blows, his throw $B), by her (shove, kick: answered `blow-taken`), by a door (5). |
 | `hewie-doing` | `( here action mode sub cond mood group -- )` | broadcast, each frame (and again when a message changes what he does) | here: 0 out of the game, 1 in another room, 2 with her; his action, move mode and its part, condition, mood, pose group. Fiona chooses her commands by it. |
@@ -267,11 +269,23 @@ mode is still to come (below).
   the stalker hurt or held off (1), within 30 of him (2) or of her (3).
 - `blow-taken` / `hit-taken` replies are taken quietly; `silent` (the scripts' 0x3D) hushes his
   own sounds (Actor_PlaySound's +0x2C), as the stalker's.
-- Left: the story's tackle (0x75: Hewie_StateTargetPursuer, LeapLaunch, LeapAtPursuer - the
-  leap, the bite of 30, the hold by his mood) wants the stalker's side of its joint action (the
-  original's slot command 7); till then it is the attack at a flank. His scuffle off screen
-  doesn't yet skip a stalker a script has (+0xE0): the stalker doesn't tell it.
-Checked by `tests/hewie/test_more.fs`, `test_pounce.fs` (the pounce, the rush, the flank),
+- `hewie/fight.fs`: the story's tackle (0x75; Hewie_StateTargetPursuer / GoForPursuer,
+  LeapLaunch, LeapTakeOff, LeapAtPursuer): seeing the stalker, not off screen, bitten or down, it
+  is asked of him (`dog-tackle`: the original's slot command 2 / 7, Pursuer_GrabOrder) - taken, the
+  spot by his leg (`dog-grip`; the stalker's behaviour cut short), refused, his default. The leap
+  there along his way: a third of its length in frames (19 at least), turning to the grip's
+  heading, rising to land at its height under 0.3 a frame of fall, never below the floor ($1E01,
+  his snarl $68); the spring faded in, the leg's bite ($2218) faded in over the frames left, its
+  time held meanwhile; 13 frames before he lands the leg's attack is asked (`dog-attack` 15: the
+  stalker bitten, the spot anew - unless the story's flags $13 / $2B). Landed: on the spot, the
+  bite of 30 (`bite`, hard by the leg's chance; the black shepherd twice, Sylvesta Esca half
+  again), its big mark, then holding on as at the leg with one bite left - he lets go ($2219) at
+  its end or when she calls him off. His hold by his mood (angry 110, upset none, else (his
+  feeling + 10) x 5) is set, as in the original, but never rolled against.
+- His scuffle off screen skips a stalker a script or a scene of the room has (+0xE0: the
+  stalker's `stalker-ties`).
+Checked by `tests/hewie/test_tackle.fs` (20: the tackle, refused, the stalker's ties, the scuffle
+skipped, Fiona kept apart), `tests/hewie/test_more.fs`, `test_pounce.fs` (the pounce, the rush, the flank),
 `test_fetch.fs`, `test_exits.fs`, `test_alert.fs` (his alerts, what he hears, his feelings and
 leaps by kind, struck, near her by his way, coming in, left down), and the save's skills and
 leaps in `tests/saves/test_saves.fs`.

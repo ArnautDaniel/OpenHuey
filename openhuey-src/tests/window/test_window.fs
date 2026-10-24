@@ -69,4 +69,19 @@ key: X press
 T{ shown? -> $8007 }T
 25 frames  key: X press
 T{ shown? -> -1 }T
+testing the box's place (0x0A n, Task_Layout): none given, low and boxed; a tutorial's 0x81 - the middle, no box
+T{ $8010 message-layout drop  0 message-place  $40A5 message-layout drop  0 message-place -> -1 $81 }T
+: box-centre ( -- y )  [: window:box-y @  window:box-h @ 2/ + ;] its ;
+: screen-h ( -- h )  screen-size nip ;
+$8010 show  2 frames
+T{ [: window:boxed? ;] its  box-centre 448 * screen-h /  370 6 + - abs 3 < -> -1 -1 }T
+key: X press  key: X press
+$40A5 show  2 frames
+T{ [: window:boxed? ;] its  box-centre 448 * screen-h /  224 6 + - abs 3 < -> 0 -1 }T
+key: X press  key: X press  key: X press  20 frames
+T{ shown? -> -1 }T
+
+testing a line to the right (0x14) and the options taking no room (Task_CollectChoices: the hand before them)
+T{ $8006 message-layout drop  1 1 message-align  1 0 message-align -> 2 0 }T
+T{ 1 message-option-at  1 1 message-line nip -> 1 1 6 8 }T   \ ("YES   NO")
 test-summary

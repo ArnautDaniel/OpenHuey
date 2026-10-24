@@ -206,8 +206,8 @@ static void cast_shadow(Actor *a, const RoomLight *l, Vec3 center, float radius,
     Mat4 proj, view, vp;
     int slot;
 
-    if (dist < radius * 1.5f) {
-        return;   /* the light is inside it */
+    if (l->shadow < 1.0f || dist < radius * 1.5f) {
+        return;   /* (a light whose shadows reach under 1 casts none: Shadow_Draw; or the light is inside it) */
     }
     dir = vec3_scale(dir, 1.0f / dist);
     up = fabsf(dir.y) > 0.95f ? vec3(1, 0, 0) : vec3(0, 1, 0);
@@ -215,7 +215,7 @@ static void cast_shadow(Actor *a, const RoomLight *l, Vec3 center, float radius,
                             dist + radius * 6.0f + 200.0f);
     view = mat4_look(l->pos, dir, up);
     vp = mat4_mul(proj, view);
-    slot = render_shadow_add(&vp, center, radius, strength);
+    slot = render_shadow_add(&vp, center, radius, strength, vec3(l->pos.x, l->pos.y + 5.0f, l->pos.z), l->shadow);
     if (slot >= 0 && !a->shadow_off) {
         render_shadow_mesh(&a->gpu, a->model.d, a->model.nd);
     }
@@ -549,6 +549,55 @@ static int fog_after(int layer) {
     return gRoomLook.has_fog && layer > (gRoomLook.fog_early ? 9 : 0x21);
 }
 
+/* the frame's blockers of the lights: the room's scripts' this tick, then the open doors' in view
+ * (Door_Draw's door_portal) - for the characters' shadows (render_blockers) */
+static void use_blockers(Engine *e, const RoomView *v) {
+    float q[ROOM_MAX_BLOCKERS * 18];
+    RoomBlocker b[ROOM_MAX_BLOCKERS];
+    int n = e->nblockers, i, k;
+
+    memcpy(b, e->blockers, sizeof(RoomBlocker) * (size_t)n);
+    n = room_door_blockers(&e->room, v, b, n, ROOM_MAX_BLOCKERS);
+    for (i = 0; i < n; i++) {
+        const Vec3 *p[6] = {&b[i].q[0], &b[i].q[1], &b[i].q[2], &b[i].q[3], &b[i].facing, &b[i].top};
+
+        for (k = 0; k < 6; k++) {
+            q[i * 18 + k * 3] = p[k]->x;
+            q[i * 18 + k * 3 + 1] = p[k]->y;
+            q[i * 18 + k * 3 + 2] = p[k]->z;
+        }
+    }
+    render_blockers(q, n);
+}
+
+/* layer 6, the original's shadow buffer: the open doors' shadows (DoorShadow_Draw) - each box's
+ * sides facing the eye, shading from the door's strength to nothing - taken off the room drawn so
+ * far (the characters come after). With the characters' shadows (gfx.shadow-maps) */
+static void draw_door_shades(Engine *e, const RoomView *v) {
+    static const int kSides[4][4] = {{0, 1, 4, 5}, {1, 3, 5, 7}, {3, 2, 7, 6}, {2, 0, 6, 4}};
+    RoomShade s[ROOM_MAX_SHADES];
+    int n, i, k, j;
+
+    if (!gRender.shadow_maps || e->nstage > 0 || (n = room_door_shades(&e->room, v, s, ROOM_MAX_SHADES)) == 0 ||
+        !render_shade_begin()) {
+        return;
+    }
+    for (i = 0; i < n; i++) {
+        for (k = 0; k < 4; k++) {
+            Vec3 p[4];
+
+            for (j = 0; j < 4; j++) {
+                p[j] = s[i].p[kSides[k][j]];
+            }
+            /* (the PS2 draws the sides wound one way on the screen: those facing the eye) */
+            if (vec3_dot(vec3_cross(vec3_sub(p[1], p[0]), vec3_sub(p[2], p[0])), vec3_sub(v->eye, p[0])) > 0.0f) {
+                render_shade_quad(&v->vp, p, s[i].alpha);
+            }
+        }
+    }
+    render_shade_end();
+}
+
 /* layer `layer`: the room's draws in it, then the characters' ($1C, drawn softened, apart) */
 static void draw_layer(Engine *e, const Mat4 *vp, int layer) {
     int i;
@@ -564,6 +613,7 @@ static void draw_layer(Engine *e, const Mat4 *vp, int layer) {
 
 static void draw(Engine *e) {
     Mat4 proj, view, vp;
+    RoomView rv;
     int i, layer;
 
     platform_size(&e->width, &e->height);
@@ -583,6 +633,7 @@ static void draw(Engine *e) {
     view = camera_view(&e->camera);
     vp = mat4_mul(proj, view);
     render_camera(&proj, &view, e->camera.pos, e->camera.znear, e->camera.zfar);
+    render_blockers(NULL, 0);
     if (e->alone > 0) {   /* (one model on the background, nothing else: the extras' model gallery) */
         if (e->alone - 1 < MAX_ACTORS && e->actors[e->alone - 1].used) {
             draw_actor(e, &e->actors[e->alone - 1], &vp);
@@ -590,7 +641,12 @@ static void draw(Engine *e) {
         goto the_2d;
     }
     room_draw_begin(&e->room, e->camera.pos, camera_forward(&e->camera));
+    rv = room_view(&proj, &view, e->camera.pos, e->camera.znear, e->camera.zfar);
+    use_blockers(e, &rv);
     for (layer = 0; layer < 0x1E; layer++) {   /* the room's layers and the characters' in order */
+        if (layer == 6) {
+            draw_door_shades(e, &rv);
+        }
         draw_layer(e, &vp, layer);
     }
     for (i = 0; i < MAX_ACTORS && !(e->actors[i].used && e->actors[i].layer == 0x1C); i++) {

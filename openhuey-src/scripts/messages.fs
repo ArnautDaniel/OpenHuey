@@ -112,6 +112,8 @@ message panic-shorten ( frames -- )          \ (the panic) its time left shorten
 message fear-set ( amount -- )               \ the fear this frame set outright (the progress' +0x7D8 =: f>cell)
 message fear-in ( amount -- )
 message panic-overlay ( thousandths -- )       \ (the panic) its screen overlay's level (ScreenFade_Level, the panic's +0x34): her breath only at 1000, its tint scaled by it; the game over sets it full and fades it with its tints
+message overlay-held ( -- )                  \ (the panic) the screen's fade stepped this frame (Events_ScenePlaying, +0x11F3): its overlay level not set back to full
+message panic-onset ( on -- )                \ broadcast by the panic: her panic's start - her scream, its first 30 frames (SceneGame +0xF6CD24 bit 3) - begun (-1) or over (0)
 message panic-stage! ( stage -- )
 message panic-level! ( level -- )
 message hewie-near ( near -- )               \ broadcast by Hewie each frame she is with him: 1 within 20, 2 within 50, 3 further (the progress' +0x7B9: how the panic weighs its inputs)
@@ -168,6 +170,7 @@ message fiona-doing ( mode sub cond cmd doing -- ) \ broadcast each frame: her m
                                              \ condition, her command this frame (-1 none; 3 the praise held), her
                                              \ action (+0x1AD580: her-doing)
 message fiona-blow ( n damage x y z reach -- )   \ broadcast: her blow `n` there (f>cell; reach -1: what touches her) - for the homunculi
+message thing-blow ( damage yaw -- )   \ to a homunculus: a magnesia going off within reach, or trodden on (f>cell yaw: the way it faces) - in any room
 message throw-down ( who recover -- )        \ (Fiona) thrown down by who (an actor, -1 none); recover: her recovery reset (the story's 0xB2)
 message look-hold ( who frames -- )          \ (Fiona) her head on who for so many frames (the story's 0x96)
 message fiona-unseen ( on -- )               \ broadcast when it changes: she can't be seen (item $89 worn, still)
@@ -295,7 +298,8 @@ message show ( on -- )                       \ (to a character) shown or hidden 
 
 \ ---- the screen and the music (docs/subsystems/screen.md, music.md) ----
 message fade ( frames kind -- )              \ (the screen) fade in (kind 0 / 1) or out over frames
-message fade-finish ( -- )                   \ (the screen) the fade counts as over
+message fade-step ( -- )                     \ (the screen) the scripts' 0x5D: the fade a frame on (ScreenFade_Step), a fade's frame for the panic
+message fade-stop ( -- )                     \ (the screen) the scripts' 0x5E: the fade counts as over where it is
 message fade-done ( -- )                     \ (to who faded) it's over
 message bgm-want ( track pause level -- )    \ (the music) background track wanted ($FF none), paused, its level (f>cell)
 message bgm-resume ( -- )                    \ (the music) the streamed track resumed
@@ -326,6 +330,11 @@ message stalker-reach ( d -- )                 \ broadcast each frame by a stalk
 \ ---- the story's orders to Hewie, Fiona and the panic (the scripts' commands; H4 / F5) ----
 message drawn-to ( tri -- )                  \ (the things: the doll) a stalker searching the room being played drawn to
                                              \ it, if he sees it and can get there - his search's one stop
+message stalker-ties ( scripted apart linked -- )   \ broadcast each frame by a stalker in the game, after stalker-doing:
+                                             \ a script or a scene of the room has him (+0xE0); out of contact - through a door, on a
+                                             \ ladder, off screen (+0x2A: Fiona_KeepApart leaves him be); a joint action with him under
+                                             \ way, asked and not yet settled (Progress_IsLinked: his seize of her awaiting her answer,
+                                             \ Hewie's attack or tackle the frame he takes it)
 message stalker-blow ( n -- )                \ broadcast each frame by a stalker in the game, after stalker-doing:
                                              \ the blow of his attack under way (its move's damage), -1 none
                                              \ (Pursuer_PathNodeSound, as hg names it)
@@ -363,6 +372,9 @@ message dog-attack ( kind -- )               \ (Hewie -> the stalker) his attack
 enum: dog-attack-kind  10 near-flank-attack near-charged-attack far-flank-attack far-charged-attack head-on-attack leg-attack ;
 message dog-grip ( tri x y z yaw -- )        \ (the stalker's answer) taken: leap to there, facing so (floats f>cell)
 message dog-refused ( -- )                   \ (the stalker's answer) not now
+message dog-tackle ( -- )                    \ (Hewie -> the stalker) the story's tackle (his 0x75: the slot command 2 / 7 - Pursuer_GrabOrder):
+                                             \ the spot by his leg to leap to, answered dog-grip (the stalker not yet bitten: his
+                                             \ behaviour cut short) or dog-refused; the leap reaching him asks dog-attack (the leg)
 message bite ( damage hard -- )              \ (Hewie -> the stalker he holds) a bite; hard: he stumbles
 message shaken-off ( -- )                    \ (Hewie -> the stalker) he let go / (the stalker -> Hewie) thrown off
 message snap ( -- )                          \ (Hewie -> the stalker) growled at, barked at (Relation kind 6): his temper up

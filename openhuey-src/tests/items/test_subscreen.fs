@@ -72,6 +72,8 @@ testing the arrow in the forest's maze: by the room's place in the dealt row (Ev
 1 $1F var!  5 $20 var!
 T{ 0 row-room subscreen.map:maze-place  2 row-room subscreen.map:maze-place  $10B subscreen.map:maze-place -> 0 2 -1 }T
 0 $1F var!  0 $20 var!
+testing the map's arrow at a quarter (Map_HereArrow's $20808080); its title on $A6, $48 (Map_PageFrame)
+T{ subscreen.map:arrow-alpha  subscreen.map:title-x  subscreen.map:title-y -> $20 $A6 $48 }T
 testing the options: the cross edits a row, the arrows change it; the square puts them back
 key: E tap  key: E tap
 T{ [: page @ ;] menu@ -> 5 }T
@@ -189,5 +191,21 @@ key: Down tap
 T{ [: cost-row @ ;] menu@ -> 2 }T   \ (no Hewie row: Exit)
 key: X tap  20 frames
 T{ stage@  $26 pvar  $28 pvar -> 0 3 0 }T
+
+testing the words' blending by the colour byte (Task_DrawGlyph): $80 subtracted (palettes 4..6 by alpha), $40 by alpha, else added
+USING: subscreen.art subscreen.tables ;
+T{ menu-ink ink-blend  chosen-ink ink-blend  $85 ink-blend  $40 ink-blend  box-ink ink-blend  cursor-ink ink-blend
+   -> subtracted subtracted by-alpha by-alpha added added }T
+testing the parts' blending (SubScreen_DrawPart's kAlpha by the table's last column): the item picture subtracted, the arrows mixed, the corners added
+: part-blend ( i -- n )  /part * parts + 8 cells + @ ;
+T{ 11 part-blend  $1A part-blend  $15 part-blend  $A part-blend -> subtracted mixed added by-alpha }T
+testing the box's lines: one after {right} (0x14) to the right of the page's widest (Task_DrawPage)
+: box-x ( line -- x )  [: $403D shown !  0 shown-page !  subscreen.box:line-x ;] menu@ ;
+: box-w ( line -- w )  [: subscreen.box:line-width ;] menu@ ;
+: box-widest ( -- w )  [: subscreen.box:widest ;] menu@ ;
+$403D message-layout drop  T{ 0 1 message-align  0 0 message-align -> 2 0 }T
+: right-spare ( -- n )  1 box-x 0 box-x -  box-widest 1 box-w -  - ;   \ (0: the line's right at the widest's)
+T{ right-spare -> 0 }T
+[: -1 shown ! ;] menu@
 
 test-summary

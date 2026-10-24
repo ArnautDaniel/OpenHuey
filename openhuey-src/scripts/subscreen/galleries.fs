@@ -17,24 +17,23 @@ USING: engine game-state actors messages keys facts ps2-screen subscreen.state s
 : gal-line ( msg -- addr len )  0 0 line-of ;   \ (the extras room's own message, its first line)
 $16E constant unknown-msg   \ "???"
 
-\ ---- drawn: the texts in the original's three colours (0 plain, 1 marked, 2 the cursor's) ----
-: ink-of ( c -- rgba )
-    case  2 of  true ink  endof  1 of  $FF784000 openness @ 2* 255 min or  endof  >r false ink r>  endcase ;
+\ ---- drawn: the texts in the original's colours (art.fs `inked`): on the lists' paper the font's
+\ palettes subtracted (menu-ink | c: 0 plain, 1 marked, 2 the cursor's), in the bars added ----
 variable gal-text-layer   word-layer gal-text-layer !   \ (the words' layer: over the page; under the box; over the bars)
-: text-in ( addr len x y c -- )  {: a n x y c :}  gal-text-layer @ a n  x sx  y sy  c ink-of  scale  ui-text ;
+: text-in ( addr len x y colour -- )  {: a n x y c :}  gal-text-layer @ a n x y c inked-on ;
 create number-buf 8 allot
 : number$ ( n width -- addr len )   \ (right-aligned in width: "%2d", "%3d")
     {: n w :}  n n>s {: a len :}  w len - 0 max {: pad :}
     number-buf pad 32 fill  a number-buf pad + len move  number-buf pad len + ;
 : ps2-width ( addr len -- n )  scale text-width 512 * fw @ 1 max / ;   \ (Task_MessageWidth)
-: heads ( msg -- )  $F gal-line $30 $3B 0 text-in  gal-line $58 $3B 0 text-in ;
+: heads ( msg -- )  $F gal-line $30 $3B menu-ink text-in  gal-line $58 $3B menu-ink text-in ;
 : row-y ( k -- y )  8 mod 35 * $5E + ;
 : row ( k addr len colour width -- )   \ its number and its title
-    {: k a n c w :}  k 1+ w number$ $30 k row-y c text-in  a n $58 k row-y c text-in ;
+    {: k a n c w :}  k 1+ w number$ $30 k row-y c menu-ink or text-in  a n $58 k row-y c menu-ink or text-in ;
 : help ( msg1 msg2 -- )   \ the controls' line (the second placed by the usual first's width)
     $12 gal-line ps2-width $56 + {: m1 m2 x :}   \ (one message at a time: line-of's text is its own buffer)
-    m1 gal-line $46 $186 0 text-in  m2 gal-line x $186 0 text-in ;
-: page-of ( g n -- )  of$ $186 $176 0 text-in ;
+    m1 gal-line $46 $186 menu-ink text-in  m2 gal-line x $186 menu-ink text-in ;
+: page-of ( g n -- )  of$ $186 $176 menu-ink text-in ;
 : arrows ( -- )  $168 $170 $1A blink part  $1B3 $170 $1B blink part ;
 : page-black ( -- )  art-layer 0 0 screen-size  openness @ 2* 255 min  ui-rect ;   \ (the lists: nothing of the world, the frame's sides black)
 : list-colour ( k -- c )  gal-at @ = if  2  else  0  then ;

@@ -31,7 +31,7 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
     making-for @ 0< if  in-play  else  making-for @ leave-by  then ;
 :noname ( -- flag )  give-up? dup if  give-up  then ; is gave-up?
 : recovered ( -- )
-    0 reeling !
+    0 reeling !  0 apart !   \ (his step done: in contact again - Pursuer_FrameUpdate)
     hp @ 0> 0= if  hp-max @ hp !  then
     give-up? if  give-up exit  then
     growl-after @ my-mode @ held-off <> and if  stumble-growl 7 sound  then  0 growl-after !
@@ -144,6 +144,10 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     hp @ 0> 0= if  at-door? if  1 hp !  else  knock-down exit  then  then
     kind powder-blow = powdered? and if  how loops-mask and dup powder-loops !  powder-cloud exit  then   \ (powdered again)
     reeling @ if  exit  then                                       \ (already reeling: the damage only)
+    at-dog @ if   \ (after Hewie, struck by her or powdered: the chance roll - Pursuer_Hit)
+        striker @ fiona = if  0 struck-dog !  true chance-roll drop
+        else  kind powder-blow = if  true chance-roll drop  then  then
+    then
     kind killing-blow = if   \ (a killing blow kept from felling him - in a doorway: the low flinch, nothing else)
         let-her-go  combo-over  0 hold-off !  low-blow flinch exit
     then

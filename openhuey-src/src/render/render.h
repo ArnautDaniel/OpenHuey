@@ -151,10 +151,25 @@ void render_reflect_begin(const Mat4 *vp, const Vec3 q[4]);
 void render_reflect_end(const Mat4 *vp, const Vec3 q[4]);
 void render_shadows_begin(void);
 /* a new shadow: the light's view-projection, the caster's middle and size (shadows fade past a
- * few sizes), the darkening; -1 if there is no room left. Then render_shadow_mesh draws into it */
-int render_shadow_add(const Mat4 *light_vp, Vec3 center, float radius, float strength);
+ * few sizes), the darkening, and where the light shades from and how far (for the blockers); -1
+ * if there is no room left. Then render_shadow_mesh draws into it */
+int render_shadow_add(const Mat4 *light_vp, Vec3 center, float radius, float strength, Vec3 light, float reach);
 void render_shadow_mesh(const GpuMesh *g, const MeshDraw *d, int nd);
 void render_shadows_end(void);
+
+/* the lights' blockers this frame (room.h RoomBlocker: 6 points each - 4 corners, the facing, the
+ * top middle): where one shades a shadow's light from a point, that shadow doesn't fall there */
+#define RENDER_MAX_BLOCKERS 16
+void render_blockers(const float *v, int n);
+
+/* the original's layer 6, its shadow buffer (half size): between render_shade_begin (0: not now)
+ * and render_shade_end, strips drawn into it against the scene's depth so far, each over what is
+ * there as the GS blends (its near two corners 0x80 grey at `alpha` - of 0x80 - its far two
+ * nothing, shaded along the screen); at the end the buffer is blurred and taken off the screen at
+ * half (display values). What is drawn after isn't darkened */
+int render_shade_begin(void);
+void render_shade_quad(const Mat4 *vp, const Vec3 p[4], float alpha);
+void render_shade_end(void);
 
 /* the contact-shadow texture (a soft round blob) */
 GpuTexture render_blob_texture(void);
@@ -168,6 +183,12 @@ void render_image_uv(GpuTexture t, float x, float y, float w, float h, float u0,
                      uint32_t rgba);
 /* ... on four corners xy[8] (the part's top left, top right, bottom left, bottom right: turned) */
 void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, float u1, float v1, uint32_t rgba);
+/* how the pictures (render_image*) from now are blended, as the GS's ALPHA register with C the
+ * fixed FIX (`fix` / 128): RENDER_BLEND_NORMAL over the screen by their alpha times the colour's
+ * (the default); SUBTRACT Cd - Cs * FIX (GS 0x62), MIX (Cs - Cd) * FIX + Cd (0x64), ADD
+ * Cd + Cs * FIX (0x68) - in these the texture's alpha only tests: nothing drawn where it is 0 */
+enum { RENDER_BLEND_NORMAL, RENDER_BLEND_SUBTRACT, RENDER_BLEND_MIX, RENDER_BLEND_ADD };
+void render_blend_2d(int mode, int fix);
 /* a texture (re)filled with a w x h RGBA picture each time (a movie); made anew when the size
  * changes (*tw / *th: its size) */
 GpuTexture render_texture_stream(GpuTexture t, const uint8_t *rgba, int w, int h, int *tw, int *th);

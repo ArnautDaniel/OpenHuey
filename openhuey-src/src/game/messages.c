@@ -162,11 +162,14 @@ static void new_line(void) {
 }
 
 static void new_page(void) {
+    int place = page()->place;   /* (the box stays where it was put: Task's x, y) */
+
     page()->typed = sFrame;
     if (sLayout.npages < MESSAGE_PAGES) {
         sLayout.npages++;
         memset(page(), 0, sizeof(MessagePage));
         page()->nlines = 1;
+        page()->place = place;
     }
     sFrame = 0;   /* (Task_StateNextPage: typing starts again) */
 }
@@ -231,6 +234,7 @@ const MessageLayout *message_layout(int id) {
     sLayout.id = id;
     sLayout.npages = 1;
     page()->nlines = 1;
+    page()->place = -1;
     if (p == NULL) {
         snprintf(sLayout.pages[0].lines[0], MESSAGE_LINE_CHARS, "(message %04X)", id);
         return &sLayout;
@@ -279,7 +283,15 @@ const MessageLayout *message_layout(int id) {
         case 0x10:   /* typing stops: closed n frames on (0: left up) */
             sLayout.close_after = p[1];
             goto done;
-        case 0x07: case 0x0A:   /* one operand */
+        case 0x0A:   /* the box's place (Task_Layout: the page's, before it is typed) */
+            page()->place = p[1];
+            p += 2;
+            continue;
+        case 0x12: case 0x14:   /* the line centred / to the right (at its start, on this disc) */
+            page()->align[page()->nlines - 1] = c == 0x12 ? 1 : 2;
+            p++;
+            continue;
+        case 0x07:   /* one operand */
             p += 2;
             continue;
         case 0x0B: case 0x19:   /* two */
@@ -300,8 +312,7 @@ const MessageLayout *message_layout(int id) {
                 o->col = (int)strlen(page()->lines[o->line]);
                 o->leads_to = p[1] << 8 | p[2];
             }
-            put_text("  ");
-            p += 3;
+            p += 3;   /* (no width: the cursor goes before it, Task_CollectChoices) */
             continue;
         case 0x08:   /* a parameter (a system message the scripts chose) */
         case 0x13: { /* a button's name: slot n is system message $801C + n (the first controller
@@ -338,7 +349,7 @@ const MessageLayout *message_layout(int id) {
             }
             continue;
         }
-        case 0x18:   /* furigana: the reading (not shown here) */
+        case 0x18:   /* furigana's reading (0x16 base 0x18 reading 0x17: none on the USA disc) */
             hidden = 1;
             p++;
             continue;
@@ -346,7 +357,7 @@ const MessageLayout *message_layout(int id) {
             hidden = 0;
             p++;
             continue;
-        case 0x12: case 0x14: case 0x16: case 0x05: case 0x06:
+        case 0x16: case 0x05: case 0x06:
             p++;
             continue;
         case 0x1A: case 0x1B: case 0x1C: case 0x1D:   /* a glyph of another font, or past 0xFF */

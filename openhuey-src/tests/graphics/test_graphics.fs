@@ -1,7 +1,7 @@
 \ The graphics menu (scripts/graphics.fs): F1 opens it. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/graphics/test_graphics.fs
 IN: test-graphics
-USING: tester engine game graphics ;
+USING: tester engine game graphics actors messages room-names ;
 
 testing F1 opens the menu
 key: F1 true key-hold  game-tick  key: F1 false key-hold  game-tick
@@ -16,4 +16,16 @@ T{ s" g_chandelie" named placed-draws -> $26 -1 }T
 $21 room
 T{ s" a_nozoki" named placed-draws -> $19 0 }T
 T{ 0 placed-draws nip -> 0 }T
+testing an open door's shadow in layer 6 (DoorShadow_Queue): none shut; open, castle-1f-1's door
+testing 0 from light 0 (the moon) at 18 of $80 - 4 cos^2 x its intensity x (64 + the ambient)
+: frames ( n -- )  0 ?do  game-tick  loop ;
+castle-1f-1 0 rooms send go-to-room  10 frames
+0 -1 0e door-swing  2 frames
+T{ door-shades -> 0 }T
+0 -1 -90e door-swing  2 frames
+T{ door-shades -> 2 }T
+T{ 0 door-shade f>s -> 0 0 18 }T
+0 -1 -70e door-swing  2 frames
+T{ door-shades -> 2 }T                       \ (open at all: its shadow; blocking the lights is past 78.75)
+0 -1 0e door-swing  2 frames
 test-summary

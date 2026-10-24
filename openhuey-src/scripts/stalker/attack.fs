@@ -66,7 +66,7 @@ create blow-at /vec allot
     my-model @ mv-bone bone-pos blow-at vec!  blow-at mv-reach reaches-dog?
     mv-bone2 0< 0= if  my-model @ mv-bone2 bone-pos blow-at vec!  blow-at mv-reach reaches-dog? or  then
     0= if  exit  then
-    mv-kind mv-damage  mv-stumble stumble-roll  hewie send blow  -1 dog-sent ! ;
+    mv-kind mv-damage  mv-stumble stumble-roll  hewie send blow  -1 dog-sent !  -1 struck-dog ! ;
 \ a wall between him and the blow (Npc_CanWalkStraight): it lands on nothing
 : walled? ( v -- flag )
     {: v :}  v v-tri dup 0< if  drop false exit  then  {: t :}
@@ -77,8 +77,9 @@ create blow-at /vec allot
 : d-quarry ( F: -- d )  at-dog @ if  d-hewie  else  d-fiona  then  f@ ;
 defer to-stand ( -- )
 : combo-over ( -- )  -1 combo !  0 combo-step !  -1 step-done !  0 unshaken ! ;
-\ after it: held off a while (struck her: his table's 90; else 30 at least)
-: held-off-after ( -- )  took @ if  90  else  hold-off @ 30 max  then  hold-off ! ;
+\ after it: held off a while (Pursuer_StateAttackStep: struck her, his rests' first - Debilitas 90;
+\ else his rests' second at least - 30)
+: held-off-after ( -- )  took @ if  rest-struck  else  hold-off @ rest-missed max  then  hold-off ! ;
 defer next-move ( -- )
 \ his blow's swing (swung): not yet, swung, after it
 0 constant unswung   1 constant swinging   2 constant swung-past
@@ -111,7 +112,8 @@ defer next-move ( -- )
     then
     swung-past swung !  0 unshaken ! ;
 \ Pursuer_StateAttackActive: a hold - at its key whoever is within its reach of him is held
-\ (the grip: the move's bone number); at its end held off 30 if it held her, and the next move
+\ (the grip: the move's bone number); at its end held off by his rests' third (Debilitas 30) if it
+\ held her, and the next move
 : holding ( -- )
     key?  sent @ 0= and  world-held state-flag? 0= and if
         fiona here? if  d-fiona f@ mv-reach f<  d-fiona f@ f0< 0= and if
@@ -119,7 +121,7 @@ defer next-move ( -- )
         then  then
     then
     ended? if
-        took @ if  30 hold-off !  then
+        took @ if  rest-held hold-off !  then
         1 combo-step +!  next-move exit
     then
     mv-turns? if  fiona body-at turn-rate turn-to fdrop  then
@@ -135,7 +137,7 @@ defer next-move ( -- )
         then
     then
     combo-over ; is next-move
-: combo-start ( n -- )  combo !  0 combo-step !  0 took !  0 step-done !  combo-act chase-act !  combo-act action-look!  next-move ;
+: combo-start ( n -- )  0 struck-dog !  combo !  0 combo-step !  0 took !  0 step-done !  combo-act chase-act !  combo-act action-look!  next-move ;
 
 \ ---- a blow's mark (HitEffect_Spawn: `spray`) on someone, that much of their height up them;
 \ his animation's effect key ($20: where his blows land) ----
@@ -144,14 +146,24 @@ defer next-move ( -- )
     who body-tri heavy  who body-at vec@ {: F: x y z :}  x  y who body-dims fswap fdrop h f* f+  z  spray ;
 : effect-key? ( -- flag )  my-model @ 0 -1 1 motion-events $20 and 0<> ;
 
-\ ---- his blow struck home (`hit-taken`): his cry, held still 5 frames; his blow's mark on the
+\ ---- his blow struck home (`hit-taken`, Pursuer_CryHeard): held off his rests' first, his cry, held still 5 frames; his blow's mark on the
 \ one struck, as they cry out (his own: Riccardo_CryHit, Daniella_BlowEffect) ----
 $40 constant motion-frozen   \ (his motion's flag: held still)
 : struck-home ( kind -- )
-    drop  1 took !  90 hold-off !
+    drop  1 took !  rest-struck hold-off !
     own-mark @ ?dup if  sender swap execute  then
     cry @ dup 0< 0= if  7 sound  else  drop  then  -1 cry !
     5 freeze-t !  model act.mflags dup l@ motion-frozen or swap l! ;
 : thaw ( -- )   \ (each frame: the hold counted down)
     freeze-t @ 0= if  exit  then
     -1 freeze-t +!  freeze-t @ 0= if  model act.mflags dup l@ motion-frozen invert and swap l!  then ;
+
+\ ---- his chance roll (Pursuer_ChanceRoll): his kit's table (+0x1740) - its row {chance, rise}: Hewie
+\ down, his blow struck Hewie in this attack, struck by someone (struck?), else. Won: his temper with
+\ Hewie gone (and what built up); lost, what built up rises - the next likelier ----
+: roll-row ( struck? -- i )
+    dog-cond @ down-cond = if  drop 0 exit  then  struck-dog @ if  drop 1 exit  then  if  3  else  2  then ;
+: chance-roll ( struck? -- won? )
+    roll-row 2* floats rolls + {: row :}
+    rnd 100e f*  row f@ roll-build f@ f+  f<= if  0 temper !  0e roll-build f!  true exit  then
+    row float+ f@ roll-build f@ f+ roll-build f!  false ;

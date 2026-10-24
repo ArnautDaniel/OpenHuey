@@ -1546,6 +1546,70 @@ PRIM(p_door_animating) {   /* ( exit -- flag ) its animation is still going (not
 
     PUSH(exit >= 0 && exit < ROOM_DOORS && gEngine.room.doors[exit].keys != NULL ? -1 : 0);
 }
+/* ---- the open doors' light (room.h: room_door_shades, the lights' blockers) ---- */
+static RoomView engine_room_view(void) {
+    Mat4 proj = camera_proj(&gEngine.camera, render_aspect()), view = camera_view(&gEngine.camera);
+
+    return room_view(&proj, &view, gEngine.camera.pos, gEngine.camera.znear, gEngine.camera.zfar);
+}
+static RoomShade sShades[ROOM_MAX_SHADES];
+static int sNShades;
+static RoomBlocker sBlockers[ROOM_MAX_BLOCKERS];
+static int sNBlockers;
+PRIM(p_door_shades) {   /* ( -- n ) the open doors' shadows as the camera sees them now (room_door_shades) */
+    RoomView v = engine_room_view();
+
+    sNShades = room_door_shades(&gEngine.room, &v, sShades, ROOM_MAX_SHADES);
+    PUSH(sNShades);
+}
+PRIM(p_door_shade) {   /* ( i -- exit light ) ( F: -- alpha ) shadow i of those (alpha of 0x80) */
+    Cell i = POP();
+
+    if (i < 0 || i >= sNShades) {
+        forth_error(f, "door-shade: %ld out of range", (long)i);
+        return;
+    }
+    PUSH(sShades[i].exit);
+    PUSH(sShades[i].light);
+    FPUSH(sShades[i].alpha);
+}
+PRIM(p_light_blocker) {   /* ( F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 -- ) a blocker of the lights this frame
+                           * (the room scripts' 0x66: corners top far, top near, bottom far, bottom near) */
+    Vec3 q[4];
+    int k;
+
+    for (k = 3; k >= 0; k--) {
+        q[k].z = (float)FPOP();
+        q[k].y = (float)FPOP();
+        q[k].x = (float)FPOP();
+    }
+    if (gEngine.nblockers < ROOM_MAX_BLOCKERS) {   /* (Lights_AddDoorway: no room, none) */
+        RoomView v = engine_room_view();
+        int seen = 1;
+
+        for (k = 0; k < 4; k++) {   /* (... nor out of view) */
+            seen &= room_in_view(&v, q[k]);
+        }
+        if (seen) {
+            gEngine.blockers[gEngine.nblockers++] = room_blocker(q);
+        }
+    }
+}
+PRIM(p_light_blockers) {   /* ( -- n ) the lights' blockers now: the scripts' this frame, the open doors' in view */
+    RoomView v = engine_room_view();
+
+    memcpy(sBlockers, gEngine.blockers, sizeof(RoomBlocker) * (size_t)gEngine.nblockers);
+    sNBlockers = room_door_blockers(&gEngine.room, &v, sBlockers, gEngine.nblockers, ROOM_MAX_BLOCKERS);
+    PUSH(sNBlockers);
+}
+PRIM(p_light_blocked) {   /* ( light -- flag ) ( F: x y z -- ) the light shaded from there by one of those
+                           * (no character's shadow from it falls there) */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    Cell l = POP();
+
+    PUSH(l >= 0 && l < gEngine.room.nlights && room_blocked(&gEngine.room.lights[l], sBlockers, sNBlockers, vec3(x, y, z)) ? -1
+                                                                                                                       : 0);
+}
 PRIM(p_door_at) {   /* ( exit -- flag ) ( F: -- x y z ) where the room's door at that exit stands
                      * (Doors_GetPos); false: no door there */
     Cell exit = POP();
@@ -1734,6 +1798,17 @@ PRIM(p_message_line) {   /* ( page line -- addr len ) */
     }
     PUSH(sMsg->pages[pg].lines[ln]);
     PUSH(strlen(sMsg->pages[pg].lines[ln]));
+}
+PRIM(p_message_place) {   /* ( page -- n ) the box's place from that page (0x0A n); -1 none given */
+    Cell pg = POP();
+
+    PUSH(sMsg != NULL && pg >= 0 && pg < sMsg->npages ? sMsg->pages[pg].place : -1);
+}
+PRIM(p_message_align) {   /* ( page line -- n ) 0 from the left, 1 centred (0x12), 2 to the right (0x14) */
+    Cell ln = POP(), pg = POP();
+
+    PUSH(sMsg != NULL && pg >= 0 && pg < sMsg->npages && ln >= 0 && ln < sMsg->pages[pg].nlines
+             ? sMsg->pages[pg].align[ln] : 0);
 }
 PRIM(p_message_options) { PUSH(sMsg != NULL ? sMsg->noptions : 0); }   /* ( -- n ) */
 static const MessageOption *message_option(Cell i) {
@@ -2134,7 +2209,7 @@ PRIM(p_stage_light) {   /* ( i -- ) ( F: x y z r g b range -- ) light i (0..2) o
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
 
     if (i >= 0 && i < 3) {
-        gEngine.stage[i] = (RoomLight){vec3(x, y, z), vec3(r, g, b), 1.0f, range, 0.0f};
+        gEngine.stage[i] = (RoomLight){vec3(x, y, z), vec3(r, g, b), 1.0f, range, 0.0f, 0.0f, 0.0f};
     }
 }
 PRIM(p_stage_lights) { gEngine.nstage = (int)POP(); }   /* ( n -- ) how many (0: the room's again) */
@@ -2895,7 +2970,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its parts shown or hi
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.21") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.22") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
@@ -3101,6 +3176,7 @@ void engine_tick(Engine *e) {
         render_look_tick();
         return;
     }
+    e->nblockers = 0;   /* (Lights_Frame: the room's scripts give them again each frame) */
     hactor_frame(e->forth);   /* the actors' frame, then their models move on */
     if (e->still) {   /* (the game over: the world stands still behind it, its actors running) */
         freecam_tick(e);
@@ -3144,6 +3220,7 @@ typedef struct UiItem {
     int group, id, csa;       /* (3) the texture cache's group + id, its palette */
     float u, v, uw, vh;       /* (3) the part of it, in texels */
     float corners[8];         /* (5: a part on four corners) x, y each */
+    int blend, fix;           /* (1, 3, 5: text, pictures) how blended: RENDER_BLEND_*, at FIX (ui-blend) */
 } UiItem;
 static UiItem sUi[UI_LAYERS][UI_ITEMS];
 static int sUiN[UI_LAYERS];
@@ -3293,6 +3370,17 @@ PRIM(p_ui_text_in) {   /* ( layer addr len x y rgba scale palette -- ) in the ga
         *u = (UiItem){.text = 1, .x = (float)x, .y = (float)y, .w = (float)(scale < 1 ? 1 : scale), .rgba = (uint32_t)rgba,
                       .csa = (int)csa};
         snprintf(u->s, sizeof(u->s), "%.*s", (int)(n > 0 ? n : 0), n > 0 ? (const char *)a : "");
+    }
+}
+PRIM(p_ui_blend) {   /* ( layer mode fix -- ) the layer's last text or picture blended as the GS's
+                       * ALPHA with FIX `fix` (128 = 1): mode 0 by its alpha (as drawn), 1 subtracted
+                       * (Cd - Cs * FIX), 2 mixed ((Cs - Cd) * FIX + Cd), 3 added (Cd + Cs * FIX) */
+    Cell fix = POP(), mode = POP();
+    int l = ui_layer(f, POP());
+
+    if (sUiN[l] > 0) {
+        sUi[l][sUiN[l] - 1].blend = mode >= 0 && mode <= 3 ? (int)mode : 0;
+        sUi[l][sUiN[l] - 1].fix = (int)fix;
     }
 }
 PRIM(p_ui_image4) {   /* ( layer x0 y0 x1 y1 x2 y2 x3 y3 group id csa u v uw vh rgba -- ) a cache texture's part
@@ -3495,6 +3583,7 @@ static void ui_draw(void) {
         for (i = 0; i < sUiN[l]; i++) {
             const UiItem *u = &sUi[l][i];
 
+            render_blend_2d(u->blend, u->fix);
             if (u->text == 3) {
                 int tw, th;
                 unsigned t = sprites_texture_of(u->group, u->id, u->csa, &tw, &th);
@@ -3525,6 +3614,7 @@ static void ui_draw(void) {
             }
         }
     }
+    render_blend_2d(RENDER_BLEND_NORMAL, 0);
 }
 
 void engine_draw_2d(Engine *e) {
@@ -3588,7 +3678,7 @@ void bind_engine(Forth *f) {
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"can-walk-between?", p_can_walk_between}, {"v-wall", p_v_wall}, {"nav-links", p_nav_links}, {"nav-next", p_nav_next}, {"nav-link-tri", p_nav_link_tri}, {"nav-link-yaw", p_nav_link_yaw}, {"nav-link-spot", p_nav_link_spot}, {"nav-link-at?", p_nav_link_at}, {"nav-link-side", p_nav_link_side}, {"nav-link-front", p_nav_link_front}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-path-curved", p_v_path_curved}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
-        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-crosses?", p_nav_crosses}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {"placed-at", p_placed_at}, {"placed-f@", p_placed_f_fetch}, {"placed-f!", p_placed_f_store}, {"placed-l@", p_placed_l_fetch}, {"placed-l!", p_placed_l_store}, {"placed-here?", p_placed_here}, {"placed-shown?", p_placed_shown}, {"nav-square-step", p_nav_square_step}, {"obstacles-reset", p_obstacles_reset}, {"obstacle-placed?", p_obstacle_placed}, {"obstacle-make", p_obstacle_make}, {"obstacle-stop", p_obstacle_stop}, {"obstacle-square", p_obstacle_square}, {"obstacle-at", p_obstacle_at}, {"obstacle-middle", p_obstacle_middle}, {"obstacles-ring-mask", p_obstacles_ring_mask}, {"obstacle-on-square?", p_obstacle_on_square}, {"obstacle-can-push?", p_obstacle_can_push}, {"obstacle-push", p_obstacle_push}, {"obstacle-step", p_obstacle_step}, {"obstacle-moved", p_obstacle_moved}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
+        {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-crosses?", p_nav_crosses}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {"placed-at", p_placed_at}, {"placed-f@", p_placed_f_fetch}, {"placed-f!", p_placed_f_store}, {"placed-l@", p_placed_l_fetch}, {"placed-l!", p_placed_l_store}, {"placed-here?", p_placed_here}, {"placed-shown?", p_placed_shown}, {"nav-square-step", p_nav_square_step}, {"obstacles-reset", p_obstacles_reset}, {"obstacle-placed?", p_obstacle_placed}, {"obstacle-make", p_obstacle_make}, {"obstacle-stop", p_obstacle_stop}, {"obstacle-square", p_obstacle_square}, {"obstacle-at", p_obstacle_at}, {"obstacle-middle", p_obstacle_middle}, {"obstacles-ring-mask", p_obstacles_ring_mask}, {"obstacle-on-square?", p_obstacle_on_square}, {"obstacle-can-push?", p_obstacle_can_push}, {"obstacle-push", p_obstacle_push}, {"obstacle-step", p_obstacle_step}, {"obstacle-moved", p_obstacle_moved}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"door-shades", p_door_shades}, {"door-shade", p_door_shade}, {"light-blocker", p_light_blocker}, {"light-blockers", p_light_blockers}, {"light-blocked?", p_light_blocked}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
         {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area},
         {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"door-set-opened", p_door_set_opened}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"door-turn", p_door_turn}, {"door-angle", p_door_angle}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"placed-draws", p_placed_draws}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
@@ -3608,7 +3698,7 @@ void bind_engine(Forth *f) {
         {"message-layout", p_message_layout}, {"message-file", p_message_file}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
         {"message-options", p_message_options}, {"message-option-at", p_message_option_at}, {"message-option-leads", p_message_option_leads},
         {"message-choice-flags", p_message_choice_flags}, {"message-typed", p_message_typed}, {"message-skip", p_message_skip},
-        {"message-close-after", p_message_close_after}, {"message-run", p_message_run}, {"ui-text-in", p_ui_text_in}, {"ui-image4", p_ui_image4}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
+        {"message-close-after", p_message_close_after}, {"message-run", p_message_run}, {"message-place", p_message_place}, {"message-align", p_message_align}, {"ui-text-in", p_ui_text_in}, {"ui-blend", p_ui_blend}, {"ui-image4", p_ui_image4}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-back!", p_cloth_back}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
         {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},

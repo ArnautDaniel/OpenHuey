@@ -20,7 +20,9 @@ The original's `Panic_*` (`fiona.c`, the object at SceneGame +0x7F8, progress +0
 | `danger` | | in | Calm (0) calms faster. |
 | `hewie-near` | `( near -- )` | in, from Hewie each frame she is with him | How near: 1 within 20, 2 within 50, 3 further (`report_fiona_near`, the progress' +0x7B9) - how the inputs weigh. |
 | `calm-add` | `( amount -- )` | in | Calming this frame, weighed as the story's (+0x7E4): Lavender's, from the items. |
-| `panic-overlay` | `( thousandths -- )` | in | The screen overlay's level, 0..1000 (`ScreenFade_Level`, +0x34): her breath only when full, the overlay's tint scaled by it (`ScreenFade_Frame`). The game over sets it full and fades it with its tints. |
+| `panic-overlay` | `( thousandths -- )` | in | The screen overlay's level, 0..1000 (`ScreenFade_Level`, +0x34): her breath only when full, the overlay's tint scaled by it (`ScreenFade_Frame`). The game over sets it full and fades it with its tints; the screen's fade steps set it (`ScreenFade_Step`). |
+| `overlay-held` | `( -- )` | in, from the screen | A frame of the screen's fade (`Events_ScenePlaying`): the level isn't set back to full this frame. |
+| `panic-onset` | `( on -- )` | broadcast | Her panic's start - her scream, its first 30 frames (SceneGame +0xF6CD24 bit 3) - begun (-1) or over (0): the story holds its action scripts and is busy. |
 
 ## State
 
@@ -80,9 +82,17 @@ the rise alone - not checked that it is the same ladder), not while he is down n
 In the mini-game's run she out of sight with him, her fear grows; away from the room played her
 panic stops at 99.
 
-*Not yet*: the screen overlay's level (`panic-overlay`) is sent by the game over only - the
-story's fades (`ScreenFade_Step`; while a scene plays it is not set back to full) don't yet; nor
-does a level under full stop the camera's shake (`ScreenFade_Frame`).
+**The overlay's level** (+0x34): set back to full each frame of play (not while a scene has the
+camera nor under flag $F), unless the screen's fade stepped that frame (`overlay-held`); the fade's
+steps set it - going out 0.58 less 0.005 a point of alpha past 16 (0 by its end), coming in 0.44 up
+to full a little before its end (`ScreenFade_Step`). The out kinds' step scripts go on after their
+fade, so after a fade out it stays 0 until a fade in or the next room. Under full
+(`ScreenFade_Frame`): no breath, no negative, no frame blend or blur - the heartbeat's pulse back to
+$80 - and the camera still while she panics or calms down or the pulse was cut short; the grey
+scaled by it. Checked by `tests/story/test_story_fades.fs`.
+
+*Not yet*: her panic's start (bit 3) also stops the characters' thinking and the camera director
+for its 30 frames in the original (SubPlay: `(*flags & 0xF) == 0`) - only the story holds for it.
 
 Also built: the story's commands (`panic-level` and the rooms' frights), the charms (the earrings
 and chokers: `earrings`, `fiona/moving.fs`), the camera's shake (`jolting`), and with each breath

@@ -277,8 +277,9 @@ subtitles, the pause and the skip's darkening.
   Six doors in five rooms have parts in a group (castle-b1-6's in 22): the scripts' `door-bits`
   shows them. The masks start empty with each room, as the original's doors are made anew.
 - **Lights** (`light`): back to the room's own (`light-own`), or the intensity / the shadows'
-  reach scaled (`light-scale`). `lights-doorway` (the shadow volumes' blockers) has nothing to
-  do with shadow maps.
+  reach scaled (`light-scale`). `lights-doorway` (0x66) gives the lights a blocker for the
+  frame (`light-blocker`): where its quad shades a light, the characters' shadows from that light
+  don't fall (docs/subsystems/doors.md, "The open door's light").
 - **The look:** `depth-range` / `-off` (slot $1C), `fog` ($1D), `screen-blend` ($1E).
 Checked by `tests/story/test_things.fs` (8 tests).
 
@@ -440,8 +441,14 @@ Hewie's side, the hiding places' offer while busy, `char-camera` $FF, `self-touc
 other's margins, `stalker-free?` (not held by a script or struck; his floor free), the facing
 conditions anywhere, `loader-busy?` (cond 0x62: the loader's busy flag - never, the waits on it
 end at once), `spirit-request-pending?` (cond 0x64). `tests/story/test_story_rules.fs` (22).
-Left: `stalker-free?`'s other hold (Progress_IsLinked: a pending relation between the slots,
-which OpenHuey's messages don't keep) and SceneGame_Busy's +0xF6CD24 bits.
+Also (2026-10-24, `tests/story/test_story_fades.fs`): $FF in a condition is nobody (cond_char,
+`cond-slot`: Progress_SlotOfId gives none - `char-in-zone?` takes it as anyone, Zone_HasAnyChar);
+SceneGame_Busy's +0xF6CD24 bits: bit 3, her panic's start (`panic-onset` from the panic, cleared
+by phase 0 and a forced action for Fiona, 0x92 for 0) is busy and holds the action scripts; bit 0
+(the room's loading frames) the scripts never see, OpenHuey loading at once. The fades' 0x5D /
+0x5E are a step and an over where it is (screen.md).
+`stalker-free?`'s other hold (Progress_IsLinked): `stalker-linked?`, the stalker's `stalker-ties`
+kept by the room (his seize of her awaiting her answer, Hewie's attack or tackle being taken).
 
 The later stages, by how much the scripts use them (all built now):
 

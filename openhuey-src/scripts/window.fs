@@ -24,6 +24,7 @@ state: window-state
   cell field pages  cell field page
   cell field picked         \ the option under the cursor
   cell field chosen         \ the option answered (none: no choice made)
+  cell field place         \ the box's place when the message gives none (0x0A n)
   cell field prompt-kind    \ the action prompt (0: none)
   cell field prompt-age     \ frames since it was last offered
   cell field blink          \ frames drawn (the page mark blinks)
@@ -31,28 +32,41 @@ state: window-state
   \ the panel, measured each frame for the page shown (window pixels)
   cell field scale  cell field line-height  cell field pad
   cell field box-x  cell field box-y  cell field box-w  cell field box-h
+  cell field text-w         \ the page's widest line
 end-state
 
 : open? ( -- flag )  shown @ none <> ;
 : last-page? ( -- flag )  page @ pages @ 1- >= ;
 : choosing? ( -- flag )  last-page? message-options 0> and ;
 : last-option ( -- i )  message-options 1- 0 max ;
+: place-now ( -- n )  page @ message-place  dup 0< if  drop place @  then ;
 : lay-out ( msg -- )
     dup shown !  message-layout pages !  0 page !  0 typed !
     message-choice-flags starts-on-last and if  last-option  else  0  then  picked ! ;
 
-\ ---- drawing: a panel low in the picture, sized to the page's lines, the words scaled with the
-\ screen's height (the PS2's glyph 16 x 21 of 448 lines: a pen of height / 224) ----
+\ ---- drawing: a panel sized to the page's lines about the place the message gives it, the words
+\ scaled with the screen's height (the PS2's glyph 16 x 21 of 448 lines: a pen of height / 224) ----
 $0A0A12D8 constant panel-colour   $8C7A5AC0 constant edge-colour
 $F0EBE0FF constant words-colour   $C8B48CFF constant mark-colour
-: measure ( lines -- )   \ (a long page - the tutorials' - drawn smaller, to stay in the lower 3/5)
+\ the places (0x0A n, D_0044B010): the text's centre down the PS2's 448 lines - low (the default),
+\ the middle (the notes on the walls, the tutorials), a little higher (the memory card's); n's
+\ bit 7: no box, the words alone
+create place-ys  370 , 224 , 330 , 224 , 224 , 224 , 224 , 224 ,
+$80 constant no-box   6 constant box-drop   \ (Task_BoxSize: the box 6 lines below the text's centre)
+: place-y ( n -- y )  $7F and 7 min cells place-ys + @ ;
+: boxed? ( -- flag )  place-now no-box and 0= ;
+: line-width ( line -- px )  page @ swap message-line  scale @ text-width ;
+: widest ( lines -- px )  0 swap 0 ?do  i line-width max  loop ;
+: measure ( lines -- )   \ (a page taller than the screen - none in the game - drawn smaller)
     {: lines | w h :}  screen-size to h to w
-    h 3 * 5 /  lines 4 max 12 * /  h 224 / min  1 max  scale !
+    h 9 * 10 /  lines 3 max 1+ 12 * /  h 224 / min  1 max  scale !
     scale @ 12 * line-height !  scale @ 6 * pad !
+    lines widest text-w !
     w 84 * 100 /  h 16 * 10 / min  box-w !   \ (at most 16:10 of the height across: wide screens keep it readable)
     w box-w @ - 2/ box-x !
     lines 3 max line-height @ *  pad @ 2* +  box-h !
-    h  box-h @ -  h 20 / -  box-y ! ;
+    place-now place-y box-drop + h * 448 /  box-h @ 2/ -   \ (about the place's centre, kept on the screen)
+    h 20 /  h box-h @ - h 20 / -  clamp  box-y ! ;
 : rect ( x y w h rgba -- )  {: x y w h rgba :}  text-layer x y w h rgba ui-rect ;
 : words ( addr len x y rgba -- )  {: a n x y rgba :}  text-layer a n x y rgba scale @ ui-text ;
 : frame-edges ( -- )   \ a thin edge all round
@@ -62,7 +76,12 @@ $F0EBE0FF constant words-colour   $C8B48CFF constant mark-colour
     x y          1 h  edge-colour rect
     x w + 1- y   1 h  edge-colour rect ;
 : panel ( -- )  box-x @ box-y @ box-w @ box-h @ panel-colour rect  frame-edges ;
-: line-x ( -- x )  box-x @ pad @ 2* + ;
+: line-x ( -- x )   \ the text's left: in the panel; no box, the text centred (Task_DrawPage)
+    boxed? if  box-x @ pad @ 2* +  else  screen-size drop text-w @ - 2/  then ;
+: line-start ( line -- x )   \ a line's: 0x12 centred in the text's width, 0x14 to its right
+    {: ln | spare :}  text-w @ ln line-width - to spare
+    page @ ln message-align  case  1 of  spare 2/  endof  2 of  spare  endof  0 swap  endcase
+    line-x + ;
 : line-y ( n -- y )  line-height @ *  box-y @ pad @ + + ;
 : more-mark ( -- )   \ a small arrow down at the bottom right, blinking: another page follows
     blink @ 32 and if  exit  then
@@ -77,16 +96,18 @@ $F0EBE0FF constant words-colour   $C8B48CFF constant mark-colour
 : typed-line ( line -- )   \ what of it is typed so far, run by run of a colour
     {: ln | col :}
     begin  page @ ln col typed @ message-run  {: a n c :}  n 0>  while
-        a n  line-x ln col indent +  ln line-y  c palette-words  n col + to col
+        a n  ln line-start ln col indent +  ln line-y  c palette-words  n col + to col
     repeat ;
-: cursor ( -- )   \ the arrow before the option picked
+$60 constant cursor-glyph   9 constant cursor-palette   \ (the font's pointing hand, in its palette 9)
+create cursor-text  cursor-glyph c,
+: cursor ( -- )   \ the hand before the option picked: 20 of the PS2's pixels left of it (Task_DrawPage)
     picked @ message-option-at  {: pg line col :}
-    s" >"  line-x line col indent +  scale @ 6 * -  line line-y  mark-colour words ;
+    cursor-text 1  line line-start line col indent +  scale @ 10 * -  line line-y  cursor-palette palette-words ;
 : draw ( -- )
     text-layer ui-clear
     open? 0= if  exit  then
     shown @ message-layout drop   \ (the C layout is one at a time: lay it out again to read it)
-    page @ message-lines measure  panel
+    page @ message-lines measure  boxed? if  panel  then
     page @ message-lines 0 ?do  i typed-line  loop
     page-typed? 0= if  exit  then
     choosing? if  cursor  then
@@ -106,8 +127,9 @@ create look-text 8 allot
 : close ( -- )
     shown @  chosen @  asked-by @ send text-closed
     none shown !  0 broadcast text-shown ;
+\ (Task_StateChoice: the message an option leads to opens where this one was, boxed)
 : answer ( -- )   \ the option's message follows (from the same table), or the window closes
-    picked @ chosen !
+    picked @ chosen !  place-now no-box invert and place !
     picked @ message-option-leads  dup no-message = if  drop close exit  then
     shown @ message-table-bits and or lay-out ;
 \ ---- choosing (Task_StateChoice): the cross answers; the triangle, when the choice allows it,
@@ -155,7 +177,7 @@ behaviour showing
   on spawned ( -- )  none shown !  self subscribe tick  self subscribe frame-end ;
   on show-text ( msg -- )
       open? 0= if  -1 broadcast text-shown  then
-      sender asked-by !  none chosen !  lay-out ;
+      sender asked-by !  none chosen !  0 place !  lay-out ;
   on close-text ( msg -- )
       open? 0= if  drop exit  then
       dup no-message = swap shown @ = or if  close  then ;

@@ -20,6 +20,7 @@ USING: engine game-state actors messages common room-names story.state story.wor
     #chars 0 do  0 i cells char-scripted + !  -1 i cells move-done-of + !  loop
     -1 prep-scene !  -1 prepared-msg !  -1 prepared-page !  zones-off
     0 movie-kind !  -1 cue !  -1 cue-prev !  0 fading !  effects-none
+    0 panic-onset-on !   \ (SceneGame_SetFlag3 0)
     $FF 0 1e bgm ;   \ (no background track wanted: the room's scripts ask again, else it fades out)
 : phase ( n -- )
     phase-context
@@ -92,8 +93,8 @@ behaviour playing-room
       over room-id <> if  2drop exit  then  -1 entered !
       dup came-by !  exit-taken !  this-room !
       self subscribe tick  self subscribe frame-end
-      self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe hewie-gesture  self subscribe moving
-      self subscribe stalker-doing  self subscribe stalker-blow  self subscribe item-event  self subscribe item-var  self subscribe item-event-bit  100 st-age !  -1 st-blow !
+      self subscribe danger  self subscribe panic  self subscribe panic-onset  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe hewie-gesture  self subscribe moving
+      self subscribe stalker-doing  self subscribe stalker-ties  self subscribe stalker-blow  self subscribe item-event  self subscribe item-var  self subscribe item-event-bit  100 st-age !  -1 st-blow !
       self subscribe creature-doing  self subscribe noise-was  self subscribe summoner-cooldown-is  self subscribe fiona-struck-by  self subscribe fiona-shakes  self subscribe fiona-shaking  self subscribe hewie-health  self subscribe keri-fell  self subscribe fiona-unseen  self subscribe fiona-message  self subscribe fiona-requested  #creatures 0 do  100 i cells cr-ages + !  loop
       0 phase
       #chars 0 do  i char-enter  loop
@@ -103,7 +104,8 @@ behaviour playing-room
       clock-off   \ (drawn again by the rooms that show it, each frame)
       1 phase  -1 prep-scene !   \ (Progress_CharRequests: the actions prepared afresh)
       0 fiona-request-kind !     \ (Progress_OwnRequests: her request taken)
-      2 phase  offer-it  run-slots ;
+      2 phase  offer-it
+      panic-onset-on @ 0= if  run-slots  then ;   \ (not in her panic's start: SubPlay's frame flag bit 3)
   on fiona-message ( msg -- )   \ (her locked door's script: not while Hewie is the one played)
       leaving @ msg @ 0< 0= or  hewie-controlled? or if  drop exit  then
       message  -1 msg-owner ! ;
@@ -139,6 +141,7 @@ behaviour playing-room
   on story-stop ( -- )  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
   on danger ( level -- )  the-danger ! ;
   on panic ( stage level -- )  cell>f f>s the-panic-level !  the-panic ! ;
+  on panic-onset ( on -- )  panic-onset-on ! ;
   on fiona-doing ( mode sub cond cmd doing -- )  fiona-act !  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode !
       entered @ if  fiona-cs dup char-here arrival  then ;
   on fiona-requested ( kind -- )  fiona-request-kind ! ;
@@ -161,6 +164,8 @@ behaviour playing-room
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       st-came !  st-alert !  drop  st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  0 st-age !
       sender slot2 @ =  entered @ and if  stalker-told-in  then ;
+  on stalker-ties ( scripted apart linked -- )   \ (the one in slot 2's: stalker-free?'s Progress_IsLinked)
+      sender slot2 @ = if  st-linked !  2drop  else  2drop drop  then ;
   on stalker-blow ( n -- )  st-blow ! ;
 end-behaviour
 

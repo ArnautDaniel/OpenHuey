@@ -36,12 +36,13 @@ $60 constant msg-entries   $66 constant msg-notes
     spell-reset  swap 10 /mod n>s +spell n>s +spell  s" :" +spell  10 /mod n>s +spell n>s +spell  spelled ;
 : none? ( a -- flag )  dup c@ 99 =  over 1+ c@ 59 = and  swap 2 + c@ 59 = and ;
 : rank$ ( i -- addr len )  case  0 of  s" 1st"  endof  1 of  s" 2nd"  endof  >r s" 3rd" r>  endcase ;
-: best-times ( challenge y lit -- )   \ (the three: rank, mm:ss or -----; the lit one gold)
+: best-times ( challenge y lit -- )   \ (the three: rank, mm:ss or -----; the lit one in palette 1)
     {: c y0 lit :}
     3 0 do
-        i rank$  $E0  y0 i $18 * +  i lit =  text
+        i lit = 1 and {: hue :}   \ (the lit one in palette 1, added: Task_PrintfEx's colour)
+        i rank$  $E0  y0 i $18 * +  hue inked
         c i record dup none? if  drop s" -----"  $121  else  dup c@ over 1+ c@ rot 2 + c@ time$  $124  then
-        y0 i $18 * +  i lit =  text
+        y0 i $18 * +  hue inked
     loop ;
 : list-frame ( -- )   \ (its top, a piece a row, its foot: one more row past three)
     $40 $10 $1D $80 part  0 $40 $20 $80 part
@@ -63,11 +64,11 @@ $60 constant msg-entries   $66 constant msg-notes
 : extras-view ( -- )
     list-frame  mg-at @ entry entry-art
     mg-n @ 0 ?do
-        i entry msg-entries + 0 room-line  $20  $68 i $20 * +  i mg-at @ =  text
+        i entry msg-entries + 0 room-line  $20  $68 i $20 * +  i mg-at @ = 2 and inked
     loop
     mg-at @ entry {: e :}
-    e intro-entry = if  msg-notes 0 room-line $E0 $68 false text  msg-notes 1 room-line $E0 $80 false text  exit  then
-    e exit-entry < if  msg-notes e + 0 room-line $E0 $70 false text  e 1- $15A -1 best-times  then ;
+    e intro-entry = if  msg-notes 0 room-line $E0 $68 box-ink inked  msg-notes 1 room-line $E0 $80 box-ink inked  exit  then
+    e exit-entry < if  msg-notes e + 0 room-line $E0 $70 box-ink inked  e 1- $15A -1 best-times  then ;
 : picked ( v -- )  challenge-var var!  se-decide  close-menu ;
 : extras-keys ( -- )
     up? if  mg-at @ 1- mg-n @ wrap mg-at !  se-cursor  then
