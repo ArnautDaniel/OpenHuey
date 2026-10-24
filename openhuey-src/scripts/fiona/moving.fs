@@ -12,9 +12,11 @@ USING: engine game-state actors messages common vectors facts items.names fiona.
 : root-step ( F: -- x z )  root@ {: F: turn x y z :}  x z ;
 : root-turn ( F: -- x y z )   \ (the turn taken: the step left)
     root@ {: F: turn x y z :}  her-yaw f@ turn f+ angle-wrap her-yaw f!  x y z ;
-\ a move by (x, z) in the room over her floor, sliding along walls (Actor_Move)
-: move-by ( F: x z -- )
-    her-at blocked-floor v-nav-move  dup 0< if  drop  else  her-tri !  then ;
+\ a move by (x, z) in the room over the floor the mask lets her on, sliding along walls
+\ (Actor_Move); over her own floor
+: move-within ( mask -- ) ( F: x z -- )
+    her-at swap v-nav-move  dup 0< if  drop  else  her-tri !  then ;
+: move-by ( F: x z -- )  blocked-floor move-within ;
 \ Model_SlopeKeep: on a slope (motion flag 4) the part of a step kept, by her facing along the fall
 4 constant on-slope-flag
 : slope-keep ( F: -- k )
@@ -25,6 +27,7 @@ USING: engine game-state actors messages common vectors facts items.names fiona.
     nx l f/ her-yaw f@ fsin f*  nz l f/ her-yaw f@ fcos f* f+ fabs
     1e ny fsq f- f*  1e fswap f- ;
 : root-move ( -- )  root-turn {: F: x y z :}  x z her-yaw f@ rotate-by move-by ;   \ Character_RootMove
+: root-move-within ( mask -- )  root-turn {: F: x y z :}  x z her-yaw f@ rotate-by move-within ;
 : turn-to-heading ( F: step -- left )  her-yaw f@ her-heading f@ frot turn-toward fswap her-yaw f! ;
 
 \ ---- standing, walking, running (Fiona_StateIdleMove) ----

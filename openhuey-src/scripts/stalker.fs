@@ -77,10 +77,16 @@ $1300 constant gesture-anims
 : sub-told ( -- sub )
     bitten @ if  bitten-sub exit  then  cond @ down-cond = if  down-sub exit  then
     leading @ if  leading-sub  else  0  then ;
+\ his step this frame in the room while it takes him ahead (Motion_RootMovement's z over 0), else none
+: stride-ahead ( F: -- dx dz )
+    away? my-model @ 0< or if  0e 0e exit  then
+    root@ {: F: turn x y z :}  z f0> if  x z yaw rotate-by  else  0e 0e  then ;
+: tell-stride ( -- )  stride-ahead {: F: dx dz :}  dx f>cell dz f>cell broadcast stalker-stride ;
 : tell-doing ( -- )
     my-room  move-mode-told  sub-told
     cond @  hp @  hp-max @  my-kind @  my-mode @  came-by @  broadcast stalker-doing
     d-fiona f@ f>cell broadcast stalker-reach
+    tell-stride
     away? 0=  combo @ 0< 0= and if  mv-damage  else  -1  then  broadcast stalker-blow ;
 \ the family's setup (Pursuer_Setup): his sight 150 ahead, 60 degrees either side; Fiona and
 \ Hewie known; listening for noises above his threshold (not his own)

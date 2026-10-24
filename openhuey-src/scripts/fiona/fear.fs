@@ -93,9 +93,16 @@ create probe /vec allot  create up-was /vec allot  variable up-tri
     rx rz her-yaw f@ rotate-by  her-at blocked-floor 1 or v-nav-move  dup 0< if  drop  else  her-tri !  then
     if  probe-ok? 0= if  her-at up-was vec-copy  up-tri @ her-tri !  then  then   \ (moved off: back)
     her-attack-t @ $97 < if  shakes-now if  2 panic-id send panic-shorten  2 her-attack-t +!  then  then ;
+\ down after a hard fall (Fiona_StateFallen, Fiona_StateAfterThrow's floored): on the ground
+\ ($B01), down; her struggle (+0x1AD6C0) and shakes (+0x1AD710 / 714) start over
+: lie-down ( -- )
+    0 her-attack-t !  lying-anim -1 play-table  down-mode her-mode !  down-doing her-doing !
+    -1 her-shake-rest !  0e her-shake-a f!  ['] getting-up her-act ! ;
+\ in an exit's area (PursuerGroup_Fields' bit 1): no turning along walls there
+: in-exit-area? ( -- flag )
+    8 0 do  i exit-area dup area-count < if  her-pos area-in? if  true unloop exit  then  else  drop  then  loop  false ;
 : fallen ( -- )
-    ended? if  0 her-attack-t !  lying-anim -1 play-table  down-mode her-mode !  down-doing her-doing !  -1 her-shake-rest !  0e her-shake-a f!
-        ['] getting-up her-act ! exit  then
+    ended? if  lie-down exit  then
     her-fall-turn @ -1 = if  root-move
     else
         root-step her-fall-yaw f@ rotate-by move-by
@@ -103,8 +110,7 @@ create probe /vec allot  create up-was /vec allot  variable up-tri
             her-yaw f@ her-fall-yaw f@ 20e deg>rad turn-toward f0= if  1 her-fall-turn !  then  her-yaw f!
         then
     then
-    8 0 do  i exit-area dup area-count < if  her-pos area-in? if  unloop exit  then  else  drop  then  loop
-    along-wall ;
+    in-exit-area? 0= if  along-wall  then ;
 : falling ( -- )
     settled? if
         -1 her-attack-t !  -1 her-fall-turn !  -1 her-wall-side !  her-yaw f@ her-fall-yaw f!

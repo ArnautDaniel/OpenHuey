@@ -4,7 +4,7 @@
 \ of the door, opens or shuts it by hand (her animation 0x600 + its kind, the door swinging with
 \ her) and lets it go as she steps out. A locked door she tries, and gives up.
 IN: fiona.doors
-USING: engine vectors keys actors messages common paths doors fiona.state fiona.anims fiona.model fiona.moving fiona.spots ;
+USING: engine vectors keys actors messages common paths doors fiona.state fiona.anims fiona.model fiona.moving fiona.spots fiona.slam ;
 
 : doors-id ( -- id )  s" doors" actor-named ;
 defer to-idle   ' noop is to-idle      \ (fiona.fs)
@@ -119,8 +119,10 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
     door-doing her-doing !  led-mode her-mode !
     door-start ;
 : action-button? ( -- flag )  circle button-pressed? ;   \ (Progress_PlayerButtons: circle)
-\ Progress_PlayerButtons (her doors): free, the button, an exit she may use
+\ Progress_PlayerButtons (her doors): free, the button, an exit she may use - not with the
+\ stalker touching her (Fiona_StateBlock 2 / 9)
 : try-doors ( -- )
     her-mode @ own-mode <>  her-doing @ free-doing <> or  her-sub @ pushing-sub = or if  exit  then   \ (not while pushing)
     action-button? 0= if  exit  then
-    usable dup 0< if  drop exit  then  use ;
+    usable dup 0< if  drop exit  then
+    stalker-touching? if  drop exit  then  use ;

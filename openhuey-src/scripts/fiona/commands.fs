@@ -250,6 +250,7 @@ create ch-at /vec allot
     her-mode @ dup command-mode = swap down-mode = or if  true exit  then
     her-mode @ own-mode = if  her-doing @ dup push-doing <> swap attack-doing <> and exit  then
     her-mode @ thrown-mode = if  her-sub @ dup led-away-r = swap held-down-r = or exit  then
+    her-mode @ defend-mode = if  her-doing @ shove-doing =  motion-bits $20 and 0<> and exit  then   \ (her shove come round)
     false ;
 : read-command ( -- )
     her-busy-t @ if  -1 her-busy-t +!  then

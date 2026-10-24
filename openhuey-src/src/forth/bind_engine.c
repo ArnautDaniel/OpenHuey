@@ -449,6 +449,57 @@ PRIM(p_body_tri_to) {   /* ( v mask -- tri ) walking straight from it to v (mask
     PUSH(navmesh_walk(n, b->tri, vec3(b->pos[0], b->pos[1], b->pos[2]), vec3(v[0], v[1], v[2]), NULL));
     n->block = 0;
 }
+PRIM(p_push_out) {   /* ( v tri other mask -- tri' ) Actor_PushOut: v (on tri) put out of body `other`, to
+                       * their radii + 0.01 apart (its radius the running actor's body's) - straight
+                       * away, else turned 2, 4 .. 180 degrees either way - where it is reached
+                       * straight over the floor within the mask: v there on the floor, its
+                       * triangle; -1 nowhere fits (v kept) */
+    uint32_t mask = (uint32_t)POP();
+    HBody *o = any_body(f, POP(), "push-out");
+    Cell tri = POP();
+    float *v = vec_arg(f);
+    HBody *b = own_body(f, "push-out");
+    NavMesh *n = nav_masked(mask);
+    float dist = 0.01f + b->radius + o->radius, dx = v[0] - o->pos[0], dz = v[2] - o->pos[2];
+    float l = sqrtf(dx * dx + dz * dz), c = cosf(0.034906585f), s = sinf(0.034906585f);   /* (2 degrees) */
+    float lx, lz, rx, rz;
+    int t = -1, deg;
+
+    if (l > 0.0f) {
+        dx = dx / l * dist;
+        dz = dz / l * dist;
+    } else {
+        dx = dz = 0.0f;
+    }
+    lx = rx = dx;
+    lz = rz = dz;
+    t = navmesh_walk(n, (int)tri, vec3(v[0], v[1], v[2]), vec3(o->pos[0] + dx, o->pos[1], o->pos[2] + dz), NULL);
+    for (deg = 2; t < 0 && deg < 181; deg += 2) {
+        float x = lx;   /* (sceVu0RotMatrixY: -2 degrees one way, +2 the other) */
+
+        lx = c * x - s * lz;
+        lz = s * x + c * lz;
+        dx = lx;
+        dz = lz;
+        t = navmesh_walk(n, (int)tri, vec3(v[0], v[1], v[2]), vec3(o->pos[0] + dx, o->pos[1], o->pos[2] + dz), NULL);
+        if (t >= 0) {
+            break;
+        }
+        x = rx;
+        rx = c * x + s * rz;
+        rz = -s * x + c * rz;
+        dx = rx;
+        dz = rz;
+        t = navmesh_walk(n, (int)tri, vec3(v[0], v[1], v[2]), vec3(o->pos[0] + dx, o->pos[1], o->pos[2] + dz), NULL);
+    }
+    n->block = 0;
+    if (t >= 0) {
+        v[0] = o->pos[0] + dx;
+        v[2] = o->pos[2] + dz;
+        v[1] = navmesh_height(n, t, v[0], v[2]);
+    }
+    PUSH(t);
+}
 PRIM(p_body_free) {   /* ( mask -- ) ( F: yaw d -- free ) how far ahead along yaw is free (mask -1: its own) */
     Cell mask = POP();
     HBody *b = own_body(f, "body-free");
@@ -3412,7 +3463,7 @@ void bind_engine(Forth *f) {
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"text-width", p_text_width}, {"ui-movie", p_ui_movie}, {"ui-held", p_ui_held}, {"movie-hold", p_movie_hold}, {"movie-unhold", p_movie_unhold}, {"cast-as", p_cast_as}, {"chars-hide", p_chars_hide}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
-        {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-climb", p_body_climb}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-on", p_cam_on}, {"cam-followed", p_cam_followed}, {"cam-followed!", p_cam_followed_set}, {"cam-target", p_cam_target_id}, {"cam-player!", p_cam_player}, {"cam-char-setup", p_cam_char_setup}, {"cam-forget-setups", p_cam_forget_setups}, {"cam-setup-of", p_cam_setup_of}, {"cam-take-followed", p_cam_take_followed}, {"cam-scene!", p_cam_scene}, {"cam-scene?", p_cam_scene_q}, {"cam-next-set", p_cam_next_set}, {"cam-rate!", p_cam_rate}, {"cam-shake!", p_cam_shake}, {"cam-cut?", p_cam_cut}, {"cam-remember", p_cam_remember}, {"cam-started?", p_cam_started}, {"cam-stop", p_cam_stop}, {"cam-angle", p_cam_angle}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-event!", p_cam_event_set}, {"cam-track", p_cam_track},
+        {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-climb", p_body_climb}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-on", p_cam_on}, {"cam-followed", p_cam_followed}, {"cam-followed!", p_cam_followed_set}, {"cam-target", p_cam_target_id}, {"cam-player!", p_cam_player}, {"cam-char-setup", p_cam_char_setup}, {"cam-forget-setups", p_cam_forget_setups}, {"cam-setup-of", p_cam_setup_of}, {"cam-take-followed", p_cam_take_followed}, {"cam-scene!", p_cam_scene}, {"cam-scene?", p_cam_scene_q}, {"cam-next-set", p_cam_next_set}, {"cam-rate!", p_cam_rate}, {"cam-shake!", p_cam_shake}, {"cam-cut?", p_cam_cut}, {"cam-remember", p_cam_remember}, {"cam-started?", p_cam_started}, {"cam-stop", p_cam_stop}, {"cam-angle", p_cam_angle}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-event!", p_cam_event_set}, {"cam-track", p_cam_track}, {"push-out", p_push_out},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed}, {"cam-set@", p_cam_set}, {"actor-load-textured", p_actor_load_textured}, {"motions-load", p_motions_load}, {"motions-use", p_motions_use}, {"cam-place", p_cam_place}, {"cam-retake", p_cam_retake}, {"frame-blend", p_frame_blend}, {"frame-blend-off", p_frame_blend_off}, {"panic-negative", p_panic_negative}, {"zoom-blur", p_zoom_blur}, {"panic-tint", p_panic_tint}, {"flicker-new", p_flicker_new}, {"flame-new", p_flame_new}, {"swarm-new", p_swarm_new}, {"splash-new", p_splash_new}, {"burst-new", p_burst_new}, {"spray", p_spray}, {"thing-new", p_thing_new}, {"thing-free", p_thing_free}, {"things-clear", p_things_clear}, {"thing-used?", p_thing_used}, {"thing-kind", p_thing_kind}, {"thing-room", p_thing_room}, {"thing-tri", p_thing_tri}, {"thing-age", p_thing_age}, {"thing-state", p_thing_state}, {"thing-at", p_thing_at}, {"thing-speed", p_thing_speed}, {"thing-age!", p_thing_age_store}, {"thing-place", p_thing_place}, {"thing-kick", p_thing_kick}, {"thing-fade", p_thing_fade}, {"thing-events", p_thing_events}, {"thing-turn", p_thing_turn}, {"things-step", p_things_step}, {"thing-reaches?", p_thing_reaches}, {"puffs", p_puffs}, {"debris-cloud", p_debris_cloud}, {"gun-smoke", p_gun_smoke}, {"spark", p_spark}, {"particles-engines", p_particles_engines}, {"sink-ring", p_sink_ring}, {"water-step", p_water_step}, {"welling", p_welling}, {"shards-new", p_shards_new}, {"butterflies-new", p_butterflies_new}, {"butterflies-to", p_butterflies_to}, {"wander-new", p_wander_new}, {"spirit-new", p_spirit_new}, {"spirit-at", p_spirit_at}, {"spirit-vanish", p_spirit_vanish}, {"vanish-new", p_vanish_new}, {"stones-new", p_stones_new}, {"reflect!", p_reflect_set}, {"reflect-off", p_reflect_off}, {"reflect-only", p_reflect_only}, {"debris-new", p_debris_new}, {"rising-smoke-new", p_rising_smoke_new}, {"dust-shaft-new", p_dust_shaft_new}, {"spiral-smoke-new", p_spiral_smoke_new}, {"drips-new", p_drips_new}, {"one-drip-new", p_one_drip_new}, {"rising-motes-new", p_rising_motes_new}, {"embers-new", p_embers_new}, {"flecks-new", p_flecks_new}, {"smoke-puffs-new", p_smoke_puffs_new}, {"wall-shadow-new", p_wall_shadow_new}, {"fire-new", p_fire_new}, {"steam-new", p_steam_new}, {"floor-glow-new", p_floor_glow_new}, {"tv-new", p_tv_new}, {"big-fire-new", p_big_fire_new}, {"light-shaft-new", p_light_shaft_new}, {"glint-new", p_glint_new}, {"marker-new", p_marker_new}, {"window-flash-new", p_window_flash_new}, {"smoke-trail-new", p_smoke_trail_new}, {"mag-burst-new", p_mag_burst_new}, {"mirror-square", p_mirror_square}, {"haze-new", p_haze_new}, {"caustic-new", p_caustic_new}, {"glow-new", p_glow_new}, {"wisp-column-new", p_wisp_column_new}, {"spark-spray-new", p_spark_spray_new}, {"heat-haze-new", p_heat_haze_new}, {"leaves-new", p_leaves_new}, {"loop-sprite-new", p_loop_sprite_new}, {"object-glow-new", p_object_glow_new}, {"rain-new", p_rain_new}, {"ash-new", p_ash_new}, {"pit-embers-new", p_pit_embers_new}, {"particles-place", p_particles_place}, {"particles-rest!", p_particles_rest}, {"swim-path", p_swim_path}, {"swim-step", p_swim_step}, {"body-advance", p_body_advance}, {"particles-command", p_particles_command}, {"particles-alive?", p_particles_alive}, {"particles-children", p_particles_children}, {"particles-free", p_particles_free}, {"particles-info", p_particles_info},
         {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-wall", p_v_wall}, {"nav-links", p_nav_links}, {"nav-next", p_nav_next}, {"nav-link-tri", p_nav_link_tri}, {"nav-link-yaw", p_nav_link_yaw}, {"nav-link-spot", p_nav_link_spot}, {"nav-link-at?", p_nav_link_at}, {"nav-link-side", p_nav_link_side}, {"nav-link-front", p_nav_link_front}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-path-curved", p_v_path_curved}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
