@@ -50,6 +50,9 @@ requests to Fiona.
 | `bite` | `( damage hard -- )` | in, from Hewie | A bite while he holds on. |
 | `shaken-off` | `( -- )` | in / out | Hewie let go / thrown off. |
 | `snap` | `( -- )` | in, from Hewie | Growled or barked at: his temper. |
+| `dog-tackle` | `( -- )` | in, from Hewie | The story's tackle (Pursuer_GrabOrder's slot command 2 / 7): the leg's spot answered (`dog-grip`), his behaviour cut short; or `dog-refused`. |
+| `stalker-ties` | `( scripted apart linked -- )` | out, broadcast each frame in the game | A script or a scene has him (+0xE0: `scripted`, `scene`); out of contact (+0x2A: his door animation till he lets the door go, pushing it on barred floor, on a ladder, off screen - Fiona isn't pushed out of him); a joint action pending (Progress_IsLinked: his seize of her awaiting her answer; Hewie's attack or tackle the frame he takes it) - for the story's "free" (cond 0x65). |
+| `hewie-doing` | | in (Hewie's broadcast) | His condition: down, his chance roll's first row. |
 | `noise` | | out, to acoustics | His steps, growls. |
 | `heard` | | in, from acoustics | A noise he heard (he listens above a threshold). |
 | `fiona-doing`, `hewie-doing` | | in (broadcasts) | What they are doing (whether she can be struck, grabbed...). |
@@ -396,7 +399,7 @@ struck, searching or waiting about): temper +1 (+3 while she hides). His temper 
 stands (Debilitas 20; Daniella 200, hard 80) and free: after Hewie (Pursuer_GoForHewie,
 BehaviourHewie) - toward him, and within reach facing him an attack from his table for Hewie
 (situation $B: a blow at him, or his grab, a hold of him; his combo at Hewie: `at-dog`); that
-over, or his time for it up (`dog-limit`, +0x16D8: Debilitas and Riccardo 1800, Daniella 6000,
+over (and his chance roll won), or his time for it up (`dog-limit`, +0x16D8: Debilitas and Riccardo 1800, Daniella 6000,
 Lorenzo2 600, kind 39 300 - hard 360 -, kind 37 900, the TintStalker 1800 (TintStalker_Setup),
 Lorenzo and kind 12 none), his taunt ($1602) and his
 temper back to 0, on as before. Hewie gone from the room: out after him by the exit to his
@@ -496,8 +499,22 @@ she and Hewie off the line to it - takes his shot instead of her: his point (Pur
 $11 sprites drifting about them: the PC port of the original draws none either); the model set
 to the floor by his stance (Pursuer_ModelUpdate's model +0x40 with +0x1694 / +0x169C walking
 $201, else +0x1698 / +0x16A0: Debilitas 8 / 1.5, 12 / 1.5, kinds 7 and 27 6 / 1.5, 13 / 0 - the
-engine has no such placement for the stalkers); the chance roll's table (+0x1740,
-Pursuer_ChanceRoll) and the taunt's hold (+0x1748). Built:
+engine has no such placement: HumanModel_BodyFrames finds the floor under each foot (on slopes
+two points that far back and ahead along his step) and Model_LegIK bends the legs to reach them -
+a human legs fit the engine lacks for Fiona and the cast too, a C module like `doglegs.c` with
+each model's leg bones). Built: **his chance roll and rests** (`tools/stalkertables.py`: each
+kit's +0x1740 and +0x1748 by the hard setting and his rage - kind 37 alerted -, as his Setup /
+SetRage / Kind37_Update set them; Lorenzo2's hard rests are memory nothing writes: zeros). The
+rests: held off after a blow that struck (Debilitas 90, Daniella 90, hard 60, kind 35 120 / 150
+...), at least after one that missed (30, 60 ...), after a hold that caught (30, 60 ...); letting
+go of her hand (Pursuer_StateTauntHold) and her crying out at his blow (Pursuer_CryHeard) the
+first. The chance roll (Pursuer_ChanceRoll): {chance, rise} by row - Hewie down, his blow struck
+Hewie in this attack, struck by someone, else (Debilitas 100, 100, 75 rising 25, 25 rising 12) -
+plus what built up; won, his temper with Hewie gone; lost, what built up rises. Rolled as each
+attack at Hewie ends (Pursuer_BehaviourAttack: still past what he stands, at Hewie again, else on
+as before - his taunt only when his time for it runs out, his temper still up), struck by her or
+powdered while after Hewie (Pursuer_Hit), back on his feet with Hewie down (Pursuer_StateBackOnFeet).
+Hewie's attack and tackle are taken only on floor he may stand on (Actor_TriFreeFor). Also built:
 **the mini-game's run** (Hewie played): she isn't always in the room played - after her
 while she is elsewhere he goes out by the first door of his way to her room (Pursuer_Modes /
 BehaviourFollow) and travels after her; coming into the room played he waits 150 frames first

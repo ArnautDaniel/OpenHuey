@@ -129,6 +129,7 @@ state: hewie-state
   cell field st-id  cell field st-room  cell field st-mode  cell field st-sub  cell field st-cond
   cell field st-hp  cell field st-hp-max  cell field st-kind  cell field st-age
   cell field st-alert            \ the stalker's alert: his mode (+0x16C8; 1..3 hunting)
+  cell field st-scripted         \ a script or a scene has him (+0xE0: stalker-ties)
   \ the creatures, as each tells (creature-doing): its actor, move mode (8 holding her down, 4
   \ struck or going), up (after her), frames since (by slot: spirits 0..6, homunculi 7..9)
   #creatures cells field cr-ids  #creatures cells field cr-modes  #creatures cells field cr-ups  #creatures cells field cr-ages

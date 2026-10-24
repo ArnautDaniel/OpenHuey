@@ -82,11 +82,15 @@ create deb-pursue-3  10e f, 90 , 390 ,  10e f, 90 , 390 ,  10e f, 90 , 390 ,  10
 create deb-grips  0.9433e f, 11.2509e f,  0.9433e f, 11.2509e f,  2.1745e f, 15.0419e f,  2.1745e f, 15.0419e f,  -1.6117e f, -4.3418e f,  0.0182e f, -1.0008e f,
 create deb-anim-sounds  88 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $15 , -1 ,  $15 , -1 ,  $16 , -1 ,  $16 , -1 ,  $18 , -1 ,  $18 , -1 ,  $23 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  -1 , -1 ,  -1 , -1 ,  $25 , -1 ,  -1 , -1 ,  $26 , -1 ,  $23 , -1 ,  $23 , -1 ,  $24 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , $E ,  -1 , -1 ,  $F , -1 ,  -1 , -1 ,  $23 , $10 ,  $1A , $F ,  $2E , -1 ,  $22 , -1 ,  $24 , -1 ,  $0 , $0 ,  $0 , $0 ,  $0 , $0 ,
 create deb-knocks  $28 , 50e f,  $23 , 100e f,
+create deb-rolls-3AFAF0  100e f, 0e f,  100e f, 0e f,  25e f, 12e f,  75e f, 25e f,
+create deb-rolls  deb-rolls-3AFAF0 , deb-rolls-3AFAF0 , deb-rolls-3AFAF0 , deb-rolls-3AFAF0 ,   \ [hard][rage]
+create deb-rests-3AFB58  90 , 30 , 30 ,
+create deb-rests  deb-rests-3AFB58 , deb-rests-3AFB58 , deb-rests-3AFB58 , deb-rests-3AFB58 ,   \ [hard][rage]
 create debilitas-kit  deb-tables , deb-moves , deb-combos , deb-gestures , deb-chase-frames , deb-chase-chances ,
     deb-lunge-chances , deb-temper-0 , deb-temper-1 , deb-pursue-0 , deb-pursue-1 , deb-pursue-2 , deb-pursue-3 ,
     13 , 14 , deb-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    deb-knocks , deb-anim-sounds , deb-run ,
+    deb-knocks , deb-anim-sounds , deb-run , deb-rolls , deb-rests ,
 
 \ ==== Debilitas6 ====
 create db6-table-41BB10  $13 , 6 , 10e f,  $13 , 0 , 30e f,  $13 , 1 , 50e f,  $17 , 1 , 70e f,  $13 , 4 , 80e f,  $17 , 7 , 90e f,  $17 , 3 , 100e f,
@@ -155,11 +159,16 @@ create db6-pursue-3  25e f, 90 , 150 ,  50e f, 120 , 90 ,  25e f, 60 , 150 ,  50
 create db6-grips  0.9433e f, 11.2509e f,  0.9433e f, 11.2509e f,  2.1745e f, 15.0419e f,  2.1745e f, 15.0419e f,  -1.6117e f, -4.3418e f,  0.0182e f, -1.0008e f,
 create db6-anim-sounds  88 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $15 , -1 ,  $15 , -1 ,  $16 , -1 ,  $16 , -1 ,  $18 , -1 ,  $18 , -1 ,  $23 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  -1 , -1 ,  -1 , -1 ,  $25 , -1 ,  -1 , -1 ,  $26 , -1 ,  $23 , -1 ,  $23 , -1 ,  $24 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , $E ,  -1 , -1 ,  $F , -1 ,  -1 , -1 ,  $23 , $10 ,  $1A , $F ,  $2E , -1 ,  $22 , -1 ,  $24 , -1 ,  $0 , $0 ,  $0 , $0 ,  $0 , $0 ,
 create db6-knocks  $27 , 25e f,  $23 , 75e f,  $28 , 100e f,
+create db6-rolls-41BE60  100e f, 0e f,  100e f, 0e f,  25e f, 12e f,  75e f, 25e f,
+create db6-rolls-41C2B0  100e f, 0e f,  50e f, 25e f,  20e f, 10e f,  75e f, 25e f,
+create db6-rolls  db6-rolls-41BE60 , db6-rolls-41BE60 , db6-rolls-41C2B0 , db6-rolls-41C2B0 ,   \ [hard][rage]
+create db6-rests-41BEC8  90 , 30 , 30 ,
+create db6-rests  db6-rests-41BEC8 , db6-rests-41BEC8 , db6-rests-41BEC8 , db6-rests-41BEC8 ,   \ [hard][rage]
 create debilitas6-kit  db6-tables , db6-moves , db6-combos , db6-gestures , db6-chase-frames , db6-chase-chances ,
     db6-lunge-chances , db6-temper-0 , db6-temper-1 , db6-pursue-0 , db6-pursue-1 , db6-pursue-2 , db6-pursue-3 ,
     13 , 14 , db6-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    db6-knocks , db6-anim-sounds , db6-run ,
+    db6-knocks , db6-anim-sounds , db6-run , db6-rolls , db6-rests ,
 
 \ ==== Debilitas7 ====
 create db7-table-413A60  $13 , 10 , 20e f,  $13 , 9 , 40e f,  $14 , -1 , 60e f,  $13 , 16 , 70e f,  $13 , 2 , 90e f,  $1001 , -1 , 100e f,
@@ -228,11 +237,16 @@ create db7-pursue-3  25e f, 120 , 150 ,  50e f, 90 , 150 ,  25e f, 90 , 150 ,  5
 create db7-grips  0.9433e f, 11.2509e f,  0.9433e f, 11.2509e f,  2.1745e f, 15.0419e f,  2.1745e f, 15.0419e f,  -1.6117e f, -4.3418e f,  0.0182e f, -1.0008e f,
 create db7-anim-sounds  88 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $15 , -1 ,  $15 , -1 ,  $16 , -1 ,  $16 , -1 ,  $18 , -1 ,  $18 , -1 ,  $23 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  -1 , -1 ,  -1 , -1 ,  $25 , -1 ,  -1 , -1 ,  $26 , -1 ,  $23 , -1 ,  $23 , -1 ,  $24 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , $E ,  -1 , -1 ,  $F , -1 ,  -1 , -1 ,  $23 , $10 ,  $1A , $F ,  $2E , -1 ,  $22 , -1 ,  $24 , -1 ,  $0 , $0 ,  $0 , $0 ,  $0 , $0 ,
 create db7-knocks  $22 , 50e f,  $24 , 100e f,
+create db7-rolls-413E60  100e f, 0e f,  50e f, 25e f,  20e f, 10e f,  75e f, 25e f,
+create db7-rolls-414270  100e f, 0e f,  20e f, 10e f,  10e f, 5e f,  25e f, 12e f,
+create db7-rolls  db7-rolls-413E60 , db7-rolls-413E60 , db7-rolls-414270 , db7-rolls-414270 ,   \ [hard][rage]
+create db7-rests-413EC8  90 , 30 , 30 ,
+create db7-rests  db7-rests-413EC8 , db7-rests-413EC8 , db7-rests-413EC8 , db7-rests-413EC8 ,   \ [hard][rage]
 create debilitas7-kit  db7-tables , db7-moves , db7-combos , db7-gestures , db7-chase-frames , db7-chase-chances ,
     db7-lunge-chances , db7-temper-0 , db7-temper-1 , db7-pursue-0 , db7-pursue-1 , db7-pursue-2 , db7-pursue-3 ,
     13 , 14 , db7-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    db7-knocks , db7-anim-sounds , db7-run ,
+    db7-knocks , db7-anim-sounds , db7-run , db7-rolls , db7-rests ,
 
 \ ==== Kind27 ====
 create k27-table-42E9D0  $13 , 10 , 30e f,  $1001 , -1 , 60e f,  $14 , -1 , 70e f,  $13 , 9 , 100e f,
@@ -301,11 +315,16 @@ create k27-pursue-3  75e f, 60 , 180 ,  50e f, 60 , 150 ,  25e f, 60 , 150 ,  50
 create k27-grips  0.9433e f, 11.2509e f,  0.9433e f, 11.2509e f,  2.1745e f, 15.0419e f,  2.1745e f, 15.0419e f,  -1.6117e f, -4.3418e f,  0.0182e f, -1.0008e f,
 create k27-anim-sounds  88 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $15 , -1 ,  $15 , -1 ,  $16 , -1 ,  $16 , -1 ,  $18 , -1 ,  $18 , -1 ,  $23 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  -1 , -1 ,  -1 , -1 ,  $25 , -1 ,  -1 , -1 ,  $26 , -1 ,  $23 , -1 ,  $23 , -1 ,  $24 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , $E ,  -1 , -1 ,  $F , -1 ,  -1 , -1 ,  $23 , $10 ,  $1A , $F ,  $2E , -1 ,  $22 , -1 ,  $24 , -1 ,  $0 , $0 ,  $0 , $0 ,  $0 , $0 ,
 create k27-knocks  $22 , 50e f,  $24 , 100e f,
+create k27-rolls-42ED40  100e f, 0e f,  25e f, 12e f,  10e f, 5e f,  50e f, 25e f,
+create k27-rolls-42F160  100e f, 0e f,  50e f, 25e f,  25e f, 12e f,  25e f, 12e f,
+create k27-rolls  k27-rolls-42ED40 , k27-rolls-42ED40 , k27-rolls-42F160 , k27-rolls-42F160 ,   \ [hard][rage]
+create k27-rests-42EDA8  90 , 30 , 30 ,
+create k27-rests  k27-rests-42EDA8 , k27-rests-42EDA8 , k27-rests-42EDA8 , k27-rests-42EDA8 ,   \ [hard][rage]
 create kind27-kit  k27-tables , k27-moves , k27-combos , k27-gestures , k27-chase-frames , k27-chase-chances ,
     k27-lunge-chances , k27-temper-0 , k27-temper-1 , k27-pursue-0 , k27-pursue-1 , k27-pursue-2 , k27-pursue-3 ,
     13 , 14 , k27-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k27-knocks , k27-anim-sounds , k27-run ,
+    k27-knocks , k27-anim-sounds , k27-run , k27-rolls , k27-rests ,
 
 \ ==== Riccardo ====
 create ric-table-414D50  $1000 , -1 , 50e f,  $13 , 4 , 65e f,  $13 , 6 , 80e f,  $13 , 16 , 90e f,  $13 , 15 , 100e f,
@@ -383,11 +402,17 @@ create ric-flurry-0  10e f, 25e f, 45e f, 70e f, 90e f, 100e f,
 create ric-flurry-1  20e f, 45e f, 65e f, 80e f, 90e f, 100e f,
 create ric-anim-sounds  84 ,  -1 , -1 ,  $2A , -1 ,  -1 , -1 ,  -1 , -1 ,  $2A , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , $D ,  $16 , -1 ,  $15 , -1 ,  $16 , -1 ,  -1 , $D ,  $18 , $D ,  -1 , $D ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $28 , -1 ,  $27 , -1 ,  $27 , -1 ,  -1 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , $D ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  $E , -1 ,  -1 , -1 ,  $19 , -1 ,  -1 , -1 ,  $1A , $D ,  $16 , -1 ,  $15 , $D ,  $24 , $D ,  $15 , $D ,  $24 , $D ,  $0 , $0 ,  $0 , $0 ,
 create ric-knocks  $27 , 50e f,  $1A , 100e f,
+create ric-rolls-4150B0  100e f, 0e f,  50e f, 25e f,  10e f, 5e f,  10e f, 5e f,
+create ric-rolls-415630  100e f, 0e f,  25e f, 12e f,  10e f, 5e f,  50e f, 25e f,
+create ric-rolls  ric-rolls-4150B0 , ric-rolls-4150B0 , ric-rolls-415630 , ric-rolls-415630 ,   \ [hard][rage]
+create ric-rests-415118  90 , 30 , 60 ,
+create ric-rests-415650  60 , 30 , 60 ,
+create ric-rests  ric-rests-415118 , ric-rests-415118 , ric-rests-415650 , ric-rests-415650 ,   \ [hard][rage]
 create riccardo-kit  ric-tables , ric-moves , ric-combos , ric-gestures , ric-chase-frames , ric-chase-chances ,
     ric-lunge-chances , ric-temper-0 , ric-temper-1 , ric-pursue-0 , ric-pursue-1 , ric-pursue-2 , ric-pursue-3 ,
     16 , 17 , ric-grips ,
     ric-waits-0 , ric-flurry-0 , ric-flurry-1 , ric-waits-1 , ric-waits-2 , ric-waits-3 ,
-    ric-knocks , ric-anim-sounds , ric-run ,
+    ric-knocks , ric-anim-sounds , ric-run , ric-rolls , ric-rests ,
 
 \ ==== Lorenzo ====
 create lor-table-41A870  $13 , 0 , 20e f,  $13 , 1 , 35e f,  $13 , 2 , 49e f,  $13 , 3 , 50e f,  $13 , 5 , 65e f,  $17 , 2 , 90e f,  $14 , -1 , 100e f,
@@ -446,11 +471,16 @@ create lor-pursue-3  60e f, 240 , 600 ,  60e f, 240 , 600 ,  60e f, 240 , 600 , 
 create lor-grips  -1.2219e f, -15.9398e f,  -1.2219e f, -15.9398e f,  0.2996e f, 14.3695e f,  0.2996e f, 14.3695e f,  -0.396e f, -1.3011e f,  -0.3379e f, -0.706e f,
 create lor-anim-sounds  76 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $15 , -1 ,  $15 , -1 ,  $15 , -1 ,  $18 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $2A , -1 ,  $22 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  $1D , -1 ,  $1D , -1 ,  $17 , $B ,  $1D , -1 ,  $1D , -1 ,  $17 , $B ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1B , -1 ,  $1B , -1 ,  $1C , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , -1 ,  $1C , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  -1 , -1 ,  -1 , -1 ,  $D , -1 ,  -1 , -1 ,  -1 , -1 ,  $22 , -1 ,  $22 , -1 ,  $0 , $0 ,  $0 , $0 ,
 create lor-knocks  $13 , 50e f,  $15 , 100e f,
+create lor-rolls-41AC20  100e f, 100e f,  100e f, 100e f,  100e f, 100e f,  100e f, 100e f,
+create lor-rolls  lor-rolls-41AC20 , lor-rolls-41AC20 , lor-rolls-41AC20 , lor-rolls-41AC20 ,   \ [hard][rage]
+create lor-rests-41AC40  60 , 60 , 60 ,
+create lor-rests-41B008  30 , 30 , 0 ,
+create lor-rests  lor-rests-41AC40 , lor-rests-41AC40 , lor-rests-41B008 , lor-rests-41B008 ,   \ [hard][rage]
 create lorenzo-kit  lor-tables , lor-moves , lor-combos , lor-gestures , lor-chase-frames , lor-chase-chances ,
     lor-lunge-chances , lor-temper-0 , lor-temper-1 , lor-pursue-0 , lor-pursue-1 , lor-pursue-2 , lor-pursue-3 ,
     -1 , -1 , lor-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    lor-knocks , lor-anim-sounds , lor-run ,
+    lor-knocks , lor-anim-sounds , lor-run , lor-rolls , lor-rests ,
 
 \ ==== Lorenzo2 ====
 create ly0-table-422A70  $1002 , -1 , 20e f,  $13 , 4 , 45e f,  $13 , 5 , 70e f,  $17 , 0 , 85e f,  $1000 , -1 , 95e f,  $1001 , -1 , 100e f,
@@ -539,11 +569,18 @@ create ly0-pursue-3  60e f, 180 , 240 ,  60e f, 180 , 240 ,  30e f, 150 , 240 , 
 create ly0-grips  1.1771e f, 9.8175e f,  1.1771e f, 9.8175e f,  0.9538e f, 13.3707e f,  0.9538e f, 13.3707e f,  -1.1471e f, -2.5207e f,  -0.1481e f, -3.9775e f,
 create ly0-anim-sounds  84 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $16 , -1 ,  $16 , -1 ,  $15 , -1 ,  $15 , -1 ,  $18 , -1 ,  $18 , -1 ,  -1 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $22 , -1 ,  $22 , $24 ,  $23 , -1 ,  $26 , -1 ,  $26 , -1 ,  -1 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $17 , -1 ,  -1 , -1 ,  $1D , -1 ,  $1D , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  -1 , -1 ,  -1 , -1 ,  $E , -1 ,  -1 , -1 ,  $1A , $F ,  $25 , -1 ,  $15 , $D ,  $0 , $0 ,  $0 , $0 ,  $0 , $0 ,
 create ly0-knocks  $13 , 50e f,  $22 , 100e f,
+create ly0-rolls-4230C0  100e f, 0e f,  80e f, 10e f,  35e f, 15e f,  100e f, 0e f,
+create ly0-rolls-423950  100e f, 0e f,  80e f, 10e f,  35e f, 15e f,  100e f, 0e f,
+create ly0-rolls-423970  100e f, 0e f,  50e f, 10e f,  20e f, 10e f,  80e f, 5e f,
+create ly0-rolls  ly0-rolls-4230C0 , ly0-rolls-4230C0 , ly0-rolls-423950 , ly0-rolls-423970 ,   \ [hard][rage]
+create ly0-rests-423128  90 , 90 , 90 ,
+create ly0-rests-0  0 , 0 , 0 ,
+create ly0-rests  ly0-rests-423128 , ly0-rests-423128 , ly0-rests-0 , ly0-rests-0 ,   \ [hard][rage]
 create lorenzo2-kit  ly0-tables , ly0-moves , ly0-combos , ly0-gestures , ly0-chase-frames , ly0-chase-chances ,
     ly0-lunge-chances , ly0-temper-0 , ly0-temper-1 , ly0-pursue-0 , ly0-pursue-1 , ly0-pursue-2 , ly0-pursue-3 ,
     9 , 10 , ly0-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    ly0-knocks , ly0-anim-sounds , ly0-run ,
+    ly0-knocks , ly0-anim-sounds , ly0-run , ly0-rolls , ly0-rests ,
 
 \ ==== Lorenzo2H ====
 create ly1-table-422A70  $1002 , -1 , 20e f,  $13 , 4 , 45e f,  $13 , 5 , 70e f,  $17 , 0 , 85e f,  $1000 , -1 , 95e f,  $1001 , -1 , 100e f,
@@ -632,11 +669,18 @@ create ly1-pursue-3  60e f, 180 , 240 ,  60e f, 180 , 240 ,  30e f, 150 , 240 , 
 create ly1-grips  1.1771e f, 9.8175e f,  1.1771e f, 9.8175e f,  0.9538e f, 13.3707e f,  0.9538e f, 13.3707e f,  -1.1471e f, -2.5207e f,  -0.1481e f, -3.9775e f,
 create ly1-anim-sounds  84 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $16 , -1 ,  $16 , -1 ,  $15 , -1 ,  $15 , -1 ,  $18 , -1 ,  $18 , -1 ,  -1 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $22 , -1 ,  $22 , $24 ,  $23 , -1 ,  $26 , -1 ,  $26 , -1 ,  -1 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $17 , -1 ,  -1 , -1 ,  $1D , -1 ,  $1D , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  -1 , -1 ,  -1 , -1 ,  $E , -1 ,  -1 , -1 ,  $1A , $F ,  $25 , -1 ,  $15 , $D ,  $0 , $0 ,  $0 , $0 ,  $0 , $0 ,
 create ly1-knocks  $13 , 50e f,  $22 , 100e f,
+create ly1-rolls-4230C0  100e f, 0e f,  80e f, 10e f,  35e f, 15e f,  100e f, 0e f,
+create ly1-rolls-423950  100e f, 0e f,  80e f, 10e f,  35e f, 15e f,  100e f, 0e f,
+create ly1-rolls-423970  100e f, 0e f,  50e f, 10e f,  20e f, 10e f,  80e f, 5e f,
+create ly1-rolls  ly1-rolls-4230C0 , ly1-rolls-4230C0 , ly1-rolls-423950 , ly1-rolls-423970 ,   \ [hard][rage]
+create ly1-rests-423128  90 , 90 , 90 ,
+create ly1-rests-0  0 , 0 , 0 ,
+create ly1-rests  ly1-rests-423128 , ly1-rests-423128 , ly1-rests-0 , ly1-rests-0 ,   \ [hard][rage]
 create lorenzo2h-kit  ly1-tables , ly1-moves , ly1-combos , ly1-gestures , ly1-chase-frames , ly1-chase-chances ,
     ly1-lunge-chances , ly1-temper-0 , ly1-temper-1 , ly1-pursue-0 , ly1-pursue-1 , ly1-pursue-2 , ly1-pursue-3 ,
     9 , 10 , ly1-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    ly1-knocks , ly1-anim-sounds , ly1-run ,
+    ly1-knocks , ly1-anim-sounds , ly1-run , ly1-rolls , ly1-rests ,
 
 \ ==== Kind39 ====
 create k39-table-4450C0  $13 , 1 , 10e f,  $13 , 3 , 25e f,  $13 , 4 , 35e f,  $13 , 6 , 40e f,  $13 , 8 , 55e f,  $17 , 0 , 60e f,  $1001 , -1 , 75e f,  $13 , 0 , 90e f,  $17 , 5 , 95e f,  $14 , -1 , 100e f,
@@ -701,11 +745,17 @@ create k39-pursue-3  40e f, 300 , 120 ,  40e f, 300 , 120 ,  50e f, 240 , 180 , 
 create k39-grips  1.1771e f, 9.8175e f,  1.1771e f, 9.8175e f,  0.9538e f, 13.3707e f,  0.9538e f, 13.3707e f,  -1.1471e f, -2.5207e f,  -0.1481e f, -3.9775e f,
 create k39-anim-sounds  84 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $16 , -1 ,  $16 , -1 ,  $15 , -1 ,  $15 , -1 ,  $18 , -1 ,  $18 , -1 ,  -1 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $22 , -1 ,  $22 , $24 ,  $23 , -1 ,  $26 , -1 ,  $26 , -1 ,  -1 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $17 , -1 ,  -1 , -1 ,  $1D , -1 ,  $1D , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  -1 , -1 ,  -1 , -1 ,  $E , -1 ,  -1 , -1 ,  $1A , $F ,  $25 , -1 ,  $15 , $D ,  $0 , $0 ,  $0 , $0 ,  $0 , $0 ,
 create k39-knocks  $13 , 50e f,  $22 , 100e f,
+create k39-rolls-445530  100e f, 0e f,  100e f, 0e f,  30e f, 10e f,  100e f, 0e f,
+create k39-rolls-4459E0  100e f, 0e f,  75e f, 10e f,  25e f, 10e f,  85e f, 5e f,
+create k39-rolls  k39-rolls-445530 , k39-rolls-445530 , k39-rolls-4459E0 , k39-rolls-4459E0 ,   \ [hard][rage]
+create k39-rests-445598  90 , 30 , 30 ,
+create k39-rests-445A48  60 , 0 , 30 ,
+create k39-rests  k39-rests-445598 , k39-rests-445598 , k39-rests-445A48 , k39-rests-445A48 ,   \ [hard][rage]
 create kind39-kit  k39-tables , k39-moves , k39-combos , k39-gestures , k39-chase-frames , k39-chase-chances ,
     k39-lunge-chances , k39-temper-0 , k39-temper-1 , k39-pursue-0 , k39-pursue-1 , k39-pursue-2 , k39-pursue-3 ,
     9 , 10 , k39-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k39-knocks , k39-anim-sounds , k39-run ,
+    k39-knocks , k39-anim-sounds , k39-run , k39-rolls , k39-rests ,
 
 \ ==== Kind39H ====
 create k39h-table-4450C0  $13 , 1 , 10e f,  $13 , 3 , 25e f,  $13 , 4 , 35e f,  $13 , 6 , 40e f,  $13 , 8 , 55e f,  $17 , 0 , 60e f,  $1001 , -1 , 75e f,  $13 , 0 , 90e f,  $17 , 5 , 95e f,  $14 , -1 , 100e f,
@@ -770,11 +820,17 @@ create k39h-pursue-3  40e f, 300 , 120 ,  40e f, 300 , 120 ,  50e f, 240 , 180 ,
 create k39h-grips  1.1771e f, 9.8175e f,  1.1771e f, 9.8175e f,  0.9538e f, 13.3707e f,  0.9538e f, 13.3707e f,  -1.1471e f, -2.5207e f,  -0.1481e f, -3.9775e f,
 create k39h-anim-sounds  84 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $16 , -1 ,  $16 , -1 ,  $15 , -1 ,  $15 , -1 ,  $18 , -1 ,  $18 , -1 ,  -1 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $22 , -1 ,  $22 , $24 ,  $23 , -1 ,  $26 , -1 ,  $26 , -1 ,  -1 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $17 , -1 ,  -1 , -1 ,  $1D , -1 ,  $1D , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  -1 , -1 ,  -1 , -1 ,  $E , -1 ,  -1 , -1 ,  $1A , $F ,  $25 , -1 ,  $15 , $D ,  $0 , $0 ,  $0 , $0 ,  $0 , $0 ,
 create k39h-knocks  $13 , 50e f,  $22 , 100e f,
+create k39h-rolls-445530  100e f, 0e f,  100e f, 0e f,  30e f, 10e f,  100e f, 0e f,
+create k39h-rolls-4459E0  100e f, 0e f,  75e f, 10e f,  25e f, 10e f,  85e f, 5e f,
+create k39h-rolls  k39h-rolls-445530 , k39h-rolls-445530 , k39h-rolls-4459E0 , k39h-rolls-4459E0 ,   \ [hard][rage]
+create k39h-rests-445598  90 , 30 , 30 ,
+create k39h-rests-445A48  60 , 0 , 30 ,
+create k39h-rests  k39h-rests-445598 , k39h-rests-445598 , k39h-rests-445A48 , k39h-rests-445A48 ,   \ [hard][rage]
 create kind39h-kit  k39h-tables , k39h-moves , k39h-combos , k39h-gestures , k39h-chase-frames , k39h-chase-chances ,
     k39h-lunge-chances , k39h-temper-0 , k39h-temper-1 , k39h-pursue-0 , k39h-pursue-1 , k39h-pursue-2 , k39h-pursue-3 ,
     9 , 10 , k39h-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k39h-knocks , k39h-anim-sounds , k39h-run ,
+    k39h-knocks , k39h-anim-sounds , k39h-run , k39h-rolls , k39h-rests ,
 
 \ ==== Kind37 ====
 create k37-table-441CF0  $13 , 0 , 25e f,  $13 , 13 , 50e f,  $14 , -1 , 85e f,  $17 , 3 , 100e f,
@@ -882,11 +938,19 @@ create k37-flurry-0  10e f, 25e f, 45e f, 70e f, 90e f, 100e f,
 create k37-flurry-1  20e f, 45e f, 65e f, 80e f, 90e f, 100e f,
 create k37-anim-sounds  84 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $15 , -1 ,  $15 , -1 ,  $15 , -1 ,  $16 , -1 ,  $18 , -1 ,  $18 , -1 ,  $15 , $D ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $28 , -1 ,  $27 , -1 ,  $27 , -1 ,  -1 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  $E , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1A , $F ,  $16 , -1 ,  $15 , $D ,  $24 , $D ,  $15 , $D ,  $24 , $D ,  $0 , $0 ,  $0 , $0 ,
 create k37-knocks  $21 , 100e f,   \ (none of his own: the Pursuer's)
+create k37-rolls-4421F0  100e f, 0e f,  50e f, 25e f,  25e f, 12e f,  50e f, 25e f,
+create k37-rolls-442210  100e f, 0e f,  50e f, 25e f,  20e f, 10e f,  50e f, 25e f,
+create k37-rolls-442870  100e f, 0e f,  25e f, 12e f,  10e f, 5e f,  25e f, 12e f,
+create k37-rolls-442890  100e f, 0e f,  20e f, 10e f,  10e f, 5e f,  10e f, 5e f,
+create k37-rolls  k37-rolls-4421F0 , k37-rolls-442210 , k37-rolls-442870 , k37-rolls-442890 ,   \ [hard][rage]
+create k37-rests-442278  60 , 30 , 60 ,
+create k37-rests-4428B0  30 , 30 , 60 ,
+create k37-rests  k37-rests-442278 , k37-rests-442278 , k37-rests-442278 , k37-rests-4428B0 ,   \ [hard][rage]
 create kind37-kit  k37-tables , k37-moves , k37-combos , k37-gestures , k37-chase-frames , k37-chase-chances ,
     k37-lunge-chances , k37-temper-0 , k37-temper-1 , k37-pursue-0 , k37-pursue-1 , k37-pursue-2 , k37-pursue-3 ,
     16 , 17 , k37-grips ,
     k37-waits-0 , k37-flurry-0 , k37-flurry-1 , k37-waits-1 , k37-waits-2 , k37-waits-3 ,
-    k37-knocks , k37-anim-sounds , k37-run ,
+    k37-knocks , k37-anim-sounds , k37-run , k37-rolls , k37-rests ,
 
 \ ==== TintStalker ====
 create ts-table-42A7F0  $13 , 1 , 10e f,  $13 , 2 , 30e f,  $13 , 0 , 55e f,  $13 , 13 , 75e f,  $14 , -1 , 100e f,
@@ -959,11 +1023,15 @@ create ts-pursue-3  25e f, 60 , 150 ,  25e f, 60 , 180 ,  50e f, 90 , 180 ,  20e
 create ts-grips  -0.0389e f, 10.4049e f,  -0.0389e f, 10.4049e f,  0.7311e f, 13.251e f,  0.7311e f, 13.251e f,  -1.1471e f, -2.5207e f,  -0.328e f, -2.3929e f,
 create ts-anim-sounds  84 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $15 , -1 ,  $15 , -1 ,  $15 , -1 ,  $16 , -1 ,  $18 , -1 ,  $18 , -1 ,  $15 , $D ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $28 , -1 ,  $27 , -1 ,  $27 , -1 ,  -1 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  $E , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1A , $F ,  $16 , -1 ,  $15 , $D ,  $24 , $D ,  $15 , $D ,  $24 , $D ,  $0 , $0 ,  $0 , $0 ,
 create ts-knocks  $27 , 50e f,  $19 , 100e f,
+create ts-rolls-42AB20  100e f, 0e f,  25e f, 12e f,  10e f, 5e f,  10e f, 5e f,
+create ts-rolls  ts-rolls-42AB20 , ts-rolls-42AB20 , ts-rolls-42AB20 , ts-rolls-42AB20 ,   \ [hard][rage]
+create ts-rests-42AB88  60 , 30 , 60 ,
+create ts-rests  ts-rests-42AB88 , ts-rests-42AB88 , ts-rests-42AB88 , ts-rests-42AB88 ,   \ [hard][rage]
 create tintstalker-kit  ts-tables , ts-moves , ts-combos , ts-gestures , ts-chase-frames , ts-chase-chances ,
     ts-lunge-chances , ts-temper-0 , ts-temper-1 , ts-pursue-0 , ts-pursue-1 , ts-pursue-2 , ts-pursue-3 ,
     16 , 17 , ts-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    ts-knocks , ts-anim-sounds , ts-run ,
+    ts-knocks , ts-anim-sounds , ts-run , ts-rolls , ts-rests ,
 
 \ ==== Kind12 ====
 create k12-table-423D90  $13 , 0 , 75e f,  $13 , 1 , 100e f,
@@ -1020,11 +1088,16 @@ create k12-pursue-3  50e f, 900 , 900 ,  50e f, 900 , 900 ,  50e f, 900 , 900 , 
 create k12-grips  0.0e f, 0.0e f,  0.0e f, 0.0e f,  0.0e f, 0.0e f,  0.0e f, 0.0e f,  0.0e f, 0.0e f,  0.0e f, 0.0e f,
 create k12-anim-sounds  76 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $15 , -1 ,  $15 , -1 ,  $15 , -1 ,  $16 , -1 ,  $18 , -1 ,  $18 , -1 ,  $22 , -1 ,  $22 , -1 ,  $22 , -1 ,  $22 , -1 ,  $22 , -1 ,  $22 , -1 ,  $22 , -1 ,  $22 , -1 ,  $21 , -1 ,  $14 , -1 ,  $13 , -1 ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  $17 , $B ,  -1 , -1 ,  $1D , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  $E , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1A , -1 ,  $13 , -1 ,  $0 , $0 ,  $0 , $0 ,
 create k12-knocks  $22 , 50e f,  $13 , 100e f,
+create k12-rolls-423FB0  100e f, 100e f,  100e f, 100e f,  100e f, 100e f,  100e f, 100e f,
+create k12-rolls  k12-rolls-423FB0 , k12-rolls-423FB0 , k12-rolls-423FB0 , k12-rolls-423FB0 ,   \ [hard][rage]
+create k12-rests-423FD0  30 , 30 , 0 ,
+create k12-rests-424238  30 , 0 , 0 ,
+create k12-rests  k12-rests-423FD0 , k12-rests-423FD0 , k12-rests-424238 , k12-rests-424238 ,   \ [hard][rage]
 create kind12-kit  k12-tables , k12-moves , k12-combos , k12-gestures , k12-chase-frames , k12-chase-chances ,
     k12-lunge-chances , k12-temper-0 , k12-temper-1 , k12-pursue-0 , k12-pursue-1 , k12-pursue-2 , k12-pursue-3 ,
     -1 , -1 , k12-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k12-knocks , k12-anim-sounds , k12-run ,
+    k12-knocks , k12-anim-sounds , k12-run , k12-rolls , k12-rests ,
 
 \ ==== Kind34 ====
 create k34-table-43BAC0  $14 , -1 , 10e f,  $13 , 2 , 25e f,  $13 , 10 , 35e f,  $13 , 9 , 45e f,  $13 , 7 , 60e f,  $13 , 11 , 70e f,  $17 , 4 , 75e f,  $17 , 5 , 95e f,  $17 , 0 , 100e f,
@@ -1125,11 +1198,21 @@ create k34-pursue-3  50e f, 300 , 450 ,  50e f, 300 , 450 ,  50e f, 300 , 600 , 
 create k34-grips  0.2576e f, 10.7031e f,  0.2576e f, 10.7031e f,  1.6432e f, 10.9092e f,  1.6432e f, 10.9092e f,  -0.1714e f, -3.1206e f,  0.4004e f, -2.9467e f,
 create k34-anim-sounds  80 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $18 , -1 ,  $18 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $29 , $22 ,  $24 , -1 ,  $24 , -1 ,  $21 , -1 ,  $14 , -1 ,  $29 , $13 ,  -1 , -1 ,  $1C , -1 ,  $17 , -1 ,  -1 , -1 ,  $1C , -1 ,  $17 , -1 ,  -1 , -1 ,  $1C , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  -1 , -1 ,  $25 , $E ,  -1 , -1 ,  $1A , $F ,  $2B , -1 ,  $23 , -1 ,
 create k34-knocks  $21 , 50e f,  $19 , 75e f,  $1A , 100e f,
+create k34-rolls-43C2B0  80e f, 10e f,  5e f, 5e f,  0e f, 0e f,  0e f, 10e f,
+create k34-rolls-43C2D0  100e f, 0e f,  15e f, 5e f,  0e f, 10e f,  0e f, 10e f,
+create k34-rolls-43CC70  100e f, 0e f,  25e f, 5e f,  0e f, 5e f,  35e f, 10e f,
+create k34-rolls-43CC90  100e f, 0e f,  60e f, 5e f,  20e f, 5e f,  50e f, 10e f,
+create k34-rolls  k34-rolls-43C2B0 , k34-rolls-43C2D0 , k34-rolls-43CC70 , k34-rolls-43CC90 ,   \ [hard][rage]
+create k34-rests-43C338  90 , 30 , 60 ,
+create k34-rests-43C348  90 , 60 , 60 ,
+create k34-rests-43CCF8  90 , 30 , 60 ,
+create k34-rests-43CD08  60 , 0 , 0 ,
+create k34-rests  k34-rests-43C338 , k34-rests-43C348 , k34-rests-43CCF8 , k34-rests-43CD08 ,   \ [hard][rage]
 create kind34-kit  k34-tables , k34-moves , k34-combos , k34-gestures , k34-chase-frames , k34-chase-chances ,
     k34-lunge-chances , k34-temper-0 , k34-temper-1 , k34-pursue-0 , k34-pursue-1 , k34-pursue-2 , k34-pursue-3 ,
     11 , 12 , k34-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k34-knocks , k34-anim-sounds , k34-run ,
+    k34-knocks , k34-anim-sounds , k34-run , k34-rolls , k34-rests ,
 
 \ ==== Kind35 ====
 create k35-table-43D180  $13 , 0 , 10e f,  $13 , 2 , 15e f,  $13 , 1 , 25e f,  $13 , 11 , 30e f,  $14 , -1 , 35e f,  $17 , 1 , 40e f,  $17 , 3 , 45e f,  $17 , 5 , 65e f,  $17 , 0 , 80e f,  $13 , 9 , 100e f,
@@ -1196,11 +1279,17 @@ create k35-pursue-3  50e f, 120 , 90 ,  50e f, 120 , 90 ,  50e f, 120 , 90 ,  50
 create k35-grips  0.2576e f, 10.7031e f,  0.2576e f, 10.7031e f,  1.6432e f, 10.9092e f,  1.6432e f, 10.9092e f,  -0.1714e f, -3.1206e f,  0.4004e f, -2.9467e f,
 create k35-anim-sounds  80 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $18 , -1 ,  $18 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $29 , $22 ,  $24 , -1 ,  $24 , -1 ,  $21 , -1 ,  $14 , -1 ,  $29 , $13 ,  -1 , -1 ,  $1C , -1 ,  $17 , -1 ,  -1 , -1 ,  $1C , -1 ,  $17 , -1 ,  -1 , -1 ,  $1C , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  -1 , -1 ,  $25 , $E ,  -1 , -1 ,  $1A , $F ,  $2B , -1 ,  $23 , -1 ,
 create k35-knocks  $21 , 100e f,   \ (none of his own: the Pursuer's)
+create k35-rolls-43D630  80e f, 10e f,  5e f, 5e f,  0e f, 0e f,  0e f, 10e f,
+create k35-rolls-43DB30  100e f, 0e f,  35e f, 10e f,  25e f, 20e f,  70e f, 10e f,
+create k35-rolls  k35-rolls-43D630 , k35-rolls-43D630 , k35-rolls-43DB30 , k35-rolls-43DB30 ,   \ [hard][rage]
+create k35-rests-43D698  120 , 60 , 30 ,
+create k35-rests-43DB98  150 , 30 , 60 ,
+create k35-rests  k35-rests-43D698 , k35-rests-43D698 , k35-rests-43DB98 , k35-rests-43DB98 ,   \ [hard][rage]
 create kind35-kit  k35-tables , k35-moves , k35-combos , k35-gestures , k35-chase-frames , k35-chase-chances ,
     k35-lunge-chances , k35-temper-0 , k35-temper-1 , k35-pursue-0 , k35-pursue-1 , k35-pursue-2 , k35-pursue-3 ,
     11 , 12 , k35-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k35-knocks , k35-anim-sounds , k35-run ,
+    k35-knocks , k35-anim-sounds , k35-run , k35-rolls , k35-rests ,
 
 \ ==== Kind36 ====
 create k36-table-43E010  $13 , 0 , 10e f,  $13 , 2 , 15e f,  $13 , 1 , 25e f,  $13 , 11 , 30e f,  $14 , -1 , 35e f,  $17 , 1 , 40e f,  $17 , 3 , 45e f,  $17 , 5 , 65e f,  $17 , 0 , 80e f,  $13 , 9 , 100e f,
@@ -1267,11 +1356,17 @@ create k36-pursue-3  70e f, 120 , 90 ,  70e f, 120 , 90 ,  70e f, 120 , 90 ,  60
 create k36-grips  0.2576e f, 10.7031e f,  0.2576e f, 10.7031e f,  1.6432e f, 10.9092e f,  1.6432e f, 10.9092e f,  -0.1714e f, -3.1206e f,  0.4004e f, -2.9467e f,
 create k36-anim-sounds  80 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $18 , -1 ,  $18 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $29 , $22 ,  $24 , -1 ,  $24 , -1 ,  $21 , -1 ,  $14 , -1 ,  $29 , $13 ,  -1 , -1 ,  $1C , -1 ,  $17 , -1 ,  -1 , -1 ,  $1C , -1 ,  $17 , -1 ,  -1 , -1 ,  $1C , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  -1 , -1 ,  $25 , $E ,  -1 , -1 ,  $1A , $F ,  $2B , -1 ,  $23 , -1 ,
 create k36-knocks  $21 , 100e f,   \ (none of his own: the Pursuer's)
+create k36-rolls-43E4C0  80e f, 10e f,  5e f, 5e f,  0e f, 0e f,  0e f, 10e f,
+create k36-rolls-43E9E0  100e f, 0e f,  35e f, 10e f,  15e f, 20e f,  70e f, 10e f,
+create k36-rolls  k36-rolls-43E4C0 , k36-rolls-43E4C0 , k36-rolls-43E9E0 , k36-rolls-43E9E0 ,   \ [hard][rage]
+create k36-rests-43E528  120 , 60 , 30 ,
+create k36-rests-43EA48  120 , 30 , 60 ,
+create k36-rests  k36-rests-43E528 , k36-rests-43E528 , k36-rests-43EA48 , k36-rests-43EA48 ,   \ [hard][rage]
 create kind36-kit  k36-tables , k36-moves , k36-combos , k36-gestures , k36-chase-frames , k36-chase-chances ,
     k36-lunge-chances , k36-temper-0 , k36-temper-1 , k36-pursue-0 , k36-pursue-1 , k36-pursue-2 , k36-pursue-3 ,
     11 , 12 , k36-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    k36-knocks , k36-anim-sounds , k36-run ,
+    k36-knocks , k36-anim-sounds , k36-run , k36-rolls , k36-rests ,
 
 \ ==== Daniella ====
 create dan-table-3D77B0  $13 , 0 , 15e f,  $13 , 6 , 20e f,  $13 , 2 , 35e f,  $13 , 1 , 55e f,  $17 , 0 , 65e f,  $17 , 1 , 75e f,  $14 , -1 , 90e f,  $13 , 5 , 100e f,
@@ -1372,11 +1467,21 @@ create dan-pursue-3  50e f, 300 , 450 ,  50e f, 300 , 450 ,  50e f, 300 , 600 , 
 create dan-grips  0.2576e f, 10.7031e f,  0.2576e f, 10.7031e f,  1.6432e f, 10.9092e f,  1.6432e f, 10.9092e f,  -0.1714e f, -3.1206e f,  0.4004e f, -2.9467e f,
 create dan-anim-sounds  80 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $18 , -1 ,  $18 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1C , -1 ,  $1C , -1 ,  $1C , -1 ,  $1D , -1 ,  $1D , -1 ,  $1D , -1 ,  $1E , -1 ,  $29 , $22 ,  $24 , -1 ,  $24 , -1 ,  $21 , -1 ,  $14 , -1 ,  $29 , $13 ,  -1 , -1 ,  $1C , -1 ,  $17 , -1 ,  -1 , -1 ,  $1C , -1 ,  $17 , -1 ,  -1 , -1 ,  $1C , -1 ,  -1 , -1 ,  $1D , $12 ,  $1B , $11 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $1B , $12 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  -1 , -1 ,  $19 , -1 ,  -1 , -1 ,  $25 , $E ,  -1 , -1 ,  $1A , $F ,  $2B , -1 ,  $23 , -1 ,
 create dan-knocks  $21 , 50e f,  $19 , 75e f,  $1A , 100e f,
+create dan-rolls-3D7F00  80e f, 10e f,  5e f, 5e f,  0e f, 0e f,  0e f, 10e f,
+create dan-rolls-3D7F20  100e f, 0e f,  15e f, 5e f,  0e f, 10e f,  0e f, 10e f,
+create dan-rolls-3D8850  0e f, 10e f,  5e f, 5e f,  0e f, 0e f,  35e f, 15e f,
+create dan-rolls-3D8870  100e f, 0e f,  60e f, 5e f,  20e f, 5e f,  50e f, 10e f,
+create dan-rolls  dan-rolls-3D7F00 , dan-rolls-3D7F20 , dan-rolls-3D8850 , dan-rolls-3D8870 ,   \ [hard][rage]
+create dan-rests-3D7F88  90 , 60 , 60 ,
+create dan-rests-3D7F98  90 , 60 , 60 ,
+create dan-rests-3D88D8  60 , 0 , 30 ,
+create dan-rests-3D88E8  60 , 0 , 0 ,
+create dan-rests  dan-rests-3D7F88 , dan-rests-3D7F98 , dan-rests-3D88D8 , dan-rests-3D88E8 ,   \ [hard][rage]
 create daniella-kit  dan-tables , dan-moves , dan-combos , dan-gestures , dan-chase-frames , dan-chase-chances ,
     dan-lunge-chances , dan-temper-0 , dan-temper-1 , dan-pursue-0 , dan-pursue-1 , dan-pursue-2 , dan-pursue-3 ,
     11 , 12 , dan-grips ,
     0 , 0 , 0 , 0 , 0 , 0 ,
-    dan-knocks , dan-anim-sounds , dan-run ,
+    dan-knocks , dan-anim-sounds , dan-run , dan-rolls , dan-rests ,
 
 \ ---- a kit: where his tables are (his `kit` field points at his). The tables by situation: 17,
 \ his rage's 17, the hard setting's 17 and 17 ----
@@ -1386,7 +1491,7 @@ begin-structure /kit
     field: k.pursue  field: k.pursue-rage  field: k.pursue-hard  field: k.pursue-hard-rage
     field: k.throw-a  field: k.throw-b  field: k.grips
     field: k.waits  field: k.flurry  field: k.flurry-hard  field: k.waits-hard  field: k.waits-hurt  field: k.waits-hard-hurt
-    field: k.knocks  field: k.anim-sounds  field: k.run
+    field: k.knocks  field: k.anim-sounds  field: k.run  field: k.rolls  field: k.rests
 end-structure
 : my-kit ( -- kit )  kit @ ;
 : hard-set? ( -- flag )  hard-mode? ;
@@ -1419,3 +1524,10 @@ end-structure
 : knocks ( -- addr )  my-kit k.knocks @ ;
 : anim-sounds ( -- addr )  my-kit k.anim-sounds @ ;
 : move-of ( n -- addr )  /move * moves + ;
+\ his chance roll's table (+0x1740: {chance, rise} - Hewie down, his blow struck Hewie, else, struck
+\ by someone) and his rests (+0x1748: frames after a blow that struck, at least after one that
+\ missed, after a hold that caught), by the hard setting and his rage (or kind 37 alerted)
+: by-stance ( addr -- addr' )  hard-set? if  2 cells +  then  raging @ alt-tables @ or if  cell+  then  @ ;
+: rolls ( -- addr )  my-kit k.rolls @ by-stance ;
+: rests ( -- addr )  my-kit k.rests @ by-stance ;
+: rest-struck ( -- n )  rests @ ;   : rest-missed ( -- n )  rests cell+ @ ;   : rest-held ( -- n )  rests 2 cells + @ ;

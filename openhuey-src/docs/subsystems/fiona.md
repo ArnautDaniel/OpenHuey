@@ -121,7 +121,8 @@ voice.
 she is pushed out to their radii apart - along his step this frame (`stalker-stride`, his root
 motion while it takes him ahead) 20 on plus the way from him to her when he steps at her, else
 straight away; a push off her floor leaves her where she is, out of contact (+0x2A) - no more
-pushing until she touches neither. Overlapping Hewie she is put out of him (`push-out`,
+pushing until she touches neither; nor while he is out of contact himself (his +0x2A, as he
+tells it: `stalker-ties` - through a door, on a ladder). Overlapping Hewie she is put out of him (`push-out`,
 Actor_PushOut: their radii + 0.01 apart, straight away or turned 2, 4 .. 180 degrees either way
 until reached over her floor), else back to where she was. None of it when she touched Hewie
 (and not the stalker) as the frame began. `idle` (Fiona_ToIdle) sets the stick back to the

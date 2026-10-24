@@ -45,7 +45,7 @@ behaviour hewie-own
       s" fiona" actor-named his-fiona !
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe write-save
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end
-      self subscribe stalker-doing  self subscribe creature-doing  self subscribe scene  self subscribe camera-cut  -1 st-id !  100 st-age !  -1 his-grip !
+      self subscribe stalker-doing  self subscribe stalker-ties  self subscribe creature-doing  self subscribe scene  self subscribe camera-cut  -1 st-id !  100 st-age !  -1 his-grip !
       self subscribe danger-signals  self subscribe fiona-struck-by  -1 her-struck-by !
       -1 his-heard-src !  0 hewie-noise s" acoustics" actor-named send listen   \ (Character_Hearing: any noise but his own)
       #creatures 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop ;
@@ -167,11 +167,14 @@ behaviour hewie-own
   \ struck - by him, by her, by a door (answered `blow-taken` when it struck)
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       drop st-alert !  st-kind !  st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  sender st-id !  0 st-age ! ;
+  on stalker-ties ( scripted apart linked -- )  drop drop st-scripted ! ;
   on dog-grip ( tri x y z yaw -- )
       along? 0= if  2drop 2drop drop exit  then
+      tackling? if  tackle-answer exit  then   \ (the story's tackle)
       his-act @ ['] st-await-grip <> if  2drop 2drop drop  sender send shaken-off exit  then   \ (no longer at it)
       {: x y z yaw :}  x cell>f  y cell>f  z cell>f  yaw cell>f  leap ;   \ (tri; x y z yaw)
-  on dog-refused ( -- )  along? if  his-act @ ['] st-await-grip = if  harry-stalker-act start  then  then ;
+  on dog-refused ( -- )  along? tackling? and if  to-default exit  then
+      along? if  his-act @ ['] st-await-grip = if  harry-stalker-act start  then  then ;
   on blow-taken ( -- )   \ (his bite struck home: on a homunculus, bite-landed)
       along? sender creature-slot 0< 0= and if  bite-landed  then ;
   on hit-taken ( kind -- )  drop ;

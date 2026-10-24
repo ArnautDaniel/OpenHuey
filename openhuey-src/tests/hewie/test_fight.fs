@@ -2,7 +2,7 @@
 \ stalker's reaction and temper, Hewie struck (docs/subsystems/hewie.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/hewie/test_fight.fs
 IN: test-fight
-USING: tester engine game-state actors messages common facts room-names game debug flag-names hewie.state hewie.body hewie.model hewie.states hewie.fight fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.anims stalker.chase stalker.bitten ;
+USING: tester engine game-state actors messages common facts room-names game debug flag-names hewie.state hewie.body hewie.model hewie.states hewie.fight fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.anims stalker.chase stalker.attack stalker.bitten ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : his@ ( xt -- x )  game:hewie enter  execute  leave-actor ;
@@ -67,11 +67,20 @@ T{ progress pr.hewie-downs l@ downs0 -  caught state-flag?  30 frames caught sta
 testing barked at, his temper up (Pursuer_Hit kind 6: 1 each, searching or waiting about)
 [: 0 temper !  3 mode! ;] deb!  3 game:debilitas send snap  game:debilitas send snap  2 frames
 T{ [: temper @ ;] deb@ -> 2 }T
-testing past what he stands (20): he goes for Hewie - an attack from his table for Hewie - then his taunt ($1602), his temper back to 0, on
+testing past what he stands (20): he goes for Hewie - an attack from his table for Hewie - each over, the chance roll (Pursuer_ChanceRoll): won, his temper back to 0 and on
 false blind  [: 30 temper ! ;] deb!
 T{ [: [: at-dog @ ;] deb@ ;] 10 soon -> -1 }T
-T{ [: [: anim @ taunt-anim = ;] deb@ ;] 2000 soon  [: temper @ ;] deb@ -> -1 0 }T
-T{ [: [: at-dog @ 0= ;] deb@ ;] 200 soon -> -1 }T
+T{ [: [: at-dog @ 0= ;] deb@ ;] 2000 soon  [: temper @ ;] deb@ -> -1 0 }T
+testing ... his time for it up, his temper still past it: his taunt ($1602), his temper back to 0
+[: 30 temper ! ;] deb!
+T{ [: [: at-dog @ ;] deb@ ;] 10 soon -> -1 }T
+[: 1 dog-t !  closing-in dog-phase ! ;] deb!
+T{ [: [: anim @ taunt-anim = ;] deb@ ;] 30 soon  [: temper @ ;] deb@ -> -1 0 }T
+T{ [: [: at-dog @ 0= ;] deb@ ;] 300 soon -> -1 }T
+testing the chance roll's rows (Debilitas: Hewie down 100, his blow struck Hewie 100, else 25 rising 12, struck 75 rising 25)
+: rolled ( cond struck-dog struck? -- won? )  [: {: c d s :}  c dog-cond !  d struck-dog !  0e roll-build f!  50 temper !  s chance-roll ;] deb@ ;
+T{ 2 0 0 rolled  0 -1 0 rolled  [: temper @ ;] deb@ -> -1 -1 0 }T
+T{ [: 0 dog-cond !  0 struck-dog !  -1e8 roll-build f!  false chance-roll drop  roll-build f@ -1e8 f- f>s  true chance-roll drop  roll-build f@ -1e8 f- f>s  0e roll-build f! ;] deb@ -> 12 37 }T
 testing ... Hewie gone from the room meanwhile: out after him by the exit to his, his temper back to 0
 variable by  variable to
 : an-exit ( -- )  8 0 do  room-id i room-exit-leads drop dup 0< 0= if  to !  i by !  unloop exit  then  drop  loop ;

@@ -35,7 +35,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     well-cond cond !  0 reeling !  0 hits !
     route-clear  my-path path-clear  waiting-about mode!  stand-anim play-now  stand  pose
     -1 came-by !  -1 to-shut !  -1 at-ladder !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
-    out-over  -1 held-door !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
+    0 apart !  0 link-t !  out-over  -1 held-door !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
     away? 0= if  search-start  then ;
 : go-out ( -- )  let-her-go  let-door-go  out-over  forget-leads  0 in-game !  body-off  0 him act.visible l! ;
 
@@ -82,12 +82,21 @@ $1300 constant gesture-anims
     away? my-model @ 0< or if  0e 0e exit  then
     root@ {: F: turn x y z :}  z f0> if  x z yaw rotate-by  else  0e 0e  then ;
 : tell-stride ( -- )  stride-ahead {: F: dx dz :}  dx f>cell dz f>cell broadcast stalker-stride ;
+\ what holds him, for the others (stalker-ties): a script or a scene of the room has him (+0xE0:
+\ Hewie's scuffle off screen leaves him be); out of contact (+0x2A: Fiona isn't pushed out of him);
+\ a joint action under way (Progress_IsLinked: his seize of her awaiting her answer; Hewie's attack
+\ or tackle the frame he takes it - its entry settled the next) - the story's "free" (cond 0x65)
+: linked? ( -- flag )  leading @ 1 =  answer @ no-answer = and  link-t @ 0> or ;
+: tell-ties ( -- )
+    script-held @ in-scene @ or 0<>  apart @ away? or 0<>  linked?  broadcast stalker-ties
+    link-t @ if  -1 link-t +!  then ;
 : tell-doing ( -- )
     my-room  move-mode-told  sub-told
     cond @  hp @  hp-max @  my-kind @  my-mode @  came-by @  broadcast stalker-doing
     d-fiona f@ f>cell broadcast stalker-reach
     tell-stride
-    away? 0=  combo @ 0< 0= and if  mv-damage  else  -1  then  broadcast stalker-blow ;
+    away? 0=  combo @ 0< 0= and if  mv-damage  else  -1  then  broadcast stalker-blow
+    tell-ties ;
 \ the family's setup (Pursuer_Setup): his sight 150 ahead, 60 degrees either side; Fiona and
 \ Hewie known; listening for noises above his threshold (not his own)
 : family-setup ( -- )
@@ -97,6 +106,7 @@ $1300 constant gesture-anims
     hear-threshold @ stalker-noise s" acoustics" actor-named send listen
     pursuer-ladder ladder-offsets !  -1 her-ladder-on !  -1 at-ladder !
     self subscribe zone-target  self subscribe zone-targets-off  self subscribe fiona-unseen
+    self subscribe hewie-doing  self subscribe scene  0 script-held !  0 in-scene !  well-cond dog-cond !
     my-kind @ head-bones!  ahead-look look-mode ! ;
 
 \ a door slammed off screen, the one he makes for: right behind it, its damage (not below 1) and
@@ -242,6 +252,11 @@ behaviour stalking
   on tick ( -- )  in-game @ if  frame  own-frame @ ?dup if  execute  then  tell-doing  then  loaded @ if  status  then ;
   \ Hewie: his attack asked, his letting go, his bites, his growls
   on dog-attack ( kind -- )  dog-attacked ;
+  on dog-tackle ( -- )  dog-tackled ;
+  on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
+      2drop 2drop 2drop 2drop  dog-cond !  2drop 2drop ;   \ (his condition: the chance roll's)
+  on scripted ( on -- )  0<> script-held ! ;   \ (a script of the room has him, or lets go: his +0xE0)
+  on scene ( on -- )  0<> in-scene ! ;          \ (a cutscene has the characters)
   on shaken-off ( -- )  bitten @ bite-how @ held-by-dog = and if  dog-let-go bite-how !  then ;
   on bite ( damage hard -- )  bitten @ if  bitten-by  else  2drop  then ;
   on snap ( -- )  in-game @ if  snapped  then ;
