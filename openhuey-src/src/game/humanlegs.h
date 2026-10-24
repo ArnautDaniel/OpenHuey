@@ -41,6 +41,11 @@ typedef struct HumanLegs {
 /* its legs are a human's: bone chains from `right` and `left` (hip, knee, ankle, foot); -1 none.
  * The easing starts afresh (HumanModel_Loaded's FeetUp) */
 void humanlegs_set(HumanLegs *h, int right, int left);
+/* Motion_OntoFloor: point p (room) put on the floor, walking the mesh from triangle `tri` at `at`
+ * toward it (mask: the marked triangles that stop it) */
+void humanlegs_onto_floor(const NavMesh *nav, int tri, uint32_t mask, Vec3 at, float *p);
+/* the floor's height under `at` on triangle `tri` (the nav mesh's +0x14) */
+float humanlegs_floor_at(const NavMesh *nav, int tri, Vec3 at);
 /* this frame (the character's +0x40, before its motion moves on): the body by its feet over
  * `nav` (tri -1: the model at its place, the feet not planted - Model_BodyFrames); plant 1 / 0
  * the feet planted or not once posed (+0x4C), -1 not asked */
@@ -50,5 +55,17 @@ void humanlegs_fit(struct Actor *a, const NavMesh *nav, int tri, uint32_t mask, 
 void humanlegs_tick(struct Actor *a);
 /* the feet planted on the posed skeleton (model space; place: model -> room, unplace its inverse) */
 void humanlegs_pose(HumanLegs *h, const Model *m, Mat4 *world, const Mat4 *place, const Mat4 *unplace);
+
+/* A human's head where it looks (HumanModel_AdjustBone, the human models' +0x14 as each bone is
+ * posed): the head bone (+0x8B0) turned in its own frame by the tilt (-pitch about its X) and half
+ * the turn (about its Y); the bone below it (+0x8B4) by the other half about the model's up, about
+ * its own place. pitch / yaw: the motion's +0x854 / +0x858 (the character eases them). */
+typedef struct HumanHead {
+    int head, neck;         /* -1: none */
+    float pitch, yaw;
+} HumanHead;
+
+/* the pose's per-bone hook (data/model.h model_pose_adjust; user: the HumanHead) */
+void humanhead_adjust(int i, Mat4 *world, void *user);
 
 #endif

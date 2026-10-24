@@ -85,6 +85,20 @@ he can reach her within 20 on foot (10 half hidden), straight there; Fiona and H
 measured on foot in turn, a frame each. He hears noises above his threshold (Debilitas 0,
 Daniella 12) through the acoustics actor.
 
+**His head** (`stalker/head.fs`; Pursuer_HeadLook, Pursuer_LookAt, Motion_LookAt, Motion_EaseTilt,
+HumanModel_AdjustBone): by his action's look mode he looks at Fiona while he sees her, at Hewie
+while he sees him (5 above him: the tilt too), at his goal in view within 30 degrees, else
+ahead; from his eye (16 up; Lorenzo in his chair 3.5), the turn only for Fiona and the goal, small
+turns none, 8 degrees a frame (Pursuer_TurnRateFast). Each frame Pursuer_Think first eases his
+head back (no scripted look: Model_EaseTilt) and only then does Pursuer_ModelUpdate's HeadLook turn
+it, so in the original a stalker's head turns one step (8 degrees) at most - and his sight, which
+looks where his head does, with it. As his model is posed (the engine's `head-bones ( id head
+neck -- )`, `head-turn ( id -- ) ( F: pitch yaw -- )`: `humanhead_adjust`) the head bone (+0x8B0)
+turns in its own frame by the tilt and half the turn, the bone below it (+0x8B4) the other half
+about its own place: Debilitas's kinds $16 / $F, Daniella's $1F / $15, Riccardo's and the tinted
+ones' (Kind23Model: 23, 37) $23 / $1A, Lorenzo's other class (10, 39) $2B / $22, kind 12 $13 / $B;
+Lorenzo's chair turns his own. Checked in `tests/stalker/test_stalker.fs`.
+
 **Modes** (P1c, `stalker/search.fs`, Pursuer_ModesSearching in the room being played): seeing
 her he is after her (mode 0) and his clock restarts (his setup's +0x16D4, Pursuer_Caught:
 Debilitas 300 frames, hard 540; the others' in their sections); out of sight it
@@ -496,8 +510,10 @@ nearest her - within 50 of her, further than 20 from him, about his height, a st
 she and Hewie off the line to it - takes his shot instead of her: his point (Pursuer_AttackPoint,
 `body-point!`) there 3 frames, where the story's zones see it (it breaks).
 *Not yet*: the tints' flares (the renderer's layer
-$11 sprites drifting about them: the PC port of the original draws none either); Lorenzo's own
-model (O_LRO: LorenzoModel_BodyFrames, its own floor and no planted feet). Built: **his legs on
+$11 sprites drifting about them: the PC port of the original draws none either); **the story's
+moves** for him (Pursuer_EventCommand: the `scripted-move`s his own scripts give him - walking to a
+spot or a triangle, animations, turning, the doors' uses, the looks 12 / 13: 52 rooms' scripts do;
+he takes none yet and is always done). Built: **his legs on
 the floor** (`src/game/humanlegs.c`, as Fiona's - `fiona.md`; `stalker.fs` `fit-legs`): each frame
 in the room played (Pursuer_ModelUpdate), on the floor but on a ladder or a script's walk through
 blocked floor, his body is set at the floor under the lower of his feet (HumanModel_BodyFrames: on a
@@ -506,7 +522,21 @@ $201, else +0x1698 / +0x16A0: Debilitas, kind 6, Daniella and 34..36, Riccardo, 
 TintStalker 8 / 1.5, 12 / 1.5; kinds 7 and 27 6 / 1.5, 13 / 0; Lorenzo's classes and kind 12
 8 / -8 both) and his feet planted, his legs bent to them (HumanModel_PlantFeet, Model_LegIK); off
 it, his model at his place. His legs by his model (each class's Loaded: +0x890..+0x8AC): bones
-2..5 and 6..9, O_LRY's left $12..$15 (`leg-bones`). Checked by `tests/stalker/test_legs.fs`. Built: **his chance roll and rests** (`tools/stalkertables.py`: each
+2..5 and 6..9, O_LRY's left $12..$15 (`leg-bones`). Checked by `tests/stalker/test_legs.fs`.
+Built: **Lorenzo in his chair** (O_LRO, `src/game/chair.c`; LorenzoModel_BodyFrames /
+_AdjustBone): no feet planted; on the floor (Chair_OnFloor: his height on it or below) his body
+is tilted along the floor from the point his stance's `back` behind him to him, the chair's
+front (bone $A and what hangs from it) along it from him to the point `front` ahead (8 / -8: both
+behind him), each found by walking the nav mesh (Motion_OntoFloor); off it, both as he stands.
+His head turns about the front's axes by his look (bone $B 0.3 of the turn; $12 0.4 of the tilt
+and 0.3 of the turn about a frame kept upright from $B; $13 0.2 and 0.4 from $12: Mtx_TurnTwo,
+Mtx_FrameKeepZ). Mtx_TurnTwo clears the bone's place and turns it by matrices whose place row the
+original leaves unset (stack garbage - zeros would put his head at the room's origin); here each
+head bone turns about its own place. His walks are on the floor: a path's stride points put on
+the mesh (`paths.fs` `onto-floor`, PathPlan_AdvanceOnMesh's set_on) - before, he kept his height
+up a slope. The engine's words: `lorenzo-chair ( id on -- )` (at load), `chair-fit ( id tri mask
+-- ) ( F: front back pitch yaw -- )` each frame in the room played, `chair-rises ( id -- ) ( F: --
+body front )` (how far the tilts raise the forward axis). Checked by `tests/stalker/test_chair.fs`. Built: **his chance roll and rests** (`tools/stalkertables.py`: each
 kit's +0x1740 and +0x1748 by the hard setting and his rage - kind 37 alerted -, as his Setup /
 SetRage / Kind37_Update set them; Lorenzo2's hard rests are memory nothing writes: zeros). The
 rests: held off after a blow that struck (Debilitas 90, Daniella 90, hard 60, kind 35 120 / 150

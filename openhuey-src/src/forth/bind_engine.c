@@ -2696,6 +2696,45 @@ PRIM(p_legs_fit) {   /* ( id tri mask plant -- ) ( F: back front -- ) this frame
 
     humanlegs_fit(a, &gEngine.room.nav, (int)tri, (uint32_t)mask, (int)plant, back, front);
 }
+PRIM(p_lorenzo_chair) {   /* ( id on -- ) its model Lorenzo's in his chair (LorenzoModel: chair-fit) */
+    Cell on = POP();
+    Actor *a = actor_arg(f, POP());
+
+    chair_set(&a->chair, on != 0);
+}
+PRIM(p_chair_fit) {   /* ( id tri mask -- ) ( F: front back pitch yaw -- ) this frame (as legs-fit: the
+                       * original's +0x40, LorenzoModel_BodyFrames): on the floor from triangle tri,
+                       * tilted by the floor `front` ahead and `back` behind (0 0: as he stands), his
+                       * head by the look's tilt and turn; tri -1 as he stands */
+    float yaw = (float)FPOP(), pitch = (float)FPOP(), back = (float)FPOP(), front = (float)FPOP();
+    Cell mask = POP(), tri = POP();
+    Actor *a = actor_arg(f, POP());
+
+    chair_fit(a, &gEngine.room.nav, (int)tri, (uint32_t)mask, front, back, pitch, yaw);
+}
+PRIM(p_chair_rises) {   /* ( id -- ) ( F: body front -- ) how far its chair's tilts raise its forward
+                         * axis (a unit's): the body's and the front's, as last asked (0 0 level) */
+    Actor *a = actor_arg(f, POP());
+
+    FPUSH(a->chair.asked || a->chair.fitted ? a->chair.body.m[9] : 0.0f);
+    FPUSH(a->chair.asked || a->chair.fitted ? a->chair.front.m[9] : 0.0f);
+}
+PRIM(p_head_bones) {   /* ( id head neck -- ) a human model's head and the bone below it (the
+                        * models' +0x8B0 / +0x8B4; -1 none): turned where it looks (head-turn) */
+    Cell neck = POP(), head = POP();
+    Actor *a = actor_arg(f, POP());
+
+    a->head.head = (int)head;
+    a->head.neck = (int)neck;
+    a->head.pitch = a->head.yaw = 0.0f;
+}
+PRIM(p_head_turn) {   /* ( id -- ) ( F: pitch yaw -- ) where its head looks from here on (the motion's
+                       * +0x854 / +0x858: HumanModel_AdjustBone) */
+    Actor *a = actor_arg(f, POP());
+
+    a->head.yaw = (float)FPOP();
+    a->head.pitch = (float)FPOP();
+}
 PRIM(p_legs_height) {   /* ( id -- ) ( F: -- y ) the height its body was last put at by its feet */
     Actor *a = actor_arg(f, POP());
 
@@ -2996,7 +3035,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its parts shown or hi
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.1") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.2") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
@@ -3727,7 +3766,7 @@ void bind_engine(Forth *f) {
         {"message-close-after", p_message_close_after}, {"message-run", p_message_run}, {"message-place", p_message_place}, {"message-align", p_message_align}, {"ui-text-in", p_ui_text_in}, {"ui-blend", p_ui_blend}, {"ui-image4", p_ui_image4}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-back!", p_cloth_back}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
-        {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"human-legs", p_human_legs}, {"legs-fit", p_legs_fit}, {"legs-height", p_legs_height}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"human-legs", p_human_legs}, {"legs-fit", p_legs_fit}, {"lorenzo-chair", p_lorenzo_chair}, {"chair-fit", p_chair_fit}, {"chair-rises", p_chair_rises}, {"head-bones", p_head_bones}, {"head-turn", p_head_turn}, {"legs-height", p_legs_height}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"world-volume!", p_world_volume}, {"world-volume", p_world_volume_q}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"controls", p_controls}, {"control-key", p_control_key}, {"control-binding", p_control_binding}, {"control-bind", p_control_bind}, {"controls-reset", p_controls_reset}, {"control-bind-next", p_control_bind_next}, {"control-waiting", p_control_waiting}, {"key-name", p_key_name}, {"mod-camera", p_mod_camera}, {"mod-camera!", p_mod_camera_set}, {"mod-camera?", p_mod_camera_has}, {"mouse-capture", p_mouse_capture}, {"art-picture", p_art_picture}, {"thumbnail", p_thumbnail}, {"alone", p_alone}, {"cam-keep", p_cam_keep}, {"cam-kept", p_cam_kept}, {"key-push", p_key_push}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"freecam?", p_freecam}, {"freecam!", p_freecam_set}, {"mouse-down?", p_mouse_down},

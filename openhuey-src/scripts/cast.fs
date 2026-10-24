@@ -59,6 +59,11 @@ state: cast-state
   1 floats field an-home-x  1 floats field an-home-z  1 floats field an-run-x  1 floats field an-run-z
   /vec field an-watch  /vec field an-near
   cell field st-actor  cell field st-room-is   \ (the stalker, as he tells: stalker-doing)
+  cell field held               \ a script of the room has it (the story's scripted: +0xE0)
+  cell field noclipped          \ through blocked floor (the story's 0x20: +0x2B)
+  \ its head (Pursuer_Think): a scripted look on (+0x16F9), at whom the moves last said (+0x100:
+  \ 0 Fiona, 1 Hewie, else the point), the point (+0x1700); the head's turn (its motion's +0x858)
+  cell field look-on  cell field look-who  /vec field look-pt  1 floats field head-yaw
 end-state
 : him ( -- a )  model @ actor ;
 : shown! ( on -- )  0<> dup shown !  broadcast figure-shown ;   \ (told: the obstacles leave a hidden one out)
@@ -105,6 +110,31 @@ $201 constant other-walk-anim   \ (Pursuer_SlowWalkAnim: $201 with its +0x16C8 s
         ['] arrive-turning act !  exit
     then
     0e step body-move-local ;
+\ ---- its head (Pursuer_Think, Pursuer_LookAt; Motion_LookAt, Motion_EaseTilt, Model_EaseTilt):
+\ a scripted look on, turned toward whom the moves last named - Fiona, Hewie, else the look's
+\ point (the original's +0x100: the looks, the turns to a character, the doors' and the walk
+\ with an animation's argument) - small turns none; else eased back. 8 degrees a frame
+\ (Pursuer_TurnRateFast). The tilt stays level (the look eases it to 0 by nothing, the easing
+\ back to 0). The head bones take it as they are posed (HumanModel_AdjustBone: head-turn) ----
+: rate ( F: -- r )  8e deg>rad ;
+: ease-yaw ( F: target -- )
+    {: F: goal :}  head-yaw f@ goal f- fabs rate f<= if  goal head-yaw f! exit  then
+    head-yaw f@ goal f> if  head-yaw f@ rate f-  else  head-yaw f@ rate f+  then  head-yaw f! ;
+-2 constant at-point
+: look-char ( -- id | at-point )
+    look-who @ case  0 of  s" fiona" actor-named  endof   1 of  s" hewie" actor-named  endof
+                     >r at-point r>  endcase ;
+: look-target ( -- v | 0 )   \ (one gone: none)
+    look-char dup at-point = if  drop look-pt exit  then
+    dup 0< if  drop 0 exit  then  dup body? 0= if  drop 0 exit  then  body-at ;
+: look ( -- )
+    look-on @ if
+        look-target ?dup if
+            self swap body-heading-to yaw f- angle-wrap  fdup fabs 0.05e f< if  fdrop 0e  then  ease-yaw
+        then
+    else  0e ease-yaw  then
+    0e head-yaw f@ model @ head-turn ;
+: who-was ( n -- )  look-who ! ;   \ (a move's argument as the original's +0x100)
 : walk-anim-for ( -- anim )   \ (Pursuer_ScriptMove: 5 / 6 its b if one of the $2xx walks, else $200; 10 / 11 $201)
     mv-kind @ dup walk-move = swap run-move = or if
         mv-b @ $FF00 and walk-anim = if  mv-b @  else  walk-anim  then
@@ -183,15 +213,18 @@ create who-at /vec allot
         blend-move of  mv-a @ mv-b @ 0 play-blend  done  ['] root-move act !  endof
         blend8-move of  mv-a @ mv-b @ 8 play-blend  done  ['] root-move act !  endof
         idle-anim-move of  stand-anim mv-b @ 0 play-blend  done  ['] root-move act !  endof   \ (its stand, over b frames)
-        turn-to-who-move of  walk-anim play  ['] turning act !  endof
+        turn-to-who-move of  mv-a @ who-was  walk-anim play  ['] turning act !  endof
         turn-to-heading-move of  walk-anim play  ['] turning act !  endof
         walk-move of  walk-anim-for play  ['] walking act !  endof
         run-move of  walk-anim-for play  ['] walking act !  endof
         walk-path-move of  walk-anim-for play  ['] walking act !  endof
         run-path-move of  walk-anim-for play  ['] walking act !  endof
-        walk-anim-move of  mv-a @ play-now  ['] walking act !  endof
+        walk-anim-move of  mv-a @ who-was  mv-a @ play-now  ['] walking act !  endof
         stand-move of  0 play-now  settle  endof
-        >r done r>   \ (the looks, the doors' uses: nothing for it)
+        look-move of  mv-b @ dup who-was  $FF = if  0 look-on !  else  mv-a @ 0< 0= if  1 look-on !  then  then  done  endof
+        look-point-move of  look-pt mv-at vec-copy  1 look-on !  done  endof
+        open-door-move of  mv-a @ who-was  done  endof   shut-door-move of  mv-a @ who-was  done  endof
+        >r done r>
     endcase ;
 
 \ ---- loaded, dressed, gone ----
@@ -201,9 +234,20 @@ create who-at /vec allot
     -1 model !  -1 who !  0 in-scene !  ['] still act !  body-off ;
 : model-load ( file len id -- model )   \ (its kind's textures when it has its own)
     kind-textures dup if  actor-load-textured  else  2drop actor-load  then ;
+\ its legs (each human model class's Loaded: +0x890..+0x8AC) by its kind - Lorenzo's hanging figure
+\ (Kind09Model) his left from $12, Fiona's doubles (EventHumanModel, Kind18Model) 2..5 and 6..9; the
+\ others' models are plain (no feet planted); their heads (+0x8B0 / +0x8B4) the same way
+: kind-legs ( kind -- right left )
+    case  hanging-lorenzo of  2 $12  endof  fiona-double of  2 6  endof  fiona-double-2 of  2 6  endof
+          >r -1 -1 r>  endcase ;
+: kind-head ( kind -- head neck )
+    case  hanging-lorenzo of  $2B $22  endof  fiona-double of  $21 $17  endof  fiona-double-2 of  $21 $17  endof
+          >r -1 -1 r>  endcase ;
 : load ( file len id -- )
     {: id :}  unload  id model-load model !  id who !  id model @ cast-as
     id kind-motions dup if  model @ -rot motion-table  else  2drop  then
+    model @ id kind-legs human-legs  model @ id kind-head head-bones
+    0 look-on !  -1 look-who !  0e 0e 0e look-pt vec!  0e head-yaw f!   \ (Pursuer_Reset; +0x100 -1 as made)
     0 him act.visible l!  true shown!  -1 mv-done !  ['] still act !  0 play-now ;
 : dress ( model -- )   \ (another's model worn: its files loaded for this one)
     who @ 0< if  drop exit  then
@@ -224,6 +268,16 @@ create who-at /vec allot
     my-at v.x sf@ him act.x sf!  my-at v.y sf@ him act.y sf!  my-at v.z sf@ him act.z sf!
     yaw him act.yaw sf!
     self body-room room-id =  shown @ and  0<> 1 and  him act.visible l! ;
+\ its feet on the floor (Pursuer_ModelUpdate: the model's +0x40 by its stance's points - its kinds
+\ set none, 0 0: at its own height - and +0x4C): in the room played, on its triangle, planted but
+\ while a script walks it through blocked floor; a scene's (its director's motion) not
+: floor-mask ( -- mask )  noclipped @ if  0  else  pursuer-floor  then ;
+: fit-legs ( -- )
+    model @ 0< in-scene @ or if  exit  then
+    self body? 0= if  exit  then
+    self body-room room-id <> if  exit  then
+    held @ noclipped @ and 0= 1 and {: on :}
+    0e 0e  model @ self body-tri floor-mask on legs-fit ;
 PRIVATE>
 
 behaviour figure
@@ -236,7 +290,7 @@ behaviour figure
   on cast-unload ( -- )  unload ;
   on cast-dress ( model -- )  dress ;
   on cast-out ( -- )  body-off ;
-  on tick ( -- )  model @ 0< 0= self body? and if  act @ execute  then  pose ;
+  on tick ( -- )  model @ 0< 0= self body? and if  act @ execute  look  then  pose  fit-legs ;
   on frame-end ( -- )
       model @ 0< 0= self body? and if  mv-done @  ended?  model @ 0 0 1 motion-events  broadcast moving  then ;
   on scene ( on -- )  in-scene ! ;
@@ -248,7 +302,7 @@ behaviour figure
       0 exit-spot dup 0< if  drop fdrop fdrop fdrop exit  then      ( tri ) ( F: x y z )
       room-id swap body-place ;
   on show ( on -- )  shown! ;
-  on scripted ( on -- )  drop ;
+  on scripted ( on -- )  0<> held ! ;
   on scripted-move ( kind a b x y z yaw -- )
       cell>f mv-yaw f!  cells>xyz mv-at vec!
       mv-b !  mv-a !  start-move ;
@@ -258,7 +312,7 @@ behaviour figure
   on animal-go ( sound x z -- )  {: sound x z :}  sound x cell>f z cell>f animal-go ;   \ (the rooms' commands: the rabbits)
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       2drop 2drop 2drop 2drop  st-room-is !  sender st-actor ! ;   \ (who he is, and his room)
-  on noclip ( on -- )  if  0  else  pursuer-floor  then  body-mask! ;   \ (the story's 0x20: through blocked floor)
+  on noclip ( on -- )  0<> dup noclipped !  if  0  else  pursuer-floor  then  body-mask! ;   \ (the story's 0x20: through blocked floor)
 end-behaviour
 
 : cast-spawn ( slot -- id )

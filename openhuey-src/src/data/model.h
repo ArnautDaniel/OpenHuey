@@ -139,5 +139,10 @@ void model_pose_turns(const ModelTurn *t, int n);
 /* a hook on the next poses: the bones' world matrices (model space) once built, before skinning */
 typedef void (*ModelPoseHook)(Mat4 *world, int nbones, void *user);
 void model_pose_hook(ModelPoseHook hook, void *user);
+/* a hook on the next poses for each bone as it is posed (parents first, before its children: the
+ * original's model +0x14, AdjustBone, from Skel_WorldPose): bone `i`'s world matrix (model space;
+ * the others posed so far in `world`) changed as the model's class does */
+typedef void (*ModelBoneAdjust)(int i, Mat4 *world, void *user);
+void model_pose_adjust(ModelBoneAdjust adjust, void *user);
 
 #endif

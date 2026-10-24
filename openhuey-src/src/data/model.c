@@ -1054,6 +1054,13 @@ static ModelTurn sTurns[8];
 static int sNTurns;
 static ModelPoseHook sHook;
 static void *sHookUser;
+static ModelBoneAdjust sAdjust;
+static void *sAdjustUser;
+
+void model_pose_adjust(ModelBoneAdjust adjust, void *user) {
+    sAdjust = adjust;
+    sAdjustUser = user;
+}
 
 void model_pose_hook(ModelPoseHook hook, void *user) {
     sHook = hook;
@@ -1171,6 +1178,9 @@ void model_pose_layers(const Model *m, const ModelLayer *layers, int nlayers, Ma
                 if (sTurns[j].bone == i) {
                     turn_bone(&world[i], sTurns[j].pitch, sTurns[j].yaw);
                 }
+            }
+            if (sAdjust != NULL) {
+                sAdjust(i, world, sAdjustUser);
             }
             done[i] = progress = 1;
         }

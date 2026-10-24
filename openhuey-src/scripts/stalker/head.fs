@@ -3,8 +3,9 @@
 \ he is doing - each action's look mode, the action table's (kPursuerSteps +0x19) - at Fiona
 \ while he sees her, at Hewie while he sees him (5 above him), at his goal while it's in view
 \ within 30 degrees of his heading; else eased back ahead. It turns at his fast rate (8 degrees
-\ a frame) and his sight looks where it does. The head bone takes the tilt and half the turn,
-\ the bone below it the other half.
+\ a frame) and his sight looks where it does. The head bone takes the tilt and half the turn
+\ in its own frame, the bone below it the other half (the engine's head-turn); Lorenzo's chair
+\ turns his own (chair.c: the tilt and turn given to chair-fit).
 IN: stalker.head
 USING: engine game-state actors common vectors stalker-names stalker.state stalker.senses stalker.moving stalker.names ;
 
@@ -28,14 +29,16 @@ create look-modes
         daniella-kind of  $1F $15  endof  kind34-kind of  $1F $15  endof            \ DaniellaModel
         kind35-kind of  $1F $15  endof  kind36-kind of  $1F $15  endof
         riccardo-kind of  $23 $1A  endof                                             \ RiccardoModel
+        tintstalker-kind of  $23 $1A  endof  kind37-kind of  $23 $1A  endof         \ Kind23Model
         lorenzo2-kind of  $2B $22  endof  kind39-kind of  $2B $22  endof            \ Lorenzo2Model
         kind12-kind of  $13 $B  endof                                                \ Kind12Model
-        >r -1 -1 r>                                                       \ (Lorenzo's, the tinted ones': none)
+        >r -1 -1 r>                                                       \ (Lorenzo's: his chair turns it)
     endcase  neck-bone !  head-bone ! ;
 
-\ ---- Motion_LookAt: from his eye (16 up) the tilt (rise over the level distance) and the turn
-\ from his heading; Motion_EaseTilt: each toward its target by at most the step ----
-16e fconstant eye-up
+\ ---- Motion_LookAt: from his eye (16 up; Lorenzo in his chair 3.5 - each model's Loaded: +0x864)
+\ the tilt (rise over the level distance) and the turn from his heading; Motion_EaseTilt: each
+\ toward its target by at most the step ----
+: eye-up ( F: -- h )  chaired @ if  3.5e  else  16e  then ;
 create eye /vec allot
 : look-at ( v -- ) ( F: -- pitch turn )
     {: v :}  eye my-at vec-copy  eye v.y sf@ eye-up f+ eye v.y sf!
@@ -70,9 +73,12 @@ create hewie-pt /vec allot
     endcase ;
 : turn-head ( -- )
     head-bone @ 0< if  exit  then
-    my-model @ turns-clear
-    my-model @ neck-bone @  0e  head-yaw f@ 0.5e f*  turn+
-    my-model @ head-bone @  head-pitch f@ fnegate  head-yaw f@ 0.5e f*  turn+ ;
+    my-model @ head-bone @ neck-bone @ head-bones
+    head-pitch f@ head-yaw f@  my-model @ head-turn ;
 : sight-heading ( -- )  yaw head-yaw f@ f+ angle-wrap view-heading f! ;
-: looking ( -- )   \ (each frame, in the room being played: his sight where his head is)
-    head-look  sight-heading  turn-head ;
+\ each frame: Pursuer_Think eases his head back first (its scripted look +0x16F9 off:
+\ Model_EaseTilt), then in the room being played Pursuer_ModelUpdate's Pursuer_HeadLook - so a
+\ look turns it one step (8 degrees) at most, and with none it comes back two; his sight where his
+\ head is
+: looking ( played? -- )
+    look-ahead  if  head-look  then  sight-heading  turn-head ;

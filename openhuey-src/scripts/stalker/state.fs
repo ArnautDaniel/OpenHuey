@@ -162,6 +162,7 @@ state: stalker-state
   \ his body set by his feet on a slope: the points back and ahead along his step - slowly walking
   \ ($201: +0x1694 / +0x169C), else (+0x1698 / +0x16A0) - his Setup's
   1 floats field feet-slow-back  1 floats field feet-slow-front  1 floats field feet-back  1 floats field feet-front
+  cell field chaired            \ Lorenzo in his chair (O_LRO: LorenzoModel - tilted by the floor, no feet planted)
   cell field hushed              \ +0x2C: his own sounds don't play (the story's 0x3D)
   \ (P4c) a stalker's own: his chase (its start and its step: Riccardo's; 0 the family's), his
   \ own actions ($1000.. in his tables: a table of xts; 0 Debilitas's), how near he attacks

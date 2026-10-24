@@ -1,7 +1,7 @@
 \ The stalkers, P1: Debilitas in the house (docs/subsystems/stalker.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_stalker.fs
 IN: test-stalker
-USING: story.words tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.head stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam ;
+USING: stalker-names story.words tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.head stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam ;
 fvariable dx  fvariable dy  fvariable dz  fvariable dyaw
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
@@ -50,6 +50,13 @@ T{ 40e there  seen -> -1 }T
 testing ... his head looks at her (look mode 1): turned toward her, his sight with it
 40e there  [: 0.4e yaw f+ body-turn  1 stalker.state:look-mode ! ;] his  1 frames
 T{ [: head-yaw f@ fabs 0.05e f>  view-heading f@ yaw head-yaw f@ f+ angle-wrap f- fabs 0.01e f< ;] his -> -1 -1 }T
+testing ... but one step (8 degrees) at most: his Think eases it back each frame before his HeadLook
+[: 1 stalker.state:look-mode ! ;] his  10 frames
+T{ [: head-yaw f@ fabs 8e deg>rad f- fabs 0.001e f< ;] his -> -1 }T
+testing his head bones by his model (+0x8B0 / +0x8B4): Debilitas's $16 / $F; the tinted ones' (Kind23Model) $23 / $1A
+T{ [: head-bone @ neck-bone @ ;] his -> $16 $F }T
+T{ [: tintstalker-kind head-bones!  head-bone @ neck-bone @  kind37-kind head-bones!  head-bone @ neck-bone @
+      debilitas-kind head-bones! ;] his -> $23 $1A $23 $1A }T
 : heard-any ( -- flag )   \ (a noise each frame; heard on the frame after its end)
     0 10 0 do  $14 room-id s" fiona" actor-named body-tri -1 0 game:acoustics send noise  game-tick  [: did-hear @ ;] his or  loop ;
 T{ heard-any -> -1 }T

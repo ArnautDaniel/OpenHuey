@@ -107,6 +107,7 @@ int actor_load_textured(Actor *actors, const char *name, const char *tex) {
     }
     a = &actors[i];
     memset(a, 0, sizeof(*a));
+    a->head.head = a->head.neck = -1;
     if (!load_model_gltf(&a->model, name)) {   /* (else the .PCK) */
         snprintf(path, sizeof(path), "%s.PCK", name);
         pck = files_read(path, &size);
@@ -400,6 +401,9 @@ void actor_tick(Actor *a) {
     advance(a);
     if (a->hlegs.on) {   /* (HumanModel_PlantFeet's part before the pose: after Motion_Update moved on) */
         humanlegs_tick(a);
+    }
+    if (a->chair.on) {
+        chair_tick(&a->chair);
     }
 }
 
@@ -836,7 +840,13 @@ static void skin(Actor *a) {
             sHookUnplace = unplace_of(a, place.m[13]);
             model_pose_hook(pose_hook, NULL);
         }
+        if (a->chair.on) {
+            model_pose_adjust(chair_adjust, &a->chair);
+        } else if (a->head.head >= 0 || a->head.neck >= 0) {
+            model_pose_adjust(humanhead_adjust, &a->head);
+        }
         model_pose_layers(m, l, nl, skin_m, NULL);
+        model_pose_adjust(NULL, NULL);
         model_pose_hook(NULL, NULL);
         model_pose_turns(NULL, 0);
         if (a->motion >= 0) {
