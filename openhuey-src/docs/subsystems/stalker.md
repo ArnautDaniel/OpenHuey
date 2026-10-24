@@ -496,13 +496,17 @@ nearest her - within 50 of her, further than 20 from him, about his height, a st
 she and Hewie off the line to it - takes his shot instead of her: his point (Pursuer_AttackPoint,
 `body-point!`) there 3 frames, where the story's zones see it (it breaks).
 *Not yet*: the tints' flares (the renderer's layer
-$11 sprites drifting about them: the PC port of the original draws none either); the model set
-to the floor by his stance (Pursuer_ModelUpdate's model +0x40 with +0x1694 / +0x169C walking
-$201, else +0x1698 / +0x16A0: Debilitas 8 / 1.5, 12 / 1.5, kinds 7 and 27 6 / 1.5, 13 / 0 - the
-engine has no such placement: HumanModel_BodyFrames finds the floor under each foot (on slopes
-two points that far back and ahead along his step) and Model_LegIK bends the legs to reach them -
-a human legs fit the engine lacks for Fiona and the cast too, a C module like `doglegs.c` with
-each model's leg bones). Built: **his chance roll and rests** (`tools/stalkertables.py`: each
+$11 sprites drifting about them: the PC port of the original draws none either); Lorenzo's own
+model (O_LRO: LorenzoModel_BodyFrames, its own floor and no planted feet). Built: **his legs on
+the floor** (`src/game/humanlegs.c`, as Fiona's - `fiona.md`; `stalker.fs` `fit-legs`): each frame
+in the room played (Pursuer_ModelUpdate), on the floor but on a ladder or a script's walk through
+blocked floor, his body is set at the floor under the lower of his feet (HumanModel_BodyFrames: on a
+slope motion two points along his step instead - his Setup's +0x1694 / +0x169C slowly walking
+$201, else +0x1698 / +0x16A0: Debilitas, kind 6, Daniella and 34..36, Riccardo, kind 37, the
+TintStalker 8 / 1.5, 12 / 1.5; kinds 7 and 27 6 / 1.5, 13 / 0; Lorenzo's classes and kind 12
+8 / -8 both) and his feet planted, his legs bent to them (HumanModel_PlantFeet, Model_LegIK); off
+it, his model at his place. His legs by his model (each class's Loaded: +0x890..+0x8AC): bones
+2..5 and 6..9, O_LRY's left $12..$15 (`leg-bones`). Checked by `tests/stalker/test_legs.fs`. Built: **his chance roll and rests** (`tools/stalkertables.py`: each
 kit's +0x1740 and +0x1748 by the hard setting and his rage - kind 37 alerted -, as his Setup /
 SetRage / Kind37_Update set them; Lorenzo2's hard rests are memory nothing writes: zeros). The
 rests: held off after a blow that struck (Debilitas 90, Daniella 90, hard 60, kind 35 120 / 150

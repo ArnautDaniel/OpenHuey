@@ -28,35 +28,35 @@ PRIVATE>
 : float! ( field -- ) ( F: x -- ) gfx swap execute sf! ;
 PRIVATE>
 
-\ as the PS2 showed it: no effects, a 4:3 picture
+\ as the PS2 showed it: a 4:3 picture, the room's own fog, tint, bloom and depth of
+\ field (the original's), the characters lit as the game lit them (src/game/model.c light_rgba: no
+\ boost, no rim) - and none of OpenHuey's own effects
 : look-original
     1 ['] gfx.msaa int!  1 ['] gfx.aspect int!
     ['] gfx.room-lights on  ['] gfx.shadow-maps on   \ (the game lit and shadowed its characters too)
+    1 ['] gfx.ps2-lighting int!  1e ['] gfx.character-light float!  0e ['] gfx.rim float!
     ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on
     ['] gfx.ssao off  ['] gfx.bloom off  ['] gfx.fog off  ['] gfx.shadows off
     0 ['] gfx.tonemap int!  0e ['] gfx.vignette float!  0e ['] gfx.grain float!
     1e ['] gfx.saturation float!  1e ['] gfx.contrast float!  1e ['] gfx.exposure float! ;
 
-\ the original's look, cleaned up and deepened: the default
+\ the original's look with modern polish, the default: antialiased, the wide picture, the characters
+\ lit by the PS2's formula per pixel (smooth, but as bright against the room as the game had them -
+\ OpenHuey's own point lights at twice the strength lit them brighter than the room, chests blown
+\ white), a faint rim only as lit as they are (in the dark, no glowing outline), ambient occlusion,
+\ a soft glow on what is past white, highlights eased, a light vignette (0.2: the old 0.35 sank the
+\ corners of rooms dark already). No haze: the rooms have their own fog
 : look-enhanced
     4 ['] gfx.msaa int!  0 ['] gfx.aspect int!
+    ['] gfx.room-lights on  ['] gfx.shadow-maps on
+    2 ['] gfx.ps2-lighting int!  1e ['] gfx.character-light float!  0.2e ['] gfx.rim float!
     ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on
     ['] gfx.ssao on  0.9e ['] gfx.ssao-strength float!  20e ['] gfx.ssao-radius float!
     ['] gfx.bloom on  0.9e ['] gfx.bloom-threshold float!  0.12e ['] gfx.bloom-strength float!
     ['] gfx.fog off  0.0012e ['] gfx.fog-density float!  150e ['] gfx.fog-start float!   \ (the rooms have their own)
     ['] gfx.shadows on
-    1 ['] gfx.tonemap int!  0.35e ['] gfx.vignette float!  0e ['] gfx.grain float!   \ (no grain: in a game this dark it reads as dither)
+    1 ['] gfx.tonemap int!  0.2e ['] gfx.vignette float!  0e ['] gfx.grain float!   \ (no grain: in a game this dark it reads as dither)
     1e ['] gfx.saturation float!  1e ['] gfx.contrast float!  1e ['] gfx.exposure float! ;
-
-\ a touch moodier than enhanced: the film curve, a little haze, glow and grain, colours a shade
-\ drained - kept light (the strong version buried the game's own look)
-: look-cinematic
-    look-enhanced
-    2 ['] gfx.tonemap int!  1.1e ['] gfx.exposure float!
-    0.8e ['] gfx.bloom-threshold float!  0.16e ['] gfx.bloom-strength float!
-    ['] gfx.fog on  0.0008e ['] gfx.fog-density float!  200e ['] gfx.fog-start float!
-    0.42e ['] gfx.vignette float!  0.015e ['] gfx.grain float!
-    0.92e ['] gfx.saturation float!  1.03e ['] gfx.contrast float! ;
 
 \ ---- the menu ----
 \ An item is a record: label (address, length), kind, the field's word, and for numbers
@@ -181,7 +181,6 @@ PRIVATE>
 \ ---- the items ----
 s" Preset: as on the PS2"  ' look-original  action 0 0 0 item
 s" Preset: enhanced"       ' look-enhanced  action 0 0 0 item
-s" Preset: cinematic"      ' look-cinematic action 0 0 0 item
 s" Fullscreen (F11)" ' gfx.fullscreen flag 0 1 0 item
 s" Picture"         ' gfx.aspect choice 0 1   s" fill the screen" s" 4:3" 2 names item
 s" Antialiasing"    ' gfx.msaa doubling 1 8 0 item
@@ -202,6 +201,7 @@ s" Haze"            ' gfx.fog flag 0 1 0 item
 s"   density"       ' gfx.fog-density number 0 10 1 item
 s"   start"         ' gfx.fog-start number 0 1000000 25000 item
 s" Characters lit by the room" ' gfx.room-lights flag 0 1 0 item
+s"   how"           ' gfx.ps2-lighting choice 0 2   s" OpenHuey's" s" as the PS2" s" as the PS2, smooth" 3 names item
 s"   strength"      ' gfx.character-light number 500 4000 100 item
 s" Shadows from room lights" ' gfx.shadow-maps flag 0 1 0 item
 s"   strength"      ' gfx.shadow-strength number 0 1000 50 item
@@ -264,6 +264,7 @@ variable row-h  variable col-w
 ' watch-controls on-tick
 ' draw-menu on-draw
 
+\ a fresh start: enhanced; a player's saved settings over it
 look-enhanced
 : load-settings  settings-file file-exists? if  settings-file included  then ;
 ' load-settings catch drop

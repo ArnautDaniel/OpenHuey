@@ -38,6 +38,16 @@ int navmesh_build(NavMesh *n, const uint8_t *sec, size_t size) {
 void navmesh_take_flags(NavMesh *n, const uint8_t *sec16, size_t size) {
     int i;
 
+    free(n->marks);
+    n->marks = NULL;
+    n->nmarks = 0;
+    if (sec16 != NULL && size > 0) {
+        n->marks = malloc(size);
+        if (n->marks != NULL) {
+            memcpy(n->marks, sec16, size);
+            n->nmarks = (int)size;
+        }
+    }
     for (i = 0; i < n->ntris; i++) {
         n->tris[i].flags &= 0xDF39FFFFu;
         if (sec16 != NULL && (size_t)i < size) {
@@ -54,6 +64,7 @@ void navmesh_take_flags(NavMesh *n, const uint8_t *sec16, size_t size) {
 
 void navmesh_free(NavMesh *n) {
     free(n->tris);
+    free(n->marks);
     memset(n, 0, sizeof(*n));
 }
 

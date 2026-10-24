@@ -107,6 +107,35 @@ variable stalker-apart   \ (the stalker out of contact, as he tells it - his +0x
     hewie-played? if  exit  then
     dog-in-room overlaps? if  out-of-hewie  then ;
 
+\ ---- her feet on the floor (Fiona_AnimUpdate: her model's +0x40 and +0x4C, the engine's legs-fit
+\ - humanlegs.c): each frame she is on her feet (+0x1AD5BC) but in the states that clear it -
+\ thrown, down and getting up, seized, led and dragged, on a ladder and falling off it, the
+\ story's step while through blocked floor (Fiona_StateStep with +0x2B). On them, her body is set
+\ by her feet: 11 back and 1 ahead along her step on a slope, 5 and 0.5 while running, turning to
+\ flee, kicking or out of breath (Fiona_AnimGroup 2, 9, 10, 3); then her feet are planted. Off
+\ them, her model at her place, her feet as they are ----
+create feet-off-acts   \ (the states that clear +0x1AD5BC)
+    ' fiona.fear:getting-up ,   ' fiona.fear:fallen ,   ' fiona.fear:falling ,          \ SpecialEntry, Fallen, PanicFall
+    ' fiona.hurt:thrown ,   ' fiona.hurt:door-thrown ,   ' fiona.hurt:after-throw ,      \ Thrown, HitByDoor, AfterThrow
+    ' fiona.hurt:got-up ,   ' fiona.seized:pulled-up ,                                  \ getting_up: GetUp, PulledFree
+    ' fiona.seized:held ,   ' fiona.seized:led-walking ,   ' fiona.seized:led-by-hand , \ Held, LedAway, LedHand
+    ' fiona.seized:carried ,   ' fiona.seized:at-his-hand ,                             \ LedSpot, HandSpot
+    ' fiona.seized:dragged ,   ' fiona.seized:dragged-off ,                             \ Dragged, DraggedOff
+    ' fiona.ladder:crawl-drop ,   ' fiona.ladder:crawl-fall ,   ' fiona.ladder:crawl-down ,   \ CrawlDrop, CrawlFall, CrawlDown
+    ' fiona.ladder:crawl-up ,   ' fiona.ladder:ladder-off ,   ' fiona.ladder:on-ladder ,     \ CrawlPull, LadderOff, OnLadder
+    0 ,
+: feet-off-act? ( xt -- flag )
+    {: xt :}  feet-off-acts  begin  dup @ while  dup @ xt = if  drop true exit  then  cell+  repeat  drop false ;
+: feet-set ( -- )   \ (before her state runs)
+    her-act @ feet-off-act?  her-act @ ['] root-move = her-noclip @ and  or 0= her-feet ! ;
+: feet-way ( F: -- back front )   \ (by the group of her animation)
+    group dup running-group = over turning-to-flee-group = or over kicking-group = or swap breathless-group = or
+    if  5e 0.5e  else  11e -1e  then ;
+: fit-legs ( -- )
+    her-model @ 0< if  exit  then
+    her-feet @ if  feet-way  else  0e 0e  then
+    her-model @ her-tri @ blocked-floor her-feet @ 1 and legs-fit ;
+
 \ ---- a frame in the mini-game's run (Fiona_Update while Hewie is played): she goes with him by
 \ herself (fiona/companion.fs) - out of sight, nothing else; her calls to him from her mind, the
 \ pad not hers ----
@@ -119,11 +148,11 @@ variable stalker-apart   \ (the stalker out of contact, as he tells it - his +0x
     companion-frame
     her-mode @ own-mode = if  panic-controls  else  false  then  0= hands-off? 0= and if  control-command  then
     -1 her-cmd !
-    touching 1 =  her-act @ execute  keep-apart
+    touching 1 =  feet-set  her-act @ execute  keep-apart
     looks  tell-point
     command-sounds  motion-sounds
     footsteps
-    show-her ;
+    show-her  fit-legs ;
 
 \ ---- each frame (Fiona_Update, the parts built so far) ----
 : frame ( -- )
@@ -134,11 +163,11 @@ variable stalker-apart   \ (the stalker out of contact, as he tells it - his +0x
     read-controls
     her-mode @ own-mode = if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
     hands-off? if  -1 her-cmd !  else  read-command  try-flee  try-defend  try-doors  try-ladders  try-let-go  then
-    touching 1 =  her-act @ execute  keep-apart
+    touching 1 =  feet-set  her-act @ execute  keep-apart
     looks  tell-point
     command-sounds  motion-sounds
     footsteps
-    show-her ;
+    show-her  fit-legs ;
 
 \ her earrings and choker on the costumes that have them (Fiona_ShowEquipment, by the model's
 \ ShowParts: EventHumanModel_ShowParts for her clothes, Costume2Model_ShowParts for O_FIH): the pair
@@ -191,6 +220,7 @@ create model-name 32 allot  create tex-name 32 allot  create marker-name 32 allo
     tex-name her-costume @ 0 named  actor-load-textured dup her-model !
     dup 0< 0= if  0 over actor act.doorway-fade l!  then   \ (she never fades in doorways: Fiona_LightChange keeps her layer)
     dup 0< 0= if  1 over actor act.alive l!  then   \ (she blinks, her hands posed by her motions: Fiona_AnimUpdate)
+    dup 0< 0= if  dup 2 6 human-legs  then   \ (her legs: bones 2..5 and 6..9 - FionaModel_Loaded's +0x890..)
     0 over cast-as  s" motions-fiona" motion-table   \ (CharModel_SecondaryMotion: her fades and flags)
     her-costume @ own-markers? if  marker-name her-costume @  her-costume @ 1 = if  0  else  worn  then  named
     else  marker-name 0 worn named  then

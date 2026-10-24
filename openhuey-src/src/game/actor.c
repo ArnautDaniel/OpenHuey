@@ -374,9 +374,10 @@ static void face_channels(Actor *a, const Model *m, int index, float frame) {
     }
 }
 
+static void advance(Actor *a);
+
 void actor_tick(Actor *a) {
-    int frames, loop, i;
-    float s0, s1;
+    int i;
 
     if (!a->used) {
         return;
@@ -396,6 +397,17 @@ void actor_tick(Actor *a) {
     if (a->legs.on) {
         legs_contact(a);
     }
+    advance(a);
+    if (a->hlegs.on) {   /* (HumanModel_PlantFeet's part before the pose: after Motion_Update moved on) */
+        humanlegs_tick(a);
+    }
+}
+
+/* the motion moves on (Motion_Advance) */
+static void advance(Actor *a) {
+    int frames, loop;
+    float s0, s1;
+
     if (a->motion < 0 || (a->mflags & 0x40)) {
         return;
     }
@@ -669,13 +681,16 @@ static void pose_hook(Mat4 *world, int n, void *user) {
     if (sHookActor->legs.on) {
         doglegs_pose(&sHookActor->legs, &sHookActor->model, world, &sHookPlace, &sHookUnplace);
     }
+    if (sHookActor->hlegs.on) {
+        humanlegs_pose(&sHookActor->hlegs, &sHookActor->model, world, &sHookPlace, &sHookUnplace);
+    }
     if (sHookActor->cloth != NULL) {
         cloth_pose(sHookActor->cloth, world, n, &sHookPlace, &sHookUnplace);
     }
 }
 
-/* room -> model space: the place undone (turn back, unscale) */
-static Mat4 unplace_of(const Actor *a) {
+/* room -> model space: the place undone (turn back, unscale; its origin at height y) */
+static Mat4 unplace_of(const Actor *a, float y) {
     Mat4 u = mat4_identity();
     float c = cosf(a->yaw), s = sinf(a->yaw), k = a->scale != 0.0f ? 1.0f / a->scale : 1.0f;
 
@@ -683,7 +698,7 @@ static Mat4 unplace_of(const Actor *a) {
     u.m[5] = k;
     u.m[8] = -s * k; u.m[10] = c * k;
     u.m[12] = -(u.m[0] * a->pos.x + u.m[8] * a->pos.z);
-    u.m[13] = -k * a->pos.y;
+    u.m[13] = -k * y;
     u.m[14] = -(u.m[2] * a->pos.x + u.m[10] * a->pos.z);
     return u;
 }
@@ -812,13 +827,13 @@ static void skin(Actor *a) {
         place.m[5] = a->scale;
         place.m[8] = s * a->scale;  place.m[10] = c * a->scale;
         place.m[12] = a->pos.x;
-        place.m[13] = a->pos.y;
+        place.m[13] = a->hlegs.on && a->hlegs.fitted ? a->hlegs.height : a->pos.y;   /* (BodyFrames' +0x804) */
         place.m[14] = a->pos.z;
         model_pose_turns(a->turns, a->nturns);
-        if (a->legs.on || a->cloth != NULL) {
+        if (a->legs.on || a->hlegs.on || a->cloth != NULL) {
             sHookActor = a;
             sHookPlace = place;
-            sHookUnplace = unplace_of(a);
+            sHookUnplace = unplace_of(a, place.m[13]);
             model_pose_hook(pose_hook, NULL);
         }
         model_pose_layers(m, l, nl, skin_m, NULL);

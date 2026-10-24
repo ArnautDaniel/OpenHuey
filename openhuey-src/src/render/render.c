@@ -9,18 +9,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* the defaults: look-enhanced (scripts/graphics.fs - which start-up applies too, before a
+ * player's saved settings) */
 RenderSettings gRender = {
     .msaa = 4, .scale = 1.0f, .aspect = 0, .anisotropy = 16.0f,
     .ssao = 1, .ssao_radius = 20.0f, .ssao_strength = 0.9f,
     .bloom = 1, .bloom_threshold = 0.9f, .bloom_strength = 0.12f,
-    .fog = 1, .fog_density = 0.0012f, .fog_start = 150.0f, .fog_color = {0.05f, 0.055f, 0.07f},
+    .fog = 0, .fog_density = 0.0012f, .fog_start = 150.0f, .fog_color = {0.05f, 0.055f, 0.07f},
     .exposure = 1.0f, .tonemap = 1, .saturation = 1.0f, .contrast = 1.0f,
-    .vignette = 0.35f, .grain = 0.0f,
+    .vignette = 0.2f, .grain = 0.0f,
     .shadows = 1,
     .light_dir = {0.35f, 0.85f, 0.4f}, .light_color = {0.55f, 0.52f, 0.48f}, .ambient = {0.16f, 0.17f, 0.2f},
-    .rim = 0.35f,
+    .rim = 0.2f,
     .room_fog = 1, .room_tint = 1, .room_bloom = 1, .room_dof = 1, .game_font = 1,
-    .room_lights = 1, .character_light = 2.0f, .shadow_maps = 1, .shadow_strength = 0.7f,
+    .room_lights = 1, .character_light = 1.0f, .ps2_lighting = 2, .shadow_maps = 1, .shadow_strength = 0.7f,
 };
 
 RoomLook gRoomLook;
@@ -66,7 +68,29 @@ void render_look_tick(void) {
 enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_COLOR, U_AMBIENT, U_EYE, U_RIM, U_MASK,
        U_ROOM_LIT, U_LPOS = 12, U_LCOL = 15, U_LRANGE = 18, U_AMBIENT128 = 21, U_NSHADOWS = 22, U_SHADOW_VP = 23,
        U_SHADOW_INFO = 35, U_SHADOW_STRENGTH = 47, U_RECEIVE = 59, U_CHAR_LIGHT = 60, U_ALPHA = 61,
-       U_REJECT = 62, U_UNFOGGED = 63, U_SHADOW_LIGHT = 64, U_NBLOCKERS = 76, U_BLOCKER = 77 };   /* (12 shadows, 16 blockers) */
+       U_REJECT = 62, U_UNFOGGED = 63, U_SHADOW_LIGHT = 64, U_NBLOCKERS = 76, U_BLOCKER = 77,   /* (12 shadows, 16 blockers) */
+       U_PS2 = 180, U_PDIR = 181, U_PFALL = 184 };
+
+/* the PS2's lighting (gfx.ps2-lighting; src/game/model.c light_rgba): each light one direction
+ * (from the model's root to it; w: -dir.L), a falloff along it, its colour; the ambient; the sum
+ * clamped at 0x80 (= 1.0 against the texture). In the vertex shader (1: per vertex, as the
+ * original) or the fragment shader (2: the same per pixel, smooth) */
+#define PS2_LIGHT \
+    "layout(location = 15) uniform vec3 u_lcol[3];\n" \
+    "layout(location = 21) uniform vec3 u_ambient128;\n" \
+    "layout(location = 180) uniform int u_ps2;\n" \
+    "layout(location = 181) uniform vec4 u_pdir[3];\n" \
+    "layout(location = 184) uniform float u_pfall[3];\n" \
+    "vec3 ps2_light(vec3 normal, vec3 p) {\n" \
+    "    float len = length(normal);\n" \
+    "    vec3 n = len > 0.0 ? normal / len : vec3(0.0), l = u_ambient128;\n" \
+    "    for (int i = 0; i < 3; i++) {\n" \
+    "        float d = max(dot(u_pdir[i].xyz, n), 0.0);\n" \
+    "        float f = max(1.0 + u_pfall[i] * (dot(u_pdir[i].xyz, p) + u_pdir[i].w), 0.0);\n" \
+    "        l += u_lcol[i] * d * f;\n" \
+    "    }\n" \
+    "    return clamp(l, 0.0, 128.0);\n" \
+    "}\n"
 
 static const char *kMeshVs =
     "#version 460 core\n"
@@ -76,6 +100,10 @@ static const char *kMeshVs =
     "layout(location = 3) in vec3 a_normal;\n"
     "layout(location = 0) uniform mat4 u_mvp;\n"
     "layout(location = 62) uniform vec4 u_reject;\n"   /* the PS2's clip volume (x, y bands, near, far); x 0: off */
+    "layout(location = 3) uniform int u_lit;\n"
+    "layout(location = 11) uniform int u_room_lit;\n"
+    PS2_LIGHT
+    "out vec3 v_ps2;\n"
     "out vec2 v_st;\n"
     "out vec4 v_col;\n"
     "out vec3 v_normal;\n"
@@ -90,6 +118,8 @@ static const char *kMeshVs =
     "    v_col = a_col * (255.0 / 128.0);\n"   /* 0x80 = 1.0 */
     "    v_normal = a_normal;\n"
     "    v_pos = a_pos;\n"
+    /* (per vertex, cut to whole steps: the vertex colour the microprograms gave the GS) */
+    "    v_ps2 = u_lit != 0 && u_room_lit != 0 && u_ps2 == 1 ? floor(ps2_light(a_normal, a_pos)) / 128.0 : vec3(1.0);\n"
     "}\n";
 
 /* the GS's modulate (texel times vertex colour), done on linear values; characters lit by a key
@@ -100,6 +130,7 @@ static const char *kMeshFs =
     "in vec4 v_col;\n"
     "in vec3 v_normal;\n"
     "in vec3 v_pos;\n"
+    "in vec3 v_ps2;\n"
     "noperspective in float v_out;\n"
     "layout(binding = 0) uniform sampler2D u_tex;\n"
     "layout(location = 1) uniform int u_use_tex;\n"
@@ -114,10 +145,9 @@ static const char *kMeshFs =
     "layout(location = 10) uniform float u_mask;\n"   /* the bloom mask: 1 for its own draws */
     "layout(location = 11) uniform int u_room_lit;\n"   /* lit draws: by the room's lights */
     "layout(location = 12) uniform vec3 u_lpos[3];\n"
-    "layout(location = 15) uniform vec3 u_lcol[3];\n"   /* 0..128, times intensity */
     "layout(location = 18) uniform float u_lrange[3];\n"
-    "layout(location = 21) uniform vec3 u_ambient128;\n"
     "layout(location = 22) uniform int u_nshadows;\n"
+    PS2_LIGHT   /* (u_lcol: 0..128, times intensity) */
     "layout(location = 23) uniform mat4 u_shadow_vp[12];\n"
     "layout(location = 35) uniform vec4 u_shadow_info[12];\n"   /* the caster's middle, its size */
     "layout(location = 47) uniform float u_shadow_strength[12];\n"
@@ -174,7 +204,11 @@ static const char *kMeshFs =
      * normal turned toward the eye, else the rim light floods it and the lights miss it) */
     "        if (dot(n, v) < 0.0) n = -n;\n"
     "        float rim = pow(1.0 - max(dot(n, v), 0.0), 3.0) * u_rim;\n"
-    "        if (u_room_lit != 0) {\n"   /* the game's: ambient + 3 point lights, 0x80 = 1.0 */
+    "        if (u_room_lit != 0 && u_ps2 == 1) {\n"   /* as the PS2 lit it (the vertex shader) */
+    "            light = pow(v_ps2, vec3(2.2));\n"
+    "        } else if (u_room_lit != 0 && u_ps2 == 2) {\n"   /* ... per pixel */
+    "            light = pow(ps2_light(v_normal, v_pos) / 128.0, vec3(2.2));\n"
+    "        } else if (u_room_lit != 0) {\n"   /* OpenHuey's: ambient + 3 point lights, 0x80 = 1.0 */
     "            vec3 l = u_ambient128;\n"
     "            for (int i = 0; i < 3; i++) {\n"
     "                vec3 d = u_lpos[i] - v_pos;\n"
@@ -189,8 +223,9 @@ static const char *kMeshFs =
     "        }\n"
     "        c.rgb *= light;\n"
     /* (the rim by the surface's own colour: a light one rimmed as it was, a dark one - a crow's
-     * feathers seen edge on - barely, not washed pale) */
-    "        c.rgb += rim * max(light, u_ambient) * clamp(c.rgb * 2.0, 0.0, 1.0) * c.a;\n"
+     * feathers seen edge on - barely, not washed pale; and by the room's light on it alone, so a
+     * character in the dark has no glowing outline) */
+    "        c.rgb += rim * (u_room_lit != 0 ? light : max(light, u_ambient)) * clamp(c.rgb * 2.0, 0.0, 1.0) * c.a;\n"
     "    }\n"
     "    if (u_receive != 0) {\n"   /* characters' shadows: PCF over 3 x 3, fading with distance */
     "        vec2 texel = 1.0 / vec2(textureSize(u_shadow, 0).xy);\n"
@@ -477,11 +512,21 @@ void render_camera(const Mat4 *proj, const Mat4 *view, Vec3 eye, float znear, fl
     glProgramUniform1f(R.mesh_prog, U_RIM, gRender.rim);
 }
 
-void render_draw_lights(Vec3 ambient, const DrawLight *lights, int n) {
-    float pos[9] = {0}, col[9] = {0}, range[3] = {0};
+void render_draw_lights(Vec3 ambient, const DrawLight *lights, int n, Vec3 root) {
+    float pos[9] = {0}, col[9] = {0}, range[3] = {0}, dir[12] = {0}, fall[3] = {1, 1, 1};
     int i;
 
     for (i = 0; i < n && i < 3; i++) {
+        /* the PS2's (light_slot): the direction from the root to the light, w -dir.L */
+        Vec3 d = vec3_sub(lights[i].pos, root);
+        float len = vec3_len(d);
+
+        d = len > 0.0f ? vec3_scale(d, 1.0f / len) : vec3(0, 0, 0);
+        dir[i * 4] = d.x;
+        dir[i * 4 + 1] = d.y;
+        dir[i * 4 + 2] = d.z;
+        dir[i * 4 + 3] = -vec3_dot(d, lights[i].pos);
+        fall[i] = lights[i].fall;
         pos[i * 3] = lights[i].pos.x;
         pos[i * 3 + 1] = lights[i].pos.y;
         pos[i * 3 + 2] = lights[i].pos.z;
@@ -491,9 +536,12 @@ void render_draw_lights(Vec3 ambient, const DrawLight *lights, int n) {
         range[i] = lights[i].range;
     }
     glProgramUniform1i(R.mesh_prog, U_ROOM_LIT, n >= 0 && gRender.room_lights);
+    glProgramUniform1i(R.mesh_prog, U_PS2, gRender.ps2_lighting);
     glProgramUniform3fv(R.mesh_prog, U_LPOS, 3, pos);
     glProgramUniform3fv(R.mesh_prog, U_LCOL, 3, col);
     glProgramUniform1fv(R.mesh_prog, U_LRANGE, 3, range);
+    glProgramUniform4fv(R.mesh_prog, U_PDIR, 3, dir);
+    glProgramUniform1fv(R.mesh_prog, U_PFALL, 3, fall);
     glProgramUniform3f(R.mesh_prog, U_AMBIENT128, ambient.x, ambient.y, ambient.z);
     glProgramUniform1f(R.mesh_prog, U_CHAR_LIGHT, gRender.character_light);
 }
