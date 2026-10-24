@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.2.3 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.2.4 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -26,10 +26,12 @@ if(HGA_RELEASE)
     set(DEFAULT_EXE "")
 endif()
 
-# ---- the Forth system ----
-add_library(forth STATIC src/forth/forth.c)
-target_include_directories(forth PUBLIC src/forth)
-target_link_libraries(forth PUBLIC m)
+# ---- the Forth system: ClankForth (external/clankforth, a submodule shared with OpenMizzurna - its
+# language, prelude and tester built in; its own tests run with ours) ----
+enable_testing()
+set(CLANKFORTH_TESTS ON CACHE BOOL "the language's tests (ctest)")
+add_subdirectory(external/clankforth)
+add_library(forth ALIAS clankforth)
 
 # the game state the scripts share (no SDL: the forth tool and the tests have it too)
 add_library(gamestate STATIC src/game/progress.c)
@@ -44,7 +46,6 @@ set_target_properties(forth-tool PROPERTIES OUTPUT_NAME forth)
 target_link_libraries(forth-tool PRIVATE forth gamestate hactor)
 target_compile_definitions(forth-tool PRIVATE "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"")
 
-enable_testing()
 file(GLOB FORTH_TESTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_*.fs")
 foreach(t ${FORTH_TESTS})
     get_filename_component(name "${t}" NAME_WE)

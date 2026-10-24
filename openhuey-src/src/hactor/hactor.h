@@ -12,7 +12,7 @@
 #ifndef HACTOR_H
 #define HACTOR_H
 
-#include "../forth/forth.h"
+#include "forth.h"
 
 #define HACTOR_MAX 256      /* actors alive at once */
 #define HMSG_ARGS 16        /* cells a message carries */

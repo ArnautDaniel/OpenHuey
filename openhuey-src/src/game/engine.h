@@ -3,7 +3,7 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include "../forth/forth.h"
+#include "forth.h"
 #include "../platform/platform.h"
 #include "actor.h"
 #include "camera.h"

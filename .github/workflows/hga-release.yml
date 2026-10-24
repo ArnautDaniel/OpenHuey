@@ -30,6 +30,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true   # (the Forth: external/clankforth)
 
       # the release script's tools, and the headers SDL is built against for Linux (it opens
       # X11 / Wayland / the sound servers itself at run time)

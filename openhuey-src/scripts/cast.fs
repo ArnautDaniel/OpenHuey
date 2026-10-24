@@ -303,6 +303,8 @@ behaviour figure
       room-id swap body-place ;
   on show ( on -- )  shown! ;
   on scripted ( on -- )  0<> held ! ;
+  on activate ( -- )   \ (the story's 0x15: Character_Activate - a script's hold and its way through blocked floor gone)
+      0 held !  0 noclipped !  pursuer-floor body-mask! ;
   on scripted-move ( kind a b x y z yaw -- )
       cell>f mv-yaw f!  cells>xyz mv-at vec!
       mv-b !  mv-a !  start-move ;

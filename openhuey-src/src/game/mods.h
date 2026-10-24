@@ -4,7 +4,7 @@
 #ifndef MODS_H
 #define MODS_H
 
-#include "../forth/forth.h"
+#include "forth.h"
 
 #define MODS_API_MAJOR 1   /* the mod API: the game's messages, broadcasts and hooks (a mod's */
 #define MODS_API_MINOR 3   /* `requires: openhuey 1 0`): the minor grows with additions (1.1: item-use-rule, 1.2: title-menu-hook, 1.3: the mods' camera) */

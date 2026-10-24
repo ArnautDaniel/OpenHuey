@@ -1,0 +1,3 @@
+[submodule "openhuey-src/external/clankforth"]
+	path = openhuey-src/external/clankforth
+	url = https://github.com/ArnautDaniel/ClankForth.git
