@@ -108,6 +108,7 @@ message fright-raw ( amount -- )             \ (Panic_FrightRaw: as it is)
 message panic-shorten ( frames -- )          \ (the panic) its time left shortened (the progress' +0x7BA: her shaking as she gets up)
 message fear-set ( amount -- )               \ the fear this frame set outright (the progress' +0x7D8 =: f>cell)
 message fear-in ( amount -- )
+message panic-overlay ( thousandths -- )       \ (the panic) its screen overlay's level (ScreenFade_Level of the progress' +0x7B8): the game over sets it full and fades it with its tints
 message panic-stage! ( stage -- )
 message panic-level! ( level -- )
 message panic ( stage level -- )             \ broadcast each frame
