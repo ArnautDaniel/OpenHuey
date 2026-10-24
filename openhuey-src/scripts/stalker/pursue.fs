@@ -6,8 +6,9 @@
 \ walks at her or stalks her a while. Walking, his time out or her past 100: he
 \ stalks. Stalking, his time out within 100: his lunge table. Touching her: a step back facing
 \ her, and again by the row once she is 5 further off. Standing: turning to her; out of the
-\ ground he gains, or not in front of him (20 degrees): by the row again. A combo, a taunt or
-\ his way round her over: by the row again. Within reach in front of him on her floor: his
+\ ground he gains, or not in front of him (20 degrees): by the row again. Round her, or his third
+\ taunt (its gesture flagged), far off: stalking; over, walking at her. A combo or another taunt
+\ over: by the row again. Within reach in front of him on her floor: his
 \ attack (his table for how she stands).
 IN: stalker.pursue
 USING: engine game-state actors messages common facts flag-names paths stalker.anims stalker.names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase ;
@@ -25,6 +26,13 @@ USING: engine game-state actors messages common facts flag-names paths stalker.a
     fiona body-at turn-rate turn-to fdrop  root-move
     ended? if  -1 step-done !  then ;
 : step-back ( -- )  step-back-anim play-now  ['] backing back-off-act act! ;
+\ round her, or his third taunt with its gesture's flag (Pursuer_BehaviourStalk $1A / $19): more
+\ than 100 from her, stalking her for the row's frames; else, over, walking at her for the row's
+\ ($1B, his second way round, has no case there)
+: far-off? ( -- flag )  d-her 100e f> ;
+: round-or-taunt ( far-stalks? -- )
+    far-off? and if  stalk-act her-stage @ pursue-row stalk-frames# keep exit  then
+    step-done @ if  walk-at-act her-stage @ pursue-row walk-frames# keep  then ;
 \ standing to her (Pursuer_Move17C): turned to her
 : facing-her ( -- )  fiona body-at turn-rate turn-to fdrop  freeze-t @ 0= if  root-move  then ;
 : stand-to ( -- )  still-anim play  ['] facing-her watch-act act! ;
@@ -41,8 +49,8 @@ USING: engine game-state actors messages common facts flag-names paths stalker.a
               else  d-her touch f<=  d-her f0< 0= and if  step-back  then  then  endof
         watch-act of  d-her ground-gained f>  in-front? 0= or if  pick-pace
               else  d-her f0< if  out-of-reach 0= if  search-again exit  then  then  then  endof
-        round-act of  step-done @ if  walk-at-act  her-stage @ pursue-row walk-frames#  keep  then  endof
-        round-2-act of  step-done @ if  walk-at-act  her-stage @ pursue-row walk-frames#  keep  then  endof
+        round-act of  true round-or-taunt  endof
+        taunt-3-act of  taunt-gesture @ gesture-flag? round-or-taunt  endof
         >r  step-done @ if  pick-pace  then  r>
     endcase
     hold-t @ 0> if  -1 hold-t +!  then

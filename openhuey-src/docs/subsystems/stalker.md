@@ -63,7 +63,18 @@ doors (open, locked: `door-state`).
 Debilitas: model `O_DB0/DB0_000`, motion table $3D89A0, radius 5, height 20, head bone $16. His
 model is the kind he is loaded as (`debilitas-dress`, Pursuer_ModelFiles): kind 6 (Debilitas2)
 `O_DB1/DB1_000`, kinds 7 (Debilitas3) and 27 `O_DB2/DB2_000` - the same skeleton, motions and model
-class - with their own textures (the hard setting's `..H`), events and sounds.
+class - with their own textures (the hard setting's `..H`), events and sounds. Loaded as a kind
+he is set up as it (`debilitas-setup`, each time - a new Pursuer in the original, health full):
+his kit (`tools/stalkertables.py`: each kind's attack tables by the hard setting, moves,
+gestures, combos, base chase, temper, animations' sounds, knocks), his numbers and his kind
+(`my-kind`, the one the cutscenes' cast finds him by: `char-model`, speech, reflections):
+
+| Kind | Setup | Health (hard) | Chase | Gives up | Rooms | Hewie: tolerance, throw (hard), time | Away, cooldown | After her (hard), down (hard) |
+|---|---|---|---|---|---|---|---|---|
+| 2 | Debilitas_Setup | 70 (110) | his own | 20 damage | $20 (796) | 20, 10, 1800 | 4500, 90 | 300 (540), 1800 (1350) |
+| 6 | Debilitas2_Setup | 90 (135) | the Pursuer's | 80 damage | $20 (796), $02 (794) | 30, 10 (15), 1800 | 10800, 150 | 300, 1800 |
+| 7 | Debilitas3_Setup | 110 (165) | the Pursuer's | never | none | 40, 12 (18), 1800 | 9000, 150 | 300, 1350 |
+| 27 | Kind27_Setup | 110 (165) | the Pursuer's | never | none | 30, 12 (18), 1800 | 9000, 150 | 300, 1350 |
 
 **Senses** (P1b, `stalker/senses.fs`): he sees 150 ahead, 60 degrees either side, past no wall
 (triangles $40080; $40088 while she hides) to her middle or one of 9 points round her far side;
@@ -72,7 +83,8 @@ measured on foot in turn, a frame each. He hears noises above his threshold (Deb
 Daniella 12) through the acoustics actor.
 
 **Modes** (P1c, `stalker/search.fs`, Pursuer_ModesSearching in the room being played): seeing
-her he is after her (mode 0) and his clock restarts (300 frames, hard 540); out of sight it
+her he is after her (mode 0) and his clock restarts (his setup's +0x16D4, Pursuer_Caught:
+Debilitas 300 frames, hard 540; the others' in their sections); out of sight it
 runs down, then he searches the room (mode 2, 600 frames' clock, 2..5 stops); his route over
 he waits about (mode 3, 900 frames), then searches again. Heading for her room (1) he searches
 it once in; held off (4) he is after her again when his clock runs out. Coming into the game
@@ -152,16 +164,18 @@ and adds it to the damage he's had (to 999); a killing one (3) all of it. Its si
 or behind him, +2 a kick or hard one - picks his flinch ($1001 / $1000 / $1004 / $1003; in a
 doorway $1002 / $1005); in a move that leaves him unshaken (his move table's byte $1D) a shove
 only gets a grunt ($1C). Out of health he falls (forward $1804 with floor ahead, else back
-$1800), lies there 1800 frames (hard 1350; "hard" throughout is the hard mode, `hard-mode?`: story flag $AF) - a blow then a twitch - and gets up ($1807 /
+$1800), lies there his setup's frames (+0x16D0, Pursuer_NoGiveUp: Debilitas 1800, hard 1350;
+"hard" throughout is the hard mode, `hard-mode?`: story flag $AF) - a blow then a twitch - and gets up ($1807 /
 $1803) with his health back; in a doorway he's left at 1. A stumble ($8000, or her kick's
 roll by how worn he is: his health over its most above 0.8 none, 0.6 2 in 100, 0.4 5, else 10)
 hurts him 900 frames: he stands 2, walks $202 / $203, turns $405.., and growls ($1F) after
 it. At his flinch's key, her blow, he may strike back: his table 8 (her in front) or 9.
 At the end of each step - a blow's reaction, his striking back, any move of his chase
-(Pursuer_FrameUpdate) - 20 damage or more (not held off, not in a doorway) and a way home: he
-gives up - his cry ($20), held off (mode 4, 900 frames), the damage count back to 0 - and goes
-out by the first door of his route to the nearer of his own rooms ($20, $02; in one of them, to
-its spot: Debilitas_PickDestination). No route home: he doesn't give up.
+(Pursuer_FrameUpdate) - 20 damage or more (kind 6 80: DEBILITAS_GIVE_UP_HITS; not held off, not
+in a doorway) and a way home: he gives up - his cry ($20), held off (mode 4, 900 frames), the
+damage count back to 0 - and goes out by the first door of his route to the nearer of his own
+rooms (Debilitas $20; kind 6 $20, $02; in one of them, to its spot: Debilitas_PickDestination).
+No route home: he doesn't give up. The others never do (Pursuer_GivesUp: kinds 7 and 27 too).
 
 **Taking her** (P2b, `stalker/grab.fs`; Pursuer_StateFaceFiona / StateWalkOn, Pursuer_CloseOnFiona):
 her floor not free for him (flags $80001) - his attack tables 6 / 7 instead (7 from the panic's
@@ -227,7 +241,8 @@ loudness was meant to grow; it is always full.)
 
 **His lair** (vtable +0x314, Debilitas_PickDestination, Pursuer_TravelOffscreen /
 Pursuer_Pace): held off (mode 4), he heads for the nearer of his own rooms by route (Debilitas
-castle-2f-2 $20 - its spot triangle 796 - and castle-1f-2 $02 - 794; Daniella none) and, out
+castle-2f-2 $20 - its spot triangle 796: kDebilitasRoomSpots; kind 6 that and castle-1f-2 $02 -
+794: D_0041BE40; the rest none) and, out
 of sight there, travels no further while it lasts; coming into play there held off he walks to
 its spot. (The summoner may still take him: 5 s held off away from her.)
 
@@ -247,7 +262,9 @@ past stage 3 - standing to her; else by her row walking at her ($200) or stalkin
 its frames; walking, her time out or Fiona past 100 - stalking; stalking, her time out within
 100 - her table 10; touching - a step back facing her ($404), and the row again once 5 further
 off; standing - turned to her, the row again out of the ground she gains or out of 20 degrees; a
-combo, a taunt or her way round over - the row again; within reach in front on her floor - her
+combo or a taunt over - the row again; round her ($1A), or her third taunt ($19) with its
+gesture's flag (+4 of her gesture table's row), more than 100 off - stalking for the row's frames,
+else over - walking at her for the row's; within reach in front on her floor - her
 attack by Fiona's plight. *The door she comes into Fiona's room by* (Daniella_DoorBreak /
 ExitArg; Riccardo's and the TintStalker's alike): pulled shut behind her once she is clear of
 its area and it stands open (`shut-behind`, the doors' `pull-shut`); in her rage left open
@@ -380,7 +397,8 @@ stands (Debilitas 20; Daniella 200, hard 80) and free: after Hewie (Pursuer_GoFo
 BehaviourHewie) - toward him, and within reach facing him an attack from his table for Hewie
 (situation $B: a blow at him, or his grab, a hold of him; his combo at Hewie: `at-dog`); that
 over, or his time for it up (`dog-limit`, +0x16D8: Debilitas and Riccardo 1800, Daniella 6000,
-Lorenzo2 600, kind 39 300 - hard 360 -, kind 37 900, else none), his taunt ($1602) and his
+Lorenzo2 600, kind 39 300 - hard 360 -, kind 37 900, the TintStalker 1800 (TintStalker_Setup),
+Lorenzo and kind 12 none), his taunt ($1602) and his
 temper back to 0, on as before. Hewie gone from the room: out after him by the exit to his
 (`follow-dog`; his temper back to 0, heading for her room after it); none, on as before. His blows reach Hewie
 as they reach her (a `blow` with the move's kind, damage and stumble). Hewie's tackles (a `blow`
@@ -398,7 +416,12 @@ Each stalker's own is now his: `own-chase` / `own-run` (his chase's start and st
 family's: Debilitas's or the Pursuer's), `own-acts` (his own actions, `$1000..` of his tables: a
 table of xts - 0 Debilitas's), `attack-range` (vtable +0x2F4; 0 the family's 24) and `own-frame`
 (his own each frame). The kits (`tools/stalkertables.py`) carry two more: Riccardo's waits
-(+0x1824) and his flurry's chances.
+(+0x1824) and his flurry's chances. Each one's clocks from his Setup (`clocks`: after her
++0x16D4, down when knocked out +0x16D0; normal / hard): Daniella 450 / 450, 750 / 300; kind 34
+300 / 360, 900 / 1350; kind 35 600, 450 / 360; kind 36 300 / 600, 900 / 360; Riccardo 300 / 540,
+1200 / 900; kind 37 300 / 360, 150; the TintStalker 300, 1200; Lorenzo 600 / 450, 510 / 360;
+Lorenzo2 900 / 450, 0 (up at once); kind 39 900, 0; kind 12 29970, 0. None of them gives up
+after damage (Pursuer_GivesUp).
 
 **Riccardo** (kind 4; riccardo.c): 100 health (hard 125), 3 across, 17 tall, his model O_RCG/RCG_000
 (its 74 motions; motion table $41A2C0), reach 20, reach for Hewie 12. His walks: standing 1
@@ -443,7 +466,8 @@ of there). Under the floor 15 frames, unseen. **Kind 39** (lorenzo.c Kind39_*): 
 with its own tables, 250 health (hard 300), no "rage" (reach 18, for Hewie 12); its sweep
 strikes whoever it sees.
 
-**Riccardo's other class** (kind 37; riccardo.c Kind37_*): his chase with its own tables, near
+**Riccardo's other class** (kind 37; riccardo.c Kind37_*): his chase with its own tables (its
+reach the Pursuer's 24: Pursuer_AttackRange, not his 20), near
 him at 30 (Riccardo 60), its model O_RCT/RCT_000 (motion table $42AED0), 100 health (hard 125);
 struck to 100 damage it is alerted - hurt, its alert tables and waits (the kit's waits by the hard
 setting and alerted) - and calms below. **The TintStalker** (kind 23; tintstalker.c): the
@@ -469,14 +493,18 @@ nearest her - within 50 of her, further than 20 from him, about his height, a st
 she and Hewie off the line to it - takes his shot instead of her: his point (Pursuer_AttackPoint,
 `body-point!`) there 3 frames, where the story's zones see it (it breaks).
 *Not yet*: the tints' flares (the renderer's layer
-$11 sprites drifting about them: the PC port of the original draws none either). Built:
+$11 sprites drifting about them: the PC port of the original draws none either); the model set
+to the floor by his stance (Pursuer_ModelUpdate's model +0x40 with +0x1694 / +0x169C walking
+$201, else +0x1698 / +0x16A0: Debilitas 8 / 1.5, 12 / 1.5, kinds 7 and 27 6 / 1.5, 13 / 0 - the
+engine has no such placement for the stalkers); the chance roll's table (+0x1740,
+Pursuer_ChanceRoll) and the taunt's hold (+0x1748). Built:
 **the mini-game's run** (Hewie played): she isn't always in the room played - after her
 while she is elsewhere he goes out by the first door of his way to her room (Pursuer_Modes /
 BehaviourFollow) and travels after her; coming into the room played he waits 150 frames first
 (Pursuer_ThroughDoorEnding); doors are left open behind (Kind34_ExitArg, TintStalker_EndingDoor);
 Kind34 and the TintStalker take the run's attack rows for situations 14 / 15 (`run-table`);
-their tempers with Hewie are the run's (80, 20, Debilitas3's 16); kind 7 (`stalker-as`) is the
-Pursuer with Debilitas's model and the Pursuer's chase. Searching out of sight his clock is 1
+their tempers with Hewie are the run's (80, 20, Debilitas3's 16); kind 7 (`stalker-as`) is
+Debilitas set up as Debilitas3 (the table above): the Pursuer's chase. Searching out of sight his clock is 1
 (Pursuer_Timer15s), and done with it - she not in his room nor next to it - he goes after Hewie
 instead (Pursuer_Modes' mode 3: SetTarget(Hewie) - here, to the room played, Hewie's, to search
 it: `hunting-dog`). The summoner doesn't bring him in during the run (Summoner_RoomStart). The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,

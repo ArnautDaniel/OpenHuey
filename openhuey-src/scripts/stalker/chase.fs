@@ -45,11 +45,14 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 \ turned on the spot toward her
 : turning-to ( -- )  root-move  ended? if  -1 step-done !  then ;
 : turn-to-her ( way -- )  turn-base + play-now  ['] turning-to turn-act act! ;
-\ a gesture (a taunt: his gesture table) played to its end
+\ a gesture (a taunt: his gesture table's row n, its animation and a flag) played to its end, as
+\ the row's act (Pursuer_PickFromTable $2, $17..$19: the row kept, +0x104)
 : gesturing-at ( -- )  freeze-t @ 0= if  root-move  then  ended? if  -1 step-done !  then ;
-: gesture! ( n -- )
-    2* cells gestures + @  dup 1 = if  drop stand-watch exit  then
-    play-now  ['] gesturing-at taunt-act act! ;
+: gesture-anim ( n -- anim )  2* cells gestures + @ ;
+: gesture-flag? ( n -- flag )  2* 1+ cells gestures + @ 0<> ;
+: gesture-as ( n act -- )
+    {: n act :}  n gesture-anim  dup 1 = if  drop stand-watch exit  then
+    play-now  ['] gesturing-at act act!  n taunt-gesture ! ;
 \ round her (Pursuer_StateSidestepRoom / StateSidestep): at his distance, 5 degrees a step the
 \ way she isn't facing; the other way when it's blocked; done after 30 of it or 120 frames
 create rd-at /vec allot
@@ -142,7 +145,8 @@ create family-acts  ' wander , ' turn-at-her , ' lunge , ' grab-dog ,
     swap case
         watch-act of  drop  endof                                    \ (nothing new)
         combo-act of  combo-start  endof
-        taunt-act of  gesture!  endof   taunt-2-act of  gesture!  endof   taunt-3-act of  gesture!  endof   gesture-act of  gesture!  endof
+        taunt-act of  taunt-act gesture-as  endof   taunt-2-act of  taunt-2-act gesture-as  endof
+        taunt-3-act of  taunt-3-act gesture-as  endof   gesture-act of  gesture-act gesture-as  endof
         round-act of  drop round-her  endof   round-2-act of  drop round-her  endof
         take-by-hand-act of  drop by-the-hand take-her  endof   take-walking-act of  drop walked-off take-her  endof
         >r drop stand-watch r>
