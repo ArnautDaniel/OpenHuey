@@ -69,9 +69,10 @@ $20020008 constant hand-stops   \ (the floors her hand can't pass over)
     aim  0 her-let-gone !
     her-sub @ case  thrown-sub of throw-anim endof  aimed-sub of aimed-throw-anim endof  >r set-down-anim r>  endcase  -1 play-table
     ['] letting-go her-act ! ;
-\ the triangle (Progress_PlayerButtons): free, a thing in slot 2 (not under progress flag $14)
+\ the triangle (Progress_PlayerButtons): free, a thing in slot 2 - not panicking (the threat at
+\ 4: the buttons after the action button are skipped), nor under progress flag $14
 : try-let-go ( -- )
-    her-mode @ own-mode <>  her-doing @ free-doing <> or  no-flee state-flag? or if  exit  then
+    her-mode @ own-mode <>  her-doing @ free-doing <> or  no-flee state-flag? or  her-panic-stage @ panicking >= or if  exit  then
     triangle button-pressed? 0= if  exit  then
     held let-go-as {: how kind :}  how 0=  kind 0< or if  exit  then
     how her-sub !  throw-mode her-mode !  let-go-doing her-doing !  ['] let-go-start her-act ! ;

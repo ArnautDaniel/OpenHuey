@@ -25,9 +25,11 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
 : arrive-at ( exit -- )   \ (the room scripts' char-to-exit: its outside spot, her heading kept)
     dup 0 exit-spot 0< if  fdrop fdrop fdrop  drop arrive-anywhere exit  then
     drop  her-yaw f@ put ;
-: idle ( -- )   \ Fiona_ToIdle: free, standing, her moves her own
-    free-doing her-doing !  own-mode her-mode !  her-yaw f@ her-heading f!  0 her-rest !   \ (the turn mode kept: Fiona_ToIdle leaves +0x1AD588)
+: stand-free ( -- )   \ (Fiona_ToIdle but for the turn mode: free, standing, her moves her own)
+    free-doing her-doing !  own-mode her-mode !  her-yaw f@ her-heading f!  0 her-rest !
     -1 idle-anim  ['] idle-move her-act ! ;
+: idle ( -- )   \ Fiona_ToIdle: free, standing, the stick by the camera now (+0x1AD588 0)
+    camera-relative her-turn-mode !  stand-free ;
 ' idle is fiona.defend:to-idle   ' idle is fiona.hurt:to-idle   ' idle is fiona.seized:to-idle   ' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle   ' idle is fiona.ladder:to-idle   ' idle is fiona.push:to-idle   ' idle is fiona.letgo:to-idle
 ' fiona.ladder:knocked-off is fiona.hurt:knocked-off
 ' fiona.doors:scripted-door is fiona.moves:door-use
@@ -49,7 +51,7 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
     free-doing her-doing !  own-mode her-mode !  0 her-sub !  6 her-still !  0 her-lock !
     her-turn-mode @ door-steered <> if  camera-relative her-turn-mode !  then   \ (a door's held stick kept through the arrival)
     1e her-stick-k f!  -1 her-variant !  1e her-tired-w f!  0 her-rest !  0 her-run-t !
-    -1 her-cmd !  0 her-busy-t !  0 her-scripted !  0 her-move !  -1 her-move-done !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  idle ;
+    -1 her-cmd !  0 her-busy-t !  0 her-scripted !  0 her-move !  -1 her-move-done !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  stand-free ;   \ (the turn mode as set above)
 
 \ arriving by an exit while walking or running on her own, she keeps on into the room: her
 \ stride and the held stick carry over (Fiona_Vt34 stops her only when she was busy)
@@ -70,31 +72,39 @@ create goal /vec allot
     led-mode her-mode !  run-to-doing her-doing !  ['] going her-act ! ;
 
 \ ---- keeping out of the others (Fiona_KeepApart), while she is free: overlapping the stalker
-\ she is pushed out to their radii apart - along his way when he is coming at her (his heading
-\ 20 on, plus the way from him to her), else straight away from him - unless that is off the
-\ floor; overlapping Hewie (not at the frame's start) back to where she was ----
+\ she is pushed out to their radii apart - along his way when he is stepping at her (his step
+\ this frame 20 on, plus the way from him to her), else straight away from him; off the floor
+\ she isn't moved and is out of contact (+0x2A: no more pushing till she stands clear of
+\ both). Overlapping Hewie, out of him - beside him, as near straight away as the floor allows
+\ (Actor_PushOut) - or, nowhere, back to where she was. None of it when she touched Hewie
+\ (and not the stalker) as the frame began (Fiona_Update) ----
 create ap-at /vec allot
 : overlaps? ( id -- flag )  dup 0< if  drop false exit  then  self swap 0e 0e bodies-touching? ;
-: coming-at-her? ( id -- flag ) ( F: dx dz -- )   \ (his heading against the way from him to her)
-    {: him F: dx dz :}  him body-yaw fsin dx f*  him body-yaw fcos dz f* f+ f0> ;
+: touching ( -- n )   \ (Fiona_Touching: 2 the stalker, 1 Hewie, 0 neither)
+    stalker-in-room overlaps? if  2 exit  then  dog-in-room overlaps? 1 and ;
 : push-from ( id -- )
     {: him :}
     her-at v.x sf@ him body-at v.x sf@ f-  her-at v.z sf@ him body-at v.z sf@ f-  {: F: dx dz :}   \ (from him to her)
     self body-dims fdrop  him body-dims fdrop f+  dx dz vlen f-  {: F: gap :}
-    him dx dz coming-at-her? if   \ (along his way: 20 on, plus the way from him to her)
-        0e 20e him body-yaw rotate-by  dz f+ to dz  dx f+ to dx
+    her-st-dx f@ her-st-dz f@  {: F: sx sz :}   \ (his step this frame, as he told it)
+    sx dx f*  sz dz f* f+ f0> if   \ (stepping at her: along it, 20 on, plus the way from him to her)
+        sx 20e f* dx f+ to dx  sz 20e f* dz f+ to dz
     then
     dx dz vlen {: F: l :}  l f0= if  exit  then
     gap l f/ {: F: k :}
     dx k f* her-at v.x sf@ f+ ap-at v.x sf!
     dz k f* her-at v.z sf@ f+ ap-at v.z sf!  her-at v.y sf@ ap-at v.y sf!
-    ap-at blocked-floor v-tri-in dup 0< if  drop exit  then
+    her-tri @ her-at ap-at blocked-floor v-walk dup 0< if  drop -1 her-apart ! exit  then   \ (Actor_TriTo: not over her floor)
     her-tri !  her-at ap-at vec-copy ;
-: keep-apart ( hewie-was? -- )   \ (in the run, not out of Hewie)
+: out-of-hewie ( -- )
+    her-at her-tri @ dog-in-room blocked-floor push-out
+    dup 0< if  drop  her-at her-was-at vec-copy  her-was-tri @  then  her-tri ! ;
+: keep-apart ( touched-hewie? -- )   \ (in the run, not out of Hewie)
     her-mode @ own-mode <>  her-scripted @ or if  drop exit  then
-    stalker-in-room dup overlaps? if  nip push-from exit  then  drop
-    hewie-played? or if  exit  then
-    dog-in-room overlaps? if  her-at her-was-at vec-copy  her-was-tri @ her-tri !  then ;
+    her-apart @ or if  touching 0= if  0 her-apart !  then  exit  then   \ (clear of both: in contact again)
+    stalker-in-room dup overlaps? if  push-from exit  then  drop
+    hewie-played? if  exit  then
+    dog-in-room overlaps? if  out-of-hewie  then ;
 
 \ ---- a frame in the mini-game's run (Fiona_Update while Hewie is played): she goes with him by
 \ herself (fiona/companion.fs) - out of sight, nothing else; her calls to him from her mind, the
@@ -108,7 +118,7 @@ create ap-at /vec allot
     companion-frame
     her-mode @ own-mode = if  panic-controls  else  false  then  0= hands-off? 0= and if  control-command  then
     -1 her-cmd !
-    dog-in-room overlaps?  her-act @ execute  keep-apart
+    touching 1 =  her-act @ execute  keep-apart
     looks  tell-point
     command-sounds  motion-sounds
     footsteps
@@ -123,7 +133,7 @@ create ap-at /vec allot
     read-controls
     her-mode @ own-mode = if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
     hands-off? if  -1 her-cmd !  else  read-command  try-flee  try-defend  try-doors  try-ladders  try-let-go  then
-    dog-in-room overlaps?  her-act @ execute  keep-apart
+    touching 1 =  her-act @ execute  keep-apart
     looks  tell-point
     command-sounds  motion-sounds
     footsteps
@@ -227,7 +237,7 @@ behaviour free
   on spawned ( -- )  self cam-player!
       -1 her-model !  -1 her-hit-who !  -1 her-shake-count !  her-creatures #creatures cells -1 fill  progress pr.vars $26 + c@ wear  2e 15e body-size
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe camera-cut  self subscribe write-save  self subscribe creature-doing
-      self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene  self subscribe stalker-doing
+      self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene  self subscribe stalker-doing  self subscribe stalker-stride
       self subscribe equipment ;
   on leaving-room ( room exit -- )  hewie-played? if  nip fiona.companion:he-left exit  then  2drop  through-door ;
   on arrived ( room exit -- )   \ (the story's scripts place her too; in the run, she comes with him or not)
@@ -259,6 +269,8 @@ behaviour free
   on text-shown ( on -- )  her-reading ! ;
   on equipment ( boots earrings costume choker -- )  2drop 2drop  show-equipment ;   \ (the sub screen: Fiona_ShowEquipment)
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  her-st-came !  2drop 2drop  her-st-cond !  drop her-st-mode !  drop ;
+  on stalker-stride ( dx dz -- )   \ (the stalker in her room's step: Fiona_KeepApart)
+      sender stalker-in-room = if  cell>f her-st-dz f!  cell>f her-st-dx f!  else  2drop  then ;
   on scene ( on -- )  her-in-scene ! ;   \ (a cutscene has her)
   on go-to ( x y z -- )  cells>xyz  go-to-point ;
   on place ( x y z yaw -- )  cells>xyzw  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)

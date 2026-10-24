@@ -145,6 +145,7 @@ Each of these has cost someone time:
 | `room-group!` | `group flag --` | show or hide a group of the room mesh |
 | `.room` | | a summary |
 | `nav-tri`, `tri-center` | `F: x y z -- ` `-- tri`, `tri -- F: x y z` | nav triangles |
+| `push-out` | `v tri other mask -- tri'` | v put out of body `other` to their radii + 0.01 apart, straight or turned up to 180 degrees, reached over the floor (Actor_PushOut); -1 nowhere |
 | `exit-tri` | `exit which -- tri` | this room's exit triangles: 0 out, 1 in, 2 through |
 | `exit-leads` | `exit -- room exit'` | where an exit goes (-1 -1: nowhere) - the game's door table |
 | `hud` | `addr len --` | a line of text at the bottom of the screen (`0 0 hud` clears) |

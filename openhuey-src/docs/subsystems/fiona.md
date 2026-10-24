@@ -115,7 +115,18 @@ The debug walker is gone.
 
 Left for F1: the slow locked-door try (with the panic, F2); the camera-cut steering is built
 but untested (a cut needs the story's camera setups); her motion sounds (key-frame sounds) and
-voice; keeping clear of others (with Hewie).
+voice.
+
+**Keeping apart** (Fiona_KeepApart, fiona.fs `keep-apart`): free and overlapping the stalker,
+she is pushed out to their radii apart - along his step this frame (`stalker-stride`, his root
+motion while it takes him ahead) 20 on plus the way from him to her when he steps at her, else
+straight away; a push off her floor leaves her where she is, out of contact (+0x2A) - no more
+pushing until she touches neither. Overlapping Hewie she is put out of him (`push-out`,
+Actor_PushOut: their radii + 0.01 apart, straight away or turned 2, 4 .. 180 degrees either way
+until reached over her floor), else back to where she was. None of it when she touched Hewie
+(and not the stalker) as the frame began. `idle` (Fiona_ToIdle) sets the stick back to the
+camera's (+0x1AD588 0); arriving afresh by an exit keeps a door's held stick (turn mode 3).
+These, and the buttons' refusals below, are checked by `tests/fiona/test_rules.fs`.
 
 **F2 built** (`scripts/fiona/fear.fs`, with `scripts/danger.fs` and `scripts/panic.fs`):
 - her fear meter, rising as she runs and falling as she walks or stands (faster when calm);
@@ -176,9 +187,13 @@ ladder (her fall from it: with the ladders) or with the world held. A blow knock
 on a step or in a doorway (floor $80003) the short falls $100E / $100F, else $1000 / $1004 by the
 side it came from (front, behind +1, her right +2, her left +3), her cry $3E / $3F; up again, 30
 frames before she may fall again. A hard blow throws her: facing him back along her heading
-($1008, then up $100A), from behind forwards ($100B, up $100D); panicking she is flung down
-($B04) and stays down as from a panic fall ($B01, up when her breath is back); moved by the
-motion turned toward him, 20 degrees a frame. A hold catches her: her gasp $43, a flinch by
+($1008, then up $100A), from behind forwards ($100B, up $100D) - the get-ups cut in
+(Motion_Play); panicking she is flung down ($B04) and stays down as from a panic fall ($B01, her
+struggle and shakes started over; up when her breath is back); moved by the motion turned toward
+him, 20 degrees a frame, along walls - not when thrown (sub $A) in an exit's area. Thrown, after
+it and getting up, nav flag 1 blocks her too; after a door's throw (sub $B) her floor is the
+door's ($8000018). The side of a knock-down: from whoever struck; nobody (a creature's request),
+from her request's point; a striker gone meanwhile, as from behind. A hold catches her: her gasp $43, a flinch by
 his grip ($F02 by the arm looking at him - only facing him on open floor -, $F04, $F03 from
 behind, $F05), then free. Each takes its fright to her panic; a blow tells the danger she was
 struck (`danger-signal` 1); a stumble resets her recovery (`reset-recovery`: 1800 frames to calm
@@ -220,11 +235,15 @@ turning to flee - a kick. The shove ($E00, its pace slower the longer she's been
 recovery past $1C3: (3150 - recovery) / 1800 x 1.5 - and the more frightened - fear past 40:
 (160 - fear) / 120) reaches 2 round her hand (bone 9) at its key: a `blow` 1, damage 1; with a
 wall between her and her hand (the walk from her triangle to it, over flags $20018: Actor_TriTo)
-it ends ($101). The kick ($E01: her cry $3D, a step of 1.0756 a frame while it fades in)
+it ends: blended into standing over 10 (Motion_PlayWith flags $101), and once that has faded
+in Hewie is told (`reaction` 10, unless she struck him) and she stands - the shove's own end
+tells him nothing. The kick ($E01: her cry $3D, a step of 1.0756 a frame while it fades in)
 meets whom she touches while its key is clear: a `blow` 2, damage 5, he may stumble (`how` 1:
 rolled by him); at its end her fear up 10. Each reaches the stalker and Hewie once a blow;
 struck home (`blow-taken`) she's held still 5 frames ($90 kicked, $8F shoved). Hewie is told
-(`reaction` 10 / 11) when she shoves or kicks without striking him.
+(`reaction` 11) when her kick ends without striking him. Not while she is turning to push, in a
+panic attack or out of breath (Fiona_IsIdle). Her gestures to Hewie are read during a shove only
+as it comes round (Fiona_ReadsPad: mode 8, her action 5, the motion's flag $20).
 
 ## F5: the story's words about her (`scripts/story/words.fs`)
 
@@ -257,7 +276,7 @@ A ladder is a nav link of the room (NavMesh_FindDoorRegions: two triangles shari
 bits 9..13; `nav-link-*`): side 0 its foot (the lower triangle), side 1 its top, each with a spot
 (the edge toward the other) and a facing (across it, toward the ladder). Free (her mode 0, her
 action 0, the panic below stage 4), in its region on one side (`nav-link-at?`, `nav-link-side`),
-facing along that side (Actor_FacingDoor), the stalker not in the region nor touching her - the
+facing along that side (Actor_FacingDoor), the stalker not on that side of it nor touching her - the
 action button (Fiona_StateLadder): she walks to its end's spot (Actor_DoorFront with
 kFionaMeetOffsets - 12-byte entries x, z, degrees: the top 1.7 back from it, the foot 2.1 out),
 facing along it, and gets on ($700 from the top, $704 from the foot; her mode 3, sub 7). On it
@@ -269,15 +288,18 @@ $709). After each move her triangle is the end's. The stalker in the region at i
 her from getting off there (she holds on); at its top, within his height above her, from going
 up (Progress_WhoIsWhere's region bits: 4 side 0, 2 side 1). Off (Fiona_StateLadderOff): at the
 move's flag $20 she is put by that end (the foot 2.1 out, the top 1.7 back) and free. She is
-moved by her animations' root motion, up and down too, off the floor. Rooms with ladders:
+moved by her animations' root motion, up and down too, off the floor. In full panic (her fear
+bit 2) she lets go - knocked off as by a blow (mode 4, sub 8: Fiona_StateCaughtCrawling). Rooms with ladders:
 castle-1f-2 (two), room 3 (two), 29, 37, 40, 47, 48, 84. Checked by
 `tests/fiona/test_ladder.fs` (11): on from the top and down, off on the ground floor; turned
 from it nothing; on from the foot and up, off on the floor above; the stalker at its foot - she
-holds on; struck on it, knocked off (`knocked-off`, Fiona_StateCaughtCrawling). Not yet: the
+holds on; struck on it, knocked off (`knocked-off`, Fiona_StateCaughtCrawling); panicking on it,
+let go. Not yet: the
 region's slot bits for Hewie.
 
 Also fixed with it: `walk-anim` (Fiona_StateCmdWalkAnim) read the animation's key events for
 `MOTION_EVENTS` $20; it is the motion's come-round flag (`ended?`).
+`play-cut` (Motion_Play) cuts in with no blend; it had taken the motion table's fade.
 
 ## F5: pushing (`scripts/fiona/push.fs`)
 
@@ -353,7 +375,10 @@ out of sight (8 a frame; back in when she moves) and `fiona-unseen` is told. Her
   that exit, opening or shutting it; her move done as the use ends.
 - **Hit by a door** (request 5, Fiona_StateHitByDoor): the stalker waiting at a door she is behind
   (its area 2) or holds, the door 10..80 open, pushes it into her - thrown along its swing,
-  forward ($1008) or back ($100B; panicking flung down, $B04, her panic full).
+  forward ($1008) or back ($100B; panicking flung down, $B04, her panic full), cut in; she
+  slides along it turning to it 20 degrees a frame (not flung down).
+- **Not at a door with the stalker touching her** (Fiona_StateBlock 2 / 9): the action button
+  does nothing there.
 - **Knocked off a ladder** (reaction 8, Fiona_StateCaughtCrawling / CrawlDrop / Pull / Fall / Down):
   to the spot 10 out from its top - within 20 of it pulled off ($F02), else dropped there ($70A /
   $70B, then down $70C and up $100D), falling 0.5 faster a frame; her cry ($7D / $81).
@@ -397,7 +422,7 @@ out of sight (8 a frame; back in when she moves) and `fiona-unseen` is told. Her
 - **The flee turn**: toward the stalker within 30 (the turn spins her from him); at its end Hewie
   told (reaction 9).
 - **Letting go of things** (`fiona/letgo.fs`; Fiona_StateLetGoStart / LetGo): the triangle with a
-  throwable in slot 2 - thrown ($D00), aimed at the stalker within 80 and 60 degrees ($D01), set
+  throwable in slot 2, not panicking (the threat at 4) - thrown ($D00), aimed at the stalker within 80 and 60 degrees ($D01), set
   down ($D02); at the key the thing leaves her hand (4 / 6 / still) unless her hand is past a wall;
   one of the item used; a throw tells Hewie (12). What becomes of them: `docs/subsystems/things.md`.
 

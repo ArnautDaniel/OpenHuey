@@ -16,6 +16,8 @@ USING: engine vectors game-state actors messages common doors rumble stalker-nam
 \ the stalker in her room (the one in the game: stalker-names), Hewie in her room
 : stalker-in-room ( -- id | -1 )
     stalker-in-game dup 0< if  exit  then  dup body-room room-id <> if  drop -1  then ;
+: stalker-touching? ( -- flag )   \ (Actor_Touching her and him: Fiona_StateBlock refuses a door or a ladder)
+    stalker-in-room dup 0< if  drop false exit  then  self swap 0e 0e bodies-touching? ;
 : dog-in-room ( -- id | -1 )
     s" hewie" actor-named dup 0< 0= if  dup body? if  dup body-room room-id = if  exit  then  then  then  drop -1 ;
 

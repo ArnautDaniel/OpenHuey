@@ -66,13 +66,15 @@ defer drop-door ( -- )   ' noop is drop-door   \ (a door she held let go: fiona.
     endcase ;
 
 \ ---- the way the blow sends her: from whoever struck to her (nobody: from where it was asked
-\ from - her request's point), turned from her heading ----
+\ from - her request's point, the original's noise point of her slot), turned from her heading;
+\ a striker gone meanwhile, none - as from behind (Fiona_StateKnockedDown) ----
 fvariable side
 create from-pt /vec allot
 : striker? ( -- flag )  her-hit-who @ dup 0< if  drop false exit  then  dup alive? if  body?  else  drop false  then ;
 : blow-side ( -- )
-    striker? if  her-hit-who @ body-at her-at vec-heading  else  from-pt her-at vec-heading  then
-    her-yaw f@ f- angle-wrap side f! ;
+    her-hit-who @ 0< if  from-pt her-at vec-heading  her-yaw f@ f- angle-wrap side f! exit  then
+    striker? 0= if  0e side f! exit  then
+    her-hit-who @ body-at her-at vec-heading  her-yaw f@ f- angle-wrap side f! ;
 \ a fall by side: sent along her heading - struck from behind - (within 60 degrees) `front`, sent
 \ back - struck from in front - (past 120) +1, to her left +3, her right +2
 : fall-by-side ( front -- )
@@ -98,29 +100,34 @@ create from-pt /vec allot
 
 \ ---- thrown (Fiona_StateThrown): away from him - her back to him, forwards ($1008); facing
 \ him, backwards ($100B; panicking she is flung down $B04, turned to him). Moved by the motion
-\ turned to that way, turning there 20 degrees a frame (pull_back_move); then up ($100A / $100D), or
-\ panicking she stays down and gets up as from a panic fall ----
+\ turned to that way, turning there 20 degrees a frame (pull_back_move), along walls - not while
+\ thrown (sub $A) in an exit's area; then up ($100A / $100D, cut in), or panicking she stays down
+\ and gets up as from a panic fall. Thrown, after and getting up, nav flag 1 blocks her too; by
+\ a door (sub $B) her floor is the door's ($8000018) ----
+$8000018 constant door-hit-floor
+: thrown-floor ( -- mask )   \ (navMask |= 1)
+    her-sub @ door-thrown-r = if  door-hit-floor  else  blocked-floor  then  1 or ;
 : pull-back ( -- )
-    her-fall-turn @ -1 = if  root-move exit  then
-    root-step her-fall-yaw f@ rotate-by move-by
+    her-fall-turn @ -1 = if  thrown-floor root-move-within exit  then
+    root-step her-fall-yaw f@ rotate-by  thrown-floor move-within
     her-fall-turn @ 0= if
         her-yaw f@ her-fall-yaw f@ 20e deg>rad turn-toward f0= if  1 her-fall-turn !  then  her-yaw f!
     then ;
-: got-up ( -- )  ended? if  to-idle exit  then  root-move ;
-: floored ( -- )  lying-anim -1 play-table  down-mode her-mode !  down-doing her-doing !  ['] getting-up her-act ! ;
+: got-up ( -- )  ended? if  to-idle exit  then  blocked-floor 1 or root-move-within ;   \ (getting_up)
+: get-up ( anim -- )  play-cut  ['] got-up her-act ! ;
+: thrown-down? ( -- anim | 0 )   \ (the fall that came to its end: forwards, backwards, flung down; 0 none)
+    ended? 0= if  0 exit  then
+    anim@ her-throw-back @ if
+        dup flung-down-anim =  over thrown-back-anim = or 0= if  drop 0  then
+    else  dup thrown-forward-anim <> if  drop 0  then  then ;
 : after-throw ( -- )
-    ended? if
-        her-throw-back @ 0= if
-            anim@ thrown-forward-anim = if
-                her-fear-bits @ 2 and if  floored exit  then
-                up-from-forward-anim -1 play-table  ['] got-up her-act ! exit
-            then
-        else
-            anim@ flung-down-anim = if  floored exit  then
-            anim@ thrown-back-anim = if  up-from-back-anim -1 play-table  ['] got-up her-act ! exit  then
-        then
-    then
-    pull-back  along-wall ;
+    thrown-down? case
+        thrown-forward-anim of  her-fear-bits @ 2 and if  lie-down  else  up-from-forward-anim get-up  then  exit  endof
+        thrown-back-anim of  up-from-back-anim get-up  exit  endof
+        flung-down-anim of  lie-down  exit  endof
+    endcase
+    pull-back
+    her-sub @ thrown-r =  in-exit-area? and 0= if  along-wall  then ;
 : thrown ( -- )
     settled? if
         striker? if  0 her-fall-turn !  her-hit-who @ body-at her-at vec-heading her-fall-yaw f!   \ (away from him)
@@ -136,7 +143,7 @@ create from-pt /vec allot
         else  fall-sound 0 her-sound  $5F noise-here  then
         ['] after-throw her-act !
     then
-    pull-back ;
+    blocked-floor 1 or root-move-within ;
 
 \ ---- caught (Fiona_StateCaught: a hold - her gasp, a flinch in his grip by how he holds her:
 \ an arm $F02 looking at him, $F04, from behind $F03, $F05; then free) ----
@@ -190,13 +197,14 @@ create door-pt /vec allot
     her-hit-how @ 1 exit-spot drop  door-pt vec!  door-pt her-at vec-heading      ( F: turn away )
     fover f- angle-wrap fabs pi f2/ f> if  pi f+ angle-wrap  then ;
 : door-thrown ( -- )
-    door-way  -1 her-fall-turn !  fdup her-fall-yaw f!
+    door-way  0 her-fall-turn !  fdup her-fall-yaw f!   \ (turned to the swing as she slides)
     her-yaw f@ f- angle-wrap fabs pi f2/ f< if
-        0 her-throw-back !  thrown-forward-anim -1 play-table
+        0 her-throw-back !  thrown-forward-anim play-cut
     else
         -1 her-throw-back !  her-fall-yaw f@ pi f+ angle-wrap her-fall-yaw f!
-        her-fear-bits @ 2 and if  her-fall-yaw f@ her-yaw f!  flung-down-anim  else  thrown-back-anim  then  -1 play-table
+        her-fear-bits @ 2 and if  -1 her-fall-turn !  her-fall-yaw f@ her-yaw f!  flung-down-anim  else  thrown-back-anim  then  play-cut
     then
+    blocked-floor 1 or root-move-within
     her-fear-bits @ 2 and if
         panic-scream-sound 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fear-set
     else  fall-sound 0 her-sound  $5F noise-here  then

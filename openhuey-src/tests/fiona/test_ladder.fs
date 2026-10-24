@@ -30,6 +30,12 @@ testing at its top facing it, the action button: on from the top ($700), then ho
 1 0 at-end
 T{ circle press  ladder  on? -> 0 1 -1 }T
 T{ [: anim $700 = ;] 30 soon  [: anim $708 = ;] 120 soon  on? -> -1 -1 -1 }T
+testing panicking on it (fear bit 2): she lets go - knocked off as by a blow (Fiona_StateOnLadder: mode 4, sub 8), near its top pulled off ($F02)
+10 frames
+T{ [: 2 her-fear-bits ! ;] hers  2 frames  [: her-sub @ ;] hers  anim -> 8 $F02 }T
+[: 0 her-fear-bits ! ;] hers
+T{ [: free? ;] 200 soon  ladder drop -> -1 -1 }T
+1 0 at-end  circle press  [: anim $708 = ;] 200 soon drop   \ (on again, holding at its top)
 testing ... a stalker after her in the room (Npc_OpenDoorFionaHides, his action $12): to beside its foot, on ($704), up the rungs ($705)
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : his-anim ( -- a )  [: stalker.state:anim @ ;] his ;
