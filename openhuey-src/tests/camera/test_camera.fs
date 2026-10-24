@@ -53,4 +53,17 @@ testing the game over (CamDirector_NextSetup): the room's next set, nobody follo
 cam-set@ was !  s" camera" actor-named send camera-hold  3 frames
 T{ cam-set@  cam-target -> was @ 1+ room-cameras mod  -1 }T
 
+
+testing out of view as the original (Camera_OutOfView): from the camera's near to its far, not 1 to 2000
+: ahead ( F: d -- x y z )   \ (d along the camera's view)
+    {: F: d :}  engine:camera cam.yaw sf@ engine:camera cam.pitch sf@ {: F: yaw F: pitch :}
+    engine:camera cam.x sf@  yaw fsin pitch fcos f* d f* f+
+    engine:camera cam.y sf@  pitch fsin engine:camera cam.up sf@ f* d f* f+
+    engine:camera cam.z sf@  yaw fcos pitch fcos f* d f* f- ;
+engine:camera cam.far sf@ fvalue was-far
+T{ 1000e ahead out-of-view?  3000e ahead out-of-view? -> 0 -1 }T
+20000e engine:camera cam.far sf!
+T{ 3000e ahead out-of-view?  -100e ahead out-of-view? -> 0 -1 }T
+was-far engine:camera cam.far sf!
+
 test-summary

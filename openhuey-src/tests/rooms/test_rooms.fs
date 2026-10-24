@@ -51,4 +51,17 @@ T{ room-id -> front-garden-2 }T
 T{ 2 seen@ 5 seen@ -> -1 -1 }T
 T{ fiona body-room -> front-garden-2 }T
 
+testing the fog drawn early: by its parameters' +16 (Fog_SetParams reads 26 bytes - on past the
+testing section, as the room in memory goes on, when its fog's 16 come last)
+create fog-bytes 32 allot
+: early? ( room -- flag )  room  room-look look.fog-early l@ 0<> ;
+T{ $18 early?  $3 early?  $4 early? -> 0 -1 -1 }T
+T{ $1D fog-bytes look@  fog-bytes 16 + l@ -> 26 2 }T      \ ($4's fog: the next section's first word)
+T{ $1D fog-bytes 16 look-set  room-look look.fog-early l@ -> 0 }T   \ (16 given: the rest 0)
+
+testing no lights section: no lights, the ambient 128 (Lights_Reset); off the nav mesh, light 0 alone
+T{ $D room  room-ambient f>s f>s f>s  0e 0e 0e lights-at -> 128 128 128 -1 -1 -1 }T
+T{ front-garden-3 room  0 light@ fdrop f0> -> -1 }T
+T{ 0e 100000e 0e lights-at -> 0 -1 -1 }T
+
 test-summary

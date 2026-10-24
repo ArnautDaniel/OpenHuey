@@ -131,6 +131,8 @@ behaviour keeping
       {: ex anim source :}  source ex user !
       room-id ex door-of 0< if  exit  then  ex anim door-anim drop ;
   on swing-door ( exit open source -- )  {: ex open source :}  source ex user !  ex open false door-move ;
+  \ (a room's script: no one using it - the creak's noise is Fiona's, the original's opener 0)
+  on set-door-opened ( exit open -- )  {: ex open :}  ex open door-set-opened if  fiona-noise ex user !  then ;
   \ slammed shut or burst open (Fiona_SlamDoor: taken hold of first - DoorHold_Take - then let go
   \ open or shut at rest by its user, as a swing along an animation is)
   on slam ( exit source -- )  over user !  dup grab  false true door-move ;

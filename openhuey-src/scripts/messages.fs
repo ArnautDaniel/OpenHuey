@@ -77,6 +77,7 @@ message rebuild-exits ( -- )                 \ the rooms' exits through the door
 \ the played room's doors, by exit; `source` is the user's noise source
 message use-door ( exit anim source -- )     \ the door swings along the user's animation
 message swing-door ( exit open source -- )   \ swung open / shut by hand
+message set-door-opened ( exit open -- )     \ set swinging open (a loud creak, Fiona's noise) or shut at 15 degrees a frame, its passage at once (Doors_SetOpened)
 message pull-shut ( exit source -- )         \ taken hold of and swung shut behind its user (DoorHold_Take, DoorHold_Shut)
 message slam ( exit source -- )
 message barge ( exit source -- )             \ burst open (Fiona running into it)

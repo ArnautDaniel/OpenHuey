@@ -132,7 +132,8 @@ void room_reset_look(Room *r) {
 /* one of the look's effects from its parameters (the original's room effect slots 0x1C depth of
  * field, 0x1D fog, 0x1E screen blend, 0x1F tint: Tint_SetParams, ScreenBlend_SetParams,
  * Fog_SetParams, DepthRange_SetParams); NULL: that effect removed */
-static uint8_t sLookRaw[4][16];   /* each effect's parameters as given (slots 0x1C..0x1F) */
+#define LOOK_RAW 26   /* (the longest: the fog's - Fog_SetParams reads 26 bytes) */
+static uint8_t sLookRaw[4][LOOK_RAW];   /* each effect's parameters as given (slots 0x1C..0x1F) */
 static size_t sLookN[4];
 size_t room_look_get(int slot, uint8_t *out) {
     if (slot < 0x1C || slot > 0x1F) {
@@ -145,7 +146,7 @@ void room_look_set(int slot, const uint8_t *d, size_t n) {
     RoomLook *l = &gRoomLook;
 
     if (slot >= 0x1C && slot <= 0x1F) {
-        sLookN[slot - 0x1C] = d != NULL ? (n < 16 ? n : 16) : 0;
+        sLookN[slot - 0x1C] = d != NULL ? (n < LOOK_RAW ? n : LOOK_RAW) : 0;
         if (d != NULL) {
             memcpy(sLookRaw[slot - 0x1C], d, sLookN[slot - 0x1C]);
         }
@@ -182,6 +183,10 @@ void room_look_set(int slot, const uint8_t *d, size_t n) {
             memcpy(range, d + 8, 8);
             l->fog_near = range[0];
             l->fog_far = range[1];
+            /* +16: the fog drawn early (layer 9, not $21 - Fog_Draw), the see-through parts before
+             * it (RoomMgr_Draw); +20..25 the characters' light groups (Fog_Update: layer $B, after
+             * the fog as $A is - not drawn differently here). Shorter parameters: 0 */
+            l->fog_early = n >= 20 && word(d + 16) != 0;
         }
         break;
     case 0x1C:
@@ -209,7 +214,11 @@ static void load_look(Room *r) {
         room_look_set(0x1E, sec + word(sec + 0xC), 5);
     }
     if (word(sec + 0x10) != 0 && word(sec + 0x10) + 16 <= size) {
-        room_look_set(0x1D, sec + word(sec + 0x10), 16);
+        /* (all 26 bytes, as Fog_SetParams reads them - past the section into what follows it in the
+         * file, when the fog's are its last 16: the next section's first bytes) */
+        size_t left = (size_t)(r->pac.data + r->pac_read - (sec + word(sec + 0x10)));
+
+        room_look_set(0x1D, sec + word(sec + 0x10), left < LOOK_RAW ? left : LOOK_RAW);
     }
     if (word(sec + 0x14) != 0 && word(sec + 0x14) + 16 <= size) {   /* (DepthRange_SetParams) */
         room_look_set(0x1C, sec + word(sec + 0x14), 16);
@@ -217,7 +226,7 @@ static void load_look(Room *r) {
 }
 
 /* PAC section 4: a count, the ambient colour, then 0x30 bytes a light (src/game/lights.c
- * Lights_TakeRoom) */
+ * Lights_TakeRoom); none: no lights, the ambient 128 (Lights_Reset) */
 static void load_lights(Room *r) {
     size_t size;
     const uint8_t *sec = pac_section(&r->pac, PAC_LIGHTS, &size);
@@ -225,7 +234,7 @@ static void load_lights(Room *r) {
     int i;
 
     r->nlights = 0;
-    r->ambient = vec3(16, 16, 16);
+    r->ambient = vec3(128, 128, 128);
     if (sec == NULL || size < 16) {
         return;
     }
@@ -248,9 +257,13 @@ static void load_lights(Room *r) {
 int room_lights_at(const Room *r, Vec3 pos, int out[3]) {
     float best[3] = {-1, -1, -1}, h;
     int tri = navmesh_find(&r->nav, pos, 10.0f, &h), i, k, n = 0;
-    uint32_t mask = tri >= 0 ? r->nav.tris[tri].lights : (r->nlights > 0 ? 1u : 0u);
+    uint32_t mask = tri >= 0 ? r->nav.tris[tri].lights : 0;
 
     out[0] = out[1] = out[2] = -1;
+    if (tri < 0) {   /* (off the mesh: the room's light 0 alone, wherever it reaches - Lights_ForModel) */
+        out[0] = r->nlights > 0 ? 0 : -1;
+        return r->nlights > 0;
+    }
     for (i = 0; i < r->nlights; i++) {
         const RoomLight *l = &r->lights[i];
         float score = (0.3f * l->color.x + 0.6f * l->color.y + 0.1f * l->color.z) * l->intensity;
@@ -326,6 +339,7 @@ static void load_doors(Room *r) {
                 roommesh_build_list(&d->mesh, s8 + m + n * 0x10, s8 + s8size, MESH_SOLID) && d->mesh.nv > 0) {
                 render_mesh_upload(&d->gpu, d->mesh.v, d->mesh.nv);
                 d->present = 1;
+                d->shown = d->tri != -1;   /* (Doors_TakeRoom: +0x70 only with one) */
             }
         }
         n++;
@@ -580,6 +594,26 @@ void room_door_passage(Room *r, int exit, int open, uint32_t locks) {
     }
 }
 
+int room_door_set_opened(Room *r, int exit, int open) {
+    RoomDoor *d;
+
+    if (exit < 0 || exit >= ROOM_DOORS || !r->doors[exit].present || r->doors[exit].mode == 1) {
+        return 0;
+    }
+    d = &r->doors[exit];
+    if (open) {
+        d->sounded = 1;
+        d->next_sound = 0x91;
+        d->next_how = 3;
+    }
+    d->mode = 3;
+    d->closing = !open;
+    d->keys = NULL;
+    door_side_flags(r, d, open ? 0 : 1, 0x60000, 0);
+    door_side_flags(r, d, open ? 1 : 0, 0x60000, 1);
+    return 1;
+}
+
 void room_door_angle(Room *r, int exit, float radians) {
     if (exit >= 0 && exit < ROOM_DOORS) {
         r->doors[exit].swing = r->doors[exit].target = (radians - r->doors[exit].rot.y) * 180.0f / 3.14159265f;
@@ -599,6 +633,7 @@ int room_load(Room *r, int id) {
         return 0;
     }
     r->id = id;
+    r->pac_read = r->pac.size;
     attach_texts(r);
     if (!load_mesh_gltf(r)) {   /* (else the PAC's own section) */
         sec = pac_section(&r->pac, PAC_MESH, &size);
@@ -667,9 +702,13 @@ void room_tick(Room *r) {
         RoomDoor *d = &r->doors[i];
         float step = d->mode == 3 ? 15.0f : 5.0f;
 
-        d->sound = 0;
-        d->sound_how = 0;
+        d->sound = d->next_sound;
+        d->sound_how = d->next_how;
+        d->next_sound = d->next_how = 0;
         d->settled = -1;
+        if (!d->shown) {   /* (Door_Swing: only a shown one) */
+            continue;
+        }
         switch (d->mode) {
         case 1:   /* along the user's animation, a frame a key; creak / latch once */
             d->swing = d->target = rdf(d->keys + (size_t)d->key * 4);
@@ -739,46 +778,70 @@ static Mat4 door_matrix(const RoomDoor *d) {
     return mat4_mul(t, mat4_mul(rz, mat4_mul(ry, rx)));
 }
 
-/* the draws [first, end) of parts lo..hi (the mesh keeps them in part order) */
-static void draw_parts(Room *r, const Mat4 *vp, int lo, int hi) {
+/* the renderer layer a mesh part draws in (RoomMgr_Draw): the solid part 1, the see-through and
+ * flip-book parts $19 - 8 when the fog is drawn early (the fog effect's +0x1C: in layer 9, so
+ * they are fogged and what follows isn't) - the glows $1F, the bloom mask $26; part 3 never */
+static int part_layer(int part) {
+    switch (part) {
+    case MESH_SOLID: return 1;
+    case MESH_SEE_THROUGH:
+    case MESH_ANIMATED: return gRoomLook.has_fog && gRoomLook.fog_early ? 8 : 0x19;
+    case MESH_GLOW: return 0x1F;
+    case MESH_BLOOM_MASK: return 0x26;
+    }
+    return -1;
+}
+
+/* the draws of d[0..n) in renderer layer `layer`, each run of them at once */
+static void draw_layer_runs(Room *r, const GpuMesh *g, const Mat4 *vp, const MeshDraw *d, int n, int layer) {
     int first = 0, end;
 
-    while (first < r->mesh.nd && r->mesh.d[first].part < lo) {
-        first++;
-    }
-    for (end = first; end < r->mesh.nd && r->mesh.d[end].part <= hi; end++) {
-    }
-    if (end > first) {
-        render_mesh(&r->gpu, vp, r->mesh.d + first, end - first, r->textures, r->ntextures, r->groups);
+    while (first < n) {
+        if (part_layer(d[first].part) != layer) {
+            first++;
+            continue;
+        }
+        for (end = first; end < n && part_layer(d[end].part) == layer; end++) {
+        }
+        render_mesh(g, vp, d + first, end - first, r->textures, r->ntextures, r->groups);
+        first = end;
     }
 }
 
-void room_draw(Room *r, const Mat4 *view_proj, Vec3 eye, Vec3 forward) {
-    int i;
-
-    if (r->id < 0) {
-        return;
-    }
-    draw_parts(r, view_proj, MESH_SOLID, MESH_SEE_THROUGH);
-    for (i = 0; i < ROOM_DOORS; i++) {
-        if (r->doors[i].present) {
-            Mat4 mvp = mat4_mul(*view_proj, door_matrix(&r->doors[i]));
-
-            render_mesh(&r->doors[i].gpu, &mvp, r->doors[i].mesh.d, r->doors[i].mesh.nd, r->textures, r->ntextures, r->doors[i].groups);
-        }
-    }
-    placed_draw(&r->placed, view_proj, r->textures, r->ntextures);
-    if (r->mesh.ndyn > 0) {
+void room_draw_begin(Room *r, Vec3 eye, Vec3 forward) {
+    r->nmoving = 0;
+    if (r->id >= 0 && r->mesh.ndyn > 0) {
         int n = roommesh_dynamic(&r->mesh, eye, forward, r->moving_v, r->moving_d), nv = 0, i;
 
         for (i = 0; i < n; i++) {
             nv = r->moving_d[i].first + r->moving_d[i].count > nv ? r->moving_d[i].first + r->moving_d[i].count : nv;
         }
         render_mesh_update(&r->moving, r->moving_v, nv > 0 ? nv : 1);
-        render_mesh(&r->moving, view_proj, r->moving_d, n, r->textures, r->ntextures, r->groups);
+        r->nmoving = n;
     }
-    draw_parts(r, view_proj, MESH_PART3, MESH_GLOW);
-    draw_parts(r, view_proj, MESH_BLOOM_MASK, MESH_BLOOM_MASK);
+}
+
+void room_draw_layer(Room *r, const Mat4 *view_proj, int layer) {
+    int i;
+
+    if (r->id < 0) {
+        return;
+    }
+    render_mesh_ps2_clip(1);   /* (the room's microprograms reject as the characters' do) */
+    draw_layer_runs(r, &r->gpu, view_proj, r->mesh.d, r->mesh.nd, layer);
+    draw_layer_runs(r, &r->moving, view_proj, r->moving_d, r->nmoving, layer);
+    if (layer == 1) {   /* (Doors_Draw: after the room's parts) */
+        for (i = 0; i < ROOM_DOORS; i++) {
+            if (r->doors[i].present && r->doors[i].shown) {
+                Mat4 mvp = mat4_mul(*view_proj, door_matrix(&r->doors[i]));
+
+                render_mesh(&r->doors[i].gpu, &mvp, r->doors[i].mesh.d, r->doors[i].mesh.nd, r->textures, r->ntextures,
+                            r->doors[i].groups);
+            }
+        }
+    }
+    placed_draw(&r->placed, view_proj, r->textures, r->ntextures, layer);
+    render_mesh_ps2_clip(0);
 }
 
 int room_floor_below(const Room *r, float x, float y, float z, float *out) {

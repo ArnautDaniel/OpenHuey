@@ -21,6 +21,7 @@ Declared in `scripts/messages.fs`. Kinds of character (for locks): `fiona-kind` 
 | `let-go-open` / `let-go-shut` | `( room exit source -- )` | doors | Let it go open or shut (off-screen: heard). |
 | `use-door` | `( exit anim source -- )` | doors | The played room's door swings along the user's animation; at rest it is let go. |
 | `swing-door` | `( exit open source -- )` | doors | Swung open / shut by 5 degrees a frame. |
+| `set-door-opened` | `( exit open -- )` | doors | A room's script sets it swinging (`Doors_SetOpened`): open with a loud creak (0x91, heard 0x5F from Fiona's source) or shut, by 15 degrees a frame; its passage moves over at once; its state isn't changed (nobody holds it). |
 | `slam` | `( exit source -- )` | doors | Slammed shut (15 a frame, a loud latch); taken hold of first, let go at rest. |
 | `barge` | `( exit source -- )` | doors | Burst open (15 a frame); taken hold of first, let go at rest (Fiona_SlamDoor). |
 | `pull-shut` | `( exit source -- )` | doors | Taken hold of and swung shut by 5 degrees a frame, let go shut at rest: a stalker's door behind him (his DoorBreak: DoorHold_Take, DoorHold_Shut). |
@@ -64,7 +65,14 @@ From `doors.c` (`Doors_*`), `progress.c` (`Progress_*Door*`), `room_map.c` (clos
    and the latch (0x28) as it shuts past -6 degrees are heard at 0xF. A slam's latch is heard at
    0x5F, and a plain swing's latch is silent. When it comes to rest, the door is let go open or
    shut by its user.
-9. *To read when built:* slamming, held doors and who may pass, the "locked" message and keys
+   Only a door with a nav triangle (section 7's first word, not -1) is drawn or swung
+   (`Doors_TakeRoom` +0x70: water-tower-7f-1's exit 0 has a model but none).
+10. A room's script setting a door opened (`Doors_SetOpened`, room 0x91's cmd00): not while it
+   swings along an animation; open - a loud creak 0x91 at once (0x5F from the opener 0, Fiona's
+   source), the passage flags $60000 off the near side and on the far one, then a slam's swing
+   (15 a frame) to -90; shut - the flags back, the swing to 0 and a slam's loud latch. The door's
+   state word is untouched: at rest nobody holds it, so letting go changes nothing.
+11. *To read when built:* slamming, held doors and who may pass, the "locked" message and keys
    (Fiona's side), the stalkers' knocking and breaking.
 
 ## Design notes
@@ -80,10 +88,17 @@ From `doors.c` (`Doors_*`), `progress.c` (`Progress_*Door*`), `room_map.c` (clos
 ## Status
 
 **Built** (`scripts/doors.fs`; the swing in C `room.c` now follows `Door_Swing`'s three modes and
-reports each frame's sound and rest). Checked by `tests/doors/test_doors.fs` (25 tests: locking;
+reports each frame's sound and rest). Checked by `tests/doors/test_doors.fs` (39 tests: locking;
 the locked-door quirk; holding once; letting go open / shut / not held; locked against a kind; a
 doorway; a door used off-screen heard at 0xF from its user's source; a held door swung open in
-the played room settles open; a slam's latch heard at 0x5F and the door left shut).
+the played room settles open; a slam's latch heard at 0x5F and the door left shut; set opened by
+a room's script - 15 a frame, the passage at once, the creak and latch heard at 0x5F; a door
+without a nav triangle not swung).
+
+Not yet: the door's light through its doorway (`DoorShadow_Queue`, layer 6) and the doorway
+portals it gives the lights past -78.75 degrees (`door_portal`, `Lights_AddDoorway`): both feed
+the original's shadow-volume buffer (`Shadow_BlockerVolumes`), which OpenHuey's shadow maps
+replace - to build with a light-through-a-door effect of its own.
 
 Fiona uses doors (docs/subsystems/fiona.md): she holds a door, opens or shuts it by hand along
 her animation, and lets it go as she steps out.
@@ -91,6 +106,6 @@ her animation, and lets it go as she steps out.
 Used by the stalker in her room too (`stalker/doorway.fs`: his door animation with `use-door`),
 and slammed or burst open by Fiona (`fiona/slam.fs`). Also built: the event
 commands' door bits (the story's `door-lock`, `door-close-off-lock`, `door-lock-for`,
-`room-doors-state`), `Doors_SetOpened` (`swing-door`), a stalker breaking a door open and
+`room-doors-state`), `Doors_SetOpened` (`set-door-opened`), a stalker breaking a door open and
 pulling it shut behind him (his DoorBreak: `stalker/doorway.fs` `shut-behind`). Left: names for
 doors.

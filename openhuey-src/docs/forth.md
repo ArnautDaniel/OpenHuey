@@ -167,7 +167,7 @@ Each of these has cost someone time:
 | `console-type` | `addr len --` | put text in the console's line, as if typed |
 | `console-log` | `n --` | print the console's last n lines |
 | `gfx` | `-- addr` | the picture's settings: `gfx.msaa gfx.aspect gfx.ssao gfx.bloom gfx.fog gfx.shadows gfx.tonemap gfx.debug gfx.room-fog gfx.room-tint gfx.room-bloom gfx.room-lights gfx.shadow-maps` (l@ l!), `gfx.scale gfx.anisotropy gfx.ssao-radius gfx.ssao-strength gfx.bloom-threshold gfx.bloom-strength gfx.fog-density gfx.fog-start gfx.fog-r/g/b gfx.exposure gfx.saturation gfx.contrast gfx.vignette gfx.grain gfx.light-x/y/z gfx.light-r/g/b gfx.ambient-r/g/b gfx.rim gfx.character-light gfx.shadow-strength` (sf@ sf!) |
-| `room-look`, `room-look-reset` | `-- addr` | the room's look now (`look.fog look.tint look.bloom look.dof look.bloom-mode` l@, `look.fog-near look.fog-far` sf@, `look.fog-near-color look.fog-far-color look.tint-glow look.tint-contrast look.bloom-color look.dof-range`: 4 floats); back to the file's |
+| `room-look`, `room-look-reset` | `-- addr` | the room's look now (`look.fog look.fog-early look.tint look.bloom look.dof look.bloom-mode` l@, `look.fog-near look.fog-far` sf@, `look.fog-near-color look.fog-far-color look.tint-glow look.tint-contrast look.bloom-color look.dof-range`: 4 floats); back to the file's |
 | `on-draw`, `off-draw` | `xt --` | run a word every frame to draw 2D |
 | `pen-color`, `pen-scale` | `rgba --`, `n --` | colour (0xRRGGBBAA) and text size for the drawing words |
 | `draw-text`, `draw-rect` | `addr len x y --`, `x y w h --` | in window pixels from the top left |

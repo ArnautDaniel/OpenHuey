@@ -607,6 +607,7 @@ static void cues(void) {
     memcpy(gRoomLook.fog_far_color, C.look.fog_far_color, sizeof(gRoomLook.fog_far_color));
     gRoomLook.fog_near = C.look.fog_near;
     gRoomLook.fog_far = C.look.fog_far;
+    gRoomLook.fog_early = 0;   /* (kept with its colours and range only: +0x258.. 0) */
     if (C.cues == NULL || C.cues_size < 0x10) {
         return;
     }
@@ -637,7 +638,7 @@ static void cues(void) {
             room_look_set(0x1C, c + 0x10, 0x10);
             break;
         case 2:
-            room_look_set(0x1D, c + 0x10, 0x10);
+            room_look_set(0x1D, c + 0x10, 26);   /* (Fog_SetParams: all 26) */
             break;
         }
     }
@@ -769,6 +770,7 @@ void cutscene_end(void) {
         memcpy(gRoomLook.fog_far_color, C.look.fog_far_color, sizeof(gRoomLook.fog_far_color));
         gRoomLook.fog_near = C.look.fog_near;
         gRoomLook.fog_far = C.look.fog_far;
+        gRoomLook.fog_early = 0;
         gRoomLook.has_dof = C.look.has_dof;
         memcpy(gRoomLook.dof, C.look.dof, sizeof(gRoomLook.dof));
         memset(&gEngine.extra, 0, sizeof(gEngine.extra));

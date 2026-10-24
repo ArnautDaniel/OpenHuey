@@ -52,6 +52,27 @@ From `SceneGame_LeaveRoom`, the play sub-state (`scene_game.c` ~1033-1095), `Sce
    exit) - arriving by that same number (SceneGame_LeaveRoom). Without one it still takes exit
    0's door (the original's spare slot would hold the room left: not kept here).
 
+## Drawing
+
+The room draws in the original's renderer layers, in order with the characters' (theirs $A;
+`main.c` `draw_layer`, `room.c` `room_draw_layer`; `RoomMgr_Draw`, `Doors_Draw`,
+`PlacedObjects_Draw`):
+
+| Layer | What |
+|---|---|
+| 1 | the solid part (0), the doors, the plain placed objects |
+| $19 (8 with the fog drawn early) | the see-through part (1), the flip books (4); "a_" objects always $19 |
+| $1F | the glows (part 5, no depth writes) |
+| $26 | the bloom mask (part 2) and the "g_" objects: they mark the mask only, no colour |
+
+Part 3 is never drawn. Characters behind glass are drawn before it, so its depth writes don't
+hide them. Room, door and placed draws drop a triangle with a corner outside the PS2's clip
+volume, as their microprograms do (`D_003A7530` and the placed kinds': CLIP, FCAND, ADC -
+`render_mesh_ps2_clip`).
+
+The room's lights (section 4): without one, no lights and the ambient 128 (`Lights_Reset`). A
+character off the nav mesh takes light 0 alone, wherever it reaches (`Lights_ForModel`).
+
 ## Design notes
 
 - The original loaded the next room into a second slot ahead of time (`exit-prepare`, event
@@ -62,9 +83,10 @@ From `SceneGame_LeaveRoom`, the play sub-state (`scene_game.c` ~1033-1095), `Sce
 
 ## Status
 
-**Built** (`scripts/rooms.fs`). Checked by `tests/rooms/test_rooms.fs` (15 tests: a new game in
+**Built** (`scripts/rooms.fs`). Checked by `tests/rooms/test_rooms.fs` (21 tests: a new game in
 the cage room; out by an exit - leaving / arrived / entered in order, with both exits; back
-again; an exit to nowhere; a jump). Listeners subscribe to `leaving-room`, `arrived` and
+again; an exit to nowhere; a jump; the fog drawn early by its 26 bytes, past its section; no
+lights section; light 0 off the mesh). The placed objects' layers: `tests/graphics`. Listeners subscribe to `leaving-room`, `arrived` and
 `entered-room`.
 
 The rooms' own sounds come with their scripts (`room-sounds`). The sections where Hewie is the
