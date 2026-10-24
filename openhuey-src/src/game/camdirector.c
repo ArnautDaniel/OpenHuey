@@ -178,7 +178,9 @@ int camera_out_of_view(const Camera *c, Vec3 p) {
     float z = -(v.m[2] * p.x + v.m[6] * p.y + v.m[10] * p.z + v.m[14]);
     float tv = tanf(c->fov * 0.5f), th = tv * 4.0f / 3.0f;
 
-    return z < 1.0f || z > 2000.0f || fabsf(x) > z * th || fabsf(y) > z * tv;
+    /* (Camera_OutOfView: through the clip matrix, between the camera's near and far - the story's
+     * range - and the PS2's 4:3 screen; one behind the eye always out, as |w| leaves it) */
+    return z < c->znear || z > c->zfar || fabsf(x) > z * th || fabsf(y) > z * tv;
 }
 
 /* ---- the path (CamPath_*) ---- */

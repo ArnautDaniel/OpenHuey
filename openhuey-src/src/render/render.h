@@ -79,6 +79,7 @@ typedef struct RoomLook {
     int32_t has_fog;
     float fog_near_color[4], fog_far_color[4];   /* the ramp's ends; a: how opaque (0x80 = 1) */
     float fog_near, fog_far;                     /* view distance where it starts / ends */
+    int32_t fog_early;                           /* drawn in layer 9: what follows (the characters) not fogged */
     int32_t has_tint;
     float tint_glow[4];                          /* added: the screen blurred, times this */
     float tint_contrast[4];                      /* pushed away from: its blurred copy, times this */
@@ -125,6 +126,9 @@ void render_mesh_tint(float r, float g, float b, float a);
  * the PS2's clip volume (the near and far planes, the GS's drawing space round the screen) not
  * drawn at all, not cut at the screen (on for the draws until turned off) */
 void render_mesh_ps2_clip(int on);
+/* what is drawn from now on is drawn after the room's fog (the original's layers: Fog_Draw's 9 or
+ * $21), which then leaves it unfogged */
+void render_fog_after(int on);
 /* draw a mesh's draws; textures[i] for texture index i; groups: bit g shows group g (0 always) */
 void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, const GpuTexture *textures,
                  int ntextures, const uint32_t groups[8]);

@@ -23,7 +23,7 @@ calls it directly, at the points the original does.
 | `cam-restart` | `( -- )` | Start over on the setup (0x4A). |
 | `cam-scene!` / `cam-scene?` | `( flag -- )` / `( -- flag )` | A cutscene has the camera (from its start of play to its signal 8): the director idle, `cam-set@` -1. Others wait on it (the summoner, the butterflies' motes). |
 | `cam-set@` / `cam-changed?` | `( -- set )` / `( -- flag )` | Conditions 0x25 and 0x2C (the phase 3 scripts' per-set depth ranges). |
-| `out-of-view?` | `( -- flag ) ( F: x y z -- )` | Off the camera's 4:3 picture, 1 to 2000 deep (`Camera_OutOfView`): condition 0x45, the director's own jump test. |
+| `out-of-view?` | `( -- flag ) ( F: x y z -- )` | Off the camera's 4:3 picture, or nearer than its near or beyond its far (`Camera_OutOfView`, through its clip matrix; behind the eye always out): condition 0x45, the director's own jump test. |
 
 | Message | Stack | To | Meaning |
 |---|---|---|---|

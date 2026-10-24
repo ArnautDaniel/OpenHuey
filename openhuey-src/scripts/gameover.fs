@@ -28,8 +28,8 @@ state: gameover-state
   cell field step          \ (enum: over-step)
   cell field timer
   /tint field tint-from  /tint field tint-to   \ the tint from where it was, and to
-  16 field fog-from        \ the fog's colours and range
-  16 field look-at         \ (a look's parameters, as set)
+  28 field fog-from        \ the fog's colours, range and flags (Fog_SetParams' 26 bytes)
+  28 field look-at         \ (a look's parameters, as set)
   cell field held          \ (a movie death) the movie's last picture kept, drawn over everything
 end-state
 
@@ -60,7 +60,7 @@ $FF constant no-track
     {: a b :}  tint-from /tint 0 fill  tint-slot tint-from look@ drop
     a tint-to tint-a l!  b tint-to tint-b l!  tint-from tint-sharp c@ tint-to tint-sharp c! ;
 : tints-start ( -- )   \ (the tint to purple, the fog to clear - from where they are)
-    fog-from 16 0 fill  fog-slot fog-from look@ drop
+    fog-from 26 0 fill  fog-slot fog-from look@ drop
     $AA0000C8 $FFFFFFFF tint-toward ;
 : tint! ( t n -- )   \ (the tint `t` of `n` back toward tint-from)
     {: t n :}
@@ -68,9 +68,9 @@ $FF constant no-track
     tint-from tint-b l@  tint-to tint-b l@  t n mix  look-at tint-b l!
     tint-to tint-sharp c@ look-at tint-sharp c!  tint-slot look-at 9 look-set ;
 : fog! ( t -- )   \ (the fog `t` of 60 back toward fog-from - to none; its range kept)
-    {: t :}  fog-from look-at 16 move
+    {: t :}  fog-from look-at 26 move
     fog-from l@ 0 t 60 mix look-at l!  fog-from 4 + l@ 0 t 60 mix look-at 4 + l!
-    fog-slot look-at 16 look-set ;
+    fog-slot look-at 26 look-set ;
 : tints-step ( -- )
     timer @ 60 tint!  timer @ fog!
     timer @ 0= if

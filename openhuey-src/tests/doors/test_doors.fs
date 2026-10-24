@@ -80,6 +80,29 @@ T{ front-garden-2 0 fiona-kind hold -> 1 }T
 T{ slammed -> fiona-noise $5F }T
 T{ door0 door-open? -> 0 }T
 
+testing a room's script sets it swinging open (Doors_SetOpened): 15 degrees a frame, its passage over
+testing at once, a loud creak heard from Fiona's source, the door's state not opened
+: side-tri ( side -- tri )   \ a nav triangle of only that side of the door
+    {: side :}  nav-tris 0 ?do  0 side i door-on-side?  0 1 side - i door-on-side? 0= and if  i unloop exit  then  loop  -1 ;
+: passage? ( side -- flag )  side-tri nav-flags $60000 and 0<> ;
+T{ 0 passage?  1 passage? -> -1 0 }T
+T{ -1 got !  0 got-loud !  as-user 0 true doors send set-door-opened leave-actor deliver -> }T
+T{ 0 passage?  1 passage? -> 0 -1 }T
+: heard ( n -- source loud )   \ (within n frames)
+    0 ?do  game-tick  got @ 0< 0= if  leave  then  loop  got @ got-loud @ ;
+T{ game-tick  0 door-angle f>s -> -15 }T
+T{ 4 heard -> fiona-noise $5F }T
+T{ 6 frames  0 door-angle f>s  door0 door-open? -> -90 0 }T
+testing set swinging shut: the latch, loud, as it shuts; the passage back at once
+T{ -1 got !  0 got-loud !  as-user 0 false doors send set-door-opened leave-actor deliver  0 passage?  1 passage? -> -1 0 }T
+T{ 9 heard  0 door-angle f>s -> fiona-noise $5F 0 }T
+
+testing a door with no nav triangle is never shown nor swung (Doors_TakeRoom +0x70: water-tower-7f-1's exit 0)
+water-tower-7f-1 room
+T{ 0 door-here? -> -1 }T
+T{ 0 true false door-move  6 frames  0 door-angle f>s -> 0 }T
+front-garden-2 room
+
 testing routes between the halves of a room (room $40: two halves joined through other rooms)
 create no-avoid 13 cells allot  no-avoid 13 cells 0 fill
 : halves ( from-way want -- n )  >r >r $40 r> $40 r> stalker-kind -1 no-avoid route-sides ;

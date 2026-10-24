@@ -154,6 +154,17 @@ disc; kind 0 brightens, $40808080) use them.
 their bright parts (green 0x40 of 0xFF and up) with half of eight round them added in the colour
 the marker gives each frame (`post_shine`). Lorenzo's marker uses it in place of a glow.
 
+**The room's fog** (room effect $1D: `Fog_SetParams`, `Fog_Draw`): two colours over its near to
+far distance, nothing nearer than its near. Its parameters are 26 bytes - the colours, the
+range, +16 a word that moves the fog to layer 9 (else $21), +20..25 the characters' light groups
+(`Fog_Update`: layer $B, after the fog as $A is - drawn no differently). Read from the room file
+the original's way: 26 on, past the section into the next one's first bytes when the fog's are
+the section's last (38 rooms have +16 set, many by those bytes). In layer 9 it fogs the room's
+solid and see-through parts (layer 8) and not what follows - the characters, the "a_" objects,
+the glows; at $21 everything before it. Done in the composite, with the scene's second target's
+g: set where a depth-writing draw came after the fog's layer (`render_fog_after`). A cutscene
+keeps the fog's colours and range only (+16 back to 0).
+
 Untextured batches: group -1 (white). A batch can take a GPU texture of its own
 (`sprites_raw_texture`).
 

@@ -106,8 +106,8 @@ void camdir_retake(CamDirector *d);
 void camdir_next_set(CamDirector *d);
 /* how fast it follows along a path (CamDirector_Set50: below 0 the usual 6) */
 void camdir_rate(CamDirector *d, float rate);
-/* outside a camera's view volume as the original sees it (a 4:3 picture, 1 to 2000 deep:
- * Camera_OutOfView) */
+/* outside a camera's view volume as the original sees it (a 4:3 picture, from the camera's near
+ * to its far: Camera_OutOfView) */
 int camera_out_of_view(const Camera *c, Vec3 p);
 /* the shake on the engine's camera, after any cutscene's shot (Camera_ViewMatrix) */
 void camdir_shake(const CamDirector *d, Camera *c);

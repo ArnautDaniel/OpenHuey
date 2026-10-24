@@ -138,6 +138,20 @@ PRIM(p_light_fetch) {   /* ( i -- ) ( F: -- intensity shadow ) room light i's (0
     FPUSH(l != NULL ? l->intensity : 0.0f);
     FPUSH(l != NULL ? l->shadow : 0.0f);
 }
+PRIM(p_room_ambient) {   /* ( -- ) ( F: -- r g b ) the room's ambient light (0..128) */
+    FPUSH(gEngine.room.ambient.x);
+    FPUSH(gEngine.room.ambient.y);
+    FPUSH(gEngine.room.ambient.z);
+}
+PRIM(p_lights_at) {   /* ( -- l0 l1 l2 ) ( F: x y z -- ) the room's lights on a character there (-1: none) */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    int l[3];
+
+    room_lights_at(&gEngine.room, vec3(x, y, z), l);
+    PUSH(l[0]);
+    PUSH(l[1]);
+    PUSH(l[2]);
+}
 PRIM(p_look_on) {   /* ( slot -- flag ) the look's effect in that slot ($1C..$1F) is on */
     Cell slot = POP();
     int on = slot == 0x1F ? gRoomLook.has_tint : slot == 0x1E ? gRoomLook.has_bloom :
@@ -1487,7 +1501,7 @@ PRIM(p_door_at) {   /* ( exit -- flag ) ( F: -- x y z ) where the room's door at
     PUSH(-1);
 }
 PRIM(p_out_of_view) {   /* ( -- flag ) ( F: x y z -- ) outside the camera's view volume as the original
-                         * sees it: a 4:3 picture, 1 to 2000 deep (Camera_OutOfView) */
+                         * sees it: a 4:3 picture, its near to its far (Camera_OutOfView) */
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
 
     PUSH(camera_out_of_view(&gEngine.camera, vec3(x, y, z)) ? -1 : 0);
@@ -1527,6 +1541,13 @@ PRIM(p_placed_info) {   /* ( i -- addr len shown ) ( F: -- x y z ) its name, sho
     FPUSH(p != NULL ? p->pos.y : 0.0);
     FPUSH(p != NULL ? p->pos.z : 0.0);
 }
+PRIM(p_placed_draws) {   /* ( i -- layer mask? ) the renderer layer it draws in; it marks the bloom mask only */
+    Cell i = POP();
+    const Placed *p = i >= 0 && i < gEngine.room.placed.n ? &gEngine.room.placed.p[i] : NULL;
+
+    PUSH(p != NULL ? placed_layer(p) : -1);
+    PUSH(p != NULL && p->mesh.nd > 0 && p->mesh.d[0].mask ? -1 : 0);
+}
 PRIM(p_area_count) { PUSH(area_count(&gEngine.room)); }   /* ( -- n ) */
 PRIM(p_area_kind) { PUSH(area_kind(&gEngine.room, (int)POP())); }   /* ( area -- kind ) 1 a box, -1 none */
 PRIM(p_area_corner) {   /* ( area k -- flag ) ( F: -- x y z ) */
@@ -1555,6 +1576,11 @@ PRIM(p_door_move) {   /* ( exit open? slam? -- ) the played room's door swung op
     Cell slam = POP(), open = POP(), exit = POP();
 
     room_door_move(&gEngine.room, (int)exit, open != 0, slam != 0);
+}
+PRIM(p_door_set_opened) {   /* ( exit open? -- ok? ) Doors_SetOpened: set swinging open (creaking) or shut, its passage at once */
+    Cell open = POP(), exit = POP();
+
+    PUSH(room_door_set_opened(&gEngine.room, (int)exit, open != 0) ? -1 : 0);
 }
 PRIM(p_door_events) {   /* ( exit -- sound how settled ) what its swing did this tick (room.h RoomDoor) */
     Cell exit = POP();
@@ -2727,7 +2753,7 @@ PRIM(p_look_kept) { gRoomLook = sKeptLook; }   /* ( -- ) and put back */
 PRIM(p_look_plain) {   /* ( -- ) none of it: no fog, tint, bloom, depth of field (the model gallery's) */
     gRoomLook.has_fog = gRoomLook.has_tint = gRoomLook.has_bloom = gRoomLook.has_dof = 0;
 }
-PRIM(p_look_get) {   /* ( slot addr -- n ) a look effect's parameters as last set, into addr (16 at most; 0 none) */
+PRIM(p_look_get) {   /* ( slot addr -- n ) a look effect's parameters as last set, into addr (26 at most - the fog; 0 none) */
     Cell a = POP(), slot = POP();
 
     PUSH((Cell)room_look_get((int)slot, (uint8_t *)a));
@@ -3406,7 +3432,7 @@ void bind_engine(Forth *f) {
         Code code;
     } prims[] = {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-sides", p_route_sides}, {"exit-way", p_exit_way}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"world-exits-rebuild", p_exits_rebuild}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
-        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
+        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"room-ambient", p_room_ambient}, {"lights-at", p_lights_at}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"text-width", p_text_width}, {"ui-movie", p_ui_movie}, {"ui-held", p_ui_held}, {"movie-hold", p_movie_hold}, {"movie-unhold", p_movie_unhold}, {"cast-as", p_cast_as}, {"chars-hide", p_chars_hide}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
@@ -3418,7 +3444,7 @@ void bind_engine(Forth *f) {
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
         {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-crosses?", p_nav_crosses}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {"placed-at", p_placed_at}, {"placed-f@", p_placed_f_fetch}, {"placed-f!", p_placed_f_store}, {"placed-l@", p_placed_l_fetch}, {"placed-l!", p_placed_l_store}, {"placed-here?", p_placed_here}, {"placed-shown?", p_placed_shown}, {"nav-square-step", p_nav_square_step}, {"obstacles-reset", p_obstacles_reset}, {"obstacle-placed?", p_obstacle_placed}, {"obstacle-make", p_obstacle_make}, {"obstacle-stop", p_obstacle_stop}, {"obstacle-square", p_obstacle_square}, {"obstacle-at", p_obstacle_at}, {"obstacle-middle", p_obstacle_middle}, {"obstacles-ring-mask", p_obstacles_ring_mask}, {"obstacle-on-square?", p_obstacle_on_square}, {"obstacle-can-push?", p_obstacle_can_push}, {"obstacle-push", p_obstacle_push}, {"obstacle-step", p_obstacle_step}, {"obstacle-moved", p_obstacle_moved}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
         {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area},
-        {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"door-turn", p_door_turn}, {"door-angle", p_door_angle}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"door-set-opened", p_door_set_opened}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"door-turn", p_door_turn}, {"door-angle", p_door_angle}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"placed-draws", p_placed_draws}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end}, {"cutscene-leave-alone", p_cutscene_leave_alone}, {"cutscene-keep-model", p_cutscene_keep_model}, {"soft-reset", p_soft_reset},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},
@@ -3537,6 +3563,7 @@ void bind_engine(Forth *f) {
     field(f, "look.fog-far-color", offsetof(RoomLook, fog_far_color));
     field(f, "look.fog-near", offsetof(RoomLook, fog_near));
     field(f, "look.fog-far", offsetof(RoomLook, fog_far));
+    field(f, "look.fog-early", offsetof(RoomLook, fog_early));
     field(f, "look.tint", offsetof(RoomLook, has_tint));
     field(f, "look.tint-glow", offsetof(RoomLook, tint_glow));
     field(f, "look.tint-contrast", offsetof(RoomLook, tint_contrast));

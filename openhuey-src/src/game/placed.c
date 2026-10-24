@@ -42,9 +42,9 @@ static void strip_to_mesh(RoomMesh *m, const MeshVertex *v, const uint8_t *no_tr
     d = &m->d[0];
     d->count = m->nv;
     d->texture = texture;
-    d->part = glow ? MESH_GLOW : blend ? MESH_SEE_THROUGH : MESH_SOLID;
-    d->blend = (uint8_t)(blend || glow);
-    d->no_zwrite = (uint8_t)glow;
+    d->part = glow ? MESH_BLOOM_MASK : blend ? MESH_SEE_THROUGH : MESH_SOLID;
+    d->blend = (uint8_t)blend;
+    d->mask = (uint8_t)glow;   /* (layer $26: only the bloom mask marked, no colour) */
     m->nd = m->nv > 0;
 }
 
@@ -354,14 +354,21 @@ static Mat4 placed_matrix(const Placed *p) {
     return mat4_mul(t, mat4_mul(rz, mat4_mul(ry, mat4_mul(rx, sc))));
 }
 
-void placed_draw(PlacedSet *s, const Mat4 *view_proj, const GpuTexture *textures, int ntextures) {
+/* its renderer layer by its name (PlacedObject_Draw): "g_..." $26, "a_..." $19, others 1 */
+int placed_layer(const Placed *p) {
+    char c = p->name[0] | 0x20;
+
+    return p->name[1] != '_' ? 1 : c == 'g' ? 0x26 : c == 'a' ? 0x19 : 1;
+}
+
+void placed_draw(PlacedSet *s, const Mat4 *view_proj, const GpuTexture *textures, int ntextures, int layer) {
     static const uint32_t kAll[8] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u};
     int i;
 
     for (i = 0; i < s->n; i++) {
         Placed *p = &s->p[i];
 
-        if (p->shown && p->mesh.nd > 0) {
+        if (p->shown && p->mesh.nd > 0 && placed_layer(p) == layer) {
             Mat4 mvp = mat4_mul(*view_proj, placed_matrix(p));
 
             render_mesh(&p->gpu, &mvp, p->mesh.d, p->mesh.nd, textures, ntextures, kAll);

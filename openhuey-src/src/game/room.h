@@ -28,6 +28,7 @@ typedef struct RoomLight {
  * swing from rest in degrees (-90: open) easing to the wanted one */
 typedef struct RoomDoor {
     int present;
+    int shown;              /* drawn and swung (+0x70): only with a nav triangle (Doors_TakeRoom) */
     const uint8_t *sides;   /* its two sides' nav triangles (section 7 +0x28: a count and the
                              * triangles, then the other side's) - the passage a door blocks */
     RoomMesh mesh;
@@ -47,6 +48,7 @@ typedef struct RoomDoor {
      * latch; 0 none) and how loud its noise is (Door_PlaySound: 1 / 2 quiet, 3 / 4 loud, else
      * none); `settled` 1 it came to rest open, 0 shut, -1 neither */
     int sound, sound_how, settled;
+    int next_sound, next_how;   /* a sound made between ticks (Doors_SetOpened's creak): this tick's */
     uint32_t groups[8];     /* its model's parts shown: bit g, group g (0 always) - the scripts'
                              * door bits (Doors_SetBits: door +0x120) */
 } RoomDoor;
@@ -54,6 +56,7 @@ typedef struct RoomDoor {
 typedef struct Room {
     int id;                 /* -1: none loaded */
     Pac pac;
+    size_t pac_read;        /* its size as read (before the library's texts are put back after it) */
     RoomMesh mesh;
     NavMesh nav;            /* where characters can stand (empty in some rooms) */
     GpuMesh gpu;
@@ -69,6 +72,7 @@ typedef struct Room {
     GpuMesh moving;         /* the batches that move with the view or animate, rebuilt each frame */
     MeshVertex *moving_v;
     MeshDraw *moving_d;
+    int nmoving;            /* this frame's (room_draw_begin) */
 } Room;
 
 int room_exists(int id);
@@ -110,13 +114,22 @@ int room_door_in_area(const Room *r, int exit, int kind, Vec3 p);
 void room_door_passage(Room *r, int exit, int open, uint32_t locks);
 /* door `exit` swung open or shut by 5 degrees a frame (Door_Swing 2), or slammed shut (3) */
 void room_door_move(Room *r, int exit, int open, int slam);
+/* Doors_SetOpened: door `exit` (not along a user's animation) set swinging open - with a loud
+ * creak (0x91), heard from Fiona's noise source - or shut, by 15 degrees a frame, its passage
+ * flags 0x60000 moved to the other side at once; 0 if it can't */
+int room_door_set_opened(Room *r, int exit, int open);
 /* door `exit` turned to `radians` (its whole turn, as a cutscene keys it: Doors_TurnTo) */
 void room_door_angle(Room *r, int exit, float radians);
 /* a tick: the room's flip books step, its doors swing */
 void room_tick(Room *r);
-/* draw it as the eye sees it: solid and see-through parts, the moving batches, the glows, then
- * the bloom mask */
-void room_draw(Room *r, const Mat4 *view_proj, Vec3 eye, Vec3 forward);
+/* the frame's moving batches, as the eye sees them: before room_draw_layer */
+void room_draw_begin(Room *r, Vec3 eye, Vec3 forward);
+/* its draws in the original's renderer layer `layer` (RoomMgr_Draw, PlacedObjects_Draw; layers
+ * draw in order, the characters in theirs - $A): 1 the solid part, the doors, the plain placed
+ * objects; $19 (8 when the fog is drawn early) the see-through and flip-book parts, $19 the "a_"
+ * objects; $1F the glows; $26 the bloom mask and the "g_" objects. Each triangle with a corner
+ * outside the PS2's clip volume is left out, as the room's microprograms do */
+void room_draw_layer(Room *r, const Mat4 *view_proj, int layer);
 /* the highest solid surface at (x, z) below height y: 1 and its height in *out, or 0 if none */
 /* the up to 3 lights brightest at a point (those reaching its nav triangle: the game's
  * Lights_Brightest): their indices, -1 for none; how many */
