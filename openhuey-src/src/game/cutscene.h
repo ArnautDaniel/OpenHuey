@@ -7,8 +7,9 @@
  * The scripts drive it: start (cutscene-start), step it until ready (status 2), let it start,
  * give it the movie's frame each frame and update. Its status: 1 loading, 2 ready, 3 playing,
  * 5 over. Actors are characters by script id (actor i -> id kMap[i]), found through the event
- * state's characters; the room's doors and object groups keyed too. Not yet: the flash (signal
- * 0) and the rumble. */
+ * state's characters; the room's doors and object groups keyed too. At a cut (signal 0) its
+ * characters' hanging parts settle afresh (Fiona_FollowAnim, Pursuer_PlaceModel). Not yet: the
+ * flash (signal 0's Renderer +0x5C). */
 #ifndef CUTSCENE_H
 #define CUTSCENE_H
 

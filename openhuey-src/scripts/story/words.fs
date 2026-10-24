@@ -1792,7 +1792,11 @@ $2301 constant slam-anim   $20 constant impact-key
 : daniella? ( who -- flag )  dup stalker-who = if  drop daniella-kind stalker-kind?  else  daniella-kind =  then ;
 : daniella-parts ( model a? b? -- )  {: m a b :}  m daniella-part-a a actor-part-show  m daniella-part-b b actor-part-show ;
 variable daniella-second   \ (her model's +0x878: op 1 shows her second part, not the first)
-: daniella-one ( model -- )  daniella-second @ 0=  dup 0=  daniella-parts ;
+\ one of them shown (DaniellaModel_Vt30), her right hand's own shape with it: 1 by the first, 2 the
+\ second (+0x880 - the cutscene's give-back goes by it too: cutscene.c)
+: daniella-one ( model -- )
+    {: m :}  m daniella-second @ 0=  dup 0=  daniella-parts
+    daniella-second @ 0= if  1  else  2  then  m actor act.hand-default 4 + l! ;
 : char-model-op ( op id v -- )
     {: op who v :}
     op 3 = if  who cutscene-keep-model exit  then

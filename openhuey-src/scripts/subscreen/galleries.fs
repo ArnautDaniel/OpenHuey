@@ -268,6 +268,7 @@ create second-ones  15 , 17 , 19 , 21 , 23 ,                               \ (bi
     mn if  dup ma mn actor-markers  then
     gal-at @ kind-table ?dup if  motion-table  else  2drop  then
     1 gal-model @ actor act.visible l!
+    1 gal-model @ actor act.alive l!   \ (it blinks, its hands posed by its motions: the gallery's Motion_Eyes / Motion_Hands)
     0e gal-model @ actor act.x sf!  0e gal-model @ actor act.y sf!  0e gal-model @ actor act.z sf!  0e gal-model @ actor act.yaw sf!
     gal-model @ alone  cam-keep  look-keep look-plain   \ (the room's fog, tint and bloom: none - the original's own tint, plain)
     gal-at @ floats model-nearest + f@ 10e f+ gal-dist f!  0e gal-turn f!

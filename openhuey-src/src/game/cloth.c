@@ -429,6 +429,12 @@ static void settle(Cloth *c) {
     }
 }
 
+void cloth_settle(Cloth *c) {
+    if (c != NULL) {
+        c->reset = 1;
+    }
+}
+
 void cloth_tick(Cloth *c) {
     if (c != NULL && c->pending < 4) {
         c->pending++;
@@ -437,17 +443,12 @@ void cloth_tick(Cloth *c) {
 
 void cloth_pose(Cloth *c, Mat4 *world, int nbones, const Mat4 *place, const Mat4 *unplace) {
     int steps, k, i, j;
-    Vec3 root = place_of(place);
 
     sBones = nbones < 128 ? nbones : 128;
     for (i = 0; i < sBones; i++) {
         sRoom[i] = mat4_mul(*place, world[i]);
         sChanged[i] = 0;
     }
-    if (vec3_len(vec3_sub(root, c->root)) > 30.0f) {   /* (put somewhere else: settle there) */
-        c->reset = 1;
-    }
-    c->root = root;
     if (c->reset) {
         settle(c);
         steps = c->settle_steps;

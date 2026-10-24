@@ -92,6 +92,18 @@ typedef struct Actor {
     int nturns;
     DogLegs legs;           /* a dog's feet planted and its legs fitted to them (Hewie) */
     Cloth *cloth;           /* its hanging parts (Fiona's slip, skirt, hair), NULL none */
+    /* its face and hands (the original's model +0x58.., +0x38 / +0x48): the face's shapes' weights,
+     * each hand's two shapes and the way between them - set by its motion's channels (tracks -7..-12:
+     * the scenes' mouths and hands, Motion_ExtraChannels), and when `alive` by its blinks and its
+     * motions' hand poses (Motion_Eyes / Motion_Hands: Fiona's and the stalkers' models, out of
+     * scenes); kept till something sets them again */
+    ModelFace face;
+    int32_t alive;
+    int32_t blink;          /* frames into its blink (+0x870) */
+    uint8_t hand_on[2];     /* each hand's pose played forward (+0x85C / +0x85D) */
+    int32_t hand_default[2];/* each hand's shape where its pose has none (+0x87C / +0x880) */
+    float hand_frame;       /* its motion's time at the tick before (the slot's +0x8) */
+    SkinVertex *shaped;     /* its vertices with the face's shapes (NULL: it has no face or hands) */
     /* its motions' event keys (NAME.MRK: a byte of flags a frame for each motion, by the bank's
      * id list; the original's motion +0x4D4), NULL none */
     uint8_t *events;

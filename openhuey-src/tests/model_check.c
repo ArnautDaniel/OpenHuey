@@ -15,7 +15,7 @@
 #include "../src/data/modelgltf.h"
 #include "../src/third_party/cgltf.h"
 
-static int sModels, sBad, sUnbuilt;
+static int sModels, sBad, sUnbuilt, sMorphs;
 static long long sPck, sGltf;
 
 static void check(const char *name, uint8_t *pck, size_t size) {
@@ -31,6 +31,18 @@ static void check(const char *name, uint8_t *pck, size_t size) {
         return;
     }
     sModels++;
+    if (strcasecmp(name, "DNL_000.PCK") == 0) {   /* (parts are numbered on through the rigid and morphing ones,
+                                                    * as the original's draw flags: Daniella's part 31 is rigid) */
+        int found = 0;
+
+        for (i = 0; i < a.nd; i++) {
+            found |= a.d[i].group == 32;
+        }
+        if (!found) {
+            fprintf(stderr, "FAIL %s: no draw is its part 31 (group 32)\n", name);
+            sBad++;
+        }
+    }
     json = modelgltf_write(&a, "model.bin", "../X.texbank/", &bin, &bs, &len);
     sGltf += (long long)(len + bs + a.motions_size);
     {
@@ -66,6 +78,20 @@ static void check(const char *name, uint8_t *pck, size_t size) {
                (a.motions == NULL || memcmp(a.motions, b.motions, a.motions_size) == 0);
         for (i = 0; same && i < a.nbones; i++) {
             same = memcmp(&a.bones[i], &b.bones[i], sizeof(ModelBone)) == 0;
+        }
+        same = same && a.nmorphs == b.nmorphs;
+        for (i = 0; same && i < a.nmorphs; i++) {   /* (the faces and hands: each shape's every vertex) */
+            const ModelMorph *x = &a.morphs[i], *y = &b.morphs[i];
+            size_t n = (size_t)x->nshapes * (size_t)x->count * sizeof(Vec3);
+
+            same = x->first == y->first && x->count == y->count && x->face == y->face && x->hand == y->hand &&
+                   x->nshapes == y->nshapes && memcmp(x->dpos, y->dpos, n) == 0 && memcmp(x->dnrm, y->dnrm, n) == 0;
+            if (!same) {
+                fprintf(stderr, "FAIL %s: morph %d read back differs\n", name, i);
+            }
+        }
+        if (a.nmorphs > 0) {
+            sMorphs += a.nmorphs;
         }
         if (!same) {
             int v = -1, d = -1, bn = -1;
@@ -126,7 +152,7 @@ int main(int argc, char **argv) {
     }
     snprintf(data, sizeof(data), "%s/", argv[1]);
     SDL_EnumerateDirectory(data, one, NULL);
-    printf("model-check: %d models (%lld MB of PCK; %d not models the engine builds) as %lld MB of glTF and motions, %d "
-           "failures\n", sModels, sPck >> 20, sUnbuilt, sGltf >> 20, sBad);
+    printf("model-check: %d models (%lld MB of PCK; %d not models the engine builds; %d faces and hands) as %lld MB of glTF "
+           "and motions, %d failures\n", sModels, sPck >> 20, sUnbuilt, sMorphs, sGltf >> 20, sBad);
     return sBad != 0 || sModels == 0;
 }

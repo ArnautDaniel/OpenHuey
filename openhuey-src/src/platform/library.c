@@ -202,6 +202,19 @@ static int disc_is_ours(char *why, size_t n) {   /* (the disc opened) */
 /* ---- the manifest: "hga-library 1", "disc <crc>", "convert <kind> <format>" each converter
  * used, then "file <size> <path>" each ---- */
 
+/* the converters whose newer formats give the game more than an older library has (a library
+ * made by an older OpenHuey is still read; these offer a re-import): the models' faces, hands and
+ * parts' numbers (models 2), the tables the faces and hands go by (exe 2) */
+static const struct {
+    const char *kind;
+    int format;
+} kNewer[] = {
+    {"models", MODELGLTF_FORMAT},
+    {"exe", EXETABLES_FORMAT},
+};
+#define NNEWER (int)(sizeof(kNewer) / sizeof(kNewer[0]))
+static int sOlder;   /* the library's converters older than these */
+
 static int library_ok(char *why, size_t n) {
     char path[2200], line[1200];
     FILE *f;
@@ -224,12 +237,29 @@ static int library_ok(char *why, size_t n) {
         fclose(f);
         return 0;
     }
+    {
+        int k;
+
+        sOlder = 0;
+        for (k = 0; k < NNEWER; k++) {
+            sOlder |= 1 << k;   /* (till its line says otherwise) */
+        }
+    }
     while (fgets(line, sizeof(line), f) != NULL) {
         long size;
         char name[1024];
         SDL_PathInfo info;
+        int fmt, k;
 
         line[strcspn(line, "\r\n")] = 0;
+        if (sscanf(line, "convert %1023s %d", name, &fmt) == 2) {
+            for (k = 0; k < NNEWER; k++) {
+                if (strcmp(name, kNewer[k].kind) == 0 && fmt >= kNewer[k].format) {
+                    sOlder &= ~(1 << k);
+                }
+            }
+            continue;
+        }
         if (sscanf(line, "file %ld %1023[^\n]", &size, name) != 2) {
             continue;
         }
@@ -895,7 +925,7 @@ static int write_manifest(const char *root, const Items *made) {
     fprintf(f, "convert samples %d\n", SAMPLES_FORMAT);
     fprintf(f, "convert movies 1\n");   /* (X.mpg, X.flac: data/sfd.h) */
     fprintf(f, "convert rooms 1\n");    /* (X.room/: the textures, the text, the mesh, lights, cameras; the PAC less them) */
-    fprintf(f, "convert models 1\n");   /* (X.model/: glTF, the motion bank, the shadows) */
+    fprintf(f, "convert models %d\n", MODELGLTF_FORMAT);   /* (X.model/: glTF, the motion bank, the shadows) */
     for (i = 0; i < made->n; i++) {
         fprintf(f, "file %ld %s\n", made->e[i].size, made->e[i].path);
     }
@@ -1014,6 +1044,48 @@ int library_import_from(const char *disc, int headless) {
     return 1;
 }
 
+#define REIMPORT_WHY "This OpenHuey reads more of the game than your library has: the characters' faces (blinking, " \
+                     "their mouths in the scenes), their hands, and the parts of models that are shown and hidden."
+
+/* a library made by an older OpenHuey: a re-import offered (the disc chosen again, imported over it
+ * - the saves and settings are kept); "Later" plays on with the library as it is, asked again next
+ * time. 1 with a library open */
+static int offer_reimport(void) {
+    static const SDL_MessageBoxButtonData buttons[] = {
+        {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Import again now"},
+        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "Later"},
+    };
+    SDL_MessageBoxData box;
+    char why[600], msg[900];
+    int choice = 0;
+
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        fprintf(stderr, "openhuey: %s Import your disc again for them: openhuey --import <your disc image.iso>\n",
+                REIMPORT_WHY);
+        return 1;
+    }
+    memset(&box, 0, sizeof(box));
+    box.flags = SDL_MESSAGEBOX_INFORMATION;
+    box.title = "OpenHuey: import your disc again";
+    box.message = REIMPORT_WHY "\n\nImport your disc again to have them: choose its disc image (.iso) and wait a "
+                  "minute or two. Your saves and settings are kept.\n\nLater: the game plays as before, without "
+                  "them, and this is asked again next time.";
+    box.numbuttons = 2;
+    box.buttons = buttons;
+    if (!SDL_ShowMessageBox(&box, &choice) || choice != 1) {
+        return 1;
+    }
+    if (!disc_pick("Choose your copy of Haunting Ground (USA): its disc image (.iso), to import it again.")) {
+        return open_library();   /* (none chosen: the library as it was) */
+    }
+    if (import(0, why, sizeof(why)) && open_library()) {
+        return 1;
+    }
+    snprintf(msg, sizeof(msg), "The disc couldn't be imported: %s.\n\nThe library is as it was.", why);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "OpenHuey", msg, NULL);
+    return open_library();
+}
+
 int library_choose(const char *given, const char *fallback, int headless) {
     char why[600], msg[900];
     const char *say = NULL;
@@ -1027,6 +1099,12 @@ int library_choose(const char *given, const char *fallback, int headless) {
     }
     if (library_ok(why, sizeof(why))) {
         if (open_library()) {
+            if (sOlder != 0 && headless) {
+                fprintf(stderr, "openhuey: the library was made by an older OpenHuey. %s Import your disc again for "
+                                "them: openhuey --import <your disc image.iso>\n", REIMPORT_WHY);
+            } else if (sOlder != 0) {
+                return offer_reimport();
+            }
             return 1;
         }
         snprintf(why, sizeof(why), "the library can't be read (%s)", disc_error());
