@@ -47,6 +47,7 @@ trip record is a structure (`/trip`, `creatures/trip.fs`).
 | `creatures-clear` | `( which -- )` | in, the story (0xCB) | 0 all, 1 slots 0..6, 2 slots 7..9: gone. |
 | `creature-count` | `( n other -- )` | in, the story (0x99) | How many to scatter about the next rooms (other bit 7: homunculi). |
 | `creature-doing` | `( slot room mode up -- )` | out, broadcast by each creature each frame | Where it is and its move mode (2: hanging about her) - for the story's 0x53 and 0x58. |
+| `thing-blow` | `( damage yaw -- )` | in, from `things` | A magnesia's blow (in any room; taken once in play). |
 | `creature-gone` | `( slot -- )` | out, to `creatures` | It has vanished or faded: its slot is free. |
 | `exit-taken` / `entered-room` / `arrived` | | in (broadcasts) | Fiona leaving by an exit (they follow); a room coming in (back on the floor, in play or not). |
 
@@ -168,8 +169,24 @@ sound 5 - then up, $1800, a sound at frame 34) and wakes once it notices her.
   end gone, leaving a bubbling (64 bubbles and 32 drops welling up; at frame 100 a splat on the
   floor). Its time out off screen: gone the same way.
 
-**Following her out** (_FionaLeft, _Travel): as the spirits, at 0.35 a frame; a way shut for
-kind 2 sends it back to its room's start (+0x8 2).
+**Following her out** (_FionaLeft, _Travel): awake in the room she leaves, it plans a path to her
+exit's far spot (Rooms_ExitPointThrough; not across the divider) and walks it off screen at 0.35 a
+frame - its body moving in the room it was left in - then goes through the door it made for (on
+this side; shut: marked, the trip over). No path there: if another open exit has one, a path to
+hers anyhow (no divider check); none - its trip from that room as the spirits', door by door.
+Nearer her exit than she is, it walks there but keeps the door it last made for (back the way it
+came, when that door is here). Already as near the door as the far spot and straight to it:
+through at once. Not while state flag $18 is set. Through a door off screen its place stays as
+it was, with no triangle (CreatureB_ThroughExit): coming into the room being played so, it is put
+at random.
+
+**Off screen** it keeps its place in its room (the original's creatures stay put where she left
+them): back in play there it stands where it was (its triangle the one under it). A magnesia in
+its room reaches it there, and it can tread on one (things.md); the blow waits until it is in
+play (CreatureB_ActionState runs only then). Placed off screen, or back from a loaded game, it has
+no place until the room is played. (CreatureB_RoomEntered's re-placing - a homunculus on a
+triangle of its mask's floor put elsewhere - is never reached in the original: its +0x8 is only
+ever 0 or 2, never the 1 it waits for; CreatureA_EnterRoom's +0x10 the same.)
 
 **Kept** (CreatureB_Save / _Load): as a spirit's, and its strength, the state it is in, its
 heading and how high it still is (the progress' `creature-states`, apart from the spirits'
@@ -209,13 +226,16 @@ play (and after a loaded game, 5), each free slot of the first `n` gets a spirit
 room next to hers (within two open doors), sent after her - out, resting 1..4 minutes, then on
 its way; with company (the stalker or a figure of the story up in her room) at 2/3 the pace for
 its first leg. One gone, the next frame another takes its slot. Checked by
-`tests/creatures/test_spirits.fs` (35) and `test_homunculi.fs` (27), Hewie's in
+`tests/creatures/test_spirits.fs` (35) and `test_homunculi.fs` (34), Hewie's in
 `tests/hewie/test_pounce.fs`; seen on screen.
 
 Not yet:
 - The special spots of rooms $8F / $91 checked only by the numbers.
-- Spirits: heading for her exit only when it can reach it. The story's count of homunculi (0x99
-  with bit 7: no room asks for it).
-- A homunculus coming into the room on a triangle of its mask's floor put elsewhere
-  (CreatureB_RoomEntered's re-placing).
+- Spirits: following her out by a path walked off screen (CreatureA_FionaLeft / _Travel: to her
+  exit only when on its level and reachable, at half its speed) - they still count the first leg
+  down by the straight distance, out of play. The story's count of homunculi (0x99 with bit 7: no
+  room asks for it).
+- Doors on a homunculus's trip: Progress_CurRoomFlag (wait) and Progress_ExitPassable kind 2 -
+  only the door's being open is checked. The door it last made for starts as none (the
+  original's starts as whatever its block held).
 - Kind $19 (an event character); room $4F's commands.

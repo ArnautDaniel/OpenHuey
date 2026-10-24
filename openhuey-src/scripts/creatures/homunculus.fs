@@ -47,7 +47,8 @@ state: homunculus-state
   cell field grab-spot            \ which of the four spots round her next
   1 floats field her-dist  1 floats field hewie-dist
   cell field her-mode  cell field her-sub  cell field her-doing  cell field her-unseen
-  cell field blow-n  cell field blow-damage  cell field blow-pending  cell field striker   \ (+0x14F0: who struck - her, Hewie)
+  cell field blow-n  cell field blow-damage  cell field blow-pending  cell field striker   \ (+0x14F0: who struck - her, Hewie; -1 a thing)
+  1 floats field blow-yaw         \ (+0x14FC) a thing's blow: the heading it faces
   cell field fade
   cell field left-down  cell field right-down   \ its feet down last frame (+0x72 / +0x73)
   cell field stalker  cell field stalker-age   \ the stalker as he tells (stalker-doing), frames since
@@ -260,11 +261,14 @@ enum: down#  falling lying rising-up standing-up ;
 : leave ( -- )  leaving want !  true grabbed !  creature-struck move-mode !  settle ;
 \ a blow - it reels, then is up; no strength left, it leaves
 enum: blow#  blow-landed reeling-back rising up-from-blow ;
+: blow-came-from ( F: -- yaw )   \ (+0x14F0: from her, from Hewie - whoever struck - or a thing's heading)
+    striker @ dup 0< if  drop blow-yaw f@ exit  then
+    dup body? if  body-at  else  drop her-at  then  heading-to ;
 : struck ( -- )
     step @ reeling-back <> if  root-move  then
     step @ case
-        blow-landed of  blow-damage @ negate strength +!   \ (reeling back facing whoever struck, else forward)
-              striker @ dup body? if  body-at  else  drop her-at  then  90 faces? if  reel-back-anim  else  reel-forward-anim  then
+        blow-landed of  blow-damage @ negate strength +!   \ (reeling back facing where it came from, else forward)
+              blow-came-from  self body-yaw f- angle-wrap fabs  pi f2/ f< if  reel-back-anim  else  reel-forward-anim  then
               play-now  hurt-cry sound  reeling-back step !  endof
         reeling-back of  true untouchable !
               ended? 0= if  root-move exit  then
@@ -416,10 +420,16 @@ $80 constant grab-noise
 : somewhere ( -- tri | -1 )
     nav-tris 0= if  -1 exit  then
     1000 0 do  nav-tris random  dup may-be-put? if  unloop exit  then  drop  loop  -1 ;
-: on-the-floor ( -- )   \ in the room being played: on its triangle, or (none: CreatureB_EnterRoom) put
-    stand-mask body-mask!                                  \ somewhere at random, watching her
-    my-tri @ dup 0< if  drop somewhere  watching want !  watching running !  then
-    dup my-tri !  dup 0< if  drop exit  then  room-id swap dup tri-center body-place ;
+: put-on ( tri -- )  dup my-tri !  dup 0< if  drop exit  then  room-id swap dup tri-center body-place ;
+: here-already? ( -- flag )  self body? if  self body-room room-id =  else  false  then ;
+: where-it-was ( -- )   \ (its place kept off screen, the triangle under it)
+    my-at v-tri dup 0< if  drop my-tri @  then  dup my-tri !  my-at vec@  room-id swap body-place ;
+\ in the room being played (CreatureB_EnterRoom): where it was left here, else on its triangle;
+\ none - put somewhere at random, watching her
+: on-the-floor ( -- )
+    stand-mask body-mask!
+    my-tri @ 0< if  somewhere put-on  watching want !  watching running !  exit  then
+    here-already? if  where-it-was  else  my-tri @ put-on  then ;
 : blow-taken ( -- )   \ (CreatureB_ActionState) a blow: struck
     blow-pending @ 0= if  exit  then  0 blow-pending !
     move-mode @ creature-struck = if  exit  then
@@ -439,7 +449,9 @@ $80 constant grab-noise
     in-play? 0= if
         time @ time-out >= if  gone exit  then
         grabbed @ if  gone exit  then
-        0.35e 0.35e trip trip-step if  stand-mask body-mask!  my-tri @ 0< if  on-the-floor  then  then
+        stalkers-stay state-flag? 0= if   \ (CreatureB_Travel: not while the story keeps them where they are)
+            0.35e 0.35e trip trip-step if  stand-mask body-mask!  my-tri @ 0< if  on-the-floor  then  then
+        then
         show keep exit
     then
     another-level? 0= if  0 gave-up !  then
@@ -459,6 +471,43 @@ $80 constant grab-noise
     full-strength strength !  trip trip-reset  settle
     fall f@ f0> if  dropped want !  dropped running !  then
     keep ;
+
+\ ---- she leaves by `exit` (CreatureB_FionaLeft): it makes for the exit's far spot along a path
+\ it walks off screen (`walk-on`, at 0.35), through its door at the end. No way there (not across
+\ the divider): if another open exit has one, a way there anyhow; none - its trip from here.
+\ Nearer her exit than she is, it walks there but keeps the door it last made for (through that
+\ one at the end, if it is on this side). Already as near the door as the far spot, and straight
+\ to it: through at once ----
+create far /vec allot   create door-at /vec allot
+: far-spot ( exit -- tri )  2 exit-spot far vec! ;
+: way-to-far? ( exit -- ok? )   \ (CreatureB_Path)
+    far-spot dup 0< if  drop false exit  then
+    dup self body-tri across-divider? if  drop false exit  then  far plan ;
+: leads-open? ( exit -- flag )   \ (Rooms_ExitLeads, Progress_ExitOpen)
+    my-room @ swap 2dup room-exit-leads drop {: room ex there :}
+    there 0< there room = or if  false exit  then
+    room ex room-exit-door dup 0< if  drop false exit  then
+    dup door-flags $20 and if  drop false exit  then  door-open? ;
+: another-way? ( -- flag )  8 0 do  i leads-open? if  i way-to-far? if  true unloop exit  then  then  loop  false ;
+: door-spot ( exit -- )  1 exit-spot drop door-at vec! ;   \ (the exit's near spot: Rooms_ExitPointIn)
+: nearer-than-her? ( exit -- flag )   \ (Actor_NearerRoom)
+    door-spot  my-at door-at vec-dist  her-at door-at vec-dist f< ;
+: head-out ( exit -- )
+    {: ex :}
+    trip t.closed 13 cells 0 fill  0 trip t.n !  0 trip t.i !  -1 trip t.exit !
+    my-path trip t.path !  0 trip t.walking !  my-path path-clear
+    ex 0< 0= if  ex way-to-far? trip t.walking !  then
+    trip t.walking @ 0= if  another-way? 0= if  exit  then  then
+    ex 0< if  exit  then
+    ex nearer-than-her? if  exit  then
+    trip t.walking @ 0= if   \ (a way to hers anyhow)
+        ex far-spot dup 0< if  drop exit  then  far plan 0= if  exit  then  true trip t.walking !
+    then
+    my-room @ ex room-exit-door trip t.last !
+    ex far-spot drop  ex door-spot
+    my-at door-at vec-dist  far door-at vec-dist f<= if
+        self body-tri my-at door-at path-mask v-walk 0< 0= if  my-path path-end  then
+    then ;
 
 behaviour homunculus
   on spawned ( -- )
@@ -499,8 +548,11 @@ behaviour homunculus
       then
       n blow-n !  damage blow-damage !  true blow-pending !  sender striker !  sender send blow-taken ;
   on leaving-room ( room exit -- )   \ she leaves: in her room and awake, it follows
-      over my-room @ = awake @ and grabbed @ 0= and if  trip swap follow-out drop exit  then  2drop ;
-  on arrived ( room exit -- )  2drop  in-play? if  on-the-floor  else  body-off  then ;
+      over my-room @ = awake @ and grabbed @ 0= and if  nip head-out exit  then  2drop ;
+  on arrived ( room exit -- )  2drop  in-play? if  on-the-floor  then ;   \ (elsewhere it keeps its place there)
+  on thing-blow ( damage yaw -- )   \ (a magnesia's: ThingShared_ReachStalkers / _StompStalkers - in any
+      \ room, untouchable or not; it is struck once it is in play, facing that way)
+      cell>f blow-yaw f!  blow-damage !  -1 striker !  true blow-pending ! ;
   on killed ( -- )  model @ dup 0< if  drop exit  then  actor-free ;
   on set-level ( level -- )  level ! ;   \ (its floor of a split room: a room's command - Room48)
 end-behaviour
