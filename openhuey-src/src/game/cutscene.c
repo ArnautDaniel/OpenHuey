@@ -669,8 +669,10 @@ void cutscene_update(void) {
             sOnFollow(C.slots[i].actor, pos);
         }
     }
-    if (cutscene_signal_count(0) > 0) {   /* (a cut: its characters' hanging parts settled afresh -
-                                           * Fiona_FollowAnim, Pursuer_PlaceModel) */
+    if (cutscene_signal_count(0) > 0) {   /* (a cut: the glow's trails wiped - Cutscene_Update's
+                                           * renderer +0x5C - and its characters' hanging parts
+                                           * settled afresh - Fiona_FollowAnim, Pursuer_PlaceModel) */
+        camdir_glow_cut();
         for (i = 1; i < SLOTS; i++) {
             Actor *a = slot_actor(&C.slots[i]);
 

@@ -889,7 +889,7 @@ PRIM(p_cam_angle) { FPUSH(gCamDir.fov * 57.29578f); }   /* ( F: -- deg ) its vie
 PRIM(p_cam_stop) { gCamDir.started = 0; }                       /* ( -- ) a room change: nothing to direct till it starts */
 PRIM(p_cam_ease) { camdir_ease(&gCamDir); }
 PRIM(p_cam_event) { PUSH(gCamDir.event ? -1 : 0); }   /* ( -- flag ) an event's shot has the camera (the director idle) */
-PRIM(p_cam_event_set) { gCamDir.event = POP() != 0; }  /* ( flag -- ) an event's shot takes the camera, or gives it back */
+PRIM(p_cam_event_set) { camdir_event(&gCamDir, POP() != 0); }  /* ( flag -- ) an event's shot takes the camera, or gives it back */
 PRIM(p_cam_track) { camdir_track(&gCamDir); }
 /* ---- the mods' camera (docs/modding.md): a mod's own, over the director's in play - not in a
  * cutscene's shot or an event's (those keep theirs) ---- */
@@ -2768,7 +2768,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its parts shown or hi
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.18") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.19") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);

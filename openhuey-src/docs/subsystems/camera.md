@@ -47,9 +47,13 @@ sub-state and the room change.
    (`RoomStart`, then `CameraOn`): the view angle from 0.6 of the set's, out to it over 60
    frames, and the phase 3 scripts see the setup changed. A fresh start (a new game, a load:
    `RoomIn`) resets it and cuts on the first frame; Fiona's setup is the save's.
-4. The panic stills the camera at the start of each frame and shakes it (0.2) through a panic's
+4. A cut wipes the glow's trails (`camdir_glow_cut`; Renderer_GlowClear, the renderer's +0x5C):
+   `Track`'s cuts, the room start, a restart, a cutscene taking the camera or giving it back, the
+   story's shot coming in, and a cutscene's own cuts (its signal 0). Not while state flag $28 is
+   set (`in-play`: from the game's entry till the opening is done - the original's check).
+5. The panic stills the camera at the start of each frame and shakes it (0.2) through a panic's
    later stretch (`Panic_Stage`), unless a cutscene has the camera or the panic is held.
-5. The story's shot: the point and heading fixed as it starts, its distance and angles as told;
+6. The story's shot: the point and heading fixed as it starts, its distance and angles as told;
    the room's depth range off meanwhile. Following nobody ends it.
 
 ## Debug

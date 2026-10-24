@@ -94,6 +94,12 @@ void camdir_take_followed(CamDirector *d);
 /* a cutscene's start of play has the camera (CamDirector_ModeEvent), and its end gives it back
  * (CamDirector_ModeDefault: the setup taken anew) */
 void camdir_scene(CamDirector *d, int on);
+/* the story's shot of the one followed takes the camera (on) or gives it back */
+void camdir_event(CamDirector *d, int on);
+/* a cut: the glow's trails wiped (Renderer_GlowClear, the renderer's +0x5C - at the director's
+ * cuts, its room start and restart, a scene taking the camera or giving it back and the scene's
+ * own cuts; not while state flag $28 is set: from the game's entry till the opening is done) */
+void camdir_glow_cut(void);
 /* the setup taken anew, as if it had changed (the event's shot over) */
 void camdir_retake(CamDirector *d);
 /* on to the room's next camera set, no path, following nobody (CamDirector_NextSetup: the game over) */
