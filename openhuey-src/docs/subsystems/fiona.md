@@ -317,6 +317,31 @@ straining she lets go ($1202, then free), else free. The stalker touching her: f
 She lets go when the stalker touches her or her panic attack takes her (Fiona_PushBlocked: FI
 0x1AD584 bit 2). Checked by `tests/obstacles/test_obstacles.fs`.
 
+## Her legs on the floor (`src/game/humanlegs.c`)
+
+Her model stands on the floor by her feet, as the human models' do (`model.c`
+HumanModel_BodyFrames, HumanModel_PlantFeet, Model_LegIK; Fiona_AnimUpdate decides when, `fiona.fs`
+`fit-legs`). Each frame she is on her feet (+0x1AD5BC: set as her frame starts, cleared by the
+states she isn't - thrown, down and getting up, seized, led, dragged, held, on a ladder and
+falling off it, the story's step while through blocked floor; `feet-off-acts`):
+- **her body** goes to the floor under the lower of her feet (y up: the lesser), eased a quarter of
+  the way a frame (not the first after the model is loaded) - the floor found by walking her nav
+  mesh from her triangle to under each foot (Motion_OntoFloor: at a wall, its slope carried on);
+  with motion flag $100 a foot not down counts at her height; on a slope motion (flag 4) the floor
+  at two points along her step instead: 11 back and 1 ahead, 5 and 0.5 running, turning to flee,
+  kicking or out of breath (Fiona_AnimGroup 2, 9, 10, 3);
+- **her feet** are put on the floor under them (on a slope motion their height over her eased by
+  how much the slope faces her way: Model_SlopeKeep), and her legs - hip, knee, ankle (bones 2..4,
+  6..8; feet 5, 9) - bent to reach them, two-bone, the knee to the side of the hip's Z (IK2); the
+  ankle and foot moved as far as the solved ankle went. Through the pose hook, before her hanging
+  parts.
+
+Off her feet her model is at her place, unfitted; off the nav mesh, at her place (Model_BodyFrames).
+The engine's words: `human-legs ( id right left -- )` (the bone chains; at load), `legs-fit ( id tri
+mask plant -- ) ( F: back front -- )` each frame after she is placed, `legs-height` (her body's
+height). Checked by `tests/fiona/test_legs.fs`. The nav mesh keeps section 16's bytes for it
+(`NavMesh.marks`: bit $80 a wall to the feet where the mask blocks).
+
 ## Her hanging parts (`src/game/cloth.c`)
 
 What hangs and sways on her model is C's, as posing is: the original's spring sets

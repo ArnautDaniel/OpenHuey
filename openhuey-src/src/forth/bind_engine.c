@@ -2676,6 +2676,31 @@ PRIM(p_dog_legs) {   /* ( id on -- ) its feet planted and its legs fitted (a dog
     }
     a->legs.on = on != 0;
 }
+PRIM(p_human_legs) {   /* ( id right left -- ) its legs a human's: the bone chains hip, knee, ankle,
+                       * foot from `right` and `left` (-1 -1: none); fitted each frame it asks
+                       * (legs-fit), the easing afresh (as the model is loaded) */
+    Cell left = POP(), right = POP();
+    Actor *a = actor_arg(f, POP());
+
+    humanlegs_set(&a->hlegs, (int)right, (int)left);
+}
+PRIM(p_legs_fit) {   /* ( id tri mask plant -- ) ( F: back front -- ) this frame (after its place is
+                     * set, before its motion moves on - the original's model +0x40 / +0x4C): its
+                     * body put by its feet on the floor from triangle tri (mask: the floor that
+                     * stops it; back / front the points along its step on a slope; 0 0 at its
+                     * place), plant 1 / 0 its feet planted once posed or not, -1 not asked; tri -1:
+                     * at its place, unplanted. A frame it doesn't ask: at its place, unfitted */
+    float front = (float)FPOP(), back = (float)FPOP();
+    Cell plant = POP(), mask = POP(), tri = POP();
+    Actor *a = actor_arg(f, POP());
+
+    humanlegs_fit(a, &gEngine.room.nav, (int)tri, (uint32_t)mask, (int)plant, back, front);
+}
+PRIM(p_legs_height) {   /* ( id -- ) ( F: -- y ) the height its body was last put at by its feet */
+    Actor *a = actor_arg(f, POP());
+
+    FPUSH(a->hlegs.height);
+}
 PRIM(p_has_motion) {   /* ( id motion-id -- flag ) */
     Cell mid = POP();
     Actor *a = actor_arg(f, POP());
@@ -3702,7 +3727,7 @@ void bind_engine(Forth *f) {
         {"message-close-after", p_message_close_after}, {"message-run", p_message_run}, {"message-place", p_message_place}, {"message-align", p_message_align}, {"ui-text-in", p_ui_text_in}, {"ui-blend", p_ui_blend}, {"ui-image4", p_ui_image4}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-back!", p_cloth_back}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
-        {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
+        {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"human-legs", p_human_legs}, {"legs-fit", p_legs_fit}, {"legs-height", p_legs_height}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
         {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"world-volume!", p_world_volume}, {"world-volume", p_world_volume_q}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"controls", p_controls}, {"control-key", p_control_key}, {"control-binding", p_control_binding}, {"control-bind", p_control_bind}, {"controls-reset", p_controls_reset}, {"control-bind-next", p_control_bind_next}, {"control-waiting", p_control_waiting}, {"key-name", p_key_name}, {"mod-camera", p_mod_camera}, {"mod-camera!", p_mod_camera_set}, {"mod-camera?", p_mod_camera_has}, {"mouse-capture", p_mouse_capture}, {"art-picture", p_art_picture}, {"thumbnail", p_thumbnail}, {"alone", p_alone}, {"cam-keep", p_cam_keep}, {"cam-kept", p_cam_kept}, {"key-push", p_key_push}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"freecam?", p_freecam}, {"freecam!", p_freecam_set}, {"mouse-down?", p_mouse_down},

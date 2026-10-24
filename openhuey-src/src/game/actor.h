@@ -7,6 +7,7 @@
 #include "../data/model.h"
 #include "../render/render.h"
 #include "doglegs.h"
+#include "humanlegs.h"
 #include "cloth.h"
 
 #define MAX_ACTORS 32   /* (the models loaded at once: Fiona, Hewie, the stalkers, the cast, the scenes') */
@@ -91,6 +92,8 @@ typedef struct Actor {
     ModelTurn turns[8];
     int nturns;
     DogLegs legs;           /* a dog's feet planted and its legs fitted to them (Hewie) */
+    HumanLegs hlegs;        /* a human's body set by its feet and its legs fitted to the floor
+                             * (Fiona, the stalkers: humanlegs.c) */
     Cloth *cloth;           /* its hanging parts (Fiona's slip, skirt, hair), NULL none */
     /* its face and hands (the original's model +0x58.., +0x38 / +0x48): the face's shapes' weights,
      * each hand's two shapes and the way between them - set by its motion's channels (tracks -7..-12:

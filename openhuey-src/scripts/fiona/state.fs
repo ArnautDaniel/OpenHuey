@@ -87,6 +87,7 @@ state: fiona-state
   1 floats field her-st-dx  1 floats field her-st-dz   \ his step this frame (stalker-stride: 0 0 not ahead)
   cell field her-apart          \ out of contact (+0x2A): a push out of the stalker found no floor
   cell field her-noclip         \ the story's 0x20: through blocked floor (+0x2B)
+  cell field her-feet           \ on her feet this frame (+0x1AD5BC): her model set on the floor by them
   cell field her-aside          \ the story's 0x21: left alone - nobody attacks her (+0x2D)
   cell field her-ladder         \ the ladder she uses (+0x100: the room's nav link; -1 none)
   cell field her-push           \ +0x1AD560: the obstacle she pushes (-1 none)
