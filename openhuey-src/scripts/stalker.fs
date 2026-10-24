@@ -138,12 +138,35 @@ $1300 constant gesture-anims
     forget-leads  0 beaten !  -1 making-for !  0 down-t !  waiting-about mode!  900 mode-t !  0 raging !
     hp @ 0> 0= if  hp-max @ hp !  then ;
 : unload ( -- )  0 loaded !  in-game @ if  go-out  then  my-kind @ -1 cast-as ;
+: dressed ( id addr len -- )   \ (his model loaded, its motion table by name: hidden till he comes in;
+    \ he blinks, his hands posed by his motions - Pursuer_ModelUpdate's Motion_Eyes / Motion_Hands)
+    {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l!  1 him act.alive l! ;
+: model-file ( addr len -- id )  2dup file!  actor-load ;
+\ Debilitas's model by the kind he is loaded as (Pursuer_ModelFiles: Debilitas_ModelFiles O_DB0,
+\ Debilitas2_ModelFiles O_DB1, Debilitas3_ / Kind27_ModelFiles O_DB2 - the same skeleton and
+\ motions, the model class DebilitasModel's), its textures by the hard setting (the tables' H ones);
+\ its sounds and events its own
+: debilitas-file ( kind -- addr len )
+    case  debilitas-6-kind of  s" O_DB1/DB1_000"  endof   debilitas-7-kind of  s" O_DB2/DB2_000"  endof
+          debilitas-27-kind of  s" O_DB2/DB2_000"  endof  >r s" O_DB0/DB0_000" r>  endcase ;
+create hard-tex 32 allot
+: hard-textures ( addr len -- addr' len' )   \ (the name with H on)
+    {: a n :}  a hard-tex n move  [char] H hard-tex n + c!  hard-tex n 1+ ;
+: debilitas-model ( addr len -- id )
+    2dup file!  2dup hard-mode? if  hard-textures  then  actor-load-textured ;
+: debilitas-dress ( kind -- )   \ (anew when the kind's model isn't the one he has)
+    debilitas-file  2dup file compare 0= if  2drop exit  then
+    my-model @ dup 0< if  drop  else  actor-free  then
+    debilitas-model s" motions-debilitas" dressed ;
+: debilitas-of? ( kind -- flag )   \ (the kinds the Debilitas actor is loaded as)
+    dup debilitas-kind =  over debilitas-6-kind = or  over debilitas-7-kind = or  swap debilitas-27-kind = or ;
 create place-at /vec allot
 behaviour stalking
   on stalker-load ( slot -- )  load ;
-  \ the kind he is loaded as (Debilitas's: kind 7 is the Pursuer with his model, its chase the
+  \ the kind he is loaded as (Debilitas's: his model by it - debilitas-dress; kind 7 is the Pursuer, its chase the
   \ Pursuer's - Debilitas3)
   on stalker-as ( kind -- )
+      dup debilitas-of? if  dup debilitas-dress  then
       dup debilitas-7-kind = if  my-kind !  -1 base-chase ! exit  then  drop
       my-kind @ debilitas-7-kind = if  debilitas-kind my-kind !  0 base-chase !  then ;   \ (himself again)
   on stalker-unload ( -- )  unload ;
@@ -222,10 +245,6 @@ end-behaviour
 : fby-hardness ( F: normal hard -- f )  hard-mode? if  fnip  else  fdrop  then ;
 : ways ( kit pursuers? gives-up? -- ) ( F: turn-deg reach -- )   \ (his tables; the Pursuer's chase or his own; giving up)
     gives-up !  base-chase !  kit !  reach-k f!  deg>rad turn-k f! ;
-: dressed ( id addr len -- )   \ (his model loaded, its motion table by name: hidden till he comes in;
-    \ he blinks, his hands posed by his motions - Pursuer_ModelUpdate's Motion_Eyes / Motion_Hands)
-    {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l!  1 him act.alive l! ;
-: model-file ( addr len -- id )  2dup file!  actor-load ;
 : health! ( n -- )  dup hp-max !  hp ! ;
 : hewie-temper ( tolerance dog-limit -- ) ( F: throw -- )  dog-limit !  tolerance !  throw-k f! ;
 : no-own-rooms ( -- )  -1 own-a !  -1 own-b ! ;
@@ -240,7 +259,7 @@ behaviour debilitas
   extends stalking
   on spawned ( -- )
       3e 16e  debilitas-kit false true ways
-      s" O_DB0/DB0_000" model-file s" motions-debilitas" dressed
+      debilitas-kind debilitas-file debilitas-model s" motions-debilitas" dressed
       70 110 by-hardness health!  debilitas-kind my-kind !  -1 growls !  0 hear-threshold !  family-setup
       4500 away-base !  90 cool-secs !  $20 own-a !  $02 own-b !  796 own-a-tri !  794 own-b-tri !
       10e  20 1800 hewie-temper  leaves-doors door-manner !  debilitas-ladder ladder-offsets !
