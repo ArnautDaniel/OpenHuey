@@ -62,10 +62,14 @@ enum: gait  walk-gait trot-gait run-gait ;
     his-t3 @ walk-gait = fdup 10e f< or if  fdrop walk-pose
     else  his-t3 @ trot-gait = 20e f< or if  trot-pose  else  run-pose  then  then ;
 
-\ Hewie_TargetTri: his target in his room, its place into tt-at; -1 none
+\ Hewie_TargetTri: his target in his room, its place into tt-at; none, the exit he is alert to
+\ (an exit into the stalker's room: its spot through it); -1 none
 create tt-at /vec allot
+: alert-exit-tri ( -- tri | -1 )
+    his-alert @ exit-alert <> if  -1 exit  then
+    his-alert-what @ 2 exit-spot  dup 0< if  fdrop fdrop fdrop exit  then  tt-at vec! ;
 : target-tri ( -- tri | -1 )
-    his-target @ dup 0< if  exit  then
+    his-target @ dup 0< if  drop alert-exit-tri exit  then
     dup with? 0= if  drop -1 exit  then
     tt-at over body-at vec-copy  body-tri ;
 : close-to ( v -- flag )  his-at swap vec-dist 10e f< ;

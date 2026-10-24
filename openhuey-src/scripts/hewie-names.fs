@@ -143,6 +143,7 @@ enum: hewie-action
     bark-act              \ $85
     back-on-floor-act     \ $86
     run-up-jump-act       \ $87 (not built)
+    through-act           \ $88 through the exit with her: at it in her room at once (Hewie_Vt34)
 ;
 
 \ his move mode (his-mode; the characters' move modes): his own; out of reach (on a ladder, off

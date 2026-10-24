@@ -7,24 +7,8 @@
 \ closing in); struck (Hewie_TakeBlow: by the stalker, by her, by a door) - his yelp, pushed back
 \ (StateMoveAlong), then down or on (Hewie_AfterYelp).
 IN: hewie.fight
-USING: engine keys game-state actors messages common facts paths vectors flag-names stalker-names hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states floor-flags ;
+USING: engine keys game-state actors messages common facts paths vectors flag-names stalker-names hewie-names hewie.exits hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states floor-flags ;
 
-\ ---- his fight's animations: the leap, the bite, letting go - at the near flank, the far one,
-\ head on, his leg; thrown off at a flank (hanging on), held on again or flung, at the top of
-\ the arc and falling; landing ----
-$2200 constant leap-near-anim   $2209 constant leap-far-anim   $2214 constant leap-head-on-anim   $2217 constant leap-leg-anim
-$2201 constant bite-near-anim   $220A constant bite-far-anim   $2215 constant bite-head-on-anim   $2218 constant bite-leg-anim
-$2202 constant let-go-near-anim   $220B constant let-go-far-anim   $2216 constant let-go-head-on-anim   $2219 constant let-go-leg-anim
-$2203 constant hanging-near-anim   $220C constant hanging-far-anim
-$2204 constant hold-again-near-anim   $220D constant hold-again-far-anim
-$2207 constant flung-near-anim   $2210 constant flung-far-anim
-$2205 constant top-held-near-anim   $220E constant top-held-far-anim
-$2208 constant top-flung-near-anim   $2211 constant top-flung-far-anim
-$2206 constant falling-held-near-anim   $220F constant falling-held-far-anim
-$2212 constant land-held-anim   $2213 constant flung-anim   \ (landed: held on; flung - struck down too)
-
-\ his grip on the stalker (his-grip): none yet, head on, the near flank, the far one
-enum: grip  -1 no-grip head-on-grip near-grip far-grip ;
 \ his-biting: holding on - the first time round, still; letting go; thrown off. Thrown off
 \ (hanging): he held on again, or flung
 enum: bite-hold  first-hold still-holding letting-go thrown-off ;
@@ -34,24 +18,36 @@ enum: bite-hold  first-hold still-holding letting-go thrown-off ;
 : by-grip ( near far other -- anim )   \ (by his grip: the near flank, the far one, else)
     {: near far other :}  his-grip @ case  near-grip of  near  endof  far-grip of  far  endof  >r other r>  endcase ;
 
-\ ---- his feelings about the stalker (Hewie_Feeling, Hewie_ChangeFeeling: -10..10) ----
-: feel ( -- addr )   \ (by the stalker's kind: Debilitas, Daniella, Lorenzo, Riccardo)
-    st-kind @ case
-        daniella-kind of  1  endof  riccardo-kind of  3  endof
-        lorenzo2-kind of  2  endof  lorenzo-kind of  2  endof  kind12-kind of  2  endof
-        >r 0 r>
-    endcase  cells his-feel + ;
+\ ---- his feelings about the stalker (Hewie_Feeling, Hewie_ChangeFeeling: -10..10) and how often
+\ he has leapt at him (Hewie_CountEncounter: 0..100), kept for each of them by the stalker's
+\ kind: Debilitas (and his figures), Daniella (and her later kinds), Lorenzo (his classes),
+\ Riccardo (the TintStalker, his other class); none for any other kind ----
+: kind-slot ( kind -- i | -1 )
+    case
+        debilitas-kind of  0  endof  debilitas-6-kind of  0  endof  debilitas-7-kind of  0  endof  debilitas-27-kind of  0  endof
+        daniella-kind of  1  endof  kind34-kind of  1  endof  kind35-kind of  1  endof  kind36-kind of  1  endof
+        lorenzo2-kind of  2  endof  lorenzo-kind of  2  endof  kind12-kind of  2  endof  kind39-kind of  2  endof
+        riccardo-kind of  3  endof  tintstalker-kind of  3  endof  kind37-kind of  3  endof
+        >r -1 r>
+    endcase ;
+: stalker-slot ( -- i | -1 )  st-kind @ kind-slot ;
+: feel ( -- addr | 0 )  stalker-slot dup 0< if  drop 0  else  cells his-feel +  then ;
+: feeling ( -- n )  feel dup if  @  then ;   \ (none: 0)
+: met ( -- addr | 0 )  stalker-slot dup 0< if  drop 0  else  cells his-met +  then ;
+: met+ ( -- )  met ?dup if  dup @ 1+ 100 min swap !  then ;   \ Hewie_CountEncounter
 \ Hewie_FeelPursuer: his mood normal, a stalker about - the more he dislikes him, the likelier he
 \ is upset: a 1-in-16 roll under 14 at -10, falling by one a step to 1 at 0, none above
 create upset-chance  14 , 10 , 9 , 8 , 7 , 6 , 5 , 4 , 3 , 2 , 1 ,
 : feel-pursuer ( -- )
-    his-mood @ normal-mood <>  pursuer active? 0= or  feel @ 0> or if  exit  then
-    feel @ 10 + cells upset-chance + @  16 roll > if  upset-mood -1 set-mood  then ;
-: feel+ ( n -- )  feel @ + -10 10 clamp feel !  feel-pursuer ;
-\ Hewie_Dares: from trust 2, a 1-in-16 roll under his level + 1 + his feeling / 5 (at most 8)
+    his-mood @ normal-mood <>  pursuer active? 0= or  feel 0= or if  exit  then
+    feeling 0> if  exit  then
+    feeling 10 + cells upset-chance + @  16 roll > if  upset-mood -1 set-mood  then ;
+: feel+ ( n -- )  feel {: n a :}  a if  a @ n + -10 10 clamp a !  then  feel-pursuer ;
+\ Hewie_Dares: from trust 2, a 1-in-16 roll under his level + 1 + how often he has leapt at the
+\ stalker / 5 (at most 8)
 : dares? ( -- flag )
-    his-trust @ 2 < if  false exit  then
-    feel @ 5 / 8 min  his-trust @ + 1+  16 roll > ;
+    his-trust @ 2 <  pursuer active? 0= or if  false exit  then
+    met dup if  @ 5 / 8 min  then  his-trust @ + 1+  16 roll > ;
 
 \ ---- a bite (bite_pursuer): its damage (bite-damage), hard by chance - the more hurt the
 \ stalker, the likelier (Hewie_ReactionRoll; the chances' rows by the bite) ----
@@ -201,7 +197,7 @@ defer after-yelp ( -- )   \ (yelped, below)
             then
         then
     then
-    slide-root  at-his-height ;
+    slide-root  at-his-height  1 his-on-him ! ;
 
 \ ---- the leap (StateLeapGrip, StateLeapLands): his bites by his action, grip and trust; his way
 \ to the spot and the turn covered in 8 frames (the leg 12), at the stalker's height; landed -
@@ -220,13 +216,13 @@ defer after-yelp ( -- )   \ (yelped, below)
         first-bite  bite-sound make-sound
         his-to vec@ his-place  his-leap-yaw f@ his-yaw!
         bite-anim play-cut  still-holding his-biting !
-        feel @ 10 + 5 * his-hold !  0 his-mash !
+        feeling 10 + 5 * his-hold !  0 his-mash !
         ['] st-bite-hold behave
     else
         his-leap-yaw f@ his-leap-turn f@ body-turn-toward fdrop
         his-leap-k f@ ahead@ his-path path-i!  ahead vec@ his-place  1 his-no-root !
     then
-    at-his-height ;
+    at-his-height  1 his-on-him ! ;
 : bites-by-trust ( -- n )
     his-action @ case
         at-flank-act of
@@ -240,9 +236,11 @@ defer after-yelp ( -- )   \ (yelped, below)
     his-leap-yaw f!  his-to vec!  his-to-tri !
     his-to-tri @ his-to plan-to 0= if  to-default exit  then
     bites-by-trust his-bites !
+    no-call his-call !   \ (the call answered)
     his-hits @ if  -1 his-hits +!  300 his-hit-t !  then
     leaping-sub his-sub !
-    rnd 0.33333e f< if  1 feel+  then
+    rnd 0.33333e f< if  1 feel+  then  met+
+    1 his-on-him !
     at-leg? if  leap-leg-anim
     else  his-grip @ case
             near-grip of  st-kind @ lorenzo-kind <> if  turn-round  then  leap-near-anim  endof
@@ -294,7 +292,7 @@ defer after-yelp ( -- )   \ (yelped, below)
 \ a homunculus bitten (bite_landed): his temper with her easing (one fewer of her hits held
 \ against him, for 300 frames more), his sound
 : bite-landed ( -- )
-    his-hits @ if  -1 his-hits +!  300 his-hit-t !  then  snap-sound make-sound ;
+    his-hits @ if  -1 his-hits +!  300 his-hit-t !  then  no-call his-call !  snap-sound make-sound ;
 
 \ Hewie_PickTarget: whom he goes for - the stalker when he has hold of her; a homunculus holding
 \ her down; the stalker; else the nearest creature up and after her, not struck or going -
@@ -372,26 +370,47 @@ defer close-by ( F: rest -- done? )   :noname fdrop false ; is close-by   \ (hew
     else from 0< 0= if  from his-target !  from body-at heading-to pi f+ angle-wrap  else  his-yaw  then then  his-push-yaw f!
     yelp-anim play  kind shove-blow = if  shoved-yelp  else  yelp-sound  then  make-sound
     yelp-act his-action !  ['] st-move-along behave ;
-: door-yelp ( exit -- )   \ (back from the door's swing, away from her side of it)
+: door-yelp ( F: yaw -- )   \ (back from the door's swing, along yaw)
+    his-push-yaw f!
     struck-mode his-mode !  0 his-cmd !  5e his-push f!  1e his-push-less f!
-    dup door-turn  her body-at vec@ door-side 1 = if  pi f+ angle-wrap  then  his-push-yaw f!
     yelp-anim play  yelp-sound make-sound
     door-yelp-act his-action !  ['] st-move-along behave ;
+\ a door swung into him (its exit): she not in front of it - back along its turn, through blocked
+\ floor; she in front of it and he on its sides where he may pass - out by it, against its turn;
+\ else, off its gap, aside (a quarter turn); in its gap nothing more
+: door-hit ( exit -- )
+    {: e :}  e door-turn {: F: yaw :}
+    e her body-at vec@ door-side 1 <> if  1 his-2b !  yaw door-yelp exit  then
+    e on-its-sides?  e may-pass? and if  yaw pi f+ angle-wrap his-push-yaw f!  pushed-out-act 0 want exit  then
+    on-gap? 0= if  yaw pi f2/ f+ angle-wrap door-yelp  then ;
+\ who called him, struck while angry: her, else whoever it was (none: nobody)
+2 constant other-call
+: caller ( from -- n )  dup 0< if  drop no-call exit  then  her = if  0  else  other-call  then ;
 : take-blow ( kind damage how from -- taken? )
     {: kind damage how from :}  from his-by !
-    his-cond @ down-cond = if  his-action @ go-limp-act <> if  go-limp-act 0 want  then  true exit  then
+    his-cond @ down-cond =  kind ignored-blow <> and if   \ (down: he goes limp - not at a grab)
+        his-action @ go-limp-act <> if  go-limp-act 0 want  then  true exit
+    then
     kind throw-off-blow <>  his-mode @ struck-mode = and if  false exit  then
     kind throw-off-blow <>  his-mode @ engaged-mode = and  his-sub @ going-for-sub leaping-sub 1+ within and if  false exit  then
-    damage  from her =  kind door-blow <> and if  2*  then  hurt-by   \ (her blows twice: not a door)
+    kind door-blow = if
+        how door-animating? 0= if  true exit  then   \ (a door hurts only while it swings)
+        damage hurt-by
+    else
+        his-mood @ angry-mood = if  from caller his-call !  then
+        damage  from her = if  2*  then  hurt-by   \ (her blows twice)
+    then
     his-hurt-t @ 0> 0= if  300 his-hurt-t !  then
+    0 his-2b !
     kind case
-        door-blow of  how door-yelp  true  endof                   \ (a door: how is its exit)
+        door-blow of  how door-hit  true  endof                    \ (a door: how is its exit)
         ignored-blow of  false  endof  throw-off-blow of  false  endof
-        from pursuer? if  rnd 0.25e f< if  -1 feel+  then  0 his-hits !
+        from 0< 0= from her <> and if   \ (by another: a grudge now and then, her hits forgiven)
+            from pursuer? if  rnd 0.25e f< if  -1 feel+  then  then  0 his-hits !
         else from her = if
             0 3 praise-scold drop
             his-hits @ 1+ 6 min his-hits !  300 his-hit-t !
-            16 roll  his-hits @ cells angry-chance + @ < if  angry-mood -1 set-mood  then
+            16 roll  his-hits @ cells angry-chance + @ < if  no-call his-call !  angry-mood -1 set-mood  then
         then then
         dup from yelp  true swap
     endcase ;

@@ -43,11 +43,11 @@ variable hewie-blow-n   -2000 hewie-blow-n !   \ (his blows' numbers for the hom
         pursuer behind-of? to behind
         blow-kind-of  behind tackle-damage  behind tackle-row hard-bite? if  $8000  else  0  then   ( kind damage how )
         pursuer send blow
-        his-t3 @ bit-him or his-t3 !  snap-sound make-sound
+        his-t3 @ bit-him or his-t3 !  no-call his-call !  snap-sound make-sound
     else
         his-t3 @ bit-her and 0=  her reaches? and if
             his-ready @ if  heavy-blow-request  else  blow-request  then  0 20e f>cell her send hit
-            his-t3 @ bit-her or his-t3 !
+            his-t3 @ bit-her or his-t3 !  no-call his-call !
         then
     then
     his-ready @ if  10  else  5  then  bite-creatures ;
@@ -100,7 +100,7 @@ variable hewie-blow-n   -2000 hewie-blow-n !   \ (his blows' numbers for the hom
         leap-snarl make-sound
         pursuer reaches? if  shove-blow 5 bite-damage  rush-bite hard-bite? if $8000 else 0 then  pursuer send blow  then
         her reaches? if  blow-request 0 20e f>cell her send hit  then
-        ['] st-bitten behave exit
+        no-call his-call !  ['] st-bitten behave exit   \ (Hewie_State1980: the call answered)
     then
     5 bite-creatures ;
 : close-in ( -- )

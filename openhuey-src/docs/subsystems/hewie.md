@@ -32,10 +32,13 @@ Declared in `scripts/messages.fs`.
 | `fiona-doing` | `( mode sub cond -- )` | in (Fiona's broadcast, each frame) | What she is doing: her move mode, its part, her condition (2 down). The panic hears it too. |
 | `danger` | `( level -- )` | in (broadcast) | His mode's behaviour (calm / wary / tense) and his lists follow it. |
 | `panic` | `( stage level -- )` | in (broadcast) | Her panic at 4 or 5 may bring him to her, by his trust (in her room, or from off screen). |
-| `leaving-room` | `( room exit -- )` | in (rooms) | She leaves his room by that exit: he follows her that way, by another exit, or stays (Hewie_Vt34). |
+| `leaving-room` | `( room exit -- )` | in (rooms) | She leaves his room by that exit: he follows her that way (nearer its door than she is: through it with her at once, 0x88), by another exit, or stays; at the stalker then (leaping, biting), he waits off to the side (0x38); down, he is up again (hurt) only in a hard game or where he may not lie (Hewie_Vt34). |
 | `arrived` | `( room exit -- )` | in (rooms) | Where she is now. He comes in by himself, off screen through the doors (Hewie_Arrive / Hewie_StateToDoor). |
 | `noise` | | to acoustics | His loud barks and yelps (0x80) and growls / barking at someone (0x1B). Source: `hewie-noise`. |
-| `danger-signal` | `4` | to danger | He's alert to a stalker (Hewie_Alert: in his room within 200, ahead of his head). |
+| `danger-signal` | `4` | to danger | He's alert to a stalker (Hewie_Alert: in his room within 200, ahead of his head; elsewhere, an exit of his room leads into the stalker's - that exit his target; or the stalker heard). |
+| `listen` / `heard` / `heard-nothing` | `( 0 hewie-noise )` / `( loud room tri door source )` / `( )` | to / from acoustics | He hears any noise but his own (Character_Hearing, threshold 0): the source and room of last frame's, for his alert (the stalker's) and off screen (a noise from another room may send him there, 0x33). |
+| `danger-signals` | `( bits -- )` | in (the danger's broadcast, at the frame's end) | The frame's signals (the original's condition bits): off screen, Fiona struck (bit 1) has him choose again where his action lets the story break in. |
+| `fiona-struck-by` | `( who -- )` | in (Fiona's broadcast) | Who has hold of her (her +0x100): held by the stalker he harries him; held down by another, he rushes whom he picks. |
 | `stalker-doing` | `( room mode sub cond hp hp-max kind -- )` | in (the stalker's broadcast) | The stalker in the game, as he tells it each frame (`pursuer`). |
 | `dog-attack` | `( kind -- )` | to the stalker | His attack asked (10..15); answered `dog-grip ( tri x y z yaw )` or `dog-refused`. |
 | `bite` / `shaken-off` / `snap` | | to the stalker | A bite while holding on; he let go; growled or barked at him. |
@@ -80,7 +83,14 @@ behaviours, `Hewie_WhatNext` / `WhenIdle` (the weighted lists, from the executab
 3. **His moods.** Pleased (1800 frames) when praised from afar, upset (1800) when scolded too
    often, angry (450) when she hits him. Each changes what he does with an action.
 4. **Off-screen** nothing moves him but time: each stretch to the next door takes its length
-   at his pace (1.6 a frame, 0.38 hurt, 10 hurrying to her panic).
+   at his pace (1.6 a frame, 0.38 hurt, 10 hurrying to her panic). Hidden (Hewie_HiddenFrame),
+   where his action lets them: Fiona struck (the danger's signal) has him choose again; a noise
+   heard from a room other than the last he went to sends him there by his trust's chance
+   (`noise-chance`, 0x33).
+5. **Coming in** (Hewie_Arrive): through the exit with her (0x88) at its spot in her room; on
+   his way to the door in the room still (0x2C / 0x2D / 0x39), where he is (on his triangle,
+   else anywhere on his half) trotting (limping; to her cry running); mid-grip when she left
+   (0x38 after at a flank), letting go of the stalker to the animation's end (0x73).
 
 ## Design notes
 
@@ -165,15 +175,21 @@ spot, the bite animation, the chance to hold on (his feeling + 10) x 5. Holding 
 his-pet-time 300); else bites again (the leg 5 / 10, a flank 2 or 3 / 2 or 3, head on 4 / 3);
 let go when she calls him off (0x27 / 0x2C) or the stalker is down. Thrown off (the stalker's
 `shaken-off`): at a flank (0x1F / 0x20) hanging ($2203 / $220C) - then held on if he dares
-(Hewie_Dares) or flung (10 damage), $2204 / $220D or $2207 / $2210, along his last root motion,
+(Hewie_Dares: from trust 2, a 1-in-16 roll under his level + 1 + how often he has leapt at that
+stalker / 5, at most 8 - Hewie_CountEncounter, counted at each leap to 100 and kept in the save's
+`hewie-met` line) or flung (10 damage), $2204 / $220D or $2207 / $2210, along his last root motion,
 falling 0.5 a frame, landing $2212 / $2213 (StateHanging, StateJumpArc); else letting go.
 Harrying (0x59 / 0x5A: near him, 0x53, then 0x23 closing in - his-wanted times, 3 for 0x5A).
-Struck (Hewie_TakeBlow, `blow`): down - 0x74; already struck or in a joint action - nothing; its
-damage (hers twice, not a door's); by the stalker a quarter of the time his feeling down; by
-her scolded (praise-scold), hit lately counted (to 6; one less every 300 frames) and angry by
-chance (`angry-chance`); his yelp ($1000, $65 a shove, else $66), pushed back from whoever
-struck him 1.5 less 0.5 a frame (0x69, StateMoveAlong); a door, from her side of it 5 less 1
-(0x6B); then at its event (Hewie_AfterYelp) down (0x52, his feeling for the stalker -3) or -
+Struck (Hewie_TakeBlow, `blow`): down - 0x74 (not at the stalker's grab, 6); already struck or in
+a joint action - nothing; its damage (hers twice); angry, whoever struck him calls him
+(`his-call`: her 0, another 2 - answered at his next bite or leap); by another than her a quarter
+of the time his feeling for the stalker down and her hits forgiven; by her scolded
+(praise-scold), hit lately counted (to 6; one less every 300 frames) and angry by chance
+(`angry-chance`: no call then); his yelp ($1000, $65 a shove, else $66), pushed back from whoever
+struck him 1.5 less 0.5 a frame (0x69, StateMoveAlong). A door only while it swings: she not in
+front of it, back along its turn through blocked floor (0x6B); she in front and he on its sides
+where he may pass, out by it (0x6C); else, off its gap, a quarter turn aside (0x6B) - 5 less 1;
+then at its event (Hewie_AfterYelp) down (0x52, his feeling for the stalker -3) or -
 her blow, by her, hit lately - cowering (9 the first time, 0xB), else on. Her blows struck home
 are answered `blow-taken`. Checked by `tests/hewie/test_fight.fs` (19 tests).
 
@@ -182,7 +198,8 @@ left in, once a meeting and not within 900 frames - by chance (15 / 45 / 15 / 25
 hurt, him only, the stalker only, or nothing: him a tenth of his health (not below 1); his yelp
 ($66, $69 unhurt) heard if his room is next to hers; the stalker held 30..180 frames (`blow` 8:
 its `stun-t`, its cry $1D from the door it would come in by) and hurt a tenth of its health
-(twice in the black shepherd costume) unless he may not attack; then he waits it out ($30). His feeling about the
+(twice in the black shepherd costume) unless he may not attack; then he waits it out ($30). His feelings are kept by the stalker's kind (Hewie_Feeling): Debilitas (2, 6, 7, 27), Daniella
+(3, 34..36), Lorenzo (10..12, 39), Riccardo (4, 23 the TintStalker, 37); none for another. His feeling about the
 stalker (Hewie_FeelPursuer): calm, a stalker about, the more he dislikes him the likelier he is
 upset (mood 2: 14 in 16 at -10 down to 1 at 0) - as his feeling changes and as the danger turns
 wary or tense. A bite's mark at his mouth (Hewie_BiteEffect: bone $25, a big one too while his
@@ -193,8 +210,8 @@ stalker, the door pushing him out and the creatures came with H5, below.)
 **H4: the story's words about him** (`scripts/story/words.fs`; EventCmd_Hewie, event.c's
 conditions). He tells each frame, in `hewie-doing`, besides what he does: whether she may command
 him (Hewie_FionaCanCommand: with her, not scripted, idle, not angry, a command word that takes
-one, no meeting), near enough for it (Hewie_FionaNearCommand: within 150 - straight, not by his
-way), whether he can reach her (Hewie_FionaReachable: only while scripted, a way planned apart -
+one, no meeting), near enough for it (Hewie_FionaNearCommand: within 150 by his way over the floor,
+planned apart - Hewie_WalkDistance), whether he can reach her (Hewie_FionaReachable: only while scripted, a way planned apart -
 `his-probe`), whether he may be broken off (Hewie_MayBreakOff, not `once`: its mark not kept),
 his half of the room, his trust level. Conditions 0x24 his action, 0x4C, 0x0F, 0x5A, 0x31 (the
 converter's `hewie-stays?`: he *may* be broken off), 0x33, 0x61. Orders: 0x39 his action
@@ -213,6 +230,9 @@ reported each frame). Behind Fiona (0x72) and fetching came with H5; the Hewie-c
 mode is still to come (below).
 
 **H5: the rest of his actions.**
+- His own decisions (Hewie_OwnDecisions) also: where his action lets it (0x100), the stalker - or a
+  creature up - in his room within 10, its back to him: near it (0x7C); Fiona newly held, by chance
+  at whoever holds her - the stalker harried (0x5A), else whom he picks rushed (0x6D).
 - `hewie/more.fs`: the story's sit-then-on (0x80), behind her (0x72), limp (0x74), a scene's
   pose (0x79), back on his floor (0x86), waiting after an attack (0x38), stepping away from his
   target (0x82), pushed back (0x68) or out by a door (0x6C), at one of the cast (0x5B..0x60),
@@ -247,8 +267,14 @@ mode is still to come (below).
   the stalker hurt or held off (1), within 30 of him (2) or of her (3).
 - `blow-taken` / `hit-taken` replies are taken quietly; `silent` (the scripts' 0x3D) hushes his
   own sounds (Actor_PlaySound's +0x2C), as the stalker's.
+- Left: the story's tackle (0x75: Hewie_StateTargetPursuer, LeapLaunch, LeapAtPursuer - the
+  leap, the bite of 30, the hold by his mood) wants the stalker's side of its joint action (the
+  original's slot command 7); till then it is the attack at a flank. His scuffle off screen
+  doesn't yet skip a stalker a script has (+0xE0): the stalker doesn't tell it.
 Checked by `tests/hewie/test_more.fs`, `test_pounce.fs` (the pounce, the rush, the flank),
-`test_fetch.fs`, `test_exits.fs`, and the save's skills in `tests/saves/test_saves.fs`.
+`test_fetch.fs`, `test_exits.fs`, `test_alert.fs` (his alerts, what he hears, his feelings and
+leaps by kind, struck, near her by his way, coming in, left down), and the save's skills and
+leaps in `tests/saves/test_saves.fs`.
 
 Found on the way: the ball rolled with no friction on level floor (things.c had the slope's
 sine and cosine the wrong way round - NavTri_Slope gives the sine); fixed.

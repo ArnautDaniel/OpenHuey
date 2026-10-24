@@ -59,4 +59,9 @@ testing her command 0x23 with a ball lying in front of her: he answers (0x1D), f
 [: 0 0 want ;] his!  [: -1 his-follows ! ;] his!  things-clear  10 frames  31 skills!
 ball-ahead  60 frames   \ (lying still)
 T{ [: $23 fiona-command  his-follows @ 0< 0=  his-action @ ;] his@ -> -1 -1 $1D }T
+testing ... her command acted on (Hewie_ActOnCommand 0x23: no straight walk to her asked): for the ball all the same
+[: 0 0 want  -1 his-follows ! ;] his!  things-clear  10 frames
+ball-ahead  60 frames
+T{ [: 0 0 want  -1 his-follows !  go-there-cmd act-on-command  his-follows @ 0< 0=  his-action @  his-next @ ;] his@ -> -1 -1 $1D $78 }T
+[: 0 0 want ;] his!
 test-summary

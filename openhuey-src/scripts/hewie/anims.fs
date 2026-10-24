@@ -1,6 +1,6 @@
 \ hewie/anims.fs - Hewie's animations by name (the motion's id in his banks: its set in the high
 \ byte). Named for what he does in them; the original's states that play them in hewie.c. His
-\ fights' are in hewie/fight.fs, his overlays' (head, ears, tail) in hewie/mind.fs.
+\ overlays' (head, ears, tail) are in hewie/mind.fs.
 IN: hewie.anims
 
 \ ---- still ----
@@ -69,3 +69,16 @@ $1E03 constant land-anim
 $1E04 constant leap-up-anim      \ (the story's leap)
 $1E05 constant leap-fall-anim
 $1E06 constant leap-land-anim
+\ ---- his fight's animations: the leap, the bite, letting go - at the near flank, the far one,
+\ head on, his leg; thrown off at a flank (hanging on), held on again or flung, at the top of
+\ the arc and falling; landing ----
+$2200 constant leap-near-anim   $2209 constant leap-far-anim   $2214 constant leap-head-on-anim   $2217 constant leap-leg-anim
+$2201 constant bite-near-anim   $220A constant bite-far-anim   $2215 constant bite-head-on-anim   $2218 constant bite-leg-anim
+$2202 constant let-go-near-anim   $220B constant let-go-far-anim   $2216 constant let-go-head-on-anim   $2219 constant let-go-leg-anim
+$2203 constant hanging-near-anim   $220C constant hanging-far-anim
+$2204 constant hold-again-near-anim   $220D constant hold-again-far-anim
+$2207 constant flung-near-anim   $2210 constant flung-far-anim
+$2205 constant top-held-near-anim   $220E constant top-held-far-anim
+$2208 constant top-flung-near-anim   $2211 constant top-flung-far-anim
+$2206 constant falling-held-near-anim   $220F constant falling-held-far-anim
+$2212 constant land-held-anim   $2213 constant flung-anim   \ (landed: held on; flung - struck down too)

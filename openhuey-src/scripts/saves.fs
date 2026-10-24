@@ -67,6 +67,7 @@ variable was-hewie     fvariable hw-x   fvariable hw-y   fvariable hw-z   fvaria
 variable was-trust  variable was-points  variable was-hp
 variable hw-room  variable hw-tri  variable hw-side  create hw-mood 7 cells allot   \ (a save without them: her room, calm)
 create was-skills  6 cells allot   \ (a save without them: 16 each, as he starts)
+create was-met  4 cells allot      \ (a save without them: none)
 variable was-stalker   \ his kind (-1: none loaded)
 variable st-in  variable st-room  variable st-tri  variable st-hp  variable st-mode
 create st-more 8 cells allot   variable st-more?   \ (a save without them: as he was)
@@ -77,13 +78,14 @@ variable was-map-page                                \ the map's page she was on
 : progress-word! ( v i -- )  4 * progress + l! ;
 : in-room ( room -- )
     dup was-room !  hw-room !  -1 hw-tri !  2 hw-side !  hw-mood 7 cells 0 fill
-    false was-hewie !  -1 was-stalker !  6 0 do  16 i cells was-skills + !  loop
+    false was-hewie !  -1 was-stalker !  6 0 do  16 i cells was-skills + !  loop  was-met 4 cells 0 fill
     false sm-was? !  -1 was-map-page ! ;
 : fiona-was ( costume -- ) ( F: x y z yaw -- )  was-yaw f!  was-z f!  was-y f!  was-x f!  was-costume ! ;
 : hewie-was ( trust points hp -- ) ( F: x y z yaw -- )
     hw-yaw f!  hw-z f!  hw-y f!  hw-x f!  was-hp !  was-points !  was-trust !  true was-hewie ! ;
 
 : hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  0 5 do  i cells was-skills + !  -1 +loop ;
+: hewie-met ( m0 m1 m2 m3 -- )  0 3 do  i cells was-met + !  -1 +loop ;
 : fiona-camera ( set path -- )  s" fiona" actor-named -rot cam-char-setup ;   \ (her camera setup: the save's +0x1A0)
 : hewie-state ( room tri side mood time hide f0 f1 f2 f3 -- )
     0 6 do  i cells hw-mood + !  -1 +loop  hw-side !  hw-tri !  hw-room ! ;
@@ -131,6 +133,7 @@ variable was-map-page                                \ the map's page she was on
         7 0 do  i cells hw-mood + @  loop  hewie-id send hewie-mood-restore
         was-trust @ was-points @ was-hp @ hewie-id send hewie-restore
         6 0 do  i cells was-skills + @  loop  hewie-id send hewie-skills
+        4 0 do  i cells was-met + @  loop  hewie-id send hewie-met
     else  hewie-id send part-from-fiona  then
     was-stalker @ 0< if  slot-unload summoner-back exit  then   \ (the stalker's slot: as it was)
     was-stalker @ partner-load   \ (the summoner afresh, then as it was)

@@ -46,6 +46,8 @@ behaviour hewie-own
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe write-save
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe scene  self subscribe camera-cut  -1 st-id !  100 st-age !  -1 his-grip !
+      self subscribe danger-signals  self subscribe fiona-struck-by  -1 her-struck-by !
+      -1 his-heard-src !  0 hewie-noise s" acoustics" actor-named send listen   \ (Character_Hearing: any noise but his own)
       #creatures 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop ;
   on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
   on part-from-fiona ( -- )  part  1 -1 cast-as ;
@@ -60,7 +62,8 @@ behaviour hewie-own
       \ (Hewie_SaveState: his room and the half of it he is on, his mood and its time, staying put,
       \ his feelings about each stalker)
       self body-room .  self body-tri .  his-way @ .  his-mood @ .  his-mood-time @ .  his-hide @ .
-      4 0 do  i cells his-feel + @ .  loop  ." hewie-state" cr ;
+      4 0 do  i cells his-feel + @ .  loop  ." hewie-state" cr
+      4 0 do  i cells his-met + @ .  loop  ." hewie-met" cr ;   \ (how often he leapt at each)
   on hewie-mood-restore ( mood time hide f0 f1 f2 f3 -- )
       3 cells his-feel + !  2 cells his-feel + !  1 cells his-feel + !  his-feel !
       his-hide !  his-mood-time !  his-mood ! ;
@@ -69,6 +72,7 @@ behaviour hewie-own
   on heal ( n -- )  abs his-hp @ + 100 min hp! ;          \ (0xB8)
   on set-hp ( n -- )  0 max 100 min hp! ;                 \ (a room's command: +0x14C8 put back)
   on hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  0 5 do  i cells his-skill + !  -1 +loop ;
+  on hewie-met ( m0 m1 m2 m3 -- )  0 3 do  i cells his-met + !  -1 +loop ;
   on place ( x y z yaw -- )   \ (the story puts him)
       along? 0= if  2drop 2drop exit  then
       >r cells>xyz  his-place  r> cell>f his-yaw! ;
@@ -121,7 +125,12 @@ behaviour hewie-own
   on noclip ( on -- )  0<> 1 and his-2b ! ;
   on aside ( on -- )  0<> 1 and his-2d ! ;
   on activate ( -- )  0 his-2b !  0 his-2d !  100 hp!  hewie-played? if  restart  then ;   \ (the story's 0x15, Hewie_Activate: afresh, at full health - in the run, played: Hewie_StartScene)
-  on tick ( -- )  along? if  frame  else  tell-doing  then  -1 his-heard ! ;
+  on tick ( -- )  along? if  frame  else  tell-doing  then  -1 his-heard !  0 his-signals ! ;
+  \ what he hears (the acoustics, each frame's end), the danger's signals, who has hold of her
+  on heard ( loud room tri door source -- )  his-heard-src !  2drop  his-heard-room !  drop ;
+  on heard-nothing ( -- )  -1 his-heard-src ! ;
+  on danger-signals ( bits -- )  his-signals ! ;
+  on fiona-struck-by ( who -- )  her-struck-by ! ;
   \ her commands (H2)
   on command ( code tri yaw x z -- )   \ (Hewie_StateBlock's 13)
       along? 0= if  2drop 2drop drop exit  then
