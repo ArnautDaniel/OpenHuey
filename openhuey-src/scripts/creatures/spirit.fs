@@ -26,9 +26,9 @@ $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)
         1 of  other-half and 0=  endof
         >r both-halves <> r>
     endcase ;
-: anywhere ( -- tri )   \ a random triangle it may stand on (CreatureA_PlaceRandom)
+: anywhere ( -- tri )   \ a random triangle it may stand on, off the doors' spots (CreatureA_PlaceRandom)
     nav-tris 0= if  -1 exit  then
-    1000 0 do  nav-tris random  dup may-stand? if  unloop exit  then  drop  loop  -1 ;
+    1000 0 do  nav-tris random  dup may-stand? over off-the-doors? and if  unloop exit  then  drop  loop  -1 ;
 : onto ( tri -- )  dup my-tri !  dup 0< if  drop exit  then  room-id swap dup tri-center body-place ;
 : on-the-floor ( -- )   \ in the room being played: on its triangle, or (none) somewhere at random
     0 body-mask!  my-tri @ dup 0< if  drop anywhere  then  onto ;
@@ -48,15 +48,15 @@ $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)
     out @ if  4 random 1+ minutes rest !  then ;   \ (out, a rest again: CreatureA_SetupKind)
 
 \ ---- coming for her (CreatureA_FionaDistance) ----
-: reaches-her? ( -- flag )   \ straight from it onto her triangle
-    in-play? 0= if  false exit  then  self body-tri my-at her-at 0 v-walk  her-tri = ;
+: reaches-her? ( mask -- flag )   \ straight from it onto her triangle, kept off the mask's floor
+    in-play? 0= if  drop false exit  then  >r  self body-tri my-at her-at r> v-walk  her-tri = ;
 : comes? ( -- flag )
     out @ if   \ (sent after her off screen: its rest first)
         rest @ if  -1 rest +!  false exit  then  in-play? 0=  exit
     then
     reach @ 0= if  true exit  then
     odd-one? if  1 waited +!  waited @ 61 >=  exit  then
-    reaches-her?  her-dist f@ reach @ s>f f<= and ;
+    0 reaches-her?  her-dist f@ reach @ s>f f<= and ;   \ (its own mask: none)
 
 \ ---- after her (_StateAfterFiona, _StraightAtFiona) ----
 : advance ( v -- there? )  x-z speed body-advance ;
@@ -72,7 +72,7 @@ $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)
     her-dist f@ 2e f< if  1 tries +!  then
     tries @ most-tries >=  self body-tri her-tri <> and dup if  0 tries !  true gave-up !  then ;
 : straight-at-her ( -- went? )
-    reaches-her? 0= if  false exit  then
+    path-mask reaches-her? 0= if  false exit  then   \ (its paths' mask)
     my-path path-clear
     giving-up? if  false exit  then
     her-dist f@ 1e f<= her-mode @ thrown-mode = and 0= if  her-at advance drop  then  true ;
@@ -106,9 +106,14 @@ create spot /vec allot   fvariable turn   fvariable off
     follow-path ;
 
 \ ---- off screen (creatures/trip.fs): to her exit at half its speed, its legs at its speed
-\ (2/3 with company) ----
+\ (2/3 with company: the first leg only); not while the story keeps the stalkers where they are ----
+: pace ( F: -- s )  speed company @ if  1.5e f/  then ;
+: leg-ends? ( -- flag )   \ (a leg counted down this frame)
+    trip t.exit @ 0<  trip route-over? 0= and  trip t.leg sf@ pace f<= and ;
 : travel ( -- )
-    speed f2/  speed company @ if  1.5e f/  then  trip trip-step 0= if  exit  then
+    stalkers-stay state-flag? if  exit  then
+    speed f2/  pace  leg-ends? if  false company !  then
+    trip trip-step 0= if  exit  then
     0 body-mask!  my-tri @ 0< if  on-the-floor  then ;   \ (in by a door: on its spot)
 
 \ ---- its end: touching her, or its time out ----

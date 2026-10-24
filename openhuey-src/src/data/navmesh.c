@@ -570,6 +570,78 @@ int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach) {
     return -1;
 }
 
+int navmesh_walk_between(const NavMesh *n, int from, Vec3 a, int to, Vec3 b, uint32_t mask) {
+    int t = from, came = -1, steps;
+    float w[3];
+
+    if (from < 0 || from >= n->ntris || to < 0 || to >= n->ntris) {
+        return NAV_WALK_FAIL;
+    }
+    for (steps = 0; steps < n->ntris + 2; steps++) {
+        const NavTri *tr = &n->tris[t];
+        float best = -1.0f;
+        int e, cross = -1;
+
+        if (tr->flags & mask) {
+            return t;
+        }
+        if (inside(tr, b.x, b.z, w)) {
+            return t == to ? NAV_WALK_REACHED : NAV_WALK_STUCK;
+        }
+        for (e = 0; e < 3; e++) {   /* the edge it leaves by: the farthest crossing ahead */
+            float f = seg_cross(a, b, tr->v[e], tr->v[(e + 1) % 3]);
+
+            if (f < 0.0f || f > 1.0f || (came >= 0 && tr->next[e] == came)) {
+                continue;
+            }
+            if (cross < 0 || f > best) {
+                best = f;
+                cross = e;
+            }
+        }
+        if (cross < 0) {
+            return NAV_WALK_FAIL;
+        }
+        if (tr->next[cross] < 0) {
+            return NAV_WALK_OFF;
+        }
+        came = t;
+        t = tr->next[cross];
+    }
+    return NAV_WALK_FAIL;
+}
+
+int navmesh_can_walk_between(const NavMesh *n, int ta, Vec3 a, int tb, Vec3 b, uint32_t mask) {
+    uint32_t walk;
+    int r, r2;
+
+    if (mask == 0) {
+        mask = 0x40080;
+    }
+    walk = mask | 0x4000;
+    r = navmesh_walk_between(n, ta, a, tb, b, walk);
+    if (r == NAV_WALK_REACHED) {
+        return 1;
+    }
+    if (r == NAV_WALK_OFF || r == NAV_WALK_FAIL) {
+        return 0;
+    }
+    if (r != NAV_WALK_STUCK && (mask & n->tris[r].flags)) {
+        return 0;
+    }
+    r2 = navmesh_walk_between(n, tb, b, ta, a, walk);
+    if (r2 == NAV_WALK_REACHED) {
+        return 0;
+    }
+    if (r2 == NAV_WALK_STUCK) {
+        return r != NAV_WALK_STUCK;
+    }
+    if (r2 == NAV_WALK_OFF || r2 == NAV_WALK_FAIL) {
+        return 0;
+    }
+    return (mask & n->tris[r2].flags) ? 0 : 1;
+}
+
 float navmesh_height(const NavMesh *n, int t, float x, float z) {
     const NavTri *tr;
     float w[3];
