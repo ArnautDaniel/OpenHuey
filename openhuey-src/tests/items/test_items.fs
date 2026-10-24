@@ -72,9 +72,25 @@ T{ files  0 file@  1 file@ -> 2 $205 $206 }T
 testing used: a remedy - Camomile calms her (fear and recovery down) and is spent
 [: 60e her-fear f!  900 her-recovery ! ;] her
 T{ 1 0 use  [: her-fear f@ f>s her-recovery @ ;] her  camomile items-of -> 1 0 0 97 }T
-testing ... Lavender: its effect for 300 frames, running down
+testing ... Lavender: its effect for 300 frames, running down - calming 0.27 a frame more (StatusTimers_Frame)
+: panic-level ( F: -- l )  game:panic enter  panic:level f@  leave-actor ;
+70 game:panic send panic-level!  1 frames
 T{ 1 1 use  calm-boost boost-on? -> 1 -1 }T
-T{ 300 frames  calm-boost boost-on? -> 0 }T
+T{ panic-level  30 frames  panic-level f-  fdup 10e f>  11.5e f< -> -1 -1 }T   \ (0.1 calm, 0.27 Lavender's)
+T{ 270 frames  calm-boost boost-on? -> 0 }T
+50 game:panic send panic-level!  1 frames
+T{ panic-level  30 frames  panic-level f-  fdup 2.5e f>  3.5e f< -> -1 -1 }T   \ (0.1 calm alone)
+testing ... Fortis: her fear held at 0 for 1800 frames (StatusTimers_Frame)
+: remedy-at ( id -- i )  64 0 do  dup 1 i item-at = if  drop i unloop exit  then  loop  drop -1 ;
+fortis 1 give
+T{ 1 fortis remedy-at use  [: 50e her-fear f! ;] her  2 frames  [: her-fear f@ f>s ;] her -> 1 0 }T
+T{ 1800 frames  [: 50e her-fear f! ;] her  2 frames  [: her-fear f@ f>s ;] her 40 > -> -1 }T
+testing ... Weltigo: everything heard out over 30 frames, silent, back in over the last 30 of its 1800
+weltigo 1 give
+T{ 1 weltigo remedy-at use  15 frames  world-volume 0.5e f- fabs 0.05e f< -> 5 -1 }T
+T{ 100 frames  world-volume f0=  weltigo remedy-at -1 = -> -1 -1 }T
+T{ 1670 frames  world-volume 0.5e f-  fabs 0.05e f< -> -1 }T
+T{ 30 frames  world-volume 1e f= -> -1 }T
 testing ... a key away from its place: nothing happens, kept
 smudged-key 1 give
 T{ 0 1 item-at 0 1 use  smudged-key items-of -> smudged-key 0 1 }T

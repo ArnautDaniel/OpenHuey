@@ -1,7 +1,7 @@
 \ the panic and Fiona's fear (docs/subsystems/panic.md, fiona.md F2). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/panic/test_panic.fs
 IN: test-panic
-USING: tester engine game-state actors messages room-names common game fiona.state fiona.model ;
+USING: tester engine game-state actors messages room-names common facts flag-names game fiona.state fiona.model ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : stage ( -- s )  game:panic enter  panic:stage @  leave-actor ;
@@ -64,5 +64,33 @@ testing the screen's heartbeat (ScreenFade_Frame): at each breath the pulse 0, b
 T{ 85 game:panic send panic-level!  beat-seen -> -1 }T
 T{ 10 frames  pulse 36 49 within  grey 0> -> -1 -1 }T   \ (4 a frame)
 T{ 30 frames  pulse -> $80 }T
+
+testing the passing part lasts: a fright's half held 30 frames, then down by the recovery (0.167 a frame)
+: passing ( F: -- p )  game:panic enter  panic:passing f@  leave-actor ;
+0 game:panic send panic-level!  game-tick
+T{ 40e f>cell game:panic send fright  game-tick  passing 20e about -> -1 }T
+T{ 25 frames  passing 20e about  level 35e f> -> -1 -1 }T
+T{ 65 frames  passing 10e 1e f- f>  passing 10e 1e f+ f< -> -1 -1 }T
+T{ 100 frames  passing f0= -> -1 }T
+
+testing Hewie near her weighs the inputs: within 20 calming twice as fast (0.2 a frame, calm danger)
+: near-frames ( near n -- )  0 ?do  dup broadcast hewie-near  game-tick  loop  drop ;
+70 game:panic send panic-level!  game-tick
+T{ level  1 10 near-frames  level f- 2e about -> -1 }T
+T{ level  10 frames  level f- 1e about -> -1 }T
+T{ level  3 10 near-frames  level f- 1.5e about -> -1 }T
+
+testing no breath while the world is held - the beat, but not her breath nor the pad's (the screen fade's level 0: Panic_Update under flag 8)
+: felt? ( -- flag )  rumble-now nip 0> ;
+: breath-felt ( -- flag )  120 0 do  game-tick  felt? if  true unloop exit  then  loop  false ;
+85 game:panic send panic-level!  world-held state-flag-set
+T{ breath-felt -> 0 }T
+T{ beat-seen -> -1 }T
+world-held state-flag-clear  85 game:panic send panic-level!
+T{ breath-felt -> -1 }T
+
+testing panicking from the level: its first breath at once and the shake a step toward 60 (Panic_Stage's fall-through)
+0 game:panic send panic-level!  40 frames
+T{ 100 game:panic send panic-level!  game-tick  stage pulse grey -> 4 0 1 }T
 
 test-summary
