@@ -7,7 +7,8 @@
 \   treading on one is hurt (5 / 10 / 20);
 \ - the magnesias (2, 5 refined, 7 prima): set down; armed after a while (30 s, 1 min, 2 min) they
 \   go off - a hard blow (15 / 30 / 45, startling him maybe) to the stalker within reach; the
-\   stalker or a homunculus treading on one sets it off at once; homunculi within reach are struck;
+\   stalker or a homunculus treading on one sets it off at once; homunculi within reach are struck
+\   (in whatever room it lies, as they stand there - off screen too);
 \ - the doll (3): lies there 5 minutes; Debilitas is drawn to it (its noise), and takes it;
 \ - the stone (8): after 15 s a noise that draws the stalker, and gone.
 \ The kinds 0, 2, 3, 5, 7, 8 are kept in the save; ten of a kind at most (the oldest goes).
@@ -29,7 +30,6 @@ state: things-state
   cell field st-kind  cell field st-mode    \ (the stalker as he tells: his kind, his mode)
   cell field st-room  cell field st-told     \ (his room; frames since he told: 0 this one)
   #things cells field keris   \ (kind 9) the room object it carries: "keri0".."keri5" (-1 none)
-  cell field blow-n           \ (its blows to the homunculi: their own numbers, down from -1000)
 end-state
 
 \ ---- the one looked at ----
@@ -78,8 +78,11 @@ end-state
 : in-reach? ( body -- flag )   \ (a magnesia's: across, 10 high)
     dup 0< if  drop false exit  then  it @  kind reach s>f  10e thing-reaches? ;
 : homunculus ( slot -- id )  first-homunculus - cells homunculi + @ ;
-: homunculi-tread? ( -- flag )
-    false  first-homunculus 3 + first-homunculus do  i homunculus 0 treads? or  loop ;
+: in-its-room? ( id -- flag )   \ (a homunculus with a place in its room - in play or not)
+    dup 0< if  drop false exit  then  dup body? 0= if  drop false exit  then  body-room its-room = ;
+\ each homunculus in its room, `xt ( id -- )` on it
+: each-homunculus ( xt -- )
+    {: xt :}  first-homunculus 3 + first-homunculus do  i homunculus dup in-its-room? if  xt execute  else  drop  then  loop ;
 
 \ ---- their effects ----
 : go-burst ( -- )   \ (a magnesia going off: the plain one the shove's puffs, the refined and prima their own bursts)
@@ -96,9 +99,16 @@ $8000 constant startled   \ (a blow's flag: he flinches)
     {: id k d pct :}  id 0< if  exit  then
     k d  rnd 100e f* f>s pct < if  startled  else  0  then  at vec@ xyz>cells  id send blow-from ;
 : blow-stalker ( kind damage startle% -- )  {: k d pct :}  stalker k d pct blow-him ;   \ (the one in her room)
-: blow-homunculi ( damage reach -- )   \ (ThingShared_ReachStalkers: as one of her blows there)
-    {: d r :}  blow-n @  d  at v.x sf@ f>cell  at v.y sf@ f>cell  at v.z sf@ f>cell  r s>f f>cell
-    -1 blow-n +!  broadcast fiona-blow ;
+\ the homunculi struck (their action 4 - taken once they are in play): within its reach (ThingShared_
+\ ReachStalkers - facing it), or standing on it (ThingShared_StompStalkers - facing heading 0)
+: blow-homunculus ( id F: yaw -- )  >r  kind damage  f>cell  r> send thing-blow ;
+: reach-homunculi ( -- )
+    [: dup it @  kind reach s>f 10e thing-reaches? if  dup body-at at vec-heading blow-homunculus  else  drop  then ;]
+    each-homunculus ;
+variable trodden
+: tread-homunculi ( -- any? )
+    false trodden !
+    [: dup 0 treads? if  0e blow-homunculus  true trodden !  else  drop  then ;] each-homunculus  trodden @ ;
 
 \ ---- her kick (thing_kick_up: her blow's point within 5 kicks it her way - 2 ahead, up - once
 \ a touch) ----
@@ -148,16 +158,15 @@ $20 constant object-x   $24 constant object-y   $28 constant object-z   \ (a roo
     here? if  in-reach?  else  drop true  then ;
 : magnesia-frame ( -- )   \ (thing_watch)
     age kind armed-at >= if
-        here? if  kind damage kind reach blow-homunculi  then   \ (ThingShared_ReachStalkers)
+        reach-homunculi
         sets-him-off? quiet? 0= and if  him-in-its-room kick-blow kind damage kind startle blow-him  then
         here? if  go-off  else  gone  then  exit
     then
-    here? 0= quiet? or if  exit  then
-    homunculi-tread?  stalker 0 treads?  {: homunculi? him? :}
-    homunculi? him? or 0= if  kick exit  then
+    quiet? if  exit  then
+    tread-homunculi  here? if  stalker 0 treads?  else  false  then  {: homunculi? him? :}   \ (he only in her room)
+    homunculi? him? or 0= if  here? if  kick  then  exit  then
     him? if  kick-blow kind damage kind startle blow-stalker  then
-    homunculi? if  kind damage 0 blow-homunculi  then   \ (those standing on it struck: ThingShared_StompStalkers)
-    go-off ;
+    go-off ;   \ (its sound and burst wherever it lies, as the original's: trodden on off screen too)
 : stone-frame ( -- )   \ (Thing08_Frame: armed, a noise the stalker hears - $4F at it - and gone)
     age 450 < if  kick exit  then
     here? if  0 thing-sound  3 $10 $10 $10 $80  at vec@  burst  then
@@ -240,7 +249,7 @@ $1F constant doll-noise
 
 behaviour keeping-things
   on spawned ( -- )  kicked #things cells 0 fill  homunculi 3 cells -1 fill  keris #things cells -1 fill
-      met-in #things cells -1 fill  100 st-told !  -1000 blow-n !
+      met-in #things cells -1 fill  100 st-told !
       self subscribe tick  self subscribe write-save  self subscribe creature-doing  self subscribe stalker-doing ;
   on tick ( -- )  frame  st-told @ 100 < if  1 st-told +!  then ;
   on thing-made ( kind tri x y z vx vy vz -- )   \ (her let go: at her hand, its way)

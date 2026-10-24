@@ -170,6 +170,7 @@ message fiona-doing ( mode sub cond cmd doing -- ) \ broadcast each frame: her m
                                              \ condition, her command this frame (-1 none; 3 the praise held), her
                                              \ action (+0x1AD580: her-doing)
 message fiona-blow ( n damage x y z reach -- )   \ broadcast: her blow `n` there (f>cell; reach -1: what touches her) - for the homunculi
+message thing-blow ( damage yaw -- )   \ to a homunculus: a magnesia going off within reach, or trodden on (f>cell yaw: the way it faces) - in any room
 message throw-down ( who recover -- )        \ (Fiona) thrown down by who (an actor, -1 none); recover: her recovery reset (the story's 0xB2)
 message look-hold ( who frames -- )          \ (Fiona) her head on who for so many frames (the story's 0x96)
 message fiona-unseen ( on -- )               \ broadcast when it changes: she can't be seen (item $89 worn, still)

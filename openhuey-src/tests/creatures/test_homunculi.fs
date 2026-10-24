@@ -108,4 +108,35 @@ yaw7 constant saved-yaw
 T{ h7 alive? -> 0 }T
 ' saves:quick-load game:saves enter execute leave-actor  deliver  1 frames
 T{ h7 alive?  [: kind @ awake @  strength @ ;] of7  yaw7 saved-yaw - abs 2 < -> -1 $80 0 3 -1 }T
+testing she leaves: it makes for her exit's far spot, walking there off screen - its body moving in the room it was left in (CreatureB_FionaLeft, _Travel)
+2 game:creatures send creatures-clear  deliver  1 frames
+1 constant way-out   \ (front garden 2's exit 1: an open door, on her level)
+room-id constant left-room
+create far-at 12 allot  create in-at 12 allot  create was-at 12 allot
+way-out 2 exit-spot drop far-at vec!  way-out 1 exit-spot drop in-at vec!
+: inward ( F: -- x y z )   \ (12 further in from the exit's near spot: off its area)
+    in-at sf@ fdup far-at sf@ f- 0.5e f* f+  in-at 4 + sf@  in-at 8 + sf@ fdup far-at 8 + sf@ f- 0.5e f* f+ ;
+inward 0e debug:tp-facing  2 frames
+0e far-tri 0 place-one  5 frames
+: moved ( -- n )  h7 body-at was-at vec-dist-xz fround f>s ;
+: walking? ( -- flag )  [: trip creatures.trip:t.walking @ ;] of7 ;
+way-out game:rooms send go-through  deliver  3 frames
+T{ room-id left-room <>  [: my-room @ ;] of7 left-room =  h7 body?  h7 body-room left-room =  walking? -> -1 -1 -1 -1 -1 }T
+T{ [: trip creatures.trip:t.last @ ;] of7  left-room way-out room-exit-door = -> -1 }T
+was-at h7 body-at vec-copy  30 frames
+T{ moved 9 12 within -> -1 }T   \ (0.35 a frame)
+testing trodden on there off screen, a magnesia goes off: it is struck, facing heading 0 (ThingShared_StompStalkers)
+was-at h7 body-at vec-copy
+2 left-room -1  was-at vec@  0e 0e 0e  thing-new constant trodden
+2 frames
+T{ trodden thing-used?  [: blow-pending @  blow-damage @  blow-yaw f@ f0= ;] of7 -> 0 -1 15 -1 }T
+[: 0 blow-pending ! ;] of7
+testing a magnesia going off in that room strikes it there, taken once it is in play: it reels (ThingShared_ReachStalkers)
+was-at h7 body-at vec-copy
+2 left-room -1  was-at vec@ fswap 5e f+ fswap  0e 0e 0e  thing-new constant mag
+900 mag thing-age!  2 frames
+T{ mag thing-used?  [: blow-pending @  blow-damage @  striker @ ;] of7 -> 0 -1 15 -1 }T
+T{ [: [: my-room @ room-id = ;] of7 ;] 1500 soon -> -1 }T
+1 frames
+T{ h7 body-room room-id =  [: running @  blow-pending @ ;] of7 -> -1 2 0 }T   \ (it came in by her door, struck)
 test-summary
