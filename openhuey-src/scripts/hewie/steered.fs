@@ -22,7 +22,7 @@ enum: way-from  from-camera from-facing from-none from-steering ;
 : read-steering ( -- )
     0 his-sprint !
     stick@  {: F: ex F: ez :}  ex ez unit  {: F: nx F: nz :}
-    his-steer @ steer-afresh =  his-cut @ or  0 his-cut !  if   \ (a cut: the old camera steers while the stick is held)
+    his-steer @ steer-afresh =  his-cam-cut @ or  0 his-cam-cut !  if   \ (a cut: the old camera steers while the stick is held)
         by-camera-now his-steer !  0 his-still !
         nx fabs 0.5e f>  nz fabs 0.5e f> or if  3 his-lock !  cut-steered his-steer !  then
     then

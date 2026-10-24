@@ -18,7 +18,7 @@ The third codebase, and the one meant to ship: the program `openhuey`. (This fol
 
 Start with `docs/design.md`, then `docs/actors.md` (the kernel) and `docs/subsystems.md` (the
 map of the game). Each subsystem gets its own page in `docs/subsystems/` before it is built.
-The Forth is `docs/forth.md`; the game library (the disc imported, its assets in common formats)
+The Forth is ClankForth (`external/clankforth`, a submodule: clone with `--recursive`, or `git submodule update --init`; the language `external/clankforth/docs/forth.md`, OpenHuey's side `docs/forth.md`); the game library (the disc imported, its assets in common formats)
 and mods are `docs/library-and-mods.md`; **making a mod: `docs/modding.md`**.
 
 ## Building and running

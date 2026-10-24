@@ -119,7 +119,7 @@ behaviour hewie-own
       his-way !  over room-id = >r  place-on  r> if  to-default  then ;
   on to-exit ( exit -- )  his-door ! ;   \ (the story's char-to-exit, Character_ChooseExit: the exit he came in by)
   on hewie-restart ( -- )  along? if  restart  then ;   \ (the run's clock: Hewie_Restart)
-  on camera-cut ( -- )  -1 his-cut ! ;
+  on camera-cut ( -- )  -1 his-cam-cut ! ;
   on hewie-side! ( side -- )  dup 3 u< 0= if  drop -1  then  his-way ! ;
   on hewie-stay ( -- )  300 his-pet-time ! ;
   on noclip ( on -- )  0<> 1 and his-2b ! ;

@@ -14,11 +14,11 @@
  * (platform/library.c), else - with a window - the player is asked for the disc to import.
  *
  * Start-up: the window, the renderer, the Forth system with the engine's words, then
- * scripts/prelude.fs and scripts/game.fs - which decide everything else. Each frame: input,
+ * ClankForth's prelude, scripts/base.fs and scripts/game.fs - which decide everything else. Each frame: input,
  * game ticks at a fixed 30 a second, the original's frame rate (Forth tasks and hooks), then drawing
  * (only after a tick: the picture is 30 frames a second too). */
 #include "core/files.h"
-#include "forth/forth.h"
+#include "forth.h"
 #include "game/engine.h"
 #include "game/particles.h"
 #include "game/progress.h"
@@ -149,7 +149,7 @@ static const char *script_dir(void) {
     if (getenv("HG2_SCRIPTS") != NULL) {
         return getenv("HG2_SCRIPTS");
     }
-    snprintf(probe, sizeof(probe), "%s/prelude.fs", HG2_SCRIPT_DIR);
+    snprintf(probe, sizeof(probe), "%s/game.fs", HG2_SCRIPT_DIR);
     if (HG2_SCRIPT_DIR[0] != 0 && SDL_GetPathInfo(probe, NULL)) {
         return HG2_SCRIPT_DIR;
     }
@@ -161,7 +161,10 @@ static int load_scripts(Forth *f) {
     const char *dir = script_dir();
     char path[1024];
 
-    snprintf(path, sizeof(path), "%s/prelude.fs", dir);
+    if (forth_prelude(f) != 0) {   /* (the language's rest: ClankForth's, built in) */
+        return 0;
+    }
+    snprintf(path, sizeof(path), "%s/base.fs", dir);   /* (OpenHuey's own words for every script) */
     if (forth_include(f, path) != 0) {
         return 0;
     }
@@ -725,6 +728,7 @@ static void start_scripts(Engine *e, int hidden) {
     bind_state(e->forth);
     bind_hactor(e->forth);
     bind_mods(e->forth);
+    forth_report_crashes(e->forth);   /* (a crash names the Forth words running) */
     bind_update(e->forth);
     forth_prim(e->forth, "exit-status", p_exit_status);
     forth_prim(e->forth, "error-count", p_error_count);

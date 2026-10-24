@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#include "../forth/forth.h"
+#include "forth.h"
 
 #define STORY_FLAGS 0x400       /* the scripts use up to 0x36B */
 #define STATE_FLAGS 64          /* the original has 46 */

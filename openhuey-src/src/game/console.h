@@ -5,7 +5,7 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-#include "../forth/forth.h"
+#include "forth.h"
 #include "../platform/platform.h"
 
 #include <stddef.h>

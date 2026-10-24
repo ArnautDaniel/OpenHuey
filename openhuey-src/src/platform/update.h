@@ -6,7 +6,7 @@
 #ifndef UPDATE_H
 #define UPDATE_H
 
-#include "../forth/forth.h"
+#include "forth.h"
 
 /* `openhuey --update`: checked, downloaded and installed here, progress on stderr. 0: up to date
  * or updated; 1: it failed (said why) */

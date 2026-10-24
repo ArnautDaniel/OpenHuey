@@ -135,7 +135,7 @@ linux() {
     strip "$P/openhuey"
     cp -r openhuey-src/scripts "$P/"
     cp -r openhuey-src/examples/mods "$P/mod-examples"   # (off: a mod is on once copied into mods/)
-    mkdir -p "$P/docs" && cp openhuey-src/docs/modding.md openhuey-src/docs/forth.md openhuey-src/docs/actors.md openhuey-src/docs/library-and-mods.md "$P/docs/"   # (for modders)
+    mkdir -p "$P/docs" && cp openhuey-src/docs/modding.md openhuey-src/docs/forth.md openhuey-src/docs/actors.md openhuey-src/docs/library-and-mods.md "$P/docs/"  && cp openhuey-src/external/clankforth/docs/forth.md "$P/docs/clankforth.md"   # (for modders)
     cp -L "$DEPS/ffmpeg-linux/lib/libavcodec.so.62" "$DEPS/ffmpeg-linux/lib/libavutil.so.60" "$P/lib/"
     strip "$P/lib/"*.so.*
     licences "$P" linux "$DEPS/SDL3-$SDL/LICENSE.txt"
@@ -163,7 +163,7 @@ windows() {
     cp "$DEPS/ffmpeg-windows/bin/avcodec-62.dll" "$DEPS/ffmpeg-windows/bin/avutil-60.dll" "$P/"
     cp -r openhuey-src/scripts "$P/"
     cp -r openhuey-src/examples/mods "$P/mod-examples"   # (off: a mod is on once copied into mods/)
-    mkdir -p "$P/docs" && cp openhuey-src/docs/modding.md openhuey-src/docs/forth.md openhuey-src/docs/actors.md openhuey-src/docs/library-and-mods.md "$P/docs/"   # (for modders)
+    mkdir -p "$P/docs" && cp openhuey-src/docs/modding.md openhuey-src/docs/forth.md openhuey-src/docs/actors.md openhuey-src/docs/library-and-mods.md "$P/docs/"  && cp openhuey-src/external/clankforth/docs/forth.md "$P/docs/clankforth.md"   # (for modders)
     licences "$P" windows "$ROOT/tools/win/SDL3-$SDL/LICENSE.txt"
     readme "$P" "openhuey.exe"
     rm -f "$P.zip"

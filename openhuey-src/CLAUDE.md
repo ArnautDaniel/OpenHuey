@@ -7,7 +7,7 @@ game does. Read `README.md` first, then the doc for your task:
 | Task | Read |
 |---|---|
 | any gameplay change | `docs/design.md`, `docs/actors.md`, `docs/subsystems.md`, the subsystem's `docs/subsystems/<name>.md` |
-| writing Forth | `docs/forth.md` (the dialect: vocabularies, locals, structures, enums, quotations; its Pitfalls section) |
+| writing Forth | `external/clankforth/docs/forth.md` (the language, ClankForth - a submodule shared with OpenMizzurna: vocabularies, locals, structures, enums, quotations; its Pitfalls), then `docs/forth.md` (OpenHuey's words and scripts) |
 | a mod, or the mods system | `docs/modding.md` (how), `docs/library-and-mods.md` (why) |
 | the release builds, the updater | `tools/hga_release.sh`, `.github/workflows/hga-release.yml`, `docs/library-and-mods.md` ("Updating") |
 | the game's data, the library, a file format | `docs/library-and-mods.md`, the header of the `src/data/*.h` for that format |
@@ -22,6 +22,7 @@ break existing libraries), the save files `hga-*.fs` (players' saves). Mods may 
 ## Building and testing
 
 ```sh
+git submodule update --init                          # the Forth (ClankForth) once
 cmake -S . -B build && cmake --build build -j
 cd build && SDL_AUDIO_DRIVER=dummy ctest -j8          # everything (needs the game's data)
 SDL_AUDIO_DRIVER=dummy ./openhuey --test ../tests/<sub>/test_<x>.fs   # one test file
