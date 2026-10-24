@@ -6,7 +6,7 @@
 \ lunge (her panic calming down: on into his seize) and his grab at Hewie (Debilitas_Actions
 \ $1002 / $1003).
 IN: stalker.grab
-USING: engine game-state actors messages common facts flag-names paths vectors stalker.anims stalker.names stalker.state stalker.senses stalker.moving stalker.search stalker.attack stalker.chase floor-flags ;
+USING: engine game-state actors messages common facts flag-names paths vectors stalker.anims stalker.names stalker.state stalker.senses stalker.moving stalker.search stalker.attack stalker.chase stalker.tables floor-flags ;
 
 : fright ( F: amount -- )  f>cell panic-id send fright ;
 \ her answer to his taking her (answer): none yet, taken, refused, broke free
@@ -19,10 +19,10 @@ enum: seize-answer  no-answer she-came she-refused she-broke-free ;
 : may-take? ( -- flag )  her-plight @ unreachable-plight <>  stalkers-blind state-flag? 0= and ;
 
 \ ---- taken by the hand: his taunting hold, a fright each time (10 the first, then 5); she
-\ breaks free - he lets go; the sixth - he holds on while she's dragged off ----
+\ breaks free - he lets go (held off his rests' first after: Pursuer_StateTauntHold); the sixth - he holds on while she's dragged off ----
 : holding-on ( -- )  root-move ;
 : let-go-end ( -- )   \ (his letting go to its end: held off her a while)
-    root-move  ended? if  1 took !  90 hold-off !  let-her-go  -1 step-done !  then ;
+    root-move  ended? if  1 took !  rest-struck hold-off !  let-her-go  -1 step-done !  then ;
 : taunting ( -- )
     root-move
     ended? 0= if  exit  then

@@ -150,6 +150,14 @@ state: stalker-state
   cell field dog-t  cell field dog-limit  cell field dog-phase
   cell field dog-sent            \ his blow this move has struck Hewie (stalker/attack.fs)
   cell field at-dog              \ his combo is at Hewie (after him, his temper up), not her
+  \ Hewie as he tells it (hewie-doing): his condition (2 down); the chance roll that calms his temper
+  \ with Hewie (Pursuer_ChanceRoll): what has built up on it (+0x16C0), his blow struck Hewie in this
+  \ attack (+0x1760 bit 1)
+  cell field dog-cond  1 floats field roll-build  cell field struck-dog
+  \ what he tells besides (stalker-ties): a script of the room has him (`scripted`), a scene does
+  \ (`scene`) - his +0xE0; out of contact (+0x2A: through a door, on a ladder); frames a joint
+  \ action he took stays pending (Progress_IsLinked: its entry settled the next frame)
+  cell field script-held  cell field in-scene  cell field apart  cell field link-t
   cell field raging              \ +0x16B8 2: in a rage (the story's 0x31) - his stance and walk
   cell field hushed              \ +0x2C: his own sounds don't play (the story's 0x3D)
   \ (P4c) a stalker's own: his chase (its start and its step: Riccardo's; 0 the family's), his

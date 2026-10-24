@@ -13,7 +13,7 @@ USING: engine keys game-state actors messages common facts paths vectors flag-na
 \ (hanging): he held on again, or flung
 enum: bite-hold  first-hold still-holding letting-go thrown-off ;
 0 constant held-on   1 constant flung
-: at-leg? ( -- flag )  his-action @ dup at-leg-act = swap at-leg-2-act = or ;
+: at-leg? ( -- flag )  his-action @ dup at-leg-act =  over at-leg-2-act = or  swap tackle-act = or ;   \ (the story's tackle holds by the leg too)
 : on-him? ( -- flag )  his-action @ dup at-flank-act = swap at-stalker-act = or ;   \ (at him: hanging on, flung)
 : by-grip ( near far other -- anim )   \ (by his grip: the near flank, the far one, else)
     {: near far other :}  his-grip @ case  near-grip of  near  endof  far-grip of  far  endof  >r other r>  endcase ;
@@ -254,6 +254,71 @@ defer after-yelp ( -- )   \ (yelped, below)
     leap-snarl make-sound
     ['] st-leap-lands behave ;
 
+\ ---- the story's tackle (0x75: Hewie_SetAction, StateTargetPursuer / GoForPursuer - his slot
+\ command 2 / 7 to the stalker, `dog-tackle`, answered with the spot by his leg - StateLeapLaunch,
+\ LeapTakeOff, LeapAtPursuer): the leap there along his way, a third of its length in frames (19
+\ at least), turning to the grip's heading and rising to land at its height under 0.3 a frame of
+\ fall, never below the floor ($1E01, his snarl); the spring faded in, the leg's bite ($2218) faded
+\ in over the frames left, held still meanwhile; 13 before he lands his attack at the leg asked
+\ (`dog-attack`: the stalker bitten, the spot anew). Landed - on the spot, the bite of 30 (hard by
+\ chance; the black shepherd twice), its big mark, holding on with one bite left: let go at its end
+\ (the hold by his mood - angry 110, upset none, else (his feeling + 10) x 5 - is never rolled
+\ against) or when she calls him off. Refused, or the stalker gone: his default ----
+0.3e fconstant tackle-fall   19 constant tackle-frames   13 constant tackle-asks-at
+: play-held ( anim n -- )   \ (Motion_PlayWith flags 9: looping, its time held while it fades in over n)
+    rate-1  {: anim n :}  model anim n 9 motion-play ;
+: tackle-fly ( -- )   \ (leap_fly)
+    his-leap-yaw f@ his-leap-turn f@ body-turn-toward fdrop
+    his-fly-x f@ ahead@ his-path path-i!  ahead vec@ his-place
+    his-fly-y f@ tackle-fall f- fdup his-fly-y f!  his-fly-h f@ f+ fdup his-fly-h f!
+    fdup his-at v.y sf@ f> if  his-y!  else  fdrop  then
+    1 his-no-root ! ;
+: tackle-hold ( -- n )   \ (by his mood: never rolled against - one bite left)
+    his-mood @ case  angry-mood of  110  endof  upset-mood of  0  endof  >r feeling 10 + 5 * r>  endcase ;
+: st-tackle-lands ( -- )   \ (Hewie_StateLeapAtPursuer)
+    pursuer with? 0= if  to-default exit  then
+    settled? 0= if
+        -1 his-t1 +!
+        his-t1 @ tackle-asks-at =  hewie-no-attack state-flag? fiona-occupied state-flag? or 0= and if
+            leg-attack pursuer send dog-attack
+        then
+        tackle-fly
+    else
+        his-room his-to-tri @ his-to vec@ body-place
+        tackle-hold his-hold !  still-holding his-biting !  1 his-bites !  1 his-ready !
+        leg-bite 30 bite-him  bite-mark
+        ['] st-bite-hold behave
+    then
+    1 his-on-him !  1 his-no-root ! ;
+: st-tackle-take-off ( -- )   \ (Hewie_StateLeapTakeOff)
+    pursuer with? 0= if  to-default exit  then
+    settled? if  bite-leg-anim his-t1 @ play-held  ['] st-tackle-lands behave  then
+    tackle-fly  -1 his-t1 +! ;
+: tackle-launch ( -- )   \ (Hewie_StateLeapLaunch: to his-to on his-to-tri, the grip's heading his-leap-yaw)
+    pursuer with? 0= if  to-default exit  then
+    his-to-tri @ his-to plan-to 0= if  to-default exit  then   \ ("Dog New Hide Attack -> No Route")
+    rest {: F: r :}  r 3e f/ f>s tackle-frames max {: n :}  n s>f {: F: k :}
+    his-at v.y sf@ his-fly-h f!  n his-t1 !  r k f/ his-fly-x f!
+    his-to v.y sf@ his-at v.y sf@ f- k f/  0.5e tackle-fall f* k f* f+  his-fly-y f!
+    his-leap-yaw f@ his-yaw f- angle-wrap fabs k f/ his-leap-turn f!
+    tackle-anim play  1 his-no-root !  leap-snarl make-sound
+    ['] st-tackle-take-off behave ;
+: st-await-tackle ( -- )  pursuer with? 0= if  to-default  then ;   \ (Hewie_StateGoForPursuer: his answer)
+: st-target-pursuer ( -- )   \ (Hewie_StateTargetPursuer: here - the tackle asked of him)
+    pursuer with? 0= if  to-default exit  then
+    pursuer his-target !  pursuer send dog-tackle  ['] st-await-tackle behave ;
+: tackle ( -- )   \ (Hewie_SetAction 0x75: seeing him, not off screen, not bitten or down)
+    pursuer dup with? 0= if  drop to-default exit  then
+    mode-of unreachable-mode =  st-sub @ dup bitten-sub = swap down-sub = or  or if  to-default exit  then
+    engaged-mode his-mode !  pursuer his-target !  ahead-look look-now!  0 his-cmd !  1 his-2d !
+    ['] st-target-pursuer behave ;
+\ the stalker's answers while he tackles: the spot (then the leap), the spot anew as he reaches
+\ him (where he lands), or refused
+: tackling? ( -- flag )  his-act @ dup ['] st-await-tackle =  swap ['] st-tackle-lands = or ;
+: tackle-answer ( tri x y z yaw -- )   \ (floats in cells)
+    cell>f {: tri x y z F: yaw :}  x cell>f y cell>f z cell>f his-to vec!  tri his-to-tri !
+    his-act @ ['] st-await-tackle = if  yaw his-leap-yaw f!  ['] tackle-launch behave  then ;
+
 \ ---- going for him (StateRunAtPursuer, StateGoesForPursuer, GoForPursuer2): at him at a trot
 \ or a run; within 23, the side he comes from picks the grip (and the action), the attack is
 \ asked of the stalker (`dog-attack`), and he waits for the answer ----
@@ -415,7 +480,8 @@ defer close-by ( F: rest -- done? )   :noname fdrop false ; is close-by   \ (hew
         dup from yelp  true swap
     endcase ;
 
-\ ---- his scuffles off screen (Hewie_Scuffle): the stalker hunting in his room (its alert 1..3),
+\ ---- his scuffles off screen (Hewie_Scuffle): the stalker hunting in his room (its alert 1..3), no
+\ script of the room having him (stalker-ties),
 \ once a meeting and not within 900 frames of the last, him neither hurt nor down. By chance:
 \ 15 in 100 both hurt, 45 him only, 15 the stalker only, 25 nothing. Him hurt: a tenth of his
 \ health (not below 1), a grudge one time in four. Heard next door: his yelp (another when he
@@ -434,7 +500,7 @@ create scuffle-chances  both-hurt , 15 ,  he-is-hurt , 45 ,  it-is-hurt , 15 ,  
 : scuffle ( -- )
     pursuer active?  pursuer with? 0= and if  0 his-scuffled !  then   \ (met again once it has been elsewhere)
     his-cond @ hurt-cond down-cond 1+ within  his-hold-call @ or  his-scuffled @ or if  exit  then
-    pursuer with?  st-alert @ 1 4 within and 0= if  exit  then
+    pursuer with?  st-alert @ 1 4 within and  st-scripted @ 0= and 0= if  exit  then   \ (not one a script has: +0xE0)
     -1 his-scuffled !  900 his-hold-call !
     scuffle-outcome  dup nothing-came = if  drop exit  then
     6 roll 30 * 30 +  his-wanted !

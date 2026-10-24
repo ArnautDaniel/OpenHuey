@@ -75,10 +75,11 @@ create goal /vec allot
 \ she is pushed out to their radii apart - along his way when he is stepping at her (his step
 \ this frame 20 on, plus the way from him to her), else straight away from him; off the floor
 \ she isn't moved and is out of contact (+0x2A: no more pushing till she stands clear of
-\ both). Overlapping Hewie, out of him - beside him, as near straight away as the floor allows
+\ both); nor while he is out of contact himself (his +0x2A: stalker-ties). Overlapping Hewie, out of him - beside him, as near straight away as the floor allows
 \ (Actor_PushOut) - or, nowhere, back to where she was. None of it when she touched Hewie
 \ (and not the stalker) as the frame began (Fiona_Update) ----
 create ap-at /vec allot
+variable stalker-apart   \ (the stalker out of contact, as he tells it - his +0x2A: through a door, on a ladder)
 : overlaps? ( id -- flag )  dup 0< if  drop false exit  then  self swap 0e 0e bodies-touching? ;
 : touching ( -- n )   \ (Fiona_Touching: 2 the stalker, 1 Hewie, 0 neither)
     stalker-in-room overlaps? if  2 exit  then  dog-in-room overlaps? 1 and ;
@@ -102,7 +103,7 @@ create ap-at /vec allot
 : keep-apart ( touched-hewie? -- )   \ (in the run, not out of Hewie)
     her-mode @ own-mode <>  her-scripted @ or if  drop exit  then
     her-apart @ or if  touching 0= if  0 her-apart !  then  exit  then   \ (clear of both: in contact again)
-    stalker-in-room dup overlaps? if  push-from exit  then  drop
+    stalker-in-room dup overlaps?  stalker-apart @ 0= and if  push-from exit  then  drop
     hewie-played? if  exit  then
     dog-in-room overlaps? if  out-of-hewie  then ;
 
@@ -237,7 +238,7 @@ behaviour free
   on spawned ( -- )  self cam-player!
       -1 her-model !  -1 her-hit-who !  -1 her-shake-count !  her-creatures #creatures cells -1 fill  progress pr.vars $26 + c@ wear  2e 15e body-size
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe camera-cut  self subscribe write-save  self subscribe creature-doing
-      self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene  self subscribe stalker-doing  self subscribe stalker-stride
+      self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene  self subscribe stalker-doing  self subscribe stalker-stride  self subscribe stalker-ties
       self subscribe equipment ;
   on leaving-room ( room exit -- )  hewie-played? if  nip fiona.companion:he-left exit  then  2drop  through-door ;
   on arrived ( room exit -- )   \ (the story's scripts place her too; in the run, she comes with him or not)
@@ -269,6 +270,7 @@ behaviour free
   on text-shown ( on -- )  her-reading ! ;
   on equipment ( boots earrings costume choker -- )  2drop 2drop  show-equipment ;   \ (the sub screen: Fiona_ShowEquipment)
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  her-st-came !  2drop 2drop  her-st-cond !  drop her-st-mode !  drop ;
+  on stalker-ties ( scripted apart linked -- )  drop  sender stalker-in-room = and stalker-apart !  drop ;
   on stalker-stride ( dx dz -- )   \ (the stalker in her room's step: Fiona_KeepApart)
       sender stalker-in-room = if  cell>f her-st-dz f!  cell>f her-st-dx f!  else  2drop  then ;
   on scene ( on -- )  her-in-scene ! ;   \ (a cutscene has her)

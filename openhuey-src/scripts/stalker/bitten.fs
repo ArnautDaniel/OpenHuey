@@ -91,20 +91,28 @@ defer bitten-over ( -- )
     bite-cells k# temper# temper+
     bite-yaw f@ yaw f- angle-wrap fabs  bitten @ leg-attack = if  12e  else  8e  then  f/ bite-turn f!
     ['] bite-turning step! ;
-\ Pursuer_StateBackOnFeet: up again, at least 1 health; on as after a blow
+\ Pursuer_StateBackOnFeet: up again, at least 1 health - Hewie down, the chance roll; on as after a blow
 :noname ( -- )
     0 bitten !  held-by-dog bite-how !  0 reeling !  hp @ 0> 0= if  1 hp !  then
+    dog-cond @ down-cond = if  false chance-roll drop  then
     recovered ; is bitten-over
 
 \ ---- Hewie's attack asked (Pursuer_EventConcerns kind 9, Pursuer_GrabOrder): in her room, not
-\ bitten, down, reeling or leading her ----
+\ bitten, down, reeling or leading her; asked by Hewie, on floor he may stand on too
+\ (Actor_TriFreeFor: not a step or a doorway, not in a door's area) ----
+: floor-free? ( -- flag )
+    self body-tri dup 0< if  drop false exit  then  nav-flags doorway-or-step and if  false exit  then
+    8 0 do  i door-here? if  i 0 my-at vec@ door-in-area?  i 1 my-at vec@ door-in-area? or if  false unloop exit  then  then  loop
+    true ;
 : grip? ( kind -- tri | -1 ) ( F: -- yaw | )
     away?  bitten @ or  cond @ down-cond = or  leading @ or  in-game @ 0= or  hewie here? 0= or if  drop -1 exit  then
     grip-spot ;
+: order? ( kind -- tri | -1 ) ( F: -- yaw | )   \ (Pursuer_GrabOrder: his own floor free too)
+    floor-free? 0= if  drop -1 exit  then  grip? ;
 : gs-cells ( -- x y z )  gs-at v.x sf@ f>cell  gs-at v.y sf@ f>cell  gs-at v.z sf@ f>cell ;
 : dog-attacked ( kind -- )   \ (gs-at: the spot found)
-    dup grip? dup 0< if  2drop  hewie send dog-refused exit  then   ( kind tri ) ( F: yaw )
-    fdup bite-yaw f!  swap bitten-at
+    dup order? dup 0< if  2drop  hewie send dog-refused exit  then   ( kind tri ) ( F: yaw )
+    fdup bite-yaw f!  swap bitten-at  1 link-t !
     gs-cells  f>cell  hewie send dog-grip ;
 
 \ ---- a room's grab of Hewie from behind (Pursuer_GrabHewieBehind: his leg's spot): the spot found
@@ -132,10 +140,13 @@ $28020028 constant grab-walk-mask
 \ ---- after Hewie, his temper past what he stands (Pursuer_GoForHewie, Pursuer_BehaviourHewie):
 \ toward him; within reach facing him, an attack from his table for Hewie (a blow, or a hold of
 \ him); that over - or his time for it (`dog-limit`) up - his taunt, his temper back to 0, and
-\ on as before. Hewie gone from the room: out after him by the exit to his (heading for her
-\ room after it - Pursuer_ThroughDoor); none open to it, on as before ----
+\ on as before. Each attack at him over (Pursuer_BehaviourAttack), the chance roll: his temper
+\ still past what he stands, after him again; else on as before. Hewie gone from the room: out
+\ after him by the exit to his (heading for her room after it - Pursuer_ThroughDoor); none open
+\ to it, on as before ----
 enum: dog-phase#  closing-in attacking taunting ;
-: dog-over ( -- )  0 temper !  0 dog-t !  0 at-dog !  closing-in dog-phase !  combo-over  recovered ;
+: dog-done ( -- )  0 dog-t !  0 at-dog !  closing-in dog-phase !  combo-over  recovered ;   \ (his temper as it is)
+: dog-over ( -- )  0 temper !  dog-done ;
 : dog-reach? ( -- flag )
     hold-off @ if  false exit  then
     d-hewie f@ fdup 24e f< 0=  fdup f0< or if  fdrop false exit  then
@@ -161,7 +172,10 @@ enum: dog-phase#  closing-in attacking taunting ;
     dog-phase @ closing-in <> if
         step-done @ 0= if  exit  then
         dog-phase @ taunting = if  dog-over exit  then
-        0 dog-t !  closing-in dog-phase !  ['] watching watch-act act!   \ (his attack over: the taunt)
+        false chance-roll drop  0 struck-dog !   \ (his attack over: the roll; Pursuer_MayGo - the stalkers blind, his temper gone)
+        stalkers-blind state-flag? if  0 temper !  0e roll-build f!  then
+        hot? 0= if  dog-done exit  then
+        closing-in dog-phase !  ['] watching watch-act act!
     then
     dog-t @ 0> 0= if  temper @ if  taunt  else  dog-over  then  exit  then
     close-in-on-dog
@@ -174,3 +188,14 @@ enum: dog-phase#  closing-in attacking taunting ;
     hot? 0= bitten @ or reeling @ or leading @ or  stalkers-blind state-flag? or if  exit  then
     hewie here? 0= if  0 temper !  exit  then
     step @ ['] after-dog = if  exit  then  go-for-dog ;
+
+\ ---- the story's tackle asked by Hewie (Pursuer_GrabOrder's slot command 2 / 7): as his attack at
+\ the leg - its spot (Pursuer_GrabHewieSpot 15), the heading his bite will turn him to - but not
+\ bitten yet: his behaviour cut short and on afresh (the slot command's {$C, 30}: Pursuer_EventState
+\ 12, Pursuer_BehaviourEnded). Hewie's leap asks the leg's attack (`dog-attack`) as it reaches him ----
+: dog-tackled ( -- )
+    leg-attack order? dup 0< if  drop  hewie send dog-refused exit  then   ( tri ) ( F: yaw )
+    fdup bite-yaw f!  1 link-t !
+    gs-cells  f>cell  hewie send dog-grip
+    reeling @ if  exit  then
+    step @ ['] after-dog = if  dog-done  else  combo-over recovered  then ;

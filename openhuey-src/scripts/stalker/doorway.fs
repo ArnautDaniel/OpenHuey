@@ -13,7 +13,7 @@
 \ its way - knocked on through it, out of the room where it leads out (stunned there 150
 \ frames); else staggered back from it.
 IN: stalker.doorway
-USING: engine game-state actors messages common facts flag-names paths vectors doors stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.anims rumble ;
+USING: engine game-state actors messages common facts flag-names paths vectors doors stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.anims rumble floor-flags ;
 
 : doors-actor ( -- id )  s" doors" actor-named ;
 defer door-done ( -- )   ' stand is door-done          \ given up on the way out (struck.fs: on again)
@@ -30,7 +30,7 @@ create spot-at /vec allot
 \ ---- the door he holds let go open (Npc_DoorRelease); his way out over ----
 : let-door-go ( -- )
     held-door @ dup 0< if  drop exit  then  room-id swap stalker-noise doors-actor send let-go-open  -1 held-door ! ;
-: out-over ( -- )  0 out-going !  0 wandering-out !  -1 door-use !  -1 asked !  0 for-her ! ;
+: out-over ( -- )  0 apart !  0 out-going !  0 wandering-out !  -1 door-use !  -1 asked !  0 for-her ! ;
 : give-up-door ( -- )  let-door-go  for-her @  out-over  if  round-failed  else  door-done  then ;
 : out ( -- )  let-door-go  out-over  making-for @ through ;   \ (Pursuer_ThroughDoor)
 
@@ -47,16 +47,18 @@ create spot-at /vec allot
 \ ---- his door animation (by how he uses it): once it has faded in the door swings along it
 \ (Pursuer_DoorThrough); he is moved by it until the door is at rest (Pursuer_DoorPush), then
 \ lets it go open (Pursuer_Door1C4) and goes on through ----
-: door-pushing ( -- )
+: door-pushing ( -- )   \ (out of contact while on barred floor: Pursuer_DoorPush's +0x2A)
+    self body-tri dup 0< if  drop 0  else  nav-flags barred-floor and  then  0<> apart !
     root-move
     1 step-t +!  step-t @ 3 < if  exit  then               \ (the doors take it up next frame)
     making-for @ door-animating? if  exit  then
-    let-door-go  on-through ;
+    let-door-go  0 apart !  on-through ;   \ (Pursuer_Door1C4: in contact again)
 : door-swinging ( -- )
     root-move  settled? 0= if  exit  then
     making-for @ door-use @ stalker-noise doors-actor send use-door
     ['] door-pushing step! ;
-: got-door ( -- )  making-for @ held-door !  -1 asked !  door-anims door-use @ + play-now  ['] door-swinging step! ;
+: got-door ( -- )   \ (Pursuer_DoorBarge: out of contact till the door is let go)
+    -1 apart !  making-for @ held-door !  -1 asked !  door-anims door-use @ + play-now  ['] door-swinging step! ;
 
 \ ---- lined up at his spot for its animation (Pursuer_DoorLineUp, DoorGoThrough: from behind
 \ it, in front), turned to its heading (Pursuer_DoorFace / DoorOpen), its handle asked for ----

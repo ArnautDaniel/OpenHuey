@@ -253,7 +253,7 @@ create idle-tricks  sit-trick-act , sit-trick-2-act , lie-down-trick-act , stand
     fetch-act of  fetch  endof
     draw-off-act of  draw-off  endof
     rush-act of  close-in  endof
-    tackle-act of  at-pursuer  endof   \ (the story's tackle: Hewie_StateTargetPursuer - at him, as at a flank)
+    tackle-act of  tackle  endof   \ (the story's tackle: Hewie_StateTargetPursuer, the leap at his leg)
     \ the rest: the default
     >r  r@ if  to-default  then  r>
     endcase ;
