@@ -7,6 +7,7 @@ IN: subscreen.map
 USING: engine game-state actors facts story-names ps2-screen subscreen.state subscreen.art subscreen.input subscreen.tables ;
 
 $28 constant map-group   \ (the page's picture in the texture cache)
+$20 constant arrow-alpha   \ (Map_HereArrow's colour $20808080: a quarter of the PS2's opaque)
 
 \ a map's rooms: room, page | x scale, z scale, x offset, y offset (where the arrow goes)
 begin-structure /map-room  field: room-of-e  field: page-of-e
@@ -95,7 +96,10 @@ $100 constant first-maze-room   $1F constant deals-var   $20 constant dealt-row-
     her body-yaw fnegate  fdup fsin fswap fcos                \ ( F: ay ax s c )
     art-layer  -16 16 corner  16 16 corner  -16 -16 corner  16 -16 corner
     fdrop fdrop fdrop fdrop
-    base-group 0 6  $1C0 $60 32 32  $80 faded  ui-image4 ;
+    base-group 0 6  $1C0 $60 32 32  arrow-alpha faded  ui-image4 ;
+$A6 constant title-x   $48 constant title-y
+: title ( addr len -- )   \ centred on title-x by its width (Text_LineWidth), its top at title-y
+    {: a n :}  word-layer a n  title-x sx  a n scale text-width 2/ -  title-y sy  false ink  scale  ui-text ;
 : map-view ( -- )
     1 page-art  load-page
     map-at @ held? if
@@ -103,7 +107,7 @@ $100 constant first-maze-room   $1F constant deals-var   $20 constant dealt-row-
         here-arrow
     then
     map-at @ held? if  map-at @ map-pg @ map-page nip nip  else  $85  then   \ (its title; none: "No Data")
-    menu-line  $A6 $48 centred
+    menu-line title
     held-maps dup 0<>  swap 4 = map-at @ 2 = and 0= and if   \ (somewhere to turn to)
         $A $F0 $1A blink part  $1D6 $F0 $1B blink part
     then ;

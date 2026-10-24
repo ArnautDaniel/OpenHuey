@@ -10,7 +10,8 @@
  * colour (0x03 n, 0x04 back) and the frame it is typed on (Task_StateType: 0x0C n the speed - a
  * glyph then waits Text_GlyphFrames[n] frames, 0x0D back to 0; 0x09 n a pause of n; 0x10 n: the
  * message closes n frames after it is typed, 0 never by a button); the window that shows it is
- * Forth's. */
+ * Forth's. 0x0A n places the box (Task_Layout: from the page it is on); 0x12 / 0x14 centre a line
+ * or put it to the right (Task_DrawPage). */
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
@@ -26,7 +27,10 @@ typedef struct MessagePage {
     char lines[MESSAGE_LINES][MESSAGE_LINE_CHARS];
     uint16_t at[MESSAGE_LINES][MESSAGE_LINE_CHARS];      /* the frame (from the page's start) each is typed on */
     uint8_t colour[MESSAGE_LINES][MESSAGE_LINE_CHARS];   /* its colour (the font's palette) */
+    uint8_t align[MESSAGE_LINES];    /* the line's: 0 from the left, 1 centred (0x12), 2 to the right (0x14) */
     int nlines;
+    int place;                       /* the box's place (0x0A n: preset n & 0x7F, bit 7 no box) from
+                                      * this page on; -1 none given yet */
     int typed;                       /* the frame the page is typed out on (then the button) */
     uint16_t pause[MESSAGE_PAUSES];  /* the frames its pauses (0x09) start on: holding cancel types up to the next */
     int npauses;

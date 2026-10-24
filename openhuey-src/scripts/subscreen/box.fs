@@ -8,9 +8,11 @@ USING: engine messages keys ps2-screen subscreen.state subscreen.art subscreen.i
 : last-shown-page? ( -- flag )  shown-page @ 1+  shown @ message-layout  >= ;
 : choosing? ( -- flag )  shown @ message-layout drop  message-options 0>  last-shown-page? and ;
 
-: marker ( -- )   \ ">" before the option picked
+create hand  $60 c,   9 constant hand-palette   \ (the font's pointing hand, in its palette 9: Task_DrawPage)
+: marker ( -- )   \ the hand before the option picked (an option takes no room: 20 of the PS2's pixels before it)
     shown @ message-layout drop  picked @ message-option-at  {: pg line col :}
-    word-layer s" >"  $40 sx  col 1- 0 max char-size drop * scale * +  line 18 * $B0 + sy  $FFD878FF scale  ui-text ;
+    pg line message-line drop col scale text-width  {: indent :}
+    word-layer hand 1  $40 sx indent +  scale 10 * -  line 22 * $B0 + sy  $FFFFFFFF scale hand-palette  ui-text-in ;
 : box-view ( -- )
     $100 $E0 $1A0 $A0 shade
     shown @ message-layout drop

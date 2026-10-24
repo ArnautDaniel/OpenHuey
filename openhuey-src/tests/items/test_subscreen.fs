@@ -72,6 +72,8 @@ testing the arrow in the forest's maze: by the room's place in the dealt row (Ev
 1 $1F var!  5 $20 var!
 T{ 0 row-room subscreen.map:maze-place  2 row-room subscreen.map:maze-place  $10B subscreen.map:maze-place -> 0 2 -1 }T
 0 $1F var!  0 $20 var!
+testing the map's arrow at a quarter (Map_HereArrow's $20808080); its title on $A6, $48 (Map_PageFrame)
+T{ subscreen.map:arrow-alpha  subscreen.map:title-x  subscreen.map:title-y -> $20 $A6 $48 }T
 testing the options: the cross edits a row, the arrows change it; the square puts them back
 key: E tap  key: E tap
 T{ [: page @ ;] menu@ -> 5 }T

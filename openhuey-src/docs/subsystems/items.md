@@ -125,7 +125,8 @@ message box), `lists.fs` (the item lists, an item's actions, the files), `map.fs
 1. **The map** (Map_*): the maps she holds - a sketch used for each (story flags
    `castle-map-held` ..) - page by page with left / right, past the ends to the next map she
    holds; it opens on her room's page with an arrow where she stands, turned to her heading
-   (Map_HereArrow: base texture 0 at $1C0, $60, palette 6, on four corners - `ui-image4`); in the
+   (Map_HereArrow: base texture 0 at $1C0, $60, palette 6, on four corners - `ui-image4` - at a
+   quarter's alpha, $20); its title centred on $A6 by its width, its top at $48; in the
    forest's maze rooms ($100..$105) placed by the room's place in the dealt row
    (Events_ThingPlace: one of three spots of their own, none while no rows are dealt). The page
    she is on is kept in a save (its +0x18F0) and turned to on loading. Each room entered is found on the maps (`arrived`); the story's 0xD1 (`map-turn-to`)
@@ -153,7 +154,7 @@ message box), `lists.fs` (the item lists, an item's actions, the files), `map.fs
 a quarter off each fright and the recovery's reset three times in four; $8B a quarter off, her
 calming half again, the reset half the time; $8C half off, her calming doubled, never the reset,
 nor running's fright; **I2, I3 built**
-(`scripts/subscreen.fs`, `tests/items/test_subscreen.fs` (54)). Not yet: the parts' blendings (subtract / add: drawn plain), the
+(`scripts/subscreen.fs`, `tests/items/test_subscreen.fs` (58)). Not yet: the parts' blendings (subtract / add: drawn plain), the words' (the colour's bit 0x80 - most of the menu's, the map's title: subtracted, so dark on the paper - drawn light), the
 menu's sound turned down while open. **The galleries** (`subscreen/galleries.fs`, the extras
 room's modes; their tables generated from the executable by `tools/gallerytables.py` into
 `subscreen/gallery-tables.fs`; `tests/items/test_galleries.fs` (35)): eight a page, "???" until the

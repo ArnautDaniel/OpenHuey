@@ -1735,6 +1735,17 @@ PRIM(p_message_line) {   /* ( page line -- addr len ) */
     PUSH(sMsg->pages[pg].lines[ln]);
     PUSH(strlen(sMsg->pages[pg].lines[ln]));
 }
+PRIM(p_message_place) {   /* ( page -- n ) the box's place from that page (0x0A n); -1 none given */
+    Cell pg = POP();
+
+    PUSH(sMsg != NULL && pg >= 0 && pg < sMsg->npages ? sMsg->pages[pg].place : -1);
+}
+PRIM(p_message_align) {   /* ( page line -- n ) 0 from the left, 1 centred (0x12), 2 to the right (0x14) */
+    Cell ln = POP(), pg = POP();
+
+    PUSH(sMsg != NULL && pg >= 0 && pg < sMsg->npages && ln >= 0 && ln < sMsg->pages[pg].nlines
+             ? sMsg->pages[pg].align[ln] : 0);
+}
 PRIM(p_message_options) { PUSH(sMsg != NULL ? sMsg->noptions : 0); }   /* ( -- n ) */
 static const MessageOption *message_option(Cell i) {
     return sMsg != NULL && i >= 0 && i < sMsg->noptions ? &sMsg->options[i] : NULL;
@@ -3608,7 +3619,7 @@ void bind_engine(Forth *f) {
         {"message-layout", p_message_layout}, {"message-file", p_message_file}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
         {"message-options", p_message_options}, {"message-option-at", p_message_option_at}, {"message-option-leads", p_message_option_leads},
         {"message-choice-flags", p_message_choice_flags}, {"message-typed", p_message_typed}, {"message-skip", p_message_skip},
-        {"message-close-after", p_message_close_after}, {"message-run", p_message_run}, {"ui-text-in", p_ui_text_in}, {"ui-image4", p_ui_image4}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
+        {"message-close-after", p_message_close_after}, {"message-run", p_message_run}, {"message-place", p_message_place}, {"message-align", p_message_align}, {"ui-text-in", p_ui_text_in}, {"ui-image4", p_ui_image4}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-back!", p_cloth_back}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
         {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
