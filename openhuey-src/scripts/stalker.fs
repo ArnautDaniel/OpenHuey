@@ -23,10 +23,13 @@ USING: engine game-state actors messages common facts flag-names room-names path
 : feet-on? ( -- flag )  my-move-mode @ on-ladder-mode <>  script-held @ noclipped @ and 0= and ;
 : feet-way ( F: -- back front )
     anim @ walk-slow-anim = if  feet-slow-back f@ feet-slow-front f@  else  feet-back f@ feet-front f@  then ;
+\ Lorenzo (LorenzoModel_BodyFrames: the same two numbers, the floor ahead and behind) tilted in
+\ his chair by the floor and his head turned by his look, no feet
 : fit-legs ( -- )
     played? 0= my-model @ 0< or if  exit  then
     self body-tri  feet-on?  {: tri on :}
     on if  feet-way  else  0e 0e  then
+    chaired @ if  head-pitch f@ head-yaw f@  my-model @ tri my-floor @ chair-fit exit  then
     my-model @ tri my-floor @ on 1 and legs-fit ;
 \ his legs (each model class's Loaded: +0x890..+0x8AC) by his model's file - Lorenzo's other class
 \ (O_LRY: Lorenzo2Model) his left from $12; Lorenzo (O_LRO) not a human's model (LorenzoModel: its
@@ -85,7 +88,7 @@ $1300 constant gesture-anims
 : frame ( -- )
     away? if  away  pose  tell-danger  exit  then
     thaw  hurt-down  senses  modes  dog-temper  shut-behind  ladder-watch
-    step @ ?dup if  execute  then  search  looking   \ (Pursuer_Think: the head after the behaviour)
+    step @ ?dup if  execute  then  search  played? looking   \ (Pursuer_Think: the head after the behaviour)
     played? growls @ and if  growl  then
     played? if  stalker.moving:footsteps  anim-sounds-play  then
     pose  fit-legs  tell-danger ;
@@ -178,7 +181,8 @@ $1300 constant gesture-anims
 : dressed ( id addr len -- )   \ (his model loaded, its motion table by name: hidden till he comes in;
     \ he blinks, his hands posed by his motions - Pursuer_ModelUpdate's Motion_Eyes / Motion_Hands)
     {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l!  1 him act.alive l!
-    id file leg-bones human-legs ;
+    id file leg-bones human-legs
+    file s" O_LRO" model-of? dup chaired !  id swap lorenzo-chair ;   \ (LorenzoModel: in his chair)
 : model-file ( addr len -- id )  2dup file!  actor-load ;
 \ ---- each one's own numbers (his Setup, by the hard setting) and ways ----
 : by-hardness ( normal hard -- n )  hard-mode? if  nip  else  drop  then ;

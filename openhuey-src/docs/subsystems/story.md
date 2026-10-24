@@ -228,7 +228,9 @@ its animation's end), which the room keeps for `self-wait-done` / `self-wait-ani
 `wait-char-anim`. Done is true while idle (a character with no move is done). Words: `self-move-to`,
 `self-move-tri`, `self-idle`, `self-anim`, `self-anim-blend`, `self-anim-blend8`, `self-idle-anim`,
 `self-turn-angle`, `self-turn-to-xz`, `self-turn-to`, `self-look-at`, `self-look-at-point`,
-`self-move-slot`, `self-walk-anim`, `char-anim-hold` (`hold-anim`), `char-visible` (`show`; 0x1F's argument 1 hides, 0 shows - the
+`self-move-slot`, `self-walk-anim` (the turn to a character carries its slot as `a`, a look at one
+its actor as `a` and its slot as `b` - the original's +0x100 the figures' heads read; a look at an
+id nobody has sends no move, as the original's), `char-anim-hold` (`hold-anim`), `char-visible` (`show`; 0x1F's argument 1 hides, 0 shows - the
 character's +0x29).
 - Fiona (`scripts/fiona/moves.fs`, from Fiona_Requests and the Fiona_StateCmd* states): straight
   to a spot (her door walk), along a path turning 10 degrees a frame and stepping by her root

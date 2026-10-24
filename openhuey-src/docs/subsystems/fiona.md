@@ -339,7 +339,15 @@ falling off it, the story's step while through blocked floor; `feet-off-acts`):
 Off her feet her model is at her place, unfitted; off the nav mesh, at her place (Model_BodyFrames).
 The engine's words: `human-legs ( id right left -- )` (the bone chains; at load), `legs-fit ( id tri
 mask plant -- ) ( F: back front -- )` each frame after she is placed, `legs-height` (her body's
-height). Checked by `tests/fiona/test_legs.fs`. The nav mesh keeps section 16's bytes for it
+height). Checked by `tests/fiona/test_legs.fs`.
+
+Her head (`fiona/looks.fs`) turns as her model is posed as the human models' do
+(HumanModel_AdjustBone; the engine's `head-bones`, `head-turn`: `humanhead_adjust`): the head bone
+in its own frame by the tilt and half the turn, the bone below it the other half about its own
+place. Its bones by her costume's model class (each Loaded's +0x8B0 / +0x8B4): her clothes and
+costume 2 $21 / $17, the slip (FionaModel) $35 / $2B, costume 3 $1D / $13, 6 $14 / $A, 7 $16 / $A,
+8 $13 / $B (before, every costume but the slip took $21 / $17). Checked by
+`tests/fiona/test_costumes.fs` (each head at head height, above the bone below it). The nav mesh keeps section 16's bytes for it
 (`NavMesh.marks`: bit $80 a wall to the feet where the mask blocks).
 
 ## Her hanging parts (`src/game/cloth.c`)

@@ -2,13 +2,20 @@
 \ tilt: Motion_LookAt, Motion_EaseTilt, HumanModel_AdjustBone). On her own she looks at Hewie
 \ (within 50, ahead of her, reachable) - the stalker first, within 200, with them - or else
 \ toward where she is turning; after a command at him; under a script where it says (the
-\ story's moves 12 / 13). The head bone ($35) takes the pitch and half the turn, the bone below
-\ it ($2B) the other half.
+\ story's moves 12 / 13). The head bone (her model class's +0x8B0) takes the pitch and half the
+\ turn in its own frame, the bone below it (+0x8B4) the other half (the engine's head-turn).
 IN: fiona.looks
 USING: engine messages hewie-names vectors actors common fiona.state fiona.anims fiona.model fiona.slam ;
 
-: head-bone ( -- b )  her-costume @ slip-dress = if  $35  else  $21  then ;   \ (FionaModel / EventHumanModel +0x8B0)
-: neck-bone ( -- b )  her-costume @ slip-dress = if  $2B  else  $17  then ;   \ (+0x8B4)
+\ her head and the bone below it by her costume's model class (each one's Loaded: +0x8B0 / +0x8B4):
+\ her clothes EventHumanModel, the slip FionaModel, then Costume2..8Model
+: her-head-bones ( -- head neck )
+    her-costume @ case
+        slip-dress of  $35 $2B  endof   scalpel-outfit of  $1D $13  endof   illegal-outfit of  $14 $A  endof
+        cowgirl-outfit of  $16 $A  endof   frog-outfit of  $13 $B  endof
+        >r $21 $17 r>                     \ (her clothes, normal-outfit-2)
+    endcase ;
+: head-bone ( -- b )  her-head-bones drop ;
 14e fconstant eye-up
 : dog-ok? ( -- flag )  dog-here @ dog-with-her = ;            \ Hewie with her (the original's +0x1AD5D5)
 : hewie-id ( -- id )  s" hewie" actor-named ;
@@ -41,9 +48,8 @@ $40080 constant sight-stops   \ (the floors her eye can't pass over)
 
 \ the head's bones turned by the angles (each frame, as she is posed)
 : turn-head ( -- )
-    her-model @ turns-clear
-    her-model @ neck-bone  0e  her-head-yaw f@ 0.5e f*  turn+
-    her-model @ head-bone  her-head-pitch f@ fnegate  her-head-yaw f@ 0.5e f*  turn+ ;
+    her-model @ her-head-bones head-bones
+    her-head-pitch f@ her-head-yaw f@  her-model @ head-turn ;
 
 \ whom she looks at: their head (the actor gone: the look off)
 : look-point ( -- ok? )

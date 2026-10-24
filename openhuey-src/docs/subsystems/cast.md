@@ -68,13 +68,32 @@ once on it; at the spot, standing. To the spot (Pursuer_StateArrive): put on it,
 the move's heading at 4 degrees a frame (Pursuer_TurnRate), standing, done. 14 / 15 turning to
 the move's heading in $200 at 4 degrees a frame, then standing (0) and done once that has faded
 in (Pursuer_StateTurnThenWait); 17 its own animation to the spot (put on it, facing the move's
-way, done); 1 standing; the looks and the doors' uses: done. `hold-anim`: in it, done.
+way, done); 1 standing; the doors' uses: done. `hold-anim`: in it, done.
+
+**Its head** (Pursuer_Think, Pursuer_LookAt; `look`): 12 a look at a character (b its slot; $FF
+off - on only if the slot has someone), 13 at a point (+0x1700); done at once. While a look is on
+the head turns toward whom the moves last named - the original's +0x100: written by the looks, the
+turns to a character (14), the doors' uses (3 / 4: their exit) and the walk with an animation (17:
+its animation) - 0 Fiona, 1 Hewie, anything else the look's point (so a look at a point after a
+look at Fiona still looks at her, as the original's does); small turns (under 0.05) none; 8
+degrees a frame (Pursuer_TurnRateFast). The tilt stays level (Pursuer_LookAt eases it to 0 by
+nothing; easing back takes it to 0). No look: eased back, 8 degrees a frame. As the model is posed
+(HumanModel_AdjustBone: `head-turn`) the head bone takes half the turn in its own frame and the
+bone below it the other half about its own place: Lorenzo's hanging figure (Kind09Model) $2B /
+$22, Fiona's doubles (13 EventHumanModel, 18 Kind18Model) $21 / $17; the plain models have none.
+
+**Its legs**: the human figures' feet are planted on the floor as Fiona's (`humanlegs.c`;
+Pursuer_ModelUpdate's +0x40 with its stance's points - these kinds set none, 0 0 - and +0x4C): in
+the room played, on its triangle, but not while a script walks it through blocked floor; a
+scene's not. Lorenzo's hanging figure's legs 2..5 and $12..$15, Fiona's doubles' 2..5 and 6..9
+(each class's Loaded: +0x890..+0x8AC).
 
 As the story shows or hides it (`show`) a figure tells (`figure-shown`): the obstacles leave a
 hidden one out of their way.
 
 ## Status
 
-**Built** (`scripts/cast.fs`). Checked by `tests/cast/test_cast.fs` (23) and
-`tests/cast/test_animal.fs` (4). *Not kept*: the models' own cloth (kind 9's strands, Fiona's
+**Built** (`scripts/cast.fs`). Checked by `tests/cast/test_cast.fs` (23),
+`tests/cast/test_animal.fs` (4), `tests/cast/test_cast_legs.fs` (3) and
+`tests/cast/test_cast_head.fs` (8). *Not kept*: the models' own cloth (kind 9's strands, Fiona's
 doubles' springs, kind 18's per-part draw settings) and kind 33's raised body frames.

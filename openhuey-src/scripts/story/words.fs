@@ -728,11 +728,13 @@ variable mv-kind  variable mv-a  variable mv-b  create mv-at /vec allot  fvariab
 : self-turn-yaw ( F: yaw -- )  {: F: yaw :}  turn-to-heading-move 0 -1  0e 0e 0e yaw  self-move ;
 : self-turn-angle ( face -- )  degrees>yaw self-turn-yaw ;   \ 0x4B
 : self-turn-to-xz ( F: x z -- )  heading-from-self self-turn-yaw ;   \ 0x8E
-: self-turn-to ( id -- )   \ 0x42: to a character
-    char-slot char-actor dup 0< if  drop exit  then
-    body-pos fswap fdrop  heading-from-self  {: F: yaw :}  turn-to-who-move 0 -1  0e 0e 0e yaw  self-move ;
-: self-look-at ( id -- )   \ 0x2B: look at a character (self-who: stop)
-    dup self-who = if  drop -1  else  char-slot char-actor  then  look-move swap -1  no-place  self-move ;
+: self-turn-to ( id -- )   \ 0x42: to a character (a: its slot - the original's +0x100)
+    char-slot dup char-actor dup 0< if  2drop exit  then  {: cs who :}
+    who body-pos fswap fdrop  heading-from-self  {: F: yaw :}  turn-to-who-move cs -1  0e 0e 0e yaw  self-move ;
+: self-look-at ( id -- )   \ 0x2B: look at a character (self-who: stop): a its actor, b its slot ($FF stop;
+    \ the original's +0x100); nobody of that id: no move
+    dup self-who = if  drop look-move -1 $FF  no-place  self-move exit  then
+    char-slot dup 0< if  drop exit  then  {: cs :}  look-move cs char-actor cs  no-place  self-move ;
 : self-look-at-point ( F: x y z -- )  look-point-move 0 -1  0e  self-move ;   \ 0xAB
 : self-move-slot ( slot move -- )   \ 0x10: toward a character (turned to it, looking at it)
     dup turn-to-who-move = if  drop self-turn-to exit  then  dup look-move = if  drop self-look-at exit  then

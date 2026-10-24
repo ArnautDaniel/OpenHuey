@@ -113,15 +113,14 @@ static void tri_normal(const NavMesh *nav, int i, float *n) {
  * `from`) toward it: on a triangle, its height there; at a wall (no triangle beyond, or one
  * marked $80 whose flags the character's mask blocks) its height carried on along the line
  * from the character to where the wall was met */
-static void onto_floor(const HumanLegs *h, float *p) {
-    const NavMesh *nav = h->nav;
+void humanlegs_onto_floor(const NavMesh *nav, int start, uint32_t mask, Vec3 at, float *p) {
     float from[3], hit[3] = {0.0f, 0.0f, 0.0f}, d[3], len;
-    int tri = h->tri, n;
+    int tri = start, n;
 
     if (nav == NULL || tri < 0 || tri >= nav->ntris) {
         return;
     }
-    v_from(from, h->at);
+    v_from(from, at);
     for (n = 0; n < 4 * nav->ntris + 16; n++) {   /* (the original walks without a bound) */
         const NavTri *t = &nav->tris[tri];
         int e = exit_edge_hit(t, hit, from, p);
@@ -131,14 +130,14 @@ static void onto_floor(const HumanLegs *h, float *p) {
             return;
         }
         if (e == 4) {
-            onto_plane(&nav->tris[h->tri], p);
+            onto_plane(&nav->tris[start], p);
             return;
         }
         tri = t->next[e];
         if (tri < 0 || tri >= nav->ntris) {
             break;
         }
-        if (tri < nav->nmarks && (nav->marks[tri] & 0x80) && (nav->tris[tri].flags & h->mask)) {
+        if (tri < nav->nmarks && (nav->marks[tri] & 0x80) && (nav->tris[tri].flags & mask)) {
             break;
         }
     }
@@ -147,6 +146,20 @@ static void onto_floor(const HumanLegs *h, float *p) {
     v_sub(d, hit, from);
     v_norm(d, d);
     p[1] = from[1] + d[1] * len;
+}
+
+static void onto_floor(const HumanLegs *h, float *p) {
+    humanlegs_onto_floor(h->nav, h->tri, h->mask, h->at, p);
+}
+
+float humanlegs_floor_at(const NavMesh *nav, int tri, Vec3 at) {   /* (the nav mesh's +0x14) */
+    float p[3];
+
+    v_from(p, at);
+    if (nav != NULL && tri >= 0 && tri < nav->ntris) {
+        onto_plane(&nav->tris[tri], p);
+    }
+    return p[1];
 }
 
 /* ---- the motion's feet ---- */
@@ -270,7 +283,7 @@ void humanlegs_fit(Actor *a, const NavMesh *nav, int tri, uint32_t mask, int pla
     Mat4 place = place_at(a, a->pos.y);
     float l[3], r[3];
 
-    if (!h->on) {
+    if (!h->on || a->drive != NULL) {   /* (a scene's: Fiona_FollowAnim / Pursuer_PlaceModel - no +0x40 or +0x4C) */
         return;
     }
     h->asked = 1;
@@ -503,5 +516,39 @@ void humanlegs_pose(HumanLegs *h, const Model *m, Mat4 *world, const Mat4 *place
         for (k = 0; k < 4; k++) {
             world[h->bones[i][k]] = mat4_mul(*unplace, b[k]);
         }
+    }
+}
+
+/* ---- the head: HumanModel_AdjustBone ---- */
+
+/* sceVu0RotMatrixX / Y's rotations (Mat4 has the sce matrices' layout) */
+static Mat4 rot_x(float t) {
+    Mat4 r = mat4_identity();
+
+    r.m[5] = cosf(t);   r.m[6] = sinf(t);
+    r.m[9] = -sinf(t);  r.m[10] = cosf(t);
+    return r;
+}
+
+static Mat4 rot_y(float t) {
+    Mat4 r = mat4_identity();
+
+    r.m[0] = cosf(t);  r.m[2] = -sinf(t);
+    r.m[8] = sinf(t);  r.m[10] = cosf(t);
+    return r;
+}
+
+void humanhead_adjust(int i, Mat4 *world, void *user) {
+    const HumanHead *h = user;
+
+    if (i == h->head) {   /* (b = b * RotY(yaw / 2) * RotX(-pitch): in its own frame) */
+        world[i] = mat4_mul(world[i], mat4_mul(rot_y(0.5f * h->yaw), rot_x(-h->pitch)));
+    }
+    if (i == h->neck) {   /* (b = RotY(yaw / 2) about its place * b less its place) */
+        Mat4 r = rot_y(0.5f * h->yaw), b = world[i];
+
+        r.m[12] = b.m[12];  r.m[13] = b.m[13];  r.m[14] = b.m[14];
+        b.m[12] = b.m[13] = b.m[14] = 0.0f;
+        world[i] = mat4_mul(r, b);
     }
 }

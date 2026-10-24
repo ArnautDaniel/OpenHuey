@@ -3,7 +3,7 @@
 \   /path field my-path          (in a state: ... end-state)
 \   my-path from-tri from-v to-tri to-v mask path-plan
 IN: paths
-USING: engine ;
+USING: engine vectors ;
 
 64 constant path-points
 2 cells path-points 12 * + constant /path   \ the record: count, index, points (3 single floats)
@@ -23,8 +23,11 @@ USING: engine ;
 : path-plan-curved ( path from-tri a to-tri b mask -- n )  v-path-curved path-keep ;
 
 \ the point `d` along the rest of the way from `at`, into `ahead`; the index of the next
-\ turning point there (Character_WaypointAhead)
+\ turning point there (Character_WaypointAhead) - put on the floor there, as the original's
+\ stride over the mesh does (PathPlan_AdvanceOnMesh: set_on), so a walk down a slope or the
+\ steps goes down with it
 create ahead 12 allot  fvariable to-go
+: onto-floor ( v -- )  dup vec@ nav-floor drop  v.y sf! ;   \ (the floor under it nearest its height)
 : path-ahead ( path at -- i ) ( F: d -- )
     to-go f!  ahead swap vec-copy  dup path-i                          ( path i )
     begin  2dup swap path-n < while
@@ -33,9 +36,9 @@ create ahead 12 allot  fvariable to-go
             to-go f@ fswap f- to-go f!  ahead r> vec-copy  1+
         else
             fdrop  ahead r@ vec-heading  to-go f@  ahead ahead vec-ahead  r> drop
-            nip exit
+            nip  ahead onto-floor exit
         then
-    repeat  nip ;
+    repeat  nip  ahead onto-floor ;
 \ how far is left along it from `at` (on the level)
 create rest-at 12 allot
 : path-rest ( path at -- ) ( F: -- d )
