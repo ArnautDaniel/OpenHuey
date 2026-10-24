@@ -390,6 +390,7 @@ message cast-load ( id -- )                   \ (a figure) be character `id` (it
 message cast-unload ( -- )                    \ (a figure) let it go
 message cast-out ( -- )                       \ (a figure) out of the scene, still loaded (the scripts' 0x14)
 message cast-dress ( model -- )               \ (a figure) wear that model (the scripts' hand-over 0xBA)
+message figure-shown ( on -- )                \ broadcast by a figure as the story shows or hides it (its +0x29: hidden, out of the obstacles' way)
 
 \ ---- the items (docs/subsystems/items.md): the inventory, kept in the progress ----
 message give-item ( id n -- )                 \ (the items) n of item id into the inventory (Items_Give)

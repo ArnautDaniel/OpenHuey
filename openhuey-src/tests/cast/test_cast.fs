@@ -23,6 +23,9 @@ testing the scripts' 0x12: character $1C (its kind's figure O_HMA) into slot 3, 
 $1C 3 $FF char-load  2 frames
 T{ $1C char-slot  3 $1C char-loaded?  3 char-actor  $1C cast-model model3 = -> 3 -1 -1 -1 }T
 T{ model3 model-file s" O_HMA/HMA_000" compare -> 0 }T
+testing 0x12 into a slot taken: nothing (CharLoad_EventChar)
+$F 3 $FF char-load  2 frames
+T{ 3 $1C char-loaded?  3 $F char-loaded?  model3 model-file s" O_HMA/HMA_000" compare -> -1 0 0 }T
 testing placed by the story: in the room, seen
 game:fiona body-pos fz f! fdrop fx f!
 fx f@ 10e f+  game:fiona body-pos fdrop fswap fdrop  fz f@  0e put3  3 frames
@@ -34,6 +37,27 @@ testing walking to a spot (5): there, facing the move's way, done
 5 -1 -1  fx f@ 10e f+  game:fiona body-pos fdrop fswap fdrop  fz f@ 8e f+  0e move3  1 frames
 T{ [: cast.private:mv-done @ ;] c3 -> 0 }T
 T{ [: [: cast.private:mv-done @ ;] c3 ;] 300 soon  game:cast3 body-pos frot fdrop fswap fdrop  fz f@ 8e f+ f- fabs 1e f< -> -1 -1 }T
+testing there, it turns to the move's heading (Pursuer_StateArrive: 4 degrees a frame), then stands
+: yaw3 ( -- deg )  game:cast3 body-yaw 180e f* pi f/ fround f>s ;
+5 -1 -1  fx f@ 10e f+  game:fiona body-pos fdrop fswap fdrop  fz f@ 16e f+  pi f2/ move3  1 frames
+T{ [: [: cast.private:act @ ['] cast.private:arrive-turning = ;] c3 ;] 300 soon -> -1 }T
+T{ [: [: cast.private:mv-done @ ;] c3 ;] 100 soon  yaw3 -> -1 90 }T
+testing blended (8): a faded in over b frames, done at once
+7 $9000 -1  0e 0e 0e 0e move3  2 frames   \ (playing something first: a fade needs one to fade from)
+8 $9001 12  0e 0e 0e 0e move3  1 frames
+T{ anim3  [: cast.private:mv-done @  cast.private:faded-in? ;] c3 -> $9001 -1 0 }T
+testing an idle (16): its stand (0) over b frames - b no animation (this figure has no 0: as it was)
+16 0 $9002  0e 0e 0e 0e move3  1 frames
+T{ anim3  [: cast.private:mv-done @ ;] c3 -> $9001 -1 }T
+testing turning to a heading (15): 4 degrees a frame; turned, standing, done once that has faded in
+[: 0e body-turn ;] c3
+15 0 -1  0e 0e 0e  pi f2/ move3  3 frames
+T{ yaw3 dup 0> swap 13 <  [: cast.private:mv-done @ ;] c3 -> -1 -1 0 }T
+T{ [: [: cast.private:mv-done @ ;] c3 ;] 100 soon  yaw3 -> -1 90 }T
+testing the walks' animations (Pursuer_ScriptMove): 5 / 6 b if one of the $2xx, else $200; 10 / 11 $201
+T{ [: walk-move cast.private:mv-kind !  $204 cast.private:mv-b !  cast.private:walk-anim-for
+      -1 cast.private:mv-b !  cast.private:walk-anim-for
+      run-path-move cast.private:mv-kind !  $204 cast.private:mv-b !  cast.private:walk-anim-for ;] c3 -> $204 $200 $201 }T
 
 testing the scripts' 0x14: out of the scene - gone from the room, still loaded
 $1C char-done  2 frames

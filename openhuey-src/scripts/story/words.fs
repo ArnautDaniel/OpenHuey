@@ -1256,7 +1256,7 @@ $FF constant as-it-is   \ (an exit argument: none - where it is)
     id stalker-actor to a
     a 0< 0= if  a slot slot-actor !  id slot slot-id !  slot a send stalker-load exit  then
     slot figure-cs? 0= if  s" char-load (a figure not in slots 3..5)" stub-step exit  then
-    slot slot-clear
+    slot slot-actor @ 0< 0= if  exit  then   \ (the slot taken: nothing - CharLoad_EventChar)
     slot cast-actor to a  a 0< if  exit  then
     a slot slot-actor !  id slot slot-id !
     id a send cast-load

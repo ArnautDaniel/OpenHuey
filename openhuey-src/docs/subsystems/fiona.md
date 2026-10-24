@@ -281,8 +281,8 @@ Also fixed with it: `walk-anim` (Fiona_StateCmdWalkAnim) read the animation's ke
 
 ## F5: pushing (`scripts/fiona/push.fs`)
 
-Fiona_FindPushable, tried each frame she walks or runs (her step's reach ahead, from where she
-was): the walk toward that point meets a wall (an edge, or her floor's blocks; `v-wall`), and
+Fiona_FindPushable, tried each frame she walks or runs in her own moves (move mode 0) (her
+step's reach ahead, from where she was): the walk toward that point meets a wall (an edge, or her floor's blocks; `v-wall`), and
 the floor 2 to each side of it is pushable ($800000: an obstacle's ring). She turns square to
 the wall, from her side of it (Fiona_StateTurnStick: 10 degrees a frame, her action 1, sub 5),
 while the stick holds within 0.6 of that way, then leans on it ($1200: 2 back). As each move
