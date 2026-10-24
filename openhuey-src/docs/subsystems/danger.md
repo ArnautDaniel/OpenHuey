@@ -13,6 +13,7 @@ Hewie all follow it. The original's "game mode" (`Progress_GameMode`, set by
 | `danger-signal` | `( signal -- )` | in | Something this frame (`enum: danger-signal` in messages.fs): `stalker-close` / `stalker-near` Fiona within 150 / 200 of the stalker, `fiona-struck`, `no-stalker`, `stalker-down` (knocked down), `hewie-alert` (alert to him), `being-hunted` (the summoner). |
 | `stalker-here` | `( room mode down -- )` | in | The stalker in play this frame (the stalkers send it): his mode (`enum: stalker-mode`; the original's Progress_StalkerAlert) and whether he is knocked down (condition 2). None this frame: no stalker. |
 | `danger` | `( level -- )` | broadcast | Changed: `calm`, `followed` (tense), `chased` (`enum: danger-level`). Also sent on `entered-room`. |
+| `danger-signals` | `( bits -- )` | broadcast (at the frame's end, when any) | The frame's signals, a bit each (`1 signal lshift`): the original's condition bits (Progress +0x14), which Hewie reads off screen. |
 
 **Facts:** story flags 0x1B (force calm), 0x1F (force chased), 7 (force tense), 0x22; the played
 room; the room graph.

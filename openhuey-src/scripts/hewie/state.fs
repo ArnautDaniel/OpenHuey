@@ -52,10 +52,14 @@ state: hewie-state
   8 cells field his-rolls   6 cells field his-rolled   cell field his-roll-n
   \ what he notices
   cell field his-alert  cell field his-alert-was  cell field his-alert-what
+  \ what he heard last frame (the acoustics' `heard`: its source - -1 nothing - and room); the
+  \ danger's signals last frame (the original's condition bits, Progress +0x14); who Fiona was
+  \ struck or caught by (her +0x100: fiona-struck-by)
+  cell field his-heard-src  cell field his-heard-room  cell field his-signals  cell field her-struck-by
   cell field his-held           \ Fiona was held
   cell field his-panic-seen     \ her panic's stages seen (1: 4, 2: 5)
   cell field his-scene-req
-  cell field his-call           \ who called him ($FF none; 0 Fiona)
+  cell field his-call           \ who called him (no-call; 0 Fiona; whoever struck him while angry)
   cell field his-hits  cell field his-hit-t   \ how often Fiona hit him lately
   cell field his-hold-call   \ (+0xF35B0) 900 frames after a call while waiting, or a scuffle: no 0x4F / 0x50, no scuffle
   cell field his-ready
@@ -131,12 +135,15 @@ state: hewie-state
   cell field his-scuffled   \ scuffled with him this meeting (+0xF368A; till another his-hold-call)
   \ at the stalker (hewie/fight.fs): the grip (+0x104: 0 head on, 1 / 2 a flank, -1 none yet),
   \ biting (+0xF36B4: 0 / 1 biting, 2 let go, 3 thrown), bites left (+0xF36B8), the chance to
-  \ hold on (+0xF36BC), his feelings about each stalker (+0xF367C: Debilitas, Daniella, Lorenzo,
+  \ hold on (+0xF36BC), his feelings about each stalker (+0xF3674: Debilitas, Daniella, Lorenzo,
   \ Riccardo; -10..10), hit by her lately (+0xF35C4, its timer +0xF35C8); the leap's step and
   \ turn, the fling (+0xF36E0 / +0xF36C8), a
   \ push (+0xF36C8 less +0xF36CC a frame, along +0xF36C4)
   cell field his-grip  cell field his-biting  cell field his-bites  cell field his-hold
   4 cells field his-feel
+  4 cells field his-met          \ how often he leapt at each (+0xF367C: 0..100; Hewie_CountEncounter)
+  cell field his-on-him          \ at the stalker this frame: leaping, biting (+0xF3581)
+  cell field his-attack-was      \ the attack he was at as she left the room (+0xF36B8, after-attack-act)
   1 floats field his-leap-k  1 floats field his-leap-turn  1 floats field his-leap-yaw
   1 floats field his-fly-x  1 floats field his-fly-y  1 floats field his-fly-z  1 floats field his-fly-h
   1 floats field his-push  1 floats field his-push-less  1 floats field his-push-yaw
@@ -178,6 +185,10 @@ on-obeying on-waiting or on-danger or on-command or on-noise or on-story or on-w
 : breaks-in? ( bit -- flag )  his-cmd @ dup nothing-breaks-in and if  2drop false  else  and 0<>  then ;
 : shut-out ( -- )  his-cmd @ nothing-breaks-in or his-cmd ! ;          \ nothing breaks in for now
 : let-in ( -- )  his-cmd @ nothing-breaks-in invert and his-cmd ! ;     \ again as it was
-\ what alerts him (his-alert): nothing; the stalker in sight ahead (this frame); (2: never set);
-\ the stalker in his room while she is chased
-enum: alert-kind  no-alert sight-alert unused-alert chase-alert ;
+\ what alerts him (his-alert, Hewie_Alert): nothing; the stalker in sight ahead (this frame); an
+\ exit of his room into the stalker's (his-alert-what: the exit); the stalker heard (his noise),
+\ or in his room while she is chased
+enum: alert-kind  no-alert sight-alert exit-alert chase-alert ;
+$FF constant no-call   \ (his-call: nobody called him; 0 Fiona)
+\ his grip on the stalker (his-grip): none yet, head on, the near flank, the far one
+enum: grip  -1 no-grip head-on-grip near-grip far-grip ;

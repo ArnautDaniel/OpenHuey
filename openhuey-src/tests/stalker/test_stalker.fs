@@ -225,6 +225,7 @@ testing ... (P3b) by its door: lined up, his animation ($602), the door swung op
 T{ room-id 0 room-exit-door door-open?  room-id 0 room-exit-door door-held? -> -1 0 }T
 false blind  debug:debilitas-out  2 frames
 testing ... seeing her - striking back at her shove - he gives up all the same, at the end of that
+2 common:seed !   \ (his giving up is by chance: the rolls from here on fixed, whatever came before - Hewie's own)
 testing ... step (Pursuer_FrameUpdate); out by the first door of his way home (Debilitas_PickDestination)
 settled  close-up  false blind  [: 70 hp !  25 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press
 T{ [: [: my-mode @ 4 = ;] his ;] 300 soon  [: hits @ ;] his -> -1 0 }T

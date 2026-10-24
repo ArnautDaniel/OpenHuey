@@ -4,22 +4,28 @@
 IN: hewie.mind
 USING: engine actors common facts paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.fetch hewie.exits hewie.steered flag-names floor-flags ;
 
-$FF constant no-call   \ (his-call: nobody called him; 0 Fiona)
 \ report_fiona_near: how near she is, for the story (1 within 20, 2 within 50, 3 further)
 : report-near ( -- )
     her-with? 0= if  exit  then
     her-dist  fdup 20e f<= if  fdrop 1  else  50e f<= if  2  else  3  then  then  his-near ! ;
-\ Hewie_Alert: the stalker in his room within 200, ahead of his head (125 degrees): the danger
-\ is told
+\ Hewie_Alert: what he is alert to, the danger told (alerted): the stalker in his room within 200,
+\ ahead of his head (125 degrees); elsewhere, an exit of his room into the stalker's room (the
+\ exit); else the stalker heard (his noise, last frame). Nothing new: an exit's alert is let go,
+\ and any once the stalker is out of his room
+: ahead-within? ( id -- flag )   \ (within 200, ahead of his head)
+    dup body-at his-at vec-dist 200e f<= 0= if  drop false exit  then
+    body-at heading-to  his-yaw his-head-yaw f@ f+ angle-wrap f- angle-wrap fabs  125e deg>rad f<= ;
+: exit-into ( room -- e | -1 )   \ (the first exit of his room leading there)
+    {: room :}
+    8 0 do  his-room i room-exit-leads drop  dup room =  swap his-room <> and if  i unloop exit  then  loop  -1 ;
+: alert! ( what kind -- )  his-alert !  his-alert-what !  alerted ;
 : alert ( -- )
     pursuer dup active? 0=  his-away @ or  his-cond @ down-cond = or if  drop no-alert his-alert !  exit  then
-    dup with? if
-        dup body-at his-at vec-dist 200e f<= if
-            dup body-at heading-to  his-yaw his-head-yaw f@ f+ angle-wrap f- angle-wrap fabs
-            125e deg>rad f<= if  his-alert-what !  sight-alert his-alert !  alerted  exit  then
-        then
-    then
-    drop  his-alert @ unused-alert = if  no-alert his-alert !  then ;
+    {: stalker :}
+    stalker with? if  stalker ahead-within? if  stalker sight-alert alert!  exit  then
+    else  stalker body-room exit-into  dup 0< 0= if  exit-alert alert!  exit  then  drop  then
+    his-heard-src @ stalker-noise = if  stalker chase-alert alert!  exit  then
+    his-alert @ exit-alert =  stalker with? 0= or if  no-alert his-alert !  then ;
 
 \ ---- Hewie_Upkeep: his timers, health and mood each frame ----
 : upkeep ( -- )
@@ -194,6 +200,15 @@ $FF constant no-call   \ (his-call: nobody called him; 0 Fiona)
     his-action @ whine-act = if  obeys  then  true ;
 : down-stays-down ( -- )   \ (down: knocked down, unless going limp)
     his-action @ dup knocked-down-act <> swap go-limp-act <> and if  knocked-down-act 0 want  then ;
+: behind-him? ( id -- flag )   \ (within 10, facing away from him by more than 90 degrees: his back to bite)
+    dup his-at swap body-at vec-dist 10e f< 0= if  drop false exit  then
+    his-yaw body-yaw f- angle-wrap fabs  pi f2/ f> ;
+: creature-behind? ( -- flag )   \ (one up in his room, its back to him)
+    {: | c :}
+    #creatures 0 do
+        i creature to c
+        c with?  i creature-up? and if  c behind-him? if  true unloop exit  then  then
+    loop  false ;
 : off-slope? ( -- flag )   \ (standing, sitting or lying on a slope, facing down it)
     anim-group in-standing-up < his-action @ off-slope-act <> and facing-down-slope? and ;
 : own-decisions ( -- )
@@ -210,10 +225,14 @@ $FF constant no-call   \ (his-call: nobody called him; 0 Fiona)
         his-panic @ panicking < if  0 his-panic-seen !  then
     then
     his-mood @ angry-mood = if  staying if  exit  then  then
-    \ Fiona held: newly so, by chance he goes for whoever holds her - the stalker
+    \ Fiona held: newly so, by chance he goes for whoever holds her - the stalker harried, else
+    \ (a homunculus holding her down) whom he picks rushed
     her-with? fiona-mode @ thrown-mode = and fiona-sub @ dup led-away-r = swap held-down-r = or and
-    dup  his-held @ 0= and  his-mood @ angry-mood <> and  pursuer with? and if
-        go-for-holder-chance by-chance if  his-held !  harry-stalker-act 0 want exit  then
+    dup  his-held @ 0= and  his-mood @ angry-mood <> and if
+        go-for-holder-chance by-chance if
+            his-held !
+            her-struck-by @ pursuer? if  harry-stalker-act  else  pick-target his-target !  rush-act  then  0 want exit
+        then
     then  his-held !
     his-danger @ chased <> his-alert-was @ no-alert = and his-alert @ no-alert <> and his-action @ yelp-anim-act <> and if
         prick-ears-act 0 want  exit
@@ -221,6 +240,10 @@ $FF constant no-call   \ (his-call: nobody called him; 0 Fiona)
     his-scene-req @ 1 = if  0 his-scene-req !  his-action @ scene-pose-act <> if  scene-pose-act 0 want  exit  then  then
     his-danger @ calm <> if  forget-ball  else  ball-ahead? if  fetch-act 0 want  exit  then  then
     off-slope? if  off-slope-act 0 want  exit  then
+    on-100 breaks-in?  pursuer with? and if   \ (the stalker - or a creature up - within 10, its back to him)
+        his-action @ near-target-2-act <>  pursuer behind-him? and if  near-target-2-act 0 want  exit  then
+        creature-behind? if  near-target-2-act 0 want  exit  then
+    then
     on-footing breaks-in?  anim-group dup in-walking = swap in-standing-up < or and if
         his-action @ off-edge-act <> if
             cp-try head-at  cp-try -1 body-tri-to 0< if  off-edge-act 0 want  exit  then
@@ -414,7 +437,10 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
 
 \ Hewie_HiddenFrame: each frame out of the room being played - down he stays down; Fiona
 \ panicking may bring him (once at its height, once calming down, by his trust); a yelp's time
-\ out, he sets off toward her
+\ out, he sets off toward her; then, as his action lets them break in, Fiona struck (the
+\ danger's signal last frame) has him choose again, and a noise heard from a room other than the
+\ last one he went to may send him there (by his trust)
+: signaled? ( signal -- flag )  1 swap lshift his-signals @ and 0<> ;
 : hidden-frame ( -- )
     his-cond @ down-cond = if  his-action @ knocked-down-act <> if  knocked-down-act 0 want  then  exit  then
     his-panic-seen @ 2 and 0= if
@@ -426,7 +452,11 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     his-panic @ panicking < if  0 his-panic-seen !  then
     his-yelp @ if
         his-yelp @ 0> his-action @ hidden-act <> and if  hidden-act 0 want exit  then
-    else  -1 his-yelp !  0 his-hide !  to-her-room-act 0 want  then ;
+    else  -1 his-yelp !  0 his-hide !  to-her-room-act 0 want  then
+    on-story breaks-in?  fiona-struck signaled? and if  1 his-pending !  exit  then   \ (the story's condition 1: she was struck)
+    on-noise breaks-in?  his-heard-src @ 0< 0= and  his-heard-room @ his-noise-room @ <> and if   \ (a noise from another room)
+        noise-chance by-chance if  his-heard-room @ his-noise-room !  to-noise-act 0 want  then
+    then ;
 
 \ ---- Hewie_Update: a frame of his ----
 : show-him ( -- )   \ the model where his body is
@@ -437,8 +467,15 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
 : free-for-command? ( -- flag )   \ (Hewie_FreeForCommand: idle, a command queued, nothing linked)
     his-busy @ 0=  his-mode @ free-mode = and  his-cmd @ 0<> and  his-cmd @ nothing-breaks-in and 0= and  his-meet @ 0< and ;
 : commandable? ( -- flag )  her-with?  his-mood @ angry-mood <> and  free-for-command? and ;   \ Hewie_FionaCanCommand
-: near-command? ( -- flag )   \ Hewie_FionaNearCommand (by the straight distance: his way's length not planned here)
-    commandable? if  her-dist 150e f<=  else  false  then ;
+\ Hewie_WalkDistance: how far to her by his way over the floor (planned apart); -1 none - she
+\ not with him, or not in the room being played
+: way-to-her ( F: -- d )
+    her-with? here? and 0= if  -1e exit  then
+    his-probe his-tri his-at her body-tri fiona-at hewie-floor path-plan 0> 0= if  -1e exit  then
+    his-probe his-at path-rest ;
+: near-command? ( -- flag )   \ Hewie_FionaNearCommand: within 150 of her by his way
+    commandable? 0= if  false exit  then
+    way-to-her  fdup f0< if  fdrop false  else  150e f<=  then ;
 : reachable? ( -- flag )   \ Hewie_FionaReachable (only while a script has him: a way to her, planned apart)
     his-busy @ 0=  his-away @ or if  true exit  then
     his-2d @ his-2b @ or if  false exit  then
@@ -470,6 +507,7 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     his-busy @ if  -1 his-was-busy !  gesture!  think exit  then
     his-was-busy @ if  0 his-was-busy !  full-stop  to-default  then   \ (the script let him go)
     upkeep  alert  his-cond @ down-cond <> if  report-near  then  obedience
+    0 his-on-him !
     his-away @ if   \ out of the room being played
         arrive 0= if
             hidden-frame  scuffle

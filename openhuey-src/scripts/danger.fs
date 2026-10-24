@@ -63,6 +63,7 @@ end-state
     else  by-rooms  then then then
     last @ level @ <> if  last @ prev !  level @ broadcast danger  then
     fiona-struck signal? level @ calm = and hunted-next !
+    signals @ ?dup if  broadcast danger-signals  then   \ (for Hewie: the original's condition bits)
     0 signals !  0 s-here !  0 creature-here ! ;
 
 behaviour judging

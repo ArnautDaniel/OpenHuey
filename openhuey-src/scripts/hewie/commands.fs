@@ -79,7 +79,11 @@ create reactions  300 , 1 ,  300 , 1 ,  300 , 1 ,  750 , 1 ,  150 , 1 ,  1500 , 
         come-back-cmd of  heard-her-act  his-danger @ calm = if  come-back-act  else  hurry-to-her-act  then  want  obeys  true  endof
         go-for-it-cmd of  after-coming-out-act 0 want  obeys  true  endof
         tend-cmd of  10 hp!  false  endof
-        go-there-cmd of  his-danger @ calm = if  heard-her-act go-there-act want  else  go-there-act 0 want  then  obeys  true  endof
+        go-there-cmd of   \ (calm, no ball yet: for the ball nearest her ahead of her, if any - else to the spot)
+            his-danger @ calm =  ball 0< and if
+                nearest-ball dup his-follows !  0< 0= if  heard-her-act fetch-act want  true exit  then
+            then
+            his-danger @ calm = if  heard-her-act go-there-act want  else  go-there-act 0 want  then  obeys  true  endof
         attack-now-cmd of  obeys  false  endof
         help-cmd of  answers-cry? dup if  answer-call-act 0 want  then  endof
         >r false r>

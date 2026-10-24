@@ -92,6 +92,7 @@ message door-changed ( door -- )             \ broadcast: its state changed
 message danger-signal ( signal -- )          \ something this frame (below)
 message stalker-here ( room mode down -- )   \ the stalker in play this frame: his mode, knocked down?
 message danger ( level -- )                  \ broadcast: calm, followed, chased
+message danger-signals ( bits -- )           \ broadcast at the frame's end: this frame's signals, a bit each (1 signal lshift), when any
 enum: danger-level  calm followed chased ;
 \ the frame's signals (the original's condition bits): Fiona within 150 / 200 of the stalker,
 \ Fiona struck, no stalker in play, the stalker knocked down, Hewie alert to him, she's hunted
@@ -206,6 +207,7 @@ message set-hp ( n -- )                    \ (Hewie) his health set (a room's co
 message hewie-restore ( trust points hp -- )   \ (Hewie) as a save had him
 message hewie-mood-restore ( mood time hide f0 f1 f2 f3 -- )   \ (Hewie) his mood and its time, staying put, his feelings about the stalkers, as a save had them
 message hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  \ (Hewie) his skills at fetching, as a save had them
+message hewie-met ( m0 m1 m2 m3 -- )           \ (Hewie) how often he leapt at each stalker (Debilitas, Daniella, Lorenzo, Riccardo: 0..100), as a save had it
 message fetch-this ( thing -- )                \ (Hewie) Fiona threw the ball: his to fetch (things.fs)
 message effect-place ( x y z -- )           \ (a room effect) moved there (f>cell)
 message effect-rest ( n -- )                \ (a flickering sprite) its rest before its next run
