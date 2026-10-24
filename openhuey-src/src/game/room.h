@@ -19,6 +19,8 @@ typedef struct RoomLight {
     float intensity;
     float range;
     float shadow;           /* how far its shadows reach (+0x2C: Shadow_Draw's extrusion) */
+    float reach, range2;    /* its falloff as the shadows take it (+0x24, +0x28: 1 / range and
+                             * range squared; range2 0: none) */
 } RoomLight;
 
 #define ROOM_DOORS 8
@@ -134,6 +136,55 @@ void room_draw_layer(Room *r, const Mat4 *view_proj, int layer);
 /* the up to 3 lights brightest at a point (those reaching its nav triangle: the game's
  * Lights_Brightest): their indices, -1 for none; how many */
 int room_lights_at(const Room *r, Vec3 pos, int out[3]);
+/* ... of those reaching nav triangle `tri` (-1: light 0 alone - Lights_ShadowLights) */
+int room_lights_on(const Room *r, int tri, Vec3 pos, int out[3]);
 int room_floor_below(const Room *r, float x, float y, float z, float *out);
+
+/* ---- the open doors' light (src/game/lights.c, src/game/doors.c Door_Draw) ---- */
+
+/* what the doors' light is worked out for: the camera's view-projection, eye, near and far, and
+ * the PS2's clip bands (render_mesh_ps2_clip's: the GS's drawing space round the screen). A point
+ * is "in view" inside them, as the original's clip tests take it */
+typedef struct RoomView {
+    Mat4 vp;
+    Vec3 eye;
+    float bx, by, znear, zfar;
+} RoomView;
+RoomView room_view(const Mat4 *proj, const Mat4 *view, Vec3 eye, float znear, float zfar);
+int room_in_view(const RoomView *v, Vec3 p);
+
+/* an open door's shadow from one light (DoorShadow_Queue / DoorShadow_FromLight: its draw in the
+ * original's layer 6): the door's face away from the light (p[0..3]: its 12 x 22 leaf's top
+ * far, top near, bottom far, bottom near) and each corner swept away from the light by 3/4 of
+ * its shadows' reach (p[4..7]); the box's sides are drawn into the shadow buffer shading from
+ * `alpha` (of 0x80) at the door to nothing at the far end */
+typedef struct RoomShade {
+    Vec3 p[8];
+    float alpha;
+    int exit, light;
+} RoomShade;
+#define ROOM_MAX_SHADES (ROOM_DOORS * 3)
+/* the open doors' shadows this frame (each door shown, its leaf shown, swung open at all, and the
+ * lights letting a shadow fall at it - lights +0x2C - up to 3 of them); how many */
+int room_door_shades(const Room *r, const RoomView *v, RoomShade *out, int max);
+
+/* a blocker of the lights (lights +0x38, Lights_AddDoorway): a quad (corners top far, top near,
+ * bottom far, bottom near - in that order a strip), the way it faces and its top middle. Where it
+ * shades a light - behind it, away from the light (5 above it), within the light's shadows'
+ * reach - the characters' shadows from that light don't fall (Shadow_BlockerVolumes) */
+typedef struct RoomBlocker {
+    Vec3 q[4];
+    Vec3 facing, top;
+} RoomBlocker;
+#define ROOM_MAX_BLOCKERS 16   /* (the lights' room for them: 0x60 vectors) */
+/* the doors swung open past 78.75 degrees give two each: the leaf's two faces (door_portal),
+ * when wholly in view; added to out[n..max), the new count */
+int room_door_blockers(const Room *r, const RoomView *v, RoomBlocker *out, int n, int max);
+/* a blocker from four corners (the room scripts' 0x66): its facing from the first three, its
+ * middle */
+RoomBlocker room_blocker(const Vec3 q[4]);
+/* point p is in the shade of a blocker from light `l` (the volume behind it facing away from the
+ * light: Shadow_BlockerVolumes' first, longer, one); 1 if so */
+int room_blocked(const RoomLight *l, const RoomBlocker *b, int n, Vec3 p);
 
 #endif

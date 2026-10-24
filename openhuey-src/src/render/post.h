@@ -55,6 +55,11 @@ void post_shine_end(void);
  * in the scene - at half size, blended back over it stretched (soft-edged) */
 int post_soft_begin(void);
 void post_soft_end(void);
+/* layer 6, the original's shadow buffer: its draws go to a half-size target against the scene's
+ * depth so far (begin: 0 no target yet); at the end it is blurred and taken off the screen at half,
+ * on its display values, and the scene's target is current again */
+int post_shade_begin(void);
+void post_shade_end(void);
 void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, int w, int h, float time);
 
 #endif

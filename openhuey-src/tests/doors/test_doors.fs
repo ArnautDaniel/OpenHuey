@@ -112,4 +112,23 @@ T{ 0 0 halves  -1 1 halves  0 -1 halves -> 0 0 0 }T                \ the same ha
 T{ 0 1 halves 0>  first-way -> -1 0 }T                             \ round to the other: out by its own half
 T{ 1 0 halves 0>  first-way -> -1 1 }T
 
+testing an open door blocks the lights past 78.75 degrees (Door_Draw's door_portal: its leaf's two
+testing faces); behind it, away from a light, that light's shadows don't fall (Shadow_BlockerVolumes)
+castle-1f-1 0 rooms send go-to-room  10 frames
+0 -1 0e door-swing  2 frames
+T{ light-blockers -> 0 }T
+0 -1 -90e door-swing  2 frames
+T{ light-blockers -> 2 }T
+T{ 4 133.9e 4.5e -44.1e light-blocked? -> -1 }T      \ (light 4, through the leaf's middle and on)
+T{ 4 110e 4.5e -44.1e light-blocked? -> 0 }T         \ (beside it)
+T{ 4 126.5e 11e -47e light-blocked? -> 0 }T          \ (on the light's side of it)
+0 -1 -70e door-swing  2 frames
+T{ light-blockers -> 0 }T
+testing a room script's blocker (0x66) lasts its frame
+130e 30e -40e 120e 30e -40e 130e 10e -40e 120e 10e -40e light-blocker
+T{ light-blockers -> 1 }T
+T{ 1 frames  light-blockers -> 0 }T
+0 -1 0e door-swing  2 frames
+front-garden-2 -1 rooms send go-to-room  2 frames
+
 test-summary

@@ -277,8 +277,9 @@ subtitles, the pause and the skip's darkening.
   Six doors in five rooms have parts in a group (castle-b1-6's in 22): the scripts' `door-bits`
   shows them. The masks start empty with each room, as the original's doors are made anew.
 - **Lights** (`light`): back to the room's own (`light-own`), or the intensity / the shadows'
-  reach scaled (`light-scale`). `lights-doorway` (the shadow volumes' blockers) has nothing to
-  do with shadow maps.
+  reach scaled (`light-scale`). `lights-doorway` (0x66) gives the lights a blocker for the
+  frame (`light-blocker`): where its quad shades a light, the characters' shadows from that light
+  don't fall (docs/subsystems/doors.md, "The open door's light").
 - **The look:** `depth-range` / `-off` (slot $1C), `fog` ($1D), `screen-blend` ($1E).
 Checked by `tests/story/test_things.fs` (8 tests).
 
