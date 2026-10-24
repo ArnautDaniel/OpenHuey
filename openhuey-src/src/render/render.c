@@ -65,7 +65,8 @@ void render_look_tick(void) {
 
 enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_COLOR, U_AMBIENT, U_EYE, U_RIM, U_MASK,
        U_ROOM_LIT, U_LPOS = 12, U_LCOL = 15, U_LRANGE = 18, U_AMBIENT128 = 21, U_NSHADOWS = 22, U_SHADOW_VP = 23,
-       U_SHADOW_INFO = 35, U_SHADOW_STRENGTH = 47, U_RECEIVE = 59, U_CHAR_LIGHT = 60, U_ALPHA = 61 };   /* (12 shadows) */
+       U_SHADOW_INFO = 35, U_SHADOW_STRENGTH = 47, U_RECEIVE = 59, U_CHAR_LIGHT = 60, U_ALPHA = 61,
+       U_REJECT = 62 };   /* (12 shadows) */
 
 static const char *kMeshVs =
     "#version 460 core\n"
@@ -74,12 +75,17 @@ static const char *kMeshVs =
     "layout(location = 2) in vec4 a_col;\n"
     "layout(location = 3) in vec3 a_normal;\n"
     "layout(location = 0) uniform mat4 u_mvp;\n"
+    "layout(location = 62) uniform vec4 u_reject;\n"   /* the PS2's clip volume (x, y bands, near, far); x 0: off */
     "out vec2 v_st;\n"
     "out vec4 v_col;\n"
     "out vec3 v_normal;\n"
     "out vec3 v_pos;\n"
+    "noperspective out float v_out;\n"
     "void main() {\n"
     "    gl_Position = u_mvp * vec4(a_pos, 1.0);\n"
+    "    vec4 p = gl_Position;\n"
+    "    v_out = u_reject.x > 0.0 && (p.w < u_reject.z || p.w > u_reject.w || abs(p.x) > u_reject.x * p.w ||\n"
+    "                                 abs(p.y) > u_reject.y * p.w) ? 1.0 : 0.0;\n"
     "    v_st = a_st;\n"
     "    v_col = a_col * (255.0 / 128.0);\n"   /* 0x80 = 1.0 */
     "    v_normal = a_normal;\n"
@@ -94,6 +100,7 @@ static const char *kMeshFs =
     "in vec4 v_col;\n"
     "in vec3 v_normal;\n"
     "in vec3 v_pos;\n"
+    "noperspective in float v_out;\n"
     "layout(binding = 0) uniform sampler2D u_tex;\n"
     "layout(location = 1) uniform int u_use_tex;\n"
     "layout(location = 2) uniform int u_solid_tex;\n"
@@ -121,6 +128,9 @@ static const char *kMeshFs =
     "layout(location = 0) out vec4 o_color;\n"
     "layout(location = 1) out float o_mask;\n"
     "void main() {\n"
+    /* (a triangle with a corner outside the PS2's clip volume isn't drawn at all, as the
+     * character microprograms reject it: CLIP, FCAND, the ADC bit - not cut at the screen) */
+    "    if (v_out > 0.0) discard;\n"
     "    vec4 c = vec4(pow(max(v_col.rgb, 0.0), vec3(2.2)), v_col.a);\n"
     "    if (u_use_tex != 0) {\n"
     "        vec4 t = texture(u_tex, v_st);\n"   /* sRGB texture: already linear */
@@ -681,6 +691,23 @@ void render_mesh_free(GpuMesh *g) {
 }
 
 static float sTint[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+/* the character microprograms' clip test (tools/vudis.py: CLIP each corner, FCAND over the
+ * triangle's three, the ADC bit then drops it): a triangle with a corner outside the PS2's clip
+ * volume - nearer than the camera's near, beyond its far, or past the GS's 4096-wide drawing
+ * space around the 512 x 448 screen (2047 / 256 and 2047 / 224 of the screen's half-sizes) -
+ * isn't drawn at all; OpenGL would cut it at the screen and the near plane instead, so a camera
+ * in a model shows its insides. On for the draws until turned off */
+void render_mesh_ps2_clip(int on) {
+    float aspect = R.proj.m[0] != 0.0f ? R.proj.m[5] / R.proj.m[0] : 4.0f / 3.0f;
+
+    if (on) {
+        glProgramUniform4f(R.mesh_prog, U_REJECT, (2047.0f / 256.0f) * (4.0f / 3.0f) / aspect, 2047.0f / 224.0f, R.znear,
+                           R.zfar);
+    } else {
+        glProgramUniform4f(R.mesh_prog, U_REJECT, 0.0f, 0.0f, 0.0f, 0.0f);
+    }
+}
 
 void render_mesh_tint(float r, float g, float b, float a) {
     sTint[0] = r;

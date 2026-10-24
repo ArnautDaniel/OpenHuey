@@ -51,9 +51,15 @@ sub-state and the room change.
    `Track`'s cuts, the room start, a restart, a cutscene taking the camera or giving it back, the
    story's shot coming in, and a cutscene's own cuts (its signal 0). Not while state flag $28 is
    set (`in-play`: from the game's entry till the opening is done - the original's check).
-5. The panic stills the camera at the start of each frame and shakes it (0.2) through a panic's
+5. The camera's range (`RoomStart`: Camera +0xB0 / +0xB4): near 1, far 2000 as each room
+   starts; the story's 0x0B (`camera-value`) changes them after (water-tower-8f-1's far 20000).
+   Characters are drawn as the original's microprograms clip (CLIP, FCAND, the ADC bit;
+   `render_mesh_ps2_clip`): a triangle with a corner nearer than the near plane, beyond the far
+   one or past the GS's drawing space round the screen (about 8 screens across) isn't drawn at all
+   - OpenGL alone would cut it at the screen, showing a model's inside to a camera in it.
+6. The panic stills the camera at the start of each frame and shakes it (0.2) through a panic's
    later stretch (`Panic_Stage`), unless a cutscene has the camera or the panic is held.
-6. The story's shot: the point and heading fixed as it starts, its distance and angles as told;
+7. The story's shot: the point and heading fixed as it starts, its distance and angles as told;
    the room's depth range off meanwhile. Following nobody ends it.
 
 ## Debug

@@ -443,6 +443,8 @@ void camdir_room_start(CamDirector *d, const float *sets, int nsets, const int32
     sNsets = nsets;
     d->started = 1;
     camdir_glow_cut();
+    gEngine.camera.znear = 1.0f;     /* (the camera's range: Camera +0xB0 / +0xB4 - the story's 0x0B */
+    gEngine.camera.zfar = 2000.0f;   /* changes it after, e.g. water-tower-8f-1's far 20000) */
 
     d->last_set = d->last_path = -1;
     take_set(d, d->set);

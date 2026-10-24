@@ -121,6 +121,10 @@ void render_mesh_free(GpuMesh *g);
 /* the next meshes drawn tinted and faded (1 1 1 1: as they are; a character fading out of sight,
  * a silhouette) */
 void render_mesh_tint(float r, float g, float b, float a);
+/* the characters' clip test, as the original's microprograms: a triangle with a corner outside
+ * the PS2's clip volume (the near and far planes, the GS's drawing space round the screen) not
+ * drawn at all, not cut at the screen (on for the draws until turned off) */
+void render_mesh_ps2_clip(int on);
 /* draw a mesh's draws; textures[i] for texture index i; groups: bit g shows group g (0 always) */
 void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, const GpuTexture *textures,
                  int ntextures, const uint32_t groups[8]);

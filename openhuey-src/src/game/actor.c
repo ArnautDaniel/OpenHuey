@@ -934,7 +934,9 @@ void actor_draw(Actor *a, const Mat4 *view_proj) {
             draw_shadow(a, view_proj);
         }
         render_mesh_tint((float)(a->tint >> 24) * k, (float)(a->tint >> 16 & 0xFF) * k, (float)(a->tint >> 8 & 0xFF) * k, alpha);
+        render_mesh_ps2_clip(1);
         render_mesh(&a->gpu, view_proj, a->model.d, a->model.nd, a->textures, a->ntextures, a->parts_shown);
+        render_mesh_ps2_clip(0);
         render_mesh_tint(1.0f, 1.0f, 1.0f, 1.0f);
     }
 }
