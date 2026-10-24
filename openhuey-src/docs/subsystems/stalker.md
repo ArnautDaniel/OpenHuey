@@ -60,7 +60,10 @@ doors (open, locked: `door-state`).
 
 ## Rules (from src/game/pursuer.c, debilitas.c)
 
-Debilitas: model `O_DB0/DB0_000`, motion table $3D89A0, radius 5, height 20, head bone $16.
+Debilitas: model `O_DB0/DB0_000`, motion table $3D89A0, radius 5, height 20, head bone $16. His
+model is the kind he is loaded as (`debilitas-dress`, Pursuer_ModelFiles): kind 6 (Debilitas2)
+`O_DB1/DB1_000`, kinds 7 (Debilitas3) and 27 `O_DB2/DB2_000` - the same skeleton, motions and model
+class - with their own textures (the hard setting's `..H`), events and sounds.
 
 **Senses** (P1b, `stalker/senses.fs`): he sees 150 ahead, 60 degrees either side, past no wall
 (triangles $40080; $40088 while she hides) to her middle or one of 9 points round her far side;
@@ -273,7 +276,7 @@ Riccardo's right hand's own shape is 8, Daniella's 1 or 2 by which of her parts 
 ($1800..$1803) her back's capsules bend and her hair falls forward, each frame by her animation
 (the engine's `cloth_watch`; DaniellaModel_Vt3C); the story sets them flat or standing for its
 own moves (its 0xCC op 4, `cloth-back!`; DaniellaModel_BackCapsules). The others' hanging parts likewise (by their model files): Debilitas
-(O_DB0: four from bone 10, the last three from the first's end, off two spheres on bone 2);
+(O_DB0, O_DB1, O_DB2: four from bone 10, the last three from the first's end, off two spheres on bone 2);
 Riccardo (O_RCG: four in pairs off four spheres; his coat, twelve in pairs following their
 anchors and tied about 1.9 to the first pair of their six, off five capsules down his back -
 Part60; four more drawn along their bones - Part50); his look (O_RCT: kind 37, the TintStalker)
