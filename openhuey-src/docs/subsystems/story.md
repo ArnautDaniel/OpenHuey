@@ -418,7 +418,7 @@ end), `char-model-op` (0xCC: 3 a cutscene actor's model left as it is; Daniella'
 then morphing, as the original's draw flags count them),
 `self-doorway-fade` (0xAC: a character fading out through a doorway - `doorway_faded`, by its depth
 past the exit area's middle; Fiona never), `self-noclip` for the stalker and the figures (their
-floor mask), `char-activate` for Fiona and Hewie (`activate`: afresh); the hidden model parts of
+floor mask), `char-activate` for Fiona, Hewie, the stalker and whoever is in a figure's slot (`activate`: afresh - a stalker posed as a figure freed); the hidden model parts of
 old-mansion-b1-3 and castle-2f-3; the story's rumble (0x71). Checked by
 `tests/story/test_finishing.fs` (23).
 

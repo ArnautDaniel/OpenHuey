@@ -510,10 +510,40 @@ nearest her - within 50 of her, further than 20 from him, about his height, a st
 she and Hewie off the line to it - takes his shot instead of her: his point (Pursuer_AttackPoint,
 `body-point!`) there 3 frames, where the story's zones see it (it breaks).
 *Not yet*: the tints' flares (the renderer's layer
-$11 sprites drifting about them: the PC port of the original draws none either); **the story's
-moves** for him (Pursuer_EventCommand: the `scripted-move`s his own scripts give him - walking to a
-spot or a triangle, animations, turning, the doors' uses, the looks 12 / 13: 52 rooms' scripts do;
-he takes none yet and is always done). Built: **his legs on
+$11 sprites drifting about them: the PC port of the original draws none either); the Debilitas kinds' goal on blocked floor
+(their GoTo's Npc_NearestWalkable: a script's walk to a triangle he may not stand on goes to the
+nearest one he may - here to it as given). Built: **the story's moves** (`stalker/scripted.fs`,
+checked by `tests/stalker/test_scripted.fs`): the story's action for him (Pursuer_EventState's 5)
+takes him at his next frame if he is in the room being played - else it is dropped; held
+(+0xE0) his frame is Pursuer_Think's (`held-frame`: his senses, the move his step, his head,
+footsteps, his model - no modes, no behaviour, no frame of his own, blows not taken). Taken
+(Pursuer_BackToNormal, BackToStance) he lets go of her hand and of a door, Hewie is thrown off him,
+the story's look is off, and he stands (his action 1), done once his stance has faded in. Each move
+(`scripted-move`, Pursuer_EventCommand) clears his done (+0xE1): 2 standing; 3 / 4 the door at
+exit a used from his side - opened if shut, shut if open (his animation $600 + its kind, $601 / $603
+shutting; `stalker/doorway.fs` `script-door`), then standing; 5 / 10 walking to the spot on
+triangle a (NPC_GoTo: off it, its middle) in the move's walk (b if one of the group's, $200
+walking / $201 slowly, else his fast / slow walk: Pursuer_ScriptMove) along his way, turned on the
+spot past 80 degrees (WalkToGoal, StepBack, CloseInGoal), there - another triangle a way under 0.1
+left: put on it - turned to the move's heading at his turn rate, then standing (StateArrive); 6 /
+11 the same to triangle a's middle, done once he is on it, walking on the spot at its end
+(StateRunToTri); 7 an animation, 8 blended over b frames, 9 the same with no time of its own, 16
+his stance over b frames - done at once, moved by its root motion; 12 / 13 the story's look - at
+whom its moves last named (+0x100: 0 Fiona, 1 Hewie, else the look's point) - turning his head
+8 degrees a frame before his own look (so standing - his action 0, no look of his own - it turns
+fully; walking to his goal his own eases it back again); 14 / 15 turning to a character / the
+move's heading in $200, then standing; 1 let go; 17 (the walk with an animation) not the
+stalkers' - nothing, never done. Done is "standing faded in" for the stance moves (StateStand /
+Move180). Let go (move 1 - the script over, its `scripted` off: Pursuer_EventReset, StanceByFiona,
+PickStep) he is through blocked floor no more, his own sounds again, on as before (as after a
+blow: struck.fs `on-as-before`). The scripts' 0x9D (`hold-anim`) poses him in an animation, shown
+(+0xE0 / +0xE2: Pursuer_PlaceModel - his model alone, his body by his feet, not planted); a script
+letting go doesn't free him, the story's 0x15 (`activate`: Character_Activate) does. The story's
+0x1F hides and shows him (`show`, +0x29). A stalker loaded into a figure's slot (3..5: Debilitas as
+castle-1f-10's figure) is placed by the story, posed and shown there; his own behaviour never
+runs (Progress_CharsFrame frames slots 0..2 only). Also: an action's look mode is set as it starts
+even when it is "as it was" (0: no look of his own - his head eased back), as Pursuer_StartAction
+does. Built: **his legs on
 the floor** (`src/game/humanlegs.c`, as Fiona's - `fiona.md`; `stalker.fs` `fit-legs`): each frame
 in the room played (Pursuer_ModelUpdate), on the floor but on a ladder or a script's walk through
 blocked floor, his body is set at the floor under the lower of his feet (HumanModel_BodyFrames: on a

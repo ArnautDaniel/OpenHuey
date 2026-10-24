@@ -74,12 +74,14 @@ T{ on-her  3 held-apart  her-moved 0.01e f< -> -1 }T
 T{ on-her  [: 0 apart ! ;] deb!  3 frames  her-moved 0.5e f> -> -1 }T
 true blind  debug:debilitas-out  5 frames
 
-testing off screen: no scuffle with a stalker a script has (Hewie_Scuffle's +0xE0)
+testing off screen: no scuffle with a stalker a script has (Hewie_Scuffle's +0xE0: taken in her room, she gone on)
 2 seed !
 front-garden-2 room!  10 frames  140.64e 124e -217.33e 0e tp-facing  5 frames  game:hewie send join-fiona  20 frames
+true blind  s" fiona" actor-named body-tri debug:debilitas-tri  1 frames
+-1 game:debilitas send scripted  2 frames
+T{ [: script-held @ ;] deb@ -> -1 }T
 front-garden-3 room!  2 frames
-[: 0 his-scuffled !  0 his-hold-call ! ;] his!  -1 game:debilitas send scripted  1 frames
-true blind  front-garden-2 0 game:debilitas send stalker-in  2 frames  [: 2 mode! ;] deb!
+[: 0 his-scuffled !  0 his-hold-call ! ;] his!  [: 2 mode! ;] deb!
 T{ [: [: his-scuffled @ ;] his@ ;] 30 soon -> 0 }T
 0 game:debilitas send scripted  2 frames
 T{ [: [: his-scuffled @ ;] his@ ;] 30 soon -> -1 }T

@@ -1452,8 +1452,8 @@ $1A constant weak-blow-sub   \ (her move's sub for the weak blow)
         fiona-cs of  fiona-id send activate  endof
         hewie-cs of  hewie-id send activate  endof
         stalker-cs of  slot2 @ dup 0< if  drop  else  send activate  then  endof
-        >r r>   \ (a figure: in the scene once the story places it)
-    endcase ;
+        dup figure-cs? if  dup slot-actor @ dup 0< if  drop  else  send activate  then  then   \ (a figure: in the scene
+    endcase ;                                     \ once the story places it; a stalker as one: posed no more)
 : stalker-command ( id mode -- )  swap stalker-id dup 0< if  2drop exit  then  send stalker-order ;   \ 0x2F
 : stalker-search-delay ( id frames -- )  swap stalker-id dup 0< if  2drop exit  then  send stalker-clock ;   \ 0x2A
 : stalker-knock-down ( id -- )  stalker-id dup 0< if  drop exit  then  send stalker-knock-out ;   \ 0x30

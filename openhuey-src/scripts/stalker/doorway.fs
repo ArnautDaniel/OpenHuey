@@ -27,11 +27,20 @@ create spot-at /vec allot
 : aim-at ( tri -- ok? ) ( F: x y z -- )   \ (his way planned there)
     spot-at vec!  dup 0< if  drop false exit  then  spot-at plan 0> ;
 
-\ ---- the door he holds let go open (Npc_DoorRelease); his way out over ----
+\ ---- the door he holds let go open (Npc_DoorRelease) - shut, his animation one that shuts it
+\ (Npc_DoorShutOther: the story's door use, 1 / 3); his way out over ----
+: shutting? ( -- flag )  door-use @ 0< 0=  door-use @ 1 and 0<> and ;
 : let-door-go ( -- )
-    held-door @ dup 0< if  drop exit  then  room-id swap stalker-noise doors-actor send let-go-open  -1 held-door ! ;
-: out-over ( -- )  0 apart !  0 out-going !  0 wandering-out !  -1 door-use !  -1 asked !  0 for-her ! ;
-: give-up-door ( -- )  let-door-go  for-her @  out-over  if  round-failed  else  door-done  then ;
+    held-door @ dup 0< if  drop exit  then  room-id swap stalker-noise
+    shutting? if  doors-actor send let-go-shut  else  doors-actor send let-go-open  then  -1 held-door ! ;
+: out-over ( -- )  0 apart !  0 out-going !  0 wandering-out !  -1 door-use !  -1 asked !  0 for-her !  0 door-script ! ;
+\ the story's door use (stalker/scripted.fs): over - or given up, his step left trying it (the
+\ original's: never done)
+defer script-door-over ( -- )   ' noop is script-door-over
+: script-door-failed ( -- )  let-door-go  out-over  ['] noop step ! ;
+: give-up-door ( -- )
+    door-script @ if  script-door-failed exit  then
+    let-door-go  for-her @  out-over  if  round-failed  else  door-done  then ;
 : out ( -- )  let-door-go  out-over  making-for @ through ;   \ (Pursuer_ThroughDoor)
 
 \ ---- on through an open door or a doorway (Pursuer_ExitGoTo: to its spot 12 beyond - its
@@ -52,6 +61,7 @@ create spot-at /vec allot
     root-move
     1 step-t +!  step-t @ 3 < if  exit  then               \ (the doors take it up next frame)
     making-for @ door-animating? if  exit  then
+    door-script @ if  let-door-go  out-over  script-door-over exit  then   \ (the story's: done with it)
     let-door-go  0 apart !  on-through ;   \ (Pursuer_Door1C4: in contact again)
 : door-swinging ( -- )
     root-move  settled? 0= if  exit  then
@@ -61,7 +71,8 @@ create spot-at /vec allot
     -1 apart !  making-for @ held-door !  -1 asked !  door-anims door-use @ + play-now  ['] door-swinging step! ;
 
 \ ---- lined up at his spot for its animation (Pursuer_DoorLineUp, DoorGoThrough: from behind
-\ it, in front), turned to its heading (Pursuer_DoorFace / DoorOpen), its handle asked for ----
+\ it, in front; one more - the animation that shuts it - while it is open), turned to its heading
+\ (Pursuer_DoorFace / DoorOpen), its handle asked for ----
 0 constant from-behind-use   2 constant in-front-use
 : asking ( -- ) ;                                          \ (the doors' answer: `door-held` / `door-refused`)
 : facing-door ( -- )
@@ -71,7 +82,7 @@ create spot-at /vec allot
 : lining-up ( -- )  walk-stride if  still-anim play  ['] facing-door step!  then ;
 : line-up ( -- )
     my-at vec@ making-for @ door-side  dup 0< if  drop give-up-door exit  then
-    if  in-front-use  else  from-behind-use  then  door-use !
+    if  in-front-use  else  from-behind-use  then  making-for @ kind-at open-way = 1 and +  door-use !
     making-for @ door-use @ door-user-spot  spot-yaw f!      ( tri ) ( F: x y z )
     aim-at 0= if  give-up-door exit  then
     mode-walk play  ['] lining-up step! ;
@@ -142,7 +153,14 @@ create re-list 8 cells allot
 : held-answer ( exit -- )   \ (`door-held`: his to open; else the door he came in by - swung open)
     dup asked @ = if  drop got-door exit  then  swing-open ;
 : refused-answer ( exit -- )   \ (`door-refused`: as he finds it now - shaken, it won't give)
-    asked @ <> if  exit  then  -1 asked !  $80 15 stalker-jolt  at-exit ;
+    asked @ <> if  exit  then  -1 asked !  $80 15 stalker-jolt
+    door-script @ if  script-door-failed exit  then  at-exit ;
+
+\ ---- the story's door use (its moves 3 / 4: Pursuer_Door1C8, his action $A) - the door at exit
+\ `exit` opened if shut, shut if open, from his side; then (stalker/scripted.fs) he stands ----
+: script-door ( exit -- )
+    out-over  making-for !  -1 door-script !  0 door-wait !  -1 asked !
+    line-up ;
 
 \ ---- round to her across his own room ----
 : her-way ( -- way )  her-came @ dup 0< if  exit  then  room-id swap 1 exit-way ;
