@@ -1752,6 +1752,42 @@ PRIM(p_message_option_leads) {   /* ( i -- msg ) the message option i leads to (
     PUSH(o ? o->leads_to : 0xFFFF);
 }
 PRIM(p_message_choice_flags) { PUSH(sMsg != NULL ? sMsg->choice_flags : 0); }
+PRIM(p_message_typed) {   /* ( page -- frame ) the frame the page is typed out on */
+    Cell pg = POP();
+
+    PUSH(sMsg != NULL && pg >= 0 && pg < sMsg->npages ? sMsg->pages[pg].typed : 0);
+}
+PRIM(p_message_skip) {   /* ( page frame -- frame' ) where holding cancel takes the typing: its next pause, else its end */
+    Cell fr = POP(), pg = POP();
+
+    PUSH(message_skip(sMsg, (int)pg, (int)fr));
+}
+PRIM(p_message_close_after) { PUSH(sMsg != NULL ? sMsg->close_after : -1); }   /* ( -- n ) 0x10's frames; -1 none */
+PRIM(p_message_run) {   /* ( page line col frame -- addr len colour ) from col, the characters typed by `frame` in one colour */
+    Cell fr = POP(), col = POP(), ln = POP(), pg = POP();
+    const MessagePage *p;
+    int n, len;
+
+    if (sMsg == NULL || pg < 0 || pg >= sMsg->npages || ln < 0 || ln >= sMsg->pages[pg].nlines) {
+        PUSH(0);
+        PUSH(0);
+        PUSH(0);
+        return;
+    }
+    p = &sMsg->pages[pg];
+    len = (int)strlen(p->lines[ln]);
+    if (col < 0 || col >= len || p->at[ln][col] > fr) {
+        PUSH(0);
+        PUSH(0);
+        PUSH(0);
+        return;
+    }
+    for (n = (int)col; n < len && p->at[ln][n] <= fr && p->colour[ln][n] == p->colour[ln][col]; n++) {
+    }
+    PUSH(p->lines[ln] + col);
+    PUSH(n - col);
+    PUSH(p->colour[ln][col]);
+}
 PRIM(p_message_param_text) {   /* ( slot addr len -- ) parameter `slot` shows this text */
     Cell n = POP(), a = POP(), slot = POP();
 
@@ -3107,6 +3143,7 @@ typedef struct UiItem {
     char s[96];
     int group, id, csa;       /* (3) the texture cache's group + id, its palette */
     float u, v, uw, vh;       /* (3) the part of it, in texels */
+    float corners[8];         /* (5: a part on four corners) x, y each */
 } UiItem;
 static UiItem sUi[UI_LAYERS][UI_ITEMS];
 static int sUiN[UI_LAYERS];
@@ -3236,7 +3273,7 @@ PRIM(p_ui_held) {   /* ( layer x y w h -- ) the kept movie picture (movie-hold) 
     UiItem *u = ui_add(f, POP());
 
     if (u != NULL) {
-        *u = (UiItem){.text = 3, .x = (float)x, .y = (float)y, .w = (float)width, .h = (float)height};
+        *u = (UiItem){.text = 4, .x = (float)x, .y = (float)y, .w = (float)width, .h = (float)height};
     }
 }
 PRIM(p_ui_text) {   /* ( layer addr len x y rgba scale -- ) */
@@ -3248,14 +3285,42 @@ PRIM(p_ui_text) {   /* ( layer addr len x y rgba scale -- ) */
         snprintf(u->s, sizeof(u->s), "%.*s", (int)(n > 0 ? n : 0), n > 0 ? (const char *)a : "");
     }
 }
+PRIM(p_ui_text_in) {   /* ( layer addr len x y rgba scale palette -- ) in the game font's palette n (a message's colour) */
+    Cell csa = POP(), scale = POP(), rgba = POP(), y = POP(), x = POP(), n = POP(), a = POP();
+    UiItem *u = ui_add(f, POP());
+
+    if (u != NULL) {
+        *u = (UiItem){.text = 1, .x = (float)x, .y = (float)y, .w = (float)(scale < 1 ? 1 : scale), .rgba = (uint32_t)rgba,
+                      .csa = (int)csa};
+        snprintf(u->s, sizeof(u->s), "%.*s", (int)(n > 0 ? n : 0), n > 0 ? (const char *)a : "");
+    }
+}
+PRIM(p_ui_image4) {   /* ( layer x0 y0 x1 y1 x2 y2 x3 y3 group id csa u v uw vh rgba -- ) a cache texture's part
+                       * on four corners (the texels' top left, top right, bottom left, bottom right) */
+    Cell rgba = POP(), vh = POP(), uw = POP(), v = POP(), u = POP(), csa = POP(), id = POP(), group = POP();
+    float c[8];
+    int i;
+    UiItem *it;
+
+    for (i = 7; i >= 0; i--) {
+        c[i] = (float)POP();
+    }
+    it = ui_add(f, POP());
+    if (it != NULL) {
+        *it = (UiItem){.text = 5, .x = c[0], .y = c[1], .rgba = (uint32_t)rgba, .group = (int)group, .id = (int)id,
+                       .csa = (int)csa, .u = (float)u, .v = (float)v, .uw = (float)uw, .vh = (float)vh};
+        memcpy(it->corners, c, sizeof(c));
+    }
+}
 PRIM(p_ui_image) {   /* ( layer x y w h group id csa u v uw vh rgba -- ) part of a cache texture */
     Cell rgba = POP(), vh = POP(), uw = POP(), v = POP(), u = POP(), csa = POP(), id = POP(), group = POP();
     Cell height = POP(), width = POP(), y = POP(), x = POP();
     UiItem *it = ui_add(f, POP());
 
     if (it != NULL) {
-        *it = (UiItem){3, (float)x, (float)y, (float)width, (float)height, (uint32_t)rgba, "", (int)group, (int)id,
-                       (int)csa, (float)u, (float)v, (float)uw, (float)vh};
+        *it = (UiItem){.text = 3, .x = (float)x, .y = (float)y, .w = (float)width, .h = (float)height, .rgba = (uint32_t)rgba,
+                       .group = (int)group, .id = (int)id, .csa = (int)csa, .u = (float)u, .v = (float)v, .uw = (float)uw,
+                       .vh = (float)vh};
     }
 }
 PRIM(p_tex_info) {   /* ( group id -- w h tex ) a cache texture's size and GPU name (0: none) */
@@ -3381,9 +3446,18 @@ PRIM(p_text_width) {   /* ( addr len scale -- px ) */
     PUSH((Cell)text_width((const char *)a, n > 0 ? (int)n : 0, (float)(scale < 1 ? 1 : scale)));
 }
 
-static int game_text(float x, float y, float scale, uint32_t rgba, const char *s) {
+static int game_text(float x, float y, float scale, uint32_t rgba, const char *s, int palette) {
     int tw, th, i;
     unsigned t = game_font(&tw, &th);
+
+    if (t != 0 && palette > 0) {   /* (another of the font's palettes: a message's colour) */
+        int pw, ph;
+        unsigned pt = sprites_texture_of(FONT_GROUP, FONT_TEXTURE, palette, &pw, &ph);
+
+        if (pt != 0) {
+            t = pt;
+        }
+    }
     float cell = 8.0f * scale, tall = cell * 21.0f / 16.0f;   /* (a glyph 16 x 21, as the message window's: Task glyphW / glyphH) */
 
     if (t == 0 || tw <= 0 || th <= 0) {
@@ -3431,12 +3505,19 @@ static void ui_draw(void) {
                 }
             } else if (u->text == 2) {
                 movie_draw_at(u->x, u->y, u->w, u->h);
-            } else if (u->text == 3) {
+            } else if (u->text == 5) {
+                int tw, th;
+                unsigned t = sprites_texture_of(u->group, u->id, u->csa, &tw, &th);
+
+                if (t != 0 && tw > 0 && th > 0) {
+                    render_image_quad(t, u->corners, u->u / tw, u->v / th, (u->u + u->uw) / tw, (u->v + u->vh) / th, u->rgba);
+                }
+            } else if (u->text == 4) {
                 if (sHeldTex != 0) {
                     render_image(sHeldTex, u->x, u->y, u->w, u->h, 0xFFFFFFFFu);
                 }
             } else if (u->text) {
-                if (!gRender.game_font || !game_text(u->x, u->y, u->w, u->rgba, u->s)) {
+                if (!gRender.game_font || !game_text(u->x, u->y, u->w, u->rgba, u->s, u->csa)) {
                     render_text(u->x, u->y, u->w, u->rgba, u->s, (int)strlen(u->s));
                 }
             } else {
@@ -3526,7 +3607,8 @@ void bind_engine(Forth *f) {
         {"nav-in-group?", p_nav_in_group}, {"nav-flags", p_nav_flags},
         {"message-layout", p_message_layout}, {"message-file", p_message_file}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
         {"message-options", p_message_options}, {"message-option-at", p_message_option_at}, {"message-option-leads", p_message_option_leads},
-        {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
+        {"message-choice-flags", p_message_choice_flags}, {"message-typed", p_message_typed}, {"message-skip", p_message_skip},
+        {"message-close-after", p_message_close_after}, {"message-run", p_message_run}, {"ui-text-in", p_ui_text_in}, {"ui-image4", p_ui_image4}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-back!", p_cloth_back}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
         {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},

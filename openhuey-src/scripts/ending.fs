@@ -162,6 +162,7 @@ enum: ending-type  unjudged dog-beater fugitive top-breeder treasure-hunter warm
 : wait-for ( n -- flag )  1 timer +!  timer @ swap >= ;
 : next ( -- )  1 step +!  0 timer ! ;
 : confirm? ( -- flag )  circle button-pressed?  cross button-pressed? or  start-button button-pressed? or ;
+: on-held? ( -- flag )  circle button-down?  start-button button-down? or ;   \ (the record's end: circle or Start held - gPadHeld)
 
 : show ( msg -- )  shown ! ;
 : closed? ( -- flag )   \ (the message up taken down by the button)
@@ -178,7 +179,7 @@ enum: ending-type  unjudged dog-beater fugitive top-breeder treasure-hunter warm
         2 of  pic-to-half if  next  then  endof
         3 of  text-a @ $80 < if  4 text-a +!  else  next  then  endof
         4 of  150 wait-for if  next  then  endof
-        5 of  confirm? if  next  then  endof
+        5 of  on-held? if  next  then  endof
         6 of
             text-a @ 0> if  -8 text-a +!  text-a @ 0 max text-a !  exit  then
             unlocks!

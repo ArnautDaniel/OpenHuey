@@ -4,11 +4,14 @@
 \ the panic held, the actors and the room still - then its music (by the story so far), the
 \ room's tint going purple and its fog clear over 60 frames, the GAMEOVER movie, the tint
 \ drifting to blue for a minute (a face button cuts it short), black over 30 frames - and a
-\ fresh game: back to the title (`soft-reset`, as the original makes its title scene anew).
+\ fresh game: back to the title (`soft-reset`, as the original makes its title scene anew); in
+\ the mini-game's run (Hewie played) the run starts again in place, from the extras room. The
+\ panic's screen overlay full as the tints start, fading with them (`panic-overlay`).
 \ A death in a movie (kind 0: the story's 0x8B 0) leaves the world running: its music (6) at
-\ once, the movie stopped but its last picture kept over everything, then the tints and on.
+\ once, the movie stopped but its last picture kept over everything (the overlay off), then the
+\ tints and on.
 IN: gameover
-USING: engine game-state actors messages keys facts flag-names story-names ps2-screen ;
+USING: engine game-state actors messages keys facts flag-names story-names room-names ps2-screen ;
 
 6 constant movie-layer   9 constant black-layer
 
@@ -31,6 +34,7 @@ state: gameover-state
   28 field fog-from        \ the fog's colours, range and flags (Fog_SetParams' 26 bytes)
   28 field look-at         \ (a look's parameters, as set)
   cell field held          \ (a movie death) the movie's last picture kept, drawn over everything
+  cell field overlay-fades  \ the panic's overlay fades with the tints (not with a picture kept)
 end-state
 
 : music-id ( -- id )  s" music" actor-named ;
@@ -48,6 +52,9 @@ end-state
     over-music-b story-flag? if  $B exit  then  $A ;
 $FF constant no-track
 : bgm ( track -- )  0 1e f>cell music-id send bgm-want ;
+
+\ ---- the panic's screen overlay (ScreenFade_Level of the progress' +0x7B8), thousandths ----
+: overlay! ( thousandths -- )  s" panic" actor-named send panic-overlay ;
 
 \ ---- the room's tint and fog, a step on: `t` of `n` back toward where they were ----
 : mix ( from to t n -- c )   \ each byte: to + t * (from - to) / n
@@ -73,6 +80,7 @@ $FF constant no-track
     fog-slot look-at 26 look-set ;
 : tints-step ( -- )
     timer @ 60 tint!  timer @ fog!
+    overlay-fades @ if  timer @ 1000 * 60 / overlay!  then
     timer @ 0= if
         s" SYSTEM/GAMEOVER.SFD" movie-open if  $41 $10 $20 movie-compose  over-movie step !   \ (class 6: three-level)
         else  drift-start step !  then
@@ -91,6 +99,21 @@ $FF constant no-track
 : freeze ( -- )   \ (the panic held - the camera still - the actors and the room still; the room still
     panic-held state-flag-set  1 still!  0e cam-shake!  chars-hide   \ drawn, without the characters, from the room's next camera set)
     s" camera" actor-named send camera-hold ;
+\ the mini-game's run over (SceneGame_SubTransition, Hewie played): it starts again in place -
+\ Fiona played again, the camera at its pace, the panic at rest, door $10C shut, this room's doors
+\ open to Hewie, him put in the extras room, the stalker gone; the extras room entered by $81
+\ (its entry script: Fiona's action $C). The world as the game over froze it, let go
+$10C constant run-door   $81 constant run-again-exit
+: unfreeze ( -- )  panic-held state-flag-clear  0 still!  frame-blend-off ;
+: run-again ( -- )
+    unfreeze  world-held state-flag-set
+    0 hewie-played !  -1e cam-rate!
+    0 s" panic" actor-named send panic-stage!
+    run-door 0 s" doors" actor-named send door-opened
+    room-id 1 0 s" doors" actor-named send lock-room-for
+    off-map-37 -1 0 s" hewie" actor-named send hewie-place
+    story.words:slot-unload
+    off-map-37 run-again-exit s" rooms" actor-named send go-to-room ;
 : run ( -- )
     step @ case
         music-out of  0 0 30 music-id send music-op  no-track bgm  movie-close  freeze-world step !  endof   \ (the stage music and the room's track out)
@@ -100,7 +123,7 @@ $FF constant no-track
               -1 timer +!  timer @ 0= if  track bgm  60 timer !  music-in step !  then  endof
         music-in of  -1 timer +!  timer @ 0= if
                   kind @ own-music-death = if  $39 5 bank-sound  then
-                  tints-start  60 timer !  tinting step !
+                  tints-start  1000 overlay!  -1 overlay-fades !  60 timer !  tinting step !
               then  endof
         tinting of  tints-step  endof
         over-movie of  movie-status 1 = if  drift-start step !  then  endof
@@ -108,7 +131,8 @@ $FF constant no-track
         drifting of  drift  endof
         to-black of  timer @ 30 < if  1 timer +!  then
                timer @ 30 = if  world-held state-flag-set  movie-close  restart step !  then  endof
-        restart of  over-done step !  held @ if  movie-unhold  0 held !  then  soft-reset  endof   \ (to the title: a fresh game)
+        restart of  over-done step !  held @ if  movie-unhold  0 held !  then
+              hewie-played? if  run-again  else  soft-reset  then  endof   \ (to the title: a fresh game)
     endcase ;
 \ a death in a movie (GameOver_StateMovie): no freeze, no wipe - its music at once, the movie
 \ stopped, its last picture kept over everything; the tints, then on as the others
@@ -116,7 +140,9 @@ $FF constant no-track
 : run-movie ( -- )
     step @ case
         music-out of  movie-death-track bgm  0 0 30 music-id send music-op  movie-close  60 timer !  afterimage step !  endof
-        afterimage of  -1 timer +!  timer @ 0= if  tints-start  60 timer !  tinting step !  then  endof
+        afterimage of  -1 timer +!  timer @ 0= if
+                  tints-start  held @ 0= dup overlay-fades !  if  1000 overlay!  then  60 timer !  tinting step !
+              then  endof
         >r run r>
     endcase ;
 
@@ -146,7 +172,9 @@ behaviour ending-the-game
               caught state-flag-clear  0 held !
               hewie-played? if  faded-out kind !  then   \ (the run: its own - GameOver_StateSpecial, faded out)
               kind @ story-end = if  over-done step !  broadcast the-ending  exit  then
+              0 overlay-fades !
               kind @ movie-death = if  movie-status 0<> if  movie-hold held !  then  then   \ (GameOver_StateStart: its last picture)
+              held @ if  0 overlay!  then
               music-out step !
           then
           exit

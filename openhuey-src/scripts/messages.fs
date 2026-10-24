@@ -110,6 +110,7 @@ message fright-raw ( amount -- )             \ (Panic_FrightRaw: as it is)
 message panic-shorten ( frames -- )          \ (the panic) its time left shortened (the progress' +0x7BA: her shaking as she gets up)
 message fear-set ( amount -- )               \ the fear this frame set outright (the progress' +0x7D8 =: f>cell)
 message fear-in ( amount -- )
+message panic-overlay ( thousandths -- )       \ (the panic) its screen overlay's level (ScreenFade_Level of the progress' +0x7B8): the game over sets it full and fades it with its tints
 message panic-stage! ( stage -- )
 message panic-level! ( level -- )
 message hewie-near ( near -- )               \ broadcast by Hewie each frame she is with him: 1 within 20, 2 within 50, 3 further (the progress' +0x7B9: how the panic weighs its inputs)
@@ -298,6 +299,7 @@ message fade-done ( -- )                     \ (to who faded) it's over
 message bgm-want ( track pause level -- )    \ (the music) background track wanted ($FF none), paused, its level (f>cell)
 message bgm-resume ( -- )                    \ (the music) the streamed track resumed
 message music-op ( op a b -- )               \ (the music) the stage music: 0 over a frames to volume b, 2 hold, 4 release, 5 silence
+message music-duck ( v -- )                   \ (the music) the stream turned down to v (f>cell, 0..1) - the pause, the sub screen (Bgm +0x114)
 message music-stage ( stage -- )             \ (the music) the stage set's music made (-1: ended)
 \ ---- scenes (the cutscene director: docs/subsystems/story.md S4) ----
 message scene ( on -- )                      \ broadcast: a cutscene has the characters (on) / gives them back (off)
@@ -380,6 +382,7 @@ message summoner-take ( kind -- )             \ (the summoner) take the stalker 
 message summoner-cooldown ( secs -- )         \ (the summoner) not before secs seconds
 message summoner-cooldown-less ( secs -- )    \ (the summoner) that much sooner
 message summoner-reset ( -- )                 \ (the summoner) afresh (a stalker loaded)
+message summoner-restore ( away called cooldown room waited mode kind -- )   \ (the summoner) as a save had it (its progress +0x764): time away, called in, cooldown (frames), the room he was taken from, frames waited, his mode last seen, how he was taken
 
 \ ---- the obstacles (docs/subsystems/obstacles.md): the things pushed about ----
 message place-obstacle ( i n kind a b -- )    \ obstacle i (model "oshi0n", of a kind) placed at square (a, b)
@@ -424,6 +427,8 @@ message tab-op ( op item -- )                \ (the sub screen) the tab: 0 an it
 message tab-done ( -- )                       \ (from the sub screen) the tab's step is done (it waits on 2 / 4)
 message menu-mode ( mode -- )                 \ (the sub screen) the mode the scripts open it in (0x6D: 0 the menu, 1 saving ...)
 message map-turn-to ( page -- )              \ (the sub screen) her room shown on that page of her map (the scripts' 0xD1)
+message options-changed ( vib out vol x y layout -- )   \ (the sub screen -> saves) the options as now set: kept in the system data
+message options-restore ( vib out vol x y layout -- )   \ (saves -> the sub screen) the options the system data kept
 message give-plate ( c0 c1 c2 c3 c4 c5 c6 c7 -- )   \ (the items) a word plate made, its 8 letters (0: none)
 message door-opened ( door on -- )            \ (the doors) its open bit set / cleared (the story's 0x59 09 / 0A)
 message calm-reset ( -- )                     \ (Fiona) her fear and her recovery's count back to 0 (the story's 0x4E)

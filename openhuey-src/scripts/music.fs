@@ -3,7 +3,7 @@
 \ sequences - the calm music's two parts, the chase, the panic - mixed by their volumes). The
 \ room's scripts ask; it plays them each frame.
 IN: music
-USING: engine game-state actors messages facts flag-names story.strings ;
+USING: engine game-state actors messages facts flag-names story-names story.strings ;
 
 \ a value fading toward a goal by a step a frame (MusicDir's volumes and bends)
 begin-structure /fader  ffield: now  ffield: goal  ffield: by  end-structure
@@ -12,6 +12,7 @@ state: music-state
   \ the background music: the track playing and the one wanted (no-track), paused, its level and fade
   cell field bgm-cur  cell field bgm-req  cell field bgm-pause
   1 floats field bgm-level  1 floats field bgm-fade  1 floats field bgm-speed
+  1 floats field bgm-duck   \ (turned down while the pause or the sub screen is open: Bgm +0x114)
   \ the stage music: the stage set (-1 none), its step, held; the global volume, where it goes, how fast
   cell field sm-stage  cell field sm-step  cell field sm-hold
   1 floats field sm-global  1 floats field sm-to  1 floats field sm-rate
@@ -42,6 +43,7 @@ $FF constant no-track
 \ ---- the background music: a new track starts at once (paused if asked); none fades the
 \ playing one out over 30 frames; wanting it again fades it back in. Its loudness: the
 \ original's 100 log10 v tenths of a dB - the square root of v as an amplitude ----
+: bgm-volume ( -- )  bgm-fade f@ bgm-level f@ f* bgm-duck f@ f* 0e fmax 1e fmin fsqrt music-volume! ;
 : bgm-start ( -- )  bgm-req @ dup bgm-cur !  bgm-track bgm-pause @ music-play drop ;
 : bgm-tick ( -- )
     false                                                   ( start? )
@@ -55,7 +57,7 @@ $FF constant no-track
         bgm-fade f@ 1e f>= bgm-fade f@ 0e f<= or if  0e bgm-speed f!  then
         bgm-fade f@ 0e f<= if  music-stop  no-track bgm-cur !  then
     then
-    bgm-fade f@ bgm-level f@ f* 0e fmax 1e fmin fsqrt music-volume!
+    bgm-volume
     if  bgm-start  then ;
 
 \ ---- the stage music: made for a stage set, its bank and four sequences loaded; held and
@@ -268,15 +270,26 @@ create lost-lists  lost-1 , lost-2 , lost-3 , lost-4 ,
         4 of  follow-danger  tracks-fade  bends-fade  seq3-fade  global-fade  sm-apply  endof
     endcase ;
 
+\ ---- a save loaded (SceneGame_LoadedStart): the stage music the story has come to, made anew -
+\ the latest stage's flag set (none: no stage music) ----
+: loaded-stage ( -- stage | -1 )
+    over-music-d story-flag? if  3 exit  then
+    over-music-c story-flag? if  2 exit  then
+    over-music-b story-flag? if  1 exit  then
+    opening-done story-flag? if  0 exit  then  -1 ;
+
 behaviour playing-music
   on spawned ( -- )
-      no-track bgm-cur !  no-track bgm-req !  1e bgm-level f!  -1 sm-stage !  255e sm-to f!  -1 sm-st !
-      self subscribe tick  self subscribe held-tick  self subscribe danger  self subscribe panic  self subscribe stalker-doing  self subscribe stalker-reach ;
+      no-track bgm-cur !  no-track bgm-req !  1e bgm-level f!  1e bgm-duck f!  -1 sm-stage !  255e sm-to f!  -1 sm-st !
+      self subscribe tick  self subscribe held-tick  self subscribe danger  self subscribe panic  self subscribe stalker-doing  self subscribe stalker-reach
+      self subscribe game-loaded ;
   on bgm-want ( track pause level -- )   \ (BgmCtl_Want: no track - the playing one fades out)
       cell>f  bgm-pause !  dup bgm-req !  no-track <> if  bgm-level f!  else  fdrop  then ;
   on bgm-resume ( -- )  0 music-pause ;          \ (the ADX stream resumed)
+  on music-duck ( v -- )  cell>f 0e fmax 1e fmin bgm-duck f!  bgm-volume ;   \ (at once: the menus are held)
   on music-op ( op a b -- )  sm-op ;               \ (0x6A)
   on music-stage ( stage -- )  sm-load ;            \ (0x6B; -1: the stage music ended, 0x6C)
+  on game-loaded ( -- )  loaded-stage sm-load ;
   on danger ( level -- )  sm-danger ! ;
   on panic ( stage level -- )  drop sm-panic ! ;
   on stalker-reach ( d -- )  cell>f sm-st-reach f! ;

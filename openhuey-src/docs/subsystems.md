@@ -42,15 +42,25 @@ only points there.
 | Effects | flames, sparks, flickering sprites, shards, butterflies; the rooms' own | `effects.fs` | `effects.c` | [effects](subsystems/effects.md) |
 | Game over | the three kinds of game over | `gameover.fs` | `gameover.c` | [gameover](subsystems/gameover.md) |
 | Ending | the staff roll, the results, the unlocks | `ending.fs` | `scene_ending.c` | [ending](subsystems/ending.md) |
-| Saving | F5 / F9 quick save, the 8 save slots (the save points), the system data (the unlocks) | `saves.fs` | `SceneGame_Save` | (below) |
+| Saving | F5 / F9 quick save, the 8 save slots (the save points), the system data (the unlocks, the best times, the options) | `saves.fs` | `SceneGame_Save` | (below) |
 
 Also: the title and the opening (`opening.fs`), the avoid prompt (`avoid.fs`), the pad's rumble
 (`rumble.fs`), the graphics options (`graphics.fs`), the debug words and overlay (`debug.fs`).
 
 **Saving.** A save is a Forth file in the user's folder, read back by running it. `saves` writes
-the progress, then broadcasts `write-save` and each actor (Fiona, Hewie, the stalker) prints its
-own line. Loading puts the progress back, plays the room again and puts them where they were;
-anything else (a scene playing, the room's own script state) starts afresh, as in the original.
+the progress (the doors' held bits left out, as `Progress_CopyState` clears them), then
+broadcasts `write-save` and each actor (Fiona, Hewie, the stalker, the summoner - its record, the
+progress' +0x764 -, the sub screen - the map's page she is on, the save's +0x18F0 -, the things)
+prints its own line. Loading puts the progress back (held bits cleared from an older save),
+broadcasts `game-loaded` (the music makes the stage music the story has come to again:
+`SceneGame_LoadedStart`), plays the room again and puts them where they were - the summoner's
+record after the stalker is loaded (a save without it: his time away rolled anew), the map
+turned to her page; a stalker saved in the game away from her room, down or held off, is then
+taken out by the summoner (`SceneGame_EnterRoom`'s `Summoner_Take(0)`). Anything else (a scene
+playing, the room's own script state) starts afresh, as in the original. The system data
+(`hga-system.fs`, written whenever it changes) keeps the unlocks, the mini-game's best times and
+the options (the original's +0x30: the sub screen tells `options-changed`, and gets them back as
+`options-restore` as the game starts).
 
 ## Not yet
 

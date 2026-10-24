@@ -80,10 +80,10 @@ while rd(syms['kMapRooms'] + m * 4, '<I') or rd(syms['kMapPages'] + m * 4, '<I')
     while r and rd(r + len(rooms) * 0x18, '<i') != -1:
         e = r + len(rooms) * 0x18
         rooms.append((rd(e, '<i'), rd(e + 4, '<b'), rd(e + 8, '<f'), rd(e + 12, '<f'), rd(e + 16, '<f'), rd(e + 20, '<f')))
-    maps.append((pages, titles, rooms))
+    maps.append((pages, titles, rooms, r))
     m += 1
 w('%d constant #maps' % len(maps))
-for k, (pages, titles, rooms) in enumerate(maps):
+for k, (pages, titles, rooms, table) in enumerate(maps):
     w(': map%d-page ( page -- addr len title )' % k)
     w('    case')
     for i, (f, t) in enumerate(zip(pages, titles)):
@@ -94,6 +94,12 @@ for k, (pages, titles, rooms) in enumerate(maps):
     for (room, page, xs, zs, xo, yo) in rooms:
         w('    $%X , %d , %se f, %se f, %se f, %se f,' % (room, page, repr(xs), repr(zs), repr(xo), repr(yo)))
     w('    -1 ,')
+    if k == 2:   # (Map_HereArrow: the maze rooms' three spots, entries 14..16 of the forest's table)
+        w("\\ (the maze rooms' three spots, by their place in the dealt row: D_00420570's entries 14..16)")
+        w('create maze-spots')
+        for i in range(14, 17):
+            e = table + i * 0x18
+            w('    -1 , 0 , %se f, %se f, %se f, %se f,' % tuple(repr(rd(e + o, '<f')) for o in (8, 12, 16, 20)))
 w(': map-page ( map page -- addr len title )   \\ (0 0 0: no such page)')
 w('    swap case')
 for k in range(len(maps)):
@@ -101,7 +107,7 @@ for k in range(len(maps)):
 w('        >r drop 0 0 0 r>')
 w('    endcase ;')
 w(': map-pages ( map -- n )  case')
-for k, (pages, _, _) in enumerate(maps):
+for k, (pages, _, _, _) in enumerate(maps):
     w('        %d of  %d  endof' % (k, len(pages)))
 w('        >r 0 r>  endcase ;')
 w(': map-rooms ( map -- addr | 0 )  case')

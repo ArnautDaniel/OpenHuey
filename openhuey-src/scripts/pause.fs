@@ -46,10 +46,14 @@ end-state
 : shut ( -- )   \ back to play
     in-movie? 0= if  0 pause!  then  closed stage !  0e t f! ;
 
-\ ---- the sound turned down as far as it is open (duck: the effects, the stream and the stage
-\ music) ----
-: duck ( -- )  1e  1e t f@ f-  sound-volume!   1e t f@ f- music-volume!  1e t f@ f- stage-music-volume! ;
-: unduck ( -- )  1e 1e sound-volume!  1e stage-music-volume! ;   \ (the stream: its own again as the world goes on)
+\ ---- the sound turned down as far as it is open (duck: the effects' master, the stream, the
+\ stage music and the movie) ----
+: music-duck! ( F: v -- )  f>cell s" music" actor-named send music-duck ;
+: duck-by ( F: down -- )   \ (pause.c duck)
+    1e fswap f- 0e fmax 1e fmin  {: F: v :}
+    1e v sound-volume!  v music-duck!  v stage-music-volume!  v movie-volume! ;
+: duck ( -- )  t f@ duck-by ;
+: unduck ( -- )  0e duck-by ;
 
 \ ---- choosing: up / down the first / second line (a sound when it changes) ----
 : arrow ( k1 k2 -- flag )  key-pressed? swap key-pressed? or ;
@@ -87,12 +91,12 @@ end-state
 \ ---- the movie pause (MoviePause_State*) ----
 : movie-frame ( -- )
     stage @ case
-        movie-opening of  0.2e t+  opened? if  movie-open stage !  then  endof
+        movie-opening of  0.2e t+  duck  opened? if  movie-open stage !  then  endof
         movie-open of
             triangle button-pressed? if  0e t f!  skipping stage !  back-sound sound  exit  then   \ (Cancel: MoviePause_StateOpen)
             start-button button-pressed? if  0 movie-pause  movie-closing stage !  back-sound sound  then  endof
-        skipping of  0.2e t+  opened? if  movie-skipped state-flag-set  then  endof
-        movie-closing of  -0.2e t+  shut? if  shut  then  endof
+        skipping of  0.2e t+  1e t f@ f- duck-by  opened? if  movie-skipped state-flag-set  then  endof   \ (the sound back as it darkens)
+        movie-closing of  -0.2e t+  duck  shut? if  shut  then  endof
     endcase ;
 
 : step ( -- )
@@ -103,38 +107,48 @@ end-state
     then
     in-movie? if  movie-frame  else  play-frame  then ;
 
-\ ---- drawing: the dimming (alpha 63 of 128 open; darkening to 255 skipping or quitting - here
-\ twice the PS2's 128 scale), the lines centred at the PS2's heights (of 448), the chosen one
-\ lit; all fading with it. The words scale with the screen's height (a pen of height / 224) ----
+\ ---- drawing (pause.c): the dimming (alpha 63 of 128 open; darkening to 255 skipping or
+\ quitting - here twice the PS2's 128 scale); the lines in the game's font at its size (a pen of
+\ height / 224: its 16 x 21 glyphs of 448 lines) and their colours, centred on x 256 of the
+\ PS2's 512 - "PAUSE" and the line chosen in a highlight (GAME_FIX's texture 2 box, palette 5,
+\ twice the line's width, 32 high); the movie pause's from x 320; all fading with it ----
 : darkening? ( -- flag )  stage @ skipping =  stage @ quitting = or ;
 : dim ( -- a )  darkening? if  63e 192e t f@ f* f+  else  63e t f@ f*  then  f>s 2* 255 min ;
 : alpha ( -- a )   \ the words' (fading out as it darkens)
     darkening? if  1e t f@ f-  else  t f@  then  255e f* f>s ;
 variable pen
-$D8D0C400 constant plain-colour  $F0C87800 constant lit-colour  $F0EBE000 constant title-colour
+$D8D0C400 constant plain-colour   \ (the font's own, palette 0: its white tinted as the window's)
 : text-of ( msg -- addr len )  message-layout drop  0 0 message-line ;
-: words ( addr len x y rgb -- )  {: a n x y rgb :}  pause-layer a n x y  rgb alpha or  pen @ ui-text ;
-: line ( msg y rgb -- )   \ a line centred on the screen's middle (256 of 512)
-    {: msg y rgb :}  msg text-of  2dup pen @ text-width 2/ 256 sx swap -  y sy  rgb words ;
-: centred ( msg y -- )  plain-colour line ;
-: option ( msg y lit? -- )  if  lit-colour  else  plain-colour  then  line ;
-: title ( msg y -- )   \ (twice the size)
-    pen @ {: msg y size :}  size 2* pen !  msg y title-colour line  size pen ! ;
+: width ( msg -- w )   \ (Task_MessageWidth: in the PS2's units)
+    text-of pen @ text-width  512 *  ps2-screen:fw @ 1 max / ;
+: line-at ( msg x y -- )   \ its first line from x, y (the PS2's), run by run of a colour
+    {: msg x y | col :}  msg message-layout drop
+    begin  0 0 col 0 message-run  {: a n c :}  n 0>  while
+        pause-layer a n  x sx  0 0 message-line drop col pen @ text-width +  y sy
+        c if  $FFFFFF00  else  plain-colour  then  alpha or  pen @ c ui-text-in
+        col n + to col
+    repeat ;
+: centred ( msg y -- )  {: msg y :}  msg  256 msg width 2/ -  y line-at ;
+: highlight ( msg y -- )   \ (highlight_w)
+    {: msg y :}  msg width {: w :}
+    pause-layer  256 w - sx  y sy  w 2* sw  $20 sy  $10 2 5  $30 $20 $20 $20  $FFFFFF00 alpha or  ui-image ;
+: chosen ( first second y0 step -- )   \ the highlight on the line chosen
+    {: a b y0 step :}  choice @ if  b  else  a  then  y0 choice @ step * +  highlight ;
 : play-lines ( -- )
     stage @ case
-        opening of  pause-msg $D0 title  endof
-        open of  pause-msg $D0 title  endof
-        closing of  pause-msg $D0 title  endof
-        on-menu of  back-to-game-msg $C8 choice @ 0= option  quit-msg $E8 choice @ 0<> option  endof
-        menu-closing of  back-to-game-msg $C8 centred  quit-msg $E8 centred  endof
-        >r  exit-to-title-msg $BC centred  yes-msg $E0 choice @ 0= option  no-msg $F8 choice @ 0<> option  r>   \ (asking, quitting)
+        opening of  pause-msg $D2 highlight  pause-msg $D6 centred  endof
+        open of  pause-msg $D2 highlight  pause-msg $D6 centred  endof
+        closing of  pause-msg $D2 highlight  pause-msg $D6 centred  endof
+        on-menu of  back-to-game-msg quit-msg $C4 $20 chosen  back-to-game-msg $C8 centred  quit-msg $E8 centred  endof
+        menu-closing of  back-to-game-msg quit-msg $C4 $20 chosen  back-to-game-msg $C8 centred  quit-msg $E8 centred  endof
+        >r  exit-to-title-msg $C8 centred  yes-msg no-msg $E4 $14 chosen  yes-msg $E8 centred  no-msg $FC centred  r>   \ (asking, quitting)
     endcase ;
 : draw ( -- )
     pause-layer ui-clear
     stage @ closed = if  exit  then
     frame!  screen-size nip 224 / 1 max pen !
     pause-layer  0 0 screen-size  dim  ui-rect
-    in-movie? if  unpause-msg $180 centred  skip-msg $194 centred  else  play-lines  then ;
+    in-movie? if  unpause-msg $140 $190 line-at  skip-msg $140 $1A4 line-at  else  play-lines  then ;
 
 behaviour pausing
   on spawned ( -- )  closed stage !  self subscribe tick  self subscribe held-tick  self subscribe frame-end ;

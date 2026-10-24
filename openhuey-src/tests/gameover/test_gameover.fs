@@ -35,4 +35,13 @@ s" OPENING.SFD" movie-open drop  10 frames   \ (a movie on)
 T{ step? 0< 0=  panic-held state-flag?  movie-status 1 = -> -1 0 0 }T
 T{ ' purple? 400 soon -> -1 }T
 
+testing the mini-game's run (Hewie played): over, it starts again in place - the extras room by
+testing its exit $81, Fiona played again, the stalker gone (SceneGame_SubTransition)
+game:gameover enter  -1 gameover:step !  leave-actor  movie-close  0 still!  panic-held state-flag-clear  world-held state-flag-clear
+-1 hewie-played !  2 frames  caught state-flag-set  2 frames
+T{ step? 0< 0= -> -1 }T
+T{ ' press-on 30000 soon -> -1 }T
+20 frames
+T{ room-id  hewie-played?  panic-held state-flag? -> off-map-37 0 0 }T
+
 test-summary

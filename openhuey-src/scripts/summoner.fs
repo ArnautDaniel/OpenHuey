@@ -198,7 +198,7 @@ create waits  0 , 10 , 30 , 30 ,                                   \ D_00419DC0:
 behaviour summoning
   on spawned ( -- )
       reset  100 s-age !  -1 her-room !  -1 her-exit !  calm the-danger !
-      self subscribe frame-end  self subscribe entered-room  self subscribe danger  self subscribe noise-made ;
+      self subscribe frame-end  self subscribe entered-room  self subscribe danger  self subscribe noise-made  self subscribe write-save ;
   on stalker-status ( room mode in-game own away cool beaten -- )
       s-beaten !  s-cool !  s-away !  s-own !  s-in !  s-mode !  s-room !  sender s-id !  0 s-age ! ;
   on entered-room ( room exit -- )  her-exit !  her-room ! ;
@@ -208,6 +208,11 @@ behaviour summoning
   on summoner-cooldown ( secs -- )  dup 0< if  drop s-cool @  then  30 * cooldown ! ;
   on summoner-cooldown-less ( secs -- )  30 * cooldown @ swap - 0 max cooldown ! ;
   on summoner-reset ( -- )  reset ;
+  \ (saves.fs) its record, kept in a save as the original's progress +0x764 is (Progress_Sub75C)
+  on write-save ( -- )
+      away @ .  called @ .  cooldown @ .  took-room @ .  waited @ .  last-mode @ .  took-kind @ .  ." summoner-was" cr ;
+  on summoner-restore ( away called cooldown room waited mode kind -- )
+      took-kind !  last-mode !  waited !  took-room !  cooldown !  called !  away ! ;
   on frame-end ( -- )  decide  s-age @ 100 < if  1 s-age +!  then
       cooldown @ dup 30 /  swap 0<> over 0= and if  drop 1  then   \ (Countdown_Seconds: at least 1 while it runs)
       broadcast summoner-cooldown-is ;

@@ -60,7 +60,10 @@ T{ ' results? 60 soon -> -1 }T
 testing the record shows; a button and the picture goes; then back to the title
 : text-up? ( -- flag )  0 [: drop ending:text-a @ $80 = ;] in-ending ;
 T{ ' text-up? 600 soon -> -1 }T
-: on-and-on ( -- flag )  cross press  stage? ending:done = ;
+testing the record waits for circle or Start held, not the cross (SceneEnding_SeqResults: gPadHeld)
+160 frames  cross press  5 frames
+T{ 0 [: drop ending:step @ ;] in-ending -> 5 }T
+: on-and-on ( -- flag )  circle press  stage? ending:done = ;
 T{ ' on-and-on 1200 soon -> -1 }T
 
 test-summary

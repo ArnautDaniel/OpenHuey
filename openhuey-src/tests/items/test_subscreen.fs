@@ -3,7 +3,7 @@
 \ tab the story slides in with an item. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/items/test_subscreen.fs
 IN: test-subscreen
-USING: tester engine game-state actors messages keys facts flag-names story-names game items items.names subscreen subscreen.state fiona.state debug saves room-names ;
+USING: tester engine game-state actors messages keys facts flag-names story-names game items items.names subscreen subscreen.state fiona.state debug saves room-names music ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : tap ( key -- )  dup true key-hold  game-tick  false key-hold  game-tick ;
@@ -24,6 +24,9 @@ key: Tab tap  10 frames
 T{ stage@  [: page @ ;] menu@ -> 2 0 }T
 key: W true key-hold  20 frames  key: W false key-hold
 T{ moved 0.01e f< -> -1 }T
+testing the stream turned down with it (sub_set_volume: 1 - 128 / 255)
+: ducked ( -- n )  game:music enter  music:bgm-duck f@ 1000e f* fround f>s  leave-actor ;
+T{ ducked -> 498 }T
 
 testing R1 turns to the next list; the cross opens the item's actions (on its first: use)
 key: E tap
@@ -62,6 +65,13 @@ castle-map-held story-flag-set  key: Right tap
 T{ [: map-at @ map-pg @ ;] menu@ -> 0 1 }T
 key: Left tap  key: Left tap
 T{ [: map-at @ map-pg @ ;] menu@ -> 0 4 }T
+testing the arrow in the forest's maze: by the room's place in the dealt row (Events_ThingPlace)
+: var! ( v n -- )  progress pr.vars + c! ;
+: row-room ( i -- room )  s" deal-rows" exe-table drop  5 3 * + + c@ $100 + ;   \ (row 5's)
+0 $1F var!  T{ 0 row-room subscreen.map:maze-place -> -1 }T
+1 $1F var!  5 $20 var!
+T{ 0 row-room subscreen.map:maze-place  2 row-room subscreen.map:maze-place  $10B subscreen.map:maze-place -> 0 2 -1 }T
+0 $1F var!  0 $20 var!
 testing the options: the cross edits a row, the arrows change it; the square puts them back
 key: E tap  key: E tap
 T{ [: page @ ;] menu@ -> 5 }T
@@ -72,7 +82,7 @@ T{ [: volume @ ;] menu@ -> 128 }T
 key: E tap
 testing triangle closes it: the world goes on
 key: V tap  10 frames
-T{ stage@ -> 0 }T
+T{ stage@ ducked -> 0 1000 }T
 key: W true key-hold  20 frames  key: W false key-hold
 T{ moved 0.5e f> -> -1 }T
 

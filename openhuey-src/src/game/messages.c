@@ -149,6 +149,10 @@ void message_set_param_text(int slot, const char *text, int len) {   /* Msg_Prin
 
 static MessagePage *page(void) { return &sLayout.pages[sLayout.npages - 1]; }
 
+/* typing (Task_StateType): the frame now (from the page's start), the speed, the colour */
+static const uint8_t kGlyphFrames[8] = {0, 1, 4, 0, 0x60, 0, 0, 0};   /* Text_GlyphFrames (0x47B140) */
+static int sFrame, sSpeed, sColour;
+
 static void new_line(void) {
     MessagePage *p = page();
 
@@ -158,11 +162,13 @@ static void new_line(void) {
 }
 
 static void new_page(void) {
+    page()->typed = sFrame;
     if (sLayout.npages < MESSAGE_PAGES) {
         sLayout.npages++;
         memset(page(), 0, sizeof(MessagePage));
         page()->nlines = 1;
     }
+    sFrame = 0;   /* (Task_StateNextPage: typing starts again) */
 }
 
 static void put(char ch) {
@@ -173,7 +179,38 @@ static void put(char ch) {
     if (n + 1 < MESSAGE_LINE_CHARS) {
         line[n] = ch;
         line[n + 1] = 0;
+        p->at[p->nlines - 1][n] = (uint16_t)(sFrame < 0xFFFF ? sFrame : 0xFFFF);
+        p->colour[p->nlines - 1][n] = (uint8_t)sColour;
     }
+}
+
+/* a glyph typed: then its speed's wait (and a frame to go on) */
+static void typed(char ch) {
+    int w = kGlyphFrames[sSpeed & 7];
+
+    put(ch);
+    if (w != 0) {
+        sFrame += w + 1;
+    }
+}
+
+int message_skip(const MessageLayout *l, int pg, int frame) {
+    const MessagePage *p;
+    int i;
+
+    if (l == NULL || pg < 0 || pg >= l->npages) {
+        return frame;
+    }
+    p = &l->pages[pg];
+    for (i = 0; i < p->npauses; i++) {
+        if (frame < p->pause[i]) {
+            return p->pause[i];
+        }
+        if (frame == p->pause[i]) {
+            return frame;   /* (pausing: Task_StatePause doesn't skip) */
+        }
+    }
+    return frame < p->typed ? p->typed : frame;
 }
 
 static void put_text(const char *s) {
@@ -189,6 +226,8 @@ const MessageLayout *message_layout(int id) {
     int depth = 0, steps = 0, hidden = 0, table_bits = id & 0xC000;
 
     memset(&sLayout, 0, sizeof(sLayout));
+    sFrame = sSpeed = sColour = 0;
+    sLayout.close_after = -1;
     sLayout.id = id;
     sLayout.npages = 1;
     page()->nlines = 1;
@@ -214,7 +253,33 @@ const MessageLayout *message_layout(int id) {
             new_page();
             p++;
             continue;
-        case 0x03: case 0x07: case 0x09: case 0x0A: case 0x0C: case 0x10:   /* one operand */
+        case 0x03:   /* a colour (the font's palette n) */
+            sColour = p[1] & 0x7F;
+            p += 2;
+            continue;
+        case 0x04:   /* back to the message's own */
+            sColour = 0;
+            p++;
+            continue;
+        case 0x0C:   /* the typing speed */
+            sSpeed = p[1];
+            p += 2;
+            continue;
+        case 0x0D:
+            sSpeed = 0;
+            p++;
+            continue;
+        case 0x09:   /* a pause of n frames (Task_StatePause: and one to go on) */
+            if (page()->npauses < MESSAGE_PAUSES) {
+                page()->pause[page()->npauses++] = (uint16_t)sFrame;
+            }
+            sFrame += p[1] + 1;
+            p += 2;
+            continue;
+        case 0x10:   /* typing stops: closed n frames on (0: left up) */
+            sLayout.close_after = p[1];
+            goto done;
+        case 0x07: case 0x0A:   /* one operand */
             p += 2;
             continue;
         case 0x0B: case 0x19:   /* two */
@@ -223,6 +288,7 @@ const MessageLayout *message_layout(int id) {
         case 0x0E:   /* a choice: the options (0x0F) follow */
             sLayout.choice = 1;
             sLayout.choice_flags = p[1];
+            sSpeed = 0;
             p += 3;
             continue;
         case 0x0F:   /* an option, leading to message hi:lo (0xFFFF: none, the window closes) */
@@ -280,23 +346,24 @@ const MessageLayout *message_layout(int id) {
             hidden = 0;
             p++;
             continue;
-        case 0x04: case 0x0D: case 0x12: case 0x14: case 0x16: case 0x05: case 0x06:
+        case 0x12: case 0x14: case 0x16: case 0x05: case 0x06:
             p++;
             continue;
         case 0x1A: case 0x1B: case 0x1C: case 0x1D:   /* a glyph of another font, or past 0xFF */
             if (!hidden) {
-                put('?');
+                typed('?');
             }
             p += 2;
             continue;
         default:
             if (!hidden) {
-                put(c >= 0x20 ? (char)c : '?');   /* (0x80 on: the font's own glyphs - the pad's buttons at 0xC0) */
+                typed(c >= 0x20 ? (char)c : '?');   /* (0x80 on: the font's own glyphs - the pad's buttons at 0xC0) */
             }
             p++;
         }
     }
 done:
+    page()->typed = sFrame;
     for (int k = 0; k < sLayout.npages; k++) {   /* (a page's empty last lines: dropped) */
         MessagePage *pp = &sLayout.pages[k];
 

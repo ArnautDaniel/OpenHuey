@@ -98,6 +98,8 @@ group; `ui-image` draws a part of one of its textures.
 1. **Opening** (SceneGame_SubPlay): Select while the menu isn't locked, the world isn't held, no
    scene runs, the panic is below 4 and Fiona is free; or the scripts' 0x6D. The world is held
    (`pause!`) and the menu has the held frames: it fades in over 8 frames, out over 4.
+   The sound goes down with it and back up as it closes (sub_set_volume: 1 - its fade / 255 -
+   the effects' master, the stream by `music-duck`, the stage music; about half while open).
 2. **Its pages**: the three item lists (16 to a page, columns of 8), then the files (two to a
    page); L1 / R1 turn them round. (The original's map and options pages come between: I3.)
 3. **An item** (SubScreen_StateItemActions): its picture slides in with its name, count and
@@ -122,12 +124,16 @@ message box), `lists.fs` (the item lists, an item's actions, the files), `map.fs
 
 1. **The map** (Map_*): the maps she holds - a sketch used for each (story flags
    `castle-map-held` ..) - page by page with left / right, past the ends to the next map she
-   holds; it opens on her room's page with an arrow where she stands (not turned to her heading
-   here). Each room entered is found on the maps (`arrived`); the story's 0xD1 (`map-turn-to`)
+   holds; it opens on her room's page with an arrow where she stands, turned to her heading
+   (Map_HereArrow: base texture 0 at $1C0, $60, palette 6, on four corners - `ui-image4`); in the
+   forest's maze rooms ($100..$105) placed by the room's place in the dealt row
+   (Events_ThingPlace: one of three spots of their own, none while no rows are dealt). The page
+   she is on is kept in a save (its +0x18F0) and turned to on loading. Each room entered is found on the maps (`arrived`); the story's 0xD1 (`map-turn-to`)
    shows her room on another page of her map.
 2. **The options** (Options_*): the controller type (its button names; the keyboard here),
    vibration, the sound out, the volume, the screen's position - the cross edits a row, the square
-   resets them. Kept for the session; the vibration turns the pad's rumble on or off (on: a buzz)
+   resets them. Kept in the system data (saves.fs: `options-changed` to saves at each change,
+   `options-restore` back as the game starts - the original's +0x30); the vibration turns the pad's rumble on or off (on: a buzz)
    and the volume scales everything heard (SubScreen_ApplyOptions); the sound out and the
    position have nothing here to change.
 3. **The word plate** (the scripts' mode 2, SubScreen_StateWordMake): a word of up to 8 letters on
