@@ -91,7 +91,17 @@ the state flags (`subscreen-locked`, `world-held`, `subscreen-wanted`). **Draws*
 original's art (`subscreen/tables.fs` from `tools/subscreentables.py`: SUBBASE's parts in the
 cache's group $18, SUBBACK's panels in $19, the item's picture ITEMnn/ITEM_xxx in $27) on UI
 layers 10 and 11, the PS2's 512 x 448 in a 4:3 frame. The engine's `tex-bank` loads a bank into a
-group; `ui-image` draws a part of one of its textures.
+group; `ui-image` draws a part of one of its textures, `ui-blend` blends what was drawn last as the
+GS's ALPHA does with a fixed alpha (FIX): subtracted (Cd - Cs x FIX), mixed, added. Blended as the
+original: the panels mixed by their alpha (SubScreen_DrawPanel, 0x64), each part by its table
+entry's last column (SubScreen_DrawPart's kAlpha: by its own alpha, subtracted - the item's picture,
+dark on the paper -, mixed - the page arrows -, added - the corners, the lit key); the words by the
+colour byte (`art.fs` `inked`, Task_DrawGlyph): its low 6 bits the font's palette, $80 subtracted
+(palettes 4..6 by their alpha), $40 by their alpha, else added - the menu's own words $80 (dark on
+the paper; the chosen $82), the boxes' words 0 (light on the shade), the wardrobe's, the slot
+machine's and the extras' 0 / 1 / 2 added, the cursor's hand 9; drawn in three quarters of the
+glyph's colour (its vertex colour $60). The box's lines honour 0x12 / 0x14 (centred in, or to the
+right of, the page's widest line), as the message window does.
 
 ## Rules (I2)
 
@@ -154,8 +164,9 @@ message box), `lists.fs` (the item lists, an item's actions, the files), `map.fs
 a quarter off each fright and the recovery's reset three times in four; $8B a quarter off, her
 calming half again, the reset half the time; $8C half off, her calming doubled, never the reset,
 nor running's fright; **I2, I3 built**
-(`scripts/subscreen.fs`, `tests/items/test_subscreen.fs` (58)). Not yet: the parts' blendings (subtract / add: drawn plain), the words' (the colour's bit 0x80 - most of the menu's, the map's title: subtracted, so dark on the paper - drawn light), the
-menu's sound turned down while open. **The galleries** (`subscreen/galleries.fs`, the extras
+(`scripts/subscreen.fs`, `tests/items/test_subscreen.fs` (62)). Not yet: the
+menu's sound turned down while open; the words' fades by the task's alpha (the gallery bars' and
+page counts' `0x80 - fade`: drawn at the menu's). **The galleries** (`subscreen/galleries.fs`, the extras
 room's modes; their tables generated from the executable by `tools/gallerytables.py` into
 `subscreen/gallery-tables.fs`; `tests/items/test_galleries.fs` (35)): eight a page, "???" until the
 system data unlocks each (the resident flags: the original's +0x24 bits on), the extras room's

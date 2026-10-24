@@ -96,6 +96,8 @@ typedef void (APIENTRY *HGA_GLVIEWPORT)(GLint, GLint, GLsizei, GLsizei);
     X(PFNGLTEXTURESTORAGE3DPROC, glTextureStorage3D) \
     X(PFNGLPROGRAMUNIFORM1FVPROC, glProgramUniform1fv) \
     X(HGA_GLBLENDFUNC, glBlendFunc) \
+    X(PFNGLBLENDCOLORPROC, glBlendColor) \
+    X(PFNGLBLENDEQUATIONPROC, glBlendEquation) \
     X(HGA_GLDELETETEXTURES, glDeleteTextures) \
     X(HGA_GLDEPTHFUNC, glDepthFunc) \
     X(HGA_GLDEPTHMASK, glDepthMask) \
@@ -198,6 +200,8 @@ GL_FUNCTIONS(GL_DECLARE)
 #define glNamedFramebufferTextureLayer p_glNamedFramebufferTextureLayer
 #define glTextureStorage3D p_glTextureStorage3D
 #define glProgramUniform1fv p_glProgramUniform1fv
+#define glBlendColor p_glBlendColor
+#define glBlendEquation p_glBlendEquation
 
 /* load the pointers (a GL context must be current); 0 if one is missing */
 int gl_load(void);

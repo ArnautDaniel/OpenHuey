@@ -267,12 +267,20 @@ static const char *k2dImageFs =   /* a picture (a movie's frame), times the colo
     "in vec2 v_uv;\n"
     "in vec4 v_col;\n"
     "layout(binding = 0) uniform sampler2D u_image;\n"
+    "layout(location = 1) uniform int u_fixed;\n"   /* a fixed-alpha blend: the texture's alpha only
+                                                     * tests, as the GS's (none drawn where it is 0;
+                                                     * filtered, its edges' colour faded by it) */
     "out vec4 o_color;\n"
     "vec3 to_srgb(vec3 c) {\n"
     "    return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c));\n"
     "}\n"
     "void main() {\n"
     "    vec4 t = texture(u_image, v_uv);\n"
+    "    if (u_fixed != 0) {\n"
+    "        if (t.a < 1.0 / 255.0) discard;\n"
+    "        o_color = vec4(to_srgb(t.rgb) * min(t.a, 1.0), 1.0) * v_col;\n"
+    "        return;\n"
+    "    }\n"
     "    o_color = vec4(to_srgb(t.rgb), t.a) * v_col;\n"
     "}\n";
 
@@ -818,6 +826,13 @@ void render_image(GpuTexture t, float x, float y, float w, float h, uint32_t rgb
     render_image_uv(t, x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f, rgba);
 }
 
+static int sBlend2d;     /* how the pictures from now are blended (render_blend_2d) */
+static float sFix2d;     /* ... at FIX / 128 */
+void render_blend_2d(int mode, int fix) {
+    sBlend2d = mode;
+    sFix2d = (float)(fix < 0 ? 0 : fix > 255 ? 255 : fix) / 128.0f;
+}
+
 static void image_draw(GpuTexture t);
 void render_image_uv(GpuTexture t, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
                      uint32_t rgba) {
@@ -856,7 +871,14 @@ static void image_draw(GpuTexture t) {
     glNamedBufferData(R.vbo2d, (GLsizeiptr)(R.n2d * sizeof(Vertex2d)), R.v2d, GL_STREAM_DRAW);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    if (sBlend2d == RENDER_BLEND_NORMAL) {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    } else {   /* (the GS's ALPHA with C = FIX: the 2D is drawn in display values, as the GS blends) */
+        glBlendColor(sFix2d, sFix2d, sFix2d, sFix2d);
+        glBlendEquation(sBlend2d == RENDER_BLEND_SUBTRACT ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
+        glBlendFunc(GL_CONSTANT_COLOR, sBlend2d == RENDER_BLEND_MIX ? GL_ONE_MINUS_CONSTANT_COLOR : GL_ONE);
+    }
+    glProgramUniform1i(R.prog2d_image, 1, sBlend2d != RENDER_BLEND_NORMAL);
     glProgramUniformMatrix4fv(R.prog2d_image, 0, 1, GL_FALSE, proj.m);
     glUseProgram(R.prog2d_image);
     glBindTextureUnit(0, t);
@@ -864,6 +886,7 @@ static void image_draw(GpuTexture t) {
     glBindVertexArray(R.vao2d);
     glDrawArrays(GL_TRIANGLES, 0, R.n2d);
     glBindVertexArray(0);
+    glBlendEquation(GL_FUNC_ADD);
     glDisable(GL_BLEND);
     R.n2d = 0;
 }
