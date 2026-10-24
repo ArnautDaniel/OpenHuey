@@ -95,10 +95,48 @@ the played room settles open; a slam's latch heard at 0x5F and the door left shu
 a room's script - 15 a frame, the passage at once, the creak and latch heard at 0x5F; a door
 without a nav triangle not swung).
 
-Not yet: the door's light through its doorway (`DoorShadow_Queue`, layer 6) and the doorway
-portals it gives the lights past -78.75 degrees (`door_portal`, `Lights_AddDoorway`): both feed
-the original's shadow-volume buffer (`Shadow_BlockerVolumes`), which OpenHuey's shadow maps
-replace - to build with a light-through-a-door effect of its own.
+Also built: the open door's light (below), checked by `tests/graphics/test_graphics.fs` (its
+shadow: none shut, castle-1f-1's door 0 from the moon at 18) and `tests/doors/test_doors.fs` (its
+blockers: two past 78.75 degrees, none at 70; a point behind the leaf from light 4 shaded, one
+beside it or before it not; a room script's blocker lasting its frame).
+
+### The open door's light
+
+Two things in the original, both read from `lights.c` / `doors.c` (Door_Draw) and hg's `glr.c`:
+
+1. **Its shadow** (`DoorShadow_Queue`, `DoorShadow_FromLight`, `DoorShadow_Draw`; layer 6). A door
+   shown, its leaf's part shown (`PlacedMesh_LastShown`) and swung open at all, where a shadow may
+   fall (the eye above its nav triangle's plane), for each of up to 3 lights at it
+   (`Lights_ShadowLights`): the leaf (12 x 22 x 1, `D_003EC080`) face away from the light (5 above
+   it) is swept away from the light by 3/4 of the light's shadows' reach into a box. Its strength
+   is `4 cos^2 x falloff x intensity x (64 + the ambient's mean)`, at most $80 (falloff
+   `((range^2 - d^2) / range^2)^4` at the face's top middle; out of reach, none). None if a corner
+   is outside the PS2's clip volume. The box's four sides, those facing the eye, are drawn into the
+   half-size shadow buffer against the scene's depth so far: gouraud strips, the door's two corners
+   grey $80 at the strength, the far two nothing (so it falls off as the square), each blended over
+   the buffer. At layer 6's end the buffer is blurred (each texel plus 1/8 of its 8 neighbours,
+   kept to $FF) and taken off the screen at half on its display values. The characters (layer $A)
+   come after it: the door's shadow darkens the room and the door, not them.
+   OpenHuey: `room_door_shades` (room.c) and `render_shade_*` / `post_shade_*` (a half-size
+   target, the same blur and subtraction), drawn as layer 6 begins (`main.c draw_door_shades`), with
+   `gfx.shadow-maps`. One difference from hg: glr draws the strips' grey at $FF (its mesh shader
+   scales vertex colours by 255/128); the GS writes $80, as here.
+2. **Blocking the lights** (`door_portal`, `Lights_AddDoorway`; `Shadow_BlockerVolumes`). Past
+   -78.75 degrees the leaf's two faces, when wholly in view, are added to the lights' blockers for
+   the frame (as the room scripts' 0x66 quads - walls, ceilings - are). Each character shadow's
+   volume count is then made against the blockers facing away from its light: their volumes
+   (behind the quad, away from the light, the light's shadows' reach long - and again 1/5 of it)
+   count the other way, so **no character's shadow falls where the door (or wall) already shades
+   that light**. (Worked out from the windings: the bone boxes' faces and the leaf's are both wound
+   outward, and the character's volume must count +1 to show; the near cap - the leaf itself - is
+   left out, being solid.) OpenHuey's shadow maps take only the characters as casters, so the
+   room's walls and doors don't stop them by themselves: the frame's blockers (`room_door_blockers`,
+   `light-blocker`, max 16) go to the scene's shader, which leaves shadow i out at a point inside a
+   blocker's volume from shadow i's light (`room_blocked` is the same test in C).
+   Not reproduced, on purpose: the original drops a character's whole shadow from a light when a
+   blocker's far corners are out of view (the volumes can't be drawn clipped - its own bone boxes
+   have the same all-or-nothing); the second, shorter volume (it only matters where two of the
+   character's boxes overlap, a count of 2).
 
 Fiona uses doors (docs/subsystems/fiona.md): she holds a door, opens or shuts it by hand along
 her animation, and lets it go as she steps out.

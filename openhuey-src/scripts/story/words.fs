@@ -1133,10 +1133,10 @@ $14 constant room-parts
 \ shadows' reach, times k ----
 : light ( op light F: k -- )
     swap  dup 0= if  drop light-own fdrop exit  then  light-scale ;
-\ 0x66: a lit doorway this frame - its quad keeps the characters' shadows off where the wall
-\ already shades the light (Lights_AddDoorway: the shadow volumes' blockers). The shadows here
-\ are shadow maps, which the walls shade themselves: nothing to add.
-: lights-doorway ( F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 -- )  12 0 do  fdrop  loop ;
+\ 0x66: a blocker of the lights this frame (Lights_AddDoorway: a wall, a ceiling) - where its quad
+\ shades a light the characters' shadows from that light don't fall (the shadow maps cast only
+\ characters: the room's walls don't stop them by themselves)
+: lights-doorway ( F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 -- )  light-blocker ;
 
 \ ---- the look's effects (RoomEffects slots $1C..$1E: the depth range, the fog, the screen blend) ----
 \ (colour_pulse) the room's tint (slot $1F) pulsing by variable `var` (0..$60, on 1 a call):

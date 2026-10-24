@@ -527,6 +527,41 @@ static GLuint sShineProg, sSoftPrepProg;
 static int sShineWanted;
 static float sShineCol[3];
 
+/* ---- layer 6, the original's shadow buffer (func_001B4F30; hg's glr.c shadow_end): its draws at
+ * half size against the scene's depth so far; at its end the buffer blurred - each texel plus 1/8
+ * of each of its 8 neighbours (1 texel of the PS2's 256 x 224 away), kept to 0xFF - and stretched
+ * over the screen, taken off it at half (ALPHA (0 - Cs) x FIX 0x40 + Cd) on the screen's display
+ * values ---- */
+static const char *kShadeBlurFs =
+    "#version 460 core\n"
+    "in vec2 v_uv;\n"
+    "layout(binding = 0) uniform sampler2D u_src;\n"
+    "layout(location = 0) uniform vec2 u_step;\n"   /* one PS2 texel (uv) */
+    "out vec4 o_color;\n"
+    "void main() {\n"
+    "    float s = texture(u_src, v_uv).r * 8.0;\n"
+    "    for (int y = -1; y <= 1; y++)\n"
+    "        for (int x = -1; x <= 1; x++)\n"
+    "            if (x != 0 || y != 0) s += texture(u_src, v_uv + vec2(x, y) * u_step).r;\n"
+    "    o_color = vec4(min(s / 8.0, 1.0), 0.0, 0.0, 1.0);\n"
+    "}\n";
+static const char *kShadeSubFs =
+    "#version 460 core\n"
+    "in vec2 v_uv;\n"
+    "layout(binding = 0) uniform sampler2D u_scene;\n"   /* (a copy of it) */
+    "layout(binding = 1) uniform sampler2D u_shade;\n"
+    "layout(location = 0) out vec4 o_color;\n"
+    "void main() {\n"
+    "    float b = texture(u_shade, v_uv).r * 0.5;\n"
+    "    if (b <= 0.0) discard;\n"
+    "    vec4 c = texelFetch(u_scene, ivec2(gl_FragCoord.xy), 0);\n"
+    "    vec3 d = max(pow(max(c.rgb, 0.0), vec3(1.0 / 2.2)) - b, 0.0);\n"
+    "    o_color = vec4(pow(d, vec3(2.2)), c.a);\n"
+    "}\n";
+static GLuint sShadeBlurProg, sShadeSubProg;
+static GLuint sShadeTex, sShadeDepth, sShadeFbo, sShadeBlur, sShadeBlurFbo, sShadeCopy, sShadeCopyFbo, sShadeOf;
+static int sShadeW, sShadeH;
+
 static GLuint sGreyProg, sTvTex, sTvFbo;
 static int sTvW, sTvH, sTvWanted;
 
@@ -545,6 +580,8 @@ void post_init(void) {
     sShineProg = gl_program(kFullscreenVs, kShineFs, "shine");
     sSoftPrepProg = gl_program(kFullscreenVs, kSoftPrepFs, "soft layer");
     sSoftOverProg = gl_program(kFullscreenVs, kSoftOverFs, "soft layer over");
+    sShadeBlurProg = gl_program(kFullscreenVs, kShadeBlurFs, "shadow buffer blur");
+    sShadeSubProg = gl_program(kFullscreenVs, kShadeSubFs, "shadow buffer off the screen");
     glCreateSamplers(1, &sLinear);   /* for the passes' inputs: bilinear, clamped */
     glSamplerParameteri(sLinear, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glSamplerParameteri(sLinear, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -734,6 +771,68 @@ int post_glow_begin(void) {
 void post_glow_end(void) {
     glBindFramebuffer(GL_FRAMEBUFFER, T.ms_fbo != 0 ? T.ms_fbo : T.fbo);
     glViewport(0, 0, T.w, T.h);
+}
+
+int post_shade_begin(void) {
+    static const float kNone[4] = {0, 0, 0, 0};
+
+    if (T.fbo == 0) {
+        return 0;
+    }
+    if (sShadeTex == 0 || sShadeOf != T.depth) {
+        if (sShadeTex != 0) {
+            GLuint fbos[3] = {sShadeFbo, sShadeBlurFbo, sShadeCopyFbo}, texs[4] = {sShadeTex, sShadeDepth, sShadeBlur, sShadeCopy};
+
+            glDeleteFramebuffers(3, fbos);
+            glDeleteTextures(4, texs);
+        }
+        sShadeW = T.half_w;
+        sShadeH = T.half_h;
+        sShadeTex = texture2d(GL_R16F, sShadeW, sShadeH);
+        sShadeDepth = texture2d(GL_DEPTH32F_STENCIL8, sShadeW, sShadeH);
+        glCreateFramebuffers(1, &sShadeFbo);
+        glNamedFramebufferTexture(sShadeFbo, GL_COLOR_ATTACHMENT0, sShadeTex, 0);
+        glNamedFramebufferTexture(sShadeFbo, GL_DEPTH_STENCIL_ATTACHMENT, sShadeDepth, 0);
+        sShadeBlur = texture2d(GL_R16F, sShadeW, sShadeH);
+        sShadeBlurFbo = framebuffer(sShadeBlur, 0);
+        sShadeCopy = texture2d(GL_RGBA16F, T.w, T.h);
+        sShadeCopyFbo = framebuffer(sShadeCopy, 0);
+        sShadeOf = T.depth;
+    }
+    /* the scene's depth so far, halved (the original copies its Z buffer down) */
+    if (T.ms_fbo != 0) {
+        glBlitNamedFramebuffer(T.ms_fbo, T.fbo, 0, 0, T.w, T.h, 0, 0, T.w, T.h, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    }
+    glBlitNamedFramebuffer(T.fbo, sShadeFbo, 0, 0, T.w, T.h, 0, 0, sShadeW, sShadeH, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glClearNamedFramebufferfv(sShadeFbo, GL_COLOR, 0, kNone);
+    glBindFramebuffer(GL_FRAMEBUFFER, sShadeFbo);
+    glViewport(0, 0, sShadeW, sShadeH);
+    return 1;
+}
+
+void post_shade_end(void) {
+    GLuint scene = T.ms_fbo != 0 ? T.ms_fbo : T.fbo;
+
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    glDepthMask(GL_FALSE);
+    glBindVertexArray(sEmptyVao);
+    /* (a PS2 texel: 1/224 of the height down, 1/256 of a 4:3 picture's width across) */
+    glProgramUniform2f(sShadeBlurProg, 0, (4.0f / 3.0f) * (float)sShadeH / 256.0f / (float)sShadeW, 1.0f / 224.0f);
+    bind(0, sShadeTex, sLinear);
+    fullscreen(sShadeBlurFbo, sShadeW, sShadeH, sShadeBlurProg);
+    glNamedFramebufferReadBuffer(scene, GL_COLOR_ATTACHMENT0);   /* (the screen so far, to read) */
+    glBlitNamedFramebuffer(scene, sShadeCopyFbo, 0, 0, T.w, T.h, 0, 0, T.w, T.h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    bind(0, sShadeCopy, 0);
+    bind(1, sShadeBlur, sLinear);
+    glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);   /* (the bloom mask left be) */
+    fullscreen(scene, T.w, T.h, sShadeSubProg);
+    glColorMaski(1, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    bind(1, 0, 0);
+    glBindVertexArray(0);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    glDepthMask(GL_TRUE);
 }
 
 void post_shine(uint32_t rgba) {

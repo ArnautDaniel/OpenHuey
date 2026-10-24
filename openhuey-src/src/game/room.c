@@ -249,15 +249,23 @@ static void load_lights(Room *r) {
         r->lights[i].intensity = v[7];
         r->lights[i].range = v[8];
         r->lights[i].shadow = v[11];
+        r->lights[i].reach = v[9];
+        r->lights[i].range2 = v[10];
         r->own_lights[i] = r->lights[i];
     }
     r->nlights = i;
 }
 
 int room_lights_at(const Room *r, Vec3 pos, int out[3]) {
-    float best[3] = {-1, -1, -1}, h;
-    int tri = navmesh_find(&r->nav, pos, 10.0f, &h), i, k, n = 0;
-    uint32_t mask = tri >= 0 ? r->nav.tris[tri].lights : 0;
+    float h;
+
+    return room_lights_on(r, navmesh_find(&r->nav, pos, 10.0f, &h), pos, out);
+}
+
+int room_lights_on(const Room *r, int tri, Vec3 pos, int out[3]) {
+    float best[3] = {-1, -1, -1};
+    int i, k, n = 0;
+    uint32_t mask = tri >= 0 && tri < r->nav.ntris ? r->nav.tris[tri].lights : 0;
 
     out[0] = out[1] = out[2] = -1;
     if (tri < 0) {   /* (off the mesh: the room's light 0 alone, wherever it reaches - Lights_ForModel) */
@@ -880,4 +888,224 @@ int room_floor_below(const Room *r, float x, float y, float z, float *out) {
         *out = best;
     }
     return found;
+}
+
+/* ---- the open doors' light (src/game/lights.c DoorShadow_*, Shadow_BlockerVolumes; doors.c
+ * Door_Draw, door_portal) ---- */
+
+/* the door's leaf in its own space (D_003EC080): 12 wide, 22 high, 1 thick - its two faces, each
+ * four corners (top far, top near, bottom far, bottom near), the way it faces and its top middle */
+static const float kLeaf[2][6][3] = {
+    {{12, 22, 0}, {0, 22, 0}, {12, 0, 0}, {0, 0, 0}, {0, 0, 1}, {6, 22, 0}},
+    {{0, 22, -1}, {12, 22, -1}, {0, 0, -1}, {12, 0, -1}, {0, 0, -1}, {6, 22, -1}},
+};
+
+static Vec3 leaf_point(const Mat4 *m, int face, int k) {
+    return mat4_point(m, vec3(kLeaf[face][k][0], kLeaf[face][k][1], kLeaf[face][k][2]));
+}
+
+static Vec3 leaf_facing(const Mat4 *m, int face) {
+    return vec3_norm(vec3_sub(leaf_point(m, face, 4), mat4_point(m, vec3(0, 0, 0))));
+}
+
+RoomView room_view(const Mat4 *proj, const Mat4 *view, Vec3 eye, float znear, float zfar) {
+    RoomView v;
+    float aspect = proj->m[0] != 0.0f ? proj->m[5] / proj->m[0] : 4.0f / 3.0f;
+
+    v.vp = mat4_mul(*proj, *view);
+    v.eye = eye;
+    v.bx = (2047.0f / 256.0f) * (4.0f / 3.0f) / aspect;   /* (as render_mesh_ps2_clip) */
+    v.by = 2047.0f / 224.0f;
+    v.znear = znear;
+    v.zfar = zfar;
+    return v;
+}
+
+int room_in_view(const RoomView *v, Vec3 p) {
+    const float *m = v->vp.m;
+    float x = m[0] * p.x + m[4] * p.y + m[8] * p.z + m[12], y = m[1] * p.x + m[5] * p.y + m[9] * p.z + m[13];
+    float w = m[3] * p.x + m[7] * p.y + m[11] * p.z + m[15];
+
+    return w >= v->znear && w <= v->zfar && fabsf(x) <= v->bx * w && fabsf(y) <= v->by * w;
+}
+
+/* where a light shades from: 5 above it (DoorShadow_FromLight +0x60, Shadow_BlockerVolumes) */
+static Vec3 shade_from(const RoomLight *l) {
+    return vec3(l->pos.x, l->pos.y + 5.0f, l->pos.z);
+}
+
+/* DoorShadow_FromLight: the leaf's face away from the light, the strength - the light's, its
+ * falloff at the face's top middle, the square of the angle it meets the face (times 4), the
+ * room's ambient - and the box; 0 if out of the light's reach or nothing */
+static int door_shade(const Room *r, const Mat4 *m, const RoomLight *l, RoomShade *s) {
+    Vec3 lp = shade_from(l), d = vec3_sub(lp, leaf_point(m, 0, 5)), n;
+    float fall = 1.0f, c, len = 0.75f * l->shadow;
+    int face = 0, k, a;
+
+    if (!(vec3_dot(d, leaf_facing(m, 0)) < 0.0f)) {
+        face = 1;
+        d = vec3_sub(lp, leaf_point(m, 1, 5));
+    }
+    if (l->range2 != 0.0f) {
+        float f = l->range2 - vec3_dot(d, d);
+
+        if (f < 0.0f) {
+            return 0;
+        }
+        f = f * l->reach * l->reach;
+        f = f * f;
+        fall = f * f;
+    }
+    n = leaf_facing(m, face);
+    c = -vec3_dot(vec3_norm(d), n);
+    a = (int)(4.0f * c * c * fall * l->intensity * (64.0f + (r->ambient.x + r->ambient.y + r->ambient.z) / 3.0f));
+    if (a <= 0) {
+        return 0;
+    }
+    s->alpha = a > 0x80 ? 0x80 : (float)a;
+    for (k = 0; k < 4; k++) {
+        s->p[k] = leaf_point(m, face, k);
+        s->p[k + 4] = vec3_add(s->p[k], vec3_scale(vec3_norm(vec3_sub(s->p[k], lp)), len));
+    }
+    return 1;
+}
+
+/* the door's leaf shown: its model's last part's group is 0 or on (PlacedMesh_LastShown) */
+static int leaf_shown(const RoomDoor *d) {
+    int g = d->mesh.nd > 0 ? d->mesh.d[d->mesh.nd - 1].group : 0;
+
+    return g == 0 || (d->groups[g >> 5] >> (g & 31) & 1u);
+}
+
+int room_door_shades(const Room *r, const RoomView *v, RoomShade *out, int max) {
+    int i, k, n = 0;
+
+    if (r->id < 0) {
+        return 0;
+    }
+    for (i = 0; i < ROOM_DOORS; i++) {
+        const RoomDoor *d = &r->doors[i];
+        int lights[3];
+        Mat4 m;
+
+        if (!d->present || !d->shown || !leaf_shown(d) || !(d->swing < 0.0f)) {
+            continue;
+        }
+        /* a shadow may fall at it (lights +0x2C): the eye above its triangle's plane */
+        if (!(vec3_dot(navmesh_normal(&r->nav, d->tri), vec3_sub(d->pos, v->eye)) < 0.0f)) {
+            continue;
+        }
+        if (r->nlights > 0 && d->tri != -1) {   /* (Lights_ShadowLights) */
+            room_lights_on(r, d->tri, d->pos, lights);
+        } else {
+            lights[0] = 0;
+            lights[1] = lights[2] = -1;
+        }
+        m = door_matrix(d);
+        for (k = 0; k < 3 && n < max; k++) {
+            RoomShade *s = &out[n];
+            int j, seen = 1;
+
+            if (lights[k] < 0 || lights[k] >= r->nlights || !door_shade(r, &m, &r->lights[lights[k]], s)) {
+                continue;
+            }
+            for (j = 0; j < 8; j++) {   /* (DoorShadow_Draw: none if a corner is out of view) */
+                seen &= room_in_view(v, s->p[j]);
+            }
+            if (seen) {
+                s->exit = i;
+                s->light = lights[k];
+                n++;
+            }
+        }
+    }
+    return n;
+}
+
+RoomBlocker room_blocker(const Vec3 q[4]) {
+    RoomBlocker b;
+    int k;
+
+    for (k = 0; k < 4; k++) {
+        b.q[k] = q[k];
+    }
+    b.facing = vec3_norm(vec3_cross(vec3_sub(q[1], q[0]), vec3_sub(q[2], q[0])));
+    b.top = vec3(q[3].x + 0.5f * (q[0].x - q[3].x), q[2].y + 0.5f * (q[1].y - q[2].y), q[3].z + 0.5f * (q[0].z - q[3].z));
+    return b;
+}
+
+int room_door_blockers(const Room *r, const RoomView *v, RoomBlocker *out, int n, int max) {
+    int i, face, k;
+
+    if (r->id < 0) {
+        return n;
+    }
+    for (i = 0; i < ROOM_DOORS; i++) {
+        const RoomDoor *d = &r->doors[i];
+        Mat4 m;
+
+        if (!d->present || !d->shown || !leaf_shown(d) || !(d->swing <= -78.75f)) {
+            continue;
+        }
+        m = door_matrix(d);
+        for (face = 0; face < 2 && n < max; face++) {   /* (door_portal: z 0, then -1) */
+            RoomBlocker *b = &out[n];
+            int seen = 1;
+
+            for (k = 0; k < 4; k++) {
+                b->q[k] = leaf_point(&m, face, k);
+                seen &= room_in_view(v, b->q[k]);
+            }
+            if (!seen) {   /* (Lights_AddDoorway: only wholly in view) */
+                continue;
+            }
+            b->facing = leaf_facing(&m, face);
+            b->top = leaf_point(&m, face, 5);
+            n++;
+        }
+    }
+    return n;
+}
+
+/* inside the volume of blocker b from lp, `len` long: behind the quad (in the pyramid from the
+ * light through it) and before the far end (its corners each `len` on) */
+static int in_blocker_volume(const RoomBlocker *b, Vec3 lp, float len, Vec3 p) {
+    static const int kRound[4] = {0, 1, 3, 2};   /* (the corners in turn round the quad) */
+    Vec3 f[4], mid = vec3(0, 0, 0), fn;
+    int k;
+
+    if (!(vec3_dot(vec3_sub(p, b->q[0]), b->facing) > 0.0f)) {
+        return 0;
+    }
+    for (k = 0; k < 4; k++) {
+        mid = vec3_add(mid, vec3_scale(b->q[k], 0.25f));
+    }
+    for (k = 0; k < 4; k++) {
+        Vec3 a = b->q[kRound[k]], c = b->q[kRound[(k + 1) & 3]];
+        Vec3 sn = vec3_cross(vec3_sub(a, lp), vec3_sub(c, lp));
+
+        if (vec3_dot(sn, vec3_sub(p, lp)) * vec3_dot(sn, vec3_sub(mid, lp)) < 0.0f) {
+            return 0;
+        }
+        f[k] = vec3_add(b->q[k], vec3_scale(vec3_norm(vec3_sub(b->q[k], lp)), len));
+    }
+    fn = vec3_cross(vec3_sub(f[3], f[0]), vec3_sub(f[2], f[1]));   /* (the far end: across its diagonals) */
+    mid = vec3_scale(vec3_add(vec3_add(f[0], f[1]), vec3_add(f[2], f[3])), 0.25f);
+    return vec3_dot(fn, vec3_sub(p, mid)) * vec3_dot(fn, vec3_sub(lp, mid)) >= 0.0f;
+}
+
+int room_blocked(const RoomLight *l, const RoomBlocker *b, int n, Vec3 p) {
+    Vec3 lp = shade_from(l);
+    int i;
+
+    if (!(l->shadow > 0.0f)) {
+        return 0;
+    }
+    for (i = 0; i < n; i++) {
+        /* (only a quad facing away from the light shades it) */
+        if (vec3_dot(vec3_sub(lp, b[i].top), b[i].facing) < 0.0f && in_blocker_volume(&b[i], lp, l->shadow, p)) {
+            return 1;
+        }
+    }
+    return 0;
 }

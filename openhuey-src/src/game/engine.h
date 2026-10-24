@@ -33,6 +33,10 @@ typedef struct Engine {
     RoomLight stage[3];    /* lights set by scripts (a scene of their own, e.g. the title): */
     int nstage;            /* used in place of the room's when there are any */
     Vec3 stage_ambient;    /* (0..128, as a room's) */
+    /* the lights' blockers the room's scripts gave this tick (their 0x66, lights +0x38: cleared as
+     * a tick starts); the frame adds the open doors' (room_door_blockers) */
+    RoomBlocker blockers[ROOM_MAX_BLOCKERS];
+    int nblockers;
     /* scripted lighting on top of the room's (the original's Lights +0x950, Lights_Scripted; a
      * cutscene's cues set it): the room lights' colours scaled, the ambient raised, and up to
      * two lights from the camera's side, turned `up` (about the axis across the view) and

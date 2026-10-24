@@ -66,7 +66,7 @@ void render_look_tick(void) {
 enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_COLOR, U_AMBIENT, U_EYE, U_RIM, U_MASK,
        U_ROOM_LIT, U_LPOS = 12, U_LCOL = 15, U_LRANGE = 18, U_AMBIENT128 = 21, U_NSHADOWS = 22, U_SHADOW_VP = 23,
        U_SHADOW_INFO = 35, U_SHADOW_STRENGTH = 47, U_RECEIVE = 59, U_CHAR_LIGHT = 60, U_ALPHA = 61,
-       U_REJECT = 62, U_UNFOGGED = 63 };   /* (12 shadows) */
+       U_REJECT = 62, U_UNFOGGED = 63, U_SHADOW_LIGHT = 64, U_NBLOCKERS = 76, U_BLOCKER = 77 };   /* (12 shadows, 16 blockers) */
 
 static const char *kMeshVs =
     "#version 460 core\n"
@@ -126,7 +126,37 @@ static const char *kMeshFs =
     "layout(location = 61) uniform vec4 u_tint;\n"   /* the whole draw tinted and faded (a character: 1 1 1 1 as it is) */
     "layout(location = 63) uniform float u_unfogged;\n"   /* drawn after the room's fog: 1 */
     "layout(binding = 1) uniform sampler2DArrayShadow u_shadow;\n"
+    "layout(location = 64) uniform vec4 u_shadow_light[12];\n"   /* where its light shades from, its shadows' reach */
+    "layout(location = 76) uniform int u_nblockers;\n"
+    "layout(location = 77) uniform vec3 u_blocker[96];\n"   /* 6 each: 4 corners, the facing, the top middle */
     "layout(location = 0) out vec4 o_color;\n"
+    /* the lights' blockers (room.c room_blocked, the original's Shadow_BlockerVolumes): shadow i's
+     * light shaded from p by one - p behind a quad facing away from it, in the pyramid from the
+     * light through it, before its far end (the corners each the reach on) */
+    "bool blocked(int i, vec3 p) {\n"
+    "    vec3 lp = u_shadow_light[i].xyz;\n"
+    "    float len = u_shadow_light[i].w;\n"
+    "    if (!(len > 0.0)) return false;\n"
+    "    for (int b = 0; b < 16; b++) {\n"
+    "        if (b >= u_nblockers) break;\n"
+    "        vec3 q[4] = vec3[4](u_blocker[b * 6], u_blocker[b * 6 + 1], u_blocker[b * 6 + 3], u_blocker[b * 6 + 2]);\n"
+    "        vec3 n = u_blocker[b * 6 + 4];\n"
+    "        if (!(dot(lp - u_blocker[b * 6 + 5], n) < 0.0) || !(dot(p - q[0], n) > 0.0)) continue;\n"
+    "        vec3 mid = 0.25 * (q[0] + q[1] + q[2] + q[3]);\n"
+    "        bool inside = true;\n"
+    "        for (int k = 0; k < 4; k++) {\n"
+    "            vec3 sn = cross(q[k] - lp, q[(k + 1) & 3] - lp);\n"
+    "            if (dot(sn, p - lp) * dot(sn, mid - lp) < 0.0) inside = false;\n"
+    "        }\n"
+    "        if (!inside) continue;\n"
+    "        vec3 f0 = q[0] + normalize(q[0] - lp) * len, f1 = q[1] + normalize(q[1] - lp) * len;\n"
+    "        vec3 f2 = q[2] + normalize(q[2] - lp) * len, f3 = q[3] + normalize(q[3] - lp) * len;\n"
+    "        vec3 fn = cross(f2 - f0, f3 - f1);\n"
+    "        vec3 fm = 0.25 * (f0 + f1 + f2 + f3);\n"
+    "        if (dot(fn, p - fm) * dot(fn, lp - fm) >= 0.0) return true;\n"
+    "    }\n"
+    "    return false;\n"
+    "}\n"
     "layout(location = 1) out vec2 o_mask;\n"   /* the bloom mask; drawn after the room's fog (no fog there) */
     "void main() {\n"
     /* (a triangle with a corner outside the PS2's clip volume isn't drawn at all, as the
@@ -166,6 +196,7 @@ static const char *kMeshFs =
     "        vec2 texel = 1.0 / vec2(textureSize(u_shadow, 0).xy);\n"
     "        for (int i = 0; i < 12; i++) {\n"
     "            if (i >= u_nshadows) break;\n"
+    "            if (blocked(i, v_pos)) continue;\n"
     /* (characters receive too - each other's shadows and their own: the point is moved out along
      * the surface's normal first so a surface doesn't shadow itself) */
     "            vec3 at = u_lit != 0 ? v_pos + normalize(v_normal) * 0.35 : v_pos;\n"
@@ -230,6 +261,8 @@ static struct {
     int nshadows;
     Mat4 shadow_vp[RENDER_MAX_SHADOWS];
     float shadow_info[RENDER_MAX_SHADOWS][4], shadow_strength[RENDER_MAX_SHADOWS];
+    float shadow_light[RENDER_MAX_SHADOWS][4];   /* where its light shades from, its reach */
+    GLuint shade_prog, shade_vao, shade_vbo;     /* layer 6's draws */
 } R;
 
 #define FONT_CELL_W 6
@@ -532,7 +565,7 @@ void render_shadows_begin(void) {
     R.nshadows = 0;
 }
 
-int render_shadow_add(const Mat4 *light_vp, Vec3 center, float radius, float strength) {
+int render_shadow_add(const Mat4 *light_vp, Vec3 center, float radius, float strength, Vec3 light, float reach) {
     static const float kFar = 1.0f;
     int i = R.nshadows;
 
@@ -546,6 +579,10 @@ int render_shadow_add(const Mat4 *light_vp, Vec3 center, float radius, float str
     R.shadow_info[i][2] = center.z;
     R.shadow_info[i][3] = radius;
     R.shadow_strength[i] = strength;
+    R.shadow_light[i][0] = light.x;
+    R.shadow_light[i][1] = light.y;
+    R.shadow_light[i][2] = light.z;
+    R.shadow_light[i][3] = reach;
     glBindFramebuffer(GL_FRAMEBUFFER, R.shadow_fbo[i]);
     glViewport(0, 0, SHADOW_SIZE, SHADOW_SIZE);
     glDepthMask(GL_TRUE);
@@ -589,7 +626,84 @@ void render_shadows_end(void) {
         glProgramUniformMatrix4fv(R.mesh_prog, U_SHADOW_VP, R.nshadows, GL_FALSE, vp);
         glProgramUniform4fv(R.mesh_prog, U_SHADOW_INFO, R.nshadows, &R.shadow_info[0][0]);
         glProgramUniform1fv(R.mesh_prog, U_SHADOW_STRENGTH, R.nshadows, R.shadow_strength);
+        glProgramUniform4fv(R.mesh_prog, U_SHADOW_LIGHT, R.nshadows, &R.shadow_light[0][0]);
     }
+}
+
+void render_blockers(const float *v, int n) {
+    n = n < 0 ? 0 : n > RENDER_MAX_BLOCKERS ? RENDER_MAX_BLOCKERS : n;
+    glProgramUniform1i(R.mesh_prog, U_NBLOCKERS, n);
+    if (n > 0) {
+        glProgramUniform3fv(R.mesh_prog, U_BLOCKER, n * 6, v);
+    }
+}
+
+/* ---- layer 6: the original's shadow buffer (post.c post_shade_*) ---- */
+
+static const char *kShadeVs =
+    "#version 460 core\n"
+    "layout(location = 0) in vec3 a_pos;\n"
+    "layout(location = 1) in vec2 a_ca;\n"   /* the GS's colour and alpha (0..1: 0xFF, 0x80) */
+    "layout(location = 0) uniform mat4 u_vp;\n"
+    "noperspective out vec2 v_ca;\n"   /* (the GS shades along the screen) */
+    "void main() {\n"
+    "    gl_Position = u_vp * vec4(a_pos, 1.0);\n"
+    "    v_ca = a_ca;\n"
+    "}\n";
+static const char *kShadeFs =
+    "#version 460 core\n"
+    "noperspective in vec2 v_ca;\n"
+    "layout(location = 0) out vec4 o_color;\n"
+    "void main() { o_color = vec4(v_ca.x, 0.0, 0.0, v_ca.y); }\n";
+
+int render_shade_begin(void) {
+    if (!post_shade_begin()) {
+        return 0;
+    }
+    if (R.shade_prog == 0) {
+        R.shade_prog = gl_program(kShadeVs, kShadeFs, "shadow buffer");
+        glCreateVertexArrays(1, &R.shade_vao);
+        glCreateBuffers(1, &R.shade_vbo);
+        glNamedBufferStorage(R.shade_vbo, 4 * 5 * sizeof(float), NULL, GL_DYNAMIC_STORAGE_BIT);
+        glVertexArrayVertexBuffer(R.shade_vao, 0, R.shade_vbo, 0, 5 * sizeof(float));
+        glEnableVertexArrayAttrib(R.shade_vao, 0);
+        glVertexArrayAttribFormat(R.shade_vao, 0, 3, GL_FLOAT, GL_FALSE, 0);
+        glVertexArrayAttribBinding(R.shade_vao, 0, 0);
+        glEnableVertexArrayAttrib(R.shade_vao, 1);
+        glVertexArrayAttribFormat(R.shade_vao, 1, 2, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
+        glVertexArrayAttribBinding(R.shade_vao, 1, 0);
+    }
+    glUseProgram(R.shade_prog);
+    glBindVertexArray(R.shade_vao);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDepthMask(GL_FALSE);
+    glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    return 1;
+}
+
+void render_shade_quad(const Mat4 *vp, const Vec3 p[4], float alpha) {
+    float v[4][5];
+    int k;
+
+    for (k = 0; k < 4; k++) {   /* (the near two: 0x80 grey at the alpha; the far two: nothing) */
+        v[k][0] = p[k].x;
+        v[k][1] = p[k].y;
+        v[k][2] = p[k].z;
+        v[k][3] = k < 2 ? 128.0f / 255.0f : 0.0f;
+        v[k][4] = k < 2 ? alpha / 128.0f : 0.0f;
+    }
+    glNamedBufferSubData(R.shade_vbo, 0, sizeof(v), v);
+    glProgramUniformMatrix4fv(R.shade_prog, 0, 1, GL_FALSE, vp->m);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+void render_shade_end(void) {
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
+    post_shade_end();
 }
 
 void render_post(void) {
