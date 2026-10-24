@@ -59,6 +59,7 @@ state: room-state
   \ the characters: where each was at the last frame's end (for areas entered / left), whether
   \ it was seen, and whether a script of this room has it (+0xE0: its scripted state)
   #chars /vec * field char-was  #chars cells field char-seen  #chars cells field char-scripted
+  #chars cells field char-in-room   \ each in this room as it last told (one coming in: its entering script)
   \ each character's move (+0xE1: done) and whether its animation ended, as it last told (moving)
   #chars cells field move-done-of  #chars cells field anim-ended-of  #chars cells field events-of
   \ the action prepared this frame (the scripts' scene-change: +0x1134): the scene (-1 none), its
@@ -97,5 +98,6 @@ state: room-state
   cell field summoner-secs       \ the summoner's cooldown left (seconds)
   cell field loud-here           \ a noise of $20 or more made in this room lately (frames left)
   cell field fiona-unseen         \ she can't be seen (fiona-unseen: item $89, still)
+  cell field fiona-request-kind   \ a creature's request of her this frame (fiona-requested; the progress' +0x1050), 0 none
   #creatures cells field cr-rooms  #creatures cells field cr-modes  #creatures cells field cr-ages  #creatures cells field cr-ids
 end-state

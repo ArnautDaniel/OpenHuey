@@ -30,12 +30,29 @@ USING: engine game-state actors messages common room-names story.state story.wor
     dup 1 = if  shared.after-phase1  then
     2 = if  shared.after-phase2  then ;
 
-\ character slot `cs` enters this room: its entering script, run as itself
+\ character slot `cs` enters this room: its entering script, run as itself (Events_CharEnter) -
+\ the room's entering characters, and each one coming in while it is played; the context of the
+\ script running then put back
 : char-enter ( cs -- )
     dup char-here 0= if  drop exit  then
     events-held state-flag? if  ['] shared.char-enter-26  else  this-room @ 6 room-script @  then
     ?dup 0= if  drop exit  then
-    phase-context  swap dup ctx-who !  ctx-id !  execute ;
+    ctx-slot @ ctx-who @ ctx-id @ phase-frames @ {: cs xt slot who id frames :}
+    phase-context  cs ctx-who !  cs cs>id ctx-id !  xt execute
+    slot ctx-slot !  who ctx-who !  id ctx-id !  frames phase-frames ! ;
+\ who is in this room as they last told (char-in): one not in it before and in it now has come in.
+\ The original's characters run Events_CharEnter as they come into the room played: the stalker
+\ through a door (Pursuer_ThroughDoor - not put there by a script: came-by -1), Hewie arriving
+\ (Hewie_Vt38, arrived, Hewie_PlaceInRoom), Fiona back in view (fiona_show)
+: char-in ( cs -- addr )  cells char-in-room + ;
+: chars-in ( -- )  #chars 0 do  i char-here i char-in !  loop ;
+: arrival ( cs in? -- )
+    {: cs in? :}  cs char-in @ 0= in? and  in? cs char-in !  if  cs char-enter  then ;
+\ the stalker in slot 2 as he tells it: in by a door, his entering script; put here (came-by -1), in
+: stalker-told-in ( -- )
+    stalker-cs char-here {: in? :}
+    in? st-came @ 0< and if  -1 stalker-cs char-in !  exit  then
+    stalker-cs in? arrival ;
 
 \ the action scripts, a turn each: a character's goes once the character isn't in its scripted
 \ action any more (and the message it opened with it)
@@ -77,14 +94,15 @@ behaviour playing-room
       self subscribe tick  self subscribe frame-end
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe hewie-gesture  self subscribe moving
       self subscribe stalker-doing  self subscribe stalker-blow  self subscribe item-event  self subscribe item-var  self subscribe item-event-bit  100 st-age !  -1 st-blow !
-      self subscribe creature-doing  self subscribe noise-was  self subscribe summoner-cooldown-is  self subscribe fiona-struck-by  self subscribe fiona-shakes  self subscribe fiona-shaking  self subscribe hewie-health  self subscribe keri-fell  self subscribe fiona-unseen  self subscribe fiona-message  #creatures 0 do  100 i cells cr-ages + !  loop
+      self subscribe creature-doing  self subscribe noise-was  self subscribe summoner-cooldown-is  self subscribe fiona-struck-by  self subscribe fiona-shakes  self subscribe fiona-shaking  self subscribe hewie-health  self subscribe keri-fell  self subscribe fiona-unseen  self subscribe fiona-message  self subscribe fiona-requested  #creatures 0 do  100 i cells cr-ages + !  loop
       0 phase
       #chars 0 do  i char-enter  loop
-      remember-chars
+      chars-in  remember-chars
       start-camera  3 phase  shot-camera ;
   on tick ( -- )
       clock-off   \ (drawn again by the rooms that show it, each frame)
       1 phase  -1 prep-scene !   \ (Progress_CharRequests: the actions prepared afresh)
+      0 fiona-request-kind !     \ (Progress_OwnRequests: her request taken)
       2 phase  offer-it  run-slots ;
   on fiona-message ( msg -- )   \ (her locked door's script: not while Hewie is the one played)
       leaving @ msg @ 0< 0= or  hewie-controlled? or if  drop exit  then
@@ -121,10 +139,13 @@ behaviour playing-room
   on story-stop ( -- )  free-slots  release-all  scene-gone  effects-off  story-id send room-done ;
   on danger ( level -- )  the-danger ! ;
   on panic ( stage level -- )  cell>f f>s the-panic-level !  the-panic ! ;
-  on fiona-doing ( mode sub cond cmd doing -- )  fiona-act !  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode ! ;
+  on fiona-doing ( mode sub cond cmd doing -- )  fiona-act !  fiona-cmd !  fiona-cond !  fiona-sub !  fiona-mode !
+      entered @ if  fiona-cs dup char-here arrival  then ;
+  on fiona-requested ( kind -- )  fiona-request-kind ! ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       hewie-trust-lv !  hewie-way !  hewie-breakable !  hewie-reach !  hewie-near !  hewie-cmdable !
-      2drop hewie-cond !  drop  hewie-move-mode !  hewie-act !  hewie-here ! ;
+      2drop hewie-cond !  drop  hewie-move-mode !  hewie-act !  hewie-here !
+      entered @ if  hewie-cs dup char-here arrival  then ;
   on hewie-gesture ( g -- )  hewie-gesture-now ! ;
   on fiona-unseen ( on -- )  fiona-unseen ! ;
   on summoner-cooldown-is ( secs -- )  summoner-secs ! ;
@@ -138,7 +159,8 @@ behaviour playing-room
   on creature-doing ( slot room mode up -- )
       drop rot cells  tuck cr-modes + !  tuck cr-rooms + !  sender over cr-ids + !  0 swap cr-ages + ! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
-      st-came !  st-alert !  drop  st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  0 st-age ! ;
+      st-came !  st-alert !  drop  st-hp-max !  st-hp !  st-cond !  st-sub !  st-mode !  st-room !  0 st-age !
+      sender slot2 @ =  entered @ and if  stalker-told-in  then ;
   on stalker-blow ( n -- )  st-blow ! ;
 end-behaviour
 

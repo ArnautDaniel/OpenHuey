@@ -59,6 +59,7 @@ message spirit-kept ( slot -- )              \ (a spirit) as its progress record
 message creature-gone ( slot -- )            \ (creatures) it has vanished: its slot is free
 message creature-doing ( slot room mode up -- )  \ broadcast each frame by each creature: where, how it moves (creature-move), up (after her: what Hewie goes for)
 message fiona-request ( kind x y z threat -- )   \ (Fiona) a request from there (Progress_Noise; xyz>cells, threat f>cell): request-kind
+message fiona-requested ( kind -- )            \ broadcast (Fiona) a request of hers taken this frame (the progress' +0x1050: the story's cond 0x64)
 message game-loaded ( -- )                   \ broadcast: a save's progress is back (saves.fs) - rebuild from it
 
 \ ---- doors (docs/subsystems/doors.md) ----

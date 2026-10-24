@@ -57,7 +57,9 @@ A room registers its scripts by their names: `castle-1f-2 register-scripts` find
 its place (`register-shared` the same for `shared.act80` ..); only a script registered under another
 name is written out. Fiona's action offered on her action button is `act when offer-action` -
 `when` the original's kind by when it may be: `unhurried` (not in a panic; chased, her "no time"
-message instead), `always`, `calm` (not in a panic), `calm-hewie-up`.
+message instead), `always`, `calm` (not in a panic), `calm-hewie-up` (the hiding places: not in a
+panic, nor in hard mode while Hewie is down; busy - chased, a stalker or figure in the room, or
+someone but Hewie held by a script: SceneGame_Busy - her "no time" message instead).
 
 The ways a room opens and closes are its nav triangles' flags, by name (scripts/floor-flags.fs:
 who each keeps off - `keeps-people-off`, `keeps-hewie-off`, `solid-floor`, ... - and what the
@@ -91,7 +93,8 @@ Declared in `scripts/messages.fs`.
 | `room-leave` / `room-left` | | story → room | Phase 4 / phase 5. |
 | `room-done` | | room → story | Finished: it may go. |
 | `story-stop` | | → story | No more room scripts (the others' tests; the console). |
-| `danger`, `panic`, `fiona-doing`, `hewie-doing` | | in (broadcasts) | Facts the conditions read (game mode, panic stage, Fiona's mode). |
+| `danger`, `panic`, `fiona-doing`, `hewie-doing` | | in (broadcasts) | Facts the conditions read (game mode, panic stage, Fiona's mode). With `stalker-doing`, who is in the room: one coming in runs its entering script. |
+| `fiona-requested` | `( kind -- )` | in (Fiona's broadcast) | A creature's request of her this frame (cond 0x64: a spirit's, $D). |
 | `go-through` | `( exit -- )` | → rooms | An exit taken (`exit-check`), after the frame. |
 | `to-exit` | `( exit -- )` | → a character | Put yourself on the exit's outside spot, facing in (`char-to-exit`). |
 | `cam-char-setup`, `cam-on` (C words), `camera-restart` | | → camera | `char-camera`, `area-camera`, `chars-area-camera`, `camera-follow`. |
@@ -120,18 +123,28 @@ conditions), `scene_game.c` (the order), `progress.c`.
 
 1. **Characters by slot:** 0 Fiona, 1 Hewie, 2 the stalker, 3.. the event characters' figures
    (`cast-actor`: docs/subsystems/cast.md); 0xFF the
-   script's own character; 0xFE the active stalker.
-2. **Areas entered / left** compare where a character was at the last frame's end with where
+   script's own character; 0xFE the active stalker. A script's context has its character's id
+   (+0x153C: `cs>id` - Fiona 0, Hewie 1, the stalker his kind, a figure the id it was loaded as):
+   `self-is?` (cond 0x17) compares it, $FE the stalker's while he is in the game. `char-camera`
+   with $FF is the director's own setup, followed by nobody (Progress_SlotOfId gives none).
+   The facing conditions (0x05, 0x06) want the character in the game, in any room (cond_char).
+2. **Entering scripts** (Events_CharEnter): each character in the room as it is entered, then
+   each coming in while it is played, as it tells (`fiona-doing`, `hewie-doing`, `stalker-doing`):
+   Hewie arriving or placed here, Fiona back in view, the stalker through a door - not put here by
+   a script (his came-by -1, as Pursuer +0x64 runs none). Run in the character's context, the
+   running script's put back after.
+3. **Areas entered / left** compare where a character was at the last frame's end with where
    it is now (the original's previous position).
-3. **Taking an exit** (cmd 0x00): with bit 7, at once; otherwise if its door isn't locked, is
-   passable, and Fiona isn't in a scripted action. **An exit usable** (cond 0x07): Fiona free
-   (no script; moving on her own, or mode 0xA), in the exit's area, its door open, and the door
-   not held. Arrivals are on the exit's outside spot, outside its area: nothing else stops a
+4. **Taking an exit** (cmd 0x00): with bit 7, at once; otherwise if its door isn't locked, is
+   passable from the one played's side (Fiona's bit $10, Hewie's $20), and the one played moves
+   on their own (Fiona: mode 0 or 0xA; Hewie: 0) - a script holding her doesn't stop it. **An
+   exit usable** (cond 0x07): the one played free (no script, and that mode), in the exit's area,
+   its door open, and the door not held. Arrivals are on the exit's outside spot, outside its area: nothing else stops a
    bounce, as in the original.
-4. **Actions** (cmd 0x05 / 0x92): a scene's script in its slot if free (0x92: always); a
+5. **Actions** (cmd 0x05 / 0x92): a scene's script in its slot if free (0x92: always); a
    character's in its slot, unless it already has one (0x92: always), the character then
    scripted until its script ends (`self-idle-or-end`). No new action once an exit is taken.
-5. **`events-held`** runs only phase 3 and a shared script for characters entering.
+6. **`events-held`** runs only phase 3 and a shared script for characters entering.
 
 ## Design notes
 
@@ -420,6 +433,15 @@ player and restarts him; its stop gives Fiona back; its save keeps the time for 
 back) go to the room `room-preload` or `exit-prepare` named (`docs/subsystems/rooms.md`).
 The title's MINI-GAME starts the extras room's action 1 at once (its door 0's offer:
 `mini-game-asked?`).
+
+**Checked against event.c** (2026-10-24): the entering scripts of characters coming in while the
+room is played, the script's character by id (`cs>id`, `self-is?`), exits by her mode and from
+Hewie's side, the hiding places' offer while busy, `char-camera` $FF, `self-touching?` by the
+other's margins, `stalker-free?` (not held by a script or struck; his floor free), the facing
+conditions anywhere, `loader-busy?` (cond 0x62: the loader's busy flag - never, the waits on it
+end at once), `spirit-request-pending?` (cond 0x64). `tests/story/test_story_rules.fs` (22).
+Left: `stalker-free?`'s other hold (Progress_IsLinked: a pending relation between the slots,
+which OpenHuey's messages don't keep) and SceneGame_Busy's +0xF6CD24 bits.
 
 The later stages, by how much the scripts use them (all built now):
 

@@ -320,7 +320,8 @@ O_FIC), and the stalkers' (Daniella, Debilitas, Riccardo, Lorenzo's two). Not ye
 
 ## F4e: the creatures' requests (`fiona/hurt.fs`, `fiona/seized.fs`)
 
-`fiona-request ( kind x y z )` from a creature (Progress_Noise; the point it came from):
+`fiona-request ( kind x y z )` from a creature (Progress_Noise; the point it came from), told on
+as `fiona-requested ( kind )` (the story's cond 0x64 reads the progress' +0x1050 that frame):
 - **$D** a spirit touched her: **falls** ($13, Fiona_StateFall13) away from the point - on open
   floor by the side it came from ($1004 ahead, $1005 behind, $1006 / $1007 the sides), on a step
   or in a doorway straight down ($100F); her cry ($3F), a noise ($5F); at the fall's last frame

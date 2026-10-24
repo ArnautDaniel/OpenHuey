@@ -202,11 +202,11 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
         then
         in-area4-2 ebit-clear
     then
-    in-area5 ebit? loader-done? not and if
+    in-area5 ebit? loader-busy? not and if
         $1C 3 1 char-load
         in-area5 ebit-clear
     then
-    in-area4-2 ebit? loader-done? not and if
+    in-area4-2 ebit? loader-busy? not and if
         $14 3 $FF char-load
         $15 4 $FF char-load
         $16 5 $FF char-load
@@ -862,7 +862,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     left-foot-down ebit-set
     right-foot-down ebit-set
     $F $44 fade
-    [: loader-done? ;] wait-while
+    [: loader-busy? ;] wait-while
     8 3 $FF char-load
     self-wait-done
     omb1-6-flag1 story-flag? not if
@@ -1022,7 +1022,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     1 self-scripted
     self-wait-done
     $F $44 fade
-    [: loader-done? ;] wait-while
+    [: loader-busy? ;] wait-while
     8 3 $FF char-load
     3 char-start
     $37 1.0 1 bgm

@@ -19,6 +19,7 @@ calls it directly, at the points the original does.
 | `cam-char-setup` | `( who set path -- )` | `who`'s setup from now on (path -1: none). The story's `char-camera` / `area-camera`. |
 | `cam-on` | `( who -- )` | Follow `who` and take their setup (-1: nobody; someone gone, elsewhere or without a setup: Fiona). The story's `camera-follow` (0x28). |
 | `cam-followed` | `( -- who )` | Whom it follows (the story's `camera-on`). |
+| `cam-followed!` | `( who -- )` | Whom it is taken to follow, the one it looks at left (the story's `char-camera` $FF: -1, the progress' +0x1130 = 0xFF). |
 | `cam-shake!` | `( F: a -- )` | The eye shaken by up to `a` each way - for this frame: the panic stills it first each frame (0xD3). |
 | `cam-restart` | `( -- )` | Start over on the setup (0x4A). |
 | `cam-scene!` / `cam-scene?` | `( flag -- )` / `( -- flag )` | A cutscene has the camera (from its start of play to its signal 8): the director idle, `cam-set@` -1. Others wait on it (the summoner, the butterflies' motes). |

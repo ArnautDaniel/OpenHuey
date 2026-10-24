@@ -284,7 +284,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     hewie-who char-done
     3 0 char-remove
     4 0 char-remove
-    [: loader-done? ;] wait-while
+    [: loader-busy? ;] wait-while
     0 self-idle-anim
     fiona-who $BD -78.171 -25.963 -73 char-to-xz
     camera-restart

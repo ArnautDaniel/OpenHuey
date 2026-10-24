@@ -246,7 +246,7 @@ behaviour free
   on costume ( n -- )  wear  show-her ;
   on fiona-request ( kind x y z threat -- )   \ (a creature's, Progress_Noise: $D a spirit - she falls; 3 a red one
       >r cells>xyz from-pt vec!   \ going - grabbed; $C homunculi - held down)
-      0 -1 r> cell>f struck drop ;   \ (its threat her fright: Fiona_React)
+      dup broadcast fiona-requested  0 -1 r> cell>f struck drop ;   \ (its threat her fright: Fiona_React)
   on throw-down ( who recover -- )  thrown-down ;   \ (the story's 0xB2)
   on look-hold ( who frames -- )  her-look-hold !  her-look-who !  1 her-look-on ! ;   \ (the story's 0x96: Fiona_SetTarget)
   on creature-doing ( slot room mode up -- )   \ (a homunculus in her room holding her; each creature remembered)
