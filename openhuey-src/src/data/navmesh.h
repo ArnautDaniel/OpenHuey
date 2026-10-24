@@ -34,11 +34,14 @@ typedef struct NavMesh {
     int nlinks;
     uint32_t block;    /* triangles with any of these flags are walls to whoever moves now (the
                         * original's per-character mask: Fiona 0x28020018, Hewie 0x29020008) */
+    uint8_t *marks;    /* section 16's byte a triangle, as it is (NavMesh +0x18: bit $80 a wall to
+                        * the feet - Motion_OntoFloor); NULL none */
+    int nmarks;
 } NavMesh;
 
 int navmesh_build(NavMesh *n, const uint8_t *sec, size_t size);
 /* the flags as the game sets them up (NavMeshSet_Take): some cleared, then section 16's byte a
- * triangle adds 0x4000 (bit 0) and 0x80000 (bit 1) */
+ * triangle adds 0x4000 (bit 0) and 0x80000 (bit 1); the bytes kept (marks) */
 void navmesh_take_flags(NavMesh *n, const uint8_t *sec16, size_t size);
 void navmesh_free(NavMesh *n);
 /* the links (NavMesh_FindDoorRegions; navmesh_take_flags calls it) */

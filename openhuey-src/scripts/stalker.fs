@@ -17,6 +17,27 @@ USING: engine game-state actors messages common facts flag-names room-names path
     self body-yaw him act.yaw sf!
     played? under-t @ 0= and unseen @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class)
 
+\ his body set by his feet (Pursuer_ModelUpdate: his model's +0x40 and +0x4C, the engine's legs-fit -
+\ humanlegs.c): in the room played, on the floor - but on a ladder, or a script's walk through
+\ blocked floor - by his stance's points along his step, his feet planted; else at his place
+: feet-on? ( -- flag )  my-move-mode @ on-ladder-mode <>  script-held @ noclipped @ and 0= and ;
+: feet-way ( F: -- back front )
+    anim @ walk-slow-anim = if  feet-slow-back f@ feet-slow-front f@  else  feet-back f@ feet-front f@  then ;
+: fit-legs ( -- )
+    played? 0= my-model @ 0< or if  exit  then
+    self body-tri  feet-on?  {: tri on :}
+    on if  feet-way  else  0e 0e  then
+    my-model @ tri my-floor @ on 1 and legs-fit ;
+\ his legs (each model class's Loaded: +0x890..+0x8AC) by his model's file - Lorenzo's other class
+\ (O_LRY: Lorenzo2Model) his left from $12; Lorenzo (O_LRO) not a human's model (LorenzoModel: its
+\ own floor), none; the others' 2..5 and 6..9
+: model-of? ( addr len dir len -- flag )  {: a n d m :}  n m < if  false exit  then  a m d m compare 0= ;   \ (its file in that folder)
+: leg-bones ( addr len -- right left )
+    2dup s" O_LRO" model-of? if  2drop -1 -1 exit  then
+    s" O_LRY" model-of? if  2 $12  else  2 6  then ;
+: feet-fit ( F: slow-back slow-front back front -- )   \ (his Setup's +0x1694.. +0x16A0)
+    feet-front f!  feet-back f!  feet-slow-front f!  feet-slow-back f! ;
+
 \ ---- in the game and out (Pursuer_Activate: waiting about, his first animation) ----
 \ in the story's character slot 2 (CharLoad_Partner: loaded and started, not yet anywhere) and
 \ out of it; while loaded the cutscenes find its model by its kind (their cast)
@@ -67,7 +88,7 @@ $1300 constant gesture-anims
     step @ ?dup if  execute  then  search  looking   \ (Pursuer_Think: the head after the behaviour)
     played? growls @ and if  growl  then
     played? if  stalker.moving:footsteps  anim-sounds-play  then
-    pose  tell-danger ;
+    pose  fit-legs  tell-danger ;
 \ what he is doing, for Hewie (the original's character fields he reads: room, move mode and
 \ part, condition, health)
 : move-mode-told ( -- mode )
@@ -156,7 +177,8 @@ $1300 constant gesture-anims
 : unload ( -- )  0 loaded !  in-game @ if  go-out  then  my-kind @ -1 cast-as ;
 : dressed ( id addr len -- )   \ (his model loaded, its motion table by name: hidden till he comes in;
     \ he blinks, his hands posed by his motions - Pursuer_ModelUpdate's Motion_Eyes / Motion_Hands)
-    {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l!  1 him act.alive l! ;
+    {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l!  1 him act.alive l!
+    id file leg-bones human-legs ;
 : model-file ( addr len -- id )  2dup file!  actor-load ;
 \ ---- each one's own numbers (his Setup, by the hard setting) and ways ----
 : by-hardness ( normal hard -- n )  hard-mode? if  nip  else  drop  then ;
@@ -175,21 +197,21 @@ $1300 constant gesture-anims
 \ 24 for her, Hewie's time 1800 ----
 : as-debilitas ( -- )   \ (debilitas.c Debilitas_Setup: his own chase; 20 damage and he gives up,
     \ home to his lair - castle-2f-2 $20, its spot 796 - kDebilitasRoomSpots)
-    3e 16e  debilitas-kit false true ways  20 give-up-hits !
+    3e 16e  debilitas-kit false true ways  20 give-up-hits !  8e 1.5e 12e 1.5e feet-fit
     70 110 by-hardness health!  300 540 1800 1350 clocks
     10e  20 1800 hewie-temper  4500 away-base !  90 cool-secs !  $20 796 -1 -1 own-rooms ;
 : as-debilitas-6 ( -- )   \ (debilitas2.c Debilitas2_Setup: the Pursuer's chase, +0x16B4 1; 80 damage
     \ and he gives up, home to castle-2f-2 $20 (796) or castle-1f-2 $02 (794) - D_0041BE40)
-    3e 16e  debilitas6-kit true true ways  80 give-up-hits !
+    3e 16e  debilitas6-kit true true ways  80 give-up-hits !  8e 1.5e 12e 1.5e feet-fit
     90 135 by-hardness health!  300 300 1800 1800 clocks
     10e 15e fby-hardness  30 1800 hewie-temper  10800 away-base !  150 cool-secs !  $20 796 $02 794 own-rooms ;
 : as-debilitas-7 ( -- )   \ (debilitas.c Debilitas3_Setup: the Pursuer's chase; never gives up
     \ (Pursuer_GivesUp), no rooms of his own (Debilitas3_PickDestination 0))
-    3e 16e  debilitas7-kit true false ways
+    3e 16e  debilitas7-kit true false ways  6e 1.5e 13e 0e feet-fit
     110 165 by-hardness health!  300 300 1350 1350 clocks
     12e 18e fby-hardness  40 1800 hewie-temper  9000 away-base !  150 cool-secs !  no-own-rooms ;
 : as-debilitas-27 ( -- )   \ (debilitas.c Kind27_Setup: as kind 7, its own tables, Hewie's tolerance 30)
-    3e 16e  kind27-kit true false ways
+    3e 16e  kind27-kit true false ways  6e 1.5e 13e 0e feet-fit
     110 165 by-hardness health!  300 300 1350 1350 clocks
     12e 18e fby-hardness  30 1800 hewie-temper  9000 away-base !  150 cool-secs !  no-own-rooms ;
 : debilitas-setup ( kind -- )
@@ -344,7 +366,7 @@ $2D constant hand-bone
 behaviour daniella
   extends stalking
   on spawned ( -- )
-      4e 12e  daniella-kit true false ways  daniella-marks
+      4e 12e  daniella-kit true false ways  8e 1.5e 12e 1.5e feet-fit  daniella-marks
       s" O_DNL/DNL_000" daniella-model daniella-motions dressed
       120 100 by-hardness health!  daniella-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       140 100 by-hardness cool-secs !  3600 6000 by-hardness away-base !  no-own-rooms   \ (Daniella_Setup's first)
@@ -362,7 +384,7 @@ end-behaviour
 behaviour kind34
   extends stalking
   on spawned ( -- )
-      4e 12e  kind34-kit true false ways  daniella-marks
+      4e 12e  kind34-kit true false ways  8e 1.5e 12e 1.5e feet-fit  daniella-marks
       s" O_DNL/DNL_001" daniella-model daniella-motions dressed
       120 200 by-hardness health!  kind34-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       180 160 by-hardness cool-secs !  4500 6000 by-hardness away-base !  no-own-rooms   \ (Kind34_Setup)
@@ -376,7 +398,7 @@ end-behaviour
 behaviour kind35
   extends stalking
   on spawned ( -- )
-      4e 12e  kind35-kit true false ways  daniella-marks
+      4e 12e  kind35-kit true false ways  8e 1.5e 12e 1.5e feet-fit  daniella-marks
       s" O_DNL/DNL_000" daniella-model daniella-motions dressed
       65 80 by-hardness health!  kind35-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       140 100 by-hardness cool-secs !  3600 6000 by-hardness away-base !  no-own-rooms   \ (Kind35_Setup)
@@ -390,7 +412,7 @@ end-behaviour
 behaviour kind36
   extends stalking
   on spawned ( -- )
-      4e 12e  kind36-kit true false ways  daniella-marks
+      4e 12e  kind36-kit true false ways  8e 1.5e 12e 1.5e feet-fit  daniella-marks
       s" O_DNL/DNL_001" daniella-model daniella-motions dressed
       65 80 by-hardness health!  kind36-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       180 160 by-hardness cool-secs !  4500 6000 by-hardness away-base !  no-own-rooms   \ (Kind36_Setup)
@@ -408,7 +430,7 @@ end-behaviour
 behaviour riccardo
   extends stalking
   on spawned ( -- )
-      4e 12e  riccardo-kit false false ways
+      4e 12e  riccardo-kit false false ways  8e 1.5e 12e 1.5e feet-fit
       ['] cry-hit own-mark !  riccardo-chase  riccardo-acts own-acts !  ['] riccardo-frame own-frame !
       s" O_RCG/RCG_000" model-file s" motions-riccardo" dressed
       100 125 by-hardness health!  riccardo-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
@@ -425,7 +447,7 @@ end-behaviour
 behaviour lorenzo
   extends stalking
   on spawned ( -- )
-      2e 12e  lorenzo-kit true false ways  18e attack-range f!
+      2e 12e  lorenzo-kit true false ways  8e -8e 8e -8e feet-fit  18e attack-range f!
       s" O_LRO/LRO_000" model-file s" motions-lorenzo" dressed
       50 75 by-hardness health!  lorenzo-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       100 cool-secs !  3600 away-base !  no-own-rooms   \ (Lorenzo_Setup)
@@ -441,7 +463,7 @@ end-behaviour
 behaviour lorenzo2
   extends stalking
   on spawned ( -- )
-      4e 60e  lorenzo2-kit lorenzo2h-kit by-hardness true false ways
+      4e 60e  lorenzo2-kit lorenzo2h-kit by-hardness true false ways  8e -8e 8e -8e feet-fit
       lorenzo2-acts own-acts !  ['] lorenzo2-frame own-frame !  70e attack-range f!
       s" O_LRY/LRY_000" model-file s" motions-lorenzo2" dressed
       250 400 by-hardness health!  lorenzo2-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
@@ -457,7 +479,7 @@ end-behaviour
 behaviour kind39
   extends stalking
   on spawned ( -- )
-      4e 12e  kind39-kit kind39h-kit by-hardness true false ways
+      4e 12e  kind39-kit kind39h-kit by-hardness true false ways  8e -8e 8e -8e feet-fit
       lorenzo2-acts own-acts !  18e attack-range f!
       s" O_LRY/LRY_000" model-file s" motions-lorenzo2" dressed
       250 300 by-hardness health!  kind39-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
@@ -475,7 +497,7 @@ end-behaviour
 behaviour kind37
   extends stalking
   on spawned ( -- )
-      4e 12e  kind37-kit false false ways
+      4e 12e  kind37-kit false false ways  8e 1.5e 12e 1.5e feet-fit
       riccardo-chase  24e attack-range f!  ['] kind37-frame own-frame !   \ (its reach the Pursuer's: Pursuer_AttackRange)
       s" O_RCT/RCT_000" model-file s" motions-tintstalker" dressed
       100 125 by-hardness health!  kind37-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
@@ -492,7 +514,7 @@ end-behaviour
 behaviour tintstalker
   extends stalking
   on spawned ( -- )
-      4e 12e  tintstalker-kit true false ways
+      4e 12e  tintstalker-kit true false ways  8e 1.5e 12e 1.5e feet-fit
       ['] tint-frame own-frame !  -1 tint-was !  -1 unseen !
       s" O_RCT/RCT_000" model-file s" motions-tintstalker" dressed
       100 125 by-hardness health!  tintstalker-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
@@ -509,7 +531,7 @@ end-behaviour
 behaviour kind12
   extends stalking
   on spawned ( -- )
-      4e 14e  kind12-kit true false ways  18e attack-range f!
+      4e 14e  kind12-kit true false ways  8e -8e 8e -8e feet-fit  18e attack-range f!
       ['] kind12-frame own-frame !  -1 mark-id !
       s" O_LRF/LRF_000" model-file s" motions-kind12" dressed
       9999 health!  kind12-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
