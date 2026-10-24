@@ -10,6 +10,10 @@ state: stalker-state
   \ damage (Debilitas_GivesUp; the Pursuer's never), his turn a frame (+0xA0), his reach in
   \ the ground he gains (+0x2F0: Debilitas 16, Daniella 12)
   cell field base-chase  cell field gives-up  1 floats field turn-k  1 floats field reach-k
+  cell field give-up-hits       \ the damage he gives up at (DEBILITAS_GIVE_UP_HITS: Debilitas 20, kind 6 80)
+  \ his setup's times (frames): after her (+0x16D4, Pursuer_Caught: his mode's clock), down when
+  \ knocked out (+0x16D0, Pursuer_NoGiveUp)
+  cell field after-frames  cell field down-frames
   cell field my-model           \ its model (an Actor)
   cell field in-game            \ in the game (stalker-in .. stalker-out)
   cell field my-mode            \ +0x16C8: stalker-mode (messages.fs: after her, heading for her room, searching it, waiting about, held off)
@@ -108,6 +112,7 @@ state: stalker-state
   cell field reeling  cell field twitch  cell field by-her  cell field growl-after  cell field unshaken
   cell field lie-anim  cell field down-stage  cell field knockouts  cell field striker
   cell field gesture            \ the look about he plays at a stop (-1: none)
+  cell field taunt-gesture      \ +0x104: his taunt's row of his gesture table (Pursuer_PickFromTable $17..$19)
   \ for the summoner (summoner.fs): his time away's base (+0x16E0, frames), his cooldown (+0x16E4,
   \ seconds: vtable +0x2D4), the rooms he keeps to (vtable +0x314: two, -1 none)
   cell field away-base  cell field cool-secs  cell field own-a  cell field own-b

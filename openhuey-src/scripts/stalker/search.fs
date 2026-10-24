@@ -38,9 +38,9 @@ enum: search-phase#  no-search to-stop at-the-stop ;
     loop ;
 : search-stops ( -- n )  rnd 4e f* f>s 2 + ;   \ (searching: 2..5 stops)
 
-\ ---- his mode's clock (vtable +0x2BC .. +0x2C4: Debilitas after her 300 frames (hard 540),
-\ searching 600, waiting 900) ----
-: after-t ( -- )  hard-mode? if  540  else  300  then  mode-t ! ;
+\ ---- his mode's clock (vtable +0x2BC .. +0x2C4: after her his setup's frames - Pursuer_Caught's
+\ +0x16D4: Debilitas 300, hard 540 -, searching 600, waiting 900) ----
+: after-t ( -- )  after-frames @ mode-t ! ;
 : mode! ( m -- )
     dup my-mode !  case
         after-her of  after-t  endof
