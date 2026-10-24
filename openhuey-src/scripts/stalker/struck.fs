@@ -30,16 +30,20 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
     0 hits !  give-up-cry 7 sound  held-off mode!  no-search search-phase !
     making-for @ 0< if  in-play  else  making-for @ leave-by  then ;
 :noname ( -- flag )  give-up? dup if  give-up  then ; is gave-up?
-: recovered ( -- )
-    0 reeling !  0 apart !   \ (his step done: in contact again - Pursuer_FrameUpdate)
-    hp @ 0> 0= if  hp-max @ hp !  then
-    give-up? if  give-up exit  then
-    growl-after @ my-mode @ held-off <> and if  stumble-growl 7 sound  then  0 growl-after !
+\ on as before by his stance (Pursuer_StanceByFiona, PickStep): held off, on home; seeing her,
+\ his chase; else after her, or searching
+: on-as-before ( -- )
     my-mode @ held-off = if   \ (held off already: on home)
         way-home 0= if  stand exit  then
         making-for @ 0< if  in-play  else  making-for @ leave-by  then  exit
     then
     sees-fiona @ if  chase-begin  else  my-mode @ after-her = if  chase-start  else  search-again  then  then ;
+: recovered ( -- )
+    0 reeling !  0 apart !   \ (his step done: in contact again - Pursuer_FrameUpdate)
+    hp @ 0> 0= if  hp-max @ hp !  then
+    give-up? if  give-up exit  then
+    growl-after @ my-mode @ held-off <> and if  stumble-growl 7 sound  then  0 growl-after !
+    on-as-before ;
 
 \ ---- flinching (Pursuer_StateFlinch: by the side and height - in front, behind, a low one; in
 \ a doorway the short ones); her blow: at its key he may strike back ----

@@ -18,8 +18,8 @@ create look-modes
     ahead-look v, ahead-look v, her-look v, her-look v, goal-look v, her-look v, ahead-look v, ahead-look v,         \ $18..$1F
     ahead-look v, ahead-look v, ahead-look v, ahead-look v, ahead-look v, goal-look v, goal-look v, goal-look v,     \ $20..$27
     goal-look v, goal-look v,                                                                                          \ $28..$29
-: action-look! ( action -- )   \ (Pursuer_StartAction: an action's look; as it was - none)
-    dup 0 $2A within 0= if  drop exit  then  look-modes + c@  ?dup if  look-mode !  then ;
+: action-look! ( action -- )   \ (Pursuer_StartAction: an action's look - as it was, 0, too: no look of
+    dup 0 $2A within 0= if  drop exit  then  look-modes + c@  look-mode ! ;   \ his own, eased back)
 
 \ ---- his bones by his model (the models' Loaded: +0x8B0 / +0x8B4): head, neck ----
 : head-bones! ( kind -- )
@@ -76,9 +76,16 @@ create hewie-pt /vec allot
     my-model @ head-bone @ neck-bone @ head-bones
     head-pitch f@ head-yaw f@  my-model @ head-turn ;
 : sight-heading ( -- )  yaw head-yaw f@ f+ angle-wrap view-heading f! ;
-\ each frame: Pursuer_Think eases his head back first (its scripted look +0x16F9 off:
-\ Model_EaseTilt), then in the room being played Pursuer_ModelUpdate's Pursuer_HeadLook - so a
-\ look turns it one step (8 degrees) at most, and with none it comes back two; his sight where his
-\ head is
+\ the story's look (Pursuer_Think: its moves 12 / 13 - stalker/scripted.fs): at whom its moves
+\ last named (+0x100) - Fiona, Hewie, else the look's point (+0x1700)
+: scripted-target ( -- v | 0 )
+    sm-who @ case  0 of  fiona  endof  1 of  hewie  endof  >r -1 r>  endcase
+    dup -1 = if  drop look-pt exit  then
+    dup body? 0= if  drop 0 exit  then  body-at ;
+\ each frame: Pursuer_Think eases his head back first - unless the story's look is on: then
+\ turned toward it - then in the room being played Pursuer_ModelUpdate's Pursuer_HeadLook - so a
+\ look of his own turns it one step (8 degrees) at most, and with none it comes back two; his
+\ sight where his head is
+: think-look ( -- )  look-on @ if  scripted-target ?dup if  turn-only  then  else  look-ahead  then ;
 : looking ( played? -- )
-    look-ahead  if  head-look  then  sight-heading  turn-head ;
+    think-look  if  head-look  then  sight-heading  turn-head ;

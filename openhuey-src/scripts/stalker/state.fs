@@ -186,4 +186,14 @@ state: stalker-state
   cell field run-pause
   \ ... gone after Hewie instead (his room, the one played: Pursuer_Modes' mode 3 out of sight)
   cell field hunting-dog
+  \ the story's moves (stalker/scripted.fs; Pursuer_EventCommand): posed in a held animation (the
+  \ scripts' 0x9D: +0xE2 - his model alone moves), the move given (+0xF4 its kind, +0x104 its two
+  \ arguments, +0x110 its point, +0x10C its heading), done (+0xE1), whom it last named (+0x100:
+  \ 0 Fiona, 1 Hewie), the walk it plays (+0x104 [1]), hidden (+0x29: the scripts' 0x1F); his
+  \ scripted look (+0x16F9) and its point (+0x1700); the story's door use under way (moves 3 / 4)
+  cell field posed  cell field sm-kind  cell field sm-a  cell field sm-b  /vec field sm-at  1 floats field sm-yaw
+  cell field sm-done  cell field sm-who  cell field sm-walk  cell field hidden
+  cell field look-on  /vec field look-pt
+  cell field door-script
+  cell field take-asked         \ the story's action for him asked (+0x14E8 5: taken at his next frame, if in the room played)
 end-state

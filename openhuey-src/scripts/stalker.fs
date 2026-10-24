@@ -3,7 +3,7 @@
 \ tables, his numbers, his model; in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths vectors hewie-names stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.leads stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 stalker.ladder stalker.head stalker.names stalker.anims stalker.sounds floor-flags ;
+USING: engine game-state actors messages common facts flag-names room-names paths vectors hewie-names stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.leads stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 stalker.ladder stalker.head stalker.names stalker.anims stalker.sounds stalker.scripted floor-flags ;
 
 : me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
@@ -12,10 +12,16 @@ USING: engine game-state actors messages common facts flag-names room-names path
 
 \ his model where his body is, shown in the room being played (Daniella on her back: her hair
 \ and back by her animation - the engine's, DaniellaModel_Vt3C)
+2 constant play-slot   \ (the stalker in play: his sounds in bank 7, saved)
+: figure? ( -- flag )  loaded @  my-slot @ play-slot <> and ;   \ (in slots 3..5: a scene's figure)
+: here? ( -- flag )   \ (in the room being played: the stalker in play, or a figure placed there)
+    in-game @ if  played? exit  then
+    figure? self body? and if  self body-room room-id =  else  false  then ;
 : pose ( -- )
     my-at v.x sf@ him act.x sf!  my-at v.y sf@ him act.y sf!  my-at v.z sf@ him act.z sf!
     self body-yaw him act.yaw sf!
-    played? under-t @ 0= and unseen @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class)
+    here? under-t @ 0= and unseen @ 0= and hidden @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class;
+    \ hidden by the story: its 0x1F - the original's +0x29)
 
 \ his body set by his feet (Pursuer_ModelUpdate: his model's +0x40 and +0x4C, the engine's legs-fit -
 \ humanlegs.c): in the room played, on the floor - but on a ladder, or a script's walk through
@@ -44,11 +50,15 @@ USING: engine game-state actors messages common facts flag-names room-names path
 \ ---- in the game and out (Pursuer_Activate: waiting about, his first animation) ----
 \ in the story's character slot 2 (CharLoad_Partner: loaded and started, not yet anywhere) and
 \ out of it; while loaded the cutscenes find its model by its kind (their cast)
-2 constant play-slot   \ (the stalker in play: his sounds in bank 7, saved)
 : file! ( addr len -- )  31 min dup my-file c!  my-file 1+ swap move ;
 : file ( -- addr len )  my-file 1+ my-file c@ ;
 : load ( slot -- )   \ (slots 3..5 have no bank: Daniella as a scene's figure mid-Debilitas leaves his)
     dup my-slot !  -1 loaded !  my-kind @ my-model @ cast-as  play-slot = if  7 file sound-bank drop  then ;
+\ nothing of the story's on him (Character_Activate / Pursuer_EventReset's): not held nor posed,
+\ no look of its, through no blocked floor, his sounds his own
+: unheld ( -- )
+    0 script-held !  0 posed !  0 take-asked !  0 look-on !  -1 sm-who !  0e 0e 0e look-pt vec!  0 door-script !
+    0 noclipped !  my-floor @ body-mask! ;
 : come-in ( room tri -- )
     loaded @ 0= if  play-slot load  then  forget-leads  0 beaten !
     {: room tri :}
@@ -59,7 +69,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     well-cond cond !  0 reeling !  0 hits !
     route-clear  my-path path-clear  waiting-about mode!  stand-anim play-now  stand  pose
     -1 came-by !  -1 to-shut !  -1 at-ladder !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
-    0 apart !  0 link-t !  out-over  -1 held-door !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
+    unheld  0 apart !  0 link-t !  out-over  -1 held-door !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
     away? 0= if  search-start  then ;
 : go-out ( -- )  let-her-go  let-door-go  out-over  forget-leads  0 in-game !  body-off  0 him act.visible l! ;
 
@@ -85,7 +95,44 @@ $1300 constant gesture-anims
     0 growl-t !
     my-move-mode @ own-move-mode = anim @ gesture-anims <> and anim @ stand-about-anims <> and if  growl-sound 7 sound  then ;
 : tell-danger ( -- )  my-room my-mode @ cond @ down-cond = danger-id send stalker-here ;   \ (SceneGame_Danger reads his mode, and whether he's down)
+\ ---- held by a script of the room (the story's action for him - Pursuer_EventState's 5, only in
+\ the room being played: Pursuer_BackToNormal, BackToStance): what he was doing given up - her hand
+\ and a door let go, his way out over, Hewie off him -, the story's look off, then standing (his
+\ action 1), done once his stance has faded in. Let go (the script over, its move 1:
+\ Pursuer_EventReset, StanceByFiona, PickStep): through blocked floor no more, his sounds his own,
+\ on as before. (Hewie on him is thrown off - the original has him let go of his own accord.) ----
+: taken ( -- )
+    let-her-go  let-door-go  out-over  0 reeling !  0 apart !  no-search search-phase !
+    bitten @ if  0 bitten !  hewie send shaken-off  then
+    0 look-on !  -1 sm-who !  0e 0e 0e look-pt vec!  -1 script-held !  my-path path-clear
+    stand-to ;
+:noname ( -- )  unheld  0 hushed !  0 sm-done !  in-game @ if  on-as-before  then ; is released
+\ the scripts' 0x9D: posed in an animation (its flags - 1 loops - and the frames it fades in over),
+\ shown; held there (+0xE0, +0xE2) till started afresh
+: pose-in ( anim flags blend -- )
+    {: a fl bl :}  -1 posed !  -1 script-held !  0 hidden !
+    my-model @ a has-motion? if  a anim !  my-model @ a bl fl motion-play  then ;
+\ held by a script (+0xE0: Progress_CharsFrame runs his Pursuer_Think, not his own frame): his
+\ senses, the story's move his step (stalker/scripted.fs), his head, footsteps, his model - no
+\ modes, no behaviour, no frame of his own; on the triangle a move takes him to, done
+: held-frame ( -- )
+    senses  step @ ?dup if  execute  then  on-the-tri  played? looking
+    played? if  stalker.moving:footsteps  anim-sounds-play  then
+    pose  fit-legs  tell-danger ;
+\ posed by the scripts' 0x9D (+0xE2: Pursuer_PlaceModel): his model alone, at his place - its
+\ body by its feet, not planted (BodyFrames 0 0)
+: posed-fit ( -- )
+    here? 0= my-model @ 0< or  self body? 0= or if  exit  then
+    chaired @ if  0e 0e 0e 0e  my-model @ self body-tri my-floor @ chair-fit exit  then
+    0e 0e  my-model @ self body-tri my-floor @ 0 legs-fit ;
+: posed-frame ( -- )  pose  posed-fit ;
+: take? ( -- )   \ (Pursuer_EventState's 5: asked, taken in the room played - else dropped)
+    take-asked @ 0= if  exit  then  0 take-asked !
+    played? script-held @ 0= and if  taken  then ;
 : frame ( -- )
+    take?
+    posed @ if  posed-frame  tell-danger exit  then
+    script-held @ if  held-frame exit  then
     away? if  away  pose  tell-danger  exit  then
     thaw  hurt-down  senses  modes  dog-temper  shut-behind  ladder-watch
     step @ ?dup if  execute  then  search  played? looking   \ (Pursuer_Think: the head after the behaviour)
@@ -177,7 +224,9 @@ $1300 constant gesture-anims
     hewie-played? if  run-temper  then
     forget-leads  0 beaten !  -1 making-for !  0 down-t !  waiting-about mode!  900 mode-t !  0 raging !
     hp @ 0> 0= if  hp-max @ hp !  then ;
-: unload ( -- )  0 loaded !  in-game @ if  go-out  then  my-kind @ -1 cast-as ;
+: unload ( -- )   \ (a scene's figure placed: out of the room too)
+    0 loaded !  unheld  in-game @ if  go-out  else  body-off  my-model @ 0< 0= if  0 him act.visible l!  then  then
+    my-kind @ -1 cast-as ;
 : dressed ( id addr len -- )   \ (his model loaded, its motion table by name: hidden till he comes in;
     \ he blinks, his hands posed by his motions - Pursuer_ModelUpdate's Motion_Eyes / Motion_Hands)
     {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l!  1 him act.alive l!
@@ -251,8 +300,8 @@ behaviour stalking
       dup debilitas-dress  debilitas-setup ;
   on stalker-unload ( -- )  unload ;
   on stalker-in ( room tri -- )  come-in ;
-  on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him)
-      in-game @ 0= if  2drop 2drop exit  then
+  on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him; a scene's figure where the story puts it)
+      in-game @ figure? or 0= if  2drop 2drop exit  then
       {: yaw :}  cells>xyz place-at vec!
       room-id  place-at my-floor @ v-tri-in  place-at vec@ body-place  yaw cell>f body-turn  settle ;
   on stalker-out ( -- )  go-out ;
@@ -275,13 +324,26 @@ behaviour stalking
   on drawn-to ( tri -- )  in-game @ if  go-for-doll  else  drop  then ;
   on stalker-hunt ( -- )  in-game @ if  heading-for-her mode!  away? 0= if  search-again  then  then ;
   on entered-room ( room exit -- )  her-came !  room-changed  in-game @ if  pose  then ;
-  on tick ( -- )  in-game @ if  frame  own-frame @ ?dup if  execute  then  tell-doing  then  loaded @ if  status  then ;
+  on tick ( -- )
+      in-game @ if  frame  script-held @ 0= if  own-frame @ ?dup if  execute  then  then  tell-doing  then   \ (held: his Think, not his own frame)
+      figure? self body? and  in-game @ 0= and if  posed @ if  posed-frame  else  pose  then  then   \ (a scene's figure: moved only posed)
+      loaded @ if  status  then ;
   \ Hewie: his attack asked, his letting go, his bites, his growls
   on dog-attack ( kind -- )  dog-attacked ;
   on dog-tackle ( -- )  dog-tackled ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       2drop 2drop 2drop 2drop  dog-cond !  2drop 2drop ;   \ (his condition: the chance roll's)
-  on scripted ( on -- )  0<> script-held ! ;   \ (a script of the room has him, or lets go: his +0xE0)
+  \ the story's: a script of the room has him (in the room being played: +0xE0) or lets go (posed:
+  \ held till started afresh); its moves (stalker/scripted.fs: carried out while held - each clears
+  \ his done, +0xE1); shown or hidden (0x1F: +0x29); posed (0x9D)
+  on scripted ( on -- )
+      if  -1 take-asked !
+      else  0 take-asked !  script-held @ posed @ 0= and if  released  then  then ;
+  on scripted-move ( kind a b x y z yaw -- )
+      cell>f sm-yaw f!  cells>xyz sm-at vec!  sm-b !  sm-a !
+      0 sm-done !  script-held @ posed @ 0= and if  start-move  else  drop  then ;
+  on show ( on -- )  0= hidden ! ;
+  on hold-anim ( anim flags blend -- )  loaded @ if  pose-in  else  drop 2drop  then ;
   on scene ( on -- )  0<> in-scene ! ;          \ (a cutscene has the characters)
   on shaken-off ( -- )  bitten @ bite-how @ held-by-dog = and if  dog-let-go bite-how !  then ;
   on bite ( damage hard -- )  bitten @ if  bitten-by  else  2drop  then ;
@@ -292,21 +354,26 @@ behaviour stalking
   on stalker-clock ( frames -- )  mode-t ! ;
   on stalker-knock-out ( -- )  in-game @ if  knocked-out  then ;
   on rage ( on -- )  0<> raging ! ;
-  on activate ( -- )  in-game @ if  activated  then ;
+  on activate ( -- )   \ (Pursuer_Activate: Character_Activate - not held, not posed)
+      script-held @ posed @ or  unheld  0 sm-done !
+      in-game @ if  activated  if  stand  then  else  drop  then ;
   on set-cond ( v -- )  cond ! ;
   on full-health ( -- )  hp-max @ hp ! ;
   on heal ( n -- )  abs hp @ + hp-max @ min hp ! ;
   on silent ( on -- )  0<> hushed ! ;
   \ his move and animation for the story's waits (the scripts' 0x7B, 0x9E): as Fiona's and Hewie's
-  on frame-end ( -- )  in-game @ if  -1 ended? my-model @ 0 0 1 motion-events broadcast moving  then ;
+  on frame-end ( -- )  in-game @ figure? or if  sm-done @ ended? my-model @ 0 0 1 motion-events broadcast moving  then ;
   on stalker-summoned ( room exit found plan -- )  summoned ;
   on heard ( loud room tri door source -- )  nip hear ;
   on heard-nothing ( -- )  heard-none ;
   on door-held ( room exit -- )  nip held-answer ;   \ (his to open, or the door he came in by)
   on hit-taken ( kind -- )  struck-home ;
+  \ (held by a script his requests aren't taken - Pursuer_Think - and are cleared as he is let go)
   on blow-from ( kind damage how x y z -- )   \ (from a point: Progress_Noise)
+      script-held @ if  2drop 2drop 2drop exit  then
       cells>xyz strike-pt vec!  away? if  blow-away exit  then  -2 striker !  struck ;
   on blow ( kind damage how -- )   \ (her shove or kick; a door she slammed: no answer)
+      script-held @ if  2drop drop exit  then
       away? if  blow-away exit  then
       sender striker !  2 pick door-blow = {: door? :}  struck  door? 0= if  sender send blow-taken  then ;
   on seize-taken ( -- )   \ (her answers to his taking her; one he isn't waiting for: let go)
