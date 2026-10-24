@@ -28,6 +28,8 @@ One actor, `summoner` (`scripts/summoner.fs`).
 | `summoner-cooldown` | `( secs -- )` | in, the story (0x5A, 0x5B) | Not before `secs` seconds. |
 | `summoner-cooldown-less` | `( secs -- )` | in, the story (0x5A) | That much sooner. |
 | `summoner-reset` | `( -- )` | in, the story (0x11: a stalker loaded) | Its state afresh. |
+| `write-save` | `( -- )` | in (broadcast by saves) | Prints its record (`summoner-was`): kept in a save as the original's progress +0x764 is. |
+| `summoner-restore` | `( away called cooldown room waited mode kind -- )` | in, from saves (a save loaded, after the stalker's `summoner-reset`) | Its record as the save had it. |
 | `stalker-summoned` | `( room exit found plan -- )` | out, to the stalker | Come in out of sight in `room`, by `exit`; `found` (called by a noise): after her; else waiting about, `plan` heading for her. |
 | `stalker-out` | `( -- )` | out, to the stalker | Taken back out of the game. |
 | `danger-signal` | `( 6 -- )` | out, to danger | Hunted (a noise heard off stage). |

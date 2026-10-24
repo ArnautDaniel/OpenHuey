@@ -1,11 +1,12 @@
 \ subscreen/options.fs - the options page (src/game/subscreen.c Options_StateList, Options_Draw,
 \ Options_Defaults): five rows - the controller type (its buttons' names; fixed to the keyboard
 \ here), vibration, the sound out, the volume, the screen's position. The cross edits a row and
-\ the arrows change it; the square asks to put them all back. Kept for the session; the
+\ the arrows change it; the square asks to put them all back. Kept in the system data
+\ (saves.fs, as the original's +0x30: told each change, given them back as the game starts); the
 \ vibration and the volume take effect at once (SubScreen_ApplyOptions) - the sound out and the
 \ screen's position have nothing here to change.
 IN: subscreen.options
-USING: engine keys facts subscreen.state subscreen.art subscreen.input subscreen.box ;
+USING: engine actors messages keys facts subscreen.state subscreen.art subscreen.input subscreen.box ;
 
 \ each row: its icon (a part), its label (a menu message), its line
 create option-rows   $10 , $60 , $54 ,   $11 , $77 , $F4 ,   $12 , $7A , $114 ,   $13 , $7E , $134 ,   $14 , $81 , $154 ,
@@ -23,6 +24,9 @@ create run-layouts
 : apply ( -- )   \ (SubScreen_ApplyOptions: the vibration on or off, everything heard at the volume)
     vibration @ 0<> rumble-allowed!  volume @ s>f 128e f/ game-volume! ;
 : defaults ( -- )  1 vibration !  1 sound-out !  128 volume !  0 pos-x !  0 pos-y !  0 layout !  apply ;
+: kept ( -- )   \ (to the system data)
+    vibration @ sound-out @ volume @ pos-x @ pos-y @ layout @  s" saves" actor-named send options-changed ;
+: restore ( vib out vol x y layout -- )  layout !  pos-y !  pos-x !  volume !  sound-out !  vibration !  apply ;
 
 : say ( msg x y -- )  {: msg x y :}  msg menu-line x y false text ;
 : buttons ( -- )   \ the buttons and what they do, in two columns of four
@@ -62,14 +66,14 @@ variable line-y
         3 of  16 * volume @ + 0 max 128 min volume !  apply  endof
         4 of  pos-x @ + -32 max 32 min pos-x !  endof
         >r drop r>
-    endcase ;
-: put-back ( answer -- )  0= if  defaults  then  back-to-page ;
+    endcase  kept ;
+: put-back ( answer -- )  0= if  defaults kept  then  back-to-page ;
 : editing-keys ( -- )
     left? if  -1 change  se-cursor  then
     right? if  1 change  se-cursor  then
     opt-row @ 4 = if   \ (the position: up / down too)
-        up? if  pos-y @ 1- -32 max pos-y !  then
-        down? if  pos-y @ 1+ 32 min pos-y !  then
+        up? if  pos-y @ 1- -32 max pos-y !  kept  then
+        down? if  pos-y @ 1+ 32 min pos-y !  kept  then
     then
     confirm? if  0 opt-editing !  se-decide  then
     back? if  0 opt-editing !  se-cancel  then ;

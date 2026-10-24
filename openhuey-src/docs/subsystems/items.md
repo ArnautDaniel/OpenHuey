@@ -121,7 +121,8 @@ message box), `lists.fs` (the item lists, an item's actions, the files), `map.fs
    shows her room on another page of her map.
 2. **The options** (Options_*): the controller type (its button names; the keyboard here),
    vibration, the sound out, the volume, the screen's position - the cross edits a row, the square
-   resets them. Kept for the session; the vibration turns the pad's rumble on or off (on: a buzz)
+   resets them. Kept in the system data (saves.fs: `options-changed` to saves at each change,
+   `options-restore` back as the game starts - the original's +0x30); the vibration turns the pad's rumble on or off (on: a buzz)
    and the volume scales everything heard (SubScreen_ApplyOptions); the sound out and the
    position have nothing here to change.
 3. **The word plate** (the scripts' mode 2, SubScreen_StateWordMake): a word of up to 8 letters on

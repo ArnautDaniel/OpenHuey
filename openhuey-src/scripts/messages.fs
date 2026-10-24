@@ -373,6 +373,7 @@ message summoner-take ( kind -- )             \ (the summoner) take the stalker 
 message summoner-cooldown ( secs -- )         \ (the summoner) not before secs seconds
 message summoner-cooldown-less ( secs -- )    \ (the summoner) that much sooner
 message summoner-reset ( -- )                 \ (the summoner) afresh (a stalker loaded)
+message summoner-restore ( away called cooldown room waited mode kind -- )   \ (the summoner) as a save had it (its progress +0x764): time away, called in, cooldown (frames), the room he was taken from, frames waited, his mode last seen, how he was taken
 
 \ ---- the obstacles (docs/subsystems/obstacles.md): the things pushed about ----
 message place-obstacle ( i n kind a b -- )    \ obstacle i (model "oshi0n", of a kind) placed at square (a, b)
@@ -416,6 +417,8 @@ message tab-op ( op item -- )                \ (the sub screen) the tab: 0 an it
 message tab-done ( -- )                       \ (from the sub screen) the tab's step is done (it waits on 2 / 4)
 message menu-mode ( mode -- )                 \ (the sub screen) the mode the scripts open it in (0x6D: 0 the menu, 1 saving ...)
 message map-turn-to ( page -- )              \ (the sub screen) her room shown on that page of her map (the scripts' 0xD1)
+message options-changed ( vib out vol x y layout -- )   \ (the sub screen -> saves) the options as now set: kept in the system data
+message options-restore ( vib out vol x y layout -- )   \ (saves -> the sub screen) the options the system data kept
 message give-plate ( c0 c1 c2 c3 c4 c5 c6 c7 -- )   \ (the items) a word plate made, its 8 letters (0: none)
 message door-opened ( door on -- )            \ (the doors) its open bit set / cleared (the story's 0x59 09 / 0A)
 message calm-reset ( -- )                     \ (Fiona) her fear and her recovery's count back to 0 (the story's 0x4E)

@@ -123,7 +123,7 @@ behaviour menu
       shut stage !  pg-special page !  -1 shown !  -1 shown-picture !  0 tab !  -1 stalker-room !  defaults
       1 back-bank !  -1 her-map !  -1 her-pg !  -1 her-room !  -1 map-loaded !
       self subscribe tick  self subscribe held-tick  self subscribe frame-end  self subscribe arrived
-      self subscribe fiona-doing  self subscribe danger  self subscribe panic  self subscribe stalker-doing ;
+      self subscribe fiona-doing  self subscribe danger  self subscribe panic  self subscribe stalker-doing  self subscribe write-save ;
   on tick ( -- )
       1 frames +!  tab-frame
       stage @ shut = if
@@ -135,7 +135,9 @@ behaviour menu
   on menu-mode ( mode -- )  opened-as ! ;
   on game-saved ( -- )  saved-now ;
   on arrived ( room exit -- )  drop find-room ;        \ (Map_FindRoom as each room comes in)
-  on map-turn-to ( page -- )  show-on-page ;            \ (the scripts' 0xD1)
+  on map-turn-to ( page -- )  show-on-page ;            \ (the scripts' 0xD1; a save loaded: SceneGame_RoomIn)
+  on write-save ( -- )  her-pg @ .  ." map-page-was" cr ;   \ (saves.fs) the map's page she is on (the save's +0x18F0)
+  on options-restore ( vib out vol x y layout -- )  subscreen.options:restore ;   \ (saves.fs: the system data's)
   on item-used ( id result -- )  mode @ awaiting-use = if  used  else  2drop  then ;
   on fiona-doing ( mode sub cond cmd doing -- )  her-doing !  2drop drop  her-mode ! ;
   on danger ( level -- )  the-danger ! ;
