@@ -98,8 +98,7 @@ $100 constant first-maze-room   $1F constant deals-var   $20 constant dealt-row-
     fdrop fdrop fdrop fdrop
     base-group 0 6  $1C0 $60 32 32  arrow-alpha faded  ui-image4 ;
 $A6 constant title-x   $48 constant title-y
-: title ( addr len -- )   \ centred on title-x by its width (Text_LineWidth), its top at title-y
-    {: a n :}  word-layer a n  title-x sx  a n scale text-width 2/ -  title-y sy  false ink  scale  ui-text ;
+: title ( addr len -- )  title-x title-y centred ;   \ (centred on title-x, its top at title-y)
 : map-view ( -- )
     1 page-art  load-page
     map-at @ held? if

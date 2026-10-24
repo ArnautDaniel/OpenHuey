@@ -42,9 +42,9 @@ variable piece
     if  $FFD87800  else  $E8E0D000  then  openness @ 2* 255 min or ;
 : text ( addr len x y light? -- )   \ a line at x y
     {: addr len x y light :}  word-layer addr len  x sx  y sy  light ink  scale  ui-text ;
-: centred ( addr len x y -- )   \ a line centred on x
+: centred ( addr len x y -- )   \ a line centred on x by its width (Text_LineWidth)
     {: addr len x y :}
-    word-layer addr len  x sx  len char-size drop * scale * 2/ -  y sy  false ink  scale  ui-text ;
+    word-layer addr len  x sx  addr len scale text-width 2/ -  y sy  false ink  scale  ui-text ;
 : line-of ( msg page line -- addr len )  rot message-layout drop  message-line ;
 : menu-line ( msg -- addr len )  $4000 or 0 0 line-of ;   \ the menu's own messages (the second table)
 : name ( id -- addr len )  $8100 + 0 0 line-of ;         \ an item's name
