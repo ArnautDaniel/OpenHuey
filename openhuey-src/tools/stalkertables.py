@@ -98,16 +98,39 @@ def c_tables(array):   # an attack-table array of daniella.c, its names in order
 
 TS_TABLES = (dan(['TintStalker_Attack0_%02d' % i for i in range(15)] + ['str_r_8', 'str_t_13']) +
              dan(['TintStalker_Attack1_%02d' % i for i in range(15)] + ['str_r_9', 'str_t_14']))
+DEB_GRIPS = ((0.9433, 11.2509), (0.9433, 11.2509), (2.1745, 15.0419), (2.1745, 15.0419),
+             (-1.6117, -4.3418), (0.0182, -1.0008))   # (Debilitas_ActionOffsets; his other kinds' the same)
 DAN_GRIPS = ((0.2576, 10.7031), (0.2576, 10.7031), (1.6432, 10.9092), (1.6432, 10.9092),
              (-0.1714, -3.1206), (0.4004, -2.9467))   # (Daniella_ActionOffsets; her later kinds' the same)
 STALKERS = [
     # name, prefix, attack tables [hard][rage][17] (Debilitas: his rage the same), moves, combos,
     # gestures, chase, lunge, temper (normal, hard), base chase [hard][rage], throws, grip offsets
     dict(name='Debilitas', steps=(0x3AF340, 0x3AF4A0), knocks=0x3AF4A0, p='deb', tables=DEB_TABLES[:17] * 2 + DEB_TABLES[17:] * 2,
-         moves=(0x3AF4D0, 15), combos=(0x3AF730, 16), gestures=(0x3AF6F0, 8), chase=0x3AFB70, lunge=0x3AF4B0,
+         moves=(0x3AF4D0, 15), combos=(0x3AF730, 18), gestures=(0x3AF6F0, 8), chase=0x3AFB70, lunge=0x3AF4B0,
          temper=(0x3AFB10, 0x3AFB10), pursue=(0x3AFA90, 0x3AFA90, 0x3AFA90, 0x3AFA90), throws=(13, 14),
-         grips=((0.9433, 11.2509), (0.9433, 11.2509), (2.1745, 15.0419), (2.1745, 15.0419),
-                (-1.6117, -4.3418), (0.0182, -1.0008))),
+         grips=DEB_GRIPS),
+    # Debilitas's other kinds (debilitas2.c Debilitas2_Setup: kind 6; debilitas.c Debilitas3_Setup /
+    # Kind27_Setup: kinds 7 and 27): his moves, gestures, combos and grips again, their own attack
+    # tables (by the hard setting, no rage), base chase (+0x1730), temper, animations' sounds and
+    # knocks; the chase and lunge tables are Debilitas's own chase's, which these never run
+    dict(name='Debilitas6', steps=(0x41B6E0, 0x41B840), knocks=0x41B840, p='db6',
+         tables=(lambda t: t[:17] * 2 + t[17:] * 2)(dan(['Debilitas2_Attack0_%02d' % i for i in range(16)] + ['str_t_11'] +
+                                                        ['Debilitas2_Attack1_%02d' % i for i in range(16)] + ['str_t_12'])),
+         moves=(0x41B860, 15), combos=(0x41BAC0, 18), gestures=(0x41BA80, 8), chase=0x3AFB70, lunge=0x3AF4B0,
+         temper=(0x41BE80, 0x41BE80), pursue=(0x41BDF0, 0x41BDF0, 0x41C260, 0x41C260), throws=(13, 14),
+         grips=DEB_GRIPS),
+    dict(name='Debilitas7', steps=(0x413640, 0x4137A0), knocks=0x4137A0, p='db7',
+         tables=(lambda t: t[:17] * 2 + t[17:] * 2)(dan(['Debilitas3_Attack0_%02d' % i for i in range(16)] + ['str_t_5'] +
+                                                        ['Debilitas3_Attack1_%02d' % i for i in range(16)] + ['str_t_6'])),
+         moves=(0x4137B0, 15), combos=(0x413A10, 18), gestures=(0x4139D0, 8), chase=0x3AFB70, lunge=0x3AF4B0,
+         temper=(0x413E80, 0x413E80), pursue=(0x413E10, 0x413E10, 0x414220, 0x414220), throws=(13, 14),
+         grips=DEB_GRIPS),
+    dict(name='Kind27', steps=(0x42E5B0, 0x42E710), knocks=0x42E710, p='k27',
+         tables=(lambda t: t[:17] * 2 + t[17:] * 2)(dan(['Kind27_Attack0_%02d' % i for i in range(16)] + ['str_t_15'] +
+                                                        ['Kind27_Attack1_%02d' % i for i in range(16)] + ['str_t_16'])),
+         moves=(0x42E720, 15), combos=(0x42E980, 18), gestures=(0x42E940, 8), chase=0x3AFB70, lunge=0x3AF4B0,
+         temper=(0x42ED60, 0x42ED60), pursue=(0x42ECF0, 0x42ECF0, 0x42F110, 0x42F110), throws=(13, 14),
+         grips=DEB_GRIPS),
     dict(name='Riccardo', steps=(0x4148E0, 0x414A30), knocks=0x414A30, p='ric', tables=RIC_TABLES[:17] * 2 + RIC_TABLES[17:] * 2,
          moves=(0x414A40, 18), combos=(0x414D00, 20), gestures=(0x414CD0, 6), chase=0x3AFB70, lunge=0x47AC38,
          temper=(0x4150D0, 0x4150D0), pursue=(0x415060, 0x415060, 0x4155E0, 0x4155E0), throws=(16, 17),

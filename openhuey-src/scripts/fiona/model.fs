@@ -26,7 +26,7 @@ USING: engine actors vectors messages fiona.state fiona.anims ;
 : entry ( anim -- blend flags )  her-model @ swap motion-entry nip ;   \ its table's fade and flags
 : play-table ( anim variant -- )  over entry start ;                 \ Motion_PlayTable
 : play-own ( anim -- )  -1 over entry 8 or start ;   \ (Motion_PlayOwnBlend: no variant, no time of its own)
-: play-cut ( anim -- )  -1 play-table ;              \ (Motion_Play)
+: play-cut ( anim -- )  {: anim :}  anim -1 0  anim entry nip  start ;   \ (Motion_Play: cut in, no blend)
 : play-blend ( anim n variant -- )  {: anim n variant :}  anim variant n  anim entry nip  start ;   \ blended over n frames
 : weight! ( F: w -- )  her act.vweight sf! ;      \ the animation against its variant
 : settled? ( -- flag )  her act.fade sf@ 0e f<= ;  \ faded in

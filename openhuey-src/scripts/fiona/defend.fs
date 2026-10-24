@@ -4,7 +4,8 @@
 \ stage 3 - standing, walking, resting, or just set off running, a shove ($E00: her hand, damage
 \ 1); running or turning to flee, a kick ($E01: her body, damage 5, and it may make him
 \ stumble). A blow is a `blow` to whom it reaches; struck home she's held still 5 frames.
-\ Hewie is told when she shoves or kicks without him being struck (Fiona_HewieReact 10 / 11).
+\ Hewie is told when her shove meets a wall or her kick ends, without him being struck
+\ (Fiona_HewieReact 10 / 11).
 IN: fiona.defend
 USING: engine vectors game-state actors messages common keys facts flag-names rumble items items.names fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.slam fiona.fear fiona.controls fiona.looks ;
 
@@ -38,7 +39,7 @@ defer to-idle ( -- )
 \ metal (1 in 10 a stumble, damage 2), silver (a hard blow of 5, 1 in 5 a stumble), burst shoes
 \ (1 in 10 a hard blow of 50 - the special costumes' 1 in 10: 50 / 100 - with a burst on whom it
 \ meets); in a special costume 1 in 5 a stumble too. The damage by Fortis's boost (x3). Into
-\ a wall (not the special strikes) it ends ($101) ----
+\ a wall (not the special strikes) it ends: blended into standing ----
 create hand /vec allot
 \ her blow, as worked out (blow-power): its kind, damage, how (a stumble), a big one (a burst at
 \ them), its reach - the shove's working values, read again as it lands
@@ -69,15 +70,26 @@ $8000 constant stumble-blow
     form cowgirl-outfit = if  -10e 0e $23 at-bone  10e blow-reach f! exit  then
     form illegal-outfit = if  0e 6e $21 at-bone  3e blow-reach f! exit  then
     her-model @ 9 bone-pos hand vec!  2e blow-reach f! ;
-: shove-end ( -- )  ended? if  0 her-run-t !  to-idle exit  then  moving ;
-: shoving ( -- )
+: shove-done ( -- )  0 her-run-t !  to-idle ;
+\ into a wall (Fiona_StateShove): blended into standing over 10 (Motion_PlayWith: flags $101 -
+\ looping, feet planted - once the shove has faded in); once that has faded in Hewie is told
+\ (if not struck) and she stands
+: wall-end ( -- )  stand-anim -1 10 $101 start ;
+: shove-end ( -- )
     recoil-down
-    ended? if  her-struck @ 2 and 0= if  shove-reaction hewie-id send reaction  then  0 her-run-t !  to-idle exit  then
+    settled? if
+        anim@ shove-anim = if  wall-end
+        else  her-struck @ 2 and 0= if  shove-reaction hewie-id send reaction  then  shove-done exit  then
+    then
+    moving ;
+: shoving ( -- )   \ (Fiona_StateStrike: at its end she stands)
+    recoil-down
+    ended? if  shove-done exit  then
     moving
     events 2 and 0= if  exit  then
     blow-point
     hand true slam-door if  exit  then                     \ (a door there slammed)
-    special? 0=  hand $20018 body-tri-to 0< and if  $101 10 -1 play-blend  ['] shove-end her-act ! exit  then   \ (a wall before her hand)
+    special? 0=  hand $20018 body-tri-to 0< and if  settled? if  wall-end  then  ['] shove-end her-act ! exit  then   \ (a wall before her hand)
     blow-power  blow-dmg @ boosted blow-dmg !
     0  hand stalker-in-room blow-reach f@ near-point? 1 and or  hand dog-in-room blow-reach f@ near-point? 2 and or  {: mask :}
     mask if  blow-kind @ blow-dmg @ blow-how @ mask strike  then
@@ -129,8 +141,8 @@ create ahead-pt /vec allot   \ (her radius ahead)
     g running-group = if  start-kick  then ;
 : try-defend ( -- )
     square button-pressed? 0= if  exit  then
-    hands-off?  her-mode @ own-mode <> or  her-panic-stage @ panicking >= or  no-flee state-flag? or if  exit  then
-    defend-by-pose ;
+    hands-off?  her-mode @ own-mode <> or  still? or  her-panic-stage @ panicking >= or  no-flee state-flag? or if  exit  then
+    defend-by-pose ;   \ (still?: Fiona_IsIdle - not turning to push, in a panic attack or out of breath)
 \ her blow struck home (`blow-taken`): held still; her sound ($90 a kick, $8F a shove; Hewie
 \ counted as kicked - with his trust, H3)
 \ her shove's: costume 6 its own ($22), costume 7 none - its sparks instead (a blood spray at

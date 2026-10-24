@@ -6,8 +6,11 @@
  * lead to another message, 0x11 hi lo go on with another, 0x15 hi lo a system message inserted,
  * 0x08 n a parameter, colours, speeds, waits.
  *
- * Here a message is laid out as pages of plain lines (colours, speeds and waits dropped), with
- * its options; the window that shows it is Forth's. */
+ * Here a message is laid out as pages of plain lines with its options, and each character's
+ * colour (0x03 n, 0x04 back) and the frame it is typed on (Task_StateType: 0x0C n the speed - a
+ * glyph then waits Text_GlyphFrames[n] frames, 0x0D back to 0; 0x09 n a pause of n; 0x10 n: the
+ * message closes n frames after it is typed, 0 never by a button); the window that shows it is
+ * Forth's. */
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
@@ -17,10 +20,16 @@
 #define MESSAGE_LINES 16
 #define MESSAGE_LINE_CHARS 96
 #define MESSAGE_OPTIONS 8
+#define MESSAGE_PAUSES 16
 
 typedef struct MessagePage {
     char lines[MESSAGE_LINES][MESSAGE_LINE_CHARS];
+    uint16_t at[MESSAGE_LINES][MESSAGE_LINE_CHARS];      /* the frame (from the page's start) each is typed on */
+    uint8_t colour[MESSAGE_LINES][MESSAGE_LINE_CHARS];   /* its colour (the font's palette) */
     int nlines;
+    int typed;                       /* the frame the page is typed out on (then the button) */
+    uint16_t pause[MESSAGE_PAUSES];  /* the frames its pauses (0x09) start on: holding cancel types up to the next */
+    int npauses;
 } MessagePage;
 
 typedef struct MessageOption {
@@ -33,12 +42,16 @@ typedef struct MessageLayout {
     MessagePage pages[MESSAGE_PAGES];
     int npages;
     int choice, choice_flags;   /* a choice (0x0E and its flags byte) */
+    int close_after;            /* 0x10 n: closes n frames after its last page is typed (0: never by
+                                 * a button); -1 none */
     MessageOption options[MESSAGE_OPTIONS];
     int noptions;
 } MessageLayout;
 
 /* message `id`'s raw text (NULL: none) */
 const uint8_t *message_text(int id);
+/* the frame typing on `page` reaches after `frame`, holding cancel: its next pause, else its end */
+int message_skip(const MessageLayout *l, int page, int frame);
 /* laid out (the one layout: valid until the next call) */
 const MessageLayout *message_layout(int id);
 /* a table of a scene's own from a file (ids with bit 13; NULL: none): 1 loaded */

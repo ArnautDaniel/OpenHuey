@@ -98,15 +98,21 @@ USING: engine game-state actors messages keys facts flag-names items items.table
     stage @ shut <> if  draw-page exit  then
     tab @ if  $80 openness !  draw-tab  0 openness !  then ;
 
+\ ---- the sound turned down as it opens, back up as it closes (sub_set_volume: by the fade -
+\ 1 - fade / 255 - the effects' master, the stream, the stage music) ----
+: sub-volume ( -- )
+    255 openness @ - s>f 255e f/  {: F: v :}
+    1e v sound-volume!  v f>cell s" music" actor-named send music-duck  v stage-music-volume! ;
+
 \ ---- a frame with the world held ----
 : held-frame ( -- )
     1 frames +!
     stage @ case
-        opening of  16 openness +!  openness @ 128 >= if  128 openness !  up stage !  then  endof
+        opening of  16 openness +!  openness @ 128 >= if  128 openness !  up stage !  then  sub-volume  endof
         up of  menu-keys  select-button button-pressed? gal-kind @ 0= and if  close-menu  then  endof   \ (in a gallery select is its own)
         closing of
             openness @ 128 = quiet @ 0= and if  se-close  then
-            -32 openness +!  openness @ 0> 0= if  shut-menu exit  then  endof
+            -32 openness +!  openness @ 0 max openness !  sub-volume  openness @ 0> 0= if  shut-menu exit  then  endof
     endcase
     draw ;
 
@@ -123,7 +129,7 @@ behaviour menu
       shut stage !  pg-special page !  -1 shown !  -1 shown-picture !  0 tab !  -1 stalker-room !  defaults
       1 back-bank !  -1 her-map !  -1 her-pg !  -1 her-room !  -1 map-loaded !
       self subscribe tick  self subscribe held-tick  self subscribe frame-end  self subscribe arrived
-      self subscribe fiona-doing  self subscribe danger  self subscribe panic  self subscribe stalker-doing ;
+      self subscribe fiona-doing  self subscribe danger  self subscribe panic  self subscribe stalker-doing  self subscribe write-save ;
   on tick ( -- )
       1 frames +!  tab-frame
       stage @ shut = if
@@ -135,7 +141,9 @@ behaviour menu
   on menu-mode ( mode -- )  opened-as ! ;
   on game-saved ( -- )  saved-now ;
   on arrived ( room exit -- )  drop find-room ;        \ (Map_FindRoom as each room comes in)
-  on map-turn-to ( page -- )  show-on-page ;            \ (the scripts' 0xD1)
+  on map-turn-to ( page -- )  show-on-page ;            \ (the scripts' 0xD1; a save loaded: SceneGame_RoomIn)
+  on write-save ( -- )  her-pg @ .  ." map-page-was" cr ;   \ (saves.fs) the map's page she is on (the save's +0x18F0)
+  on options-restore ( vib out vol x y layout -- )  subscreen.options:restore ;   \ (saves.fs: the system data's)
   on item-used ( id result -- )  mode @ awaiting-use = if  used  else  2drop  then ;
   on fiona-doing ( mode sub cond cmd doing -- )  her-doing !  2drop drop  her-mode ! ;
   on danger ( level -- )  the-danger ! ;

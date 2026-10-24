@@ -2,10 +2,10 @@
 \ Pursuer_StateKnockedDown / StateHurt, Pursuer_FrameUpdate; Debilitas_GivesUp): a `blow` (her
 \ shove or kick) takes his health and adds to the damage he's had; he flinches by the side and
 \ height it came from - in a move that leaves him unshaken a shove only gets a grunt - or, out
-\ of health, he falls and stays down a while (1800 frames; hard 1350); a stumble hurts him a while
-\ (900 frames: his hurt walk). At his flinch's key he may strike back (his tables for in front,
-\ behind). After it, 20 damage or more and he gives up: his cry, held off - he goes out of the
-\ room for a while.
+\ of health, he falls and stays down a while (his setup's frames: Debilitas 1800, hard 1350); a
+\ stumble hurts him a while (900 frames: his hurt walk). At his flinch's key he may strike back (his
+\ tables for in front, behind). After it, enough damage (Debilitas 20, kind 6 80) and he gives up:
+\ his cry, held off - he goes out of the room for a while.
 IN: stalker.struck
 USING: engine game-state actors messages common facts flag-names paths vectors stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.names stalker.anims stalker.sounds ;
 
@@ -22,9 +22,9 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
     own-a @ 0< if  false exit  then
     own-room? if  -1 making-for !  true exit  then
     head-home  route-over? 0= ;
-: give-up? ( -- flag )   \ (Debilitas_GivesUp: 20 damage, not held off already, not in a doorway, and a way
-    gives-up @ 0= if  false exit  then   \ home - else on after her; the Pursuer's: never)
-    hits @ 20 <  my-mode @ held-off = or  at-door? or if  false exit  then
+: give-up? ( -- flag )   \ (Debilitas_GivesUp: his damage to give up at, not held off already, not in a
+    gives-up @ 0= if  false exit  then   \ doorway, and a way home - else on after her; the Pursuer's: never)
+    hits @ give-up-hits @ <  my-mode @ held-off = or  at-door? or if  false exit  then
     way-home ;
 : give-up ( -- )   \ (out by the first door of his way home; in one of his rooms, to its spot)
     0 hits !  give-up-cry 7 sound  held-off mode!  no-search search-phase !
@@ -79,7 +79,8 @@ $7FFF constant loops-mask
     dup powder-loops !  powder-cloud
     powdered-anim play-now  -1 reeling !  ['] powdering step! ;
 
-\ ---- knocked down (Pursuer_StateKnockedDown, StateHurt): forward with floor ahead, else back;
+\ ---- knocked down (Pursuer_StateKnockedDown, StateHurt; out of health, down his setup's frames:
+\ Pursuer_NoGiveUp): forward with floor ahead, else back;
 \ Hewie letting go of his leg, on his front; lying while he's down for good, a blow then a
 \ twitch (the lying's one before); up (the one after) ----
 enum: down-stage#  falling lying twitching getting-up ;
@@ -101,7 +102,7 @@ create ahead-at /vec allot
 : fall ( anim lie -- )
     lie-anim !  play-now  falling down-stage !
     hp @ 0> 0= if
-        hard-mode? if  1350  else  1800  then  down-t !  down-cond cond !  -1 beaten !  1 knockouts +!  down-for-good
+        down-frames @ down-t !  down-cond cond !  -1 beaten !  1 knockouts +!  down-for-good
     else  0 down-t !  then
     let-her-go  0 sees-fiona !  0 sees-hewie !  -1 reeling !  ['] downed step! ;
 : knock-down ( -- )  floor-ahead? if  fall-front-anim lying-front-anim  else  fall-back-anim lying-back-anim  then  fall ;

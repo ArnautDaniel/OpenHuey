@@ -79,6 +79,7 @@ typedef struct RoomLook {
     int32_t has_fog;
     float fog_near_color[4], fog_far_color[4];   /* the ramp's ends; a: how opaque (0x80 = 1) */
     float fog_near, fog_far;                     /* view distance where it starts / ends */
+    int32_t fog_early;                           /* drawn in layer 9: what follows (the characters) not fogged */
     int32_t has_tint;
     float tint_glow[4];                          /* added: the screen blurred, times this */
     float tint_contrast[4];                      /* pushed away from: its blurred copy, times this */
@@ -121,6 +122,13 @@ void render_mesh_free(GpuMesh *g);
 /* the next meshes drawn tinted and faded (1 1 1 1: as they are; a character fading out of sight,
  * a silhouette) */
 void render_mesh_tint(float r, float g, float b, float a);
+/* the characters' clip test, as the original's microprograms: a triangle with a corner outside
+ * the PS2's clip volume (the near and far planes, the GS's drawing space round the screen) not
+ * drawn at all, not cut at the screen (on for the draws until turned off) */
+void render_mesh_ps2_clip(int on);
+/* what is drawn from now on is drawn after the room's fog (the original's layers: Fog_Draw's 9 or
+ * $21), which then leaves it unfogged */
+void render_fog_after(int on);
 /* draw a mesh's draws; textures[i] for texture index i; groups: bit g shows group g (0 always) */
 void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, const GpuTexture *textures,
                  int ntextures, const uint32_t groups[8]);
@@ -158,6 +166,8 @@ void render_image(GpuTexture t, float x, float y, float w, float h, uint32_t rgb
 /* ... a part of it: texture coordinates u0, v0 .. u1, v1 (0..1) */
 void render_image_uv(GpuTexture t, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
                      uint32_t rgba);
+/* ... on four corners xy[8] (the part's top left, top right, bottom left, bottom right: turned) */
+void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, float u1, float v1, uint32_t rgba);
 /* a texture (re)filled with a w x h RGBA picture each time (a movie); made anew when the size
  * changes (*tw / *th: its size) */
 GpuTexture render_texture_stream(GpuTexture t, const uint8_t *rgba, int w, int h, int *tw, int *th);

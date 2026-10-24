@@ -31,14 +31,54 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
 \ the end's point (Rooms' nav +0x5C: 0 the foot, 1 the top)
 : end-y ( side -- ) ( F: -- y )  her-ladder @ swap nav-link-spot  fdrop fswap fdrop ;
 
-\ ---- the stalker in this ladder's region on that side (Progress_WhoIsWhere's region bits: 4
-\ side 0, its foot; 2 side 1, its top): at the foot he keeps her from getting off there; at the
-\ top, within his height above her, from going up ----
+\ ---- the stalker in a ladder's region (Progress_WhoIsWhere's region bits: 4 side 0, its foot;
+\ 2 side 1, its top): at the foot he keeps her from getting off there; at the top, within his
+\ height above her, from going up ----
+: stalker-side ( link -- side | -1 )   \ (his side of it; -1 not in its region)
+    {: link :}  stalker-in-room {: him :}
+    him 0< if  -1 exit  then
+    him body-at link nav-link-at? 0= if  -1 exit  then
+    him body-at him body-tri link nav-link-side ;
 : stalker-on ( side -- flag )
-    stalker-in-room {: side him :}  him 0< if  false exit  then
-    him body-at her-ladder @ nav-link-at? 0= if  false exit  then
-    him body-at him body-tri her-ladder @ nav-link-side side =
-    side 1 = if  her-at v.y sf@ him body-at v.y sf@ f-  him body-dims fswap fdrop f< and  then ;
+    {: side :}  her-ladder @ stalker-side side <> if  false exit  then
+    side 0= if  true exit  then
+    her-at v.y sf@ stalker-in-room body-at v.y sf@ f-  stalker-in-room body-dims fswap fdrop f< ;
+
+\ ---- knocked off it (a blow while on it, Fiona_Reaction 8: Fiona_StateCaughtCrawling): to the
+\ spot 10 out from its top - near it (under 20 below) pulled off ($F02), else dropped there
+\ ($70A, then $70B as it comes round), falling 0.5 faster each frame over as many frames as that
+\ takes; there her cry ($7D pulled, $81 fallen); fallen, down ($70C) and up ($100D) - her
+\ recovery reset (CrawlDrop / CrawlPull / CrawlFall / CrawlDown) ----
+: crawl-up ( -- )   \ (standing again: out of the ladder)
+    ended? if  her-drop-far @ if  reset-recovery  then  own-mode her-mode !  off-ladder exit  then  root-move ;
+: crawl-down ( -- )  ended? if  up-from-back-anim play-cut  ['] crawl-up her-act !  then  root-move ;
+: crawl-fall ( -- )  settled? if  ladder-fallen-anim -1 play-table  ['] crawl-down her-act !  then ;
+: crawl-drop ( -- )
+    -1 her-drop-n +!
+    her-drop-n @ if
+        her-drop-far @  anim@ ladder-fall-anim <> and  ended? and if  ladder-fall-anim -1 play-table  then
+        her-at v.x sf@ her-drop-dx f@ f- her-at v.x sf!
+        her-at v.y sf@ her-drop-dy f@ f- her-at v.y sf!
+        her-at v.z sf@ her-drop-dz f@ f- her-at v.z sf!
+        her-drop-dy f@ 0.5e f+ her-drop-dy f!  exit   \ (falling faster)
+    then
+    her-at her-drop-at vec-copy  her-drop-tri @ dup 0< if  drop  else  her-tri !  then
+    $D0 12 fiona-jolt   \ (landed)
+    her-drop-far @ if  long-fall-cry voice  ['] crawl-fall  else  pull-free-cry voice  ['] crawl-up  then  her-act ! ;
+: frames-to-fall ( F: h -- ) ( -- n )   \ (0, 0.5, 1 ... a frame: how many frames to fall h)
+    {: F: h | F: step :}  1
+    begin  h step f- to h  h f0< 0= while  step 0.5e f+ to step  1+  repeat ;
+: knocked-off ( -- )
+    her-ladder @ 1 0e 10e nav-link-front her-drop-tri !  her-drop-at vec!
+    her-at v.y sf@ her-drop-at v.y sf@ f- fdup 20e f< if
+        0 her-drop-far !  react-mode her-mode !  pull-free-anim -1 play-table  struck-hard-sound 0 her-sound
+    else
+        -1 her-drop-far !  ladder-slip-anim -1 play-table  fall-sound 0 her-sound
+    then
+    frames-to-fall dup her-drop-n !  s>f  {: F: n :}
+    her-at v.x sf@ her-drop-at v.x sf@ f- n f/ her-drop-dx f!
+    her-at v.z sf@ her-drop-at v.z sf@ f- n f/ her-drop-dz f!
+    0e her-drop-dy f!  ['] crawl-drop her-act ! ;
 
 \ ---- off (Fiona_StateLadderOff): at the event $20 put by that end, free ----
 : ladder-off ( -- )
@@ -89,13 +129,19 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
         on-ladder-foot-anim of  ladder-hold-anim play-own  endof   rung-up-end-anim of  ladder-hold-anim play-own  endof
         rung-down-anim of  ladder-hold-2-anim play-own  endof   rung-up-anim of  ladder-hold-2-anim play-own  endof
     endcase ;
-: on-ladder ( -- )   \ (until the move has faded in: still)
+: move-done? ( anim -- flag )  events $20 and 0<>  swap ladder-hold-anim ladder-slip-anim within or ;   \ (a move come round, or holding)
+: stick-move ( anim -- moved? )   \ (the stick: down, up - not with him above her: as let go - or let go)
+    stick-up fdup fabs 0.5e f> 0= if  fdrop holding true exit  then
+    f0< if  going-down exit  then
+    1 stalker-on if  holding true  else  going-up  then ;
+: nearer-end ( -- side )  anim@ dup off-ladder-foot-anim = swap on-ladder-foot-anim = or 0 1 ? ;   \ (after a move: the foot's for getting off or on there)
+\ in the panic she lets go - fallen off as if knocked (Fiona_StateCaughtCrawling: mode 4, sub 8)
+: panicked-off ( -- )  thrown-doing her-doing !  thrown-mode her-mode !  off-ladder-r her-sub !  knocked-off ;
+: on-ladder ( -- )   \ (Fiona_StateOnLadder; until the move has faded in: still)
     settled? 0= if  exit  then
-    anim@ events $20 and 0<>  over ladder-hold-anim ladder-slip-anim within or 0= if  drop climb-move exit  then   ( anim )
-    stick-up fdup fabs 0.5e f> if
-        f0< if  going-down  else  1 stalker-on if  holding true  else  going-up  then  then
-    else  fdrop holding true  then
-    if  anim@ dup off-ladder-foot-anim = swap on-ladder-foot-anim = or 0 1 ?  end-tri  then
+    her-fear-bits @ 2 and if  panicked-off exit  then
+    anim@ {: anim :}
+    anim move-done? if  anim stick-move if  nearer-end end-tri  then  then
     climb-move ;
 
 \ ---- getting on (Fiona_StateLadder, LadderWalk): to its end's spot, facing it; there, on ----
@@ -113,57 +159,22 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
 \ ---- the action button by a ladder (Progress_CharRequests' regions, Progress_PlayerButtons) ----
 : facing-along? ( link side -- flag )   \ (Actor_FacingDoor: her forward against its facing)
     nav-link-yaw her-yaw f@ f- fcos f0> ;
-: ladder-here ( -- link side | -1 )
+: side-here ( link -- side | -1 )   \ (her side of it: 0 the foot, 1 the top; -1 not in its region)
+    {: link :}  her-at link nav-link-at? 0= if  -1 exit  then
+    her-at her-tri @ link nav-link-side  dup 0 2 within 0= if  drop -1  then ;
+: ladder-here ( -- link side | -1 )   \ (on a side of one with the stalker not on it, facing along it)
+    {: | side :}
     nav-links 0 ?do
-        her-at i nav-link-at? if
-            her-at her-tri @ i nav-link-side dup 0 2 within if
-                stalker-in-room dup 0< 0= if
-                    dup body-at i nav-link-at? if  drop  drop unloop -1 exit  then
-                then  drop
-                i over facing-along? if  i swap unloop exit  then
-            then  drop
+        i side-here to side
+        side 0< 0=  i stalker-side side <> and  if
+            i side facing-along? if  i side unloop exit  then
         then
     loop  -1 ;
 : try-ladders ( -- )
     her-mode @ own-mode <>  her-doing @ free-doing <> or  her-panic-stage @ panicking >= or if  exit  then
     circle button-pressed? 0= if  exit  then
     ladder-here dup 0< if  drop exit  then                              ( link side )
-    stalker-in-room dup 0< 0= if  self swap 0e 0e bodies-touching? if  2drop exit  then  else  drop  then
+    stalker-touching? if  2drop exit  then
     her-ladder-side !  her-ladder !
     getting-on her-sub !  ladder-doing her-doing !  ladder-mode her-mode !  ladder-start ;
 
-\ ---- knocked off it (a blow while on it, Fiona_Reaction 8: Fiona_StateCaughtCrawling): to the
-\ spot 10 out from its top - near it (under 20 below) pulled off ($F02), else dropped there
-\ ($70A, then $70B as it comes round), falling 0.5 faster each frame over as many frames as that
-\ takes; there her cry ($7D pulled, $81 fallen); fallen, down ($70C) and up ($100D) - her
-\ recovery reset (CrawlDrop / CrawlPull / CrawlFall / CrawlDown) ----
-: crawl-up ( -- )   \ (standing again: out of the ladder)
-    ended? if  her-drop-far @ if  reset-recovery  then  own-mode her-mode !  off-ladder exit  then  root-move ;
-: crawl-down ( -- )  ended? if  up-from-back-anim play-cut  ['] crawl-up her-act !  then  root-move ;
-: crawl-fall ( -- )  settled? if  ladder-fallen-anim -1 play-table  ['] crawl-down her-act !  then ;
-: crawl-drop ( -- )
-    -1 her-drop-n +!
-    her-drop-n @ if
-        her-drop-far @  anim@ ladder-fall-anim <> and  ended? and if  ladder-fall-anim -1 play-table  then
-        her-at v.x sf@ her-drop-dx f@ f- her-at v.x sf!
-        her-at v.y sf@ her-drop-dy f@ f- her-at v.y sf!
-        her-at v.z sf@ her-drop-dz f@ f- her-at v.z sf!
-        her-drop-dy f@ 0.5e f+ her-drop-dy f!  exit   \ (falling faster)
-    then
-    her-at her-drop-at vec-copy  her-drop-tri @ dup 0< if  drop  else  her-tri !  then
-    $D0 12 fiona-jolt   \ (landed)
-    her-drop-far @ if  long-fall-cry voice  ['] crawl-fall  else  pull-free-cry voice  ['] crawl-up  then  her-act ! ;
-: frames-to-fall ( F: h -- ) ( -- n )   \ (0, 0.5, 1 ... a frame: how many frames to fall h)
-    {: F: h | F: step :}  1
-    begin  h step f- to h  h f0< 0= while  step 0.5e f+ to step  1+  repeat ;
-: knocked-off ( -- )
-    her-ladder @ 1 0e 10e nav-link-front her-drop-tri !  her-drop-at vec!
-    her-at v.y sf@ her-drop-at v.y sf@ f- fdup 20e f< if
-        0 her-drop-far !  react-mode her-mode !  pull-free-anim -1 play-table  struck-hard-sound 0 her-sound
-    else
-        -1 her-drop-far !  ladder-slip-anim -1 play-table  fall-sound 0 her-sound
-    then
-    frames-to-fall dup her-drop-n !  s>f  {: F: n :}
-    her-at v.x sf@ her-drop-at v.x sf@ f- n f/ her-drop-dx f!
-    her-at v.z sf@ her-drop-at v.z sf@ f- n f/ her-drop-dz f!
-    0e her-drop-dy f!  ['] crawl-drop her-act ! ;

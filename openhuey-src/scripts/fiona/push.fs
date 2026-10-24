@@ -27,6 +27,7 @@ create probe /vec allot
 PRIVATE>
 : find-pushable ( pick? -- ok? ) ( F: reach -- )
     {: pick? F: reach :}
+    her-mode @ own-mode <> if  false exit  then   \ (her own moves only: led, on a ladder, thrown - none)
     group dup walking-group =  over running-group = or  swap pushing-group = or 0= if  false exit  then
     0e reach probe!  her-tri @ her-at probe blocked-floor v-wall 0= if  fdrop false exit  then  {: F: wall :}
     -2e reach side-tri dup 0< if  drop false exit  then  obstacles-ring-mask

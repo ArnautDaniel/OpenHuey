@@ -12,6 +12,10 @@ int sound_open(void);
 void sound_close(void);
 /* everything heard turned down (0..1: the options' volume) */
 void sound_gain(float g);
+/* the game's own fade over everything heard, under the options' volume (0..1: StatusTimers_Frame's
+ * master volume - Weltigo's silence), and what it is now */
+void sound_fade_all(float v);
+float sound_fade_level(void);
 /* a stream mixed in as well (a movie's sound): it adds `frames` stereo frames into `out`;
  * NULL none */
 void sound_stream(void (*mix)(int16_t *out, int frames));

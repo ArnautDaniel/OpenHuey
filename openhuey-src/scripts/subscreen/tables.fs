@@ -261,6 +261,11 @@ create map2-rooms   \ (room page | x-scale z-scale x-off y-off; -1 ends)
     $10A , 0 , 5.263199806213379e f, 5.263199806213379e f, 255.0e f, 219.0e f,
     $10B , 0 , 5.263199806213379e f, 5.263199806213379e f, 231.0e f, 250.0e f,
     -1 ,
+\ (the maze rooms' three spots, by their place in the dealt row: D_00420570's entries 14..16)
+create maze-spots
+    -1 , 0 , 5.263199806213379e f, 5.263199806213379e f, 267.0e f, 114.0e f,
+    -1 , 0 , 5.263199806213379e f, 5.263199806213379e f, 235.0e f, 171.0e f,
+    -1 , 0 , 5.263199806213379e f, 5.263199806213379e f, 276.0e f, 171.0e f,
 : map3-page ( page -- addr len title )
     case
         0 of  s" MAP/S_B1"  $90  endof

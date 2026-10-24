@@ -138,6 +138,20 @@ PRIM(p_light_fetch) {   /* ( i -- ) ( F: -- intensity shadow ) room light i's (0
     FPUSH(l != NULL ? l->intensity : 0.0f);
     FPUSH(l != NULL ? l->shadow : 0.0f);
 }
+PRIM(p_room_ambient) {   /* ( -- ) ( F: -- r g b ) the room's ambient light (0..128) */
+    FPUSH(gEngine.room.ambient.x);
+    FPUSH(gEngine.room.ambient.y);
+    FPUSH(gEngine.room.ambient.z);
+}
+PRIM(p_lights_at) {   /* ( -- l0 l1 l2 ) ( F: x y z -- ) the room's lights on a character there (-1: none) */
+    float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
+    int l[3];
+
+    room_lights_at(&gEngine.room, vec3(x, y, z), l);
+    PUSH(l[0]);
+    PUSH(l[1]);
+    PUSH(l[2]);
+}
 PRIM(p_look_on) {   /* ( slot -- flag ) the look's effect in that slot ($1C..$1F) is on */
     Cell slot = POP();
     int on = slot == 0x1F ? gRoomLook.has_tint : slot == 0x1E ? gRoomLook.has_bloom :
@@ -449,6 +463,57 @@ PRIM(p_body_tri_to) {   /* ( v mask -- tri ) walking straight from it to v (mask
     PUSH(navmesh_walk(n, b->tri, vec3(b->pos[0], b->pos[1], b->pos[2]), vec3(v[0], v[1], v[2]), NULL));
     n->block = 0;
 }
+PRIM(p_push_out) {   /* ( v tri other mask -- tri' ) Actor_PushOut: v (on tri) put out of body `other`, to
+                       * their radii + 0.01 apart (its radius the running actor's body's) - straight
+                       * away, else turned 2, 4 .. 180 degrees either way - where it is reached
+                       * straight over the floor within the mask: v there on the floor, its
+                       * triangle; -1 nowhere fits (v kept) */
+    uint32_t mask = (uint32_t)POP();
+    HBody *o = any_body(f, POP(), "push-out");
+    Cell tri = POP();
+    float *v = vec_arg(f);
+    HBody *b = own_body(f, "push-out");
+    NavMesh *n = nav_masked(mask);
+    float dist = 0.01f + b->radius + o->radius, dx = v[0] - o->pos[0], dz = v[2] - o->pos[2];
+    float l = sqrtf(dx * dx + dz * dz), c = cosf(0.034906585f), s = sinf(0.034906585f);   /* (2 degrees) */
+    float lx, lz, rx, rz;
+    int t = -1, deg;
+
+    if (l > 0.0f) {
+        dx = dx / l * dist;
+        dz = dz / l * dist;
+    } else {
+        dx = dz = 0.0f;
+    }
+    lx = rx = dx;
+    lz = rz = dz;
+    t = navmesh_walk(n, (int)tri, vec3(v[0], v[1], v[2]), vec3(o->pos[0] + dx, o->pos[1], o->pos[2] + dz), NULL);
+    for (deg = 2; t < 0 && deg < 181; deg += 2) {
+        float x = lx;   /* (sceVu0RotMatrixY: -2 degrees one way, +2 the other) */
+
+        lx = c * x - s * lz;
+        lz = s * x + c * lz;
+        dx = lx;
+        dz = lz;
+        t = navmesh_walk(n, (int)tri, vec3(v[0], v[1], v[2]), vec3(o->pos[0] + dx, o->pos[1], o->pos[2] + dz), NULL);
+        if (t >= 0) {
+            break;
+        }
+        x = rx;
+        rx = c * x + s * rz;
+        rz = -s * x + c * rz;
+        dx = rx;
+        dz = rz;
+        t = navmesh_walk(n, (int)tri, vec3(v[0], v[1], v[2]), vec3(o->pos[0] + dx, o->pos[1], o->pos[2] + dz), NULL);
+    }
+    n->block = 0;
+    if (t >= 0) {
+        v[0] = o->pos[0] + dx;
+        v[2] = o->pos[2] + dz;
+        v[1] = navmesh_height(n, t, v[0], v[2]);
+    }
+    PUSH(t);
+}
 PRIM(p_body_free) {   /* ( mask -- ) ( F: yaw d -- free ) how far ahead along yaw is free (mask -1: its own) */
     Cell mask = POP();
     HBody *b = own_body(f, "body-free");
@@ -486,6 +551,17 @@ PRIM(p_v_walk) {   /* ( tri a b mask -- tri' ) straight from a (on tri) to b wit
 
     PUSH(navmesh_walk(n, (int)tri, vec3(a[0], a[1], a[2]), vec3(b[0], b[1], b[2]), NULL));
     n->block = 0;
+}
+PRIM(p_can_walk_between) {   /* ( ta a tb b mask -- flag ) can one walk between a (on ta) and b (on tb):
+                              * Actor_CanWalkBetween - straight both ways, mask 0 its $40080 */
+    uint32_t mask = (uint32_t)POP();
+    float *b = vec_arg(f);
+    Cell tb = POP();
+    float *a = vec_arg(f);
+    Cell ta = POP();
+
+    PUSH(navmesh_can_walk_between(&gEngine.room.nav, (int)ta, vec3(a[0], a[1], a[2]), (int)tb,
+                                  vec3(b[0], b[1], b[2]), mask) ? -1 : 0);
 }
 PRIM(p_nav_crosses) {   /* ( tri a b mask -- flag ) a straight line from a (on tri) toward b crosses
                          * a triangle with all of mask's flags (to b's, or a wall) */
@@ -862,6 +938,7 @@ PRIM(p_cam_setup) {   /* ( set path -- ) */
 }
 PRIM(p_cam_on) { camdir_camera_on(&gCamDir, (int)POP()); }   /* ( id -- ) follow someone and take their setup (-1: nobody) */
 PRIM(p_cam_followed) { PUSH(gCamDir.followed); }   /* ( -- id ) whom it follows (-1: nobody) */
+PRIM(p_cam_followed_set) { gCamDir.followed = (int)POP(); }   /* ( id -- ) whom it is taken to follow, its target left (-1: nobody - Progress +0x1130 = 0xFF) */
 PRIM(p_cam_target_id) { PUSH(gCamDir.target); }    /* ( -- id ) whom the director looks at (-1: nobody) */
 PRIM(p_cam_player) { gCamDir.player = (int)POP(); }   /* ( id -- ) Fiona: whom it falls back on */
 PRIM(p_cam_char_setup) {   /* ( who set path -- ) a character's camera setup */
@@ -889,7 +966,7 @@ PRIM(p_cam_angle) { FPUSH(gCamDir.fov * 57.29578f); }   /* ( F: -- deg ) its vie
 PRIM(p_cam_stop) { gCamDir.started = 0; }                       /* ( -- ) a room change: nothing to direct till it starts */
 PRIM(p_cam_ease) { camdir_ease(&gCamDir); }
 PRIM(p_cam_event) { PUSH(gCamDir.event ? -1 : 0); }   /* ( -- flag ) an event's shot has the camera (the director idle) */
-PRIM(p_cam_event_set) { gCamDir.event = POP() != 0; }  /* ( flag -- ) an event's shot takes the camera, or gives it back */
+PRIM(p_cam_event_set) { camdir_event(&gCamDir, POP() != 0); }  /* ( flag -- ) an event's shot takes the camera, or gives it back */
 PRIM(p_cam_track) { camdir_track(&gCamDir); }
 /* ---- the mods' camera (docs/modding.md): a mod's own, over the director's in play - not in a
  * cutscene's shot or an event's (those keep theirs) ---- */
@@ -1487,7 +1564,7 @@ PRIM(p_door_at) {   /* ( exit -- flag ) ( F: -- x y z ) where the room's door at
     PUSH(-1);
 }
 PRIM(p_out_of_view) {   /* ( -- flag ) ( F: x y z -- ) outside the camera's view volume as the original
-                         * sees it: a 4:3 picture, 1 to 2000 deep (Camera_OutOfView) */
+                         * sees it: a 4:3 picture, its near to its far (Camera_OutOfView) */
     float z = (float)FPOP(), y = (float)FPOP(), x = (float)FPOP();
 
     PUSH(camera_out_of_view(&gEngine.camera, vec3(x, y, z)) ? -1 : 0);
@@ -1527,6 +1604,13 @@ PRIM(p_placed_info) {   /* ( i -- addr len shown ) ( F: -- x y z ) its name, sho
     FPUSH(p != NULL ? p->pos.y : 0.0);
     FPUSH(p != NULL ? p->pos.z : 0.0);
 }
+PRIM(p_placed_draws) {   /* ( i -- layer mask? ) the renderer layer it draws in; it marks the bloom mask only */
+    Cell i = POP();
+    const Placed *p = i >= 0 && i < gEngine.room.placed.n ? &gEngine.room.placed.p[i] : NULL;
+
+    PUSH(p != NULL ? placed_layer(p) : -1);
+    PUSH(p != NULL && p->mesh.nd > 0 && p->mesh.d[0].mask ? -1 : 0);
+}
 PRIM(p_area_count) { PUSH(area_count(&gEngine.room)); }   /* ( -- n ) */
 PRIM(p_area_kind) { PUSH(area_kind(&gEngine.room, (int)POP())); }   /* ( area -- kind ) 1 a box, -1 none */
 PRIM(p_area_corner) {   /* ( area k -- flag ) ( F: -- x y z ) */
@@ -1555,6 +1639,11 @@ PRIM(p_door_move) {   /* ( exit open? slam? -- ) the played room's door swung op
     Cell slam = POP(), open = POP(), exit = POP();
 
     room_door_move(&gEngine.room, (int)exit, open != 0, slam != 0);
+}
+PRIM(p_door_set_opened) {   /* ( exit open? -- ok? ) Doors_SetOpened: set swinging open (creaking) or shut, its passage at once */
+    Cell open = POP(), exit = POP();
+
+    PUSH(room_door_set_opened(&gEngine.room, (int)exit, open != 0) ? -1 : 0);
 }
 PRIM(p_door_events) {   /* ( exit -- sound how settled ) what its swing did this tick (room.h RoomDoor) */
     Cell exit = POP();
@@ -1663,6 +1752,42 @@ PRIM(p_message_option_leads) {   /* ( i -- msg ) the message option i leads to (
     PUSH(o ? o->leads_to : 0xFFFF);
 }
 PRIM(p_message_choice_flags) { PUSH(sMsg != NULL ? sMsg->choice_flags : 0); }
+PRIM(p_message_typed) {   /* ( page -- frame ) the frame the page is typed out on */
+    Cell pg = POP();
+
+    PUSH(sMsg != NULL && pg >= 0 && pg < sMsg->npages ? sMsg->pages[pg].typed : 0);
+}
+PRIM(p_message_skip) {   /* ( page frame -- frame' ) where holding cancel takes the typing: its next pause, else its end */
+    Cell fr = POP(), pg = POP();
+
+    PUSH(message_skip(sMsg, (int)pg, (int)fr));
+}
+PRIM(p_message_close_after) { PUSH(sMsg != NULL ? sMsg->close_after : -1); }   /* ( -- n ) 0x10's frames; -1 none */
+PRIM(p_message_run) {   /* ( page line col frame -- addr len colour ) from col, the characters typed by `frame` in one colour */
+    Cell fr = POP(), col = POP(), ln = POP(), pg = POP();
+    const MessagePage *p;
+    int n, len;
+
+    if (sMsg == NULL || pg < 0 || pg >= sMsg->npages || ln < 0 || ln >= sMsg->pages[pg].nlines) {
+        PUSH(0);
+        PUSH(0);
+        PUSH(0);
+        return;
+    }
+    p = &sMsg->pages[pg];
+    len = (int)strlen(p->lines[ln]);
+    if (col < 0 || col >= len || p->at[ln][col] > fr) {
+        PUSH(0);
+        PUSH(0);
+        PUSH(0);
+        return;
+    }
+    for (n = (int)col; n < len && p->at[ln][n] <= fr && p->colour[ln][n] == p->colour[ln][col]; n++) {
+    }
+    PUSH(p->lines[ln] + col);
+    PUSH(n - col);
+    PUSH(p->colour[ln][col]);
+}
 PRIM(p_message_param_text) {   /* ( slot addr len -- ) parameter `slot` shows this text */
     Cell n = POP(), a = POP(), slot = POP();
 
@@ -2527,6 +2652,8 @@ PRIM(p_rumble_swell) {   /* ( channel from to frames -- ) the large motor going 
 }
 PRIM(p_rumble_allow) { rumble_allow(POP() != 0); }   /* ( flag -- ) the vibration allowed (the options) */
 PRIM(p_game_volume) { sound_gain((float)FPOP()); }   /* ( F: v -- ) everything heard, 0..1 (the options' volume) */
+PRIM(p_world_volume) { sound_fade_all((float)FPOP()); }   /* ( F: v -- ) everything heard faded, 0..1, under the options' (StatusTimers_Frame: Weltigo's) */
+PRIM(p_world_volume_q) { FPUSH(sound_fade_level()); }   /* ( F: -- v ) */
 PRIM(p_rumble_seq_clear) { rumble_sequence_clear(); }   /* ( -- ) the sequence emptied */
 PRIM(p_rumble_seq_add) {   /* ( small? from to frames -- ) a step added to the sequence */
     Cell frames = POP(), to = POP(), from = POP();
@@ -2727,7 +2854,7 @@ PRIM(p_look_kept) { gRoomLook = sKeptLook; }   /* ( -- ) and put back */
 PRIM(p_look_plain) {   /* ( -- ) none of it: no fog, tint, bloom, depth of field (the model gallery's) */
     gRoomLook.has_fog = gRoomLook.has_tint = gRoomLook.has_bloom = gRoomLook.has_dof = 0;
 }
-PRIM(p_look_get) {   /* ( slot addr -- n ) a look effect's parameters as last set, into addr (16 at most; 0 none) */
+PRIM(p_look_get) {   /* ( slot addr -- n ) a look effect's parameters as last set, into addr (26 at most - the fog; 0 none) */
     Cell a = POP(), slot = POP();
 
     PUSH((Cell)room_look_get((int)slot, (uint8_t *)a));
@@ -2768,7 +2895,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its parts shown or hi
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.18") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.1.21") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
@@ -3016,6 +3143,7 @@ typedef struct UiItem {
     char s[96];
     int group, id, csa;       /* (3) the texture cache's group + id, its palette */
     float u, v, uw, vh;       /* (3) the part of it, in texels */
+    float corners[8];         /* (5: a part on four corners) x, y each */
 } UiItem;
 static UiItem sUi[UI_LAYERS][UI_ITEMS];
 static int sUiN[UI_LAYERS];
@@ -3145,7 +3273,7 @@ PRIM(p_ui_held) {   /* ( layer x y w h -- ) the kept movie picture (movie-hold) 
     UiItem *u = ui_add(f, POP());
 
     if (u != NULL) {
-        *u = (UiItem){.text = 3, .x = (float)x, .y = (float)y, .w = (float)width, .h = (float)height};
+        *u = (UiItem){.text = 4, .x = (float)x, .y = (float)y, .w = (float)width, .h = (float)height};
     }
 }
 PRIM(p_ui_text) {   /* ( layer addr len x y rgba scale -- ) */
@@ -3157,14 +3285,42 @@ PRIM(p_ui_text) {   /* ( layer addr len x y rgba scale -- ) */
         snprintf(u->s, sizeof(u->s), "%.*s", (int)(n > 0 ? n : 0), n > 0 ? (const char *)a : "");
     }
 }
+PRIM(p_ui_text_in) {   /* ( layer addr len x y rgba scale palette -- ) in the game font's palette n (a message's colour) */
+    Cell csa = POP(), scale = POP(), rgba = POP(), y = POP(), x = POP(), n = POP(), a = POP();
+    UiItem *u = ui_add(f, POP());
+
+    if (u != NULL) {
+        *u = (UiItem){.text = 1, .x = (float)x, .y = (float)y, .w = (float)(scale < 1 ? 1 : scale), .rgba = (uint32_t)rgba,
+                      .csa = (int)csa};
+        snprintf(u->s, sizeof(u->s), "%.*s", (int)(n > 0 ? n : 0), n > 0 ? (const char *)a : "");
+    }
+}
+PRIM(p_ui_image4) {   /* ( layer x0 y0 x1 y1 x2 y2 x3 y3 group id csa u v uw vh rgba -- ) a cache texture's part
+                       * on four corners (the texels' top left, top right, bottom left, bottom right) */
+    Cell rgba = POP(), vh = POP(), uw = POP(), v = POP(), u = POP(), csa = POP(), id = POP(), group = POP();
+    float c[8];
+    int i;
+    UiItem *it;
+
+    for (i = 7; i >= 0; i--) {
+        c[i] = (float)POP();
+    }
+    it = ui_add(f, POP());
+    if (it != NULL) {
+        *it = (UiItem){.text = 5, .x = c[0], .y = c[1], .rgba = (uint32_t)rgba, .group = (int)group, .id = (int)id,
+                       .csa = (int)csa, .u = (float)u, .v = (float)v, .uw = (float)uw, .vh = (float)vh};
+        memcpy(it->corners, c, sizeof(c));
+    }
+}
 PRIM(p_ui_image) {   /* ( layer x y w h group id csa u v uw vh rgba -- ) part of a cache texture */
     Cell rgba = POP(), vh = POP(), uw = POP(), v = POP(), u = POP(), csa = POP(), id = POP(), group = POP();
     Cell height = POP(), width = POP(), y = POP(), x = POP();
     UiItem *it = ui_add(f, POP());
 
     if (it != NULL) {
-        *it = (UiItem){3, (float)x, (float)y, (float)width, (float)height, (uint32_t)rgba, "", (int)group, (int)id,
-                       (int)csa, (float)u, (float)v, (float)uw, (float)vh};
+        *it = (UiItem){.text = 3, .x = (float)x, .y = (float)y, .w = (float)width, .h = (float)height, .rgba = (uint32_t)rgba,
+                       .group = (int)group, .id = (int)id, .csa = (int)csa, .u = (float)u, .v = (float)v, .uw = (float)uw,
+                       .vh = (float)vh};
     }
 }
 PRIM(p_tex_info) {   /* ( group id -- w h tex ) a cache texture's size and GPU name (0: none) */
@@ -3290,9 +3446,18 @@ PRIM(p_text_width) {   /* ( addr len scale -- px ) */
     PUSH((Cell)text_width((const char *)a, n > 0 ? (int)n : 0, (float)(scale < 1 ? 1 : scale)));
 }
 
-static int game_text(float x, float y, float scale, uint32_t rgba, const char *s) {
+static int game_text(float x, float y, float scale, uint32_t rgba, const char *s, int palette) {
     int tw, th, i;
     unsigned t = game_font(&tw, &th);
+
+    if (t != 0 && palette > 0) {   /* (another of the font's palettes: a message's colour) */
+        int pw, ph;
+        unsigned pt = sprites_texture_of(FONT_GROUP, FONT_TEXTURE, palette, &pw, &ph);
+
+        if (pt != 0) {
+            t = pt;
+        }
+    }
     float cell = 8.0f * scale, tall = cell * 21.0f / 16.0f;   /* (a glyph 16 x 21, as the message window's: Task glyphW / glyphH) */
 
     if (t == 0 || tw <= 0 || th <= 0) {
@@ -3340,12 +3505,19 @@ static void ui_draw(void) {
                 }
             } else if (u->text == 2) {
                 movie_draw_at(u->x, u->y, u->w, u->h);
-            } else if (u->text == 3) {
+            } else if (u->text == 5) {
+                int tw, th;
+                unsigned t = sprites_texture_of(u->group, u->id, u->csa, &tw, &th);
+
+                if (t != 0 && tw > 0 && th > 0) {
+                    render_image_quad(t, u->corners, u->u / tw, u->v / th, (u->u + u->uw) / tw, (u->v + u->vh) / th, u->rgba);
+                }
+            } else if (u->text == 4) {
                 if (sHeldTex != 0) {
                     render_image(sHeldTex, u->x, u->y, u->w, u->h, 0xFFFFFFFFu);
                 }
             } else if (u->text) {
-                if (!gRender.game_font || !game_text(u->x, u->y, u->w, u->rgba, u->s)) {
+                if (!gRender.game_font || !game_text(u->x, u->y, u->w, u->rgba, u->s, u->csa)) {
                     render_text(u->x, u->y, u->w, u->rgba, u->s, (int)strlen(u->s));
                 }
             } else {
@@ -3406,19 +3578,19 @@ void bind_engine(Forth *f) {
         Code code;
     } prims[] = {
         {"room", p_room}, {"route", p_route}, {"route-avoiding", p_route_avoiding}, {"route-sides", p_route_sides}, {"exit-way", p_exit_way}, {"route-door", p_route_door}, {"door-open?", p_door_open}, {"world-exits-rebuild", p_exits_rebuild}, {"door-exit-in", p_door_exit_in}, {"door-leads", p_door_leads}, {"exit-stand", p_exit_stand}, {"room-id", p_room_id}, {"room-exists?", p_room_exists},
-        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
+        {"room-bounds", p_room_bounds}, {"room-cameras", p_room_cameras}, {"room-camera", p_room_camera}, {"light-own", p_light_own}, {"light-scale", p_light_scale}, {"door-group?", p_door_group_q}, {"light@", p_light_fetch}, {"room-ambient", p_room_ambient}, {"lights-at", p_lights_at}, {"look-on?", p_look_on}, {"sprites", p_sprites_new}, {"sprites-free", p_sprites_free}, {"sprites-free-all", p_sprites_free_all}, {"sprites-texture", p_sprites_texture}, {"sprites-cells", p_sprites_cells}, {"sprites-flags", p_sprites_flags}, {"sprites-offset", p_sprites_offset}, {"sprites-corner", p_sprites_corner}, {"sprites-count", p_sprites_count}, {"sprite!", p_sprite_store}, {"sprites-uv", p_sprites_uv}, {"sprite-quad!", p_sprite_quad}, {"door-group!", p_door_group}, {"room-group!", p_room_group}, {"floor-below", p_floor_below},
         {"nav-tris", p_nav_tris}, {"nav-tri", p_nav_tri}, {"tri-center", p_tri_center}, {"tri-normal", p_tri_normal},
         {"exit-tri", p_exit_tri}, {"exit-leads", p_exit_leads}, {"room-exit-door", p_room_exit_door}, {"room-exit-leads", p_room_exit_leads}, {"door-sides", p_door_sides}, {"room-exit-tri", p_room_exit_tri}, {"hud", p_hud}, {"ui-clear", p_ui_clear}, {"ui-image", p_ui_image}, {"tex-bank", p_tex_bank}, {"tex-info", p_tex_info}, {"ui-rect", p_ui_rect}, {"ui-text", p_ui_text}, {"text-width", p_text_width}, {"ui-movie", p_ui_movie}, {"ui-held", p_ui_held}, {"movie-hold", p_movie_hold}, {"movie-unhold", p_movie_unhold}, {"cast-as", p_cast_as}, {"chars-hide", p_chars_hide}, {"cast-model", p_cast_model}, {"model-file", p_model_file}, {"nav-move", p_nav_move}, {"nav-nearest", p_nav_nearest}, {"nav-at", p_nav_at}, {".room", p_room_info},
         {"camera", p_camera},
         {"cam-new-room", p_cam_new_room}, {"cam-room-start", p_cam_room_start}, {"cam-setup", p_cam_setup},
-        {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-climb", p_body_climb}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-on", p_cam_on}, {"cam-followed", p_cam_followed}, {"cam-target", p_cam_target_id}, {"cam-player!", p_cam_player}, {"cam-char-setup", p_cam_char_setup}, {"cam-forget-setups", p_cam_forget_setups}, {"cam-setup-of", p_cam_setup_of}, {"cam-take-followed", p_cam_take_followed}, {"cam-scene!", p_cam_scene}, {"cam-scene?", p_cam_scene_q}, {"cam-next-set", p_cam_next_set}, {"cam-rate!", p_cam_rate}, {"cam-shake!", p_cam_shake}, {"cam-cut?", p_cam_cut}, {"cam-remember", p_cam_remember}, {"cam-started?", p_cam_started}, {"cam-stop", p_cam_stop}, {"cam-angle", p_cam_angle}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-event!", p_cam_event_set}, {"cam-track", p_cam_track},
+        {"body-move", p_body_move}, {"body-move-any", p_body_move_any}, {"body-move-local", p_body_move_local}, {"body-climb", p_body_climb}, {"body-turn-toward", p_body_turn_toward}, {"body-heading-to", p_body_heading_to}, {"body-place-at", p_body_place_at}, {"body-tri-to", p_body_tri_to}, {"body-free", p_body_free}, {"bodies-touching?", p_bodies_touching}, {"cam-on", p_cam_on}, {"cam-followed", p_cam_followed}, {"cam-followed!", p_cam_followed_set}, {"cam-target", p_cam_target_id}, {"cam-player!", p_cam_player}, {"cam-char-setup", p_cam_char_setup}, {"cam-forget-setups", p_cam_forget_setups}, {"cam-setup-of", p_cam_setup_of}, {"cam-take-followed", p_cam_take_followed}, {"cam-scene!", p_cam_scene}, {"cam-scene?", p_cam_scene_q}, {"cam-next-set", p_cam_next_set}, {"cam-rate!", p_cam_rate}, {"cam-shake!", p_cam_shake}, {"cam-cut?", p_cam_cut}, {"cam-remember", p_cam_remember}, {"cam-started?", p_cam_started}, {"cam-stop", p_cam_stop}, {"cam-angle", p_cam_angle}, {"cam-ease", p_cam_ease}, {"cam-event?", p_cam_event}, {"cam-event!", p_cam_event_set}, {"cam-track", p_cam_track}, {"push-out", p_push_out},
         {"cam-update", p_cam_update}, {"cam-restart", p_cam_restart}, {"cam-changed?", p_cam_changed}, {"cam-set@", p_cam_set}, {"actor-load-textured", p_actor_load_textured}, {"motions-load", p_motions_load}, {"motions-use", p_motions_use}, {"cam-place", p_cam_place}, {"cam-retake", p_cam_retake}, {"frame-blend", p_frame_blend}, {"frame-blend-off", p_frame_blend_off}, {"panic-negative", p_panic_negative}, {"zoom-blur", p_zoom_blur}, {"panic-tint", p_panic_tint}, {"flicker-new", p_flicker_new}, {"flame-new", p_flame_new}, {"swarm-new", p_swarm_new}, {"splash-new", p_splash_new}, {"burst-new", p_burst_new}, {"spray", p_spray}, {"thing-new", p_thing_new}, {"thing-free", p_thing_free}, {"things-clear", p_things_clear}, {"thing-used?", p_thing_used}, {"thing-kind", p_thing_kind}, {"thing-room", p_thing_room}, {"thing-tri", p_thing_tri}, {"thing-age", p_thing_age}, {"thing-state", p_thing_state}, {"thing-at", p_thing_at}, {"thing-speed", p_thing_speed}, {"thing-age!", p_thing_age_store}, {"thing-place", p_thing_place}, {"thing-kick", p_thing_kick}, {"thing-fade", p_thing_fade}, {"thing-events", p_thing_events}, {"thing-turn", p_thing_turn}, {"things-step", p_things_step}, {"thing-reaches?", p_thing_reaches}, {"puffs", p_puffs}, {"debris-cloud", p_debris_cloud}, {"gun-smoke", p_gun_smoke}, {"spark", p_spark}, {"particles-engines", p_particles_engines}, {"sink-ring", p_sink_ring}, {"water-step", p_water_step}, {"welling", p_welling}, {"shards-new", p_shards_new}, {"butterflies-new", p_butterflies_new}, {"butterflies-to", p_butterflies_to}, {"wander-new", p_wander_new}, {"spirit-new", p_spirit_new}, {"spirit-at", p_spirit_at}, {"spirit-vanish", p_spirit_vanish}, {"vanish-new", p_vanish_new}, {"stones-new", p_stones_new}, {"reflect!", p_reflect_set}, {"reflect-off", p_reflect_off}, {"reflect-only", p_reflect_only}, {"debris-new", p_debris_new}, {"rising-smoke-new", p_rising_smoke_new}, {"dust-shaft-new", p_dust_shaft_new}, {"spiral-smoke-new", p_spiral_smoke_new}, {"drips-new", p_drips_new}, {"one-drip-new", p_one_drip_new}, {"rising-motes-new", p_rising_motes_new}, {"embers-new", p_embers_new}, {"flecks-new", p_flecks_new}, {"smoke-puffs-new", p_smoke_puffs_new}, {"wall-shadow-new", p_wall_shadow_new}, {"fire-new", p_fire_new}, {"steam-new", p_steam_new}, {"floor-glow-new", p_floor_glow_new}, {"tv-new", p_tv_new}, {"big-fire-new", p_big_fire_new}, {"light-shaft-new", p_light_shaft_new}, {"glint-new", p_glint_new}, {"marker-new", p_marker_new}, {"window-flash-new", p_window_flash_new}, {"smoke-trail-new", p_smoke_trail_new}, {"mag-burst-new", p_mag_burst_new}, {"mirror-square", p_mirror_square}, {"haze-new", p_haze_new}, {"caustic-new", p_caustic_new}, {"glow-new", p_glow_new}, {"wisp-column-new", p_wisp_column_new}, {"spark-spray-new", p_spark_spray_new}, {"heat-haze-new", p_heat_haze_new}, {"leaves-new", p_leaves_new}, {"loop-sprite-new", p_loop_sprite_new}, {"object-glow-new", p_object_glow_new}, {"rain-new", p_rain_new}, {"ash-new", p_ash_new}, {"pit-embers-new", p_pit_embers_new}, {"particles-place", p_particles_place}, {"particles-rest!", p_particles_rest}, {"swim-path", p_swim_path}, {"swim-step", p_swim_step}, {"body-advance", p_body_advance}, {"particles-command", p_particles_command}, {"particles-alive?", p_particles_alive}, {"particles-children", p_particles_children}, {"particles-free", p_particles_free}, {"particles-info", p_particles_info},
-        {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"v-wall", p_v_wall}, {"nav-links", p_nav_links}, {"nav-next", p_nav_next}, {"nav-link-tri", p_nav_link_tri}, {"nav-link-yaw", p_nav_link_yaw}, {"nav-link-spot", p_nav_link_spot}, {"nav-link-at?", p_nav_link_at}, {"nav-link-side", p_nav_link_side}, {"nav-link-front", p_nav_link_front}, {"v-free", p_v_free},
+        {".director", p_cam_info}, {"area-in?", p_area_in}, {"nav-path", p_nav_path}, {"v-nav-move", p_v_nav_move}, {"v-walk", p_v_walk}, {"can-walk-between?", p_can_walk_between}, {"v-wall", p_v_wall}, {"nav-links", p_nav_links}, {"nav-next", p_nav_next}, {"nav-link-tri", p_nav_link_tri}, {"nav-link-yaw", p_nav_link_yaw}, {"nav-link-spot", p_nav_link_spot}, {"nav-link-at?", p_nav_link_at}, {"nav-link-side", p_nav_link_side}, {"nav-link-front", p_nav_link_front}, {"v-free", p_v_free},
         {"v-path", p_v_path}, {"v-path-curved", p_v_path_curved}, {"v-tri", p_v_tri}, {"nav-floor", p_nav_floor}, {"v-tri-in", p_v_tri_in}, {"vec!", p_vec_store}, {"vec@", p_vec_fetch}, {"vec-copy", p_vec_copy},
         {"vec-dist", p_vec_dist}, {"vec-dist-xz", p_vec_dist_xz}, {"vec-heading", p_vec_heading}, {"vec-ahead", p_vec_ahead},
         {"angle-wrap", p_angle_wrap}, {"nav-walk", p_nav_walk}, {"nav-crosses?", p_nav_crosses}, {"nav-path-point", p_nav_path_point}, {"placed-op", p_placed_op}, {"placed-at", p_placed_at}, {"placed-f@", p_placed_f_fetch}, {"placed-f!", p_placed_f_store}, {"placed-l@", p_placed_l_fetch}, {"placed-l!", p_placed_l_store}, {"placed-here?", p_placed_here}, {"placed-shown?", p_placed_shown}, {"nav-square-step", p_nav_square_step}, {"obstacles-reset", p_obstacles_reset}, {"obstacle-placed?", p_obstacle_placed}, {"obstacle-make", p_obstacle_make}, {"obstacle-stop", p_obstacle_stop}, {"obstacle-square", p_obstacle_square}, {"obstacle-at", p_obstacle_at}, {"obstacle-middle", p_obstacle_middle}, {"obstacles-ring-mask", p_obstacles_ring_mask}, {"obstacle-on-square?", p_obstacle_on_square}, {"obstacle-can-push?", p_obstacle_can_push}, {"obstacle-push", p_obstacle_push}, {"obstacle-step", p_obstacle_step}, {"obstacle-moved", p_obstacle_moved}, {".placed", p_placed_list}, {"door-swing", p_door_swing}, {"room-door-at", p_door_at}, {"door-user-spot", p_door_user_spot},
         {"door-anim", p_door_anim}, {"door-side", p_door_side}, {"door-near?", p_door_near}, {"door-in-area?", p_door_in_area},
-        {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"door-turn", p_door_turn}, {"door-angle", p_door_angle}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
+        {"door-animating?", p_door_animating}, {"door-on-side?", p_door_on_side}, {"door-side-flags", p_door_side_flags}, {"door-passage", p_door_passage}, {"door-move", p_door_move}, {"door-set-opened", p_door_set_opened}, {"game-tick", p_game_tick}, {"door-events", p_door_events}, {"door-here?", p_door_present}, {"door-turn", p_door_turn}, {"door-angle", p_door_angle}, {"area-middle", p_area_middle}, {"to-screen", p_to_screen}, {"placed-count", p_placed_count}, {"placed-info", p_placed_info}, {"placed-draws", p_placed_draws}, {"area-count", p_area_count}, {"area-kind", p_area_kind}, {"area-corner", p_area_corner}, {"area-cross", p_area_cross}, {"exit-area", p_exit_area}, {"movie-open", p_movie_open}, {"movie-status", p_movie_status},
         {"movie-frame", p_movie_frame}, {"cutscene-load", p_cs_start}, {"cutscene-run", p_cs_run}, {"cutscene-go", p_cs_go},
         {"cutscene-frame!", p_cs_frame_set}, {"cutscene-frame", p_cs_frame}, {"cutscene-update", p_cs_update}, {"cutscene-end", p_cs_end}, {"cutscene-leave-alone", p_cutscene_leave_alone}, {"cutscene-keep-model", p_cutscene_keep_model}, {"soft-reset", p_soft_reset},
         {"cutscene-status", p_cs_status}, {"cutscene-in-shot?", p_cs_in_shot}, {"cutscene-near?", p_cs_near_end}, {"cutscene-shot-at", p_cs_shot_at},
@@ -3435,12 +3607,13 @@ void bind_engine(Forth *f) {
         {"nav-in-group?", p_nav_in_group}, {"nav-flags", p_nav_flags},
         {"message-layout", p_message_layout}, {"message-file", p_message_file}, {"message-lines", p_message_lines}, {"message-line", p_message_line},
         {"message-options", p_message_options}, {"message-option-at", p_message_option_at}, {"message-option-leads", p_message_option_leads},
-        {"message-choice-flags", p_message_choice_flags}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
+        {"message-choice-flags", p_message_choice_flags}, {"message-typed", p_message_typed}, {"message-skip", p_message_skip},
+        {"message-close-after", p_message_close_after}, {"message-run", p_message_run}, {"ui-text-in", p_ui_text_in}, {"ui-image4", p_ui_image4}, {"message-param!", p_message_param}, {"message-param$", p_message_param_text}, {"exit-spot", p_exit_spot},
         {"actor-load", p_actor_load}, {"actor-free", p_actor_free}, {"cloth-force!", p_cloth_force}, {"cloth-back!", p_cloth_back}, {"actor-texture-swap", p_actor_texture_swap}, {"actor-texture-restore", p_actor_texture_restore}, {"actor-markers", p_actor_markers}, {"actor", p_actor},
         {"motion!", p_motion_store}, {"has-motion?", p_has_motion}, {"motion-play", p_motion_play}, {"motion-entry", p_motion_entry}, {"motion-index", p_motion_index}, {"motion-variant", p_motion_variant}, {"motion-events", p_motion_events},
         {"motion-table", p_motion_table}, {"exe-table", p_exe_table}, {"root-delta", p_root_delta}, {"bone-pos", p_bone_pos}, {"bone-point", p_bone_point}, {"foot-down?", p_foot_down}, {"dog-legs", p_dog_legs}, {"motion-track", p_motion_track}, {"motion-track-by", p_motion_track_by}, {"foot-at", p_foot_at}, {"motion-overlay", p_motion_overlay}, {"turns-clear", p_turns_clear}, {"turn+", p_turn_add}, {"motion@", p_motion_fetch}, {"motion-done?", p_motion_done},
         {"motion-frames", p_motion_frames}, {".motions", p_motions},
-        {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"controls", p_controls}, {"control-key", p_control_key}, {"control-binding", p_control_binding}, {"control-bind", p_control_bind}, {"controls-reset", p_controls_reset}, {"control-bind-next", p_control_bind_next}, {"control-waiting", p_control_waiting}, {"key-name", p_key_name}, {"mod-camera", p_mod_camera}, {"mod-camera!", p_mod_camera_set}, {"mod-camera?", p_mod_camera_has}, {"mouse-capture", p_mouse_capture}, {"art-picture", p_art_picture}, {"thumbnail", p_thumbnail}, {"alone", p_alone}, {"cam-keep", p_cam_keep}, {"cam-kept", p_cam_kept}, {"key-push", p_key_push}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
+        {"rumble", p_rumble}, {"rumble-buzz", p_rumble_buzz}, {"rumble-swell", p_rumble_swell}, {"rumble-sequence-clear", p_rumble_seq_clear}, {"rumble-step", p_rumble_seq_add}, {"rumble-now", p_rumble_now}, {"rumble-allowed!", p_rumble_allow}, {"game-volume!", p_game_volume}, {"world-volume!", p_world_volume}, {"world-volume", p_world_volume_q}, {"pad-stick", p_pad_stick}, {"key-down?", p_key_down}, {"key-hold", p_key_hold}, {"controls", p_controls}, {"control-key", p_control_key}, {"control-binding", p_control_binding}, {"control-bind", p_control_bind}, {"controls-reset", p_controls_reset}, {"control-bind-next", p_control_bind_next}, {"control-waiting", p_control_waiting}, {"key-name", p_key_name}, {"mod-camera", p_mod_camera}, {"mod-camera!", p_mod_camera_set}, {"mod-camera?", p_mod_camera_has}, {"mouse-capture", p_mouse_capture}, {"art-picture", p_art_picture}, {"thumbnail", p_thumbnail}, {"alone", p_alone}, {"cam-keep", p_cam_keep}, {"cam-kept", p_cam_kept}, {"key-push", p_key_push}, {"key-pressed?", p_key_pressed}, {"mouse-dx", p_mouse_dx},
         {"mouse-dy", p_mouse_dy}, {"freecam?", p_freecam}, {"freecam!", p_freecam_set}, {"mouse-down?", p_mouse_down},
         {"on-tick", p_on_tick}, {"off-tick", p_off_tick}, {"ticks", p_ticks}, {"dt", p_dt},
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
@@ -3537,6 +3710,7 @@ void bind_engine(Forth *f) {
     field(f, "look.fog-far-color", offsetof(RoomLook, fog_far_color));
     field(f, "look.fog-near", offsetof(RoomLook, fog_near));
     field(f, "look.fog-far", offsetof(RoomLook, fog_far));
+    field(f, "look.fog-early", offsetof(RoomLook, fog_early));
     field(f, "look.tint", offsetof(RoomLook, has_tint));
     field(f, "look.tint-glow", offsetof(RoomLook, tint_glow));
     field(f, "look.tint-contrast", offsetof(RoomLook, tint_contrast));

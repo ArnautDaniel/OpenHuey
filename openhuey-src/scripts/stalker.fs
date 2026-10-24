@@ -77,10 +77,16 @@ $1300 constant gesture-anims
 : sub-told ( -- sub )
     bitten @ if  bitten-sub exit  then  cond @ down-cond = if  down-sub exit  then
     leading @ if  leading-sub  else  0  then ;
+\ his step this frame in the room while it takes him ahead (Motion_RootMovement's z over 0), else none
+: stride-ahead ( F: -- dx dz )
+    away? my-model @ 0< or if  0e 0e exit  then
+    root@ {: F: turn x y z :}  z f0> if  x z yaw rotate-by  else  0e 0e  then ;
+: tell-stride ( -- )  stride-ahead {: F: dx dz :}  dx f>cell dz f>cell broadcast stalker-stride ;
 : tell-doing ( -- )
     my-room  move-mode-told  sub-told
     cond @  hp @  hp-max @  my-kind @  my-mode @  came-by @  broadcast stalker-doing
     d-fiona f@ f>cell broadcast stalker-reach
+    tell-stride
     away? 0=  combo @ 0< 0= and if  mv-damage  else  -1  then  broadcast stalker-blow ;
 \ the family's setup (Pursuer_Setup): his sight 150 ahead, 60 degrees either side; Fiona and
 \ Hewie known; listening for noises above his threshold (not his own)
@@ -138,14 +144,75 @@ $1300 constant gesture-anims
     forget-leads  0 beaten !  -1 making-for !  0 down-t !  waiting-about mode!  900 mode-t !  0 raging !
     hp @ 0> 0= if  hp-max @ hp !  then ;
 : unload ( -- )  0 loaded !  in-game @ if  go-out  then  my-kind @ -1 cast-as ;
+: dressed ( id addr len -- )   \ (his model loaded, its motion table by name: hidden till he comes in;
+    \ he blinks, his hands posed by his motions - Pursuer_ModelUpdate's Motion_Eyes / Motion_Hands)
+    {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l!  1 him act.alive l! ;
+: model-file ( addr len -- id )  2dup file!  actor-load ;
+\ ---- each one's own numbers (his Setup, by the hard setting) and ways ----
+: by-hardness ( normal hard -- n )  hard-mode? if  nip  else  drop  then ;
+: fby-hardness ( F: normal hard -- f )  hard-mode? if  fnip  else  fdrop  then ;
+: ways ( kit pursuers? gives-up? -- ) ( F: turn-deg reach -- )   \ (his tables; the Pursuer's chase or his own; giving up)
+    gives-up !  base-chase !  kit !  reach-k f!  deg>rad turn-k f! ;
+: health! ( n -- )  dup hp-max !  hp ! ;
+: hewie-temper ( tolerance dog-limit -- ) ( F: throw -- )  dog-limit !  tolerance !  throw-k f! ;
+: no-own-rooms ( -- )  -1 own-a !  -1 own-b ! ;
+: own-rooms ( room-a tri-a room-b tri-b -- )  own-b-tri !  own-b !  own-a-tri !  own-a ! ;   \ (vtable +0x314: -1 none)
+: clocks ( after after-hard down down-hard -- )   \ (+0x16D4 after her, +0x16D0 down when knocked out)
+    {: a ah d dh :}  a ah by-hardness after-frames !  d dh by-hardness down-frames ! ;
+
+\ ---- Debilitas's kinds: one actor, set up as the kind he is loaded as (a new Pursuer each time in
+\ the original: its Setup's numbers, health full). All turn 3 degrees a frame, reach 16 for Hewie,
+\ 24 for her, Hewie's time 1800 ----
+: as-debilitas ( -- )   \ (debilitas.c Debilitas_Setup: his own chase; 20 damage and he gives up,
+    \ home to his lair - castle-2f-2 $20, its spot 796 - kDebilitasRoomSpots)
+    3e 16e  debilitas-kit false true ways  20 give-up-hits !
+    70 110 by-hardness health!  300 540 1800 1350 clocks
+    10e  20 1800 hewie-temper  4500 away-base !  90 cool-secs !  $20 796 -1 -1 own-rooms ;
+: as-debilitas-6 ( -- )   \ (debilitas2.c Debilitas2_Setup: the Pursuer's chase, +0x16B4 1; 80 damage
+    \ and he gives up, home to castle-2f-2 $20 (796) or castle-1f-2 $02 (794) - D_0041BE40)
+    3e 16e  debilitas6-kit true true ways  80 give-up-hits !
+    90 135 by-hardness health!  300 300 1800 1800 clocks
+    10e 15e fby-hardness  30 1800 hewie-temper  10800 away-base !  150 cool-secs !  $20 796 $02 794 own-rooms ;
+: as-debilitas-7 ( -- )   \ (debilitas.c Debilitas3_Setup: the Pursuer's chase; never gives up
+    \ (Pursuer_GivesUp), no rooms of his own (Debilitas3_PickDestination 0))
+    3e 16e  debilitas7-kit true false ways
+    110 165 by-hardness health!  300 300 1350 1350 clocks
+    12e 18e fby-hardness  40 1800 hewie-temper  9000 away-base !  150 cool-secs !  no-own-rooms ;
+: as-debilitas-27 ( -- )   \ (debilitas.c Kind27_Setup: as kind 7, its own tables, Hewie's tolerance 30)
+    3e 16e  kind27-kit true false ways
+    110 165 by-hardness health!  300 300 1350 1350 clocks
+    12e 18e fby-hardness  30 1800 hewie-temper  9000 away-base !  150 cool-secs !  no-own-rooms ;
+: debilitas-setup ( kind -- )
+    dup my-kind !  0 give-up-hits !  case
+        debilitas-6-kind of  as-debilitas-6  endof   debilitas-7-kind of  as-debilitas-7  endof
+        debilitas-27-kind of  as-debilitas-27  endof  as-debilitas
+    endcase ;
+\ Debilitas's model by the kind he is loaded as (Pursuer_ModelFiles: Debilitas_ModelFiles O_DB0,
+\ Debilitas2_ModelFiles O_DB1, Debilitas3_ / Kind27_ModelFiles O_DB2 - the same skeleton and
+\ motions, the model class DebilitasModel's), its textures by the hard setting (the tables' H ones);
+\ its sounds and events its own
+: debilitas-file ( kind -- addr len )
+    case  debilitas-6-kind of  s" O_DB1/DB1_000"  endof   debilitas-7-kind of  s" O_DB2/DB2_000"  endof
+          debilitas-27-kind of  s" O_DB2/DB2_000"  endof  >r s" O_DB0/DB0_000" r>  endcase ;
+create hard-tex 32 allot
+: hard-textures ( addr len -- addr' len' )   \ (the name with H on)
+    {: a n :}  a hard-tex n move  [char] H hard-tex n + c!  hard-tex n 1+ ;
+: debilitas-model ( addr len -- id )
+    2dup file!  2dup hard-mode? if  hard-textures  then  actor-load-textured ;
+: debilitas-dress ( kind -- )   \ (anew when the kind's model isn't the one he has)
+    debilitas-file  2dup file compare 0= if  2drop exit  then
+    my-model @ dup 0< if  drop  else  actor-free  then
+    debilitas-model s" motions-debilitas" dressed ;
+: debilitas-of? ( kind -- flag )   \ (the kinds the Debilitas actor is loaded as)
+    dup debilitas-kind =  over debilitas-6-kind = or  over debilitas-7-kind = or  swap debilitas-27-kind = or ;
 create place-at /vec allot
 behaviour stalking
   on stalker-load ( slot -- )  load ;
-  \ the kind he is loaded as (Debilitas's: kind 7 is the Pursuer with his model, its chase the
-  \ Pursuer's - Debilitas3)
+  \ the kind he is loaded as (Debilitas's: his model and his Setup by it - debilitas-dress,
+  \ debilitas-setup; his kind the cutscenes' cast finds him by)
   on stalker-as ( kind -- )
-      dup debilitas-7-kind = if  my-kind !  -1 base-chase ! exit  then  drop
-      my-kind @ debilitas-7-kind = if  debilitas-kind my-kind !  0 base-chase !  then ;   \ (himself again)
+      dup debilitas-of? 0= if  drop exit  then
+      dup debilitas-dress  debilitas-setup ;
   on stalker-unload ( -- )  unload ;
   on stalker-in ( room tri -- )  come-in ;
   on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him)
@@ -216,34 +283,20 @@ behaviour stalking
   on door-refused ( room exit -- )  nip refused-answer ;
 end-behaviour
 
-\ ---- each one's own: his tables and ways, his model, his numbers (by the hard setting), his
-\ body ----
-: by-hardness ( normal hard -- n )  hard-mode? if  nip  else  drop  then ;
-: fby-hardness ( F: normal hard -- f )  hard-mode? if  fnip  else  fdrop  then ;
-: ways ( kit pursuers? gives-up? -- ) ( F: turn-deg reach -- )   \ (his tables; the Pursuer's chase or his own; giving up)
-    gives-up !  base-chase !  kit !  reach-k f!  deg>rad turn-k f! ;
-: dressed ( id addr len -- )   \ (his model loaded, its motion table by name: hidden till he comes in;
-    \ he blinks, his hands posed by his motions - Pursuer_ModelUpdate's Motion_Eyes / Motion_Hands)
-    {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l!  1 him act.alive l! ;
-: model-file ( addr len -- id )  2dup file!  actor-load ;
-: health! ( n -- )  dup hp-max !  hp ! ;
-: hewie-temper ( tolerance dog-limit -- ) ( F: throw -- )  dog-limit !  tolerance !  throw-k f! ;
-: no-own-rooms ( -- )  -1 own-a !  -1 own-b ! ;
+\ ---- each one's own: his model, his body ----
 : bodied ( floor -- ) ( F: width height -- )
     body-size  dup my-floor !  body-mask!  body-off  0 in-game !
     self subscribe tick  self subscribe entered-room  self subscribe write-save  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
 
 \ ---- Debilitas (debilitas.c Debilitas_Setup, DebilitasModel): 70 health (hard: 110), 5 across,
-\ 20 tall; his model O_DB0/DB0_000, its motion table, his sounds (bank 7); his own rooms (his
-\ lair, D_0041BE40, and their spots) ----
+\ 20 tall; his model O_DB0/DB0_000, its motion table, his sounds (bank 7); his own room (his
+\ lair and its spot); loaded as kinds 6, 7 and 27 their Setups (`debilitas-setup`) ----
 behaviour debilitas
   extends stalking
   on spawned ( -- )
-      3e 16e  debilitas-kit false true ways
-      s" O_DB0/DB0_000" model-file s" motions-debilitas" dressed
-      70 110 by-hardness health!  debilitas-kind my-kind !  -1 growls !  0 hear-threshold !  family-setup
-      4500 away-base !  90 cool-secs !  $20 own-a !  $02 own-b !  796 own-a-tri !  794 own-b-tri !
-      10e  20 1800 hewie-temper  leaves-doors door-manner !  debilitas-ladder ladder-offsets !
+      debilitas-kind debilitas-file debilitas-model s" motions-debilitas" dressed
+      debilitas-kind debilitas-setup  -1 growls !  0 hear-threshold !  family-setup
+      leaves-doors door-manner !  debilitas-ladder ladder-offsets !
       5e 20e debilitas-floor bodied ;
 end-behaviour
 : debilitas-spawn ( -- id )  debilitas stalker-state s" debilitas" spawn ;
@@ -280,6 +333,7 @@ behaviour daniella
       s" O_DNL/DNL_000" daniella-model daniella-motions dressed
       120 100 by-hardness health!  daniella-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       140 100 by-hardness cool-secs !  3600 6000 by-hardness away-base !  no-own-rooms   \ (Daniella_Setup's first)
+      450 450 750 300 clocks
       10e 25e fby-hardness  200 80 by-hardness 6000 hewie-temper
       shuts-doors-calm door-manner !  daniella-ladder ladder-offsets !
       3e 17e pursuer-floor bodied ;
@@ -297,6 +351,7 @@ behaviour kind34
       s" O_DNL/DNL_001" daniella-model daniella-motions dressed
       120 200 by-hardness health!  kind34-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       180 160 by-hardness cool-secs !  4500 6000 by-hardness away-base !  no-own-rooms   \ (Kind34_Setup)
+      300 360 900 1350 clocks
       25e 50e fby-hardness  200 65 by-hardness 6000 hewie-temper
       shuts-doors-calm leaves-doors by-hardness door-manner !  daniella-ladder ladder-offsets !
       3e 17e pursuer-floor bodied ;
@@ -310,6 +365,7 @@ behaviour kind35
       s" O_DNL/DNL_000" daniella-model daniella-motions dressed
       65 80 by-hardness health!  kind35-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       140 100 by-hardness cool-secs !  3600 6000 by-hardness away-base !  no-own-rooms   \ (Kind35_Setup)
+      600 600 450 360 clocks
       15e 10e fby-hardness  120 75 by-hardness 3000 600 by-hardness hewie-temper
       leaves-doors door-manner !  daniella-ladder ladder-offsets !
       3e 17e pursuer-floor bodied ;
@@ -323,6 +379,7 @@ behaviour kind36
       s" O_DNL/DNL_001" daniella-model daniella-motions dressed
       65 80 by-hardness health!  kind36-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       180 160 by-hardness cool-secs !  4500 6000 by-hardness away-base !  no-own-rooms   \ (Kind36_Setup)
+      300 600 900 360 clocks
       25e 10e fby-hardness  120 65 by-hardness 3000 600 by-hardness hewie-temper
       leaves-doors door-manner !  daniella-ladder ladder-offsets !
       3e 17e pursuer-floor bodied ;
@@ -336,11 +393,12 @@ end-behaviour
 behaviour riccardo
   extends stalking
   on spawned ( -- )
-      4e 12e  riccardo-kit false true ways
+      4e 12e  riccardo-kit false false ways
       ['] cry-hit own-mark !  riccardo-chase  riccardo-acts own-acts !  ['] riccardo-frame own-frame !
       s" O_RCG/RCG_000" model-file s" motions-riccardo" dressed
       100 125 by-hardness health!  riccardo-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       90 cool-secs !  9000 away-base !  no-own-rooms   \ (Riccardo_Setup)
+      300 540 1200 900 clocks
       15e 10e fby-hardness  50 1800 hewie-temper  shuts-doors door-manner !  riccardo-ladder ladder-offsets !
       3e 17e pursuer-floor bodied ;
 end-behaviour
@@ -352,10 +410,11 @@ end-behaviour
 behaviour lorenzo
   extends stalking
   on spawned ( -- )
-      2e 12e  lorenzo-kit true true ways  18e attack-range f!
+      2e 12e  lorenzo-kit true false ways  18e attack-range f!
       s" O_LRO/LRO_000" model-file s" motions-lorenzo" dressed
       50 75 by-hardness health!  lorenzo-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       100 cool-secs !  3600 away-base !  no-own-rooms   \ (Lorenzo_Setup)
+      600 450 510 360 clocks
       0e  100 0 hewie-temper  leaves-doors door-manner !
       5e 20e pursuer-floor bodied ;
 end-behaviour
@@ -367,11 +426,12 @@ end-behaviour
 behaviour lorenzo2
   extends stalking
   on spawned ( -- )
-      4e 60e  lorenzo2-kit lorenzo2h-kit by-hardness true true ways
+      4e 60e  lorenzo2-kit lorenzo2h-kit by-hardness true false ways
       lorenzo2-acts own-acts !  ['] lorenzo2-frame own-frame !  70e attack-range f!
       s" O_LRY/LRY_000" model-file s" motions-lorenzo2" dressed
       250 400 by-hardness health!  lorenzo2-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       150 cool-secs !  9000 away-base !  no-own-rooms   \ (Lorenzo2_Setup)
+      900 450 0 0 clocks
       50e 25e fby-hardness  100 600 hewie-temper  leaves-doors door-manner !
       4e 18e pursuer-floor bodied ;
 end-behaviour
@@ -382,11 +442,12 @@ end-behaviour
 behaviour kind39
   extends stalking
   on spawned ( -- )
-      4e 12e  kind39-kit kind39h-kit by-hardness true true ways
+      4e 12e  kind39-kit kind39h-kit by-hardness true false ways
       lorenzo2-acts own-acts !  18e attack-range f!
       s" O_LRY/LRY_000" model-file s" motions-lorenzo2" dressed
       250 300 by-hardness health!  kind39-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       150 cool-secs !  9000 away-base !  no-own-rooms   \ (Kind39_Setup)
+      900 900 0 0 clocks
       30e 65e fby-hardness  40 75 by-hardness 300 360 by-hardness hewie-temper
       leaves-doors door-manner !
       4e 18e pursuer-floor bodied ;
@@ -399,11 +460,12 @@ end-behaviour
 behaviour kind37
   extends stalking
   on spawned ( -- )
-      4e 12e  kind37-kit false true ways
-      riccardo-chase  ['] kind37-frame own-frame !
+      4e 12e  kind37-kit false false ways
+      riccardo-chase  24e attack-range f!  ['] kind37-frame own-frame !   \ (its reach the Pursuer's: Pursuer_AttackRange)
       s" O_RCT/RCT_000" model-file s" motions-tintstalker" dressed
       100 125 by-hardness health!  kind37-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       45 cool-secs !  5400 away-base !  no-own-rooms   \ (Kind37_Setup)
+      300 360 150 150 clocks
       10e  50 900 hewie-temper  leaves-doors door-manner !  riccardo-ladder ladder-offsets !
       3e 17e pursuer-floor bodied ;
 end-behaviour
@@ -415,12 +477,13 @@ end-behaviour
 behaviour tintstalker
   extends stalking
   on spawned ( -- )
-      4e 12e  tintstalker-kit true true ways
+      4e 12e  tintstalker-kit true false ways
       ['] tint-frame own-frame !  -1 tint-was !  -1 unseen !
       s" O_RCT/RCT_000" model-file s" motions-tintstalker" dressed
       100 125 by-hardness health!  tintstalker-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       45 cool-secs !  5400 away-base !  no-own-rooms   \ (TintStalker_Setup)
-      15e 10e fby-hardness  50 0 hewie-temper  shuts-doors door-manner !  riccardo-ladder ladder-offsets !
+      300 300 1200 1200 clocks
+      15e 10e fby-hardness  50 1800 hewie-temper  shuts-doors door-manner !  riccardo-ladder ladder-offsets !
       3e 17e pursuer-floor bodied ;
 end-behaviour
 : tintstalker-spawn ( -- id )  tintstalker stalker-state s" tintstalker" spawn ;
@@ -436,6 +499,7 @@ behaviour kind12
       s" O_LRF/LRF_000" model-file s" motions-kind12" dressed
       9999 health!  kind12-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       999 cool-secs !  3000 away-base !  no-own-rooms   \ (Kind12_Setup)
+      29970 29970 0 0 clocks
       0e  100 0 hewie-temper  leaves-doors door-manner !
       3.5e 18e pursuer-floor bodied ;
 end-behaviour

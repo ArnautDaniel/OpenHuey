@@ -146,7 +146,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     3 0 char-remove
     1 track action-end
     figure-scene-on ebit-set
-    [: loader-done? ;] wait-while
+    [: loader-busy? ;] wait-while
     $E 3 $FF char-load
     $F 4 figure-load
     $F $44 fade

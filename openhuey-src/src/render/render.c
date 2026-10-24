@@ -65,7 +65,8 @@ void render_look_tick(void) {
 
 enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_COLOR, U_AMBIENT, U_EYE, U_RIM, U_MASK,
        U_ROOM_LIT, U_LPOS = 12, U_LCOL = 15, U_LRANGE = 18, U_AMBIENT128 = 21, U_NSHADOWS = 22, U_SHADOW_VP = 23,
-       U_SHADOW_INFO = 35, U_SHADOW_STRENGTH = 47, U_RECEIVE = 59, U_CHAR_LIGHT = 60, U_ALPHA = 61 };   /* (12 shadows) */
+       U_SHADOW_INFO = 35, U_SHADOW_STRENGTH = 47, U_RECEIVE = 59, U_CHAR_LIGHT = 60, U_ALPHA = 61,
+       U_REJECT = 62, U_UNFOGGED = 63 };   /* (12 shadows) */
 
 static const char *kMeshVs =
     "#version 460 core\n"
@@ -74,12 +75,17 @@ static const char *kMeshVs =
     "layout(location = 2) in vec4 a_col;\n"
     "layout(location = 3) in vec3 a_normal;\n"
     "layout(location = 0) uniform mat4 u_mvp;\n"
+    "layout(location = 62) uniform vec4 u_reject;\n"   /* the PS2's clip volume (x, y bands, near, far); x 0: off */
     "out vec2 v_st;\n"
     "out vec4 v_col;\n"
     "out vec3 v_normal;\n"
     "out vec3 v_pos;\n"
+    "noperspective out float v_out;\n"
     "void main() {\n"
     "    gl_Position = u_mvp * vec4(a_pos, 1.0);\n"
+    "    vec4 p = gl_Position;\n"
+    "    v_out = u_reject.x > 0.0 && (p.w < u_reject.z || p.w > u_reject.w || abs(p.x) > u_reject.x * p.w ||\n"
+    "                                 abs(p.y) > u_reject.y * p.w) ? 1.0 : 0.0;\n"
     "    v_st = a_st;\n"
     "    v_col = a_col * (255.0 / 128.0);\n"   /* 0x80 = 1.0 */
     "    v_normal = a_normal;\n"
@@ -94,6 +100,7 @@ static const char *kMeshFs =
     "in vec4 v_col;\n"
     "in vec3 v_normal;\n"
     "in vec3 v_pos;\n"
+    "noperspective in float v_out;\n"
     "layout(binding = 0) uniform sampler2D u_tex;\n"
     "layout(location = 1) uniform int u_use_tex;\n"
     "layout(location = 2) uniform int u_solid_tex;\n"
@@ -117,10 +124,14 @@ static const char *kMeshFs =
     "layout(location = 59) uniform int u_receive;\n"
     "layout(location = 60) uniform float u_char_light;\n"
     "layout(location = 61) uniform vec4 u_tint;\n"   /* the whole draw tinted and faded (a character: 1 1 1 1 as it is) */
+    "layout(location = 63) uniform float u_unfogged;\n"   /* drawn after the room's fog: 1 */
     "layout(binding = 1) uniform sampler2DArrayShadow u_shadow;\n"
     "layout(location = 0) out vec4 o_color;\n"
-    "layout(location = 1) out float o_mask;\n"
+    "layout(location = 1) out vec2 o_mask;\n"   /* the bloom mask; drawn after the room's fog (no fog there) */
     "void main() {\n"
+    /* (a triangle with a corner outside the PS2's clip volume isn't drawn at all, as the
+     * character microprograms reject it: CLIP, FCAND, the ADC bit - not cut at the screen) */
+    "    if (v_out > 0.0) discard;\n"
     "    vec4 c = vec4(pow(max(v_col.rgb, 0.0), vec3(2.2)), v_col.a);\n"
     "    if (u_use_tex != 0) {\n"
     "        vec4 t = texture(u_tex, v_st);\n"   /* sRGB texture: already linear */
@@ -183,7 +194,7 @@ static const char *kMeshFs =
     "    }\n"
     "    c *= u_tint;\n"
     "    o_color = c;\n"
-    "    o_mask = u_mask;\n"
+    "    o_mask = vec2(u_mask, u_unfogged);\n"
     "}\n";
 
 /* the shadow pass: depth only, from the light */
@@ -682,6 +693,29 @@ void render_mesh_free(GpuMesh *g) {
 
 static float sTint[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
+/* the character microprograms' clip test (tools/vudis.py: CLIP each corner, FCAND over the
+ * triangle's three, the ADC bit then drops it): a triangle with a corner outside the PS2's clip
+ * volume - nearer than the camera's near, beyond its far, or past the GS's 4096-wide drawing
+ * space around the 512 x 448 screen (2047 / 256 and 2047 / 224 of the screen's half-sizes) -
+ * isn't drawn at all; OpenGL would cut it at the screen and the near plane instead, so a camera
+ * in a model shows its insides. On for the draws until turned off */
+void render_mesh_ps2_clip(int on) {
+    float aspect = R.proj.m[0] != 0.0f ? R.proj.m[5] / R.proj.m[0] : 4.0f / 3.0f;
+
+    if (on) {
+        glProgramUniform4f(R.mesh_prog, U_REJECT, (2047.0f / 256.0f) * (4.0f / 3.0f) / aspect, 2047.0f / 224.0f, R.znear,
+                           R.zfar);
+    } else {
+        glProgramUniform4f(R.mesh_prog, U_REJECT, 0.0f, 0.0f, 0.0f, 0.0f);
+    }
+}
+
+/* what is drawn from now is after the room's fog (its layer: 9 drawn early, else $21 - Fog_Draw):
+ * the fog leaves it be */
+void render_fog_after(int on) {
+    glProgramUniform1f(R.mesh_prog, U_UNFOGGED, on ? 1.0f : 0.0f);
+}
+
 void render_mesh_tint(float r, float g, float b, float a) {
     sTint[0] = r;
     sTint[1] = g;
@@ -726,6 +760,8 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
             glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
         }
         glDepthMask(x->no_zwrite || x->mask ? GL_FALSE : GL_TRUE);
+        /* (only what writes depth says whether the room's fog is over it) */
+        glColorMaski(1, GL_TRUE, x->no_zwrite || x->mask ? GL_FALSE : GL_TRUE, GL_FALSE, GL_FALSE);
         glProgramUniform1f(R.mesh_prog, U_MASK, x->mask ? 1.0f : 0.0f);
         glProgramUniform1i(R.mesh_prog, U_USE_TEX, tex != 0);
         glProgramUniform1i(R.mesh_prog, U_SOLID_TEX, x->solid_tex);
@@ -738,6 +774,7 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
             glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         }
     }
+    glColorMaski(1, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glBindVertexArray(0);
     glDepthMask(GL_TRUE);
     glDisable(GL_BLEND);
@@ -781,12 +818,39 @@ void render_image(GpuTexture t, float x, float y, float w, float h, uint32_t rgb
     render_image_uv(t, x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f, rgba);
 }
 
+static void image_draw(GpuTexture t);
 void render_image_uv(GpuTexture t, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
                      uint32_t rgba) {
-    Mat4 proj = mat4_ortho2d((float)R.w, (float)R.h);
-
     flush_2d();   /* (what was drawn before stays under it) */
     quad(x, y, x + w, y + h, u0, v0, u1, v1, rgba);
+    image_draw(t);
+}
+
+void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, float u1, float v1, uint32_t rgba) {
+    static const int kOrder[6] = {0, 1, 3, 0, 3, 2};   /* (top left, top right, bottom right; top left, bottom right, bottom left) */
+    const float uv[8] = {u0, v0, u1, v0, u0, v1, u1, v1};
+    int i;
+
+    flush_2d();
+    if (R.n2d + 6 > R.cap2d) {
+        R.cap2d = R.cap2d * 2 + 6 * 256;
+        R.v2d = realloc(R.v2d, (size_t)R.cap2d * sizeof(Vertex2d));
+    }
+    for (i = 0; i < 6; i++) {
+        int k = kOrder[i];
+        Vertex2d *v = &R.v2d[R.n2d++];
+
+        *v = (Vertex2d){xy[k * 2], xy[k * 2 + 1], uv[k * 2], uv[k * 2 + 1], {0}};
+        v->rgba[0] = (uint8_t)(rgba >> 24);
+        v->rgba[1] = (uint8_t)(rgba >> 16);
+        v->rgba[2] = (uint8_t)(rgba >> 8);
+        v->rgba[3] = (uint8_t)rgba;
+    }
+    image_draw(t);
+}
+
+static void image_draw(GpuTexture t) {
+    Mat4 proj = mat4_ortho2d((float)R.w, (float)R.h);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, R.w, R.h);
     glNamedBufferData(R.vbo2d, (GLsizeiptr)(R.n2d * sizeof(Vertex2d)), R.v2d, GL_STREAM_DRAW);

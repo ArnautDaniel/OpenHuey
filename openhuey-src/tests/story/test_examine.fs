@@ -31,7 +31,8 @@ testing 0xA5: a message offered on the action button; taken, it opens and she lo
 T{ [: -1 prep-scene !  $8016 examine-message  prep-scene @ prep-arg @ ;] in-room -> read-message $8016 }T
 T{ [: -1 prep-scene !  scene-locked state-flag-set  $8016 examine-message  scene-locked state-flag-clear  prep-scene @ ;] in-room -> -1 }T
 T{ read-message $8016 room-actor send take-offer  deliver  [: msg @ ;] in-room  [: her-look-hold @ ;] hers -> $8016 30 }T
-T{ cross press  5 frames  [: msg @ ;] in-room -> -1 }T
+T{ cross press  5 frames  [: msg @ ;] in-room -> $8016 }T   \ (it closes itself: 0x10 62 - no button)
+T{ 70 frames  [: msg @ ;] in-room -> -1 }T
 
 testing a locked door's script: the room shows "locked from the other side" for her
 T{ $8001 broadcast fiona-message  deliver  2 frames  shown -> $8001 }T

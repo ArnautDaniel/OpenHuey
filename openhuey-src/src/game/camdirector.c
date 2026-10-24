@@ -4,6 +4,8 @@
 #include "camdirector.h"
 
 #include "engine.h"
+#include "progress.h"
+#include "../render/post.h"
 
 #include <math.h>
 #include <string.h>
@@ -176,7 +178,9 @@ int camera_out_of_view(const Camera *c, Vec3 p) {
     float z = -(v.m[2] * p.x + v.m[6] * p.y + v.m[10] * p.z + v.m[14]);
     float tv = tanf(c->fov * 0.5f), th = tv * 4.0f / 3.0f;
 
-    return z < 1.0f || z > 2000.0f || fabsf(x) > z * th || fabsf(y) > z * tv;
+    /* (Camera_OutOfView: through the clip matrix, between the camera's near and far - the story's
+     * range - and the PS2's 4:3 screen; one behind the eye always out, as |w| leaves it) */
+    return z < c->znear || z > c->zfar || fabsf(x) > z * th || fabsf(y) > z * tv;
 }
 
 /* ---- the path (CamPath_*) ---- */
@@ -410,6 +414,12 @@ static void keep_in_view(CamDirector *d, int rate) {
 /* (CamDirector_NewRoom: the camera reset - its shake off, no cut to see - nothing set, nobody
  * followed, no event's shot nor cutscene; its rate, the characters' setups and whom it falls
  * back on kept) */
+void camdir_glow_cut(void) {
+    if (!(gProgress.state[0x28 >> 5] & (1u << (0x28 & 31)))) {
+        post_glow_clear();
+    }
+}
+
 void camdir_new_room(CamDirector *d) {
     float rate = d->move_rate;
     int player = d->player, shown = d->shown, followed = d->followed;
@@ -434,6 +444,9 @@ void camdir_room_start(CamDirector *d, const float *sets, int nsets, const int32
     sSets = sets;   /* (the original's camera has the room's sets already) */
     sNsets = nsets;
     d->started = 1;
+    camdir_glow_cut();
+    gEngine.camera.znear = 1.0f;     /* (the camera's range: Camera +0xB0 / +0xB4 - the story's 0x0B */
+    gEngine.camera.zfar = 2000.0f;   /* changes it after, e.g. water-tower-8f-1's far 20000) */
 
     d->last_set = d->last_path = -1;
     take_set(d, d->set);
@@ -522,6 +535,14 @@ void camdir_take_followed(CamDirector *d) {
 void camdir_scene(CamDirector *d, int on) {
     d->scene = on != 0;
     d->last_set = d->last_path = -1;
+    camdir_glow_cut();   /* (CamDirector_ModeEvent / ModeDefault) */
+}
+
+void camdir_event(CamDirector *d, int on) {
+    if (on && !d->event) {   /* (CamDirector_ModeNormal: the event's shot comes in) */
+        camdir_glow_cut();
+    }
+    d->event = on != 0;
 }
 
 void camdir_retake(CamDirector *d) {
@@ -597,7 +618,9 @@ void camdir_track(CamDirector *d) {
             spline_seek(&d->path, 1.0f);
         }
     }
-    (void)changed;
+    if (changed) {
+        camdir_glow_cut();
+    }
 }
 
 void camdir_ease(CamDirector *d) {
@@ -661,6 +684,7 @@ void camdir_update(CamDirector *d) {
 }
 
 void camdir_restart(CamDirector *d) {
+    camdir_glow_cut();
     d->ease = 60;
     d->cut = 0x80;
     d->fov = d->set_fov;

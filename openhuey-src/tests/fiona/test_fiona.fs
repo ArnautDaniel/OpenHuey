@@ -1,7 +1,7 @@
 \ Fiona, phase F1: moving, footsteps, doors, going out (docs/subsystems/fiona.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/fiona/test_fiona.fs
 IN: test-fiona
-USING: tester engine game-state actors messages room-names game fiona.state fiona.model fiona.moving fiona.doors fiona.hurt ;
+USING: tester engine game-state actors messages room-names game fiona.state fiona.model fiona.moving fiona.doors fiona.hurt fiona.fear ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : her@ ( xt -- x )  fiona enter  execute  leave-actor ;          \ (one of her fields, read inside her)
@@ -88,7 +88,7 @@ T{ room-id 0 fiona send arrived  1 frames  sub anim -> 0 0 }T
 
 testing down after a fall, she gets up where she fell ($B01, then $B02; Fiona_StateSpecialEntry)
 moved
-[: floored ;] her@  1 frames
+[: lie-down ;] her@  1 frames
 T{ [: her-mode @ ;] her@  anim -> $A $B01 }T
 : up? ( n -- flag )  0 ?do  game-tick  [: her-mode @ 0= ;] her@ if  true unloop exit  then  loop  false ;
 T{ 600 up?  since 5e f<  [: her-tri @ 0< 0= ;] her@ -> -1 -1 -1 }T

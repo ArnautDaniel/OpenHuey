@@ -265,11 +265,11 @@ static const char *kCompositeFs =
     "    s += soft * u_tint_glow.rgb * u_tint_glow.a;\n"
     /* (the second colour sees the screen after the first: its blurred copy has the glow too) */
     "    s += (s - soft * (1.0 + 3.0 * u_tint_glow.rgb * u_tint_glow.a) * u_tint_contrast.rgb) * u_tint_contrast.a;\n"
-    /* (the game starts the ramp sharply at its near distance - its fixed cameras keep things
-     * beyond it; ours roam, so it fades in over the last 40% before) */
-    "    if (u_fog_near_color.a + u_fog_far_color.a > 0.0 && d < 1.0 && z > u_fog_range.x * 0.6) {\n"
-    "        vec4 fc = mix(u_fog_near_color, u_fog_far_color, clamp((z - u_fog_range.x) / max(u_fog_range.y - u_fog_range.x, 1e-3), 0.0, 1.0));\n"
-    "        fc.a *= smoothstep(u_fog_range.x * 0.6, u_fog_range.x, z);\n"
+    /* (as the game's: none up to its near distance, then the ramp from the near colour - not over
+     * what was drawn after the fog's layer, the mask's g) */
+    "    if (u_fog_near_color.a + u_fog_far_color.a > 0.0 && d < 1.0 && z > u_fog_range.x && u_fog_range.y > u_fog_range.x) {\n"
+    "        vec4 fc = mix(u_fog_near_color, u_fog_far_color, clamp((z - u_fog_range.x) / (u_fog_range.y - u_fog_range.x), 0.0, 1.0));\n"
+    "        fc.a *= 1.0 - texture(u_mask, v_uv).g;\n"
     "        s = mix(s, fc.rgb, clamp(fc.a, 0.0, 1.0));\n"
     "    }\n"
     "    s += 5.0 * pow(max(texture(u_glow, v_uv).rgb, 0.0), vec3(1.0 / 2.2)) * u_room_bloom.rgb * u_room_bloom.a;\n"
@@ -376,7 +376,7 @@ static void make_targets(int w, int h, int msaa) {
     T.h = h;
     T.msaa = msaa;
     T.color = texture2d(GL_RGBA16F, w, h);
-    T.mask = texture2d(GL_R8, w, h);
+    T.mask = texture2d(GL_RG8, w, h);   /* (r: the bloom mask, g: drawn after the fog) */
     T.depth = texture2d(GL_DEPTH32F_STENCIL8, w, h);   /* (the stencil: the reflections' quads) */
     glTextureParameteri(T.depth, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTextureParameteri(T.depth, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -387,7 +387,7 @@ static void make_targets(int w, int h, int msaa) {
         glCreateRenderbuffers(1, &T.ms_color);
         glNamedRenderbufferStorageMultisample(T.ms_color, msaa, GL_RGBA16F, w, h);
         glCreateRenderbuffers(1, &T.ms_mask);
-        glNamedRenderbufferStorageMultisample(T.ms_mask, msaa, GL_R8, w, h);
+        glNamedRenderbufferStorageMultisample(T.ms_mask, msaa, GL_RG8, w, h);
         glCreateRenderbuffers(1, &T.ms_depth);
         glNamedRenderbufferStorageMultisample(T.ms_depth, msaa, GL_DEPTH32F_STENCIL8, w, h);
         glCreateFramebuffers(1, &T.ms_fbo);

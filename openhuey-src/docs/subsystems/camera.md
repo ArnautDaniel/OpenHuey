@@ -19,11 +19,12 @@ calls it directly, at the points the original does.
 | `cam-char-setup` | `( who set path -- )` | `who`'s setup from now on (path -1: none). The story's `char-camera` / `area-camera`. |
 | `cam-on` | `( who -- )` | Follow `who` and take their setup (-1: nobody; someone gone, elsewhere or without a setup: Fiona). The story's `camera-follow` (0x28). |
 | `cam-followed` | `( -- who )` | Whom it follows (the story's `camera-on`). |
+| `cam-followed!` | `( who -- )` | Whom it is taken to follow, the one it looks at left (the story's `char-camera` $FF: -1, the progress' +0x1130 = 0xFF). |
 | `cam-shake!` | `( F: a -- )` | The eye shaken by up to `a` each way - for this frame: the panic stills it first each frame (0xD3). |
 | `cam-restart` | `( -- )` | Start over on the setup (0x4A). |
 | `cam-scene!` / `cam-scene?` | `( flag -- )` / `( -- flag )` | A cutscene has the camera (from its start of play to its signal 8): the director idle, `cam-set@` -1. Others wait on it (the summoner, the butterflies' motes). |
 | `cam-set@` / `cam-changed?` | `( -- set )` / `( -- flag )` | Conditions 0x25 and 0x2C (the phase 3 scripts' per-set depth ranges). |
-| `out-of-view?` | `( -- flag ) ( F: x y z -- )` | Off the camera's 4:3 picture, 1 to 2000 deep (`Camera_OutOfView`): condition 0x45, the director's own jump test. |
+| `out-of-view?` | `( -- flag ) ( F: x y z -- )` | Off the camera's 4:3 picture, or nearer than its near or beyond its far (`Camera_OutOfView`, through its clip matrix; behind the eye always out): condition 0x45, the director's own jump test. |
 
 | Message | Stack | To | Meaning |
 |---|---|---|---|
@@ -47,9 +48,19 @@ sub-state and the room change.
    (`RoomStart`, then `CameraOn`): the view angle from 0.6 of the set's, out to it over 60
    frames, and the phase 3 scripts see the setup changed. A fresh start (a new game, a load:
    `RoomIn`) resets it and cuts on the first frame; Fiona's setup is the save's.
-4. The panic stills the camera at the start of each frame and shakes it (0.2) through a panic's
+4. A cut wipes the glow's trails (`camdir_glow_cut`; Renderer_GlowClear, the renderer's +0x5C):
+   `Track`'s cuts, the room start, a restart, a cutscene taking the camera or giving it back, the
+   story's shot coming in, and a cutscene's own cuts (its signal 0). Not while state flag $28 is
+   set (`in-play`: from the game's entry till the opening is done - the original's check).
+5. The camera's range (`RoomStart`: Camera +0xB0 / +0xB4): near 1, far 2000 as each room
+   starts; the story's 0x0B (`camera-value`) changes them after (water-tower-8f-1's far 20000).
+   Characters are drawn as the original's microprograms clip (CLIP, FCAND, the ADC bit;
+   `render_mesh_ps2_clip`): a triangle with a corner nearer than the near plane, beyond the far
+   one or past the GS's drawing space round the screen (about 8 screens across) isn't drawn at all
+   - OpenGL alone would cut it at the screen, showing a model's inside to a camera in it.
+6. The panic stills the camera at the start of each frame and shakes it (0.2) through a panic's
    later stretch (`Panic_Stage`), unless a cutscene has the camera or the panic is held.
-5. The story's shot: the point and heading fixed as it starts, its distance and angles as told;
+7. The story's shot: the point and heading fixed as it starts, its distance and angles as told;
    the room's depth range off meanwhile. Following nobody ends it.
 
 ## Debug

@@ -1,7 +1,7 @@
 \ The stalkers, P1: Debilitas in the house (docs/subsystems/stalker.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_stalker.fs
 IN: test-stalker
-USING: tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.head stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam ;
+USING: story.words tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.head stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam ;
 fvariable dx  fvariable dy  fvariable dz  fvariable dyaw
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
@@ -114,12 +114,19 @@ T{ [: 32 state@ opened-bit and 0<> ;] 1200 wait-for -> -1 }T
 T{ [: 32 state@ opened-bit and 0=  to-shut @ 0< and ;] 600 wait-for  [: my-room ;] his -> -1 castle-1f-2 }T
 [: leaves-doors door-manner ! ;] his  debug:debilitas-out  2 frames
 
-testing held off out of sight (P4b): to the nearer of his own rooms ($20, $02), and there he stays
+testing held off out of sight (P4b): to the nearer of his own rooms - as kind 6 ($20, $02:
+testing ... D_0041BE40) castle-1f-2 - and there he stays; Debilitas (kind 2) has one, $20
 front-garden-2 room!  10 frames   \ (the summoner takes him after 5 s held off: checked within it)
+6 partner-load  deliver  2 frames
 castle-1f-10 0 game:debilitas send stalker-in  2 frames
 [: 4 mode!  900 mode-t !  0 doors-n !  0 door-i ! ;] his
 T{ [: own-room? ;] 1500 wait-for  [: my-room ;] his -> -1 castle-1f-2 }T
 T{ 40 frames  [: own-room?  my-mode @  route-over? ;] his -> -1 4 -1 }T
+debug:debilitas-out  2 frames
+2 partner-load  deliver  2 frames
+castle-1f-10 0 game:debilitas send stalker-in  2 frames
+[: 4 mode!  900 mode-t !  0 doors-n !  0 door-i ! ;] his
+T{ 10 frames  [: goal-room @  my-room castle-1f-2 = own-room? and ;] his -> castle-2f-2 0 }T
 debug:debilitas-out  2 frames
 
 testing after her (P2a): seeing her he chases her; his blows knock her down, a hard one throws her, a hold catches her
@@ -225,6 +232,7 @@ testing ... (P3b) by its door: lined up, his animation ($602), the door swung op
 T{ room-id 0 room-exit-door door-open?  room-id 0 room-exit-door door-held? -> -1 0 }T
 false blind  debug:debilitas-out  2 frames
 testing ... seeing her - striking back at her shove - he gives up all the same, at the end of that
+2 common:seed !   \ (his giving up is by chance: the rolls from here on fixed, whatever came before - Hewie's own)
 testing ... step (Pursuer_FrameUpdate); out by the first door of his way home (Debilitas_PickDestination)
 settled  close-up  false blind  [: 70 hp !  25 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press
 T{ [: [: my-mode @ 4 = ;] his ;] 300 soon  [: hits @ ;] his -> -1 0 }T

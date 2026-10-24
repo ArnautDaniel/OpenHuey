@@ -74,6 +74,11 @@ create spot /vec allot
 \ standing in an exit's area as its door swings, it waits there; the door still again and
 \ standing open, it carries on; left shut, it goes through after whoever used it ----
 : by-exit? ( exit v -- flag )  >r exit-area dup area-count < if  r> vec@ area-in?  else  r> 2drop false  then ;
+\ a triangle off every exit's area (its middle): somewhere to be put at random (CreatureA_PlaceRandom,
+\ Actor_TeleportRandom)
+create tri-mid /vec allot
+: off-the-doors? ( tri -- flag )
+    tri-center tri-mid vec!  8 0 do  i tri-mid by-exit? if  false unloop exit  then  loop  true ;
 : swinging-by ( v -- exit | -1 )   \ (the first)
     8 0 do  i door-here? if  i door-animating? if  i over by-exit? if  drop i unloop exit  then  then  then  loop
     drop -1 ;

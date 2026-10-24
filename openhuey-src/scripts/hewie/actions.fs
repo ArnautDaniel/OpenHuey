@@ -83,7 +83,7 @@ create idle-tricks  sit-trick-act , sit-trick-2-act , lie-down-trick-act , stand
         breaks-any on-obeying on-waiting or on-footing or on-alert or but his-cmd !  ['] st-steer behave  endof
     face-target-act of
         pick-target his-target !
-        his-alert @ unused-alert =  his-target @ with? or if  150 his-wait !  free-mode mode!  breaks-any his-cmd !  ['] st-face-target behave
+        his-alert @ exit-alert =  his-target @ with? or if  150 his-wait !  free-mode mode!  breaks-any his-cmd !  ['] st-face-target behave
         else  sniff-act 0 want  then  endof
     wait-for-her-act of
         her-with? if  free-mode mode!  target-her  300 his-wait !  on-danger on-wait-over or on-100 or on-alert or his-cmd !  ['] st-wait-for-fiona behave

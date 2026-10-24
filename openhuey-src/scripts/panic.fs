@@ -21,6 +21,7 @@ state: panic-state
   cell field pulse           \ the heartbeat on the screen: 0 at each breath, back to $80 by 4 a frame (+0x38)
   cell field shake           \ the screen's grey (+0x40): with the level past 60; panicking $50, calming down $90
   cell field jolting         \ the camera shaken by her panic (Panic_Stage: 0.2 past its first stretch)
+  1 floats field fade        \ the screen fade's level (+0x34): her breath only at 1 - 0 while the world is held
   1 floats field scale       \ the fear's scale (1)
   cell field the-danger      \ (told)
   cell field her-mode  cell field her-sub  cell field her-cond   \ (told by Fiona each frame)
@@ -32,8 +33,8 @@ $29 constant breath-sound   $42 constant scream-sound   \ (hers: the common bank
 : her-sound ( id vol -- )   \ a sound of hers (the common bank), at her
     fiona-id {: id vol her :}  her body? 0= if  exit  then
     id 5 vol 0  her body-pos sound-at ;
-: inputs-clear ( -- )
-    0 weighing !  0e passing f!  0e fright-a f!  0e fright-a2 f!  0e recovering f!
+: inputs-clear ( -- )   \ (Panic_Update's end: the passing part stays - only setting the level clears it)
+    0 weighing !  0e fright-a f!  0e fright-a2 f!  0e recovering f!
     0e fear-d f!  0e fear-d2 f!  0e calm-b f!  0e calm-b2 f! ;
 450 constant panic-frames   \ (how long a panic lasts)
 : stage-at ( level -- stage )
@@ -44,7 +45,7 @@ $29 constant breath-sound   $42 constant scream-sound   \ (hers: the common bank
 : set-level ( n -- )
     dup s>f level f!  dup s>f lasting f!
     dup 100 >= if  drop panic-frames length !  else  stage-at stage !  then
-    inputs-clear ;
+    0e passing f!  inputs-clear ;
 create stage-levels  0 , 60 , 75 , 90 , 100 , 100 ,   \ (a stage set: its level)
 : set-stage ( stage -- )  dup calming-down 1+ u< if  cells stage-levels + @ set-level  else  drop  then ;
 \ a fright: under 10 to this frame's fear; more, half of it to the passing part too, held 30 frames
@@ -64,7 +65,8 @@ create breaths   \ (shaken .. calming down)
     rumble-sequence-clear
     dup calming-down =  0  rot breath-of breath-strength @  3 rumble-step
     stage @ panicking = if  0 255 255 3 rumble-step  then ;
-: breath ( -- )   \ (not while the screen's effect is off: with effects)
+: breath ( -- )   \ (only with the screen fade full: not while the world is held, nor in a fade)
+    fade f@ 1e f= 0= if  exit  then
     stage @ shaken calming-down 1+ within 0= if  exit  then
     stage @ breath-rumble
     breath-sound  stage @ breath-of breath-volume @  her-sound ;
@@ -80,10 +82,10 @@ create breaths   \ (shaken .. calming down)
     level f@ f>s stage-at stage ! ;
 : shake-toward ( n -- )   \ the shake a step nearer n
     dup shake @ > if  drop 1 shake +!  else  shake @ < if  -1 shake +!  then  then ;
-: uneasy ( -- )   \ not yet panicking: her breath by the stage, the shake by the level
+: uneasy ( -- )   \ not yet panicking: her breath by the stage, the shake by the level (just
+    \ panicking too: its first breath at once, the shake toward 60)
     stage @ composed = if  shake @ 8 - 0 max shake !  then
     by-level
-    stage @ panicking = if  exit  then
     stage @ composed <> beat @ 0= and if  panicking stage @ - 30 * beat !  0 pulse !  breath  then
     level f@ 60e f< if  exit  then
     level f@ 60e f- 1.5e f* f>s shake-toward ;
@@ -113,7 +115,7 @@ $30 constant grey-limit
 : screens ( -- )
     stage @ panicking =  length @ 0< and if  panic-negative  then
     pulse @ $80 <> if  pulse @ frame-blend  pulse @ $10 <= if  zoom-blur  then  then
-    shake @ if  grey-limit shake @ panic-tint  then ;
+    shake @ if  grey-limit shake @ s>f fade f@ f* f>s panic-tint  then ;   \ (the overlay tinted by its level: ScreenFade_Frame)
 
 \ ---- Panic_FearInputs (calm with time; the stalker's part comes as fear-in) and Panic_Update ----
 : time-inputs ( -- )
@@ -195,6 +197,7 @@ create weights   \ (fright, fear, calming)
         level f@ 100e f< 0= if  cap-at-99  0e passing f!  then
     then ;
 : update ( -- )
+    world-held state-flag? if  0e fade f!  then
     staging
     hold @ if  -1 hold +!  then
     level f@ 100e f< if  time-inputs  stalker-fear  weigh-inputs  then
@@ -203,9 +206,11 @@ create weights   \ (fright, fear, calming)
 : updating? ( -- flag )  cam-scene? 0=  panic-held state-flag? 0= and ;
 
 behaviour measuring
-  on spawned ( -- )  1e scale f!  2 st-cond !  $80 pulse !  self subscribe tick  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing  self subscribe stalker-doing ;
+  on spawned ( -- )  1e scale f!  1e fade f!  2 st-cond !  $80 pulse !  self subscribe hewie-near  self subscribe tick  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing  self subscribe stalker-doing ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop st-kind !  2drop st-cond !  st-sub !  st-mode !  st-room ! ;
   on danger ( level -- )  the-danger ! ;
+  on hewie-near ( near -- )  weighing ! ;   \ (report_fiona_near: Hewie with her - 1 within 20, 2 within 50, 3 further)
+  on panic-overlay ( thousandths -- )  s>f 1000e f/ 0e fmax 1e fmin fade f! ;   \ (ScreenFade_Level: the game over's fade)
   on fiona-doing ( mode sub cond cmd doing -- )  2drop her-cond !  her-sub !  her-mode ! ;
   \ the story's (the scripts' 0x43, 0xC0, 0x93, 0xC9): the threat (Threat_Raise: as a fright, into
   \ the weighted parts), its accumulator, calming (bit $80: 128 at once; else v / 30), the level
@@ -214,6 +219,7 @@ behaviour measuring
       cell>f fdup f0< if  fdrop exit  then
       fdup 10e f< if  fear-d2 f@ f+ fear-d2 f!  exit  then
       0.5e f*  30 hold !  fdup fear-d2 f@ f+ fear-d2 f!  fright-a2 f@ f+ fright-a2 f! ;
+  on calm-add ( amount -- )  cell>f calm-b2 f@ f+ calm-b2 f! ;   \ (Lavender's, each frame: StatusTimers_Frame)
   on threat-acc ( amount -- )  cell>f 0e fmax 100e fmin fear-d2 f@ f+ fear-d2 f! ;
   on calm-in ( v -- )
       dup $80 and if  drop 128e calm-b f@ f+ calm-b f!  else  s>f 30e f/ calm-b2 f@ f+ calm-b2 f!  then ;
@@ -234,7 +240,7 @@ behaviour measuring
   \ so the camera is still unless her panic - or the story, after it - shakes it)
   on tick ( -- )  updating? if  jolting @ if  0.2e  else  0e  then  cam-shake!  then ;
   on frame-end ( -- )
-      updating? if  update  screens  else  $80 pulse !  then   \ (a scene's: the screen as it is)
+      updating? if  update  1e fade f!  screens  else  $80 pulse !  then   \ (a scene's: the screen as it is)
       stage @ level f@ f>cell broadcast panic ;
 end-behaviour
 

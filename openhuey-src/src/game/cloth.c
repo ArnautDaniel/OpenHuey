@@ -915,7 +915,7 @@ Cloth *cloth_for(const char *name) {
     Cloth *c;
     static const struct { const char *prefix; void (*make)(Cloth *); } kModels[] = {
         {"O_FIS/", slip}, {"O_FIN/", clothes}, {"O_FIH/", costume2}, {"O_FIO/", costume3}, {"O_FIB/", costume6},
-        {"O_FIC/", costume7}, {"O_DNL/", daniella}, {"O_DB0/", debilitas}, {"O_RCG/", riccardo},
+        {"O_FIC/", costume7}, {"O_DNL/", daniella}, {"O_DB0/", debilitas}, {"O_DB1/", debilitas}, {"O_DB2/", debilitas}, {"O_RCG/", riccardo},
         {"O_RCT/", riccardo_look}, {"O_LRO/", lorenzo}, {"O_LRY/", lorenzo_other},
     };
     size_t k;

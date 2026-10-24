@@ -59,8 +59,14 @@ i -- addr )` and `id@ n@`, `item-at`, `listed`, `items-of ( id -- n )`, `find-it
    remedies change her fear and recovery, calm the panic, or start a timed effect. A bait feeds
    Hewie only at hand (hers to command, within 20, reachable in a step): her event $8E, his
    $8F / $90 / $91. Results 1 and 2 spend one.
-5. **Timed effects** (the progress' +0x9E0..): Torva doubles the panic's fear inputs, Fortis her
-   blows' damage, Sylvesta Esca Hewie's bites; the earrings scale the panic's calming (the
+5. **Timed effects** (the progress' +0x9E0..; they run, and run down, only while no cutscene has
+   the camera - StatusTimers_Frame): Lavender calms the panic 0.27 a frame for 300 frames (into
+   its weighed calming, `calm-add`), Torva doubles the panic's fear inputs, Fortis holds her fear
+   at 0 for 1800 frames (`fear-to` each frame) and triples her blows' damage, Weltigo fades
+   everything heard (the sound, the music, the movies: `world-volume!`, under the options'
+   volume) out over 30 frames, silent, back in over the last 30 of its 1800 - told only as it
+   changes, so a room change (everything full again) is heard until it fades back in -
+   Sylvesta Esca Hewie's bites; the earrings scale the panic's calming (the
    Inquisitor's and the Philosopher's 1.25, the Alchemist's 2).
 6. **The story's words**: `item-give` (0x0D: a file with its sound; in the other game - story
    flag $AF - only ids with bit $8000), `item-add` (0x0E), `item-give-count` (0x83),
@@ -92,6 +98,8 @@ group; `ui-image` draws a part of one of its textures.
 1. **Opening** (SceneGame_SubPlay): Select while the menu isn't locked, the world isn't held, no
    scene runs, the panic is below 4 and Fiona is free; or the scripts' 0x6D. The world is held
    (`pause!`) and the menu has the held frames: it fades in over 8 frames, out over 4.
+   The sound goes down with it and back up as it closes (sub_set_volume: 1 - its fade / 255 -
+   the effects' master, the stream by `music-duck`, the stage music; about half while open).
 2. **Its pages**: the three item lists (16 to a page, columns of 8), then the files (two to a
    page); L1 / R1 turn them round. (The original's map and options pages come between: I3.)
 3. **An item** (SubScreen_StateItemActions): its picture slides in with its name, count and
@@ -116,12 +124,16 @@ message box), `lists.fs` (the item lists, an item's actions, the files), `map.fs
 
 1. **The map** (Map_*): the maps she holds - a sketch used for each (story flags
    `castle-map-held` ..) - page by page with left / right, past the ends to the next map she
-   holds; it opens on her room's page with an arrow where she stands (not turned to her heading
-   here). Each room entered is found on the maps (`arrived`); the story's 0xD1 (`map-turn-to`)
+   holds; it opens on her room's page with an arrow where she stands, turned to her heading
+   (Map_HereArrow: base texture 0 at $1C0, $60, palette 6, on four corners - `ui-image4`); in the
+   forest's maze rooms ($100..$105) placed by the room's place in the dealt row
+   (Events_ThingPlace: one of three spots of their own, none while no rows are dealt). The page
+   she is on is kept in a save (its +0x18F0) and turned to on loading. Each room entered is found on the maps (`arrived`); the story's 0xD1 (`map-turn-to`)
    shows her room on another page of her map.
 2. **The options** (Options_*): the controller type (its button names; the keyboard here),
    vibration, the sound out, the volume, the screen's position - the cross edits a row, the square
-   resets them. Kept for the session; the vibration turns the pad's rumble on or off (on: a buzz)
+   resets them. Kept in the system data (saves.fs: `options-changed` to saves at each change,
+   `options-restore` back as the game starts - the original's +0x30); the vibration turns the pad's rumble on or off (on: a buzz)
    and the volume scales everything heard (SubScreen_ApplyOptions); the sound out and the
    position have nothing here to change.
 3. **The word plate** (the scripts' mode 2, SubScreen_StateWordMake): a word of up to 8 letters on
@@ -135,7 +147,7 @@ message box), `lists.fs` (the item lists, an item's actions, the files), `map.fs
 
 ## Status
 
-**I1 built** (`scripts/items.fs`, `tests/items/test_items.fs` (30)). What she wears: her boots
+**I1 built** (`scripts/items.fs`, `tests/items/test_items.fs` (40)). What she wears: her boots
 (slot 0) - $80 her steps softer and heard less (`fiona/moving.fs`), $81..$83 her kicks
 (`fiona/defend.fs`); her choker (slot 3, `fiona/moving.fs` choker-fear / reset-recovery) - $8A
 a quarter off each fright and the recovery's reset three times in four; $8B a quarter off, her
@@ -182,9 +194,9 @@ story's shared actions $84 / $85 ask first): eight slots, each a save file of it
 $300..); a used slot asked before it is written over; "Saved", then the menu closes. The title
 has LOAD GAME: the same slots, one in use loaded (`load-from-slot`). The timed effects: Torva's (her fear doubled, Panic_Update), Fortis's (her strikes and her kick
 on Hewie and the stalker x3 - the creatures' kick stays 5, as the original's), Sylvesta Esca's
-(Hewie's bites half again). Lavender's, Weltigo's, Paptisma's and the rest of Fortis's fields are
-written by their uses but read by nothing in the original (searched: its code and the
-assembly) - kept as they are, without effect. (hg's reset leaves the blows' factor +0xA04 at 0,
+(Hewie's bites half again), Lavender's (calming), Fortis's hold on her fear and Weltigo's
+silence (StatusTimers_Frame, on SceneGame +0xA20 - the progress' +0x9E0). Paptisma's field is
+written by its use and only counted down. (hg's reset leaves the blows' factor +0xA04 at 0,
 which multiplied as it stands would make every kick and strike do nothing; OpenHuey reads it as a
 boost - the base damage, x3 while Fortis lasts.) **The word plate** (item $3F, ItemClassF430_Use,
 `plate-use`): the word it bears, by room and spot - the golem's EMETH / METH / SALTATIO

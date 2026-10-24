@@ -87,11 +87,15 @@ testing her kick on him: struck home (her answer), he yelps; hit by her often - 
 2 5 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 frames
 T{ [: his-hp @  his-action @  his-hits @ ;] his@ -> 90 $69 1 }T
 
-testing a door slammed on him (kind 5): its damage, pushed back from it ($6B)
+testing a door into him (kind 5): only while it swings - its damage, back from it or aside ($6B), or out by it ($6C)
 [: 100 hp!  0 cond!  0 0 set-action ;] his!  5 frames
 5 3 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 frames
-T{ [: his-hp @  his-action @ ;] his@ -> 97 $6B }T
-[: 100 hp!  0 cond!  0 0 set-action ;] his!  60 frames
+T{ [: his-hp @  his-action @ dup $6B = swap $6C = or ;] his@ -> 100 0 }T
+T{ 0 0 door-anim  1 frames  0 door-animating? -> -1 -1 }T
+5 3 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 frames
+T{ [: his-hp @  his-action @ dup $6B = swap $6C = or ;] his@ -> 97 -1 }T
+[: 100 hp!  0 cond!  0 his-2b !  0 his-2d !  0 0 set-action ;] his!  60 frames
+[: room-id s" fiona" actor-named body-tri dup tri-center body-place ;] his!  5 frames
 
 testing at a flank, the stalker's temper high: thrown off ($1702) - hanging ($2203), then held on or flung, and on
 200 deb-in  false blind

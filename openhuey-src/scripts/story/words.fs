@@ -116,6 +116,14 @@ create slot-chars  #chars cells allot  slot-chars #chars cells -1 fill
     dup stalker-who = if  drop stalker-cs exit  then
     dup fiona-cs stalker-cs within if  exit  then
     #chars first-figure-cs do  i slot-id @ over = if  drop i unloop exit  then  loop  drop -1 ;
+\ a slot's character's script id (its +0x153C: the context's id, what self-is? compares; $FF none)
+: cs>id ( cs -- id )
+    case
+        fiona-cs of  fiona-who  endof
+        hewie-cs of  hewie-who  endof
+        stalker-cs of  slot2-kind @  endof
+        dup figure-cs? if  dup slot-id @  else  -1  then  swap
+    endcase  dup 0< if  drop self-who  then ;
 : char-here ( cs -- flag )   \ in the game and in this room
     dup 0< if  drop false exit  then  char-actor dup 0< if  drop false exit  then  body-room this-room @ = ;
 : in-room? ( cs -- flag )  char-here ;
@@ -207,8 +215,8 @@ $1F constant hewie-zone-var
     spawn-held r> slot-task ! ;
 : start-action ( id act -- )   \ a scene script: its own slot, no character
     script-for ?dup 0= if  drop exit  then  swap  -1 swap  dup slot-of  fill-slot ;
-: give-script ( cs act -- )   \ a character's: slot cs + 1, as itself
-    script-for ?dup 0= if  drop exit  then  swap  dup  over 1+  fill-slot ;
+: give-script ( cs act -- )   \ a character's: slot cs + 1, as itself (its id the context's)
+    script-for ?dup 0= if  drop exit  then  swap  dup cs>id  over 1+  fill-slot ;
 : tell-scripted ( cs on -- )   \ (the character told: a script of the room has it, or lets go)
     swap char-actor dup 0< if  2drop exit  then  send scripted ;
 : release ( cs -- )   \ (its script is over: free again)
@@ -246,9 +254,10 @@ $1F constant hewie-zone-var
 : call-action ( id -- )  script-for ?dup if  execute  then ;
 
 \ ---- characters: where they are ----
-: self-is? ( id -- flag )
-    dup stalker-who = if  drop false exit  then   \ (the active stalker: H3)
-    ctx-id @ = ;
+: self-is? ( id -- flag )   \ cond 0x17: the script's character is `id` (stalker-who: the stalker, in the game)
+    dup stalker-who = if
+        drop stalker-cs char-actor 0< if  false exit  then  stalker-cs cs>id
+    then  ctx-id @ = ;
 : char-here? ( id -- flag )  char-slot char-here ;
 : char-busy? ( who -- flag )   \ (a scene's slot running, or a character in a scripted action)
     dup scene-id? if  slot-of slot-task @ 0<> exit  then
@@ -265,8 +274,9 @@ $1F constant hewie-zone-var
     swap char-slot dup 0< if  2drop false exit  then  char-actor dup 0< if  2drop false exit  then  body-room = ;
 \ faces heading dir x 2 degrees (a signed byte), within `within` degrees
 : s8 ( b -- n )  $FF and  dup $80 and if  $100 -  then ;   \ (a signed byte)
-: char-heading? ( who dir within -- flag )
-    {: who dir within :}  who char-slot dup char-here 0= if  drop false exit  then
+: char-active ( cs -- flag )  char-actor 0< 0= ;   \ (in the game, in whichever room: cond_char)
+: char-heading? ( who dir within -- flag )   \ cond 0x05
+    {: who dir within :}  who char-slot dup char-active 0= if  drop false exit  then
     char-actor body-yaw angle-wrap deg  dir s8 2* s>f f-  fabs
     fdup 180e f> if  360e fswap f-  then  within s>f f<= ;
 
@@ -281,7 +291,9 @@ $1F constant hewie-zone-var
     exit-door dup 0< if  drop false exit  then
     dup door-flags doorway-flag and if  drop true exit  then
     door-state dup door-locked-bit and if  drop false exit  then  door-open-bit and 0<> ;
-: exit-passable ( exit -- flag )  exit-door dup 0< if  drop false exit  then  door-state door-barred-bit and 0= ;
+\ passable from a side (Progress_ExitPassable: the door's bits 4..: 0 Fiona's side - $10 -, 1 Hewie's - $20)
+: exit-passable ( exit side -- flag )
+    swap exit-door dup 0< if  2drop false exit  then  door-state  door-barred-bit rot lshift and 0= ;
 : scripted? ( cs -- flag )  cells char-scripted + @ 0<> ;   \ (a script of this room has it)
 : fiona-scripted? ( -- flag )  fiona-cs scripted? ;
 \ take exit `exit` after this frame (with any-door - forced - to the room loaded ahead, else whatever
@@ -289,26 +301,23 @@ $1F constant hewie-zone-var
 \ controlled - Fiona, free of scripts)
 $80 constant any-door
 : hewie-scripted? ( -- flag )  hewie-cs scripted? ;
-: player-free? ( -- flag )   \ (cmd_exit: the one played free - Fiona, or Hewie at his own pace)
-    hewie-controlled? if  hewie-scripted? 0=  hewie-move-mode @ 0= and  else  fiona-scripted? 0=  then ;
-: exit-check ( exit -- )
+: player-own-pace? ( -- flag )   \ (cmd_exit: the one played - Fiona moving on her own or down, Hewie at his own pace; +0xF8)
+    hewie-controlled? if  hewie-move-mode @ 0=  else  fiona-mode @ dup own-mode =  swap down-mode = or  then ;
+: player-free? ( -- flag )   \ (cond 0x07: that, and no script of the room has them - +0xE0)
+    player-own-pace?  hewie-controlled? if  hewie-scripted?  else  fiona-scripted?  then  0= and ;
+: player-side ( -- side )  hewie-controlled? 1 and ;   \ (the side of a door the one played passes from)
+: exit-check ( exit -- )   \ (a script holding her doesn't stop it: her mode does)
     dup any-door and if  dup exit-taken !  going !  -1 leaving !  exit  then   \ (forced: rooms.fs)
     dup exit-door dup 0< 0= if  door-locked? if  drop exit  then  else  drop  then
-    dup exit-passable 0= if  drop exit  then
-    player-free? 0= if  drop exit  then
+    dup player-side exit-passable 0= if  drop exit  then
+    player-own-pace? 0= if  drop exit  then
     dup exit-taken !  going ! ;
 : exit-prepare ( exit -- )  s" rooms" actor-named send exit-prepare ;   \ (the room behind it loaded ahead: a forced exit's way)
 : exit-usable? ( exit -- flag )   \ the one played free (Fiona: no script, moving on her own or down;
-    hewie-controlled? if                                          \ Hewie: no script, at his own pace), in
-        player-free? 0= if  drop false exit  then                 \ the exit's area, its door open, not held
-        hewie-cs char-here 0= if  drop false exit  then
-        hewie-cs over exit-area char-in-area 0= if  drop false exit  then
-    else
-        fiona-scripted? if  drop false exit  then
-        fiona-mode @ dup own-mode <> swap down-mode <> and if  drop false exit  then
-        fiona-cs char-here 0= if  drop false exit  then
-        fiona-cs over exit-area char-in-area 0= if  drop false exit  then
-    then
+    player-free? 0= if  drop false exit  then                     \ Hewie: no script, at his own pace), in
+    hewie-controlled? if  hewie-cs  else  fiona-cs  then          \ the exit's area, its door open, not held
+    dup char-here 0= if  2drop false exit  then
+    over exit-area char-in-area 0= if  drop false exit  then
     dup exit-open 0= if  drop false exit  then
     exit-door door-held? 0= ;
 : exit-taken? ( exit -- flag )  exit-taken @ = ;
@@ -323,7 +332,9 @@ $80 constant any-door
     {: cs set path :}  cs 0< if  exit  then
     cs fiona-cs <>  cs char-here 0= and if  -1 to set  -1 to path  then
     cs char-actor dup 0< if  drop exit  then  set path cam-char-setup ;
-: char-camera ( id set path -- )  rot char-slot -rot char-cam! ;
+: char-camera ( id set path -- )   \ 0x36 ($FF: the director's own setup - Progress_SlotOfId gives none - followed by nobody)
+    rot dup self-who = if  drop cam-setup  -1 cam-followed!  exit  then
+    char-slot -rot char-cam! ;
 \ (Progress_CameraOn: a slot without its character - the director falls back on Fiona)
 256 constant no-one   \ (the director: nobody to follow - it falls back on Fiona)
 : camera-follow ( id -- )
@@ -471,8 +482,8 @@ fvariable fx  fvariable fz
 : char-faces-xz? ( who x z within -- flag )
     >r  s>f s>f fswap  char-slot dup char-here 0= if  drop fdrop fdrop r> drop false exit  then
     faces-off  r> s>f f<= ;
-: char-faces-area? ( who area within -- flag )   \ (inside the area, facing its middle)
-    rot char-slot dup char-here 0= if  drop 2drop false exit  then          ( area within cs )
+: char-faces-area? ( who area within -- flag )   \ cond 0x06 (inside the area, facing its middle)
+    rot char-slot dup char-active 0= if  drop 2drop false exit  then        ( area within cs )
     rot 2dup char-in-area 0= if  2drop drop false exit  then                ( within cs area )
     area-middle drop  fswap fdrop  faces-off  s>f f<= ;
 : char-action? ( who v -- flag )   \ (its move mode: +0xF8)
@@ -538,15 +549,32 @@ overlap-height overlap-across or constant overlapping
 : prepare ( scene arg kind -- )  prep-kind !  prep-arg !  prep-scene ! ;
 \ when it may be offered (cmd_scene_change's kinds; 2 4 5 6 alike, 1 and 7 alike): not in a panic -
 \ chased, her "no time" message instead; always; not in a panic; that, and in hard mode not while
-\ Hewie is down (the original's game mode check: S4)
+\ Hewie is down - busy (too-busy?), her "no time" message instead
 enum: offer-when  unhurried always calm calm-hewie-up ;
 $8016 constant no-time-message   \ ("I have to get away! I don't have time for this!")
 $80000005 constant read-message
+\ what is going on (SceneGame_Busy, as bits): 1 chased or a stalker or figure (slot 2..) in this
+\ room, 2 Hewie held by a script, 4 another held (+0xE0)
+1 constant busy-pressed   2 constant busy-hewie-held   4 constant busy-other-held
+: busy-bits ( -- bits )
+    0  the-danger @ chased = if  busy-pressed or  then
+    #chars 0 do
+        i char-actor 0< 0= if
+            i scripted? if  i hewie-cs = if  busy-hewie-held  else  busy-other-held  then  or  then
+            i stalker-cs >=  i char-here and if  busy-pressed or  then
+        then
+    loop ;
+: too-busy? ( -- flag )  busy-bits dup 0<>  swap busy-hewie-held <> and ;   \ (nothing, or only Hewie held: not)
+: no-time ( -- )  read-message no-time-message 0 prepare ;
 : scene-change ( scene arg kind -- )
     {: scene arg kind :}
     prep-scene @ her-action =  scene-locked state-flag? or  fiona-scripted? or if  exit  then
     in-panic? if  kind dup always = swap 7 = or 0= if  exit  then  then
-    kind unhurried = the-danger @ chased = and if  read-message no-time-message 0 prepare  exit  then
+    kind unhurried = the-danger @ chased = and if  no-time exit  then
+    kind calm-hewie-up = if
+        hard-mode? hewie-cond @ down-cond = and if  exit  then
+        too-busy? if  no-time exit  then
+    then
     scene her-action = fiona-scripted? and if  exit  then
     scene arg kind prepare ;
 \ Fiona's action script `act` offered on her action button this frame (scene 5)
@@ -1256,7 +1284,7 @@ $FF constant as-it-is   \ (an exit argument: none - where it is)
     id stalker-actor to a
     a 0< 0= if  a slot slot-actor !  id slot slot-id !  slot a send stalker-load exit  then
     slot figure-cs? 0= if  s" char-load (a figure not in slots 3..5)" stub-step exit  then
-    slot slot-clear
+    slot slot-actor @ 0< 0= if  exit  then   \ (the slot taken: nothing - CharLoad_EventChar)
     slot cast-actor to a  a 0< if  exit  then
     a slot slot-actor !  id slot slot-id !
     id a send cast-load
@@ -1291,10 +1319,6 @@ $FFFF constant its-own-room
 : stalker-here? ( -- flag )  stalker-told? st-room @ this-room @ = and ;
 : stalker-kind-here? ( kind -- flag )  stalker-here? swap slot2-kind @ = and ;   \ cond 0x3C
 : stalker-alert? ( v -- flag )  stalker-told? if  st-alert @  else  $FF  then  = ;   \ cond 0x10
-: stalker-free? ( -- flag )   \ cond 0x65: here, not leading her, not bitten or down
-    stalker-here? 0= if  false exit  then
-    st-mode @ engaged-mode = st-sub @ leading-sub dup 2 + within and if  false exit  then
-    st-mode @ struck-mode = st-sub @ bitten-sub down-sub 1+ within and 0= ;
 \ ---- the rooms' own conditions' facts about him (gCharSlot2 / gCharPursuer) ----
 : stalker-move-mode ( -- n )  st-mode @ ;          \ (+0xE8: his move mode - hewie-mode's names: free, off screen, struck, ...)
 : stalker-room ( -- room )  st-room @ ;
@@ -1501,18 +1525,19 @@ create zp /vec allot
 : height-of ( id -- ) ( F: -- h )  body-dims fswap fdrop ;
 \ two characters close (Actor_Touching): the higher within the lower's height (and a vertical
 \ margin) of it, and their radii and a margin apart across the floor
-: touching? ( a b margin vmargin -- flag )
-    {: a b margin vmargin :}
+: touching-by? ( a b -- flag ) ( F: margin vmargin -- )
+    {: a b F: margin vmargin :}
     a y-of b y-of f< if  b y-of a y-of f-  a height-of  else  a y-of b y-of f-  b height-of  then
-    vmargin s>f f+  f> if  false exit  then
-    a body-at b body-at vec-dist-xz   a radius-of b radius-of f+ margin s>f f+  f<= ;
+    vmargin f+  f> if  false exit  then
+    a body-at b body-at vec-dist-xz   a radius-of b radius-of f+ margin f+  f<= ;
+: touching? ( a b margin vmargin -- flag )  {: margin vmargin :}  margin s>f vmargin s>f touching-by? ;
 : heading-between ( a b -- ) ( F: -- yaw )   \ from character a toward b
     {: a b :}  b x-of a x-of f-  b z-of a z-of f-  fatan2 ;
 : cond-char ( who -- id | -1 )   \ a condition's character: in the game and in this room
     who>cs dup char-here if  char-actor  else  drop -1  then ;
 : self-touching? ( who -- flag )   \ cond 0x47: this script's character and `who` close (by its margins)
     self-char char-actor  swap cond-char  {: me them :}
-    me 0< them 0< or if  false exit  then  me them 0 0 touching? ;
+    me 0< them 0< or if  false exit  then  me them  them radius-of them height-of  touching-by? ;   \ (its +0xC8 / +0xCC)
 : char-touching-facing? ( a b m0 m1 within -- flag )   \ cond 0x1F: close, and a faces b within so many degrees
     {: a b m0 m1 within :}
     a cond-char to a  b cond-char to b
@@ -1541,6 +1566,11 @@ $80001 constant step-or-doorway   \ (a floor's nav flags)
     id body-tri dup 0< if  drop false exit  then  nav-flags step-or-doorway and if  false exit  then
     8 0 do  i door-here? if  i 0 id body-pos door-in-area?  i 1 id body-pos door-in-area? or if  false unloop exit  then  then  loop
     true ;
+: stalker-free? ( -- flag )   \ cond 0x65: here, not held (Character_Held: struck - his +0xF8 4 -, or a
+    stalker-here? 0= if  false exit  then                        \ script's), not leading her, his floor free
+    st-mode @ struck-mode =  stalker-cs scripted? or if  false exit  then
+    st-mode @ engaged-mode = st-sub @ leading-sub dup 2 + within and if  false exit  then
+    stalker-who char-tri-free? ;
 : self-done? ( -- flag )  self-char dup 0< if  drop false exit  then  move-done-of char-flag 0<> ;   \ cond 0x4D
 : message-closed? ( -- flag )  msg @ 0< ;                                                          \ cond 0x4E
 : fading? ( -- flag )  fading @ 0<> ;                                                              \ cond 0x2A
@@ -1667,9 +1697,9 @@ $27 constant knock-sound   $28 constant try-door-sound   \ (bank 5)
     how 1 = if  knock-sound  else  try-door-sound  then  5  bank-sound-at ;
 : noise-level ( v -- )  s" acoustics" actor-named send noise-setting ;   \ 0x91: the noise level setting
 : adx? ( what -- flag )  drop true ;   \ cond 0x5C: the stream can start / is playing - hga's start at once
-: loader-done? ( -- flag )  true ;     \ cond 0x62: hga loads at once
+: loader-busy? ( -- flag )  false ;   \ cond 0x62: the file loader busy (its +0x38) - OpenHuey loads at once
 : fade-well-on? ( -- flag )  fading @ 0= ;   \ cond 0x2B (unused by the scripts): the fade well on
-: spirit-request-pending? ( -- flag )  false ;   \ cond 0x64 (unused): Fiona's request $D - taken at once in hga
+: spirit-request-pending? ( -- flag )  fiona-request-kind @ spirit-request = ;   \ cond 0x64: a spirit's touch asked of her this frame ($D)
 : stalker-second-stance? ( -- flag )  false ;   \ cond 0x4B (unused): his stance-2 animations ($1805 / $1806)
 : char-find-tri ( who -- )  drop ;     \ 0x67: its triangle from its place - bodies keep theirs
 : door-flag-unread ( door on -- )  2drop ;   \ 0xA2: a flag nothing reads (Doors_SetFlag82)

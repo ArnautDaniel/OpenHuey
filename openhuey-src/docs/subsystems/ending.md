@@ -40,7 +40,8 @@ Every count stops at 9999 (`tally`).
    frame): ENDING, TIME, DOG LEVEL, PANIC, ITEM, CRITICAL HEWIE INJURIES, ENEMIES DEFEATED,
    TYPE - labels at x 32, values right-aligned at 480, a line every 32 from 96. The values the
    TYPE came from are highlighted (yellow; red for the bad ones).
-6. After 150 frames, a button (circle, cross or Start): the record fades out (8 a frame); the
+6. After 150 frames, circle or Start held (SceneEnding_SeqResults step 5 reads the held buttons):
+   the record fades out (8 a frame); the
    unlocks are worked out.
 7. Anything new: the picture back up, the messages in a box - the first clear's ($1C the secret
    room, $1D hard mode), then $1E (costumes); a button takes each down.

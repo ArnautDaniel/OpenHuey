@@ -59,6 +59,7 @@ message spirit-kept ( slot -- )              \ (a spirit) as its progress record
 message creature-gone ( slot -- )            \ (creatures) it has vanished: its slot is free
 message creature-doing ( slot room mode up -- )  \ broadcast each frame by each creature: where, how it moves (creature-move), up (after her: what Hewie goes for)
 message fiona-request ( kind x y z threat -- )   \ (Fiona) a request from there (Progress_Noise; xyz>cells, threat f>cell): request-kind
+message fiona-requested ( kind -- )            \ broadcast (Fiona) a request of hers taken this frame (the progress' +0x1050: the story's cond 0x64)
 message game-loaded ( -- )                   \ broadcast: a save's progress is back (saves.fs) - rebuild from it
 
 \ ---- doors (docs/subsystems/doors.md) ----
@@ -76,6 +77,7 @@ message rebuild-exits ( -- )                 \ the rooms' exits through the door
 \ the played room's doors, by exit; `source` is the user's noise source
 message use-door ( exit anim source -- )     \ the door swings along the user's animation
 message swing-door ( exit open source -- )   \ swung open / shut by hand
+message set-door-opened ( exit open -- )     \ set swinging open (a loud creak, Fiona's noise) or shut at 15 degrees a frame, its passage at once (Doors_SetOpened)
 message pull-shut ( exit source -- )         \ taken hold of and swung shut behind its user (DoorHold_Take, DoorHold_Shut)
 message slam ( exit source -- )
 message barge ( exit source -- )             \ burst open (Fiona running into it)
@@ -92,6 +94,7 @@ message door-changed ( door -- )             \ broadcast: its state changed
 message danger-signal ( signal -- )          \ something this frame (below)
 message stalker-here ( room mode down -- )   \ the stalker in play this frame: his mode, knocked down?
 message danger ( level -- )                  \ broadcast: calm, followed, chased
+message danger-signals ( bits -- )           \ broadcast at the frame's end: this frame's signals, a bit each (1 signal lshift), when any
 enum: danger-level  calm followed chased ;
 \ the frame's signals (the original's condition bits): Fiona within 150 / 200 of the stalker,
 \ Fiona struck, no stalker in play, the stalker knocked down, Hewie alert to him, she's hunted
@@ -108,8 +111,11 @@ message fright-raw ( amount -- )             \ (Panic_FrightRaw: as it is)
 message panic-shorten ( frames -- )          \ (the panic) its time left shortened (the progress' +0x7BA: her shaking as she gets up)
 message fear-set ( amount -- )               \ the fear this frame set outright (the progress' +0x7D8 =: f>cell)
 message fear-in ( amount -- )
+message panic-overlay ( thousandths -- )       \ (the panic) its screen overlay's level (ScreenFade_Level, the panic's +0x34): her breath only at 1000, its tint scaled by it; the game over sets it full and fades it with its tints
 message panic-stage! ( stage -- )
 message panic-level! ( level -- )
+message hewie-near ( near -- )               \ broadcast by Hewie each frame she is with him: 1 within 20, 2 within 50, 3 further (the progress' +0x7B9: how the panic weighs its inputs)
+message calm-add ( amount -- )               \ (the panic) calming this frame, weighed as the story's (the progress' +0x7E4; f>cell)
 message panic ( stage level -- )             \ broadcast each frame
 \ the panic's stages: under 60, from 60 / 75 / 90, panicking (at 100), calming down after
 enum: panic-stage  composed shaken scared terrified panicking calming-down ;
@@ -206,6 +212,7 @@ message set-hp ( n -- )                    \ (Hewie) his health set (a room's co
 message hewie-restore ( trust points hp -- )   \ (Hewie) as a save had him
 message hewie-mood-restore ( mood time hide f0 f1 f2 f3 -- )   \ (Hewie) his mood and its time, staying put, his feelings about the stalkers, as a save had them
 message hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  \ (Hewie) his skills at fetching, as a save had them
+message hewie-met ( m0 m1 m2 m3 -- )           \ (Hewie) how often he leapt at each stalker (Debilitas, Daniella, Lorenzo, Riccardo: 0..100), as a save had it
 message fetch-this ( thing -- )                \ (Hewie) Fiona threw the ball: his to fetch (things.fs)
 message effect-place ( x y z -- )           \ (a room effect) moved there (f>cell)
 message effect-rest ( n -- )                \ (a flickering sprite) its rest before its next run
@@ -293,6 +300,7 @@ message fade-done ( -- )                     \ (to who faded) it's over
 message bgm-want ( track pause level -- )    \ (the music) background track wanted ($FF none), paused, its level (f>cell)
 message bgm-resume ( -- )                    \ (the music) the streamed track resumed
 message music-op ( op a b -- )               \ (the music) the stage music: 0 over a frames to volume b, 2 hold, 4 release, 5 silence
+message music-duck ( v -- )                   \ (the music) the stream turned down to v (f>cell, 0..1) - the pause, the sub screen (Bgm +0x114)
 message music-stage ( stage -- )             \ (the music) the stage set's music made (-1: ended)
 \ ---- scenes (the cutscene director: docs/subsystems/story.md S4) ----
 message scene ( on -- )                      \ broadcast: a cutscene has the characters (on) / gives them back (off)
@@ -309,6 +317,8 @@ message costume ( n -- )                     \ (Fiona) her model for costume n (
 message stalker-load ( slot -- )            \ (a stalker) into the story's character slot (2: the one in play; 3..5 a scene's figure) - the cutscenes' cast
 message stalker-unload ( -- )                \ (a stalker) out of slot 2 (and out of the game)
 message stalker-doing ( room mode sub cond hp hp-max kind alert came -- )   \ broadcast each frame by a stalker in the
+message stalker-stride ( dx dz -- )         \ broadcast each frame by a stalker in the game: his root motion's step this frame in the
+                                             \ room (floats in cells) while it takes him ahead, else 0 0 (Fiona_KeepApart pushes her along it)
 message stalker-reach ( d -- )                 \ broadcast each frame by a stalker: how far Fiona is on foot (a float in a cell; -1 no way, elsewhere - Pursuer +0x1588)
                                              \ game: his room, how he moves (0 his own, 3 off screen, 4 struck, 8 taking her),
                                              \ what (9 Hewie on him, $A down, $18 leading her), condition, health, his kind,
@@ -373,6 +383,7 @@ message summoner-take ( kind -- )             \ (the summoner) take the stalker 
 message summoner-cooldown ( secs -- )         \ (the summoner) not before secs seconds
 message summoner-cooldown-less ( secs -- )    \ (the summoner) that much sooner
 message summoner-reset ( -- )                 \ (the summoner) afresh (a stalker loaded)
+message summoner-restore ( away called cooldown room waited mode kind -- )   \ (the summoner) as a save had it (its progress +0x764): time away, called in, cooldown (frames), the room he was taken from, frames waited, his mode last seen, how he was taken
 
 \ ---- the obstacles (docs/subsystems/obstacles.md): the things pushed about ----
 message place-obstacle ( i n kind a b -- )    \ obstacle i (model "oshi0n", of a kind) placed at square (a, b)
@@ -390,6 +401,7 @@ message cast-load ( id -- )                   \ (a figure) be character `id` (it
 message cast-unload ( -- )                    \ (a figure) let it go
 message cast-out ( -- )                       \ (a figure) out of the scene, still loaded (the scripts' 0x14)
 message cast-dress ( model -- )               \ (a figure) wear that model (the scripts' hand-over 0xBA)
+message figure-shown ( on -- )                \ broadcast by a figure as the story shows or hides it (its +0x29: hidden, out of the obstacles' way)
 
 \ ---- the items (docs/subsystems/items.md): the inventory, kept in the progress ----
 message give-item ( id n -- )                 \ (the items) n of item id into the inventory (Items_Give)
@@ -416,6 +428,8 @@ message tab-op ( op item -- )                \ (the sub screen) the tab: 0 an it
 message tab-done ( -- )                       \ (from the sub screen) the tab's step is done (it waits on 2 / 4)
 message menu-mode ( mode -- )                 \ (the sub screen) the mode the scripts open it in (0x6D: 0 the menu, 1 saving ...)
 message map-turn-to ( page -- )              \ (the sub screen) her room shown on that page of her map (the scripts' 0xD1)
+message options-changed ( vib out vol x y layout -- )   \ (the sub screen -> saves) the options as now set: kept in the system data
+message options-restore ( vib out vol x y layout -- )   \ (saves -> the sub screen) the options the system data kept
 message give-plate ( c0 c1 c2 c3 c4 c5 c6 c7 -- )   \ (the items) a word plate made, its 8 letters (0: none)
 message door-opened ( door on -- )            \ (the doors) its open bit set / cleared (the story's 0x59 09 / 0A)
 message calm-reset ( -- )                     \ (Fiona) her fear and her recovery's count back to 0 (the story's 0x4E)

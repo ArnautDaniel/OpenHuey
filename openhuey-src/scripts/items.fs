@@ -69,10 +69,10 @@ enum: equip-slot  boots-slot earrings-slot throw-slot choker-slot ;
 
 \ the timed effects (the progress' +0x9E0..: a value, frames left)
 begin-structure /boost  sffield: b.value  lfield: b.left  end-structure
-0 constant calm-boost       \ Lavender's -0.27 for 300 frames (+0x9E0; nothing in the original reads it)
+0 constant calm-boost       \ Lavender's: calming 0.27 a frame for 300 frames (+0x9E0, StatusTimers_Frame)
 1 constant fear-boost       \ Torva's: the panic's fear inputs doubled for 1800 frames (+0x9E8, Panic_Update)
-2 constant boost-9f4        \ Weltigo's 1800 frames (+0x9F4; not again while it runs; nothing reads it)
-3 constant boost-9fc        \ Fortis's other (+0x9FC 0 for 1800 frames; nothing reads it)
+2 constant hush-boost       \ Weltigo's: everything heard faded out and back, 1800 frames (+0x9F0 the volume now, +0x9F4 left; not again while it runs)
+3 constant fear-held        \ Fortis's: her fear held at 0 for 1800 frames (+0x9FC, +0xA00: StatusTimers_Frame)
 4 constant blow-boost       \ Fortis's: her blows' damage x3 for 1800 frames (+0xA04, Fiona_Kick)
 5 constant boost-a0c        \ Paptisma's 1800 frames (+0xA0C; nothing reads it)
 6 constant bite-boost       \ Sylvesta Esca's: Hewie's bites by half again, 450 frames (+0xA10)
@@ -143,6 +143,8 @@ end-state
     loop  false ;
 : item-bit-set ( n -- )  progress pr.item-bits bit-set ;
 : boost! ( k frames -- ) ( F: v -- )  {: k frames :}  frames k boost b.left l!  k boost b.value sf! ;
+: boost-frames! ( k frames -- )  swap boost b.left l! ;
+1800 constant hush-frames   30 constant hush-fade   \ (Weltigo's: its length; out and back in over 30 frames)
 
 \ ==== using one: its own rule (the items' +0x3C uses; items.c, story_chars.c). The result: 0
 \ nothing, 1 used up, 2 a mark set (used up), 4 an event started, 5 she / Hewie act, 6 the word
@@ -362,9 +364,9 @@ create lecterns  $D , $11 , $14 ,
         carbo of  25 0 fiona-id send remedy  drink  endof
         nigred of  100 0 fiona-id send remedy  drink  endof
         torva of  fear-boost 1800 2e boost!  drink  endof
-        weltigo of  boost-9f4 boost-on? if  0  else  boost-9f4 1800 0e boost!  drink  then  endof
+        weltigo of  hush-boost boost-on? if  0  else  hush-boost hush-frames boost-frames!  drink  then  endof
         remedium of  -50 0 fiona-id send remedy  0 50 panic-id send soothe  drink  endof
-        fortis of  -100 -1800 remedy-her drop  boost-9fc 1800 0e boost!  blow-boost 1800 3e boost!  used-up  endof
+        fortis of  -100 -1800 remedy-her drop  fear-held 1800 0e boost!  blow-boost 1800 3e boost!  used-up  endof
         paptisma of  boost-a0c 1800 0e boost!  used-up  endof
         \ the baits (to Hewie)
         chicken-jerky of  small-treat $8F feed  endof
@@ -393,6 +395,26 @@ create lecterns  $D , $11 , $14 ,
             place n@ 1+ place n!
         then
     loop  loop ;
+\ ---- the timed effects, each frame before they run down (StatusTimers_Frame): Lavender's
+\ calming (a value not negative would be a threat); Weltigo's fade of everything heard (out over
+\ its first 30 frames, silent, back over its last 30: the sound, the music, the movies); Fortis's
+\ hold on her fear. Not while a cutscene has the camera ----
+: lavender-frame ( -- )
+    calm-boost boost-on? 0= if  exit  then
+    calm-boost boost-value  fdup f0< if  fabs f>cell panic-id send calm-add  else  f>cell panic-id send threat  then ;
+: hush-volume ( left -- ) ( F: -- v )
+    {: left :}
+    left 0= if  1e exit  then
+    left hush-frames hush-fade - >= if  1e  hush-frames left - s>f hush-fade s>f f/ f-  exit  then
+    left hush-fade 1+ < if  1e  left s>f hush-fade s>f f/ f-  exit  then
+    0e ;
+: weltigo-frame ( -- )   \ (told only as it changes)
+    hush-boost boost b.left sl@ hush-volume  0e fmax 1e fmin {: F: v :}
+    v hush-boost boost-value f= if  exit  then
+    v hush-boost boost b.value sf!  v world-volume! ;
+: fortis-frame ( -- )
+    fear-held boost-on? if  fear-held boost-value f>s 0 max 100 min fiona-id send fear-to  then ;
+: timed-effects ( -- )  lavender-frame  weltigo-frame  fortis-frame ;
 : run-down ( -- )  8 0 do  i boost b.left  dup sl@ dup 0> if  1- swap l!  else  2drop  then  loop ;
 create swap-buf /held allot
 : swap-places ( a b -- )  {: a b :}  a swap-buf /held move  b a /held move  swap-buf b /held move ;   \ (move: from, to)
@@ -409,8 +431,12 @@ behaviour keeping-items
       3 0 do  #places 0 do  j i held-at empty  loop  loop
       4 0 do  -1 i equip-slot l!  loop
       progress pr.boosts 8 /boost * 0 fill
-      self subscribe tick  self subscribe hewie-doing  self subscribe fiona-doing ;
-  on tick ( -- )  count-up  run-down ;
+      self subscribe tick  self subscribe hewie-doing  self subscribe fiona-doing  self subscribe leaving-room ;
+  on tick ( -- )  count-up  cam-scene? 0= if  timed-effects run-down  then ;
+  \ (SceneGame's room change: everything heard full again - Weltigo's fade, if silent, only back
+  \ as it fades in; and at the game's end)
+  on leaving-room ( room exit -- )  2drop  1e world-volume! ;
+  on killed ( -- )  1e world-volume! ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       {: here action mode sub cond mood group commandable near reachable breakable way trust :}
       commandable dog-commandable !  cond dog-cond ! ;

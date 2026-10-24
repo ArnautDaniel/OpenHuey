@@ -17,7 +17,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 8 constant ambient4-sound              \ (snd 8) its ambient sounds in turn (every 30 frames): the fourth
 
 \ room 0x91 (Room91_Cmd00_ptmf): door 0's +0x68 (0)
-: house-of-truth-1f-8.cmd00 ( -- )  0 true -1 doors-id send swing-door ;   \ (door 0 set opening, Doors_SetOpened: swung open here)
+: house-of-truth-1f-8.cmd00 ( -- )  0 true doors-id send set-door-opened ;   \ (Doors_SetOpened: door 0 set swinging open)
 \ script variable 0 down by the player's hit (1 from the weak blow 0x1A, else 5), not below 0
 : house-of-truth-1f-8.cmd01 ( -- )  0 var-down-by-hit ;
 \ room 0x91: three grey smoke effects (Effect79B00, size 70) at the room's spots 1, 3, 0xB

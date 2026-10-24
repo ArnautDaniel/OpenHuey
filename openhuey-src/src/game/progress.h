@@ -66,6 +66,13 @@ typedef struct Progress {
      * as the game ended (+0xFB4), the stalkers knocked out for good (+0xFBC), the times she
      * panicked (+0xFC2), the frames played (+0xFC4: h:m:s, 30 a second; 99:59:59 at most) */
     int32_t hewie_trust, knockouts, panics, play_frames;
+    /* the rest of a homunculus' record (CreatureB_Save: +0x18 its strength, +0x14 the state it
+     * is in, +0x1C its heading, +0x20 how high it still is, dropped from a height), slots 7..9
+     * (kept apart from `creatures`, at the end, so older saves still load) */
+    struct KeptState {
+        int32_t strength, state;
+        float heading, fall;
+    } creature_states[10];
 } Progress;
 
 /* a character as the scripts see it (the original's character object: +0x30 its room, +0xE0

@@ -538,9 +538,33 @@ static void draw_actor(Engine *e, Actor *a, const Mat4 *vp) {
     a->alpha = alpha;
 }
 
+/* the original's renderer layers: drawn in order (Renderer_AddPacket's 53) */
+#define LAST_LAYER 53
+static int actor_layer(const Actor *a) {
+    return a->layer == 0 ? 0xA : a->layer < 0 ? 1 : a->layer >= LAST_LAYER ? LAST_LAYER - 1 : a->layer;
+}
+
+/* drawn in a layer after the room's fog (Fog_Draw: 9 when drawn early, else $21) */
+static int fog_after(int layer) {
+    return gRoomLook.has_fog && layer > (gRoomLook.fog_early ? 9 : 0x21);
+}
+
+/* layer `layer`: the room's draws in it, then the characters' ($1C, drawn softened, apart) */
+static void draw_layer(Engine *e, const Mat4 *vp, int layer) {
+    int i;
+
+    render_fog_after(fog_after(layer));
+    room_draw_layer(&e->room, vp, layer);
+    for (i = 0; i < MAX_ACTORS; i++) {
+        if (e->actors[i].used && actor_layer(&e->actors[i]) == layer && layer != 0x1C) {
+            draw_actor(e, &e->actors[i], vp);
+        }
+    }
+}
+
 static void draw(Engine *e) {
     Mat4 proj, view, vp;
-    int i;
+    int i, layer;
 
     platform_size(&e->width, &e->height);
     render_shadows_begin();
@@ -565,11 +589,9 @@ static void draw(Engine *e) {
         }
         goto the_2d;
     }
-    room_draw(&e->room, &vp, e->camera.pos, camera_forward(&e->camera));
-    for (i = 0; i < MAX_ACTORS; i++) {
-        if (e->actors[i].used && e->actors[i].layer < 0x1E && e->actors[i].layer != 0x1C) {
-            draw_actor(e, &e->actors[i], &vp);
-        }
+    room_draw_begin(&e->room, e->camera.pos, camera_forward(&e->camera));
+    for (layer = 0; layer < 0x1E; layer++) {   /* the room's layers and the characters' in order */
+        draw_layer(e, &vp, layer);
     }
     for (i = 0; i < MAX_ACTORS && !(e->actors[i].used && e->actors[i].layer == 0x1C); i++) {
     }
@@ -586,11 +608,10 @@ static void draw(Engine *e) {
         post_soft_end();
     }
     draw_reflections(e, &proj, &view, &vp);
-    for (i = 0; i < MAX_ACTORS; i++) {   /* (the later layers: in front of a reflection over everything) */
-        if (e->actors[i].used && e->actors[i].layer >= 0x1E) {
-            draw_actor(e, &e->actors[i], &vp);
-        }
+    for (layer = 0x1E; layer < LAST_LAYER; layer++) {   /* (the later layers: in front of a reflection over everything) */
+        draw_layer(e, &vp, layer);
     }
+    render_fog_after(0);
     things_draw(e->room.id, &vp);   /* the things lying about (their sprites written for the next) */
     sprites_draw(&vp, &view);   /* the effects (after the opaque scene: they don't write depth) */
     if (sprites_glowing() && post_glow_begin()) {   /* the glow pass: the glowing ones again */
