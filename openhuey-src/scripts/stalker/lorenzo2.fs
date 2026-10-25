@@ -18,7 +18,7 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 $1303 constant sink-anim   $1304 constant sink-to-her-anim   $1305 constant come-up-anim
 $E01 constant reach-anim   $E02 constant sweep-anim   $2301 constant slam-anim
 $1904 constant hold-blow-anim   $E00 constant blow-anim   $E04 constant blow-2-anim   $E05 constant blow-3-anim   $E06 constant arm-blow-anim
-: key? ( dt -- flag )  my-model @ 0 rot 1 motion-events 2 and 0<> ;
+: key-at? ( dt -- flag )  my-model @ 0 rot 1 motion-events 2 and 0<> ;
 \ ---- his way to her over the floor: how far (-1 none) ----
 : way-to-her ( F: -- d )
     quarry body-tri dup 0< if  drop -1e exit  then  quarry body-at plan 0> if  way-left  else  -1e  then ;
@@ -56,7 +56,7 @@ $1904 constant hold-blow-anim   $E00 constant blow-anim   $E04 constant blow-2-a
     dup hewie sweep-reaches?  swept @ 2 and 0= and if
         dup m.kind @  over m.damage @  2 pick stumble?  hewie send blow  2 swept @ or swept !
     then  drop ;
-: sweeping ( -- )  root-move  0 key? if  2 move-of sweep-hits  then  ended? if  -1 step-done !  then ;
+: sweeping ( -- )  root-move  0 key-at? if  2 move-of sweep-hits  then  ended? if  -1 step-done !  then ;
 
 \ ---- his first: sinking to come up by her (Lorenzo2_StartSink / StateSink) ----
 : sinking-behind ( -- )
@@ -79,8 +79,8 @@ $1904 constant hold-blow-anim   $E00 constant blow-anim   $E04 constant blow-2-a
 \ ---- his third: his reach from afar (Lorenzo2_StartGrab / StateGrab) ----
 : grabbing ( -- )
     {: | m :}  root-move
-    12 key? if  rise-at quarry body-at vec-copy  then
-    0 key? if
+    12 key-at? if  rise-at quarry body-at vec-copy  then
+    0 key-at? if
         3 move-of to m
         rise-at m m.reach f@ reaches? if  m m.kind @  m stumble?  m m.threat f@ f>cell  fiona send hit  then
         rise-at m m.reach f@ reaches-dog? if  m m.kind @  m m.damage @  m stumble?  hewie send blow  then
@@ -98,7 +98,7 @@ create spark-offsets  0.866e f, 0.866e f, 0e f,   -0.866e f, -0.866e f, 0e f,   
     -0.866e f, 0.866e f, 0e f,   0e f, 0e f, 1e f,   0e f, 0e f, -1e f,   0e f, 0e f, 0e f,
 create at-bone /vec allot
 : slam-dust ( -- )
-    anim @ slam-anim <>  0 key? 0= or if  exit  then
+    anim @ slam-anim <>  0 key-at? 0= or if  exit  then
     my-model @ his-hand bone-pos at-bone vec!
     8 0 do  2 $50 $50 $50  rnd 320e f* f>s 320 +  at-bone vec@ burst-new particles-engines  loop ;
 : spark-bone ( -- bone | -1 )

@@ -75,9 +75,10 @@ This page is OpenHuey's side: its words, its scripts, its tests.
 
 ## The scripts
 
-ClankForth's prelude (the language, `IN: forth`), `base.fs`, then `game.fs` (`IN: game`), whose `USING:` pulls in the
-rest; each file is a vocabulary of the same name. Shared words: `common.fs`, `vectors.fs`,
-`keys.fs`, `facts.fs` (the progress' flags), `messages.fs` (every message, declared once). Each
+ClankForth's prelude (the language, `IN: forth`), `base.fs`, then `game.fs` (`IN: game`), which uses `subsystems.fs` to pull in the
+rest and spawns their actors by qualified name (`stalker:riccardo-spawn`), so its handles (`game:fiona`) hide
+none of theirs; each file is a vocabulary of the same name. Shared words: `common.fs`, `vectors.fs`,
+`keys.fs`, `facts.fs` (the progress' flags), `messages.fs` (every message, declared once, and the actors by name: `fiona-id`, `doors-id` ...). Each
 subsystem is its own file (`fiona.fs`, `stalker.fs`, ... - the map: `docs/subsystems.md`), with a
 folder of the same name when it is bigger (`fiona/`, `hewie/`, `stalker/`, `story/`). Also
 `graphics.fs` (the presets and the options menu, saved), `debug.fs` (the console's helpers, F2's

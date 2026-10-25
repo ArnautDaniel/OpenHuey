@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-7
-USING: engine common room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+USING: engine common room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 1 constant stalker-scene-on            \ (bit 1) his scene under way (the door locked against him)
@@ -101,22 +101,22 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         stalker-who 0 char-effect-moving
     then
     0 $1ED obstacle-on? if
-        $26 door-locked? if
+        $26 doors:door-locked? if
             $26 door-unlock
         then
     then
     -2147483644 scene-request? not castle-b1-7.cond00? and if
-        $26 door-locked? not if
+        $26 doors:door-locked? not if
             $26 door-lock
         then
     then
     stalker-scene-on ebit? not if
-        $26 door-locked? if
+        $26 doors:door-locked? if
             stalker-who $1C char-in-room? if
                 0 2 track 9 action
             then
         then
-    else $26 door-locked? not if
+    else $26 doors:door-locked? not if
         2 track action-end
         0 castle-b1-7.cmd01
         stalker-who 1 stalker-command
@@ -322,7 +322,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
         wait-var var-dec
         yield
     repeat
-    $26 door-locked? if
+    $26 doors:door-locked? if
         cb1-7-flag1 story-flag? not if
             cb1-7-flag1 story-flag-set
         else $4B chance? if

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d0
-USING: room-names story.words story.shared flag-names story.clock floor-flags ;
+USING: room-names facts story.words story.shared flag-names story.clock floor-flags ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant cond-was-off                \ (bit 0) the room's condition was false last frame: its hook waits a frame once it holds
@@ -21,8 +21,8 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
     $16F solid-floor tri-floor-off
     $174 solid-floor tri-floor-off
     $19 1.0 0 bgm
-    $10 54.3 20.2 154.5 $E $80 $80 $80 $40 specks
-    $10 -53.5 20.2 154.5 $E $80 $80 $80 $40 specks
+    $10 54.3 20.2 154.5 $E $80 $80 $80 $40 scatter-specks
+    $10 -53.5 20.2 154.5 $E $80 $80 $80 $40 scatter-specks
 ;
 
 : off-map-d0.char-enter ( -- )   \ 00446A00

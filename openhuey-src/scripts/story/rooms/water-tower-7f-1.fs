@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-7f-1
-USING: actors messages room-names story.words story.shared flag-names story-names fiona.anims ;
+USING: actors messages room-names facts story.words story.shared flag-names story-names fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant gear0-turning               \ (bit 0) ? the first gear's step (cmd00 7) pending
@@ -695,7 +695,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     yield
     scene-wait-ready
     wait-fade
-    things-clear
+    engine:things-clear
     -1 self-idle-anim
     $C6 room-preload
     $10 $FF movie-param

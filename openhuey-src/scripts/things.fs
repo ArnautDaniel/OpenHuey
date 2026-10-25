@@ -28,7 +28,7 @@ state: things-state
   #things cells field met-in   \ (the doll) the room the stalker last came upon it in (-1 none)
   3 cells field homunculi      \ the homunculi's actors (slots 7..9, as they tell: creature-doing)
   cell field st-kind  cell field st-mode    \ (the stalker as he tells: his kind, his mode)
-  cell field st-room  cell field st-told     \ (his room; frames since he told: 0 this one)
+  cell field st-room  cell field st-told-t     \ (his room; frames since he told: 0 this one)
   #things cells field keris   \ (kind 9) the room object it carries: "keri0".."keri5" (-1 none)
 end-state
 
@@ -174,7 +174,7 @@ $20 constant object-x   $24 constant object-y   $28 constant object-z   \ (a roo
 \ the doll and Debilitas (Thing03_StalkerCheck): only him - kinds 2 6 7 $1B (his cast ids) - and in its room
 $1F constant doll-noise
 : debilitas-kind? ( -- flag )  st-kind @ dup debilitas-kind = over debilitas-6-kind = or over debilitas-7-kind = or swap debilitas-27-kind = or ;
-: he-is-with-it? ( -- flag )  st-told @ 2 <  debilitas-kind? and  st-room @ its-room = and ;
+: he-is-with-it? ( -- flag )  st-told-t @ 2 <  debilitas-kind? and  st-room @ its-room = and ;
 : met ( -- addr )  it @ cells met-in + ;
 : after-her? ( -- flag )  st-mode @ after-her = ;
 : searching? ( -- flag )  st-mode @ heading-for-her held-off within ;   \ (heading for her room, searching it, waiting about)
@@ -249,9 +249,9 @@ $1F constant doll-noise
 
 behaviour keeping-things
   on spawned ( -- )  kicked #things cells 0 fill  homunculi 3 cells -1 fill  keris #things cells -1 fill
-      met-in #things cells -1 fill  100 st-told !
+      met-in #things cells -1 fill  100 st-told-t !
       self subscribe tick  self subscribe write-save  self subscribe creature-doing  self subscribe stalker-doing ;
-  on tick ( -- )  frame  st-told @ 100 < if  1 st-told +!  then ;
+  on tick ( -- )  frame  st-told-t @ 100 < if  1 st-told-t +!  then ;
   on thing-made ( kind tri x y z vx vy vz -- )   \ (her let go: at her hand, its way)
       {: k tri x y z vx vy vz :}
       k make-room
@@ -271,7 +271,7 @@ behaviour keeping-things
   on creature-doing ( slot room mode up -- )
       {: slot room mode up :}  slot first-homunculus dup 3 + within if  sender slot first-homunculus - cells homunculi + !  then ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
-      {: room mode sub cond hp hp-max k alert came :}  alert st-mode !  k st-kind !  room st-room !  0 st-told ! ;
+      {: room mode sub cond hp hp-max k alert came :}  alert st-mode !  k st-kind !  room st-room !  0 st-told-t ! ;
 end-behaviour
 
 : things-spawn ( -- id )  keeping-things things-state s" things" spawn ;

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-3
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant bookshelf-remarked          \ (bit 0) its first remark made: "A wealth of information, right before your fingertips... A l"
@@ -338,7 +338,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-3.act06 ( -- )   \ 003F37E0
     [: fiona-who char-busy? ;] wait-until
-    1 message   \ "If I just apply enough force, I might be able to knock it over..."
+    1 show-message   \ "If I just apply enough force, I might be able to knock it over..."
     -1 self-idle-anim
     7 wait-frames
     wait-message
@@ -426,7 +426,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     chase-scene-on ebit-set
     self-wait-done
     rest-anim $A self-anim-blend
-    6 message   \ "That bookshelf... I wonder if I can hide behind it?"
+    6 show-message   \ "That bookshelf... I wonder if I can hide behind it?"
     self-wait-anim
     10 self-idle-anim
     wait-message

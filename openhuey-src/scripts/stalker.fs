@@ -5,22 +5,20 @@
 IN: stalker
 USING: engine game-state actors messages common facts flag-names room-names paths vectors hewie-names stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.leads stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 stalker.ladder stalker.head stalker.names stalker.anims stalker.sounds stalker.scripted floor-flags ;
 
-: me ( -- id )  self ;
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
 : played? ( -- flag )  in-game @ if  my-room room-id =  else  false  then ;   \ (Npc_InPlayedRoom)
-: danger-id ( -- id )  s" danger" actor-named ;
 
 \ his model where his body is, shown in the room being played (Daniella on her back: her hair
 \ and back by her animation - the engine's, DaniellaModel_Vt3C)
 2 constant play-slot   \ (the stalker in play: his sounds in bank 7, saved)
 : figure? ( -- flag )  loaded @  my-slot @ play-slot <> and ;   \ (in slots 3..5: a scene's figure)
-: here? ( -- flag )   \ (in the room being played: the stalker in play, or a figure placed there)
+: played-here? ( -- flag )   \ (in the room being played: the stalker in play, or a figure placed there)
     in-game @ if  played? exit  then
     figure? self body? and if  self body-room room-id =  else  false  then ;
 : pose ( -- )
     my-at v.x sf@ him act.x sf!  my-at v.y sf@ him act.y sf!  my-at v.z sf@ him act.z sf!
     self body-yaw him act.yaw sf!
-    here? under-t @ 0= and unseen @ 0= and hidden @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class;
+    played-here? under-t @ 0= and unseen @ 0= and hidden @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class;
     \ hidden by the story: its 0x1F - the original's +0x29)
 
 \ his body set by his feet (Pursuer_ModelUpdate: his model's +0x40 and +0x4C, the engine's legs-fit -
@@ -85,7 +83,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     found if
         her-room my-room = if  search-again  else  heading-for-her mode!  avoid-clear  head-for-her  then
     else
-        waiting-about mode!  plan if  avoid-clear  head-for-her  else  wander  then
+        waiting-about mode!  plan if  avoid-clear  head-for-her  else  route-at-random  then
     then ;
 
 \ ---- his frame (Debilitas_Update: so far the growl, his model) and his part in the danger ----
@@ -122,7 +120,7 @@ $1300 constant gesture-anims
 \ posed by the scripts' 0x9D (+0xE2: Pursuer_PlaceModel): his model alone, at his place - its
 \ body by its feet, not planted (BodyFrames 0 0)
 : posed-fit ( -- )
-    here? 0= my-model @ 0< or  self body? 0= or if  exit  then
+    played-here? 0= my-model @ 0< or  self body? 0= or if  exit  then
     chaired @ if  0e 0e 0e 0e  my-model @ self body-tri my-floor @ chair-fit exit  then
     0e 0e  my-model @ self body-tri my-floor @ 0 legs-fit ;
 : posed-frame ( -- )  pose  posed-fit ;
@@ -173,7 +171,7 @@ $1300 constant gesture-anims
 : family-setup ( -- )
     -1 her-came !  0 temper !
     150e view-range f!  60e deg>rad view-half f!  -1e d-fiona f!  -1e d-hewie f!
-    s" fiona" actor-named fiona-id !  s" hewie" actor-named hewie-id !
+    s" fiona" actor-named fiona-cached !  s" hewie" actor-named hewie-cached !
     hear-threshold @ stalker-noise s" acoustics" actor-named send listen
     pursuer-ladder ladder-offsets !  -1 her-ladder-on !  -1 at-ladder !
     self subscribe zone-target  self subscribe zone-targets-off  self subscribe fiona-unseen
@@ -202,16 +200,16 @@ $1300 constant gesture-anims
 \ ---- the story's orders (the scripts' 0x2F, 0x30, 0x15: Pursuer_GoForFionaStance0 /
 \ ChaseFionaHere / StartSearch, Pursuer_KnockedDown, Pursuer_Activate) - not while struck,
 \ bitten or leading her: then his mode only ----
-: up-again ( -- )  cond @ down-cond = if  well-cond cond !  0 down-t !  then ;
+: recover ( -- )  cond @ down-cond = if  well-cond cond !  0 down-t !  then ;
 : busy? ( -- flag )  reeling @ bitten @ or leading @ or ;
 : ordered ( mode -- )   \ (his wandering off given up: the order is his behaviour now)
     wandering-out @ if  let-door-go  out-over  then
     case
-        after-her of  up-again  after-her mode!  avoid-clear  busy? if  exit  then
+        after-her of  recover  after-her mode!  avoid-clear  busy? if  exit  then
               played? if  sees-fiona @ if  chase-begin  else  chase-start  then  else  head-for-her  then  endof
-        searching of  up-again  played? if  busy? if  searching mode!  else  search-again  then
+        searching of  recover  played? if  busy? if  searching mode!  else  search-again  then
               else  heading-for-her mode!  avoid-clear  head-for-her  then  endof
-        waiting-about of  up-again  played? if  busy? if  searching mode!  else  search-again  then
+        waiting-about of  recover  played? if  busy? if  searching mode!  else  search-again  then
               else  waiting-about mode!  route-clear  then  endof
     endcase ;
 : knocked-out ( -- )  played? 0= if  exit  then  let-door-go  out-over  0 hp !  knock-down ;
@@ -232,7 +230,7 @@ $1300 constant gesture-anims
     {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l!  1 him act.alive l!
     id file leg-bones human-legs
     file s" O_LRO" model-of? dup chaired !  id swap lorenzo-chair ;   \ (LorenzoModel: in his chair)
-: model-file ( addr len -- id )  2dup file!  actor-load ;
+: load-model-file ( addr len -- id )  2dup file!  actor-load ;
 \ ---- each one's own numbers (his Setup, by the hard setting) and ways ----
 : by-hardness ( normal hard -- n )  hard-mode? if  nip  else  drop  then ;
 : fby-hardness ( F: normal hard -- f )  hard-mode? if  fnip  else  fdrop  then ;
@@ -506,7 +504,7 @@ behaviour riccardo
   on spawned ( -- )
       4e 12e  riccardo-kit false false ways  8e 1.5e 12e 1.5e feet-fit
       ['] cry-hit own-mark !  riccardo-chase  riccardo-acts own-acts !  ['] riccardo-frame own-frame !
-      s" O_RCG/RCG_000" model-file s" motions-riccardo" dressed
+      s" O_RCG/RCG_000" load-model-file s" motions-riccardo" dressed
       100 125 by-hardness health!  riccardo-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       90 cool-secs !  9000 away-base !  no-own-rooms   \ (Riccardo_Setup)
       300 540 1200 900 clocks
@@ -522,7 +520,7 @@ behaviour lorenzo
   extends stalking
   on spawned ( -- )
       2e 12e  lorenzo-kit true false ways  8e -8e 8e -8e feet-fit  18e attack-range f!
-      s" O_LRO/LRO_000" model-file s" motions-lorenzo" dressed
+      s" O_LRO/LRO_000" load-model-file s" motions-lorenzo" dressed
       50 75 by-hardness health!  lorenzo-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       100 cool-secs !  3600 away-base !  no-own-rooms   \ (Lorenzo_Setup)
       600 450 510 360 clocks
@@ -539,7 +537,7 @@ behaviour lorenzo2
   on spawned ( -- )
       4e 60e  lorenzo2-kit lorenzo2h-kit by-hardness true false ways  8e -8e 8e -8e feet-fit
       lorenzo2-acts own-acts !  ['] lorenzo2-frame own-frame !  70e attack-range f!
-      s" O_LRY/LRY_000" model-file s" motions-lorenzo2" dressed
+      s" O_LRY/LRY_000" load-model-file s" motions-lorenzo2" dressed
       250 400 by-hardness health!  lorenzo2-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       150 cool-secs !  9000 away-base !  no-own-rooms   \ (Lorenzo2_Setup)
       900 450 0 0 clocks
@@ -555,7 +553,7 @@ behaviour kind39
   on spawned ( -- )
       4e 12e  kind39-kit kind39h-kit by-hardness true false ways  8e -8e 8e -8e feet-fit
       lorenzo2-acts own-acts !  18e attack-range f!
-      s" O_LRY/LRY_000" model-file s" motions-lorenzo2" dressed
+      s" O_LRY/LRY_000" load-model-file s" motions-lorenzo2" dressed
       250 300 by-hardness health!  kind39-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       150 cool-secs !  9000 away-base !  no-own-rooms   \ (Kind39_Setup)
       900 900 0 0 clocks
@@ -573,7 +571,7 @@ behaviour kind37
   on spawned ( -- )
       4e 12e  kind37-kit false false ways  8e 1.5e 12e 1.5e feet-fit
       riccardo-chase  24e attack-range f!  ['] kind37-frame own-frame !   \ (its reach the Pursuer's: Pursuer_AttackRange)
-      s" O_RCT/RCT_000" model-file s" motions-tintstalker" dressed
+      s" O_RCT/RCT_000" load-model-file s" motions-tintstalker" dressed
       100 125 by-hardness health!  kind37-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       45 cool-secs !  5400 away-base !  no-own-rooms   \ (Kind37_Setup)
       300 360 150 150 clocks
@@ -590,7 +588,7 @@ behaviour tintstalker
   on spawned ( -- )
       4e 12e  tintstalker-kit true false ways  8e 1.5e 12e 1.5e feet-fit
       ['] tint-frame own-frame !  -1 tint-was !  -1 unseen !
-      s" O_RCT/RCT_000" model-file s" motions-tintstalker" dressed
+      s" O_RCT/RCT_000" load-model-file s" motions-tintstalker" dressed
       100 125 by-hardness health!  tintstalker-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       45 cool-secs !  5400 away-base !  no-own-rooms   \ (TintStalker_Setup)
       300 300 1200 1200 clocks
@@ -607,7 +605,7 @@ behaviour kind12
   on spawned ( -- )
       4e 14e  kind12-kit true false ways  8e -8e 8e -8e feet-fit  18e attack-range f!
       ['] kind12-frame own-frame !  -1 mark-id !
-      s" O_LRF/LRF_000" model-file s" motions-kind12" dressed
+      s" O_LRF/LRF_000" load-model-file s" motions-kind12" dressed
       9999 health!  kind12-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       999 cool-secs !  3000 away-base !  no-own-rooms   \ (Kind12_Setup)
       29970 29970 0 0 clocks

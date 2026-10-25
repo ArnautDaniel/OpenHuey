@@ -9,13 +9,10 @@
 IN: fiona.commands
 USING: engine vectors game-state actors messages hewie-names common facts keys fiona.state fiona.anims fiona.model fiona.moving fiona.spots fiona.looks flag-names floor-flags ;
 
-defer to-idle   ' noop is to-idle      \ (fiona.fs)
-: acoustics-id ( -- id )  s" acoustics" actor-named ;
 : dog-in? ( -- flag )  dog-here @ dog-absent <> ;            \ in the game (+0x1AD5D4)
 : dog-at ( -- v )  hewie-id body-at ;
 : dog-dist ( F: -- d )  dog-ok? if  her-at dog-at vec-dist  else  1000e  then ;
 : react ( n -- )  hewie-id send reaction ;          \ Fiona_HewieReact (his to weigh)
-: noise-here ( loud -- )  room-id her-tri @ -1 fiona-noise acoustics-id send noise ;
 
 \ ---- her lines (fiona_voice; Fiona_OrderLine; Fiona_CallHewie) ----
 : line ( id -- )  0 her-sound ;   \ (her lines to him: by their sound id)
@@ -56,6 +53,7 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
 \ she was; for "go there" (0x23) 5 short of where he would have to stop, further on her heading.
 \ Then how it strikes him ----
 : mark-action-start ( code -- )
+    dup broadcast fiona-started
     her-sub !  her-heading f@ her-act-yaw f!  her-tri @ her-act-tri !  her-act-at her-at vec-copy ;
 create ch-at /vec allot
 : go-spot ( -- )

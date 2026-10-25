@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-13
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant hewie-away                  \ (bit 0) Hewie not here (or sent off) as the scene ends
@@ -42,10 +42,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         9 1 object-hidden
         0 part-shown
     then
-    $10 -54.6 28.6 -20.0 $E $80 $80 $80 $40 specks
-    $10 54.6 29.0 -20.0 $E $80 $80 $80 $40 specks
-    $10 -7.5 5.0 53.5 $E $80 $80 $80 $40 specks
-    $10 0.0 64.8 -20.5 $E $80 $80 $80 $40 specks
+    $10 -54.6 28.6 -20.0 $E $80 $80 $80 $40 scatter-specks
+    $10 54.6 29.0 -20.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -7.5 5.0 53.5 $E $80 $80 $80 $40 scatter-specks
+    $10 0.0 64.8 -20.5 $E $80 $80 $80 $40 scatter-specks
     0 hole-floor floor-on
 ;
 
@@ -516,10 +516,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : old-mansion-1f-13.act0E ( -- )   \ 0040EB80
     self-wait-done
     old-mansion-1f-13.cmd00
-    $10 -54.6 28.6 -20.0 $E $80 $80 $80 $40 specks
-    $10 54.6 29.0 -20.0 $E $80 $80 $80 $40 specks
-    $10 -7.5 5.0 53.5 $E $80 $80 $80 $40 specks
-    $10 0.0 64.8 -20.5 $E $80 $80 $80 $40 specks
+    $10 -54.6 28.6 -20.0 $E $80 $80 $80 $40 scatter-specks
+    $10 54.6 29.0 -20.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -7.5 5.0 53.5 $E $80 $80 $80 $40 scatter-specks
+    $10 0.0 64.8 -20.5 $E $80 $80 $80 $40 scatter-specks
     0 0 door-flag-unread
     1 4 movie-play
     0 cutscene-start

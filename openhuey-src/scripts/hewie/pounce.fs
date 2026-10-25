@@ -60,13 +60,13 @@ variable hewie-blow-n   -2000 hewie-blow-n !   \ (his blows' numbers for the hom
     anim@ land-anim <> if  settled? if  0 his-2d !  land-anim play  then  forward exit  then
     anim-done? if  0 his-2d !  to-default exit  then
     his-t2 @ if  -1 his-t2 +!  forward  else  root-move  then ;   \ (its feet down: its own motion)
-: land ( -- )
+: land-pounce ( -- )
     floor-y his-y!  settled? if  land-anim play  then
     let-in  4 his-t2 !  ['] st-landing behave ;
 : st-leap-bite ( -- )   \ (past its top: falling, 0.5 faster a frame)
     tackle-bite  forward
     his-pounce-y f@ his-pounce-vy f@ f+ fdup his-pounce-y f!  his-y!  his-pounce-vy f@ 0.5e f- his-pounce-vy f!
-    his-at v.y sf@ floor-y f< if  land  then ;
+    his-at v.y sf@ floor-y f< if  land-pounce  then ;
 : st-tackle ( -- )   \ (rising to its top, eased: a quarter sine over the frames to it)
     tackle-bite
     his-yaw his-pounce-yaw f@ 10e deg>rad turn-toward fdrop his-yaw!  forward

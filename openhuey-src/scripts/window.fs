@@ -68,7 +68,6 @@ $80 constant no-box   6 constant box-drop   \ (Task_BoxSize: the box 6 lines bel
     place-now place-y box-drop + h * 448 /  box-h @ 2/ -   \ (about the place's centre, kept on the screen)
     h 20 /  h box-h @ - h 20 / -  clamp  box-y ! ;
 : rect ( x y w h rgba -- )  {: x y w h rgba :}  text-layer x y w h rgba ui-rect ;
-: words ( addr len x y rgba -- )  {: a n x y rgba :}  text-layer a n x y rgba scale @ ui-text ;
 : frame-edges ( -- )   \ a thin edge all round
     {: | x y w h :}  box-x @ to x  box-y @ to y  box-w @ to w  box-h @ to h
     x y          w 1  edge-colour rect
@@ -125,7 +124,7 @@ create look-text 8 allot
 
 \ ---- answering ----
 : close ( -- )
-    shown @  chosen @  asked-by @ send text-closed
+    shown @  chosen @  asked-by @ dup alive? if  send text-closed  else  drop 2drop  then   \ (the asker gone: no one told)
     none shown !  0 broadcast text-shown ;
 \ (Task_StateChoice: the message an option leads to opens where this one was, boxed)
 : answer ( -- )   \ the option's message follows (from the same table), or the window closes

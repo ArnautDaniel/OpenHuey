@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.lake-pathway-1
-USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant body-remarked               \ (bit 0) its first remark made: "His limbs are twisted into unnatural positions..."
@@ -100,12 +100,12 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
     self-wait-done
     body-remarked ebit? not if
         fiona-who 4 char-in-area? if
-            0 message   \ "His limbs are twisted into unnatural positions. It looks so painful... But I gu..."
+            0 show-message   \ "His limbs are twisted into unnatural positions. It looks so painful... But I gu..."
             look-low-anim play-out
         else
             180 self-turn-angle
             self-wait-done
-            1 message   \ "No one could withstand a fall like that. No one."
+            1 show-message   \ "No one could withstand a fall like that. No one."
             look-at-anim play-out
         then
         -1 self-idle-anim

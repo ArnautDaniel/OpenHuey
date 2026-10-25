@@ -7,20 +7,19 @@
 IN: test-galleries
 USING: tester engine game-state actors messages keys facts flag-names game debug subscreen.state subscreen.galleries subscreen.gallery-tables ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : tap ( key -- )  dup true key-hold  game-tick  false key-hold  game-tick ;
 : menu@ ( xt -- x )  game:subscreen enter  execute  leave-actor ;
-: open-mode ( mode -- )  game:subscreen send menu-mode  subscreen-wanted state-flag-set  30 frames ;
+: open-mode ( mode -- )  game:subscreen send menu-mode  subscreen-wanted state-flag-set  30 run-frames ;
 : stage@ ( -- n )  [: stage @ ;] menu@ ;
 : mode@ ( -- n )  [: mode @ ;] menu@ ;
 : kind@ ( -- n )  [: gal-kind @ ;] menu@ ;
 : at@ ( -- n )  [: gal-at @ ;] menu@ ;
-: var@ ( n -- v )  progress pr.vars + c@ ;
-: shut? ( -- flag )  60 frames  stage@ shut = ;
+: story-var@ ( n -- v )  progress pr.vars + c@ ;
+: shut? ( -- flag )  60 run-frames  stage@ shut = ;
 : lock-all ( -- )  96 0 do  i progress pr.resident bit-clear  loop ;
 : unlock-all ( -- )  96 0 do  i resident-flag-set  loop ;
 
-game:free-play  $37 room!  60 frames
+game:free-play  $37 room!  60 run-frames
 
 testing the tables from the executable
 T{ #movies #tracks #pictures #types #models -> $6E 27 48 11 32 }T
@@ -34,16 +33,16 @@ T{ key: X tap  stage@ -> up }T   \ (not seen)
 T{ key: Right tap  at@  key: Left tap  at@ -> 8 0 }T
 T{ key: Up tap  at@ -> 7 }T
 unlock-all
-T{ key: X tap  $2A var@ $2B var@ -> 7 7 }T
+T{ key: X tap  $2A story-var@ $2B story-var@ -> 7 7 }T
 T{ shut?  kind@ -> -1 0 }T
-T{ 8 open-mode  at@  key: V tap  $2A var@ $2B var@ -> 7 $FF 7 }T
+T{ 8 open-mode  at@  key: V tap  $2A story-var@ $2B story-var@ -> 7 $FF 7 }T
 T{ shut? -> -1 }T
 
 testing the models: a figure unlocked shown alone, its motions stepped; back to the list, the scene again
-T{ $B open-mode  key: X tap  20 frames  [: gal-model @ ;] menu@ 0< 0= -> -1 }T
+T{ $B open-mode  key: X tap  20 run-frames  [: gal-model @ ;] menu@ 0< 0= -> -1 }T
 T{ [: gal-motion @ ;] menu@  key: E tap  [: gal-motion @ ;] menu@ -> 0 1 }T
 T{ key: Q tap  key: Q tap  [: gal-motion @ ;] menu@ -> 12 }T   \ (round: its thirteen)
-T{ key: V tap  40 frames  [: gal-model @ gal-step @ ;] menu@ -> -1 0 }T
+T{ key: V tap  40 run-frames  [: gal-model @ gal-step @ ;] menu@ -> -1 0 }T
 T{ key: V tap  shut? -> -1 }T
 
 testing the model list's unlocks (SubScreen_ExtraUnlocked)
@@ -58,16 +57,16 @@ T{ 8 model-open? -> -1 }T
 unlock-all
 
 testing the music: a track played, the triangle stops it, then leaves
-T{ $D open-mode  key: X tap  10 frames  music-playing?  [: gal-playing @ ;] menu@ -> -1 0 }T
-T{ key: V tap  60 frames  music-playing?  [: gal-playing @ ;] menu@  stage@ -> 0 $FF up }T
+T{ $D open-mode  key: X tap  10 run-frames  music-playing?  [: gal-playing @ ;] menu@ -> -1 0 }T
+T{ key: V tap  60 run-frames  music-playing?  [: gal-playing @ ;] menu@  stage@ -> 0 $FF up }T
 T{ key: V tap  shut? -> -1 }T
 
 testing the art: a picture unpacked (512 x 896), zoomed, back to the list
 T{ 0 39 art-picture -> 896 -1 }T
 T{ 30 39 art-picture -> 448 -1 }T
-T{ $E open-mode  key: X tap  20 frames  [: gal-step @ art-h @ ;] menu@ -> 2 896 }T
+T{ $E open-mode  key: X tap  20 run-frames  [: gal-step @ art-h @ ;] menu@ -> 2 896 }T
 T{ key: F tap  [: art-zoom @ ;] menu@ -> -1 }T
-T{ key: V tap  40 frames  [: gal-step @ ;] menu@ -> 0 }T
+T{ key: V tap  40 run-frames  [: gal-step @ ;] menu@ -> 0 }T
 T{ key: V tap  shut? -> -1 }T
 
 testing the TYPE ranks: their message in the box, then the one after; the second group

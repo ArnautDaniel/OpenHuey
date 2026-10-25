@@ -18,7 +18,6 @@ USING: engine messages hewie-names vectors actors common fiona.state fiona.anims
 : head-bone ( -- b )  her-head-bones drop ;
 14e fconstant eye-up
 : dog-ok? ( -- flag )  dog-here @ dog-with-her = ;            \ Hewie with her (the original's +0x1AD5D5)
-: hewie-id ( -- id )  s" hewie" actor-named ;
 
 \ Motion_LookAt: from her eye (14 up) to the point - the pitch (its rise over the level distance)
 \ and the turn from her heading (negative to the left)

@@ -7,7 +7,6 @@
 IN: fiona.hurt
 USING: engine vectors game-state actors messages common facts flag-names rumble items.names fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.fear floor-flags ;
 
-defer to-idle ( -- )
 \ how he holds her (her-hit-how): by the arm, from the side, from behind, from the front; a door's
 1 constant by-arm   2 constant by-side   3 constant from-behind   4 constant from-front   5 constant by-door
 $8000 constant stumbles   \ (a blow's flag: she stumbles)
@@ -15,7 +14,6 @@ defer grabbed ( -- )   \ (seized outright: fiona.seized)
 defer held-down ( -- )   \ (held by homunculi: fiona.seized)
 defer knocked-off ( -- )   \ (struck on a ladder: fiona.ladder)
 defer drop-door ( -- )   ' noop is drop-door   \ (a door she held let go: fiona.doors)
-: danger-id ( -- id )  s" danger" actor-named ;
 
 \ ---- how she stands for a stalker's attack (Pursuer_FionaState): out of reach while struck
 \ (her reactions, mode 4) or seized; the panic's stages 4 / 5; fleeing (mode $B); panicking
@@ -179,7 +177,7 @@ $8000018 constant door-hit-floor
 : after-fall ( -- )
     at-end? if  75e f>cell s" panic" actor-named send threat  ['] risen her-act !  then
     root-move ;
-: falling ( -- )
+: spirit-fall ( -- )
     settled? if
         struck-hard-sound 0 her-sound
         on-step? if  fall-through-anim -1 play-table
@@ -246,7 +244,7 @@ create door-pt /vec allot
     dup grabbed-r = if  drop  fiona-occupied state-flag-set  grabbed  true exit  then
     dup held-down-r = if  drop  held-down  true exit  then
     case
-        spirit-fall-r of  ['] falling her-act !  endof
+        spirit-fall-r of  ['] spirit-fall her-act !  endof
         caught-r of
             her-hit-how @ by-door = if   \ (the door's hold: thrown where there's room, else knocked down by him)
                 room-to-throw? if  -1 her-hit-who !  $D0 12 fiona-jolt  ['] thrown her-act !

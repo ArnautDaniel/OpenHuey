@@ -24,9 +24,9 @@ USING: room-names story.words story.shared ;
     room-sounds
     0 castle-2f-11.cmd00
     0 1 track 1 action
-    $A -33.7 23.2 -126.0 $C $60 $60 $60 $20 specks
-    $C -92.2 23.2 -92.0 $C $60 $60 $60 $20 specks
-    $A -118.0 23.2 -48.5 $C $60 $60 $60 $20 specks
+    $A -33.7 23.2 -126.0 $C $60 $60 $60 $20 scatter-specks
+    $C -92.2 23.2 -92.0 $C $60 $60 $60 $20 scatter-specks
+    $A -118.0 23.2 -48.5 $C $60 $60 $60 $20 scatter-specks
     1 $2300 sound-volume
 ;
 

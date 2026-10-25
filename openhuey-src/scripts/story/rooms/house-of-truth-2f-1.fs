@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-2f-1
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 1 constant locked-remarked             \ (bit 1) its first remark made: "The door is locked."
@@ -336,7 +336,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $14 wait-frames
     fiona-who key-turn-sound 6 char-sound
     $25 message-param-room
-    $E6 door-locked? not if
+    $E6 doors:door-locked? not if
         $25 item-use
     then
     $E2 door-unlock

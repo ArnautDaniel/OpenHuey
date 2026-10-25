@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-2f-1
-USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: engine actors messages room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant left-area13                 \ (bit 0) she left area $D: the scene (track 2) begun
@@ -304,7 +304,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         then
     then
     self-wait-done
-    things-clear
+    engine:things-clear
     fiona-who 4 char-file-load
     $13A -0.47 39.8 -90 $FFFF 5 self-move-to
     self-wait-done

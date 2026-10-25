@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-2
-USING: room-names story.words story.shared flag-names story-names fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant sound-step-var              \ (var 0) which of its sounds next (0..3)

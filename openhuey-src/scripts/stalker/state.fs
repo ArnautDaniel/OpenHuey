@@ -25,7 +25,7 @@ state: stalker-state
   cell field hard               \ the hard setting (progress +0x30 bit 0x8000: his numbers differ)
   cell field growl-t            \ +0x17EC: frames since his last growl
   cell field my-move-mode       \ +0xF8: how he moves (hewie-names' move modes: free-mode; unreachable-mode on a ladder)
-  cell field fiona-id  cell field hewie-id
+  cell field fiona-cached  cell field hewie-cached   \ (their ids, looked up as he starts)
   cell field my-kind            \ +0x153C: which character (2 Debilitas, 3 Daniella: the cutscenes' cast id)
   cell field growls             \ his frame growls (Debilitas_Update; Daniella's doesn't)
   cell field loaded             \ in one of the story's character slots (partner-load / char-load .. char-unload)

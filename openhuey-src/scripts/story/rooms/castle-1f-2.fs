@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-2
-USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims stalker.anims ;
+USING: actors messages room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant bark-scene-on               \ (bit 0) Hewie's bark scene (act03) under way: the stalkers held
@@ -138,13 +138,13 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         1 292.2 0.0 -61.8 flicker-sprite
     then
     0 castle-1f-2.cmd02
-    3 0 4 $FF $FC 0 $50 1 butterflies
+    3 0 4 $FF $FC 0 $50 1 release-butterflies
     0 castle-1f-2.cmd03
-    8 229.9 29.0 -63.9 $B $80 $80 $80 $30 specks
-    $A 111.4 25.0 -58.5 $B $80 $80 $80 $30 specks
-    $E 122.8 19.0 103.2 $E $80 $80 $80 $40 specks
-    $C 63.3 19.0 151.6 $10 $80 $80 $80 $40 specks
-    8 34.2 19.0 92.1 $C $80 $80 $80 $40 specks
+    8 229.9 29.0 -63.9 $B $80 $80 $80 $30 scatter-specks
+    $A 111.4 25.0 -58.5 $B $80 $80 $80 $30 scatter-specks
+    $E 122.8 19.0 103.2 $E $80 $80 $80 $40 scatter-specks
+    $C 63.3 19.0 151.6 $10 $80 $80 $80 $40 scatter-specks
+    8 34.2 19.0 92.1 $C $80 $80 $80 $40 scatter-specks
     $38B hole-floor tri-floor-on
     $1B9 hole-floor tri-floor-on
     $38C hole-floor tri-floor-on
@@ -451,30 +451,30 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     splash1-made ebit? not if
         $A 28.0 -9.0 72.0 $10 4 0 zone
         fiona-who $A 3 char-zone-bits? fiona-who $A 3 char-zone-bits-before? not and if
-            fiona-who 5 28.0 -9.0 72.0 2 $40 $50 $40 $80 splash
+            fiona-who 5 28.0 -9.0 72.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
         hewie-who $A 3 char-zone-bits? hewie-who $A 3 char-zone-bits-before? not and if
-            hewie-who $A 28.0 -9.0 72.0 2 $40 $50 $40 $80 splash
+            hewie-who $A 28.0 -9.0 72.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
         stalker-who $A 3 char-zone-bits? stalker-who $A 3 char-zone-bits-before? not and if
-            stalker-who 5 28.0 -9.0 72.0 2 $40 $50 $40 $80 splash
+            stalker-who 5 28.0 -9.0 72.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
     then
     splash2-made ebit? not if
         $B 8.0 -9.0 70.0 $10 4 0 zone
         fiona-who $B 3 char-zone-bits? fiona-who $B 3 char-zone-bits-before? not and if
-            fiona-who 5 8.0 -9.0 70.0 2 $40 $50 $40 $80 splash
+            fiona-who 5 8.0 -9.0 70.0 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
         hewie-who $B 3 char-zone-bits? hewie-who $B 3 char-zone-bits-before? not and if
-            hewie-who $A 8.0 -9.0 70.0 2 $40 $50 $40 $80 splash
+            hewie-who $A 8.0 -9.0 70.0 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
         stalker-who $B 3 char-zone-bits? stalker-who $B 3 char-zone-bits-before? not and if
-            stalker-who 5 8.0 -9.0 70.0 2 $40 $50 $40 $80 splash
+            stalker-who 5 8.0 -9.0 70.0 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
     then

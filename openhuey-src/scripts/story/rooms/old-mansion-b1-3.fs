@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-3
-USING: engine actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
+USING: engine actors messages story.state room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant on-plate1                   \ (bit 0) someone on the first plate
@@ -25,7 +25,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 17 constant hewie-in-zone3             \ (bit 17) Hewie in zone 3 (his action there made)
 18 constant breaker-remarked           \ (bit 18) its first remark made: "A circuit breaker."
 19 constant shaken-free                \ (bit 19) she shook herself free (35 shakes, or near panic)
-20 constant panicked                   \ (bit 20) she was near panic when held (the panic's stage 4 after)
+20 constant panicked-when-held                   \ (bit 20) she was near panic when held (the panic's stage 4 after)
 21 constant held-scene-on              \ (bit 21) her being held (act02) under way
 22 constant hewie-came                 \ (bit 22) Hewie came into zone 4 to help
 23 constant found-her                  \ (bit 23) he has found her hiding: she must flee (the avoid prompt)
@@ -627,7 +627,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         held-scene-on ebit-set
         hewie-came ebit-clear
         shaken-free ebit-clear
-        panicked ebit-clear
+        panicked-when-held ebit-clear
         0 old-mansion-b1-3.cmd01
         begin
             hewie-can-command? if
@@ -654,7 +654,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
             then
             panic-near-full? if
                 shaken-free ebit-set
-                panicked ebit-set
+                panicked-when-held ebit-set
             then
             shaken-free ebit? not if
                 self-at-motion-event? if
@@ -690,7 +690,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
         $11 $9003 0 5 char-anim-hold
         5 room-motion 3 blend-out
         $11 $9005 0 5 char-anim-hold
-        panicked ebit? if
+        panicked-when-held ebit? if
             4 panic-stage
         then
         omb1-3-flag1 story-flag-set
@@ -967,7 +967,7 @@ USING: engine actors messages story.state room-names story.words story.shared fl
 : old-mansion-b1-3.act10 ( -- )   \ 0040A820
     3 self-is? $22 self-is? or if
         1 self-scripted
-        things-clear
+        engine:things-clear
         0 counter-set
         panic-eased
         0 fiona-who $11 action-force

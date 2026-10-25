@@ -202,7 +202,7 @@ create lost-lists  lost-1 , lost-2 , lost-3 , lost-4 ,
 : to-panic ( -- )  sm-panic-now sm-state !  panic-track stop-fade ;
 : to-chase ( s -- )  sm-state !  chase-track stop-fade ;
 : to-fading ( -- )  sm-fading sm-state ! ;
-: restart ( k -- )  dup 0 seq-play  -1 seq-play ;
+: seq-restart ( k -- )  dup 0 seq-play  -1 seq-play ;
 : chase-begins ( now? -- )   \ (MusicDir_ChaseBegins: the chase from its start)
     {: now | frames volume bent :}
     chase-step ?dup if  dup step-volume @ to volume  step-bend @ to bent  then
@@ -210,11 +210,11 @@ create lost-lists  lost-1 , lost-2 , lost-3 , lost-4 ,
     else  90 to frames  panic-track 90 0 track-to  then
     sm-seen @ if  true stage-seen  255 to volume  else  true stage-lost  then
     0 bent bend-now                                                    \ (channel 0 at the step's bend)
-    chase-track restart  chase-track frames volume track-to ;
+    chase-track seq-restart  chase-track frames volume track-to ;
 : panic-channels ( on? -- )   \ (track 0's channels 3..8: their own volumes, or silent)
     {: on :}  9 3 do  panic-track i  on if  panic-track i chan-volume  else  0  then  seq-chan-volume  loop ;
 : panic-now ( -- )   \ (MusicDir_Panic)
-    sm-panicking sm-state !  panic-track restart
+    sm-panicking sm-state !  panic-track seq-restart
     calm-a 1 0 track-to  calm-b 1 0 track-to  chase-track 1 0 track-to  panic-track 1 255 track-to
     false panic-channels ;
 : after-panic ( -- )

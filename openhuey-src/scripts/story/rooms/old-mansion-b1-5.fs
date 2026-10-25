@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-5
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant first-time                  \ (bit 0) the story flag not yet set (the first time here)
@@ -245,7 +245,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     fiona-who $C char-in-area? fiona-who 90 $3C char-heading? and if
         stalker-who char-here? not if
-            stalker-waiting ebit? $52 door-locked? not and if
+            stalker-waiting ebit? $52 doors:door-locked? not and if
                 $11 calm offer-action
             else
                 9 calm offer-action
@@ -294,7 +294,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 scene-play
             then
             wait-fade
-            things-clear
+            engine:things-clear
             0 self-idle-anim
             fiona-who $27 15.929 21.234 -2 char-to-xz
             camera-restart
@@ -328,7 +328,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             $F $41 fade
             wait-fade
             1 say   \ "Did something just move?"
-            $52 door-locked? if
+            $52 doors:door-locked? if
                 16 wait-frames
                 $72 5 0.0 0.0 -40.0 0 0 sound
                 $52 door-unlock
@@ -396,7 +396,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             $F $41 fade
             wait-fade
             1 say   \ "Did something just move?"
-            $52 door-locked? if
+            $52 doors:door-locked? if
                 16 wait-frames
                 $72 5 0.0 0.0 -40.0 0 0 sound
                 $52 door-unlock
@@ -438,7 +438,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 0 hewie-who $86 action
             then
             world-frozen state-flag-clear
-            things-clear
+            engine:things-clear
             $10 $78 movie-param
             panic-eased
             $FFFF message-prepare
@@ -464,7 +464,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             $F $41 fade
             wait-fade
             1 say   \ "Did something just move?"
-            $52 door-locked? if
+            $52 doors:door-locked? if
                 16 wait-frames
                 $72 5 0.0 0.0 -40.0 0 0 sound
                 $52 door-unlock

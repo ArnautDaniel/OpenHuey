@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-10
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant hewie-sent-off              \ (bit 0) Hewie was here and sent off: she leaves by the other way
@@ -32,9 +32,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         2 $9000 1 0 char-anim-hold
         2 $83 12.913 14.864 90 char-to-xz
     then
-    8 25.0 12.0 19.0 4 $80 $80 $80 $20 specks
-    8 9.4 7.3 -57.3 8 $60 $60 $60 $40 specks
-    8 -12.0 21.0 -27.0 8 $70 $70 $70 $40 specks
+    8 25.0 12.0 19.0 4 $80 $80 $80 $20 scatter-specks
+    8 9.4 7.3 -57.3 8 $60 $60 $60 $40 scatter-specks
+    8 -12.0 21.0 -27.0 8 $70 $70 $70 $40 scatter-specks
     0 part-hidden
     got-bisque-doll story-flag? if
         $93 1 item-count? not castle-1f-10.cond01? and if
@@ -310,9 +310,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-10.act08 ( -- )   \ 00404500
     self-wait-done
     0 24.35 9.0 19.7 0 flame-in
-    8 25.0 12.0 19.0 4 $80 $80 $80 $20 specks
-    8 9.4 7.3 -57.3 8 $60 $60 $60 $40 specks
-    8 -12.0 21.0 -27.0 8 $70 $70 $70 $40 specks
+    8 25.0 12.0 19.0 4 $80 $80 $80 $20 scatter-specks
+    8 9.4 7.3 -57.3 8 $60 $60 $60 $40 scatter-specks
+    8 -12.0 21.0 -27.0 8 $70 $70 $70 $40 scatter-specks
     2 3 $FF char-load
     3 char-start
     3 0 movie-play
@@ -336,9 +336,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-10.act09 ( -- )   \ 004045E0
     self-wait-done
     0 24.35 9.0 19.7 0 flame-in
-    8 25.0 12.0 19.0 4 $80 $80 $80 $20 specks
-    8 9.4 7.3 -57.3 8 $60 $60 $60 $40 specks
-    8 -12.0 21.0 -27.0 8 $70 $70 $70 $40 specks
+    8 25.0 12.0 19.0 4 $80 $80 $80 $20 scatter-specks
+    8 9.4 7.3 -57.3 8 $60 $60 $60 $40 scatter-specks
+    8 -12.0 21.0 -27.0 8 $70 $70 $70 $40 scatter-specks
     2 3 $FF char-load
     3 char-start
     4 0 movie-play

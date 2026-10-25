@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-13
-USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
+USING: engine room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant balcony-remarked            \ (bit 0) its first remark made: "I can't believe the balcony collapsed. It's like something o"
@@ -81,10 +81,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     c1f-13-antimony-powder-found story-flag? c1f-13-antimony-powder story-flag? not and if
         0 -254.5 1.0 -95.0 flicker-sprite
     then
-    $10 -150.0 23.7 98.6 $A $80 $80 $80 $40 specks
-    $10 -300.0 29.0 55.0 $A $80 $80 $80 $40 specks
-    $A -300.0 29.0 -95.0 $A $80 $80 $80 $40 specks
-    $10 -150.0 23.7 -158.6 $C $80 $80 $80 $40 specks
+    $10 -150.0 23.7 98.6 $A $80 $80 $80 $40 scatter-specks
+    $10 -300.0 29.0 55.0 $A $80 $80 $80 $40 scatter-specks
+    $A -300.0 29.0 -95.0 $A $80 $80 $80 $40 scatter-specks
+    $10 -150.0 23.7 -158.6 $C $80 $80 $80 $40 scatter-specks
     0 castle-1f-13.cmd01
     c1f-13-chicken-jerky story-flag? not if
         1 -283.73 1.0 2.22 flicker-sprite
@@ -607,10 +607,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-1f-13.act0E ( -- )   \ 003F2FA0
     self-wait-done
-    $10 -150.0 23.7 98.6 $A $80 $80 $80 $40 specks
-    $10 -300.0 29.0 55.0 $A $80 $80 $80 $40 specks
-    $A -300.0 29.0 -95.0 $A $80 $80 $80 $40 specks
-    $10 -150.0 23.7 -158.6 $C $80 $80 $80 $40 specks
+    $10 -150.0 23.7 98.6 $A $80 $80 $80 $40 scatter-specks
+    $10 -300.0 29.0 55.0 $A $80 $80 $80 $40 scatter-specks
+    $A -300.0 29.0 -95.0 $A $80 $80 $80 $40 scatter-specks
+    $10 -150.0 23.7 -158.6 $C $80 $80 $80 $40 scatter-specks
     $E 3 $FF char-load
     $F 4 figure-load
     2 5 $FF char-load
@@ -640,10 +640,10 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 
 : castle-1f-13.act0F ( -- )   \ 003F3090
     self-wait-done
-    $10 -150.0 23.7 98.6 $A $80 $80 $80 $40 specks
-    $10 -300.0 29.0 55.0 $A $80 $80 $80 $40 specks
-    $A -300.0 29.0 -95.0 $A $80 $80 $80 $40 specks
-    $10 -150.0 23.7 -158.6 $C $80 $80 $80 $40 specks
+    $10 -150.0 23.7 98.6 $A $80 $80 $80 $40 scatter-specks
+    $10 -300.0 29.0 55.0 $A $80 $80 $80 $40 scatter-specks
+    $A -300.0 29.0 -95.0 $A $80 $80 $80 $40 scatter-specks
+    $10 -150.0 23.7 -158.6 $C $80 $80 $80 $40 scatter-specks
     $E 3 $FF char-load
     $F 4 figure-load
     2 5 $FF char-load

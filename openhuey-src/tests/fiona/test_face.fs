@@ -4,9 +4,8 @@
 \ (Fiona_ShowEquipment: EventHumanModel_ShowParts), her other pairs hidden. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/fiona/test_face.fs
 IN: test-face
-USING: tester engine game-state actors messages game fiona.state ;
+USING: tester engine game-state actors messages game fiona.state debug ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : model ( -- id )  game:fiona enter  her-model @  leave-actor ;
 : lid ( F: -- w )  model actor act.face 7 4 * + sf@ ;
 : hand-shape ( hand -- shape )  model actor act.face 16 4 * + swap 12 * + l@ ;
@@ -14,11 +13,11 @@ variable shut
 : watch-lids ( n -- )  0 shut !  0 ?do  game-tick  lid 0.5e f> if  1 shut +!  then  loop ;
 : shown? ( part -- flag )   \ (its bit in the model's parts shown: the part's number + 1)
     1+ {: g :}  model actor act.parts-shown  g 5 rshift 4 * + l@  g 31 and rshift 1 and 0<> ;
-: wear ( k -- )  game:fiona send costume  deliver  2 frames ;
+: wear ( k -- )  game:fiona send costume  deliver  2 run-frames ;
 : earrings! ( item -- )   \ (worn in the equipment's slot 1, as the sub screen says)
-    progress pr.equipped 4 + l!  -1 -1 -1 -1 broadcast equipment  deliver  2 frames ;
+    progress pr.equipped 4 + l!  -1 -1 -1 -1 broadcast equipment  deliver  2 run-frames ;
 
-2 frames
+2 run-frames
 0 wear
 testing she blinks: her eyelids shut for a few frames, more than once in 300
 T{ model actor act.alive l@  300 watch-lids  shut @ 4 > -> 1 -1 }T

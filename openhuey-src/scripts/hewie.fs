@@ -69,6 +69,7 @@ behaviour hewie-own
       his-hide !  his-mood-time !  his-mood ! ;
   on hewie-restore ( trust points hp -- )  his-hp !  his-trust-points !  his-trust ! ;
   on full-health ( -- )  100 hp! ;                       \ (the story's 0x48)
+  on set-cond ( v -- )  cond! ;                           \ (the story's 0x47: well, hurt, down)
   on heal ( n -- )  abs his-hp @ + 100 min hp! ;          \ (0xB8)
   on set-hp ( n -- )  0 max 100 min hp! ;                 \ (a room's command: +0x14C8 put back)
   on hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  0 5 do  i cells his-skill + !  -1 +loop ;
@@ -118,13 +119,13 @@ behaviour hewie-own
   on hewie-place ( room tri side -- )   \ (his +0x64, Hewie_PlaceInRoom)
       his-way !  over room-id = >r  place-on  r> if  to-default  then ;
   on to-exit ( exit -- )  his-door ! ;   \ (the story's char-to-exit, Character_ChooseExit: the exit he came in by)
-  on hewie-restart ( -- )  along? if  restart  then ;   \ (the run's clock: Hewie_Restart)
+  on hewie-restart ( -- )  along? if  start-afresh  then ;   \ (the run's clock: Hewie_Restart)
   on camera-cut ( -- )  -1 his-cam-cut ! ;
   on hewie-side! ( side -- )  dup 3 u< 0= if  drop -1  then  his-way ! ;
   on hewie-stay ( -- )  300 his-pet-time ! ;
   on noclip ( on -- )  0<> 1 and his-2b ! ;
   on aside ( on -- )  0<> 1 and his-2d ! ;
-  on activate ( -- )  0 his-2b !  0 his-2d !  100 hp!  hewie-played? if  restart  then ;   \ (the story's 0x15, Hewie_Activate: afresh, at full health - in the run, played: Hewie_StartScene)
+  on activate ( -- )  0 his-2b !  0 his-2d !  0 his-stay !  100 hp!  hewie-played? if  start-afresh  then ;   \ (+0xF3588 cleared too)   \ (the story's 0x15, Hewie_Activate: afresh, at full health - in the run, played: Hewie_StartScene)
   on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model)
       along? if  model scene-has? dup his-in-cast !  if  tell-doing  else  frame  then  else  tell-doing  then
       -1 his-heard !  0 his-signals ! ;
@@ -195,4 +196,4 @@ behaviour hewie-own
       sender take-blow  sender her = and if  sender send blow-taken  then ;
 end-behaviour
 
-: hewie-spawn ( -- id )  hewie-own hewie-state s" hewie" spawn ;
+: hewie-spawn ( -- id )  hewie-own hewie.state:hewie-state s" hewie" spawn ;   \ (saves has a hewie-state too: a save's line)

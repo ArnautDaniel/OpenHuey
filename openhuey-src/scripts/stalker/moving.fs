@@ -90,7 +90,7 @@ create left-at /vec allot  create right-at /vec allot
     else  metal-floor and case  metal-floor of  6  endof  stone-floor of  4  endof  wood-floor of  2  endof  >r 0 r>  endcase  7  then
     swap step-foot @ 1 and +  swap  1 step-foot +! ;
 : step-pace ( F: -- 0..1 )  stride 0.6e f- 0.8e f/  0e fmax 1e fmin ;
-: step-floor ( v -- flags )  v-tri dup 0< if  drop self body-tri  then  nav-flags ;
+: floor-under ( v -- flags )  v-tri dup 0< if  drop self body-tri  then  nav-flags ;
 \ on a ladder the rungs' sound (10) - but getting on or off at its foot with the foot over the
 \ floor out from it, the floor's (off there: under the foot from the foot's spot); off at its
 \ top the floor's from the top's spot. -1: the floor under the foot as anywhere
@@ -118,7 +118,7 @@ create lf-at /vec allot
 : step-sound ( v -- id bank )
     my-move-mode @ on-ladder-mode = if  dup ladder-floor  else  -1  then
     dup rungs = if  2drop 10 7 exit  then
-    dup 0< if  drop step-floor  else  nip  then  floor-sound ;
+    dup 0< if  drop floor-under  else  nip  then  floor-sound ;
 : lorenzo-steps? ( -- flag )   \ (Lorenzo's: walking or turning)
     anim @ $FF00 and dup walk-anim = swap turn-anims = or ;
 : footsteps ( -- )

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e5
-USING: room-names story.words story.shared flag-names story.clock fiona.sounds stalker.anims ;
+USING: room-names facts story.words story.shared flag-names story.clock fiona.sounds stalker.anims ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)

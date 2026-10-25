@@ -8,13 +8,12 @@
 IN: test-story-rules
 USING: tester engine game-state actors messages common room-names game debug facts flag-names story.state story.words ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 1 seed !
 
-free-play  front-garden-2 room!  20 frames
+free-play  front-garden-2 room!  20 run-frames
 stalkers-blind state-flag-set
 
 \ the room's entering script for characters, noted instead (who it ran as, its id)
@@ -26,19 +25,19 @@ room-id char-enter-phase room-script @ constant own-enter
 not-yet
 
 testing Hewie coming into her room while it is played: its entering script, as him
-hewie send part-from-fiona  deliver  3 frames
+hewie send part-from-fiona  deliver  3 run-frames
 T{ entered-who @ -> -1 }T
-hewie send join-fiona  deliver  3 frames
+hewie send join-fiona  deliver  3 run-frames
 T{ entered-who @ entered-id @ -> 1 1 }T
-not-yet  5 frames
+not-yet  5 run-frames
 T{ entered-who @ -> -1 }T
 
 testing the stalker put in her room by a script: in, no entering script
-2 partner-load  2 frames
-fiona body-tri debilitas-tri  3 frames
+2 partner-load  2 run-frames
+fiona body-tri debilitas-tri  3 run-frames
 T{ entered-who @  [: stalker-cs cells char-in-room + @ ;] in-room -> -1 -1 }T
 testing ... coming in by a door: his, its id his kind
-[: 0 stalker-cs cells char-in-room + ! ;] in-room  [: 1 stalker.state:came-by ! ;] his  2 frames
+[: 0 stalker-cs cells char-in-room + ! ;] in-room  [: 1 stalker.state:came-by ! ;] his  2 run-frames
 T{ entered-who @ entered-id @ -> 2 2 }T
 own-enter room-id char-enter-phase room-script!
 
@@ -53,7 +52,7 @@ testing the stalker free (0x65): not while a script of the room has him
 T{ [: stalker-free?  -1 stalker-cs cells char-scripted + !  stalker-free?  0 stalker-cs cells char-scripted + ! ;] in-room -> -1 0 }T
 testing ... nor while a joint action with him is pending (Progress_IsLinked: his stalker-ties' linked)
 T{ [: -1 st-linked !  stalker-free?  0 st-linked !  stalker-free? ;] in-room -> 0 -1 }T
-[: slot-unload ;] in-room  5 frames
+[: slot-unload ;] in-room  5 run-frames
 
 testing nobody about: offered; only Hewie held is not busy; in hard mode with Hewie down, none
 T{ [: -1 prep-scene !  5 1 calm-hewie-up scene-change  prep-scene @ ;] in-room -> 5 }T
@@ -87,7 +86,7 @@ testing the file loader never busy (0x62); a spirit's touch asked of her this fr
 T{ [: loader-busy?  spirit-request-pending? ;] in-room -> 0 0 }T
 spirit-request  fiona body-pos xyz>cells  0  fiona send fiona-request  deliver  deliver
 T{ [: spirit-request-pending? ;] in-room -> -1 }T
-2 frames
+2 run-frames
 T{ [: spirit-request-pending? ;] in-room -> 0 }T
 
 testing facing (0x05) with Hewie in the game in another room

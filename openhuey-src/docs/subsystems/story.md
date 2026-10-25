@@ -82,6 +82,57 @@ wait-until` / `wait-while`, and `player-who` - the one played, Fiona or Hewie in
 where the two branches differed only in who. The scenes' slots: `n track` ($F0..$F8),
 `cutscene-track`, `fade-track`.
 
+## Places: rooms written anew
+
+A room listed in `scripts/story/places.fs` is a **place** (docs/rooms-design.md): `story` spawns
+it instead of the converted scripts, and it says what happens in the room as a program. The
+converted file stays for the rooms not yet moved; a room is one or the other.
+
+- **The kit** (`scripts/story/kit.fs`, vocab `story.kit`): a place's state (`place-state`, its
+  own cells by `own:`), its description (`' came-in ' person-in ' each-frame ' went room place!`),
+  and the words a place is written in - facts, holds and moves, waits, messages, fades by name
+  (`screen:to-black-2 with-music or`), areas, cameras, exits and doors, parts, sounds, scenes,
+  figures, items, offers. No opcode words: a place sends messages and uses these.
+- **Activities**: a place's longer doings are tasks it resumes each frame (`start`,
+  `start-only`). Whoever an activity holds (`hold`: `scripted` to the character) is let go when
+  it ends or is stopped (the room left, `room-left`); a move is sent only for a character the
+  running activity holds, and `wait-move` waits only on a move it asked for.
+- **Offers**: what she may do where she stands - `offer` (an activity, Fiona held for it),
+  `offer-remark` - the first offered in a frame wins; `unhurried`, `calm-only`,
+  `calm-hewie-up`, `any-time` as the original's kinds.
+- **Who is in**: the place keeps where each person was at the last frame's end (areas crossed)
+  and what they last told (`fiona-doing`, `hewie-doing`, `stalker-doing`, `creature-doing`).
+  `story` keeps the stalker's last report and gives it to a new place before `room-enter` (the
+  original reads him directly as a character enters); the stalker counts as in once he has told
+  the place what he is.
+- **Story facts** by name: `fact:` in `story-names.fs`; saves write `fact <name>`.
+
+**Scenes** are the `scenes` actor's (`scripts/scenes.fs`): `scene-load ( room movie class cutscene )`
+→ `scene-ready ( movie? )`; `scene-run ( subtitles )` → `scene-shot ( shot )` each new shot →
+`scene-over` (played through or skipped: the world held, the camera back); `scene-stop` (the
+place gone). The kit's `load-scene`, `run-scene`, `at-shots`.
+
+**What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
+after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
+while she is half hidden, the mandragora's spell, the other game's rewards, her drink ($8D),
+Hewie fed ($8E-$91). A place also starts as the converted rooms did (the room visited, no track
+wanted till asked, the camera started for the room), its doings wait out her panic's onset, it
+shows her locked door's message, and it takes its own item uses (`items-here`: the plates'
+words, a marionette) before the shared ones. A doing whose character another doing takes ends,
+as the original's action replaced.
+
+Places, each with its test in `tests/places/`:
+- castle-2f-3, the bedroom (44): every remark and spot, the clothes, the TV, the bed and the
+  stalker's search, the maid's scene, the night, the attack lesson, the evasion tip, Hewie's
+  find, the four replays.
+- front-garden-3, the cage's garden (24): the opening, the remarks, the breakable, the box and
+  the grate with Hewie, Hewie freed from the wire at night (and gone, out of the game), the shared
+  crouch and drink.
+- castle-2f-8, the kiln room (15): one golem (the room's own model), EMETH, METH, SALTATIO, any
+  other word, the parchment, the choker.
+- castle-1f-4, the puppet room's hall (22): the puppet door and the marionette, the floor plate,
+  the weak wall's antimony, the plate-key's slot, Riccardo at night.
+
 ## API
 
 Declared in `scripts/messages.fs`.
@@ -204,7 +255,7 @@ command. The new game stays the default start.
   opcode table called it `scene-ending`, wrongly) prepares a message instead (`read-message`,
   the original's 0x80000005): taken, the message opens and she looks at character slot 2 for
   30 frames (`Events_OpenMessage`, `Fiona_SetTarget`).
-- **Messages:** `message` (the window shows it; `text-closed` answers), `wait-message`,
+- **Messages:** `show-message` (the window shows it; `text-closed` answers), `wait-message`,
   `message-close`, `answer?`, `message-prepare` (S4's subtitles), `message-param-room`.
 - **Her pad:** `control-action?` (her gesture this frame, from `fiona-doing`), `pad?` (the
   buttons, `keys.fs`).
@@ -297,8 +348,8 @@ Checked by `tests/story/test_things.fs` (8 tests).
 
 **S5b built** (2026-10-08): the rooms' effects (`docs/subsystems/effects.md`) - an actor each,
 drawn with the engine's sprites. Room effects in the room's 32 slots (`flame-in`,
-`flicker-sprite`, `-var`, `butterflies`, `effect-remove`, `zone-at-effect`, `char-effect-moving`),
-going with the room; scene effects ending by themselves or with the next room (`specks`,
+`flicker-sprite`, `-var`, `release-butterflies`, `effect-remove`, `zone-at-effect`, `char-effect-moving`),
+going with the room; scene effects ending by themselves or with the next room (`scatter-specks`,
 `shards-at`). `effects-arena-flip` is the PS2's packet memory: nothing here.
 Checked by `tests/story/test_effects.fs` (10 tests).
 
@@ -467,6 +518,6 @@ The later stages, by how much the scripts use them (all built now):
 | Stage | Words |
 |---|---|
 | S4 | (built) The rest: scene changes (`scene-change`'s other scenes), endings, `movie-loop`, the half-black screen (op 11). |
-| S5b | (built: docs/subsystems/effects.md) Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`flame-in` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `specks`, `butterflies`, `shards-at`, `effects-arena-flip`). |
+| S5b | (built: docs/subsystems/effects.md) Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`flame-in` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `scatter-specks`, `release-butterflies`, `shards-at`, `effects-arena-flip`). |
 | S5c | (built) The rooms' own commands (`<room>.cmdNN`: their effects - wisps, smoke, drips, the mirror...). |
 | S6 | (built) The stalkers' and creatures' words, with them (`docs/subsystems/stalker.md`, `creatures.md`). |

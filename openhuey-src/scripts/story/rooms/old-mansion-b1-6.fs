@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-6
-USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: engine actors messages room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant plate-press-remarked        \ (bit 0) its first remark made: "It's a plate pressing machine."
@@ -910,7 +910,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     8 camera-follow
     camera-restart
     0 8 0 action-force
-    6 message   \ "? Button: Run"
+    6 show-message   \ "? Button: Run"
     $F 1 fade
     wait-fade
     begin
@@ -999,7 +999,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then then then
     stalker-who char-here? not if
         16 wait-frames
-        3 message   \ "A wall of flame is shooting up from the ground!"
+        3 show-message   \ "A wall of flame is shooting up from the ground!"
     then
     self-wait-anim
     -1 self-idle-anim
@@ -1129,7 +1129,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then then then
     stalker-who char-here? not if
         16 wait-frames
-        3 message   \ "A wall of flame is shooting up from the ground!"
+        3 show-message   \ "A wall of flame is shooting up from the ground!"
     then
     self-wait-anim
     -1 self-idle-anim
@@ -1154,7 +1154,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then then then
     stalker-who char-here? not if
         16 wait-frames
-        3 message   \ "A wall of flame is shooting up from the ground!"
+        3 show-message   \ "A wall of flame is shooting up from the ground!"
     then
     self-wait-anim
     -1 self-idle-anim
@@ -1179,7 +1179,7 @@ fvariable sink-y   \ (where character 8 is sinking to: its place moves a frame b
     then then then
     stalker-who char-here? not if
         16 wait-frames
-        3 message   \ "A wall of flame is shooting up from the ground!"
+        3 show-message   \ "A wall of flame is shooting up from the ground!"
     then
     self-wait-anim
     -1 self-idle-anim

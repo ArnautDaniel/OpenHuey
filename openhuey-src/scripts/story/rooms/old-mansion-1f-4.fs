@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-4
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant transmuter-remarked         \ (bit 0) its first remark made: "Transmuter Synthesizing two objects together is a task any f"
@@ -205,7 +205,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     16 wait-frames
     fiona-who seized-sound 5 char-sound
     $3C threat-raise
-    1 $FF 8 rumble
+    1 $FF 8 rumble-pad
     uneasy-2-anim play-out
     0 part-hidden
     1 part-shown

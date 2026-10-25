@@ -94,9 +94,6 @@ state: items-state
 end-state
 
 2 constant dog-down
-: fiona-id ( -- id )  s" fiona" actor-named ;
-: hewie-id ( -- id )  s" hewie" actor-named ;
-: panic-id ( -- id )  s" panic" actor-named ;
 
 \ ==== changing it (only here) ====
 : n! ( n addr -- )  h.n l! ;

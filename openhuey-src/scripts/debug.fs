@@ -8,10 +8,8 @@
 \   circle press                    a button pressed for a frame   .here                      where she is
 \   0 act                           the room's action script 0, as Fiona's (a scene: try front-garden-3's)
 IN: debug
-USING: engine game-state actors messages keys room-names flag-names story.words ;
+USING: engine game-state actors messages keys room-names flag-names facts story.words ;
 
-: fiona-id ( -- id )  s" fiona" actor-named ;
-: rooms-id ( -- id )  s" rooms" actor-named ;
 \ a jump (`room!`) - nothing the original can do - leaves her without a camera setup where the
 \ room's scripts give none by an exit: she gets the room's set nearest her (room-label, below)
 variable jumped
@@ -37,6 +35,7 @@ variable jumped
 : tp-tri ( tri -- )  tri-center tp ;
 : walk ( F: x y z -- )   \ (over the nav mesh, then she stands)
     xyz>cells  fiona-id send go-to ;
+: run-frames ( n -- )  0 ?do  game-tick  loop ;   \ (the game run on n frames: the tests, the console)
 : press ( button -- )   \ (pressed for a frame: its key down, then up)
     button-keys drop  dup true key-hold  game-tick  false key-hold ;
 : .here ( -- )
@@ -48,7 +47,6 @@ variable jumped
     room-id room-name actor-named dup 0< if  2drop ." no room actor" cr exit  then
     enter  0 0 rot action  leave-actor ;
 \ the stalker: Debilitas into Fiona's room on a triangle (her own: `fiona-id body-tri debilitas-tri`), or out
-: debilitas-id ( -- id )  s" debilitas" actor-named ;
 : debilitas-tri ( tri -- )  room-id swap debilitas-id send stalker-in ;
 : debilitas-out ( -- )  debilitas-id send stalker-out ;
 \ ... or out of sight in another room, heading for hers (`castle-1f-10 debilitas-hunt`)
@@ -72,17 +70,17 @@ variable debug?
 : debug-on ( -- )  -1 debug? ! ;
 : debug-off ( -- )  0 debug? ! ;
 $E8E0C8FF constant text-colour   $A09880FF constant dim-colour
-: say ( addr len x y colour -- )  >r >r >r  label-layer -rot r> r> r> 2 ui-text ;
+: say-at ( addr len x y colour -- )  >r >r >r  label-layer -rot r> r> r> 2 ui-text ;
 360 constant most-run   \ (the longest out-of-breath run: stage 2's 240, and up to 4 x 30)
 200 constant bar-width
 \ a labelled bar at y: `filled` of bar-width in `colour`; after it the value (-1: none) and a note
 : bar ( value filled colour y addr len -- )
     {: value filled colour y a n :}
-    a n 12 y text-colour say
+    a n 12 y text-colour say-at
     label-layer 110 y bar-width 4 + 20 $000000A0 ui-rect
     label-layer 112 y 2 + filled 0 max bar-width min 16 colour ui-rect
-    value 0< 0= if  value n>s 124 bar-width + y text-colour say  then ;
-: note ( addr len y -- )  >r  190 bar-width + r> dim-colour say ;
+    value 0< 0= if  value n>s 124 bar-width + y text-colour say-at  then ;
+: note ( addr len y -- )  >r  190 bar-width + r> dim-colour say-at ;
 : of-bar ( n most -- n filled )  over bar-width * swap / ;
 : stage$ ( stage -- addr len )
     case  composed of s" calm" endof  panicking of s" PANIC" endof  calming-down of s" PANIC (calming)" endof
@@ -98,7 +96,7 @@ variable m-stage  variable m-level  variable m-fear  variable m-breathless  vari
     else  -1 bar-width $40A0D0FF 92 s" breath" bar   s" full" 92 note  then ;
 \ the actors alive, two columns down the right from under the room's name
 : actor-line ( id x y -- )
-    {: id x y :}  id n>s x y dim-colour say  id actor-name x 44 + y text-colour say ;
+    {: id x y :}  id n>s x y dim-colour say-at  id actor-name x 44 + y text-colour say-at ;
 256 constant most-actors   \ (the actors' table: hactor.c)
 : actors-list ( -- )
     {: | n :}
@@ -109,7 +107,7 @@ variable m-stage  variable m-level  variable m-fear  variable m-breathless  vari
     loop ;
 
 \ which OpenHuey this is, under the meters
-: version-line ( -- )  s" OpenHuey " 12 118 dim-colour say  hga-version 120 118 dim-colour say ;
+: version-line ( -- )  s" OpenHuey " 12 118 dim-colour say-at  hga-version 120 118 dim-colour say-at ;
 
 \ ---- bug reports: F12 (or `bug <what happened>` at the console) keeps the moment in a folder of
 \ its own, user/bugs/<date>_<time>/ - report.txt (where she is, every actor's state, the messages

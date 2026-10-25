@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-4f-1
-USING: engine actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: engine actors messages room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 1 constant lift-scene-on               \ (bit 1) the lift's scene (act00) under way
@@ -283,7 +283,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
         then
     then
     self-wait-done
-    things-clear
+    engine:things-clear
     fiona-who 5 char-file-load
     $166 73.23 -0.48 180 $FFFF 5 self-move-to
     self-wait-done
@@ -342,7 +342,7 @@ USING: engine actors messages room-names story.words story.shared flag-names sto
 : water-tower-4f-1.act01 ( -- )   \ 0043FE40
     4 0 object-anim
     $11 wait-frames
-    1 $FF 8 rumble
+    1 $FF 8 rumble-pad
     water-tower-4f-1.cmd01
     water-tower-4f-1.cmd02
     $3C wait-frames

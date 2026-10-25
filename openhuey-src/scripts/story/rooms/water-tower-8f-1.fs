@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.water-tower-8f-1
-USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+USING: engine room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant lying-down                  \ (bit 0) she lies down (act00)
@@ -635,7 +635,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     1 10.0 60.0 0.0 5.0 event-camera
     8 wait-frames
     0 water-tower-8f-1.cmd02
-    5 message   \ "Choose a location to set the model in. ?:USE ?:CANCEL"
+    5 show-message   \ "Choose a location to set the model in. ?:USE ?:CANCEL"
     begin
         1 water-tower-8f-1.cmd02
         spot-chosen ebit? if
@@ -748,7 +748,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : water-tower-8f-1.act09 ( -- )   \ 0047ADE0
-    2 message   \ "It's locked!"
+    2 show-message   \ "It's locked!"
     self-idle-or-end
 ;
 

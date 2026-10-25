@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-6
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 : castle-1f-6.enter ( -- )   \ 003F7920
     0 1.2 15.55 -24.813 0 flame-in
@@ -366,7 +366,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     3 door-unlock
-                    $8008 message   \ "You unlocked the door."
+                    $8008 show-message   \ "You unlocked the door."
                     20 self-idle-anim
                     $14 wait-frames
                     wait-message

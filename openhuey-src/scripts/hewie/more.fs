@@ -104,7 +104,7 @@ create behind-at /vec allot
 \ side picked by his bearing, and on for the point 45 degrees round from straight out from it, 20
 \ out (up to 40 the more squarely behind), as far as is free; off its triangle, along his way to
 \ it. Gait by how far: walk under 20, trot under 44, else run ----
-create fl-at /vec allot
+create side-at /vec allot
 : its-heading ( -- ) ( F: -- a )  his-target @ body-yaw ;
 : heading-gap ( -- ) ( F: -- gap )  its-heading his-yaw f- angle-wrap fabs ;
 : run-along ( F: a -- )  fdup head-toward-soon  run-turn turn-to fdrop ;
@@ -115,8 +115,8 @@ create fl-at /vec allot
     his-t1 @ if  pi 4e f/ f+  else  pi 4e f/ f-  then  angle-wrap  ( F: side )
     rel fabs pi f2/ f< if  20e 1e rel fabs fsin f- 20e f* f+  else  20e  then  {: F: reach :}
     fdup reach  his-target @ dup body-tri swap body-at -1 v-free     ( F: side free )
-    fl-at his-target @ body-at vec-ahead
-    fl-at -1 body-tri-to 0< if  fl-at his-target @ body-at vec-copy  then  reach ;
+    side-at his-target @ body-at vec-ahead
+    side-at -1 body-tri-to 0< if  side-at his-target @ body-at vec-copy  then  reach ;
 : st-flank ( -- )
     his-target @ with? 0= if  to-default exit  then
     his-target @ body-at his-at vec-dist-xz                          ( F: dd )
@@ -131,7 +131,7 @@ create fl-at /vec allot
             his-target @ body-at -1 body-tri-to his-target @ body-tri = if  rel f0< 0= 1 and his-t1 !  then
         then
         his-t1 @ -1 <> if
-            fdrop  rel side-spot  fl-at heading-to run-along  40e f+
+            fdrop  rel side-spot  side-at heading-to run-along  40e f+
         else
             fdrop  his-target @ dup body-tri swap body-at plan-and-go if  to-default exit  then
             stride 0= if  trot-pose keep-pose  then  rest

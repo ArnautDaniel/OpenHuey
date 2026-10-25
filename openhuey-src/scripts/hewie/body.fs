@@ -101,8 +101,6 @@ defer adjust-action ( act -- act' ) ' noop is adjust-action    \ Hewie_AdjustAct
 : trust-of ( table -- n )  his-trust @ cells + @ ;
 : by-chance ( table -- flag )  trust-of 0 100 clamp  100 roll > ;
 \ the signals and noises he gives
-: danger-id ( -- id )  s" danger" actor-named ;
-: acoustics-id ( -- id )  s" acoustics" actor-named ;
 : noise-make ( loud tri -- )   \ heard in his room (tri -1: anywhere in it)
     his-room swap -1 hewie-noise acoustics-id send noise ;
 : alerted ( -- )  hewie-alert danger-id send danger-signal ;   \ he's alert to a stalker

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-3
-USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
+USING: engine room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant portrait-1-remarked         \ (bit 0) its first remark made: "I wonder whose portrait this is?"
@@ -146,7 +146,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     then
     1 0 0 area-camera
     fiona-who self-is? if
-        c2f-8-flag3 story-flag? not c2f-2-flag1 story-flag? and if
+        golem-done story-flag? not c2f-2-flag1 story-flag? and if
             c2f-3-flag3 story-flag? not if
                 c2f-3-flag3 story-flag-set
                 0 exit-taken? in-panic? not and if
@@ -876,7 +876,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     wait-fade
     self-frames-reset
     begin
-        $2A message   \ "Push up on the right analog stick to command the dog to attack."
+        $2A show-message   \ "Push up on the right analog stick to command the dog to attack."
         $F0 frames? 0 control-action? or if
             2 room-motion self-anim
             $10 wait-frames
@@ -1309,7 +1309,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     fiona-who 4 self-move-slot
     self-wait-done
     rest-anim $A self-anim-blend
-    $F message   \ "Oh no! What should I do?! If I don't do something, that... thing will get me!"
+    $F show-message   \ "Oh no! What should I do?! If I don't do something, that... thing will get me!"
     self-wait-anim
     10 self-idle-anim
     wait-message

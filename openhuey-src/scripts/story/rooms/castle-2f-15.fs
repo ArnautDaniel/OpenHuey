@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-15
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant hewie-zone0-noticed         \ (bit 0) Hewie has reacted to zone 0 (once a visit)

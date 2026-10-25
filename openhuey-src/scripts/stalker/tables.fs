@@ -362,7 +362,7 @@ create ric-table-4154E0  $1 , -1 , 100e f,
 create ric-table-4154F0  $D , -1 , 100e f,
 create ric-table-4154B0  $9 , -1 , 75e f,  $17 , 0 , 85e f,  $17 , 2 , 90e f,  $17 , 1 , 100e f,
 create ric-tables  ric-table-414D50 , ric-table-414DC0 , ric-table-414D90 , ric-table-414DF0 , ric-table-414E20 , ric-table-414E40 , ric-table-414E58 , ric-table-414E68 , ric-table-414E80 , ric-table-414EB0 , ric-table-414EC0 , ric-table-414EE0 , ric-table-414F10 , ric-table-414F40 , ric-table-414FA0 , ric-table-414FB0 , ric-table-414F70 , ric-table-414D50 , ric-table-414DC0 , ric-table-414D90 , ric-table-414DF0 , ric-table-414E20 , ric-table-414E40 , ric-table-414E58 , ric-table-414E68 , ric-table-414E80 , ric-table-414EB0 , ric-table-414EC0 , ric-table-414EE0 , ric-table-414F10 , ric-table-414F40 , ric-table-414FA0 , ric-table-414FB0 , ric-table-414F70 , ric-table-415150 , ric-table-415200 , ric-table-4151C0 , ric-table-415250 , ric-table-415280 , ric-table-4152B0 , ric-table-4152D0 , ric-table-415340 , ric-table-415360 , ric-table-4153A0 , ric-table-4153B0 , ric-table-4153F0 , ric-table-415420 , ric-table-415450 , ric-table-4154E0 , ric-table-4154F0 , ric-table-4154B0 , ric-table-415150 , ric-table-415200 , ric-table-4151C0 , ric-table-415250 , ric-table-415280 , ric-table-4152B0 , ric-table-4152D0 , ric-table-415340 , ric-table-415360 , ric-table-4153A0 , ric-table-4153B0 , ric-table-4153F0 , ric-table-415420 , ric-table-415450 , ric-table-4154E0 , ric-table-4154F0 , ric-table-4154B0 ,   \ [hard][rage][situation]
-create ric-run   -1 ,   \ (the run: situation, table)
+create ric-run-table   -1 ,   \ (the run: situation, table)
 create ric-moves
     $E00 , $2E , -1 , 5e f, 4 , 30 , 80e f, 0e f, 1 , -1 , 0 ,
     $E06 , $2E , -1 , 5e f, 4 , 30 , 20e f, 0e f, 1 , -1 , 0 ,
@@ -412,7 +412,7 @@ create riccardo-kit  ric-tables , ric-moves , ric-combos , ric-gestures , ric-ch
     ric-lunge-chances , ric-temper-0 , ric-temper-1 , ric-pursue-0 , ric-pursue-1 , ric-pursue-2 , ric-pursue-3 ,
     16 , 17 , ric-grips ,
     ric-waits-0 , ric-flurry-0 , ric-flurry-1 , ric-waits-1 , ric-waits-2 , ric-waits-3 ,
-    ric-knocks , ric-anim-sounds , ric-run , ric-rolls , ric-rests ,
+    ric-knocks , ric-anim-sounds , ric-run-table , ric-rolls , ric-rests ,
 
 \ ==== Lorenzo ====
 create lor-table-41A870  $13 , 0 , 20e f,  $13 , 1 , 35e f,  $13 , 2 , 49e f,  $13 , 3 , 50e f,  $13 , 5 , 65e f,  $17 , 2 , 90e f,  $14 , -1 , 100e f,

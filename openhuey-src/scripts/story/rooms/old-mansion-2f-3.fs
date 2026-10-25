@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-3
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant draught-remarked            \ (bit 0) its first remark made: "I can distinctly feel air coming from inside. I wonder where"
@@ -187,7 +187,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $41 room-preload
     wait-fade
-    things-clear
+    engine:things-clear
     $FFFF message-close
     fiona-who fade-sound 6 char-sound
     world-held state-flag-set
@@ -221,7 +221,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $F $44 fade
     self-wait-done
     wait-fade
-    things-clear
+    engine:things-clear
     $FFFF message-close
     old-mansion-2f-3.cmd00
     stalker-who fade-sound 6 char-sound

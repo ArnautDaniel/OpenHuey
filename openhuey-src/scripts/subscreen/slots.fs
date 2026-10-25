@@ -8,7 +8,6 @@
 IN: subscreen.slots
 USING: engine actors common messages keys items items.names subscreen.state subscreen.art subscreen.input subscreen.tables ;
 
-: items-id ( -- id )  s" items" actor-named ;
 5 constant wild   4 constant blank
 magist-medallion constant fallback   \ (when nothing is left to forge)
 \ the machine's states: choosing a medallion, none to put in, rolling, what came out

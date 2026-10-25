@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-6
-USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
+USING: engine common actors messages room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant door-opened-bit             \ (bit 0) the door opened (act00)
@@ -252,7 +252,7 @@ defer house-of-truth-1f-6.act02
     rattle-behind-slow-anim self-anim
     16 wait-frames
     [: 0 adx? ;] wait-until
-    1 message   \ "You've been very naughty, Fiona. You are causing me much grief."
+    1 show-message   \ "You've been very naughty, Fiona. You are causing me much grief."
     0 0.0 $FF bgm
     self-wait-anim
     -1 self-idle-anim
@@ -452,7 +452,7 @@ defer house-of-truth-1f-6.act02
     0 house-of-truth-1f-6.cmd01
     1 house-of-truth-1f-6.cmd01
     fiona-who rumble-sound 6 char-sound
-    1 $FF 8 rumble
+    1 $FF 8 rumble-pad
     1 counter-set
     stage-var 8 var-set
     self-idle-or-end

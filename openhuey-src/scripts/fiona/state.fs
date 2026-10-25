@@ -148,3 +148,6 @@ end-state
 \ her-sub's that others test: pushing (fiona/push.fs), letting go of a thing (fiona/letgo.fs: how)
 5 constant pushing-sub
 $31 constant thrown-sub   $32 constant aimed-sub   $33 constant set-down-sub
+
+\ Fiona_ToIdle: free, standing (fiona.fs: idle) - what each of her doings goes back to
+defer to-idle ( -- )   ' noop is to-idle

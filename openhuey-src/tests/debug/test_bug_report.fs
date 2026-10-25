@@ -5,15 +5,14 @@
 IN: test-bug-report
 USING: tester engine game-state actors messages room-names game debug ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : her-x ( -- n )  game:fiona body-pos fdrop fdrop fround f>s ;
 : there? ( name len -- flag )  in-bug-dir file-exists? ;
-60 frames
+60 run-frames
 
 testing a report: the folder, its report and note, then its save
 her-x constant reported-x
 bug Hewie walked through a wall
-T{ 3 frames  s" report.txt" there?  s" note.txt" there?  s" save.fs" there? -> -1 -1 -1 }T
+T{ 3 run-frames  s" report.txt" there?  s" note.txt" there?  s" save.fs" there? -> -1 -1 -1 }T
 T{ bug-step @ -> 0 }T
 testing ... zipped beside the folder, each file under the folder's name
 create in-zip 300 allot  variable in-zip-len
@@ -24,15 +23,15 @@ create in-zip 300 allot  variable in-zip-len
 T{ bug-zip-path file-exists? -> -1 }T
 T{ s" report.txt" zipped?  s" note.txt" zipped?  s" save.fs" zipped? -> -1 -1 -1 }T
 testing ... a report without a note (F12's), then one added: zipped again with it
-1 bug-step !  3 frames
+1 bug-step !  3 run-frames
 T{ s" report.txt" zipped?  s" note.txt" zipped? -> -1 0 }T
 bug-note it happened again
 T{ s" note.txt" zipped? -> -1 }T
 
 testing the save loaded back: she is where she was
-10e 0e 0e tp  5 frames
+10e 0e 0e tp  5 run-frames
 T{ her-x reported-x = -> 0 }T
-s" save.fs" in-bug-dir bug-load  10 frames
+s" save.fs" in-bug-dir bug-load  10 run-frames
 T{ her-x -> reported-x }T
 
 testing every actor's state, by its fields

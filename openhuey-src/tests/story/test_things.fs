@@ -4,7 +4,6 @@
 IN: test-things
 USING: tester engine game-state actors messages room-names game debug flag-names story.state story.words story.strings ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
 \ a placed object by the room's string: shown?
@@ -16,8 +15,8 @@ variable want-n  variable want-a
         want-a @ want-n @ compare 0= if  r> unloop exit  then  r> drop
     loop  0 ;
 
-3 frames
-castle-b1-6 room!  5 frames
+3 run-frames
+castle-b1-6 room!  5 run-frames
 testing entering castle-b1-6: its door shows its part (group 22), its object 6 (the scenes' door) is hidden
 T{ 0 22 door-group?  0 0 door-group?  0 23 door-group? -> -1 -1 0 }T
 T{ 6 object-shown? -> 0 }T

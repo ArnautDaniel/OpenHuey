@@ -38,7 +38,7 @@ create run-layouts
 : position$ ( n label len -- addr len )  spell-reset +spell  n>s +spell  spelled ;
 variable line-y
 : beside ( msg -- )  menu-line $160 line-y @ centred ;   \ a setting's word, centred beside its label
-: value ( i -- )   \ a row's setting
+: setting-of ( i -- )   \ a row's setting
     dup row-y 6 + line-y !
     case
         0 of  0 action-name beside  endof
@@ -52,7 +52,7 @@ variable line-y
     5 0 do
         $20  i row-y  i row @  $80 part
         i row cell+ @ menu-line  $48  i row-y 6 +  i opt-row @ = opt-editing @ and  text
-        i value
+        i setting-of
     loop
     buttons
     $20 opt-row @ row-y $1C $80 part   \ the cursor

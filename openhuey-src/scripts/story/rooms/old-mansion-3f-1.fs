@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-3f-1
-USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: actors messages room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant obstacle0-stopped           \ (bit 0) the first obstacle stopped (on its square)
@@ -74,10 +74,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
         1 1 0 $153 $415 obstacle-place
         2 2 0 $15C $41E obstacle-place
         3 3 0 $213 $4DE obstacle-place
-        0 obstacle-stop
-        1 obstacle-stop
-        2 obstacle-stop
-        3 obstacle-stop
+        0 halt-obstacle
+        1 halt-obstacle
+        2 halt-obstacle
+        3 halt-obstacle
         obstacle0-stopped ebit-set
         obstacle1-stopped ebit-set
         obstacle2-stopped ebit-set
@@ -151,7 +151,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     then
     obstacle0-stopped ebit? not if
         0 $20A obstacle-on? if
-            0 obstacle-stop
+            0 halt-obstacle
             obstacle0-stopped ebit-set
             stopped-var 0 var? if
                 loop-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
@@ -163,7 +163,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     then
     obstacle1-stopped ebit? not if
         1 $153 obstacle-on? if
-            1 obstacle-stop
+            1 halt-obstacle
             obstacle1-stopped ebit-set
             stopped-var 0 var? if
                 loop-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
@@ -175,7 +175,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     then
     obstacle2-stopped ebit? not if
         2 $15C obstacle-on? if
-            2 obstacle-stop
+            2 halt-obstacle
             obstacle2-stopped ebit-set
             stopped-var 0 var? if
                 loop-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
@@ -187,7 +187,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     then
     obstacle3-stopped ebit? not if
         3 $213 obstacle-on? if
-            3 obstacle-stop
+            3 halt-obstacle
             obstacle3-stopped ebit-set
             stopped-var 0 var? if
                 loop-sound volume-scaled 6 0.0 0.0 0.0 0 0 sound
@@ -616,7 +616,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 ;
 
 : old-mansion-3f-1.act06 ( -- )   \ 0047AD40
-    1 message   \ "Damn! The door is locked!"
+    1 show-message   \ "Damn! The door is locked!"
     self-idle-or-end
 ;
 
@@ -855,10 +855,10 @@ USING: actors messages room-names story.words story.shared flag-names story-name
     1 1 0 $153 $415 obstacle-place
     2 2 0 $15C $41E obstacle-place
     3 3 0 $213 $4DE obstacle-place
-    0 obstacle-stop
-    1 obstacle-stop
-    2 obstacle-stop
-    3 obstacle-stop
+    0 halt-obstacle
+    1 halt-obstacle
+    2 halt-obstacle
+    3 halt-obstacle
     obstacle0-stopped ebit-set
     obstacle1-stopped ebit-set
     obstacle2-stopped ebit-set

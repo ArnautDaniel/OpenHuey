@@ -31,7 +31,6 @@ create clock 8 allot
     30 /  dup 3600 / 99 min clock two  [char] : clock 2 + c!
     dup 60 / 60 mod clock 3 + two  [char] : clock 5 + c!  60 mod clock 6 + two  clock 8 ;
 
-: saves-id ( -- id )  s" saves" actor-named ;
 : start-saving ( -- )  0 save-at !  0 save-step !  0 save-t ! ;
 : write-here ( -- )   \ (her room and map: where it is made)
     2 save-step !  save-at @  room-id her-map @ place-of  saves-id send save-to-slot ;

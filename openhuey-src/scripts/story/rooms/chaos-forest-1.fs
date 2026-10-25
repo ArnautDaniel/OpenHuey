@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-1
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant in-zone0                    \ (bit 0) someone in zone 0
@@ -34,8 +34,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     got-forest-map story-flag? not if
         0 part-shown
     then
-    $10 54.3 20.2 154.5 $E $80 $80 $80 $40 specks
-    $10 -53.5 20.2 154.5 $E $80 $80 $80 $40 specks
+    $10 54.3 20.2 154.5 $E $80 $80 $80 $40 scatter-specks
+    $10 -53.5 20.2 154.5 $E $80 $80 $80 $40 scatter-specks
 ;
 
 : chaos-forest-1.char-enter ( -- )   \ 0041DD90

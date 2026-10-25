@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-4
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant no-knob-remarked            \ (bit 0) its first remark made: "What? There's no knob... Now what do I do? Wait... There is "
@@ -58,24 +58,24 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         3 0 object-hidden
         4 0 object-hidden
     then
-    7 door-locked? if
+    7 doors:door-locked? if
         0 solid-floor pushable or floor-on
     then
     $80 exit-taken? if
-        c1f-4-flag1 story-flag-set
+        floor-plate-pressed story-flag-set
         way-in-var 1 var-set
         way-frames-var 24 var-set
     else
         3 exit-taken? if
         else
-            c1f-4-flag2 story-flag-clear
-            c1f-4-flag1 story-flag-clear
+            gate-rising story-flag-clear
+            floor-plate-pressed story-flag-clear
         then
-        c1f-4-flag2 story-flag? if
-            c1f-4-flag1 story-flag-set
+        gate-rising story-flag? if
+            floor-plate-pressed story-flag-set
             way-in-var 1 var-set
             way-frames-var 12 var-set
-        else c1f-4-flag1 story-flag? not if
+        else floor-plate-pressed story-flag? not if
             way-in-var 0 var-set
             way-frames-var 0 var-set
         else
@@ -88,7 +88,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $1F $84 $60 $3C $50 $24 $2A $2A $46 0 9 effect-string
     then
     0 22.8 14.65 68.75 0 flame-in
-    c1f-4-flag4 story-flag? not if
+    weak-wall-broken story-flag? not if
         1 part-shown
         sparkle-shown ebit-clear
     else
@@ -103,7 +103,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     else
         4 part-hidden
     then
-    8 door-locked? if
+    8 doors:door-locked? if
         5 part-hidden
     else
         5 part-shown
@@ -151,7 +151,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             fiona-who $221 -90 char-to-tri-facing
             1 1 player-camera
             world-frozen state-flag-clear
-            c1f-4-flag3 story-flag-set
+            heard-the-noise story-flag-set
             0 fiona-who $B action
         then
         saturnus-hint-on story-flag? c1f-14-flag2 story-flag? not and if
@@ -211,27 +211,27 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     then
     way-in-var 0 var? if
         hewie-who $D char-in-area? if
-            c1f-4-flag1 story-flag-set
+            floor-plate-pressed story-flag-set
             way-in-var 1 var-set
             hewie-who came-in-sound 6 char-sound
             0 1 track $D action
         else fiona-who $D char-in-area? if
-            c1f-4-flag1 story-flag-set
+            floor-plate-pressed story-flag-set
             way-in-var 1 var-set
             fiona-who came-in-sound 6 char-sound
-            broken-marionette-used story-flag? c1f-4-flag3 story-flag? not and breaker-lowered story-flag? not and if
+            broken-marionette-used story-flag? heard-the-noise story-flag? not and breaker-lowered story-flag? not and if
                 0 fiona-who $A action
             else
                 0 1 track $D action
             then
         else stalker-who $D char-in-area? if
-            c1f-4-flag1 story-flag-set
+            floor-plate-pressed story-flag-set
             way-in-var 1 var-set
             stalker-who came-in-sound 6 char-sound
             0 1 track $D action
         then then then
     else hewie-who $D char-in-area? not fiona-who $D char-in-area? not and stalker-who $D char-in-area? not and if
-        c1f-4-flag1 story-flag-clear
+        floor-plate-pressed story-flag-clear
         way-in-var 0 var-set
         0 2 track $D action
     then then
@@ -243,7 +243,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     2 140.0 -10.0 94.0 6 5 0 zone
-    c1f-4-flag4 story-flag? not if
+    weak-wall-broken story-flag? not if
         shaking ebit? not if
             fiona-who 2 char-in-zone? if
                 shakes-var 2 var? if
@@ -283,7 +283,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
         stalker-who 0 char-effect-moving
     then
-    c1f-4-flag4 story-flag? not if
+    weak-wall-broken story-flag? not if
         3 140.0 -10.0 94.0 $1E 20 0 zone
         hewie-zone3-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
             2 game-mode? not if
@@ -499,10 +499,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     16 wait-frames
     let-go-push-anim play-out
     locked-remarked ebit? not if
-        $11 message   \ "It won't open. Maybe I need a key or something?"
+        $11 show-message   \ "It won't open. Maybe I need a key or something?"
         locked-remarked ebit-set
     else
-        $12 message   \ "No luck. Could this be some strange puzzle or just another weird contraption?"
+        $12 show-message   \ "No luck. Could this be some strange puzzle or just another weird contraption?"
     then
     -1 self-idle-anim
     7 wait-frames
@@ -514,7 +514,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $19 wait-frames
     $5A threat-raise
-    1 $FF 8 rumble
+    1 $FF 8 rumble-pad
     fiona-who seized-sound 5 char-sound
     startled-anim play-out
     -1 self-idle-anim
@@ -523,7 +523,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-4.act08 ( -- )   \ 003F67A0
-    1 $FF 4 rumble
+    1 $FF 4 rumble-pad
     shaking ebit-set
     fiona-who trap-shake-sound 6 char-sound
     0 139.0 -9.0 91.5 0 0 0 0 dust
@@ -536,7 +536,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-4.act09 ( -- )   \ 003F67E0
     self-wait-done
-    c1f-4-flag4 story-flag? not if
+    weak-wall-broken story-flag? not if
         $13 say   \ "The wall looks weak here. Maybe if I hit it hard enough I can break through it?"
     else
         $14 say   \ "Bugs? Yuck! I hate bugs! Why me?"
@@ -570,7 +570,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     panic-held state-flag-clear
     $F 1 fade
     wait-fade
-    1 message   \ "What's that noise? I swear I just heard something..."
+    1 show-message   \ "What's that noise? I swear I just heard something..."
     self-wait-anim
     -1 self-idle-anim
     7 wait-frames
@@ -595,19 +595,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-4.act0D ( -- )   \ 003F6870
     [: 6 sound-bank-loaded? ;] wait-until
-    c1f-4-flag2 story-flag-set
+    gate-rising story-flag-set
     broken-marionette-used story-flag? not if
         marionette-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
     else
         broken-marionette-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
     then
-    c1f-4-flag1 story-flag? not if
+    floor-plate-pressed story-flag? not if
         begin
-            way-frames-var 0 var? not c1f-4-flag1 story-flag? not and while
+            way-frames-var 0 var? not floor-plate-pressed story-flag? not and while
             way-frames-var var-dec
             1 wait-frames
         repeat
-        c1f-4-flag1 story-flag? not if
+        floor-plate-pressed story-flag? not if
             broken-marionette-used story-flag? not if
                 marionette-sound 6 sound-stop
                 marionette-stop-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
@@ -615,15 +615,15 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 broken-marionette-sound 6 sound-stop
                 broken-marionette-stop-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
             then
-            c1f-4-flag2 story-flag-clear
+            gate-rising story-flag-clear
         then
     else
         begin
-            way-frames-var 24 var? not c1f-4-flag1 story-flag? and while
+            way-frames-var 24 var? not floor-plate-pressed story-flag? and while
             way-frames-var var-inc
             3 wait-frames
         repeat
-        c1f-4-flag1 story-flag? if
+        floor-plate-pressed story-flag? if
             broken-marionette-used story-flag? not if
                 marionette-sound 6 sound-stop
                 marionette-stop-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
@@ -631,7 +631,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 broken-marionette-sound 6 sound-stop
                 broken-marionette-stop-sound volume-scaled 6 -72.0 10.0 15.0 0 0 sound
             then
-            c1f-4-flag2 story-flag-clear
+            gate-rising story-flag-clear
         then
     then
     self-idle-or-end
@@ -767,7 +767,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     world-frozen state-flag-set
     1 self-scripted
     1 15.0 -10.0 0.0 0.0 event-camera
-    8 door-locked? if
+    8 doors:door-locked? if
         4 say   \ "What could this be used for? There appears to be a slot of sorts. Could this be som..."
     else
         5 say   \ "The plate-key is locked into place."
@@ -873,8 +873,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-4.act1B ( -- )   \ 003F6DA0
-    1 $FF 4 rumble
-    c1f-4-flag4 story-flag-set
+    1 $FF 4 rumble-pad
+    weak-wall-broken story-flag-set
     fiona-who trap-shake-sound 6 char-sound
     trap-fall-sound volume-scaled 6 140.0 -10.0 92.0 0 0 sound
     1 part-hidden

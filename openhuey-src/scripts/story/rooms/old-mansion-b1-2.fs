@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-2
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant locked-remarked             \ (bit 0) its first remark made: "The door is locked..."
@@ -437,7 +437,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $14 wait-frames
     fiona-who key-turn-sound 6 char-sound
     $D message-param-room
-    $52 door-locked? not if
+    $52 doors:door-locked? not if
         $D item-use
     then
     $51 door-unlock
@@ -491,7 +491,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     $14 wait-frames
     fiona-who key-turn-sound 6 char-sound
     $D message-param-room
-    $51 door-locked? not if
+    $51 doors:door-locked? not if
         $D item-use
     then
     $52 door-unlock
@@ -519,7 +519,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     $4F door-unlock
-                    $8008 message   \ "You unlocked the door."
+                    $8008 show-message   \ "You unlocked the door."
                     20 self-idle-anim
                     $14 wait-frames
                     wait-message

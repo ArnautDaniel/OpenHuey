@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-5
-USING: room-names story.words story.shared story-names floor-flags fiona.anims fiona.sounds ;
+USING: room-names facts story.words story.shared story-names floor-flags fiona.anims fiona.sounds ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant items-missing               \ (bit 0) she lacks the items here: their sparkles shown

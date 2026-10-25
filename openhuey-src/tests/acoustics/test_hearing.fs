@@ -7,13 +7,13 @@ USING: tester engine game-state actors messages acoustics game room-names ;
 state: ear-state  cell field dummy  end-state
 variable got   \ the source it heard last frame (-1 nothing), and the loudness
 variable got-loud
-behaviour ear
+behaviour ear-acts
   on heard ( loud room tri door source -- )  got !  2drop drop got-loud ! ;
   on heard-nothing ( -- )  -1 got !  0 got-loud ! ;
 end-behaviour
 
 front-garden-2 -1 rooms send go-to-room  actors-frame   \ (game.fs started a game: move it here)
-ear ear-state s" ear" spawn constant ear
+ear-acts ear-state s" ear" spawn constant ear
 deliver
 : put-ear ( tri -- )   \ stand it on a triangle of the played room
     ear enter  dup tri-center  room-id swap body-place  2e 15e body-size  leave-actor ;

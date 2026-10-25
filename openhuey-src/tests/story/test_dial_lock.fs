@@ -3,10 +3,9 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_dial_lock.fs
 IN: test-dial-lock
 USING: tester engine game-state actors messages common room-names game debug story.state story.words story.rooms.old-mansion-2f-12 ;
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
-free-play  old-mansion-2f-12 room!  20 frames
+free-play  old-mansion-2f-12 room!  20 run-frames
 : set ( a b c -- )  [: $1A swap progress-var!  $19 swap progress-var!  $18 swap progress-var! ;] in-room ;
 testing the dials there
 T{ [: 0 dial object-here?  3 dial object-here? ;] in-room -> -1 -1 }T

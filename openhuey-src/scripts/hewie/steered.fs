@@ -35,7 +35,7 @@ enum: way-from  from-camera from-facing from-none from-steering ;
                 his-lock @ if  -1 his-lock +!  his-steer-yaw f@ his-rot-yaw f!
                 else
                     ex his-stick-x f@ f-  ez his-stick-z f@ f-  vlen 0.01e f< if   \ (the stick held still: turn round)
-                        turning-round his-steer !  0.5e deg>rad his-spin-rate f!  yaw his-rot-yaw f!
+                        turning-round his-steer !  0.5e deg>rad his-spin-rate f!  cam-yaw his-rot-yaw f!
                     then
                 then
                 his-rot-yaw f@ nx nz stick-turned fswap fatan2 his-spin-to f!  from-steering
@@ -51,10 +51,10 @@ enum: way-from  from-camera from-facing from-none from-steering ;
         from-steering of  his-steer-yaw f@ nx nz steered-way  endof
         from-none of  0e 0e dir!  endof
         from-facing of  his-yaw fdup fsin fswap fcos dir!  endof
-        from-camera of  yaw nx nz steered-way  endof
+        from-camera of  cam-yaw nx nz steered-way  endof
     endcase
     ex his-stick-x f!  ez his-stick-z f!
-    his-steer @ by-camera-now = if  yaw his-steer-yaw f!  then
+    his-steer @ by-camera-now = if  cam-yaw his-steer-yaw f!  then
     his-steer @ turning-round <> if  nx his-last-x f!  nz his-last-z f!  then
     cross button-down? if  1 his-sprint !  then ;
 

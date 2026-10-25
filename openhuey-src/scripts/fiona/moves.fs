@@ -5,7 +5,6 @@
 IN: fiona.moves
 USING: engine messages vectors common paths fiona.state fiona.anims fiona.model fiona.moving fiona.spots ;
 
-defer to-idle   ' noop is to-idle      \ (fiona.fs)
 defer door-use ( exit opens? -- )   ' 2drop is door-use   \ (fiona/doors.fs scripted-door)
 : done ( -- )  -1 her-move-done ! ;
 create there 12 allot
@@ -22,7 +21,7 @@ create there 12 allot
 \ motion - the less the sharper the turn (Fiona_StateCmdPath / CmdPathTurn) ----
 : spot-tri ( -- tri )   \ (the spot's triangle: the one given, else under the point)
     her-move @ walk-anim-move = her-move-a @ 0< or if  her-move-at blocked-floor v-tri-in  else  her-move-a @  then ;
-: plan ( -- ok? )   \ (curved, as the original's: Character_WaypointsCurve)
+: plan-move ( -- ok? )   \ (curved, as the original's: Character_WaypointsCurve)
     her-path her-tri @ her-at spot-tri her-move-at blocked-floor path-plan-curved 0> ;
 : path-step ( -- arrived? )
     root-step fnip {: F: fwd :}
@@ -76,7 +75,7 @@ create there 12 allot
 
 \ ---- Fiona_Requests: a move given ----
 : path-start ( -- )   \ (a way to the spot; none: idle)
-    plan if  ['] path-turn her-act !  else  to-idle  then ;
+    plan-move if  ['] path-turn her-act !  else  to-idle  then ;
 : start-move ( kind -- )
     0 her-move-done !  led-mode her-mode !
     case
@@ -87,8 +86,8 @@ create there 12 allot
                   spot-tri her-move-at vec@ her-move-yaw f@ walk-spot  ['] to-spot her-act !
               else  path-start  then  endof
         walk-path-move of  walk-path-doing her-doing !  path-start  endof
-        run-move of  run-to-doing her-doing !  plan if  ['] path-to her-act !  else  to-idle  then  endof
-        run-path-move of  run-path-doing her-doing !  plan if  ['] path-to her-act !  else  to-idle  then  endof
+        run-move of  run-to-doing her-doing !  plan-move if  ['] path-to her-act !  else  to-idle  then  endof
+        run-path-move of  run-path-doing her-doing !  plan-move if  ['] path-to her-act !  else  to-idle  then  endof
         anim-move of  anim-doing her-doing !  her-move-a @ -1 play-table  done  ['] root-move her-act !  endof
         blend-move of  anim-doing her-doing !  her-move-a @ her-move-b @ -1 play-blend  done  ['] root-move her-act !  endof
         blend8-move of  anim-doing her-doing !  her-move-a @ her-move-b @ -1 play-blend  done  ['] root-move her-act !  endof   \ (no time of its own: as a blend here)
@@ -97,7 +96,7 @@ create there 12 allot
         look-point-move of  her-move-at her-look-pt /vec move  -1 her-look-who !  1 her-look-on !  done  endof
         turn-to-who-move of  turn-who-doing her-doing !  her-move-yaw f@ her-heading f!  ['] turning her-act !  endof   \ (the heading to the character: the room's)
         turn-to-heading-move of  turn-heading-doing her-doing !  her-move-yaw f@ her-heading f!  ['] turning her-act !  endof
-        walk-anim-move of  plan if
+        walk-anim-move of  plan-move if
                    her-move-a @ her-move-b @ -1 play-blend
                    her-path her-at path-rest  her-model @ motion-frames s>f  fdup f0= if  fdrop 1e  then
                    fover fover f/ 0.1e f+ her-move-step f!  fswap fdrop

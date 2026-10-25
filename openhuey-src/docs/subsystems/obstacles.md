@@ -27,7 +27,7 @@ the obstacles with `tri` on the ring round them; `obstacle-at ( i -- ) ( F: -- x
 stands. `can-push? ( i -- flag ) ( F: dx dz -- )` (`obstacles` vocabulary) gathers the other
 characters in the room and asks `obstacle-can-push?`.
 
-The story's words (`story/words.fs`): `obstacle-place`, `obstacle-place-saved`, `obstacle-stop`,
+The story's words (`story/words.fs`): `obstacle-place`, `obstacle-place-saved`, `halt-obstacle`,
 `obstacle-save`, `obstacle-save-at`, `obstacle-keep-spot`, `obstacle-model-back` send these;
 `obstacle-on?` asks `obstacle-on-square?`.
 

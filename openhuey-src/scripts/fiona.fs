@@ -4,8 +4,6 @@
 IN: fiona
 USING: engine vectors game-state facts actors messages common paths doors saves fiona.companion fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend fiona.voice fiona.letgo flag-names ;
 
-: rooms-id ( -- id )  s" rooms" actor-named ;
-: camera-id ( -- id )  s" camera" actor-named ;
 
 \ ---- arriving (by an exit: on its outside spot - Rooms_ExitPointOut - her heading kept from
 \ going through, as the original's: Fiona_Vt34 saves it, the scripts' 0x04 places without
@@ -30,7 +28,7 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
     -1 idle-anim  ['] idle-move her-act ! ;
 : idle ( -- )   \ Fiona_ToIdle: free, standing, the stick by the camera now (+0x1AD588 0)
     camera-relative her-turn-mode !  stand-free ;
-' idle is fiona.defend:to-idle   ' idle is fiona.hurt:to-idle   ' idle is fiona.seized:to-idle   ' idle is fiona.doors:to-idle   ' idle is fiona.fear:to-idle   ' idle is fiona.commands:to-idle   ' idle is fiona.moves:to-idle   ' idle is fiona.ladder:to-idle   ' idle is fiona.push:to-idle   ' idle is fiona.letgo:to-idle
+' idle is to-idle
 ' fiona.ladder:knocked-off is fiona.hurt:knocked-off
 ' fiona.doors:scripted-door is fiona.moves:door-use
 ' fiona.doors:drop-door is fiona.hurt:drop-door
@@ -115,7 +113,7 @@ variable stalker-apart   \ (the stalker out of contact, as he tells it - his +0x
 \ flee, kicking or out of breath (Fiona_AnimGroup 2, 9, 10, 3); then her feet are planted. Off
 \ them, her model at her place, her feet as they are ----
 create feet-off-acts   \ (the states that clear +0x1AD5BC)
-    ' fiona.fear:getting-up ,   ' fiona.fear:fallen ,   ' fiona.fear:falling ,          \ SpecialEntry, Fallen, PanicFall
+    ' fiona.fear:getting-up ,   ' fiona.fear:fallen ,   ' fiona.fear:panic-fall ,          \ SpecialEntry, Fallen, PanicFall
     ' fiona.hurt:thrown ,   ' fiona.hurt:door-thrown ,   ' fiona.hurt:after-throw ,      \ Thrown, HitByDoor, AfterThrow
     ' fiona.hurt:got-up ,   ' fiona.seized:pulled-up ,                                  \ getting_up: GetUp, PulledFree
     ' fiona.seized:held ,   ' fiona.seized:led-walking ,   ' fiona.seized:led-by-hand , \ Held, LedAway, LedHand
@@ -206,7 +204,7 @@ create fih-necks         1 , 2 ,   3 , -1 ,   40 , -1 ,   4 , 5 ,   41 , 42 ,
         >r s" O_FIN/FIN_" r>
     endcase ;
 : own-markers? ( n -- flag )  dup 0= over 6 = or swap 7 = or ;
-: worn ( -- v )
+: wear-variant ( -- v )
     0  $41 story-flag? if  drop 1  then  $6F story-flag? if  drop 2  then  $82 story-flag? if  drop 3  then
     $88 story-flag? if  drop 4  then  $94 story-flag? if  drop 5  then  $95 story-flag? if  drop 6  then ;
 create model-name 32 allot  create tex-name 32 allot  create marker-name 32 allot
@@ -218,14 +216,14 @@ create model-name 32 allot  create tex-name 32 allot  create marker-name 32 allo
 : wear ( n -- )
     her-costume !
     her-model @ dup 0< 0= if  actor-free  else  drop  then   \ (-1: none yet)
-    model-name her-costume @  her-costume @ 1 = if  0  else  worn  then  named
+    model-name her-costume @  her-costume @ 1 = if  0  else  wear-variant  then  named
     tex-name her-costume @ 0 named  actor-load-textured dup her-model !
     dup 0< 0= if  0 over actor act.doorway-fade l!  then   \ (she never fades in doorways: Fiona_LightChange keeps her layer)
     dup 0< 0= if  1 over actor act.alive l!  then   \ (she blinks, her hands posed by her motions: Fiona_AnimUpdate)
     dup 0< 0= if  dup 2 6 human-legs  then   \ (her legs: bones 2..5 and 6..9 - FionaModel_Loaded's +0x890..)
     0 over cast-as  s" motions-fiona" motion-table   \ (CharModel_SecondaryMotion: her fades and flags)
-    her-costume @ own-markers? if  marker-name her-costume @  her-costume @ 1 = if  0  else  worn  then  named
-    else  marker-name 0 worn named  then
+    her-costume @ own-markers? if  marker-name her-costume @  her-costume @ 1 = if  0  else  wear-variant  then  named
+    else  marker-name 0 wear-variant named  then
     her-model @ -rot actor-markers
     show-equipment
     self body? 0<> 1 and her act.visible l!  0 -1 play-table ;   \ (shown once she is in a room)
@@ -264,7 +262,7 @@ $1C constant softened-layer
 : crouch-over ( -- )  fiona-half-hidden state-flag-clear ;
 \ ... and the camera back on her, the story's shot over (Fiona_FullStop: Progress_CameraOn 0,
 \ CamDirector_HoldEffect1C 0)
-: let-go ( -- )  crouch-over  hewie-played? 0= if  self cam-on  then  0 0 0 0 0 camera-id send event-shot ;   \ (in the run the camera his)
+: script-over ( -- )  crouch-over  hewie-played? 0= if  self cam-on  then  0 0 0 0 0 camera-id send event-shot ;   \ (in the run the camera his)
 
 behaviour free
   on spawned ( -- )  self cam-player!
@@ -282,7 +280,7 @@ behaviour free
   on offer ( scene arg -- )
       her-mode @ 0= her-doing @ 0= and  hands-off? 0= and  action-button? and
       sender alive? and  if  sender send take-offer  else  2drop  then ;   \ (its room gone meanwhile: nobody to answer)
-  on scripted ( on -- )  idle  dup 0= her-scripted @ 0<> and if  let-go  then  her-scripted ! ;
+  on scripted ( on -- )  idle  dup 0= her-scripted @ 0<> and if  script-over  then  her-scripted ! ;
   on noclip ( on -- )  her-noclip ! ;   \ (the story's 0x20)
   on aside ( on -- )  her-aside ! ;     \ (0x21: out of reach of attacks)
   on activate ( -- )  0 her-noclip !  0 her-aside !  idle ;   \ (the story's 0x15, Fiona_Activate: afresh, standing)
@@ -331,6 +329,7 @@ behaviour free
       unseen-frame
       her-mode @ her-sub @ her-cond @ her-cmd @ her-doing @ broadcast fiona-doing
       her-hit-who @ broadcast fiona-struck-by
+      her-doing @ push-doing =  anim@ strain-anim = and  broadcast fiona-straining
       shook-from-rest broadcast fiona-shaking
       her-shake-count @ 0< 0= if  shakes-now her-shake-count +!  her-shake-count @ broadcast fiona-shakes  then   \ (a story counting them)
       plight  her-mode @ 3 = if  her-ladder @  else  -1  then  broadcast fiona-plight

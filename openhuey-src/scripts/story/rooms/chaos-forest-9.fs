@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.chaos-forest-9
-USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant maze-dealt                  \ (bit 0) the maze's rooms dealt (once a visit, not in a panic)

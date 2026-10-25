@@ -7,7 +7,7 @@ IN: hewie.exits
 USING: engine actors common facts paths vectors flag-names messages doors hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.model hewie.moving hewie.states hewie.offscreen ;
 
 \ ---- the exits: open to him, and where ----
-: exit-open? ( e -- flag )  room-id swap room-exit-door  dup 0< if  drop false exit  then  door-usable? ;
+: his-exit-open? ( e -- flag )  room-id swap room-exit-door  dup 0< if  drop false exit  then  door-usable? ;
 : exit-in ( e -- tri )  1 exit-tri ;                       \ (Rooms_ExitPointIn: the spot this side)
 create door-pt /vec allot
 : door-pt! ( e -- found? )   \ (where its door stands; a doorway: the spot just out)
@@ -17,11 +17,11 @@ create door-pt /vec allot
 \ ---- Hewie_FleeExit: the exit to leave by - open, nearest first, those within 20 of `from`
 \ last; the first he can plan a way to (-1 none, or `from` not in his room) ----
 create ex-dist  8 floats allot   \ each exit's distance (-1: not one to take)
-create ex-at /vec allot
+create try-at /vec allot
 : ex-d ( e -- addr )  floats ex-dist + ;
 : measure ( from e -- )
     dup ex-d -1e f!
-    dup exit-open? 0= if  2drop exit  then
+    dup his-exit-open? 0= if  2drop exit  then
     dup door-pt! 0= if  2drop exit  then
     door-pt rot body-at vec-dist-xz 20e f< if  ex-d 100000e f! exit  then
     door-pt his-at vec-dist-xz ex-d f! ;
@@ -38,7 +38,7 @@ create ex-at /vec allot
     8 0 do
         nearest dup 0< if  unloop exit  then
         dup exit-in dup 0< 0= if
-            dup tri-center ex-at vec!  ex-at plan-to if  unloop exit  then
+            dup tri-center try-at vec!  try-at plan-to if  unloop exit  then
         else  drop  then
         -1e ex-d f!
     loop  -1 ;
@@ -58,7 +58,7 @@ create ex-at /vec allot
 : st-go-to-exit ( -- )
     making-for? 0= if  exit  then
     his-t3 @ walk-pose + keep-pose  toward-spot   \ (at his gait)
-    his-exit @ exit-open? 0= past-spot? 0= or if  exit  then
+    his-exit @ his-exit-open? 0= past-spot? 0= or if  exit  then
     out-door dup 0< 0= if
         her-with? if  her body-tri fiona-at plan-to 0= if  dup avoid-door  then  then   \ (she can't follow)
         his-exit @ through-exit drop
@@ -79,7 +79,7 @@ create ex-at /vec allot
     making-for? 0= if  exit  then
     run-pose keep-pose
     on-spot? if  his-spot run-straight  else  stride 0= his-danger @ calm <> and if  trot-pose keep-pose  then  then
-    his-exit @ exit-open? 0= past-spot? 0= or if  exit  then
+    his-exit @ his-exit-open? 0= past-spot? 0= or if  exit  then
     out-door 0< if  to-default exit  then
     his-exit @ through-exit drop  flee-wait trust-of his-wanted !  wait-after-flight-act 0 want ;
 \ Hewie_StateGuard: barking at the stalker while it is 60..100 away by foot

@@ -13,7 +13,7 @@ USING: engine game-state actors messages keys facts flag-names ps2-screen ;
 
 \ its stages: closed; the movie pause's; the play pause's
 enum: pause-stage  closed
-    movie-opening movie-open skipping movie-closing
+    movie-opening movie-on skipping movie-closing
     opening open closing on-menu menu-closing asking quitting ;
 
 \ its sounds (the common bank) and lines (system messages)
@@ -89,10 +89,10 @@ end-state
     endcase ;
 
 \ ---- the movie pause (MoviePause_State*) ----
-: movie-frame ( -- )
+: movie-pause-frame ( -- )
     stage @ case
-        movie-opening of  0.2e t+  duck  opened? if  movie-open stage !  then  endof
-        movie-open of
+        movie-opening of  0.2e t+  duck  opened? if  movie-on stage !  then  endof
+        movie-on of
             triangle button-pressed? if  0e t f!  skipping stage !  back-sound sound  exit  then   \ (Cancel: MoviePause_StateOpen)
             start-button button-pressed? if  0 movie-pause  movie-closing stage !  back-sound sound  then  endof
         skipping of  0.2e t+  1e t f@ f- duck-by  opened? if  movie-skipped state-flag-set  then  endof   \ (the sound back as it darkens)
@@ -105,7 +105,7 @@ end-state
         movie-wanted? if  open-movie exit  then
         play-wanted? if  open-play  then  exit
     then
-    in-movie? if  movie-frame  else  play-frame  then ;
+    in-movie? if  movie-pause-frame  else  play-frame  then ;
 
 \ ---- drawing (pause.c): the dimming (alpha 63 of 128 open; darkening to 255 skipping or
 \ quitting - here twice the PS2's 128 scale); the lines in the game's font at its size (a pen of

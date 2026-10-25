@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-1
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 1 constant china-remarked              \ (bit 1) its first remark made: "Varied ornate, high-class china lines the shelf."
@@ -273,7 +273,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         5 22.0 -40.0 -32.0 6 12 0 zone
         fiona-who 5 char-in-zone? if
             fiona-who break-sound 6 char-sound
-            1 $FF 4 rumble
+            1 $FF 4 rumble-pad
             3 part-hidden
             4 part-shown
             2 barred-floor floor-off
@@ -510,7 +510,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     4 door-unlock
-                    $8008 message   \ "You unlocked the door."
+                    $8008 show-message   \ "You unlocked the door."
                     20 self-idle-anim
                     $14 wait-frames
                     wait-message

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-24
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 4 constant stalker-waiting             \ (bit 4) the stalker here, not yet about: the encounter to come
@@ -266,7 +266,7 @@ defer old-mansion-1f-24.act02
     [: struggle-on ebit? ;] wait-while
     $1D 1 item-count? not if
         stalker-who presence-sound 6 char-sound
-        0 message   \ "Oh my. What a filthy little princess. A small present from the lord of the manor..."
+        0 show-message   \ "Oh my. What a filthy little princess. A small present from the lord of the manor..."
         $1E wait-frames
         wait-message
         $1D message-param-room
@@ -277,7 +277,7 @@ defer old-mansion-1f-24.act02
         got-hebels-perfume story-flag-set
     else
         stalker-who presence2-sound 6 char-sound
-        1 message   \ "Miss... It's cleaning time now."
+        1 show-message   \ "Miss... It's cleaning time now."
         $5A wait-frames
         wait-message
     then

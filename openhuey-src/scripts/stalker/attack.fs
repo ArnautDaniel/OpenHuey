@@ -8,7 +8,6 @@
 IN: stalker.attack
 USING: engine game-state actors messages common facts flag-names paths vectors stalker.state stalker.senses stalker.moving stalker.tables stalker.head stalker.names stalker.sounds ;
 
-: panic-id ( -- id )  s" panic" actor-named ;
 
 \ ---- the combo's move and its fields ----
 : move-at ( k -- n )   \ (the combo's k-th move number, -1 none)

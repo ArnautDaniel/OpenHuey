@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-33
-USING: room-names story.words story.shared flag-names story-names floor-flags ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags ;
 
 : off-map-33.char-enter ( -- )   \ 00442DA0
     fiona-who self-is? if

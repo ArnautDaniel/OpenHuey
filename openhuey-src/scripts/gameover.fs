@@ -37,7 +37,6 @@ state: gameover-state
   cell field overlay-fades  \ the panic's overlay fades with the tints (not with a picture kept)
 end-state
 
-: music-id ( -- id )  s" music" actor-named ;
 
 \ ---- its music (GameOver: by the story so far; the own-music kind's own) ----
 : challenge-track ( -- n )   \ (the mini-game's run - GameOver_StateSpecial: by its challenge, A..D)

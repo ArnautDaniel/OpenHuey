@@ -17,17 +17,17 @@ begin-structure /vec  sffield: v.x  sffield: v.y  sffield: v.z  end-structure
 : field@ ( addr -- ) ( F: -- x )  sf@ ;
 : field+! ( addr -- ) ( F: dx -- )  dup sf@ f+ sf! ;
 
-: yaw   ( F: -- a ) camera cam.yaw sf@ ;
-: pitch ( F: -- a ) camera cam.pitch sf@ ;
-: world-up ( F: -- 1|-1 ) camera cam.up sf@ ;
+: cam-yaw   ( F: -- a ) camera cam.yaw sf@ ;
+: cam-pitch ( F: -- a ) camera cam.pitch sf@ ;
+: cam-up ( F: -- 1|-1 ) camera cam.up sf@ ;
 
 \ where the camera looks, and its right hand (level)
-: forward ( F: -- x y z )
-    yaw fsin pitch fcos f*   pitch fsin world-up f*   yaw fcos pitch fcos f* fnegate ;
-: right ( F: -- x y z )  yaw fcos  0e  yaw fsin ;
+: cam-forward ( F: -- x y z )
+    cam-yaw fsin cam-pitch fcos f*   cam-pitch fsin cam-up f*   cam-yaw fcos cam-pitch fcos f* fnegate ;
+: cam-right ( F: -- x y z )  cam-yaw fcos  0e  cam-yaw fsin ;
 
 \ move the camera by a vector; put it somewhere
 : cam-move ( F: dx dy dz -- )  camera cam.z field+!  camera cam.y field+!  camera cam.x field+! ;
 : cam-at ( F: x y z -- )  camera cam.z sf!  camera cam.y sf!  camera cam.x sf! ;
 : cam-pos ( F: -- x y z )  camera cam.x sf@  camera cam.y sf@  camera cam.z sf@ ;
-: .cam  cam-pos frot f. fswap f. f.  ." yaw " yaw f. ." pitch " pitch f. cr ;
+: .cam  cam-pos frot f. fswap f. f.  ." yaw " cam-yaw f. ." pitch " cam-pitch f. cr ;

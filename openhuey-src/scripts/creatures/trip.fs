@@ -32,7 +32,7 @@ enum: at-door#  off-door by-door through-door ;
 : trip-reset ( t -- )
     -1 over t.exit !  0 over t.n !  0 over t.i !  -1 over t.door !  off-door over t.at-door !
     0 over t.walking !  -1 swap t.last ! ;
-: in-play? ( t -- flag )  t.room @ room-id = ;
+: trip-here? ( t -- flag )  t.room @ room-id = ;
 : route-over? ( t -- flag )  dup t.i @ swap t.n @ < 0= ;
 : next ( t -- door )  dup t.i @ cells swap t.doors + @ ;
 
@@ -41,7 +41,7 @@ enum: at-door#  off-door by-door through-door ;
     r0 room = if  t0  else  r1 room = if  t1  else  -1  then  then  0 max s>f ;
 : leg-down ( t -- done? ) ( F: by -- )  t.leg dup sf@ fswap f-  0e fmax fdup sf!  f0= ;
 : closed! ( t door -- )  swap t.closed  over 5 rshift cells +  swap 31 and 1 swap lshift  over @ or  swap ! ;
-: plan ( t -- )   \ its route to her room: its doors, the first leg
+: plan-trip ( t -- )   \ its route to her room: its doors, the first leg
     {: t :}
     t t.room @ room-id 0 -1 t t.closed route-avoiding
     dup 0> 0= if  drop  t t.closed 13 cells 0 fill  0 t t.n !  exit  then
@@ -56,7 +56,7 @@ enum: at-door#  off-door by-door through-door ;
     over 0< if  2drop  0 t t.n !  false exit  then
     swap t t.room !  -1 t t.tri !  -1 t t.exit !                     ( exit' )
     self body? if  t t.room @ body-room!  -1 body-tri!  then
-    t in-play? if
+    t trip-here? if
         1 exit-spot dup 0< if  drop fdrop fdrop fdrop  true exit  then   \ (no spot: placed by its owner)
         dup t t.tri !  room-id swap body-place  true exit
     then  drop
@@ -91,13 +91,13 @@ create was /vec allot
     t t.walking @ if  fdrop  t walk-on if  t arrive  else  false  then  exit  then
     t t.exit @ 0< 0= if  fdrop  t leg-down if  t  t t.exit @  through  else  false  then  exit  then
     fswap fdrop
-    t route-over? if  fdrop  t plan  false exit  then
+    t route-over? if  fdrop  t plan-trip  false exit  then
     t leg-down if  t next-door  else  false  then ;
 \ she left by `exit`: to its spot first (the leg: how far it stands from it)
-create spot /vec allot
+create leg-spot /vec allot
 : follow-out ( t exit -- )
     {: t ex :}  ex t t.exit !  0 t t.n !  0 t t.i !
-    ex 0 exit-spot drop spot vec!  self body-at spot vec-dist-xz  t t.leg sf! ;
+    ex 0 exit-spot drop leg-spot vec!  self body-at leg-spot vec-dist-xz  t t.leg sf! ;
 
 \ ---- a door it stands by, swinging (CreatureA_FirstDoor / _Think's +0x84, CreatureB_HeadForDoor):
 \ standing in an exit's area as its door swings, it waits there; the door still again and

@@ -44,15 +44,15 @@ create sm-to /vec allot
     root-move  settled? 0= if  exit  then
     ended?  sm-to heading-to yaw f- angle-wrap fabs 0.1e f< or if  sm-walk @ play  walk-start  then ;
 : turn-on-spot ( way -- )  turn-base + play-now  ['] turning-on step! ;
-: straight? ( -- flag )  self body-tri my-at goal-at self body-mask v-walk goal-tri @ = ;
+: goal-straight? ( -- flag )  self body-tri my-at goal-at self body-mask v-walk goal-tri @ = ;
 : walking-on ( -- )
     way-left 4e f< 0=  settled? and if  turn-way dup no-turn <> if  turn-on-spot exit  then  drop  then
-    step-t @ 0= straight? and if  goal-tri @ goal-at plan drop  1 step-t !  then   \ (+0x1628)
+    step-t @ 0= goal-straight? and if  goal-tri @ goal-at plan drop  1 step-t !  then   \ (+0x1628)
     walk-stride if  arrived  then ;
-: no-way ( -- )  root-move ;
+: no-way-there ( -- )  root-move ;
 :noname ( -- )
     4 action-look!
-    goal-tri @ goal-at plan 0> 0= if  ['] no-way step! exit  then
+    goal-tri @ goal-at plan 0> 0= if  ['] no-way-there step! exit  then
     way-left 4e f< 0= if  turn-way  else  no-turn  then
     dup no-turn = if  drop  sm-walk @ play  ['] walking-on step!  else  turn-on-spot  then ;
 is walk-start

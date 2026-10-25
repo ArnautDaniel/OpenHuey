@@ -34,7 +34,7 @@ create number-buf 8 allot
     $12 gal-line ps2-width $56 + {: m1 m2 x :}   \ (one message at a time: line-of's text is its own buffer)
     m1 gal-line $46 $186 menu-ink text-in  m2 gal-line x $186 menu-ink text-in ;
 : page-of ( g n -- )  of$ $186 $176 menu-ink text-in ;
-: arrows ( -- )  $168 $170 $1A blink part  $1B3 $170 $1B blink part ;
+: draw-arrows ( -- )  $168 $170 $1A blink part  $1B3 $170 $1B blink part ;
 : page-black ( -- )  art-layer 0 0 screen-size  openness @ 2* 255 min  ui-rect ;   \ (the lists: nothing of the world, the frame's sides black)
 : list-colour ( k -- c )  gal-at @ = if  2  else  0  then ;
 \ the fade over it all (sub_fade_back: the overlay darkening as gal-fade goes to $80)
@@ -73,7 +73,7 @@ $2A constant movie-var   $2B constant cursor-var
     $B page-art  $10 heads
     gal-at @ group-start {: base :}
     8 0 do  gal-at @ group-start i + movie-row  loop
-    $12 $13 help  base 8 / 1+ $E page-of  arrows
+    $12 $13 help  base 8 / 1+ $E page-of  draw-arrows
     thumbnail-in
     $158 $B0 $70 $60 picture
     gal-at @ movie-seen? if  picture-group 0 0 0 0 $70 $60 $80 from
@@ -103,7 +103,7 @@ $2A constant movie-var   $2B constant cursor-var
     gal-at @ group-start {: base :}
     8 0 do  gal-at @ group-start i + track-row  loop
     $1C8  gal-playing @ $FF = if  $13  else  $1C7  then  help
-    base 8 / 1+ 4 page-of  arrows ;
+    base 8 / 1+ 4 page-of  draw-arrows ;
 : music-keys ( -- )
     gal-wait @ if  -1 gal-wait +!  then
     confirm? if
@@ -130,7 +130,7 @@ $2A constant movie-var   $2B constant cursor-var
     $E page-art  $10 heads
     gal-at @ group-start {: base :}
     8 0 do  gal-at @ group-start i + picture-row  loop
-    $12 $13 help  base 8 / 1+ 6 page-of  arrows ;
+    $12 $13 help  base 8 / 1+ 6 page-of  draw-arrows ;
 : pictures-keys ( -- )
     gal-step @ 0= if   \ (the list)
         #pictures list-moved? if  se-cursor exit  then
@@ -157,10 +157,10 @@ $2A constant movie-var   $2B constant cursor-var
     back? if  4 gal-step !  se-cancel exit  then
     confirm? if  art-turn @ 0= art-turn !  se-decide  then
     art-turn @ if  -1  else  1  then {: d :}
-    key: Up held? if  d negate art-y +!  then   key: Down held? if  d art-y +!  then
-    key: Left held? if  d negate art-x +!  then  key: Right held? if  d art-x +!  then
-    key: A held? if  d -8 * art-x +!  then  key: D held? if  d 8 * art-x +!  then
-    key: W held? if  d -8 * art-y +!  then  key: S held? if  d 8 * art-y +!  then
+    key: Up key-held? if  d negate art-y +!  then   key: Down key-held? if  d art-y +!  then
+    key: Left key-held? if  d negate art-x +!  then  key: Right key-held? if  d art-x +!  then
+    key: A key-held? if  d -8 * art-x +!  then  key: D key-held? if  d 8 * art-x +!  then
+    key: W key-held? if  d -8 * art-y +!  then  key: S key-held? if  d 8 * art-y +!  then
     circle button-pressed? if  $100 art-x !  $E0 art-y !  se-decide  then
     key: F pressed? if   \ (R3: about the middle)
         art-zoom @ 0= art-zoom !
@@ -193,7 +193,7 @@ $2A constant movie-var   $2B constant cursor-var
     g 2* cells type-groups + 2@ ?do  i  i type-title  i list-colour  2 row  loop
     g 1+ 2 page-of
     mode @ on-box = if  word-layer gal-text-layer !  exit  then
-    $12 $13 help  arrows ;
+    $12 $13 help  draw-arrows ;
 : back-to-types ( picked -- )  drop  on-gallery mode ! ;
 : after-type ( picked -- )   \ (unlocked, and a message to follow: that one too)
     drop  gal-at @ type-of {: e :}
@@ -231,7 +231,7 @@ create second-ones  15 , 17 , 19 , 21 , 23 ,                               \ (bi
     $B page-art  $10 heads
     gal-at @ group-start {: base :}
     8 0 do  gal-at @ group-start i + model-row  loop
-    $12 $13 help  base 8 / 1+ 4 page-of  arrows ;
+    $12 $13 help  base 8 / 1+ 4 page-of  draw-arrows ;
 : motions ( -- a )  gal-at @ cells model-motion-at + @ cells model-motions + ;   \ (its count, then its motions)
 : motion-of ( i -- id )  1+ cells motions + @ ;
 : kind-table ( k -- addr len | 0 0 )   \ (Gallery_MakeModel's classes: their motion tables)
@@ -283,15 +283,15 @@ create second-ones  15 , 17 , 19 , 21 , 23 ,                               \ (bi
     -1 alone  cam-kept  look-kept  0 stage-lights  0.06e 0.06e 0.08e clear-color ;
 : model-camera ( -- )   \ (Gallery_ModelCamera: the sticks; then the camera round the figure)
     gal-at @ floats model-nearest + f@ {: F: near :}
-    key: W held? if  gal-dist f@ 1e f- near fmax gal-dist f!  then
-    key: S held? if  gal-dist f@ 1e f+ 60e fmin gal-dist f!  then
-    key: A held? if  gal-turn f@ 0.0873e f- gal-turn f!  then
-    key: D held? if  gal-turn f@ 0.0873e f+ gal-turn f!  then
+    key: W key-held? if  gal-dist f@ 1e f- near fmax gal-dist f!  then
+    key: S key-held? if  gal-dist f@ 1e f+ 60e fmin gal-dist f!  then
+    key: A key-held? if  gal-turn f@ 0.0873e f- gal-turn f!  then
+    key: D key-held? if  gal-turn f@ 0.0873e f+ gal-turn f!  then
     gal-turn f@ pi f> if  gal-turn f@ 2e pi f* f- gal-turn f!  then
     gal-turn f@ pi fnegate f< if  gal-turn f@ 2e pi f* f+ gal-turn f!  then
     gal-at @ 3 * floats model-heights + {: hs :}
-    key: I held? if  gal-height f@ 0.5e f+ hs 2 floats + f@ fmin gal-height f!  then
-    key: K held? if  gal-height f@ 0.5e f- hs f@ fmax gal-height f!  then
+    key: I key-held? if  gal-height f@ 0.5e f+ hs 2 floats + f@ fmin gal-height f!  then
+    key: K key-held? if  gal-height f@ 0.5e f- hs f@ fmax gal-height f!  then
     gal-turn f@ fsin gal-dist f@ f*  gal-height f@  gal-turn f@ fcos gal-dist f@ f*
     0e gal-height f@ 0e  cam-place
     \ the light: from the camera's way turned 15 degrees up and 30 round (the original's 0x4C), far off

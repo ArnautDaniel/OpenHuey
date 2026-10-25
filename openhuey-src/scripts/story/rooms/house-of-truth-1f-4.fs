@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-4
-USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: engine common actors messages story.state room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant generator-remarked          \ (bit 0) its first remark made: "Looks like a power generator. The switch is turned on, but i"
@@ -268,7 +268,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
 
 : house-of-truth-1f-4.act01 ( -- )   \ 00433FD0
     fiona-who generator-start-sound 6 char-sound
-    1 $FF 4 rumble
+    1 $FF 4 rumble-pad
     0 house-of-truth-1f-4.cmd00
     0 house-of-truth-1f-4.cmd01
     1 house-of-truth-1f-4.cmd01
@@ -502,7 +502,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
 
 : house-of-truth-1f-4.act07 ( -- )   \ 00434410
     scene-5-pending state-flag? if
-        3 message   \ "No! It's locked!"
+        3 show-message   \ "No! It's locked!"
     else
         self-wait-done
         0 self-through-exit
@@ -547,7 +547,7 @@ USING: engine common actors messages story.state room-names story.words story.sh
     $14 wait-frames
     fiona-who key-turn-sound 6 char-sound
     $25 message-param-room
-    $E2 door-locked? not if
+    $E2 doors:door-locked? not if
         $25 item-use
     then
     $E6 door-unlock

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-37
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 16 constant wrong-sound                \ (snd 16) not right (her answer)
@@ -66,7 +66,7 @@ defer off-map-37.act00
 : off-map-37.phase2 ( -- )   \ 00445C90
     fiona-who $C char-in-area? fiona-who 45 $3C char-heading? and if
         fiona-who char-busy? not if
-            3 message   \ "PLAY TYPE LIST"
+            3 show-message   \ "PLAY TYPE LIST"
         else
             3 message-close
         then
@@ -76,7 +76,7 @@ defer off-map-37.act00
     then
     fiona-who 6 char-in-area? fiona-who -45 $3C char-heading? and if
         fiona-who char-busy? not if
-            $14 message   \ "ART GALLERY"
+            $14 show-message   \ "ART GALLERY"
         else
             $14 message-close
         then
@@ -86,7 +86,7 @@ defer off-map-37.act00
     then
     fiona-who $15 char-in-area? fiona-who 90 $32 char-heading? and if
         fiona-who char-busy? not if
-            $40 message   \ "CHANGING AREA"
+            $40 show-message   \ "CHANGING AREA"
         else
             $40 message-close
         then
@@ -96,7 +96,7 @@ defer off-map-37.act00
     then
     fiona-who 4 char-in-area? fiona-who 90 $3C char-heading? and if
         fiona-who char-busy? not if
-            1 message   \ "MUSIC GALLERY"
+            1 show-message   \ "MUSIC GALLERY"
         else
             1 message-close
         then
@@ -106,7 +106,7 @@ defer off-map-37.act00
     then
     fiona-who $1B $2D char-faces-area? if
         fiona-who char-busy? not if
-            0 message   \ "MOVIE GALLERY"
+            0 show-message   \ "MOVIE GALLERY"
         else
             0 message-close
         then
@@ -116,7 +116,7 @@ defer off-map-37.act00
     then
     fiona-who 0 char-before-door? if
         fiona-who char-busy? not if
-            $15 message   \ "MINI-GAME"
+            $15 show-message   \ "MINI-GAME"
         else
             $15 message-close
         then
@@ -126,7 +126,7 @@ defer off-map-37.act00
     then
     fiona-who 1 char-before-door? if
         fiona-who char-busy? not if
-            $16 message   \ "EXIT"
+            $16 show-message   \ "EXIT"
         else
             $16 message-close
         then
@@ -136,7 +136,7 @@ defer off-map-37.act00
     then
     fiona-who 5 char-in-area? fiona-who 90 $3C char-heading? and if
         fiona-who char-busy? not if
-            2 message   \ "CHARACTER GALLERY"
+            2 show-message   \ "CHARACTER GALLERY"
         else
             2 message-close
         then
@@ -463,7 +463,7 @@ defer off-map-37.act00
     $2E 0 pvar? if
         $D9 room-preload
         7 partner-load
-        c2f-8-flag3 story-flag-set
+        golem-done story-flag-set
         over-music-b story-flag-clear
         x-37-flag1 story-flag-clear
         over-music-c story-flag-clear
@@ -474,7 +474,7 @@ defer off-map-37.act00
     else $2E 1 pvar? if
         $E0 room-preload
         $22 partner-load
-        c2f-8-flag3 story-flag-set
+        golem-done story-flag-set
         over-music-b story-flag-set
         x-37-flag1 story-flag-set
         over-music-c story-flag-clear
@@ -485,7 +485,7 @@ defer off-map-37.act00
     else $2E 2 pvar? if
         $D9 room-preload
         $C partner-load
-        c2f-8-flag3 story-flag-set
+        golem-done story-flag-set
         over-music-b story-flag-set
         x-37-flag1 story-flag-set
         over-music-c story-flag-set
@@ -496,7 +496,7 @@ defer off-map-37.act00
     else $2E 3 pvar? if
         $E0 room-preload
         $17 partner-load
-        c2f-8-flag3 story-flag-set
+        golem-done story-flag-set
         over-music-b story-flag-set
         x-37-flag1 story-flag-set
         over-music-c story-flag-set
@@ -791,7 +791,7 @@ defer off-map-37.act00
         $AC message-param-room
         $AC 1 item-give-count
         $83 $85 0.0 0.0 0.0 0 0 sound
-        $801B message   \ "has been saved to your file."
+        $801B show-message   \ "has been saved to your file."
         $1E wait-frames
         wait-message
     else

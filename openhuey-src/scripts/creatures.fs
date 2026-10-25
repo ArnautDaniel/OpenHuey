@@ -17,10 +17,10 @@ end-state
 : slot! ( id i -- )  cells slots + ! ;
 : free? ( i -- flag )  slot@ alive? 0= ;
 : first-free ( from to -- i | -1 )  swap ?do  i free? if  i unloop exit  then  loop  -1 ;
-: record ( i -- addr )  /kept-creature *  progress pr.creatures + ;
+: slot-record ( i -- addr )  /kept-creature *  progress pr.creatures + ;
 : clear-slot ( i -- )   \ its creature gone, its record cleared
     dup slot@ dup alive? if  kill  else  drop  then
-    -1 over slot!  record /kept-creature 0 fill ;
+    -1 over slot!  slot-record /kept-creature 0 fill ;
 : clear-all ( -- )  #creatures 0 do  i clear-slot  loop ;
 
 : spirit-in ( i -- id )  spirit-spawn  tuck swap slot! ;
@@ -38,7 +38,7 @@ end-state
 : from-progress ( -- )   \ a loaded game: each kept spirit back
     #creatures 0 do
         i slot@ dup alive? if  kill  else  drop  then  -1 i slot!
-        i record kc.used l@ if
+        i slot-record kc.used l@ if
             i first-homunculus < if  i  i spirit-in send spirit-kept  else  i  i homunculus-in send homunculus-kept  then
         then
     loop ;
@@ -88,7 +88,7 @@ behaviour keeping-creatures
           >r #creatures 0 r>  endcase  ?do  i clear-slot  loop ;
   on creature-clear ( slot -- )  clear-slot ;   \ (one creature gone: a room's command)
   on creature-count ( n other -- )  scatter-other !  scatter ! ;
-  on creature-gone ( slot -- )  -1 over slot!  record /kept-creature 0 fill ;
+  on creature-gone ( slot -- )  -1 over slot!  slot-record /kept-creature 0 fill ;
   on game-loaded ( -- )  from-progress  creatures-on state-flag? if  scattered-after-load scatter !  0 scatter-other !  then ;
 end-behaviour
 

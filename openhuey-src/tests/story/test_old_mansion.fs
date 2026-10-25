@@ -6,12 +6,11 @@ IN: test-old-mansion
 USING: tester engine game-state actors messages common room-names game debug story.state story.words
   story.rooms.old-mansion-b1-3 story.rooms.old-mansion-2f-8 story.rooms.old-mansion-1f-15 ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
 : ~= ( F: a b -- flag )  f- fabs 0.001e f< ;
 : plate-y ( -- ) ( F: -- y )  s" fumi0" place-y object@ ;
-free-play  old-mansion-b1-3 room!  20 frames
+free-play  old-mansion-b1-3 room!  20 run-frames
 
 testing old-mansion-b1-3: plate 0 pressed while its bit is set, to -0.7; back up 0.2 a step
 T{ [: s" fumi0" object-here? ;] in-room -> -1 }T
@@ -22,18 +21,18 @@ T{ [: s" fumi1" place-y object@ 0e ~= ;] in-room -> -1 }T
 
 testing old-mansion-b1-3: her shakes counted from 0; at 35, event bit $13
 T{ [: 99 fiona-shook !  0 old-mansion-b1-3.cmd01 ;] in-room -> }T
-3 frames
+3 run-frames
 T{ [: fiona-shook @ ;] in-room -> 0 }T
 T{ [: 35 fiona-shook !  1 old-mansion-b1-3.cmd01  $13 ebit? ;] in-room -> -1 }T
 
-old-mansion-2f-8 room!  20 frames
+old-mansion-2f-8 room!  20 run-frames
 testing old-mansion-2f-8: the curtain at (v - $2B) / 13 opening, (v - $C) / 20 closing
 T{ [: s" Curtain" object-here? ;] in-room -> -1 }T
 T{ [: 0 $30 var-set  0 old-mansion-2f-8.cmd00  s" Curtain" $7C object@ 5e 13e f/ ~= ;] in-room -> -1 }T
 T{ [: 0 $40 var-set  1 old-mansion-2f-8.cmd00  s" Curtain" $7C object@ 1e ~= ;] in-room -> -1 }T
 T{ [: s" Curtain" $74 object-n@ ;] in-room -> 1 }T
 
-old-mansion-1f-15 room!  20 frames
+old-mansion-1f-15 room!  20 run-frames
 testing old-mansion-1f-15: the yellow shelves moved back 0.25 in x a step, held at their stop (39)
 T{ [: s" hondana_b0" object-here? ;] in-room -> -1 }T
 T{ [: 8 4 do  40e i shelf place-x object!  loop  0 ebit-set  1 1 old-mansion-1f-15.cmd00  s" hondana_b0" place-x object@ 39.75e ~=  0 ebit? ;] in-room -> -1 -1 }T

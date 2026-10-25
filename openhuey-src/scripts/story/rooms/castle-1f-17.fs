@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-17
-USING: room-names story.words story.shared story-names fiona.anims ;
+USING: room-names facts story.words story.shared story-names fiona.anims ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant insects-remarked            \ (bit 0) its first remark made: "There are miniature insect models here, too."
@@ -186,7 +186,7 @@ USING: room-names story.words story.shared story-names fiona.anims ;
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     $19 door-unlock
-                    $8008 message   \ "You unlocked the door."
+                    $8008 show-message   \ "You unlocked the door."
                     20 self-idle-anim
                     $14 wait-frames
                     wait-message
@@ -234,7 +234,7 @@ USING: room-names story.words story.shared story-names fiona.anims ;
         4 say   \ "Looks like an ordinary pool table."
         rest-anim play-out
         -1 self-idle-anim
-        6 message   \ "Why would someone put something like this in here?"
+        6 show-message   \ "Why would someone put something like this in here?"
         7 wait-frames
         wait-message
         pool-table-remarked ebit-set

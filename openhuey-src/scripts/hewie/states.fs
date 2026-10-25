@@ -175,11 +175,11 @@ create kn-at /vec allot
     -1 his-t2 +!  his-t2 @ 0= if  to-default exit  then
     her-dist 20e f> if  his-action @ start  then
     her his-target !  target-look look!  resting-pose keep-pose ;
-: by-her ( -- )  his-next @ 0= if  60 his-t2 !  ['] st-by-her-a-while behave  else  his-next @ 0 want  then ;
+: stay-by-her ( -- )  his-next @ 0= if  60 his-t2 !  ['] st-by-her-a-while behave  else  his-next @ 0 want  then ;
 \ Hewie_StateComeToFiona: to her side (follow-step); there, the next action (or by her 60 frames)
 : st-come-to-fiona ( -- )
     her-with? 0= if  to-default exit  then
-    40e 30e follow-step 1 = if  by-her  then ;
+    40e 30e follow-step 1 = if  stay-by-her  then ;
 \ Hewie_StateSlideToFiona (come-to-her-act .. sulk-to-her-act): up from lying low, the way to her
 \ side planned; close: there, else come at the gait for the distance
 : st-slide-to-fiona ( -- )
@@ -187,7 +187,7 @@ create kn-at /vec allot
     resting-pose step-to-pose if  exit  then
     resting-pose keep-pose  slide-root
     his-action @ command-place cp-pos plan-and-go if  to-default exit  then
-    rest  fdup 12e f< if  fdrop path-stop  by-her exit  then
+    rest  fdup 12e f< if  fdrop path-stop  stay-by-her exit  then
     his-cond @ hurt-cond = fdup 20e f< or if  fdrop 0  else  30e f< if  1  else  2  then  then  his-t1 !
     ['] st-come-to-fiona behave ;
 \ Hewie_StateComeToCommand (come-to-place-act): to his place by her - along the way, straight

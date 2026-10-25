@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e3
-USING: room-names story.words story.shared flag-names story.clock floor-flags fiona.sounds stalker.anims ;
+USING: room-names facts story.words story.shared flag-names story.clock floor-flags fiona.sounds stalker.anims ;
 
 \ ---- this room's own event bits and script variables ----
 3 constant alone-here                  \ (bit 3) she was free and alone here (no stalker): her own action

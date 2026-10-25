@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-3f-2
-USING: room-names story.words story.shared flag-names story-names fiona.anims stalker.anims ;
+USING: room-names facts story.words story.shared flag-names story-names fiona.anims stalker.anims ;
 
 : castle-3f-2.char-enter ( -- )   \ 0041D140
     player-who self-is? 0 exit-taken? and if

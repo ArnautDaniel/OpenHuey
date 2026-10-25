@@ -3,6 +3,28 @@
 IN: messages
 USING: actors ;
 
+\ ---- the actors, by name: who a message goes to ----
+: acoustics-id ( -- id )  s" acoustics" actor-named ;
+: camera-id ( -- id )  s" camera" actor-named ;
+: creatures-id ( -- id )  s" creatures" actor-named ;
+: danger-id ( -- id )  s" danger" actor-named ;
+: debilitas-id ( -- id )  s" debilitas" actor-named ;
+: doors-id ( -- id )  s" doors" actor-named ;
+: fiona-id ( -- id )  s" fiona" actor-named ;
+: hewie-id ( -- id )  s" hewie" actor-named ;
+: items-id ( -- id )  s" items" actor-named ;
+: music-id ( -- id )  s" music" actor-named ;
+: obstacles-id ( -- id )  s" obstacles" actor-named ;
+: panic-id ( -- id )  s" panic" actor-named ;
+: rooms-id ( -- id )  s" rooms" actor-named ;
+: saves-id ( -- id )  s" saves" actor-named ;
+: screen-id ( -- id )  s" screen" actor-named ;
+: story-id ( -- id )  s" story" actor-named ;
+: subscreen-id ( -- id )  s" subscreen" actor-named ;
+: summoner-id ( -- id )  s" summoner" actor-named ;
+: things-id ( -- id )  s" things" actor-named ;
+: window-id ( -- id )  s" window" actor-named ;
+
 \ ---- acoustics (docs/subsystems/acoustics.md) ----
 \ a noise this frame: at nav triangle `tri` (-1: at a door), or at `door` (-1: none)
 message noise ( loud room tri door source -- )
@@ -167,6 +189,8 @@ message fiona-shakes ( n -- )               \ broadcast each frame while countin
 message fiona-shaking ( n -- )              \ broadcast each frame: her shakes this frame (the stick swung, a button - Fiona_Shakes)
 message fiona-struck-by ( who -- )           \ broadcast each frame after fiona-doing: who struck or caught her (+0x100; -1 nobody)
 message fiona-doing ( mode sub cond cmd doing -- ) \ broadcast each frame: her move mode, what she does, her
+message fiona-straining ( on -- )            \ broadcast each frame: she strains at something that won't move (Fiona +0x1AD5D2: the rooms' request $80000004)
+message fiona-started ( code -- )           \ broadcast as she starts an action for Hewie (Fiona_MarkActionStart's +0x1AD6BC: the rooms' cond 0x26 - that frame only)
                                              \ condition, her command this frame (-1 none; 3 the praise held), her
                                              \ action (+0x1AD580: her-doing)
 message fiona-blow ( n damage x y z reach -- )   \ broadcast: her blow `n` there (f>cell; reach -1: what touches her) - for the homunculi
@@ -308,6 +332,12 @@ message music-duck ( v -- )                   \ (the music) the stream turned do
 message music-stage ( stage -- )             \ (the music) the stage set's music made (-1: ended)
 \ ---- scenes (the cutscene director: docs/subsystems/story.md S4) ----
 message scene ( on -- )                      \ broadcast: a cutscene has the characters (on) / gives them back (off)
+message scene-load ( room movie class cutscene -- )   \ (scenes) a room's scene made ready: its movie (a room string), how it shows, its cutscene; answered scene-ready
+message scene-ready ( movie? -- )             \ (to the place) ready: whether its movie is there to play
+message scene-run ( subtitles -- )            \ (scenes) played, the message as its subtitles ($FFFF none): scene-shot each new shot, scene-over at its end
+message scene-shot ( shot -- )                \ (to the place) its shot now
+message scene-over ( -- )                     \ (to the place) over - played through or skipped - the world held, the camera back
+message scene-stop ( -- )                     \ (scenes) stopped at once (the place gone)
 \ ---- the rooms' effects (docs/subsystems/effects.md) ----
 message particles-made ( p -- )               \ (a particles actor) the engine's system it keeps
 message effect-command ( v -- )                  \ (an effect) a command later (the scripts' 0x87: 1 still, 2 moving)
