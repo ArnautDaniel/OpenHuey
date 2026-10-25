@@ -308,6 +308,12 @@ message music-duck ( v -- )                   \ (the music) the stream turned do
 message music-stage ( stage -- )             \ (the music) the stage set's music made (-1: ended)
 \ ---- scenes (the cutscene director: docs/subsystems/story.md S4) ----
 message scene ( on -- )                      \ broadcast: a cutscene has the characters (on) / gives them back (off)
+message scene-load ( room movie class cutscene -- )   \ (scenes) a room's scene made ready: its movie (a room string), how it shows, its cutscene; answered scene-ready
+message scene-ready ( movie? -- )             \ (to the place) ready: whether its movie is there to play
+message scene-run ( subtitles -- )            \ (scenes) played, the message as its subtitles ($FFFF none): scene-shot each new shot, scene-over at its end
+message scene-shot ( shot -- )                \ (to the place) its shot now
+message scene-over ( -- )                     \ (to the place) over - played through or skipped - the world held, the camera back
+message scene-stop ( -- )                     \ (scenes) stopped at once (the place gone)
 \ ---- the rooms' effects (docs/subsystems/effects.md) ----
 message particles-made ( p -- )               \ (a particles actor) the engine's system it keeps
 message effect-command ( v -- )                  \ (an effect) a command later (the scripts' 0x87: 1 still, 2 moving)

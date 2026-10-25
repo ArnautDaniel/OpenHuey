@@ -76,6 +76,9 @@ variable was-map-page                                \ the map's page she was on
 
 : progress-clear ( -- )  progress progress-size 0 fill ;
 : progress-word! ( v i -- )  4 * progress + l! ;
+: fact ( "name" -- )   \ a story fact set (a save's line)
+    parse-name 2dup fact-named dup 0< if  drop ." save: no fact named " type cr exit  then  nip nip story-flag-set ;
+: fact-number ( n -- )  story-flag-set ;   \ (one not named yet)
 : in-room ( room -- )
     dup was-room !  hw-room !  -1 hw-tri !  2 hw-side !  hw-mood 7 cells 0 fill
     false was-hewie !  -1 was-stalker !  6 0 do  16 i cells was-skills + !  loop  was-met 4 cells 0 fill
@@ -100,14 +103,19 @@ variable was-map-page                                \ the map's page she was on
 : .at ( F: x y z -- )  {: F: x y z :}  x .f  y .f  z .f ;   \ a place, as x y z
 \ the doors' held bits aren't kept: nobody holds a door in a save (Progress_CopyState clears
 \ bit 0 of the 400 door words)
+: story-word? ( i -- flag )  progress pr.story progress - 4 /  {: i first :}  i first  first #story-flags 32 / +  within ;
 : door-words ( -- first n )  progress pr.doors progress - 4 /  400 ;
 : door-word? ( i -- flag )  door-words over + within ;
 : unheld ( v i -- v' )  door-word? if  doors:held-bit invert and  then ;
 : doors-unheld ( -- )  door-words 0 do  dup i + 4 * progress +  dup l@ doors:held-bit invert and  swap l!  loop  drop ;
-: write-progress ( -- )
+: write-progress ( -- )   \ (all of it but the story's flags: those are facts, by name)
     ." progress-clear" cr
     progress-size 4 / 0 do
-        i 4 * progress + l@ i unheld ?dup if  . i . ." progress-word!" cr  then
+        i story-word? 0= if  i 4 * progress + l@ i unheld ?dup if  . i . ." progress-word!" cr  then  then
+    loop ;
+: write-facts ( -- )   \ the story's facts set: `fact hewie-freed` (one not named yet: its number)
+    #story-flags 0 do
+        i story-flag? if  i fact-name dup if  ." fact " type cr  else  2drop  i . ." fact-number" cr  then  then
     loop ;
 
 \ ---- loading: the progress back, the room played, then everyone put where they were ----
@@ -154,7 +162,7 @@ end-state
     save-path to-file
     ." \ hga save - progress, then where things stood" cr
     ." USING: saves ;" cr
-    write-progress
+    write-progress  write-facts
     room-id . ." in-room" cr
     broadcast write-save  writing step ! ;   \ (the file kept open: the others add their lines)
 : saved ( -- )  end-file  ." saved " save-path type cr  idle step !  sender-asked @ dup 0< if  drop  else  send game-saved  then ;
