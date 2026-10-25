@@ -329,7 +329,7 @@ static void release(void) {
 }
 
 /* ---- the room's object groups: the script's header +0x4 + k x 4 is group k's list (a count,
- * then 0x10-byte entries named at +0x4); a shot's group keys (+0xA0 + k x 4: a count, then
+ * then 0x10-byte entries, each its object's name); a shot's group keys (+0xA0 + k x 4: a count, then
  * 0x1C-byte entries named at +0xC with their keys' offset at +0x8 - 0x18 bytes a frame: the
  * turn, then the place) ---- */
 
@@ -342,16 +342,16 @@ static int script_groups(void) {
     return m;
 }
 
-/* group k's object i (NULL none) */
+/* group k's object i (NULL none): its entry is its name (gRoomObjects +0x18 by the entry itself) */
 static Placed *group_object(int k, int i) {
     uint32_t o = (uint32_t)rd32(C.script + 4 + k * 4);
-    char name[13];
+    char name[17];
 
     if (o == 0 || o + 4 > C.script_size || i >= (int)rd32(C.script + o) || o + 4 + (size_t)(i + 1) * 0x10 > C.script_size) {
         return NULL;
     }
-    memcpy(name, C.script + o + 4 + i * 0x10 + 4, 12);
-    name[12] = 0;
+    memcpy(name, C.script + o + 4 + i * 0x10, 16);
+    name[16] = 0;
     return placed_named(&gEngine.room.placed, name);
 }
 
@@ -767,6 +767,9 @@ static void place_at_end(void) {
 void cutscene_end(void) {
     rumble_buzz(RUMBLE_SCENE, 0, 1);   /* (its rumble off) */
     rumble_jolt(RUMBLE_SCENE, 0, 1);
+    if (C.state != STATE_IDLE) {   /* (Cutscene_End: the groups it animates back as defined - however far it played) */
+        restore_groups();
+    }
     if (C.state == STATE_PLAYING) {   /* the fog and depth range as at the start, the lights' extra off */
         gRoomLook.has_fog = C.look.has_fog;
         memcpy(gRoomLook.fog_near_color, C.look.fog_near_color, sizeof(gRoomLook.fog_near_color));
@@ -777,7 +780,6 @@ void cutscene_end(void) {
         gRoomLook.has_dof = C.look.has_dof;
         memcpy(gRoomLook.dof, C.look.dof, sizeof(gRoomLook.dof));
         memset(&gEngine.extra, 0, sizeof(gEngine.extra));
-        restore_groups();
         if (sOnPlace != NULL && C.cast) {
             place_at_end();
         }

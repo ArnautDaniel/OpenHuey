@@ -261,7 +261,11 @@ and the kneel around the message).
   -- flag )`): the scene's motion moves their models, their places following it (Fiona_FollowAnim);
   their faces cleared and drawn with all their shapes. Given back (Cutscene_ReleaseActors:
   Character_Enable) Hewie's feet are planted afresh and he is at his default action, a stalker's way
-  is forgotten. `cutscene-control`'s 13
+  is forgotten. The room's objects the scene animates are its groups (the script's group lists:
+  each 0x10-byte entry the object's name): each shot shows the groups it moves and hides the rest
+  (Cutscene_StartShot), and the scene's end, played or skipped, puts them back where they were
+  defined (Cutscene_RestoreGroups - their place and turn; castle-2f-3's picture `a_nozoki` after
+  the change of clothes, `tests/story/test_scene_groups.fs`). `cutscene-control`'s 13
   ops step it, its cues, the movie, the subtitles (op 12 turns the prepared message's pages -
   drawn on layer 4), and op 8 ends it (`scene` off, the camera back). The conditions:
   `cutscene-mode?`, `-cue-reached?`, `-event?`, `-passed?`, `-near-end?`, `-shot?`.

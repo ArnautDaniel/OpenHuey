@@ -26,6 +26,14 @@ world-held state-flag-clear
 [: 0 0 0 action ;] in-room
 T{ 300 [: cutscene-active? ;] within -> -1 }T
 T{ her act.face-all l@  lids f0= f0= -> 1 -1 -1 }T
+testing ... the scene's tracks into her weights four apart (Motion_ExtraChannels: +0x58 + 16 i) - her eyelids
+testing ... (7 and 8: the second track's last, the third's first) moved together
+variable lids-moved  variable lids-apart
+: lids-now ( -- )
+    lids {: F: l r :}  l f0= 0= if  -1 lids-moved !  then  l r f- fabs 0.0001e f> if  -1 lids-apart !  then ;
+: watch-lids ( n -- )  0 ?do  game-tick  lids-now  loop ;
+120 watch-lids
+T{ lids-moved @  lids-apart @ -> -1 0 }T
 testing ... her own frame waiting meanwhile (Character_Disable): her place where the scene moves her (Fiona_FollowAnim)
 : her-place-off ( F: -- d )  game:fiona enter  her-at self body-at vec-dist  leave-actor ;
 T{ 60 frames  her-place-off 0.01e f<  game:fiona enter her-model @ leave-actor scene-has? -> -1 -1 }T
