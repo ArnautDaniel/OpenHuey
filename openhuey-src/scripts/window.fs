@@ -125,7 +125,7 @@ create look-text 8 allot
 
 \ ---- answering ----
 : close ( -- )
-    shown @  chosen @  asked-by @ send text-closed
+    shown @  chosen @  asked-by @ dup alive? if  send text-closed  else  drop 2drop  then   \ (the asker gone: no one told)
     none shown !  0 broadcast text-shown ;
 \ (Task_StateChoice: the message an option leads to opens where this one was, boxed)
 : answer ( -- )   \ the option's message follows (from the same table), or the window closes

@@ -45,6 +45,7 @@ at-door
 T{ key: C press  240 went?  room-id -> -1 front-garden-2 0 room-exit-leads drop }T
 
 testing an action script runs as the room's coroutine, a turn a frame
+front-garden-2 -1 rooms send go-to-room  5 frames
 : started ( -- n )  [: 0 #slots 0 do  i slot-task @ if  1+  then  loop ;] in-room ;
 variable before
 started before !
@@ -66,5 +67,5 @@ testing ... the scene pauses (Start) and skips (Triangle): over, the world let g
 T{ game:pause enter  pause:stage @  leave-actor -> 2 }T
 triangle debug:press
 : over? ( -- flag )  cutscene-active? 0=  movie-status 1 <> and ;
-T{ ' over? 600 soon  world-held state-flag? -> -1 0 }T
+T{ ' over? 600 soon  60 frames  world-held state-flag? -> -1 0 }T   \ (held as it ends, let go with the fade in: act07)
 test-summary

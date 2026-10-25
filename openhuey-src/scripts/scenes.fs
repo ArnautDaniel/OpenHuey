@@ -101,7 +101,7 @@ behaviour scening
   on scene-run ( subtitles -- )   \ played: faded in, a frame at a time until the movie or the director ends, or it is skipped
       dup $FFFF = if  drop -1  then  subtitles !  -1 page !
       -1 cue-was !  -1 cue !  cutscene-go  cutscene-run
-      1e movie-volume!  screen:from-black fade-to  0 movie-pause
+      1e movie-volume!  screen:from-black fade-to  world-held state-flag-clear  0 movie-pause   \ (coming in: the world let go - it may be paused, and skipped)
       movie-skipped state-flag-clear  running step ! ;
   on scene-stop ( -- )  stop-now ;
   on fade-done ( -- )  0 fading ! ;
