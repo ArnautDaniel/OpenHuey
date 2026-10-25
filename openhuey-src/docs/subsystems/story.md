@@ -82,6 +82,40 @@ wait-until` / `wait-while`, and `player-who` - the one played, Fiona or Hewie in
 where the two branches differed only in who. The scenes' slots: `n track` ($F0..$F8),
 `cutscene-track`, `fade-track`.
 
+## Places: rooms written anew
+
+A room listed in `scripts/story/places.fs` is a **place** (docs/rooms-design.md): `story` spawns
+it instead of the converted scripts, and it says what happens in the room as a program. The
+converted file stays for the rooms not yet moved; a room is one or the other.
+
+- **The kit** (`scripts/story/kit.fs`, vocab `story.kit`): a place's state (`place-state`, its
+  own cells by `own:`), its description (`' came-in ' person-in ' each-frame ' went room place!`),
+  and the words a place is written in - facts, holds and moves, waits, messages, fades by name
+  (`screen:to-black-2 with-music or`), areas, cameras, exits and doors, parts, sounds, scenes,
+  figures, items, offers. No opcode words: a place sends messages and uses these.
+- **Activities**: a place's longer doings are tasks it resumes each frame (`start`,
+  `start-only`). Whoever an activity holds (`hold`: `scripted` to the character) is let go when
+  it ends or is stopped (the room left, `room-left`); a move is sent only for a character the
+  running activity holds, and `wait-move` waits only on a move it asked for.
+- **Offers**: what she may do where she stands - `offer` (an activity, Fiona held for it),
+  `offer-remark` - the first offered in a frame wins; `unhurried`, `calm-only`,
+  `calm-hewie-up`, `any-time` as the original's kinds.
+- **Who is in**: the place keeps where each person was at the last frame's end (areas crossed)
+  and what they last told (`fiona-doing`, `hewie-doing`, `stalker-doing`, `creature-doing`).
+  `story` keeps the stalker's last report and gives it to a new place before `room-enter` (the
+  original reads him directly as a character enters); the stalker counts as in once he has told
+  the place what he is.
+- **Story facts** by name: `fact:` in `story-names.fs`; saves write `fact <name>`.
+
+**Scenes** are the `scenes` actor's (`scripts/scenes.fs`): `scene-load ( room movie class cutscene )`
+→ `scene-ready ( movie? )`; `scene-run ( subtitles )` → `scene-shot ( shot )` each new shot →
+`scene-over` (played through or skipped: the world held, the camera back); `scene-stop` (the
+place gone). The kit's `load-scene`, `run-scene`, `at-shots`.
+
+Places: castle-2f-3 (the bedroom), tested by `tests/places/test_castle_2f_3.fs` (44): every
+remark and spot, the clothes, the TV, the bed and the stalker's search, the maid's scene, the
+night, the attack lesson, the evasion tip, Hewie's find, the four replays.
+
 ## API
 
 Declared in `scripts/messages.fs`.

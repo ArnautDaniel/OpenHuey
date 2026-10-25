@@ -179,9 +179,15 @@ says what happens, and nothing in it can leave Fiona stuck.
 5. Once the last room is moved: the opcode words in `story/words.fs`, the slot machinery and
    `rooms-ref/` are deleted.
 
-## Questions
+## Status
 
-- Facts: should the save format move to names now, or keep reading and writing the original's
-  bit layout behind the names?
-- Coverage: should the first PR (components plus castle-2f-3) also carry every remark and
-  examine spot of that room, or only the systems?
+- Facts by name, saves by name (old saves still load): done.
+- The kit, the `scenes` actor, `story` spawning places: done (docs/subsystems/story.md, "Places").
+- castle-2f-3: done, every remark and spot, its scenes and story beats, the stalker's search,
+  Hewie's find - `tests/places/test_castle_2f_3.fs`.
+- Next: front-garden-3, castle-2f-8, castle-1f-4.
+
+## Questions (answered)
+
+- Facts: names now (the saves write `fact <name>`).
+- Coverage: every remark and examine spot of each room moved.
