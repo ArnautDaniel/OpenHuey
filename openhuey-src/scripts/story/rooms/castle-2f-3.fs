@@ -146,7 +146,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     then
     1 0 0 area-camera
     fiona-who self-is? if
-        c2f-8-flag3 story-flag? not c2f-2-flag1 story-flag? and if
+        golem-done story-flag? not c2f-2-flag1 story-flag? and if
             c2f-3-flag3 story-flag? not if
                 c2f-3-flag3 story-flag-set
                 0 exit-taken? in-panic? not and if

@@ -109,7 +109,7 @@ T{ 10 tries -> -1 }T
 debilitas-out  600 play-on
 
 testing the evasion tip: Debilitas about the castle, she comes in by the hall door - told to hide, the doors locked
-c2f-3-flag3 story-flag-clear  c2f-8-flag3 story-flag-clear
+c2f-3-flag3 story-flag-clear  golem-done story-flag-clear
 castle-1f-1 debilitas-hunt  castle-2f-3 0 rooms send go-to-room  5 frames
 400 play-on
 T{ c2f-3-flag3 story-flag?  $A5 items:items-of 0>  free? -> -1 -1 -1 }T   \ (the document among her items)

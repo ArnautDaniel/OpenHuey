@@ -38,19 +38,19 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 \ puppet - their keys bring it down while they play
 : castle-2f-8.enter ( -- )   \ 00401890
     room-sounds
-    c2f-8-flag3 story-flag? not if
+    golem-done story-flag? not if
         0 barred-floor floor-on
         5 pushable floor-on
         1 keeps-stalkers-off floor-on
         0 part-shown
     else
         0 part-hidden
-        c2f-8-flag2 story-flag? if
+        golem-moved story-flag? if
             2 barred-floor floor-on
             6 pushable floor-on
             3 keeps-stalkers-off floor-on
             1 part-shown
-        else c2f-8-flag1 story-flag? if
+        else golem-crumbled story-flag? if
             2 part-shown
         then then
     then
@@ -68,7 +68,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         4 part-shown
     then
     0 7 0.812 0.687 0.187 0.312 zone-rect
-    c2f-8-flag1 story-flag? got-obsidian-choker story-flag? not and if
+    golem-crumbled story-flag? got-obsidian-choker story-flag? not and if
         0 10.0 1.0 -25.0 flicker-sprite
     then
     c2f-3-flag1 story-flag? not if
@@ -127,8 +127,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     1 0 4 4 0 zone-at-effect
-    c2f-8-flag3 story-flag? if
-        c2f-8-flag2 story-flag? if
+    golem-done story-flag? if
+        golem-moved story-flag? if
             2 43.743 0.0 -29.309 $F 20 0 zone
             hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
                 2 game-mode? not if
@@ -143,7 +143,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                     then
                 then
             then
-        else c2f-8-flag1 story-flag? if
+        else golem-crumbled story-flag? if
             hewie-who 0 char-in-area? not if
                 2 10.0 0.0 -25.0 $A 20 0 zone
                 hewie-zone2-noticed ebit? not hewie-who char-here? and hewie-who 0 char-cond? and if
@@ -176,11 +176,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-2f-8.phase2 ( -- )   \ 00401B50
     -2147483644 scene-request? if
         0 fiona-who 8 action
-    else c2f-8-flag3 story-flag? not if
+    else golem-done story-flag? not if
         fiona-who 6 $32 char-faces-area? if
             0 unhurried offer-action
         then
-    else fiona-who $B $32 char-faces-area? c2f-8-flag2 story-flag? and if
+    else fiona-who $B $32 char-faces-area? golem-moved story-flag? and if
         9 unhurried offer-action
     then then then
     fiona-who $C char-in-area? got-old-parchment story-flag? not and if
@@ -375,7 +375,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who $A8 -160 char-to-tri-facing
     camera-restart
     $13 door-unlock
-    c2f-8-flag3 story-flag-set
+    golem-done story-flag-set
     1 0 0 music
     0 barred-floor floor-off
     5 pushable floor-off
@@ -427,7 +427,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who $A8 -160 char-to-tri-facing
     camera-restart
     $13 door-unlock
-    c2f-8-flag3 story-flag-set
+    golem-done story-flag-set
     1 0 0 music
     0 barred-floor floor-off
     5 pushable floor-off

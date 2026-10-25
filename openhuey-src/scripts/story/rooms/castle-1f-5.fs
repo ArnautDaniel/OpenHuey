@@ -21,7 +21,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-5.enter ( -- )   \ 003F6F80
     room-sounds
-    c2f-8-flag3 story-flag? c1f-5-flag1 story-flag? not and if
+    golem-done story-flag? c1f-5-flag1 story-flag? not and if
         1 exit-taken? if
             castle-1f-5.cond00? if
                 c1f-5-flag1 story-flag-set

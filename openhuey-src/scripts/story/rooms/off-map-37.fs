@@ -463,7 +463,7 @@ defer off-map-37.act00
     $2E 0 pvar? if
         $D9 room-preload
         7 partner-load
-        c2f-8-flag3 story-flag-set
+        golem-done story-flag-set
         over-music-b story-flag-clear
         x-37-flag1 story-flag-clear
         over-music-c story-flag-clear
@@ -474,7 +474,7 @@ defer off-map-37.act00
     else $2E 1 pvar? if
         $E0 room-preload
         $22 partner-load
-        c2f-8-flag3 story-flag-set
+        golem-done story-flag-set
         over-music-b story-flag-set
         x-37-flag1 story-flag-set
         over-music-c story-flag-clear
@@ -485,7 +485,7 @@ defer off-map-37.act00
     else $2E 2 pvar? if
         $D9 room-preload
         $C partner-load
-        c2f-8-flag3 story-flag-set
+        golem-done story-flag-set
         over-music-b story-flag-set
         x-37-flag1 story-flag-set
         over-music-c story-flag-set
@@ -496,7 +496,7 @@ defer off-map-37.act00
     else $2E 3 pvar? if
         $E0 room-preload
         $17 partner-load
-        c2f-8-flag3 story-flag-set
+        golem-done story-flag-set
         over-music-b story-flag-set
         x-37-flag1 story-flag-set
         over-music-c story-flag-set

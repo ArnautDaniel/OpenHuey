@@ -331,6 +331,7 @@ behaviour free
       unseen-frame
       her-mode @ her-sub @ her-cond @ her-cmd @ her-doing @ broadcast fiona-doing
       her-hit-who @ broadcast fiona-struck-by
+      her-doing @ push-doing =  anim@ strain-anim = and  broadcast fiona-straining
       shook-from-rest broadcast fiona-shaking
       her-shake-count @ 0< 0= if  shakes-now her-shake-count +!  her-shake-count @ broadcast fiona-shakes  then   \ (a story counting them)
       plight  her-mode @ 3 = if  her-ladder @  else  -1  then  broadcast fiona-plight

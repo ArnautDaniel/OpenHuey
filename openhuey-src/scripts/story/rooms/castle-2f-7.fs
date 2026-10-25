@@ -170,7 +170,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     stalkers-stay state-flag-set
     1 self-scripted
     self-wait-done
-    c2f-8-flag3 story-flag? c2f-7-flag2 story-flag? not and castle-2f-7.cond00? and 0 exit-door-open? and if
+    golem-done story-flag? c2f-7-flag2 story-flag? not and castle-2f-7.cond00? and 0 exit-door-open? and if
         $11 door-open-clear
         doors-room-in
         0 0 self-door-knock

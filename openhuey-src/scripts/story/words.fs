@@ -876,7 +876,7 @@ $B constant opaque-signal  8 constant page-signal   \ (the director's signals: m
 \ ---- motion events (a character's motion's event keys, as it last told: the mark key) ----
 $20 constant mark-key
 : char-at-motion-event? ( id -- flag )   \ cond 0x56
-    cond-slot dup char-here 0= if  drop false exit  then  events-of char-flag mark-key and 0<> ;
+    cond-slot dup char-here 0= if  drop false exit  then  anim-ended-of char-flag 0<> ;   \ (its motion's $20: come round)
 : self-at-motion-event? ( -- flag )   \ cond 0x48: no move going, at the mark - its move done
     self-char dup char-here 0= if  drop false exit  then
     dup move-done-of char-flag 0= if  drop false exit  then

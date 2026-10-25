@@ -449,7 +449,7 @@ own: stalker-gone             \ he has run out (the tutorial's end)
 0 constant attack-gesture
 : trapped-shots ( shot -- )   \ (Fiona in front of the reflections, then not; a light up, then back)
     case  0 of  0 before-reflections-layer layer  endof  1 of  0 usual-layer layer  endof
-        6 of  3 1.5e light-times  endof  7 of  3 light-back  endof  endcase ;
+        6 of  3 1.5e shadows-longer  endof  7 of  3 light-back  endof  endcase ;
 : looks-about ( -- )   \ (the stalker, waiting: looking about now and then)
     stalker hold  stalker wait-move  stalker fiona look-at
     begin  stalker-p mine? while   \ (until another doing takes him: his flight)
@@ -576,7 +576,7 @@ forced-exit 1 or constant from-the-wire   \ (sent from the front garden, Hewie f
     events-held state? if  hewie send part-from-fiona  replaying exit  then   \ (the extras: Hewie out of it, the movie played)
     came-by @ 0 = if  player 0 at-exit  1 1 player-camera  then  0 1 1 exit-camera
     came-by @ 1 = if  player 1 at-exit  0 0 player-camera  then  1 0 0 exit-camera
-    c2f-8-flag3 fact? 0=  c2f-2-flag1 fact? and  c2f-3-flag3 fact? 0= and if
+    golem-done fact? 0=  c2f-2-flag1 fact? and  c2f-3-flag3 fact? 0= and if
         c2f-3-flag3 fact!
         came-by @ 0 =  in-panic? 0= and  stalker-hunting? and if  ['] told-to-hide start drop  then
     then

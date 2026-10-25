@@ -61,9 +61,9 @@ $15   fact:    cb1-6-flag1                   \ ?
 $16   fact:    cb1-6-flag2                   \ ?
 $17   fact:    found-file-201                \ (castle-2f-3)
 $18   fact:    c2f-3-flag2                   \ ?
-$19   fact:    c2f-8-flag1                   \ ? never set by a room
-$1A   fact:    c2f-8-flag2                   \ ? never set by a room
-$1B   fact:    c2f-8-flag3                   \ ? after a scene
+$19   fact:    golem-crumbled                   \ the word plate METH used on the golem (castle-2f-8): crumbled
+$1A   fact:    golem-moved                   \ the word plate EMETH used on the golem (castle-2f-8): it walked to the door
+$1B   fact:    golem-done                   \ the golem out of the way (either plate: castle-2f-8)
 $1C   fact:    c2f-2-flag2                   \ ?
 $1D   fact:    c2f-9-flag1                   \ ?
 $1E   fact:    got-old-parchment             \ (castle-2f-8)
