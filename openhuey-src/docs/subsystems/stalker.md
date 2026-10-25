@@ -510,9 +510,15 @@ nearest her - within 50 of her, further than 20 from him, about his height, a st
 she and Hewie off the line to it - takes his shot instead of her: his point (Pursuer_AttackPoint,
 `body-point!`) there 3 frames, where the story's zones see it (it breaks).
 *Not yet*: the tints' flares (the renderer's layer
-$11 sprites drifting about them: the PC port of the original draws none either); the Debilitas kinds' goal on blocked floor
-(their GoTo's Npc_NearestWalkable: a script's walk to a triangle he may not stand on goes to the
-nearest one he may - here to it as given). Built: **the story's moves** (`stalker/scripted.fs`,
+$11 sprites drifting about them: the PC port of the original draws none either). Built: **ways to floor not his** (every walk's
+plan, `stalker/moving.fs` `plan`: NPC_PathLengthGoal / Spot / To - the Pursuers' and so his kinds'
+GoTo and HeadFor): to a goal on a triangle of his mask the way goes to the walkable point nearest it
+(Npc_NearestWalkable, the engine's `walkable`: within the door area of an exit of the room that
+doesn't loop back, from the far side of that exit; else from the nearest triangle free of the mask -
+the planner's search kind 7, PathPlan_StepCheapNear: cheapest first by the edges' costs, through
+masked floor, ended by the first free triangle further than 30 from the goal's - then on toward the
+goal while the floor is free, 0.1 short); his ways curved round their corners as the Pursuers'
+are (Character_WaypointsCurve). Checked by `tests/stalker/test_walkable.fs`. Built: **the story's moves** (`stalker/scripted.fs`,
 checked by `tests/stalker/test_scripted.fs`): the story's action for him (Pursuer_EventState's 5)
 takes him at his next frame if he is in the room being played - else it is dropped; held
 (+0xE0) his frame is Pursuer_Think's (`held-frame`: his senses, the move his step, his head,

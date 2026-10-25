@@ -14,6 +14,7 @@ typedef struct NavTri {
     Vec3 v[3];
     int32_t next[3];   /* the triangle across edge v[i] - v[(i + 1) % 3], or -1 */
     uint32_t flags;
+    float cost[3];     /* each edge's cost for the planner (+0x40: read from the triangle across it) */
     uint32_t lights;   /* the room lights reaching it: bit i = light i (+0x4C) */
 } NavTri;
 
@@ -82,6 +83,18 @@ int navmesh_walk(const NavMesh *n, int from, Vec3 a, Vec3 b, float *reach);
 /* from a (on `from`) straight toward b: whether a triangle on the way (from's too, up to b's or
  * a wall) has all of `mask`'s flags (Fiona_Voice: her mouth behind the water's surface) */
 int navmesh_crosses(const NavMesh *n, int from, Vec3 a, Vec3 b, uint32_t mask);
+/* the edge of triangle `t` the step from -> to leaves by (NavTri_ExitEdgeHit: 0..2, the crossing in
+ * `hit` with its height on the triangle's plane; 3 when `to` is inside, 4 crossing nothing) */
+int navmesh_exit_edge_hit(const NavMesh *n, int t, Vec3 from, Vec3 to, Vec3 *hit);
+/* the triangle nearest `start` (its middle, on the level) without `mask`'s flags (Npc_TriIfStandable:
+ * the planner's search kind 7, PathPlan_StepCheapNear - cheapest first by the edges' costs, through
+ * triangles with them; the first one without them further than 30 ends it); `start` itself when it
+ * has none of them; -1 none */
+int navmesh_nearest_free(const NavMesh *n, int start, uint32_t mask);
+/* from triangle `t`'s middle on toward `to` while the triangles lack `mask`'s flags (Npc_NearestWalkable's
+ * walk): the point it stops at - `to`, or where it meets one with them - 0.1 back toward the middle it
+ * set off from, in `out`; the triangle it is on, -1 off the mesh */
+int navmesh_free_toward(const NavMesh *n, int t, Vec3 to, uint32_t mask, Vec3 *out);
 /* walking straight from a (on `from`) toward b (on `to`), stopping on the first triangle with
  * any of `mask`'s flags, from's too (Actor_WalkMesh): that triangle, or NAV_WALK_REACHED (b
  * reached on `to`), NAV_WALK_STUCK (b on another triangle), NAV_WALK_OFF (the mesh's edge

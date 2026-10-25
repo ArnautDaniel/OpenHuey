@@ -135,6 +135,6 @@ enum: way-from  from-camera from-facing from-none from-steering ;
 \ into the next room, played (the rooms' change carries him): at the exit he came in by
 : played-arrive ( exit -- )
     dup his-door !  dup 0< if  drop exit  then
-    0 exit-spot dup 0< if  drop fdrop fdrop fdrop exit  then  room-id swap body-place ;
+    0 exit-spot dup 0< if  drop fdrop fdrop fdrop exit  then  room-id swap body-place  model actor-settle ;
 : played-through ( -- )
     0 his-2b !  his-action @ steered-2-act <> if  0 his-2d !  then  steer-afresh his-steer ! ;

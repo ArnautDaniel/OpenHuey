@@ -67,7 +67,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     -1 in-game !  0 growl-t !  own-move-mode my-move-mode !  -1 anim !
     hp @ 0> 0= if  hp-max @ hp !  then
     well-cond cond !  0 reeling !  0 hits !
-    route-clear  my-path path-clear  waiting-about mode!  stand-anim play-now  stand  pose
+    route-clear  my-path path-clear  waiting-about mode!  stand-anim play-now  stand  settle  pose   \ (Pursuer_PlaceInRoom)
     -1 came-by !  -1 to-shut !  -1 at-ladder !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
     unheld  0 apart !  0 link-t !  out-over  -1 held-door !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
     away? 0= if  search-start  then ;
@@ -324,7 +324,9 @@ behaviour stalking
   on drawn-to ( tri -- )  in-game @ if  go-for-doll  else  drop  then ;
   on stalker-hunt ( -- )  in-game @ if  heading-for-her mode!  away? 0= if  search-again  then  then ;
   on entered-room ( room exit -- )  her-came !  room-changed  in-game @ if  pose  then ;
-  on tick ( -- )
+  on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model)
+      my-model @ scene-has? in-cast !
+      in-game @ in-cast @ and if  tell-doing  loaded @ if  status  then  exit  then
       in-game @ if  frame  script-held @ 0= if  own-frame @ ?dup if  execute  then  then  tell-doing  then   \ (held: his Think, not his own frame)
       figure? self body? and  in-game @ 0= and if  posed @ if  posed-frame  else  pose  then  then   \ (a scene's figure: moved only posed)
       loaded @ if  status  then ;
@@ -344,7 +346,8 @@ behaviour stalking
       0 sm-done !  script-held @ posed @ 0= and if  start-move  else  drop  then ;
   on show ( on -- )  0= hidden ! ;
   on hold-anim ( anim flags blend -- )  loaded @ if  pose-in  else  drop 2drop  then ;
-  on scene ( on -- )  0<> in-scene ! ;          \ (a cutscene has the characters)
+  on scene ( on -- )   \ (a cutscene has the characters; given back - Pursuer_Enable: his way forgotten)
+      dup 0<> in-scene !  0= in-cast @ and if  0 in-cast !  my-path path-clear  then ;
   on shaken-off ( -- )  bitten @ bite-how @ held-by-dog = and if  dog-let-go bite-how !  then ;
   on bite ( damage hard -- )  bitten @ if  bitten-by  else  2drop  then ;
   on snap ( -- )  in-game @ if  snapped  then ;

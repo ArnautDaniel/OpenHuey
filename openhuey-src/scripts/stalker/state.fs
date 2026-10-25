@@ -158,6 +158,7 @@ state: stalker-state
   \ (`scene`) - his +0xE0; out of contact (+0x2A: through a door, on a ladder); frames a joint
   \ action he took stays pending (Progress_IsLinked: its entry settled the next frame)
   cell field script-held  cell field in-scene  cell field apart  cell field link-t
+  cell field in-cast            \ a scene has taken him (+0xE2: Cutscene_Cast .. ReleaseActors - his own frame waits)
   cell field raging              \ +0x16B8 2: in a rage (the story's 0x31) - his stance and walk
   \ his body set by his feet on a slope: the points back and ahead along his step - slowly walking
   \ ($201: +0x1694 / +0x169C), else (+0x1698 / +0x16A0) - his Setup's

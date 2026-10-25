@@ -63,14 +63,16 @@ typedef struct Model {
 #define MODEL_SECOND 0x10000
 
 /* a model's face and hands (the original's model +0x58 / +0x38 / +0x48): the face's weight for
- * each shape (16; the drawn face is the rest, the mouth (1) and the eyelids (7, 8)), each hand
- * from one shape to another by w */
+ * each shape (16), each hand from one shape to another by w. The face drawn (func_001BD650) is
+ * its rest and the mouth (1) and eyelids (7, 8) - or, while a scene has the character (`all`: the
+ * model's +0x30, set by Motion_Disable), every shape by its weight (func_001BCD30) */
 typedef struct ModelFace {
     float w[16];
     struct {
         int a, b;
         float w;
     } hand[2];
+    int all;
 } ModelFace;
 /* the morphing parts' vertices in `v` (a copy of the model's: nv of them) moved into the face's
  * shapes, from their rest shape; the other vertices are left as they are */

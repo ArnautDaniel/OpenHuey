@@ -26,6 +26,7 @@ state: hewie-state
   cell field his-sub            \ what he is doing, for the story (+0xFC; hewie-sub)
   cell field his-away           \ out of the room being played (the character's +0x29)
   cell field his-busy           \ a script has him (+0xE0; H4)
+  cell field his-in-cast        \ a scene has taken him (+0xE2: Cutscene_Cast .. ReleaseActors - his own frame waits)
   cell field his-done           \ the script's move is done (+0xE1; H4)
   /path field his-path
   /path field his-probe          \ a way planned only to see if there is one (Hewie_FionaReachable)

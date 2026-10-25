@@ -41,6 +41,8 @@ typedef struct HumanLegs {
 /* its legs are a human's: bone chains from `right` and `left` (hip, knee, ankle, foot); -1 none.
  * The easing starts afresh (HumanModel_Loaded's FeetUp) */
 void humanlegs_set(HumanLegs *h, int right, int left);
+/* put somewhere (HumanModel_FeetUp): its next height at its feet at once, not eased; the slope's share whole */
+void humanlegs_feet_up(HumanLegs *h);
 /* Motion_OntoFloor: point p (room) put on the floor, walking the mesh from triangle `tri` at `at`
  * toward it (mask: the marked triangles that stop it) */
 void humanlegs_onto_floor(const NavMesh *nav, int tri, uint32_t mask, Vec3 at, float *p);

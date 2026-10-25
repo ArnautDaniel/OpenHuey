@@ -277,6 +277,11 @@ void humanlegs_set(HumanLegs *h, int right, int left) {
     h->keep = 1.0f;
 }
 
+void humanlegs_feet_up(HumanLegs *h) {
+    h->jump = 1;
+    h->keep = 1.0f;
+}
+
 /* HumanModel_BodyFrames (and Model_BodyFrames for tri -1) */
 void humanlegs_fit(Actor *a, const NavMesh *nav, int tri, uint32_t mask, int plant, float back, float front) {
     HumanLegs *h = &a->hlegs;

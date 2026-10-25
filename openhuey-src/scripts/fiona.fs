@@ -155,6 +155,8 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
     show-her  fit-legs ;
 
 \ ---- each frame (Fiona_Update, the parts built so far) ----
+: followed ( -- )
+    her-at self body-at vec-copy  self body-tri dup 0< if  drop  else  her-tri !  then ;
 : frame ( -- )
     hewie-played? if  run-frame exit  then  0 mate-was-run !
     her-at her-was-at /vec move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
@@ -320,7 +322,10 @@ behaviour free
   on panic ( stage level -- )  cell>f her-panic-level f!  her-panic-stage ! ;
   on door-held ( room exit -- )  2drop  got-hold ;
   on door-refused ( room exit -- )  2drop  -1 her-move-done !  idle ;
-  on tick ( -- )  self body? if  frame  then ;
+  on tick ( -- )   \ (a scene having her - Character_Disable - her frame waits: where the scene moves her
+      \ her place - Fiona_FollowAnim; her heading kept)
+      self body? 0= if  exit  then
+      her-model @ scene-has? if  followed  else  frame  then ;
   on frame-end ( -- )   \ what she is doing, as the frame left her; her move
       self body? 0= if  exit  then
       unseen-frame
