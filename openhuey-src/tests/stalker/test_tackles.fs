@@ -5,12 +5,11 @@
 IN: test-tackles
 USING: tester engine game-state actors messages facts room-names game debug flag-names stalker stalker.state stalker.tables stalker.moving stalker.travel stalker.struck ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
 : tackle ( kind dir -- temper )  0 temper !  tackled  temper @ ;
 
-free-play  front-garden-2 room!  10 frames
+free-play  front-garden-2 room!  10 run-frames
 testing Debilitas tackled by Hewie: in front 5, in front low 8, behind 10, behind low 16
 T{ [: hewie striker !  1 0 tackle  1 2 tackle  1 1 tackle  2 3 tackle ;] his -> 5 8 10 16 }T
 testing ... not a bite ($B) or a hold ($A); not from Fiona
@@ -19,7 +18,7 @@ testing ... at most 1000
 T{ [: hewie striker !  998 temper !  0 0 tackled  temper @ ;] his -> 1000 }T
 
 testing Hewie let go of his leg (Pursuer_StateKnockedDown $1709): down on his front ($1709, lying as $1806), up again ($1807)
-stalkers-blind state-flag-set  s" fiona" actor-named body-tri debug:debilitas-tri  3 frames
+stalkers-blind state-flag-set  s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
 T{ [: 70 hp !  leg-down  anim @  lie-anim @ ;] his -> $1709 $1806 }T
 T{ [: [: anim @ $1807 = ;] his ;] 400 soon -> -1 }T
 testing his animations' sounds (Pursuer_AnimSounds): by his kit for the motion at its sound keys - his blow $E00: $15 at the first, none at the second

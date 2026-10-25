@@ -7,21 +7,20 @@
 IN: test-arrive
 USING: tester engine game-state actors messages room-names game debug fiona.state ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : model ( -- id )  game:fiona enter  her-model @  leave-actor ;
 : root-over ( F: -- d )   \ (her model's root above her place)
     model 0 bone-pos fdrop fswap fdrop  s" fiona" actor-named body-pos fdrop fswap fdrop  f- ;
 fvariable standing
 : at-rest? ( -- flag )  root-over standing f@ f- fabs 1e f< ;
 
-free-play  0 game:fiona send costume  deliver  front-garden-2 room!  30 frames
+free-play  0 game:fiona send costume  deliver  front-garden-2 room!  30 run-frames
 root-over standing f!
 testing standing in the front garden (high up): her root over her place
 T{ standing f@ 5e f>  standing f@ 15e f< -> -1 -1 }T
 testing into the castle's hall (far below): at her place as soon as she is drawn there
-castle-1f-1 room!  2 frames
+castle-1f-1 room!  2 run-frames
 T{ at-rest? -> -1 }T
 testing ... and back up
-front-garden-2 room!  2 frames
+front-garden-2 room!  2 run-frames
 T{ at-rest? -> -1 }T
 test-summary

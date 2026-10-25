@@ -12,9 +12,9 @@ behaviour asking
   on rooms-seen ( n -- )  answered ! ;
 end-behaviour
 asking asker-state s" asker" spawn constant asker
-: frames ( n -- )  0 ?do  actors-frame  loop ;
-: tally ( -- n )  -1 answered !  asker enter  room-tally send rooms-seen?  leave-actor  2 frames  answered @ ;
-2 frames
+: actor-frames ( n -- )  0 ?do  actors-frame  loop ;
+: tally ( -- n )  -1 answered !  asker enter  room-tally send rooms-seen?  leave-actor  2 actor-frames  answered @ ;
+2 actor-frames
 
 testing the mod is on and its actor is there
 T{ s" room-tally" mod-on? -> -1 }T
@@ -25,7 +25,7 @@ testing the new game's room counted
 T{ tally -> 1 }T
 
 testing a room she hadn't been in counts; one she had doesn't
-: out-by ( exit -- )  fiona enter  rooms send go-through  leave-actor  3 frames ;
+: out-by ( exit -- )  fiona enter  rooms send go-through  leave-actor  3 actor-frames ;
 front-garden-3 0 room-exit-leads constant arrive-exit drop
 0 out-by
 T{ tally -> 2 }T

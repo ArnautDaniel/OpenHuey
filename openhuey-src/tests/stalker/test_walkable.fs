@@ -6,14 +6,13 @@
 IN: test-walkable
 USING: stalker-names facts story.words tester engine game-state actors messages room-names game debug vectors flag-names stalker.state stalker.moving ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 variable mask  variable shut-tri  variable free-tri
 create at /vec allot  create out /vec allot
 
-free-play  castle-1f-1 room!  20 frames
+free-play  castle-1f-1 room!  20 run-frames
 stalkers-blind state-flag-set
-s" fiona" actor-named body-tri debug:debilitas-tri  3 frames
+s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
 [: self body-mask ;] his mask !
 \ a triangle of the room his floor isn't, with free floor about it; and one that is his
 : find-tris ( -- )

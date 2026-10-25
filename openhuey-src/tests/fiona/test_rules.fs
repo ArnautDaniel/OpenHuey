@@ -3,18 +3,17 @@
 \ out of others. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/fiona/test_rules.fs
 IN: test-fiona-rules
-USING: tester engine game-state actors messages room-names game keys items items.names facts flag-names vectors common fiona.state fiona.model fiona.anims fiona.moving fiona.controls fiona.slam fiona.fear fiona.hurt fiona.defend fiona.letgo fiona ;
+USING: tester engine game-state actors messages room-names game keys items items.names facts flag-names vectors common fiona.state fiona.model fiona.anims fiona.moving fiona.controls fiona.slam fiona.fear fiona.hurt fiona.defend fiona.letgo fiona debug ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : her@ ( xt -- x )  fiona enter  execute  leave-actor ;
 : mode ( -- n )  [: her-mode @ ;] her@ ;
 : hold ( key -- )  true key-hold ;   : release ( key -- )  false key-hold ;
-: free! ( -- )  [: idle ;] her@  10 frames ;
+: free! ( -- )  [: idle ;] her@  10 run-frames ;
 
-2 frames
-0 fiona send costume  1 frames
+2 run-frames
+0 fiona send costume  1 run-frames
 game:story send story-stop  deliver  progress pr.state 8 0 fill
-30 frames
+30 run-frames
 
 testing Fiona_ToIdle: the stick by the camera again (+0x1AD588 0); arriving afresh keeps a door's held stick
 T{ [: steered her-turn-mode !  idle  her-turn-mode @ ;] her@ -> 0 }T
@@ -23,14 +22,14 @@ free!
 
 testing the square: not while out of breath (Fiona_IsIdle), taken free (Progress_PlayerButtons)
 [: breathless-doing her-doing ! ;] her@
-key: Z hold  1 frames
+key: Z hold  1 run-frames
 T{ mode -> 0 }T
 T{ [: free-doing her-doing !  try-defend  her-mode @ ;] her@ -> 8 }T
 key: Z release  free!
 
 testing the triangle: no throw while panicking (the threat at 4), else thrown
-1 frames
-key: V hold  1 frames   \ (pressed, nothing in her hand yet)
+1 run-frames
+key: V hold  1 run-frames   \ (pressed, nothing in her hand yet)
 ball throw-slot 4 * progress pr.equipped + l!
 T{ [: panicking her-panic-stage !  try-let-go  her-mode @ ;] her@ -> 0 }T
 T{ [: 0 her-panic-stage !  try-let-go  her-mode @  her-sub @ ;] her@ -> $E $31 }T

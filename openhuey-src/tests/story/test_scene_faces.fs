@@ -7,7 +7,6 @@
 IN: test-scene-faces
 USING: tester engine game-state actors messages keys room-names game debug flag-names story-names fiona.state story.state facts story.words pause ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
 : msg? ( -- flag )  game:window enter  window:shown @  leave-actor  0< 0= ;
@@ -17,13 +16,13 @@ USING: tester engine game-state actors messages keys room-names game debug flag-
 : lids ( F: -- l r )  her act.face 7 4 * + sf@  her act.face 8 4 * + sf@ ;
 : in-scene? ( -- flag )  game:fiona enter  her-in-scene @  leave-actor ;
 
-60 frames
+60 run-frames
 testing out of a scene: her face drawn as her own (the mouth and the eyelids)
 T{ her act.face-all l@ -> 0 }T
 testing her eyelids half shut by a blink, then a scene takes her: open, and every shape of her face drawn by it
 \ (the scene: Hewie freed from the wire, at night - front-garden-3's place)
-c2f-3-flag1 story-flag-set  0 game:fiona send costume  castle-2f-3 room!  30 frames
-front-garden-3 room!  60 frames  228.1e 0e 72e 0e tp-facing  10 frames
+c2f-3-flag1 story-flag-set  0 game:fiona send costume  castle-2f-3 room!  30 run-frames
+front-garden-3 room!  60 run-frames  228.1e 0e 72e 0e tp-facing  10 run-frames
 0.49e her act.face 7 4 * + sf!  0.49e her act.face 8 4 * + sf!
 circle press
 T{ 600 [: cutscene-active? ;] within -> -1 }T
@@ -38,8 +37,8 @@ variable lids-moved  variable lids-apart
 T{ lids-moved @  lids-apart @ -> -1 0 }T
 testing ... her own frame waiting meanwhile (Character_Disable): her place where the scene moves her (Fiona_FollowAnim)
 : her-place-off ( F: -- d )  game:fiona enter  her-at self body-at vec-dist  leave-actor ;
-T{ 60 frames  her-place-off 0.01e f<  game:fiona enter her-model @ leave-actor scene-has? -> -1 -1 }T
+T{ 60 run-frames  her-place-off 0.01e f<  game:fiona enter her-model @ leave-actor scene-has? -> -1 -1 }T
 testing ... skipped: given back, drawn as her own again
-T{ start-button press  10 frames  triangle press  300 [: in-scene? 0= ;] within -> -1 }T
+T{ start-button press  10 run-frames  triangle press  300 [: in-scene? 0= ;] within -> -1 }T
 T{ her act.face-all l@  game:fiona enter her-model @ leave-actor scene-has? -> 0 0 }T
 test-summary

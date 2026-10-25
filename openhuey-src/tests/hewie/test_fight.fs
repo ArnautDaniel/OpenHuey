@@ -4,7 +4,6 @@
 IN: test-fight
 USING: tester engine game-state actors messages common facts room-names game debug flag-names hewie.state hewie.body hewie.model hewie.states hewie.fight fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.anims stalker.chase stalker.attack stalker.bitten ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : his@ ( xt -- x )  game:hewie enter  execute  leave-actor ;
 : his! ( xt -- )  game:hewie enter  execute  leave-actor ;
 : deb@ ( xt -- x )  game:debilitas enter  execute  leave-actor ;
@@ -13,13 +12,13 @@ USING: tester engine game-state actors messages common facts room-names game deb
 : blind ( on -- )  if  stalkers-blind state-flag-set  else  stalkers-blind state-flag-clear  then ;
 1 seed !
 
-free-play  front-garden-2 room!  20 frames
-140.64e 124e -217.33e 0e tp-facing  5 frames  game:hewie send join-fiona  20 frames
+free-play  front-garden-2 room!  20 run-frames
+140.64e 124e -217.33e 0e tp-facing  5 run-frames  game:hewie send join-fiona  20 run-frames
 \ (Debilitas on her triangle, not after her: a stalker at hand for Hewie)
 variable arg
 : deb-in ( temper -- )
-    true blind  s" fiona" actor-named body-tri debug:debilitas-tri  3 frames
-    arg !  [: 3 mode!  arg @ temper !  70 hp ! ;] deb!  3 frames ;
+    true blind  s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+    arg !  [: 3 mode!  arg @ temper !  70 hp ! ;] deb!  3 run-frames ;
 : go ( act -- )  arg !  [: 1000 add-trust  obeys  0 -1 set-mood  100 hp!  0 cond!  arg @ 0 set-action ;] his! ;
 
 testing he knows the stalker in his room: who, where (`stalker-doing`)
@@ -33,39 +32,39 @@ T{ [: temper @ 10 >= ;] deb@ -> -1 }T
 testing ... let go: both on again, the stalker after his reaction's end ($1707)
 T{ [: [: bitten @ 0= ;] deb@ ;] 600 soon  [: reeling @ ;] deb@ -> -1 0 }T
 T{ [: [: his-act @ ['] st-clamped <> his-action @ $1F <> and ;] his@ ;] 300 soon -> -1 }T
-debug:debilitas-out  5 frames
+debug:debilitas-out  5 run-frames
 
 testing the stalker's footsteps (Pursuer_Footsteps): walking ($200), a step as each foot comes down, heard
 0 deb-in
-: walking ( -- )  [: ['] noop step !  $200 play ;] deb! ;
+: walk-him ( -- )  [: ['] noop step !  $200 play ;] deb! ;
 : steps ( -- n )  [: step-foot @ ;] deb@ ;
-: walked ( n -- steps )  steps swap  0 do  walking  game-tick  loop  steps swap - ;
+: walked ( n -- steps )  steps swap  0 do  walk-him  game-tick  loop  steps swap - ;
 T{ 60 walked 2 > -> -1 }T
-debug:debilitas-out  5 frames
+debug:debilitas-out  5 run-frames
 
 testing refused when the stalker can't take it (not in the room): he goes again later (0x5A)
-s" fiona" actor-named body-tri debug:debilitas-tri  3 frames
+s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
 [: $1F 0 set-action  -1 his-grip !  ['] st-await-grip his-act ! ;] his!
-front-garden-3 room!  1 frames
-12 game:debilitas send dog-attack  3 frames
+front-garden-3 room!  1 run-frames
+12 game:debilitas send dog-attack  3 run-frames
 T{ [: bitten @ ;] deb@ -> 0 }T
-debug:debilitas-out  front-garden-2 room!  20 frames
-140.64e 124e -217.33e 0e tp-facing  5 frames  game:hewie send join-fiona  20 frames
+debug:debilitas-out  front-garden-2 room!  20 run-frames
+140.64e 124e -217.33e 0e tp-facing  5 run-frames  game:hewie send join-fiona  20 run-frames
 
 testing struck by the stalker (his blow): its damage, his yelp ($69, $1000), then on
-0 deb-in  [: 0 -1 set-mood  100 hp!  0 0 set-action ;] his!  2 frames
-2 30 0 game:hewie [: send blow ;] deb!  3 frames
+0 deb-in  [: 0 -1 set-mood  100 hp!  0 0 set-action ;] his!  2 run-frames
+2 30 0 game:hewie [: send blow ;] deb!  3 run-frames
 T{ [: his-hp @  his-action @  anim@ ;] his@ -> 70 $69 $1000 }T
 T{ [: [: his-action @ $69 <> ;] his@ ;] 120 soon -> -1 }T
 testing ... struck out of health: down ($52), counted for the dog's level (progress +0xFBA - not in a hard game); not a game over
 progress pr.hewie-downs l@ constant downs0
-2 90 0 game:hewie [: send blow ;] deb!  3 frames
+2 90 0 game:hewie [: send blow ;] deb!  3 run-frames
 T{ [: [: his-action @ $52 = ;] his@ ;] 120 soon  [: his-hp @ ;] his@ -> -1 0 }T
-T{ progress pr.hewie-downs l@ downs0 -  caught state-flag?  30 frames caught state-flag? -> 1 0 0 }T
-[: 100 hp!  0 cond!  0 0 set-action ;] his!  10 frames
+T{ progress pr.hewie-downs l@ downs0 -  caught state-flag?  30 run-frames caught state-flag? -> 1 0 0 }T
+[: 100 hp!  0 cond!  0 0 set-action ;] his!  10 run-frames
 
 testing barked at, his temper up (Pursuer_Hit kind 6: 1 each, searching or waiting about)
-[: 0 temper !  3 mode! ;] deb!  3 game:debilitas send snap  game:debilitas send snap  2 frames
+[: 0 temper !  3 mode! ;] deb!  3 game:debilitas send snap  game:debilitas send snap  2 run-frames
 T{ [: temper @ ;] deb@ -> 2 }T
 testing past what he stands (20): he goes for Hewie - an attack from his table for Hewie - each over, the chance roll (Pursuer_ChanceRoll): won, his temper back to 0 and on
 false blind  [: 30 temper ! ;] deb!
@@ -88,23 +87,23 @@ an-exit  [: 30 temper ! ;] deb!
 T{ [: [: at-dog @ ;] deb@ ;] 10 soon -> -1 }T
 [: to @ 0 dup tri-center body-place ;] his!
 T{ [: [: out-going @ ;] deb@ ;] 10 soon  [: making-for @  temper @  at-dog @  my-mode @ ;] deb@ -> -1 by @ 0 0 1 }T
-true blind  debug:debilitas-out  5 frames
-[: room-id s" fiona" actor-named body-tri dup tri-center body-place ;] his!  game:hewie send join-fiona  20 frames
+true blind  debug:debilitas-out  5 run-frames
+[: room-id s" fiona" actor-named body-tri dup tri-center body-place ;] his!  game:hewie send join-fiona  20 run-frames
 
 testing her kick on him: struck home (her answer), he yelps; hit by her often - angry by chance
-[: 100 hp!  0 cond!  0 0 set-action  0 his-hits ! ;] his!  5 frames
-2 5 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 frames
+[: 100 hp!  0 cond!  0 0 set-action  0 his-hits ! ;] his!  5 run-frames
+2 5 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 run-frames
 T{ [: his-hp @  his-action @  his-hits @ ;] his@ -> 90 $69 1 }T
 
 testing a door into him (kind 5): only while it swings - its damage, back from it or aside ($6B), or out by it ($6C)
-[: 100 hp!  0 cond!  0 0 set-action ;] his!  5 frames
-5 3 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 frames
+[: 100 hp!  0 cond!  0 0 set-action ;] his!  5 run-frames
+5 3 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 run-frames
 T{ [: his-hp @  his-action @ dup $6B = swap $6C = or ;] his@ -> 100 0 }T
-T{ 0 0 door-anim  1 frames  0 door-animating? -> -1 -1 }T
-5 3 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 frames
+T{ 0 0 door-anim  1 run-frames  0 door-animating? -> -1 -1 }T
+5 3 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 run-frames
 T{ [: his-hp @  his-action @ dup $6B = swap $6C = or ;] his@ -> 97 -1 }T
-[: 100 hp!  0 cond!  0 his-2b !  0 his-2d !  0 0 set-action ;] his!  60 frames
-[: room-id s" fiona" actor-named body-tri dup tri-center body-place ;] his!  5 frames
+[: 100 hp!  0 cond!  0 his-2b !  0 his-2d !  0 0 set-action ;] his!  60 run-frames
+[: room-id s" fiona" actor-named body-tri dup tri-center body-place ;] his!  5 run-frames
 
 testing at a flank, the stalker's temper high: thrown off ($1702) - hanging ($2203), then held on or flung, and on
 200 deb-in  false blind
@@ -114,20 +113,20 @@ T{ [: [: bite-how @ 1 = ;] deb@ ;] 300 soon -> -1 }T
 T{ [: [: anim@ $2203 = ;] his@ ;] 200 soon -> -1 }T
 T{ [: [: anim@ dup $2204 = swap $2207 = or ;] his@ ;] 200 soon -> -1 }T
 T{ [: [: his-action @ $1F <> ;] his@ ;] 600 soon  [: [: bitten @ 0= ;] deb@ ;] 600 soon -> -1 -1 }T
-true blind  debug:debilitas-out  5 frames
+true blind  debug:debilitas-out  5 run-frames
 false blind
 
 testing off screen, the stalker searching his room (Hewie_Scuffle): they scuffle - he waits it out ($30), the stalker held; once a meeting
 2 seed !   \ (a seed it comes to a scuffle with: a quarter of the time nothing does)
-front-garden-2 room!  10 frames  140.64e 124e -217.33e 0e tp-facing  5 frames  game:hewie send join-fiona  20 frames
-front-garden-3 room!  2 frames                     \ (she goes on: he is left off screen in front-garden-2)
-true blind  front-garden-2 0 game:debilitas send stalker-in  2 frames  [: 2 mode! ;] deb!
+front-garden-2 room!  10 run-frames  140.64e 124e -217.33e 0e tp-facing  5 run-frames  game:hewie send join-fiona  20 run-frames
+front-garden-3 room!  2 run-frames                     \ (she goes on: he is left off screen in front-garden-2)
+true blind  front-garden-2 0 game:debilitas send stalker-in  2 run-frames  [: 2 mode! ;] deb!
 T{ [: [: his-action @ $30 = ;] his@  [: stun-t @ 0> ;] deb@ or ;] 30 soon  [: his-scuffled @ ;] his@ -> -1 -1 }T
 testing his feeling about the stalker (Hewie_FeelPursuer): disliking him (-10), calm, the stalker about - upset (mood 2), 14 in 16; liking him, never
 T{ [: 0 his-mood !  -10 feel !  4 0 do  feel-pursuer  loop  his-mood @ ;] his@ -> 2 }T
 T{ [: 0 his-mood !  5 feel !  20 0 do  feel-pursuer  loop  his-mood @ ;] his@ -> 0 }T
 [: 0 feel ! ;] his!
-debug:debilitas-out  5 frames
+debug:debilitas-out  5 run-frames
 false blind
 testing his bites' damage: as it is; Sylvesta Esca's half again (+0xA10); the black shepherd twice, then half again
 : sylvesta ( frames -- )  progress pr.boosts 6 8 * + 4 + l! ;

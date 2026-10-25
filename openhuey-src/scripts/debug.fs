@@ -35,6 +35,7 @@ variable jumped
 : tp-tri ( tri -- )  tri-center tp ;
 : walk ( F: x y z -- )   \ (over the nav mesh, then she stands)
     xyz>cells  fiona-id send go-to ;
+: run-frames ( n -- )  0 ?do  game-tick  loop ;   \ (the game run on n frames: the tests, the console)
 : press ( button -- )   \ (pressed for a frame: its key down, then up)
     button-keys drop  dup true key-hold  game-tick  false key-hold ;
 : .here ( -- )

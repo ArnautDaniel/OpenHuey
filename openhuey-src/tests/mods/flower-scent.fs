@@ -3,9 +3,8 @@
 \ (CMakeLists.txt):
 \   build/openhuey-src/openhuey --mod openhuey-src/examples/mods/flower-scent --test openhuey-src/tests/mods/flower-scent.fs
 IN: test-flower-scent
-USING: tester engine game-state actors messages game items items.names fiona.state ;
+USING: tester engine game-state actors messages game items items.names fiona.state debug ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : give ( id n -- )  game:items send give-item  deliver ;
 variable used-result
 state: menu-state  cell field dummy  end-state
@@ -17,7 +16,7 @@ stand-in-menu menu-state s" stand-in-menu" spawn constant menu
     -9 used-result !  menu enter  game:items send use-item  leave-actor  deliver  used-result @ ;
 : fear ( -- n )  game:fiona enter  her-fear f@ f>s  leave-actor ;
 : fear! ( n -- )  game:fiona send fear-to  deliver ;
-2 frames
+2 run-frames
 
 testing the mod is on and its rule set
 T{ s" flower-scent" mod-on? -> -1 }T

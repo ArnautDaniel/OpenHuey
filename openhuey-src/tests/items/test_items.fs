@@ -3,9 +3,8 @@
 \ the timed effects; the story's words. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/items/test_items.fs
 IN: test-items
-USING: tester engine game-state actors messages game room-names items items.names items.tables fiona.state story-names story.state facts story.words flag-names fiona.moving ;
+USING: tester engine game-state actors messages game room-names items items.names items.tables fiona.state story-names story.state facts story.words flag-names fiona.moving debug ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : give ( id n -- )  game:items send give-item  deliver ;
 : ids ( list -- a b c )  dup 0 item-at  over 1 item-at  rot 2 item-at ;
 \ a stand-in for the menu: what came back from a use
@@ -20,7 +19,7 @@ stand-in-menu menu-state s" stand-in-menu" spawn constant menu
 : equip ( list i -- )  menu enter  game:items send equip-item  leave-actor  deliver ;
 : her ( xt -- x )  game:fiona enter  execute  leave-actor ;
 
-2 frames
+2 run-frames
 testing a new game: nothing carried, nothing worn
 T{ 0 listed  1 listed  2 listed  0 equipped -> 0 0 0 -1 }T
 
@@ -31,7 +30,7 @@ testing ... onto its stack, at most 99; an id with no class is not given
 camomile 120 give  $30 1 give
 T{ camomile items-of  0 listed -> 99 1 }T
 testing ... a counter (the Fresh Flowers) starts at 0, counts each frame
-fresh-flowers 1 give  1 frames
+fresh-flowers 1 give  1 run-frames
 T{ 0 1 held-at n@  fresh-flowers items-of -> 1 1 }T
 
 testing spent: a stack loses one; the last one goes and the list closes up
@@ -73,24 +72,24 @@ testing used: a remedy - Camomile calms her (fear and recovery down) and is spen
 [: 60e her-fear f!  900 her-recovery ! ;] her
 T{ 1 0 use  [: her-fear f@ f>s her-recovery @ ;] her  camomile items-of -> 1 0 0 97 }T
 testing ... Lavender: its effect for 300 frames, running down - calming 0.27 a frame more (StatusTimers_Frame)
-: panic-level ( F: -- l )  game:panic enter  panic:level f@  leave-actor ;
-70 game:panic send panic-level!  1 frames
+: panic-level@ ( F: -- l )  game:panic enter  panic:level f@  leave-actor ;
+70 game:panic send panic-level!  1 run-frames
 T{ 1 1 use  calm-boost boost-on? -> 1 -1 }T
-T{ panic-level  30 frames  panic-level f-  fdup 10e f>  11.5e f< -> -1 -1 }T   \ (0.1 calm, 0.27 Lavender's)
-T{ 270 frames  calm-boost boost-on? -> 0 }T
-50 game:panic send panic-level!  1 frames
-T{ panic-level  30 frames  panic-level f-  fdup 2.5e f>  3.5e f< -> -1 -1 }T   \ (0.1 calm alone)
+T{ panic-level@  30 run-frames  panic-level@ f-  fdup 10e f>  11.5e f< -> -1 -1 }T   \ (0.1 calm, 0.27 Lavender's)
+T{ 270 run-frames  calm-boost boost-on? -> 0 }T
+50 game:panic send panic-level!  1 run-frames
+T{ panic-level@  30 run-frames  panic-level@ f-  fdup 2.5e f>  3.5e f< -> -1 -1 }T   \ (0.1 calm alone)
 testing ... Fortis: her fear held at 0 for 1800 frames (StatusTimers_Frame)
 : remedy-at ( id -- i )  64 0 do  dup 1 i item-at = if  drop i unloop exit  then  loop  drop -1 ;
 fortis 1 give
-T{ 1 fortis remedy-at use  [: 50e her-fear f! ;] her  2 frames  [: her-fear f@ f>s ;] her -> 1 0 }T
-T{ 1800 frames  [: 50e her-fear f! ;] her  2 frames  [: her-fear f@ f>s ;] her 40 > -> -1 }T
+T{ 1 fortis remedy-at use  [: 50e her-fear f! ;] her  2 run-frames  [: her-fear f@ f>s ;] her -> 1 0 }T
+T{ 1800 run-frames  [: 50e her-fear f! ;] her  2 run-frames  [: her-fear f@ f>s ;] her 40 > -> -1 }T
 testing ... Weltigo: everything heard out over 30 frames, silent, back in over the last 30 of its 1800
 weltigo 1 give
-T{ 1 weltigo remedy-at use  15 frames  world-volume 0.5e f- fabs 0.05e f< -> 5 -1 }T
-T{ 100 frames  world-volume f0=  weltigo remedy-at -1 = -> -1 -1 }T
-T{ 1670 frames  world-volume 0.5e f-  fabs 0.05e f< -> -1 }T
-T{ 30 frames  world-volume 1e f= -> -1 }T
+T{ 1 weltigo remedy-at use  15 run-frames  world-volume 0.5e f- fabs 0.05e f< -> 5 -1 }T
+T{ 100 run-frames  world-volume f0=  weltigo remedy-at -1 = -> -1 -1 }T
+T{ 1670 run-frames  world-volume 0.5e f-  fabs 0.05e f< -> -1 }T
+T{ 30 run-frames  world-volume 1e f= -> -1 }T
 testing ... a key away from its place: nothing happens, kept
 smudged-key 1 give
 T{ 0 1 item-at 0 1 use  smudged-key items-of -> smudged-key 0 1 }T
@@ -101,7 +100,7 @@ testing ... nothing there: an empty place
 T{ 0 40 use  used-id @ -> 0 -1 }T
 
 testing the Fresh Flowers wither after 9000 frames: the Withered Flowers instead, marked
-9000 0 0 held-at 4 + l!  2 frames
+9000 0 0 held-at 4 + l!  2 run-frames
 T{ fresh-flowers items-of  withered-flowers items-of  flowers-withered story-flag? -> 0 1 -1 }T
 
 testing the story's words: counted and given, the count; a mark and its test; the reward
@@ -113,14 +112,14 @@ T{ files 1- file@ -> $271 }T
 
 testing a key at its place: the room's action script for her starts (the gate key: the front
 \ garden's spot 5 - its event $F), and she is marked as stalkers stay away
-front-garden-1 -1 game:rooms send go-to-room  5 frames
+front-garden-1 -1 game:rooms send go-to-room  5 run-frames
 create spot 12 allot
 5 area-middle drop  spot vec!
 game:fiona enter  her-at spot vec-copy  her-at $28020018 v-tri-in her-tri !  spot vec@ body-place-at  leave-actor
 castle-gate-key 1 give
 : room-actor ( -- id )  room-id room-name actor-named ;
 : index-of ( id -- i )  64 0 do  dup 0 i item-at = if  drop i unloop exit  then  loop  drop -1 ;
-T{ 0 castle-gate-key index-of use  1 frames  room-actor enter  1 slot-task @ 0<>  leave-actor  stalkers-stay state-flag? -> 4 -1 -1 }T
+T{ 0 castle-gate-key index-of use  1 run-frames  room-actor enter  1 slot-task @ 0<>  leave-actor  stalkers-stay state-flag? -> 4 -1 -1 }T
 testing the chokers (her equipment's slot 3): $8C halves a fright and doubles her calming, and spares her the recovery's reset; $8B a quarter off, half again; none: as it is
 : hers ( xt -- x )  game:fiona enter  execute  leave-actor ;
 : choker! ( item -- )  progress pr.equipped 12 + l! ;
@@ -133,18 +132,18 @@ testing the word plate (item $3F): at the golem (castle-2f-8, spot 6) EMETH - it
     {: a n :}  8 0 do  i n < if  a i + c@  else  0  then  loop  game:items send give-plate  deliver ;
 : stand-at ( area -- )   \ (her at the middle of the room's area)
     area-middle drop  spot vec!
-    game:fiona enter  her-at spot vec-copy  her-at $28020018 v-tri-in her-tri !  spot vec@ body-place-at  leave-actor  2 frames ;
-castle-2f-8 -1 game:rooms send go-to-room  5 frames
+    game:fiona enter  her-at spot vec-copy  her-at $28020018 v-tri-in her-tri !  spot vec@ body-place-at  leave-actor  2 run-frames ;
+castle-2f-8 -1 game:rooms send go-to-room  5 run-frames
 6 stand-at  s" EMETH" plate
 T{ 0 word-plate-key index-of use  26 story-flag?  word-plate-key items-of -> 6 -1 0 }T
 testing ... a word it doesn't know: event 5, no flag
-s" HELLO" plate  27 frames
+s" HELLO" plate  27 run-frames
 T{ 0 word-plate-key index-of use  25 story-flag? -> 6 0 }T
 testing the elements (old-mansion-1f-12, spot 8): MERCURY - its flag ($4D) and event bit 0 (the word right); at no spot: nothing
-old-mansion-1f-12 -1 game:rooms send go-to-room  5 frames
+old-mansion-1f-12 -1 game:rooms send go-to-room  5 run-frames
 s" MERCURY" plate
 T{ 0 word-plate-key index-of use -> 0 }T
 8 stand-at
-T{ 0 word-plate-key index-of use  1 frames  $4D story-flag?  room-actor enter  0 ebit?  leave-actor -> 6 -1 -1 }T
+T{ 0 word-plate-key index-of use  1 run-frames  $4D story-flag?  room-actor enter  0 ebit?  leave-actor -> 6 -1 -1 }T
 
 test-summary

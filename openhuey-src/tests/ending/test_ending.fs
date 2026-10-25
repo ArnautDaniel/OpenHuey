@@ -4,7 +4,6 @@
 IN: test-ending
 USING: tester engine game-state actors messages room-names game debug keys facts flag-names story-names ending ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : in-ending ( xt -- )  game:ending enter  execute  leave-actor ;
 : stage? ( -- n )  game:ending enter  ending:stage @  leave-actor ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
@@ -14,10 +13,10 @@ USING: tester engine game-state actors messages room-names game debug keys facts
 : level ( -- n )  0 [: drop ending:dog-level ;] in-ending ;
 : earned ( -- n )  0 [: drop ending:dog-level ending:dog !  ending:type-earned ;] in-ending ;
 
-free-play  10 frames  front-garden-2 room!  10 frames
+free-play  10 run-frames  front-garden-2 room!  10 run-frames
 testing the time played goes on in play, not while paused
-T{ progress pr.play-frames l@  10 frames  progress pr.play-frames l@ swap - -> 10 }T
-T{ 1 pause!  progress pr.play-frames l@  10 frames  progress pr.play-frames l@ swap -  0 pause! -> 0 }T
+T{ progress pr.play-frames l@  10 run-frames  progress pr.play-frames l@ swap - -> 10 }T
+T{ 1 pause!  progress pr.play-frames l@  10 run-frames  progress pr.play-frames l@ swap -  0 pause! -> 0 }T
 
 testing the dog level: his trust, less mistreated in 20s, more pleased in 10s (10 or more A, under 7 E)
 T{ 9 0 0 0 record!  level -> 0 }T            \ (9 + 1 = 10: A)
@@ -50,7 +49,7 @@ T{ 5 resident-flag? -> -1 }T   \ (the TYPE's own: 5 + 0)
 testing the story's end: the staff roll, Start skips it, its fade, then the results
 $2D progress pr.vars + 0 swap c!  2 progress pr.hewie-trust l!
 T{ stage? -> ending:playing }T
-2 game:gameover send game-over-kind  2 frames  caught state-flag-set  3 frames
+2 game:gameover send game-over-kind  2 run-frames  caught state-flag-set  3 run-frames
 T{ stage? ending:staff-roll ending:staff-fade 1+ within  world-held state-flag? -> -1 -1 }T
 : shows? ( -- flag )  stage? ending:staff-roll <> ;
 : start-on ( -- flag )  start-button press  shows? ;
@@ -61,7 +60,7 @@ testing the record shows; a button and the picture goes; then back to the title
 : text-up? ( -- flag )  0 [: drop ending:text-a @ $80 = ;] in-ending ;
 T{ ' text-up? 600 soon -> -1 }T
 testing the record waits for circle or Start held, not the cross (SceneEnding_SeqResults: gPadHeld)
-160 frames  cross press  5 frames
+160 run-frames  cross press  5 run-frames
 T{ 0 [: drop ending:step @ ;] in-ending -> 5 }T
 : on-and-on ( -- flag )  circle press  stage? ending:done = ;
 T{ ' on-and-on 1200 soon -> -1 }T

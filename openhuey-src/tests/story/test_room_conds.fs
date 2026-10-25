@@ -7,25 +7,24 @@ IN: test-room-conds
 USING: tester engine game-state actors messages common room-names game debug fiona.state story.state story.words
   story.rooms.castle-1f-10 story.rooms.castle-b1-5 story.rooms.old-mansion-b1-6 story.rooms.chaos-forest-13 story.rooms.castle-1f-9 story.rooms.castle-1f-13 ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
-free-play  front-garden-2 room!  20 frames
+free-play  front-garden-2 room!  20 run-frames
 
 testing a noise of $20 or more here: kept for the next frame, then gone; a quieter one or elsewhere not
-: noise ( loud room -- )  game:fiona body-tri -1 0 game:acoustics send noise  deliver ;
-T{ $30 room-id noise  2 frames  [: loud-here? ;] in-room -> -1 }T
-T{ 4 frames  [: loud-here? ;] in-room -> 0 }T
-T{ $10 room-id noise  2 frames  [: loud-here? ;] in-room -> 0 }T
-T{ $30 room-id 1+ noise  2 frames  [: loud-here? ;] in-room -> 0 }T
+: noise-at-her ( loud room -- )  game:fiona body-tri -1 0 game:acoustics send noise  deliver ;
+T{ $30 room-id noise-at-her  2 run-frames  [: loud-here? ;] in-room -> -1 }T
+T{ 4 run-frames  [: loud-here? ;] in-room -> 0 }T
+T{ $10 room-id noise-at-her  2 run-frames  [: loud-here? ;] in-room -> 0 }T
+T{ $30 room-id 1+ noise-at-her  2 run-frames  [: loud-here? ;] in-room -> 0 }T
 
 testing the summoner's countdown: running (5 s), then out
-T{ 5 game:summoner send summoner-cooldown  3 frames  [: summoner-done? ;] in-room -> 0 }T
-T{ 0 game:summoner send summoner-cooldown  3 frames  [: summoner-done? ;] in-room -> -1 }T
+T{ 5 game:summoner send summoner-cooldown  3 run-frames  [: summoner-done? ;] in-room -> 0 }T
+T{ 0 game:summoner send summoner-cooldown  3 run-frames  [: summoner-done? ;] in-room -> -1 }T
 
 testing nothing of kind 3 (the doll) lying about; one made, and it is
 T{ [: castle-1f-10.cond01? ;] in-room -> -1 }T
-3 game:fiona body-tri  game:fiona body-pos f>cell >r f>cell >r f>cell r> r>  0 0 0  game:things send thing-made  deliver  2 frames
+3 game:fiona body-tri  game:fiona body-pos f>cell >r f>cell >r f>cell r> r>  0 0 0  game:things send thing-made  deliver  2 run-frames
 T{ [: castle-1f-10.cond01? ;] in-room -> 0 }T
 engine:things-clear
 
@@ -33,9 +32,9 @@ testing Fiona's reaction with nobody behind it (castle-1f-9): not in one, so no
 T{ [: castle-1f-9.cond00? fiona-struck? ;] in-room -> 0 0 }T
 
 testing her 20 .. 120 from a point (castle-b1-5): 50 away yes, beside it no
-: s16 ( n -- hi lo )  $FFFF and dup 8 rshift swap $FF and ;
+: split16 ( n -- hi lo )  $FFFF and dup 8 rshift swap $FF and ;
 : pt ( F: dx dz -- ) ( -- b0 b1 b2 b3 )   \ her place plus (dx, dz), as the command's bytes
-    game:fiona body-at 8 + sf@ f+ f>s >r  game:fiona body-at sf@ f+ f>s s16  r> s16 ;
+    game:fiona body-at 8 + sf@ f+ f>s >r  game:fiona body-at sf@ f+ f>s split16  r> split16 ;
 T{ [: 50e 0e pt castle-b1-5.cond00?  1e 0e pt castle-b1-5.cond00? ;] in-room -> -1 0 }T
 
 testing a door's open state by its number (castle-1f-13): the room's exit 0 door, opened, shut

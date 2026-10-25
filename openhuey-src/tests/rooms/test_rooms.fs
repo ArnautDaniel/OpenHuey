@@ -14,17 +14,17 @@ behaviour witnessing
   on entered-room ( room exit -- )  3 -rot saw ;
 end-behaviour
 witnessing witness-state s" witness" spawn constant witness
-: frames ( n -- )  0 ?do  actors-frame  loop ;
+: actor-frames ( n -- )  0 ?do  actors-frame  loop ;
 : seen@ ( i -- x )  seen @ nth ;
 : forget  seen @ list-clear ;
-2 frames
+2 actor-frames
 
 testing a new game starts in the cage room
 T{ room-id -> front-garden-3 }T
 T{ fiona body-room -> front-garden-3 }T
 
 testing going out by an exit: leaving, arrived, entered - in that order, with both exits
-: out-by ( exit -- )  fiona enter  rooms send go-through  leave-actor  3 frames ;
+: out-by ( exit -- )  fiona enter  rooms send go-through  leave-actor  3 actor-frames ;
 front-garden-3 0 room-exit-leads constant arrive-exit constant next-room
 forget  0 out-by
 T{ room-id -> next-room }T
@@ -46,7 +46,7 @@ forget  7 out-by
 T{ room-id  seen @ length -> front-garden-3 0 }T
 
 testing a jump (no exit): no exit to arrive by
-forget  front-garden-2 -1 rooms send go-to-room  3 frames
+forget  front-garden-2 -1 rooms send go-to-room  3 actor-frames
 T{ room-id -> front-garden-2 }T
 T{ 2 seen@ 5 seen@ -> -1 -1 }T
 T{ fiona body-room -> front-garden-2 }T

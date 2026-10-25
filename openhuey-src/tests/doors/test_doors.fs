@@ -1,7 +1,7 @@
 \ doors: locks, holding, letting go, noise (docs/subsystems/doors.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/doors/test_doors.fs
 IN: test-doors
-USING: tester engine game-state actors messages room-names game ;
+USING: tester engine game-state actors messages room-names game debug ;
 
 \ ---- a user of doors, and a listener ----
 state: user-state  cell field dummy  end-state
@@ -14,8 +14,7 @@ behaviour using
   on heard-nothing ( -- ) ;
 end-behaviour
 using user-state s" user" spawn constant user
-: frames ( n -- )  0 ?do  game-tick  loop ;   \ (whole frames: the doors swing)
-front-garden-2 -1 rooms send go-to-room  2 frames
+front-garden-2 -1 rooms send go-to-room  2 run-frames
 : as-user ( -- )  user enter ;
 
 \ front-garden-2's exit 0 is a real door (to its neighbour), exit 2 a doorway
@@ -71,7 +70,7 @@ door0 clean
     as-user  0 exit-stand drop  room-id 0 body-place  leave-actor ;
 listen-here
 T{ front-garden-2 0 fiona-kind hold -> 1 }T
-T{ as-user 0 true fiona-noise doors send swing-door leave-actor  30 frames  door0 door-open? -> -1 }T
+T{ as-user 0 true fiona-noise doors send swing-door leave-actor  30 run-frames  door0 door-open? -> -1 }T
 testing slammed shut: the latch is loud (0x5F)
 T{ front-garden-2 0 fiona-kind hold -> 1 }T
 : slammed ( -- source loud )
@@ -92,7 +91,7 @@ T{ 0 passage?  1 passage? -> 0 -1 }T
     0 ?do  game-tick  got @ 0< 0= if  leave  then  loop  got @ got-loud @ ;
 T{ game-tick  0 door-angle f>s -> -15 }T
 T{ 4 heard -> fiona-noise $5F }T
-T{ 6 frames  0 door-angle f>s  door0 door-open? -> -90 0 }T
+T{ 6 run-frames  0 door-angle f>s  door0 door-open? -> -90 0 }T
 testing set swinging shut: the latch, loud, as it shuts; the passage back at once
 T{ -1 got !  0 got-loud !  as-user 0 false doors send set-door-opened leave-actor deliver  0 passage?  1 passage? -> -1 0 }T
 T{ 9 heard  0 door-angle f>s -> fiona-noise $5F 0 }T
@@ -100,7 +99,7 @@ T{ 9 heard  0 door-angle f>s -> fiona-noise $5F 0 }T
 testing a door with no nav triangle is never shown nor swung (Doors_TakeRoom +0x70: water-tower-7f-1's exit 0)
 water-tower-7f-1 room
 T{ 0 door-here? -> -1 }T
-T{ 0 true false door-move  6 frames  0 door-angle f>s -> 0 }T
+T{ 0 true false door-move  6 run-frames  0 door-angle f>s -> 0 }T
 front-garden-2 room
 
 testing routes between the halves of a room (room $40: two halves joined through other rooms)
@@ -114,21 +113,21 @@ T{ 1 0 halves 0>  first-way -> -1 1 }T
 
 testing an open door blocks the lights past 78.75 degrees (Door_Draw's door_portal: its leaf's two
 testing faces); behind it, away from a light, that light's shadows don't fall (Shadow_BlockerVolumes)
-castle-1f-1 0 rooms send go-to-room  10 frames
-0 -1 0e door-swing  2 frames
+castle-1f-1 0 rooms send go-to-room  10 run-frames
+0 -1 0e door-swing  2 run-frames
 T{ light-blockers -> 0 }T
-0 -1 -90e door-swing  2 frames
+0 -1 -90e door-swing  2 run-frames
 T{ light-blockers -> 2 }T
 T{ 4 133.9e 4.5e -44.1e light-blocked? -> -1 }T      \ (light 4, through the leaf's middle and on)
 T{ 4 110e 4.5e -44.1e light-blocked? -> 0 }T         \ (beside it)
 T{ 4 126.5e 11e -47e light-blocked? -> 0 }T          \ (on the light's side of it)
-0 -1 -70e door-swing  2 frames
+0 -1 -70e door-swing  2 run-frames
 T{ light-blockers -> 0 }T
 testing a room script's blocker (0x66) lasts its frame
 130e 30e -40e 120e 30e -40e 130e 10e -40e 120e 10e -40e light-blocker
 T{ light-blockers -> 1 }T
-T{ 1 frames  light-blockers -> 0 }T
-0 -1 0e door-swing  2 frames
-front-garden-2 -1 rooms send go-to-room  2 frames
+T{ 1 run-frames  light-blockers -> 0 }T
+0 -1 0e door-swing  2 run-frames
+front-garden-2 -1 rooms send go-to-room  2 run-frames
 
 test-summary

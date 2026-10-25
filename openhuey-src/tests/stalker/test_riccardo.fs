@@ -5,7 +5,6 @@
 IN: test-riccardo
 USING: tester engine game-state actors messages common room-names game debug flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue stalker.riccardo fiona.state ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : ric ( -- id )  s" riccardo" actor-named ;
 : his ( xt -- x )  ric enter  execute  leave-actor ;
 : fiona@ ( xt -- x )  game:fiona enter  execute  leave-actor ;
@@ -18,7 +17,7 @@ fvariable dx  fvariable dz
     s>f tp-facing ;
 1 seed !
 
-free-play  front-garden-2 room!  20 frames
+free-play  front-garden-2 room!  20 run-frames
 testing his kit: his tables, his own chase and actions, his reach (20), his model and motions
 T{ [: kit @ riccardo-kit =  own-chase @ ['] ric-begin =  own-acts @ riccardo-acts =  attack-range f@ f>s ;] his -> -1 -1 -1 20 }T
 T{ [: hp @  my-kind @  my-model @ $1300 has-motion?  my-model @ $E00 has-motion? ;] his -> 100 4 -1 -1 }T
@@ -28,19 +27,19 @@ testing his attack by how near: within 10 his grab (3); past 150 none
 T{ [: 5e attack-for  200e attack-for ;] his -> 3 0 }T
 
 testing in her room, she turned from him 30 off: he walks at her (60) or stalks her (150) by a roll
-room-id game:fiona body-tri ric send stalker-in  3 frames
-[: 340e deg>rad body-turn ;] his  1 frames
-30e 340 her-ahead  3 frames
+room-id game:fiona body-tri ric send stalker-in  3 run-frames
+[: 340e deg>rad body-turn ;] his  1 run-frames
+30e 340 her-ahead  3 run-frames
 T{ [: [: sees-fiona @ ;] his ;] 60 soon -> -1 }T
 [: ric-begin ;] his
 T{ [: step @ ['] ric-run =  chase-act @ dup 5 = swap 6 = or  hold-t @ 59 > ;] his -> -1 -1 -1 }T
 testing ... 60 off, facing him: he stands to her ($1, the comings-on from his waits)
-60e 160 her-ahead  2 frames
+60e 160 her-ahead  2 run-frames
 [: ric-begin ;] his
 T{ [: chase-act @  comings @ ;] his -> 1 60 }T
 
 testing his flurry: 1..7 blows; on her floor a swing ($E00 / $E04)
-10e 160 her-ahead  2 frames
+10e 160 her-ahead  2 run-frames
 [: flurry-start ;] his
 T{ [: chase-act @  blows @ 1 8 within  anim @ dup $E00 = swap $E04 = or ;] his -> $1000 -1 -1 }T
 testing ... a barrier by her (the story's zone of a kind with bit 1: Events_NearestPoint) - his shot strikes it instead, and it breaks ($210)
@@ -62,7 +61,7 @@ T{ [: raging @  4 her-stage !  riccardo-frame  raging @ ;] his -> -1 0 }T
 
 testing the story's kind 4 is him
 T{ 4 story.words:stalker-actor  ric = -> -1 }T
-ric send stalker-out  3 frames
+ric send stalker-out  3 run-frames
 
 \ ---- his other class (kind 37): his chase with its own tables; struck enough, alerted ----
 : k37 ( -- id )  s" kind37" actor-named ;
@@ -81,26 +80,26 @@ T{ k37 enter  3 my-mode !  -1 tint-was !  kind37-frame kind37-frame  tint-t @ 0>
 : ts ( -- id )  s" tintstalker" actor-named ;
 testing the TintStalker: its kit, the Pursuer's chase, unseen till it does something
 T{ ts enter  kit @ tintstalker-kit =  base-chase @  hp @  unseen @  leave-actor -> -1 -1 100 -1 }T
-room-id game:fiona body-tri ts send stalker-in  3 frames
+room-id game:fiona body-tri ts send stalker-in  3 run-frames
 testing ... in her room: seen a while (150 frames), then gone
 T{ ts enter  unseen @  tint-t @ 0>  my-model @ actor act.visible l@  leave-actor -> 0 -1 1 }T
 testing ... its tint (TintStalker_Fade): shown at 112 of 128; its while over, fading out by 4 a frame, then gone
 T{ ts enter  tint-alpha f@ f>s  my-model @ actor act.alpha sf@ 0.875e f- fabs 0.01e f<  leave-actor -> 112 -1 }T
-T{ [: ts enter  tint-fade @ tint-out =  leave-actor ;] 200 soon  ts enter tint-alpha f@ f>s leave-actor  1 frames  ts enter tint-alpha f@ f>s leave-actor - -> -1 4 }T
+T{ [: ts enter  tint-fade @ tint-out =  leave-actor ;] 200 soon  ts enter tint-alpha f@ f>s leave-actor  1 run-frames  ts enter tint-alpha f@ f>s leave-actor - -> -1 4 }T
 T{ [: ts enter  unseen @  leave-actor ;] 200 soon -> -1 }T
 T{ 23 story.words:stalker-actor  ts = -> -1 }T
-ts send stalker-out  3 frames
+ts send stalker-out  3 run-frames
 
 testing his hanging parts (RiccardoModel_Springs): as drawn, his coat's pairs at their length ($A to $B 1.1), those drawn along their bones too ($26 to $27 0.67)
-castle-1f-3 room!  20 frames   \ (a room whose camera has him in view: posed as drawn)
+castle-1f-3 room!  20 run-frames   \ (a room whose camera has him in view: posed as drawn)
 3 seed !   \ (where he wanders is by chance: one that keeps him in view)
-room-id game:fiona body-tri ric send stalker-in  [: 3 my-mode ! ;] his  40 frames
+room-id game:fiona body-tri ric send stalker-in  [: 3 my-mode ! ;] his  40 run-frames
 create b1-at 12 allot  create b2-at 12 allot
-: apart ( b1 b2 -- ) ( F: -- d )
+: bones-apart ( b1 b2 -- ) ( F: -- d )
     [: my-model @ ;] his swap bone-pos b2-at vec!  [: my-model @ ;] his swap bone-pos b1-at vec!  b1-at b2-at vec-dist ;
 : ~ ( F: a b -- flag )  f- fabs 0.05e f< ;
-T{ [: $A $B apart 1.1e ~  $26 $27 apart 0.67e ~ and ;] 10 soon -> -1 }T
+T{ [: $A $B bones-apart 1.1e ~  $26 $27 bones-apart 0.67e ~ and ;] 10 soon -> -1 }T
 testing his shot's debris (Riccardo_BlowFloorPoint): aimed down ($2301) - 10 out along his gun, on the floor about his feet's height
 T{ [: $2301 play-now ;] his  [: [: floor-hit  hit-at 4 + sf@ my-at 4 + sf@ f- fabs 3e f< and ;] his ;] 10 soon -> -1 }T
-ric send stalker-out  3 frames
+ric send stalker-out  3 run-frames
 test-summary

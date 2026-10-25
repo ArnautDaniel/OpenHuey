@@ -6,7 +6,6 @@
 IN: test-legs
 USING: tester engine actors room-names game debug keys fiona.state fiona.model fiona.anims fiona ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : hers ( xt -- x )  game:fiona enter  execute  leave-actor ;
 : model ( -- m )  [: her-model @ ;] hers ;
 : her-y ( F: -- y )  [: her-at 4 + sf@ ;] hers ;
@@ -15,21 +14,21 @@ USING: tester engine actors room-names game debug keys fiona.state fiona.model f
 : bone-y ( b -- ) ( F: -- y )  model swap bone-pos fdrop fswap fdrop ;
 : hold ( key -- )  true key-hold ;   : release ( key -- )  false key-hold ;
 
-free-play  castle-1f-1 room!  20 frames
-426 tri-center 0e tp-facing  30 frames   \ (the level floor at the top of its steps)
+free-play  castle-1f-1 room!  20 run-frames
+426 tri-center 0e tp-facing  30 run-frames   \ (the level floor at the top of its steps)
 testing standing on level floor, her body at her place (eased in: 1/4 of the way a frame)
 T{ sunk fabs 0.05e f< -> -1 }T
 testing her ankles (bones 4, 8) as high above it as her model has them, both alike
 T{ 4 bone-y her-y f-  0.5e f>  4 bone-y 8 bone-y f- fabs 0.01e f< -> -1 -1 }T
-342 tri-center 180e tp-facing  10 frames
+342 tri-center 180e tp-facing  10 run-frames
 testing walking down the steps (a slope of the floor), her body down at the lower of her feet
-key: S hold  20 frames
+key: S hold  20 run-frames
 T{ sunk 0.5e f>  sunk 3e f< -> -1 -1 }T
 testing her ankles: the higher foot's leg bent - its ankle higher above her body than the other's
 T{ 4 bone-y 8 bone-y f- fabs 0.5e f> -> -1 }T
-key: S release  30 frames
+key: S release  30 run-frames
 testing standing across the slope, one foot lower: her body below her place
-342 tri-center 0e tp-facing  30 frames
+342 tri-center 0e tp-facing  30 run-frames
 T{ sunk 0.2e f>  sunk 3e f< -> -1 -1 }T
 
 testing on her feet: the states that aren't (Fiona_AnimUpdate's +0x1AD5BC cleared)

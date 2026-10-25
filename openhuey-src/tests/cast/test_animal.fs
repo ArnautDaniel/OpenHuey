@@ -5,7 +5,6 @@
 IN: test-animal
 USING: tester engine game-state actors messages common room-names game debug story.words story.state ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
 : c3 ( xt -- x )  game:cast3 enter  execute  leave-actor ;
 : doing ( -- n )  [: cast.private:an-doing @ ;] c3 ;
@@ -14,13 +13,13 @@ USING: tester engine game-state actors messages common room-names game debug sto
 fvariable fx  fvariable fz  fvariable fy
 1 seed !
 
-free-play  front-garden-2 room!  20 frames
+free-play  front-garden-2 room!  20 run-frames
 game:story send story-stop  deliver
 game:fiona body-pos fz f! fy f! fx f!
-$1A 3 $FF char-load  2 frames
-fx f@ 60e f+ fy f@ fz f@ 0e put3  3 frames      \ (60 from her)
+$1A 3 $FF char-load  2 run-frames
+fx f@ 60e f+ fy f@ fz f@ 0e put3  3 run-frames      \ (60 from her)
 : go ( F: x z -- )  f>cell >r f>cell r>  2 -rot game:cast3 send animal-go  deliver ;
-fx f@ 120e f+  fz f@ go  2 frames
+fx f@ 120e f+  fz f@ go  2 run-frames
 
 testing grazing while nobody is near ($9000), not done
 T{ doing  done?  [: cast.private:anim @ ;] c3 -> 0 0 $9000 }T

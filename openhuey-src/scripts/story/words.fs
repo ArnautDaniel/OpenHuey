@@ -461,10 +461,10 @@ $1C constant depth-slot   $1D constant fog-slot   $1E constant blend-slot   $1F 
     2 and if  button-pressed?  else  button-down?  then ;
 
 \ ---- facing (cond_deg: how far a character turns from its heading to face a point) ----
-fvariable fx  fvariable fz
+fvariable face-x  fvariable face-z
 : faces-off ( cs -- ) ( F: x z -- deg )
-    fz f! fx f!  char-actor dup body-pos fswap fdrop                ( id ) ( F: cx cz )
-    fz f@ fswap f-  fswap fx f@ fswap f-  fswap fatan2             ( id ) ( F: heading )
+    face-z f! face-x f!  char-actor dup body-pos fswap fdrop                ( id ) ( F: cx cz )
+    face-z f@ fswap f-  fswap face-x f@ fswap f-  fswap fatan2             ( id ) ( F: heading )
     body-yaw f- angle-wrap deg fabs ;
 : char-faces-xz? ( who x z within -- flag )
     >r  s>f s>f fswap  cond-slot dup char-here 0= if  drop fdrop fdrop r> drop false exit  then
@@ -863,10 +863,10 @@ $20 constant mark-key
 \ ---- drawing the scene's part (the room's, at its frame's end): the movie on layer 0, the
 \ prepared message's page - the subtitles - on layer 4 ----
 4 constant subtitle-layer
-variable mx  variable my  variable mw  variable mh
+variable movie-x  variable movie-y  variable movie-w  variable movie-h
 : movie-area ( -- )   \ the 4:3 picture in the window
-    screen-size  over 3 * 4 / over min  dup mh !  4 * 3 / mw !
-    mh @ - 2/ my !  mw @ - 2/ mx ! ;
+    screen-size  over 3 * 4 / over min  dup movie-h !  4 * 3 / movie-w !
+    movie-h @ - 2/ movie-y !  movie-w @ - 2/ movie-x ! ;
 \ the classes that show it (src/game/movie.c): 1 keyed by its brightness, 2 opaque but only while
 \ movie-opaque, 3 by its own alpha, 5 opaque - over the picture at 4:3; 6 a 256 x 64 strip at
 \ (64, 176) of 512 x 448; 0 and 4 not drawn here
@@ -878,10 +878,10 @@ variable mx  variable my  variable mw  variable mh
     movie-kind @ opaque-when-movie = movie-opaque state-flag? 0= and if  exit  then
     movie-area
     movie-kind @ strip-movie = if
-        0  mx @ mw @ 64 * 512 / +  my @ mh @ 176 * 448 / +  mw @ 384 * 512 /  mh @ 96 * 448 /  ui-movie  exit
+        0  movie-x @ movie-w @ 64 * 512 / +  movie-y @ movie-h @ 176 * 448 / +  movie-w @ 384 * 512 /  movie-h @ 96 * 448 /  ui-movie  exit
     then
     movie-kind @ dup keyed-movie <> swap alpha-movie <> and if  0  0 0 screen-size  $000000FF ui-rect  then   \ (the opaque ones)
-    0  mx @ my @ mw @ mh @ ui-movie ;
+    0  movie-x @ movie-y @ movie-w @ movie-h @ ui-movie ;
 variable sw  variable sh  variable lh
 : draw-subtitles ( -- )
     subtitle-layer ui-clear

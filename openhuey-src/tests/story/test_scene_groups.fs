@@ -7,7 +7,6 @@
 IN: test-scene-groups
 USING: tester engine game-state actors messages keys room-names game debug flag-names fiona.state story.kit pause facts story-names ;
 
-: frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
 : msg? ( -- flag )  game:window enter  window:shown @  leave-actor  0< 0= ;
 : answering ( n -- )  0 ?do  msg? if  cross press  then  game-tick  loop ;
@@ -15,14 +14,14 @@ USING: tester engine game-state actors messages keys room-names game debug flag-
 : pic-shown? ( -- flag )  s" a_nozoki" placed-shown? ;
 
 1 game:fiona send costume deliver  found-file-201 story-flag-set
-castle-2f-3 room!  30 frames
+castle-2f-3 room!  30 run-frames
 testing before the scene: the picture on the wall, shown
 T{ pic-y 80e f=  pic-shown? -> -1 -1 }T
 testing the change of clothes (the clothes on the bed taken: EV0003): the picture moved by the scene's keys
-$10 area-middle 180e tp-facing  10 frames  circle press  30 frames
+$10 area-middle 180e tp-facing  10 run-frames  circle press  30 run-frames
 20 answering  600 answering
 T{ cutscene-active?  pic-y 80e f= -> -1 0 }T
 testing ... skipped: the picture back where it was defined (Cutscene_End: RestoreGroups)
-start-button press  10 frames  triangle press  600 answering
+start-button press  10 run-frames  triangle press  600 answering
 T{ cutscene-active?  pic-y 80e f= -> 0 -1 }T
 test-summary
