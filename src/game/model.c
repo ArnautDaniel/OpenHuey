@@ -2802,8 +2802,9 @@ void Model_SetMatrix(u8 *m, f32 (*mtx)[4]) {
     sceVu0CopyMatrix((f32 (*)[4])(m + 0x7D0), mtx);
 }
 
-/* the current track's extra channels at its time: four (+0x68, 8 bytes apart) into +0x58..,
- * two (+0x88) into the hand poses +0x38 / +0x48 */
+/* the current track's extra channels at its time: four (+0x68, 8 bytes apart) into the face's
+ * weights +0x58.., 16 bytes apart (track i from weight 4i), two (+0x88) into the hand poses
+ * +0x38 / +0x48 */
 /* 0x001F4F40 */
 void Motion_ExtraChannels(u8 *m) {
     s32 i;
@@ -2812,7 +2813,7 @@ void Motion_ExtraChannels(u8 *m) {
         s32 *trk = AT(AT(m, 0x6A4, u8 *), 0x68 + i * 8, s32 *);
 
         if (trk != NULL && *trk != 0) {
-            Track_Sample(trk, (f32 *)(m + 0x58 + i * 4), AT(AT(m, 0x6A4, u8 *), 0x0, f32));
+            Track_Sample(trk, (f32 *)(m + 0x58 + i * 16), AT(AT(m, 0x6A4, u8 *), 0x0, f32));
         }
     }
     for (i = 0; i < 2; i++) {

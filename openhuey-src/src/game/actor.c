@@ -360,17 +360,16 @@ static void pose_hands(Actor *a) {
 }
 
 /* the motion's channels for the face and hands at its time (Motion_ExtraChannels): tracks -7..-10
- * into the face's weights from shape 0, 1, 2, 3 on - each as many as it has, so a later one
- * overwrites what an earlier set beyond its own (the scenes': four values, the mouth the second
- * one's first), -11 / -12 the hands' shapes and way between */
+ * into the face's weights four apart - shapes 0..3, 4..7, 8..11, 12..15 (the original's +0x58 +
+ * 16 x i: asm 0x1F4F68) - -11 / -12 the hands' shapes and way between */
 static void face_channels(Actor *a, const Model *m, int index, float frame) {
     int i, j;
 
     for (i = 0; i < 6; i++) {
         float out[8];
         int set = model_track_sample(m, index, -7 - i, frame, out);
-        float *to = i < 4 ? &a->face.w[i] : (float *)&a->face.hand[i - 4];
-        int room = i < 4 ? 16 - i : 3;
+        float *to = i < 4 ? &a->face.w[i * 4] : (float *)&a->face.hand[i - 4];
+        int room = i < 4 ? 16 - i * 4 : 3;
 
         for (j = 0; j < 8 && j < room; j++) {
             if (set & (1 << j)) {

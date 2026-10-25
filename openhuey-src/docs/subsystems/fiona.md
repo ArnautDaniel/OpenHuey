@@ -441,7 +441,8 @@ out of sight (8 a frame; back in when she moves) and `fiona-unseen` is told. Her
   scenes she blinks (Motion_Eyes: her eyelids' shapes down and up over 14 frames by the game's
   curve, another from 30 frames on at random, surely by 150) and her hands take her motions' poses
   (Motion_Hands: the motion table's pose, shaped over the five frames its events say); in a scene
-  its motion's channels move her mouth and hands (Motion_ExtraChannels: tracks -7..-12). Her
+  its motion's channels move her mouth and hands (Motion_ExtraChannels: tracks -7..-10 into her face's weights four apart - shapes 0..3, 4..7,
+  8..11, 12..15 -, -11 / -12 her hands). Her
   hands' own shape is 1 (CharModel_Loaded). Drawn as the original's: out of scenes the face its
   rest, mouth and eyelids blended (shapes 0, 1, 7, 8: func_001BC8D0); while a scene has her every
   one of its 16 shapes by its weight, the rest what is left (the model's +0x30 set by
