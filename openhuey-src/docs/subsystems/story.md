@@ -112,9 +112,26 @@ converted file stays for the rooms not yet moved; a room is one or the other.
 `scene-over` (played through or skipped: the world held, the camera back); `scene-stop` (the
 place gone). The kit's `load-scene`, `run-scene`, `at-shots`.
 
-Places: castle-2f-3 (the bedroom), tested by `tests/places/test_castle_2f_3.fs` (44): every
-remark and spot, the clothes, the TV, the bed and the stalker's search, the maid's scene, the
-night, the attack lesson, the evasion tip, Hewie's find, the four replays.
+**What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
+after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
+while she is half hidden, the mandragora's spell, the other game's rewards, her drink ($8D),
+Hewie fed ($8E-$91). A place also starts as the converted rooms did (the room visited, no track
+wanted till asked, the camera started for the room), its doings wait out her panic's onset, it
+shows her locked door's message, and it takes its own item uses (`items-here`: the plates'
+words, a marionette) before the shared ones. A doing whose character another doing takes ends,
+as the original's action replaced.
+
+Places, each with its test in `tests/places/`:
+- castle-2f-3, the bedroom (44): every remark and spot, the clothes, the TV, the bed and the
+  stalker's search, the maid's scene, the night, the attack lesson, the evasion tip, Hewie's
+  find, the four replays.
+- front-garden-3, the cage's garden (24): the opening, the remarks, the breakable, the box and
+  the grate with Hewie, Hewie freed from the wire at night (and gone, out of the game), the shared
+  crouch and drink.
+- castle-2f-8, the kiln room (15): one golem (the room's own model), EMETH, METH, SALTATIO, any
+  other word, the parchment, the choker.
+- castle-1f-4, the puppet room's hall (22): the puppet door and the marionette, the floor plate,
+  the weak wall's antimony, the plate-key's slot, Riccardo at night.
 
 ## API
 

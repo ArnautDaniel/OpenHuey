@@ -185,7 +185,8 @@ says what happens, and nothing in it can leave Fiona stuck.
 - The kit, the `scenes` actor, `story` spawning places: done (docs/subsystems/story.md, "Places").
 - castle-2f-3: done, every remark and spot, its scenes and story beats, the stalker's search,
   Hewie's find - `tests/places/test_castle_2f_3.fs`.
-- Next: front-garden-3, castle-2f-8, castle-1f-4.
+- front-garden-3, castle-2f-8, castle-1f-4: done; story/common.fs for what every room does.
+- Next: the rest by area, one PR each (Migration, step 4).
 
 ## Questions (answered)
 
