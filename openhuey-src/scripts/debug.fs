@@ -115,7 +115,8 @@ variable m-stage  variable m-level  variable m-fear  variable m-breathless  vari
 \ its own, user/bugs/<date>_<time>/ - report.txt (where she is, every actor's state, the messages
 \ and the console's last lines), screenshot.png (the game, no console over it) and save.fs (the
 \ game then: `s" <folder>/save.fs" bug-load`). F12 opens the console with `bug-note ` typed:
-\ what happened, added to note.txt ----
+\ what happened, added to note.txt. All of it zipped beside the folder, user/bugs/<date>_<time>.zip
+\ (made again with each note): one file to drop on an issue ----
 create bug-dir 256 allot   variable bug-dir-len
 create bug-path 256 allot   variable bug-path-len
 : bug-dir+ ( addr len -- )  {: a n :}  a  bug-dir bug-dir-len @ +  n move  n bug-dir-len +! ;
@@ -126,16 +127,34 @@ create bug-path 256 allot   variable bug-path-len
     over + swap ?do
         i c@ 32 = if  [char] _ i c!  then  i c@ [char] : = if  [char] - i c!  then
     loop ;
-: new-bug-dir ( -- )   \ (named by the time: 2026-10-19_14-03-22)
+: taken? ( -- flag )   \ (a report there already: its report.txt)
+    s" /report.txt" {: a n :}  a n bug-dir+  bug-dir bug-dir-len @ file-exists?  n negate bug-dir-len +! ;
+: new-bug-dir ( -- )   \ (named by the time: 2026-10-19_14-03-22 - another that second -2, -3 ...)
+    {: | base n :}
     0 bug-dir-len !  user-dir bug-dir+  testing? if  s" test-bugs"  else  s" bugs"  then  bug-dir+
     bug-dir bug-dir-len @ make-dir drop
     s" /" bug-dir+  bug-dir bug-dir-len @ +  date-time bug-dir+  date-time nip file-safe
+    bug-dir-len @ to base  1 to n
+    begin  taken?  while  base bug-dir-len !  n 1+ to n  s" -" bug-dir+  n n>str bug-dir+  repeat
     bug-dir bug-dir-len @ make-dir drop  s" /" bug-dir+ ;
+create bug-zip 256 allot   variable bug-zip-len
+: bug-zip-path ( -- addr len )   \ (the folder's name, .zip)
+    bug-dir bug-zip bug-dir-len @ 1- dup bug-zip-len ! move
+    s" .zip" {: a n :}  a  bug-zip bug-zip-len @ +  n move  n bug-zip-len +!  bug-zip bug-zip-len @ ;
+: bug-folder ( -- addr len )   \ (the report folder's own name: 2026-10-19_14-03-22)
+    bug-dir bug-dir-len @ 1- {: a n :}
+    n begin  dup 0>  while  a over 1- + c@ [char] / = if  a over +  n rot -  exit  then  1-  repeat
+    drop  a n ;
+: zip-report ( -- )
+    s" report.txt note.txt screenshot.png save.fs"  bug-dir bug-dir-len @  bug-zip-path zip-files
+    if  ." bug report zipped: " bug-zip bug-zip-len @ type cr  then ;
+variable bug-step   \ (0 none; 1 the report wanted; 2 its save, once the screenshot is drawn)
 create bug-text 256 allot   variable bug-text-len   \ (a note waiting for its report)
 : add-note ( addr len -- )   \ (into the last report's note.txt)
     {: a n :}  bug-dir-len @ 0= if  ." no bug report yet: F12, or bug <what happened>" cr exit  then
     s" note.txt" in-bug-dir append-file  date-time type ."   " a n type cr  end-file
-    ." noted in " s" note.txt" in-bug-dir type cr ;
+    ." noted in " s" note.txt" in-bug-dir type cr
+    bug-step @ 0= if  zip-report  then ;   \ (still being made: zipped once it is)
 : .actor ( id -- )
     dup .  dup actor-name type  dup body? if
         ."   room " dup body-room h>s type space  ." tri " dup body-tri .  ." at " dup body-pos frot f. fswap f. f.
@@ -153,16 +172,15 @@ create bug-text 256 allot   variable bug-text-len   \ (a note waiting for its re
     cr ." ---- the last messages (oldest first; not the every-frame ones)" cr  256 .recent
     cr ." ---- the console's last lines" cr  120 console-log
     end-file ;
-variable bug-step   \ (0 none; 1 the report wanted; 2 its save, once the screenshot is drawn)
 : bug-capture ( -- )
     new-bug-dir  s" screenshot.png" in-bug-dir screenshot  write-report
     bug-text-len @ if  bug-text bug-text-len @ add-note  0 bug-text-len !  then
     2 bug-step ! ;
 : bug-save ( -- )   \ (not over the title)
     0 bug-step !
-    room-id 0< fiona-id 0< or if  ." bug report in " bug-dir bug-dir-len @ type cr  exit  then
-    s" save.fs" in-bug-dir  s" saves" actor-named send save-to-file
-    ." bug report in " bug-dir bug-dir-len @ type cr ;
+    ." bug report in " bug-dir bug-dir-len @ type cr
+    room-id 0< fiona-id 0< or if  zip-report  exit  then
+    s" save.fs" in-bug-dir  s" saves" actor-named send save-to-file ;   \ (zipped once it is written: game-saved)
 : bug-steps ( -- )   \ (each frame, held or not)
     bug-step @ 1 = if  bug-capture exit  then
     bug-step @ 2 = screenshot-pending? 0= testing? or and if  bug-save  then ;   \ (a test draws nothing)
@@ -179,6 +197,7 @@ state: label-state  cell field label-unused  end-state
 behaviour labelling
   on spawned ( -- )  self subscribe frame-end  self subscribe held-tick  self subscribe panic  self subscribe entered-room ;
   on held-tick ( -- )  bug-key  bug-steps ;   \ (a menu up: a report all the same)
+  on game-saved ( -- )  zip-report ;   \ (a bug report's save written)
   on entered-room ( room exit -- )  2drop jump-camera ;
   on panic ( stage level -- )  cell>f f>s m-level !  m-stage ! ;   \ (its level a float, as a cell)
   on her-meters ( fear breathless run -- )  m-run !  m-breathless !  m-fear ! ;

@@ -211,7 +211,7 @@ behaviour saving
       step @ writing = if  saved  then ;
   on save-to-slot ( n place -- )  sender sender-asked !  save-slot ;
   on load-from-slot ( n -- )  load-slot ;
-  on save-to-file ( addr len -- )  path-named  -1 sender-asked !  write-save-file ;
+  on save-to-file ( addr len -- )  path-named  sender sender-asked !  write-save-file ;
   on load-from-file ( addr len -- )  path-named  load-file ;
   on options-changed ( vib out vol x y layout -- )  options-were ;   \ (written with the unlocks, below)
   on tick ( -- )
