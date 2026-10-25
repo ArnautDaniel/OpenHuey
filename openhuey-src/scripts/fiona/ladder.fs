@@ -4,8 +4,9 @@
 \ side 0 its foot, 1 its top). Free, in a ladder's region on one of its sides, nobody else there
 \ but Hewie, facing along that side - the action button: she walks to its end's spot (at the top
 \ 1.7 back from it, at the foot 2.1 out), faces the ladder and gets on ($700 from the top, $704 from the
-\ foot). On it, as each move comes round, the stick: down - the next rung ($701, its end $702),
-\ off at the foot within 18 of it ($703); up - the next rung ($705, its end $706), off at the top
+\ foot). On it, as each move comes round, the stick (Fiona_StateOnLadder: the vertical plus the
+\ pad, pushed up negative): up - down a rung ($701, its end $702), off at the foot within 18
+\ of it ($703); down - up a rung ($705, its end $706), off at the top
 \ within 3 of it ($707); let go - holding ($708 / $709). The stalker at its foot keeps her from
 \ getting off there, at its top (within his height above her) from going up. Off: at the move's
 \ event $20 she is put by that end and free. Her moves on it are her animations' own,
@@ -89,7 +90,10 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
     own-mode her-mode !  off-ladder ;
 
 \ ---- on it (Fiona_StateOnLadder): as each move comes round, the stick picks the next ----
-: stick-up ( F: -- v )  sz fnegate ;   \ (the stick's up; W)
+\ (the stick's down plus the pad's down less its up - as the original reads it, pushed up is
+\ down the ladder: S or the stick pulled back climbs, W or pushed forward goes down)
+: stick-climb ( F: -- v )   \ (above 0: up the ladder)
+    sz  hands-off? if  exit  then  key: Down held? 1 and key: Up held? 1 and - s>f f+ ;
 : from-end? ( -- flag )  anim@ dup on-ladder-top-anim = swap rung-down-end-anim = or ;   \ (a move's end: cut in)
 : rung-down ( -- )   \ (from the top, a rung's end or holding: off at the foot within 18, else the next rung)
     0 end-y her-at v.y sf@ f- 18e f< if
@@ -131,7 +135,7 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
     endcase ;
 : move-done? ( anim -- flag )  events $20 and 0<>  swap ladder-hold-anim ladder-slip-anim within or ;   \ (a move come round, or holding)
 : stick-move ( anim -- moved? )   \ (the stick: down, up - not with him above her: as let go - or let go)
-    stick-up fdup fabs 0.5e f> 0= if  fdrop holding true exit  then
+    stick-climb fdup fabs 0.5e f> 0= if  fdrop holding true exit  then
     f0< if  going-down exit  then
     1 stalker-on if  holding true  else  going-up  then ;
 : nearer-end ( -- side )  anim@ dup off-ladder-foot-anim = swap on-ladder-foot-anim = or 0 1 ? ;   \ (after a move: the foot's for getting off or on there)

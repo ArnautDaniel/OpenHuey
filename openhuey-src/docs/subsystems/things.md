@@ -6,7 +6,9 @@ What Fiona throws, drops or sets down - the ball, the powders, the magnesias, th
 stone - and the story's own (src/game/placed.c: the original's placed things, gPlacedThings). The
 engine moves and draws them (`src/game/things.c`): flying under gravity, bouncing off walls
 (keeping 0.7 of their speed; the doll 0.2), rolling and slowing on the floor, dropping through
-holes ($10000000) for 31 frames. What they do is the `things` actor's (`scripts/things.fs`).
+holes ($10000000) for 31 frames. Let go, a thing leaves her hand - the bone her costume's model
+names (its +0x8BC: $2E in her clothes, $42 in the slip, $3D / $39 / $21 / $23 / $1A in costumes
+2, 3, 6, 7, 8; `hand-bone`). What they do is the `things` actor's (`scripts/things.fs`).
 
 ## The kinds
 

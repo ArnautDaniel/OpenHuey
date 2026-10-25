@@ -67,8 +67,8 @@ $8000 constant stumble-blow
 : at-bone ( bone -- ) ( F: ox oz -- )   \ (an offset in the bone's own axes: the original's bone matrix applied)
     {: bone F: ox oz :}  her-model @ bone  ox 0e oz  bone-point  hand vec! ;
 : blow-point ( -- )
-    form cowgirl-outfit = if  -10e 0e $23 at-bone  10e blow-reach f! exit  then
-    form illegal-outfit = if  0e 6e $21 at-bone  3e blow-reach f! exit  then
+    form cowgirl-outfit = if  -10e 0e hand-bone at-bone  10e blow-reach f! exit  then
+    form illegal-outfit = if  0e 6e hand-bone at-bone  3e blow-reach f! exit  then
     her-model @ 9 bone-pos hand vec!  2e blow-reach f! ;
 : shove-done ( -- )  0 her-run-t !  to-idle ;
 \ into a wall (Fiona_StateShove): blended into standing over 10 (Motion_PlayWith: flags $101 -
@@ -179,5 +179,5 @@ create poi /vec allot
     then
     her-sub @ shove-sub <>  events 2 and 0= or if  body-point-off exit  then
     form cowgirl-outfit = if  2.5e 10e point-ahead  poi vec@ body-point! exit  then
-    form illegal-outfit = if  0e 6e $21 at-bone  hand vec@ fdrop her-at v.y sf@ 2.5e f+ fswap body-point! exit  then
+    form illegal-outfit = if  0e 6e hand-bone at-bone  hand vec@ fdrop her-at v.y sf@ 2.5e f+ fswap body-point! exit  then
     her-model @ 9 bone-pos body-point! ;

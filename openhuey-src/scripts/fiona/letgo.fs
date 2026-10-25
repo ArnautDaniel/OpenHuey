@@ -50,7 +50,7 @@ $20020008 constant hand-stops   \ (the floors her hand can't pass over)
     step-at her-at vec-copy  hand v.y sf@ step-at v.y sf!
     her-tri @ step-at hand hand-stops v-walk ;
 : let-go ( -- )
-    her-model @ 9 bone-pos hand vec!
+    her-model @ hand-bone bone-pos hand vec!   \ (fiona_hand: the bone vtable +0x78 names)
     hand-reached dup 0< if  drop exit  then  {: tri :}
     hand vec@ {: F: x y z :}  way {: F: vx vy vz :}
     held let-go-as nip  tri  x f>cell y f>cell z f>cell  vx f>cell vy f>cell vz f>cell

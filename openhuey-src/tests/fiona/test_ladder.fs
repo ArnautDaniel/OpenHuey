@@ -50,30 +50,30 @@ T{ [: anim $F02 = ;] 300 soon  [: his-anim $707 = ;] 300 soon -> -1 -1 }T
 T{ [: [: at-ladder @ 0< ;] his ;] 200 soon  his-height  [: free? ;] 200 soon -> -1 -1 -1 }T
 stalkers-blind state-flag-set  debug:debilitas-out  3 frames  stalkers-blind state-flag-clear
 1 0 at-end  circle press  [: anim $708 = ;] 200 soon drop
-testing down (S): rungs down to the foot, off there ($703) on the ground floor - free, the ladder let go
-key: S hold
+testing down (W - the original's stick, pushed up, goes down): rungs down to the foot, off there ($703) on the ground floor - free, the ladder let go
+key: W hold
 T{ [: anim $701 = ;] 60 soon  [: anim $703 = ;] 600 soon  [: free? ;] 120 soon -> -1 -1 -1 }T
-key: S release
+key: W release
 T{ height  tri  ladder drop -> 26 368 -1 }T
 
 testing at its foot turned from it: the action button does nothing
 0 180 at-end
 T{ circle press  2 frames  free?  ladder drop -> -1 -1 }T
-testing facing it: on from the foot ($704); up (W) to the top, off there ($707) on the floor above
+testing facing it: on from the foot ($704); up (S) to the top, off there ($707) on the floor above
 0 0 at-end
 T{ circle press  [: anim $704 = ;] 60 soon -> -1 }T
-key: W hold
+key: S hold
 T{ [: anim $705 = ;] 300 soon  [: anim $707 = ;] 300 soon  [: free? ;] 120 soon -> -1 -1 -1 }T
-key: W release
+key: S release
 T{ height  tri  ladder drop -> -1 68 -1 }T
 
 testing the stalker at its foot: she can't get off there - she holds on ($708)
 1 0 at-end  circle press
-key: S hold
+key: W hold
 T{ [: height 3 > ;] 600 soon -> -1 }T
 368 debug:debilitas-tri  deliver  [: 0 stalker:ordered ;] his  1 frames   \ (after her: kept by its foot)
 T{ [: 0 stalker-on ;] hers  [: anim $708 = ;] 300 soon  on?  height 6 > -> -1 -1 -1 -1 }T
-key: S release
+key: W release
 
 testing struck on it (by him): knocked off - within 20 of its top pulled off up there ($F02), then free
 : strike ( kind how -- )  {: k h :}  game:debilitas enter  k h 10e f>cell fiona send hit  leave-actor  deliver ;

@@ -57,10 +57,12 @@ T{ [: action $78 <> ;] 200 soon  0 skill@ 1 skill@ -> -1 0 31 }T
 
 testing her command 0x23 with a ball lying in front of her: he answers (0x1D), for that ball next
 [: 0 0 want ;] his!  [: -1 his-follows ! ;] his!  things-clear  10 frames  31 skills!
+$B7 tri-center 0e debug:tp-facing  5 frames   \ (back where she began: the throws moved her)
 ball-ahead  60 frames   \ (lying still)
 T{ [: $23 fiona-command  his-follows @ 0< 0=  his-action @ ;] his@ -> -1 -1 $1D }T
 testing ... her command acted on (Hewie_ActOnCommand 0x23: no straight walk to her asked): for the ball all the same
 [: 0 0 want  -1 his-follows ! ;] his!  things-clear  10 frames
+$B7 tri-center 0e debug:tp-facing  game:hewie send join-fiona  30 frames   \ (both back by where she began)
 ball-ahead  60 frames
 T{ [: 0 0 want  -1 his-follows !  go-there-cmd act-on-command  his-follows @ 0< 0=  his-action @  his-next @ ;] his@ -> -1 -1 $1D $78 }T
 [: 0 0 want ;] his!
