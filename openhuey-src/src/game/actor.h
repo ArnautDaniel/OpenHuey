@@ -126,6 +126,7 @@ int actor_texture_swap(Actor *a, int sel, const char *file);
 void actor_texture_restore(Actor *a);   /* its own again (Message_ShowNothing) */
 void actor_free(Actor *a);
 /* a tick: the motion moves on */
+void actor_advance(Actor *a);
 void actor_tick(Actor *a);
 /* pose and skin it for this frame (before shadows and drawing) */
 void actor_prepare(Actor *a);

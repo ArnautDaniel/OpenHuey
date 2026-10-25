@@ -3092,7 +3092,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its parts shown or hi
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.8") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.9") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
@@ -3322,6 +3322,7 @@ void engine_tick(Engine *e) {
             e->camera = sModCam.cam;
         }
         if (e->alone > 0 && e->alone - 1 < MAX_ACTORS) {   /* (the menu's own model: it moves) */
+            actor_advance(&e->actors[e->alone - 1]);
             actor_tick(&e->actors[e->alone - 1]);
         }
         freecam_tick(e);
@@ -3329,7 +3330,12 @@ void engine_tick(Engine *e) {
         return;
     }
     e->nblockers = 0;   /* (Lights_Frame: the room's scripts give them again each frame) */
-    hactor_frame(e->forth);   /* the actors' frame, then their models move on */
+    if (!e->still) {
+        for (i = 0; i < MAX_ACTORS; i++) {   /* the models' motions move on, then the actors' frame at that time */
+            actor_advance(&e->actors[i]);
+        }
+    }
+    hactor_frame(e->forth);
     if (e->still) {   /* (the game over: the world stands still behind it, its actors running) */
         freecam_tick(e);
         render_look_tick();

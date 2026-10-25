@@ -381,9 +381,29 @@ static void face_channels(Actor *a, const Model *m, int index, float frame) {
 
 static void advance(Actor *a);
 
-void actor_tick(Actor *a) {
+/* the motions move on (Motion_Update) - at the frame's start, before the actors' frame: the
+ * original's state runs at a time, its body is posed at that same time (Model_BodyFrames) and
+ * only then does the motion move on, so what the state reads (its root movement, its events) and
+ * the pose drawn are of one time. Moved on after the state, the pose ran a frame ahead of the root
+ * movement - a climb's rung a frame before its step up */
+void actor_advance(Actor *a) {
     int i;
 
+    if (!a->used) {
+        return;
+    }
+    if (a->legs.on) {
+        legs_contact(a);
+    }
+    for (i = 0; i < 3; i++) {
+        part_tick(a, &a->parts[i]);
+    }
+    advance(a);
+}
+
+/* after the actors' frame: the hands and eyes, the cloth, the feet planted (Fiona_AnimUpdate /
+ * Pursuer_ModelUpdate) */
+void actor_tick(Actor *a) {
     if (!a->used) {
         return;
     }
@@ -392,17 +412,10 @@ void actor_tick(Actor *a) {
         blink(a);
     }
     a->hand_frame = a->frame;
-    for (i = 0; i < 3; i++) {
-        part_tick(a, &a->parts[i]);
-    }
     if (a->cloth != NULL) {
         cloth_watch(a->cloth, a->motion >= 0 ? model_motion_id(&a->model, a->motion) : -1, a->yaw);
     }
     cloth_tick(a->cloth);
-    if (a->legs.on) {
-        legs_contact(a);
-    }
-    advance(a);
     if (a->hlegs.on) {   /* (HumanModel_PlantFeet's part before the pose: after Motion_Update moved on) */
         humanlegs_tick(a);
     }

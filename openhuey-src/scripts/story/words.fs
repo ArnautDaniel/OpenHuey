@@ -928,8 +928,6 @@ variable sw  variable sh  variable lh
 : object-anim ( obj anim -- )  1 swap object ;              \ 50 01: its animation once
 : object-anim-loop ( obj anim -- )  2 swap object ;         \ 50 02: looped
 : object-anim-reset ( obj -- )  3 0 object ;                \ 50 03: back to its start
-: object-lowered ( obj -- ) ( F: dy -- )   \ (hga's own: moved down for good - a cutscene puts it back here)
-    this-room @ room-string  {: a n :}  a n $24 placed-f@ fswap f-  a n $24 placed-f!  a n 5 0 placed-op ;
 \ ---- placed objects by name, as the rooms' own commands handle them (gRoomObjects +0x18): a
 \ value of the object at the original's offset - +$10 / $14 / $18 its turn about x / y / z,
 \ +$20 / $24 / $28 its place, from +$30 the room's own values kept on it ----
