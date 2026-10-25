@@ -7,7 +7,6 @@
 IN: fiona.seized
 USING: engine vectors game-state actors messages common facts flag-names keys paths rumble fiona.state fiona.anims fiona.sounds fiona.model fiona.controls fiona.moving fiona.fear fiona.doors fiona.hurt floor-flags ;
 
-defer to-idle ( -- )
 : leader ( -- id )  her-hit-who @ ;
 : leader-gone? ( -- flag )  her-led @ 0=  leader 0< or  leader alive? 0= or ;
 : broke-away ( -- )   \ (he's told, if he's still there)
@@ -131,8 +130,8 @@ create gb-at /vec allot
     anim@ pulled-back-anim = if  pull-back along-wall  else  root-move  then ;   \ (pull_back: along any wall)
 :noname ( -- )
     0 her-cried !  0 her-ended !  -1 her-fall-turn !  her-yaw f@ her-fall-yaw f!
-    anim@ up-from-back-anim = events 2 and 0= and if  held-front-anim -1 play-table  ['] held her-act ! exit  then
-    anim@ dup up-from-forward-anim = over get-up-anim = or swap lying-anim = or  events 2 and 0= and if
+    anim@ up-from-back-anim = events-now 2 and 0= and if  held-front-anim -1 play-table  ['] held her-act ! exit  then
+    anim@ dup up-from-forward-anim = over get-up-anim = or swap lying-anim = or  events-now 2 and 0= and if
         held-down-anim -1 play-table  ['] held her-act ! exit
     then
     her-yaw f@ 17e gb-at her-at vec-ahead   \ (pulled back where she's free to be and 17 ahead is clear)
@@ -153,8 +152,8 @@ create gb-at /vec allot
         endof
         held-under-anim of  ended? if  struggling-anim -1 play-table  then  endof
     endcase ;
-: holding ( -- )
+: pinned ( -- )
     settled? 0= if  exit  then
     anim@ dup held-under-anim <> swap struggling-anim <> and if  held-under-anim -1 play-table  then
     ['] struggle her-act ! ;
-:noname ( -- )  180 her-hold !  60 her-hold-k !  ['] holding her-act ! ; is held-down
+:noname ( -- )  180 her-hold !  60 her-hold-k !  ['] pinned her-act ! ; is held-down

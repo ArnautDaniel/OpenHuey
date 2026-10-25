@@ -19,7 +19,7 @@ enum: fade-script  no-script leading stepping trailing lingering ;
 
 state: screen-state
   cell field level        \ drawn: no-fade .. full-fade
-  cell field from  cell field to  cell field frames  cell field t
+  cell field from-level  cell field to-level  cell field frames  cell field t
   cell field asked-by     \ who waits for it (-1 none)
   cell field white        \ in white (kinds 2 and 3), not black
   cell field kind         \ (+0x11F1)
@@ -43,16 +43,15 @@ create fades
 : start ( frames kind -- )
     $F and  dup from-dim > if  drop to-black-2  then        \ (8..15: no such kind - as out)
     dup kind !  dup white-kind? white !
-    fade-of  dup fade-from @ from !  fade-to @ to !
+    fade-of  dup fade-from @ from-level !  fade-to @ to-level !
     0 max frames !  0 t !
-    frames @ 0= if  to @ level !  then
+    frames @ 0= if  to-level @ level !  then
     \ (0 frames divide by 0 in the original: here at once)
     frames @ if  opaque frames @ /  else  opaque  then  rate !
     0 steps !  -1 running !
     leading script !  kind @ from-black-2 = if  held-in  else  1  then  left ! ;
 
 \ ---- the panic's overlay level (ScreenFade_Level, the panic's +0x34) by each step ----
-: panic-id ( -- id )  s" panic" actor-named ;
 : fade-frame ( -- )   \ (a fade's frame: its level not set back to full this frame)
     panic-id dup 0< if  drop exit  then  send overlay-held ;
 : alpha ( -- a )   \ this step's (ScreenFade_Step): by the steps so far, out or in
@@ -69,7 +68,7 @@ create fades
 \ either way ----
 : drawn-step ( -- )   \ (drawn: in a straight line over its frames)
     t @ frames @ < 0= if  exit  then
-    1 t +!  to @ from @ - t @ * frames @ / from @ + level ! ;
+    1 t +!  to-level @ from-level @ - t @ * frames @ / from-level @ + level ! ;
 : step ( -- )
     running @ if  tell-overlay  drawn-step  1 steps +!  then  fade-frame ;
 : fade-over ( -- )   \ (0x5E) the fade counts as over: who asked told

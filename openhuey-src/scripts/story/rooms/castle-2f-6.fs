@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-6
-USING: room-names story.words story.shared flag-names story-names fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant massive-book-remarked       \ (bit 0) its first remark made: "A massive book stands stalwart. It looks quite old. Perhaps "

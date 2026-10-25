@@ -3,7 +3,7 @@
 \ the timed effects; the story's words. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/items/test_items.fs
 IN: test-items
-USING: tester engine game-state actors messages game room-names items items.names items.tables fiona.state story-names story.state story.words flag-names fiona.moving ;
+USING: tester engine game-state actors messages game room-names items items.names items.tables fiona.state story-names story.state facts story.words flag-names fiona.moving ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : give ( id n -- )  game:items send give-item  deliver ;

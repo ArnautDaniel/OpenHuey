@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-5
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant portrait-1-remarked         \ (bit 0) its first remark made: "I wonder whose portrait this is?"
@@ -878,10 +878,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who tired-sound 6 char-sound
     $14 wait-frames
     tired-remarked ebit? not if
-        $2F message   \ "I... I don't feel so hot. It's like I have no energy all of a sudden."
+        $2F show-message   \ "I... I don't feel so hot. It's like I have no energy all of a sudden."
         tired-remarked ebit-set
     else
-        $30 message   \ "I should try to get some rest."
+        $30 show-message   \ "I should try to get some rest."
         tired-remarked ebit-clear
     then
     attack-anim $A self-anim-blend

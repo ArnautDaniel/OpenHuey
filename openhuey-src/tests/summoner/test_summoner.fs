@@ -16,7 +16,7 @@ testing a noise's level: by loudness; one less away from doors with every door s
 T{ $10 -1 lvl  $20 0 lvl  $40 0 lvl  $60 0 lvl  $FF 0 lvl -> 0 1 2 3 3 }T
 
 testing the rooms near hers: hers first, then those within two open doors
-T{ [: room-id summoner:rooms-near  summoner:near-list @  summoner:near-n @ 1 > ;] its -> room-id -1 }T
+T{ [: room-id summoner:find-near-rooms  summoner:near-list @  summoner:near-n @ 1 > ;] its -> room-id -1 }T
 T{ [: room-id 0 room-exit-leads drop summoner:listed? ;] its -> -1 }T
 
 testing off stage: loaded, the summoner on - his time away rolled, then counted down
@@ -26,8 +26,14 @@ T{ [: away @ ;] its  5 frames  [: away @ ;] its - -> 5 }T
 
 testing his time away over: in, out of sight, near her room (not hers), waiting about
 [: 1 away ! ;] its  3 frames
-T{ in-game?  his-room room-id <>  [: room-id summoner:rooms-near  his-room summoner:listed? ;] its  [: my-mode @ ;] his -> -1 -1 -1 3 }T
+T{ in-game?  his-room room-id <>  [: room-id summoner:find-near-rooms  his-room summoner:listed? ;] its  [: my-mode @ ;] his -> -1 -1 -1 3 }T
 T{ summoner-waiting state-flag?  [: cooldown @ ;] its 2600 > -> 0 -1 }T
+
+testing summoned neither after her nor planned (Pursuer_PlanWhere's mode 3): waiting about, on his way past one of his room's exits
+variable in-room  room-id 0 room-exit-leads drop in-room !
+in-room @ 0 0 0 game:debilitas send stalker-summoned  2 frames
+: past-an-exit? ( room -- flag )  false  8 0 do  over in-room @ i room-exit-leads drop = or  loop  nip ;
+T{ [: my-mode @  goal-room @  doors-n @ 0> ;] his  swap past-an-exit? -> 3 -1 -1 }T
 
 testing the story takes him (0x84): out, his room noted, his time away rolled afresh
 variable was  his-room was !  0 story.words:summon-take  2 frames

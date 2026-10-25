@@ -13,7 +13,6 @@ USING: engine keys common vectors messages facts fiona.state fiona.anims ;
     hands-off? if  exit  then
     stick@ stick-z f!  stick-x f! ;
 : run-held? ( -- flag )  hands-off? 0=  cross button-down? and ;   \ (Fiona_Move: cross held)
-: cam-yaw ( F: -- a )  camera cam.yaw sf@ ;
 : turned ( F: cam-yaw nx nz -- dx dz )  stick-turned ;
 : small? ( F: x z -- flag )  fabs 0.5e f<= fabs 0.5e f<= and ;
 : dir! ( F: x z -- )  her-dir v.z sf!  0e her-dir v.y sf!  her-dir v.x sf! ;

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-3f-2
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant on-group1                   \ (bit 0) she stepped onto nav group 1 this frame
@@ -39,10 +39,10 @@ defer old-mansion-3f-2.act07
         2 keeps-hewie-off floor-on
         3 keeps-hewie-off floor-on
     then
-    6 0.0 24.0 -60.0 $A $80 $80 $80 $40 specks
-    6 0.0 24.0 12.0 $A $80 $80 $80 $40 specks
-    6 0.0 24.0 36.0 $A $80 $80 $80 $40 specks
-    6 0.0 24.0 90.0 $A $80 $80 $80 $40 specks
+    6 0.0 24.0 -60.0 $A $80 $80 $80 $40 scatter-specks
+    6 0.0 24.0 12.0 $A $80 $80 $80 $40 scatter-specks
+    6 0.0 24.0 36.0 $A $80 $80 $80 $40 scatter-specks
+    6 0.0 24.0 90.0 $A $80 $80 $80 $40 scatter-specks
     1 $2300 sound-volume
 ;
 
@@ -508,10 +508,10 @@ defer old-mansion-3f-2.act07
 
 : old-mansion-3f-2.act0A ( -- )   \ 00421910
     self-wait-done
-    6 0.0 24.0 -60.0 $A $80 $80 $80 $40 specks
-    6 0.0 24.0 12.0 $A $80 $80 $80 $40 specks
-    6 0.0 24.0 36.0 $A $80 $80 $80 $40 specks
-    6 0.0 24.0 90.0 $A $80 $80 $80 $40 specks
+    6 0.0 24.0 -60.0 $A $80 $80 $80 $40 scatter-specks
+    6 0.0 24.0 12.0 $A $80 $80 $80 $40 scatter-specks
+    6 0.0 24.0 36.0 $A $80 $80 $80 $40 scatter-specks
+    6 0.0 24.0 90.0 $A $80 $80 $80 $40 scatter-specks
     1 0 movie-play
     0 cutscene-start
     yield
@@ -531,10 +531,10 @@ defer old-mansion-3f-2.act07
 
 : old-mansion-3f-2.act0B ( -- )   \ 004219E0
     self-wait-done
-    6 0.0 24.0 -60.0 $A $80 $80 $80 $40 specks
-    6 0.0 24.0 12.0 $A $80 $80 $80 $40 specks
-    6 0.0 24.0 36.0 $A $80 $80 $80 $40 specks
-    6 0.0 24.0 90.0 $A $80 $80 $80 $40 specks
+    6 0.0 24.0 -60.0 $A $80 $80 $80 $40 scatter-specks
+    6 0.0 24.0 12.0 $A $80 $80 $80 $40 scatter-specks
+    6 0.0 24.0 36.0 $A $80 $80 $80 $40 scatter-specks
+    6 0.0 24.0 90.0 $A $80 $80 $80 $40 scatter-specks
     self-who 1 char-visible
     3 1 movie-play
     2 cutscene-start

@@ -97,7 +97,7 @@ variable in-tri
 : placed-anywhere ( -- )   \ (Actor_TeleportRandom: no exit to stand at)
     random-tri dup 0< if  drop fiona body-tri  then
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place  settle ;
-: in-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first)
+: come-into-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first)
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
     my-mode @ held-off = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
@@ -108,17 +108,16 @@ variable in-tri
     search-again ;
 
 \ from the doorway on in to the spot 12 inside (Pursuer_SearchRouteIn), then as in-play has it
-: walking-in ( -- )  walking  step-done @ if  0 step-done !  in-play  then ;
+: walking-in ( -- )  walking  step-done @ if  0 step-done !  come-into-play  then ;
 : walk-in ( -- )
-    in-tri @ 0< if  in-play exit  then
+    in-tri @ 0< if  come-into-play exit  then
     goal-at in-at vec-copy  in-tri @ goal-at plan 0> 0= if   \ (no way in yet - the door still
-        room-id in-tri @ in-at vec@ body-place  in-play exit   \ swinging open: inside at once)
+        room-id in-tri @ in-at vec@ body-place  come-into-play exit   \ swinging open: inside at once)
     then
     mode-walk play  ['] walking-in step! ;
 
 \ ---- through the next door (Pursuer_ThroughDoor) into the room beyond: into hers he comes
 \ in; elsewhere on to the next door, or - the route over - his search there out of sight ----
-: doors-id ( -- id )  s" doors" actor-named ;
 : open-for-me ( exit -- )   \ (the shut door into her room taken - DoorHold_Take - and swung open: `door-held`)
     room-id swap stalker-kind doors-id send hold-door ;
 : swing-open ( exit -- )  true self doors-id send swing-door ;
@@ -151,7 +150,7 @@ variable in-tri
     my-room room-id = if
         room-id came-by @ room-exit-door door-kind shut-way = if  came-by @ open-for-me  then
         came-by @ came-in-by
-        came-by @ come-through 0= if  placed-anywhere  in-play exit  then
+        came-by @ come-through 0= if  placed-anywhere  come-into-play exit  then
         walk-in exit
     then
     route-over? if
@@ -202,7 +201,7 @@ create fs-a /vec allot  create fs-b /vec allot
     world-held state-flag? hushed @ or if  exit  then
     step-foot @ 1 and 7 10 2  fs-a v.x sf@ dx k f* f+  fs-a v.y sf@  fs-a v.z sf@ dz k f* f+  sound-at
     1 step-foot +! ;   \ (always at its fullest: the original takes the step as 15)
-: footsteps ( -- )
+: door-footsteps ( -- )
     next-door dup 0< if  drop exit  then  room-id door-exit-in              ( exit | -1 )
     dup 0< if  drop  -1e step-last f!  exit  then
     to-door f@ 80e f> if  drop  to-door f@ step-last f!  exit  then
@@ -212,7 +211,7 @@ create fs-a /vec allot  create fs-b /vec allot
     step-acc f@ 15e f- step-acc f!  step-at ;
 : travel ( -- )
     route-over? if  exit  then
-    to-door f@ f0> if  pace fnegate to-door f@ f+ to-door f!  footsteps  then
+    to-door f@ f0> if  pace fnegate to-door f@ f+ to-door f!  door-footsteps  then
     to-door f@ f0> if  exit  then
     at-door ;
 
@@ -278,10 +277,10 @@ create fs-a /vec allot  create fs-b /vec allot
     my-mode @ after-her = if  avoid-clear  her-room route! drop  then ;
 : back-on-floor ( -- )
     making-for @ 0< 0=  to-door f@ 80e f<= and if
-        making-for @ false place-at-exit if  in-play exit  then
+        making-for @ false place-at-exit if  come-into-play exit  then
     then
-    came-by @ 0< 0= if  came-by @ true place-at-exit if  in-play exit  then  then
-    placed-anywhere  in-play ;
+    came-by @ 0< 0= if  came-by @ true place-at-exit if  come-into-play exit  then  then
+    placed-anywhere  come-into-play ;
 : room-changed ( room -- )
     in-game @ 0= if  drop exit  then
     my-room = if  back-on-floor  else  gone-from-view  then ;

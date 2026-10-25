@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-11
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant stalker-scene-on            \ (bit 0) his scripted scene under way here (stalker): at the room's end he is put back
@@ -64,8 +64,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         4 part-shown
     then
     0 0 0.812 0.687 0.187 0.312 zone-rect
-    $A 3.5 30.7 49.9 $10 $80 $80 $80 $40 specks
-    $C 16.0 129.0 35.7 $10 $80 $80 $80 $60 specks
+    $A 3.5 30.7 49.9 $10 $80 $80 $80 $40 scatter-specks
+    $C 16.0 129.0 35.7 $10 $80 $80 $80 $60 scatter-specks
     c1f-11-medallion story-flag? not if
         2 9.646 0.163 27.266 flicker-sprite
     then
@@ -110,7 +110,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         3 -11.0 113.0 -87.0 5 12 0 zone
         fiona-who 3 char-in-zone? if
             1 castle-1f-11.cmd01
-            1 $FF 4 rumble
+            1 $FF 4 rumble-pad
             clamp-hits-var 2 var? if
                 clamp-hits-var var-inc
                 0 2 track $A action
@@ -464,8 +464,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-11.act09 ( -- )   \ 003F0C80
     self-wait-done
-    $A 3.5 30.7 49.9 $10 $80 $80 $80 $40 specks
-    $C 16.0 129.0 35.7 $10 $80 $80 $80 $60 specks
+    $A 3.5 30.7 49.9 $10 $80 $80 $80 $40 scatter-specks
+    $C 16.0 129.0 35.7 $10 $80 $80 $80 $60 scatter-specks
     1 1 movie-play
     0 cutscene-start
     yield

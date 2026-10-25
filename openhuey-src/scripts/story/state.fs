@@ -58,7 +58,7 @@ state: room-state
   cell field ctx-slot  cell field ctx-who  cell field ctx-id  cell field phase-frames
   \ the characters: where each was at the last frame's end (for areas entered / left), whether
   \ it was seen, and whether a script of this room has it (+0xE0: its scripted state)
-  #chars /vec * field char-was  #chars cells field char-seen  #chars cells field char-scripted
+  #chars /vec * field chars-were  #chars cells field char-seen  #chars cells field char-scripted
   #chars cells field char-in-room   \ each in this room as it last told (one coming in: its entering script)
   \ each character's move (+0xE1: done) and whether its animation ended, as it last told (moving)
   #chars cells field move-done-of  #chars cells field anim-ended-of  #chars cells field events-of

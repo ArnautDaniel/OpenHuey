@@ -3,7 +3,7 @@
 \ his sounds (bank 7) theirs too - and back to O_DB0 as kind 2 again. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_debilitas_models.fs
 IN: test-debilitas-models
-USING: tester engine game-state actors messages common room-names game debug flag-names stalker.state story.words ;
+USING: tester engine game-state actors messages common room-names game debug flag-names stalker.state facts story.words ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;

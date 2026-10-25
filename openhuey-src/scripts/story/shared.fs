@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py), renamed by
 \ tools/story_convert.py, once: edit by hand.
 IN: story.shared
-USING: story.words flag-names story-names fiona.anims fiona.sounds hewie.anims hewie.sounds ;
+USING: facts story.words flag-names story-names fiona.anims fiona.sounds hewie.anims hewie.sounds ;
 
 \ ---- the shared scripts (ids 0x80..) -----------------------------------------------------------
 
@@ -36,7 +36,7 @@ defer shared.act97
     8 wait-frames
     fiona-who seized-sound 5 char-sound
     uneasy-anim $A blend-out
-    1 $7F $F rumble
+    1 $7F $F rumble-pad
     stalker-who self-turn-to
     self-wait-done
     self-idle-or-end
@@ -89,7 +89,7 @@ defer shared.act97
     1 self-scripted
     self-wait-done
     hewie-reachable? not if
-        $8024 message
+        $8024 show-message
     else
         0 counter-set
         hewie-who char-here? if
@@ -113,7 +113,7 @@ defer shared.act97
     1 self-scripted
     self-wait-done
     hewie-reachable? not if
-        $8024 message
+        $8024 show-message
     else
         0 counter-set
         hewie-who char-here? if
@@ -241,10 +241,10 @@ defer shared.act97
     bent-hand-mouth-anim $A self-anim-blend
     fiona-who $23 5 char-sound
     fiona-who 2 char-wait-motion
-    1 $60 8 rumble
+    1 $60 8 rumble-pad
     yield
     fiona-who 2 char-wait-motion
-    1 $60 8 rumble
+    1 $60 8 rumble-pad
     self-wait-anim
     10 self-idle-anim
     9 wait-frames
@@ -440,7 +440,7 @@ defer shared.act97
         0.1 camera-shake
         yield
     repeat
-    1 $80 $1E rumble
+    1 $80 $1E rumble-pad
     self-frames-reset
     begin
         $1E frames? not while
@@ -448,8 +448,8 @@ defer shared.act97
         yield
     repeat
     $1B ebit-clear
-    0 0 $1E rumble
-    1 $FF $1E rumble
+    0 0 $1E rumble-pad
+    1 $FF $1E rumble-pad
     $31 $87 0.0 0.0 0.0 0 0 sound
     self-frames-reset
     begin
@@ -461,7 +461,7 @@ defer shared.act97
         1.0 camera-shake
         yield
     repeat
-    1 $80 $1E rumble
+    1 $80 $1E rumble-pad
     self-frames-reset
     begin
         $1E frames? not while

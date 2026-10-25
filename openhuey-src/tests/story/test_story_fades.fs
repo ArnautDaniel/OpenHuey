@@ -28,8 +28,8 @@ testing ... its script goes on: the level not set back to full (Events_ScenePlay
 T{ 300 game:panic send panic-overlay  30 frames  overlay -> 300 }T
 testing a level under full: the heartbeat cut short, the camera still (ScreenFade_Frame)
 T{ [: 0 panic:pulse ! ;] panic@  1 frames  [: panic:pulse @ ;] panic@ -> $80 }T
-T{ [: calming-down panic:stage !  100 panic:length ! ;] panic@  1 frames  [: panic:jolting @ ;] panic@ -> 0 }T
-[: composed panic:stage !  0 panic:length ! ;] panic@  0 game:panic send panic-level!
+T{ [: calming-down panic:stage !  100 panic:panic-left ! ;] panic@  1 frames  [: panic:jolting @ ;] panic@ -> 0 }T
+[: composed panic:stage !  0 panic:panic-left ! ;] panic@  0 game:panic send panic-level!
 
 testing a fade in (kind 1): 0.44 at its first step, full at its last two (16 steps); then its script ends
 T{ 15 1 fade!  deliver  overlay -> 440 }T
@@ -40,8 +40,8 @@ T{ 1 frames  room-fading -> 0 }T
 testing ... in play the level back to full each frame; the heartbeat and the camera's shake then go on
 T{ 300 game:panic send panic-overlay  1 frames  overlay -> 1000 }T
 T{ [: 0 panic:pulse ! ;] panic@  1 frames  [: panic:pulse @ ;] panic@ -> 4 }T
-T{ [: calming-down panic:stage !  100 panic:length ! ;] panic@  1 frames  [: panic:jolting @ ;] panic@ -> -1 }T
-[: composed panic:stage !  0 panic:length ! ;] panic@  0 game:panic send panic-level!
+T{ [: calming-down panic:stage !  100 panic:panic-left ! ;] panic@  1 frames  [: panic:jolting @ ;] panic@ -> -1 }T
+[: composed panic:stage !  0 panic:panic-left ! ;] panic@  0 game:panic send panic-level!
 
 testing the dim kinds (6 / 7) leave the level; their scripts go on as the others'
 T{ 10 6 fade!  15 frames  overlay -> 1000 }T

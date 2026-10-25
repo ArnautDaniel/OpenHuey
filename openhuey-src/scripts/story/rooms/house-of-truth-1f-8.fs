@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-8
-USING: engine common actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
+USING: engine common actors messages room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant snagged-remarked            \ (bit 0) its first remark made: "Something seems to be snagged on the other side..."
@@ -117,7 +117,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
             then
         then
     then
-    $EB door-locked? if
+    $EB doors:door-locked? if
         4 -37.0 0.0 177.0 7 20 0 zone
         fiona-who 4 char-in-zone? if
             0 1 track 4 action
@@ -298,15 +298,15 @@ USING: engine common actors messages room-names story.words story.shared flag-na
 ;
 
 : house-of-truth-1f-8.act03 ( -- )   \ 00436B70
-    1 $80 $1E rumble
+    1 $80 $1E rumble-pad
     self-frames-reset
     begin
         $1E frames? not while
         0.5 camera-shake
         yield
     repeat
-    0 0 $1E rumble
-    1 $FF $1E rumble
+    0 0 $1E rumble-pad
+    1 $FF $1E rumble-pad
     $31 $87 0.0 0.0 0.0 0 0 sound
     self-frames-reset
     begin
@@ -314,7 +314,7 @@ USING: engine common actors messages room-names story.words story.shared flag-na
         1.0 camera-shake
         yield
     repeat
-    1 $80 $1E rumble
+    1 $80 $1E rumble-pad
     self-frames-reset
     begin
         $1E frames? not while

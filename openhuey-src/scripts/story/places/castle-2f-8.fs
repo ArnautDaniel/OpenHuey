@@ -6,7 +6,7 @@
 \ before the kiln (part 0), at the door (part 1), crumbled (part 2): there is one.
 IN: story.places.castle-2f-8
 USING: engine game-state actors messages common vectors facts flag-names story-names room-names floor-flags
-    story.kit fiona.anims fiona.sounds scenes ;
+    effects story.kit fiona.anims fiona.sounds scenes ;
 
 own-reset
 

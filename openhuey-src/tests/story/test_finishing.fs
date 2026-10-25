@@ -22,7 +22,6 @@ T{ 0 0 0 0 0 s" camera" actor-named send event-shot -> }T
 T{ cam-event? -> 0 }T
 
 testing the doll away from Fiona: Debilitas coming upon it - after her he leaves it, searching he takes it
-: things-id ( -- id )  s" things" actor-named ;
 : doll-in ( room -- i )  3 swap 0  0e 0e 0e 0e 0e 0e  thing-new ;
 : he-is-in ( room his-mode -- )   \ (Debilitas, kind 2, telling the things where he is: stalker-doing)
     {: room his-mode :}  room 0 0 0 100 100 2 his-mode -1  things-id send stalker-doing ;
@@ -32,8 +31,8 @@ T{ castle-1f-2 0 he-is-in  2 frames  doll-a thing-used? -> -1 }T
 T{ castle-1f-3 2 he-is-in  2 frames  doll-b thing-used? -> 0 }T
 
 testing the pad's rumble: the strongest ask is felt, each for its frames; the story's (0x71); a sequence step by step
-T{ 1 $80 8 rumble  1 frames  rumble-now -> 0 $80 }T
-T{ 0 0 6 rumble  1 frames  rumble-now -> -1 $80 }T
+T{ 1 $80 8 rumble-pad  1 frames  rumble-now -> 0 $80 }T
+T{ 0 0 6 rumble-pad  1 frames  rumble-now -> -1 $80 }T
 T{ 8 frames  rumble-now -> 0 0 }T
 T{ rumble-sequence-clear  0 0 96 3 rumble-step  0 255 255 3 rumble-step  3 frames  rumble-now -> 0 96 }T
 T{ 3 frames  rumble-now -> 0 255 }T

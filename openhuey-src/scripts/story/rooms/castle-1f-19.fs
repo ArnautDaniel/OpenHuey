@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-19
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant hole-remarked               \ (bit 0) its first remark made: "There is a hole in the wall. I think I can see light on the "
@@ -31,8 +31,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
             hewie-who $47 char-to-tri
         then
     then
-    $10 41.5 40.7 -137.7 $E $80 $80 $80 $40 specks
-    $10 5.9 34.6 -158.4 $E $80 $80 $80 $40 specks
+    $10 41.5 40.7 -137.7 $E $80 $80 $80 $40 scatter-specks
+    $10 5.9 34.6 -158.4 $E $80 $80 $80 $40 scatter-specks
 ;
 
 : castle-1f-19.char-enter ( -- )   \ 003FDA40
@@ -142,75 +142,75 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     splash1-made ebit? not if
         0 46.0 0.0 -280.0 $10 4 0 zone
         fiona-who 0 3 char-zone-bits? fiona-who 0 3 char-zone-bits-before? not and if
-            fiona-who 5 46.0 0.0 -280.0 2 $40 $50 $40 $80 splash
+            fiona-who 5 46.0 0.0 -280.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
         hewie-who 0 3 char-zone-bits? hewie-who 0 3 char-zone-bits-before? not and if
-            hewie-who $A 46.0 0.0 -280.0 2 $40 $50 $40 $80 splash
+            hewie-who $A 46.0 0.0 -280.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
         stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
-            stalker-who 5 46.0 0.0 -280.0 2 $40 $50 $40 $80 splash
+            stalker-who 5 46.0 0.0 -280.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
     then
     splash2-made ebit? not if
         1 52.0 0.0 -240.0 $10 4 0 zone
         fiona-who 1 3 char-zone-bits? fiona-who 1 3 char-zone-bits-before? not and if
-            fiona-who 5 52.0 0.0 -240.0 2 $40 $50 $40 $80 splash
+            fiona-who 5 52.0 0.0 -240.0 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
         hewie-who 1 3 char-zone-bits? hewie-who 1 3 char-zone-bits-before? not and if
-            hewie-who $A 52.0 0.0 -240.0 2 $40 $50 $40 $80 splash
+            hewie-who $A 52.0 0.0 -240.0 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
         stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
-            stalker-who 5 52.0 0.0 -240.0 2 $40 $50 $40 $80 splash
+            stalker-who 5 52.0 0.0 -240.0 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
     then
     splash3-made ebit? not if
         2 50.0 0.0 -300.0 $10 4 0 zone
         fiona-who 2 3 char-zone-bits? fiona-who 2 3 char-zone-bits-before? not and if
-            fiona-who 5 50.0 0.0 -300.0 2 $40 $50 $40 $80 splash
+            fiona-who 5 50.0 0.0 -300.0 2 $40 $50 $40 $80 throw-splash
             splash3-made ebit-set
         then
         hewie-who 2 3 char-zone-bits? hewie-who 2 3 char-zone-bits-before? not and if
-            hewie-who $A 50.0 0.0 -300.0 2 $40 $50 $40 $80 splash
+            hewie-who $A 50.0 0.0 -300.0 2 $40 $50 $40 $80 throw-splash
             splash3-made ebit-set
         then
         stalker-who 2 3 char-zone-bits? stalker-who 2 3 char-zone-bits-before? not and if
-            stalker-who 5 50.0 0.0 -300.0 2 $40 $50 $40 $80 splash
+            stalker-who 5 50.0 0.0 -300.0 2 $40 $50 $40 $80 throw-splash
             splash3-made ebit-set
         then
     then
     splash4-made ebit? not if
         3 70.0 0.0 -260.0 $10 4 0 zone
         fiona-who 3 3 char-zone-bits? fiona-who 3 3 char-zone-bits-before? not and if
-            fiona-who 5 70.0 0.0 -260.0 2 $40 $50 $40 $80 splash
+            fiona-who 5 70.0 0.0 -260.0 2 $40 $50 $40 $80 throw-splash
             splash4-made ebit-set
         then
         hewie-who 3 3 char-zone-bits? hewie-who 3 3 char-zone-bits-before? not and if
-            hewie-who $A 70.0 0.0 -260.0 2 $40 $50 $40 $80 splash
+            hewie-who $A 70.0 0.0 -260.0 2 $40 $50 $40 $80 throw-splash
             splash4-made ebit-set
         then
         stalker-who 3 3 char-zone-bits? stalker-who 3 3 char-zone-bits-before? not and if
-            stalker-who 5 70.0 0.0 -260.0 2 $40 $50 $40 $80 splash
+            stalker-who 5 70.0 0.0 -260.0 2 $40 $50 $40 $80 throw-splash
             splash4-made ebit-set
         then
     then
     splash5-made ebit? not if
         5 73.0 0.0 -282.0 $10 4 0 zone
         fiona-who 5 3 char-zone-bits? fiona-who 5 3 char-zone-bits-before? not and if
-            fiona-who 5 73.0 0.0 -282.0 2 $40 $50 $40 $80 splash
+            fiona-who 5 73.0 0.0 -282.0 2 $40 $50 $40 $80 throw-splash
             splash5-made ebit-set
         then
         hewie-who 5 3 char-zone-bits? hewie-who 5 3 char-zone-bits-before? not and if
-            hewie-who $A 73.0 0.0 -282.0 2 $40 $50 $40 $80 splash
+            hewie-who $A 73.0 0.0 -282.0 2 $40 $50 $40 $80 throw-splash
             splash5-made ebit-set
         then
         stalker-who 5 3 char-zone-bits? stalker-who 5 3 char-zone-bits-before? not and if
-            stalker-who 5 73.0 0.0 -282.0 2 $40 $50 $40 $80 splash
+            stalker-who 5 73.0 0.0 -282.0 2 $40 $50 $40 $80 throw-splash
             splash5-made ebit-set
         then
     then
@@ -419,8 +419,8 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-19.act0A ( -- )   \ 003FE1F0
     self-wait-done
-    $10 41.5 40.7 -137.7 $E $80 $80 $80 $40 specks
-    $10 5.9 34.6 -158.4 $E $80 $80 $80 $40 specks
+    $10 41.5 40.7 -137.7 $E $80 $80 $80 $40 scatter-specks
+    $10 5.9 34.6 -158.4 $E $80 $80 $80 $40 scatter-specks
     2 3 $FF char-load
     3 char-start
     1 1 movie-play

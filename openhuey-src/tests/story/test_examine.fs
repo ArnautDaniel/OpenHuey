@@ -2,7 +2,7 @@
 \ the message window, items, zones (docs/subsystems/story.md, window.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_examine.fs
 IN: test-examine
-USING: tester engine game-state actors messages keys room-names game debug flag-names fiona.state fiona.model story.state story.words ;
+USING: tester engine game-state actors messages keys room-names game debug flag-names fiona.state fiona.model story.state facts story.words ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
@@ -41,7 +41,7 @@ T{ $8001 broadcast fiona-message  deliver  2 frames  shown -> $8001 }T
 T{ cross press  5 frames  [: msg @ ;] in-room  shown -> -1 -1 }T
 
 testing a message with a choice: the answer chosen comes back (answer?)
-: show ( msg -- )  [: story.words:message ;] in-room  deliver ;
+: show ( msg -- )  [: story.words:show-message ;] in-room  deliver ;
 T{ [: 42 answer ! ;] in-room  10 show  2 frames  cross press  3 frames  [: answer @ ;] in-room -> -1 }T   \ (no choice: -1)
 
 testing items: a file given with the pickup (once), an item counted and given (items.fs: at the next delivery)

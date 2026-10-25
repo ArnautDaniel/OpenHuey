@@ -7,11 +7,10 @@
 IN: subscreen.lists
 USING: engine actors messages keys facts items items.names items.tables subscreen.state subscreen.art subscreen.input subscreen.box ;
 
-: items-id ( -- id )  s" items" actor-named ;
-: list ( -- l )  page @ ;
-: cursor ( -- addr )  list cells cursors + ;
-: under-cursor ( -- id )  list cursor @ item-at ;
-: in-list ( -- n )  list listed ;
+: page-list ( -- l )  page @ ;
+: cursor ( -- addr )  page-list cells cursors + ;
+: under-cursor ( -- id )  page-list cursor @ item-at ;
+: in-list ( -- n )  page-list listed ;
 : list-pages ( -- n )  in-list 1- 0 max 16 / 1+ ;
 : list-page ( -- n )  cursor @ 16 / ;
 
@@ -20,12 +19,12 @@ USING: engine actors messages keys facts items items.names items.tables subscree
     {: y :}  $168 y $1A blink part  $1B3 y $1B blink part ;
 : place-of ( i -- x y )  dup 8 / $DA *  swap 8 mod 35 * ;   \ (two columns of 8)
 : draw-item ( list k x y -- )   \ its icon, its name (light if she wears it), how many
-    {: list k x y | id :}  list k item-at to id
+    {: page-list k x y | id :}  page-list k item-at to id
     x $20 +  y $5E +  id item-kind  $80 part
-    id word-plate-key = if  3  list k held-at letters 8  message-param$  then   \ (a plate: its word)
-    list k equip-state worn = ink {: c :}   \ (its count in its colour too)
+    id word-plate-key = if  3  page-list k held-at letters 8  message-param$  then   \ (a plate: its word)
+    page-list k equip-state worn = ink {: c :}   \ (its count in its colour too)
     id name  x $46 +  y $64 +  c inked
-    id stacks? if  list k held-at n@ count$  x $DE +  y $64 +  c inked  then ;
+    id stacks? if  page-list k held-at n@ count$  x $DE +  y $64 +  c inked  then ;
 : grid ( -- )
     list-page list-pages 1- > if  in-list 1- 0 max cursor !  then
     list-page 1+ list-pages of$  $186 $176 false text
@@ -33,15 +32,15 @@ USING: engine actors messages keys facts items items.names items.tables subscree
     {: | x y k :}
     16 0 do
         i place-of to y to x  list-page 16 * i + to k
-        list k item-at 0< 0=  mode @ on-actions = i 8 < and 0= and if   \ (the picture's frame covers the left column)
-            list k x y draw-item
+        page-list k item-at 0< 0=  mode @ on-actions = i 8 < and 0= and if   \ (the picture's frame covers the left column)
+            page-list k x y draw-item
         then
         cursor @ 16 mod i = if  x $20 +  y $5E +  $1C $80 part  then
     loop ;
 : help ( msg -- )  menu-line  $46 $186 false text ;
 : list-view ( -- )   \ (the special list's panels, the others')
-    list case  pg-special of  0  endof  pg-items of  8  endof  >r 9 r>  endcase  page-art
-    grid  mode @ on-actions = 0= if  list pg-items = if  $5B  else  $5D  then  help  then ;
+    page-list case  pg-special of  0  endof  pg-items of  8  endof  >r 9 r>  endcase  page-art
+    grid  mode @ on-actions = 0= if  page-list pg-items = if  $5B  else  $5D  then  help  then ;
 
 \ ---- an item's actions: use, wear, throw away (its class's bits, in that order); 0 back ----
 0 constant go-back
@@ -56,7 +55,7 @@ create acts 4 cells allot   variable #acts
     go-back act+ ;
 : act@ ( i -- act )  cells acts + @ ;
 : act-word ( act -- msg )   \ (use $50, wear $58 / take off $59, throw away $51, back $5A)
-    case  can-use of  $50  endof  can-equip of  list cursor @ equip-state worn = $59 $58 ?  endof
+    case  can-use of  $50  endof  can-equip of  page-list cursor @ equip-state worn = $59 $58 ?  endof
           can-discard of  $51  endof  >r $5A r>  endcase ;
 : load-picture ( -- )   \ its picture into the cache's picture group
     under-cursor dup shown-picture @ = if  drop exit  then
@@ -68,7 +67,7 @@ create acts 4 cells allot   variable #acts
     $10 $30 $A $80 part                                        \ the picture's frame
     slide @ $40 < if  8 slide +!  then  $50 $70 $B slide @ part
     under-cursor name  $38 $49 false text
-    under-cursor stacks? if  list cursor @ held-at n@ count$  $D2 $49 false text  then
+    under-cursor stacks? if  page-list cursor @ held-at n@ count$  $D2 $49 false text  then
     $100 $16E $19C $66 shade
     note dup message-layout 0> if  0 message-lines 0 ?do  dup 0 i line-of  $32  $142 i 22 * +  box-ink inked  loop  then  drop
     $1A9  #acts @ 10 * $DD +  $46  #acts @ 20 *  shade
@@ -90,20 +89,20 @@ create acts 4 cells allot   variable #acts
         id mark-used  1 id message-param!  se-used  $4055 ['] back ask exit
     then
     back-to-page ;
-: read-doc ( answer -- )  drop  list cursor @ items-id send use-item  back-to-page ;
+: read-doc ( answer -- )  drop  page-list cursor @ items-id send use-item  back-to-page ;
 : use-it ( -- )
     under-cursor item-kind remedy <  usable-now? 0= and if  se-buzzer  $4054 ['] back ask exit  then   \ (a key thing, the plate)
     under-cursor item-kind document = if  under-cursor $4000 or ['] read-doc ask exit  then
-    awaiting-use mode !  list cursor @ items-id send use-item ;
+    awaiting-use mode !  page-list cursor @ items-id send use-item ;
 : thrown ( answer -- )
     if  back-to-page exit  then
-    1 under-cursor message-param!  list cursor @ items-id send discard-item  $4057 ['] back ask ;
-: worn-instead ( answer -- )  0= if  list cursor @ items-id send equip-item  then  back-to-page ;
+    1 under-cursor message-param!  page-list cursor @ items-id send discard-item  $4057 ['] back ask ;
+: worn-instead ( answer -- )  0= if  page-list cursor @ items-id send equip-item  then  back-to-page ;
 : wear ( -- )
-    list cursor @ equip-state case
-        other-worn of  1  list cursor @ slot-of equipped  message-param!  $405C ['] worn-instead ask  endof   \ ask
-        worn of  list cursor @ items-id send unequip-item  back-to-page  endof
-        slot-free of  list cursor @ items-id send equip-item  back-to-page  endof
+    page-list cursor @ equip-state case
+        other-worn of  1  page-list cursor @ slot-of equipped  message-param!  $405C ['] worn-instead ask  endof   \ ask
+        worn of  page-list cursor @ items-id send unequip-item  back-to-page  endof
+        slot-free of  page-list cursor @ items-id send equip-item  back-to-page  endof
     endcase ;
 : take-action ( -- )
     se-decide
@@ -127,7 +126,7 @@ create acts 4 cells allot   variable #acts
     left? if  at 8 < if  at list-pages 16 * + 8 -  else  at 8 -  then  cursor !  then
     right? if  at 8 + 16 / list-pages 1- > if  at 8 mod  else  at 8 +  then  cursor !  then
     at cursor @ <> if  se-cursor  then
-    list pg-items = square button-pressed? and if  list items-id send sort-items  se-decide  then
+    page-list pg-items = square button-pressed? and if  page-list items-id send sort-items  se-decide  then
     page-keys ;
 : step-item ( d -- )   \ (among the actions: the list's next or last item)
     cursor @ + in-list wrap cursor !  0 action !  gather  load-picture  se-cursor ;

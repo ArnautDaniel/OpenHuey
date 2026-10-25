@@ -7,14 +7,14 @@
 \ Events_CharEnter, Events_RunCharScripts; the order: src/game/scene_game.c).
 \ Under state flag 0x26 only phase 3 runs, and a shared script for characters entering.
 IN: story.room
-USING: engine game-state actors messages common room-names story.state story.words story.shared flag-names story.clock ;
+USING: engine game-state actors messages common room-names story.state facts story.words story.shared flag-names story.clock ;
 
 : phase-context ( -- )  -1 ctx-slot !  -1 ctx-who !  $FF ctx-id !  0 phase-frames ! ;
 : run ( xt | 0 -- )  ?dup if  execute  then ;
 
 \ phase 0: the room is entered (marked visited, the event state anew)
 : entering ( -- )
-    this-room @ progress pr.visited bit-on
+    this-room @ progress pr.visited bit-set
     vars #vars cells 0 fill  0 ebits !  0 counter !  0 room-frames !  0 result !
     free-slots  -1 msg !  -1 msg-owner !  0 leaving !  -1 going !
     #chars 0 do  0 i cells char-scripted + !  -1 i cells move-done-of + !  loop
@@ -45,14 +45,14 @@ USING: engine game-state actors messages common room-names story.state story.wor
 \ The original's characters run Events_CharEnter as they come into the room played: the stalker
 \ through a door (Pursuer_ThroughDoor - not put there by a script: came-by -1), Hewie arriving
 \ (Hewie_Vt38, arrived, Hewie_PlaceInRoom), Fiona back in view (fiona_show)
-: char-in ( cs -- addr )  cells char-in-room + ;
-: chars-in ( -- )  #chars 0 do  i char-here i char-in !  loop ;
+: char-in-cell ( cs -- addr )  cells char-in-room + ;
+: chars-in ( -- )  #chars 0 do  i char-here i char-in-cell !  loop ;
 : arrival ( cs in? -- )
-    {: cs in? :}  cs char-in @ 0= in? and  in? cs char-in !  if  cs char-enter  then ;
+    {: cs in? :}  cs char-in-cell @ 0= in? and  in? cs char-in-cell !  if  cs char-enter  then ;
 \ the stalker in slot 2 as he tells it: in by a door, his entering script; put here (came-by -1), in
 : stalker-told-in ( -- )
     stalker-cs char-here {: in? :}
-    in? st-came @ 0< and if  -1 stalker-cs char-in !  exit  then
+    in? st-came @ 0< and if  -1 stalker-cs char-in-cell !  exit  then
     stalker-cs in? arrival ;
 
 \ the action scripts, a turn each: a character's goes once the character isn't in its scripted
@@ -70,7 +70,6 @@ USING: engine game-state actors messages common room-names story.state story.wor
     else  drop  then ;
 : run-slots ( -- )  #slots 0 do  i turn  loop  phase-context ;
 
-: rooms-id ( -- id )  s" rooms" actor-named ;
 : release-all ( -- )  #chars 0 do  i release  loop ;   \ (its scripts gone: the characters free)
 \ the action prepared this frame, offered to her (Progress_PlayerButtons reads her button) and
 \ shown as the action prompt - not while a message is open
@@ -78,7 +77,6 @@ USING: engine game-state actors messages common room-names story.state story.wor
     prep-scene @ dup 5 <> swap read-message <> and  msg @ 0< 0= or if  exit  then
     0 char-actor dup 0< if  drop exit  then  >r  prep-scene @ prep-arg @ r> send offer
     1 window-id send prompt ;
-: story-id ( -- id )  s" story" actor-named ;
 
 \ the camera at the start of play in the room, between its first scripts and its phase 3
 \ (CamDirector_RoomStart): from room to room the one it follows taken again (Progress_CameraOn)
@@ -108,12 +106,12 @@ behaviour playing-room
       panic-onset-on @ 0= if  run-slots  then ;   \ (not in her panic's start: SubPlay's frame flag bit 3)
   on fiona-message ( msg -- )   \ (her locked door's script: not while Hewie is the one played)
       leaving @ msg @ 0< 0= or  hewie-controlled? or if  drop exit  then
-      message  -1 msg-owner ! ;
+      show-message  -1 msg-owner ! ;
   on take-offer ( scene arg -- )   \ (she took it: scene 5, her action script `arg`; or a message
       leaving @ msg @ 0< 0= or if  2drop exit  then                \ to read, looking at character 2)
       swap case
           5 of  0 0 rot action  endof
-          read-message of  2 fiona-look-at  message  -1 msg-owner !  endof
+          read-message of  2 fiona-look-at  show-message  -1 msg-owner !  endof
           nip
       endcase ;
   \ an item used here (items.fs; item_event): character slot `who`'s action script `ev`, a script

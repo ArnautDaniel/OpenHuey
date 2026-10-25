@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-12
-USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: engine room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 1 constant synthesizer-remarked        \ (bit 1) its first remark made: "Synthesizer By separating the platinum half-piece and then s"
@@ -306,7 +306,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             fiona-who $4B 293.136 -95.0 180 char-to-xz
             world-frozen state-flag-set
             1 5.0 0.0 0.0 2.0 event-camera
-            2 message   \ "Push the left analog stick, up or down to change the dial setting. right or lef..."
+            2 show-message   \ "Push the left analog stick, up or down to change the dial setting. right or lef..."
             dials-on ebit-set
             picked-dial-var 0 var-set
             0 1 object-hidden
@@ -337,7 +337,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
             5 1 object-hidden
             dials-right ebit? if
                 dials-right-sound 6 318.0 12.0 -80.0 0 0 sound
-                1 $FF $D2 rumble
+                1 $FF $D2 rumble-pad
                 rest-anim play-out
                 fiona.anims:stand-anim self-anim
                 $32 wait-frames

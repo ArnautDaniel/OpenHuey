@@ -6,11 +6,11 @@ USING: engine vectors game-state actors messages common fiona.state fiona.anims 
 \ Fiona_Voice: her cry, muffled ($1C, bank 6) when her mouth is under water - a triangle with
 \ the water's flags ($2008000) between her feet and her head
 $2008000 constant water
-create mouth /vec allot
+create head-spot /vec allot
 : under-water? ( -- flag )
     her-tri @ 0< if  false exit  then
-    mouth self body-head vec-copy   \ (her head, as she was posed: looks.fs tell-head)
-    her-tri @ her-at mouth water nav-crosses? ;
+    head-spot self body-head vec-copy   \ (her head, as she was posed: looks.fs tell-head)
+    her-tri @ her-at head-spot water nav-crosses? ;
 : voice ( id -- )
     under-water? if  drop  muffled-sound 6 0 0 her-pos sound-at  flooded? if  1 her-at water-step  then  exit  then
     0 her-sound ;

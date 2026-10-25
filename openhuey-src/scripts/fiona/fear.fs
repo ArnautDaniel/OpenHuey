@@ -6,10 +6,6 @@
 IN: fiona.fear
 USING: engine vectors keys game-state actors messages common facts items.names fiona.state fiona.anims fiona.sounds fiona.model fiona.controls fiona.moving fiona.slam flag-names ;
 
-defer to-idle   ' noop is to-idle      \ (fiona.fs)
-: acoustics-id ( -- id )  s" acoustics" actor-named ;
-: panic-id ( -- id )  s" panic" actor-named ;
-: noise-here ( loud -- )  room-id her-tri @ -1 fiona-noise acoustics-id send noise ;
 
 \ ---- her fear meter (Fiona_ChangeFear; charms: with items) ----
 : worn-scaled ( F: d -- d' )   \ (Fiona_ChangeFear's chokers: the jade a quarter off a rise; the ruby a
@@ -111,7 +107,7 @@ create probe /vec allot  create up-was /vec allot  variable up-tri
         then
     then
     in-exit-area? 0= if  along-wall  then ;
-: falling ( -- )
+: panic-fall ( -- )
     settled? if
         -1 her-attack-t !  -1 her-fall-turn !  -1 her-wall-side !  her-yaw f@ her-fall-yaw f!
         fall-anim -1 play-table  fall-sound 0 her-sound  $5F noise-here
@@ -136,7 +132,7 @@ create next-at /vec allot
             30 her-stumble-t !
             rnd 0.2e f< if
                 1000e f>cell panic-id send fear-set   \ (the original sets the panic's fear to 1000)
-                thrown-mode her-mode !  thrown-doing her-doing !  ['] falling her-act !  true exit
+                thrown-mode her-mode !  thrown-doing her-doing !  ['] panic-fall her-act !  true exit
             then
         then
         thrown-mode her-mode !  thrown-doing her-doing !  stumble-anim -1 play-table  ['] stumbling her-act !  true exit
@@ -150,16 +146,16 @@ create next-at /vec allot
 \ (0x403) and runs; as she turns her fear rises 10 (not in costume 8), and a door she turns from
 \ is slammed (fiona/slam.fs); Hewie's reaction: with him ----
 : add-fear ( F: amount -- )  choker-fear her-fear f@ f+ 0e fmax 100e fmin her-fear f! ;   \ Fiona_AddPanic
-: events ( -- bits )  her-model @ 0 0 1 motion-events ;
+: events-now ( -- bits )  her-model @ 0 0 1 motion-events ;
 : costume ( -- n )  $26 progress pr.vars + c@ ;
 create behind-pt /vec allot   \ (her radius behind her: a door slammed as she turns from it)
 : flee-turn ( -- )
     recoil-down
     ended? if  flee-reaction s" hewie" actor-named send reaction  to-idle exit  then   \ (Hewie told)
-    events $20 and if
+    events-now $20 and if
         her-yaw f@ pi f+ angle-wrap self body-dims fdrop behind-pt her-at vec-ahead  behind-pt false slam-door drop
     then
-    events 2 and if  own-mode her-mode !  costume frog-outfit <> if  10e add-fear  then  then
+    events-now 2 and if  own-mode her-mode !  costume frog-outfit <> if  10e add-fear  then  then
     12e deg>rad turn-to-heading fdrop
     root-step her-heading f@ rotate-by move-by ;
 : flee-start ( -- )

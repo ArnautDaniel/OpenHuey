@@ -257,7 +257,7 @@ room-motion     constant crawl-in        room-motion 1+ constant lie-hidden
 room-motion 2 + constant crawl-out       room-motion 3 + constant pulled-out
 room-motion 5 + constant crawl-in-alone  room-motion 4 + constant walk-to-bed
 3 constant under-bed-camera
-: hidden? ( -- flag )  fiona-hidden state? ;
+: fiona-hidden? ( -- flag )  fiona-hidden state? ;
 : lie-under ( -- )   \ (under it: hidden, the hide prompt off; the stalker sent in by the tutorial)
     fiona lie-hidden 10 start-blend  fiona false noclip
     stalkers-stay state-off  fiona-hidden state!  0 found-her !  0 avoid-prompt
@@ -346,7 +346,7 @@ $602 constant tv-switch-anim   \ (his reach to the TV's switch)
     will-find-her @ if  ['] searches-bed start drop  else  120 summoner-sooner  then
     2 var@ 1+ 2 var! ;
 : stalker-came ( -- )
-    hidden? 0= if  0 came-while-hidden !  exit  then
+    fiona-hidden? 0= if  0 came-while-hidden !  exit  then
     -1 came-while-hidden !
     tv-on?  2 creature-moving? 0= and  debilitas? and if
         120 summoner-sooner  ['] switches-tv-off start drop
@@ -553,11 +553,11 @@ create looks
     -0.22e f,  -8e f,  59.41e f,  16e f,  11e f,   \ by the first window
 7 constant #looks
 : look# ( i -- addr )  5 floats * looks + ;
-: look@ ( i -- ) ( F: -- x y z r h )  look# {: a :}  a f@  a float+ f@  a 2 floats + f@  a 3 floats + f@  a 4 floats + f@ ;
-: look-top ( i -- ) ( F: -- x y z )  look@ {: F: x y z r h :}  x  y h f+  z ;   \ (its top: the height raised)
+: look-spot@ ( i -- ) ( F: -- x y z r h )  look# {: a :}  a f@  a float+ f@  a 2 floats + f@  a 3 floats + f@  a 4 floats + f@ ;
+: look-top ( i -- ) ( F: -- x y z )  look-spot@ {: F: x y z r h :}  x  y h f+  z ;   \ (its top: the height raised)
 : hewie-looks ( -- )
     hewie-in?  danger-now @ 0= and  hewie-cmdable-now @ and 0= if  exit  then
-    #looks 0 do  hewie i look@ centred-in? if  i look-top hewie-scent  then  loop ;
+    #looks 0 do  hewie i look-spot@ centred-in? if  i look-top hewie-scent  then  loop ;
 
 \ ---- she comes in: which way decides what happens ----
 : came-forced ( -- )   \ (back with the sketch, the forced way in: the night)

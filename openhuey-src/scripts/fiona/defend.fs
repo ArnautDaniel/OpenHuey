@@ -9,7 +9,6 @@
 IN: fiona.defend
 USING: engine vectors game-state actors messages common keys facts flag-names rumble items items.names fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.slam fiona.fear fiona.controls fiona.looks ;
 
-defer to-idle ( -- )
 \ the shove's steps move her every frame - held still by a blow that landed, its frozen frame's
 \ step goes on (Fiona_StateShoveStart / StateStrike / StateShove: Character_RootMoveMasked
 \ unconditionally; the kick stops instead)
@@ -86,7 +85,7 @@ $8000 constant stumble-blow
     recoil-down
     ended? if  shove-done exit  then
     moving
-    events 2 and 0= if  exit  then
+    events-now 2 and 0= if  exit  then
     blow-point
     hand true slam-door if  exit  then                     \ (a door there slammed)
     special? 0=  hand $20018 body-tri-to 0< and if  settled? if  wall-end  then  ['] shove-end her-act ! exit  then   \ (a wall before her hand)
@@ -94,15 +93,15 @@ $8000 constant stumble-blow
     0  hand stalker-in-room blow-reach f@ near-point? 1 and or  hand dog-in-room blow-reach f@ near-point? 2 and or  {: mask :}
     mask if  blow-kind @ blow-dmg @ blow-how @ mask strike  then
     blow-dmg @ hand vec@ blow-reach f@ blow-at ;
-fvariable pace
+fvariable shove-pace
 : shove-start ( -- )
     moving
     settled? 0= if  exit  then
     special? if  shove-anim -1 play-table  else   \ (the special costumes: their own, at its pace)
         1e  her-recovery @ $1C3 < 0= if  fdrop 3150 her-recovery @ - s>f 1800e f/ 1.5e f*  then
         1e  her-fear f@ 40e f> if  fdrop 160e her-fear f@ f- 120e f/  then
-        fmin pace f!
-        shove-anim 2 play-table  pace f@ weight!   \ (slower by her fright: blended with motion 2, kept in step)
+        fmin shove-pace f!
+        shove-anim 2 play-table  shove-pace f@ weight!   \ (slower by her fright: blended with motion 2, kept in step)
     then
     1 her-blow-n +!  0 her-struck !  ['] shoving her-act ! ;
 
@@ -117,7 +116,7 @@ create ahead-pt /vec allot   \ (her radius ahead)
         her-struck @ 2 and 0= if  kick-reaction hewie-id send reaction  then
         10e add-fear  0 her-run-t !  to-idle exit
     then
-    events 2 and if  exit  then
+    events-now 2 and if  exit  then
     ahead-pt! ahead-pt true slam-door if  exit  then                 \ (a door ahead slammed)
     0  stalker-in-room touching? 1 and or  dog-in-room touching? 2 and or
     {: mask :}  mask if  kick-blow 5 boosted 1 mask strike  then   \ (Fortis's x3 too: Fiona_StateKick's 5 x +0xA04)
@@ -174,10 +173,10 @@ create poi /vec allot
 : tell-point ( -- )
     her-mode @ defend-mode <> if  body-point-off exit  then
     her-sub @ kick-sub = if
-        events 2 and if  body-point-off exit  then
+        events-now 2 and if  body-point-off exit  then
         10e self body-dims fdrop point-ahead  poi vec@ body-point! exit
     then
-    her-sub @ shove-sub <>  events 2 and 0= or if  body-point-off exit  then
+    her-sub @ shove-sub <>  events-now 2 and 0= or if  body-point-off exit  then
     form cowgirl-outfit = if  2.5e 10e point-ahead  poi vec@ body-point! exit  then
     form illegal-outfit = if  0e 6e hand-bone at-bone  hand vec@ fdrop her-at v.y sf@ 2.5e f+ fswap body-point! exit  then
     her-model @ 9 bone-pos body-point! ;

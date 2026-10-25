@@ -6,8 +6,8 @@ IN: stalker.senses
 USING: engine game-state actors messages common facts flag-names paths vectors stalker.state ;
 
 : my-at ( -- v )  self body-at ;
-: fiona ( -- id )  fiona-id @ ;
-: hewie ( -- id )  hewie-id @ ;
+: fiona ( -- id )  fiona-cached @ ;
+: hewie ( -- id )  hewie-cached @ ;
 : here? ( id -- flag )   \ in the game and in my room
     dup 0< if  drop false exit  then  dup body? 0= if  drop false exit  then  body-room self body-room = ;
 \ walking straight from him to someone over the mask reaches their triangle (one off the floor:

@@ -9,8 +9,7 @@
 IN: fiona.letgo
 USING: things items items.names engine vectors game-state actors messages common keys facts flag-names fiona.state fiona.anims fiona.model fiona.moving fiona.slam ;
 
-defer to-idle   ' noop is to-idle      \ (fiona.fs)
-: events ( -- bits )  her-model @ 0 -1 1 motion-events ;   \ (her motion's key events this frame)
+: events-this-frame ( -- bits )  her-model @ 0 -1 1 motion-events ;   \ (her motion's key events this frame)
 
 \ ---- the item: how it is let go, and the thing it becomes ----
 : held ( -- item )  throw-slot equipped ;
@@ -62,7 +61,7 @@ $20020008 constant hand-stops   \ (the floors her hand can't pass over)
 : letting-go ( -- )   \ (Fiona_StateLetGo)
     her-yaw f@ her-letgo-yaw f@ 5e deg>rad turn-toward fdrop her-yaw f!
     ended? if  to-idle exit  then
-    events 2 and  her-let-gone @ 0= and if  -1 her-let-gone !  let-go  then
+    events-this-frame 2 and  her-let-gone @ 0= and if  -1 her-let-gone !  let-go  then
     root-move ;
 : let-go-start ( -- )   \ (Fiona_StateLetGoStart: once what she was doing has faded in)
     root-move  settled? 0= if  exit  then

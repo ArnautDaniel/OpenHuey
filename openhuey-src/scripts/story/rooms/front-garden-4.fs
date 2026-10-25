@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-4
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims stalker.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant stalker-scene-on            \ (bit 0) his scene under way: at the room's end he is let go

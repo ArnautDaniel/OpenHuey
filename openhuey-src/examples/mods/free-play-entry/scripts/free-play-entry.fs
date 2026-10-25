@@ -8,5 +8,5 @@ USING: engine opening game ;
 
 action-of title-menu-hook constant others
 : roam ( -- )  title-gone  free-play ;   \ (picked: the title away, then the game's free play)
-: entries ( -- )  others execute  s" FREE PLAY" ['] roam title-entry ;
-' entries is title-menu-hook
+: add-entries ( -- )  others execute  s" FREE PLAY" ['] roam title-entry ;
+' add-entries is title-menu-hook

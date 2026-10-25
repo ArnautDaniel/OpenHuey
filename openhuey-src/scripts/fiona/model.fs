@@ -7,6 +7,7 @@ USING: engine actors vectors messages fiona.state fiona.anims ;
 : her ( -- a )  her-model @ actor ;
 : her-pos ( F: -- x y z )  her-at vec@ ;
 : her-sound ( id vol -- )  5 swap 0 her-pos sound-at ;   \ (Actor_PlaySound: her bank, from where she is)
+: noise-here ( loud -- )  room-id her-tri @ -1 fiona-noise acoustics-id send noise ;   \ (a noise of hers where she is, for the acoustics)
 \ the model and the body where she is
 : show-her ( -- )
     her-at v.x sf@ her act.x sf!  her-at v.y sf@ her act.y sf!  her-at v.z sf@ her act.z sf!

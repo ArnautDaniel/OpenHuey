@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-18
-USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: engine room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant torn-picture-remarked       \ (bit 0) its first remark made: "This picture has been ripped out and discarded. I'm no criti"
@@ -21,34 +21,34 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
     $C0000000 6 0 0  1 fx-place vec@  sound-at ;
 
 : castle-1f-18.act06 ( -- )   \ 003FD070
-    0 $FF $E2 0 $D $FF $D8 1 butterflies
-    1 $FF $E2 0 $A $FF $D8 0 butterflies
-    2 $FF $E1 0 $B $FF $D9 0 butterflies
-    3 $FF $E2 0 $C $FF $D7 0 butterflies
-    4 $FF $E3 0 $E $FF $DA 0 butterflies
-    5 $FF $E3 0 $D $FF $D9 0 butterflies
-    6 $FF $E4 0 $C $FF $DA 0 butterflies
-    7 $FF $E3 0 $D $FF $DB 0 butterflies
-    8 $FF $E5 0 $E $FF $D8 0 butterflies
-    9 $FF $E3 0 $F $FF $D8 0 butterflies
-    $A $FF $E5 0 $C $FF $D7 0 butterflies
+    0 $FF $E2 0 $D $FF $D8 1 release-butterflies
+    1 $FF $E2 0 $A $FF $D8 0 release-butterflies
+    2 $FF $E1 0 $B $FF $D9 0 release-butterflies
+    3 $FF $E2 0 $C $FF $D7 0 release-butterflies
+    4 $FF $E3 0 $E $FF $DA 0 release-butterflies
+    5 $FF $E3 0 $D $FF $D9 0 release-butterflies
+    6 $FF $E4 0 $C $FF $DA 0 release-butterflies
+    7 $FF $E3 0 $D $FF $DB 0 release-butterflies
+    8 $FF $E5 0 $E $FF $D8 0 release-butterflies
+    9 $FF $E3 0 $F $FF $D8 0 release-butterflies
+    $A $FF $E5 0 $C $FF $D7 0 release-butterflies
     exit
 ;
 
 : castle-1f-18.enter ( -- )   \ 003FCB30
     room-sounds
-    $26 door-locked? if
-        0 0 $33 0 $14 $FF $E3 1 butterflies
-        1 0 $33 0 $16 $FF $E2 0 butterflies
-        2 0 $33 0 $12 $FF $E2 0 butterflies
-        3 0 $33 0 $E $FF $E2 0 butterflies
-        4 0 $33 0 $C $FF $E2 0 butterflies
-        5 0 $33 0 8 $FF $E2 0 butterflies
-        6 0 $33 0 $10 $FF $E6 0 butterflies
-        7 0 $33 0 $18 $FF $E2 0 butterflies
-        8 0 $32 0 $14 $FF $E2 0 butterflies
-        9 0 $30 0 $10 $FF $E2 0 butterflies
-        $A 0 $30 0 $C $FF $E6 0 butterflies
+    $26 doors:door-locked? if
+        0 0 $33 0 $14 $FF $E3 1 release-butterflies
+        1 0 $33 0 $16 $FF $E2 0 release-butterflies
+        2 0 $33 0 $12 $FF $E2 0 release-butterflies
+        3 0 $33 0 $E $FF $E2 0 release-butterflies
+        4 0 $33 0 $C $FF $E2 0 release-butterflies
+        5 0 $33 0 8 $FF $E2 0 release-butterflies
+        6 0 $33 0 $10 $FF $E6 0 release-butterflies
+        7 0 $33 0 $18 $FF $E2 0 release-butterflies
+        8 0 $32 0 $14 $FF $E2 0 release-butterflies
+        9 0 $30 0 $10 $FF $E2 0 release-butterflies
+        $A 0 $30 0 $C $FF $E6 0 release-butterflies
         0 keeps-people-off-2 floor-on
         1 keeps-hewie-off floor-on
     else
@@ -231,18 +231,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-1f-18.act03 ( -- )   \ 003FCF30
-    0 0 $A 0 $14 $FF $E3 1 butterflies
+    0 0 $A 0 $14 $FF $E3 1 release-butterflies
     0 $FF $DC 0 $B $FF $D1 0 7 effect-string
-    1 0 $34 0 $15 $FF $E0 0 butterflies
-    2 0 $33 0 $12 $FF $E1 0 butterflies
-    3 0 $34 0 $E $FF $E0 0 butterflies
-    4 0 $35 0 $17 $FF $E4 0 butterflies
-    5 0 $36 0 $13 $FF $E2 0 butterflies
-    6 0 $35 0 $F $FF $E1 0 butterflies
-    7 0 $36 0 $10 $FF $E0 0 butterflies
-    8 0 $33 0 $D $FF $E2 0 butterflies
-    9 0 $34 0 $12 $FF $E1 0 butterflies
-    $A 0 $32 0 $D $FF $E4 0 butterflies
+    1 0 $34 0 $15 $FF $E0 0 release-butterflies
+    2 0 $33 0 $12 $FF $E1 0 release-butterflies
+    3 0 $34 0 $E $FF $E0 0 release-butterflies
+    4 0 $35 0 $17 $FF $E4 0 release-butterflies
+    5 0 $36 0 $13 $FF $E2 0 release-butterflies
+    6 0 $35 0 $F $FF $E1 0 release-butterflies
+    7 0 $36 0 $10 $FF $E0 0 release-butterflies
+    8 0 $33 0 $D $FF $E2 0 release-butterflies
+    9 0 $34 0 $12 $FF $E1 0 release-butterflies
+    $A 0 $32 0 $D $FF $E4 0 release-butterflies
     1 $FF $E2 0 $A $FF $D8 0 7 effect-string
     2 $FF $E1 0 $B $FF $D9 0 7 effect-string
     3 $FF $E2 0 $C $FF $D7 0 7 effect-string
@@ -288,17 +288,17 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 : castle-1f-18.act07 ( -- )   \ 003FD0E0
     room-sounds
     self-wait-done
-    0 0 $33 0 $14 $FF $E3 1 butterflies
-    1 0 $33 0 $16 $FF $E2 0 butterflies
-    2 0 $33 0 $12 $FF $E2 0 butterflies
-    3 0 $33 0 $E $FF $E2 0 butterflies
-    4 0 $33 0 $C $FF $E2 0 butterflies
-    5 0 $33 0 8 $FF $E2 0 butterflies
-    6 0 $33 0 $10 $FF $E6 0 butterflies
-    7 0 $33 0 $18 $FF $E2 0 butterflies
-    8 0 $32 0 $14 $FF $E2 0 butterflies
-    9 0 $30 0 $10 $FF $E2 0 butterflies
-    $A 0 $30 0 $C $FF $E6 0 butterflies
+    0 0 $33 0 $14 $FF $E3 1 release-butterflies
+    1 0 $33 0 $16 $FF $E2 0 release-butterflies
+    2 0 $33 0 $12 $FF $E2 0 release-butterflies
+    3 0 $33 0 $E $FF $E2 0 release-butterflies
+    4 0 $33 0 $C $FF $E2 0 release-butterflies
+    5 0 $33 0 8 $FF $E2 0 release-butterflies
+    6 0 $33 0 $10 $FF $E6 0 release-butterflies
+    7 0 $33 0 $18 $FF $E2 0 release-butterflies
+    8 0 $32 0 $14 $FF $E2 0 release-butterflies
+    9 0 $30 0 $10 $FF $E2 0 release-butterflies
+    $A 0 $30 0 $C $FF $E6 0 release-butterflies
     1 0 movie-play
     0 cutscene-start
     yield
@@ -322,18 +322,18 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-1f-18.act08 ( -- )   \ 003FD1F0
-    0 0 $A 0 $14 $FF $E3 1 butterflies
+    0 0 $A 0 $14 $FF $E3 1 release-butterflies
     0 $FF $DC 0 $B $FF $D1 0 7 effect-string
-    1 0 $34 0 $15 $FF $E0 0 butterflies
-    2 0 $33 0 $12 $FF $E1 0 butterflies
-    3 0 $34 0 $E $FF $E0 0 butterflies
-    4 0 $35 0 $17 $FF $E4 0 butterflies
-    5 0 $36 0 $13 $FF $E2 0 butterflies
-    6 0 $35 0 $F $FF $E1 0 butterflies
-    7 0 $36 0 $10 $FF $E0 0 butterflies
-    8 0 $33 0 $D $FF $E2 0 butterflies
-    9 0 $34 0 $12 $FF $E1 0 butterflies
-    $A 0 $32 0 $D $FF $E4 0 butterflies
+    1 0 $34 0 $15 $FF $E0 0 release-butterflies
+    2 0 $33 0 $12 $FF $E1 0 release-butterflies
+    3 0 $34 0 $E $FF $E0 0 release-butterflies
+    4 0 $35 0 $17 $FF $E4 0 release-butterflies
+    5 0 $36 0 $13 $FF $E2 0 release-butterflies
+    6 0 $35 0 $F $FF $E1 0 release-butterflies
+    7 0 $36 0 $10 $FF $E0 0 release-butterflies
+    8 0 $33 0 $D $FF $E2 0 release-butterflies
+    9 0 $34 0 $12 $FF $E1 0 release-butterflies
+    $A 0 $32 0 $D $FF $E4 0 release-butterflies
     1 $FF $E2 0 $A $FF $D8 0 7 effect-string
     2 $FF $E1 0 $B $FF $D9 0 7 effect-string
     3 $FF $E2 0 $C $FF $D7 0 7 effect-string

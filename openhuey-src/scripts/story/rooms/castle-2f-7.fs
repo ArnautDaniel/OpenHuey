@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-7
-USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
+USING: engine room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant plate-press-remarked        \ (bit 0) its first remark made: "It's a plate pressing machine."
@@ -177,7 +177,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
         5 wait-frames
         fiona-who seized-sound 5 char-sound
         uneasy-2-anim 5 self-anim-blend
-        1 $FF 8 rumble
+        1 $FF 8 rumble-pad
         $10 wait-frames
         c2f-7-flag2 story-flag-set
         $5A threat-raise

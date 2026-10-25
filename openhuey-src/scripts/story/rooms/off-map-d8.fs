@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d8
-USING: room-names story.words story.shared story.clock story-names ;
+USING: room-names facts story.words story.shared story.clock story-names ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant figure-scene-on             \ (bit 0) the figure's scene begun (act00)

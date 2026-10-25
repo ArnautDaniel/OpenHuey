@@ -14,8 +14,7 @@
 IN: fiona.ladder
 USING: engine vectors game-state actors messages common keys facts flag-names rumble fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.spots fiona.controls fiona.slam fiona.fear fiona.voice ;
 
-defer to-idle   ' noop is to-idle        \ (fiona.fs)
-: events ( -- bits )  her act.mflags l@ ;   \ (MOTION_EVENTS: the motion's flags; $20 come round)
+: motion-flags ( -- bits )  her act.mflags l@ ;   \ (MOTION_EVENTS: the motion's flags; $20 come round)
 : off-ladder ( -- )  -1 her-ladder !  to-idle ;
 
 \ ---- moved by her animation's root motion, free of the floor (up and down too) ----
@@ -83,7 +82,7 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
 
 \ ---- off (Fiona_StateLadderOff): at the event $20 put by that end, free ----
 : ladder-off ( -- )
-    events $20 and 0= if  climb-move exit  then
+    motion-flags $20 and 0= if  climb-move exit  then
     anim@ off-ladder-top-anim = 1 0 ?  {: side :}
     her-ladder @ side off-offset nav-link-front                      ( tri ) ( F: x y z )
     dup 0< if  drop fdrop fdrop fdrop  else  her-tri !  her-at vec!  then
@@ -93,7 +92,7 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
 \ (the stick's down plus the pad's down less its up - as the original reads it, pushed up is
 \ down the ladder: S or the stick pulled back climbs, W or pushed forward goes down)
 : stick-climb ( F: -- v )   \ (above 0: up the ladder)
-    sz  hands-off? if  exit  then  key: Down held? 1 and key: Up held? 1 and - s>f f+ ;
+    sz  hands-off? if  exit  then  key: Down key-held? 1 and key: Up key-held? 1 and - s>f f+ ;
 : from-end? ( -- flag )  anim@ dup on-ladder-top-anim = swap rung-down-end-anim = or ;   \ (a move's end: cut in)
 : rung-down ( -- )   \ (from the top, a rung's end or holding: off at the foot within 18, else the next rung)
     0 end-y her-at v.y sf@ f- 18e f< if
@@ -127,17 +126,17 @@ defer to-idle   ' noop is to-idle        \ (fiona.fs)
         rung-up-end-anim of  rung-up  endof     ladder-hold-anim of  rung-up  endof
         drop false exit
     endcase  true ;
-: holding ( anim -- )
+: hold-on ( anim -- )
     case
         on-ladder-top-anim of  ladder-hold-anim play-own  endof   rung-down-end-anim of  ladder-hold-anim play-own  endof
         on-ladder-foot-anim of  ladder-hold-anim play-own  endof   rung-up-end-anim of  ladder-hold-anim play-own  endof
         rung-down-anim of  ladder-hold-2-anim play-own  endof   rung-up-anim of  ladder-hold-2-anim play-own  endof
     endcase ;
-: move-done? ( anim -- flag )  events $20 and 0<>  swap ladder-hold-anim ladder-slip-anim within or ;   \ (a move come round, or holding)
+: move-done? ( anim -- flag )  motion-flags $20 and 0<>  swap ladder-hold-anim ladder-slip-anim within or ;   \ (a move come round, or holding)
 : stick-move ( anim -- moved? )   \ (the stick: down, up - not with him above her: as let go - or let go)
-    stick-climb fdup fabs 0.5e f> 0= if  fdrop holding true exit  then
+    stick-climb fdup fabs 0.5e f> 0= if  fdrop hold-on true exit  then
     f0< if  going-down exit  then
-    1 stalker-on if  holding true  else  going-up  then ;
+    1 stalker-on if  hold-on true  else  going-up  then ;
 : nearer-end ( -- side )  anim@ dup off-ladder-foot-anim = swap on-ladder-foot-anim = or 0 1 ? ;   \ (after a move: the foot's for getting off or on there)
 \ in the panic she lets go - fallen off as if knocked (Fiona_StateCaughtCrawling: mode 4, sub 8)
 : panicked-off ( -- )  thrown-doing her-doing !  thrown-mode her-mode !  off-ladder-r her-sub !  knocked-off ;

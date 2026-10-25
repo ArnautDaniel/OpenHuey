@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-b1-11
-USING: room-names story.words story.shared story-names floor-flags stalker.anims ;
+USING: room-names facts story.words story.shared story-names floor-flags stalker.anims ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant stalker-sent                \ (bit 0) the stalker sent off (his action 0, then 1)

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-2
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant area0-reacted               \ (bit 0) her reaction on entering the area made (once a visit)
@@ -17,10 +17,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     c2f-3-flag1 story-flag? not if
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     else
-        $10 152.0 92.2 -60.0 $A $80 $80 $80 $30 specks
-        $E 128.0 92.2 -60.0 $C $80 $80 $80 $30 specks
-        $10 152.0 56.7 12.9 $A $80 $80 $80 $30 specks
-        $A 128.0 56.7 12.9 $A $80 $80 $80 $30 specks
+        $10 152.0 92.2 -60.0 $A $80 $80 $80 $30 scatter-specks
+        $E 128.0 92.2 -60.0 $C $80 $80 $80 $30 scatter-specks
+        $10 152.0 56.7 12.9 $A $80 $80 $80 $30 scatter-specks
+        $A 128.0 56.7 12.9 $A $80 $80 $80 $30 scatter-specks
     then
     fg-2-flag1 story-flag? not if
         0 front-garden-2.cmd00
@@ -319,10 +319,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : front-garden-2.act07 ( -- )   \ 003F98B0
     self-wait-done
-    $10 152.0 92.2 -60.0 $A $80 $80 $80 $30 specks
-    $E 128.0 92.2 -60.0 $C $80 $80 $80 $30 specks
-    $10 152.0 56.7 12.9 $A $80 $80 $80 $30 specks
-    $A 128.0 56.7 12.9 $A $80 $80 $80 $30 specks
+    $10 152.0 92.2 -60.0 $A $80 $80 $80 $30 scatter-specks
+    $E 128.0 92.2 -60.0 $C $80 $80 $80 $30 scatter-specks
+    $10 152.0 56.7 12.9 $A $80 $80 $80 $30 scatter-specks
+    $A 128.0 56.7 12.9 $A $80 $80 $80 $30 scatter-specks
     1 0 movie-play
     0 cutscene-start
     yield

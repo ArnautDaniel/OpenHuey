@@ -20,7 +20,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.a
 : walk-frames# ( row -- n )  cell+ @ ;   : stalk-frames# ( row -- n )  2 cells + @ ;
 : pick-pace ( -- )
     her-stage @ pursue-row
-    rnd 100e f*  dup f@ f<= if  walk-at-act swap walk-frames#  else  stalk-act swap stalk-frames#  then  keep ;
+    rnd 100e f*  dup f@ f<= if  walk-at-act swap walk-frames#  else  stalk-act swap stalk-frames#  then  hold-for ;
 \ a step back facing her, to its end (Pursuer_StateWalkThen404)
 : backing ( -- )
     fiona body-at turn-rate turn-to fdrop  root-move
@@ -31,11 +31,11 @@ USING: engine game-state actors messages common facts flag-names paths stalker.a
 \ ($1B, his second way round, has no case there)
 : far-off? ( -- flag )  d-her 100e f> ;
 : round-or-taunt ( far-stalks? -- )
-    far-off? and if  stalk-act her-stage @ pursue-row stalk-frames# keep exit  then
-    step-done @ if  walk-at-act her-stage @ pursue-row walk-frames# keep  then ;
+    far-off? and if  stalk-act her-stage @ pursue-row stalk-frames# hold-for exit  then
+    step-done @ if  walk-at-act her-stage @ pursue-row walk-frames# hold-for  then ;
 \ standing to her (Pursuer_Move17C): turned to her
 : facing-her ( -- )  fiona body-at turn-rate turn-to fdrop  freeze-t @ 0= if  root-move  then ;
-: stand-to ( -- )  still-anim play  ['] facing-her watch-act act! ;
+: stand-watching ( -- )  still-anim play  ['] facing-her watch-act act! ;
 
 : pursue-run ( -- )   \ (Pursuer_BehaviourStalk, each frame)
     1 chase-t +!
@@ -45,7 +45,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.a
         back-off-act of  d-her touch 5e f+ f< 0=  d-her f0< or if  pick-pace  then  endof
         stalk-act of  hold-t @ 0> 0=  d-her 100e f< and if  lunge-situation choose exit  then
               d-her touch f<=  d-her f0< 0= and if  step-back  then  endof
-        walk-at-act of  hold-t @ 0> 0=  d-her 100e f> or if  stalk-act  her-stage @ pursue-row stalk-frames#  keep
+        walk-at-act of  hold-t @ 0> 0=  d-her 100e f> or if  stalk-act  her-stage @ pursue-row stalk-frames#  hold-for
               else  d-her touch f<=  d-her f0< 0= and if  step-back  then  then  endof
         watch-act of  d-her ground-gained f>  in-front? 0= or if  pick-pace
               else  d-her f0< if  out-of-reach 0= if  search-again exit  then  then  then  endof
@@ -61,7 +61,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.a
 : pursue-now ( -- )
     no-search search-phase !  ['] pursue-run step!  0 chase-t !  0 hold-off !  -1 combo !
     d-her ground-gained f<  d-her f0< 0= and  same-floor? and  in-front? and  her-stage @ panicking < and if
-        stand-to  0 hold-t !  exit
+        stand-watching  0 hold-t !  exit
     then
     pick-pace ;
 

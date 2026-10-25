@@ -141,7 +141,7 @@ The rules (they are the game's own: `docs/design.md`, `docs/actors.md`):
 |---|---|
 | `engine` | the C words: rooms, actors' bodies, input (`key:`, `key-pressed?`), drawing (`ui-text`, `ui-rect`, `ui-clear`), sounds, files |
 | `actors` | the kernel: `message`, `behaviour` / `on` / `end-behaviour`, `state:` / `field` / `end-state`, `spawn`, `send`, `broadcast`, `subscribe`, `self`, `sender`, `kill`, `actor-named`, `enter` / `leave-actor` |
-| `messages` | every message of the game's (`scripts/messages.fs`) |
+| `messages` | every message of the game's (`scripts/messages.fs`), and the actors by name (`fiona-id`, `items-id` ...) |
 | `facts` | the progress' flags: `story-flag?`, `state-flag?`, `resident-flag?` |
 | `flag-names`, `story-names`, `room-names` | names for flags, story flags, rooms (`front-garden-3` ...) |
 | `keys` | the pad's buttons on the keyboard: `cross button-pressed?` ...; `stick@` |
@@ -271,7 +271,7 @@ SDL_AUDIO_DRIVER=dummy openhuey --mod path/to/my-mod --test tests/my-mod.fs
   rest of its file. Name things after what they mean in your mod (`reorder`, `shift-mod`).
 - **Two used vocabularies with the same word**: in a file, the later in `USING:` wins; `vocab:word`
   reaches the other. At the console and in `--eval` the order is kept from line to line, and a
-  vocabulary already in it keeps its place - say `vocab:word` there (`vectors` has a `pitch`,
+  vocabulary already in it keeps its place - say `vocab:word` there (`first-person` has a `pitch`,
   `game` a `camera`: `first-person:pitch`, `engine:camera`). If a word does something unexpected,
   check `see word` and which vocabulary has it.
 - **Control words only inside a definition.** `if`, `?do`, `do`, `case` can't run at the top level

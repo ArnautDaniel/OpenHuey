@@ -41,7 +41,7 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
     walk-stride drop ;
 : walk-at ( act -- )   \ walking at her (fast) or stalking her (slow)
     0 no-way !  dup walk-at-act = if  walk-fast  else  walk-slow  then  play  ['] at-her swap act! ;
-: keep ( act frames -- )  hold-t !  walk-at ;
+: hold-for ( act frames -- )  hold-t !  walk-at ;
 \ turned on the spot toward her
 : turning-to ( -- )  root-move  ended? if  -1 step-done !  then ;
 : turn-to-her ( way -- )  turn-base + play-now  ['] turning-to turn-act act! ;
@@ -108,7 +108,7 @@ create wd-at /vec allot
 : wandering ( -- )
     bump  -1 step-t +!
     walk-stride  step-t @ 0> 0= or if  -1 step-done !  then ;
-: wander ( -- )
+: wander-about ( -- )
     wander-tri dup 0< if  drop stand-watch exit  then
     goal-tri !  0 sent !  walk-slow play  ['] wandering own-act-1 act!  60 step-t ! ;
 \ Debilitas_StartTurnToFiona / StateTurnToFiona / StateBlow / StateStun: unshaken, turned to her
@@ -136,7 +136,7 @@ $1304 constant turn-in-anim   $205 constant charge-anim   $1004 constant stun-an
 : turn-at-her ( -- )  turn-in-anim play-now  -1 unshaken !  0 sent !  ['] turning-in own-act-2 act! ;
 \ his own actions (own-act-1 .. of his tables): his `own-acts` table, else the family's
 \ (Debilitas's: his wander, his turn to her, his lunge, his grab at Hewie)
-create family-acts  ' wander , ' turn-at-her , ' lunge , ' grab-dog ,
+create family-acts  ' wander-about , ' turn-at-her , ' lunge , ' grab-dog ,
 : own-act ( arg act -- )
     nip own-act-1 -  own-acts @ ?dup 0= if  family-acts  then  swap cells + @ execute ;
 : own? ( act -- flag )  own-act-1 own-act-1 $10 + within ;
@@ -157,7 +157,7 @@ create family-acts  ' wander , ' turn-at-her , ' lunge , ' grab-dog ,
 
 \ ---- his chase's choices (Debilitas_BackOrHold, Debilitas_StrikeOrWait) ----
 : back-or-hold ( i -- ) ( F: roll -- )   \ walk at her or stalk her, for his table's frames
-    dup chance# f<= if  walk-at-act swap walk-frames keep  else  stalk-act swap stalk-frames keep  then ;
+    dup chance# f<= if  walk-at-act swap walk-frames hold-for  else  stalk-act swap stalk-frames hold-for  then ;
 : lunge-chance ( -- n )   \ (Pursuer_ThresholdEntry: by how near she is)
     3 0 do  d-her  i 2* cells lunge-chances + f@ f<= if  i 2* 1+ cells lunge-chances + @ unloop exit  then  loop  0 ;
 : strike-or-wait ( -- )
@@ -174,28 +174,28 @@ create family-acts  ' wander , ' turn-at-her , ' lunge , ' grab-dog ,
     d-her f0< if  fdrop  out-of-reach 0= if  search-again  then  exit  then   \ (no way to her: Pursuer_ChaseFionaHere)
     faces-me? 0= if  unseen-near back-or-hold exit  then
     d-her close-reach 20e f+ f> if  seen-far back-or-hold exit  then
-    fdrop  watch-t @ if  -1 watch-t +!  else  walk-at-act seen-near walk-frames keep  then ;
+    fdrop  watch-t @ if  -1 watch-t +!  else  walk-at-act seen-near walk-frames hold-for  then ;
 : near-and-facing? ( -- flag )  d-her close-reach f<= faces-me? and ;
 : watch-her ( -- )  stand-watch  watch-frames watch-t !  0 hold-t ! ;
 : stalking-choice ( -- )
     near-and-facing? if
-        watch-t @ if  watch-her  else  walk-at-act seen-near walk-frames keep  then  exit
+        watch-t @ if  watch-her  else  walk-at-act seen-near walk-frames hold-for  then  exit
     then
     hold-t @ 0>  d-her 100e f< 0= or if  -1 hold-t +!  exit  then
     strike-or-wait ;
 : walking-choice ( -- )
     near-and-facing? watch-t @ 0> and if  watch-her exit  then
     hold-t @ 0> if
-        d-her 100e f<= if  -1 hold-t +!  else  stalk-act seen-near stalk-frames keep  then  exit
+        d-her 100e f<= if  -1 hold-t +!  else  stalk-act seen-near stalk-frames hold-for  then  exit
     then
     strike-or-wait ;
 \ within reach, facing her on her floor: his attack (his table for how she stands)
 : same-floor? ( -- flag )
     fiona body-at v.y sf@  my-at v.y sf@  {: F: hy my :}  hy my 15e f+ f<=  hy my 10e f- f>= and ;
-: range ( F: -- r )  attack-range f@ fdup f0= if  fdrop 24e  then ;   \ (vtable +0x2F4)
+: strike-range ( F: -- r )  attack-range f@ fdup f0= if  fdrop 24e  then ;   \ (vtable +0x2F4)
 : in-reach? ( -- flag )
     hold-off @ if  false exit  then
-    d-her fdup range f< 0=  fdup f0< or if  fdrop false exit  then
+    d-her fdup strike-range f< 0=  fdup f0< or if  fdrop false exit  then
     fdup ground-gained f<  10e f< or 0= if  false exit  then
     fiona body-at heading-to yaw f- angle-wrap fabs 20e deg>rad f<  same-floor? and ;
 : attack! ( -- )
@@ -224,12 +224,12 @@ defer gave-up? ( -- flag )   ' false is gave-up?
     watch-frames watch-t !
     rnd 100e f*
     faces-me? 0= if
-        d-her close-reach f> if  unseen-far chance# f<= if  walk-at-act unseen-far walk-frames keep  else  stalk-act unseen-far stalk-frames keep  then
+        d-her close-reach f> if  unseen-far chance# f<= if  walk-at-act unseen-far walk-frames hold-for  else  stalk-act unseen-far stalk-frames hold-for  then
         else   \ (the original takes the walking frames here for the chance)
-            unseen-near walk-frames s>f f<= if  walk-at-act unseen-near walk-frames keep  else  stalk-act unseen-near stalk-frames keep  then
+            unseen-near walk-frames s>f f<= if  walk-at-act unseen-near walk-frames hold-for  else  stalk-act unseen-near stalk-frames hold-for  then
         then
     else
-        d-her close-reach f> if  seen-far chance# f<= if  walk-at-act seen-far walk-frames keep  else  stalk-act seen-far stalk-frames keep  then
+        d-her close-reach f> if  seen-far chance# f<= if  walk-at-act seen-far walk-frames hold-for  else  stalk-act seen-far stalk-frames hold-for  then
         else  fdrop stand-watch  0 hold-t !  then
     then ;
 ' chase-now is chase-begin

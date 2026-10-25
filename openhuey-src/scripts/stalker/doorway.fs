@@ -133,6 +133,13 @@ create re-list 8 cells allot
     loop
     n 0= if  -1 exit  then
     n s>f rnd f* f>s n 1- min cells re-list + @ ;
+\ off stage, waiting about (Pursuer_IntoRoomByEvent, not after her nor planned: Pursuer_PlanWhere's
+\ mode 3): his route to the room past such an exit; none, to the room past the one he came by
+: route-at-random ( -- )
+    random-exit dup came-by @ = if  drop random-exit  then
+    dup 0< if  drop exit  then
+    my-room swap room-exit-leads drop  route! 0> if  exit  then
+    came-by @ dup 0< if  drop exit  then  my-room swap room-exit-leads drop  route! drop ;
 :noname ( -- )
     random-exit dup came-by @ = if  drop random-exit  then
     dup 0< if  drop stand exit  then

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-5
-USING: actors messages room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.sounds stalker.anims ;
+USING: actors messages room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.sounds stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
@@ -16,7 +16,7 @@ USING: actors messages room-names story.words story.shared flag-names story-name
 \ a hanging thing (the room's +0x34 (byte 3 + 2) object) swinging, by byte 4: 0 / 2 set going
 \ (12 degrees) away from the partner / Fiona; 1 a step (22.5 degrees of its swing, shrinking to
 \ 0.4 at each end; under half a degree it stops) - 2 while it swings
-: swing-step ( a n -- settled? )   \ (on 22.5 degrees of its swing, shrinking near the middle)
+: swing-turn ( a n -- settled? )   \ (on 22.5 degrees of its swing, shrinking near the middle)
     {: a n :}
     a n 4 object-n@ if  -22.5e  else  22.5e  then  deg>rad a n $30 object+!
     a n $30 object@ fabs 1e deg>rad f< if  a n $34 object@ 0.4e f* a n $34 object!  then
@@ -39,7 +39,7 @@ fvariable sw-dx  fvariable sw-dz
 : front-garden-5.cmd00 ( b0 b1 -- )   \ (the room's string b0 + 2; b1: 0 / 2 set going away from Hewie /
     \ Fiona, 1 swinging till it settles)
     {: obj op | a n :}  obj 2 + room-object to n to a  a n object-here? 0= if  exit  then
-    op 1 = if  begin  a n swing-step 0= while  yield  repeat  exit  then
+    op 1 = if  begin  a n swing-turn 0= while  yield  repeat  exit  then
     a n  op 0= if  1  else  0  then  swing-start ;
 \ something dropped (effect LoopingSprite_vtable, its slot in event var 1) from (-276.5, 3,
 \ 160), by byte 3: 0 started (event var 0 the frame count); 1 a frame (2 while falling): it

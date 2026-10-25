@@ -2,7 +2,7 @@
 \ frame on - Hewie told where he is held. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_grab_behind.fs
 IN: test-grab-behind
-USING: tester engine game-state actors messages common room-names game debug flag-names story.state story.words hewie.state stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.bitten ;
+USING: tester engine game-state actors messages common room-names game debug flag-names story.state facts story.words hewie.state stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.bitten ;
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;

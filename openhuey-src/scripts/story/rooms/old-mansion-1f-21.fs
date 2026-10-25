@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-21
-USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits and script variables ----
 6 constant hewie-zone1-noticed         \ (bit 6) Hewie has reacted to zone 1 (once a visit)
@@ -234,7 +234,7 @@ USING: room-names story.words story.shared story-names floor-flags fiona.anims ;
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     $44 door-unlock
-                    $8008 message   \ "You unlocked the door."
+                    $8008 show-message   \ "You unlocked the door."
                     20 self-idle-anim
                     $14 wait-frames
                     wait-message

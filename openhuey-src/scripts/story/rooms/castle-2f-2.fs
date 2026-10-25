@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-2
-USING: engine actors room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
+USING: engine actors room-names facts story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant fled-scene-done             \ (bit 0) the scene that sends her out played (file $209 given)
@@ -96,7 +96,7 @@ create dl-at 12 allot
         0 0 0 $36B $3AF obstacle-place
     else
         0 0 0 $377 $3BB obstacle-place
-        0 obstacle-stop
+        0 halt-obstacle
     then
     0 23.3 12.75 87.0 0 flame-in
     1 25.15 12.75 86.0 0 flame-in
@@ -237,7 +237,7 @@ create dl-at 12 allot
     c2f-2-flag2 story-flag? not if
         0 $377 obstacle-on? if
             c2f-2-flag2 story-flag-set
-            0 obstacle-stop
+            0 halt-obstacle
             $12 door-unlock
             stalker-who $24 0 room-doors-state
         then
@@ -417,7 +417,7 @@ create dl-at 12 allot
             0 summon-take
         then
     then
-    found-file-209 story-flag? $11 door-locked? and if
+    found-file-209 story-flag? $11 doors:door-locked? and if
         $11 door-unlock
     then
 ;
@@ -558,9 +558,9 @@ create dl-at 12 allot
         fiona-who seized-sound 5 char-sound
         startled-anim self-anim
         $5A threat-add
-        1 $FF 8 rumble
+        1 $FF 8 rumble-pad
         16 wait-frames
-        2 message   \ "Is this... blood?"
+        2 show-message   \ "Is this... blood?"
         self-wait-anim
         -1 self-idle-anim
         7 wait-frames

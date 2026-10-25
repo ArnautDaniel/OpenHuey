@@ -5,7 +5,7 @@
 \ eyelids, func_001BC8D0); given back, cleared again and drawn as before (Model_ClearDraw). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_scene_faces.fs
 IN: test-scene-faces
-USING: tester engine game-state actors messages keys room-names game debug flag-names story-names fiona.state story.state story.words pause ;
+USING: tester engine game-state actors messages keys room-names game debug flag-names story-names fiona.state story.state facts story.words pause ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;

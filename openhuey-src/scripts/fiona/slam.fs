@@ -10,9 +10,8 @@
 \ still 5 frames. Off screen, she being chased, the stalker making for that door decides for
 \ himself (`blow` all the same: struck only when he is right behind it).
 IN: fiona.slam
-USING: engine vectors game-state actors messages common doors rumble stalker-names fiona.state fiona.anims fiona.sounds fiona.model ;
+USING: engine vectors game-state actors messages common floor-flags doors rumble stalker-names fiona.state fiona.anims fiona.sounds fiona.model ;
 
-: doors-id ( -- id )  s" doors" actor-named ;
 \ the stalker in her room (the one in the game: stalker-names), Hewie in her room
 : stalker-in-room ( -- id | -1 )
     stalker-in-game dup 0< if  exit  then  dup body-room room-id <> if  drop -1  then ;
@@ -47,21 +46,19 @@ $40 constant motion-frozen   \ (her motion's flag: held still)
     stalker-in-game dup 0< if  drop exit  then  ex strike-with-door ;   \ (off screen: he decides)
 
 \ ---- the door she faces on her way to `to` ----
-: door-of-exit ( exit -- door | -1 )  room-id swap room-exit-door ;
-$20000 constant door-passage   \ (a floor's nav flag: a door's passage)
 : facing? ( ahead? -- flag ) ( F: turn -- )   \ (within 45 degrees: her way, or looking back)
     her-yaw f@ 0= if  pi f+ angle-wrap  then  f- angle-wrap fabs 45e deg>rad f< ;
-: on-passage? ( to -- flag )  v-tri dup 0< if  drop false exit  then  nav-flags door-passage and 0<> ;
+: on-passage? ( to -- flag )  v-tri dup 0< if  drop false exit  then  nav-flags barred-floor and 0<> ;   \ (a door's passage: room_door_passage bars its one side)
 : hers-to-take? ( door -- flag )   \ (DoorHold_Take for her: not held, not locked against her)
     dup state@ held-bit and if  drop false exit  then  against fiona-kind kind-bit and 0= ;
 : barge? ( exit ahead? -- flag )   \ shut, her in its area 4, neither locked nor stuck, hers, faced
-    {: ex ahead? :}  ex door-of-exit {: door :}
+    {: ex ahead? :}  ex exit-door {: door :}
     ex 4 her-pos door-in-area? 0=  door 0< or if  false exit  then
     door door-open?  door state@ locked-bit stuck-bit or and 0<> or if  false exit  then
     door hers-to-take? 0= if  false exit  then
     ex door-turn ahead? facing? ;
 : slam? ( exit ahead? -- flag )   \ open, her in its area 1, hers, faced side on
-    {: ex ahead? :}  ex door-of-exit {: door :}
+    {: ex ahead? :}  ex exit-door {: door :}
     ex 1 her-pos door-in-area? 0=  door 0< or if  false exit  then
     door door-open? 0= if  false exit  then
     door hers-to-take? 0= if  false exit  then

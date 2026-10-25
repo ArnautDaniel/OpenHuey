@@ -26,7 +26,7 @@ quarter-turn-wk half-turn-wk or constant turning-on-way-wk   last-started-wk sto
 : arrive-spot ( -- 0 )
     her-spot-tri @ her-tri !  her-at her-spot vec-copy  her-heading f@ her-yaw f!  there-wk wk+  0 ;
 : rest-of-way ( F: -- d )  her-path her-at path-rest ;
-: plan ( -- ok? )  her-path her-tri @ her-at her-spot-tri @ her-spot blocked-floor path-plan-curved 0> ;   \ (curved: Character_WaypointsCurve)
+: plan-to-spot ( -- ok? )  her-path her-tri @ her-at her-spot-tri @ her-spot blocked-floor path-plan-curved 0> ;   \ (curved: Character_WaypointsCurve)
 \ settle how to come round to the heading for the last part
 : settle-last-part ( -- )
     last-part-wk wk+
@@ -54,7 +54,7 @@ quarter-turn-wk half-turn-wk or constant turning-on-way-wk   last-started-wk sto
 : walk-to-spot ( -- r )
     there-wk wk? if  0 exit  then
     last-part-wk wk? 0= if
-        her-path path-left? 0= if  plan 0= if  root-move -1 exit  then  then
+        her-path path-left? 0= if  plan-to-spot 0= if  root-move -1 exit  then  then
         rest-of-way 7e f< if
             settled? 0= if  root-move  her-path path-end  1 exit  then
             settle-last-part

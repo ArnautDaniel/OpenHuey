@@ -30,7 +30,7 @@ One actor, `summoner` (`scripts/summoner.fs`).
 | `summoner-reset` | `( -- )` | in, the story (0x11: a stalker loaded) | Its state afresh. |
 | `write-save` | `( -- )` | in (broadcast by saves) | Prints its record (`summoner-was`): kept in a save as the original's progress +0x764 is. |
 | `summoner-restore` | `( away called cooldown room waited mode kind -- )` | in, from saves (a save loaded, after the stalker's `summoner-reset`) | Its record as the save had it. |
-| `stalker-summoned` | `( room exit found plan -- )` | out, to the stalker | Come in out of sight in `room`, by `exit`; `found` (called by a noise): after her; else waiting about, `plan` heading for her. |
+| `stalker-summoned` | `( room exit found plan -- )` | out, to the stalker | Come in out of sight in `room`, by `exit`; `found` (called by a noise): after her; else waiting about, `plan` heading for her, or else on his way past an exit at random (Pursuer_PlanWhere's mode 3: not the one he came by, if he can). |
 | `stalker-out` | `( -- )` | out, to the stalker | Taken back out of the game. |
 | `danger-signal` | `( 6 -- )` | out, to danger | Hunted (a noise heard off stage). |
 

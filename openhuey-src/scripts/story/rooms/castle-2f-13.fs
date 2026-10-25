@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-13
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ ---- this room's own event bits and script variables ----
 1 constant area6-reacted               \ (bit 1) her reaction after 30 frames in area 6 made (once a visit)

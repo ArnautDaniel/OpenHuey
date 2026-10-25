@@ -29,7 +29,7 @@ create riccardo-ladder   0e f, -5.3136e f,  0e f, 7.572e f,     0e f, 7.9372e f,
 : in-chase ( -- )   \ (back in his chase's step)
     -1 at-ladder !  own-move-mode my-move-mode !  0 apart !   \ (Pursuer_DoorAnim: in contact again)
     base-chase @ if  ['] pursue-run  else  own-run @ ?dup 0= if  ['] chase-run  then  then  step! ;
-: to-stand ( -- )  in-chase  base-chase @ if  stand-to  else  stand-watch  then ;
+: to-stand ( -- )  in-chase  base-chase @ if  stand-watching  else  stand-watch  then ;
 : ladder-done ( -- )  in-chase  base-chase @ if  pick-pace  else  stand-watch  then ;
 : no-way-there ( -- )  base-chase @ if  -1 at-ladder !  search-again  else  to-stand  then ;
 
@@ -78,18 +78,18 @@ create riccardo-ladder   0e f, -5.3136e f,  0e f, 7.572e f,     0e f, 7.9372e f,
 : given-up? ( -- flag )  her-ladder-on @ 0<  d-fiona f@ f0> and ;   \ (action $12's part 6: she free with a way)
 : get-on ( -- )   \ (Pursuer_DoorArmOpen: out of contact while on it)
     -1 apart !  0 sent !  ladder-side @ if  on-top-anim  else  on-foot-anim  then  play-own  ['] climbing step! ;
-: lining-up ( -- )
+: ladder-lining-up ( -- )
     given-up? if  to-stand exit  then
     at-ladder @ ladder-side @ nav-link-yaw  turn-rate body-turn-toward  f0=  settled? and if  get-on  then ;
 : to-the-ladder ( -- )
     given-up? if  to-stand exit  then
     settled?  way-left fdup f0> 10e f< and  and if  walk-fast play  then
-    walk-stride if  on-ladder-mode my-move-mode !  ['] lining-up step!  then ;
+    walk-stride if  on-ladder-mode my-move-mode !  ['] ladder-lining-up step!  then ;
 : climb-to ( link side -- )   \ (Pursuer_DoorApproach: his way there planned)
     ladder-side !  at-ladder !  ladder-act action-look!  no-search search-phase !
     way-left 10e f< if  walk-fast  else  mode-walk  then  play  ['] to-the-ladder step! ;
 : on-ladder? ( -- flag )
-    step @  dup ['] to-the-ladder =  over ['] lining-up = or  over ['] climbing = or  swap ['] stepping-off = or ;
+    step @  dup ['] to-the-ladder =  over ['] ladder-lining-up = or  over ['] climbing = or  swap ['] stepping-off = or ;
 ' on-ladder? is at-a-ladder?
 ' ladder-done is round-done   ' no-way-there is round-failed   \ (the same for a door opened to get at her)
 

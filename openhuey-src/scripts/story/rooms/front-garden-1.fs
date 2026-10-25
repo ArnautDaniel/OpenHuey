@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-1
-USING: actors room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+USING: actors room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant hewie-zone2-noticed         \ (bit 0) Hewie has reacted to zone 2 (once a visit)
@@ -30,12 +30,12 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
         1 0 front-garden-1.cmd00
         2 0 front-garden-1.cmd00
         3 0 front-garden-1.cmd00
-        $10 -368.0 100.0 55.0 $A $80 $80 $80 $40 specks
-        $A -332.0 100.8 -12.0 $E $80 $80 $80 $40 specks
-        $10 -332.0 100.8 165.0 $E $80 $80 $80 $40 specks
-        $10 -368.0 100.8 165.0 $C $80 $80 $80 $40 specks
-        $A -327.5 82.0 236.3 $E $80 $80 $80 $50 specks
-        $A -372.5 82.0 236.3 $E $80 $80 $80 $50 specks
+        $10 -368.0 100.0 55.0 $A $80 $80 $80 $40 scatter-specks
+        $A -332.0 100.8 -12.0 $E $80 $80 $80 $40 scatter-specks
+        $10 -332.0 100.8 165.0 $E $80 $80 $80 $40 scatter-specks
+        $10 -368.0 100.8 165.0 $C $80 $80 $80 $40 scatter-specks
+        $A -327.5 82.0 236.3 $E $80 $80 $80 $50 scatter-specks
+        $A -372.5 82.0 236.3 $E $80 $80 $80 $50 scatter-specks
     then
     got-broken-marionette story-flag? not if
         0 part-shown
@@ -55,7 +55,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     fg-1-medallion-found story-flag? fg-1-medallion story-flag? not and if
         0 -331.4 61.0 239.2 flicker-sprite
     then
-    0 door-locked? not if
+    0 doors:door-locked? not if
         cb1-6-flag3 story-flag? not if
             cb1-6-flag3 story-flag-set
             0 0 338 4 15 -1 0 0.0 creature-place
@@ -257,7 +257,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     self-wait-done
     look-at-anim self-anim
     $28 wait-frames
-    $E message   \ "It looks like there is something up there..."
+    $E show-message   \ "It looks like there is something up there..."
     c2f-3-flag1 story-flag? not if
         4 1 movie-play
         2 cutscene-start
@@ -299,7 +299,7 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : front-garden-1.act01 ( -- )   \ 0047A970
-    4 message
+    4 show-message
     self-wait-done
     wait-message
     self-idle-or-end
@@ -772,12 +772,12 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     1 0 front-garden-1.cmd00
     2 0 front-garden-1.cmd00
     3 0 front-garden-1.cmd00
-    $10 -368.0 100.0 55.0 $A $80 $80 $80 $40 specks
-    $A -332.0 100.8 -12.0 $E $80 $80 $80 $40 specks
-    $10 -332.0 100.8 165.0 $E $80 $80 $80 $40 specks
-    $10 -368.0 100.8 165.0 $C $80 $80 $80 $40 specks
-    $A -327.5 82.0 236.3 $E $80 $80 $80 $50 specks
-    $A -372.5 82.0 236.3 $E $80 $80 $80 $50 specks
+    $10 -368.0 100.0 55.0 $A $80 $80 $80 $40 scatter-specks
+    $A -332.0 100.8 -12.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -332.0 100.8 165.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -368.0 100.8 165.0 $C $80 $80 $80 $40 scatter-specks
+    $A -327.5 82.0 236.3 $E $80 $80 $80 $50 scatter-specks
+    $A -372.5 82.0 236.3 $E $80 $80 $80 $50 scatter-specks
     0 part-shown
     3 1 movie-play
     2 cutscene-start
@@ -815,12 +815,12 @@ USING: actors room-names story.words story.shared flag-names story-names floor-f
     1 0 front-garden-1.cmd00
     2 0 front-garden-1.cmd00
     3 0 front-garden-1.cmd00
-    $10 -368.0 100.0 55.0 $A $80 $80 $80 $40 specks
-    $A -332.0 100.8 -12.0 $E $80 $80 $80 $40 specks
-    $10 -332.0 100.8 165.0 $E $80 $80 $80 $40 specks
-    $10 -368.0 100.8 165.0 $C $80 $80 $80 $40 specks
-    $A -327.5 82.0 236.3 $E $80 $80 $80 $50 specks
-    $A -372.5 82.0 236.3 $E $80 $80 $80 $50 specks
+    $10 -368.0 100.0 55.0 $A $80 $80 $80 $40 scatter-specks
+    $A -332.0 100.8 -12.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -332.0 100.8 165.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -368.0 100.8 165.0 $C $80 $80 $80 $40 scatter-specks
+    $A -327.5 82.0 236.3 $E $80 $80 $80 $50 scatter-specks
+    $A -372.5 82.0 236.3 $E $80 $80 $80 $50 scatter-specks
     0 part-shown
     0 cutscene-track $10 action
     panic-eased

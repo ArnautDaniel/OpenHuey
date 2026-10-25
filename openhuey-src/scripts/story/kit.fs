@@ -271,7 +271,6 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 
 \ ---- exits ----
 : rooms-actor ( -- id )  s" rooms" actor-named ;
-: exit-door ( exit -- door | -1 )  this-room @ swap room-exit-door ;
 $80 constant forced-exit   \ (an exit's bit: not by a door - to the room loaded ahead, prepare-exit's)
 : take-exit ( exit -- )  going ! ;   \ (after this frame)
 : at-exit ( id exit -- )  over 0< if  2drop exit  then  swap send to-exit ;   \ (on its outside spot, facing in)
@@ -565,14 +564,12 @@ $FF constant no-track
 : background ( track F: vol -- )  0 f>cell music send bgm-want ;   \ the room's own track (no-track: none)
 : music-part ( stage -- )  music send music-stage ;
 : rgba ( r g b a -- rgba )  {: r g b a :}  r 24 lshift  g 16 lshift or  b 8 lshift or  a or ;
-: specks ( count spread rgba F: x y z -- )  effects:specks ;   \ a swarm straying about the point (the room's lifetime)
 : flicker-at ( k F: x y z -- )  0 effects:flicker swap effect! ;   \ effect k: a sparkle
-: shards ( rgba kind tex F: x y z u v du dv floor -- )  effects:shards ;   \ shards thrown at the point (tex: a cell u v du dv of it)
 : object ( obj op arg -- )  >r >r  this-room @ story.strings:room-string  r> r> placed-op ;   \ (the room's string names it)
 : object-hide ( obj -- )  0 1 object ;
 : object-show ( obj -- )  0 0 object ;
 : object+! ( addr len off F: d -- )  {: a n off F: d :}  a n placed-here? 0= if  exit  then  a n off placed-f@ d f+  a n off placed-f! ;
-$14 constant turn-y   $28 constant place-z
+$28 constant place-z
 : morph ( a b addr len F: t -- )   \ (a morph object: its frames a and b shown, blended by t 0..1)
     {: a b o n F: t :}  o n placed-here? 0= if  exit  then
     t 0e fmax 1e fmin  o n $7C placed-f!  a o n $74 placed-l!  b o n $78 placed-l! ;
@@ -586,8 +583,7 @@ $14 constant turn-y   $28 constant place-z
 $24 constant place-y
 : flame-at ( k kind F: x y z -- )  effects:flame swap effect! ;   \ effect k: a flame of that kind
 : dust ( F: x y z -- )  0 $80 $80 $80 16 effects:burst ;   \ grey dust thrown up there
-: rumble-pad ( motor strength frames -- )   \ (motor 0 the small one, buzzing; else the large at that strength)
-    {: motor strength frames :}  motor 0= if  1 true frames rumble-buzz exit  then  1 strength frames rumble ;
+: rumble-pad ( motor strength frames -- )  story.words:rumble-pad ;   \ (motor 0 the small one, buzzing; else the large at that strength)
 : reverb ( core level -- )  sound-reverb! ;   \ (core 0 the music's, 1 the effects')
 : threat ( v -- )  0 max 100 min s>f f>cell s" panic" actor-named send threat ;   \ (her fright raised to it)
 : room-noise ( loud tri -- )  this-room @ swap -1 world-noise s" acoustics" actor-named send noise ;

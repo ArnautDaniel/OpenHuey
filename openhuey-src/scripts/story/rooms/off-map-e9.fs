@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-e9
-USING: room-names story.words story.shared flag-names story.clock floor-flags ;
+USING: room-names facts story.words story.shared flag-names story.clock floor-flags ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant cond-was-off                \ (bit 0) the room's condition was false last frame: its hook waits a frame once it holds
@@ -36,12 +36,12 @@ USING: room-names story.words story.shared flag-names story.clock floor-flags ;
         4 0 off-map-e9.cmd02
         5 0 off-map-e9.cmd02
         6 0 off-map-e9.cmd02
-        $10 -368.0 100.0 55.0 $A $80 $80 $80 $40 specks
-        $A -332.0 100.8 -12.0 $E $80 $80 $80 $40 specks
-        $10 -332.0 100.8 165.0 $E $80 $80 $80 $40 specks
-        $10 -368.0 100.8 165.0 $C $80 $80 $80 $40 specks
-        $A -327.5 82.0 236.3 $E $80 $80 $80 $50 specks
-        $A -372.5 82.0 236.3 $E $80 $80 $80 $50 specks
+        $10 -368.0 100.0 55.0 $A $80 $80 $80 $40 scatter-specks
+        $A -332.0 100.8 -12.0 $E $80 $80 $80 $40 scatter-specks
+        $10 -332.0 100.8 165.0 $E $80 $80 $80 $40 scatter-specks
+        $10 -368.0 100.8 165.0 $C $80 $80 $80 $40 scatter-specks
+        $A -327.5 82.0 236.3 $E $80 $80 $80 $50 scatter-specks
+        $A -372.5 82.0 236.3 $E $80 $80 $80 $50 scatter-specks
     then
     0 part-hidden
 ;

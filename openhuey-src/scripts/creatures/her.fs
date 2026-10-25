@@ -7,7 +7,7 @@ USING: engine game-state actors facts flag-names floor-flags ;
 : her ( -- id )  s" fiona" actor-named ;
 : her-at ( -- v )  her body-at ;
 : her-tri ( -- tri )  her body-tri ;
-: hidden? ( -- flag )  fiona-hidden state-flag? ;
+: fiona-hidden? ( -- flag )  fiona-hidden state-flag? ;
 : half-hidden? ( -- flag )  fiona-half-hidden state-flag? ;
 : wearing? ( item slot -- flag )  4 * progress pr.equipped + l@ = ;   \ (the equipment's slots 0..3)
 : charmed? ( -- flag )  $8D 3 wearing? ;   \ (keeps the spirits away)

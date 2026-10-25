@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.house-of-truth-1f-9
-USING: engine common actors messages story.state room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+USING: engine common actors messages story.state room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant smell-remarked              \ (bit 0) its first remark made: "There is an odd smell here..."
@@ -47,7 +47,6 @@ fvariable dx  fvariable dz  fvariable dy
         25e 15e rnd f* f+  fover fsin fover f* dx f!  fswap fcos f* dz f!
         dx f@ 0e dz f@ nav-tri  dup 0< while  drop
     repeat  dx f@ dy f@ dz f@ ;
-: things-id ( -- id )  s" things" actor-named ;
 \ room objects 4 / 5 spinning (+0x10) at a speed (+0x30) eased by script variable 4 / 5: byte 3
 \ 0 sets them up (speed and base 4 degrees, top 20); else each frame (unless the progress' +0x54
 \ says no): state 0 slows by 5% of the base to 0, 1 speeds by 2% up to the base, 2 by 10% up to
@@ -647,7 +646,7 @@ defer house-of-truth-1f-9.act0F
 ;
 
 : house-of-truth-1f-9.act06 ( -- )   \ 0047AE6C
-    8 message   \ "Oh no! It's locked!"
+    8 show-message   \ "Oh no! It's locked!"
     self-idle-or-end
 ;
 

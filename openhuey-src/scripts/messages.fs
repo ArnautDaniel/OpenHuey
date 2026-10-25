@@ -3,6 +3,28 @@
 IN: messages
 USING: actors ;
 
+\ ---- the actors, by name: who a message goes to ----
+: acoustics-id ( -- id )  s" acoustics" actor-named ;
+: camera-id ( -- id )  s" camera" actor-named ;
+: creatures-id ( -- id )  s" creatures" actor-named ;
+: danger-id ( -- id )  s" danger" actor-named ;
+: debilitas-id ( -- id )  s" debilitas" actor-named ;
+: doors-id ( -- id )  s" doors" actor-named ;
+: fiona-id ( -- id )  s" fiona" actor-named ;
+: hewie-id ( -- id )  s" hewie" actor-named ;
+: items-id ( -- id )  s" items" actor-named ;
+: music-id ( -- id )  s" music" actor-named ;
+: obstacles-id ( -- id )  s" obstacles" actor-named ;
+: panic-id ( -- id )  s" panic" actor-named ;
+: rooms-id ( -- id )  s" rooms" actor-named ;
+: saves-id ( -- id )  s" saves" actor-named ;
+: screen-id ( -- id )  s" screen" actor-named ;
+: story-id ( -- id )  s" story" actor-named ;
+: subscreen-id ( -- id )  s" subscreen" actor-named ;
+: summoner-id ( -- id )  s" summoner" actor-named ;
+: things-id ( -- id )  s" things" actor-named ;
+: window-id ( -- id )  s" window" actor-named ;
+
 \ ---- acoustics (docs/subsystems/acoustics.md) ----
 \ a noise this frame: at nav triangle `tri` (-1: at a door), or at `door` (-1: none)
 message noise ( loud room tri door source -- )

@@ -184,7 +184,7 @@ defer title-menu-hook ( -- )
     triangle button-pressed? if  on-menu stage !  then ;
 
 \ ---- the opening movie over the whole window, 4:3 in the middle, black round it ----
-: movie-draw ( -- )
+: draw-opening-movie ( -- )
     movie-layer ui-clear
     stage @ opening-movie <> if  exit  then
     movie-layer  0 0 screen-size  $000000FF ui-rect
@@ -211,7 +211,7 @@ behaviour opening-the-game
           barking of  ended? if  movie-start  then  endof
           opening-movie of  movie-status 1 <>  start-button button-pressed? or if  movie-over  then  endof   \ (SceneTitle: Start skips)
       endcase ;
-  on frame-end ( -- )  title-up? if  frame-him  then  menu-draw  movie-draw ;
+  on frame-end ( -- )  title-up? if  frame-him  then  menu-draw  draw-opening-movie ;
   on killed ( -- )   \ (free play: the title or the movie cut short)
       title-up? if  title-end  then  stage @ opening-movie = if  movie-close  movie-layer ui-clear  then ;
 end-behaviour

@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-1
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant hewie-arrival-on            \ (bit 0) Hewie's arrival scene started (her first time in); over once the stalker is here
@@ -31,10 +31,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     c2f-3-flag1 story-flag? not if
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     else
-        $A 103.4 28.8 -51.9 $A $80 $80 $80 $20 specks
-        $10 83.3 29.0 14.8 $E $80 $80 $80 $50 specks
-        $10 -44.8 13.0 -13.0 $E $80 $80 $80 $40 specks
-        $C -87.5 12.9 36.0 $A $80 $80 $80 $40 specks
+        $A 103.4 28.8 -51.9 $A $80 $80 $80 $20 scatter-specks
+        $10 83.3 29.0 14.8 $E $80 $80 $80 $50 scatter-specks
+        $10 -44.8 13.0 -13.0 $E $80 $80 $80 $40 scatter-specks
+        $C -87.5 12.9 36.0 $A $80 $80 $80 $40 scatter-specks
     then
 ;
 
@@ -153,30 +153,30 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     splash1-made ebit? not if
         0 -46.0 -16.0 70.0 $C 4 0 zone
         fiona-who 0 3 char-zone-bits? fiona-who 0 3 char-zone-bits-before? not and if
-            fiona-who 5 -46.0 -16.0 70.0 2 $40 $50 $40 $80 splash
+            fiona-who 5 -46.0 -16.0 70.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
         hewie-who 0 3 char-zone-bits? hewie-who 0 3 char-zone-bits-before? not and if
-            hewie-who $A -46.0 -16.0 70.0 2 $40 $50 $40 $80 splash
+            hewie-who $A -46.0 -16.0 70.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
         stalker-who 0 3 char-zone-bits? stalker-who 0 3 char-zone-bits-before? not and if
-            stalker-who 5 -46.0 -16.0 70.0 2 $40 $50 $40 $80 splash
+            stalker-who 5 -46.0 -16.0 70.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
     then
     splash2-made ebit? not if
         1 -23.0 -16.0 67.0 $C 4 0 zone
         fiona-who 1 3 char-zone-bits? fiona-who 1 3 char-zone-bits-before? not and if
-            fiona-who 5 -23.0 -16.0 67.0 2 $40 $50 $40 $80 splash
+            fiona-who 5 -23.0 -16.0 67.0 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
         hewie-who 1 3 char-zone-bits? hewie-who 1 3 char-zone-bits-before? not and if
-            hewie-who $A -23.0 -16.0 67.0 2 $40 $50 $40 $80 splash
+            hewie-who $A -23.0 -16.0 67.0 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
         stalker-who 1 3 char-zone-bits? stalker-who 1 3 char-zone-bits-before? not and if
-            stalker-who 5 -23.0 -16.0 67.0 2 $40 $50 $40 $80 splash
+            stalker-who 5 -23.0 -16.0 67.0 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
     then
@@ -259,7 +259,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : castle-1f-1.act02 ( -- )   \ 0047A980
     self-wait-done
-    0 message   \ "It's too dangerous to go back now..."
+    0 show-message   \ "It's too dangerous to go back now..."
     self-idle-or-end
 ;
 

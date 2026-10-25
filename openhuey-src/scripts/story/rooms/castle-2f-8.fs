@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-8
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant earth-doll-remarked         \ (bit 0) its first remark made: "A huge doll made of earth blocks the door. There is a slot-s"
@@ -328,7 +328,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     strain-anim 0 self-anim-blend
     16 wait-frames
     let-go-push-anim play-out
-    1 message   \ "Well, I guess you never know until you try but I figured as much. There is no way someo..."
+    1 show-message   \ "Well, I guess you never know until you try but I figured as much. There is no way someo..."
     -1 self-idle-anim
     7 wait-frames
     wait-message

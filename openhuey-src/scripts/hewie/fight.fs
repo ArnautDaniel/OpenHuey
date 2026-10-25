@@ -102,7 +102,7 @@ defer after-yelp ( -- )   \ (yelped, below)
 : splash-here ( -- )
     his-tri dup 0< if  drop exit  then  nav-flags water-floor and water-floor <> if  exit  then
     splash-sound 6 0 0 his-at vec@ his-sound  flooded? if  1 his-at water-step  then ;
-: land ( -- )  his-biting @ held-on = if  land-held-anim  else  flung-anim  then  play  ['] st-landed behave ;
+: land-flung ( -- )  his-biting @ held-on = if  land-held-anim  else  flung-anim  then  play  ['] st-landed behave ;
 : air-floor ( F: -- y )  his-at v.x sf@ his-fly-h f@ his-at v.z sf@ nav-floor drop ;
 : fly-on ( -- landed? )   \ (a frame of it: across by his-fly-x / z, up by his-fly-y less 0.5 a frame)
     his-fly-x f@ his-fly-z f@ body-move-local  1 his-no-root !
@@ -115,9 +115,9 @@ defer after-yelp ( -- )   \ (yelped, below)
             far-grip of  anim@ top-flung-far-anim <> if  falling-held-far-anim play-cut  then  endof   \ (the original tests the flung top, starts this)
         endcase
     then
-    fly-on if  land  his-biting @ flung = if  splash-here  then  then ;
+    fly-on if  land-flung  his-biting @ flung = if  splash-here  then  then ;
 : st-jump-arc ( -- )   \ (Hewie_StateJumpArc: going up - at the top, falling)
-    fly-on if  land exit  then
+    fly-on if  land-flung exit  then
     his-fly-y f@ f0> if  exit  then
     on-him? if
         his-biting @ flung = if  top-flung-near-anim top-flung-far-anim  else  top-held-near-anim top-held-far-anim  then
@@ -362,15 +362,15 @@ defer after-yelp ( -- )   \ (yelped, below)
 \ Hewie_PickTarget: whom he goes for - the stalker when he has hold of her; a homunculus holding
 \ her down; the stalker; else the nearest creature up and after her, not struck or going -
 \ each in his room, one he can get to (the stalker not off screen)
-: reachable? ( id -- flag )  dup with? 0= if  drop false exit  then  dup body-tri swap body-at plan-to ;
-: chase? ( -- flag )  pursuer dup with? if  dup mode-of unreachable-mode <> swap reachable? and  else  drop false  then ;
+: way-to? ( id -- flag )  dup with? 0= if  drop false exit  then  dup body-tri swap body-at plan-to ;
+: chase? ( -- flag )  pursuer dup with? if  dup mode-of unreachable-mode <> swap way-to? and  else  drop false  then ;
 : her-held? ( sub -- flag )  her with? fiona-mode @ thrown-mode = and  swap fiona-sub @ = and ;
 : holding-her ( -- id | -1 )   \ (a homunculus, slots 7..9)
-    #creatures first-homunculus do  i creature dup mode-of creature-holding = over reachable? and if  unloop exit  then  drop  loop  -1 ;
+    #creatures first-homunculus do  i creature dup mode-of creature-holding = over way-to? and if  unloop exit  then  drop  loop  -1 ;
 : nearest-creature ( -- id | -1 )   \ (up, not struck, one he can get to: the nearest)
     -1 0e {: best F: best-d :}
     10 0 do
-        i creature  dup with?  i creature-up? and  over mode-of creature-struck <> and  over reachable? and if
+        i creature  dup with?  i creature-up? and  over mode-of creature-struck <> and  over way-to? and if
             dup body-at his-at vec-dist  best 0< fdup best-d f< or if  to best-d  dup to best  else  fdrop  then
         then  drop
     loop  best ;

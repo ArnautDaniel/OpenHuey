@@ -45,7 +45,7 @@ testing his flurry: 1..7 blows; on her floor a swing ($E00 / $E04)
 T{ [: chase-act @  blows @ 1 8 within  anim @ dup $E00 = swap $E04 = or ;] his -> $1000 -1 -1 }T
 testing ... a barrier by her (the story's zone of a kind with bit 1: Events_NearestPoint) - his shot strikes it instead, and it breaks ($210)
 ric story.words:slot2 !   \ (the story's slot 2 holds him, as partner-load does: its zones see his point)
-T{ [: $210 story.words:story-flag? ;] 200 soon  [: [: her-mode @ 4 = ;] fiona@ ;] 1 soon -> -1 0 }T
+T{ [: $210 facts:story-flag? ;] 200 soon  [: [: her-mode @ 4 = ;] fiona@ ;] 1 soon -> -1 0 }T
 testing ... the barrier gone, at its key it strikes her: within 10 his grab (3) - she is seized ($10)
 [: 0 blows !  flurry-start ;] his
 T{ [: [: her-mode @ 4 = ;] fiona@ ;] 200 soon  [: her-sub @ ;] fiona@ -> -1 $10 }T

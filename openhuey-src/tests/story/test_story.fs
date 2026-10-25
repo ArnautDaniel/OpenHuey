@@ -1,7 +1,7 @@
 \ The story: each room's event scripts as its actor (docs/subsystems/story.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_story.fs
 IN: test-story
-USING: tester engine game-state actors messages room-names game fiona.state story.state story.words debug flag-names keys ;
+USING: tester engine game-state actors messages room-names game fiona.state story.state facts story.words debug flag-names keys ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;

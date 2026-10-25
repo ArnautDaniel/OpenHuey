@@ -27,7 +27,7 @@ testing nothing of kind 3 (the doll) lying about; one made, and it is
 T{ [: castle-1f-10.cond01? ;] in-room -> -1 }T
 3 game:fiona body-tri  game:fiona body-pos f>cell >r f>cell >r f>cell r> r>  0 0 0  game:things send thing-made  deliver  2 frames
 T{ [: castle-1f-10.cond01? ;] in-room -> 0 }T
-things-clear
+engine:things-clear
 
 testing Fiona's reaction with nobody behind it (castle-1f-9): not in one, so no
 T{ [: castle-1f-9.cond00? fiona-struck? ;] in-room -> 0 0 }T

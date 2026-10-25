@@ -6,7 +6,7 @@
 \ (story/kit.fs). The original's scripts, for checking: story/rooms/castle-1f-4.fs.
 IN: story.places.castle-1f-4
 USING: engine game-state actors messages common vectors facts flag-names story-names room-names floor-flags
-    story.kit fiona.anims fiona.sounds scenes ;
+    effects story.kit fiona.anims fiona.sounds scenes ;
 
 own-reset
 
@@ -59,7 +59,7 @@ $F constant clock-area   $11 constant slot-area   1 constant to-exit-3-area
 3 constant riccardo-figure   4 constant other-figure   3 constant riccardo-kind
 0 constant came-in-sound   1 constant broken-mechanism-sound   2 constant broken-mechanism-stop
 3 constant mechanism-sound   4 constant mechanism-stop   5 constant first-ambient   9 constant shake-sound
-10 constant fall-sound   11 constant creak-sound   12 constant reach-sound   $72 constant unlock-sound   $AC constant slam
+10 constant rubble-sound   11 constant creak-sound   12 constant reach-sound   $72 constant unlock-sound   $AC constant slam
 $94 constant refined-antimony   $12 constant cracked-plate-key   $228 constant puppet-file
 $15 constant castle-1f-7-room   $31 constant after-riccardo-room
 
@@ -179,7 +179,7 @@ defer the-trap
     fiona hold  fiona wait-move  25 frames  $5A threat  1 $FF 8 rumble-pad
     seized-sound common-bank fiona sound-by  fiona startled-anim play  fiona -1 idle  7 frames ;
 : wall-gives ( -- )   \ (act1B: the third blow - it breaks)
-    1 $FF 4 rumble-pad  weak-wall-broken fact!  shake-sound room-bank fiona sound-by  fall-sound 140e -10e 92e room-sound
+    1 $FF 4 rumble-pad  weak-wall-broken fact!  shake-sound room-bank fiona sound-by  rubble-sound 140e -10e 92e room-sound
     wall-part hide-part  broken-wall-part show-part  139e -9e 91.5e dust  139e -9e 94.5e dust
     $80202020 1 2  137e -10e 90e  0.7e 0.5e 0.3e 0.125e  0e  shards
     $80202020 1 2  137e -10e 95e  0.7e 0.5e 0.3e 0.125e  0e  shards

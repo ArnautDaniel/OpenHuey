@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-b1-6
-USING: engine room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: engine room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant pulley-remarked             \ (bit 0) its first remark made: "A pulley system used to wind up rope... Looks like this is u"
@@ -376,7 +376,7 @@ USING: engine room-names story.words story.shared flag-names story-names floor-f
 ;
 
 : castle-b1-6.act03 ( -- )   \ 0047A9CC
-    $B message   \ "Oh no! It's locked!!"
+    $B show-message   \ "Oh no! It's locked!!"
     self-idle-or-end
 ;
 

@@ -3,7 +3,7 @@
 \ wearing another's model (0xBA), removed. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/cast/test_cast.fs
 IN: test-cast
-USING: tester engine game-state actors messages room-names game debug story.words story.state vectors ;
+USING: tester engine game-state actors messages room-names game debug facts story.words story.state vectors ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;

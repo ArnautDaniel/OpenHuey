@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-6
-USING: engine room-names story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
+USING: engine room-names facts story.words story.shared flag-names story-names fiona.anims fiona.sounds stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant in-zone0                    \ (bit 0) someone in zone 0 (the figure's hops count)

@@ -3,7 +3,7 @@
 \ swinging and settling, two pushed as Fiona walks by (front-garden-5). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_room_cmds.fs
 IN: test-room-cmds
-USING: tester engine game-state actors messages common room-names game debug story.state story.words
+USING: tester engine game-state actors messages common room-names game debug story.state facts story.words
   story.rooms.front-garden-2 story.rooms.front-garden-3 story.rooms.front-garden-5
   story.rooms.castle-1f-2 story.rooms.castle-1f-7 story.rooms.castle-1f-11 story.rooms.castle-1f-12 story.rooms.castle-1f-4
   story.rooms.castle-2f-2 story.rooms.castle-2f-12 ;
@@ -30,7 +30,7 @@ testing front-garden-5: a hanging thing set swinging away from Fiona - 12 degree
 T{ [: 0 2 + room-object object-here? ;] in-room -> -1 }T
 T{ [: 0 2 front-garden-5.cmd00  0 2 + room-object $34 object@ 12e deg>rad ~= ;] in-room -> -1 }T
 : swings ( -- n )   \ (steps till it settles)
-    [: 0  begin  1+  0 2 + room-object swing-step  over 500 > or  until ;] in-room ;
+    [: 0  begin  1+  0 2 + room-object swing-turn  over 500 > or  until ;] in-room ;
 T{ swings 500 < -> -1 }T
 T{ [: 0 2 + room-object turn-x object@ 0e ~= ;] in-room -> -1 }T
 testing front-garden-5: two hanging things - at rest; pushed by her steps past 5: swinging, event flag 3 on

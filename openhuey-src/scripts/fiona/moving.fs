@@ -127,9 +127,9 @@ feather-boots constant soft-boots
 : contact ( prev? -- l r )   \ the motion's contact track: left, right down
     her-model @ swap -4 swap motion-track 0= if  fdrop fdrop fdrop 0 0 exit  then
     fdrop  f0> 1 and  f0> 1 and ;
-create foot-at /vec allot
+create foot-spot /vec allot
 : foot-place ( left? -- )   \ where the foot is in the room (Motion_FootPos: its place track, as she is)
-    her-model @ swap 0e engine:foot-at drop  foot-at vec! ;
+    her-model @ swap 0e foot-at drop  foot-spot vec! ;
 \ on a ladder (her mode 3): the rungs' sound ($14) - but getting on or off at its foot ($704 /
 \ $703) with the foot over the floor out from it, the floor's (off there: under the foot from the
 \ foot's spot); off at its top ($707) the floor's from the top's spot. -1: the floor under the foot
@@ -151,7 +151,6 @@ create lf-at /vec allot
         off-ladder-top-anim of  1 from-end  endof
         >r drop -1 r>
     endcase ;
-: acoustics-id ( -- id )  s" acoustics" actor-named ;
 \ the step's sound by the floor's material (its nav flags; the sound set's, bank 4 - a room's own,
 \ bank 6, for some): its first of four variants, and its bank
 $2018000 constant material-bits
@@ -176,10 +175,10 @@ $14 constant rungs-sound
     left her-step-l !  right her-step-r !
     step 0= if  settled? group standing-group = and if  0 her-steps !  then  exit  then
     step 1 = foot-place
-    wading? if  running-own?  foot-at water-step  then   \ (running: the bigger ripple)
-    her-mode @ ladder-mode = if  foot-at ladder-floor  else  -1  then
+    wading? if  running-own?  foot-spot water-step  then   \ (running: the bigger ripple)
+    her-mode @ ladder-mode = if  foot-spot ladder-floor  else  -1  then
     dup rungs = if  drop  rungs-sound 4 0 0 her-pos sound-at  4 step-noise  exit  then
-    dup 0< if  drop  foot-at blocked-floor v-tri-in dup 0< if  drop her-tri @  then  nav-flags  then
+    dup 0< if  drop  foot-spot blocked-floor v-tri-in dup 0< if  drop her-tri @  then  nav-flags  then
     step-sound {: base bank :}
     base her-steps @ 3 and +  bank  1 her-steps +!                          ( id bank )
     root-step fnip 0.4e f- 0.7e f/ 0e fmax 1e fmin 2e f* f>s $7F and         ( id bank pitch )

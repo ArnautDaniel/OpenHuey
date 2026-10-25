@@ -16,14 +16,12 @@ create his-dances  $1B00 , $1C00 , $1B03 , $1C01 , $1C03 , $1B04 , $1C05 , $1C06
 5 constant #golems
 14e fconstant golem-gap      \ (between the golems, side to side)
 26e fconstant golem-back     \ (how far behind her the row stands)
-9e fconstant hewie-side      \ (Hewie by her side)
+9e fconstant hewie-beside      \ (Hewie by her side)
 $1300 constant golem-dance   $37 constant dance-music
 
 \ ---- the line-up: she where she is, facing the camera; the golems in a row behind her ----
 create her-place /vec allot   create eye /vec allot   create spot /vec allot
 fvariable facing   \ (toward the camera)
-: fiona-id ( -- id )  s" fiona" actor-named ;
-: hewie-id ( -- id )  s" hewie" actor-named ;
 : line-up ( -- )
     her-place fiona-id body-at vec-copy
     camera cam.x sf@ eye v.x sf!  her-place v.y sf@ eye v.y sf!  camera cam.z sf@ eye v.z sf!
@@ -91,7 +89,7 @@ behaviour partying
       hewie-id send join-fiona
       line-up  golems-in
       her-place vec@ facing f@ place-msg  fiona-id send place
-      0e hewie-side out-by  spot vec@ facing f@ place-msg  hewie-id send place
+      0e hewie-beside out-by  spot vec@ facing f@ place-msg  hewie-id send place
       -1 fiona-id send scripted  -1 hewie-id send scripted
       dance-music 1 1e bgm  10 settle-t !
       self subscribe tick ;

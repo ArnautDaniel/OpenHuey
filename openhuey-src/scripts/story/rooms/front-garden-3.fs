@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.front-garden-3
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims hewie.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant tree-remarked               \ (bit 0) its first remark made: "A large tree is sprawled out here."
@@ -116,8 +116,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
         front-garden-3.cmd02
         0 front-garden-3.cmd03
     else
-        $A 128.0 56.7 13.0 $E $80 $80 $80 $40 specks
-        $10 152.0 56.7 13.0 $C $80 $80 $80 $40 specks
+        $A 128.0 56.7 13.0 $E $80 $80 $80 $40 scatter-specks
+        $10 152.0 56.7 13.0 $C $80 $80 $80 $40 scatter-specks
         1 front-garden-3.cmd03
     then
     grate-open story-flag? not if
@@ -512,7 +512,7 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
     self-wait-done
     rest-anim play-out
     -1 self-idle-anim
-    6 message   \ "Where am I?"
+    6 show-message   \ "Where am I?"
     7 wait-frames
     wait-message
     fg-3-flag1 story-flag-set
@@ -849,8 +849,8 @@ variable hs-left   \ (D_0047B24C: the frames left of the handler's step)
 
 : front-garden-3.act16 ( -- )   \ 004054C0
     self-wait-done
-    $A 128.0 56.7 13.0 $E $80 $80 $80 $40 specks
-    $10 152.0 56.7 13.0 $C $80 $80 $80 $40 specks
+    $A 128.0 56.7 13.0 $E $80 $80 $80 $40 scatter-specks
+    $10 152.0 56.7 13.0 $C $80 $80 $80 $40 scatter-specks
     1 front-garden-3.cmd03
     1 0 movie-play
     0 cutscene-start

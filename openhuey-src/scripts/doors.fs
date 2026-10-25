@@ -23,7 +23,6 @@ USING: engine game-state actors messages facts ;
 : closed-off? ( door -- flag )  progress pr.closed-off bit? ;
 : closed-off! ( door -- )  progress pr.closed-off bit-set ;
 : reopened! ( door -- )  progress pr.closed-off bit-clear ;
-: acoustics-id ( -- id )  s" acoustics" actor-named ;
 
 \ ---- the rooms within two open doors of a room (SceneGame_RoomsNear): the room first, then
 \ each room an open exit (not locked, nor locked against any of the three kinds) leads to, and

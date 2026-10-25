@@ -55,14 +55,14 @@ create ex-in /vec allot   create ex-out /vec allot   create ex-best /vec allot
 : exit-out ( exit -- tri )  0 exit-spot >r ex-out vec! r> ;  \ (Rooms_ExitPosOut)
 : exit-room ( exit -- room )  her-room swap room-exit-leads drop ;
 : exit-room-way ( exit -- way )  her-room swap room-exit-leads  over 0< if  nip exit  then  half-of ;
-: exit-door ( exit -- door )  her-room swap room-exit-door ;
+: her-exit-door ( exit -- door )  her-room swap room-exit-door ;
 : leads? ( exit -- flag )  exit-room  dup 0< 0=  swap her-room <> and ;   \ (Rooms_ExitLeads)
-: real-door? ( exit -- flag )  exit-door  dup 0< if  drop false exit  then  fixed? 0= ;   \ (not a doorway)
+: real-door? ( exit -- flag )  her-exit-door  dup 0< if  drop false exit  then  fixed? 0= ;   \ (not a doorway)
 : exit-shut? ( exit -- flag )  her-room swap exit-open? 0= ;
 : barred? ( door -- flag )  dup door-locked?  over door-held? or  swap fiona-kind locked-against? or ;
 : usable? ( exit -- flag )   \ leading on, its door not locked, nor held, nor locked against her
     dup leads? 0= if  drop false exit  then
-    exit-door  dup 0< if  drop true exit  then  barred? 0= ;
+    her-exit-door  dup 0< if  drop true exit  then  barred? 0= ;
 : my-way ( -- way )  her-room mate-door @ half-of ;          \ the half she came in on
 : wrong-side? ( way tri -- flag )   \ (Fiona_WrongSide: an exit triangle on the other half)
     dup 0< if  2drop false exit  then  nav-flags both-halves and {: way f :}
@@ -208,8 +208,8 @@ create ex-in /vec allot   create ex-out /vec allot   create ex-best /vec allot
 : gone-through ( -- )
     {: | door r e :}
     mate-exit @ exit-out drop
-    her-at ex-out vec-dist 1e f< mate-exit @ exit-door 0< 0= and if
-        mate-exit @ exit-door to door  her-room mate-exit @ room-exit-leads to e to r
+    her-at ex-out vec-dist 1e f< mate-exit @ her-exit-door 0< 0= and if
+        mate-exit @ her-exit-door to door  her-room mate-exit @ room-exit-leads to e to r
         r body-room!  -1 body-tri!  e mate-door !  way-end
         door mate-link !  door r door-tri s>f mate-link-left f!  1 mate-out !  0e mate-gone f!
         2 90 frames-rnd mate-away-t !  0 her act.visible l!  exit
@@ -334,9 +334,9 @@ create ex-in /vec allot   create ex-out /vec allot   create ex-best /vec allot
         rnd 8e f* f>s {: j :}
         tried 1 j lshift and 0= if
             tried 1 j lshift or to tried
-            j leads?  j exit-door dup 0< if  drop true  else  door-locked? 0=  then  and
+            j leads?  j her-exit-door dup 0< if  drop true  else  door-locked? 0=  then  and
             her-room j half-of cur = and if
-                j exit-door mate-link !  mate-link @ her-room door-tri s>f mate-link-left f!  0 mate-out ! exit
+                j her-exit-door mate-link !  mate-link @ her-room door-tri s>f mate-link-left f!  0 mate-out ! exit
             then
         then
     repeat ;
@@ -370,7 +370,7 @@ create ex-in /vec allot   create ex-out /vec allot   create ex-best /vec allot
     following mood!  way-end  -1e mate-link-left f!
     dup 0< if  drop exit  then
     {: e :}  e exit-in-way if  exit  then
-    e exit-door mate-link !
+    e her-exit-door mate-link !
     her-at ex-in vec-dist  dog-pos ex-in vec-dist f< if  1 mate-in !  0 mate-out ! exit  then
     e exit-out drop
     her-at ex-out vec-dist  ex-in ex-out vec-dist f<=  ex-out blocked-floor v-tri-in 0< 0= and if  1 mate-in !  1 mate-out !  then ;

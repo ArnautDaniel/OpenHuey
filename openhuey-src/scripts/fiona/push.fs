@@ -11,9 +11,7 @@
 IN: fiona.push
 USING: engine vectors game-state actors messages common obstacles rumble fiona.state fiona.anims fiona.sounds fiona.model fiona.moving fiona.slam floor-flags ;
 
-defer to-idle   ' noop is to-idle        \ (fiona.fs)
 <PRIVATE
-: obstacles-id ( -- id )  s" obstacles" actor-named ;
 
 \ ---- something to push ahead (Fiona_FindPushable) ----
 create probe /vec allot
@@ -59,7 +57,7 @@ PRIVATE>
 
 \ ---- letting go (Fiona_StatePushLetGo): free as it comes round ----
 : letting-go ( -- )  held? if  to-idle exit  then  root-move  ended? if  to-idle  then ;
-: let-go ( -- )  let-go-push-anim play-cut  ['] letting-go her-act ! ;
+: stop-pushing ( -- )  let-go-push-anim play-cut  ['] letting-go her-act ! ;
 \ ---- pushing on (Fiona_StatePushStep) ----
 : push-key? ( -- flag )  her-model @ 0 0 1 motion-events 2 and 0<> ;   \ (a push's step: its key)
 : pushing-on ( -- )
@@ -68,16 +66,16 @@ PRIVATE>
     root-move
     ended? 0= if  exit  then
     anim@ push-anim = if  her-push @ obstacles-id send obstacle-moved  then
-    let-go? if  let-go exit  then
+    let-go? if  stop-pushing exit  then
     floor-ahead? if  can-go? if  push-it exit  then  then
     strain ;
 \ ---- leaning on it (Fiona_StatePush) ----
 : pushing ( -- )
     held? if  to-idle exit  then
     root-move
-    let-go? if  settled? if  anim@ strain-anim = if  let-go  else  to-idle  then  then  exit  then
+    let-go? if  settled? if  anim@ strain-anim = if  stop-pushing  else  to-idle  then  then  exit  then
     ended? 0= if  exit  then
-    her-push @ 0< if  true 2.2e find-pushable 0= if  let-go exit  then  then
+    her-push @ 0< if  true 2.2e find-pushable 0= if  stop-pushing exit  then  then
     her-push @ 0<  if  strain exit  then
     can-go? 0= if  strain exit  then
     push-it  push-sound 0 her-sound  ['] pushing-on her-act ! ;

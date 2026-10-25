@@ -37,7 +37,7 @@ end-state
 : his-mode ( -- m )  s-in @ if  s-mode @  else  no-mode  then ;
 
 \ ---- taking him out (summoner_take; Progress_CharDone) ----
-: take ( kind -- )
+: take-him ( kind -- )
     told? 0= s-in @ 0= or if  drop exit  then   \ (out already: Progress_CharDone has nothing to do)
     s-room @ took-room !  random-delay away !  0 called !  0 waited !  took-kind !
     s-id @ send stalker-out ;
@@ -72,7 +72,7 @@ end-state
 
 \ ---- the rooms within two open doors of Fiona's (doors.fs: SceneGame_RoomsNear) ----
 : listed? ( room -- flag )  near-list near-n @ in-list? ;
-: rooms-near ( room -- )  near-list #near-max doors:rooms-near near-n ! ;
+: find-near-rooms ( room -- )  near-list #near-max doors:rooms-near near-n ! ;
 
 \ ---- a way in (summon_via): a room off stage near hers, one at random, by its first exit
 \ with a route from the half of her room she came in by; he comes in there ----
@@ -96,7 +96,7 @@ create no-avoid 13 cells allot  no-avoid 13 cells 0 fill
 : via ( near? plan -- came? )   \ (near: next door to hers; plan: he heads for her)
     {: near plan :}
     her-room @ 0< if  false exit  then
-    her-room @ rooms-near  near candidates
+    her-room @ find-near-rooms  near candidates
     picks-n @ 0= if  false exit  then
     some-way  {: room :}
     her-exit @ 0< if  -1  else  her-room @ her-exit @ 1 exit-way  then  {: from :}   \ (the half of her room she came in by)
@@ -136,7 +136,7 @@ create no-avoid 13 cells allot  no-avoid 13 cells 0 fill
         her-room @ i leads s-room @ =  his-mode held-off <> s-own @ 0= or  and
         if  true unloop exit  then
     loop  false ;
-: in-play ( -- took? )
+: take-while-played ( -- took? )
     s-in @ 0= if  false exit  then
     cooldown @ if  -1 cooldown +!  then
     s-mode @ last-mode @ <> if  s-mode @ last-mode !  0 waited !  false exit  then
@@ -144,10 +144,10 @@ create no-avoid 13 cells allot  no-avoid 13 cells 0 fill
         her-room @ s-room @ =  near-her? or if  0 waited !  false exit  then
     then
     1 waited +!
-    s-beaten @ waited @ 151 >= and if  taken-beaten take  true exit  then   \ (beaten: away from her 5 s)
-    s-mode @ held-off = waited @ 151 >= and if  taken-held-off take  true exit  then
+    s-beaten @ waited @ 151 >= and if  taken-beaten take-him  true exit  then   \ (beaten: away from her 5 s)
+    s-mode @ held-off = waited @ 151 >= and if  taken-held-off take-him  true exit  then
     cooldown @ if  false exit  then
-    s-mode @ waiting-about = waited @ 91 >= and if  taken-by-story take  true exit  then
+    s-mode @ waiting-about = waited @ 91 >= and if  taken-by-story take-him  true exit  then
     false ;
 
 \ ---- each frame and at the start of play in a room (Summoner_RoomStart) ----
@@ -159,10 +159,10 @@ create no-avoid 13 cells allot  no-avoid 13 cells 0 fill
     her-room @ 0< if  exit  then
     her-room @ closed-to-stalkers? if
         her-room @ s-room @ = s-in @ and if  exit  then
-        his-mode held-off = s-own @ and if  taken-held-off take  then  exit
+        his-mode held-off = s-own @ and if  taken-held-off take-him  then  exit
     then
     cam-scene? if  exit  then   \ (a cutscene has the camera)
-    offstage 0= if  in-play drop  then ;
+    offstage 0= if  take-while-played drop  then ;
 
 \ ---- Fiona's noise (Summoner_Noise): its level; it may call him in, or have her hunted ----
 begin-structure /chances  cfield: call%  cfield: hunt%  end-structure
@@ -204,7 +204,7 @@ behaviour summoning
   on entered-room ( room exit -- )  her-exit !  her-room ! ;
   on danger ( level -- )  the-danger ! ;
   on noise-made ( loud room door -- )  noise ;
-  on summoner-take ( kind -- )  take ;
+  on summoner-take ( kind -- )  take-him ;
   on summoner-cooldown ( secs -- )  dup 0< if  drop s-cool @  then  30 * cooldown ! ;
   on summoner-cooldown-less ( secs -- )  30 * cooldown @ swap - 0 max cooldown ! ;
   on summoner-reset ( -- )  reset ;

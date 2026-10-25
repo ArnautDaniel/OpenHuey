@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-11
-USING: engine actors messages vectors story.state room-names story.words story.shared flag-names story-names fiona.anims ;
+USING: engine actors messages vectors story.state room-names facts story.words story.shared flag-names story-names fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant ladder-remarked             \ (bit 0) its first remark made: "There is a rusty stepladder here..."
@@ -229,7 +229,7 @@ fvariable drop-v   \ (the falling sprite's speed: gRoom62FallSpeed)
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     $67 door-unlock
-                    $8008 message   \ "You unlocked the door."
+                    $8008 show-message   \ "You unlocked the door."
                     20 self-idle-anim
                     $14 wait-frames
                     wait-message

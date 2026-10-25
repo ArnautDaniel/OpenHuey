@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-9
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant stairs-remarked             \ (bit 0) its first remark made: "Why do the stairs stop halfway?"
@@ -50,9 +50,9 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     c2f-3-flag1 story-flag? not if
         $1F $AC $60 $26 $50 $19 $1F $12 $80 0 9 effect-string
     else
-        $10 20.0 19.7 36.4 $E $80 $80 $80 $40 specks
-        $10 30.0 87.0 124.7 $E $80 $80 $80 $40 specks
-        $10 -53.9 28.8 -52.0 $A $80 $80 $80 $40 specks
+        $10 20.0 19.7 36.4 $E $80 $80 $80 $40 scatter-specks
+        $10 30.0 87.0 124.7 $E $80 $80 $80 $40 scatter-specks
+        $10 -53.9 28.8 -52.0 $A $80 $80 $80 $40 scatter-specks
     then
 ;
 
@@ -283,7 +283,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-9.act02 ( -- )   \ 004028D0
-    2 message   \ "What the!"
+    2 show-message   \ "What the!"
     [: fiona-free? ;] wait-until
     panic-eased
     0 fiona-who 3 action-force

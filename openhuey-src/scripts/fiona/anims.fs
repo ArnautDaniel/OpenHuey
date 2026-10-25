@@ -23,7 +23,7 @@ $401 constant turn-right-anim
 $402 constant turn-round-anim
 $403 constant flee-turn-anim       \ turning to flee (Fiona_StateFleeTurn)
 \ ---- doors ----
-$600 constant door-anim            \ through a door: $600 + its kind (FIN_D000.MTN)
+$600 constant through-door-anim            \ through a door: $600 + its kind (FIN_D000.MTN)
 $608 constant rattle-front-anim    \ trying a locked door, from in front
 $609 constant rattle-behind-anim   \ ... from behind
 $60A constant rattle-front-slow-anim   \ ... slowly (chased or panicking)

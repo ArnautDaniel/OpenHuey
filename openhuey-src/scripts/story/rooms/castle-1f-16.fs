@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-16
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds stalker.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant found-her                   \ (bit 0) he has found her hiding: she must flee (the avoid prompt)
@@ -250,7 +250,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         c1f-16-flag1 story-flag? not if
             1 self-scripted
             $5A threat-add
-            1 $FF 8 rumble
+            1 $FF 8 rumble-pad
             fiona-who seized-sound 5 char-sound
             uneasy-2-anim play-out
             -1 self-idle-anim

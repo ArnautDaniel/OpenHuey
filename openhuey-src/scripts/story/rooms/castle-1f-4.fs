@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-4
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant no-knob-remarked            \ (bit 0) its first remark made: "What? There's no knob... Now what do I do? Wait... There is "
@@ -58,7 +58,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         3 0 object-hidden
         4 0 object-hidden
     then
-    7 door-locked? if
+    7 doors:door-locked? if
         0 solid-floor pushable or floor-on
     then
     $80 exit-taken? if
@@ -103,7 +103,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     else
         4 part-hidden
     then
-    8 door-locked? if
+    8 doors:door-locked? if
         5 part-hidden
     else
         5 part-shown
@@ -499,10 +499,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     16 wait-frames
     let-go-push-anim play-out
     locked-remarked ebit? not if
-        $11 message   \ "It won't open. Maybe I need a key or something?"
+        $11 show-message   \ "It won't open. Maybe I need a key or something?"
         locked-remarked ebit-set
     else
-        $12 message   \ "No luck. Could this be some strange puzzle or just another weird contraption?"
+        $12 show-message   \ "No luck. Could this be some strange puzzle or just another weird contraption?"
     then
     -1 self-idle-anim
     7 wait-frames
@@ -514,7 +514,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     self-wait-done
     $19 wait-frames
     $5A threat-raise
-    1 $FF 8 rumble
+    1 $FF 8 rumble-pad
     fiona-who seized-sound 5 char-sound
     startled-anim play-out
     -1 self-idle-anim
@@ -523,7 +523,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-4.act08 ( -- )   \ 003F67A0
-    1 $FF 4 rumble
+    1 $FF 4 rumble-pad
     shaking ebit-set
     fiona-who trap-shake-sound 6 char-sound
     0 139.0 -9.0 91.5 0 0 0 0 dust
@@ -570,7 +570,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     panic-held state-flag-clear
     $F 1 fade
     wait-fade
-    1 message   \ "What's that noise? I swear I just heard something..."
+    1 show-message   \ "What's that noise? I swear I just heard something..."
     self-wait-anim
     -1 self-idle-anim
     7 wait-frames
@@ -767,7 +767,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     world-frozen state-flag-set
     1 self-scripted
     1 15.0 -10.0 0.0 0.0 event-camera
-    8 door-locked? if
+    8 doors:door-locked? if
         4 say   \ "What could this be used for? There appears to be a slot of sorts. Could this be som..."
     else
         5 say   \ "The plate-key is locked into place."
@@ -873,7 +873,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 ;
 
 : castle-1f-4.act1B ( -- )   \ 003F6DA0
-    1 $FF 4 rumble
+    1 $FF 4 rumble-pad
     weak-wall-broken story-flag-set
     fiona-who trap-shake-sound 6 char-sound
     trap-fall-sound volume-scaled 6 140.0 -10.0 92.0 0 0 sound

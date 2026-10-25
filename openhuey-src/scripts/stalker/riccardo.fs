@@ -15,14 +15,12 @@
 IN: stalker.riccardo
 USING: engine game-state actors messages common facts flag-names paths vectors stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue stalker.names stalker.anims stalker.sounds effects floor-flags ;
 
-: acoustics-id ( -- id )  s" acoustics" actor-named ;
 \ his waits (his kit's): frames walking, stalking, walking once seen, stalking when far, the
 \ times he comes on; then the chance to walk
 enum: wait#  walk-wait stalk-wait seen-walk-wait far-stalk-wait comings-wait ;
 : wait# ( i -- n )  cells waits + @ ;
 : wait-chance ( F: -- c )  5 cells waits + f@ ;
 : come-reach ( F: -- r )  my-kind @ kind37-kind = if  30e  else  60e  then ;   \ (+0x17C0: his other class's 30)
-: d-her ( F: -- d )  d-fiona f@ ;
 : calming? ( -- flag )  her-stage @ calming-down = ;
 \ his animations: his swings, his shots aimed down (his taunt's too), his heavy blows, his lunge
 $E00 constant swing-anim   $E04 constant swing-2-anim   $E05 constant heavy-anim   $E06 constant aim-down-anim
@@ -32,28 +30,28 @@ $22 constant swing-grunt   $23 constant swing-2-grunt   $15 constant dog-grunt  
 
 \ ---- his chase (Riccardo_Chase) ----
 defer ric-begin ( -- )
-: back-or-hold ( F: roll -- )   \ (Riccardo_BackOrHold)
-    wait-chance f<= if  walk-at-act walk-wait wait# keep  else  stalk-act stalk-wait wait# keep  then ;
+: ric-back-or-hold ( F: roll -- )   \ (Riccardo_BackOrHold)
+    wait-chance f<= if  walk-at-act walk-wait wait# hold-for  else  stalk-act stalk-wait wait# hold-for  then ;
 : lunge? ( -- flag )   \ (Riccardo_Lunge: by his lunge table)
     rnd 100e f*  lunge-chance s>f f< if  lunge-situation choose true  else  false  then ;
-: strike-or-wait ( -- )  lunge? if  exit  then  rnd 100e f* back-or-hold ;
-: stand-to ( -- )  stand-watch  comings-wait wait# comings !  0 hold-t ! ;
+: ric-strike-or-wait ( -- )  lunge? if  exit  then  rnd 100e f* ric-back-or-hold ;
+: ric-stand-to ( -- )  stand-watch  comings-wait wait# comings !  0 hold-t ! ;
 : near-seen? ( -- flag )  d-her come-reach f<=  faces-me? and ;
 : standing-step ( -- )
     chase-t @ 60 mod 0= if  lunge? if  exit  then  then
     settled? if  fiona body-at 60e deg>rad 150e deg>rad way-past dup no-turn <> if  turn-to-her  else  drop  then  then
     rnd 100e f*
     d-her f0< if  fdrop  out-of-reach 0= if  search-again  then  exit  then   \ (no way to her: Pursuer_ChaseFionaHere)
-    faces-me? 0=  d-her come-reach 20e f+ f> or if  back-or-hold exit  then  fdrop
-    comings @ 0> if  -1 comings +!  else  walk-at-act seen-walk-wait wait# keep  then ;
+    faces-me? 0=  d-her come-reach 20e f+ f> or if  ric-back-or-hold exit  then  fdrop
+    comings @ 0> if  -1 comings +!  else  walk-at-act seen-walk-wait wait# hold-for  then ;
 : stalking-step ( -- )
-    near-seen? if  comings @ 0> if  stand-to  else  walk-at-act seen-walk-wait wait# keep  then  exit  then
+    near-seen? if  comings @ 0> if  ric-stand-to  else  walk-at-act seen-walk-wait wait# hold-for  then  exit  then
     hold-t @ 0>  d-her 100e f< 0= or if  -1 hold-t +!  exit  then
-    strike-or-wait ;
+    ric-strike-or-wait ;
 : walking-step ( -- )
-    near-seen? comings @ 0> and if  stand-to exit  then
-    hold-t @ 0> if  d-her 100e f<= if  -1 hold-t +!  else  stalk-act far-stalk-wait wait# keep  then  exit  then
-    strike-or-wait ;
+    near-seen? comings @ 0> and if  ric-stand-to exit  then
+    hold-t @ 0> if  d-her 100e f<= if  -1 hold-t +!  else  stalk-act far-stalk-wait wait# hold-for  then  exit  then
+    ric-strike-or-wait ;
 : ric-run ( -- )
     1 chase-t +!
     hold-off @ if  -1 hold-off +!  then
@@ -63,7 +61,7 @@ defer ric-begin ( -- )
         watch-act of  standing-step  endof
         walk-at-act of  walking-step  endof
         stalk-act of  stalking-step  endof
-        round-act of  d-her 100e f> if  stalk-act far-stalk-wait wait# keep  else  step-done @ if  stand-watch  then  then  endof
+        round-act of  d-her 100e f> if  stalk-act far-stalk-wait wait# hold-for  else  step-done @ if  stand-watch  then  then  endof
         >r  step-done @ if  ric-begin  then  r>
     endcase
     moving-act? if  in-reach? if  attack!  then  then ;
@@ -72,8 +70,8 @@ defer ric-begin ( -- )
     calming? if  pursue-now exit  then
     no-search search-phase !  ['] ric-run step!  0 chase-t !  0 hold-off !  -1 combo !
     sees-fiona @ 0= if  chase-start exit  then
-    d-her 100e f> if  stalk-act far-stalk-wait wait# keep
-    else  near-seen? if  stand-watch  0 hold-t !  else  rnd 100e f* back-or-hold  then  then
+    d-her 100e f> if  stalk-act far-stalk-wait wait# hold-for
+    else  near-seen? if  stand-watch  0 hold-t !  else  rnd 100e f* ric-back-or-hold  then  then
     comings-wait wait# comings ! ; is ric-begin
 
 \ ---- his attack by how near (Riccardo_AttackForDistance): a chance to attack at all by the
@@ -121,7 +119,7 @@ create hit-at /vec allot   create probe /vec allot
     loop  false ;
 : floor-hit ( -- ok? )
     slam? if  down-the-gun exit  then  swing? if  floor-ahead exit  then  false ;
-: debris ( -- )  floor-hit if  $80 $50 $40 hit-at vec@ debris-cloud  then ;
+: floor-debris ( -- )  floor-hit if  $80 $50 $40 hit-at vec@ debris-cloud  then ;
 \ his shot (Riccardo_Impact: at his animation's key $20): smoke off his gun (its strike mark), a
 \ noise where he stands, its debris from one aimed down; his grab marks her
 defer cry-hit ( who -- )
@@ -130,7 +128,7 @@ $40 constant shot-noise
     effect-key? 0= if  exit  then
     my-model @ gun-bone bone-pos gun-smoke
     shot-noise room-id self body-tri -1 stalker-noise acoustics-id send noise
-    anim @ dup shot-down-anim = over shot-down-2-anim = or swap taunt-anim = or if  debris  then
+    anim @ dup shot-down-anim = over shot-down-2-anim = or swap taunt-anim = or if  floor-debris  then
     anim @ carry-anim = if  fiona cry-hit  then ;
 \ Hewie struck: the move's kind and damage
 : strike-hewie ( -- )  blow-entry m.kind @  blow-entry m.damage @  0  hewie send blow ;
@@ -139,15 +137,15 @@ $40 constant shot-noise
 \ times in four)
 : heavy ( n -- n' )  case  0 of 6 endof  3 of 7 endof  1 of 8 endof  dup  endcase ;
 : strike-her ( k -- )
-    dup 0= if  drop debris exit  then
+    dup 0= if  drop floor-debris exit  then
     0 {: stun :}
     dup hold-request = if
         blow-move @ heavy blow-move !
-        blow-entry m.bone @ $FFFF and  dup $8000 and if  $10000 -  then  to stun  debris   \ (its bone field: the stun)
+        blow-entry m.bone @ $FFFF and  dup $8000 and if  $10000 -  then  to stun  floor-debris   \ (its bone field: the stun)
     then
     dup throw-request = if  rnd 0.75e f< if  stumbles to stun  then  then
     stun  blow-entry m.threat f@ f>cell  fiona send hit ;
-: in-front? ( id -- flag ) ( F: a -- )   \ within a of his heading
+: within-heading? ( id -- flag ) ( F: a -- )   \ within a of his heading
     body-at heading-to yaw f- angle-wrap fabs f> ;
 : dog-floor? ( -- flag )
     hewie body-at v.y sf@  my-at v.y sf@  {: F: hy my :}  hy my 15e f+ f<=  hy my 10e f- f>= and ;
@@ -166,10 +164,10 @@ defer flurry-blow ( -- )
     blows @ 0> 0= if  blow-over exit  then
     at-dog @ if
         sees-hewie @ 0=  d-hewie f@ 30e f> or if  blow-over exit  then
-        hewie  pi f2/ in-front? 0= if  blow-over exit  then
+        hewie  pi f2/ within-heading? 0= if  blow-over exit  then
     else
         sees-fiona @ 0=  d-her 100e f> or  calming? or if  blow-over exit  then
-        fiona  pi f2/ in-front? 0= if  blow-over exit  then
+        fiona  pi f2/ within-heading? 0= if  blow-over exit  then
     then
     flurry-blow ;
 : grunt ( id -- )   \ (at the motion's key 1, half the time)
@@ -188,9 +186,9 @@ defer flurry-blow ( -- )
 : blowing-dog ( -- )
     blow-key? if
         0 blow-aim !
-        dog-floor?  sees-hewie @ and  d-hewie f@ 30e f< and  hewie 30e deg>rad in-front? and if
+        dog-floor?  sees-hewie @ and  d-hewie f@ 30e f< and  hewie 30e deg>rad within-heading? and if
             her-in-way? if  d-her attack-for strike-her
-            else  d-hewie f@ attack-for if  strike-hewie  else  debris  then  then
+            else  d-hewie f@ attack-for if  strike-hewie  else  floor-debris  then  then
         then
     then
     blow-aim @ if  hewie body-at turn-rate turn-to fdrop  then
@@ -230,14 +228,14 @@ create shot-at /vec allot
 : blowing-her ( -- )
     blow-key? if
         0 blow-aim !
-        sees-fiona @ same-floor? and  fiona 30e deg>rad in-front? and  target-shot? and if
+        sees-fiona @ same-floor? and  fiona 30e deg>rad within-heading? and  target-shot? and if
             shoot-target
-        else  sees-fiona @ same-floor? and  fiona 30e deg>rad in-front? and if
+        else  sees-fiona @ same-floor? and  fiona 30e deg>rad within-heading? and if
             hewie here?  fiona body-at hewie body-at vec-dist 50e f< and  d-hewie f@ 20e f> and
             dog-floor? and  her-clear? and if
-                d-hewie f@ attack-for if  strike-hewie  else  debris  then
+                d-hewie f@ attack-for if  strike-hewie  else  floor-debris  then
             else
-                crouched? if  debris  else  d-her attack-for strike-her  then
+                crouched? if  floor-debris  else  d-her attack-for strike-her  then
             then
         then  then
     then

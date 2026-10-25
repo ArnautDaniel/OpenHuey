@@ -3,7 +3,7 @@
 \ doors' open bits; Fiona's fear; story flags by variable. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_conditions.fs
 IN: test-conditions
-USING: tester engine game-state actors messages room-names game fiona.state hewie.state story.state story.words doors ;
+USING: tester engine game-state actors messages room-names game fiona.state hewie.state story.state facts story.words doors ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
@@ -116,7 +116,7 @@ testing the doors set up again
 T{ [: doors-room-in ;] in-room  deliver -> }T
 testing a splash and a burst of dust by her: there, then gone by themselves
 : there? ( addr len -- flag )  actor-named 0< 0= ;
-[: 0 6 4 $80 $80 $80 $40  her-x her-y 2e f+ her-z splash ;] in-room  deliver
+[: 0 6 4 $80 $80 $80 $40  her-x her-y 2e f+ her-z throw-splash ;] in-room  deliver
 [: 0 0 0 0 0  her-x her-y her-z dust ;] in-room  deliver  1 frames
 T{ s" splash" there?  s" dust" there? -> -1 -1 }T
 400 frames

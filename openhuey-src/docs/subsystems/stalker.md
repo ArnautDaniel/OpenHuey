@@ -43,7 +43,7 @@ requests to Fiona.
 | `stalker-out` | `( -- )` | in | Out of the game. |
 | `stalker-here` | `( room alert chasing -- )` | out, to danger | In play this frame (alert: he knows of her; chasing). |
 | `stalker-status` | `( room mode in-game own away cool -- )` | out, to the summoner | Each frame while in slot 2 (docs/subsystems/summoner.md). |
-| `stalker-summoned` | `( room exit found plan -- )` | in, from the summoner | Come in out of sight by that exit: after her, or waiting about (Pursuer_IntoRoomByEvent). |
+| `stalker-summoned` | `( room exit found plan -- )` | in, from the summoner | Come in out of sight by that exit: after her, or waiting about (Pursuer_IntoRoomByEvent) - heading for her, or past an exit at random (`route-at-random`: Pursuer_PlanWhere's mode 3). |
 | `stalker-doing` | `( room mode sub cond hp hp-max kind -- )` | out, broadcast each frame in the game | For Hewie: his room, how he moves (3 off screen, 4 struck, 8 taking her), what (9 bitten, $A down, $18 leading her), condition, health, kind. |
 | `blow` | `( kind damage how -- )` | in (Fiona: 1 shove, 2 kick, 5 a door - how its exit); out, to Hewie | Struck; his blows (and his throw, $B) strike Hewie. |
 | `dog-attack` / `dog-grip` / `dog-refused` | `( kind )` / `( tri x y z yaw )` / `( )` | in / out | Hewie's attack asked; taken (where Hewie leaps to) or not (P3c). |

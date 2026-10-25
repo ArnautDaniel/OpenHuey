@@ -55,7 +55,7 @@ y z )`; then `particles-command ( p v )`, `butterflies-to ( p count F: x y z )`,
 scripts' 0x87 (1 the character stood still, 2 it moved).
 
 The story's words: `effect-86`, `flicker-sprite`, `flicker-sprite-var`, `effect-remove`,
-`zone-at-effect`, `char-effect-moving`, `specks`, `scene-effect-8C`, `butterflies`, `splash`, `dust`.
+`zone-at-effect`, `char-effect-moving`, `scatter-specks`, `scene-effect-8C`, `release-butterflies`, `throw-splash`, `dust`.
 
 ## Rules (each class)
 

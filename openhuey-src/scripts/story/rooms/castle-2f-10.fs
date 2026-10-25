@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-2f-10
-USING: room-names story.words story.shared flag-names fiona.anims ;
+USING: room-names facts story.words story.shared flag-names fiona.anims ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant stopped-var                 \ (var 0) obstacles stopped on their squares
@@ -56,19 +56,19 @@ USING: room-names story.words story.shared flag-names fiona.anims ;
     6 1 1 1 chars-area-camera
     stopped-var 0 var-set
     0 $455 obstacle-on? 0 $459 obstacle-on? or if
-        0 obstacle-stop
+        0 halt-obstacle
         stopped-var var-inc
     then
     1 $455 obstacle-on? 1 $459 obstacle-on? or if
-        1 obstacle-stop
+        1 halt-obstacle
         stopped-var var-inc
     then
     2 $473 obstacle-on? if
-        2 obstacle-stop
+        2 halt-obstacle
         stopped-var var-inc
     then
     3 $4B8 obstacle-on? if
-        3 obstacle-stop
+        3 halt-obstacle
         stopped-var var-inc
     then
     stopped-var 4 var? if
@@ -97,7 +97,7 @@ USING: room-names story.words story.shared flag-names fiona.anims ;
     yield
     scene-wait-ready
     wait-fade
-    things-clear
+    engine:things-clear
     -1 self-idle-anim
     5 room-preload
     $28 $B4 movie-param

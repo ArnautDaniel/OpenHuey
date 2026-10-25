@@ -4,7 +4,7 @@
 \ (The room has no data on the disc - no ST_05A.PAC: it is never entered, and its messages'
 \ texts aren't known; its scripts are kept as the executable has them.)
 IN: story.rooms.off-map-5a
-USING: room-names story.words story.shared flag-names ;
+USING: room-names facts story.words story.shared flag-names ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant scene-done-bit              \ (bit 0) its scene (act01) played
@@ -147,7 +147,7 @@ USING: room-names story.words story.shared flag-names ;
         fiona-who $D2 293.136 -95.0 180 char-to-xz
         world-frozen state-flag-set
         1 5.0 0.0 0.0 2.0 event-camera
-        2 message
+        2 show-message
         message-up ebit-set
         effect-var 0 var-set
         begin

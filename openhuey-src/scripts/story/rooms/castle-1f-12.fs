@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-12
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant dial-in-use                 \ (bit 0) turning the device (the loop runs while it is set)
@@ -191,7 +191,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
                 in-panic? not if
                     fiona-who $72 5 char-sound
                     $1E door-unlock
-                    $8008 message   \ "You unlocked the door."
+                    $8008 show-message   \ "You unlocked the door."
                     20 self-idle-anim
                     $14 wait-frames
                     wait-message
@@ -261,7 +261,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         world-frozen state-flag-set
         fiona-who $73 61.0 50.0 -90 char-to-xz
         1 13.0 0.0 0.0 0.0 event-camera
-        5 message   \ "Rotate by pressing Right or Left on the left analog stick."
+        5 show-message   \ "Rotate by pressing Right or Left on the left analog stick."
         dial-in-use ebit-set
         dial-moving ebit-set
         begin
@@ -393,7 +393,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         world-frozen state-flag-set
         fiona-who $BE 30.0 -44.0 180 char-to-xz
         1 13.0 0.0 0.0 0.0 event-camera
-        5 message   \ "Rotate by pressing Right or Left on the left analog stick."
+        5 show-message   \ "Rotate by pressing Right or Left on the left analog stick."
         dial-in-use ebit-set
         dial-moving ebit-set
         begin

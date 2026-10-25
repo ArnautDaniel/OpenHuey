@@ -11,7 +11,7 @@ variable saved      \ order.txt written this visit (0 not, 1 written, -1 couldn'
 
 : open ( -- )  0 at !  0 saved ! ;
 : rows ( -- n )  mods-menu-count ;
-: pick ( delta -- )  at @ +  0 max  rows 1- 0 max min  at ! ;
+: pick-row ( delta -- )  at @ +  0 max  rows 1- 0 max min  at ! ;
 : reorder ( delta -- )  rows if  at @ swap mods-menu-move at !  else  drop  then ;
 
 \ ---- drawn on the caller's layer: the title at the top, a row a mod, the keys at the foot ----
@@ -52,8 +52,8 @@ create footer-text 64 allot   variable footer-n
 
 \ ---- the keys: true when it is done (the triangle) ----
 : keys ( -- done? )
-    key: Up pressed? if  -1 pick  then
-    key: Down pressed? if  1 pick  then
+    key: Up pressed? if  -1 pick-row  then
+    key: Down pressed? if  1 pick-row  then
     key: Left pressed?  l1 button-pressed? or if  -1 reorder  then
     key: Right pressed?  r1 button-pressed? or if  1 reorder  then
     cross button-pressed? rows 0> and if  at @ mods-menu-switch  then

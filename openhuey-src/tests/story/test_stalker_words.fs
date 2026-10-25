@@ -2,7 +2,7 @@
 \ 0x55 0x65 and commands 0x15 0x2A 0x2F 0x30 0x31 0x3D 0x47 0x48 0xB8; docs/subsystems/stalker.md).
 \ Headless:  build/openhuey-src/openhuey --test openhuey-src/tests/story/test_stalker_words.fs
 IN: test-stalker-words
-USING: tester engine game-state actors messages common room-names game debug flag-names stalker.state story.state story.words ;
+USING: tester engine game-state actors messages common room-names game debug flag-names stalker.state story.state facts story.words ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;

@@ -44,7 +44,7 @@ testing with no triangle in the room being played: put somewhere at random on it
 T{ [: 0 level !  -1 my-tri !  chasing want !  chasing running !  on-the-floor
       my-tri @ 0< 0=  my-tri @ off-the-doors?  my-tri @ nav-flags $04020028 and  running @ want @ ;] of7 -> -1 -1 0 0 0 }T
 testing kept: leaving, not in use
-T{ [: leaving want !  keep  record kc.used l@  watching want !  keep  record kc.used l@ ;] of7 -> 0 1 }T
+T{ [: leaving want !  store-record  my-record kc.used l@  watching want !  store-record  my-record kc.used l@ ;] of7 -> 0 1 }T
 2 game:creatures send creatures-clear  deliver  1 frames
 testing kind $88 placed: blocking nothing, its paths $40080
 2 game:creatures send creatures-clear  deliver  1 frames

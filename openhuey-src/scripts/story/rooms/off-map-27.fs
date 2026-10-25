@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-27
-USING: actors messages items room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: actors messages items room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant gave-first                  \ (bit 0) the first item ($91) given

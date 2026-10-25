@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-1f-8
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims fiona.sounds hewie.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant items-missing               \ (bit 0) she lacks the items here: their sparkles shown
@@ -75,7 +75,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     room-sounds
     $19 1.0 0 bgm
     0 both-halves floor-on
-    $7D door-locked? if
+    $7D doors:door-locked? if
         4 other-half floor-off
         4 one-half floor-on
     then
@@ -114,11 +114,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         then
     then
     0 old-mansion-1f-8.cmd00
-    $10 -140.0 65.6 -130.0 $E $80 $80 $80 $40 specks
-    $10 42.0 45.2 -118.0 $E $80 $80 $80 $40 specks
-    $10 -100.0 53.3 -25.0 $E $80 $80 $80 $40 specks
-    $10 -42.0 53.2 -118.0 $E $80 $80 $80 $40 specks
-    $10 149.5 38.0 61.0 $E $80 $80 $80 $40 specks
+    $10 -140.0 65.6 -130.0 $E $80 $80 $80 $40 scatter-specks
+    $10 42.0 45.2 -118.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -100.0 53.3 -25.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -42.0 53.2 -118.0 $E $80 $80 $80 $40 scatter-specks
+    $10 149.5 38.0 61.0 $E $80 $80 $80 $40 scatter-specks
     om1f-13-flag2 story-flag? white-mandragora-used story-flag? not and if
         stalker-who action-end
         stalker-who char-done
@@ -295,30 +295,30 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     splash1-made ebit? not if
         4 80.25 7.0 -6.0 $10 4 0 zone
         fiona-who 4 3 char-zone-bits? fiona-who 4 3 char-zone-bits-before? not and if
-            fiona-who 5 80.25 7.0 -6.0 2 $40 $50 $40 $80 splash
+            fiona-who 5 80.25 7.0 -6.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
         hewie-who 4 3 char-zone-bits? hewie-who 4 3 char-zone-bits-before? not and if
-            hewie-who $A 80.25 7.0 -6.0 2 $40 $50 $40 $80 splash
+            hewie-who $A 80.25 7.0 -6.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
         stalker-who 4 3 char-zone-bits? stalker-who 4 3 char-zone-bits-before? not and if
-            stalker-who 5 80.25 7.0 -6.0 2 $40 $50 $40 $80 splash
+            stalker-who 5 80.25 7.0 -6.0 2 $40 $50 $40 $80 throw-splash
             splash1-made ebit-set
         then
     then
     splash2-made ebit? not if
         5 67.4 7.0 -6.7 $10 4 0 zone
         fiona-who 5 3 char-zone-bits? fiona-who 5 3 char-zone-bits-before? not and if
-            fiona-who 5 67.4 7.0 -6.7 2 $40 $50 $40 $80 splash
+            fiona-who 5 67.4 7.0 -6.7 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
         hewie-who 5 3 char-zone-bits? hewie-who 5 3 char-zone-bits-before? not and if
-            hewie-who $A 67.4 7.0 -6.7 2 $40 $50 $40 $80 splash
+            hewie-who $A 67.4 7.0 -6.7 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
         stalker-who 5 3 char-zone-bits? stalker-who 5 3 char-zone-bits-before? not and if
-            stalker-who 5 67.4 7.0 -6.7 2 $40 $50 $40 $80 splash
+            stalker-who 5 67.4 7.0 -6.7 2 $40 $50 $40 $80 throw-splash
             splash2-made ebit-set
         then
     then
@@ -1124,11 +1124,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-8.act20 ( -- )   \ 00426440
     self-wait-done
-    $10 -140.0 65.6 -130.0 $E $80 $80 $80 $40 specks
-    $10 42.0 45.2 -118.0 $E $80 $80 $80 $40 specks
-    $10 -100.0 53.3 -25.0 $E $80 $80 $80 $40 specks
-    $10 -42.0 53.2 -118.0 $E $80 $80 $80 $40 specks
-    $10 149.5 38.0 61.0 $E $80 $80 $80 $40 specks
+    $10 -140.0 65.6 -130.0 $E $80 $80 $80 $40 scatter-specks
+    $10 42.0 45.2 -118.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -100.0 53.3 -25.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -42.0 53.2 -118.0 $E $80 $80 $80 $40 scatter-specks
+    $10 149.5 38.0 61.0 $E $80 $80 $80 $40 scatter-specks
     3 partner-load
     2 char-start
     1 0 movie-play
@@ -1156,11 +1156,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-8.act21 ( -- )   \ 00426540
     self-wait-done
-    $10 -140.0 65.6 -130.0 $E $80 $80 $80 $40 specks
-    $10 42.0 45.2 -118.0 $E $80 $80 $80 $40 specks
-    $10 -100.0 53.3 -25.0 $E $80 $80 $80 $40 specks
-    $10 -42.0 53.2 -118.0 $E $80 $80 $80 $40 specks
-    $10 149.5 38.0 61.0 $E $80 $80 $80 $40 specks
+    $10 -140.0 65.6 -130.0 $E $80 $80 $80 $40 scatter-specks
+    $10 42.0 45.2 -118.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -100.0 53.3 -25.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -42.0 53.2 -118.0 $E $80 $80 $80 $40 scatter-specks
+    $10 149.5 38.0 61.0 $E $80 $80 $80 $40 scatter-specks
     0 old-mansion-1f-8.cmd02
     $26 3 $FF char-load
     3 char-start
@@ -1184,11 +1184,11 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 
 : old-mansion-1f-8.act22 ( -- )   \ 00426630
     self-wait-done
-    $10 -140.0 65.6 -130.0 $E $80 $80 $80 $40 specks
-    $10 42.0 45.2 -118.0 $E $80 $80 $80 $40 specks
-    $10 -100.0 53.3 -25.0 $E $80 $80 $80 $40 specks
-    $10 -42.0 53.2 -118.0 $E $80 $80 $80 $40 specks
-    $10 149.5 38.0 61.0 $E $80 $80 $80 $40 specks
+    $10 -140.0 65.6 -130.0 $E $80 $80 $80 $40 scatter-specks
+    $10 42.0 45.2 -118.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -100.0 53.3 -25.0 $E $80 $80 $80 $40 scatter-specks
+    $10 -42.0 53.2 -118.0 $E $80 $80 $80 $40 scatter-specks
+    $10 149.5 38.0 61.0 $E $80 $80 $80 $40 scatter-specks
     0 old-mansion-1f-8.cmd02
     $26 3 $FF char-load
     3 char-start

@@ -40,7 +40,6 @@ state: ending-state
   cell field pen  cell field w1   \ (drawing: the pen; a character's width at 1)
 end-state
 
-: music-id ( -- id )  s" music" actor-named ;
 : bgm ( track -- )  0 1e f>cell music-id send bgm-want ;
 
 \ ==== the record ====
@@ -50,8 +49,8 @@ end-state
 : injuries ( -- n )  progress pr.hewie-downs l@ ;
 : defeated ( -- n )  progress pr.knockouts l@ ;
 : panics ( -- n )  progress pr.panics l@ ;
-: seconds ( -- n )  progress pr.play-frames l@ per-second / ;
-: hours ( -- n )  seconds 3600 / ;
+: play-seconds ( -- n )  progress pr.play-frames l@ per-second / ;
+: hours ( -- n )  play-seconds 3600 / ;
 
 \ the items: of the story flags these are, how many were set (SceneGame_BonusFlagsSet)
 create bonus-flags
@@ -229,7 +228,7 @@ create time-buf 16 allot   variable time-n
 : two ( n -- )  dup 10 / [char] 0 + put  10 mod [char] 0 + put ;
 : colon ( -- )  [char] : put ;
 : time$ ( -- addr len )
-    0 time-n !  seconds dup 3600 / 99 min two colon  dup 60 / 60 mod two colon  60 mod two
+    0 time-n !  play-seconds dup 3600 / 99 min two colon  dup 60 / 60 mod two colon  60 mod two
     time-buf time-n @ ;
 create letter-buf 1 allot
 : dog$ ( -- addr len )  [char] A dog @ + letter-buf c!  letter-buf 1 ;

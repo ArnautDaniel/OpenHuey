@@ -5,7 +5,7 @@
 \ checking: story/rooms/front-garden-3.fs (converted from the game's).
 IN: story.places.front-garden-3
 USING: engine game-state actors messages common vectors facts flag-names story-names room-names floor-flags
-    story.kit fiona.anims hewie.anims hewie-names scenes ;
+    effects story.kit fiona.anims hewie.anims hewie-names scenes ;
 
 own-reset
 

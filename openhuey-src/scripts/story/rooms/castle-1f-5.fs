@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.castle-1f-5
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant stalker-entrance-on         \ (bit 0) his entrance here under way (followed; Hewie not to attack)
@@ -283,7 +283,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
 : castle-1f-5.act02 ( -- )   \ 003F7530
     1 self-scripted
     self-wait-done
-    1 $FF 8 rumble
+    1 $FF 8 rumble-pad
     stalker-who $A1 -90 char-to-tri-facing
     0 exit-door-open? not if
         $1B4 $FFFF $B self-move-tri
@@ -460,10 +460,10 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
     fiona-who tired-sound 6 char-sound
     $14 wait-frames
     tired-remarked ebit? not if
-        5 message   \ "I... I don't feel so hot. It's like I have no energy all of a sudden."
+        5 show-message   \ "I... I don't feel so hot. It's like I have no energy all of a sudden."
         tired-remarked ebit-set
     else
-        6 message   \ "I should try to get some rest."
+        6 show-message   \ "I should try to get some rest."
         tired-remarked ebit-clear
     then
     attack-anim $A self-anim-blend

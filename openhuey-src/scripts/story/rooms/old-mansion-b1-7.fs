@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-b1-7
-USING: engine common actors messages room-names story.words story.shared story-names floor-flags fiona.anims ;
+USING: engine common actors messages room-names facts story.words story.shared story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant tries-var                   \ (var 0) the figure's tries (3: on)
@@ -243,7 +243,7 @@ USING: engine common actors messages room-names story.words story.shared story-n
     self-wait-done
     rest-anim play-out
     -1 self-idle-anim
-    0 message   \ "An aquarium? Schools of strange fish glide through the water."
+    0 show-message   \ "An aquarium? Schools of strange fish glide through the water."
     7 wait-frames
     wait-message
     self-idle-or-end

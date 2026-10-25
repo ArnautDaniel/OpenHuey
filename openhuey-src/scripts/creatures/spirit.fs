@@ -10,7 +10,7 @@ $8B constant burst-sound   $8C constant fade-sound   \ (its sounds: bank 5)
 $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)
 
 : held? ( -- flag )  her-doing @ 0<> ;                          \ (a script has her)
-: out-of-reach? ( -- flag )  hidden? her-mode @ ladder-mode = or ;
+: out-of-reach? ( -- flag )  fiona-hidden? her-mode @ ladder-mode = or ;
 
 \ ---- where it is ----
 : in-play? ( -- flag )  my-room @ room-id = ;
@@ -34,17 +34,17 @@ $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)
     0 body-mask!  my-tri @ dup 0< if  drop anywhere  then  onto ;
 
 \ ---- kept in the progress, as the original keeps each slot (CreatureA_Save) ----
-: record ( -- addr )  slot @ /kept-creature *  progress pr.creatures + ;
-: keep ( -- )
+: my-record ( -- addr )  slot @ /kept-creature *  progress pr.creatures + ;
+: store-record ( -- )
     in-play? if  self body-tri my-tri !  then
-    1 record kc.used l!  kind @ record kc.kind l!  reach @ record kc.reach l!  level @ record kc.level l!
-    my-room @ record kc.room l!  my-tri @ record kc.tri l!  time @ record kc.time l!
-    out @ record kc.out l!  come @ record kc.come l! ;
-: unkeep ( -- )  record /kept-creature 0 fill ;
+    1 my-record kc.used l!  kind @ my-record kc.kind l!  reach @ my-record kc.reach l!  level @ my-record kc.level l!
+    my-room @ my-record kc.room l!  my-tri @ my-record kc.tri l!  time @ my-record kc.time l!
+    out @ my-record kc.out l!  come @ my-record kc.come l! ;
+: unkeep ( -- )  my-record /kept-creature 0 fill ;
 : from-record ( -- )
-    record kc.kind l@ kind !  record kc.reach l@ reach !  record kc.level l@ level !
-    record kc.room l@ my-room !  record kc.tri l@ my-tri !  record kc.time l@ time !
-    record kc.out l@ 0<> out !  record kc.come l@ 0<> come !
+    my-record kc.kind l@ kind !  my-record kc.reach l@ reach !  my-record kc.level l@ level !
+    my-record kc.room l@ my-room !  my-record kc.tri l@ my-tri !  my-record kc.time l@ time !
+    my-record kc.out l@ 0<> out !  my-record kc.come l@ 0<> come !
     out @ if  4 random 1+ minutes rest !  then ;   \ (out, a rest again: CreatureA_SetupKind)
 
 \ ---- coming for her (CreatureA_FionaDistance) ----
@@ -137,17 +137,17 @@ create spot /vec allot   fvariable turn   fvariable off
 : touching-her? ( -- flag )  in-play? 0= if  false exit  then  self her 0e 0e bodies-touching? ;
 
 \ ---- a frame (CreatureA_Frame, _Think) ----
-: wait ( -- )   \ idle: on its triangle's centre the first time
+: wait-t ( -- )   \ idle: on its triangle's centre the first time
     creature-free move-mode !  centred @ 0= in-play? and if  -1 centred !  self body-tri dup 0< if  drop exit  then  onto  then ;
 : in-her-room ( -- )
-    come @ 0= if  wait exit  then
+    come @ 0= if  wait-t exit  then
     1 time +!
     another-level? 0= if  0 gave-up !  then
     out-of-reach? charmed? 0= and if
         move-mode @ creature-about <> if  creature-about move-mode !  -1 hang-again !  then  hang-about exit
     then
     creature-free move-mode !
-    hidden? held? and if  exit  then
+    fiona-hidden? held? and if  exit  then
     trip my-at door-watch if   \ (by a swinging door: waiting; left shut, through it)
         trip gone-through? if  my-path path-clear  body-off  then  exit
     then
@@ -168,14 +168,14 @@ create spot /vec allot   fvariable turn   fvariable off
     come @ 0= if  comes? if  -1 come !  then  then
     in-play? if  in-her-room  else  elsewhere  then
     vanishing @ if  exit  then
-    come @ touching-her? and hidden? 0= and held? 0= and her-plight @ unreachable-plight <> and if  touched  show exit  then   \ (left be while out of reach)
+    come @ touching-her? and fiona-hidden? 0= and held? 0= and her-plight @ unreachable-plight <> and if  touched  show exit  then   \ (left be while out of reach)
     in-play? come @ and time @ lifetime >= and if  fade-away  then
-    show keep ;
+    show store-record ;
 
 : start ( -- )   \ its look, and on the floor if in the room being played
     in-play? if  on-the-floor  else  body-off  then
     red? 0<>  my-room @ room-id = if  my-at vec@  else  0e 0e 0e  then  odd-one? if  -9e  else  0e  then  spirit-new  glow !
-    trip trip-reset  my-path path-clear  keep ;
+    trip trip-reset  my-path path-clear  store-record ;
 
 behaviour spirit
   on spawned ( -- )

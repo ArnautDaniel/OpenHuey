@@ -255,7 +255,7 @@ command. The new game stays the default start.
   opcode table called it `scene-ending`, wrongly) prepares a message instead (`read-message`,
   the original's 0x80000005): taken, the message opens and she looks at character slot 2 for
   30 frames (`Events_OpenMessage`, `Fiona_SetTarget`).
-- **Messages:** `message` (the window shows it; `text-closed` answers), `wait-message`,
+- **Messages:** `show-message` (the window shows it; `text-closed` answers), `wait-message`,
   `message-close`, `answer?`, `message-prepare` (S4's subtitles), `message-param-room`.
 - **Her pad:** `control-action?` (her gesture this frame, from `fiona-doing`), `pad?` (the
   buttons, `keys.fs`).
@@ -348,8 +348,8 @@ Checked by `tests/story/test_things.fs` (8 tests).
 
 **S5b built** (2026-10-08): the rooms' effects (`docs/subsystems/effects.md`) - an actor each,
 drawn with the engine's sprites. Room effects in the room's 32 slots (`flame-in`,
-`flicker-sprite`, `-var`, `butterflies`, `effect-remove`, `zone-at-effect`, `char-effect-moving`),
-going with the room; scene effects ending by themselves or with the next room (`specks`,
+`flicker-sprite`, `-var`, `release-butterflies`, `effect-remove`, `zone-at-effect`, `char-effect-moving`),
+going with the room; scene effects ending by themselves or with the next room (`scatter-specks`,
 `shards-at`). `effects-arena-flip` is the PS2's packet memory: nothing here.
 Checked by `tests/story/test_effects.fs` (10 tests).
 
@@ -518,6 +518,6 @@ The later stages, by how much the scripts use them (all built now):
 | Stage | Words |
 |---|---|
 | S4 | (built) The rest: scene changes (`scene-change`'s other scenes), endings, `movie-loop`, the half-black screen (op 11). |
-| S5b | (built: docs/subsystems/effects.md) Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`flame-in` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `specks`, `butterflies`, `shards-at`, `effects-arena-flip`). |
+| S5b | (built: docs/subsystems/effects.md) Effects: a sprite batch in C, an effect as an actor per slot; the classes by use (`flame-in` flames, `flicker-sprite`, `zone-at-effect`, `char-effect-moving`, `scatter-specks`, `release-butterflies`, `shards-at`, `effects-arena-flip`). |
 | S5c | (built) The rooms' own commands (`<room>.cmdNN`: their effects - wisps, smoke, drips, the mirror...). |
 | S6 | (built) The stalkers' and creatures' words, with them (`docs/subsystems/stalker.md`, `creatures.md`). |

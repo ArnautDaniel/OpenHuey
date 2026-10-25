@@ -7,7 +7,7 @@ USING: engine vectors common actors messages facts flag-names stalker-names item
 state: panic-state
   cell field stage           \ (enum: panic-stage, messages.fs)
   cell field weighing        \ how the inputs weigh (0..3)
-  cell field length          \ frames of the panic left (negative: its start)
+  cell field panic-left          \ frames of the panic left (negative: its start)
   1 floats field level       \ 0..100
   cell field hold            \ frames a fright holds off recovering
   1 floats field passing     \ the passing part
@@ -29,7 +29,6 @@ state: panic-state
   cell field st-room  cell field st-mode  cell field st-sub  cell field st-cond  cell field st-kind   \ (told by the stalker)
 end-state
 
-: fiona-id ( -- id )  s" fiona" actor-named ;
 $29 constant breath-sound   $42 constant scream-sound   \ (hers: the common bank)
 : her-sound ( id vol -- )   \ a sound of hers (the common bank), at her
     fiona-id {: id vol her :}  her body? 0= if  exit  then
@@ -45,7 +44,7 @@ $29 constant breath-sound   $42 constant scream-sound   \ (hers: the common bank
 \ Panic_SetLevel: the stage by the level (at 100 its length)
 : set-level ( n -- )
     dup s>f level f!  dup s>f lasting f!
-    dup 100 >= if  drop panic-frames length !  else  stage-at stage !  then
+    dup 100 >= if  drop panic-frames panic-left !  else  stage-at stage !  then
     0e passing f!  inputs-clear ;
 create stage-levels  0 , 60 , 75 , 90 , 100 , 100 ,   \ (a stage set: its level)
 : set-stage ( stage -- )  dup calming-down 1+ u< if  cells stage-levels + @ set-level  else  drop  then ;
@@ -80,7 +79,7 @@ create breaths   \ (shaken .. calming down)
 : by-level ( -- )
     level f@ 100e f< 0= if   \ she panics (on her feet: her scream)
         100e level f!  100e lasting f!  0e passing f!
-        on-her-feet? if  scream-sound $40 her-sound  panicking stage !  -30 length !  0 beat !  panicked  -1 onset  then
+        on-her-feet? if  scream-sound $40 her-sound  panicking stage !  -30 panic-left !  0 beat !  panicked  -1 onset  then
         exit
     then
     level f@ f>s stage-at stage ! ;
@@ -101,13 +100,13 @@ create breaths   \ (shaken .. calming down)
     beat @ if  -1 beat +!  then
     stage @ panicking < if  uneasy exit  then
     stage @ panicking = if
-        length @ 0< if   \ its start: then its length
-            1 length +!  length @ 0= if  panic-length length !  0 onset  then  $80 pulse !  exit
+        panic-left @ 0< if   \ its start: then its length
+            1 panic-left +!  panic-left @ 0= if  panic-length panic-left !  0 onset  then  $80 pulse !  exit
         then
-        fear-d f@ 500e f< 0= if  length @ 150 + panic-frames min length !  calming-down stage !  then
+        fear-d f@ 500e f< 0= if  panic-left @ 150 + panic-frames min panic-left !  calming-down stage !  then
     then
-    -1 length +!
-    length @ 0< if  composed stage !  50e level f!  50e lasting f!  0e passing f!  exit  then
+    -1 panic-left +!
+    panic-left @ 0< if  composed stage !  50e level f!  50e lasting f!  0e passing f!  exit  then
     stage @ panicking <> if  $90  -1 jolting !  else  $50  then  shake !
     beat @ if  exit  then
     6 stage @ - 7 * beat !  0 pulse !  breath ;
@@ -123,7 +122,7 @@ $30 constant grey-limit
 : panicked? ( -- flag )  stage @ panicking calming-down 1+ within ;
 : screens ( -- )
     panicked? if
-        full? if  stage @ panicking =  length @ 0< and if  panic-negative  then
+        full? if  stage @ panicking =  panic-left @ 0< and if  panic-negative  then
         else  camera-still  then
     then
     pulse @ $80 <> if
@@ -242,7 +241,7 @@ behaviour measuring
   on panic-reach ( level -- )  dup s>f level f@ f< if  drop  else  set-level  then ;
   on fright ( amount -- )  cell>f charmed f*  add-fright ;   \ Panic_Fright
   on fright-raw ( amount -- )  cell>f add-fright ;            \ Panic_FrightRaw
-  on panic-shorten ( frames -- )  negate length +! ;           \ (+0x7BA: her shaking as she gets up)
+  on panic-shorten ( frames -- )  negate panic-left +! ;           \ (+0x7BA: her shaking as she gets up)
   on fear-set ( amount -- )  cell>f fear-d f! ;               \ (+0x7D8 = 1000: running into a wall, flung down panicking)
   on fear-in ( amount -- )  cell>f fear-add ;   \ (a negative one is a fright: held 30, 50 lasting and passing)
   on panic-stage! ( stage -- )  set-stage ;

@@ -69,14 +69,14 @@ $60 constant msg-entries   $66 constant msg-notes
     mg-at @ entry {: e :}
     e intro-entry = if  msg-notes 0 room-line $E0 $68 box-ink inked  msg-notes 1 room-line $E0 $80 box-ink inked  exit  then
     e exit-entry < if  msg-notes e + 0 room-line $E0 $70 box-ink inked  e 1- $15A -1 best-times  then ;
-: picked ( v -- )  challenge-var var!  se-decide  close-menu ;
+: challenge-picked ( v -- )  challenge-var var!  se-decide  close-menu ;
 : extras-keys ( -- )
     up? if  mg-at @ 1- mg-n @ wrap mg-at !  se-cursor  then
     down? if  mg-at @ 1+ mg-n @ wrap mg-at !  se-cursor  then
     back? if  $FF challenge-var var!  se-cancel  close-menu exit  then
     confirm? if
         mg-at @ entry dup intro-entry = if  drop exit  then
-        dup exit-entry = if  drop $FF  else  1-  then  picked
+        dup exit-entry = if  drop $FF  else  1-  then  challenge-picked
     then ;
 : start-extras ( -- )  entries! ;
 

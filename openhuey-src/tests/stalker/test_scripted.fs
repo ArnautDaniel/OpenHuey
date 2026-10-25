@@ -5,7 +5,7 @@
 \ started afresh; a stalker loaded as a scene's figure placed, posed and shown. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_scripted.fs
 IN: test-stalker-scripted
-USING: stalker-names story.words tester engine game-state actors messages common room-names game debug paths doors vectors flag-names stalker stalker.state stalker.anims stalker.search stalker.moving ;
+USING: stalker-names facts story.words tester engine game-state actors messages common room-names game debug paths doors vectors flag-names stalker stalker.state stalker.anims stalker.search stalker.moving ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;

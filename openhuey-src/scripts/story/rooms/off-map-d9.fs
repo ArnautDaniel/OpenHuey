@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.off-map-d9
-USING: room-names story.words story.shared flag-names story.clock ;
+USING: room-names facts story.words story.shared flag-names story.clock ;
 
 \ ---- this room's own event bits and script variables ----
 0 constant started                     \ (bit 0) the run begun (the world let go; Hewie played)

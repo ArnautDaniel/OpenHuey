@@ -2,7 +2,7 @@
 \ Converted from the game's bytecode (new-src's tools/events2forth.py) and renamed by
 \ tools/story_convert.py, once: edit by hand. The words: docs/subsystems/story.md.
 IN: story.rooms.old-mansion-2f-6
-USING: room-names story.words story.shared flag-names story-names floor-flags fiona.anims ;
+USING: room-names facts story.words story.shared flag-names story-names floor-flags fiona.anims ;
 
 \ ---- this room's own event bits, script variables and sounds ----
 0 constant medicine-remarked           \ (bit 0) its first remark made: "There's some kind of medicine bottle on the shelf."
@@ -444,7 +444,7 @@ USING: room-names story.words story.shared flag-names story-names floor-flags fi
         $B wait-frames
         fiona-who $28 5 char-sound
         self-wait-anim
-        $B message   \ "I don't think I'll be able to open it. Maybe they have locked some important chemi..."
+        $B show-message   \ "I don't think I'll be able to open it. Maybe they have locked some important chemi..."
         -1 self-idle-anim
         7 wait-frames
         wait-message

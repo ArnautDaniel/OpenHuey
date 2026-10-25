@@ -476,7 +476,7 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
 : near-command? ( -- flag )   \ Hewie_FionaNearCommand: within 150 of her by his way
     commandable? 0= if  false exit  then
     way-to-her  fdup f0< if  fdrop false  else  150e f<=  then ;
-: reachable? ( -- flag )   \ Hewie_FionaReachable (only while a script has him: a way to her, planned apart)
+: fiona-reachable? ( -- flag )   \ Hewie_FionaReachable (only while a script has him: a way to her, planned apart)
     his-busy @ 0=  his-away @ or if  true exit  then
     his-2d @ his-2b @ or if  false exit  then
     her-with? 0= if  true exit  then
@@ -486,7 +486,7 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
 : tell-doing ( -- )   \ what he is doing, for Fiona and the story
     self body? 0= if  0 0 0 0 0 0 0  0 0 -1 0 -1 his-trust @
     else  his-away @ if  dog-elsewhere  else  dog-with-her  then  his-action @ his-mode @ his-sub @ his-cond @ his-mood @ anim-group
-          commandable? near-command? reachable? breakable? his-way @ his-trust @  then
+          commandable? near-command? fiona-reachable? breakable? his-way @ his-trust @  then
     broadcast hewie-doing
     his-hp @ broadcast hewie-health
     hewie-played? if  his-gesture @ broadcast hewie-gesture  then ;
@@ -531,7 +531,7 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     0 his-smells !  move-sub  show-him  tell-doing ;
 
 \ Hewie_StartScene: calm, his default action - in the run, played afresh (hewie/steered.fs)
-: restart ( -- )
+: start-afresh ( -- )
     hewie-played? if  played-afresh exit  then
     ['] st-calm his-mood-act !  choose-act 0 set-action ;
 \ Hewie_Activate: his state as he comes into the game (calm, the default action)
@@ -543,4 +543,4 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     normal-mood -1 set-mood  0 add-trust
     obeys  1 his-pending !
     100 hp!  well-cond cond!  300 his-hurt-t !
-    restart ;
+    start-afresh ;

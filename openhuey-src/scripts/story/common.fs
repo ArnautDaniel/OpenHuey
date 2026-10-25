@@ -13,7 +13,7 @@ USING: engine game-state actors messages common vectors facts flag-names story-n
     b body-dims {: F: r h :}  a b r f>s close-to? ;
 : on-flags? ( id flags -- flag )   \ standing on a triangle with any of these flags
     over here? 0= if  2drop false exit  then  swap body-tri dup 0< if  2drop false exit  then  nav-flags and 0<> ;
-: turn-toward ( id who -- )  dup here? 0= if  2drop exit  then  body-pos fswap fdrop  turn-to-xz ;
+: face-toward ( id who -- )  dup here? 0= if  2drop exit  then  body-pos fswap fdrop  turn-to-xz ;
 : head-on ( who frames -- )   \ her head on who for so many frames
     over 0< if  2drop exit  then  fiona send look-hold ;
 
@@ -35,7 +35,7 @@ $23 constant drink-sound   $2D constant crouch-recovery
     fiona stalker look-at  yield
     fiona crouch-up-anim 5 start-blend  8 frames  seized-sound common-bank fiona sound-by
     fiona uneasy-anim 10 play-blend  1 $7F $F rumble
-    fiona stalker turn-toward ;
+    fiona stalker face-toward ;
 : crouches ( -- )   \ ($81: down in the shadow, calmer as she stays)
     fiona hold  fiona wait-move  fiona crouch-down-anim play
     fiona-half-hidden state!  story-reaction hewie send reaction
@@ -85,7 +85,7 @@ variable feed-step   \ (0 none yet, 1 he is ready, 2 she has put it down, 3 he i
 : gives ( -- )   \ ($8E: she puts it down for him)
     fiona hold  0 feed-step !  fiona wait-move
     begin  hewie held?  feed-step @ 0= and  while  yield  repeat
-    fiona hewie turn-toward  fiona pick-up-anim play  2 feed-step !  fiona up-from-pick-anim play
+    fiona hewie face-toward  fiona pick-up-anim play  2 feed-step !  fiona up-from-pick-anim play
     fiona -1 idle  7 frames  fiona hewie look-at  yield
     begin  hewie held?  feed-step @ 2 = and  while  yield  repeat
     fiona -1 look-at ;
@@ -98,7 +98,7 @@ variable feed-step   \ (0 none yet, 1 he is ready, 2 she has put it down, 3 he i
     hewie hewie.anims:get-up-anim play  hewie 10 idle  10 frames
     hewie-full? if  1 hewie send mood!  then  3 feed-step ! ;
 : eats ( -- )   \ (up: to her, eats, a bark or a limping one)
-    1 feed-step !  hewie fiona turn-toward  waits-for-her
+    1 feed-step !  hewie fiona face-toward  waits-for-her
     hewie hewie.anims:sit-a-while-anim play  hewie fiona look-at  yield
     hewie-hurt? if  hewie.anims:bark-limping-anim  else  hewie.anims:bark-anim  then  hewie swap play ;
 : treat ( -- )   \ ($8F: a treat)
@@ -117,7 +117,7 @@ variable feed-step   \ (0 none yet, 1 he is ready, 2 she has put it down, 3 he i
 : bait ( -- )   \ ($90: an onion or the rousing bait - hurt, or knocked down if it takes the last of him)
     hewie hold  hewie wait-move
     hewie-down? if  flung exit  then
-    1 feed-step !  hewie fiona turn-toward
+    1 feed-step !  hewie fiona face-toward
     hewie hewie.anims:sit-a-while-anim play  hewie fiona look-at  yield
     hewie-in?  hewie-hp-now @ 0= and  hewie tri-free? and if
         hewie hewie.anims:go-down-anim play  down-cond hewie send set-cond
