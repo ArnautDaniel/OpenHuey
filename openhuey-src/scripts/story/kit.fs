@@ -541,6 +541,14 @@ create spot-xts #activities cells allot
         yield  taken fact?  chased? or  fiona-cmd-now @ -1 <> or if  leave  then
     loop
     hewie -1 look-at  yield  hewie keep  hewie send hewie-stay ;
+: hewie-barks-at ( F: x y z -- )   \ (the rooms' shared $88: turned to it, a bark, a moment, staying put)
+    {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
+    hewie true hush  hewie bark-anim 10 start-blend  hewie bark-mark wait-mark
+    hewie false hush  found-bark common-bank hewie sound-by  hewie true hush
+    hewie wait-anim  hewie 10 idle  hewie false hush  10 frames  hewie keep  hewie send hewie-stay ;
+: hewie-sits-by ( F: x y z -- )   \ (the rooms' shared $89: turned to it, sitting a while, staying put)
+    {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
+    hewie hewie.anims:sit-a-while-anim 10 play-blend  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
 
 \ ---- the place, as an actor ----
 \ ---- more of a room's things: its floor, doors closed off, the music, effects, objects ----
@@ -573,6 +581,15 @@ $14 constant turn-y   $28 constant place-z
     3 0 do  step i $20 * +  $60 mod  $30 swap - abs  $10 - 0 max  3 lshift  $FF min  loop   \ (its bytes 0..2)
     c3 c4 c5 c6 c7 room-tint ;
 : shown ( id on -- )  over 0< if  2drop exit  then  swap send show ;   \ (drawn, or not)
+: object@ ( addr len off -- ) ( F: -- v )  placed-f@ ;
+: object! ( addr len off F: v -- )  {: a n off F: v :}  a n placed-here? 0= if  exit  then  v a n off placed-f! ;
+$24 constant place-y
+: flame-at ( k kind F: x y z -- )  effects:flame swap effect! ;   \ effect k: a flame of that kind
+: dust ( F: x y z -- )  0 $80 $80 $80 16 effects:burst ;   \ grey dust thrown up there
+: rumble-pad ( motor strength frames -- )   \ (motor 0 the small one, buzzing; else the large at that strength)
+    {: motor strength frames :}  motor 0= if  1 true frames rumble-buzz exit  then  1 strength frames rumble ;
+: reverb ( core level -- )  sound-reverb! ;   \ (core 0 the music's, 1 the effects')
+: threat ( v -- )  0 max 100 min s>f f>cell s" panic" actor-named send threat ;   \ (her fright raised to it)
 : room-noise ( loud tri -- )  this-room @ swap -1 world-noise s" acoustics" actor-named send noise ;
 : sound-there ( id bank F: x y z -- )  0 0 sound-at ;   \ a sound at the point
 
@@ -639,6 +656,10 @@ $14 constant turn-y   $28 constant place-z
 : path-to ( id tri b kind -- )  {: id tri b kind :}  id kind tri b  tri tri-center  id body-yaw  move  id wait-move ;
 : tint ( id rgba -- )  swap model-of dup 0< if  2drop exit  then  actor act.tint l! ;   \ ($80808080 as it is)
 : doorway-fades ( id on -- )  0<> 1 and  swap model-of dup 0< if  2drop exit  then  actor act.doorway-fade l! ;
+: to-door ( id exit -- )   \ (walking to its door's spot on her side - to try it)
+    {: id ex :}  id here? 0= if  exit  then
+    id body-pos  ex door-side 1 = if  2  else  0  then  ex swap door-user-spot  dup 0< if  drop fdrop fdrop fdrop fdrop exit  then
+    {: tri F: x y z yaw :}  id walk-move tri -1  x y z yaw  move  id wait-move ;
 : with-fiona-free ( -- )  begin  fiona-free? 0= while  yield  repeat ;
 
 : people-in ( -- )   \ (each person newly in the room: its arrival)

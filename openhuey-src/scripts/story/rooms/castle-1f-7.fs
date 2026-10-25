@@ -23,7 +23,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     -0.1e s" kousi" $34 object+!  s" kousi" $34 object@ s" kousi" place-y object+!
     lid-y -25.3e f< if
         s" kousi" $30 object@ f0> if
-            -1e s" kousi" $30 object!  c1f-4-flag2 story-flag-clear
+            -1e s" kousi" $30 object!  gate-rising story-flag-clear
             cam-scene? 0= if  lid-fall-sound 6 0 0  0e 30e 30e sound  then
         then
         -25.3e s" kousi" place-y object!  s" kousi" $34 object@ -0.2e f* s" kousi" $34 object!
@@ -53,21 +53,21 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     breaker-var 0 var-set
     $80 exit-taken? if
         1 castle-1f-7.cmd00
-        c1f-4-flag1 story-flag-clear
+        floor-plate-pressed story-flag-clear
     else
         stalker-who char-here? stalker-who 0 char-in-nav-group? and if
             stalker-who $F0 char-to-tri
         then
         1 exit-taken? if
         else
-            c1f-4-flag2 story-flag-clear
-            c1f-4-flag1 story-flag-clear
+            gate-rising story-flag-clear
+            floor-plate-pressed story-flag-clear
         then
-        c1f-4-flag2 story-flag? not c1f-4-flag1 story-flag? not and if
+        gate-rising story-flag? not floor-plate-pressed story-flag? not and if
             0 barred-floor floor-on
             1 castle-1f-7.cmd00
         else
-            c1f-4-flag1 story-flag-set
+            floor-plate-pressed story-flag-set
             0 barred-floor floor-off
             breaker-var 1 var-set
             0 castle-1f-7.cmd00
@@ -140,18 +140,18 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     fiona-who 3 char-entered-area? if
         1 exit-prepare
     then
-    c1f-4-flag1 story-flag? not if
+    floor-plate-pressed story-flag? not if
         breaker-var 0 var-set
     else castle-1f-7.cond00? not if
         breaker-var 0 var-set
     then then
     hewie-who $15 0 room-doors-state
-    c1f-4-flag1 story-flag? if
+    floor-plate-pressed story-flag? if
         breaker-var 0 var? if
             fiona-who 0 char-in-nav-group? hewie-who 0 char-in-nav-group? or stalker-who 0 char-in-nav-group? or if
                 hewie-who $15 1 room-doors-state
             else
-                c1f-4-flag1 story-flag-clear
+                floor-plate-pressed story-flag-clear
                 0 barred-floor floor-on
                 0 1 track 3 action
             then
@@ -174,7 +174,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
     fiona-who 8 char-in-area? fiona-who -45 $2D char-heading? and if
         1 unhurried offer-action
     then
-    breaker-lowered story-flag? not c1f-4-flag1 story-flag? not and if
+    breaker-lowered story-flag? not floor-plate-pressed story-flag? not and if
         fiona-who 9 char-in-area? fiona-who -45 $2D char-heading? and if
             4 unhurried offer-action
         then
@@ -271,7 +271,7 @@ USING: engine common room-names story.words story.shared flag-names story-names 
 ;
 
 : castle-1f-7.act03 ( -- )   \ 003FA4F0
-    c1f-4-flag2 story-flag-set
+    gate-rising story-flag-set
     room-loop-sound volume-scaled 6 0.0 30.0 30.0 0 0 sound
     2 castle-1f-7.cmd00
     self-idle-or-end

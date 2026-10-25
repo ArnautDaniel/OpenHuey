@@ -312,19 +312,14 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
 
 \ ---- Hewie about the garden: what he looks at as he passes ----
 : zone-look ( F: x y z dy -- )  {: F: x y z dy :}  x  y dy f+  z  hewie-scent ;
-: hewie-stops ( F: x y z -- )   \ (shared $88: a bark at it, a moment, staying put)
-    {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
-    hewie true hush  hewie bark-anim 10 start-blend  hewie 1 wait-mark
-    hewie false hush  found-bark common-bank hewie sound-by  hewie true hush
-    hewie wait-anim  hewie 10 idle  hewie false hush  10 frames  hewie send hewie-stay ;
 : wire-stops ( -- )   \ (shared $8A: to the wire's tree, alert, a long look, staying put)
     hewie hold  hewie wait-move
     hewie spot-move 0 0  244.4e 11e 82.19e 0e move  hewie wait-move
     hewie stance-anim start-anim  yield
     hewie look-point-move 0 0  244.4e 11e 82.19e 0e move  120 frames
     hewie -1 look-at  yield  hewie 10 idle  10 frames  hewie send hewie-stay ;
-: grate-stops ( -- )  -23.45e -10e 138e hewie-stops ;
-: dig-stops ( -- )  252.44e 0e -156.9e hewie-stops ;
+: grate-stops ( -- )  -23.45e -10e 138e hewie-barks-at ;
+: dig-stops ( -- )  252.44e 0e -156.9e hewie-barks-at ;
 : calm-free? ( -- flag )  hewie-in?  hewie-cond-now @ well-cond = and  chased? 0= and  hewie-cmdable-now @ and ;
 : hewie-looks ( -- )
     calm-free? 0= if  exit  then

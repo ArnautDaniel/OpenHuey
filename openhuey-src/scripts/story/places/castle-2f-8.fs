@@ -202,11 +202,8 @@ $2A constant replay-var
     c2f-8-breakable-broken fact? 0= if  34e 0e 29e 5e 8e struck-in? if  breaks  then  then ;
 
 \ ---- Hewie: what he sits by and looks at ----
-: sits-by ( F: x y z -- )   \ (shared $89: turned to it, sitting a while, staying put)
-    {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
-    hewie hewie.anims:sit-a-while-anim 10 play-blend  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
-: by-the-golem ( -- )  43.743e 0e -29.309e sits-by ;
-: by-the-dust ( -- )  10e 0e -25e sits-by ;
+: by-the-golem ( -- )  43.743e 0e -29.309e hewie-sits-by ;
+: by-the-dust ( -- )  10e 0e -25e hewie-sits-by ;
 : calm-free? ( -- flag )  hewie-in?  hewie-cond-now @ well-cond = and  chased? 0= and  hewie-cmdable-now @ and ;
 : hewie-looks ( -- )
     calm-free? hewie-noticed @ 0= and if

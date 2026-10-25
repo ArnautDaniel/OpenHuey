@@ -55,7 +55,7 @@ $F    fact:    found-file-222                \ (front-garden-1)
 $10   fact:    found-file-223                \ (front-garden-1)
 $11   fact:    broken-marionette-used        \ (castle-1f-4)
 $12   fact:    c1f-2-flag1                   \ ?
-$13   fact:    c1f-4-flag1                   \ ? set on entering
+$13   fact:    floor-plate-pressed                   \ someone on castle-1f-4's floor plate: castle-1f-7's gate raised
 $14   fact:    breaker-lowered               \ the breaker box in castle-1f-7: its handle lowered
 $15   fact:    cb1-6-flag1                   \ ?
 $16   fact:    cb1-6-flag2                   \ ?
@@ -451,8 +451,8 @@ $30A  fact:    c1f-16-flag2                  \ ?
 $30B  fact:    fg-4-flag1                    \ ?
 $30C  fact:    got-jade-choker               \ (castle-2f-12)
 $30E  fact:    c2f-12-flag2                  \ ? set on entering
-$310  fact:    c1f-4-flag2                   \ ?
-$311  fact:    c1f-4-flag3                   \ ?
+$310  fact:    gate-rising                   \ castle-1f-7's gate rising or held (cleared as it lands)
+$311  fact:    heard-the-noise                   \ back in castle-1f-4 by the forced way: "What's that noise?"
 $312  fact:    c2f-3-portrait-1-examined     \ "I wonder whose portrait this is?"
 $313  fact:    c2f-3-portrait-3-examined     \ "What a powerful piece of art..."
 $314  fact:    c2f-3-portrait-2-examined     \ "The man pictured here has a noble air..."
@@ -460,7 +460,7 @@ $315  fact:    got-obsidian-choker           \ (castle-2f-8)
 $316  fact:    c1f-7-flag1                   \ ?
 $317  fact:    cb1-5-flag1                   \ ?
 $318  fact:    c2f-12-flag3                  \ ?
-$319  fact:    c1f-4-flag4                   \ ?
+$319  fact:    weak-wall-broken                   \ castle-1f-4's weak wall broken through (the bugs, the refined antimony)
 $31A  fact:    cb1-7-flag1                   \ ?
 $31B  fact:    cb1-7-flag2                   \ ?
 $31C  fact:    c2f-2-flag5                   \ ?

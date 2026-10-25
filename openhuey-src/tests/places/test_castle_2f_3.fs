@@ -132,6 +132,8 @@ testing the attack lesson: from the front garden, Hewie found in the wire - the 
 hewie-found-in-wire story-flag-set
 castle-2f-3 $81 rooms send go-to-room  5 frames
 T{ c2f-3-flag2 story-flag?  busy? -> -1 -1 }T
+: tip? ( -- flag )  shown attack-tip-msg = ;
+' tip? 900 soon drop  key: I true key-hold  game-tick  key: I false key-hold   \ (the stick up: attack - #78 locked here)
 1500 play-on
 T{ hewie-freed story-flag?  $207 filed?  busy?  free? -> -1 -1 0 -1 }T
 testing ... once
