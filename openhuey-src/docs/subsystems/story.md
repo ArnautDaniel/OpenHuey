@@ -160,10 +160,9 @@ conditions), `scene_game.c` (the order), `progress.c`.
 - `door-bits` sets which parts of the room's door models and of the room mesh itself are drawn
   (`door-group!`, `room-group!`): the breakables - a vase whole (group $15), its shards ($16) -
   are the room mesh's batches, the doors' parts their models'.
-- Where the original's data leaves something out of sight that the game means to be seen, OpenHuey
-  may place it itself, keeping the intent: castle-2f-8's golem and his plate are stored 50 above the room, out of sight under its
-  ceiling, and its enter script stands him on the floor (`golem-down`, `object-lowered`: the
-  place kept as the defined one, so a cutscene's restore leaves him there).
+- castle-2f-8's golem is the room mesh's own parts (standing, moved to the door, crumbled); the
+  placed golem 50 above the room is only the plate scenes' puppet, left up there as the original
+  leaves it.
 - The camera's nearest-set stand-in stays as a fallback for a character the scripts give no
   setup.
 

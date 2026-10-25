@@ -63,7 +63,11 @@ T{ [: $23 fiona-command  his-follows @ 0< 0=  his-action @ ;] his@ -> -1 -1 $1D 
 testing ... her command acted on (Hewie_ActOnCommand 0x23: no straight walk to her asked): for the ball all the same
 [: 0 0 want  -1 his-follows ! ;] his!  things-clear  10 frames
 $B7 tri-center 0e debug:tp-facing  game:hewie send join-fiona  30 frames   \ (both back by where she began)
-ball-ahead  60 frames
+\ a ball lying still 12 ahead of her (not rolling: not thrown, so not his to fetch till she says)
+: ball-still ( -- )
+    0  game:fiona body-tri  game:fiona body-at vec@ 12e f+ f>cell >r f>cell >r f>cell  r> r>
+    0e f>cell 0e f>cell 0e f>cell  s" things" actor-named send thing-made  deliver ;
+ball-still  10 frames
 T{ [: 0 0 want  -1 his-follows !  go-there-cmd act-on-command  his-follows @ 0< 0=  his-action @  his-next @ ;] his@ -> -1 -1 $1D $78 }T
 [: 0 0 want ;] his!
 test-summary
