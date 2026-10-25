@@ -50,6 +50,8 @@ This page is OpenHuey's side: its words, its scripts, its tests.
 | `clear-color` | `F: r g b --` | |
 | `screenshot` | `addr len --` | save the next frame as a PNG (the game's picture: the console isn't in it) |
 | `screenshot-pending?` | `-- flag` | one asked for, not yet drawn |
+| `zip-files` | `names len dir len zip len -- flag` | the files named (by spaces) in that folder zipped as `<folder>/<file>`; those not there left out (a bug report's zip) |
+| `zip-has?` | `name len zip len -- flag` | that zip has the file `folder/file` |
 | `console!` | `flag --` | open or close the console |
 | `console-type` | `addr len --` | put text in the console's line, as if typed |
 | `console-log` | `n --` | print the console's last n lines |

@@ -26,6 +26,7 @@
 #include "../platform/seq.h"
 
 #include "../core/files.h"
+#include "../core/zip.h"
 #include "../data/artpic.h"
 #include "../data/texbank.h"
 
@@ -3086,7 +3087,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its parts shown or hi
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.6") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.7") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
@@ -3143,6 +3144,36 @@ PRIM(p_make_dir) {   /* ( addr len -- flag ) a folder made (there already: true)
 
     snprintf(path, sizeof(path), "%.*s", (int)n, (const char *)a);
     PUSH(SDL_CreateDirectory(path) ? -1 : 0);
+}
+PRIM(p_zip_files) {   /* ( names len dir len zip len -- flag ) the files named (by spaces) in that folder
+                         * zipped into `zip`, as <the folder's own name>/<file>; those not there left out */
+    Cell zn = POP(), za = POP(), dn = POP(), da = POP(), nn = POP(), na = POP();
+    char zip[1024], dir[1024], list[1024], *names[16], *folder, *tok;
+    int n = 0;
+
+    snprintf(zip, sizeof(zip), "%.*s", (int)zn, (const char *)za);
+    snprintf(dir, sizeof(dir), "%.*s", (int)dn, (const char *)da);
+    snprintf(list, sizeof(list), "%.*s", (int)nn, (const char *)na);
+    while (strlen(dir) > 1 && (dir[strlen(dir) - 1] == '/' || dir[strlen(dir) - 1] == '\\')) {
+        dir[strlen(dir) - 1] = 0;
+    }
+    folder = strrchr(dir, '/');
+    folder = folder != NULL ? folder + 1 : dir;
+    for (tok = strtok(list, " "); tok != NULL && n < 16; tok = strtok(NULL, " ")) {
+        names[n++] = tok;
+    }
+    PUSH(zip_write(zip, dir, folder, (const char *const *)names, n) ? -1 : 0);
+}
+PRIM(p_zip_has) {   /* ( name len zip len -- flag ) the zip there has that file ("folder/file") */
+    Cell zn = POP(), za = POP(), nn = POP(), na = POP();
+    char zip[1024], name[512];
+    Zip *z;
+
+    snprintf(zip, sizeof(zip), "%.*s", (int)zn, (const char *)za);
+    snprintf(name, sizeof(name), "%.*s", (int)nn, (const char *)na);
+    z = zip_open(zip);
+    PUSH(z != NULL && zip_find(z, name) >= 0 ? -1 : 0);
+    zip_close(z);
 }
 PRIM(p_date_time) {   /* ( -- addr len ) the local time now: 2026-10-19 14:03:22 */
     static char buf[32];
@@ -3830,7 +3861,7 @@ void bind_engine(Forth *f) {
         {"on-draw", p_on_draw}, {"off-draw", p_off_draw}, {"pen-color", p_pen_color},
         {"pen-scale", p_pen_scale}, {"draw-text", p_draw_text}, {"draw-rect", p_draw_rect},
         {"screen-size", p_screen_size}, {"char-size", p_char_size}, {"n>s", p_n_to_s}, {"h>s", p_h_to_s}, {"f>s$", p_f_to_s},
-        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look-keep", p_look_keep}, {"look-kept", p_look_kept}, {"look-plain", p_look_plain}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"hga-version", p_hga_version}, {"actor-part-show", p_actor_part_show}, {"actor-settle", p_actor_settle}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file}, {"append-file", p_append_file}, {"make-dir", p_make_dir}, {"date-time", p_date_time},
+        {"gfx", p_gfx}, {"room-look", p_look}, {"room-look-reset", p_look_reset}, {"look-set", p_look_set}, {"look-keep", p_look_keep}, {"look-kept", p_look_kept}, {"look-plain", p_look_plain}, {"look@", p_look_get}, {"user-dir", p_user_dir}, {"testing?", p_testing}, {"hga-version", p_hga_version}, {"actor-part-show", p_actor_part_show}, {"actor-settle", p_actor_settle}, {"doorway-faded", p_doorway_faded}, {"file-exists?", p_file_exists}, {"to-file", p_to_file}, {"append-file", p_append_file}, {"make-dir", p_make_dir}, {"zip-files", p_zip_files}, {"zip-has?", p_zip_has}, {"date-time", p_date_time},
         {"end-file", p_end_file}, {"xt>name", p_xt_to_name},
         {"clear-color", p_clear_color}, {"out-of-view?", p_out_of_view}, {"screenshot", p_screenshot}, {"screenshot-pending?", p_screenshot_pending}, {"console!", p_console}, {"console-type", p_console_type}, {"console-log", p_console_log},
 
