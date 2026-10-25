@@ -86,6 +86,39 @@ T{ fiona-hidden state-flag?  [: her-scripted @ ;] her -> -1 -1 }T
 circle press  240 frames
 T{ fiona-hidden state-flag?  free? -> 0 -1 }T
 
+testing the stalker coming in while she hides, before he has searched: he doesn't look, she stays hidden
+: hide ( -- )   \ (a fresh visit, under the bed)
+    room  bed-area 180 at  circle press  240 frames ;
+: debilitas-in ( -- )  $1C debilitas-tri  60 frames ;   \ (by the bed's foot)
+: searched ( -- n )  2 var ;
+0 2 progress pr.vars + c!  hide  debilitas-in
+T{ fiona-hidden state-flag?  searched -> -1 1 }T
+debilitas-out  circle press  240 frames
+testing ... the TV left on: Debilitas turns it off instead - and it wears out
+variable worn
+c2f-3-tv-examined story-flag-set  hide  5 var worn !  debilitas-in  240 frames
+T{ c2f-3-tv-examined story-flag?  5 var  fiona-hidden state-flag? -> 0 worn @ 1+ -1 }T
+debilitas-out  circle press  240 frames
+testing ... once he has searched before (half the time): he finds her under it
+: found? ( -- flag )  [: found-her @ ;] in-place ;
+: tries ( n -- flag )   \ (until found: each a new visit)
+    0 ?do  3 2 progress pr.vars + c!  hide  debilitas-in  300 frames
+        found? if  true unloop exit  then  debilitas-out  circle press  240 frames
+    loop  false ;
+T{ 10 tries -> -1 }T
+debilitas-out  600 play-on
+
+testing the evasion tip: Debilitas about the castle, she comes in by the hall door - told to hide, the doors locked
+c2f-3-flag3 story-flag-clear  c2f-8-flag3 story-flag-clear
+castle-1f-1 debilitas-hunt  castle-2f-3 0 rooms send go-to-room  5 frames
+400 play-on
+T{ c2f-3-flag3 story-flag?  $A5 items:items-of 0>  free? -> -1 -1 -1 }T   \ (the document among her items)
+T{ [: hiding-offered @ ;] in-place -> -1 }T
+testing ... she hides under the bed, he comes in: no search (she was told to), the chase over
+bed-area 180 at  circle press  240 frames  debilitas-in  120 frames
+T{ fiona-hidden state-flag?  force-chased state-flag?  [: hiding-offered @ found-her @ ;] in-place -> -1 0 0 0 }T
+debilitas-out  circle press  240 frames
+
 testing the night: back with the castle's sketch by the forced way in - file $204, the west door locked
 got-castle-sketch story-flag-set
 castle-2f-3 $80 rooms send go-to-room  5 frames

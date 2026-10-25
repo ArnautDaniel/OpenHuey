@@ -53,6 +53,7 @@ state: place-state
   cell field tab-moving         \ the item's tab sliding (the sub screen tells when it's done)
   \ the stalker in the game, as he tells (stalker-doing): his room, condition, kind, alert (his mode)
   cell field st-room-now  cell field st-cond-now  cell field st-kind-now  cell field st-alert-now  cell field st-came-now  cell field st-age
+  cell field st-heard           \ he has told us at all (in the game: st-age frames ago)
   \ the creatures, as they tell (creature-doing): each one's room, how it moves, frames since
   4 cells field cr-room  4 cells field cr-mode  4 cells field cr-age
   #own cells field own
@@ -387,11 +388,12 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 
 \ ---- the stalker ----
 : stalker-in? ( -- flag )  stalker here? ;
-: stalker-told? ( -- flag )  st-age @ 2 < ;
+: stalker-told? ( -- flag )  st-heard @  st-age @ 2 < and ;
 : stalker-came-by? ( exit -- flag )  stalker-in? stalker-told? and if  st-came-now @ =  else  drop false  then ;   \ (in, come by that exit)
 : stalker-alert? ( mode -- flag )  stalker-told? if  st-alert-now @ =  else  drop false  then ;
 : debilitas? ( -- flag )   \ (the stalker in the game Debilitas, in one of his kinds)
-    story.words:slot2-kind @  dup debilitas-kind = over debilitas-6-kind = or swap debilitas-7-kind = or ;
+    stalker-told? 0= if  false exit  then
+    st-kind-now @  dup debilitas-kind = over debilitas-6-kind = or swap debilitas-7-kind = or ;
 : stalker-to ( room tri -- )  stalker dup 0< if  drop 2drop exit  then  send stalker-in ;   \ (into the game there)
 : summoner-sooner ( secs -- )  s" summoner" actor-named send summoner-cooldown-less ;
 : stalker-order ( mode -- )  stalker dup 0< if  2drop exit  then  send stalker-order ;
@@ -427,7 +429,7 @@ $14 constant turn-y
 $8000 constant room-motion
 : model-of ( id -- model | -1 )   \ (a person's model, as the cutscenes find it: by its kind)
     person-of case  fiona-p of 0 cast-model endof  hewie-p of 1 cast-model endof
-        stalker-p of story.words:slot2-kind @ cast-model endof  >r -1 r>  endcase ;
+        stalker-p of st-kind-now @ cast-model endof  >r -1 r>  endcase ;
 : motions-for ( id file -- )  this-room @ story.strings:room-string  rot model-of dup 0< if  drop 2drop exit  then  motions-load drop ;
 : use-motions ( id -- )  model-of dup 0< if  drop exit  then  true swap motions-use ;
 
@@ -525,19 +527,21 @@ create spot-xts #activities cells allot
 : people-in ( -- )   \ (each person newly in the room: its arrival)
     #people 0 do
         i person-id dup 0< 0= if  dup body? if  body-room this-room @ =  else  drop false  then  else  drop false  then
+        i stalker-p = if  stalker-told? and  then   \ (the stalker in once he has told us what he is)
         dup i cells in-here + @ 0= and if  i ['] d.person-in run-desc-with  then
         i cells in-here + !
     loop ;
 : text-gone ( -- )  shown-msg @ 0< if  exit  then  shown-msg @ window send close-text  -1 shown-msg ! ;   \ (ours left up: closed)
 : frame-start ( -- )  0 offer-xt !  0 offer-msg ! ;
 behaviour placing
+  on spawned ( -- )  4 0 do  100 i cells cr-age + !  loop ;   \ (no creature heard of yet; the stalker: st-heard - story may tell him before this)
   on room-enter ( room exit -- )   \ (queued as the room came in)
       over room-id <> if  2drop exit  then
       came-by !  dup this-room !  place-of desc !  -1 entered !
       -1 going !  -1 shown-msg !  #people 0 do  -1 i holder-of !  -1 i cells move-done + !  loop   \ (none held, none moving)
       self subscribe tick  self subscribe frame-end  self subscribe moving  self subscribe danger
       self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing
-      self subscribe stalker-doing  self subscribe creature-doing  100 st-age !  4 0 do  100 i cells cr-age + !  loop
+      self subscribe stalker-doing  self subscribe creature-doing
       frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people ;
   on tick ( -- )
       entered @ 0= if  exit  then
@@ -565,8 +569,8 @@ behaviour placing
   on danger ( level -- )  danger-now ! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       {: room mode sub cond hp hpmax kind alert came :}
-      sender stalker <> if  exit  then
-      room st-room-now !  cond st-cond-now !  kind st-kind-now !  alert st-alert-now !  came st-came-now !  0 st-age ! ;
+      sender stalker =  sender s" story" actor-named = or  0= if  exit  then   \ (his own, or story's copy as we came in)
+      room st-room-now !  cond st-cond-now !  kind st-kind-now !  alert st-alert-now !  came st-came-now !  0 st-age !  -1 st-heard ! ;
   on creature-doing ( slot room mode up -- )
       {: slot room mode up :}  slot 0 4 within 0= if  exit  then
       room slot cells cr-room + !  mode slot cells cr-mode + !  0 slot cells cr-age + ! ;
