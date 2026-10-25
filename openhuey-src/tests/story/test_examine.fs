@@ -13,20 +13,22 @@ USING: tester engine game-state actors messages keys room-names game debug flag-
     swap 0 ?do  game-tick  dup execute if  drop true unloop exit  then  loop  drop false ;
 
 free-play  10 frames
-testing in front of the hole (area 0x18, facing -90): an action prepared and offered (scene 5, action 0x0A)
-T{ $18 -90 tp-area-facing  3 frames  [: prep-scene @ prep-arg @ ;] in-room -> 5 $A }T
+testing in front of the hole (area 0x18, facing -90): the place offers its remark (front-garden-3's place)
+T{ $18 -90 tp-area-facing  3 frames  [: story.kit:offer-xt @ ;] in-room -> ' story.places.front-garden-3:hole }T
 testing the action button: her action script - she walks to the spot (0x200), kneels (0x800), the window shows its message (10)
 T{ circle press  [: [: her-doing @ ;] hers $12 = ;] 5 swap within -> -1 }T
-T{ 120 [: [: msg @ ;] in-room 0< 0= ;] within -> -1 }T
-T{ [: msg @ ;] in-room  shown  [: her-scripted @ her-reading @ fiona.model:anim@ ;] hers -> 10 10 -1 -1 $801 }T
+T{ 120 [: [: story.kit:shown-msg @ ;] in-room 0< 0= ;] within -> -1 }T
+T{ [: story.kit:shown-msg @ ;] in-room  shown  [: her-scripted @ her-reading @ fiona.model:anim@ ;] hers -> 10 10 -1 -1 $801 }T
 T{ [: her-at sf@ her-at 8 + sf@ ;] hers  136.933e f- fabs 0.01e f<  -12.99e f- fabs 0.01e f< -> -1 -1 }T   \ (on the script's spot)
 testing while it is up she doesn't move
 create was 12 allot  game:fiona body-pos was vec!
 T{ key: W true key-hold  20 frames  key: W false key-hold  was game:fiona body-at vec-dist 0.01e f< -> -1 }T
 testing the button closes it; she gets up (0x802), her script goes on to its end and lets her go
-T{ cross press  5 frames  [: msg @ ;] in-room  shown  [: fiona.model:anim@ ;] hers -> -1 -1 $802 }T
+T{ cross press  5 frames  [: story.kit:shown-msg @ ;] in-room  shown  [: fiona.model:anim@ ;] hers -> -1 -1 $802 }T
 T{ 120 [: [: her-scripted @ ;] hers 0= ;] within  [: her-reading @ ;] hers -> -1 0 }T
 
+\ ---- the converted rooms' words (front-garden-2: not a place) ----
+front-garden-2 -1 rooms send go-to-room  30 frames
 testing 0xA5: a message offered on the action button; taken, it opens and she looks at character 2
 T{ [: -1 prep-scene !  $8016 examine-message  prep-scene @ prep-arg @ ;] in-room -> read-message $8016 }T
 T{ [: -1 prep-scene !  scene-locked state-flag-set  $8016 examine-message  scene-locked state-flag-clear  prep-scene @ ;] in-room -> -1 }T

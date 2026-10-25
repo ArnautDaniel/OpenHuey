@@ -10,9 +10,9 @@ USING: tester engine game-state actors messages room-names game fiona.state stor
 : visited? ( room -- flag )  progress pr.visited bit? ;
 
 3 frames
-testing a new game: the cage room's actor, its entering script run: Fiona's camera setup, followed
+testing a new game: the cage room's place, come in: Fiona's camera setup, followed
 T{ room-actor 0< -> 0 }T
-T{ [: this-room @ came-by @ ;] in-room -> front-garden-3 -1 }T
+T{ [: story.kit:this-room @ story.kit:came-by @ ;] in-room -> front-garden-3 -1 }T
 T{ fiona setup-of -> 2 1 }T
 T{ cam-followed -> fiona }T
 T{ front-garden-3 visited? -> -1 }T
@@ -29,7 +29,7 @@ create spot 12 allot
     fiona enter  her-at spot vec-copy  her-at $28020018 v-tri-in her-tri !  leave-actor ;
 testing exit 2 of front-garden-2: Fiona in its area, the room's script takes it
 T{ 2 to-area-of  3 frames  room-id -> front-garden-2 2 room-exit-leads drop }T
-T{ [: came-by @ ;] in-room -> front-garden-2 2 room-exit-leads nip }T
+T{ [: story.kit:came-by @ ;] in-room -> front-garden-2 2 room-exit-leads nip }T   \ (front-garden-3: a place)
 testing arriving, she is put on the exit's outside spot and isn't sent straight back
 T{ 60 frames  room-id -> front-garden-2 2 room-exit-leads drop }T
 

@@ -167,6 +167,7 @@ message fiona-shakes ( n -- )               \ broadcast each frame while countin
 message fiona-shaking ( n -- )              \ broadcast each frame: her shakes this frame (the stick swung, a button - Fiona_Shakes)
 message fiona-struck-by ( who -- )           \ broadcast each frame after fiona-doing: who struck or caught her (+0x100; -1 nobody)
 message fiona-doing ( mode sub cond cmd doing -- ) \ broadcast each frame: her move mode, what she does, her
+message fiona-started ( code -- )           \ broadcast as she starts an action for Hewie (Fiona_MarkActionStart's +0x1AD6BC: the rooms' cond 0x26 - that frame only)
                                              \ condition, her command this frame (-1 none; 3 the praise held), her
                                              \ action (+0x1AD580: her-doing)
 message fiona-blow ( n damage x y z reach -- )   \ broadcast: her blow `n` there (f>cell; reach -1: what touches her) - for the homunculi

@@ -93,7 +93,7 @@ behaviour playing-room
       over room-id <> if  2drop exit  then  -1 entered !
       dup came-by !  exit-taken !  this-room !
       self subscribe tick  self subscribe frame-end
-      self subscribe danger  self subscribe panic  self subscribe panic-onset  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe hewie-gesture  self subscribe moving
+      self subscribe danger  self subscribe panic  self subscribe panic-onset  self subscribe fiona-doing  self subscribe hewie-doing  self subscribe hewie-gesture  self subscribe moving  self subscribe fiona-started  -1 fiona-started-now !
       self subscribe stalker-doing  self subscribe stalker-ties  self subscribe stalker-blow  self subscribe item-event  self subscribe item-var  self subscribe item-event-bit  100 st-age !  -1 st-blow !
       self subscribe creature-doing  self subscribe noise-was  self subscribe summoner-cooldown-is  self subscribe fiona-struck-by  self subscribe fiona-shakes  self subscribe fiona-shaking  self subscribe hewie-health  self subscribe keri-fell  self subscribe fiona-unseen  self subscribe fiona-message  self subscribe fiona-requested  #creatures 0 do  100 i cells cr-ages + !  loop
       0 phase
@@ -104,7 +104,7 @@ behaviour playing-room
       clock-off   \ (drawn again by the rooms that show it, each frame)
       1 phase  -1 prep-scene !   \ (Progress_CharRequests: the actions prepared afresh)
       0 fiona-request-kind !     \ (Progress_OwnRequests: her request taken)
-      2 phase  offer-it
+      2 phase  offer-it  -1 fiona-started-now !   \ (her action's start: read by phases 1 and 2)
       panic-onset-on @ 0= if  run-slots  then ;   \ (not in her panic's start: SubPlay's frame flag bit 3)
   on fiona-message ( msg -- )   \ (her locked door's script: not while Hewie is the one played)
       leaving @ msg @ 0< 0= or  hewie-controlled? or if  drop exit  then
@@ -150,6 +150,7 @@ behaviour playing-room
       2drop hewie-cond !  drop  hewie-move-mode !  hewie-act !  hewie-here !
       entered @ if  hewie-cs dup char-here arrival  then ;
   on hewie-gesture ( g -- )  hewie-gesture-now ! ;
+  on fiona-started ( code -- )  fiona-started-now ! ;
   on fiona-unseen ( on -- )  fiona-unseen ! ;
   on summoner-cooldown-is ( secs -- )  summoner-secs ! ;
   on fiona-struck-by ( who -- )  fiona-hit-by ! ;

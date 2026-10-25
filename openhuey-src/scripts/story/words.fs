@@ -1511,7 +1511,7 @@ create zp /vec allot
     self-char case  hewie-cs of  hewie-id send aside  endof  fiona-cs of  fiona-id send aside  endof
         >r drop r>  endcase ;
 \ Fiona (conds 0x26, 0x3F, 0x3D; commands 0x94, 0x95)
-: fiona-started? ( v -- flag )  fiona-cmd @ = ;   \ (Fiona_MarkActionStart: her command this frame; -1 none)
+: fiona-started? ( v -- flag )  fiona-started-now @ = ;   \ (Fiona_MarkActionStart: her command this frame; -1 none)
 : fiona-action? ( v -- flag )  fiona-act @ = ;
 : fiona-free? ( -- flag )   \ (Fiona_IsIdle: on her own, not pushing, in a panic attack or out of breath; not in a panic)
     fiona-mode @ own-mode =  fiona-act @ dup attack-doing = over push-doing = or swap breathless-doing = or 0= and

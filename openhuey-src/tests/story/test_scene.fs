@@ -2,7 +2,7 @@
 \ pause (docs/subsystems/story.md, screen.md, music.md, pause.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_scene.fs
 IN: test-scene
-USING: tester engine game-state actors messages keys room-names game debug flag-names fiona.state story.state story.words screen music pause ;
+USING: tester engine game-state actors messages keys room-names game debug flag-names story-names fiona.state story.state story.words screen music pause ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
@@ -11,7 +11,7 @@ USING: tester engine game-state actors messages keys room-names game debug flag-
 : bgm-playing ( -- track )  game:music enter  bgm-cur @  leave-actor ;
 : pause-stage ( -- n )  game:pause enter  pause:stage @  leave-actor ;
 : in-scene? ( -- flag )  game:fiona enter  her-in-scene @  leave-actor ;
-: msg? ( -- flag )  [: msg @ ;] in-room 0< 0= ;
+: msg? ( -- flag )  game:window enter  window:shown @  leave-actor  0< 0= ;
 : play ( n -- )  0 ?do  msg? if  cross press  then  game-tick  loop ;   \ (the messages read on)
 : within ( n xt -- flag )   \ (within n frames xt says so)
     swap 0 ?do  msg? if  cross press  then  game-tick  dup execute if  drop true unloop exit  then  loop  drop false ;
@@ -19,8 +19,10 @@ USING: tester engine game-state actors messages keys room-names game debug flag-
 60 frames
 testing a new game: the cage room's opening - its stage music made, the background music, faded in
 T{ bgm-playing  game:music enter sm-stage @ sm-step @ leave-actor -> $16 0 4 }T
-T{ screen-level [: story.state:fading @ ;] in-room -> 0 0 }T
+T{ screen-level [: story.kit:fading @ ;] in-room -> 0 0 }T   \ (front-garden-3: a place)
 
+\ ---- the converted rooms' fades (front-garden-2: not a place) ----
+front-garden-2 -1 rooms send go-to-room  30 frames
 testing a fade out from the room's scripts: black after its frames, the room told it is over (kind 4: 15 frames later, $BC)
 [: 20 4 story.words:fade ;] in-room
 T{ 10 frames  screen-level dup 0> swap 1000 < and  [: story.state:fading @ ;] in-room -> -1 -1 }T
@@ -34,10 +36,13 @@ T{ [: 0 0 story.words:fade ;] in-room  2 frames  screen-level -> 1000 }T
 T{ [: 10 6 story.words:fade ;] in-room  15 frames  screen-level -> 500 }T
 T{ [: 10 7 story.words:fade ;] in-room  15 frames  screen-level -> 0 }T
 
-testing the scene (act00): the movie, the cutscene, Fiona in it, the subtitles prepared
-world-held state-flag-clear   \ (as the opening left it, before her first scene)
-[: 0 0 0 action ;] in-room
-T{ 300 [: cutscene-active? ;] within  movie-status  in-scene?  [: prepared-msg @ ;] in-room -> -1 1 -1 0 }T
+testing the scene (Hewie freed from the wire, at night): the movie, the cutscene, Fiona in it, its subtitles
+c2f-3-flag1 story-flag-set  0 game:fiona send costume  castle-2f-3 room!  30 frames
+front-garden-3 room!  60 frames
+228.1e 0e 72e 0e tp-facing  10 frames   \ (by Hewie in the wire, facing him)
+: subtitles ( -- msg )  s" scenes" actor-named enter  scenes:subtitles @  leave-actor ;
+circle press
+T{ 600 [: cutscene-active? ;] within  movie-status  in-scene?  subtitles -> -1 1 -1 0 }T
 T{ 90 [: bgm-playing $FF = ;] within -> -1 }T   \ (faded out with the scene's fade)
 
 testing the movie pause: Start opens it, Cancel skips - the scene's script ends it

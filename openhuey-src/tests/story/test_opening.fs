@@ -1,7 +1,7 @@
 \ The opening as a new game plays it (docs/subsystems/story.md): the cage room's entering script
-\ (front-garden-3.enter: the doors locked, the world held, Fiona's act01 - the opening's music and
-\ figures, the fade in) and then she is the player's, to find the room's offered actions - the
-\ first, "Where am I?" (area $11, action 4). Not free-play: from the new game itself. Headless:
+\ (front-garden-3's place: the doors locked, the world held, the opening - its music and figures,
+\ the fade in) and then she is the player's, to find what the room offers - the first, "Where am
+\ I?" (area $11). Not free-play: from the new game itself. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_opening.fs
 IN: test-opening
 USING: tester engine game-state actors messages keys room-names game debug flag-names story-names story.state story.words ;
@@ -22,7 +22,7 @@ create was 12 allot  game:fiona body-pos was vec!
 T{ key: W true key-hold  20 frames  key: W false key-hold  was game:fiona body-at vec-dist 1e f> -> -1 }T
 testing "Where am I?" - in area $11 the room offers its action 4; taken, its message, and the flag set
 T{ fg-3-flag1 story-flag? -> 0 }T
-T{ $11 0 tp-area-facing  3 frames  [: prep-arg @ ;] in-room -> 4 }T
+T{ $11 0 tp-area-facing  3 frames  [: story.kit:offer-xt @ ;] in-room -> ' story.places.front-garden-3:waking }T
 T{ circle press  300 [: shown 6 = ;] within -> -1 }T   \ (her waking animation first: about 170 frames)
 T{ cross press  120 [: fg-3-flag1 story-flag? ;] within -> -1 }T
 

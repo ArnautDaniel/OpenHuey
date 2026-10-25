@@ -5,12 +5,12 @@
 \ eyelids, func_001BC8D0); given back, cleared again and drawn as before (Model_ClearDraw). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_scene_faces.fs
 IN: test-scene-faces
-USING: tester engine game-state actors messages keys room-names game debug flag-names fiona.state story.state story.words pause ;
+USING: tester engine game-state actors messages keys room-names game debug flag-names story-names fiona.state story.state story.words pause ;
 
 : frames ( n -- )  0 ?do  game-tick  loop ;
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
-: msg? ( -- flag )  [: msg @ ;] in-room 0< 0= ;
+: msg? ( -- flag )  game:window enter  window:shown @  leave-actor  0< 0= ;
 : within ( n xt -- flag )
     swap 0 ?do  msg? if  cross press  then  game-tick  dup execute if  drop true unloop exit  then  loop  drop false ;
 : her ( -- a )  game:fiona enter  her-model @  leave-actor  actor ;
@@ -21,10 +21,12 @@ USING: tester engine game-state actors messages keys room-names game debug flag-
 testing out of a scene: her face drawn as her own (the mouth and the eyelids)
 T{ her act.face-all l@ -> 0 }T
 testing her eyelids half shut by a blink, then a scene takes her: open, and every shape of her face drawn by it
+\ (the scene: Hewie freed from the wire, at night - front-garden-3's place)
+c2f-3-flag1 story-flag-set  0 game:fiona send costume  castle-2f-3 room!  30 frames
+front-garden-3 room!  60 frames  228.1e 0e 72e 0e tp-facing  10 frames
 0.49e her act.face 7 4 * + sf!  0.49e her act.face 8 4 * + sf!
-world-held state-flag-clear
-[: 0 0 0 action ;] in-room
-T{ 300 [: cutscene-active? ;] within -> -1 }T
+circle press
+T{ 600 [: cutscene-active? ;] within -> -1 }T
 T{ her act.face-all l@  lids f0= f0= -> 1 -1 -1 }T
 testing ... the scene's tracks into her weights four apart (Motion_ExtraChannels: +0x58 + 16 i) - her eyelids
 testing ... (7 and 8: the second track's last, the third's first) moved together

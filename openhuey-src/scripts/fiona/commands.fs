@@ -56,6 +56,7 @@ defer to-idle   ' noop is to-idle      \ (fiona.fs)
 \ she was; for "go there" (0x23) 5 short of where he would have to stop, further on her heading.
 \ Then how it strikes him ----
 : mark-action-start ( code -- )
+    dup broadcast fiona-started
     her-sub !  her-heading f@ her-act-yaw f!  her-tri @ her-act-tri !  her-act-at her-at vec-copy ;
 create ch-at /vec allot
 : go-spot ( -- )

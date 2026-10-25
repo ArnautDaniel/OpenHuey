@@ -52,7 +52,7 @@ end-state
     cutscene-run  cutscene-status director-over <>  cutscene-in-shot? and if  cutscene-update  then
     tell
     movie-state 0<  cutscene-status dup director-over = swap director-ending = or  or ;
-: over ( -- )   \ (the end: black, the movie stopped, the world held, the camera back)
+: scene-ends ( -- )   \ (the end: black, the movie stopped, the world held, the camera back)
     $FFFF window-actor send close-text  -1 subtitles !
     black-frame  movie-close  0 movie-up !  world-held state-flag-set
     pause-wanted state-flag-set
@@ -110,7 +110,7 @@ behaviour scening
           readying of  cutscene-run  cutscene-status director-ready = if
                            ready step !  movie-up @ asked-by @ send scene-ready  then  endof
           running of  run-frame if  ending step !  then  endof
-          ending of  over  endof
+          ending of  scene-ends  endof
       endcase ;
   on frame-end ( -- )  draw-movie  draw-subtitles ;
 end-behaviour

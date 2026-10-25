@@ -3,7 +3,7 @@
 \ it runs its leaving phase, and once the next room is in, its last, then goes.
 \ The rooms' scripts: story/rooms/*.fs (converted from the game's); their words: story/words.fs.
 IN: story
-USING: engine actors messages story.state story.words story.shared story.rooms story.room story.kit story.places ;
+USING: engine actors messages story.state story.words story.shared story.rooms story.room story.kit story.common story.places ;
 
 state: story-state
   cell field current       \ the played room's actor (-1: none)

@@ -76,6 +76,7 @@ state: room-state
   #zones /zone-rect * field zone-rects   \ the zone rectangles (an id, x0 z0 x1 z1: for the scene effects)
   \ what the others tell (fiona-doing, hewie-doing, danger, panic)
   cell field fiona-busy  cell field fiona-mode  cell field fiona-sub
+  cell field fiona-started-now   \ the action she started for Hewie this frame (-1 none)
   cell field fiona-cmd  cell field hewie-gesture-now  cell field hewie-here  cell field hewie-act  cell field hewie-move-mode
   cell field the-danger  cell field the-panic  cell field the-panic-level
   cell field panic-onset-on   \ her panic's start (SceneGame +0xF6CD24 bit 3): the action scripts held, busy

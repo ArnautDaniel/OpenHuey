@@ -511,7 +511,7 @@ own: stalker-gone             \ he has run out (the tutorial's end)
 \ movie by the story's variable $2A) - each played, nothing kept, back to the extras ----
 $2A constant replay-var
 : replay-done ( -- )
-    costume-var var@ dress  3 figure-out  forced-exit take-exit  events-held state-off  hewie let-go ;
+    costume-var var@ dress  3 figure-out  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
 : replay ( movie class cutscene subtitles -- )
     {: movie cls cut subs :}  fiona hold  fiona wait-move
     movie cls cut load-scene  wait-fade  panic-eased
@@ -573,7 +573,7 @@ forced-exit 1 or constant from-the-wire   \ (sent from the front garden, Hewie f
     stalker-told?  st-cond-now @ down-cond <> and  st-kind-now @ debilitas-kind = and
     st-room-now @ this-room @ <> and ;
 : fiona-came ( -- )
-    events-held state? if  replaying exit  then
+    events-held state? if  hewie send part-from-fiona  replaying exit  then   \ (the extras: Hewie out of it, the movie played)
     came-by @ 0 = if  player 0 at-exit  1 1 player-camera  then  0 1 1 exit-camera
     came-by @ 1 = if  player 1 at-exit  0 0 player-camera  then  1 0 0 exit-camera
     c2f-8-flag3 fact? 0=  c2f-2-flag1 fact? and  c2f-3-flag3 fact? 0= and if
