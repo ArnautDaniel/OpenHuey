@@ -1132,9 +1132,10 @@ fvariable hs-push
     100.8e fswap  30e  effects:glow  var-set ;
 
 
-\ ---- the doors' models by part: bit a + 1 + b of every door's group mask (Doors_SetBits) - a
-\ door's batches in group g are drawn while bit g is on (0 always) ----
-: door-bits ( a set b -- )  rot 1+ +  swap door-group! ;
+\ ---- the models' parts: bit a + 1 + b of every door's group mask (Doors_SetBits) and of the
+\ room mesh's own - batches in group g are drawn while bit g is on (0 always). The breakables
+\ (a whole vase, its shards) are the room mesh's batches in these groups ----
+: door-bits ( a set b -- )  rot 1+ +  swap  2dup door-group!  room-group! ;
 \ the rooms' own parts (groups from $15: the rooms' scripts use base $14) shown or hidden - a
 \ breakable whole or broken, a door's open or shut leaf, ...
 $14 constant room-parts

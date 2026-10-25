@@ -15,6 +15,11 @@ USING: engine actors vectors messages fiona.state fiona.anims ;
 
 \ ---- her animations ----
 : anim@ ( -- id )  her-model @ motion@ ;
+\ her hand's bone (the model's +0x8BC, vtable +0x78 - set by each costume's model class as it loads:
+\ EventHumanModel_Loaded, FionaModel_Loaded, Costume2..8Model_Loaded)
+: hand-bone ( -- bone )
+    her-costume @ case  0 of $2E endof  1 of $42 endof  2 of $3D endof  3 of $39 endof
+        6 of $21 endof  7 of $23 endof  8 of $1A endof  >r $42 r>  endcase ;
 \ Motion_Start: the animation (with a variant: -1 none), blended over `blend` frames, with flags
 \ (1 loops, 8 no time of its own); one her model lacks: nothing
 : start ( anim variant blend flags -- )

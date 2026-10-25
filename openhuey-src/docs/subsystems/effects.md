@@ -155,7 +155,10 @@ their bright parts (green 0x40 of 0xFF and up) with half of eight round them add
 the marker gives each frame (`post_shine`). Lorenzo's marker uses it in place of a glow.
 
 **The room's fog** (room effect $1D: `Fog_SetParams`, `Fog_Draw`): two colours over its near to
-far distance, nothing nearer than its near. Its parameters are 26 bytes - the colours, the
+far distance, held at both ends: the near colour in front of the near distance and the far one
+beyond the far and where nothing was drawn (the original reads its Z buffer through a palette,
+generator 2, whose ends are the two colours). The palette halves the colours' alpha: 0x80 is
+half-way, 0x100 opaque. Its parameters are 26 bytes - the colours, the
 range, +16 a word that moves the fog to layer 9 (else $21), +20..25 the characters' light groups
 (`Fog_Update`: layer $B, after the fog as $A is - drawn no differently). Read from the room file
 the original's way: 26 on, past the section into the next one's first bytes when the fog's are

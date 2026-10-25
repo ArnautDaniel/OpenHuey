@@ -30,6 +30,7 @@ This page is OpenHuey's side: its words, its scripts, its tests.
 | `nav-at` | `F: x y z climb -- [y']` `-- flag` | on the nav mesh? (and its height) |
 | `nav-nearest` | `F: x y z -- x' y' z'` | the middle of the nearest nav triangle |
 | `room-group!` | `group flag --` | show or hide a group of the room mesh |
+| `room-group?` | `group -- flag` | that group of the room mesh is shown |
 | `.room` | | a summary |
 | `nav-tri`, `tri-center` | `F: x y z -- ` `-- tri`, `tri -- F: x y z` | nav triangles |
 | `push-out` | `v tri other mask -- tri'` | v put out of body `other` to their radii + 0.01 apart, straight or turned up to 180 degrees, reached over the floor (Actor_PushOut); -1 nowhere |

@@ -199,6 +199,7 @@ create records-written 36 allot          \ (and the mini-game's best times)
     keep-unlocks  save-path included  unlocks-back  0 hewie-played !   \ (SceneGame_ctor: Fiona played)
     doors-unheld   \ (a save made before they were left out)
     subscreen-wanted state-flag-clear   \ (a save point's save was made with the save screen up: not again)
+    new-game-sounds state-flag? 1 and sound-set!   \ (SceneGame_StateEntry: bank 4's set by the flag - bare feet or boots)
     broadcast game-loaded
     was-room @ -1 s" rooms" actor-named send go-to-room  entering step ! ;
 : quick-load ( -- )  -1 save-path-n !  load-file ;

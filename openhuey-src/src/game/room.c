@@ -178,8 +178,9 @@ void room_look_set(int slot, const uint8_t *d, size_t n) {
         if (l->has_fog) {
             float range[2];
 
-            colour(word(d), 255.0f, 128.0f, l->fog_near_color);
-            colour(word(d + 4), 255.0f, 128.0f, l->fog_far_color);
+            /* (alpha 0x100 = opaque: the fog's palette halves it, Palette_Colour) */
+            colour(word(d), 255.0f, 256.0f, l->fog_near_color);
+            colour(word(d + 4), 255.0f, 256.0f, l->fog_far_color);
             memcpy(range, d + 8, 8);
             l->fog_near = range[0];
             l->fog_far = range[1];
@@ -529,15 +530,18 @@ int room_door_near(const Room *r, int exit, Vec3 p) {
 }
 
 int room_door_in_area(const Room *r, int exit, int kind, Vec3 p) {
-    static const float kAreas[3][8] = {   /* (D_003E51A0) */
+    static const float kAreas[5][8] = {   /* (D_003E51A0: 0 its front, 1 by its open leaf - to slam it, 2 / 3
+                                           * before it, 4 at its shut leaf - to burst it open) */
         {-6.0f, -12.0f, 6.0f, -12.0f, 6.0f, 12.0f, -6.0f, 12.0f},
         {-6.0f, 3.0f, -6.0f, 12.0f, -15.0f, 12.0f, -15.0f, 3.0f},
-        {-8.0f, 0.0f, 8.0f, 0.0f, 8.0f, 14.0f, -8.0f, 14.0f}};
+        {-8.0f, 0.0f, 8.0f, 0.0f, 8.0f, 14.0f, -8.0f, 14.0f},
+        {-8.0f, 0.0f, 6.0f, 0.0f, 6.0f, 15.0f, -8.0f, 15.0f},
+        {-3.0f, 0.0f, -3.0f, -9.0f, 6.0f, -9.0f, 6.0f, 0.0f}};
     const RoomDoor *d;
     Vec3 c[4];
     int k;
 
-    if (exit < 0 || exit >= ROOM_DOORS || !r->doors[exit].present || kind < 0 || kind > 2) {
+    if (exit < 0 || exit >= ROOM_DOORS || !r->doors[exit].present || kind < 0 || kind > 4) {
         return 0;
     }
     d = &r->doors[exit];

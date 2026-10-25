@@ -146,7 +146,7 @@ create next-at /vec allot
     then
     false ;
 
-\ ---- turning to flee (R1 - Q on the keyboard: Fiona_StateFleeStart / FleeTurn): she whips round
+\ ---- turning to flee (R1 - E on the keyboard: Fiona_StateFleeStart / FleeTurn): she whips round
 \ (0x403) and runs; as she turns her fear rises 10 (not in costume 8), and a door she turns from
 \ is slammed (fiona/slam.fs); Hewie's reaction: with him ----
 : add-fear ( F: amount -- )  choker-fear her-fear f@ f+ 0e fmax 100e fmin her-fear f! ;   \ Fiona_AddPanic

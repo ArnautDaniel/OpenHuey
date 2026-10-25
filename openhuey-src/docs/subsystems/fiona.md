@@ -74,7 +74,10 @@ behaviour.
    (tense), not afraid, and not long recovered. Otherwise she plays her idle.
 4. **Running** needs the run button, and `no-running` not set.
 5. **Footsteps** follow her animation's foot contacts. Each plays its sound (by the floor's
-   material) and is heard as a noise.
+   material) and is heard as a noise. The sounds are bank 4's set: D_1000 (bare feet) while
+   state flag 3 is on - set by the new game, as she wakes in her slip - else D_0000 (boots),
+   chosen at the game's start, the extras room and a save loaded (SceneGame_StateEntry), and by
+   the rooms' scripts as she changes (their 0xC1).
 6. **Doors.** With the action button by an exit:
    - a doorway: she just goes on through;
    - a locked door: she tries it (her rattle animation) and gives up;
@@ -262,7 +265,8 @@ one it hasn't passed. Checked by `tests/story/test_hewie_fiona_words.fs` (13, wi
 Fiona_SlamDoor, tried by her flee turn (at its event $20, her radius behind her, looking back),
 her kick (each frame of its window, her radius ahead) and her shove (at its key, her hand). A
 door of the room at rest that she faces within 45 degrees, on her way to a point on a door's
-passage (triangle flag $20000): shut, her in its area 4, neither locked nor stuck - burst open
+passage (triangle flag $20000): shut, her in its area 4 (the door areas
+are the original's five, D_003E51A0 - 4 before its shut leaf), neither locked nor stuck - burst open
 (`barge`); open, her in its area 1, faced side on - slammed shut (`slam`, her sound $91). Not one
 somebody holds or locked against her. She's held still 5 frames. Shut out by it: Hewie and the
 stalker at its front (area 0) on its far side (Doors_Side 1; slammed shut, or in its way - on its
@@ -282,9 +286,10 @@ action button (Fiona_StateLadder): she walks to its end's spot (Actor_DoorFront 
 kFionaMeetOffsets - 12-byte entries x, z, degrees: the top 1.7 back from it, the foot 2.1 out),
 facing along it, and gets on ($700 from the top, $704 from the foot; her mode 3, sub 7). On it
 (Fiona_StateOnLadder), when a move has come round (the motion's flag $20 - Motion's
-`MOTION_EVENTS` are the slot's flags, not the key events) or while holding, the stick (W / S):
-down - the next rung ($701, its end $702), off at the foot within 18 of it ($703); up - the
-next rung ($705, its end $706), off at the top within 3 of it ($707); let go - holding ($708 /
+`MOTION_EVENTS` are the slot's flags, not the key events) or while holding, the stick (the vertical plus the pad's down less its up, as the original
+reads it - pushed up is down the ladder): W, the stick forward or the pad's up - down a rung
+($701, its end $702), off at the foot within 18 of it ($703); S, back or down - up a rung
+($705, its end $706), off at the top within 3 of it ($707); let go - holding ($708 /
 $709). After each move her triangle is the end's. The stalker in the region at its foot keeps
 her from getting off there (she holds on); at its top, within his height above her, from going
 up (Progress_WhoIsWhere's region bits: 4 side 0, 2 side 1). Off (Fiona_StateLadderOff): at the

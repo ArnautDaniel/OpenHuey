@@ -265,10 +265,12 @@ static const char *kCompositeFs =
     "    s += soft * u_tint_glow.rgb * u_tint_glow.a;\n"
     /* (the second colour sees the screen after the first: its blurred copy has the glow too) */
     "    s += (s - soft * (1.0 + 3.0 * u_tint_glow.rgb * u_tint_glow.a) * u_tint_contrast.rgb) * u_tint_contrast.a;\n"
-    /* (as the game's: none up to its near distance, then the ramp from the near colour - not over
-     * what was drawn after the fog's layer, the mask's g) */
-    "    if (u_fog_near_color.a + u_fog_far_color.a > 0.0 && d < 1.0 && z > u_fog_range.x && u_fog_range.y > u_fog_range.x) {\n"
-    "        vec4 fc = mix(u_fog_near_color, u_fog_far_color, clamp((z - u_fog_range.x) / (u_fog_range.y - u_fog_range.x), 0.0, 1.0));\n"
+    /* (as the game's, Fog_Draw: its palette's ramp held at both ends - the near colour in front of
+     * the near distance, the far one beyond the far and where nothing was drawn - not over what
+     * was drawn after the fog's layer, the mask's g) */
+    "    if (u_fog_near_color.a + u_fog_far_color.a > 0.0 && u_fog_range.y > u_fog_range.x) {\n"
+    "        float zf = d < 1.0 ? z : 1e9;\n"
+    "        vec4 fc = mix(u_fog_near_color, u_fog_far_color, clamp((zf - u_fog_range.x) / (u_fog_range.y - u_fog_range.x), 0.0, 1.0));\n"
     "        fc.a *= 1.0 - texture(u_mask, v_uv).g;\n"
     "        s = mix(s, fc.rgb, clamp(fc.a, 0.0, 1.0));\n"
     "    }\n"

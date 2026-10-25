@@ -157,7 +157,9 @@ conditions), `scene_game.c` (the order), `progress.c`.
   (a character's fields, the camera director, a door's state) is now a message to its owner.
 - Room numbers inside the scripts (arguments of `stalker-to-room`, `hewie-to-room`, ...) are
   still numbers.
-- `door-bits` sets which parts of the room's door models are drawn (`door-group!`).
+- `door-bits` sets which parts of the room's door models and of the room mesh itself are drawn
+  (`door-group!`, `room-group!`): the breakables - a vase whole (group $15), its shards ($16) -
+  are the room mesh's batches, the doors' parts their models'.
 - Where the original's data leaves something out of sight that the game means to be seen, OpenHuey
   may place it itself, keeping the intent: castle-2f-8's golem and his plate are stored 50 above the room, out of sight under its
   ceiling, and its enter script stands him on the floor (`golem-down`, `object-lowered`: the

@@ -38,6 +38,7 @@ variable hard   \ the new game chosen is a hard one (the title's HARD MODE; new-
 : new-game ( -- )   \ SceneGame_StateEntry, entry $2A (messages: from an actor or at load)
     0 hewie-played !   \ (SceneGame_ctor: Fiona the one played)
     new-game-sounds flag-on  world-held flag-on  in-play flag-on
+    1 sound-set!   \ (Progress_LoadSoundSet by new-game-sounds: her bare feet's set)
     hard @ if  hard-mode-flag story-flag-set  then   \ (entry $4000002A: progress +0x30 bit 15)
     1 0 costume-vars!
     1 s" fiona" actor-named send costume
@@ -46,6 +47,7 @@ variable hard   \ the new game chosen is a hard one (the title's HARD MODE; new-
 : extras ( -- )   \ (SceneGame_StateEntry, entry $37: the extras room - Fiona in her clothes)
     0 hewie-played !
     world-held flag-on  in-play flag-on
+    0 sound-set!   \ (new-game-sounds off: the boots' set)
     0 0 costume-vars!
     0 s" fiona" actor-named send costume
     off-map-37 -1 s" rooms" actor-named send go-to-room ;

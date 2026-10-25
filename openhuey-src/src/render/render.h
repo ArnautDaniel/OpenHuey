@@ -81,7 +81,7 @@ extern RenderSettings gRender;
  * with 1.0 = 0x80 (fog: 1.0 = 0xFF), a = the strength */
 typedef struct RoomLook {
     int32_t has_fog;
-    float fog_near_color[4], fog_far_color[4];   /* the ramp's ends; a: how opaque (0x80 = 1) */
+    float fog_near_color[4], fog_far_color[4];   /* the ramp's ends; a: how opaque (1 = 0x100: the palette halves it) */
     float fog_near, fog_far;                     /* view distance where it starts / ends */
     int32_t fog_early;                           /* drawn in layer 9: what follows (the characters) not fogged */
     int32_t has_tint;
