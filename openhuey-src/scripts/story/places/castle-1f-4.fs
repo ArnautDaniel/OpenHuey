@@ -30,7 +30,6 @@ $14 constant bugs-msg          \ "Bugs? Yuck! I hate bugs! Why me?"
 7   constant reforge-msg       \ "Looks like this isn't enough... I will need to re-forge this plate-key to be able to us..."
 8   constant nothing-msg       \ "Nothing happened..."
 0   constant riccardo-msg      \ "Exire Debilitas! Please excuse me, Miss. I am Riccardo, keeper of the castle..." (the scene's subtitles)
-$8010 constant cant-carry-msg  $8011 constant obtained-msg  $8012 constant obtained-2-msg
 
 \ ---- its own state ----
 own: no-knob-remarked   own: locked-remarked   own: chair-remarked
@@ -212,13 +211,7 @@ defer the-trap
     fiona wait-move  fiona crouch-down-anim play  fiona crouching-anim start-anim  16 frames
     fiona crouch-up-anim play  fiona -1 idle  floor-msg say ;
 : the-wall ( -- )  fiona wait-move  weak-wall-broken fact? if  bugs-msg  else  weak-wall-msg  then  say ;
-: antimony ( -- )
-    fiona wait-move  fiona 140e 94e turn-to-xz
-    in-panic? if  exit  then
-    fiona pick-up-anim play  4 frames  refined-antimony item-named
-    refined-antimony item-full? if  cant-carry-msg say
-    else  c1f-4-refined-antimony fact!  antimony-fx effect-off  refined-antimony 1 give-item  refined-antimony show-item-tab  fanfare  obtained-msg say  then
-    fiona up-from-pick-anim play ;
+: antimony ( -- )  refined-antimony c1f-4-refined-antimony antimony-fx 140e 94e picks-up ;
 : plate-key ( -- )
     fiona wait-move  fiona 131.392e 147.223e turn-to-xz  fiona pick-up-anim play  4 frames
     got-cracked-plate-key fact!  plate-key-part hide-part

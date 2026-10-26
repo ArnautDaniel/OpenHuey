@@ -38,8 +38,6 @@ $31 constant pitch-black-msg     \ "The sun has completely set... It's pitch bla
 $11 constant hide-now-msg        \ "I have to find a place to hide!"
 $F  constant what-now-msg        \ "Oh no! What should I do?! If I don't do something, that... thing will get me!"
 $8016 constant no-time-msg       \ "I have to get away! I don't have time for this!"
-$8010 constant cant-carry-msg    \ "It's a . Unfortunately you can't carry anymore items."
-$8011 constant obtained-msg      \ "You've obtained ."
 
 \ ---- its own state ----
 own: portrait-1-remarked   own: portrait-2-remarked   own: portrait-3-remarked
@@ -179,17 +177,7 @@ create entries  1 , 1 ,   0 , 0 ,                            \ (by exit 0, 1: th
 
 \ the medallion Hewie sniffed out, lying by the wall
 $70 constant medallion-item
-: medallion ( -- )
-    fiona wait-move  fiona -9e -11e turn-to-xz
-    in-panic? if  exit  then
-    fiona pick-up-anim play  4 frames
-    medallion-item item-named
-    medallion-item item-full? if  cant-carry-msg say
-    else
-        c2f-3-medallion fact!  sparkle-fx effect-off  medallion-item 1 give-item
-        medallion-item show-item-tab  fanfare  obtained-msg say
-    then
-    fiona up-from-pick-anim play ;
+: medallion ( -- )  medallion-item c2f-3-medallion sparkle-fx -9e -11e picks-up ;
 
 \ ---- what she may do here: offered by where she stands and which way she faces (the first
 \ offered wins; in the sheet every thing only reminds her of it) ----

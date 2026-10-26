@@ -23,8 +23,6 @@ $B constant cruel-msg            \ "I can't believe there are people out there t
 $C constant wire-bound-msg       \ "Unforgivable! A wire is bound to the poor animal. It is digging deeply into the dog's..."
 $D constant wire-snagged-msg     \ "The wire looks like it got snagged on something. So many wounds... So much blood... Yo..."
 0  constant go-now-msg           \ "Go, now. And don't get caught this time. Go..." (the freeing scene's subtitles)
-$8010 constant cant-carry-msg    \ "It's a . Unfortunately you can't carry anymore items."
-$8011 constant obtained-msg      \ "You've obtained ."
 
 \ ---- its own state ----
 own: tree-remarked
@@ -212,9 +210,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
         hewie $37 -1 run-move path-to  hewie sit-a-while-anim play
         fiona-half-hidden state?  fiona held? 0= or if
             refined-magnesia item-full? 0= if  10 trust+  then
-            refined-magnesia item-named
-            refined-magnesia item-full? if  cant-carry-msg say
-            else  fg-3-refined-magnesia fact!  refined-magnesia 1 give-item  refined-magnesia show-item-tab  fanfare  obtained-msg say  then
+            refined-magnesia fg-3-refined-magnesia -1 takes-up
         then
     then
     hewie 238e -135e turn-to-xz
@@ -266,13 +262,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
 : wire-snagged ( -- )
     fiona wait-move  fiona 228.1e 77.57e turn-to-xz
     fiona crouch-down-anim 10 play-blend  wire-snagged-msg say  fiona crouch-up-anim 10 play-blend ;
-: pick-magnesia ( -- )
-    fiona wait-move  fiona 185.7e -35.4e turn-to-xz
-    in-panic? if  exit  then
-    fiona pick-up-anim play  4 frames  magnesia item-named
-    magnesia item-full? if  cant-carry-msg say
-    else  fg-3-magnesia fact!  magnesia-fx effect-off  magnesia 1 give-item  magnesia show-item-tab  fanfare  obtained-msg say  then
-    fiona up-from-pick-anim play ;
+: pick-magnesia ( -- )  magnesia fg-3-magnesia magnesia-fx 185.7e -35.4e picks-up ;
 : magnesia-shows ( -- )  magnesia-fx 185.7e 0.9e -35.4e flicker-at ;   \ (the box broken: the magnesia in it)
 : spots ( -- )
     night? if
@@ -329,9 +319,6 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     then ;
 
 \ ---- its ways out, its cameras ----
-: leaves-by ( area exit -- )   \ (the one played, in the area, free: through)
-    {: area ex :}  player held? if  exit  then  player area in-area? 0= if  exit  then
-    ex exit-open? 0= if  exit  then  ex exit-door doors:door-held? if  exit  then  ex take-exit ;
 : ways ( -- )
     0 0 leaves-by  1 1 leaves-by  gate-area 2 leaves-by
     fiona to-castle-area in-area?  fiona held? 0= and if  castle-figure figure-1 figure-in  3 take-exit  then

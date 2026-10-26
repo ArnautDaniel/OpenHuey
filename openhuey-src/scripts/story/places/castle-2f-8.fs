@@ -22,7 +22,6 @@ own-reset
 $A constant file-here-msg     \ "There is some kind of file here."
 $B constant calmer-msg        \ "...... That got my mind off things. I feel a little better now."
 $C constant staring-msg       \ "...... Just staring at this all day isn't going to get me out of this place any so..."
-$8010 constant cant-carry-msg  $8011 constant obtained-msg  $8012 constant obtained-2-msg
 
 \ ---- its own state ----
 own: golem-remarked
@@ -178,9 +177,7 @@ $2A constant replay-var
         choker-fx effect-off  got-obsidian-choker fact!  obsidian-choker item-named
         obsidian-choker 1 give-item  obsidian-choker show-item-tab  fanfare  obtained-2-msg say
     else
-        choker-other item-named
-        choker-other item-full? if  cant-carry-msg say
-        else  got-obsidian-choker fact!  choker-fx effect-off  choker-other 1 give-item  choker-other show-item-tab  fanfare  obtained-msg say  then
+        choker-other got-obsidian-choker choker-fx takes-up
     then
     fiona up-from-pick-anim play ;
 : strains ( -- )   \ (pushing the golem: it won't move)

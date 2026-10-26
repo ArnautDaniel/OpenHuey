@@ -333,6 +333,9 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
 : give-item ( item n -- )   \ counted (the play record) and given
     progress pr.items-counted dup l@ 1+ swap l!  items send give-item ;
 : item-full? ( item -- flag )  items:items-of 99 < 0= ;
+$8010 constant cant-carry-msg   \ "It's a . Unfortunately you can't carry anymore items." (the item named)
+$8011 constant obtained-msg     \ "You've obtained ."
+$8012 constant obtained-2-msg   \ (the same, for a thing that isn't one of many)
 : item-named ( item -- )  0 swap message-param! ;   \ (the next system message names it)
 : subscreen ( -- id )  s" subscreen" actor-named ;
 $8C constant fanfare-scene
@@ -671,6 +674,9 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
 : cameras-at ( table n -- )   \ (area set path, three cells a camera)
     0 ?do  dup i 3 * cells +  dup @  over cell+ @  rot 2 cells + @  area-camera  loop  drop ;
 : exits-out ( n -- )  0 ?do  i exit-out  loop ;   \ (she goes by any of the first n when she can)
+: leaves-by ( area exit -- )   \ (the one played, in the area, free: through - the rooms' exit-check by an area)
+    {: area ex :}  player held? if  exit  then  player area in-area? 0= if  exit  then
+    ex exit-open? 0= if  exit  then  ex exit-door doors:door-held? if  exit  then  ex take-exit ;
 : way-out ( area exit -- )  swap fiona swap entered? if  prepare-exit  else  drop  then ;
 : ways-out ( table n -- )   \ (area exit: crossing into the area, the room behind that exit loaded ahead)
     0 ?do  dup i 2* cells + @  over i 2* 1+ cells + @  way-out  loop  drop ;
@@ -685,6 +691,14 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
     hewie-in?  danger-now @ calm = and  hewie-cmdable-now @ and 0= if  2drop exit  then
     0 ?do  dup i /look * + looks-at  loop  drop ;
 \ a replayed movie over (the extras' theatre): back to the extras, out by the forced way
+\ an item found (the rooms' pick-up): named; with 99 of it she can't carry it; else taken - its
+\ fact, its sparkle (an effect of the place's, -1 none) off - its tab shown, the fanfare
+: takes-up ( item fact fx -- )
+    {: it f fx :}  it item-named  it item-full? if  cant-carry-msg say exit  then
+    f fact!  fx 0< 0= if  fx effect-off  then  it 1 give-item  it show-item-tab  fanfare  obtained-msg say ;
+: picks-up ( item fact fx F: x z -- )   \ (on the floor there: turned to it, bent down to it - not in a panic)
+    fiona wait-move  fiona turn-to-xz  in-panic? if  drop 2drop exit  then
+    fiona fiona.anims:pick-up-anim play  4 frames  takes-up  fiona fiona.anims:up-from-pick-anim play ;
 : replay-over ( -- )  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
 
 \ ---- the figures' own (the story's slots 3..5: a figure loaded there) ----
