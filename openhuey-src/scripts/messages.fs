@@ -337,6 +337,7 @@ message scene ( on -- )                      \ broadcast: a cutscene has the cha
 message scene-load ( room movie class cutscene -- )   \ (scenes) a room's scene made ready: its movie (a room string), how it shows, its cutscene; answered scene-ready
 message scene-ready ( movie? -- )             \ (to the place) ready: whether its movie is there to play
 message scene-run ( subtitles -- )            \ (scenes) played, the message as its subtitles ($FFFF none): scene-shot each new shot, scene-over at its end
+message scene-run-through ( subtitles -- )    \ (scenes) the same, never skipped, its last frame left up at its end (the game overs)
 message scene-shot ( shot -- )                \ (to the place) its shot now
 message scene-over ( -- )                     \ (to the place) over - played through or skipped - the world held, the camera back
 message scene-stop ( -- )                     \ (scenes) stopped at once (the place gone)

@@ -319,6 +319,9 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
 : run-scene ( subtitles -- )   \ played through (or skipped); subtitles: a message, or -1
     dup 0< if  drop $FFFF  then  scene-running scene-step !  scenes send scene-run
     begin  scene-step @ scene-running = while  yield  repeat  0 cue-xt ! ;
+: run-through ( subtitles -- )   \ played through, never skipped, its last frame left up (a game over's)
+    dup 0< if  drop $FFFF  then  scene-running scene-step !  scenes send scene-run-through
+    begin  scene-step @ scene-running = while  yield  repeat  0 cue-xt ! ;
 : at-shots ( xt -- )  cue-xt ! ;   \ ( shot -- ) run as each new shot of the scene comes
 : panic-eased ( -- )  in-panic? if  terrified s" panic" actor-named send panic-stage!  then ;   \ (a scene, a message: the panic down to terror)
 

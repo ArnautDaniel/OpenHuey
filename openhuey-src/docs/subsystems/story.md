@@ -109,8 +109,11 @@ converted file stays for the rooms not yet moved; a room is one or the other.
 
 **Scenes** are the `scenes` actor's (`scripts/scenes.fs`): `scene-load ( room movie class cutscene )`
 → `scene-ready ( movie? )`; `scene-run ( subtitles )` → `scene-shot ( shot )` each new shot →
-`scene-over` (played through or skipped: the world held, the camera back); `scene-stop` (the
-place gone). The kit's `load-scene`, `run-scene`, `at-shots`.
+`scene-over` (played through or skipped: the world held, the camera back); `scene-run-through
+( subtitles )` the game overs' (never skipped; at its end the movie's last frame left up, the
+director as it is, for the game over to hold: Scene_PlayThrough); `scene-stop` (the place gone).
+The kit's `load-scene`, `run-scene`, `run-through`, `at-shots`. (Headless runs go by the game
+clock, so a movie ends with its video there, not waiting for its sound to drain in real time.)
 
 **What most rooms have** (the kit's components, each room's data): a breakable (`breakable:`
 names it - its fact, whole and broken parts, the cylinder a blow breaks it in; `shard-look`,
@@ -190,6 +193,11 @@ Places, each with its test in `tests/places/`:
   Powder behind two), the Viride Medallion Hewie finds, the door unlocked from this side, the map's
   page at the stairs, the walls' shade, the other game's creature, brought here caught (Lorenzo's
   scene, the game over), the replay.
+- castle-1f-7, the breaker room (21): the gate held up from castle-1f-4's plate and falling once
+  let go (nobody under it), the breaker lowered (the hum, the door unlocked, the other game's
+  file), the locked door tried, the stabbed doll in turn, Hewie barking at the breaker, brought
+  back in by the forced way (the gate rattling, sent back), in among the wires (the game over:
+  played through), the replay.
 
 ## API
 

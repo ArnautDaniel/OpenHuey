@@ -2,7 +2,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_room_cmds.fs
 IN: test-room-cmds
 USING: tester engine game-state actors messages common room-names game debug story.state facts story.words
-  story.rooms.castle-1f-2 story.rooms.castle-1f-7 story.rooms.castle-1f-11 story.rooms.castle-1f-12
+  story.rooms.castle-1f-2 story.rooms.castle-1f-11 story.rooms.castle-1f-12
   story.rooms.castle-2f-2 story.rooms.castle-2f-12 ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
@@ -15,12 +15,6 @@ testing castle-1f-2: the cage set low (11), raised 0.25 a step; the drum can str
 T{ [: s" ori" object-here?  0 castle-1f-2.cmd00  s" ori" place-y object@ 11e ~=  1 castle-1f-2.cmd00  s" ori" place-y object@ 11.25e ~= ;] in-room -> -1 -1 -1 }T
 : wobbles ( -- n )  [: 0 castle-1f-2.cmd03  2 castle-1f-2.cmd03  0  begin  1+  1 castle-1f-2.cmd03  s" doramukan" $34 object@ f0=  over 50 > or  until ;] in-room ;
 T{ wobbles  [: s" doramukan" place-y object@ s" doramukan" $38 object@ ~= ;] in-room -> 6 -1 }T   \ (1 less 0.2 five times: just above 0 in single floats)
-
-castle-1f-7 room!  20 run-frames
-testing castle-1f-7: the lid up, then falling shut and settling at -25.3 (story flag $310 cleared on landing)
-$310 story-flag-set
-: lid-settles ( -- n )  [: 0 castle-1f-7.cmd00  0  begin  1+  lid-falls  over 300 > or  until ;] in-room ;
-T{ lid-settles 300 <  [: lid-y -25.3e ~= ;] in-room  $310 story-flag? -> -1 -1 0 }T
 
 castle-1f-11 room!  20 run-frames
 testing castle-1f-11: the lever pulled to -10 degrees, back 2 at a time, never past 0

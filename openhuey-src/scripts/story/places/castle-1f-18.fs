@@ -100,7 +100,7 @@ create at-scene   \ as the scene begins (the single one by the doorway)
 : sees-moths ( -- )   \ (stepping near them: turned to them, a shudder)
     fiona hold  fiona wait-move  fiona lamp-x fnip turn-to-xz
     fiona turn-round-anim play  fiona -1 idle
-    laid? if  moths-gone-msg say  else  moths-msg say  moths-file -1 items send add-file  then ;
+    laid? if  moths-gone-msg say  else  moths-msg say  moths-file give-file  then ;
 : empty-vase ( -- )
     fiona $EC -130 -1 walk-move -32.523e -39.444e go-to  1 30e 10e 0e 0e shot
     fiona look-low-anim 10 start-blend  empty-vase-msg say  fiona wait-anim  16 frames  shot-off ;
