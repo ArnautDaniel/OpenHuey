@@ -137,7 +137,8 @@ him in, `hauled-out`; each frame `hidden-calm`), its stalker (`came-on-her?` as 
 `searches`: the odds by a story variable - `finding-odds` 25, 50, 75 - and `will-find?`, a creature
 moving about, his alert 4; `door-for-him` opens a shut door he came by; `finds-her-at`: to the
 spot, Debilitas looking in, the others seeing her; the place's `found-her`, `came-while-hidden`);
-a placed object back as it was set (`object-reset`); a scene's signal counted past
+a placed object back as it was set (`object-reset`); an animation come round this time
+(`went-round?`: its motion's $20 key, the original's cond 0x48); a scene's signal counted past
 its nth this frame (`signal-passed?`, the original's cond 0x3B); the stalker's sound bank
 (`stalker-bank`); a breakable's own shatter
 (`shatters-with`); moths (`moths-at`: a swarm in an effect slot, the rooms' 0x35;
@@ -247,6 +248,13 @@ Places, each with its test in `tests/places/`:
   hint and its while, and in behind the bookshelf she knocks it down on him (a scene: he lies
   knocked out under it, she runs out); her thought pushing it, the books, the harp, the creepy thing
   in turn, the Camomile, Hewie wary by the table and his looks, the walls' shade, the replays.
+- castle-1f-13, the great hall (8): brought in by the forced way - the balcony collapsing under her
+  (a scene: she comes to below, Debilitas stalking along the balcony above and shoving its rubble
+  down, the crows' file), or seized and carried off (a scene, out by the way loaded ahead); a place
+  to crouch hidden behind (the stalker searching, likelier each time), Debilitas back from
+  castle-b1-7, the fallen balcony and the false doors in turn, the Chicken Jerky, the Antimony
+  Powder Hewie sniffs out, the hanging thing she sets swinging, the specks, the walls' shade, the
+  creatures, the replays.
 - castle-1f-15, the armour gallery (25): chased along the balcony by Debilitas, the encounter - no
   Hewie (or him down): a scene, she is left lying and frightened; with Hewie: he saves her (Debilitas
   knocked down) or, likelier the more he has, fails (she is left lying) - each a scene and the other

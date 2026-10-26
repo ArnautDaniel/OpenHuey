@@ -175,6 +175,8 @@ create mv-at /vec allot
     person-of dup 0< if  drop exit  then
     begin  yield  dup cells anim-ended + @  over person-id here? 0= or  until
     -1 swap cells move-done + ! ;
+: went-round? ( id -- flag )   \ its animation come round this time (its motion's $20 key: the original's cond 0x48)
+    person-of dup 0< if  drop false exit  then  cells anim-ended + @ 0<> ;
 : wait-mark ( id bits -- )   \ its animation come to a mark (an event key of it)
     {: id bits | i :}  id person-of to i  i 0< if  exit  then
     begin  yield  i cells marks + @ bits and  id here? 0= or  until ;
@@ -939,8 +941,8 @@ create replay-acts
 \ often he has come: 25, 50, 75 in 100), a creature moving about giving her away; if not, he's off sooner
 : came-on-her? ( -- flag )  fiona-hidden state?  dup came-while-hidden ! ;   \ (as he comes in: she is hidden)
 : finding-odds ( var -- pct )  var@ case  1 of 25 endof  2 of 50 endof  3 of 75 endof  >r 0 r>  endcase ;
-: searches ( var file xt -- )   \ (xt: his going to her, found - started; his comings counted)
-    {: v file xt :}  debilitas? if  stalker file motions-for  then
+: searches ( var file xt -- )   \ (xt: his going to her, found - started; his comings counted; file -1: none)
+    {: v file xt :}  debilitas?  file 0< 0= and if  stalker file motions-for  then
     v finding-odds will-find? if  xt start drop  else  120 summoner-sooner  then  v var@ 1+ v var! ;
 : door-for-him ( exit -- )   \ (come by it, its door shut: he opens it)
     dup stalker-came-by?  over exit-open? 0= and if  stalker swap open-door  else  drop  then ;

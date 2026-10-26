@@ -5,7 +5,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_room_conds.fs
 IN: test-room-conds
 USING: tester engine game-state actors messages common room-names game debug fiona.state story.state story.words
-  story.rooms.castle-b1-5 story.rooms.old-mansion-b1-6 story.rooms.chaos-forest-13 story.rooms.castle-1f-13 ;
+  story.rooms.castle-b1-5 story.rooms.old-mansion-b1-6 story.rooms.chaos-forest-13 ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
@@ -34,13 +34,6 @@ testing her 20 .. 120 from a point (castle-b1-5): 50 away yes, beside it no
 : pt ( F: dx dz -- ) ( -- b0 b1 b2 b3 )   \ her place plus (dx, dz), as the command's bytes
     game:fiona body-at 8 + sf@ f+ f>s >r  game:fiona body-at sf@ f+ f>s split16  r> split16 ;
 T{ [: 50e 0e pt castle-b1-5.cond00?  1e 0e pt castle-b1-5.cond00? ;] in-room -> -1 0 }T
-
-testing a door's open state by its number (castle-1f-13): the room's exit 0 door, opened, shut
-: door0 ( -- d )  room-id 0 room-exit-door ;
-[: door0 door-open-set ;] in-room deliver
-T{ [: door0 dup 8 rshift swap $FF and castle-1f-13.cond00? ;] in-room -> -1 }T
-[: door0 door-open-clear ;] in-room deliver
-T{ [: door0 dup 8 rshift swap $FF and castle-1f-13.cond00? ;] in-room  door0 door-flags 1 and 0<> = -> -1 }T
 
 testing the letters (old-mansion-b1-6): "LRL" from place 0 - L (on), R wanted at 1 (on), R wanted at 2: no
 : letters! ( -- )   \ (var 0's bytes: 'L' 'R' 'L' 0)

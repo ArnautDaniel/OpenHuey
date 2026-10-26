@@ -63,7 +63,6 @@ create flames  6e 21.8e -3.2e f, f, f,   29e 41.8e 41.9e f, f, f,   -46.8e 93.8e
     hewie-no-attack state!  partner activate  castle-1f-5 161 partner send stalker-in  ['] bursts-in start drop ;
 
 \ ---- his shove: Debilitas by the rubble, she at the gallery's end - he shoves it down ----
-: his-move-done? ( -- flag )  stalker-p cells anim-ended + @ ;
 : shoves ( -- )
     stalker hold  stalker his-motions motions-for  stalker $8A 0 31.949e -18.333e walk-to
     stalker use-motions  stalker true noclip  -1 his-scene !  stalker room-motion his-shove + 5 start-blend8
@@ -71,7 +70,7 @@ create flames  6e 21.8e -3.2e f, f, f,   29e 41.8e 41.9e f, f, f,   -46.8e 93.8e
         stalker fiona 0 close-to? if  stalker throws-her  then
         dup 60 = if  29e 19e 25e dust  36e 19e 25e dust  thud-sound room-bank stalker sound-by  then
         1+  st-kind-now @  cam-set@ 0<> no-shadow
-        his-move-done? 0= while  yield
+        stalker went-round? 0= while  yield
     repeat  drop
     stalker false noclip  st-kind-now @ false no-shadow  0 his-scene !  2 stalker-order ;
 : shove? ( -- )

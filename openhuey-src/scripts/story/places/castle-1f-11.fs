@@ -59,7 +59,6 @@ vase-1 0 $80505050 $111 vase   vase-2 2 $80404040 $122 vase   vase-3 1 $80404040
     c1f-11-medallion fact? 0= if  medallion-fx 9.646e 0.163e 27.266e flicker-at  then ;
 
 \ ---- the bridge falls: the scene; then Debilitas on the far side, shoving the rubble down ----
-: his-move-done? ( -- flag )  stalker-p cells anim-ended + @ ;
 : shoves ( -- )   \ (into place unseen, then his shove - throwing her if she is in his way; the dust as it lands)
     -1 his-scene !  stalker hold  stalker his-motions motions-for  stalker use-motions  stalker true noclip  yield
     stalker $132 180 -37.43e 44.367e place-at  stalker 0 0 camera-set  stalker true shown  stalker false hush
@@ -68,7 +67,7 @@ vase-1 0 $80505050 $111 vase   vase-2 2 $80404040 $122 vase   vase-3 1 $80404040
     0  begin
         stalker fiona 0 close-to? if  stalker throws-her  then
         dup 89 = if  5e 115e -70e dust  5e 115e -76e dust  thud-sound room-bank stalker sound-by  then
-        1+  his-move-done? 0= while  yield
+        1+  stalker went-round? 0= while  yield
     repeat  drop
     0 stalker-order  stalker false noclip  0 his-scene !  his-own-time ;
 : hewie-back ( -- )   \ (held: let go, by the bridge's end)
