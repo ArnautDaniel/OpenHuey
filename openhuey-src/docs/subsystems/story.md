@@ -135,7 +135,7 @@ about, his alert 4) and its calming frame (`hidden-calm`); a breakable's own sha
 (`shatters-with`); moths (`moths-at`: a swarm in an effect slot, the rooms' 0x35;
 `moths-to` sends it off for another point, their 0x33; `moths-sound` keeps a sound where it
 wanders); Hewie's wary stand at a point (`hewie-stands-by`, the shared $8A); an item used up
-(`spend`); the map's page (`map-page`); a creature let out turned (`creature-facing`); the
+(`spend`); the map's page (`map-page`); a scare (`fright+`, her fright raised by so much); a creature let out turned (`creature-facing`); the
 game over (`game-over`, its kind; `ending-var` which ending caught her). A place has the original's
 32 effect slots. A
 whole breakable is a target a stalker's blow may strike instead of her (`zone-target`, cleared as
@@ -198,6 +198,10 @@ Places, each with its test in `tests/places/`:
   file), the locked door tried, the stabbed doll in turn, Hewie barking at the breaker, brought
   back in by the forced way (the gate rattling, sent back), in among the wires (the game over:
   played through), the replay.
+- castle-1f-16, the TV room (26): the fan, the TV on and off (the first time a fright; its noise
+  heard), the hiding place (in, out, found and pulled out), the stalker coming while she hides
+  (Debilitas turning the TV off - twice and it stays off - or his search, likelier each time), the
+  mirror, the painting in turn, the Magnesia, the clock, the far views' depth.
 
 ## API
 
