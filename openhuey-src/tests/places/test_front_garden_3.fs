@@ -45,7 +45,18 @@ testing ... nearing the figures: the second cries out and rises, and past them t
 T{ [: figure-cried @ ;] in-place -> -1 }T
 
 no-flee state-flag-clear   \ (the opening's hold on her - no fleeing, no blows, no crouching - over, as later in the story)
-testing the breakable, broken (a blow in its place: tested by its zone - story/kit.fs struck-in?): in pieces, the magnesia's sparkle; she picks it up
+testing the breakable (story/kit.fs): whole, a blow elsewhere misses it; one in its place breaks it - in pieces, once
+fg-3-breakable-broken story-flag-clear  front-garden-3 room!  30 run-frames
+T{ whole-part part?  broken-part part? -> -1 0 }T
+create blow-pt 3 floats allot
+: blow-at ( F: x y z -- )   \ (her blow's point there)
+    blow-pt 2 floats + f!  blow-pt float+ f!  blow-pt f!
+    [: blow-pt f@  blow-pt float+ f@  blow-pt 2 floats + f@  body-point! ;] as-her ;
+T{ 150e 1e -35.4e blow-at  [: the-box breaks? ;] in-place -> 0 }T
+T{ 185.7e 1e -35.4e blow-at  [: the-box breaks? ;] in-place  [: the-box breaks? ;] in-place -> -1 0 }T
+T{ fg-3-breakable-broken story-flag?  whole-part part?  broken-part part? -> -1 0 -1 }T
+[: body-point-off ;] as-her
+testing ... broken, as she comes in: in pieces, the magnesia's sparkle; she picks it up
 fg-3-breakable-broken story-flag-set  front-garden-3 room!  30 run-frames
 T{ [: magnesia-fx effect @ 0<> ;] in-place -> -1 }T
 variable before  magnesia items:items-of before !

@@ -3,7 +3,7 @@
 \ gate up (the mechanism's sound while it rises and falls), the weak wall that gives at the third
 \ blow (bugs, the refined antimony), the plate-key's slot (REST), the cracked plate key, the
 \ chairs, a save clock - and at night, back with the castle's sketch, Riccardo met here. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms/castle-1f-4.fs.
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-4.fs (not loaded).
 IN: story.places.castle-1f-4
 USING: engine game-state actors messages common vectors facts flag-names story-names room-names floor-flags
     effects story.kit fiona.anims fiona.sounds scenes ;
@@ -291,11 +291,12 @@ defer the-trap
     hewie-at-spot @ 0= if
         chased? 0=  hewie-cmdable-now @ and  hewie -38.5e 0e -65e 5e 5e centred-in? and if  -1 hewie-at-spot !  $80 0 hewie-do  then
     else  hewie -38.5e 0e -65e 7e 5e centred-in? 0= if  0 hewie-at-spot !  then  then ;
-: ways-out ( -- )
-    0 exit-out
-    1 exit-out  2 exit-out
-    player held? 0=  player to-exit-3-area in-area? and if  3 take-exit  then
-    $B 1 1 area-camera  $C 0 0 area-camera
+create cameras  $B , 1 , 1 ,   $C , 0 , 0 ,                \ (area, set, path)
+create entries  1 , 1 ,   0 , 0 ,   0 , 0 ,   0 , 0 ,      \ (by exit 0 .. 3: the camera)
+: ways ( -- )
+    3 exits-out
+    player held? 0=  player to-exit-3-area in-area? and if  3 take-exit  then   \ (the forced way, no door)
+    cameras 2 cameras-at
     hewie-found-in-wire fact?  found-file-208 fact? 0= and if
         fiona to-exit-3-2-area entered?  fiona to-exit-2-area left? or if  riccardo-figure figure-out  then
     then
@@ -312,14 +313,10 @@ defer the-trap
     -28e 0e 15e 10e 15e struck-in? if  ['] hit-the-door start drop  then ;
 : each-frame ( -- )
     events-held state? if  exit  then
-    ambience  ways-out  on-the-plate  false plate-height  puppet-door-hit  blows  flame-stirs  hewie-looks  spots ;
+    ambience  ways  on-the-plate  false plate-height  puppet-door-hit  blows  flame-stirs  hewie-looks  spots ;
 
 \ ---- someone comes in ----
-: player-came ( -- )
-    came-by @ 0 = if  player 0 at-exit  1 1 player-camera  then  0 1 1 exit-camera
-    came-by @ 1 = if  player 1 at-exit  0 0 player-camera  then  1 0 0 exit-camera
-    came-by @ 2 = if  player 2 at-exit  0 0 player-camera  then  2 0 0 exit-camera
-    came-by @ 3 = if  player 3 at-exit  0 0 player-camera  then  3 0 0 exit-camera ;
+: player-came ( -- )  entries 4 ways-in ;
 : fiona-came ( -- )
     got-castle-sketch fact?  c2f-3-flag1 fact? 0= and if
         0e sounds-scaled  world-held state!  ['] meets-riccardo start drop
@@ -330,18 +327,17 @@ defer the-trap
         ['] back-by-the-trap start drop
     then
     saturnus-hint-on fact?  c1f-14-flag2 fact? 0= and if  c1f-14-flag2 fact!  0 summon-take  then ;
-: replay-done ( -- )  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
 : replay-riccardo ( -- )   \ (act19)
     fiona hold  puppet-door-part show-part  2 object-show  3 object-show  4 object-show  wall-part show-part
     $84 $60 $3C $50 $24 $2A $2A $46 room-tint  flame-fx 0 22.8e 14.65e 68.75e flame-at
     riccardo-kind riccardo-figure figure-in  yield  2 stalker-ready  yield
     6 scenes:opaque-when-movie 0 load-scene  ['] riccardo-shots at-shots  panic-eased
     if  riccardo-msg run-scene  then
-    stalker-unloaded  riccardo-figure figure-out  replay-done ;
+    stalker-unloaded  riccardo-figure figure-out  replay-over ;
 : replay-marionette ( -- )   \ (act1A)
     fiona hold  5 scenes:unseen-movie 1 load-scene
     puppet-door-part hide-part  2 object-show  3 object-show  4 object-show  flame-fx 0 22.8e 14.65e 68.75e flame-at
-    panic-eased  if  -1 run-scene  then  replay-done ;
+    panic-eased  if  -1 run-scene  then  replay-over ;
 $2A constant replay-var
 : replaying ( -- )   \ (the extras' list: its rows for this room's two scenes)
     hewie send part-from-fiona  replay-var var@ $B = if  ['] replay-riccardo  else  ['] replay-marionette  then  start drop ;

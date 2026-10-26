@@ -1,7 +1,7 @@
 \ story/places/castle-2f-3.fs - the bedroom in Belli Castle's 2F ($21), where Fiona wakes in a
 \ sheet: Daniella brings her clothes, she changes, the stalker comes, she hides under the bed;
 \ at night she hears the dog; later Hewie learns to attack here. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms/castle-2f-3.fs (converted from the game's).
+\ original's scripts, for checking: story/rooms-ref/castle-2f-3.fs (converted from the game's, not loaded).
 IN: story.places.castle-2f-3
 USING: engine game-state actors messages common vectors facts flag-names story-names room-names stalker-names
     story.kit fiona.anims fiona.sounds hewie.anims stalker.anims scenes keys ;
@@ -100,12 +100,10 @@ $40 constant window-strength
     tv-on? if  tv-static-sound  0e 3e 7e  keep-sound  then
     room-loop-sound  -42e 4e -63e  keep-sound ;
 : fan ( -- )  s" fan" 0.0200713e object-turn ;   \ (1.15 degrees a frame, but while a movie plays)
-: cameras ( -- )   \ (whoever walks into these: their camera)
-    $17 0 0 area-camera   $18 1 1 area-camera   $19 0 0 area-camera   $1A 2 2 area-camera ;
-: ways-out ( -- )
-    0 exit-out  1 exit-out
-    fiona to-exit-0-area entered? if  0 prepare-exit  then
-    fiona to-exit-1-area entered? if  1 prepare-exit  then ;
+create cameras  $17 , 0 , 0 ,   $18 , 1 , 1 ,   $19 , 0 , 0 ,   $1A , 2 , 2 ,   \ (area, set, path)
+create ahead  to-exit-0-area , 0 ,   to-exit-1-area , 1 ,    \ (area, exit loaded ahead)
+create entries  1 , 1 ,   0 , 0 ,                            \ (by exit 0, 1: the camera)
+: ways ( -- )  2 exits-out  ahead 2 ways-out  cameras 4 cameras-at ;
 : doorway-light ( -- )  -2e 7.6e -47e  -2e 7.6e -67e  -2e 0e -47e  -2e 0e -67e  light-doorway ;
 
 \ ---- her doings here (activities: she is held for each) ----
@@ -511,7 +509,7 @@ own: stalker-gone             \ he has run out (the tutorial's end)
 \ movie by the story's variable $2A) - each played, nothing kept, back to the extras ----
 $2A constant replay-var
 : replay-done ( -- )
-    costume-var var@ dress  3 figure-out  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
+    costume-var var@ dress  3 figure-out  replay-over ;
 : replay ( movie class cutscene subtitles -- )
     {: movie cls cut subs :}  fiona hold  fiona wait-move
     movie cls cut load-scene  wait-fade  panic-eased
@@ -541,23 +539,16 @@ $2A constant replay-var
     scrambling? 0= if  exit  then
     hewie  -9e 0e -11e 10e 5e  touches? 0= if  exit  then
     ['] medallion-sniffed start-only ;
-\ the things he looks up at as he passes, calm and minding her (the original's zones 0-6: each the
-\ top of an upright cylinder - x y z, radius, height)
+\ the things he looks up at as he passes (the original's zones 0-6: x y z, radius, height - their tops)
 create looks
-    -1.41e f,  -8e f,   8.99e f,  13e f,  11e f,   \ the TV
-   -46.87e f,   0e f, -38.5e f,   20e f,  22e f,   \ the third portrait
-   -39.23e f,   0e f, -59.47e f,  20e f,   6e f,
-   -37.71e f,  -8e f,  63.24e f,  15e f,  22e f,
-    46.35e f,   0e f, -40.12e f,  15e f,  22e f,
-    39.18e f,   0e f, -19.5e f,   16e f,  11e f,   \ by the second window
-    -0.22e f,  -8e f,  59.41e f,  16e f,  11e f,   \ by the first window
-7 constant #looks
-: look# ( i -- addr )  5 floats * looks + ;
-: look-spot@ ( i -- ) ( F: -- x y z r h )  look# {: a :}  a f@  a float+ f@  a 2 floats + f@  a 3 floats + f@  a 4 floats + f@ ;
-: look-top ( i -- ) ( F: -- x y z )  look-spot@ {: F: x y z r h :}  x  y h f+  z ;   \ (its top: the height raised)
-: hewie-looks ( -- )
-    hewie-in?  danger-now @ 0= and  hewie-cmdable-now @ and 0= if  exit  then
-    #looks 0 do  hewie i look-spot@ centred-in? if  i look-top hewie-scent  then  loop ;
+    -1.41e  -8e   8.99e  13e  11e  11e look,   \ the TV
+   -46.87e   0e -38.5e   20e  22e  22e look,   \ the third portrait
+   -39.23e   0e -59.47e  20e   6e   6e look,
+   -37.71e  -8e  63.24e  15e  22e  22e look,
+    46.35e   0e -40.12e  15e  22e  22e look,
+    39.18e   0e -19.5e   16e  11e  11e look,   \ by the second window
+    -0.22e  -8e  59.41e  16e  11e  11e look,   \ by the first window
+: hewie-looks ( -- )  looks 7 hewie-looks-at ;
 
 \ ---- she comes in: which way decides what happens ----
 : came-forced ( -- )   \ (back with the sketch, the forced way in: the night)
@@ -574,8 +565,7 @@ forced-exit 1 or constant from-the-wire   \ (sent from the front garden, Hewie f
     st-room-now @ this-room @ <> and ;
 : fiona-came ( -- )
     events-held state? if  hewie send part-from-fiona  replaying exit  then   \ (the extras: Hewie out of it, the movie played)
-    came-by @ 0 = if  player 0 at-exit  1 1 player-camera  then  0 1 1 exit-camera
-    came-by @ 1 = if  player 1 at-exit  0 0 player-camera  then  1 0 0 exit-camera
+    entries 2 ways-in
     golem-done fact? 0=  c2f-2-flag1 fact? and  c2f-3-flag3 fact? 0= and if
         c2f-3-flag3 fact!
         came-by @ 0 =  in-panic? 0= and  stalker-hunting? and if  ['] told-to-hide start drop  then
@@ -585,7 +575,7 @@ forced-exit 1 or constant from-the-wire   \ (sent from the front garden, Hewie f
 
 : each-frame ( -- )
     events-held state? if  doorway-light exit  then   \ (a replay: only the doorway's light)
-    ambience  fan  ways-out  cameras  show-tv  maid-comes?  hewie-sniffs  spots  hewie-looks  doorway-light ;
+    ambience  fan  ways  show-tv  maid-comes?  hewie-sniffs  spots  hewie-looks  doorway-light ;
 : person-in ( i -- )
     case  fiona-p of  fiona-came  endof  stalker-p of  stalker-came  endof  endcase ;
 : went ( -- ) ;

@@ -5,7 +5,7 @@
 \ The places themselves: story/places/*.fs. A room without one still runs its converted
 \ scripts (story/room.fs).
 IN: story.kit
-USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names effects hewie-names hewie.anims ;
+USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names effects hewie-names hewie.anims floor-flags ;
 
 \ ---- the characters a place directs: Fiona, Hewie, the stalker in the game ----
 3 constant #people
@@ -622,6 +622,70 @@ $24 constant place-y
     {: id F: x z r :}  id here? 0= if  false exit  then
     id body-pos fswap fdrop {: F: bx bz :}  id body-dims fdrop {: F: br :}
     bx x f- fdup f*  bz z f- fdup f* f+  r br f+ fdup f* f<= ;
+
+\ ---- breakables (a vase, a crate): whole or in pieces by a fact. A blow in its place breaks it,
+\ as every room has it: the parts swapped, its floor freed, shards thrown, the shatter heard,
+\ a noise made. `breakable:` names one; `shard-look`, `shard-uv`, `frees-floor`, `noise-from`
+\ say more of it; the place shows it as she comes in (`as-it-stands`) and each frame asks
+\ `breaks?` - true the frame it breaks, for what the room adds (the thing inside it) ----
+begin-structure /breakable
+  field: bk.fact  field: bk.whole  field: bk.broken  field: bk.group  field: bk.tri
+  field: bk.rgba  field: bk.kind  field: bk.tex
+  ffield: bk.x  ffield: bk.y  ffield: bk.z  ffield: bk.r  ffield: bk.h
+  ffield: bk.u  ffield: bk.v  ffield: bk.du  ffield: bk.dv  ffield: bk.floor
+end-structure
+$88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant shard-grey
+: breakable: ( fact whole-part broken-part F: x y z r h "name" -- )   \ (struck within r of x z, h up from y)
+    create  here /breakable allot  {: f w b a F: x y z r h :}
+    f a bk.fact !  w a bk.whole !  b a bk.broken !  -1 a bk.group !  -1 a bk.tri !
+    shard-grey a bk.rgba !  0 a bk.kind !  0 a bk.tex !
+    x a bk.x f!  y a bk.y f!  z a bk.z f!  r a bk.r f!  h a bk.h f!
+    0e a bk.u f!  0e a bk.v f!  1e a bk.du f!  1e a bk.dv f!  0e a bk.floor f! ;
+: shard-look ( bk rgba kind tex -- )  {: a c k t :}  c a bk.rgba !  k a bk.kind !  t a bk.tex ! ;   \ (their colour, kind, texture)
+: shard-uv ( bk F: u v du dv -- )   \ (the cell of the texture they show)
+    {: a F: u v du dv :}  u a bk.u f!  v a bk.v f!  du a bk.du f!  dv a bk.dv f! ;
+: frees-floor ( bk group -- )  swap bk.group ! ;   \ (its floor's nav group: kept off while it stands)
+: noise-from ( bk tri -- )  swap bk.tri ! ;        \ (the triangle its noise comes from; none: no noise)
+: broken? ( bk -- flag )  bk.fact @ fact? ;
+: bk-floor ( bk on -- )  over bk.group @ 0< if  2drop exit  then  swap bk.group @ keeps-people-off nav-group! ;
+: as-it-stands ( bk -- )   \ (whole or in pieces, its floor kept off while whole)
+    dup broken? {: a b :}  a b 0= bk-floor
+    b if  a bk.whole @ hide-part  a bk.broken @ show-part  else  a bk.whole @ show-part  a bk.broken @ hide-part  then ;
+: at-it ( bk -- ) ( F: -- x y z )  dup bk.x f@  dup bk.y f@  bk.z f@ ;
+: smash ( bk -- )   \ (in pieces now)
+    {: a :}  a bk.fact @ fact!  a as-it-stands
+    a bk.rgba @ a bk.kind @ a bk.tex @  a at-it  a bk.u f@ a bk.v f@ a bk.du f@ a bk.dv f@  a bk.floor f@  shards
+    shatter-sound common-bank a at-it sound-there
+    a bk.tri @ 0< 0= if  shatter-loudness a bk.tri @ room-noise  then ;
+: breaks? ( bk -- flag )   \ (whole, a blow in its place: broken now)
+    dup broken? if  drop false exit  then
+    dup at-it  dup bk.r f@  dup bk.h f@  struck-in? 0= if  drop false exit  then  smash true ;
+
+\ ---- what every room says the same way, as tables: its ways in (the camera for each exit she
+\ comes in by), its cameras (an area and the camera whoever crosses into it takes), its ways
+\ out (an area and the exit loaded ahead as she enters it), what Hewie looks up at ----
+: way-in ( exit set path -- )   \ (she came by it: placed at it, its camera hers; whoever is in it, its camera)
+    {: ex set path :}  came-by @ ex = if  player ex at-exit  set path player-camera  then  ex set path exit-camera ;
+: ways-in ( table n -- )   \ (a set and path an exit, from 0)
+    0 ?do  i  over i 2* cells + @  2 pick i 2* 1+ cells + @  way-in  loop  drop ;
+: cameras-at ( table n -- )   \ (area set path, three cells a camera)
+    0 ?do  dup i 3 * cells +  dup @  over cell+ @  rot 2 cells + @  area-camera  loop  drop ;
+: exits-out ( n -- )  0 ?do  i exit-out  loop ;   \ (she goes by any of the first n when she can)
+: way-out ( area exit -- )  swap fiona swap entered? if  prepare-exit  else  drop  then ;
+: ways-out ( table n -- )   \ (area exit: crossing into the area, the room behind that exit loaded ahead)
+    0 ?do  dup i 2* cells + @  over i 2* 1+ cells + @  way-out  loop  drop ;
+\ Hewie's looks (the rooms' 0xC5): a zone (an upright cylinder x y z, radius, height) and how high
+\ above its foot he looks; while he is in one, calm and at her command, he looks up there
+6 floats constant /look
+: look, ( F: x y z r h dy -- )  {: F: x y z r h dy :}  x f, y f, z f, r f, h f, dy f, ;
+: looks-at ( look -- )   \ (in its zone: up there)
+    {: a :}  hewie  a f@  a float+ f@  a 2 floats + f@  a 3 floats + f@  a 4 floats + f@  centred-in? 0= if  exit  then
+    a f@  a float+ f@ a 5 floats + f@ f+  a 2 floats + f@  hewie-scent ;
+: hewie-looks-at ( table n -- )
+    hewie-in?  danger-now @ calm = and  hewie-cmdable-now @ and 0= if  2drop exit  then
+    0 ?do  dup i /look * + looks-at  loop  drop ;
+\ a replayed movie over (the extras' theatre): back to the extras, out by the forced way
+: replay-over ( -- )  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
 
 \ ---- the figures' own (the story's slots 3..5: a figure loaded there) ----
 : figure ( slot -- id | -1 )  story.words:slot-actor @ ;

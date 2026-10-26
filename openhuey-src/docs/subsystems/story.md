@@ -112,6 +112,17 @@ converted file stays for the rooms not yet moved; a room is one or the other.
 `scene-over` (played through or skipped: the world held, the camera back); `scene-stop` (the
 place gone). The kit's `load-scene`, `run-scene`, `at-shots`.
 
+**What most rooms have** (the kit's components, each room's data): a breakable (`breakable:`
+names it - its fact, whole and broken parts, the cylinder a blow breaks it in; `shard-look`,
+`shard-uv`, `frees-floor`, `noise-from`; `as-it-stands` as she comes in, `breaks?` each frame -
+the parts swapped, its floor freed, shards, the shatter $88, a noise); the ways in (`ways-in`: a
+camera set and path per exit - placed at the one she came by - or `way-in` for one), the ways out
+(`exits-out`, `ways-out`: an area and the exit loaded ahead), the area cameras (`cameras-at`: area,
+set, path); what Hewie looks up at (`look,` builds a table of zones - x y z, radius, height, how
+high - and `hewie-looks-at` runs it, while he is calm and at her command: the rooms' 0xC5); a
+replayed movie over (`replay-over`: back to the extras by the forced way). The converted files of
+the rooms that are places are kept, unloaded, in `scripts/story/rooms-ref/`.
+
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
 after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
 while she is half hidden, the mandragora's spell, the other game's rewards, searching the
