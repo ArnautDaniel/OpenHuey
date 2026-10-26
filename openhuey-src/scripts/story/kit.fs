@@ -356,6 +356,9 @@ $83 constant fanfare-sound   $85 constant fanfare-bank
     -1 tab-moving !  0 swap subscreen send tab-op  begin  tab-moving @ while  yield  repeat ;
 $801B constant filed-message    \ "has been saved to your file."
 : spend ( item -- )  items send take-item ;   \ one of it used up
+: map-page ( page -- )  s" subscreen" actor-named send map-turn-to ;   \ the map opens at that page (its floor)
+$2D constant ending-var   \ (which of the endings caught her, for the game over's kind 2)
+: game-over ( kind -- )  s" gameover" actor-named send game-over-kind  caught state! ;   \ the game ends that way
 : filed ( doc -- )  dup item-named  1 give-item  fanfare  filed-message say ;   \ a document filed, said so
 
 \ ---- the panic, Fiona ----
@@ -458,8 +461,9 @@ create look-bytes 16 allot
 : preload ( room -- )  rooms-actor send room-preload ;
 : thing-lying? ( kind -- flag )   \ (one of the things of that kind lying about, in any room: PlacedThings_FirstOfKind)
     128 0 do  i thing-used? if  i thing-kind over = if  drop true unloop exit  then  then  loop  drop false ;
-: creature-in ( room level tri kind reach -- )   \ (one let out there: the creatures' own way about - reach x 10 her nearness that wakes it)
-    -1 0 0e f>cell  s" creatures" actor-named send creature-place ;   \ (the room a forced exit leads to, loaded ahead)
+: creature-facing ( room level tri kind reach yaw -- )   \ (one let out there, turned so: the creatures' own way about -
+    -1 swap 0e f>cell  s" creatures" actor-named send creature-place ;   \ reach x 10 her nearness that wakes it)
+: creature-in ( room level tri kind reach -- )  0 creature-facing ;   \ (the room a forced exit leads to, loaded ahead)
 \ a reflecting window (Reflection): reflection k (0..3) on the quad's corners, its side panels a window's
 $10000000 constant window-panels
 : window-in ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )
