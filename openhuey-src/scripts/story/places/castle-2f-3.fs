@@ -235,8 +235,6 @@ $A6 constant actions-doc   $AB constant costumes-doc
 own: hiding-step          \ how far the hiding is: Hewie waits for it (0 going in, 1 under, 2 out)
 own: hewie-along          \ he came to hide too
 own: hewie-in-place       \ he's at the other bed, ready
-own: came-while-hidden    \ the stalker came in while she lay hidden
-own: found-her            \ he has found her (she must flee)
 own: will-find-her        \ he will (by chance, as he searches)
 8 constant hiding-motions   9 constant hewie-hiding-motions   $A constant stalker-search-motions   \ (the room's motion files)
 room-motion     constant crawl-in        room-motion 1+ constant lie-hidden
@@ -279,9 +277,7 @@ room-motion 5 + constant crawl-in-alone  room-motion 4 + constant walk-to-bed
     begin
         circle button-pressed? if  out-from-under exit  then
         in-panic? found-her @ or if  in-panic? 0= if  seized-sound room-bank fiona sound-by  then  out-caught exit  then
-        2 ease-panic  6 calm-her  $1E recover
-        came-while-hidden @  stalker-in? 0= and if  0 came-while-hidden !  1 avoid-prompt  then
-        yield
+        hidden-calm  yield
     again ;
 : hewie-hides ( -- )   \ (Hewie under the other bed while she hides)
     hewie hold  hewie hewie-hiding-motions motions-for  hewie wait-move

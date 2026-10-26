@@ -1,7 +1,7 @@
 \ story/places/castle-1f-16.fs - the TV room in Belli Castle's 1F ($1A): the fan turning, the TV
 \ (her switching it on and off - the first time a fright - its noise heard about), a place to hide
-\ (the stalker coming in: Debilitas turns the TV off, else he searches - finding her more likely
-\ each time he comes), the cracked mirror, the red painting, the Magnesia, the clock. A place
+\ (the kit's; the stalker coming in: Debilitas turns the TV off, else he searches - finding
+\ her more likely each time he comes), the cracked mirror, the red painting, the Magnesia, the clock. A place
 \ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-16.fs (converted
 \ from the game's, not loaded).
 IN: story.places.castle-1f-16
@@ -16,8 +16,6 @@ own-reset
 2 constant painting-2-msg  \ "The color bears a remarkable resemblance to blood. But... surely this is just red p..."
 
 \ ---- its own state (a visit) ----
-own: found-her             \ the stalker has found her hiding (she must flee)
-own: came-while-hidden     \ the stalker came in while she hid
 own: sounds-started        \ the room's sounds begun (then kept up)
 own: painting-remarked     \ the painting's first remark made (in turn with the second)
 own: ambient-at            \ which of the room's sounds next (0..3)
@@ -28,12 +26,9 @@ own: ambient-frames        \ frames to it (30)
 8 constant clock-area   9 constant tv-area   $A constant hiding-area   $B constant mirror-area   $C constant painting-area
 0 constant switch-on-sound   1 constant running-sound   2 constant switch-off-sound   3 constant first-on-sound
 5 constant first-ambient   8 constant search-var   9 constant tv-offs-var
-0 constant her-motions   1 constant his-motions
-4 constant walk-to-hide   5 constant crawl-in   1 constant lie-hidden   2 constant crawl-out   3 constant pulled-out
-0 constant his-crawl   $602 constant tv-switch-anim
+0 constant her-motions   1 constant his-motions   $602 constant tv-switch-anim
 : tv-on? ( -- flag )  c1f-16-flag2 fact? ;
 : running-at ( F: -- x y z )  23e 11e 9e ;
-: motion ( i -- anim )  room-motion + ;
 
 \ ---- the fan, round 1.15 degrees a frame ----
 : fan ( -- )  begin  s" fan" 0.0200713e object-turn  yield  again ;
@@ -81,53 +76,22 @@ own: ambient-frames        \ frames to it (30)
     else  fiona reach-back-anim play  then
     shot-off ;
 
-\ ---- the hiding place: in, lying low, calming; out by the button - or found, and pulled out ----
-: out-caught ( -- )
-    found-her @ if  2 avoid-prompt  then
-    fiona follow  fiona-hidden state-off  fiona true noclip  slide-sound common-bank fiona sound-by
-    fiona pulled-out motion 10 play-blend  fiona false noclip
-    found-her @ 0= if  stalker let-go  then ;
-: out-herself ( -- )
-    stalker-in? if  out-caught exit  then
-    fiona follow  fiona-hidden state-off  fiona true noclip
-    fiona crawl-out motion 5 start-blend8  5 frames  slide-sound common-bank fiona sound-by  fiona wait-anim
-    fiona false noclip ;
-: hides ( -- )
-    stalkers-stay state!  0 came-while-hidden !  fiona her-motions motions-for  fiona wait-move  fiona use-motions
-    fiona walk-anim-move walk-to-hide motion 5  $CC -4.7e -39.3e floor-at  90 deg>yaw  move  fiona wait-move
-    fiona true noclip  slide-sound common-bank fiona sound-by  fiona crawl-in motion 10 start-blend8  fiona wait-anim
-    fiona lie-hidden motion 10 start-blend  fiona false noclip
-    stalkers-stay state-off  fiona-hidden state!  0 found-her !  0 avoid-prompt  fiona 3 -1 camera-set
-    begin
-        circle button-pressed? if  out-herself exit  then
-        in-panic? found-her @ or if  in-panic? 0= if  seized-sound common-bank fiona sound-by  then  out-caught exit  then
-        came-while-hidden hidden-calm  yield
-    again ;
+\ ---- the hiding place (the kit's): in, lying low, calming; out by the button - or found, and
+\ hauled out ----
+: hides ( -- )  her-motions $CC 90 3 -4.7e -39.3e hides-in ;
 
 \ ---- the stalker coming in while she hides ----
-: stalker-to-door ( -- )  0 stalker-came-by? 0 exit-open? 0= and if  stalker 0 open-door  then ;   \ (the door shut on his way: opened)
-: finds-her ( -- )   \ (he goes to the hiding place: there she is)
-    stalker hold  stalker wait-move  stalker-to-door  stalker $CE 90 -12e -37e walk-to
-    debilitas? if
-        stalker use-motions  stalker his-crawl motion 10 start-blend  30 frames  -1 found-her !  stalker wait-anim
-    else  stalker there-anim play  -1 found-her !  then
-    stalker 10 idle  begin  fiona held? while  yield  repeat  0 stalker-order ;
+: finds-her ( -- )  stalker hold  stalker wait-move  0 door-for-him  $CE 90 -12e -37e finds-her-at ;
 : switches-tv-off ( -- )   \ (Debilitas turns the TV off - after twice she can't turn it on)
-    stalker hold  stalker wait-move  stalker-to-door  stalker 7 120 14e 18e walk-to
+    stalker hold  stalker wait-move  0 door-for-him  stalker 7 120 14e 18e walk-to
     stalker tv-switch-anim start-anim  18 frames
     switch-off-sound room-bank stalker sound-by  running-sound room-bank stop-sound
     c1f-16-flag2 fact-off  0 heard-about  tv-offs-var var@ 1+ tv-offs-var var!
     3 stalker-order  stalker stand-anim play  16 frames ;
-: search-odds ( -- pct )  search-var var@ case  1 of 25 endof  2 of 50 endof  3 of 75 endof  >r 0 r>  endcase ;
-: searches ( -- )
-    debilitas? if  stalker his-motions motions-for  then
-    search-odds will-find? if  ['] finds-her start drop  else  120 summoner-sooner  then
-    search-var var@ 1+ search-var var! ;
 : stalker-came ( -- )
-    fiona-hidden state? 0= if  0 came-while-hidden !  exit  then
-    -1 came-while-hidden !
+    came-on-her? 0= if  exit  then
     tv-on?  2 creature-moving? 0= and  debilitas? and if  120 summoner-sooner  ['] switches-tv-off start drop
-    else  searches  then ;
+    else  search-var his-motions ['] finds-her searches  then ;
 
 \ ---- what she may do or say here ----
 : mirror ( -- )  fiona wait-move  fiona -145 turn  mirror-msg say ;

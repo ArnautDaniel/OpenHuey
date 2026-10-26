@@ -88,7 +88,7 @@ create candles
     stalker-unloaded  replay-over ;
 
 \ ---- every frame ----
-create cameras  2 , 0 , 0 ,   3 , 1 , 1 ,   8 , 1 , 1 ,   9 , 2 , 2 ,   \ (area, set, path)
+create cameras  2 , 0 , 0 ,   8 , 1 , 1 ,   9 , 2 , 2 ,   \ (area, set, path)
 create entries  0 , 0 ,   1 , 1 ,             \ (by exit 0, 1: the camera)
 : daniella-ahead ( -- )   \ (at night, Daniella about beyond exit 1: loaded as the way is open, gone heading the other way)
     daniella-about? 0= if  exit  then
@@ -96,7 +96,7 @@ create entries  0 , 0 ,   1 , 1 ,             \ (by exit 0, 1: the camera)
     fiona to-exit-0-area entered? if  figure-slot figure-out  then
     fiona from-exit-1-area left?  figure-slot figure 0< and if  daniella-kind figure-slot figure-in  then ;
 : ways ( -- )
-    daniella-ahead  2 exits-out  cameras 4 cameras-at
+    daniella-ahead  2 exits-out  cameras 3 cameras-at  3 1 1 camera-out
     fiona to-exit-0-area entered? if  0 prepare-exit  then
     fiona from-exit-1-area left? if  1 prepare-exit  then ;
 : each-frame ( -- )  events-held state? if  draughts exit  then  ways  hewie-sniffs  draughts  spots ;

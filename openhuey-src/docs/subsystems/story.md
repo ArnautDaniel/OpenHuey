@@ -121,7 +121,7 @@ names it - its fact, whole and broken parts, the cylinder a blow breaks it in; `
 the parts swapped, its floor freed, shards, the shatter $88, a noise); the ways in (`ways-in`: a
 camera set and path per exit - placed at the one she came by - or `way-in` for one), the ways out
 (`exits-out`, `ways-out`: an area and the exit loaded ahead), the area cameras (`cameras-at`: area,
-set, path); what Hewie looks up at (`look,` builds a table of zones - x y z, radius, height, how
+set, path; `camera-out` for one taken crossing out of its area); what Hewie looks up at (`look,` builds a table of zones - x y z, radius, height, how
 high - and `hewie-looks-at` runs it, while he is calm and at her command: the rooms' 0xC5); a
 replayed movie over (`replay-over`: back to the extras by the forced way); an item found
 (`picks-up`: turned to it, bent down, taken - `takes-up` the taking: named, full or given, its
@@ -130,8 +130,14 @@ animal figure sent off and waited for (`figure-goes`); anything's centre in a zo
 (`centre-across?`, the rooms' zone bit 8 - `here?` and the zone words know only the people); her
 own blow in a zone (`her-blow-in?`); hung things - the chimes she brushes walking by (`chimes`,
 `chimes-rest`: hangers_swing) and one struck swaying away from who struck it till still
-(`sway-start`, `sways`); a hiding place's stalker (`will-find?`: the odds, a creature moving
-about, his alert 4) and its calming frame (`hidden-calm`); a breakable's own shatter
+(`sway-start`, `sways`); a hiding place - the rooms' usual cupboard (`hides-in`: her motions'
+file, the spot she slips in from, the camera while in; the room's motions 4 the walk there, 5 in,
+1 lying low, 2 out, 3 hauled out; out by the circle button, `slips-out`, or found, panicking or
+him in, `hauled-out`; each frame `hidden-calm`), its stalker (`came-on-her?` as he comes in;
+`searches`: the odds by a story variable - `finding-odds` 25, 50, 75 - and `will-find?`, a creature
+moving about, his alert 4; `door-for-him` opens a shut door he came by; `finds-her-at`: to the
+spot, Debilitas looking in, the others seeing her; the place's `found-her`, `came-while-hidden`);
+a placed object back as it was set (`object-reset`); a breakable's own shatter
 (`shatters-with`); moths (`moths-at`: a swarm in an effect slot, the rooms' 0x35;
 `moths-to` sends it off for another point, their 0x33; `moths-sound` keeps a sound where it
 wanders); Hewie's wary stand at a point (`hewie-stands-by`, the shared $8A); an item used up
@@ -234,6 +240,11 @@ Places, each with its test in `tests/places/`:
   doors anew, Daniella the stalker, her costume and Hewie's coat afresh, the stage music) and her
   weakness after it; three flames, the vase's Antimony Powder, the box, the dim corner, the twin
   paintings, the map's pages.
+- castle-1f-8, the telephone room (24): her first steps in - uneasy, the call (the voice warning
+  her of Riccardo; a scene, its file) and the stalker in after her, the door locked; the line dead
+  since, the hiding place (in, out, found and hauled out), the stalker coming while she hides (his
+  search, likelier each time), four flames, the chair, the ornaments, the Magnesia, the Album
+  Medallion Hewie sniffs out, the walls' shade, the replay.
 
 ## API
 

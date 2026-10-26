@@ -74,6 +74,8 @@ state: place-state
   cell field st-heard           \ he has told us at all (in the game: st-age frames ago)
   \ the creatures, as they tell (creature-doing): each one's room, how it moves, frames since
   #creatures cells field cr-room  #creatures cells field cr-mode  #creatures cells field cr-age
+  cell field found-her          \ a hiding place's: the stalker has found her there (she must flee)
+  cell field came-while-hidden  \ ... he came in while she hid (gone again: the prompt anew)
   #own cells field own
 end-state
 
@@ -276,6 +278,8 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 : camera-set ( id set path -- )  cam-char-setup ;           \ (whose camera: a set of the room's, its path)
 : area-camera ( area set path -- )   \ whoever crosses into the area takes that camera
     {: area set path :}  #people 0 do  i person-id dup here? if  dup area entered? if  set path camera-set  else  drop  then  else  drop  then  loop ;
+: camera-out ( area set path -- )   \ whoever crosses out of the area takes that camera
+    {: area set path :}  #people 0 do  i person-id dup here? if  dup area crossed -1 = if  set path camera-set  else  drop  then  else  drop  then  loop ;
 : follow ( id -- )  cam-on ;
 : player ( -- id )  hewie-played? if  hewie  else  fiona  then ;   \ (the one played)
 : player-camera ( set path -- )  player -rot camera-set  player follow ;
@@ -628,6 +632,7 @@ $FF constant no-track
 : object ( obj op arg -- )  >r >r  this-room @ story.strings:room-string  r> r> placed-op ;   \ (the room's string names it)
 : object-hide ( obj -- )  0 1 object ;
 : object-show ( obj -- )  0 0 object ;
+: object-reset ( obj -- )  4 0 object ;   \ (shown, back as it was set: PlacedObject_ToDef)
 : object+! ( addr len off F: d -- )  {: a n off F: d :}  a n placed-here? 0= if  exit  then  a n off placed-f@ d f+  a n off placed-f! ;
 $28 constant place-z
 : morph ( a b addr len F: t -- )   \ (a morph object: its frames a and b shown, blended by t 0..1)
@@ -891,9 +896,55 @@ create replay-acts
 \ hidden, the stalker coming in (the rooms' hiding places): whether he will find her - by the
 \ odds (by how often he has come), a creature moving about here gives her away, his alert 4 never
 : will-find? ( odds -- flag )  chance?  2 creature-moving? or  4 stalker-alert? 0= and ;
-: hidden-calm ( came-addr -- )   \ (a frame hidden: calmer; he came while she hid and is gone - the prompt again)
+: hidden-calm ( -- )   \ (a frame hidden: calmer; he came while she hid and is gone - the prompt again)
     2 ease-panic  6 calm-her  $1E recover
-    dup @  stalker-in? 0= and if  0 swap !  1 avoid-prompt  else  drop  then ;
+    came-while-hidden @  stalker-in? 0= and if  0 came-while-hidden !  1 avoid-prompt  then ;
+
+\ ---- a hiding place (the rooms' cupboards and wardrobes): she walks to it, slips in and lies low,
+\ calming; out by the circle button - or, found (or panicking, or he is in), hauled out. The room's
+\ motions for it (her file): 4 the walk there, 5 in, 1 lying low, 2 out, 3 hauled out; his (his
+\ file, Debilitas's): 0 the look in ----
+: hid-motion ( i -- anim )  room-motion + ;
+: hauled-out ( -- )
+    found-her @ if  2 avoid-prompt  then
+    fiona follow  fiona-hidden state-off  fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by
+    fiona 3 hid-motion 10 play-blend  fiona false noclip
+    found-her @ 0= if  stalker let-go  then ;
+: slips-out ( -- )
+    stalker-in? if  hauled-out exit  then
+    fiona follow  fiona-hidden state-off  fiona true noclip
+    fiona 2 hid-motion 5 start-blend8  5 frames  fiona.sounds:slide-sound common-bank fiona sound-by  fiona wait-anim
+    fiona false noclip ;
+: hides-in ( file tri deg cam F: x z -- )   \ (her motions' file; where she slips in from, facing it; the
+    {: file tri deg cam F: x z :}           \ camera set while she's in, -1 hers kept)
+    stalkers-stay state!  0 came-while-hidden !  fiona file motions-for  fiona wait-move  fiona use-motions
+    fiona walk-anim-move 4 hid-motion 5  tri x z floor-at  deg deg>yaw  move  fiona wait-move
+    fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by  fiona 5 hid-motion 10 start-blend8  fiona wait-anim
+    fiona 1 hid-motion 10 start-blend  fiona false noclip
+    stalkers-stay state-off  fiona-hidden state!  0 found-her !  0 avoid-prompt
+    cam 0< 0= if  fiona cam -1 camera-set  then
+    begin
+        circle button-pressed? if  slips-out exit  then
+        in-panic? found-her @ or if
+            in-panic? 0= if  fiona.sounds:seized-sound common-bank fiona sound-by  then  hauled-out exit
+        then
+        hidden-calm  yield
+    again ;
+\ the stalker in while she hides: whether he finds her - by the odds in a story variable (how
+\ often he has come: 25, 50, 75 in 100), a creature moving about giving her away; if not, he's off sooner
+: came-on-her? ( -- flag )  fiona-hidden state?  dup came-while-hidden ! ;   \ (as he comes in: she is hidden)
+: finding-odds ( var -- pct )  var@ case  1 of 25 endof  2 of 50 endof  3 of 75 endof  >r 0 r>  endcase ;
+: searches ( var file xt -- )   \ (xt: his going to her, found - started; his comings counted)
+    {: v file xt :}  debilitas? if  stalker file motions-for  then
+    v finding-odds will-find? if  xt start drop  else  120 summoner-sooner  then  v var@ 1+ v var! ;
+: door-for-him ( exit -- )   \ (come by it, its door shut: he opens it)
+    dup stalker-came-by?  over exit-open? 0= and if  stalker swap open-door  else  drop  then ;
+: finds-her-at ( tri deg F: x z -- )   \ (to the hiding place: Debilitas looks in, the others see her)
+    {: tri deg F: x z :}  stalker tri deg x z walk-to
+    debilitas? if
+        stalker use-motions  stalker room-motion 10 start-blend  30 frames  -1 found-her !  stalker wait-anim
+    else  stalker stalker.anims:there-anim play  -1 found-her !  then
+    stalker 10 idle  begin  fiona held? while  yield  repeat  0 stalker-order ;
 : replay-over ( -- )  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
 
 \ ---- the figures' own (the story's slots 3..5: a figure loaded there) ----

@@ -15,8 +15,6 @@ own-reset
 
 \ ---- its own state (a visit) ----
 own: chimes-rung           \ the first chime last rang "on" (they ring on and off in turn)
-own: found-her             \ the stalker has found her hiding (she must flee)
-own: came-while-hidden     \ the stalker came in while she hid
 own: fall-at               \ the falling thing's frames (and its effect: fall-fx)
 own: fall-fx
 own: searching           \ his walk to the hiding place (its activity; 0 none)
@@ -155,7 +153,7 @@ create looks
             fiona crouch-up-anim play  fiona false noclip  stalkers-stay state-off  exit
         then
         in-panic? found-her @ or if  in-panic? 0= if  seized-sound common-bank fiona sound-by  then  caught-out exit  then
-        came-while-hidden hidden-calm  yield
+        hidden-calm  yield
     again ;
 : search-odds ( -- pct )  visits-var var@ case  1 of 25 endof  2 of 50 endof  3 of 75 endof  >r 0 r>  endcase ;
 : finds-her ( -- )   \ (he goes to the hiding place: there she is)

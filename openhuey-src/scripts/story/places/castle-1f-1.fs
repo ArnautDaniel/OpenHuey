@@ -112,10 +112,10 @@ create pond-look  -33.33e -16.93e 69.69e 40e 6e 6e look,
     hall-exit exit-open? 0=  hewie-arrived @ and  fiona body-pos hall-exit 0 door-in-area? and if  too-dangerous-msg offer-remark-now  then ;
 
 \ ---- every frame ----
-create cameras  8 , 0 , -1 ,   9 , 1 , 0 ,   $A , 1 , 0 ,   $B , 2 , -1 ,   $C , 0 , -1 ,   \ (area, set, path)
+create cameras  8 , 0 , -1 ,   9 , 1 , 0 ,   $A , 1 , 0 ,   $B , 2 , -1 ,   \ (area, set, path)
 create entries  2 , -1 ,   0 , -1 ,   0 , -1 ,                 \ (by exit 0, 1, 2: the camera)
 : ways ( -- )
-    2 exits-out  to-exit-2-area 2 leaves-by  cameras 5 cameras-at
+    2 exits-out  to-exit-2-area 2 leaves-by  cameras 4 cameras-at  $C 0 -1 camera-out
     got-doc-crouch-evasion fact? 0= if  $D 3 -1 area-camera  then
     fiona near-exit-1-area entered?  gate-open? fiona near-exit-1b-area entered? and or if  1 prepare-exit  then
     fiona near-exit-0-area entered? if  0 prepare-exit  then
