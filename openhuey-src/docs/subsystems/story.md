@@ -202,6 +202,10 @@ Places, each with its test in `tests/places/`:
   heard), the hiding place (in, out, found and pulled out), the stalker coming while she hides
   (Debilitas turning the TV off - twice and it stays off - or his search, likelier each time), the
   mirror, the painting in turn, the Magnesia, the clock, the far views' depth.
+- castle-1f-6, the long dining room (17): thirteen candles stirring as someone passes, the second
+  cracked plate-key, the candlesticks by day and night, the tapestry, the Medallion Hewie finds, the
+  door unlocked from this side, Daniella about beyond at night, brought in by the forced way
+  (Daniella's scene), the replay.
 
 ## API
 

@@ -5,7 +5,7 @@
 \ chairs, a save clock - and at night, back with the castle's sketch, Riccardo met here. A place
 \ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-4.fs (not loaded).
 IN: story.places.castle-1f-4
-USING: engine game-state actors messages common vectors facts flag-names story-names room-names floor-flags
+USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names floor-flags
     effects story.kit fiona.anims fiona.sounds scenes ;
 
 own-reset
@@ -54,7 +54,7 @@ $F constant clock-area   $11 constant slot-area   1 constant to-exit-3-area
 0 constant puppet-door-group   \ (the floor before the puppet door: solid, pushable - till it opens)
 7 constant puppet-door   8 constant slot-door
 0 constant flame-fx   1 constant antimony-fx
-3 constant riccardo-figure   4 constant other-figure   3 constant riccardo-kind
+3 constant figure-slot   4 constant other-figure   \ (slot 3: Daniella about at night, Riccardo in his scene's replay)
 0 constant came-in-sound   1 constant broken-mechanism-sound   2 constant broken-mechanism-stop
 3 constant mechanism-sound   4 constant mechanism-stop   5 constant first-ambient   9 constant shake-sound
 10 constant rubble-sound   11 constant creak-sound   12 constant reach-sound   $AC constant slam
@@ -139,7 +139,7 @@ defer the-trap
     6 scenes:opaque-when-movie 0 load-scene  ['] riccardo-shots at-shots  panic-eased
     if  riccardo-msg run-scene  then
     scene-locked state-off  after-riccardo-room s" rooms" actor-named send room-preload
-    fiona send calm-reset  world-held state!  0 summon-take  riccardo-figure figure-out
+    fiona send calm-reset  world-held state!  0 summon-take  figure-slot figure-out
     forced-exit take-exit ;
 : back-by-the-trap ( -- )   \ (act0B: back from it - "What's that noise?")
     fiona hold  fiona wait-move  world-held state-off  camera-restart
@@ -281,12 +281,12 @@ create entries  1 , 1 ,   0 , 0 ,   0 , 0 ,   0 , 0 ,      \ (by exit 0 .. 3: th
     player held? 0=  player to-exit-3-area in-area? and if  3 take-exit  then   \ (the forced way, no door)
     cameras 2 cameras-at
     hewie-found-in-wire fact?  found-file-208 fact? 0= and if
-        fiona to-exit-3-2-area entered?  fiona to-exit-2-area left? or if  riccardo-figure figure-out  then
+        fiona to-exit-3-2-area entered?  fiona to-exit-2-area left? or if  figure-slot figure-out  then
     then
     fiona to-exit-0-area entered? if  0 prepare-exit  then
     fiona from-exit-3-area left?  fiona to-exit-3-2-area entered? or if  3 prepare-exit  then
     fiona from-exit-1-area left?  fiona to-exit-1-area entered? or if
-        hewie-found-in-wire fact?  found-file-208 fact? 0= and if  riccardo-kind riccardo-figure figure-in  then
+        hewie-found-in-wire fact?  found-file-208 fact? 0= and if  daniella-kind figure-slot figure-in  then
         1 prepare-exit
     then
     fiona to-exit-2-area left? if  2 prepare-exit  then ;
@@ -313,10 +313,10 @@ create entries  1 , 1 ,   0 , 0 ,   0 , 0 ,   0 , 0 ,      \ (by exit 0 .. 3: th
 : replay-riccardo ( -- )   \ (act19)
     fiona hold  puppet-door-part show-part  2 object-show  3 object-show  4 object-show  wall-part show-part
     $84 $60 $3C $50 $24 $2A $2A $46 room-tint  flame-fx 0 22.8e 14.65e 68.75e flame-at
-    riccardo-kind riccardo-figure figure-in  yield  2 stalker-ready  yield
+    riccardo-kind figure-slot figure-in  yield  2 stalker-ready  yield
     6 scenes:opaque-when-movie 0 load-scene  ['] riccardo-shots at-shots  panic-eased
     if  riccardo-msg run-scene  then
-    stalker-unloaded  riccardo-figure figure-out  replay-over ;
+    stalker-unloaded  figure-slot figure-out  replay-over ;
 : replay-marionette ( -- )   \ (act1A)
     fiona hold  5 scenes:unseen-movie 1 load-scene
     puppet-door-part hide-part  2 object-show  3 object-show  4 object-show  flame-fx 0 22.8e 14.65e 68.75e flame-at
