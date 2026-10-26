@@ -100,7 +100,7 @@ behaviour playing-room
       start-camera  3 phase  shot-camera ;
   on tick ( -- )
       clock-off   \ (drawn again by the rooms that show it, each frame)
-      1 phase  -1 prep-scene !   \ (Progress_CharRequests: the actions prepared afresh)
+      1 phase  -1 prep-scene !  exit-request   \ (Progress_CharRequests: the actions prepared afresh - hers at a locked door)
       0 fiona-request-kind !     \ (Progress_OwnRequests: her request taken)
       2 phase  offer-it  -1 fiona-started-now !   \ (her action's start: read by phases 1 and 2)
       panic-onset-on @ 0= if  run-slots  then ;   \ (not in her panic's start: SubPlay's frame flag bit 3)

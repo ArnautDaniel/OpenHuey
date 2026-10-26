@@ -570,6 +570,18 @@ $80000005 constant read-message
 \ Fiona's action script `act` offered on her action button this frame (scene 5)
 : offer-action ( act when -- )  her-action -rot scene-change ;
 : scene-request? ( v -- flag )  prep-scene @ = ;
+\ Progress_CharRequests: Fiona in an exit's door area, its door locked - her request $80000002 (a
+\ room's own action may answer it, as its phase 2 sees: unlocked from this side; else her own try)
+-2147483646 constant locked-door-request   \ ($80000002 as the scripts compare it: the 32-bit word, sign-extended)
+: exit-request ( -- )
+    fiona-id dup 0< if  drop exit  then  {: f :}  f body? 0= if  exit  then
+    8 0 do
+        i door-here? if
+            room-id i room-exit-door  dup 0< 0= if
+                doors:door-locked?  f body-pos i 0 door-in-area?  and if  locked-door-request i 0 prepare  unloop exit  then
+            else  drop  then
+        then
+    loop ;
 \ 0xA5: message `msg` offered on her action button instead (Progress +0x1134 = 0x80000005) -
 \ not while scenes are locked or a script has her
 : examine-message ( msg -- )

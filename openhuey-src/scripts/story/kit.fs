@@ -825,6 +825,20 @@ $2A constant replay-var   \ (the story's variable: which movie the extras' theat
     id body-pos  ex door-side 1 = if  2  else  0  then  ex swap door-user-spot  dup 0< if  drop fdrop fdrop fdrop fdrop exit  then
     {: tri F: x y z yaw :}  id walk-move tri -1  x y z yaw  move  id wait-move ;
 : with-fiona-free ( -- )  begin  fiona-free? 0= while  yield  repeat ;
+\ a door locked from this side (Progress_CharRequests' request $80000002: she in an exit's door
+\ area, its door locked - the room may let her unlock it, else her own try: locked from the other side)
+$72 constant unlock-sound   $8008 constant unlocked-msg   \ (the common bank's; "You unlocked the door.")
+: before-locked? ( exit -- flag )
+    {: ex :}  fiona here? 0=  ex door-here? 0= or if  false exit  then
+    ex exit-door dup 0< if  drop false exit  then  doors:door-locked? 0= if  false exit  then
+    fiona body-pos ex 0 door-in-area? ;
+: unlocks ( exit -- )   \ (to her spot by it - not with the stalker on her - a try, and it gives: unlocked)
+    {: ex :}  stalker-in?  fiona stalker 0 close-to? and if  exit  then
+    fiona ex to-door  stalker-in?  fiona stalker 0 close-to? and  in-panic? or if  exit  then
+    fiona body-pos ex 0 door-in-area? if  fiona fiona.anims:rattle-front-anim  else  fiona fiona.anims:rattle-behind-anim  then  start-anim
+    20 frames  in-panic? if  exit  then
+    unlock-sound common-bank fiona sound-by  ex exit-door unlock  unlocked-msg show
+    fiona 20 idle  20 frames  wait-closed ;
 
 : people-in ( -- )   \ (each person newly in the room: its arrival)
     #people 0 do

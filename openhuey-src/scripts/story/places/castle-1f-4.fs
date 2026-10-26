@@ -58,7 +58,7 @@ $F constant clock-area   $11 constant slot-area   1 constant to-exit-3-area
 3 constant riccardo-figure   4 constant other-figure   3 constant riccardo-kind
 0 constant came-in-sound   1 constant broken-mechanism-sound   2 constant broken-mechanism-stop
 3 constant mechanism-sound   4 constant mechanism-stop   5 constant first-ambient   9 constant shake-sound
-10 constant rubble-sound   11 constant creak-sound   12 constant reach-sound   $72 constant unlock-sound   $AC constant slam
+10 constant rubble-sound   11 constant creak-sound   12 constant reach-sound   $AC constant slam
 $94 constant refined-antimony   $12 constant cracked-plate-key   $228 constant puppet-file
 $15 constant castle-1f-7-room   $31 constant after-riccardo-room
 
@@ -242,8 +242,6 @@ defer the-trap
         $16 of  ['] reforge start drop  true  endof   $17 of  ['] wrong-word start drop  true  endof
         >r false r>
     endcase ;
-: before-locked-door? ( exit -- flag )   \ (in its area, its door locked: trying it - the original's request $80000002)
-    {: ex :}  fiona ex exit-area in-area?  ex exit-door dup 0< if  drop false exit  then  doors:door-locked? and ;
 : spots ( -- )
     fiona puppet-door-area in-area? if
         straining-now @  fiona held? 0= and if  ['] strains start drop
@@ -256,7 +254,7 @@ defer the-trap
     sparkle-shown @  c1f-4-refined-antimony fact? 0= and if
         fiona 140e -9e 94e 5e 5e touches? if  ['] antimony calm-only offer  then
     else  fiona 140e 94e 6e near-xz?  fiona 45 50 heading? and if  ['] the-wall unhurried offer  then  then
-    2 before-locked-door? if  ['] tries-the-door any-time offer  then
+    2 before-locked? if  ['] tries-the-door any-time offer  then
     fiona slot-area in-area?  fiona -45 50 heading? and if  ['] the-slot unhurried offer  then
     got-cracked-plate-key fact? 0=  fiona 131.392e -30e 147.223e 5e 5e touches? and if  ['] plate-key calm-only offer  then ;
 

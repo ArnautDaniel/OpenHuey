@@ -120,6 +120,7 @@ USING: engine vectors keys actors messages common paths doors fiona.state fiona.
 \ stalker touching her (Fiona_StateBlock 2 / 9)
 : try-doors ( -- )
     her-mode @ own-mode <>  her-doing @ free-doing <> or  her-sub @ pushing-sub = or if  exit  then   \ (not while pushing)
+    offer-stood @ if  exit  then   \ (a room's offer here takes the button)
     action-button? 0= if  exit  then
     usable dup 0< if  drop exit  then
     stalker-touching? if  drop exit  then  use ;

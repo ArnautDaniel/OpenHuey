@@ -144,6 +144,9 @@ state: fiona-state
   cell field mate-say-t  cell field mate-look-t  cell field mate-away-t  1 floats field mate-gone
   cell field mate-in  cell field mate-out  cell field mate-door  cell field mate-link  1 floats field mate-link-left
   13 cells field mate-avoid  cell field mate-was-run
+  \ a room's offer this frame and the last (rooms offer each frame while it stands): the action
+  \ button its, not her door's - the original's prepared action replaces her door request
+  cell field her-offered  cell field offer-stood
 end-state
 \ her-sub's that others test: pushing (fiona/push.fs), letting go of a thing (fiona/letgo.fs: how)
 5 constant pushing-sub
