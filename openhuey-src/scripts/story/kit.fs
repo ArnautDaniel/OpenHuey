@@ -39,6 +39,7 @@ state: place-state
   #people cells field asked          \ a move asked of each since it was held (wait-move waits on that only)
   #people cells field anim-ended
   3 cells field figure-ended     \ each figure's (slots 3..5) animation come round, as last told
+  3 cells field figure-done      \ ... its move done (an animal off where it was sent)
   #people cells field marks          \ each one's animation marks reached (its event keys), as last told
   #people cells field in-here        \ each one in this room, as last seen
   #people /vec * field was-at        \ where each was at the last frame's end (areas crossed)
@@ -242,6 +243,9 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
     id body-at vec@ id body-dims {: F: cx cy cz cr ch :}
     cy ch 2e f/ f+  y h 2e f/ f+ f- fabs  h fabs ch fabs f+ 2e f/ f<=
     zz cz f- fdup f*  x cx f- fdup f* f+  r fdup f* f<=  and ;
+: centre-across? ( id F: x z r -- flag )   \ its centre within r of (x, z) across - anyone or anything with a body
+    {: id F: x z r :}  id dup 0< swap body? 0= or if  false exit  then   \ (the rooms' zone bit 8)
+    id body-pos fswap fdrop {: F: cx cz :}  cx x f- fdup f*  cz z f- fdup f* f+  r fdup f* f<= ;
 : at-locked-exit? ( id -- flag )   \ in an exit's area, its door locked (trying it)
     {: id :}  8 0 do
         i exit-door dup 0< 0= if  doors:door-locked? id i exit-area in-area? and if  true unloop exit  then  else  drop  then
@@ -708,6 +712,10 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
 : figure-wait ( slot -- )   \ its animation come round
     dup figure 0< if  drop yield exit  then  3 - cells figure-ended +  0 over !  begin  yield  dup @ until  drop ;
 : figure-came-round? ( slot -- flag )  3 - cells figure-ended + @ 0<> ;   \ (its animation come round: the original's cond 0x56)
+: figure-goes ( slot sound F: x z -- )   \ (an animal - a rabbit: grazing, off to (x, z) as one comes near - its feet's
+    {: slot snd F: x z :}  slot figure dup 0< if  drop exit  then   \ sound snd, -1 none; waited till it is there)
+    0 slot 3 - cells figure-done + !  >r  snd x f>cell z f>cell  r> send animal-go
+    begin  yield  slot 3 - cells figure-done + @  slot figure 0< or  until ;
 : figure-at ( slot F: x y z deg -- )  deg>rad angle-wrap  figure dup 0< if  drop fdrop fdrop fdrop fdrop exit  then  >r xyzw>cells r> send place ;
 : figure-on ( slot -- )  figure dup 0< if  drop exit  then  send activate ;
 : figure-dressed-as ( slot other -- )   \ wearing the other's model
@@ -786,7 +794,7 @@ behaviour placing
   on text-closed ( msg answer -- )  answer !  shown-msg @ = if  -1 shown-msg !  then ;
   on fade-done ( -- )  0 fading ! ;
   on moving ( done ended events -- )
-      sender person-of dup 0< if  drop  3 0 do  i 3 + story.words:slot-actor @ sender = if  over i cells figure-ended + !  then  loop  drop 2drop exit  then
+      sender person-of dup 0< if  drop  3 0 do  i 3 + story.words:slot-actor @ sender = if  over i cells figure-ended + !  2 pick i cells figure-done + !  then  loop  drop 2drop exit  then
       tuck cells marks + !  tuck cells anim-ended + !  cells move-done + ! ;
   on scene-ready ( movie? -- )  scene-movie !  scene-is-ready scene-step ! ;
   on scene-shot ( shot -- )  cue-xt @ ?dup if  execute  else  drop  then ;
