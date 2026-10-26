@@ -688,6 +688,16 @@ $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3
             body-point if  x y zz r h point-in? if  -1 to hit  then  then
         else  drop  then
     loop  hit ;
+: touching-at? ( v id F: x y z r h -- flag )   \ (its body, were it at v, overlapping the cylinder)
+    {: v id F: x y zz r h :}  v vec@ id body-dims {: F: cx cy cz cr ch :}
+    cy ch 2e f/ f+  y h 2e f/ f+ f- fabs  h fabs ch fabs f+ 2e f/ f<=
+    zz cz f- fdup f*  x cx f- fdup f* f+  r cr f+ fdup f* f<=  and ;
+: steps-into? ( id F: x y z r h -- flag )   \ touching the cylinder now, not at the last frame's end
+    {: id F: x y zz r h :}  id here? 0= if  false exit  then
+    id body-at id x y zz r h touching-at? 0= if  false exit  then
+    id person-of /vec * was-at + id x y zz r h touching-at? 0= ;
+: splash-from ( id count F: x y z -- )   \ water thrown up there, away from who stepped in
+    {: id n F: x y zz :}  id body-pos  x y zz  n 2  $40 $50 $40 $80 rgba  effects:splash ;
 : her-blow-in? ( F: x y z r h -- flag )   \ her own blow (its point of contact) inside the cylinder
     {: F: x y zz r h :}  fiona here? 0= if  false exit  then
     fiona body-point if  x y zz r h point-in?  else  false  then ;
