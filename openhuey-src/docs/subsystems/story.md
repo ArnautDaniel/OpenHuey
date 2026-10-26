@@ -124,7 +124,12 @@ replayed movie over (`replay-over`: back to the extras by the forced way); an it
 (`picks-up`: turned to it, bent down, taken - `takes-up` the taking: named, full or given, its
 tab and fanfare); out by an area (`leaves-by`); Hewie's whine from the wire (`whine-due?`); an
 animal figure sent off and waited for (`figure-goes`); anything's centre in a zone across
-(`centre-across?`, the rooms' zone bit 8 - `here?` and the zone words know only the people). A
+(`centre-across?`, the rooms' zone bit 8 - `here?` and the zone words know only the people); her
+own blow in a zone (`her-blow-in?`); hung things - the chimes she brushes walking by (`chimes`,
+`chimes-rest`: hangers_swing) and one struck swaying away from who struck it till still
+(`sway-start`, `sways`); a hiding place's stalker (`will-find?`: the odds, a creature moving
+about, his alert 4) and its calming frame (`hidden-calm`); a breakable's own shatter
+(`shatters-with`). A
 whole breakable is a target a stalker's blow may strike instead of her (`zone-target`, cleared as
 each frame starts: Events_NearestPoint, as the converted rooms' zones of kind bit 1). The
 converted files of the rooms that are places are kept, unloaded, in `scripts/story/rooms-ref/`.

@@ -597,6 +597,57 @@ $24 constant place-y
 : room-noise ( loud tri -- )  this-room @ swap -1 world-noise s" acoustics" actor-named send noise ;
 : sound-there ( id bank F: x y z -- )  0 0 sound-at ;   \ a sound at the point
 
+\ ---- things that hang and swing (the room's objects by their strings) ----
+$10 constant turn-x   $18 constant turn-z   $20 constant place-x
+$30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3C constant swing-pushed   \ (their own: floats)
+4 constant swing-back   \ (a whole number: swinging back)
+: hanging ( i -- addr len )  this-room @ story.strings:room-string ;
+: her-step ( F: -- d )   \ (how far she moved this frame)
+    fiona here? 0= if  0e exit  then  fiona-p /vec * was-at + fiona body-at vec-dist ;
+\ hung things she brushes as she walks by (hangers_swing): her steps add up - past `push` they
+\ swing for 20 frames, the first ringing (`on` / `off`, the room's sounds, in turn: `rung` a cell);
+\ a swing: on 36 degrees a frame, tilted 1 + sin of it (in degrees), each half a swing apart
+: chime-rest ( k a n -- )
+    {: k a n :}  a n placed-here? 0= if  exit  then
+    0e a n swing-phase object!  60e k s>f f* a n swing-offset object!  0e a n swing-left object!  0e a n swing-pushed object! ;
+: chimes-rest ( base n -- )  0 ?do  i  over i + hanging  chime-rest  loop  drop ;
+: chime ( k a n squared? rung on off F: push -- )
+    {: k a n sq rung on off F: push :}  a n placed-here? 0= if  exit  then
+    her-step  sq if  fdup f*  then  a n swing-pushed object+!
+    a n swing-pushed object@ push f> if
+        20e a n swing-left object!  0e a n swing-pushed object!
+        k 0= if  rung @ 0= dup rung !  if  off  else  on  then  room-bank fiona sound-by  then
+    then
+    a n swing-left object@ f0> 0= if  exit  then
+    a n swing-left object@ 1e f- 0e fmax a n swing-left object!
+    36e a n swing-phase object+!
+    a n swing-phase object@ a n swing-offset object@ f+ 360e f< 0= if  -360e a n swing-phase object+!  then
+    a n swing-phase object@ a n swing-offset object@ f+ deg>rad fsin 1e f+ deg>rad
+    fdup pi f> if  2e pi f* f-  then  a n turn-x object! ;
+: chimes ( base n squared? rung on off F: push -- )   \ (each frame she is among them)
+    {: base n sq rung on off F: push :}  n 0 ?do  i  base i + hanging  sq rung on off push chime  loop ;
+\ a hung thing set swaying - 12 degrees, away from who struck it - and left to settle: a step
+\ 22.5 degrees of its swing a frame, its size shrinking to 0.4 at each end; under half a degree, still
+: sway-start ( obj who -- )
+    {: obj who | a n F: dx F: dz F: d F: wx F: wz :}  obj hanging to n to a  a n placed-here? 0= if  exit  then
+    0 a n swing-back placed-l!  0e a n swing-phase object!  12e deg>rad a n swing-offset object!
+    who body-pos fswap fdrop to wz to wx
+    a n place-x object@ wx f- to dx  a n place-z object@ wz f- to dz
+    dx fdup f* dz fdup f* f+ fsqrt to d  d f0= if  exit  then
+    dz d f/ a n swing-left object!  dx d f/ fnegate a n swing-pushed object! ;
+: sway-step ( a n -- settled? )
+    {: a n :}
+    a n swing-back placed-l@ if  -22.5e  else  22.5e  then  deg>rad a n swing-phase object+!
+    a n swing-phase object@ fabs 1e deg>rad f< if  a n swing-offset object@ 0.4e f* a n swing-offset object!  then
+    a n swing-back placed-l@ if
+        a n swing-phase object@ pi f2/ fnegate f< if  0 a n swing-back placed-l!  then
+    else  a n swing-phase object@ pi f2/ f> if  1 a n swing-back placed-l!  then  then
+    a n swing-offset object@ 0.5e deg>rad f<= if  0e a n turn-x object!  0e a n turn-z object!  true exit  then
+    a n swing-left object@ a n swing-offset object@ f* a n swing-phase object@ fsin f*  a n turn-x object!
+    a n swing-pushed object@ a n swing-offset object@ f* a n swing-phase object@ fsin f*  a n turn-z object!  false ;
+: sways ( obj -- )   \ (an activity's: till it settles)
+    hanging {: a n :}  a n placed-here? 0= if  exit  then  begin  a n sway-step 0= while  yield  repeat ;
+
 \ ---- where things are seen and faced ----
 : unseen? ( id -- flag )  dup here? 0= if  drop true exit  then  body-at vec@ out-of-view? ;
 : point-unseen? ( F: x y z -- flag )  out-of-view? ;
@@ -625,6 +676,9 @@ $24 constant place-y
             body-point if  x y zz r h point-in? if  -1 to hit  then  then
         else  drop  then
     loop  hit ;
+: her-blow-in? ( F: x y z r h -- flag )   \ her own blow (its point of contact) inside the cylinder
+    {: F: x y zz r h :}  fiona here? 0= if  false exit  then
+    fiona body-point if  x y zz r h point-in?  else  false  then ;
 : left? ( id area -- flag )  crossed -1 = ;
 : near-xz? ( id F: x z r -- flag )   \ its body within r of the point across (any height)
     {: id F: x z r :}  id here? 0= if  false exit  then
@@ -638,6 +692,7 @@ $24 constant place-y
 \ `breaks?` - true the frame it breaks, for what the room adds (the thing inside it) ----
 begin-structure /breakable
   field: bk.fact  field: bk.whole  field: bk.broken  field: bk.group  field: bk.tri  field: bk.target
+  field: bk.sound  field: bk.bank
   field: bk.rgba  field: bk.kind  field: bk.tex
   ffield: bk.x  ffield: bk.y  ffield: bk.z  ffield: bk.r  ffield: bk.h
   ffield: bk.u  ffield: bk.v  ffield: bk.du  ffield: bk.dv  ffield: bk.floor
@@ -646,6 +701,7 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
 : breakable: ( fact whole-part broken-part F: x y z r h "name" -- )   \ (struck within r of x z, h up from y)
     create  here /breakable allot  {: f w b a F: x y z r h :}
     f a bk.fact !  w a bk.whole !  b a bk.broken !  -1 a bk.group !  -1 a bk.tri !  breakables @ a bk.target !  1 breakables +!
+    shatter-sound a bk.sound !  common-bank a bk.bank !
     shard-grey a bk.rgba !  0 a bk.kind !  0 a bk.tex !
     x a bk.x f!  y a bk.y f!  z a bk.z f!  r a bk.r f!  h a bk.h f!
     0e a bk.u f!  0e a bk.v f!  1e a bk.du f!  1e a bk.dv f!  0e a bk.floor f! ;
@@ -654,6 +710,7 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
     {: a F: u v du dv :}  u a bk.u f!  v a bk.v f!  du a bk.du f!  dv a bk.dv f! ;
 : frees-floor ( bk group -- )  swap bk.group ! ;   \ (its floor's nav group: kept off while it stands)
 : noise-from ( bk tri -- )  swap bk.tri ! ;        \ (the triangle its noise comes from; none: no noise)
+: shatters-with ( bk sound bank -- )  rot {: a :}  a bk.bank !  a bk.sound ! ;   \ (its own shatter: the room's)
 : broken? ( bk -- flag )  bk.fact @ fact? ;
 : bk-floor ( bk on -- )  over bk.group @ 0< if  2drop exit  then  swap bk.group @ keeps-people-off nav-group! ;
 : as-it-stands ( bk -- )   \ (whole or in pieces, its floor kept off while whole)
@@ -663,7 +720,7 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
 : smash ( bk -- )   \ (in pieces now)
     {: a :}  a bk.fact @ fact!  a as-it-stands
     a bk.rgba @ a bk.kind @ a bk.tex @  a at-it  a bk.u f@ a bk.v f@ a bk.du f@ a bk.dv f@  a bk.floor f@  shards
-    shatter-sound common-bank a at-it sound-there
+    a bk.sound @ a bk.bank @ a at-it sound-there
     a bk.tri @ 0< 0= if  shatter-loudness a bk.tri @ room-noise  then ;
 : a-target ( bk -- )   \ (whole: a stalker's blow may strike it instead of her - Events_NearestPoint)
     dup bk.target @ swap at-it xyz>cells broadcast zone-target ;
@@ -709,6 +766,12 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
 : whine-due? ( addr -- flag )   \ (Hewie in the wire, now and then: a counter down a frame - at 0,
     -1 over +!  dup @ 0> if  drop false exit  then   \ 3 in 10 a whine, then 180 frames; else 60)
     30 chance?  dup if  180  else  60  then  rot ! ;
+\ hidden, the stalker coming in (the rooms' hiding places): whether he will find her - by the
+\ odds (by how often he has come), a creature moving about here gives her away, his alert 4 never
+: will-find? ( odds -- flag )  chance?  2 creature-moving? or  4 stalker-alert? 0= and ;
+: hidden-calm ( came-addr -- )   \ (a frame hidden: calmer; he came while she hid and is gone - the prompt again)
+    2 ease-panic  6 calm-her  $1E recover
+    dup @  stalker-in? 0= and if  0 swap !  1 avoid-prompt  else  drop  then ;
 : replay-over ( -- )  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
 
 \ ---- the figures' own (the story's slots 3..5: a figure loaded there) ----

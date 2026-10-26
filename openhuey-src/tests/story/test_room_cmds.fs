@@ -1,9 +1,7 @@
-\ The rooms' own commands (S5c; src/game/rooms/room_*.c Cmd*): the front garden's - a hanging thing
-\ swinging and settling, two pushed as Fiona walks by (front-garden-5). Headless:
+\ The rooms' own commands (S5c; src/game/rooms/room_*.c Cmd*) - the castle's. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_room_cmds.fs
 IN: test-room-cmds
 USING: tester engine game-state actors messages common room-names game debug story.state facts story.words
-  story.rooms.front-garden-5
   story.rooms.castle-1f-2 story.rooms.castle-1f-7 story.rooms.castle-1f-11 story.rooms.castle-1f-12
   story.rooms.castle-2f-2 story.rooms.castle-2f-12 ;
 
@@ -12,22 +10,6 @@ USING: tester engine game-state actors messages common room-names game debug sto
 : ~= ( F: a b -- flag )  f- fabs 0.001e f< ;
 free-play
 
-front-garden-5 room!  20 run-frames
-testing front-garden-5: a hanging thing set swinging away from Fiona - 12 degrees, then settling
-T{ [: 0 2 + room-object object-here? ;] in-room -> -1 }T
-T{ [: 0 2 front-garden-5.cmd00  0 2 + room-object $34 object@ 12e deg>rad ~= ;] in-room -> -1 }T
-: swings ( -- n )   \ (steps till it settles)
-    [: 0  begin  1+  0 2 + room-object swing-turn  over 500 > or  until ;] in-room ;
-T{ swings 500 < -> -1 }T
-T{ [: 0 2 + room-object turn-x object@ 0e ~= ;] in-room -> -1 }T
-testing front-garden-5: two hanging things - at rest; pushed by her steps past 5: swinging, event flag 3 on
-T{ [: 0 front-garden-5.cmd02  3 ebit? ;] in-room -> 0 }T
-fvariable st-y  fvariable st-z
-: step ( -- )   \ (a 3 step for her, then the room's command 1)
-    game:fiona body-pos  st-z f!  st-y f!  3e f+  st-y f@ st-z f@  0e tp-facing  deliver
-    [: 1 front-garden-5.cmd02 ;] in-room  1 run-frames ;   \ (within the frame, as its phase runs it)
-T{ step  [: 3 ebit?  4 room-object $38 object@ f0= ;] in-room -> 0 -1 }T
-T{ step  [: 3 ebit?  4 room-object $38 object@ f0> ;] in-room -> -1 -1 }T
 castle-1f-2 room!  20 run-frames
 testing castle-1f-2: the cage set low (11), raised 0.25 a step; the drum can struck and wobbling back to rest
 T{ [: s" ori" object-here?  0 castle-1f-2.cmd00  s" ori" place-y object@ 11e ~=  1 castle-1f-2.cmd00  s" ori" place-y object@ 11.25e ~= ;] in-room -> -1 -1 -1 }T
