@@ -247,6 +247,13 @@ Places, each with its test in `tests/places/`:
   hint and its while, and in behind the bookshelf she knocks it down on him (a scene: he lies
   knocked out under it, she runs out); her thought pushing it, the books, the harp, the creepy thing
   in turn, the Camomile, Hewie wary by the table and his looks, the walls' shade, the replays.
+- castle-1f-15, the armour gallery (25): chased along the balcony by Debilitas, the encounter - no
+  Hewie (or him down): a scene, she is left lying and frightened; with Hewie: he saves her (Debilitas
+  knocked down) or, likelier the more he has, fails (she is left lying) - each a scene and the other
+  game's file; the hole in the balcony floor (down it by her choice; dropped in from above, she
+  lands), the diorama, the spear, the armour and the handrail in turn, the Camomile and the Medallion
+  Hewie sniffs out, his bark at the high window and his looks, the steady sound, the far view's
+  depth, the walls' shade, the other game's creature, the replays.
 - castle-1f-8, the telephone room (24): her first steps in - uneasy, the call (the voice warning
   her of Riccardo; a scene, its file) and the stalker in after her, the door locked; the line dead
   since, the hiding place (in, out, found and hauled out), the stalker coming while she hides (his
