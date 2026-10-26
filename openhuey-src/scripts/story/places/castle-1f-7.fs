@@ -60,9 +60,6 @@ $30 constant not-landed   $34 constant speed   -25.3e fconstant shut-y
 : gate-rattles ( -- )  gate placed-here? 0= if  exit  then  begin  rattles 0= while  yield  repeat ;
 
 \ ---- as she comes in ----
-: put-on-tri ( id tri -- )   \ (on its middle, its heading kept)
-    {: id tri | F: x F: y F: z :}  tri tri-center to z to y to x
-    x f>cell y f>cell z f>cell id body-yaw f>cell  id send place ;
 : came-in ( exit -- )
     room-sounds  0 gate-held !
     dup forced-exit = if

@@ -197,6 +197,9 @@ create mv-at /vec allot
     {: id tri face F: x z :}  tri x z floor-at  face deg>yaw  {: F: px py pz yaw :}
     px f>cell py f>cell pz f>cell yaw f>cell  id send place ;
 : place-on-tri ( id tri face -- )  {: id tri face :}  id tri face  tri tri-center fswap fdrop  place-at ;
+: put-on-tri ( id tri -- )   \ put on its middle at once, its heading kept
+    {: id tri | F: x F: y F: z :}  tri tri-center to z to y to x
+    x f>cell y f>cell z f>cell id body-yaw f>cell  id send place ;
 : noclip ( id on -- )  swap send noclip ;   \ (through blocked floor)
 
 \ ---- the message window ----

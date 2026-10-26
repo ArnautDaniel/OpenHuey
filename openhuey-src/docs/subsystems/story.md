@@ -135,7 +135,7 @@ about, his alert 4) and its calming frame (`hidden-calm`); a breakable's own sha
 (`shatters-with`); moths (`moths-at`: a swarm in an effect slot, the rooms' 0x35;
 `moths-to` sends it off for another point, their 0x33; `moths-sound` keeps a sound where it
 wanders); Hewie's wary stand at a point (`hewie-stands-by`, the shared $8A); an item used up
-(`spend`); the map's page (`map-page`); a scare (`fright+`, her fright raised by so much); a creature let out turned (`creature-facing`); the
+(`spend`); the map's page (`map-page`); a scare (`fright+`, her fright raised by so much); put on a triangle, its heading kept (`put-on-tri`); a creature let out turned (`creature-facing`); the
 game over (`game-over`, its kind; `ending-var` which ending caught her). A place has the original's
 32 effect slots. A
 whole breakable is a target a stalker's blow may strike instead of her (`zone-target`, cleared as
@@ -206,6 +206,10 @@ Places, each with its test in `tests/places/`:
   cracked plate-key, the candlesticks by day and night, the tapestry, the Medallion Hewie finds, the
   door unlocked from this side, Daniella about beyond at night, brought in by the forced way
   (Daniella's scene), the replay.
+- castle-1f-19, the flooded passage (30): the hole Hewie hides in at her "go there" (out at her
+  "come back"), Debilitas by it - the ambush (a scene, its files), Hewie fetching the Rubrum
+  Medallion across the water, splashes, his bark at the hole and look across, the hole's remarks,
+  the replay.
 
 ## API
 
