@@ -197,6 +197,9 @@ create mv-at /vec allot
     {: id tri face F: x z :}  tri x z floor-at  face deg>yaw  {: F: px py pz yaw :}
     px f>cell py f>cell pz f>cell yaw f>cell  id send place ;
 : place-on-tri ( id tri face -- )  {: id tri face :}  id tri face  tri tri-center fswap fdrop  place-at ;
+: on-floor-of? ( id flags -- flag )   \ standing on a triangle with any of these flags
+    over here? 0= if  2drop false exit  then  swap body-tri dup 0< if  2drop false exit  then  nav-flags and 0<> ;
+: throws-her ( id -- )  false fiona send throw-down ;   \ she is thrown down by it
 : put-on-tri ( id tri -- )   \ put on its middle at once, its heading kept
     {: id tri | F: x F: y F: z :}  tri tri-center to z to y to x
     x f>cell y f>cell z f>cell id body-yaw f>cell  id send place ;
@@ -436,6 +439,7 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
     stalker-told? 0= if  false exit  then
     st-kind-now @  dup debilitas-kind = over debilitas-6-kind = or swap debilitas-7-kind = or ;
 : stalker-to ( room tri -- )  stalker dup 0< if  drop 2drop exit  then  send stalker-in ;   \ (into the game there)
+: his-own-time ( -- )  -1 s" summoner" actor-named send summoner-cooldown ;   \ (the summoner's wait: his own kind's)
 : summoner-sooner ( secs -- )  s" summoner" actor-named send summoner-cooldown-less ;
 : stalker-order ( mode -- )  stalker dup 0< if  2drop exit  then  send stalker-order ;
 : summoner ( -- id )  s" summoner" actor-named ;
@@ -599,6 +603,7 @@ create spot-xts #activities cells allot
 : on-group? ( id group -- flag )   \ standing on a triangle of that group
     over here? 0= if  2drop false exit  then  swap body-tri dup 0< if  2drop false exit  then  swap nav-in-group? ;
 : closed-off ( door -- )  dup doors-actor send close-off  lock ;   \ gone for good: its exits use another door
+: door-as ( door from -- )  doors-actor send copy-door ;   \ door takes on the other's open mark, lock and closing off
 : exits-redone ( -- )  doors-actor send rebuild-exits ;
 0 constant fiona-slot   1 constant hewie-slot   2 constant stalker-slot   \ (the story's character slots)
 : doors-into ( room slot on -- )  doors-actor send lock-room-for ;   \ every door into the room locked against them, or not
