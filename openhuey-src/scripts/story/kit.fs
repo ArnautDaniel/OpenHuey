@@ -60,8 +60,10 @@ state: place-state
   cell field started-now        \ the action she started for Hewie this frame (-1 none: fiona-started)
   cell field straining-now      \ she strains at something that won't move (fiona-straining)
   cell field fiona-mode-now  cell field fiona-doing-now  cell field fiona-cmd-now
+  cell field struck-by-now      \ who struck or caught her (-1 nobody: her reaction her own)
   cell field hewie-act-now  cell field hewie-cond-now  cell field hewie-reach-now  cell field hewie-cmdable-now  cell field hewie-near-now
   cell field hewie-breakable-now   \ he may be broken off what he does (Hewie_MayBreakOff)
+  cell field hewie-way-now         \ his side of a split room (one-half / other-half: 1, 2)
   cell field hewie-hp-now          \ his health, 0..100
   \ the scene asked for (scenes.fs): how far it is, whether its movie is there, what to do at each new shot
   cell field scene-step  cell field scene-movie  cell field cue-xt
@@ -969,7 +971,7 @@ behaviour placing
       self subscribe tick  self subscribe frame-end  self subscribe moving  self subscribe danger
       self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset
-      self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message
+      self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
       self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
       self subscribe item-event
       room-starts  frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people
@@ -1008,9 +1010,11 @@ behaviour placing
       room slot cells cr-room + !  mode slot cells cr-mode + !  0 slot cells cr-age + ! ;
   on panic ( stage level -- )  drop panic-stage ! ;
   on fiona-doing ( mode sub cond cmd doing -- )  fiona-doing-now !  fiona-cmd-now !  drop drop  fiona-mode-now ! ;
+  on fiona-struck-by ( who -- )  struck-by-now ! ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       {: here act mode sub cond mood group cmdable near reach breakable way trust :}
-      act hewie-act-now !  cond hewie-cond-now !  reach hewie-reach-now !  cmdable hewie-cmdable-now !  near hewie-near-now !  breakable hewie-breakable-now ! ;
+      act hewie-act-now !  cond hewie-cond-now !  reach hewie-reach-now !  cmdable hewie-cmdable-now !  near hewie-near-now !  breakable hewie-breakable-now !
+      way hewie-way-now ! ;
   on panic-onset ( on -- )  onset ! ;
   on fiona-requested ( kind -- )  request-now ! ;
   on fiona-unseen ( on -- )  unseen-now ! ;

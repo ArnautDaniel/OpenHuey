@@ -5,7 +5,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_room_conds.fs
 IN: test-room-conds
 USING: tester engine game-state actors messages common room-names game debug fiona.state story.state story.words
-  story.rooms.castle-b1-5 story.rooms.old-mansion-b1-6 story.rooms.chaos-forest-13 story.rooms.castle-1f-9 story.rooms.castle-1f-13 ;
+  story.rooms.castle-b1-5 story.rooms.old-mansion-b1-6 story.rooms.chaos-forest-13 story.rooms.castle-1f-13 ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
@@ -28,9 +28,6 @@ T{ [: 3 story.kit:thing-lying? 0= ;] in-room -> -1 }T
 3 game:fiona body-tri  game:fiona body-pos f>cell >r f>cell >r f>cell r> r>  0 0 0  game:things send thing-made  deliver  2 run-frames
 T{ [: 3 story.kit:thing-lying? 0= ;] in-room -> 0 }T
 engine:things-clear
-
-testing Fiona's reaction with nobody behind it (castle-1f-9): not in one, so no
-T{ [: castle-1f-9.cond00? fiona-struck? ;] in-room -> 0 0 }T
 
 testing her 20 .. 120 from a point (castle-b1-5): 50 away yes, beside it no
 : split16 ( n -- hi lo )  $FFFF and dup 8 rshift swap $FF and ;

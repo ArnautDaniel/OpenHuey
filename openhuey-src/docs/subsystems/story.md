@@ -139,7 +139,8 @@ wanders); Hewie's wary stand at a point (`hewie-stands-by`, the shared $8A); an 
 by someone (`throws-her`); a door taking on another's state (`door-as`); the summoner's wait his
 kind's own (`his-own-time`); dials (`dial-set`, `dial-turns`, `dial-asked`: a number 0..6 in a progress
 variable, 30 degrees each, the stick's repeat); an object catching the light (`catches-light`);
-one character reflected in an object (`object-mirror`: MirrorFragment); a creature let out turned (`creature-facing`); the
+one character reflected in an object (`object-mirror`: MirrorFragment); who struck her (`struck-by-now`), Hewie's
+side of a split room (`hewie-way-now`); a creature let out turned (`creature-facing`); the
 game over (`game-over`, its kind; `ending-var` which ending caught her). A place has the original's
 32 effect slots. A
 whole breakable is a target a stalker's blow may strike instead of her (`zone-target`, cleared as
@@ -222,6 +223,10 @@ Places, each with its test in `tests/places/`:
   right one's lens glinting), the Lunar Refractor set (a scene, her reflection in the lens), the
   dials right with castle-2f-1's - out there and back by the forced ways, the moon door unlocked
   and the five doors open; the vase's Medallion, the moon on the wall, the locked door, the replays.
+- castle-1f-9, the hall of the half stairs (37): the stairs in turn, the sealed well, the bench, two
+  vases (the Magnesia), the Rubrum Medallion Hewie sniffs out, the Album Medallion he fetches off
+  the stairs at her "go there", the garden door locked - the Garden Key and the Luminessants'
+  scene (their file, the creature let out), her first fright, the motes, tint and specks, the replay.
 
 ## API
 
