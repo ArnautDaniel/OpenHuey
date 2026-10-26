@@ -2,7 +2,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_room_cmds.fs
 IN: test-room-cmds
 USING: tester engine game-state actors messages common room-names game debug story.state facts story.words
-  story.rooms.castle-1f-2 story.rooms.castle-1f-12
+  story.rooms.castle-1f-2
   story.rooms.castle-2f-2 story.rooms.castle-2f-12 ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
@@ -16,14 +16,6 @@ T{ [: s" ori" object-here?  0 castle-1f-2.cmd00  s" ori" place-y object@ 11e ~= 
 : wobbles ( -- n )  [: 0 castle-1f-2.cmd03  2 castle-1f-2.cmd03  0  begin  1+  1 castle-1f-2.cmd03  s" doramukan" $34 object@ f0=  over 50 > or  until ;] in-room ;
 T{ wobbles  [: s" doramukan" place-y object@ s" doramukan" $38 object@ ~= ;] in-room -> 6 -1 }T   \ (1 less 0.2 five times: just above 0 in single floats)
 
-
-castle-1f-12 room!  20 run-frames
-testing castle-1f-12: a dial set from its variable (3 notches: 0 degrees), then turning a degree a frame to 5 notches
-0 3 [: pvar-set ;] in-room
-T{ [: 0 0 castle-1f-12.cmd00  s" syuukouki2" turn-y object@ rad>deg 0e ~= ;] in-room -> -1 }T
-0 5 [: pvar-set ;] in-room
-: turns ( -- n )  [: 1 ebit-clear  0  begin  1+  0 2 castle-1f-12.cmd00  1 ebit?  over 200 > or  until ;] in-room ;
-T{ turns 60 - abs 2 <  [: s" syuukouki2" turn-y object@ rad>deg 60e f- fabs 1.5e f< ;] in-room -> -1 -1 }T
 
 castle-2f-2 room!  20 run-frames
 testing castle-2f-2: the doll put back, knocked (a push up), falling and landing on the floor, settled

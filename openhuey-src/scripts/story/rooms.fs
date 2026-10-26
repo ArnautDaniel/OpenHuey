@@ -1,6 +1,6 @@
 \ story/rooms.fs - every room's event scripts (story/rooms/*.fs), loaded.
 IN: story.rooms
-USING: story.rooms.castle-1f-2 story.rooms.castle-1f-12 story.rooms.castle-2f-9
+USING: story.rooms.castle-1f-2 story.rooms.castle-2f-9
     story.rooms.castle-3f-1 story.rooms.castle-b1-4 story.rooms.castle-1f-13 story.rooms.castle-1f-3 story.rooms.castle-2f-1 story.rooms.castle-b1-5
     story.rooms.castle-b1-6 story.rooms.off-map-0d story.rooms.castle-1f-5
     story.rooms.castle-b1-1 story.rooms.castle-b1-2 story.rooms.castle-b1-3 story.rooms.castle-2f-10

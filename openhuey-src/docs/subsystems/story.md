@@ -137,7 +137,9 @@ about, his alert 4) and its calming frame (`hidden-calm`); a breakable's own sha
 wanders); Hewie's wary stand at a point (`hewie-stands-by`, the shared $8A); an item used up
 (`spend`); the map's page (`map-page`); a scare (`fright+`, her fright raised by so much); put on a triangle, its heading kept (`put-on-tri`); on a triangle with these floor flags (`on-floor-of?`); she thrown down
 by someone (`throws-her`); a door taking on another's state (`door-as`); the summoner's wait his
-kind's own (`his-own-time`); a creature let out turned (`creature-facing`); the
+kind's own (`his-own-time`); dials (`dial-set`, `dial-turns`, `dial-asked`: a number 0..6 in a progress
+variable, 30 degrees each, the stick's repeat); an object catching the light (`catches-light`);
+one character reflected in an object (`object-mirror`: MirrorFragment); a creature let out turned (`creature-facing`); the
 game over (`game-over`, its kind; `ending-var` which ending caught her). A place has the original's
 32 effect slots. A
 whole breakable is a target a stalker's blow may strike instead of her (`zone-target`, cleared as
@@ -216,6 +218,10 @@ Places, each with its test in `tests/places/`:
   the bridge falls - a scene, the far door closed off, Debilitas shoving the rubble down, throwing
   her in his way), three vases (the Beef Jerky and the Magnesia), the Medallion Hewie fetches
   across the gap, the clamp's remarks, the map's pages, the replay.
+- castle-1f-12, the moon dials' room (4): two dials turned by the stick (clicking at a number, the
+  right one's lens glinting), the Lunar Refractor set (a scene, her reflection in the lens), the
+  dials right with castle-2f-1's - out there and back by the forced ways, the moon door unlocked
+  and the five doors open; the vase's Medallion, the moon on the wall, the locked door, the replays.
 
 ## API
 

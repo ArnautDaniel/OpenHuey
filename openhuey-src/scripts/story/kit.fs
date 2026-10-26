@@ -5,7 +5,7 @@
 \ The places themselves: story/places/*.fs. A room without one still runs its converted
 \ scripts (story/room.fs).
 IN: story.kit
-USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names effects hewie-names hewie.anims floor-flags ;
+USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names effects hewie-names hewie.anims floor-flags keys ;
 
 \ ---- the characters a place directs: Fiona, Hewie, the stalker in the game ----
 3 constant #people
@@ -645,6 +645,37 @@ $24 constant place-y
 
 \ ---- things that hang and swing (the room's objects by their strings) ----
 $10 constant turn-x   $18 constant turn-z   $20 constant place-x
+: catches-light ( addr len F: turn -- )   \ an object catching the light: a flash at it, turned as it is and more by turn
+    {: a n F: turn :}  a n placed-here? 0= if  exit  then
+    a n place-x object@  a n place-y object@  a n place-z object@  a n turn-y object@ turn f+  effects:window-flash ;
+: object-mirror ( k strength model addr len F: nx ny nz -- )   \ effect k: one character's model reflected in an
+    {: k str model a n F: nx ny nz :}   \ object's plane (normal n, turned with it), an 8 x 8 square there (MirrorFragment)
+    a n placed-here? 0= if  k effect-off exit  then
+    nx ny nz  a n turn-x object@  a n turn-y object@  a n turn-z object@
+    a n place-x object@  a n place-y object@  a n place-z object@  mirror-square
+    k effect @ 0= if  k 3 and effects:reflection k effect!  then  k 3 and false str reflect!  k 3 and model reflect-only ;
+\ ---- dials: an object turned by the stick to a number (0..6, 30 degrees each from its base) kept in
+\ a progress variable; turned a degree a frame to it (room_dial: the castle's moon dials) ----
+create arrows-held 4 cells allot   \ (frames each arrow has been held: the pad's repeat)
+: arrow-keys ( i -- k1 k2 )   \ 0 up, 1 right, 2 down, 3 left (the arrows, or WASD)
+    case  0 of  key: Up key: W  endof  1 of  key: Right key: D  endof  2 of  key: Down key: S  endof
+          >r key: Left key: A r>  endcase ;
+: count-arrows ( -- )   \ (a frame's: how long each arrow has been held)
+    4 0 do  i cells arrows-held +  i arrow-keys key-down? swap key-down? or if  1 swap +!  else  0 swap !  then  loop ;
+: arrow-repeat? ( i -- flag )   \ (pressed, then again after 12 frames held, every 2: gMenuRepeat)
+    cells arrows-held + @  dup 1 = if  drop true exit  then  dup 13 < if  drop false exit  then  13 - 2 mod 0= ;
+: dial-angle ( var base -- ) ( F: -- rad )  swap var@ 30 * + s>f deg>rad ;
+: dial-set ( addr len var base -- )  {: a n var base :}  a n placed-here? 0= if  exit  then  var base dial-angle a n turn-y object! ;
+: dial-turns ( addr len var base -- there? )   \ (a degree a frame toward its number)
+    {: a n var base :}  a n placed-here? 0= if  true exit  then
+    a n turn-y object@ rad>deg  var base dial-angle rad>deg f-
+    fdup 1e f> if  fdrop -1e deg>rad a n turn-y object+!  false exit  then
+    -1e f< if  1e deg>rad a n turn-y object+!  false  else  true  then ;
+: dial-asked ( var -- n )   \ the stick this frame: 1 turned to another number, -1 done (cross or triangle), 0 nothing
+    {: var :}  count-arrows
+    cross button-pressed?  triangle button-pressed? or if  -1 exit  then
+    var var@  3 arrow-repeat? if  dup if  1-  then  else  1 arrow-repeat? if  dup 6 < if  1+  then  then  then
+    dup var var@ <> if  var var!  1  else  drop 0  then ;
 $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3C constant swing-pushed   \ (their own: floats)
 4 constant swing-back   \ (a whole number: swinging back)
 : hanging ( i -- addr len )  this-room @ story.strings:room-string ;
