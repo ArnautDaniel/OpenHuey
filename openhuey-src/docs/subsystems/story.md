@@ -114,8 +114,12 @@ place gone). The kit's `load-scene`, `run-scene`, `at-shots`.
 
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
 after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
-while she is half hidden, the mandragora's spell, the other game's rewards, her drink ($8D),
-Hewie fed ($8E-$91). A place also starts as the converted rooms did (the room visited, no track
+while she is half hidden, the mandragora's spell, the other game's rewards, searching the
+stalker ($80, offered by the shared after-phase 2: down on his front - $1806 or its twitch
+$1805, Pursuer_InStance2Anim, the converted rooms' cond 0x4B - she close, 2 more than their
+sizes, and facing him within 50 degrees; she bends to him and finds the next of his kind's
+gifts, 0xB6 - the first always, after it 1 in 10; none due, his time down is over and he gets
+up), her drink ($8D), Hewie fed ($8E-$91). A place also starts as the converted rooms did (the room visited, no track
 wanted till asked, the camera started for the room), its doings wait out her panic's onset, it
 shows her locked door's message, and it takes its own item uses (`items-here`: the plates'
 words, a marionette) before the shared ones. A doing whose character another doing takes ends,

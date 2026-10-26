@@ -388,6 +388,7 @@ message panic-reach ( level -- )             \ 0xC9: the level set to it if not 
 message stalker-order ( mode -- )            \ 0x2F: 0 after her, 2 to her room / searching here, 3 searching
 message stalker-clock ( frames -- )          \ 0x2A: his mode's clock (+0x1660)
 message stalker-knock-out ( -- )             \ 0x30: knocked down, out of health
+message stalker-down-over ( -- )             \ 0xB6 searched him, no gift due: his time down over (+0x1664 0) - he gets up
 message rage ( on -- )                       \ 0x31: in a rage (Pursuer_SetRage: his stance and walk)
 message activate ( -- )                      \ 0x15: (re)started where it is, afresh (Pursuer_ / Fiona_ / Hewie_Activate)
 message set-cond ( v -- )                    \ 0x47: his condition (+0xC4: 0 well, 1 hurt, 2 down)

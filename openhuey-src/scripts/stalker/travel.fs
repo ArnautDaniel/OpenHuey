@@ -101,7 +101,7 @@ variable in-tri
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
     my-mode @ held-off = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
-        own-tri dup tri-center goal-at vec!  goal-at plan 0> if  walk-slow play  ['] walking step!  then  exit
+        own-tri dup tri-center goal-at vec!  goal-at plan 0> if  walk-slow play  ['] walking step!  else  stand  then  exit
     then
     my-mode @ after-her = if  chase-start exit  then
     my-mode @ heading-for-her = if  searching mode!  then
@@ -246,7 +246,7 @@ create fs-a /vec allot  create fs-b /vec allot
         then  drop
     loop ;
 : head-home ( -- )
-    own-a @ 0< if  wander-off exit  then  avoid-clear
+    own-a @ 0< if  wander-off exit  then
     own-a @ route! {: na :}
     own-b @ 0< if  na 0> if  own-a @ route! drop  then  exit  then
     own-b @ route! {: nb :}   \ (his route there now: the shorter kept)

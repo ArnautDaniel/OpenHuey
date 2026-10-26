@@ -25,17 +25,17 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 : give-up? ( -- flag )   \ (Debilitas_GivesUp: his damage to give up at, not held off already, not in a
     gives-up @ 0= if  false exit  then   \ doorway, and a way home - else on after her; the Pursuer's: never)
     hits @ give-up-hits @ <  my-mode @ held-off = or  at-door? or if  false exit  then
-    way-home ;
+    avoid-clear  way-home ;   \ (afresh: the doors that let him down on his way home kept till then)
 : give-up ( -- )   \ (out by the first door of his way home; in one of his rooms, to its spot)
     0 hits !  give-up-cry 7 sound  held-off mode!  no-search search-phase !
-    making-for @ 0< if  in-play  else  making-for @ leave-by  then ;
+    making-for @ 0< if  come-into-play  else  making-for @ leave-by  then ;
 :noname ( -- flag )  give-up? dup if  give-up  then ; is gave-up?
 \ on as before by his stance (Pursuer_StanceByFiona, PickStep): held off, on home; seeing her,
 \ his chase; else after her, or searching
 : on-as-before ( -- )
     my-mode @ held-off = if   \ (held off already: on home)
         way-home 0= if  stand exit  then
-        making-for @ 0< if  in-play  else  making-for @ leave-by  then  exit
+        making-for @ 0< if  come-into-play  else  making-for @ leave-by  then  exit
     then
     sees-fiona @ if  chase-begin  else  my-mode @ after-her = if  chase-start  else  search-again  then  then ;
 : recovered ( -- )

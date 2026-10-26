@@ -133,7 +133,8 @@ $1300 constant gesture-anims
     script-held @ if  held-frame exit  then
     away? if  away  pose  tell-danger  exit  then
     thaw  hurt-down  senses  modes  dog-temper  shut-behind  ladder-watch
-    step @ ?dup if  execute  then  search  played? looking   \ (Pursuer_Think: the head after the behaviour)
+    step @ ?dup if  execute  then   \ (his search waits while he reels - struck, down: the original's behaviour is
+    reeling @ 0= if  search  then  played? looking   \ only picked at a step's end; then Pursuer_Think's head)
     played? growls @ and if  growl  then
     played? if  stalker.moving:footsteps  anim-sounds-play  then
     pose  fit-legs  tell-danger ;
@@ -354,6 +355,7 @@ behaviour stalking
   on stalker-order ( mode -- )  in-game @ if  ordered  else  drop  then ;
   on stalker-clock ( frames -- )  mode-t ! ;
   on stalker-knock-out ( -- )  in-game @ if  knocked-out  then ;
+  on stalker-down-over ( -- )  0 down-t ! ;
   on rage ( on -- )  0<> raging ! ;
   on activate ( -- )   \ (Pursuer_Activate: Character_Activate - not held, not posed)
       script-held @ posed @ or  unheld  0 sm-done !

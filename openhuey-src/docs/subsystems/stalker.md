@@ -191,8 +191,13 @@ At the end of each step - a blow's reaction, his striking back, any move of his 
 (Pursuer_FrameUpdate) - 20 damage or more (kind 6 80: DEBILITAS_GIVE_UP_HITS; not held off, not
 in a doorway) and a way home: he gives up - his cry ($20), held off (mode 4, 900 frames), the
 damage count back to 0 - and goes out by the first door of his route to the nearer of his own
-rooms (Debilitas $20; kind 6 $20, $02; in one of them, to its spot: Debilitas_PickDestination).
-No route home: he doesn't give up. The others never do (Pursuer_GivesUp: kinds 7 and 27 too).
+rooms (Debilitas $20; kind 6 $20, $02; in one of them, to its spot: Debilitas_PickDestination;
+there already, he stands). No route home: he doesn't give up. A door of his way home he can't
+line up at (no way to his spot by it) is avoided as Pursuer_OnToNextExit marks it, and his way
+home planned again without it - the doors avoided kept till he next gives up. While he reels
+(struck, down) his search waits - the original picks its behaviour only at a step's end - so
+he lies his whole time down. Searched with no gift due (`stalker-down-over`, the story's 0xB6)
+his time down is over. The others never do (Pursuer_GivesUp: kinds 7 and 27 too).
 
 **Taking her** (P2b, `stalker/grab.fs`; Pursuer_StateFaceFiona / StateWalkOn, Pursuer_CloseOnFiona):
 her floor not free for him (flags $80001) - his attack tables 6 / 7 instead (7 from the panic's
