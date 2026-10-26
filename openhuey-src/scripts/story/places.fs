@@ -4,4 +4,5 @@ IN: story.places
 USING: story.places.castle-2f-3 story.places.front-garden-3 story.places.castle-2f-8 story.places.castle-1f-4
     story.places.lake-pathway-2 story.places.lake-pathway-1 story.places.front-garden-4
     story.places.front-garden-2 story.places.front-garden-5 story.places.front-garden-1
-    story.places.castle-1f-17 story.places.castle-1f-1 story.places.castle-1f-10 ;
+    story.places.castle-1f-17 story.places.castle-1f-1 story.places.castle-1f-10
+    story.places.castle-1f-18 ;

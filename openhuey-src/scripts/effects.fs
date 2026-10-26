@@ -20,6 +20,9 @@ behaviour room-effect
   on effect-command ( v -- )  particles @ swap particles-command ;   \ (the scripts' 0x87)
   on effect-place ( x y z -- )  cells>xyz  particles @ particles-place ;   \ (moved by a room's command)
   on effect-rest ( n -- )  particles @ swap particles-rest! ;
+  on effect-to ( n x y z -- )  cells>xyz  particles @ swap butterflies-to ;
+  on effect-sound ( id bank -- )   \ (butterflies) a sound where they wander now
+      {: id bank :}  particles @ butterflies-at if  {: F: x y z :}  id bank 0 0  x y z  sound-at  then ;
   on killed ( -- )  particles @ particles-free ;
 end-behaviour
 

@@ -129,7 +129,10 @@ own blow in a zone (`her-blow-in?`); hung things - the chimes she brushes walkin
 `chimes-rest`: hangers_swing) and one struck swaying away from who struck it till still
 (`sway-start`, `sways`); a hiding place's stalker (`will-find?`: the odds, a creature moving
 about, his alert 4) and its calming frame (`hidden-calm`); a breakable's own shatter
-(`shatters-with`). A
+(`shatters-with`); moths (`moths-at`: a swarm in an effect slot, the rooms' 0x35;
+`moths-to` sends it off for another point, their 0x33; `moths-sound` keeps a sound where it
+wanders); Hewie's wary stand at a point (`hewie-stands-by`, the shared $8A); an item used up
+(`spend`). A place has the original's 32 effect slots. A
 whole breakable is a target a stalker's blow may strike instead of her (`zone-target`, cleared as
 each frame starts: Events_NearestPoint, as the converted rooms' zones of kind bit 1). The
 converted files of the rooms that are places are kept, unloaded, in `scripts/story/rooms-ref/`.
@@ -178,6 +181,9 @@ Places, each with its test in `tests/places/`:
 - castle-1f-10, the doll's room (41): the remarks, the flame, the beef jerky, Debilitas sitting
   with his doll (a figure: his doll's model) - the scene and the Smudged Key, the dance - his
   chase scene, the Bisque Doll, the replays.
+- castle-1f-18, the moth room (28): the moths round the lamp by the shut door (their remark and
+  file, Hewie wary of them, their sound), the Fresh Flowers laid in the vase (the scene: the moths
+  drawn over, the door unlocked), the torn picture, the clock, the empty vase, the replay.
 
 ## API
 

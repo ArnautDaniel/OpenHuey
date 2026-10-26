@@ -87,7 +87,10 @@ Engine words each make one (`*-new`, giving the system); `effects.fs` wraps them
 (made and forgotten, or kept in a story variable), the TV as a room effect. Those that take
 `effect-command`: the embers (0 a gust, 1 flung away), the fire and the steam (-1 put out / dying
 down), the floor glow (its level), the TV (on / off). A room effect can be moved (`effect-place`,
-`particles-place`) and a flicker's rest set (`effect-rest`, `particles-rest!`).
+`particles-place`) and a flicker's rest set (`effect-rest`, `particles-rest!`). Butterflies (moths)
+are sent off for another point (`effect-to`: n of them, 0 as they are - `butterflies-to`,
+Butterflies_SetParams) and play a sound where they wander about now (`effect-sound`:
+`butterflies-at`, the effect's +0x20 - room $1C's command 1).
 
 - **Effect79B00** (`stones-new`, House of Truth): 32 boxes dropped from a height onto random floor
   triangles over and over, tumbling, bouncing once off floors that let them, fading on the

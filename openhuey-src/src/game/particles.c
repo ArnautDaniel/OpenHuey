@@ -4204,6 +4204,16 @@ void particles_butterflies_to(int h, Vec3 to, int count) {   /* Butterflies_SetP
     }
 }
 
+int particles_butterflies_at(int h, Vec3 *at) {
+    System *s = get(h);
+
+    if (s == NULL || s->what != BUTTERFLIES) {
+        return 0;
+    }
+    *at = s->wander;
+    return 1;
+}
+
 static void butterflies_step(System *s) {   /* Butterflies_Update */
     Vec3 d = vec3_sub(s->target, s->c);
     float d2 = d.x * d.x + d.y * d.y + d.z * d.z, tilt, side, speed;

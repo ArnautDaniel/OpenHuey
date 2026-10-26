@@ -243,6 +243,8 @@ message hewie-met ( m0 m1 m2 m3 -- )           \ (Hewie) how often he leapt at e
 message fetch-this ( thing -- )                \ (Hewie) Fiona threw the ball: his to fetch (things.fs)
 message effect-place ( x y z -- )           \ (a room effect) moved there (f>cell)
 message effect-rest ( n -- )                \ (a flickering sprite) its rest before its next run
+message effect-to ( n x y z -- )            \ (butterflies, moths) off for that point (f>cell), n of them (0: as many)
+message effect-sound ( id bank -- )         \ (butterflies, moths) a sound played where they wander now
 message reflect-in ( slot -- )            \ (a reflection, effects.fs) its engine slot
 message keri-drop ( k tri x y z -- )         \ (things) the story's debris: a kind-9 thing carrying room object "keri<k>", falling from there (f>cell)
 message trap-place ( tri x y z -- )          \ (things) the story's trap: a kind-10 thing set down there (f>cell)

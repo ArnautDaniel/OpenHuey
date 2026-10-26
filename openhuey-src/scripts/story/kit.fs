@@ -25,6 +25,7 @@ enum: person  fiona-p hewie-p stalker-p ;
 \ ---- the place's state ----
 8 constant #activities
 48 constant #own   \ the place's own cells (`own:`)
+32 constant #room-effects   \ (RoomEffects: 0x20 slots)
 state: place-state
   cell field this-room
   cell field came-by            \ the exit she came in by (-1: none)
@@ -64,7 +65,7 @@ state: place-state
   cell field hewie-hp-now          \ his health, 0..100
   \ the scene asked for (scenes.fs): how far it is, whether its movie is there, what to do at each new shot
   cell field scene-step  cell field scene-movie  cell field cue-xt
-  8 cells field effects        \ the effects the place made (actors; 0 none), gone with it
+  #room-effects cells field effects   \ the effects the place made (actors; 0 none), gone with it (RoomEffects: 32)
   cell field tab-moving         \ the item's tab sliding (the sub screen tells when it's done)
   \ the stalker in the game, as he tells (stalker-doing): his room, condition, kind, alert (his mode)
   cell field st-room-now  cell field st-cond-now  cell field st-kind-now  cell field st-alert-now  cell field st-came-now  cell field st-age
@@ -354,6 +355,7 @@ $83 constant fanfare-sound   $85 constant fanfare-bank
 : show-item-tab ( item -- )   \ (its tab slid in to show her: waited out)
     -1 tab-moving !  0 swap subscreen send tab-op  begin  tab-moving @ while  yield  repeat ;
 $801B constant filed-message    \ "has been saved to your file."
+: spend ( item -- )  items send take-item ;   \ one of it used up
 : filed ( doc -- )  dup item-named  1 give-item  fanfare  filed-message say ;   \ a document filed, said so
 
 \ ---- the panic, Fiona ----
@@ -437,7 +439,7 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : effect! ( id k -- )   \ the place's effect k (the one there before gone)
     dup effect @ ?dup if  dup alive? if  kill  else  drop  then  then  effect ! ;
 : effect-off ( k -- )  0 swap effect! ;
-: effects-gone ( -- )  8 0 do  i effect-off  loop ;
+: effects-gone ( -- )  #room-effects 0 do  i effect-off  loop ;
 : tell-effect ( v k -- )  effect @ dup alive? if  send effect-command  else  2drop  then ;
 \ the room's tint (Tint_SetParams: the look's slot): the glow colour and the contrast colour, RGBA
 $1F constant tint-slot
@@ -572,6 +574,10 @@ create spot-xts #activities cells allot
     hewie true hush  hewie bark-anim 10 start-blend  hewie bark-mark wait-mark
     hewie false hush  found-bark common-bank hewie sound-by  hewie true hush
     hewie wait-anim  hewie 10 idle  hewie false hush  10 frames  hewie keep  hewie send hewie-stay ;
+: hewie-stands-by ( F: x y z -- )   \ (the rooms' shared $8A: over to it, tense, his eyes on it a while, staying put)
+    {: F: x y z :}  hewie hold  hewie wait-move  hewie spot-move 0 0  x y z 0e  move  hewie wait-move
+    hewie hewie.anims:stance-anim start-anim  yield  hewie look-point-move 0 0  x y z 0e  move
+    120 frames  hewie -1 look-at  yield  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
 : hewie-sits-by ( F: x y z -- )   \ (the rooms' shared $89: turned to it, sitting a while, staying put)
     {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
     hewie hewie.anims:sit-a-while-anim 10 play-blend  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
@@ -592,6 +598,11 @@ $FF constant no-track
 : music-part ( stage -- )  music send music-stage ;
 : rgba ( r g b a -- rgba )  {: r g b a :}  r 24 lshift  g 16 lshift or  b 8 lshift or  a or ;
 : flicker-at ( k F: x y z -- )  0 effects:flicker swap effect! ;   \ effect k: a sparkle
+: moths-at ( k n F: x y z -- )  effects:butterflies swap effect! ;   \ effect k: n moths (0: 8) making for the point (0x35)
+: moths-to ( k n F: x y z -- )   \ effect k's moths off for another point; n of them (0: as many as they are) - 0x33
+    {: k n F: x y z :}  k effect @ dup alive? 0= if  drop exit  then  >r  n x f>cell y f>cell z f>cell  r> send effect-to ;
+: moths-sound ( k id -- )   \ the room's sound id kept going where effect k's moths wander now
+    {: k id :}  k effect @ dup alive? 0= if  drop exit  then  >r  id story-volume or keep-playing or room-bank  r> send effect-sound ;
 : object ( obj op arg -- )  >r >r  this-room @ story.strings:room-string  r> r> placed-op ;   \ (the room's string names it)
 : object-hide ( obj -- )  0 1 object ;
 : object-show ( obj -- )  0 0 object ;
