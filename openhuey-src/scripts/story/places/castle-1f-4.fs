@@ -43,7 +43,6 @@ own: hewie-noticed      \ Hewie has barked at the wall (once a visit)
 own: hewie-at-spot      \ Hewie at his spot by the clock (his action there made)
 own: ambient-step   own: ambient-frames
 own: marionette-step    \ the marionette's scene: done (her part waits for it)
-own: flame-was          \ who stood in the flame's draught last frame (bits by person)
 
 \ ---- its places, its things ----
 $A constant puppet-door-area   $D constant plate-area   $E constant chair-area   $10 constant chair-2-area
@@ -266,14 +265,7 @@ defer the-trap
         0 ambient-frames !  first-ambient ambient-step @ + -17e 22e -9e room-sound
         ambient-step @ 1+ 4 mod ambient-step !
     then ;
-: in-draught? ( id -- flag )  22.8e 10.65e 68.75e 8e 4e touches? ;   \ (the flame's draught: its zone, 4 below it)
-: flame-stirs ( -- )   \ (someone stepping into the flame's draught: the flame told how - still 1, moving 2)
-    #people 0 do
-        i person-id  dup in-draught?  1 i lshift flame-was @ and 0= and if
-            flame-fx effect @ ?dup if  over i cells was-at + over body-at vec-dist fdup f* 0.5e f< if  1  else  2  then  swap send effect-command  then
-        then
-        in-draught? if  1 i lshift flame-was @ or  else  1 i lshift invert flame-was @ and  then  flame-was !
-    loop ;
+: flame-stirs ( -- )  flame-fx 22.8e 10.65e 68.75e 8e 4e flame-stirred ;   \ (someone stepping into its draught)
 : barks-at-wall ( -- )  140e -10e 94e hewie-barks-at ;
 : hewie-looks ( -- )
     hewie-in?  hewie-cond-now @ well-cond = and 0= if  exit  then

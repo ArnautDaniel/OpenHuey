@@ -50,8 +50,38 @@ USING: engine game-state actors messages common facts flag-names room-names path
 \ out of it; while loaded the cutscenes find its model by its kind (their cast)
 : file! ( addr len -- )  31 min dup my-file c!  my-file 1+ swap move ;
 : file ( -- addr len )  my-file 1+ my-file c@ ;
+\ a scene's figure (slots 3..5) wears its kind's other model (Pursuer_ModelFiles out of slot 2):
+\ its _200 pack - the scenes' own motions, $9000 on - with the play model's textures (hard: the H
+\ ones; the second set, _200.TEX, not yet); back in slot 2 his own again. (Debilitas 7 and 27's,
+\ O_DB2/DB2_200.PCK, isn't on the disc: none)
+: figure-base ( kind -- addr len | 0 0 )
+    case
+        debilitas-kind of  s" O_DB0/DB0"  endof    debilitas-6-kind of  s" O_DB0/DB0"  endof
+        daniella-kind of  s" O_DNL/DNL"  endof     kind34-kind of  s" O_DNL/DNL"  endof
+        kind35-kind of  s" O_DNL/DNL"  endof       kind36-kind of  s" O_DNL/DNL"  endof
+        riccardo-kind of  s" O_RCG/RCG"  endof     tintstalker-kind of  s" O_RCT/RCT"  endof
+        kind37-kind of  s" O_RCT/RCT"  endof       lorenzo-kind of  s" O_LRO/LRO"  endof
+        lorenzo2-kind of  s" O_LRY/LRY"  endof     kind39-kind of  s" O_LRY/LRY"  endof
+        kind12-kind of  s" O_LRF/LRF"  endof       \ (no hard textures of its own)
+        >r 0 0 r>
+    endcase ;
+create figure-pck 32 allot   create figure-tex 32 allot
+: joined ( addr len addr2 len2 buf -- addr' len' )  {: a n a2 n2 buf :}  a buf n move  a2 buf n + n2 move  buf n n2 + ;
+: figure-textures ( -- addr len )   \ (its base's _000, hard: _000H)
+    hard-mode?  my-kind @ kind12-kind <> and if  s" _000H"  else  s" _000"  then ;
+: wear-figure ( -- )
+    figure-worn @ if  exit  then
+    my-kind @ figure-base dup 0= if  2drop exit  then  {: a n :}
+    a n s" _200" figure-pck joined  a n figure-textures figure-tex joined  actor-load-textured {: id :}
+    0 him act.visible l!  my-model @ play-model !  id my-model !  -1 figure-worn !
+    my-motions 2@ dup if  id -rot motion-table  else  2drop  then
+    0 him act.visible l!  1 him act.alive l!  id file leg-bones human-legs ;
+: wear-own ( -- )
+    figure-worn @ 0= if  exit  then
+    my-model @ actor-free  play-model @ my-model !  0 figure-worn !  0 him act.visible l! ;
 : load ( slot -- )   \ (slots 3..5 have no bank: Daniella as a scene's figure mid-Debilitas leaves his)
-    dup my-slot !  -1 loaded !  my-kind @ my-model @ cast-as  play-slot = if  7 file sound-bank drop  then ;
+    dup my-slot !  -1 loaded !  dup play-slot = if  wear-own  else  wear-figure  then
+    my-kind @ my-model @ cast-as  play-slot = if  7 file sound-bank drop  then ;
 \ nothing of the story's on him (Character_Activate / Pursuer_EventReset's): not held nor posed,
 \ no look of its, through no blocked floor, his sounds his own
 : unheld ( -- )
@@ -225,10 +255,10 @@ $1300 constant gesture-anims
     hp @ 0> 0= if  hp-max @ hp !  then ;
 : unload ( -- )   \ (a scene's figure placed: out of the room too)
     0 loaded !  unheld  in-game @ if  go-out  else  body-off  my-model @ 0< 0= if  0 him act.visible l!  then  then
-    my-kind @ -1 cast-as ;
+    my-kind @ -1 cast-as  wear-own ;
 : dressed ( id addr len -- )   \ (his model loaded, its motion table by name: hidden till he comes in;
     \ he blinks, his hands posed by his motions - Pursuer_ModelUpdate's Motion_Eyes / Motion_Hands)
-    {: id a n :}  id my-model !  id a n motion-table  0 him act.visible l!  1 him act.alive l!
+    {: id a n :}  id my-model !  a n my-motions 2!  id a n motion-table  0 him act.visible l!  1 him act.alive l!
     id file leg-bones human-legs
     file s" O_LRO" model-of? dup chaired !  id swap lorenzo-chair ;   \ (LorenzoModel: in his chair)
 : load-model-file ( addr len -- id )  2dup file!  actor-load ;
@@ -284,7 +314,7 @@ create hard-tex 32 allot
 : debilitas-model ( addr len -- id )
     2dup file!  2dup hard-mode? if  hard-textures  then  actor-load-textured ;
 : debilitas-dress ( kind -- )   \ (anew when the kind's model isn't the one he has)
-    debilitas-file  2dup file compare 0= if  2drop exit  then
+    wear-own  debilitas-file  2dup file compare 0= if  2drop exit  then
     my-model @ dup 0< if  drop  else  actor-free  then
     debilitas-model s" motions-debilitas" dressed ;
 : debilitas-of? ( kind -- flag )   \ (the kinds the Debilitas actor is loaded as)

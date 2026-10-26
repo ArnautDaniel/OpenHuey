@@ -12,7 +12,11 @@ USING: engine game-state actors messages common vectors facts flag-names story-n
 enum: person  fiona-p hewie-p stalker-p ;
 : fiona ( -- id )  s" fiona" actor-named ;
 : hewie ( -- id )  s" hewie" actor-named ;
-: stalker ( -- id )  stalker-in-game ;
+: figure-of? ( id -- flag )   \ (in one of the story's slots 3..5: a scene's figure - a stalker's actor too)
+    dup 0< if  drop false exit  then
+    3 0 do  i 3 + story.words:slot-actor @ over = if  drop true unloop exit  then  loop  drop false ;
+: stalker ( -- id )   \ (the one with a body, not a scene's figure)
+    #stalkers 0 do  i stalker# dup 0< 0= if  dup body?  over figure-of? 0= and if  unloop exit  then  then  drop  loop  -1 ;
 : person-id ( i -- id )  case  fiona-p of fiona endof  hewie-p of hewie endof  stalker-p of stalker endof  >r -1 r>  endcase ;
 : person-of ( id -- i | -1 )
     dup 0< if  drop -1 exit  then
@@ -145,7 +149,8 @@ variable acting   -1 acting !   \ the activity being run (-1: none)
 
 \ ---- waiting (in an activity) ----
 : frames ( n -- )  0 ?do  yield  loop ;
-: here? ( id -- flag )   \ (in this room as last seen, and still in the game)
+: here? ( id -- flag )   \ (a person: in this room as last seen, and still in the game; a figure: in this room)
+    dup figure-of? if  dup body? if  body-room room-id =  else  drop false  then  exit  then
     dup person-of dup 0< if  2drop false exit  then  cells in-here + @ if  body?  else  drop false  then ;
 
 \ ---- moving those held (the story's moves: scripted-move, answered by `moving`) ----
@@ -449,6 +454,8 @@ create look-bytes 16 allot
 : screen-blend-off ( -- )  blend-slot 0 0 look-set ;
 : glow-at ( k rgba F: x y z size -- )  effects:glow swap effect! ;   \ effect k: a glow (Effect737D0)
 : preload ( room -- )  rooms-actor send room-preload ;
+: thing-lying? ( kind -- flag )   \ (one of the things of that kind lying about, in any room: PlacedThings_FirstOfKind)
+    128 0 do  i thing-used? if  i thing-kind over = if  drop true unloop exit  then  then  loop  drop false ;
 : creature-in ( room level tri kind reach -- )   \ (one let out there: the creatures' own way about - reach x 10 her nearness that wakes it)
     -1 0 0e f>cell  s" creatures" actor-named send creature-place ;   \ (the room a forced exit leads to, loaded ahead)
 \ a reflecting window (Reflection): reflection k (0..3) on the quad's corners, its side panels a window's
@@ -696,6 +703,14 @@ $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3
     {: id F: x y zz r h :}  id here? 0= if  false exit  then
     id body-at id x y zz r h touching-at? 0= if  false exit  then
     id person-of /vec * was-at + id x y zz r h touching-at? 0= ;
+: flame-stirred ( k F: x y z r h -- )   \ (effect k, a flame: whoever steps into its draught - it told
+    {: k F: x y zz r h :}                   \ how: 1 they barely moved this frame, 2 moving - 0x87)
+    #people 0 do
+        i person-id  x y zz r h steps-into? if
+            i person-id body-at  i /vec * was-at +  vec-dist fdup f* 0.5e f< if  1  else  2  then
+            k effect @ dup alive? if  send effect-command  else  2drop  then
+        then
+    loop ;
 : splash-from ( id count F: x y z -- )   \ water thrown up there, away from who stepped in
     {: id n F: x y zz :}  id body-pos  x y zz  n 2  $40 $50 $40 $80 rgba  effects:splash ;
 : her-blow-in? ( F: x y z r h -- flag )   \ her own blow (its point of contact) inside the cylinder
@@ -777,6 +792,25 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
     hewie-in?  danger-now @ calm = and  hewie-cmdable-now @ and 0= if  2drop exit  then
     0 ?do  dup i /look * + looks-at  loop  drop ;
 $2A constant replay-var   \ (the story's variable: which movie the extras' theatre replays)
+\ which of the room's acts replays it (the shared script $26's list, by the variable: $FF none; three
+\ go by the story's variable $2C too)
+create replay-acts
+    $27 c,  $28 c,  $10 c,  $08 c,  $0C c,  $0D c,  $10 c,  $0C c,  $11 c,  $12 c,  $14 c,  $19 c,  $03 c,  $16 c,  $07 c,  $29 c,
+    $2A c,  $11 c,  $12 c,  $15 c,  $1A c,  $09 c,  $0D c,  $0C c,  $0D c,  $0E c,  $0E c,  $0F c,  $07 c,  $08 c,  $0A c,  $17 c,
+    $09 c,  $01 c,  $09 c,  $0A c,  $FF c,  $0C c,  $0D c,  $0E c,  $0F c,  $10 c,  $09 c,  $03 c,  $06 c,  $23 c,  $04 c,  $06 c,
+    $06 c,  $09 c,  $0F c,  $10 c,  $14 c,  $15 c,  $16 c,  $17 c,  $13 c,  $14 c,  $15 c,  $16 c,  $20 c,  $0E c,  $21 c,  $22 c,
+    $1B c,  $FF c,  $08 c,  $0E c,  $0F c,  $0A c,  $0B c,  $0A c,  $0B c,  $08 c,  $10 c,  $11 c,  $08 c,  $07 c,  $08 c,  $04 c,
+    $04 c,  $02 c,  $12 c,  $1A c,  $1B c,  $1C c,  $04 c,  $13 c,  $14 c,  $15 c,  $16 c,  $0C c,  $08 c,  $05 c,  $0B c,  $0C c,
+    $0D c,  $0B c,  $04 c,  $01 c,  $0F c,  $10 c,  $11 c,  $12 c,  $10 c,  $07 c,  $FF c,  $05 c,  $FF c,  $02 c,
+110 constant #replays
+: replay-act ( -- act | -1 )   \ (the original act number of the room it replays in)
+    replay-var var@ {: v :}  v #replays u< 0= if  -1 exit  then
+    v case
+        $24 of  $2C var@ 0= if  9  else  $B  then  endof
+        $6A of  $2C var@ 0= if  4  else  1  then  endof
+        $6C of  $2C var@ 0= if  6  else  5  then  endof
+        >r  v replay-acts + c@  dup $FF = if  drop -1  then  r>
+    endcase ;
 \ a replayed movie over (the extras' theatre): back to the extras, out by the forced way
 \ an item found (the rooms' pick-up): named; with 99 of it she can't carry it; else taken - its
 \ fact, its sparkle (an effect of the place's, -1 none) off - its tab shown, the fanfare

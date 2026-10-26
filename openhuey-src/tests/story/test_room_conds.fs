@@ -5,7 +5,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_room_conds.fs
 IN: test-room-conds
 USING: tester engine game-state actors messages common room-names game debug fiona.state story.state story.words
-  story.rooms.castle-1f-10 story.rooms.castle-b1-5 story.rooms.old-mansion-b1-6 story.rooms.chaos-forest-13 story.rooms.castle-1f-9 story.rooms.castle-1f-13 ;
+  story.rooms.castle-b1-5 story.rooms.old-mansion-b1-6 story.rooms.chaos-forest-13 story.rooms.castle-1f-9 story.rooms.castle-1f-13 ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
@@ -23,10 +23,10 @@ testing the summoner's countdown: running (5 s), then out
 T{ 5 game:summoner send summoner-cooldown  3 run-frames  [: summoner-done? ;] in-room -> 0 }T
 T{ 0 game:summoner send summoner-cooldown  3 run-frames  [: summoner-done? ;] in-room -> -1 }T
 
-testing nothing of kind 3 (the doll) lying about; one made, and it is
-T{ [: castle-1f-10.cond01? ;] in-room -> -1 }T
+testing nothing of kind 3 (the doll) lying about (castle-1f-10's Bisque Doll); one made, and it is
+T{ [: 3 story.kit:thing-lying? 0= ;] in-room -> -1 }T
 3 game:fiona body-tri  game:fiona body-pos f>cell >r f>cell >r f>cell r> r>  0 0 0  game:things send thing-made  deliver  2 run-frames
-T{ [: castle-1f-10.cond01? ;] in-room -> 0 }T
+T{ [: 3 story.kit:thing-lying? 0= ;] in-room -> 0 }T
 engine:things-clear
 
 testing Fiona's reaction with nobody behind it (castle-1f-9): not in one, so no

@@ -552,7 +552,11 @@ blow: struck.fs `on-as-before`). The scripts' 0x9D (`hold-anim`) poses him in an
 letting go doesn't free him, the story's 0x15 (`activate`: Character_Activate) does. The story's
 0x1F hides and shows him (`show`, +0x29). A stalker loaded into a figure's slot (3..5: Debilitas as
 castle-1f-10's figure) is placed by the story, posed and shown there; his own behaviour never
-runs (Progress_CharsFrame frames slots 0..2 only). Also: an action's look mode is set as it starts
+runs (Progress_CharsFrame frames slots 0..2 only). As a figure he wears his kind's other model
+(Pursuer_ModelFiles out of slot 2: its `_200` pack - the scenes' own animations, $9000 on - with
+the play model's textures, `_000` / hard `_000H`; `stalker.fs` `wear-figure`), back in slot 2 his own
+(`wear-own`). Debilitas 7 / 27's (`O_DB2/DB2_200.PCK`) isn't on the disc; the tables' second
+texture set (`_200.TEX`) isn't used yet. Also: an action's look mode is set as it starts
 even when it is "as it was" (0: no look of his own - his head eased back), as Pursuer_StartAction
 does. Built: **his legs on
 the floor** (`src/game/humanlegs.c`, as Fiona's - `fiona.md`; `stalker.fs` `fit-legs`): each frame

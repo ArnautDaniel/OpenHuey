@@ -171,6 +171,13 @@ Places, each with its test in `tests/places/`:
   shoves, the drop), the chimes, the crate, three pickups, the rusted door, the hiding place.
 - lake-pathway-1 (11) and lake-pathway-2 (9): the path collapsed and the bridge gone, the body,
   the lavender, Hewie's looks.
+- castle-1f-1, the entrance hall (1): the gate, the pond's splashes, the Refined Magnesia Hewie
+  fetches, the crouch evasion tip, the creature let out, in from the bookshelf's way.
+- castle-1f-17, the specimen room (27): the pendulums, the remarks, the lavender, Hewie by the
+  shelf, the door unlocked from this side.
+- castle-1f-10, the doll's room (41): the remarks, the flame, the beef jerky, Debilitas sitting
+  with his doll (a figure: his doll's model) - the scene and the Smudged Key, the dance - his
+  chase scene, the Bisque Doll, the replays.
 
 ## API
 
