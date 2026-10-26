@@ -245,6 +245,21 @@ T{ [: [: my-mode @ 4 = ;] his ;] 300 soon  [: hits @ ;] his -> -1 0 }T
 T{ [: goal-room @ dup $20 = swap $02 = or  making-for @ 0< 0= ;] his -> -1 -1 }T
 T{ [: [: away? ;] his ;] 900 soon -> -1 }T
 debug:debilitas-out  2 run-frames
+testing ... in his own room (castle-2f-2): held off there, on in the room - not left flinching
+: struck-to-give-up ( room tri -- )   \ (in that room with her, on that triangle, 25 damage had: one more blow)
+    swap room!  20 run-frames  debug:debilitas-tri  5 run-frames
+    [: 70 hp !  25 hits !  0 reeling !  0 unshaken ! ;] his  kick-blow 5 0 game:debilitas send blow ;
+: tri-she-is-on ( -- tri )  s" fiona" actor-named body-tri ;
+true blind  castle-2f-2 room!  20 run-frames  castle-2f-2 tri-she-is-on struck-to-give-up  90 run-frames
+T{ [: my-mode @  stalker.state:step @ ['] flinching =  making-for @ ;] his -> 4 0 -1 }T
+debug:debilitas-out  2 run-frames
+testing ... held off at a door of his way home he can't line up at (castle-1f-2's exit 1, from the
+testing ... hall's far side): that door avoided, his way home another
+castle-1f-2 room!  20 run-frames  tri-she-is-on debug:debilitas-tri  [: room-id 694 dup tri-center body-place ;] his  5 run-frames
+[: held-off mode!  avoid-clear  1 making-for !  line-up ;] his  2 run-frames
+: avoided? ( door -- flag )  [: dup 5 rshift cells avoid + @  swap 31 and rshift 1 and 0<> ;] his ;
+T{ castle-1f-2 1 room-exit-door avoided?  [: my-mode @  making-for @ 1 <> ;] his -> -1 4 -1 }T
+debug:debilitas-out  2 run-frames  false blind
 
 testing a door slammed on him (P3b): Fiona beside the open door, him in its way - shut, 3 damage, knocked through and out (stunned 150)
 : door0 ( -- door )  room-id 0 room-exit-door ;

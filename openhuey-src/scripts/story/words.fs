@@ -653,21 +653,24 @@ create gift-rows
 create gift-row-of  #gift-kinds cells allot  gift-row-of #gift-kinds cells 0 fill
 : row-for ( row kind -- )  cells gift-row-of + ! ;
     3 daniella-kind row-for   6 riccardo-kind row-for   1 debilitas-6-kind row-for   2 debilitas-7-kind row-for   8 lorenzo-kind row-for   7 tintstalker-kind row-for   4 kind34-kind row-for   5 kind35-kind row-for   5 kind36-kind row-for   7 kind37-kind row-for
-: gift-entry ( k -- addr )
-    slot2-kind @ dup 0 #gift-kinds within 0= if  drop 0  then  cells gift-row-of + @ gifts-a-row 2* *  swap 2* +  gift-rows + ;
-: gift-item ( k -- item )   \ (the entry's item; one only-if-missing she has: the Magist Medallion)
+: gift-entry ( kind k -- addr )
+    swap dup 0 #gift-kinds within 0= if  drop 0  then  cells gift-row-of + @ gifts-a-row 2* *  swap 2* +  gift-rows + ;
+: gift-item ( kind k -- item )   \ (the entry's item; one only-if-missing she has: the Magist Medallion)
     gift-entry dup 1+ c@ script-item  swap c@ if  dup items-of if  drop magist-medallion  then  then ;
 $8011 constant gift-message   $801A constant no-gift-message   \ (the first names the item: parameter 0)
-: stalker-gift ( -- )
-    progress pr.gifts l@ if  rnd 100e f* 10e f< 0= if  exit  then  then
-    begin  progress pr.gift-next l@ dup gifts-a-row < if  gift-item items-of 99 <  else  drop true  then  0= while
+: gift-due? ( -- flag )   \ (the first; after it 1 in 10 - counted, up to 8)
+    progress pr.gifts l@ 0=  rnd 100e f* 10e f< or  dup if  progress pr.gifts l@ 1+ 8 min progress pr.gifts l!  then ;
+: next-gift ( kind -- item | -1 )   \ (the next of his row she has under 99 of, the row moved on past it; -1 none left)
+    {: kind :}
+    begin  progress pr.gift-next l@ dup gifts-a-row < if  kind swap gift-item items-of 99 <  else  drop true  then  0= while
         progress pr.gift-next dup l@ 1+ swap l!
     repeat
-    progress pr.gift-next l@ dup gifts-a-row < if
-        gift-item  0 over message-param!  dup 1 items-id send give-item  1 counter !
-        progress pr.gift-next dup l@ 1+ swap l!  drop  gift-message show-message
-    else  drop  no-gift-message show-message  then
-    progress pr.gifts l@ 1+ 8 min progress pr.gifts l! ;
+    progress pr.gift-next l@ dup gifts-a-row < 0= if  drop -1 exit  then
+    kind swap gift-item  progress pr.gift-next dup l@ 1+ swap l! ;
+: stalker-gift ( -- )
+    gift-due? 0= if  slot2 @ dup 0< if  drop  else  send stalker-down-over  then  exit  then
+    slot2-kind @ next-gift  dup 0< if  drop no-gift-message show-message exit  then
+    0 over message-param!  1 items-id send give-item  1 counter !  gift-message show-message ;
 
 \ ==== S3: the characters' moves (+0xF4: each carries out its own; +0xE1 its done) ====
 : cs>who ( id -- cs )   \ (an actor to its slot: -1 none)
@@ -1687,7 +1690,9 @@ $27 constant knock-sound   $28 constant try-door-sound   \ (bank 5)
 : loader-busy? ( -- flag )  false ;   \ cond 0x62: the file loader busy (its +0x38) - OpenHuey loads at once
 : fade-well-on? ( -- flag )  fading @ 0= ;   \ cond 0x2B (unused by the scripts): the fade well on
 : spirit-request-pending? ( -- flag )  fiona-request-kind @ spirit-request = ;   \ cond 0x64: a spirit's touch asked of her this frame ($D)
-: stalker-second-stance? ( -- flag )  false ;   \ cond 0x4B (unused): his stance-2 animations ($1805 / $1806)
+: stalker-second-stance? ( -- flag )   \ cond 0x4B: down, lying on his front ($1806, its twitch $1805: Pursuer_InStance2Anim)
+    stalker-about? stalker-down? and 0= if  false exit  then
+    slot2-kind @ cast-model dup 0< if  drop false exit  then  motion@  dup $1806 =  swap $1805 = or ;
 : char-find-tri ( who -- )  drop ;     \ 0x67: its triangle from its place - bodies keep theirs
 : door-flag-unread ( door on -- )  2drop ;   \ 0xA2: a flag nothing reads (Doors_SetFlag82)
 : camera-value ( which F: v -- )   \ 0x0B: the camera's far clip (0; Camera_SetFar) or near (Camera_SetNear)

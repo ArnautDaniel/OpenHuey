@@ -41,6 +41,8 @@ defer script-door-over ( -- )   ' noop is script-door-over
 : give-up-door ( -- )
     door-script @ if  script-door-failed exit  then
     let-door-go  for-her @  out-over  if  round-failed  else  door-done  then ;
+: no-way-to-door ( -- )   \ (no way to his spot by it: not that way again - Pursuer_OnToNextExit)
+    my-room making-for @ room-exit-door avoid-door  give-up-door ;
 : out ( -- )  let-door-go  out-over  making-for @ through ;   \ (Pursuer_ThroughDoor)
 
 \ ---- on through an open door or a doorway (Pursuer_ExitGoTo: to its spot 12 beyond - its
@@ -81,10 +83,10 @@ defer script-door-over ( -- )   ' noop is script-door-over
     ['] asking step! ;
 : lining-up ( -- )  walk-stride if  still-anim play  ['] facing-door step!  then ;
 : line-up ( -- )
-    my-at vec@ making-for @ door-side  dup 0< if  drop give-up-door exit  then
+    my-at vec@ making-for @ door-side  dup 0< if  drop no-way-to-door exit  then
     if  in-front-use  else  from-behind-use  then  making-for @ kind-at open-way = 1 and +  door-use !
     making-for @ door-use @ door-user-spot  spot-yaw f!      ( tri ) ( F: x y z )
-    aim-at 0= if  give-up-door exit  then
+    aim-at 0= if  no-way-to-door exit  then
     mode-walk play  ['] lining-up step! ;
 
 \ ---- by a door held shut (Pursuer_DoorWait): he waits, looking again every half second; 10
