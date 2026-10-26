@@ -110,8 +110,8 @@ T{ 7 subscreen-bit?  7 subscreen-bit  deliver  7 subscreen-bit? -> 0 -1 }T
 45 progress pr.hewie-mistreated l!  reward-item  deliver
 T{ files 1- file@ -> $271 }T
 
-testing a key at its place: the room's action script for her starts (the gate key: the front
-\ garden's spot 5 - its event $F), and she is marked as stalkers stay away
+testing a key at its place: the room's doing for her starts (the gate key: the front garden's
+\ spot 5 - its event $F: the place's way into the castle), and she is marked as stalkers stay away
 front-garden-1 -1 game:rooms send go-to-room  5 run-frames
 create spot 12 allot
 5 area-middle drop  spot vec!
@@ -119,7 +119,7 @@ game:fiona enter  her-at spot vec-copy  her-at $28020018 v-tri-in her-tri !  spo
 castle-gate-key 1 give
 : room-actor ( -- id )  room-id room-name actor-named ;
 : index-of ( id -- i )  64 0 do  dup 0 i item-at = if  drop i unloop exit  then  loop  drop -1 ;
-T{ 0 castle-gate-key index-of use  1 run-frames  room-actor enter  1 slot-task @ 0<>  leave-actor  stalkers-stay state-flag? -> 4 -1 -1 }T
+T{ 0 castle-gate-key index-of use  1 run-frames  room-actor enter  story.kit:acts @ 0<>  leave-actor  stalkers-stay state-flag? -> 4 -1 -1 }T
 testing the chokers (her equipment's slot 3): $8C halves a fright and doubles her calming, and spares her the recovery's reset; $8B a quarter off, half again; none: as it is
 : hers ( xt -- x )  game:fiona enter  execute  leave-actor ;
 : choker! ( item -- )  progress pr.equipped 12 + l! ;

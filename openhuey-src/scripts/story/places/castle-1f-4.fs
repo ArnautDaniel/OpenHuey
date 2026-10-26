@@ -331,7 +331,6 @@ create entries  1 , 1 ,   0 , 0 ,   0 , 0 ,   0 , 0 ,      \ (by exit 0 .. 3: th
     fiona hold  5 scenes:unseen-movie 1 load-scene
     puppet-door-part hide-part  2 object-show  3 object-show  4 object-show  flame-fx 0 22.8e 14.65e 68.75e flame-at
     panic-eased  if  -1 run-scene  then  replay-over ;
-$2A constant replay-var
 : replaying ( -- )   \ (the extras' list: its rows for this room's two scenes)
     hewie send part-from-fiona  replay-var var@ $B = if  ['] replay-riccardo  else  ['] replay-marionette  then  start drop ;
 : person-in ( i -- )

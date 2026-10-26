@@ -160,6 +160,17 @@ Places, each with its test in `tests/places/`:
   other word, the parchment, the choker.
 - castle-1f-4, the puppet room's hall (22): the puppet door and the marionette, the floor plate,
   the weak wall's antimony, the plate-key's slot, Riccardo at night.
+- front-garden-1, the gate and the drive (13): the opening's scene at the gate, the castle gate
+  key, the tree and the marionette (her look, Hewie fetching it), the lamps flickering at night,
+  the crate, two Medallions, the spirits let out, the far view's depth, the replays.
+- front-garden-2, the yard (16): the grate bolted and its scene, three crates and a Medallion, the
+  windows, the whine at night, turning back for Hewie, the replay.
+- front-garden-4, the kennels (17): the cages, two doors, the crate, the camomile, the Album
+  Medallion, the rabbit, the stalker shutting the door on her.
+- front-garden-5, the far corner (19): Hewie's four ways over, the hung things (his snaps, her
+  shoves, the drop), the chimes, the crate, three pickups, the rusted door, the hiding place.
+- lake-pathway-1 (11) and lake-pathway-2 (9): the path collapsed and the bridge gone, the body,
+  the lavender, Hewie's looks.
 
 ## API
 

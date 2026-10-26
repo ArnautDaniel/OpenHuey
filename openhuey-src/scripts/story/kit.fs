@@ -439,6 +439,18 @@ $1F constant tint-slot
 create tint-bytes 9 allot
 : room-tint ( gr gg gb ga cr cg cb ca -- )   \ (its mode 0)
     0 tint-bytes 8 + c!  8 0 do  tint-bytes 7 i - + c!  loop  tint-slot tint-bytes 9 look-set ;
+\ the look's other slots: the depth range (its far view's: Room_DepthRange), the screen's blend
+$1C constant depth-slot   $1E constant blend-slot
+create look-bytes 16 allot
+: depth-range ( F: a b c d -- )
+    look-bytes 12 + sf!  look-bytes 8 + sf!  look-bytes 4 + sf!  look-bytes sf!  depth-slot look-bytes 16 look-set ;
+: depth-range-off ( -- )  depth-slot 0 0 look-set ;
+: screen-blend ( rgba mode -- )  look-bytes 4 + c!  look-bytes l!  blend-slot look-bytes 5 look-set ;
+: screen-blend-off ( -- )  blend-slot 0 0 look-set ;
+: glow-at ( k rgba F: x y z size -- )  effects:glow swap effect! ;   \ effect k: a glow (Effect737D0)
+: preload ( room -- )  rooms-actor send room-preload ;
+: creature-in ( room level tri kind reach -- )   \ (one let out there: the creatures' own way about - reach x 10 her nearness that wakes it)
+    -1 0 0e f>cell  s" creatures" actor-named send creature-place ;   \ (the room a forced exit leads to, loaded ahead)
 \ a reflecting window (Reflection): reflection k (0..3) on the quad's corners, its side panels a window's
 $10000000 constant window-panels
 : window-in ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )
@@ -754,6 +766,7 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
 : hewie-looks-at ( table n -- )
     hewie-in?  danger-now @ calm = and  hewie-cmdable-now @ and 0= if  2drop exit  then
     0 ?do  dup i /look * + looks-at  loop  drop ;
+$2A constant replay-var   \ (the story's variable: which movie the extras' theatre replays)
 \ a replayed movie over (the extras' theatre): back to the extras, out by the forced way
 \ an item found (the rooms' pick-up): named; with 99 of it she can't carry it; else taken - its
 \ fact, its sparkle (an effect of the place's, -1 none) off - its tab shown, the fanfare

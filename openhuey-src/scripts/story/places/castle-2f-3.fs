@@ -490,7 +490,6 @@ own: stalker-gone             \ he has run out (the tutorial's end)
 
 \ ---- the movies replayed (the extras' theatre: the room entered with its scripts held, the
 \ movie by the story's variable $2A) - each played, nothing kept, back to the extras ----
-$2A constant replay-var
 : replay-done ( -- )
     costume-var var@ dress  3 figure-out  replay-over ;
 : replay ( movie class cutscene subtitles -- )

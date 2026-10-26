@@ -150,7 +150,6 @@ fvariable kiln-phase
     fiona hold  daylight
     3 scenes:keyed-movie 2 load-scene  $F $96 movie-key  golem-part hide-part  fiona false shown  golem-dust-part show-part  panic-eased
     if  -1 run-scene  then  fiona true shown  replay-done ;
-$2A constant replay-var
 : replaying ( -- )   \ (the extras' list: its rows for this room's two scenes)
     hewie send part-from-fiona
     replay-var var@ case  4 of  ['] replay-alive  endof  7 of  ['] replay-alive  endof  $17 of  ['] replay-alive  endof
