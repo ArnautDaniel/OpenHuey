@@ -19,7 +19,7 @@ own-reset
 $A constant ornaments-msg  \ "Various ornaments have been placed here. They all look quite dusty, though."
 
 \ ---- its own state (a visit) ----
-own: his-entrance          \ the stalker coming in after the call (kept to his way: ordered to 0)
+own: his-entrance          \ the stalker coming in after the call (left meanwhile: his order 0)
 
 \ ---- the room's things ----
 4 constant album-fx   5 constant magnesia-fx   0 constant receiver-part
@@ -140,7 +140,6 @@ create entries  0 , -1 ,   1 , 0 ,             \ (by exit 0, 1: the camera)
     fiona to-exit-0-area entered? if  0 prepare-exit  then
     called? 0=  fiona call-area left? and if  c1f-8-flag1 fact!  panic-eased  ['] telephone-rings start drop  then ;
 : each-frame ( -- )
-    his-entrance @ if  0 stalker-order  then
     events-held state? if  draughts exit  then
     ways  draughts  hewie-sniffs  spots  walls-shade ;
 : person-in ( i -- )
@@ -150,6 +149,6 @@ create entries  0 , -1 ,   1 , 0 ,             \ (by exit 0, 1: the camera)
             entries 2 ways-in  endof
         stalker-p of  stalker-came  endof
     endcase ;
-: went ( -- ) ;
+: went ( -- )  his-entrance @ if  0 stalker-order  then ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-8 place!

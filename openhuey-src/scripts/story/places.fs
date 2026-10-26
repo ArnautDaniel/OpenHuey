@@ -8,4 +8,4 @@ USING: story.places.castle-2f-3 story.places.front-garden-3 story.places.castle-
     story.places.castle-1f-18 story.places.castle-1f-14 story.places.castle-1f-7
     story.places.castle-1f-16 story.places.castle-1f-6 story.places.castle-1f-19
     story.places.castle-1f-11 story.places.castle-1f-12 story.places.castle-1f-9
-    story.places.castle-1f-5 story.places.castle-1f-8 ;
+    story.places.castle-1f-5 story.places.castle-1f-8 story.places.castle-1f-3 ;

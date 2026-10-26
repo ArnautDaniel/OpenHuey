@@ -137,7 +137,9 @@ him in, `hauled-out`; each frame `hidden-calm`), its stalker (`came-on-her?` as 
 `searches`: the odds by a story variable - `finding-odds` 25, 50, 75 - and `will-find?`, a creature
 moving about, his alert 4; `door-for-him` opens a shut door he came by; `finds-her-at`: to the
 spot, Debilitas looking in, the others seeing her; the place's `found-her`, `came-while-hidden`);
-a placed object back as it was set (`object-reset`); a breakable's own shatter
+a placed object back as it was set (`object-reset`); a scene's signal counted past
+its nth this frame (`signal-passed?`, the original's cond 0x3B); the stalker's sound bank
+(`stalker-bank`); a breakable's own shatter
 (`shatters-with`); moths (`moths-at`: a swarm in an effect slot, the rooms' 0x35;
 `moths-to` sends it off for another point, their 0x33; `moths-sound` keeps a sound where it
 wanders); Hewie's wary stand at a point (`hewie-stands-by`, the shared $8A); an item used up
@@ -240,6 +242,11 @@ Places, each with its test in `tests/places/`:
   doors anew, Daniella the stalker, her costume and Hewie's coat afresh, the stage music) and her
   weakness after it; three flames, the vase's Antimony Powder, the box, the dim corner, the twin
   paintings, the map's pages.
+- castle-1f-3, the library (9): the awakening at the Garden Key the first time (the voice, the thing
+  set on the table; a scene), the key taken after; chased by Debilitas while he is elsewhere - the
+  hint and its while, and in behind the bookshelf she knocks it down on him (a scene: he lies
+  knocked out under it, she runs out); her thought pushing it, the books, the harp, the creepy thing
+  in turn, the Camomile, Hewie wary by the table and his looks, the walls' shade, the replays.
 - castle-1f-8, the telephone room (24): her first steps in - uneasy, the call (the voice warning
   her of Riccardo; a scene, its file) and the stalker in after her, the door locked; the line dead
   since, the hiding place (in, out, found and hauled out), the stalker coming while she hides (his

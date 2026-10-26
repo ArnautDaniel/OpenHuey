@@ -320,6 +320,7 @@ $80000000 constant keep-playing   \ (a sound's id bit: one already playing kept 
 : room-sound ( id F: x y z -- )  {: id F: x y z :}  id story-volume or room-bank 0 0  x y z  sound-at ;
 : keep-sound ( id F: x y z -- )  {: id F: x y z :}  id story-volume or keep-playing or room-bank 0 0  x y z  sound-at ;
 5 constant common-bank   \ (the sounds every room has: knocks, Hewie's find)
+7 constant stalker-bank  \ (the stalker's own: each kind's set)
 : sound-by ( id bank who -- )  {: id bank who :}  who dup 0< if  drop exit  then  body? 0= if  exit  then  who body-pos {: F: x y z :}  id bank 0 0  x y z  sound-at ;   \ (at a character)
 
 \ ---- scenes (scenes.fs): made ready while the screen is black, then played ----
@@ -334,7 +335,11 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
 : run-through ( subtitles -- )   \ played through, never skipped, its last frame left up (a game over's)
     dup 0< if  drop $FFFF  then  scene-running scene-step !  scenes send scene-run-through
     begin  scene-step @ scene-running = while  yield  repeat  0 cue-xt ! ;
-: at-shots ( xt -- )  cue-xt ! ;   \ ( shot -- ) run as each new shot of the scene comes
+: at-shots ( xt -- )  cue-xt ! ;
+: signal-passed? ( k n -- flag )   \ the scene's signal k, counted, passing its nth this frame (the original's cond 0x3B)
+    over cutscene-signals dup 0> 0= if  drop 2drop false exit  then     ( k n new )
+    rot cutscene-signal-total                                          ( n new total )
+    rot 2dup < if  2drop drop false exit  then  >r swap - r> < ;   \ ( shot -- ) run as each new shot of the scene comes
 : panic-eased ( -- )  in-panic? if  terrified s" panic" actor-named send panic-stage!  then ;   \ (a scene, a message: the panic down to terror)
 
 \ ---- the story's character slots (shared with the converted rooms): figures for a scene ----

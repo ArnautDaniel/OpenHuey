@@ -550,7 +550,8 @@ PickStep) he is through blocked floor no more, his own sounds again, on as befor
 blow: struck.fs `on-as-before`). The scripts' 0x9D (`hold-anim`) poses him in an animation, shown
 (+0xE0 / +0xE2: Pursuer_PlaceModel - his model alone, his body by his feet, not planted); a script
 letting go doesn't free him, the story's 0x15 (`activate`: Character_Activate) does. The story's
-0x1F hides and shows him (`show`, +0x29). A stalker loaded into a figure's slot (3..5: Debilitas as
+0x1F hides and shows him (`show`, +0x29); a cutscene giving him back shows him again (its cast
+made active: Cutscene_ReleaseActors). A stalker loaded into a figure's slot (3..5: Debilitas as
 castle-1f-10's figure) is placed by the story, posed and shown there; his own behaviour never
 runs (Progress_CharsFrame frames slots 0..2 only). As a figure he wears his kind's other model
 (Pursuer_ModelFiles out of slot 2: its `_200` pack - the scenes' own animations, $9000 on - with

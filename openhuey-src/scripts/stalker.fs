@@ -353,8 +353,9 @@ behaviour stalking
   on drawn-to ( tri -- )  in-game @ if  go-for-doll  else  drop  then ;
   on stalker-hunt ( -- )  in-game @ if  heading-for-her mode!  away? 0= if  search-again  then  then ;
   on entered-room ( room exit -- )  her-came !  room-changed  in-game @ if  pose  then ;
-  on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model)
-      my-model @ scene-has? in-cast !
+  on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model;
+      \ given back he is shown, as the cast was made active: Cutscene_ReleaseActors' +0x29)
+      my-model @ scene-has?  dup 0=  in-cast @ and if  0 hidden !  then  in-cast !
       in-game @ in-cast @ and if  tell-doing  loaded @ if  status  then  exit  then
       in-game @ if  frame  script-held @ 0= if  own-frame @ ?dup if  execute  then  then  tell-doing  then   \ (held: his Think, not his own frame)
       figure? self body? and  in-game @ 0= and if  posed @ if  posed-frame  else  pose  then  then   \ (a scene's figure: moved only posed)
