@@ -237,8 +237,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     cruel-msg say  freed-file give-file  stalkers-stay state-off ;
 : whines ( -- )   \ (now and then, from the wire)
     in-wire? 0= if  exit  then
-    -1 whine-frames +!  whine-frames @ 0> if  exit  then
-    30 chance? if  whine-sound room-bank hewie sound-by  180  else  60  then  whine-frames ! ;
+    whine-frames whine-due? if  whine-sound room-bank hewie sound-by  then ;
 
 \ ---- the movie replayed (the extras: its scripts held) ----
 : replay-freed ( -- )

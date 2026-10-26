@@ -120,8 +120,16 @@ camera set and path per exit - placed at the one she came by - or `way-in` for o
 (`exits-out`, `ways-out`: an area and the exit loaded ahead), the area cameras (`cameras-at`: area,
 set, path); what Hewie looks up at (`look,` builds a table of zones - x y z, radius, height, how
 high - and `hewie-looks-at` runs it, while he is calm and at her command: the rooms' 0xC5); a
-replayed movie over (`replay-over`: back to the extras by the forced way). The converted files of
-the rooms that are places are kept, unloaded, in `scripts/story/rooms-ref/`.
+replayed movie over (`replay-over`: back to the extras by the forced way); an item found
+(`picks-up`: turned to it, bent down, taken - `takes-up` the taking: named, full or given, its
+tab and fanfare); out by an area (`leaves-by`); Hewie's whine from the wire (`whine-due?`); an
+animal figure sent off and waited for (`figure-goes`); anything's centre in a zone across
+(`centre-across?`, the rooms' zone bit 8 - `here?` and the zone words know only the people). A
+whole breakable is a target a stalker's blow may strike instead of her (`zone-target`, cleared as
+each frame starts: Events_NearestPoint, as the converted rooms' zones of kind bit 1). The
+converted files of the rooms that are places are kept, unloaded, in `scripts/story/rooms-ref/`.
+Tests of the converted rooms' machinery set `story:places-off` to run a room so even if it is a
+place (its converted scripts or none); it goes with the machinery.
 
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
 after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker

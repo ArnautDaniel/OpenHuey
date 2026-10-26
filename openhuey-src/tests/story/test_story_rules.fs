@@ -13,6 +13,7 @@ USING: tester engine game-state actors messages common room-names game debug fac
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 1 seed !
 
+-1 story:places-off !   \ (front-garden-2 as its converted room: the machinery's host)
 free-play  front-garden-2 room!  20 run-frames
 stalkers-blind state-flag-set
 

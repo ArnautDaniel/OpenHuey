@@ -26,7 +26,8 @@ testing the button closes it; she gets up (0x802), her script goes on to its end
 T{ cross press  5 run-frames  [: story.kit:shown-msg @ ;] in-room  shown  [: fiona.model:anim@ ;] hers -> -1 -1 $802 }T
 T{ 120 [: [: her-scripted @ ;] hers 0= ;] within  [: her-reading @ ;] hers -> -1 0 }T
 
-\ ---- the converted rooms' words (front-garden-2: not a place) ----
+\ ---- the converted rooms' words (front-garden-2, run as its converted room) ----
+-1 story:places-off !   \ (front-garden-2 as its converted room: the machinery's host)
 front-garden-2 -1 rooms send go-to-room  30 run-frames
 testing 0xA5: a message offered on the action button; taken, it opens and she looks at character 2
 T{ [: -1 prep-scene !  $8016 examine-message  prep-scene @ prep-arg @ ;] in-room -> read-message $8016 }T

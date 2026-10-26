@@ -410,12 +410,7 @@ $201 constant first-file
 \ ---- night: back with the castle's sketch - a dog crying out there (the forced way in, $80) ----
 $204 constant night-file
 : dog-whines ( -- )   \ (now and then, from the wire by the wall)
-    begin
-        yield  -1 whine-frames +!
-        whine-frames @ 0= if
-            30 chance? if  whine-sound 228e 5e 78e room-sound  180  else  60  then  whine-frames !
-        then
-    again ;
+    begin  yield  whine-frames whine-due? if  whine-sound 228e 5e 78e room-sound  then  again ;
 : night-falls ( -- )
     fiona hold  fiona wait-move  c2f-3-flag1 fact!  2 2 her-camera  1 prepare-exit
     fiona $A8 46  $A8 tri-center fswap fdrop  place-at

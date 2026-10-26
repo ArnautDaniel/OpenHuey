@@ -13,6 +13,7 @@ USING: tester engine game-state actors messages room-names game debug flag-names
 : sparks# ( -- n )   \ (the torches' sparks going: the engine's, theirs)
     0  4 0 do  i slot dup alive? if  system particles-children +  else  drop  then  loop ;
 
+-1 story:places-off !   \ (front-garden-2 as its converted room: the machinery's host)
 free-play  20 run-frames
 castle-1f-8 room!  10 run-frames
 testing castle-1f-8's torches: four fires (kind 1) in slots 0..3, each with its lasting sparks

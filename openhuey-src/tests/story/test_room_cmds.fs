@@ -1,22 +1,16 @@
-\ The rooms' own commands (S5c; src/game/rooms/room_*.c Cmd*): the front garden's - the grate
-\ swung open (front-garden-2), a hanging thing
+\ The rooms' own commands (S5c; src/game/rooms/room_*.c Cmd*): the front garden's - a hanging thing
 \ swinging and settling, two pushed as Fiona walks by (front-garden-5). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_room_cmds.fs
 IN: test-room-cmds
 USING: tester engine game-state actors messages common room-names game debug story.state facts story.words
-  story.rooms.front-garden-2 story.rooms.front-garden-5
+  story.rooms.front-garden-5
   story.rooms.castle-1f-2 story.rooms.castle-1f-7 story.rooms.castle-1f-11 story.rooms.castle-1f-12
   story.rooms.castle-2f-2 story.rooms.castle-2f-12 ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
 : ~= ( F: a b -- flag )  f- fabs 0.001e f< ;
-free-play  front-garden-2 room!  20 run-frames
-
-testing front-garden-2: the grate shut, then open a quarter turn
-T{ [: s" kousi" object-here? ;] in-room -> -1 }T
-T{ [: 1 front-garden-2.cmd00  s" kousi" turn-y object@ pi f2/ fnegate ~= ;] in-room -> -1 }T
-T{ [: 0 front-garden-2.cmd00  s" kousi" turn-y object@ 0e ~= ;] in-room -> -1 }T
+free-play
 
 front-garden-5 room!  20 run-frames
 testing front-garden-5: a hanging thing set swinging away from Fiona - 12 degrees, then settling

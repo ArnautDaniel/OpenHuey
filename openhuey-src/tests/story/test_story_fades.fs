@@ -16,6 +16,7 @@ USING: tester engine game-state actors messages common room-names game debug fac
 : fade! ( frames kind -- )  [: fade ;] in-room  deliver ;   \ (its first step at once, as in the frame a script starts it)
 1 seed !
 
+-1 story:places-off !   \ (front-garden-2 as its converted room: the machinery's host)
 free-play  front-garden-2 room!  20 run-frames
 stalkers-blind state-flag-set
 

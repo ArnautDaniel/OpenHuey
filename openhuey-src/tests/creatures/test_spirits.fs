@@ -66,9 +66,9 @@ T{ 60 gone-in? -> -1 }T
 testing while she hides it hangs about her (the story asks: 0x53 2)
 far-tri 4 0 place-spirit
 fiona-hidden state-flag-set  5 run-frames
-T{ [: move-mode @ ;] of0  [: 2 creature-action? ;] in-room-actor -> 2 -1 }T
+T{ [: move-mode @ ;] of0  [: 2 story.kit:creature-moving? ;] in-room-actor -> 2 -1 }T
 fiona-hidden state-flag-clear  5 run-frames
-T{ [: 2 creature-action? ;] in-room-actor -> 0 }T
+T{ [: 2 story.kit:creature-moving? ;] in-room-actor -> 0 }T
 
 testing cleared by the story
 T{ 1 game:creatures send creatures-clear  deliver  1 run-frames  spirit0 alive? -> 0 }T

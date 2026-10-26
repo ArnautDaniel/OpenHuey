@@ -9,6 +9,7 @@ USING: tester engine game-state actors messages common room-names game debug fio
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
+-1 story:places-off !   \ (front-garden-2 as its converted room: the machinery's host)
 free-play  front-garden-2 room!  20 run-frames
 
 testing a noise of $20 or more here: kept for the next frame, then gone; a quieter one or elsewhere not

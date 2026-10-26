@@ -4,6 +4,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_conditions.fs
 IN: test-conditions
 USING: tester engine game-state actors messages room-names game fiona.state hewie.state story.state facts story.words doors debug ;
+-1 story:places-off !   \ (front-garden-2 as its converted room: the machinery's host)
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;

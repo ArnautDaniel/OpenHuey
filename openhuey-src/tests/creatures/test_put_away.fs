@@ -3,6 +3,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/creatures/test_put_away.fs
 IN: test-put-away
 USING: tester engine game-state actors messages room-names flag-names facts paths saves game fiona.state story.state story.words creatures creatures.state creatures.spirit debug ;
+-1 story:places-off !   \ (front-garden-2 as its converted room: the machinery's host)
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room-actor ( xt -- x )  room-actor enter  execute  leave-actor ;
 : spirit0 ( -- id )  game:creatures enter  0 slot@  leave-actor ;

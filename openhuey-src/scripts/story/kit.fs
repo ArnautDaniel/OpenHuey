@@ -72,10 +72,11 @@ end-state
 
 \ a place's own cell, by name: `own: came-while-hidden`
 variable owns
+variable breakables   \ (a place's breakables so far: each a target number, for a stalker's blow)
 : own: ( "name" -- )
     owns @ #own >= abort" own: too many cells for a place"
     create owns @ ,  1 owns +!  does> @ cells own + ;
-: own-reset ( -- )  0 owns ! ;   \ (each place file starts its own)
+: own-reset ( -- )  0 owns !  0 breakables ! ;   \ (each place file starts its own)
 
 \ ---- a place's description: its words ----
 begin-structure /desc
@@ -406,7 +407,7 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 
 \ ---- creatures (as they tell): one in this room moving so ----
 : creature-moving? ( mode -- flag )
-    {: mode :}  4 0 do
+    {: mode :}  #creatures 0 do   \ (cond 0x53: any of them)
         i cells cr-age + @ 2 <  i cells cr-room + @ this-room @ = and  i cells cr-mode + @ mode = and if  true unloop exit  then
     loop  false ;
 
@@ -636,7 +637,7 @@ $24 constant place-y
 \ say more of it; the place shows it as she comes in (`as-it-stands`) and each frame asks
 \ `breaks?` - true the frame it breaks, for what the room adds (the thing inside it) ----
 begin-structure /breakable
-  field: bk.fact  field: bk.whole  field: bk.broken  field: bk.group  field: bk.tri
+  field: bk.fact  field: bk.whole  field: bk.broken  field: bk.group  field: bk.tri  field: bk.target
   field: bk.rgba  field: bk.kind  field: bk.tex
   ffield: bk.x  ffield: bk.y  ffield: bk.z  ffield: bk.r  ffield: bk.h
   ffield: bk.u  ffield: bk.v  ffield: bk.du  ffield: bk.dv  ffield: bk.floor
@@ -644,7 +645,7 @@ end-structure
 $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant shard-grey
 : breakable: ( fact whole-part broken-part F: x y z r h "name" -- )   \ (struck within r of x z, h up from y)
     create  here /breakable allot  {: f w b a F: x y z r h :}
-    f a bk.fact !  w a bk.whole !  b a bk.broken !  -1 a bk.group !  -1 a bk.tri !
+    f a bk.fact !  w a bk.whole !  b a bk.broken !  -1 a bk.group !  -1 a bk.tri !  breakables @ a bk.target !  1 breakables +!
     shard-grey a bk.rgba !  0 a bk.kind !  0 a bk.tex !
     x a bk.x f!  y a bk.y f!  z a bk.z f!  r a bk.r f!  h a bk.h f!
     0e a bk.u f!  0e a bk.v f!  1e a bk.du f!  1e a bk.dv f!  0e a bk.floor f! ;
@@ -664,8 +665,10 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
     a bk.rgba @ a bk.kind @ a bk.tex @  a at-it  a bk.u f@ a bk.v f@ a bk.du f@ a bk.dv f@  a bk.floor f@  shards
     shatter-sound common-bank a at-it sound-there
     a bk.tri @ 0< 0= if  shatter-loudness a bk.tri @ room-noise  then ;
+: a-target ( bk -- )   \ (whole: a stalker's blow may strike it instead of her - Events_NearestPoint)
+    dup bk.target @ swap at-it xyz>cells broadcast zone-target ;
 : breaks? ( bk -- flag )   \ (whole, a blow in its place: broken now)
-    dup broken? if  drop false exit  then
+    dup broken? if  drop false exit  then  dup a-target
     dup at-it  dup bk.r f@  dup bk.h f@  struck-in? 0= if  drop false exit  then  smash true ;
 
 \ ---- what every room says the same way, as tables: its ways in (the camera for each exit she
@@ -703,6 +706,9 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
 : picks-up ( item fact fx F: x z -- )   \ (on the floor there: turned to it, bent down to it - not in a panic)
     fiona wait-move  fiona turn-to-xz  in-panic? if  drop 2drop exit  then
     fiona fiona.anims:pick-up-anim play  4 frames  takes-up  fiona fiona.anims:up-from-pick-anim play ;
+: whine-due? ( addr -- flag )   \ (Hewie in the wire, now and then: a counter down a frame - at 0,
+    -1 over +!  dup @ 0> if  drop false exit  then   \ 3 in 10 a whine, then 180 frames; else 60)
+    30 chance?  dup if  180  else  60  then  rot ! ;
 : replay-over ( -- )  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
 
 \ ---- the figures' own (the story's slots 3..5: a figure loaded there) ----
@@ -752,7 +758,7 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
         i cells in-here + !
     loop ;
 : text-gone ( -- )  shown-msg @ 0< if  exit  then  shown-msg @ window send close-text  -1 shown-msg ! ;   \ (ours left up: closed)
-: frame-start ( -- )  0 offer-xt !  0 offer-msg ! ;
+: frame-start ( -- )  0 offer-xt !  0 offer-msg !  broadcast zone-targets-off ;   \ (the breakables say so again)
 \ what every room does, played as a place (story/common.fs: the original's shared scripts run
 \ after a room's own phases - crouching, ... - and the item uses' scripts)
 defer every-room ( -- )   ' noop is every-room
