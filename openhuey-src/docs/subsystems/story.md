@@ -140,7 +140,9 @@ by someone (`throws-her`); a door taking on another's state (`door-as`); the sum
 kind's own (`his-own-time`); dials (`dial-set`, `dial-turns`, `dial-asked`: a number 0..6 in a progress
 variable, 30 degrees each, the stick's repeat); an object catching the light (`catches-light`);
 one character reflected in an object (`object-mirror`: MirrorFragment); who struck her (`struck-by-now`), Hewie's
-side of a split room (`hewie-way-now`); a creature let out turned (`creature-facing`); the
+side of a split room (`hewie-way-now`); the story's stalker in its slot, in the game or not (`partner`,
+`partner-kind`); doors locked against a kind (`door-for`), back again (`reopened`), their opened
+mark (`open-mark`); a creature let out turned (`creature-facing`); the
 game over (`game-over`, its kind; `ending-var` which ending caught her). A place has the original's
 32 effect slots. A
 whole breakable is a target a stalker's blow may strike instead of her (`zone-target`, cleared as
@@ -227,6 +229,11 @@ Places, each with its test in `tests/places/`:
   vases (the Magnesia), the Rubrum Medallion Hewie sniffs out, the Album Medallion he fetches off
   the stairs at her "go there", the garden door locked - the Garden Key and the Luminessants'
   scene (their file, the creature let out), her first fright, the motes, tint and specks, the replay.
+- castle-1f-5, the long gallery (16): Debilitas bursting in after her (the golem done) and his shove
+  bringing the rubble down; brought in after Daniella's scene, the chapter turning (the castle's
+  doors anew, Daniella the stalker, her costume and Hewie's coat afresh, the stage music) and her
+  weakness after it; three flames, the vase's Antimony Powder, the box, the dim corner, the twin
+  paintings, the map's pages.
 
 ## API
 

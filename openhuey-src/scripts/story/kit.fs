@@ -440,6 +440,8 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : debilitas? ( -- flag )   \ (the stalker in the game Debilitas, in one of his kinds)
     stalker-told? 0= if  false exit  then
     st-kind-now @  dup debilitas-kind = over debilitas-6-kind = or swap debilitas-7-kind = or ;
+: partner ( -- id | -1 )  story.words:slot2 @ ;   \ the story's stalker (its slot 2): loaded, in the game or not
+: partner-kind ( -- kind )  story.words:slot2-kind @ ;
 : stalker-to ( room tri -- )  stalker dup 0< if  drop 2drop exit  then  send stalker-in ;   \ (into the game there)
 : his-own-time ( -- )  -1 s" summoner" actor-named send summoner-cooldown ;   \ (the summoner's wait: his own kind's)
 : summoner-sooner ( secs -- )  s" summoner" actor-named send summoner-cooldown-less ;
@@ -606,6 +608,9 @@ create spot-xts #activities cells allot
     over here? 0= if  2drop false exit  then  swap body-tri dup 0< if  2drop false exit  then  swap nav-in-group? ;
 : closed-off ( door -- )  dup doors-actor send close-off  lock ;   \ gone for good: its exits use another door
 : door-as ( door from -- )  doors-actor send copy-door ;   \ door takes on the other's open mark, lock and closing off
+: door-for ( door slot on -- )  doors-actor send lock-for ;   \ locked against the story slot's kind of character, or not
+: reopened ( door -- )  dup doors-actor send reopen  unlock ;  \ back again, unlocked (its exits theirs again)
+: open-mark ( door on -- )  doors-actor send door-opened ;     \ its opened mark set, or cleared
 : exits-redone ( -- )  doors-actor send rebuild-exits ;
 0 constant fiona-slot   1 constant hewie-slot   2 constant stalker-slot   \ (the story's character slots)
 : doors-into ( room slot on -- )  doors-actor send lock-room-for ;   \ every door into the room locked against them, or not
