@@ -203,6 +203,9 @@ says what happens, and nothing in it can leave Fiona stuck.
 - Castle 3F: all done (castle-3f-1, -2).
 - Castle B1: all done (castle-b1-1 .. -7).
 - The old mansion: all done (old-mansion-1f-1 .. -24, -2f-1 .. -13, -3f-1, -2, -b1-1 .. -7).
+- The Chaos Forest: all done (chaos-forest-1 .. -13); what its rooms share in story/places/forest.fs.
+- Fixed on the way: the places table held rooms below $100 (the forest's corrupted what followed:
+  512 now, an error past it); the engine's area-count (the event table's entries, not a quarter of them).
 - Fixed on the way: the rooms' `point-on-camera?` (cond 0x4F) is the camera's out-of-view test, so
   their `point-on-camera? not` is the point on the screen (`point-seen?`) - the places converted
   before had it the other way (Hewie's errands, the thicket and hole hideouts, front-garden-5's ways).

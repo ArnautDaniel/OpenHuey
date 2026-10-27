@@ -210,6 +210,14 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   lockers, the gallery, the dial lock), its 3F (the boxes, Daniella's death; the armour's
   corridor), its B1 (the mirror and symbol doors, Daniella at the kiln, the trap workshop, the
   torture chamber, the golem race).
+- the Chaos Forest (every room a place; `story/places/forest.fs` what they share - the maze dealt
+  anew, as she comes in to a room never dealt and as her panic sets in; the bushes of -4 .. -7 to
+  crouch in, the stalker's search of them by the odds, their leaves; the wisp startled by a noise or
+  someone near; the rabbit): its edge (the hopper, the Forest Map), the clearing (Hewie found, seven
+  crates, the sundial), the lake, the crossing, the way to its heart, Hewie shot (his hurt face, the
+  bandage scene), the heart (Riccardo; dressed anew, on to the water tower). Kit: `start-holding`
+  (an activity that holds someone from the frame it starts - nothing else takes them first),
+  `loud-here?` (a loud noise made here last frame), `face-off`.
 
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
 after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
