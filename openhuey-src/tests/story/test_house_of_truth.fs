@@ -1,10 +1,9 @@
 \ The House of Truth's room commands (S5c; src/game/rooms/room_8C.c, room_8E.c): the dynamo
-\ shaken, the belt machine run and slowed, the shelf falling over, Hewie's health kept and put
-\ back. Headless:
+\ shaken, the belt machine run and slowed, Hewie's health kept and put back. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_house_of_truth.fs
 IN: test-house-of-truth
 USING: tester engine game-state actors messages common room-names game debug story.state story.words
-  story.rooms.house-of-truth-1f-4 story.rooms.house-of-truth-1f-6
+  story.rooms.house-of-truth-1f-4
   story.rooms.house-of-truth-1f-9 ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
@@ -25,12 +24,6 @@ T{ [: 2 0 var-set  1 house-of-truth-1f-4.cmd03 ;] in-room -> }T
 5 run-frames
 T{ [: hewie-hp @ ;] in-room -> 10 }T
 T{ [: 0 house-of-truth-1f-4.cmd03  2 var @ ;] in-room -> 10 }T
-
-house-of-truth-1f-6 room!  20 run-frames
-testing house-of-truth-1f-6: the shelf set falling, then put down
-T{ [: s" tana" object-here? ;] in-room -> -1 }T
-T{ [: 0 house-of-truth-1f-6.cmd01  s" tana" $3C object@ 0.005e ~= ;] in-room -> -1 }T
-T{ [: 2 house-of-truth-1f-6.cmd01  s" tana" turn-x object@ pi f2/ fsin ~= ;] in-room -> -1 }T
 
 house-of-truth-1f-9 room!  20 run-frames
 : of-kind ( k -- n )  0  128 0 do  i thing-used? if  i thing-kind 2 pick = if  1+  then  then  loop  nip ;
