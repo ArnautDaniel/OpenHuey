@@ -18,9 +18,9 @@ USING:
     story.rooms.off-map-64 story.rooms.off-map-65
    
     story.rooms.house-of-truth-1f-1 story.rooms.house-of-truth-2f-1
-    story.rooms.house-of-truth-2f-2 story.rooms.house-of-truth-b1-1 story.rooms.house-of-truth-b1-2 story.rooms.house-of-truth-b1-3 story.rooms.house-of-truth-b1-4 story.rooms.house-of-truth-1f-2
+    story.rooms.house-of-truth-2f-2 story.rooms.house-of-truth-b1-1 story.rooms.house-of-truth-b1-2 story.rooms.house-of-truth-b1-3 story.rooms.house-of-truth-1f-2
     story.rooms.house-of-truth-1f-3 story.rooms.house-of-truth-1f-4 story.rooms.house-of-truth-1f-5 story.rooms.house-of-truth-1f-6 story.rooms.house-of-truth-1f-7 story.rooms.house-of-truth-1f-8
-    story.rooms.house-of-truth-1f-9 story.rooms.house-of-truth-b1-5 story.rooms.house-of-truth-b1-6 story.rooms.house-of-truth-b1-7 story.rooms.house-of-truth-b1-8 story.rooms.house-of-truth-b1-9
+    story.rooms.house-of-truth-1f-9 story.rooms.house-of-truth-b1-9
     story.rooms.house-of-truth-b1-10 story.rooms.house-of-truth-b1-11 story.rooms.house-of-truth-b1-12 story.rooms.house-of-truth-1f-10 story.rooms.water-tower-1f-1 story.rooms.water-tower-2f-1
     story.rooms.water-tower-4f-1 story.rooms.off-map-c4 story.rooms.water-tower-7f-1 story.rooms.water-tower-7f-2 story.rooms.water-tower-8f-1
     story.rooms.off-map-d0 story.rooms.off-map-d1 story.rooms.off-map-d2 story.rooms.off-map-d3 story.rooms.off-map-d4 story.rooms.off-map-d5
