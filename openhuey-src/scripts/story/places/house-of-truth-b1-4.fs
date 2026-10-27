@@ -22,7 +22,7 @@ create colour-doors  $F1 , $F2 , $104 , $105 , $106 , $107 , $108 , $109 , $10A 
 : comes-to-white ( -- )   \ (the dark lifting; the first time its fact, after that its file)
     comes-to  found-file-254 fact? if  white-file give-file  else  found-file-254 fact!  then ;
 : each-frame ( -- )
-    inscription-msg colour-frame  2 house-of-truth-b1-5 ahead  3 house-of-truth-b1-6 ahead ;
+    inscription-msg colour-frame  2 house-of-truth-b1-5 loads-ahead  3 house-of-truth-b1-6 loads-ahead ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
     came-by @ forced-exit = if

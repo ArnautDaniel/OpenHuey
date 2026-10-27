@@ -6,7 +6,7 @@
 \ these: `own-reset  truth-owns owns !`.
 IN: story.places.house-of-truth
 USING: engine game-state actors messages common facts flag-names story-names room-names stalker-names
-    floor-flags story.kit ;
+    floor-flags story.kit stalker.anims ;
 
 own-reset
 
@@ -65,7 +65,7 @@ $129 constant arrival-tri   $EB constant his-arrival-tri
     through-reacted @ if  exit  then
     fiona 0 in-area?  fiona 1 in-area? or 0= if  exit  then
     -1 through-reacted !  ['] through fiona start-holding drop ;
-: ahead ( area room -- )  swap fiona swap entered? if  preload  else  drop  then ;   \ (into the area: that room loaded ahead)
+: loads-ahead ( area room -- )  swap fiona swap entered? if  preload  else  drop  then ;   \ (into the area: that room loaded ahead)
 : colours-done? ( -- flag )  htb1-5-flag1 fact?  htb1-6-flag1 fact? and  htb1-7-flag1 fact? and  htb1-8-flag1 fact? and ;
 : not-yet ( area fact room -- )   \ (that colour's room ahead while it isn't done; else back to the white)
     rot fiona swap entered? 0= if  2drop exit  then
@@ -82,3 +82,9 @@ variable said-msg
 create colour-cameras  4 , 0 , 0 ,  5 , 1 , 1 ,
 : colour-frame ( msg -- )  colour-cameras 2 cameras-at  doors-through  voices  slam-shake  reads ;
 : colour-went ( -- )  scene-locked state-off ;
+
+\ ---- Lorenzo coming in ahead of her (the corridors): there at once, looking about ----
+: appears ( tri deg -- )   \ (an activity: out of sight till he stands there, then shown, looking about)
+    {: tri deg :}  stalker-present  stalker hold  stalker false shown  stalker wait-move  stalker true shown
+    stalker tri deg place-on-tri  stalker 1 1 camera-set  stalker look-about-3-anim 0 play-blend  0 stalker-order ;
+: sent-in ( room tri -- )  stalker-to  0 stalker-order ;   \ (into that room on the triangle, about his own way)
