@@ -79,7 +79,7 @@ state: place-state
   cell field st-room-now  cell field st-cond-now  cell field st-kind-now  cell field st-alert-now  cell field st-came-now  cell field st-age
   cell field st-heard           \ he has told us at all (in the game: st-age frames ago)
   \ the creatures, as they tell (creature-doing): each one's room, how it moves, frames since
-  #creatures cells field cr-room  #creatures cells field cr-mode  #creatures cells field cr-age
+  #creatures cells field cr-room  #creatures cells field cr-mode  #creatures cells field cr-age  #creatures cells field cr-id
   cell field found-her          \ a hiding place's: the stalker has found her there (she must flee)
   cell field came-while-hidden  \ ... he came in while she hid (gone again: the prompt anew)
   cell field hewie-came-now   \ the exit Hewie came in by (hewie-came; -1 none)
@@ -541,6 +541,13 @@ create look-bytes 16 allot
     128 0 do  i thing-used? if  i thing-kind over = if  drop true unloop exit  then  then  loop  drop false ;
 : creature-facing ( room level tri kind reach yaw -- )   \ (one let out there, turned so: the creatures' own way about -
     -1 swap 0e f>cell  s" creatures" actor-named send creature-place ;   \ reach x 10 her nearness that wakes it)
+: homunculi-off ( group -- )   \ (the homunculi here standing on a triangle of that nav group: gone)
+    {: g :}  #creatures first-homunculus do
+        i cells cr-age + @ 100 <  i cells cr-room + @ this-room @ = and if
+            i cells cr-id + @ dup body? if  body-tri dup 0< 0= if  g nav-in-group? if  i s" creatures" actor-named send creature-clear  then  else  drop  then
+            else  drop  then
+        then
+    loop ;
 : creature-in ( room level tri kind reach -- )  0 creature-facing ;
 : creature-dropped ( room level tri kind reach yaw F: from -- )   \ (a homunculus: turned so, dropped from that height)
     -1 swap f>cell  s" creatures" actor-named send creature-place ;   \ (the room a forced exit leads to, loaded ahead)
@@ -1245,7 +1252,7 @@ behaviour placing
       room st-room-now !  mode st-mode-now !  sub st-sub-now !  cond st-cond-now !  kind st-kind-now !  alert st-alert-now !  came st-came-now !  0 st-age !  -1 st-heard ! ;
   on creature-doing ( slot room mode up -- )
       {: slot room mode up :}  slot 0 #creatures within 0= if  exit  then
-      room slot cells cr-room + !  mode slot cells cr-mode + !  0 slot cells cr-age + ! ;
+      room slot cells cr-room + !  mode slot cells cr-mode + !  0 slot cells cr-age + !  sender slot cells cr-id + ! ;
   on panic ( stage level -- )  cell>f f>s panic-level-now !  panic-stage ! ;
   on fiona-doing ( mode sub cond cmd doing -- )  fiona-doing-now !  fiona-cmd-now !  drop  fiona-sub-now !  fiona-mode-now ! ;
   on fiona-struck-by ( who -- )  struck-by-now ! ;
