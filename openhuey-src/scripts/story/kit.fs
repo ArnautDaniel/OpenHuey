@@ -426,6 +426,7 @@ $26 constant costume-var   $27 constant coat-var   $28 constant costume-worn-var
 : scrambling? ( -- flag )  hewie-act-now @ dup scramble-act = swap scramble-2-act = or  hewie-in? and ;
 : hush ( id on -- )  over 0< if  2drop exit  then  swap send silent ;   \ (its own sounds kept quiet)
 : trust+ ( n -- )  hewie send trust+ ;
+: hewie-eyes-on ( F: x y z -- )  f>cell f>cell f>cell swap rot  hewie send scent-now ;   \ (his look on that point now)
 : hewie-scent ( F: x y z -- )  f>cell f>cell f>cell swap rot  hewie send scent-at ;   \ (something to look to, if he has none)
 : chance? ( pct -- flag )  rnd 100e f* f>s > ;
 

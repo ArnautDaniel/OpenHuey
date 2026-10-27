@@ -144,7 +144,7 @@ picture (`lit-over-all`); an exit's door held (`exit-held?`: none, not); Daniell
 another word plate to press (`plate-pressable?`); a thing wandering about its place (`wanderer-at`);
 a face's texture from a file (`face-on`); the stalker free (`stalker-free?`: here, not struck, held
 or linked, not leading her, not in a doorway - cond 0x65); his grab of Hewie from behind asked
-(`grabs-hewie?`, his yes a frame on); dust of a kind and colour (`dust-of`); an activity
+(`grabs-hewie?`, his yes a frame on); Hewie's look on a point now (`hewie-eyes-on`); dust of a kind and colour (`dust-of`); an activity
 stopped by its word (`stop-doing`); by one of the forced ways
 (`forced-way?`: $80 .. the last given - not a room entered by none, -1); one triangle's floor flags
 (`floor-tri-on`); before an exit's door (`before-door?`); within reach across, whatever the height
@@ -232,6 +232,13 @@ Places, each with its test in `tests/places/`:
 - castle-2f-15, the hall with its far way open ($30): climbing down, the statue, the Prima Magnesia
   Hewie sniffs out, Daniella's motions loaded on the way out while she is the maid, the bridge's
   Hewie (on his side of the hall), the map's pages.
+- castle-2f-12, the nursery ($26): the wardrobe to hide in (Hewie, near, in with her; out by the
+  button, in a panic, or found - the stalker rattling it with her shaking inside, Debilitas
+  dragging her out, the others seeing her and she runs), Debilitas by the rocking chair; the three
+  rocking chairs (set rocking by a blow, the first a while the first time; Hewie watching it), the
+  box and its slot (the right thing: it opens, the Inquisitor Earrings and the Jade Choker; else
+  nothing), the caged doll and the rocking horse in turn, the doll in the chair, the crib, the
+  Refined Antimony Hewie sniffs out, the vase's Medallion.
 - castle-2f-13, the suspended bridge's hall before the great hall's balcony fell ($28): out on the
   balcony a while (she, or the stalker after her), it gives - to black, the doors set anew, down to
   the great hall by the forced way (her way the balcony's fall, his her seizing), Hewie sent there

@@ -289,8 +289,10 @@ room-motion 5 + constant crawl-in-alone  room-motion 4 + constant walk-to-bed
     hewie-hidden state-off  hewie true noclip  hewie crawl-out 5 start-blend8  hewie wait-anim  hewie false noclip ;
 : hide-under-bed ( -- )
     stalkers-stay state!  0 came-while-hidden !  0 hiding-step !  0 hewie-along !  0 hewie-in-place !
-    hewie held? 0=  hewie-near-now @ and  fiona body-at hewie body-at vec-dist 50e f<= and  hewie-in? and if
-        ['] hewie-hides start drop  -1 hewie-along !
+    hewie-in? if   \ (Hewie, free and near her: under the other bed)
+        hewie held? 0=  hewie-near-now @ and  fiona body-at hewie body-at vec-dist 50e f<= and if
+            ['] hewie-hides start drop  -1 hewie-along !
+        then
     then
     crawl-under  lying-hidden ;
 
