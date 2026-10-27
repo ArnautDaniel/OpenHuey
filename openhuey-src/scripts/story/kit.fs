@@ -549,6 +549,9 @@ create look-bytes 16 allot
         then
     loop ;
 : creature-in ( room level tri kind reach -- )  0 creature-facing ;
+: story-spirit-in ( room level tri kind reach -- )   \ (the story's own spirit, slot 6, let out there)
+    story-spirit 0 0e f>cell  s" creatures" actor-named send creature-place ;
+: creature-up? ( slot -- flag )  cells cr-age + @ 2 < ;   \ (in the game: it told us this frame or the last)
 : creature-dropped ( room level tri kind reach yaw F: from -- )   \ (a homunculus: turned so, dropped from that height)
     -1 swap f>cell  s" creatures" actor-named send creature-place ;   \ (the room a forced exit leads to, loaded ahead)
 \ a reflecting quad (Reflection): reflection k (0..3: the effect k's, k and 3) on the quad's corners -
