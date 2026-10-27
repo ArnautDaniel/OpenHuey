@@ -218,6 +218,16 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   bandage scene), the heart (Riccardo; dressed anew, on to the water tower). Kit: `start-holding`
   (an activity that holds someone from the frame it starts - nothing else takes them first),
   `loud-here?` (a loud noise made here last frame), `face-off`.
+- the House of Truth (every room a place; `story/places/house-of-truth.fs` what they share - Lorenzo's
+  slam shaking the camera (`slam-shake`, `slam-shake-of` a kind), the B1's voices, the colour rooms
+  (the way on decided by the colours done, the inscription, the dark between them), Lorenzo coming in
+  ahead (`appears`), the tremors once the house begins to come down (`tremors`: the violent ones with
+  her quake, else slight), the holes in the walls (`hole-offer`, `out-of-hole`), the Sol Key turned
+  (`sol-turned`)): its B1 (the colour rooms, the shower, the gas), its 1F (the blasted wall, the
+  marker, the demolisher, the furnace, the trap, the pit - the cane set in, the house coming down,
+  Lorenzo's fall), its 2F (the crates, the study). Kit: `steady` (a room's steady sound: started once
+  its sounds are in, then kept up), `kept-by` (a sound kept on a moving character), `fell-now` (the
+  debris fallen through: the things' `keri-fell`), `hewie-mode-now` (his move mode).
 
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
 after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker

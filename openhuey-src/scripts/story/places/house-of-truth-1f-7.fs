@@ -128,7 +128,7 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
     ht1f-7-flag3 fact?  fiona hiding-area in-area? and  fiona 90 60 heading? and if
         stalker-in?  his-in-view? and if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
     then
-    request-now @ 2 =  fiona 0 before-door? and if  ['] unlocks-door any-time offer  then
+    8 locked-request?  fiona 0 before-door? and if  ['] unlocks-door any-time offer  then
     fiona wall-area in-area?  fiona -45 50 heading? and if
         ht1f-7-flag1 fact? if  got-cane-of-caduceus fact? 0= if  ['] the-cane unhurried offer  then
         else  hewie-at-wall @ if  ['] wall-opens unhurried offer  then  then

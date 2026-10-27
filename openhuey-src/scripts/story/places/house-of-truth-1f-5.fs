@@ -104,7 +104,7 @@ $1C constant door-track   $81 constant mystic-way
     fiona door-area in-area?  fiona 0 50 heading? and if
         done if  ['] mystic-door unhurried offer  else  ['] welded unhurried offer  then
     then
-    request-now @ 2 = if
+    8 locked-request? if
         fiona 0 before-door? if  done if  ['] get-out unhurried  else  ['] tries-front any-time  then  offer  then
         fiona 1 before-door? if  done if  ['] get-out unhurried  else  ['] tries-behind any-time  then  offer  then
         fiona 2 before-door?  done and if  ['] get-out unhurried offer  then

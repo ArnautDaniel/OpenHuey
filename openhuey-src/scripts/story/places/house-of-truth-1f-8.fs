@@ -85,7 +85,7 @@ create flame-slots  0 , 1 , 2 , 4 ,
 : magist-sniffed ( -- )  ht1f-8-magist-medallion-found ht1f-8-magist-medallion magist-fx  86e 1e 68e  hewie-finds ;
 : spots ( -- )
     fiona clock-area in-area?  fiona -22 50 heading? and if  ['] save-clock calm-hewie-up offer  then
-    request-now @ 2 =  fiona 0 before-door? and if  ['] tries-snagged any-time offer  then
+    8 locked-request?  fiona 0 before-door? and if  ['] tries-snagged any-time offer  then
     ht1f-8-magist-medallion-found fact?  ht1f-8-magist-medallion fact? 0= and  fiona 86e 1e 68e 5e 5e touches? and if  ['] pick-magist calm-only offer  then ;
 
 \ ---- every frame ----

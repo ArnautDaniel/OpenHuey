@@ -158,7 +158,7 @@ create ahead  2 , 0 ,  3 , 1 ,   \ (area, exit loaded ahead)
     fiona hiding-area in-area?  fiona -45 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
     then
-    request-now @ 2 =  fiona 0 before-door? and if  ['] tries-door any-time offer  then
+    8 locked-request?  fiona 0 before-door? and if  ['] tries-door any-time offer  then
     over-music-e fact? 0=  stage @ no-stage = and  spot-taken @ 0= and
     fiona spot-area in-area? and  fiona 0 50 heading? and if  ['] the-spot unhurried offer  then ;
 : each-frame ( -- )

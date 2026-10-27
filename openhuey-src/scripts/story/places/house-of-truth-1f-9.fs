@@ -284,7 +284,7 @@ create tint-b  $72 c, $96 c, $94 c, $6E c, $60 c, $56 c, $70 c, $3C c,
 : locked-now ( -- )  locked-now-msg show ;
 : spots ( -- )
     fiona hole-area in-area?  fiona 0 50 heading? and if  ['] the-hole unhurried offer  then
-    scene-5-pending state?  1 locked-request? and if  ['] locked-now any-time offer  then
+    scene-5-pending state?  8 locked-request? and if  ['] locked-now any-time offer  then
     ht1f-9-flag2 fact?  fiona 0e 0e 0e 23e 4e touches? and  fiona 50 0e 0e faces-point? and if  ['] the-pit unhurried offer  then ;
 
 \ ---- the movies replayed (the extras) ----

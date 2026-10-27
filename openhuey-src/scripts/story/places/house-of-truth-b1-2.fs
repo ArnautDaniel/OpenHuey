@@ -47,7 +47,7 @@ create ahead  2 , 0 ,  3 , 1 ,   \ (area, exit loaded ahead)
 : spots ( -- )
     fiona clock-area 50 faces-area? if  ['] save-clock calm-hewie-up offer  then
     over-music-e fact? 0=  fiona 1 before-door? and if  ['] to-lorenzo any-time offer  then
-    request-now @ 2 =  fiona 0 before-door? and if  ['] tries-it any-time offer  then
+    8 locked-request?  fiona 0 before-door? and if  ['] tries-it any-time offer  then
     htb1-2-lavender fact? 0=  fiona -45.77e 5.75e 19.99e 5e 5e touches? and if  ['] pick-lavender calm-only offer  then ;
 : each-frame ( -- )
     0 exit-out  over-music-e fact? if  1 exit-out  then

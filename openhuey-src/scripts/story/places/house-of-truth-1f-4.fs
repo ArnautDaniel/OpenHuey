@@ -156,7 +156,7 @@ create belt-cues  $F , $12 , $13 , $14 , $17 , $28 , $29 , $2A , $2B , $2C , $31
     fiona up-from-pick-anim play  got-sol-key fact! ;
 : spots ( -- )
     fiona generator-area in-area?  fiona 90 50 heading? and if  ['] the-generator unhurried offer  then
-    request-now @ 2 = if  ['] the-door any-time offer  then
+    8 locked-request? if  ['] the-door any-time offer  then
     ht1f-4-flag1 fact?  got-sol-key fact? 0= and  fiona 0e -3.2e 65e 5e 5e touches? and if  ['] takes-sol calm-only offer  then
     found-file-250 fact? 0=  fiona demolisher-area 50 faces-area? and if  ['] the-demolisher unhurried offer  then ;
 
