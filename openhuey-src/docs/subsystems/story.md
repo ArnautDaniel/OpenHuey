@@ -138,7 +138,8 @@ him in, `hauled-out`; each frame `hidden-calm`), its stalker (`came-on-her?` as 
 moving about, his alert 4; `door-for-him` opens a shut door he came by; `finds-her-at`: to the
 spot, Debilitas looking in, the others seeing her; the place's `found-her`, `came-while-hidden`);
 a placed object back as it was set (`object-reset`); the push-boxes (`obstacle-in`,
-`obstacle-fixed`, `obstacle-on-tri?`); dust of a kind and colour (`dust-of`); an activity
+`obstacle-fixed`, `obstacle-on-tri?`, `obstacle-kept`, `obstacle-keep`); a scene's lit quad over the
+picture (`lit-over-all`); an exit's door held (`exit-held?`: none, not); dust of a kind and colour (`dust-of`); an activity
 stopped by its word (`stop-doing`); by one of the forced ways
 (`forced-way?`: $80 .. the last given - not a room entered by none, -1); one triangle's floor flags
 (`floor-tri-on`); before an exit's door (`before-door?`); within reach across, whatever the height
@@ -197,6 +198,14 @@ Places, each with its test in `tests/places/`:
   fright the first time), the floor, the angel painting, the dark corner, the Album Medallion Hewie
   sniffs out, his wary stand and sitting by, his looks up, the chandeliers swinging, two flames,
   the wheel's sounds, Debilitas's far shove, the creatures, the walls' shade, the replay.
+- castle-2f-4, the little TV room ($31): brought in by the forced way from the bedroom's TV, her
+  nightmare (a scene: the lit quad over the picture and her layer and shadow by its shots), out by
+  the way loaded ahead; the TV, the fan, the replay.
+- castle-2f-10, the room of the four boxes ($17): the boxes pushed onto their squares (each fixed;
+  all four, the scene - the way opened, the doors set anew - and out by the forced way), where they
+  stand kept as she leaves, the replay.
+- castle-2f-11, the corridor of the slanted crest ($1F): the doll and the swing rocking, the crest,
+  the specks, Hewie's look up.
 - castle-2f-3, the bedroom (44): every remark and spot, the clothes, the TV, the bed and the
   stalker's search, the maid's scene, the night, the attack lesson, the evasion tip, Hewie's
   find, the four replays.

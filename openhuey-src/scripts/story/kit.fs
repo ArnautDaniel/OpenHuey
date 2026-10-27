@@ -503,6 +503,8 @@ create look-bytes 16 allot
 $10000000 constant window-panels
 : window-in ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )
     {: k str :}  k effect @ 0= if  k effects:reflection k effect!  then  k false str window-panels or reflect! ;
+: lit-over-all ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )   \ (a scene's lit quad - a Reflection with no window
+    {: k str :}  k effect @ 0= if  k 3 and effects:reflection k effect!  then  k 3 and true str reflect! ;   \ panels - over the whole picture)
 : window-over-all ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )   \ (a scene's: over the whole picture)
     {: k str :}  k effect @ 0= if  k effects:reflection k effect!  then  k true str window-panels or reflect! ;
 \ the room's placed objects, by name
@@ -519,7 +521,8 @@ $8000 constant room-motion
 : use-motions ( id -- )  model-of dup 0< if  drop exit  then  true swap motions-use ;
 
 \ ---- exits: taken by the one played, free, in its area, its door open and not held ----
-: exit-open? ( exit -- flag )   \ (a doorway, or a door not locked with its opened mark)
+: exit-held? ( exit -- flag )  exit-door dup 0< if  drop false  else  doors:door-held?  then ;   \ (its door held - none: not)
+: exit-open? ( exit -- flag )   \ (a doorway, or a door not locked with its opened mark; no door: not)
     exit-door dup 0< if  drop false exit  then
     dup door-flags 1 and if  drop true exit  then
     dup doors:door-locked? if  drop false exit  then  doors:opened-bit doors:has? ;
@@ -529,7 +532,7 @@ $8000 constant room-motion
     {: ex :}  fiona-free? 0= if  exit  then
     fiona ex exit-area in-area? 0= if  exit  then
     ex exit-open? 0= if  exit  then
-    ex exit-door doors:door-held? if  exit  then
+    ex exit-held? if  exit  then
     ex take-exit ;
 : light-doorway ( F: x0 y0 z0 .. x3 y3 z3 -- )  light-blocker ;   \ (this frame: the characters' shadows kept off where the wall shades)
 
@@ -631,6 +634,9 @@ create spot-xts #activities cells allot
 : obstacle-in ( i n kind a b -- )  s" obstacles" actor-named send place-obstacle ;   \ (box i - model "oshi0n", its kind - on square (a, b))
 : obstacle-fixed ( i -- )  s" obstacles" actor-named send stop-obstacle ;   \ (it can't be pushed any more)
 : obstacle-on-tri? ( i tri -- flag )  obstacle-on-square? ;   \ (it stands on that triangle's square)
+: obstacle-kept ( i n kind -- )  s" obstacles" actor-named send place-obstacle-kept ;   \ (placed where it was kept)
+: obstacle-keep ( i -- )   \ (its square kept for the next visit, and where its model stands)
+    dup s" obstacles" actor-named send keep-obstacle  s" obstacles" actor-named send keep-obstacle-spot ;
 : floor-tri-on ( tri flags -- )  true -rot nav-tri-flags! ;   \ (one triangle's floor: who it keeps off)
 : closed-off ( door -- )  dup doors-actor send close-off  lock ;   \ gone for good: its exits use another door
 : door-as ( door from -- )  doors-actor send copy-door ;   \ door takes on the other's open mark, lock and closing off
@@ -888,7 +894,7 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
 : exits-out ( n -- )  0 ?do  i exit-out  loop ;   \ (she goes by any of the first n when she can)
 : leaves-by ( area exit -- )   \ (the one played, in the area, free: through - the rooms' exit-check by an area)
     {: area ex :}  player held? if  exit  then  player area in-area? 0= if  exit  then
-    ex exit-open? 0= if  exit  then  ex exit-door doors:door-held? if  exit  then  ex take-exit ;
+    ex exit-open? 0= if  exit  then  ex exit-held? if  exit  then  ex take-exit ;
 : way-out ( area exit -- )  swap fiona swap entered? if  prepare-exit  else  drop  then ;
 : ways-out ( table n -- )   \ (area exit: crossing into the area, the room behind that exit loaded ahead)
     0 ?do  dup i 2* cells + @  over i 2* 1+ cells + @  way-out  loop  drop ;
