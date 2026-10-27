@@ -15,7 +15,7 @@ USING:
    
     story.rooms.off-map-5a
    
-    story.rooms.off-map-64 story.rooms.off-map-65 story.rooms.chaos-forest-1
+    story.rooms.off-map-64 story.rooms.off-map-65
    
     story.rooms.house-of-truth-1f-1 story.rooms.house-of-truth-2f-1
     story.rooms.house-of-truth-2f-2 story.rooms.house-of-truth-b1-1 story.rooms.house-of-truth-b1-2 story.rooms.house-of-truth-b1-3 story.rooms.house-of-truth-b1-4 story.rooms.house-of-truth-1f-2
@@ -27,5 +27,5 @@ USING:
     story.rooms.off-map-d6 story.rooms.off-map-d7 story.rooms.off-map-d8 story.rooms.off-map-d9 story.rooms.off-map-e0 story.rooms.off-map-e1
     story.rooms.off-map-e2 story.rooms.off-map-e3 story.rooms.off-map-e4 story.rooms.off-map-e5 story.rooms.off-map-e6 story.rooms.off-map-e7
     story.rooms.off-map-e8 story.rooms.off-map-e9
-    story.rooms.chaos-forest-8 story.rooms.chaos-forest-10
+    story.rooms.chaos-forest-10
     story.rooms.chaos-forest-13 ;
