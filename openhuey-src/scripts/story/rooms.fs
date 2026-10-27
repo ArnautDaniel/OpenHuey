@@ -5,7 +5,7 @@ USING:
     story.rooms.castle-b1-6 story.rooms.off-map-0d
     story.rooms.castle-b1-1 story.rooms.castle-b1-2 story.rooms.castle-b1-3
     story.rooms.castle-b1-7
-    story.rooms.castle-2f-7
+   
     story.rooms.castle-2f-12 story.rooms.off-map-27 story.rooms.castle-2f-13
     story.rooms.castle-3f-2 story.rooms.old-mansion-1f-1 story.rooms.castle-2f-14
     story.rooms.castle-2f-15 story.rooms.castle-2f-5 story.rooms.off-map-33 story.rooms.off-map-34 story.rooms.off-map-35

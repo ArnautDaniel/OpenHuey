@@ -140,7 +140,9 @@ spot, Debilitas looking in, the others seeing her; the place's `found-her`, `cam
 a placed object back as it was set (`object-reset`); the push-boxes (`obstacle-in`,
 `obstacle-fixed`, `obstacle-on-tri?`, `obstacle-kept`, `obstacle-keep`); a scene's lit quad over the
 picture (`lit-over-all`); an exit's door held (`exit-held?`: none, not); Daniella's held things away or back
-(`hands-empty`, `hands-back`); "Used ..." (`used-msg`); dust of a kind and colour (`dust-of`); an activity
+(`hands-empty`, `hands-back`); "Used ..." (`used-msg`); a door tried from beyond (`door-tried`);
+another word plate to press (`plate-pressable?`); a thing wandering about its place (`wanderer-at`);
+a face's texture from a file (`face-on`); dust of a kind and colour (`dust-of`); an activity
 stopped by its word (`stop-doing`); by one of the forced ways
 (`forced-way?`: $80 .. the last given - not a room entered by none, -1); one triangle's floor flags
 (`floor-tri-on`); before an exit's door (`before-door?`); within reach across, whatever the height
@@ -206,6 +208,11 @@ Places, each with its test in `tests/places/`:
   drawer, the Lunar Refractor; the stalker stronger, the summoner on), the board (the Luminessants),
   the shelves, the massive book and the desktop, the Lavender, Hewie's bark at the desk and his
   looks up, the far view's depth.
+- castle-2f-7, the plate press room ($23): the plate pressing machine (the first time its scene and
+  the press; a word plate made - its scene, the plate shown her, the file; again while fewer than ten
+  are made, else none left; a plate given back), once the golem is done someone trying the door from
+  beyond (a fright), brought in by the forced way Daniella's scene (her face as it turns to her), the
+  birdcage in turn, the ruin, the thing wandering, Hewie's looks, the replays.
 - castle-2f-9, the stair landing ($5): while the chapter has Daniella the maid, her cleaning here (on
   her knees scrubbing; spoken to she stands - "It's cleaning time now" - then her strangeness; taken
   as she leaves), her steady sound, Hewie wary of her and his look; the first time in, the screen

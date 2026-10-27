@@ -380,6 +380,7 @@ $8010 constant cant-carry-msg   \ "It's a . Unfortunately you can't carry anymor
 $8011 constant obtained-msg     \ "You've obtained ."
 $8012 constant obtained-2-msg   \ (the same, for a thing that isn't one of many)
 $8019 constant used-msg         \ "Used ." (the item named)
+: plate-pressable? ( -- flag )  items:plates 10 < ;   \ (fewer than ten word plates made: another may be pressed)
 : item-named ( item -- )  0 swap message-param! ;   \ (the next system message names it)
 : subscreen ( -- id )  s" subscreen" actor-named ;
 $8C constant fanfare-scene
@@ -464,6 +465,9 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
     st-kind-now @  dup debilitas-kind = over debilitas-6-kind = or swap debilitas-7-kind = or ;
 : partner ( -- id | -1 )  story.words:slot2 @ ;   \ the story's stalker (its slot 2): loaded, in the game or not
 : partner-kind ( -- kind )  story.words:slot2-kind @ ;
+: face-on ( kind sel addr len -- )   \ a character's face: its texture sel the file's first (Progress_LoadSpeech / Speak)
+    story.words:speech-load  {: kind sel :}  kind cast-model dup 0< if  drop exit  then
+    sel story.words:speech-file story.words:speech-len @ actor-texture-swap drop ;
 : daniellas-model ( -- model | -1 )  partner-kind daniella-kind = if  daniella-kind cast-model  else  -1  then ;   \ (the stalker loaded Daniella)
 : hands-empty ( -- )  daniellas-model dup 0< if  drop exit  then  false false story.words:daniella-parts ;   \ (what she holds put away)
 : hands-back ( -- )  daniellas-model dup 0< if  drop exit  then  story.words:daniella-one ;   \ (what she holds shown again)
@@ -559,6 +563,10 @@ $A constant usual-layer   $1E constant before-reflections-layer   \ (a model's d
 : sounds-scaled ( F: v -- )  sound-scale! ;        \ (every sound of the story's scaled: 0 silent)
 : stage-music ( op a b -- )  s" music" actor-named send music-op ;
 $27 constant knock-sound
+$28 constant try-door-sound
+: door-tried ( exit -- )   \ (someone trying that door from beyond - heard there, unless it's open)
+    {: ex :}  ex exit-door dup 0< if  drop exit  then  door-open? if  exit  then
+    ex exit-stand 0= if  fdrop fdrop fdrop exit  then  try-door-sound common-bank bank-sound-at ;
 : knock ( exit -- )   \ (a knock at that door, unless it's open)
     {: ex :}  ex exit-door dup 0< if  drop exit  then  door-open? if  exit  then
     ex exit-stand 0= if  fdrop fdrop fdrop exit  then  knock-sound common-bank bank-sound-at ;
@@ -679,6 +687,7 @@ $28 constant place-z
 : object! ( addr len off F: v -- )  {: a n off F: v :}  a n placed-here? 0= if  exit  then  v a n off placed-f! ;
 $24 constant place-y
 : flame-at ( k kind F: x y z -- )  effects:flame swap effect! ;   \ effect k: a flame of that kind
+: wanderer-at ( k F: x y z rx rz tx ty tz -- )  effects:wander swap effect! ;   \ effect k: a flat thing wandering within (rx, rz), turned so (degrees)
 : dust ( F: x y z -- )  0 $80 $80 $80 16 effects:burst ;   \ grey dust thrown up there
 : dust-of ( kind r g b F: x y z -- )  16 effects:burst ;   \ dust of a kind and colour (the rooms' 0xC8 with its own)
 : rumble-pad ( motor strength frames -- )  story.words:rumble-pad ;   \ (motor 0 the small one, buzzing; else the large at that strength)
