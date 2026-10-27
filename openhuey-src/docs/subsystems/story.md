@@ -142,7 +142,9 @@ a placed object back as it was set (`object-reset`); the push-boxes (`obstacle-i
 picture (`lit-over-all`); an exit's door held (`exit-held?`: none, not); Daniella's held things away or back
 (`hands-empty`, `hands-back`); "Used ..." (`used-msg`); a door tried from beyond (`door-tried`);
 another word plate to press (`plate-pressable?`); a thing wandering about its place (`wanderer-at`);
-a face's texture from a file (`face-on`); dust of a kind and colour (`dust-of`); an activity
+a face's texture from a file (`face-on`); the stalker free (`stalker-free?`: here, not struck, held
+or linked, not leading her, not in a doorway - cond 0x65); his grab of Hewie from behind asked
+(`grabs-hewie?`, his yes a frame on); dust of a kind and colour (`dust-of`); an activity
 stopped by its word (`stop-doing`); by one of the forced ways
 (`forced-way?`: $80 .. the last given - not a room entered by none, -1); one triangle's floor flags
 (`floor-tri-on`); before an exit's door (`before-door?`); within reach across, whatever the height
@@ -222,6 +224,11 @@ Places, each with its test in `tests/places/`:
   stand kept as she leaves, the replay.
 - castle-2f-11, the corridor of the slanted crest ($1F): the doll and the swing rocking, the crest,
   the specks, Hewie's look up.
+- castle-2f-14, the suspended bridge's hall ($2F): the first time in, the screen back (the crows'
+  file); the raised bridge in turn; Hewie pointed across the gap leaps over to the Medallion and
+  brings it back (it had, he lies down over there); called back he leaps back; the stalker grabbing
+  him from behind on the plank; climbing down to the great hall (Hewie left here); the statue turn
+  and turn about; his bark across and his looks; the map's pages.
 - castle-2f-3, the bedroom (44): every remark and spot, the clothes, the TV, the bed and the
   stalker's search, the maid's scene, the night, the attack lesson, the evasion tip, Hewie's
   find, the four replays.

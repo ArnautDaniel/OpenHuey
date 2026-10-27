@@ -402,11 +402,54 @@ PRIM(p_body_advance) {   /* ( F: x z speed -- ) ( -- there? ) straight toward (x
     body_move(b, b->mask, dx / d * speed, dz / d * speed);
     PUSH(0);
 }
-PRIM(p_body_move_any) {   /* ( F: dx dz -- ) the same over any triangle */
+/* over any triangle along the mesh's own links, whatever the heights (Actor_MoveAny's NavMesh_Slide
+ * with no mask: straight on, else along x or z alone, else up to the edge first met) */
+static void body_slide_any(HBody *b, float dx, float dz) {
+    NavMesh *n = nav_masked(0);
+    const float tries[3][2] = {{dx, dz}, {dx, 0.0f}, {0.0f, dz}};
+    Vec3 a = vec3(b->pos[0], b->pos[1], b->pos[2]);
+    float reach;
+    int i, t;
+
+    if (b->tri < 0) {
+        body_move(b, 0, dx, dz);
+        return;
+    }
+    for (i = 0; i < 3; i++) {
+        Vec3 to = vec3(a.x + tries[i][0], a.y, a.z + tries[i][1]);
+
+        if (tries[i][0] == 0.0f && tries[i][1] == 0.0f) {
+            continue;
+        }
+        t = navmesh_walk(n, b->tri, a, to, NULL);
+        if (t >= 0) {
+            b->pos[0] = to.x;
+            b->pos[2] = to.z;
+            b->pos[1] = navmesh_height(n, t, to.x, to.z);
+            b->tri = t;
+            return;
+        }
+    }
+    navmesh_walk(n, b->tri, a, vec3(a.x + dx, a.y, a.z + dz), &reach);   /* (up to the edge) */
+    reach -= 0.01f;
+    if (reach > 0.0f) {
+        float len = sqrtf(dx * dx + dz * dz);
+        Vec3 to = vec3(a.x + dx * reach / len, a.y, a.z + dz * reach / len);
+
+        t = navmesh_walk(n, b->tri, a, to, NULL);
+        if (t >= 0) {
+            b->pos[0] = to.x;
+            b->pos[2] = to.z;
+            b->pos[1] = navmesh_height(n, t, to.x, to.z);
+            b->tri = t;
+        }
+    }
+}
+PRIM(p_body_move_any) {   /* ( F: dx dz -- ) the same over any triangle, along the mesh's links */
     HBody *b = own_body(f, "body-move-any");
     float dz = (float)FPOP(), dx = (float)FPOP();
 
-    body_move(b, 0, dx, dz);
+    body_slide_any(b, dx, dz);
 }
 PRIM(p_body_move_local) {   /* ( F: x z -- ) a step in its own frame (x to its right, z ahead) */
     HBody *b = own_body(f, "body-move-local");

@@ -71,6 +71,9 @@ state: place-state
   cell field tab-moving         \ the item's tab sliding (the sub screen tells when it's done)
   \ the stalker in the game, as he tells (stalker-doing): his room, condition, kind, alert (his mode)
   cell field st-mode-now        \ his move mode (hewie-mode's names: free, off screen, struck, ...)
+  cell field st-sub-now         \ ... and its part (leading her: leading-sub ..)
+  cell field st-linked-now      \ linked to someone (stalker-ties: Progress_IsLinked)
+  cell field grab-asked-now  cell field grab-ok-now   \ the grab of Hewie from behind asked of him, his yes
   cell field st-room-now  cell field st-cond-now  cell field st-kind-now  cell field st-alert-now  cell field st-came-now  cell field st-age
   cell field st-heard           \ he has told us at all (in the game: st-age frames ago)
   \ the creatures, as they tell (creature-doing): each one's room, how it moves, frames since
@@ -463,6 +466,16 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : debilitas? ( -- flag )   \ (the stalker in the game Debilitas, in one of his kinds)
     stalker-told? 0= if  false exit  then
     st-kind-now @  dup debilitas-kind = over debilitas-6-kind = or swap debilitas-7-kind = or ;
+: stalker-free? ( -- flag )   \ (here, not struck, held or linked, not leading her, not in a doorway: the original's cond 0x65)
+    stalker-in? 0= if  false exit  then
+    st-mode-now @ struck-mode =  stalker held? or  st-linked-now @ 0<> or if  false exit  then
+    st-mode-now @ engaged-mode =  st-sub-now @ leading-sub dup 2 + within and if  false exit  then
+    stalker body-tri dup 0< if  drop false exit  then  nav-flags $80001 and if  false exit  then
+    8 0 do  i door-here? if  i 0 stalker body-pos door-in-area?  i 1 stalker body-pos door-in-area? or if  false unloop exit  then  then  loop
+    true ;
+: grabs-hewie? ( -- flag )   \ (asked of the stalker - can he grab Hewie from behind? - his yes a frame on, once)
+    grab-ok-now @ if  0 grab-ok-now !  true exit  then
+    grab-asked-now @ 0=  stalker 0< 0= and if  -1 grab-asked-now !  stalker send grab-hewie  then  false ;
 : partner ( -- id | -1 )  story.words:slot2 @ ;   \ the story's stalker (its slot 2): loaded, in the game or not
 : partner-kind ( -- kind )  story.words:slot2-kind @ ;
 : face-on ( kind sel addr len -- )   \ a character's face: its texture sel the file's first (Progress_LoadSpeech / Speak)
@@ -1089,7 +1102,7 @@ behaviour placing
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset
       self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
       self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
-      self subscribe item-event
+      self subscribe item-event  self subscribe stalker-ties
       room-starts  frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people
       camera-starts  camera-placed ;
   on tick ( -- )
@@ -1120,7 +1133,7 @@ behaviour placing
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       {: room mode sub cond hp hpmax kind alert came :}
       sender stalker =  sender s" story" actor-named = or  0= if  exit  then   \ (his own, or story's copy as we came in)
-      room st-room-now !  mode st-mode-now !  cond st-cond-now !  kind st-kind-now !  alert st-alert-now !  came st-came-now !  0 st-age !  -1 st-heard ! ;
+      room st-room-now !  mode st-mode-now !  sub st-sub-now !  cond st-cond-now !  kind st-kind-now !  alert st-alert-now !  came st-came-now !  0 st-age !  -1 st-heard ! ;
   on creature-doing ( slot room mode up -- )
       {: slot room mode up :}  slot 0 #creatures within 0= if  exit  then
       room slot cells cr-room + !  mode slot cells cr-mode + !  0 slot cells cr-age + ! ;
@@ -1140,6 +1153,8 @@ behaviour placing
   on fiona-shaking ( n -- )  shook-now ! ;
   on fiona-message ( msg -- )   \ (her locked door's: not while Hewie is the one played)
       leaving @  shown-msg @ 0< 0= or  hewie-played? or if  drop exit  then  show ;
+  on stalker-ties ( scripted apart linked -- )  st-linked-now !  2drop ;
+  on grab-answer ( ok -- )  grab-ok-now !  0 grab-asked-now ! ;
   on item-event ( who ev var value -- )   \ (the room's own, else what every room does)
       leaving @ if  2drop 2drop exit  then
       ['] d.item hook ?dup if  >r 2over 2over r> execute if  2drop 2drop exit  then  then  item-used ;

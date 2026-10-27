@@ -56,7 +56,10 @@ Declared in `scripts/messages.fs`.
 | `hewie-told` | `( what arg -- )` | to Fiona | Barking low (Hewie_StateLookLow): 0 a shut exit `arg` he is at the front of, to open; 1 where he is (`arg` his triangle). |
 
 **Facts he reads:** his own body (moved by the engine's body operations: `body-move-local`,
-`body-turn-toward`, `body-free`, `body-tri-to`, `path-plan`), Fiona's body (`body-at`,
+`body-turn-toward`, `body-free`, `body-tri-to`, `path-plan`; through anything - his story leaps
+and his root motion while he goes through blocked floor - `body-move-any`, which slides along the
+mesh's own links whatever the heights, as the original's NavMesh_Slide: up onto a ledge by its
+links, not stopped at its foot), Fiona's body (`body-at`,
 `body-yaw`, `body-tri`, `body-room`), the nav mesh (flags, floor, normals), the room graph and
 the doors (`route-avoiding`, `door-open?`, `door-exit-in`, `door-sides`, `exit-spot`), his
 model's motion (root motion, foot contacts, the end and fade), the difficulty (progress var
