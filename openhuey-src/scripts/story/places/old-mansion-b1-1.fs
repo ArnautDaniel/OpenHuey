@@ -19,12 +19,9 @@ omb1-1-breakable-broken 0 1  60.5e -0.1e -33.4e 5e 8e  breakable: the-vase
 the-vase $80303030 0 6 shard-look  the-vase 0.812e 0.687e 0.187e 0.312e shard-uv  the-vase 0 frees-floor  the-vase $123 noise-from
 $900A $900B lash-sound hop-sound  39.3e 0e 50.4e -90e  hopper: the-figure
 
-\ ---- the figure (the kit's hopper; out of sight coming by the near ways): its calls now and then ----
+\ ---- the figure (the kit's hopper; out of sight coming by the near ways): its calls ----
 : hopping-about ( -- )  the-figure  came-by @ dup 0 =  swap 3 = or 0=  hops-about ;
-: calls ( -- )   \ (while it hops: every 60 frames one of its three calls)
-    the-figure hopper-still 0= if  exit  then
-    1 call-frames +!  call-frames @ 60 < if  exit  then  0 call-frames !
-    33 chance? if  first-call  else  50 chance? if  first-call 1+  else  first-call 2 +  then  then  hopper-sound ;
+: calls ( -- )  the-figure call-frames first-call hopper-calls ;
 
 \ ---- as she comes in ----
 : jerky-shows ( -- )  omb1-1-chicken-jerky fact? 0= if  jerky-fx 60.5e 0.9e -33.4e flicker-at  then ;

@@ -1163,6 +1163,10 @@ end-structure
         hopper-slot figure-came-round? if  hopper-slot a hp.hop @ 0 0 figure-play  0 a hp.still !  else  1 a hp.still +!  then
         yield
     again ;
+: hopper-calls ( h counter first-sound -- )   \ (each frame: while it hops, every 60 one of its three calls)
+    {: a c snd :}  a hopper-still 0= if  exit  then
+    1 c +!  c @ 60 < if  exit  then  0 c !
+    33 chance? if  snd  else  50 chance? if  snd 1+  else  snd 2 +  then  then  hopper-sound ;
 : hopper-gone ( -- )  hopper-slot figure dup 0< if  drop  else  let-go  then ;
 : figure-dressed-as ( slot other -- )   \ wearing the other's model
     story.words:slot-id @ cast-model dup 0< if  2drop exit  then  swap figure dup 0< if  2drop exit  then  send cast-dress ;
