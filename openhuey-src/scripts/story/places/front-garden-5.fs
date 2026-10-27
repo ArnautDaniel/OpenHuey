@@ -96,26 +96,26 @@ the-crate crate-group frees-floor  the-crate $10A noise-from  the-crate crate-so
 : to-hanger-a ( -- )  $161 -90 $8A ['] snaps-at-a  -220e 190e  -259.5e 1e 190.1e up-to ;
 : go-there? ( -- flag )  started-now @ go-there-cmd = ;
 : come-back? ( -- flag )  started-now @ come-back-cmd = ;
-: unseen-from? ( F: x y z -- flag )  point-unseen? ;   \ (the spot off the screen: she faces it, the camera doesn't show it)
+: seen-from? ( F: x y z -- flag )  point-seen? ;   \ (the spot on the screen as she faces it)
 variable way-sent   \ (the way he is sent this frame: the last that fits, as the original's)
 : sent ( xt -- )  hewie-breakable-now @ if  way-sent !  else  drop  then ;
 : left-way ( -- )
-    fiona 50 -130e 115e faces-point?  -130e -10e 115e unseen-from? and 0= if  exit  then
+    fiona 50 -130e 115e faces-point?  -130e -10e 115e seen-from? and 0= if  exit  then
     hewie left-side-area in-area? if
         go-there? if  ['] left-from-near sent  else  come-back?  fiona left-side-area in-area? 0= and if  ['] left-from-near sent  then  then
     else
         go-there? if  ['] left-from-far sent  else  come-back?  fiona left-side-area in-area? and if  ['] left-from-far sent  then  then
     then ;
 : right-way ( -- )
-    fiona 50 -180e 180e faces-point?  -180e 5e 180e unseen-from? and 0= if  exit  then
+    fiona 50 -180e 180e faces-point?  -180e 5e 180e seen-from? and 0= if  exit  then
     hewie right-side-area in-area? 0= if
         go-there? if  ['] right-from-near sent  else  come-back?  fiona right-side-area in-area? and if  ['] right-from-near sent  then  then
     else
         go-there? if  ['] right-from-far sent  else  come-back?  fiona right-side-area in-area? 0= and if  ['] right-from-far sent  then  then
     then ;
 : hanger-ways ( -- )
-    fiona 30 -276e 160e faces-point?  -276e -10e 160e unseen-from? and  go-there? and if  ['] to-hanger-b sent  then
-    fiona 30 -260e 190e faces-point?  -260e -10e 190e unseen-from? and  go-there? and if  ['] to-hanger-a sent  then ;
+    fiona 30 -276e 160e faces-point?  -276e -10e 160e seen-from? and  go-there? and if  ['] to-hanger-b sent  then
+    fiona 30 -260e 190e faces-point?  -260e -10e 190e seen-from? and  go-there? and if  ['] to-hanger-a sent  then ;
 : hewie-ways ( -- )   \ (calm, both of them in view, he up and about)
     danger-now @ calm = 0= if  exit  then
     hewie-in?  hewie-cond-now @ down-cond <> and  fiona unseen? 0= and  hewie unseen? 0= and 0= if  exit  then

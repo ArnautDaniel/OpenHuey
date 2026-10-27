@@ -60,7 +60,7 @@ variable bridge-remarked  variable statue-remarked  variable medallion-noticed
     st-cond-now @ down-cond =  stalker his-plank-area in-area? 0= or  stalker-free? 0= or  crossing @ or if  exit  then
     plank-open  grabs-hewie? if  -1 crossing !  ['] grabbed start drop  else  plank-shut  then ;
 : pointed-across? ( -- flag )   \ (her gesture up, facing the far side - out of the picture - both of them seen)
-    chased? 0=  fiona-cmd-now @ 0= and  -163e 97e -50e point-unseen? and  fiona unseen? 0= and  hewie unseen? 0= and
+    chased? 0=  fiona-cmd-now @ 0= and  -163e 97e -50e point-seen? and  fiona unseen? 0= and  hewie unseen? 0= and
     fiona 50 -163e -50e faces-point? and ;
 : hewie-by-the-gap ( -- )   \ (each frame)
     hewie-in? 0=  hewie-cond-now @ down-cond = or  hewie held? or if  exit  then

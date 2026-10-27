@@ -51,8 +51,8 @@ testing started again (0x15): waiting about, no rage, his health back
 [: $FE char-activate ;] in-room  3 run-frames
 T{ [: raging @  my-mode @  hp @ hp-max @ = ;] his -> 0 3 -1 }T
 140.64e 124e -217.33e 0e tp-facing  5 run-frames
-testing out of sight (0x45): her on the camera, and her place
-T{ [: 0 char-unseen?  140 124 -217 point-on-camera? ;] in-room -> 0 -1 }T
+testing out of sight (0x45): her on the camera; her place by cond 0x4F (the camera's out-of-view test, despite its name): on it
+T{ [: 0 char-unseen?  140 124 -217 point-on-camera? ;] in-room -> 0 0 }T
 debug:debilitas-out  3 run-frames
 T{ [: $FE char-unseen?  stalker-active? ;] in-room -> -1 0 }T
 stalkers-blind state-flag-clear

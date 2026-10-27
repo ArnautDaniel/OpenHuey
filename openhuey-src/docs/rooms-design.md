@@ -202,7 +202,10 @@ says what happens, and nothing in it can leave Fiona stuck.
 - Castle 2F: all done (castle-2f-1 .. -15).
 - Castle 3F: all done (castle-3f-1, -2).
 - Castle B1: all done (castle-b1-1 .. -7).
-- The old mansion: under way - 1f-1, 1f-10, 1f-14, 1f-16, 1f-18, 1f-19, 1f-21, 1f-24, 1f-3, 1f-5, 2f-1, 2f-10, 2f-13, 2f-2, 2f-4, 2f-7, 2f-9, b1-7 done.
+- The old mansion: all done (old-mansion-1f-1 .. -24, -2f-1 .. -13, -3f-1, -2, -b1-1 .. -7).
+- Fixed on the way: the rooms' `point-on-camera?` (cond 0x4F) is the camera's out-of-view test, so
+  their `point-on-camera? not` is the point on the screen (`point-seen?`) - the places converted
+  before had it the other way (Hewie's errands, the thicket and hole hideouts, front-garden-5's ways).
 - Open from them: in castle-b1-2 her walk from the locked door's spot to its knob ($95) never
   arrives (her second try, "grimy handprints"); in castle-b1-7 no test spot was found where her
   request at the blocked door is made (its remark untested); castle-b1-1's step-in scene tested

@@ -558,6 +558,8 @@ create look-bytes 16 allot
 : story-spirit-in ( room level tri kind reach -- )   \ (the story's own spirit, slot 6, let out there)
     story-spirit 0 0e f>cell  s" creatures" actor-named send creature-place ;
 : creature-up? ( slot -- flag )  cells cr-age + @ 2 < ;   \ (in the game: it told us this frame or the last)
+: creatures-grounded ( -- )   \ (the creatures in play here all on level 0's floor: Room48's Cmd05)
+    #creatures 0 do  i creature-up?  i cells cr-room + @ this-room @ = and if  0 i cells cr-id + @ send set-level  then  loop ;
 : within-xz? ( id F: x z r -- flag )   \ (its body's place within r of (x, z), across)
     {: id F: x z r :}  id body-pos fswap fdrop  z f- fdup f*  fswap x f- fdup f* f+  r fdup f* f< ;
 : spirit-put-away-near? ( F: x z r -- flag )   \ (the first spirit about within r of (x, z) put away there)
@@ -833,8 +835,9 @@ create arrows-held 4 cells allot   \ (frames each arrow has been held: the pad's
 $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3C constant swing-pushed   \ (their own: floats)
 4 constant swing-back   \ (a whole number: swinging back)
 : hanging ( i -- addr len )  this-room @ story.strings:room-string ;
-: her-step ( F: -- d )   \ (how far she moved this frame)
-    fiona here? 0= if  0e exit  then  fiona-p /vec * was-at + fiona body-at vec-dist ;
+: step-of ( id F: -- d )   \ (how far a person moved this frame)
+    dup here? 0= if  drop 0e exit  then  dup person-of /vec * was-at + swap body-at vec-dist ;
+: her-step ( F: -- d )  fiona step-of ;
 \ hung things she brushes as she walks by (hangers_swing): her steps add up - past `push` they
 \ swing for 20 frames, the first ringing (`on` / `off`, the room's sounds, in turn: `rung` a cell);
 \ a swing: on 36 degrees a frame, tilted 1 + sin of it (in degrees), each half a swing apart
@@ -842,19 +845,21 @@ $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3
     {: k a n :}  a n placed-here? 0= if  exit  then
     0e a n swing-phase object!  60e k s>f f* a n swing-offset object!  0e a n swing-left object!  0e a n swing-pushed object! ;
 : chimes-rest ( base n -- )  0 ?do  i  over i + hanging  chime-rest  loop  drop ;
-: chime ( k a n squared? rung on off F: push -- )
-    {: k a n sq rung on off F: push :}  a n placed-here? 0= if  exit  then
-    her-step  sq if  fdup f*  then  a n swing-pushed object+!
-    a n swing-pushed object@ push f> if
-        20e a n swing-left object!  0e a n swing-pushed object!
-        k 0= if  rung @ 0= dup rung !  if  off  else  on  then  room-bank fiona sound-by  then
-    then
-    a n swing-left object@ f0> 0= if  exit  then
+: chime-push ( k a n rung on off F: d push -- )   \ (pushed by d: past push, 20 frames of swing - the first rings)
+    {: k a n rung on off F: d push :}  d a n swing-pushed object+!
+    a n swing-pushed object@ push f> 0= if  exit  then
+    20e a n swing-left object!  0e a n swing-pushed object!
+    k 0= if  rung @ 0= dup rung !  if  off  else  on  then  room-bank fiona sound-by  then ;
+: chime-swing ( a n -- )   \ (a frame of its swing, while it has some left)
+    {: a n :}  a n swing-left object@ f0> 0= if  exit  then
     a n swing-left object@ 1e f- 0e fmax a n swing-left object!
     36e a n swing-phase object+!
     a n swing-phase object@ a n swing-offset object@ f+ 360e f< 0= if  -360e a n swing-phase object+!  then
     a n swing-phase object@ a n swing-offset object@ f+ deg>rad fsin 1e f+ deg>rad
     fdup pi f> if  2e pi f* f-  then  a n turn-x object! ;
+: chime ( k a n squared? rung on off F: push -- )
+    {: k a n sq rung on off F: push :}  a n placed-here? 0= if  exit  then
+    k a n rung on off  her-step sq if  fdup f*  then  push chime-push  a n chime-swing ;
 : chimes ( base n squared? rung on off F: push -- )   \ (each frame she is among them)
     {: base n sq rung on off F: push :}  n 0 ?do  i  base i + hanging  sq rung on off push chime  loop ;
 \ a hung thing set swaying - 12 degrees, away from who struck it - and left to settle: a step
@@ -882,6 +887,7 @@ $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3
 \ ---- where things are seen and faced ----
 : unseen? ( id -- flag )  dup here? 0= if  drop true exit  then  body-at vec@ out-of-view? ;
 : point-unseen? ( F: x y z -- flag )  out-of-view? ;
+: point-seen? ( F: x y z -- flag )  out-of-view? 0= ;   \ (on the screen: the rooms' "point-on-camera? not" - their cond 0x4F is the camera's out-of-view test)
 : faces-point? ( id within F: x z -- flag )   \ facing the point, within so many degrees
     {: id within F: x z :}  id here? 0= if  false exit  then
     id body-pos fswap fdrop {: F: mx mz :}  x mx f-  z mz f-  fatan2

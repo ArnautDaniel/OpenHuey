@@ -287,7 +287,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     grate-open fact? 0= and  stalker-in? 0= and if
         hewie-breakable-now @ if  ['] to-the-box start drop  then  exit
     then
-    238e 0e -135e point-unseen?  fiona unseen? 0= and  hewie unseen? 0= and
+    238e 0e -135e point-seen?  fiona unseen? 0= and  hewie unseen? 0= and
     fiona 50 238e -135e faces-point? and  fg-3-refined-magnesia fact? 0= and if
         hewie-breakable-now @ if  ['] go-for-it start drop  then
     then ;

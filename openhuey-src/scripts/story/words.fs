@@ -1425,7 +1425,8 @@ $1A constant weak-blow-sub   \ (her move's sub for the weak blow)
 \ out of sight (cond 0x45): not in the game, elsewhere, or off the camera - its 4:3 picture,
 \ whatever the window's shape (Camera_OutOfView, the camera's +0xD4)
 : on-camera? ( F: x y z -- flag )  out-of-view? 0= ;
-: point-on-camera? ( x y z -- flag )  >r >r s>f r> s>f r> s>f on-camera? ;
+: point-on-camera? ( x y z -- flag )   \ cond 0x4F, as the converter named it: the original's is the camera's
+    >r >r s>f r> s>f r> s>f out-of-view? ;   \ +0xD4 (Camera_OutOfView, as cond 0x45's) - true OFF the camera
 : char-unseen? ( id -- flag )
     cond-slot dup char-here 0= if  drop true exit  then  char-at vec@ on-camera? 0= ;
 

@@ -144,6 +144,6 @@ old-mansion-1f-12 -1 game:rooms send go-to-room  5 run-frames
 s" MERCURY" plate
 T{ 0 word-plate-key index-of use -> 0 }T
 8 stand-at
-T{ 0 word-plate-key index-of use  1 run-frames  $4D story-flag?  room-actor enter  0 ebit?  leave-actor -> 6 -1 -1 }T
+T{ 0 word-plate-key index-of use  1 run-frames  $4D story-flag?  room-actor enter  story.kit:word-right-now @ 0<>  leave-actor -> 6 -1 -1 }T   \ (a place: the word right, as its doing starts)
 
 test-summary

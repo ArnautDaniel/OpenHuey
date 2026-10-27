@@ -41,11 +41,11 @@ $900A $900B lash-sound hop-sound  39.3e 0e 50.4e -90e  hopper: the-figure
     15 fade-in  hall-file give-file  scene-locked state-off  stalkers-stay state-off ;
 
 \ ---- the Album Medallion on the ledge: Hewie fetches it at her "go there" ----
-: medallion-out-of-sight? ( -- flag )  -6e 40e -29e point-unseen? ;
+: medallion-in-sight? ( -- flag )  -6e 40e -29e point-seen? ;
 : fiona-far-side? ( -- flag )  fiona body-tri dup 0< if  drop false exit  then  nav-flags other-half and 0<> ;
 : sent-up? ( -- flag )
     hewie-in? 0=  hewie-cond-now @ down-cond = or  hewie held? or  chased? or  hewie-way-now @ 0<> or if  false exit  then
-    fiona-far-side? 0=  medallion-out-of-sight? 0= or  fiona unseen? or  hewie unseen? or if  false exit  then
+    fiona-far-side? 0=  medallion-in-sight? 0= or  fiona unseen? or  hewie unseen? or if  false exit  then
     fiona 60 -6e -29e faces-point?  started-now @ go-there-cmd = and  hewie-breakable-now @ and ;
 : fetches ( -- )
     hewie hold  stalkers-stay state!  -1 fetching !  hewie-bark  hewie wait-move
