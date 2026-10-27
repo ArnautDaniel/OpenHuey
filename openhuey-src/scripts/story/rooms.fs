@@ -12,7 +12,7 @@ USING:
     story.rooms.off-map-36 story.rooms.off-map-37
     story.rooms.old-mansion-1f-8
     story.rooms.old-mansion-b1-3
-    story.rooms.old-mansion-b1-4 story.rooms.old-mansion-b1-5 story.rooms.old-mansion-1f-15
+    story.rooms.old-mansion-b1-5 story.rooms.old-mansion-1f-15
     story.rooms.off-map-5a
     story.rooms.old-mansion-3f-1
     story.rooms.off-map-64 story.rooms.off-map-65 story.rooms.old-mansion-b1-6 story.rooms.chaos-forest-1

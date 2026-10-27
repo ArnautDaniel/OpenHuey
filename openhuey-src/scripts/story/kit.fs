@@ -1114,6 +1114,145 @@ variable hide-shriek   -1 hide-shriek !   \ (the hiding place next: that sound, 
         stalker use-motions  stalker room-motion 10 start-blend  30 frames  -1 found-her !  stalker wait-anim
     else  stalker stalker.anims:there-anim play  -1 found-her !  then
     stalker 10 idle  begin  fiona held? while  yield  repeat  0 stalker-order ;
+
+\ ---- the old mansion's cabinets (old-mansion-1f-22, -b1-4): two doors she shuts herself in behind -
+\ Hewie, near and at her command, squeezing in beside her; out by the button, bursting out in a
+\ panic (or with the stalker by her). The stalker coming in while she hides: by the odds he passes,
+\ Daniella grabs at her through it, or he opens it - Daniella hauls her out, the others see her
+\ there (she bursts out). `cabinet:` names one: its fact (shut), the story variable counting his
+\ searches, the exit he opens it from, and where she, Hewie, the grab and the other stalkers stand.
+\ Its sounds the room's 0 (open), 1 (shut), 5 (the grab); the motions her file 2, his 3, Daniella's 4 ----
+begin-structure /cabinet
+  field: cb.fact  field: cb.search  field: cb.exit
+  field: cb.her-tri  field: cb.her-deg  field: cb.dog-tri  field: cb.dog-deg
+  field: cb.grab-tri  field: cb.grab-deg  field: cb.see-tri  field: cb.see-deg
+  ffield: cb.her-x  ffield: cb.her-z  ffield: cb.dog-x  ffield: cb.dog-z
+  ffield: cb.grab-x  ffield: cb.grab-z  ffield: cb.see-x  ffield: cb.see-z
+end-structure
+: cabinet: ( fact search exit her-tri her-deg dog-tri dog-deg grab-tri grab-deg see-tri see-deg
+            F: her-x her-z dog-x dog-z grab-x grab-z see-x see-z "name" -- )
+    create  here /cabinet allot
+    {: f v ex ht hd dt dd gt gd st sd a F: hx hz dx dz gx gz sx sz :}
+    f a cb.fact !  v a cb.search !  ex a cb.exit !
+    ht a cb.her-tri !  hd a cb.her-deg !  dt a cb.dog-tri !  dd a cb.dog-deg !
+    gt a cb.grab-tri !  gd a cb.grab-deg !  st a cb.see-tri !  sd a cb.see-deg !
+    hx a cb.her-x f!  hz a cb.her-z f!  dx a cb.dog-x f!  dz a cb.dog-z f!
+    gx a cb.grab-x f!  gz a cb.grab-z f!  sx a cb.see-x f!  sz a cb.see-z f! ;
+variable cab   \ (the one in use)
+variable cab-stage   \ (his opening it: 0 not, 1 at it, 2 open)
+variable cab-held   variable cab-closed   variable cab-burst   variable cab-dog   variable cab-dog-in
+variable cab-steps   \ (hers: 1 in, 2 out - Hewie follows them)
+variable cab-searched
+0 constant cab-open-sound   1 constant cab-shut-sound   5 constant cab-grab-sound
+: cab-doors ( anim -- )  {: a :}  0 1 a object  1 1 a object ;
+: cabinet-shut ( -- )  cab @ cb.fact @ fact!  0 barred-floor floor-on ;
+: cabinet-shown ( cb -- )   \ (as she comes in: shut, or open - nobody but her before it)
+    cab !  0 keeps-hewie-off floor-on  0 keeps-stalkers-off floor-on
+    cab @ cb.fact @ fact? if  0 show-part  0 barred-floor floor-on  0 object-hide  1 object-hide
+    else  0 hide-part  0 barred-floor floor-off  0 object-show  1 object-show  then ;
+: near-her? ( id F: d -- flag )  {: id F: d :}  id here? 0= if  false exit  then  fiona body-at id body-at vec-dist d f<= ;
+: daniella-here? ( -- flag )  st-kind-now @ dup daniella-kind = swap kind34-kind = or ;
+: cab-out ( -- )  2 cab-steps !  fiona follow  fiona-hidden state-off ;
+: cab-faces-him ( -- )   \ (out, the stalker here: her eyes on him, turned to him)
+    stalker-in? 0= if  exit  then  fiona stalker look-at  yield  fiona stalker body-pos fswap fdrop turn-to-xz ;
+: cab-him-off ( -- )  stalker-in? if  0 stalker-order  stalker let-go  then ;
+: cab-steps-out ( -- )
+    cab-out  cab-him-off  fiona true noclip  2 cab-doors  fiona room-motion 2 + 0 start-blend
+    16 frames  cab-open-sound room-bank fiona sound-by  56 frames  cab-shut-sound room-bank fiona sound-by
+    fiona wait-anim  fiona false noclip  cab-faces-him  cab @ cb.fact @ fact-off ;
+: cab-bursts-out ( -- )
+    cab-out  -1 cab-burst !  cab-stage @ 0= if  cab-him-off  then
+    fiona true noclip  4 cab-doors  fiona room-motion 4 + 0 start-blend  7 frames  cab-open-sound room-bank fiona sound-by
+    fiona wait-anim  fiona false noclip  cab-faces-him  cabinet-shut ;
+: cab-forced-out ( -- )  fiona hold  cab-bursts-out ;   \ (seen there: out of it, at once)
+: cab-pulled-out ( -- )
+    begin  cab-stage @ 2 = 0= while  yield  repeat
+    cab-out  2 avoid-prompt  fiona true noclip  fiona room-motion 3 + 0 play-blend  fiona false noclip  cabinet-shut ;
+: cab-hewie-hides ( -- )
+    hewie hold  hewie 3 motions-for  hewie cab @ cb.dog-tri @ cab @ cb.dog-deg @ -1 walk-path-move  cab @ cb.dog-x f@ cab @ cb.dog-z f@ go-to
+    hewie use-motions  -1 cab-dog-in !  begin  cab-steps @ 0= while  yield  repeat
+    hewie true noclip  hewie room-motion cab-closed @ 0= if  1+  then  5 start-blend8  hewie wait-anim  hewie false noclip
+    hewie-hidden state!
+    begin  fiona held?  cab-steps @ 2 <> and while  yield  repeat
+    hewie-hidden state-off  hewie true noclip
+    cab-burst @ if  hewie room-motion 4 + 0 start-blend  7 frames  cab-open-sound room-bank fiona sound-by  hewie wait-anim
+    else  hewie room-motion  cab-stage @ 0= if  2 +  else  3 +  then  0 play-blend  then
+    hewie false noclip ;
+: cab-goes-in ( -- )
+    cab @ cb.fact @ fact? if
+        fiona room-motion 5 start-blend8  5 frames  0 hide-part  0 object-show  1 object-show  0 cab-doors
+        40 frames  cab-shut-sound room-bank fiona sound-by  fiona wait-anim
+    else
+        fiona room-motion 1+ 5 start-blend8  5 frames  0 hide-part  0 object-show  1 object-show  1 cab-doors
+        14 frames  cab-open-sound room-bank fiona sound-by  60 frames  cab-shut-sound room-bank fiona sound-by  fiona wait-anim
+    then ;
+: cab-lies-low ( -- )   \ (till she leaves, or is hauled or bursts out)
+    begin
+        circle button-pressed? 0=  cab-held @ or if
+            cab-stage @ 1 = if
+                0 cab-held !  fiona.sounds:seized-sound common-bank fiona sound-by
+                stalker-in? if  cab-pulled-out  else  cab-steps-out  then  exit
+            then
+            in-panic? if  cab-bursts-out exit  then
+            hidden-calm  yield
+        else
+            stalker 50e near-her? if  cab-bursts-out exit  then
+            cab-steps-out  0 barred-floor floor-off  exit
+        then
+    again ;
+: hides-in-cabinet ( cb -- )   \ (a place's doing: in it, lying low)
+    {: a :}  a cab !
+    stalkers-stay state!  0 came-while-hidden !  fiona hold  fiona wait-move
+    0 cab-stage !  0 cab-held !  a cb.fact @ fact? cab-closed !  0 cab-steps !  0 cab-dog !  0 cab-dog-in !  0 cab-burst !
+    hewie 30e near-her?  hewie held? 0= and  hewie-near-now @ and if
+        -1 cab-dog !  ['] cab-hewie-hides start drop
+    then
+    fiona 2 motions-for  daniella-here? if  stalker 4 motions-for  then
+    fiona a cb.her-tri @ a cb.her-deg @ a cb.her-x f@ a cb.her-z f@ walk-to  fiona use-motions
+    cab-dog @ if  fiona hewie look-at  yield  begin  cab-dog-in @ 0= while  yield  repeat  then
+    1 cab-steps !  fiona true noclip  fiona -1 look-at  yield  cab-goes-in  fiona false noclip
+    0 barred-floor floor-off  stalkers-stay state-off  fiona-hidden state!  0 avoid-prompt  shrieks
+    cab-lies-low ;
+: cab-grabs ( -- )   \ (Daniella: her hands through it - her fright up twice)
+    stalker hold  stalker wait-move  0 door-for-him  stalker cab @ cb.grab-tri @ cab @ cb.grab-deg @ cab @ cb.grab-x f@ cab @ cb.grab-z f@ walk-to
+    -1 cab-searched !  -1 cab-held !  stalker room-motion 2 + 10 start-blend
+    25 frames  cab-grab-sound room-bank stalker sound-by  40 threat  9 frames  cab-grab-sound room-bank stalker sound-by  20 threat
+    stalker wait-anim  0 cab-held !  0 cab-searched !  stalker stalker.anims:step-back-anim play  120 summoner-sooner ;
+: cab-opens ( -- )
+    stalker hold  stalker wait-move  cab @ cb.exit @ door-for-him
+    daniella-here? if
+        cab-searched @ 0= if  stalker cab @ cb.grab-tri @ cab @ cb.grab-deg @ cab @ cb.grab-x f@ cab @ cb.grab-z f@ walk-to  then  0 cab-searched !
+    else  stalker cab @ cb.see-tri @ cab @ cb.see-deg @ cab @ cb.see-x f@ cab @ cb.see-z f@ walk-to  then
+    1 cab-stage !
+    daniella-here? if
+        3 cab-doors  stalker room-motion 1+ 10 start-blend  16 frames  2 cab-stage !  10 frames  cab-open-sound room-bank stalker sound-by
+        stalker wait-anim  stalker stalker.anims:step-back-anim play
+    else
+        stalker stalker.anims:there-anim play
+        fiona-hidden state? if  2 avoid-prompt  panic-eased  ['] cab-forced-out start drop  then
+    then
+    stalker 10 idle  begin  fiona held? while  yield  repeat  0 stalker-order ;
+: cab-finding ( var -- result )   \ (0 he passes, 1 a grab, 2 he opens it)
+    var@ case
+        0 of  10 chance? if  2  else  0  then  endof
+        1 of  25 chance? if  2  else  1  then  endof
+        2 of  50 chance? if  2  else  1  then  endof
+        3 of  75 chance? if  2  else  1  then  endof
+        >r 0 r>
+    endcase
+    daniella-here? 0=  over 1 = and if  drop 2  then
+    2 creature-moving? if  drop 2  then ;
+: cabinet-stalker-came ( cb -- )   \ (the place's, as he comes in)
+    {: a | v :}  a cab !  a cb.search @ to v
+    came-on-her? 0= if  exit  then
+    stalker follow  v cab-finding  2 stalker-order
+    case
+        0 of  0 stalker-clock  120 summoner-sooner  endof
+        1 of  150 stalker-clock  ['] cab-grabs start drop  endof
+        2 of  300 stalker-clock  ['] cab-opens start drop  endof
+    endcase
+    0 cab-searched !  v var@ 1+ v var! ;
+
 \ she weak (since the chapter turned, till she rests in her bedroom): reaching to act - a button, a
 \ command - she flags (the rooms' own doing), her fear kept high
 : weak? ( -- flag )  over-music-b fact?  saturnus-hint-on fact? 0= and ;

@@ -34,7 +34,7 @@ testing the cabinet shut: in, hidden; out by the button, left open
 om1f-22-flag1 story-flag-set  room-afresh
 T{ 0 part? -> -1 }T
 cabinet-area 45 at  circle press  [: hidden? ;] 900 soon drop
-T{ hidden?  [: steps @ ;] in-place -> -1 1 }T
+T{ hidden?  cab-steps @ -> -1 1 }T
 circle press  [: doing-busy? 0= ;] 900 soon drop
 T{ hidden?  free?  om1f-22-flag1 story-flag? -> 0 -1 0 }T
 testing the cabinet open: in again, hidden; out
