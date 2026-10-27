@@ -2,8 +2,7 @@
 \ an event's shot holding the camera (the summoner's wait), ... Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_finishing.fs
 IN: test-finishing
-USING: tester engine game-state actors messages common room-names game debug story.state story.words
-  story.rooms.castle-2f-3 ;
+USING: tester engine game-state actors messages common room-names game debug story.state story.words ;
 
 testing the fade's music: cut ($80) at once, eased ($40) over 90; silent out, full back; else left alone
 T{ $84 music-frames  $84 music-to -> 1 0 }T
@@ -37,10 +36,10 @@ T{ rumble-sequence-clear  0 0 96 3 rumble-step  0 255 255 3 rumble-step  3 run-f
 T{ 3 run-frames  rumble-now -> 0 255 }T
 T{ 3 run-frames  rumble-now -> 0 0 }T
 
-testing a model part hidden (the original's part flag 2): castle-2f-3's cmd03 hides Fiona's part 10
+testing a model part hidden (the original's part flag 2): Fiona's part 10 (as castle-2f-3's cmd03 did)
 : part-shown? ( model part -- flag )  1+ dup 5 rshift 4 *  rot actor act.parts-shown + l@  swap 31 and rshift 1 and 0<> ;
 T{ 0 char-model 10 part-shown? -> -1 }T
-T{ castle-2f-3.cmd03  0 char-model 10 part-shown?  0 char-model 9 part-shown? -> 0 -1 }T
+T{ fiona-who 10 hide-part  0 char-model 10 part-shown?  0 char-model 9 part-shown? -> 0 -1 }T
 T{ 0 10 true show-part  0 char-model 10 part-shown? -> -1 }T
 
 testing going out through a doorway (Character_RegionFade): none at the exit area's middle, half way to its outer spot about half

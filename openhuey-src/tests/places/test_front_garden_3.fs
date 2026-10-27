@@ -45,7 +45,18 @@ testing ... nearing the figures: the second cries out and rises, and past them t
 T{ [: figure-cried @ ;] in-place -> -1 }T
 
 no-flee state-flag-clear   \ (the opening's hold on her - no fleeing, no blows, no crouching - over, as later in the story)
-testing the breakable, broken (a blow in its place: tested by its zone - story/kit.fs struck-in?): in pieces, the magnesia's sparkle; she picks it up
+testing the breakable (story/kit.fs): whole, a blow elsewhere misses it; one in its place breaks it - in pieces, once
+fg-3-breakable-broken story-flag-clear  front-garden-3 room!  30 run-frames
+T{ whole-part part?  broken-part part? -> -1 0 }T
+create blow-pt 3 floats allot
+: blow-at ( F: x y z -- )   \ (her blow's point there)
+    blow-pt 2 floats + f!  blow-pt float+ f!  blow-pt f!
+    [: blow-pt f@  blow-pt float+ f@  blow-pt 2 floats + f@  body-point! ;] as-her ;
+T{ 150e 1e -35.4e blow-at  [: the-box breaks? ;] in-place -> 0 }T
+T{ 185.7e 1e -35.4e blow-at  [: the-box breaks? ;] in-place  [: the-box breaks? ;] in-place -> -1 0 }T
+T{ fg-3-breakable-broken story-flag?  whole-part part?  broken-part part? -> -1 0 -1 }T
+[: body-point-off ;] as-her
+testing ... broken, as she comes in: in pieces, the magnesia's sparkle; she picks it up
 fg-3-breakable-broken story-flag-set  front-garden-3 room!  30 run-frames
 T{ [: magnesia-fx effect @ 0<> ;] in-place -> -1 }T
 variable before  magnesia items:items-of before !
@@ -72,6 +83,11 @@ ready
 key: I true key-hold  game-tick  key: I false key-hold  60 run-frames   \ (the stick up: "go there")
 T{ [: hewie held? ;] in-place -> -1 }T
 400 run-frames
+T{ [: hewie-at-box @ ;] in-place -> -1 }T
+testing ... called back from the box ("come back"): he comes back; sent again
+[: come-back-cmd started-now ! ;] in-place
+T{ [: [: hewie-at-box @ 0= ;] in-place ;] 30 soon  [: [: hewie held? 0= ;] in-place ;] 600 soon -> -1 -1 }T
+-90 0e 138e by  key: I true key-hold  game-tick  key: I false key-hold  460 run-frames
 T{ [: hewie-at-box @ ;] in-place -> -1 }T
 box-area -45 at  circle press  900 play-on
 T{ grate-open story-flag?  grate-door doors:door-locked?  $275 filed?  free? -> -1 0 0 -1 }T   \ ($8275: filed in the other game only)

@@ -173,10 +173,20 @@ says what happens, and nothing in it can leave Fiona stuck.
 2. **castle-2f-3** as the first room, end to end: it has a hiding place, Hewie's tutorial,
    two scenes, the TV, remarks and ambience. You review it before we go further.
 3. The rooms with open bugs: front-garden-3, castle-2f-8, castle-1f-4.
-4. The rest by area (the front garden, castle 1F, 2F, B1, the old mansion, ...). Each area is
-   one PR, and the old and new rooms coexist while it happens. A room file is either old or
-   new, never mixed.
-5. Once the last room is moved: the opcode words in `story/words.fs`, the slot machinery and
+4. The shared pieces the remaining rooms need, as kit components with their tests (one PR):
+   breakables (32 rooms), dial locks and plates (~15), mirrors and pushed obstacles (~10),
+   scenes with the other stalkers as figures (Daniella, Riccardo, Lorenzo: ~20), a room's own
+   variables (the script vars) as `own:` cells or facts, the stalker and summoner hooks. Each
+   converted file moves to `scripts/story/rooms-ref/` (unloaded) once its place exists.
+5. The rest by area, in story order, one PR per area (agreed 2026-10-26): the front garden and
+   the lake pathway; castle 1F; castle 2F; castle 3F and B1; the old mansion 1F; its 2F, 3F
+   and B1; the Chaos Forest; the water tower; the House of Truth; the off-map rooms - the
+   Hewie-controlled clock rooms ($D0..$E9) and off-map-5a too. The old and new rooms coexist
+   while it happens; a room file is either old or new, never mixed. Each room: every act,
+   branch, remark, spot, scene and entry case of the original listed first, then the place,
+   then `tests/places/test_<room>.fs`; each PR: the full suite, no "hides" warnings, the
+   words' resolution unchanged where not meant to.
+6. Once the last room is moved: the opcode words in `story/words.fs`, the slot machinery and
    `rooms-ref/` are deleted.
 
 ## Status
@@ -186,7 +196,15 @@ says what happens, and nothing in it can leave Fiona stuck.
 - castle-2f-3: done, every remark and spot, its scenes and story beats, the stalker's search,
   Hewie's find - `tests/places/test_castle_2f_3.fs`.
 - front-garden-3, castle-2f-8, castle-1f-4: done; story/common.fs for what every room does.
-- Next: the rest by area, one PR each (Migration, step 4).
+- The shared pieces (step 4): done - the kit's components (story.md, "What most rooms have").
+- The front garden and the lake pathway (step 5's first area): done, every room a place.
+- Castle 1F (step 5): all done (castle-1f-1 .. -19).
+- Castle 2F: all done (castle-2f-1 .. -15).
+- Castle 3F: all done (castle-3f-1, -2).
+- Castle B1: castle-b1-2 .. -7 done; castle-b1-1 next.
+- Open from them: in castle-b1-2 her walk from the locked door's spot to its knob ($95) never
+  arrives (her second try, "grimy handprints"); in castle-b1-7 no test spot was found where her
+  request at the blocked door is made (its remark untested).
 
 ## Questions (answered)
 

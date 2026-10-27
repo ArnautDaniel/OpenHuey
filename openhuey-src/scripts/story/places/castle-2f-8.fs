@@ -2,7 +2,7 @@
 \ blocks the door; the word plate brings it to life (EMETH: it walks to the door's side) or to
 \ dust (METH), or sets it dancing (SALTATIO); the old parchment, the kiln, the mark, a breakable,
 \ the obsidian choker. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms/castle-2f-8.fs (converted from the game's). The golem is the room's own model -
+\ story/rooms-ref/castle-2f-8.fs (converted from the game's, not loaded). The golem is the room's own model -
 \ before the kiln (part 0), at the door (part 1), crumbled (part 2): there is one.
 IN: story.places.castle-2f-8
 USING: engine game-state actors messages common vectors facts flag-names story-names room-names floor-flags
@@ -22,7 +22,6 @@ own-reset
 $A constant file-here-msg     \ "There is some kind of file here."
 $B constant calmer-msg        \ "...... That got my mind off things. I feel a little better now."
 $C constant staring-msg       \ "...... Just staring at this all day isn't going to get me out of this place any so..."
-$8010 constant cant-carry-msg  $8011 constant obtained-msg  $8012 constant obtained-2-msg
 
 \ ---- its own state ----
 own: golem-remarked
@@ -39,10 +38,12 @@ $B constant moved-golem-area   $C constant parchment-area   2 constant to-exit-0
 0 constant before-kiln-group   1 constant before-kiln-stalkers   5 constant before-kiln-push   \ (the floor the golem stands on there ...)
 2 constant at-door-group   3 constant at-door-stalkers   6 constant at-door-push           \ (... and by the door)
 4 constant breakable-group
+c2f-8-breakable-broken whole-part broken-part  34e 0e 29e 5e 8e  breakable: the-vase
+the-vase shard-grey 0 7 shard-look  the-vase 0.812e 0.687e 0.187e 0.312e shard-uv  the-vase breakable-group frees-floor  the-vase $FF noise-from
 0 constant choker-fx
 $13 constant golem-door
 8 constant golem-kind   3 constant golem-figure   \ (the scenes' golem: a figure in slot 3)
-0 constant try-sound   9 constant room-loop-sound   $84 constant calmed-sound   $88 constant breaking-sound
+0 constant try-sound   9 constant room-loop-sound   $84 constant calmed-sound
 $A0 constant old-parchment   $8D constant obsidian-choker   $75 constant choker-other   \ (items)
 $16 constant emeth-seen   $17 constant meth-seen   \ (the system data's flags: the scenes seen)
 6 constant debilitas-6    \ (the stalker after it: Debilitas)
@@ -67,8 +68,7 @@ $16 constant emeth-seen   $17 constant meth-seen   \ (the system data's flags: t
     then
     got-old-parchment fact? 0= if  parchment-part show-part  then
     effects:rising-smoke
-    c2f-8-breakable-broken fact? if  breakable-group keeps-people-off floor-off  whole-part hide-part  broken-part show-part
-    else  breakable-group keeps-people-off floor-on  whole-part show-part  broken-part hide-part  then
+    the-vase as-it-stands
     golem-crumbled fact?  got-obsidian-choker fact? 0= and if  choker-fx 10e 1e -25e flicker-at  then
     c2f-3-flag1 fact? 0= if  daylight  then
     kiln-light 1.5e shadows-longer ;
@@ -141,7 +141,7 @@ fvariable kiln-phase
     endcase ;
 
 \ ---- the movies replayed (the extras: the golem's two scenes) ----
-: replay-done ( -- )  world-held state!  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
+: replay-done ( -- )  world-held state!  replay-over ;
 : replay-alive ( -- )
     fiona hold  daylight  golem-kind golem-figure figure-in  yield  golem-kind true no-shadow
     1 scenes:keyed-movie 0 load-scene  $F $3C movie-key  golem-part hide-part  fiona false shown  panic-eased
@@ -150,7 +150,6 @@ fvariable kiln-phase
     fiona hold  daylight
     3 scenes:keyed-movie 2 load-scene  $F $96 movie-key  golem-part hide-part  fiona false shown  golem-dust-part show-part  panic-eased
     if  -1 run-scene  then  fiona true shown  replay-done ;
-$2A constant replay-var
 : replaying ( -- )   \ (the extras' list: its rows for this room's two scenes)
     hewie send part-from-fiona
     replay-var var@ case  4 of  ['] replay-alive  endof  7 of  ['] replay-alive  endof  $17 of  ['] replay-alive  endof
@@ -177,18 +176,12 @@ $2A constant replay-var
         choker-fx effect-off  got-obsidian-choker fact!  obsidian-choker item-named
         obsidian-choker 1 give-item  obsidian-choker show-item-tab  fanfare  obtained-2-msg say
     else
-        choker-other item-named
-        choker-other item-full? if  cant-carry-msg say
-        else  got-obsidian-choker fact!  choker-fx effect-off  choker-other 1 give-item  choker-other show-item-tab  fanfare  obtained-msg say  then
+        choker-other got-obsidian-choker choker-fx takes-up
     then
     fiona up-from-pick-anim play ;
 : strains ( -- )   \ (pushing the golem: it won't move)
     fiona hold  fiona strain-anim 0 start-blend  16 frames  fiona let-go-push-anim play
     cant-push-msg show  fiona -1 idle  7 frames  wait-closed ;
-: breaks ( -- )
-    c2f-8-breakable-broken fact!  breakable-group keeps-people-off floor-off  whole-part hide-part  broken-part show-part
-    $80303030 0 7  34e 0e 29e  0.812e 0.687e 0.187e 0.312e  0e  shards
-    breaking-sound common-bank 34e 0e 29e sound-there  $40 $FF room-noise ;
 : spots ( -- )
     straining-now @  fiona held? 0= and if  ['] strains start drop  exit  then
     golem-done fact? 0= if  fiona golem-area 50 faces-area? if  ['] golem unhurried offer  then
@@ -199,7 +192,7 @@ $2A constant replay-var
     fiona kiln-area in-area?  fiona 45 45 heading? and if  ['] the-kiln unhurried offer  then
     fiona mark-area in-area?  fiona mark-2-area in-area? or  fiona 90 45 heading? and if  ['] the-mark unhurried offer  then
     choker-fx effect @  fiona 10e -25e 4e near-xz? and if  ['] choker calm-only offer  then
-    c2f-8-breakable-broken fact? 0= if  34e 0e 29e 5e 8e struck-in? if  breaks  then  then ;
+    the-vase breaks? drop ;
 
 \ ---- Hewie: what he sits by and looks at ----
 : by-the-golem ( -- )  43.743e 0e -29.309e hewie-sits-by ;
@@ -223,17 +216,14 @@ $2A constant replay-var
 : ambience ( -- )
     room-sounds-in? 0= if  exit  then
     room-loop-sound 57e 0e -2e  sounds-on @ if  keep-sound  else  room-sound  -1 sounds-on !  then ;
-: ways-out ( -- )
-    0 exit-out  1 exit-out
-    4 0 -1 area-camera  5 1 -1 area-camera
-    fiona to-exit-0-area entered? if  0 prepare-exit  then
-    fiona to-exit-1-area entered? if  1 prepare-exit  then ;
+create cameras  4 , 0 , -1 ,   5 , 1 , -1 ,                  \ (area, set, path)
+create ahead  to-exit-0-area , 0 ,   to-exit-1-area , 1 ,    \ (area, exit loaded ahead)
+create entries  1 , -1 ,   0 , -1 ,                          \ (by exit 0, 1: the camera)
+: ways ( -- )  2 exits-out  cameras 2 cameras-at  ahead 2 ways-out ;
 : each-frame ( -- )
     events-held state? if  exit  then
-    ambience  ways-out  hewie-looks  spots ;
-: player-came ( -- )
-    came-by @ 0 = if  player 0 at-exit  1 -1 player-camera  then  0 1 -1 exit-camera
-    came-by @ 1 = if  player 1 at-exit  0 -1 player-camera  then  1 0 -1 exit-camera ;
+    ambience  ways  hewie-looks  spots ;
+: player-came ( -- )  entries 2 ways-in ;
 : person-in ( i -- )
     ['] kiln start-only
     fiona-p = if  events-held state? if  replaying exit  then  player-came  then ;

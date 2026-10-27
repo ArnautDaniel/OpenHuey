@@ -11,69 +11,74 @@ create room-strings  #string-rooms cells allot  room-strings #string-rooms cells
 : room-strings! ( room -- )  latest swap strings-of ! ;   \ (the list just made: that room's)
 
 strings: front-garden-1$ DE0011  DE0011\DE0011.SFD  DE0003  DE0003\DE0003.SFD  DE0003\DE1003.SFD ;  front-garden-1 room-strings!
-strings: castle-1f-2$ DE000D  memo  lever  DE000D\DE000D.SFD  O_FIN_M\FIN_101.MTN
-    O_DB0\DB0_101.MTN  O_FIN_M\FIN_105.MTN ;  castle-1f-2 room-strings!
-strings: castle-1f-11$ DE0008  DE0008\DE0008.SFD  O_DB0\DB0_102.MTN ;  castle-1f-11 room-strings!
-strings: castle-1f-12$ DE001A ;  castle-1f-12 room-strings!
+strings: castle-1f-2$  DE000D  memo  lever  DE000D\DE000D.SFD  O_FIN_M\FIN_101.MTN
+     O_DB0\DB0_101.MTN  O_FIN_M\FIN_105.MTN  doramukan  O_DB0\DB0_104.MTN  ori ;  castle-1f-2 room-strings!
+strings: castle-1f-11$  DE0008  DE0008\DE0008.SFD  O_DB0\DB0_102.MTN  hanebasi1  hanebasi2  kanagu ;  castle-1f-11 room-strings!
+strings: castle-1f-12$  DE001A  lens  syuukouki2  DE001A\DE001A.SFD  DE100B  DE100B\DE100B.SFD
+     syuukouki1  autodoor0  autodoor1  autodoor2  autodoor3  autodoor4  O_DNL\DNL_104.MTN ;  castle-1f-12 room-strings!
 strings: castle-3f-1$ EV0013  EV0013\EV0013.SFD  O_DNL\DNL_104.MTN ;  castle-3f-1 room-strings!
 strings: castle-1f-13$ DE0006  DE0006\DE0006.SFD  DE0015  DE0015\DE0015.SFD  bal_0  bal_1  bal_2
     bal_3  bal_4  bal_5  kaihi  O_DB0\DB0_106.MTN ;  castle-1f-13 room-strings!
 strings: castle-1f-3$ DE0014  DE0014\DE0014.SFD  tana  DE001B  DE001B\DE001B.SFD  DE0010
     DE0010\DE0010.SFD ;  castle-1f-3 room-strings!
-strings: castle-2f-1$ DE000B  DE000B\DE000B.SFD ;  castle-2f-1 room-strings!
+strings: castle-2f-1$  DE000B  DE000B\DE000B.SFD  syuukouki ;  castle-2f-1 room-strings!
 strings: castle-b1-5$ O_FIN_M\FIN_104.MTN ;  castle-b1-5 room-strings!
 strings: castle-b1-6$ DE000C  DE000C\DE000C.SFD  EV0012  EV0012\EV0012.SFD  EV0011
     EV0011\EV0011.SFD  ev_door  DE001C  DE001C\DE001C.SFD  chandelier  chandelier2  DE003D
     DE003D\DE003D.SFD  dai_B  dai_A  left_lever  right_lever  Rope_b  Rope_a ;  castle-b1-6 room-strings!
-strings: castle-1f-14$ EV1033  EV1033\EV1033.SFD ;  castle-1f-14 room-strings!
-strings: castle-1f-4$ EV0004  DE0004 ;  castle-1f-4 room-strings!
+strings: castle-1f-14$  EV1033  EV1033\EV1033.SFD  O_DB0\DB0_103.MTN ;  castle-1f-14 room-strings!
+strings: castle-1f-4$  EV0004  DE0004  hook  a_Puppet  Puppetdoor  DE0004\DE0004.SFD
+     EV0004\EV0004.SFD  ev_door_a  ev_ddor_b  fumi_yuka ;  castle-1f-4 room-strings!
 strings: castle-1f-5$ O_DB0\DB0_103.MTN ;  castle-1f-5 room-strings!
 strings: castle-1f-6$ EV0014  EV0014\EV0014.SFD ;  castle-1f-6 room-strings!
 strings: castle-b1-1$ DE000F  DE000F\DE000F.SFD  DE0012  DE0012\DE0012.SFD  otama
     O_FIN_M\FIN_101.MTN  O_DB0\DB0_101.MTN ;  castle-b1-1 room-strings!
-strings: front-garden-2$ DE0019  DE0019\DE0019.SFD ;  front-garden-2 room-strings!
-strings: castle-b1-2$ O_FIN_M\FIN_108.MTN  O_DB0\DB0_108.MTN ;  castle-b1-2 room-strings!
-strings: castle-1f-7$ DE0005  DE0005\DE0005.SFD  lever  O_FIN_M\FIN_106.MTN ;  castle-1f-7 room-strings!
+strings: front-garden-2$  DE0019  DE0019\DE0019.SFD  kousi ;  front-garden-2 room-strings!
+strings: castle-b1-2$  O_FIN_M\FIN_108.MTN  O_DB0\DB0_108.MTN  Cartain ;  castle-b1-2 room-strings!
+strings: castle-1f-7$  DE0005  DE0005\DE0005.SFD  lever  O_FIN_M\FIN_106.MTN  kousi ;  castle-1f-7 room-strings!
 strings: castle-2f-10$ DE0009  DE0009\DE0009.SFD ;  castle-2f-10 room-strings!
 strings: castle-1f-8$ EV0009  EV0009\EV0009.SFD  O_FIN_M\FIN_101.MTN  O_DB0\DB0_101.MTN
     telephone_a  telephone_b ;  castle-1f-8 room-strings!
 strings: castle-1f-15$ DE0018  DE0018\DE0018.SFD  DE1018  DE1018\DE1018.SFD  DE2018
     DE2018\DE2018.SFD ;  castle-1f-15 room-strings!
-strings: castle-1f-16$ O_FIN_M\FIN_101.MTN  O_DB0\DB0_101.MTN ;  castle-1f-16 room-strings!
+strings: castle-1f-16$  O_FIN_M\FIN_101.MTN  O_DB0\DB0_101.MTN  fan ;  castle-1f-16 room-strings!
 strings: castle-1f-17$ fish1  fish2  fish3  hawk1  hawk2 ;  castle-1f-17 room-strings!
 strings: castle-1f-18$ DE0007  DE0007\DE0007.SFD ;  castle-1f-18 room-strings!
 strings: castle-1f-19$ DE0017  DE0017\DE0017.SFD ;  castle-1f-19 room-strings!
 strings: castle-2f-11$ doll  swing ;  castle-2f-11 room-strings!
-strings: castle-2f-2$ DE000E  DE000E\DE000E.SFD  O_FIN_M\FIN_102.MTN  chandelie  g_chandelie ;  castle-2f-2 room-strings!
+strings: castle-2f-2$  DE000E  DE000E\DE000E.SFD  O_FIN_M\FIN_102.MTN  chandelie  g_chandelie  dool
+     O_DB0\DB0_105.MTN ;  castle-2f-2 room-strings!
 strings: castle-2f-3$ EV0002  EV0002\EV0002.SFD  EV0003  EV0003\EV0003.SFD  EV0007
     EV0007\EV0007.SFD  EV0008  EV0008\EV0008.SFD  O_FIN_M\FIN_101.MTN  O_HEW\HEW_101.MTN
     O_DB0\DB0_101.MTN  O_FIN_M\FIN_102.MTN ;  castle-2f-3 room-strings!
 strings: castle-2f-6$ drawer  O_FIN_M\FIN_107.MTN ;  castle-2f-6 room-strings!
-strings: castle-2f-7$ DE0000  DE1000  DE0000\DE0000.SFD  DE1000\DE1000.SFD  EV0010
-    EV0010\EV0010.SFD  cube ;  castle-2f-7 room-strings!
+strings: castle-2f-7$  DE0000  DE1000  DE0000\DE0000.SFD  DE1000\DE1000.SFD  EV0010
+     EV0010\EV0010.SFD  cube  O_DNL\DNL_201.TEX ;  castle-2f-7 room-strings!
 strings: castle-2f-8$ DE0001  DE0001\DE0001.SFD  DE0002  DE0002\DE0002.SFD  Golem_off_00
     Golem_off_01  Golem_off_02  Golem_off_03  Golem_off_04  Golem_off_05  plate ;  castle-2f-8 room-strings!
 strings: castle-1f-9$ DE000A  DE000A\DE000A.SFD ;  castle-1f-9 room-strings!
-strings: castle-2f-12$ left_door  right_door ;  castle-2f-12 room-strings!
+strings: castle-2f-12$  left_door  right_door  left  right  O_FIN_M\FIN_100.MTN  O_HEW\HEW_100.MTN
+     O_DB0\DB0_100.MTN  movechair_1  movechair_2  movechair_3 ;  castle-2f-12 room-strings!
 strings: castle-2f-13$ O_HEW\HEW_102.MTN ;  castle-2f-13 room-strings!
 strings: castle-1f-10$ DE0016  DE0013  dool  DE0016\DE0016.SFD  DE0013\DE0013.SFD ;  castle-1f-10 room-strings!
-strings: front-garden-3$ EV0006  EV0006\EV0006.SFD ;  front-garden-3 room-strings!
+strings: front-garden-3$  EV0006  EV0006\EV0006.SFD  kibako  a_koushi ;  front-garden-3 room-strings!
 strings: castle-3f-2$ O_DNL\DNL_104.MTN ;  castle-3f-2 room-strings!
 strings: front-garden-5$ kibako  koushi  kakasi_a  kakasi_b  kaihi_a  kaihi_b ;  front-garden-5 room-strings!
 strings: old-mansion-1f-1$ DE002B  DE002B\DE002B.SFD  O_DNL\DNL_109.MTN ;  old-mansion-1f-1 room-strings!
-strings: castle-2f-14$ O_HEW\HEW_102.MTN ;  castle-2f-14 room-strings!
+strings: castle-2f-14$  O_HEW\HEW_102.MTN  O_HEW\HEW_102.MTN  O_DNL\DNL_104.MTN ;  castle-2f-14 room-strings!
 strings: castle-2f-15$ O_HEW\HEW_102.MTN  O_DNL\DNL_104.MTN ;  castle-2f-15 room-strings!
-strings: castle-2f-4$ EV0005  EV0005\EV0005.SFD ;  castle-2f-4 room-strings!
+strings: castle-2f-4$  EV0005  EV0005\EV0005.SFD  fan ;  castle-2f-4 room-strings!
 strings: castle-2f-5$ 8  O_FIN_M\FIN_101.MTN  O_HEW\HEW_101.MTN  O_DNL\DNL_101.MTN  12  EV0015
-    EV0015\EV0015.SFD ;  castle-2f-5 room-strings!
+    EV0015\EV0015.SFD  a_fragment0  a_fragment1  a_fragment2  a_fragment3  a_fragment4  a_fragment5
+    a_fragment6  a_fragment7  a_fragment8  a_fragment9  a_fragment10  fan ;  castle-2f-5 room-strings!   \ (14..: the next tables, read on into)
 strings: off-map-33$ EV1034  EV1034\EV1034.SFD ;  off-map-33 room-strings!
 strings: off-map-34$ EV0034  EV0034\EV0034.SFD ;  off-map-34 room-strings!
 strings: off-map-35$ EV0033  EV0033\EV0033.SFD  EV0031  EV0031\EV0031.SFD  EV0032
     EV0032\EV0032.SFD  8  O_HND\HND_000.PCK ;  off-map-35 room-strings!
 strings: off-map-36$ EV1031  EV1031\EV1031.SFD ;  off-map-36 room-strings!
 strings: off-map-37$ DE0035\FILM.SFD  fan ;  off-map-37 room-strings!
-strings: old-mansion-1f-2$ DE0028  DE0028\DE0028.SFD  DE0029  DE0029\DE0029.SFD  isi_ichi
-    ishi_iou  ishi_gin  ishi_shiro  ishi_aka  exitdoor  exitdoor1  kusari ;  old-mansion-1f-2 room-strings!
+strings: old-mansion-1f-2$  DE0028  DE0028\DE0028.SFD  DE0029  DE0029\DE0029.SFD  isi_ichi  ishi_iou
+     ishi_gin  ishi_shiro  ishi_aka  exitdoor  exitdoor1  kusari  sara_l  sara_r  tenbin ;  old-mansion-1f-2 room-strings!
 strings: old-mansion-2f-1$ Curtain ;  old-mansion-2f-1 room-strings!
 strings: old-mansion-1f-6$ O_FIN_M\FIN_101.MTN  O_DNL\DNL_101.MTN ;  old-mansion-1f-6 room-strings!
 strings: old-mansion-1f-7$ EV0019  EV0019\EV0019.SFD ;  old-mansion-1f-7 room-strings!
@@ -82,13 +87,13 @@ strings: old-mansion-1f-8$ DE0032  DE0032\DE0032.SFD  Kaihi_a  Kaihi_b  DE002E  
 strings: old-mansion-1f-9$ DE001D  DE001D\DE001D.SFD  mado0  mado1  mado2  mado3
     O_FIN_M\FIN_108.MTN ;  old-mansion-1f-9 room-strings!
 strings: old-mansion-2f-2$ DE0027  DE0027\DE0027.SFD  wood ;  old-mansion-2f-2 room-strings!
-strings: old-mansion-b1-2$ O_FIN_M\FIN_109.MTN  O_DNL\DNL_109.MTN ;  old-mansion-b1-2 room-strings!
+strings: old-mansion-b1-2$  O_FIN_M\FIN_109.MTN  O_DNL\DNL_109.MTN  Curtain ;  old-mansion-b1-2 room-strings!
 strings: old-mansion-b1-3$ fumi0  fumi1  fumi2  fumi3  DE0022  DE0022\DE0022.SFD  DE0023
     DE0023\DE0023.SFD  O_FIN_M\FIN_10A.MTN  O_FIN_M\FIN_10C.MTN  lever2  lever2_1  lever1
     lever1_1  futa  toge1  toge2  DE0021  DE0021\DE0021.SFD ;  old-mansion-b1-3 room-strings!
-strings: old-mansion-1f-11$ O_FIN_M\FIN_109.MTN  O_DNL\DNL_109.MTN ;  old-mansion-1f-11 room-strings!
-strings: old-mansion-1f-12$ atama_1  atama_2  atama_3  DE002F  DE002F\DE002F.SFD  DE0030
-    DE0030\DE0030.SFD  plate ;  old-mansion-1f-12 room-strings!
+strings: old-mansion-1f-11$  O_FIN_M\FIN_109.MTN  O_DNL\DNL_109.MTN  Curtain ;  old-mansion-1f-11 room-strings!
+strings: old-mansion-1f-12$  atama_1  atama_2  atama_3  DE002F  DE002F\DE002F.SFD  DE0030
+     DE0030\DE0030.SFD  plate  sikakebox ;  old-mansion-1f-12 room-strings!
 strings: old-mansion-b1-4$ l_door0  r_door0  O_FIN_M\FIN_100.MTN  O_HEW\HEW_100.MTN
     O_DNL\DNL_100.MTN  O_DNL\DNL_102.MTN  DE0031  DE0031\DE0031.SFD ;  old-mansion-b1-4 room-strings!
 strings: old-mansion-b1-5$ DE001F  DE001F\DE001F.SFD  DE101F  DE101F\DE101F.SFD  DE201F
@@ -106,20 +111,21 @@ strings: old-mansion-2f-6$ DE0033  DE0033\DE0033.SFD  DE1033  DE1033\DE1033.SFD 
     DE0034\DE0034.SFD  DE1034  DE1034\DE1034.SFD  bin0  bin1  O_FIN_M\FIN_108.MTN  EV0022
     EV0022\EV0022.SFD ;  old-mansion-2f-6 room-strings!
 strings: off-map-5a$ dial0  dial1  dial2 ;  off-map-5a room-strings!
-strings: old-mansion-2f-8$ O_FIN_M\FIN_10B.MTN ;  old-mansion-2f-8 room-strings!
-strings: old-mansion-1f-17$ DE001E  DE001E\DE001E.SFD  plate  wall  picture  light ;  old-mansion-1f-17 room-strings!
-strings: old-mansion-3f-1$ EV0017  EV0017\EV0017.SFD  EV0018  EV0018\EV0018.SFD  a_splinter00
-    a_splinter01  a_splinter02  a_splinter03  a_splinter04  a_splinter05  a_splinter06
-    a_splinter07  a_splinter08  a_splinter09  a_splinter10  a_splinter11  a_splinter12
-    a_splinter13  a_splinter14  a_splinter15  a_splinter16  a_splinter17  a_splinter18
-    a_splinter19  a_splinter20  a_splinter21  a_splinter22  a_splinter23 ;  old-mansion-3f-1 room-strings!
+strings: old-mansion-2f-8$  O_FIN_M\FIN_10B.MTN  Curtain ;  old-mansion-2f-8 room-strings!
+strings: old-mansion-1f-17$  DE001E  DE001E\DE001E.SFD  plate  wall  picture  light  doll ;  old-mansion-1f-17 room-strings!
+strings: old-mansion-3f-1$  EV0017  EV0017\EV0017.SFD  EV0018  EV0018\EV0018.SFD  a_splinter00
+     a_splinter01  a_splinter02  a_splinter03  a_splinter04  a_splinter05  a_splinter06
+     a_splinter07  a_splinter08  a_splinter09  a_splinter10  a_splinter11  a_splinter12
+     a_splinter13  a_splinter14  a_splinter15  a_splinter16  a_splinter17  a_splinter18
+     a_splinter19  a_splinter20  a_splinter21  a_splinter22  a_splinter23  O_DNL\DNL_203.TEX
+     O_DNL\DNL_10A.MTN  a_buki ;  old-mansion-3f-1 room-strings!
 strings: old-mansion-2f-11$ step  book0 ;  old-mansion-2f-11 room-strings!
 strings: old-mansion-3f-2$ DE0024  DE0024\DE0024.SFD  DE0025  DE0025\DE0025.SFD  DE1025
     DE1025\DE1025.SFD  DE2025  DE2025\DE2025.SFD  body  bowgun  dai  gen_0  gen_1  head  joint
     left_0  left_1  left_2  pol_detach  pol_detach1  right_0  right_1  right_2 ;  old-mansion-3f-2 room-strings!
 strings: old-mansion-b1-6$ DE0026  DE0026\DE0026.SFD ;  old-mansion-b1-6 room-strings!
-strings: old-mansion-1f-18$ O_DNL\DNL_104.MTN ;  old-mansion-1f-18 room-strings!
-strings: old-mansion-2f-13$ O_FIN_M\FIN_109.MTN  O_DNL\DNL_109.MTN ;  old-mansion-2f-13 room-strings!
+strings: old-mansion-1f-18$  O_DNL\DNL_104.MTN  EV0019  EV0019\EV0019.SFD ;  old-mansion-1f-18 room-strings!
+strings: old-mansion-2f-13$  O_FIN_M\FIN_109.MTN  O_DNL\DNL_109.MTN  Curtain ;  old-mansion-2f-13 room-strings!
 strings: old-mansion-1f-19$ O_FIN_M\FIN_101.MTN  O_DNL\DNL_101.MTN ;  old-mansion-1f-19 room-strings!
 strings: old-mansion-1f-20$ O_FIN_M\FIN_101.MTN  O_DNL\DNL_101.MTN ;  old-mansion-1f-20 room-strings!
 strings: old-mansion-1f-21$ l_door0  r_door0  O_FIN_M\FIN_100.MTN  O_HEW\HEW_100.MTN
@@ -134,17 +140,20 @@ strings: house-of-truth-b1-1$ demo_door0  demo_door1  demo_door2  EV0028  EV0028
 strings: house-of-truth-b1-2$ DE0042  DE0042\DE0042.SFD ;  house-of-truth-b1-2 room-strings!
 strings: house-of-truth-1f-2$ O_FIN_M\FIN_108.MTN ;  house-of-truth-1f-2 room-strings!
 strings: house-of-truth-1f-3$ DE0040  DE0040\DE0040.SFD ;  house-of-truth-1f-3 room-strings!
-strings: house-of-truth-1f-4$ DE0044  DE0044\DE0044.SFD  DE0045  DE0045\DE0045.SFD  DE0046
-    DE0046\DE0046.SFD ;  house-of-truth-1f-4 room-strings!
+strings: house-of-truth-1f-4$  DE0044  DE0044\DE0044.SFD  DE0045  DE0045\DE0045.SFD  DE0046
+     DE0046\DE0046.SFD  dynamo  key  roller  belt  roller_blood  belt_blood  hahen0  hahen1  hahen2
+     hahen3  hahen4  stone0  stone1  stone2_0  stone2_1  stone2_2  stone3 ;  house-of-truth-1f-4 room-strings!
 strings: house-of-truth-1f-5$ EV0030  EV0030\EV0030.SFD ;  house-of-truth-1f-5 room-strings!
-strings: house-of-truth-1f-6$ DE0041  DE0041\DE0041.SFD ;  house-of-truth-1f-6 room-strings!
-strings: house-of-truth-1f-7$ DE0047  DE0047\DE0047.SFD  wall_l  wall_r  zou0  O_FIN_M\FIN_10D.MTN
-    DE003F  DE003F\DE003F.SFD  O_FIN_M\FIN_101.MTN ;  house-of-truth-1f-7 room-strings!
-strings: house-of-truth-1f-9$ DE0049  DE0049\DE0049.SFD  DE0048  DE0048\DE0048.SFD ;  house-of-truth-1f-9 room-strings!
+strings: house-of-truth-1f-6$  DE0041  DE0041\DE0041.SFD  tana  left_door  right_door
+     O_FIN_M\FIN_100.MTN  O_HEW\HEW_100.MTN ;  house-of-truth-1f-6 room-strings!
+strings: house-of-truth-1f-7$  DE0047  DE0047\DE0047.SFD  wall_l  wall_r  zou0  O_FIN_M\FIN_10D.MTN
+     DE003F  DE003F\DE003F.SFD  O_FIN_M\FIN_101.MTN  O_FIO\FIO_201.TEX  O_FIH\FIH_201.TEX ;  house-of-truth-1f-7 room-strings!
+strings: house-of-truth-1f-9$  DE0049  DE0049\DE0049.SFD  DE0048  DE0048\DE0048.SFD  fan0  fan1
+     EV0029  EV0029\EV0029.SFD  fumi0  fumi1  keri0  keri1  keri2  keri3  keri4  keri5 ;  house-of-truth-1f-9 room-strings!
 strings: house-of-truth-1f-10$ kaihi_a  kaihi_b  kaihi_c ;  house-of-truth-1f-10 room-strings!
 strings: water-tower-1f-1$ O_FIN_M\FIN_108.MTN ;  water-tower-1f-1 room-strings!
 strings: water-tower-2f-1$ move00  move01  lever2  lever2_1  O_FIN_M\FIN_10C.MTN ;  water-tower-2f-1 room-strings!
-strings: water-tower-4f-1$ move00  move01  lever2  lever2_1 ;  water-tower-4f-1 room-strings!
+strings: water-tower-4f-1$  move00  move01  lever2  lever2_1  doramukan  O_FIN_M\FIN_10C.MTN ;  water-tower-4f-1 room-strings!
 strings: water-tower-7f-1$ DE0039  DE0039\DE0039.SFD  earth  moon  mercury  venus  sun  mars
     jupiter  saturn ;  water-tower-7f-1 room-strings!
 strings: water-tower-8f-1$ DE003C  DE003C\DE003C.SFD  EV0025  EV0025\EV0025.SFD  DE003B

@@ -51,8 +51,8 @@ beside  searched
 T{ jerky  gifts  [: anim @ lying-back-anim = ;] his -> before @  1 -1 }T
 debug:debilitas-out  2 run-frames
 
-testing in a room of converted scripts (front-garden-2): the same offer (cond 0x4B), the next of his row once due (beef jerky)
-front-garden-2 room!  30 run-frames  beef before !  0 progress pr.gifts l!
+testing in a room of converted scripts (front-garden-2 run so): the same offer (cond 0x4B), the next of his row once due (beef jerky)
+-1 story:places-off !  front-garden-2 room!  30 run-frames  beef before !  0 progress pr.gifts l!
 : her-y ( F: -- y )  s" fiona" actor-named body-pos fdrop fswap fdrop ;
 140.64e her-y -217.33e 0e tp-facing  5 run-frames   \ (an open spot)
 ' leg-down felled  T{ ' lying? 120 soon -> -1 }T
@@ -60,5 +60,5 @@ beside
 circle press  T{ [: window-shown $8011 = ;] 200 soon -> -1 }T
 searched
 T{ beef  gifts  progress pr.gift-next l@ -> before @ 1+  1 2 }T
-debug:debilitas-out  2 run-frames
+debug:debilitas-out  2 run-frames  0 story:places-off !
 test-summary

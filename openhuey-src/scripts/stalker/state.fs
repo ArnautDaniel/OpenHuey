@@ -48,6 +48,9 @@ state: stalker-state
   cell field hear-threshold     \ (+0x14B8: noises louder than this)
   /path field probe-path        \ (a way planned only to measure it)
   32 field my-file              \ its model's files (a counted name: its sounds too, bank 7 while loaded)
+  2 cells field my-motions      \ its model's motion table (its name)
+  cell field figure-worn        \ as a scene's figure: its kind's other model worn (stalker.fs wear-figure)
+  cell field play-model         \ ... and meanwhile his own, put by
   \ his moves (stalker/moving.fs): his way (+0x120..), what he plays (+0x1788), his step and
   \ what it is doing (the original's state function and its counters)
   /path field my-path

@@ -12,6 +12,7 @@ USING: tester engine game-state actors messages common room-names game debug fla
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
 1 seed !
 
+-1 story:places-off !   \ (front-garden-2 as its converted room: the machinery's host)
 free-play  front-garden-2 room!  20 run-frames  game:hewie send join-fiona  20 run-frames
 testing his action told (0x24) and set (0x39): lying by her (1)
 [: 1 0 hewie-do ;] in-room  2 run-frames

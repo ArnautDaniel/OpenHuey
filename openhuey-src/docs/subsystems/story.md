@@ -109,8 +109,81 @@ converted file stays for the rooms not yet moved; a room is one or the other.
 
 **Scenes** are the `scenes` actor's (`scripts/scenes.fs`): `scene-load ( room movie class cutscene )`
 → `scene-ready ( movie? )`; `scene-run ( subtitles )` → `scene-shot ( shot )` each new shot →
-`scene-over` (played through or skipped: the world held, the camera back); `scene-stop` (the
-place gone). The kit's `load-scene`, `run-scene`, `at-shots`.
+`scene-over` (played through or skipped: the world held, the camera back); `scene-run-through
+( subtitles )` the game overs' (never skipped; at its end the movie's last frame left up, the
+director as it is, for the game over to hold: Scene_PlayThrough); `scene-stop` (the place gone).
+The kit's `load-scene`, `run-scene`, `run-through`, `at-shots`. (Headless runs go by the game
+clock, so a movie ends with its video there, not waiting for its sound to drain in real time.)
+
+**What most rooms have** (the kit's components, each room's data): a breakable (`breakable:`
+names it - its fact, whole and broken parts, the cylinder a blow breaks it in; `shard-look`,
+`shard-uv`, `frees-floor`, `noise-from`; `as-it-stands` as she comes in, `breaks?` each frame -
+the parts swapped, its floor freed, shards, the shatter $88, a noise); the ways in (`ways-in`: a
+camera set and path per exit - placed at the one she came by - or `way-in` for one), the ways out
+(`exits-out`, `ways-out`: an area and the exit loaded ahead), the area cameras (`cameras-at`: area,
+set, path; `camera-out` for one taken crossing out of its area); what Hewie looks up at (`look,` builds a table of zones - x y z, radius, height, how
+high - and `hewie-looks-at` runs it, while he is calm and at her command: the rooms' 0xC5); a
+replayed movie over (`replay-over`: back to the extras by the forced way); an item found
+(`picks-up`: turned to it, bent down, taken - `takes-up` the taking: named, full or given, its
+tab and fanfare); out by an area (`leaves-by`); Hewie's whine from the wire (`whine-due?`); an
+animal figure sent off and waited for (`figure-goes`); anything's centre in a zone across
+(`centre-across?`, the rooms' zone bit 8 - `here?` and the zone words know only the people); her
+own blow in a zone (`her-blow-in?`); hung things - the chimes she brushes walking by (`chimes`,
+`chimes-rest`: hangers_swing) and one struck swaying away from who struck it till still
+(`sway-start`, `sways`); a hiding place - the rooms' usual cupboard (`hides-in`: her motions'
+file, the spot she slips in from, the camera while in; the room's motions 4 the walk there, 5 in,
+1 lying low, 2 out, 3 hauled out; the room's camera while she's in, following nobody; out by the circle button, `slips-out`, or found, panicking or
+him in, `hauled-out`; each frame `hidden-calm`), its stalker (`came-on-her?` as he comes in;
+`searches`: the odds by a story variable - `finding-odds` 25, 50, 75 - and `will-find?`, a creature
+moving about, his alert 4; `door-for-him` opens a shut door he came by; `finds-her-at`: to the
+spot, Debilitas looking in, the others seeing her; the place's `found-her`, `came-while-hidden`);
+a placed object back as it was set (`object-reset`); the push-boxes (`obstacle-in`,
+`obstacle-fixed`, `obstacle-on-tri?`, `obstacle-kept`, `obstacle-keep`); a reflecting quad (`glass-in`: over the whole picture or on the quad, its strength's top bits side
+panels - `window-panels`, `door-panels`; `window-in`, `door-glass-in`, `window-over-all`), a scene's
+lit quad over the picture (`lit-over-all`); she weak since the chapter turned, till she rests
+(`weak?`; `reaching-to-act?`: a button, a command; `weakness` starts the room's flagging as she
+does, her fear kept at 99); Daniella's back for her hair (`her-back`: 0 standing, 1 flat, 2 bent); an exit's door held (`exit-held?`: none, not); Daniella's held things away or back
+(`hands-empty`, `hands-back`); "Used ..." (`used-msg`); a door tried from beyond (`door-tried`);
+another word plate to press (`plate-pressable?`); a thing wandering about its place (`wanderer-at`);
+a face's texture from a file (`face-on`); the stalker free (`stalker-free?`: here, not struck, held
+or linked, not leading her, not in a doorway - cond 0x65); his grab of Hewie from behind asked
+(`grabs-hewie?`, his yes a frame on); Hewie's look on a point now (`hewie-eyes-on`); dust of a kind and colour (`dust-of`); an activity
+stopped by its word (`stop-doing`); by one of the forced ways
+(`forced-way?`: $80 .. the last given - not a room entered by none, -1); one triangle's floor flags
+(`floor-tri-on`); before an exit's door (`before-door?`); within reach across, whatever the height
+(`reaches-across?`, the zone bit 2); the camera's near clip (`near-clip`); the rooms' four ambient sounds in turn
+(`ambient-sounds`); her request at a locked door (`locked-request?`), a locked door tried
+(`tries-locked`), a key turned in one (`key-turns`); the boxes' squares kept and models put back
+(`obstacle-kept-at`, `obstacle-model-home`); an object put somewhere (`object-to`); a thing there is
+one of taken (`takes-the`); the exit Hewie came in by (`hewie-came-by?`, the `hewie-came` message);
+Fiona's move part (`fiona-sub-now`); a blow in a cylinder by anyone (`blow-in?`) and the stalker's
+blow's strength (`his-blow`); the other game's file for Hewie's trust (`trust-file`); the screen
+darkened a frame (`screen-dark`); the spirits away (`spirits-gone`); the panic over (`panic-over`);
+her fright raised up to
+a level (`fright-up-to`: Panic_FrightRaw by what she is short of it); the stalker's move mode
+(`st-mode-now`); an animation come round this time
+(`went-round?`: its motion's $20 key, the original's cond 0x48); a scene's signal counted past
+its nth this frame (`signal-passed?`, the original's cond 0x3B); the stalker's sound bank
+(`stalker-bank`); a breakable's own shatter
+(`shatters-with`); moths (`moths-at`: a swarm in an effect slot, the rooms' 0x35;
+`moths-to` sends it off for another point, their 0x33; `moths-sound` keeps a sound where it
+wanders); Hewie's wary stand at a point (`hewie-stands-by`, the shared $8A); an item used up
+(`spend`); the map's page (`map-page`); a scare (`fright+`, her fright raised by so much); put on a triangle, its heading kept (`put-on-tri`); on a triangle with these floor flags (`on-floor-of?`); she thrown down
+by someone (`throws-her`); a door taking on another's state (`door-as`); the summoner's wait his
+kind's own (`his-own-time`); dials (`dial-turning`: the stick's message up, each number turned to, the rest sound and
+the right one's click and glint, till she is done; `dial-set`, `dial-turns`, `dial-asked`: a number 0..6 in a progress
+variable, 30 degrees each, the stick's repeat); an object catching the light (`catches-light`);
+one character reflected in an object (`object-mirror`: MirrorFragment); who struck her (`struck-by-now`), Hewie's
+side of a split room (`hewie-way-now`); the story's stalker in its slot, in the game or not (`partner`,
+`partner-kind`); doors locked against a kind (`door-for`), back again (`reopened`), their opened
+mark (`open-mark`); a creature let out turned (`creature-facing`); the
+game over (`game-over`, its kind; `ending-var` which ending caught her). A place has the original's
+32 effect slots. A
+whole breakable is a target a stalker's blow may strike instead of her (`zone-target`, cleared as
+each frame starts: Events_NearestPoint, as the converted rooms' zones of kind bit 1). The
+converted files of the rooms that are places are kept, unloaded, in `scripts/story/rooms-ref/`.
+Tests of the converted rooms' machinery set `story:places-off` to run a room so even if it is a
+place (its converted scripts or none); it goes with the machinery.
 
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
 after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
@@ -123,12 +196,94 @@ up), her drink ($8D), Hewie fed ($8E-$91). A place also starts as the converted 
 wanted till asked, the camera started for the room), its doings wait out her panic's onset, it
 shows her locked door's message, and it takes its own item uses (`items-here`: the plates'
 words, a marionette) before the shared ones. A doing whose character another doing takes ends,
-as the original's action replaced.
+as the original's action replaced. What she commanded Hewie this frame (`started-now`) and a
+creature's request of her (`request-now`) are gone by the time the doings run: the frame's words
+read them (and tell a doing, as castle-1f-2's gap and front-garden-3's box do).
 
 Places, each with its test in `tests/places/`:
+- castle-2f-1, the music room ($A): the third moon dial (turned by the stick; all three right, the
+  moonlight's scene and down to castle-1f-12 by the forced way; brought back up set right, the moon
+  door unlocked and the creatures loose), the moonlight's scene as she comes up with castle-1f-12's
+  dials right, the door unlocked from this side, the piano, the speakers, the Refined Magnesia Hewie
+  sniffs out, the Lavender, his looks up, the walls' shade, the replay (on to castle-1f-12's).
+- castle-2f-2, the chandelier hall ($20): her first steps by the chandeliers (Debilitas's scene: he
+  comes in and looks about, the file), the box barring the way (pushed home: fixed, the door beyond
+  unlocked), the Bisque Doll knocked down by her blow, falling and landing (on open floor, picked
+  up), after the telephone's warning the ticking beyond the door and the door tried (seized: the
+  forced way; brought back pulled free, she flees - the file; its locked door then), the blood (a
+  fright the first time), the floor, the angel painting, the dark corner, the Album Medallion Hewie
+  sniffs out, his wary stand and sitting by, his looks up, the chandeliers swinging, two flames,
+  the wheel's sounds, Debilitas's far shove, the creatures, the walls' shade, the replay.
+- castle-2f-4, the little TV room ($31): brought in by the forced way from the bedroom's TV, her
+  nightmare (a scene: the lit quad over the picture and her layer and shadow by its shots), out by
+  the way loaded ahead; the TV, the fan, the replay.
+- castle-2f-6, the study ($22): the desk locked (her blows on it), the Study Key used at it (the
+  drawer, the Lunar Refractor; the stalker stronger, the summoner on), the board (the Luminessants),
+  the shelves, the massive book and the desktop, the Lavender, Hewie's bark at the desk and his
+  looks up, the far view's depth.
+- castle-2f-7, the plate press room ($23): the plate pressing machine (the first time its scene and
+  the press; a word plate made - its scene, the plate shown her, the file; again while fewer than ten
+  are made, else none left; a plate given back), once the golem is done someone trying the door from
+  beyond (a fright), brought in by the forced way Daniella's scene (her face as it turns to her), the
+  birdcage in turn, the ruin, the thing wandering, Hewie's looks, the replays.
+- castle-2f-9, the stair landing ($5): while the chapter has Daniella the maid, her cleaning here (on
+  her knees scrubbing; spoken to she stands - "It's cleaning time now" - then her strangeness; taken
+  as she leaves), her steady sound, Hewie wary of her and his look; the first time in, the screen
+  back.
+- castle-2f-10, the room of the four boxes ($17): the boxes pushed onto their squares (each fixed;
+  all four, the scene - the way opened, the doors set anew - and out by the forced way), where they
+  stand kept as she leaves, the replay.
+- castle-2f-11, the corridor of the slanted crest ($1F): the doll and the swing rocking, the crest,
+  the specks, Hewie's look up.
+- the suspended bridge's hall (castle-2f-13, -14, -15: the same hall at three times) shares its
+  bridge in `story/places/bridge.fs` (vocab story.places.bridge): the bridge and the statue in
+  turn, Hewie's fetch of the Medallion across the gap and his calling back, the stalker's grab on
+  the plank, Hewie's bark and look across, climbing down; each room names its far side's triangles
+  as it comes in (`far-side!`).
+- castle-2f-15, the hall with its far way open ($30): climbing down, the statue, the Prima Magnesia
+  Hewie sniffs out, Daniella's motions loaded on the way out while she is the maid, the bridge's
+  Hewie (on his side of the hall), the map's pages.
+- castle-2f-12, the nursery ($26): the wardrobe to hide in (Hewie, near, in with her; out by the
+  button, in a panic, or found - the stalker rattling it with her shaking inside, Debilitas
+  dragging her out, the others seeing her and she runs), Debilitas by the rocking chair; the three
+  rocking chairs (set rocking by a blow, the first a while the first time; Hewie watching it), the
+  box and its slot (the right thing: it opens, the Inquisitor Earrings and the Jade Choker; else
+  nothing), the caged doll and the rocking horse in turn, the doll in the chair, the crib, the
+  Refined Antimony Hewie sniffs out, the vase's Medallion.
+- castle-2f-13, the suspended bridge's hall before the great hall's balcony fell ($28): out on the
+  balcony a while (she, or the stalker after her), it gives - to black, the doors set anew, down to
+  the great hall by the forced way (her way the balcony's fall, his her seizing), Hewie sent there
+  or kept here; the bridge, Hewie's fetch of the Medallion and his calling back, the stalker's grab
+  on the plank, the statue as castle-2f-14; Hewie wary on the balcony, the sparkles.
+- castle-2f-14, the suspended bridge's hall ($2F): the first time in, the screen back (the crows'
+  file); the raised bridge in turn; Hewie pointed across the gap leaps over to the Medallion and
+  brings it back (it had, he lies down over there); called back he leaps back; the stalker grabbing
+  him from behind on the plank; climbing down to the great hall (Hewie left here); the statue turn
+  and turn about; his bark across and his looks; the map's pages.
+- the bedroom (castle-2f-3, and castle-2f-5: the same room once the chapter has turned) shares its
+  things in `story/places/bedroom.fs` (vocab story.places.bedroom): the TV, the window's and the
+  door's glass, its sounds and fan, the fire, the portraits, the doll, the birdcage, the scales, the
+  chest (her costumes), the bed to hide under (Hewie under the other; `hide-under-bed` takes what
+  the room does once she's under and as she gets out), what Hewie sniffs out and looks up at; its
+  own cells come first (`own-reset  bedroom-owns owns !`).
 - castle-2f-3, the bedroom (44): every remark and spot, the clothes, the TV, the bed and the
   stalker's search, the maid's scene, the night, the attack lesson, the evasion tip, Hewie's
   find, the four replays.
+- castle-3f-1 ($6): the boxes below, the symbol door (its file; the Saturnus Key: Daniella's
+  "Dinner is served" before the chapter turns, else it unlocks), Daniella busy there after the
+  rest, the replay. castle-3f-2 ($2C): Daniella ahead the first time on after the rest.
+- castle-b1-2 (the washroom), -3 (the store room: the Metal Boots, the Castle Gate Key), -4 (the
+  spiral stair), -5 (the dark passage: Hewie tense, sent ahead; the pit), -6 (the chapel: the
+  statue and the Saturnus Key, Debilitas, the stands and the chandelier, the five replays), -7
+  (behind the furniture: the Study Key Hewie fetches through the hole, the blocked door and the
+  stalker trying it, the Medallions).
+- castle-2f-5, the bedroom once the chapter has turned ($32): the mirror whole, then broken; she
+  weak (flagging as she reaches to act, at a locked door, at the jerky); resting on the bed - the
+  mirror's scene (it cracks and shatters as it goes, Daniella in a fragment, her face), well again,
+  the file, Hewie out from under the other bed, Daniella left in the room, the chapter's doors
+  open; the remarks, the TV, the windows (the glass sharp after), the chest, the clock; the bed to
+  hide under and Daniella's search (she looks under it); the chicken jerky Hewie sniffs out; the
+  replay.
 - front-garden-3, the cage's garden (24): the opening, the remarks, the breakable, the box and
   the grate with Hewie, Hewie freed from the wire at night (and gone, out of the game), the shared
   crouch and drink.
@@ -136,6 +291,99 @@ Places, each with its test in `tests/places/`:
   other word, the parchment, the choker.
 - castle-1f-4, the puppet room's hall (22): the puppet door and the marionette, the floor plate,
   the weak wall's antimony, the plate-key's slot, Riccardo at night.
+- front-garden-1, the gate and the drive (13): the opening's scene at the gate, the castle gate
+  key, the tree and the marionette (her look, Hewie fetching it), the lamps flickering at night,
+  the crate, two Medallions, the spirits let out, the far view's depth, the replays.
+- front-garden-2, the yard (16): the grate bolted and its scene, three crates and a Medallion, the
+  windows, the whine at night, turning back for Hewie, the replay.
+- front-garden-4, the kennels (17): the cages, two doors, the crate, the camomile, the Album
+  Medallion, the rabbit, the stalker shutting the door on her.
+- front-garden-5, the far corner (19): Hewie's four ways over, the hung things (his snaps, her
+  shoves, the drop), the chimes, the crate, three pickups, the rusted door, the hiding place.
+- lake-pathway-1 (11) and lake-pathway-2 (9): the path collapsed and the bridge gone, the body,
+  the lavender, Hewie's looks.
+- castle-1f-1, the entrance hall (1): the gate, the pond's splashes, the Refined Magnesia Hewie
+  fetches, the crouch evasion tip, the creature let out, in from the bookshelf's way.
+- castle-1f-17, the specimen room (27): the pendulums, the remarks, the lavender, Hewie by the
+  shelf, the door unlocked from this side.
+- castle-1f-10, the doll's room (41): the remarks, the flame, the beef jerky, Debilitas sitting
+  with his doll (a figure: his doll's model) - the scene and the Smudged Key, the dance - his
+  chase scene, the Bisque Doll, the replays.
+- castle-1f-18, the moth room (28): the moths round the lamp by the shut door (their remark and
+  file, Hewie wary of them, their sound), the Fresh Flowers laid in the vase (the scene: the moths
+  drawn over, the door unlocked), the torn picture, the clock, the empty vase, the replay.
+- castle-1f-14, the west corridor (14): three vases broken (the Chicken Jerky and the Antimony
+  Powder behind two), the Viride Medallion Hewie finds, the door unlocked from this side, the map's
+  page at the stairs, the walls' shade, the other game's creature, brought here caught (Lorenzo's
+  scene, the game over), the replay.
+- castle-1f-7, the breaker room (21): the gate held up from castle-1f-4's plate and falling once
+  let go (nobody under it), the breaker lowered (the hum, the door unlocked, the other game's
+  file), the locked door tried, the stabbed doll in turn, Hewie barking at the breaker, brought
+  back in by the forced way (the gate rattling, sent back), in among the wires (the game over:
+  played through), the replay.
+- castle-1f-16, the TV room (26): the fan, the TV on and off (the first time a fright; its noise
+  heard), the hiding place (in, out, found and pulled out), the stalker coming while she hides
+  (Debilitas turning the TV off - twice and it stays off - or his search, likelier each time), the
+  mirror, the painting in turn, the Magnesia, the clock, the far views' depth.
+- castle-1f-6, the long dining room (17): thirteen candles stirring as someone passes, the second
+  cracked plate-key, the candlesticks by day and night, the tapestry, the Medallion Hewie finds, the
+  door unlocked from this side, Daniella about beyond at night, brought in by the forced way
+  (Daniella's scene), the replay.
+- castle-1f-19, the flooded passage (30): the hole Hewie hides in at her "go there" (out at her
+  "come back"), Debilitas by it - the ambush (a scene, its files), Hewie fetching the Rubrum
+  Medallion across the water, splashes, his bark at the hole and look across, the hole's remarks,
+  the replay.
+- castle-1f-11, the drawbridge room (3): the clamp struck (the lever jolting; the third blow and
+  the bridge falls - a scene, the far door closed off, Debilitas shoving the rubble down, throwing
+  her in his way), three vases (the Beef Jerky and the Magnesia), the Medallion Hewie fetches
+  across the gap, the clamp's remarks, the map's pages, the replay.
+- castle-1f-12, the moon dials' room (4): two dials turned by the stick (clicking at a number, the
+  right one's lens glinting), the Lunar Refractor set (a scene, her reflection in the lens), the
+  dials right with castle-2f-1's - out there and back by the forced ways, the moon door unlocked
+  and the five doors open; the vase's Medallion, the moon on the wall, the locked door, the replays.
+- castle-1f-9, the hall of the half stairs (37): the stairs in turn, the sealed well, the bench, two
+  vases (the Magnesia), the Rubrum Medallion Hewie sniffs out, the Album Medallion he fetches off
+  the stairs at her "go there", the garden door locked - the Garden Key and the Luminessants'
+  scene (their file, the creature let out), her first fright, the motes, tint and specks, the replay.
+- castle-1f-5, the long gallery (16): Debilitas bursting in after her (the golem done) and his shove
+  bringing the rubble down; brought in after Daniella's scene, the chapter turning (the castle's
+  doors anew, Daniella the stalker, her costume and Hewie's coat afresh, the stage music) and her
+  weakness after it; three flames, the vase's Antimony Powder, the box, the dim corner, the twin
+  paintings, the map's pages.
+- castle-1f-2, the courtyard (2): the gate's lever (the cage rising, the door beyond unlocked, the
+  creatures out), Hewie sent under the gate - through the gap, sitting there; sent on, he fetches
+  the Fresh Flowers back to her; called, he crawls back; the hole in the wall (the voices: a scene,
+  the Scrawled Memo; else the breeze, never again), the fireplace (the embers in its draught, the
+  drum can struck, the fire and the doll in turn), a place to hide (the stalker searching - likelier
+  each time he comes, or seeing her), in by the gate's way (Debilitas knocked down beyond it, no
+  going back), Debilitas shoving the rubble by the hall and far off, two vases (the Viola
+  Medallion, the Onion), the Rubrum Medallion Hewie sniffs out, the flowers and the fence in turn,
+  the pond's splashes, Hewie's barks and wary stand and his look up, the machine's hum, the moths,
+  the specks, the steady sounds, the walls' shade, the map's pages, the replay.
+- castle-1f-3, the library (9): the awakening at the Garden Key the first time (the voice, the thing
+  set on the table; a scene), the key taken after; chased by Debilitas while he is elsewhere - the
+  hint and its while, and in behind the bookshelf she knocks it down on him (a scene: he lies
+  knocked out under it, she runs out); her thought pushing it, the books, the harp, the creepy thing
+  in turn, the Camomile, Hewie wary by the table and his looks, the walls' shade, the replays.
+- castle-1f-13, the great hall (8): brought in by the forced way - the balcony collapsing under her
+  (a scene: she comes to below, Debilitas stalking along the balcony above and shoving its rubble
+  down, the crows' file), or seized and carried off (a scene, out by the way loaded ahead); a place
+  to crouch hidden behind (the stalker searching, likelier each time), Debilitas back from
+  castle-b1-7, the fallen balcony and the false doors in turn, the Chicken Jerky, the Antimony
+  Powder Hewie sniffs out, the hanging thing she sets swinging, the specks, the walls' shade, the
+  creatures, the replays.
+- castle-1f-15, the armour gallery (25): chased along the balcony by Debilitas, the encounter - no
+  Hewie (or him down): a scene, she is left lying and frightened; with Hewie: he saves her (Debilitas
+  knocked down) or, likelier the more he has, fails (she is left lying) - each a scene and the other
+  game's file; the hole in the balcony floor (down it by her choice; dropped in from above, she
+  lands), the diorama, the spear, the armour and the handrail in turn, the Camomile and the Medallion
+  Hewie sniffs out, his bark at the high window and his looks, the steady sound, the far view's
+  depth, the walls' shade, the other game's creature, the replays.
+- castle-1f-8, the telephone room (24): her first steps in - uneasy, the call (the voice warning
+  her of Riccardo; a scene, its file) and the stalker in after her, the door locked; the line dead
+  since, the hiding place (in, out, found and hauled out), the stalker coming while she hides (his
+  search, likelier each time), four flames, the chair, the ornaments, the Magnesia, the Album
+  Medallion Hewie sniffs out, the walls' shade, the replay.
 
 ## API
 

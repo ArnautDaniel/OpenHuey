@@ -5,14 +5,18 @@
 \ The places themselves: story/places/*.fs. A room without one still runs its converted
 \ scripts (story/room.fs).
 IN: story.kit
-USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names effects hewie-names hewie.anims ;
+USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names effects hewie-names hewie.anims floor-flags keys ;
 
 \ ---- the characters a place directs: Fiona, Hewie, the stalker in the game ----
 3 constant #people
 enum: person  fiona-p hewie-p stalker-p ;
 : fiona ( -- id )  s" fiona" actor-named ;
 : hewie ( -- id )  s" hewie" actor-named ;
-: stalker ( -- id )  stalker-in-game ;
+: figure-of? ( id -- flag )   \ (in one of the story's slots 3..5: a scene's figure - a stalker's actor too)
+    dup 0< if  drop false exit  then
+    3 0 do  i 3 + story.words:slot-actor @ over = if  drop true unloop exit  then  loop  drop false ;
+: stalker ( -- id )   \ (the one with a body, not a scene's figure)
+    #stalkers 0 do  i stalker# dup 0< 0= if  dup body?  over figure-of? 0= and if  unloop exit  then  then  drop  loop  -1 ;
 : person-id ( i -- id )  case  fiona-p of fiona endof  hewie-p of hewie endof  stalker-p of stalker endof  >r -1 r>  endcase ;
 : person-of ( id -- i | -1 )
     dup 0< if  drop -1 exit  then
@@ -21,6 +25,7 @@ enum: person  fiona-p hewie-p stalker-p ;
 \ ---- the place's state ----
 8 constant #activities
 48 constant #own   \ the place's own cells (`own:`)
+32 constant #room-effects   \ (RoomEffects: 0x20 slots)
 state: place-state
   cell field this-room
   cell field came-by            \ the exit she came in by (-1: none)
@@ -39,6 +44,7 @@ state: place-state
   #people cells field asked          \ a move asked of each since it was held (wait-move waits on that only)
   #people cells field anim-ended
   3 cells field figure-ended     \ each figure's (slots 3..5) animation come round, as last told
+  3 cells field figure-done      \ ... its move done (an animal off where it was sent)
   #people cells field marks          \ each one's animation marks reached (its event keys), as last told
   #people cells field in-here        \ each one in this room, as last seen
   #people /vec * field was-at        \ where each was at the last frame's end (areas crossed)
@@ -46,35 +52,49 @@ state: place-state
   \ the offer this frame (the action prompt): its doing (an xt, 0 none), whether a message
   cell field offer-xt  cell field offer-msg
   \ what the others tell
-  cell field danger-now  cell field panic-stage
+  cell field danger-now  cell field panic-stage  cell field panic-level-now   \ (her panic's level, 0..100)
   cell field onset              \ her panic's first frames (the room's doings wait: SubPlay's frame flag bit 3)
   cell field request-now        \ a creature's request of her this frame (fiona-requested)
   cell field unseen-now         \ she can't be seen (item $89 worn, still)
   cell field shook-now          \ she shook this frame (the stick swung or a button)
   cell field started-now        \ the action she started for Hewie this frame (-1 none: fiona-started)
+  cell field fiona-sub-now      \ her move mode's part (fiona-doing's sub)
   cell field straining-now      \ she strains at something that won't move (fiona-straining)
   cell field fiona-mode-now  cell field fiona-doing-now  cell field fiona-cmd-now
+  cell field struck-by-now      \ who struck or caught her (-1 nobody: her reaction her own)
   cell field hewie-act-now  cell field hewie-cond-now  cell field hewie-reach-now  cell field hewie-cmdable-now  cell field hewie-near-now
   cell field hewie-breakable-now   \ he may be broken off what he does (Hewie_MayBreakOff)
+  cell field hewie-way-now         \ his side of a split room (one-half / other-half: 1, 2)
   cell field hewie-hp-now          \ his health, 0..100
+  cell field hewie-trust-now       \ his trust level (1..7)
   \ the scene asked for (scenes.fs): how far it is, whether its movie is there, what to do at each new shot
   cell field scene-step  cell field scene-movie  cell field cue-xt
-  8 cells field effects        \ the effects the place made (actors; 0 none), gone with it
+  #room-effects cells field effects   \ the effects the place made (actors; 0 none), gone with it (RoomEffects: 32)
   cell field tab-moving         \ the item's tab sliding (the sub screen tells when it's done)
   \ the stalker in the game, as he tells (stalker-doing): his room, condition, kind, alert (his mode)
+  cell field st-mode-now        \ his move mode (hewie-mode's names: free, off screen, struck, ...)
+  cell field st-sub-now         \ ... and its part (leading her: leading-sub ..)
+  cell field st-linked-now      \ linked to someone (stalker-ties: Progress_IsLinked)
+  cell field grab-asked-now  cell field grab-ok-now   \ the grab of Hewie from behind asked of him, his yes
   cell field st-room-now  cell field st-cond-now  cell field st-kind-now  cell field st-alert-now  cell field st-came-now  cell field st-age
   cell field st-heard           \ he has told us at all (in the game: st-age frames ago)
   \ the creatures, as they tell (creature-doing): each one's room, how it moves, frames since
   #creatures cells field cr-room  #creatures cells field cr-mode  #creatures cells field cr-age
+  cell field found-her          \ a hiding place's: the stalker has found her there (she must flee)
+  cell field came-while-hidden  \ ... he came in while she hid (gone again: the prompt anew)
+  cell field hewie-came-now   \ the exit Hewie came in by (hewie-came; -1 none)
+  cell field st-blow-now      \ the stalker's blow under way (stalker-blow; -1 none)
+  cell field ambient-step  cell field ambient-frames   \ the room's four ambient sounds in turn: which next, frames to it
   #own cells field own
 end-state
 
 \ a place's own cell, by name: `own: came-while-hidden`
 variable owns
+variable breakables   \ (a place's breakables so far: each a target number, for a stalker's blow)
 : own: ( "name" -- )
     owns @ #own >= abort" own: too many cells for a place"
     create owns @ ,  1 owns +!  does> @ cells own + ;
-: own-reset ( -- )  0 owns ! ;   \ (each place file starts its own)
+: own-reset ( -- )  0 owns !  0 breakables ! ;   \ (each place file starts its own)
 
 \ ---- a place's description: its words ----
 begin-structure /desc
@@ -122,6 +142,8 @@ variable acting   -1 acting !   \ the activity being run (-1: none)
     drop -1 ;
 : running? ( xt -- flag )
     #activities 0 do  i act-slot @  over i cells act-xts + @ = and if  drop true unloop exit  then  loop  drop false ;
+: stop-doing ( xt -- )   \ (the activity running xt stopped, if one is)
+    #activities 0 do  i act-slot @  over i cells act-xts + @ = and if  i stop-act  then  loop  drop ;
 : start-only ( xt -- )  dup running? if  drop  else  start drop  then ;   \ (once, if it isn't already running)
 : run-acts ( -- )
     #activities 0 do
@@ -143,7 +165,8 @@ variable acting   -1 acting !   \ the activity being run (-1: none)
 
 \ ---- waiting (in an activity) ----
 : frames ( n -- )  0 ?do  yield  loop ;
-: here? ( id -- flag )   \ (in this room as last seen, and still in the game)
+: here? ( id -- flag )   \ (a person: in this room as last seen, and still in the game; a figure: in this room)
+    dup figure-of? if  dup body? if  body-room room-id =  else  drop false  then  exit  then
     dup person-of dup 0< if  2drop false exit  then  cells in-here + @ if  body?  else  drop false  then ;
 
 \ ---- moving those held (the story's moves: scripted-move, answered by `moving`) ----
@@ -163,6 +186,8 @@ create mv-at /vec allot
     person-of dup 0< if  drop exit  then
     begin  yield  dup cells anim-ended + @  over person-id here? 0= or  until
     -1 swap cells move-done + ! ;
+: went-round? ( id -- flag )   \ its animation come round this time (its motion's $20 key: the original's cond 0x48)
+    person-of dup 0< if  drop false exit  then  cells anim-ended + @ 0<> ;
 : wait-mark ( id bits -- )   \ its animation come to a mark (an event key of it)
     {: id bits | i :}  id person-of to i  i 0< if  exit  then
     begin  yield  i cells marks + @ bits and  id here? 0= or  until ;
@@ -189,6 +214,12 @@ create mv-at /vec allot
     {: id tri face F: x z :}  tri x z floor-at  face deg>yaw  {: F: px py pz yaw :}
     px f>cell py f>cell pz f>cell yaw f>cell  id send place ;
 : place-on-tri ( id tri face -- )  {: id tri face :}  id tri face  tri tri-center fswap fdrop  place-at ;
+: on-floor-of? ( id flags -- flag )   \ standing on a triangle with any of these flags
+    over here? 0= if  2drop false exit  then  swap body-tri dup 0< if  2drop false exit  then  nav-flags and 0<> ;
+: throws-her ( id -- )  false fiona send throw-down ;   \ she is thrown down by it
+: put-on-tri ( id tri -- )   \ put on its middle at once, its heading kept
+    {: id tri | F: x F: y F: z :}  tri tri-center to z to y to x
+    x f>cell y f>cell z f>cell id body-yaw f>cell  id send place ;
 : noclip ( id on -- )  swap send noclip ;   \ (through blocked floor)
 
 \ ---- the message window ----
@@ -242,6 +273,14 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
     id body-at vec@ id body-dims {: F: cx cy cz cr ch :}
     cy ch 2e f/ f+  y h 2e f/ f+ f- fabs  h fabs ch fabs f+ 2e f/ f<=
     zz cz f- fdup f*  x cx f- fdup f* f+  r fdup f* f<=  and ;
+: centre-across? ( id F: x z r -- flag )   \ its centre within r of (x, z) across - anyone or anything with a body
+    {: id F: x z r :}  id dup 0< swap body? 0= or if  false exit  then   \ (the rooms' zone bit 8)
+    id body-pos fswap fdrop {: F: cx cz :}  cx x f- fdup f*  cz z f- fdup f* f+  r fdup f* f<= ;
+: reaches-across? ( id F: x z r -- flag )   \ its body within r of (x, z) across, whatever its height (the rooms' zone bit 2)
+    {: id F: x z r :}  id here? 0= if  false exit  then
+    id body-at vec@ id body-dims {: F: cx cy cz cr ch :}  cx x f- fdup f*  cz z f- fdup f* f+  r cr f+ fdup f* f<= ;
+: before-door? ( id exit -- flag )   \ before the exit's door (the original's cond 0x18)
+    {: id ex :}  id here? 0= if  false exit  then  id body-pos ex 0 door-in-area? ;
 : at-locked-exit? ( id -- flag )   \ in an exit's area, its door locked (trying it)
     {: id :}  8 0 do
         i exit-door dup 0< 0= if  doors:door-locked? id i exit-area in-area? and if  true unloop exit  then  else  drop  then
@@ -257,12 +296,15 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 : camera-set ( id set path -- )  cam-char-setup ;           \ (whose camera: a set of the room's, its path)
 : area-camera ( area set path -- )   \ whoever crosses into the area takes that camera
     {: area set path :}  #people 0 do  i person-id dup here? if  dup area entered? if  set path camera-set  else  drop  then  else  drop  then  loop ;
+: camera-out ( area set path -- )   \ whoever crosses out of the area takes that camera
+    {: area set path :}  #people 0 do  i person-id dup here? if  dup area crossed -1 = if  set path camera-set  else  drop  then  else  drop  then  loop ;
 : follow ( id -- )  cam-on ;
 : player ( -- id )  hewie-played? if  hewie  else  fiona  then ;   \ (the one played)
 : player-camera ( set path -- )  player -rot camera-set  player follow ;
 : exit-camera ( exit set path -- )   \ whoever is inside the exit's area takes that camera (as they come in)
     {: ex set path :}  #people 0 do  i person-id dup ex exit-area in-area? if  set path camera-set  else  drop  then  loop ;
 : her-camera ( set path -- )  fiona -rot camera-set  fiona follow ;   \ (her setup, and the camera on her)                                \ the camera follows who
+: near-clip ( F: v -- )  engine:camera cam.near sf! ;   \ (the camera's near clip: 1 the usual)
 : fixed-camera ( set path -- )  cam-setup  -1 cam-followed! ;   \ the room's own camera, following nobody
 : shot ( on F: dist pitch yaw rise -- )   \ the story's own shot of the one followed (0: back)
     {: on F: d p y r :}  on  d 1000e f* f>s  p 1000e f* f>s  y 1000e f* f>s  r 1000e f* f>s  camera-actor send event-shot ;
@@ -272,6 +314,7 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 \ ---- exits ----
 : rooms-actor ( -- id )  s" rooms" actor-named ;
 $80 constant forced-exit   \ (an exit's bit: not by a door - to the room loaded ahead, prepare-exit's)
+: forced-way? ( last -- flag )  came-by @ forced-exit rot 1+ within ;   \ (she came by one of the forced ways $80 .. last)
 : take-exit ( exit -- )  going ! ;   \ (after this frame)
 : at-exit ( id exit -- )  over 0< if  2drop exit  then  swap send to-exit ;   \ (on its outside spot, facing in)
 : prepare-exit ( exit -- )  rooms-actor send exit-prepare ;   \ (the room behind it loaded ahead)
@@ -297,6 +340,7 @@ $80000000 constant keep-playing   \ (a sound's id bit: one already playing kept 
 : room-sound ( id F: x y z -- )  {: id F: x y z :}  id story-volume or room-bank 0 0  x y z  sound-at ;
 : keep-sound ( id F: x y z -- )  {: id F: x y z :}  id story-volume or keep-playing or room-bank 0 0  x y z  sound-at ;
 5 constant common-bank   \ (the sounds every room has: knocks, Hewie's find)
+7 constant stalker-bank  \ (the stalker's own: each kind's set)
 : sound-by ( id bank who -- )  {: id bank who :}  who dup 0< if  drop exit  then  body? 0= if  exit  then  who body-pos {: F: x y z :}  id bank 0 0  x y z  sound-at ;   \ (at a character)
 
 \ ---- scenes (scenes.fs): made ready while the screen is black, then played ----
@@ -308,7 +352,14 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
 : run-scene ( subtitles -- )   \ played through (or skipped); subtitles: a message, or -1
     dup 0< if  drop $FFFF  then  scene-running scene-step !  scenes send scene-run
     begin  scene-step @ scene-running = while  yield  repeat  0 cue-xt ! ;
-: at-shots ( xt -- )  cue-xt ! ;   \ ( shot -- ) run as each new shot of the scene comes
+: run-through ( subtitles -- )   \ played through, never skipped, its last frame left up (a game over's)
+    dup 0< if  drop $FFFF  then  scene-running scene-step !  scenes send scene-run-through
+    begin  scene-step @ scene-running = while  yield  repeat  0 cue-xt ! ;
+: at-shots ( xt -- )  cue-xt ! ;
+: signal-passed? ( k n -- flag )   \ the scene's signal k, counted, passing its nth this frame (the original's cond 0x3B)
+    over cutscene-signals dup 0> 0= if  drop 2drop false exit  then     ( k n new )
+    rot cutscene-signal-total                                          ( n new total )
+    rot 2dup < if  2drop drop false exit  then  >r swap - r> < ;   \ ( shot -- ) run as each new shot of the scene comes
 : panic-eased ( -- )  in-panic? if  terrified s" panic" actor-named send panic-stage!  then ;   \ (a scene, a message: the panic down to terror)
 
 \ ---- the story's character slots (shared with the converted rooms): figures for a scene ----
@@ -333,6 +384,11 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
 : give-item ( item n -- )   \ counted (the play record) and given
     progress pr.items-counted dup l@ 1+ swap l!  items send give-item ;
 : item-full? ( item -- flag )  items:items-of 99 < 0= ;
+$8010 constant cant-carry-msg   \ "It's a . Unfortunately you can't carry anymore items." (the item named)
+$8011 constant obtained-msg     \ "You've obtained ."
+$8012 constant obtained-2-msg   \ (the same, for a thing that isn't one of many)
+$8019 constant used-msg         \ "Used ." (the item named)
+: plate-pressable? ( -- flag )  items:plates 10 < ;   \ (fewer than ten word plates made: another may be pressed)
 : item-named ( item -- )  0 swap message-param! ;   \ (the next system message names it)
 : subscreen ( -- id )  s" subscreen" actor-named ;
 $8C constant fanfare-scene
@@ -341,7 +397,16 @@ $83 constant fanfare-sound   $85 constant fanfare-bank
 : show-item-tab ( item -- )   \ (its tab slid in to show her: waited out)
     -1 tab-moving !  0 swap subscreen send tab-op  begin  tab-moving @ while  yield  repeat ;
 $801B constant filed-message    \ "has been saved to your file."
+: spend ( item -- )  items send take-item ;   \ one of it used up
+: map-page ( page -- )  s" subscreen" actor-named send map-turn-to ;   \ the map opens at that page (its floor)
+$2D constant ending-var   \ (which of the endings caught her, for the game over's kind 2)
+: game-over ( kind -- )  s" gameover" actor-named send game-over-kind  caught state! ;   \ the game ends that way
 : filed ( doc -- )  dup item-named  1 give-item  fanfare  filed-message say ;   \ a document filed, said so
+: trust-file ( -- )   \ (in the other game: the file for Hewie's trust now, levels 1..7 - the shared $9C)
+    items-40-as-70 fact? 0= if  exit  then  hewie-trust-now @ dup 1 8 within if  $828E + give-file  else  drop  then ;
+: screen-dark ( alpha -- )  story.words:screen-fill ;   \ (this frame: the screen darkened by alpha, to $80)
+: spirits-gone ( -- )  1 s" creatures" actor-named send creatures-clear ;   \ (the spirits about the castle away)
+: panic-over ( -- )  0 s" panic" actor-named send panic-stage! ;
 
 \ ---- the panic, Fiona ----
 : calm-her ( n -- )  fiona send fear-less ;
@@ -371,6 +436,7 @@ $26 constant costume-var   $27 constant coat-var   $28 constant costume-worn-var
 : scrambling? ( -- flag )  hewie-act-now @ dup scramble-act = swap scramble-2-act = or  hewie-in? and ;
 : hush ( id on -- )  over 0< if  2drop exit  then  swap send silent ;   \ (its own sounds kept quiet)
 : trust+ ( n -- )  hewie send trust+ ;
+: hewie-eyes-on ( F: x y z -- )  f>cell f>cell f>cell swap rot  hewie send scent-now ;   \ (his look on that point now)
 : hewie-scent ( F: x y z -- )  f>cell f>cell f>cell swap rot  hewie send scent-at ;   \ (something to look to, if he has none)
 : chance? ( pct -- flag )  rnd 100e f* f>s > ;
 
@@ -399,19 +465,40 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 
 \ ---- creatures (as they tell): one in this room moving so ----
 : creature-moving? ( mode -- flag )
-    {: mode :}  4 0 do
+    {: mode :}  #creatures 0 do   \ (cond 0x53: any of them)
         i cells cr-age + @ 2 <  i cells cr-room + @ this-room @ = and  i cells cr-mode + @ mode = and if  true unloop exit  then
     loop  false ;
 
 \ ---- the stalker ----
 : stalker-in? ( -- flag )  stalker here? ;
 : stalker-told? ( -- flag )  st-heard @  st-age @ 2 < and ;
+: hewie-came-by? ( exit -- flag )  hewie-in? if  hewie-came-now @ =  else  drop false  then ;   \ (in, come by that exit: cond 0x30's)
 : stalker-came-by? ( exit -- flag )  stalker-in? stalker-told? and if  st-came-now @ =  else  drop false  then ;   \ (in, come by that exit)
 : stalker-alert? ( mode -- flag )  stalker-told? if  st-alert-now @ =  else  drop false  then ;
 : debilitas? ( -- flag )   \ (the stalker in the game Debilitas, in one of his kinds)
     stalker-told? 0= if  false exit  then
     st-kind-now @  dup debilitas-kind = over debilitas-6-kind = or swap debilitas-7-kind = or ;
-: stalker-to ( room tri -- )  stalker dup 0< if  drop 2drop exit  then  send stalker-in ;   \ (into the game there)
+: stalker-free? ( -- flag )   \ (here, not struck, held or linked, not leading her, not in a doorway: the original's cond 0x65)
+    stalker-in? 0= if  false exit  then
+    st-mode-now @ struck-mode =  stalker held? or  st-linked-now @ 0<> or if  false exit  then
+    st-mode-now @ engaged-mode =  st-sub-now @ leading-sub dup 2 + within and if  false exit  then
+    stalker body-tri dup 0< if  drop false exit  then  nav-flags $80001 and if  false exit  then
+    8 0 do  i door-here? if  i 0 stalker body-pos door-in-area?  i 1 stalker body-pos door-in-area? or if  false unloop exit  then  then  loop
+    true ;
+: grabs-hewie? ( -- flag )   \ (asked of the stalker - can he grab Hewie from behind? - his yes a frame on, once)
+    grab-ok-now @ if  0 grab-ok-now !  true exit  then
+    grab-asked-now @ 0=  stalker 0< 0= and if  -1 grab-asked-now !  stalker send grab-hewie  then  false ;
+: partner ( -- id | -1 )  story.words:slot2 @ ;   \ the story's stalker (its slot 2): loaded, in the game or not
+: partner-kind ( -- kind )  story.words:slot2-kind @ ;
+: face-on ( kind sel addr len -- )   \ a character's face: its texture sel the file's first (Progress_LoadSpeech / Speak)
+    story.words:speech-load  {: kind sel :}  kind cast-model dup 0< if  drop exit  then
+    sel story.words:speech-file story.words:speech-len @ actor-texture-swap drop ;
+: daniellas-model ( -- model | -1 )  partner-kind daniella-kind = if  daniella-kind cast-model  else  -1  then ;   \ (the stalker loaded Daniella)
+: hands-empty ( -- )  daniellas-model dup 0< if  drop exit  then  false false story.words:daniella-parts ;   \ (what she holds put away)
+: hands-back ( -- )  daniellas-model dup 0< if  drop exit  then  story.words:daniella-one ;   \ (what she holds shown again)
+: her-back ( pose -- )  daniellas-model dup 0< if  2drop exit  then  swap cloth-back! ;   \ (Daniella's back for her hair: 0 standing, 1 flat, 2 bent)
+: stalker-to ( room tri -- )  partner dup 0< if  drop 2drop exit  then  send stalker-in ;   \ (the story's stalker into the game there, loaded: stalker-to-room)
+: his-own-time ( -- )  -1 s" summoner" actor-named send summoner-cooldown ;   \ (the summoner's wait: his own kind's)
 : summoner-sooner ( secs -- )  s" summoner" actor-named send summoner-cooldown-less ;
 : stalker-order ( mode -- )  stalker dup 0< if  2drop exit  then  send stalker-order ;
 : summoner ( -- id )  s" summoner" actor-named ;
@@ -424,19 +511,37 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : effect! ( id k -- )   \ the place's effect k (the one there before gone)
     dup effect @ ?dup if  dup alive? if  kill  else  drop  then  then  effect ! ;
 : effect-off ( k -- )  0 swap effect! ;
-: effects-gone ( -- )  8 0 do  i effect-off  loop ;
+: effects-gone ( -- )  #room-effects 0 do  i effect-off  loop ;
 : tell-effect ( v k -- )  effect @ dup alive? if  send effect-command  else  2drop  then ;
 \ the room's tint (Tint_SetParams: the look's slot): the glow colour and the contrast colour, RGBA
 $1F constant tint-slot
 create tint-bytes 9 allot
 : room-tint ( gr gg gb ga cr cg cb ca -- )   \ (its mode 0)
     0 tint-bytes 8 + c!  8 0 do  tint-bytes 7 i - + c!  loop  tint-slot tint-bytes 9 look-set ;
-\ a reflecting window (Reflection): reflection k (0..3) on the quad's corners, its side panels a window's
-$10000000 constant window-panels
-: window-in ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )
-    {: k str :}  k effect @ 0= if  k effects:reflection k effect!  then  k false str window-panels or reflect! ;
-: window-over-all ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )   \ (a scene's: over the whole picture)
-    {: k str :}  k effect @ 0= if  k effects:reflection k effect!  then  k true str window-panels or reflect! ;
+\ the look's other slots: the depth range (its far view's: Room_DepthRange), the screen's blend
+$1C constant depth-slot   $1E constant blend-slot
+create look-bytes 16 allot
+: depth-range ( F: a b c d -- )
+    look-bytes 12 + sf!  look-bytes 8 + sf!  look-bytes 4 + sf!  look-bytes sf!  depth-slot look-bytes 16 look-set ;
+: depth-range-off ( -- )  depth-slot 0 0 look-set ;
+: screen-blend ( rgba mode -- )  look-bytes 4 + c!  look-bytes l!  blend-slot look-bytes 5 look-set ;
+: screen-blend-off ( -- )  blend-slot 0 0 look-set ;
+: glow-at ( k rgba F: x y z size -- )  effects:glow swap effect! ;   \ effect k: a glow (Effect737D0)
+: preload ( room -- )  rooms-actor send room-preload ;
+: thing-lying? ( kind -- flag )   \ (one of the things of that kind lying about, in any room: PlacedThings_FirstOfKind)
+    128 0 do  i thing-used? if  i thing-kind over = if  drop true unloop exit  then  then  loop  drop false ;
+: creature-facing ( room level tri kind reach yaw -- )   \ (one let out there, turned so: the creatures' own way about -
+    -1 swap 0e f>cell  s" creatures" actor-named send creature-place ;   \ reach x 10 her nearness that wakes it)
+: creature-in ( room level tri kind reach -- )  0 creature-facing ;   \ (the room a forced exit leads to, loaded ahead)
+\ a reflecting quad (Reflection): reflection k (0..3: the effect k's, k and 3) on the quad's corners -
+\ over the whole picture or on the quad - at strength (0..$80), its top bits side panels: a window's or a door's
+$10000000 constant window-panels   $20000000 constant door-panels
+: glass-in ( k over-all? strength F: x0 y0 z0 .. x3 y3 z3 -- )
+    {: k all str :}  k effect @ 0= if  k 3 and effects:reflection k effect!  then  k 3 and all str reflect! ;
+: window-in ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )  false swap window-panels or glass-in ;   \ (a window: on its quad)
+: door-glass-in ( k over-all? strength F: x0 y0 z0 .. x3 y3 z3 -- )  door-panels or glass-in ;   \ (a door's)
+: lit-over-all ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )  true swap glass-in ;   \ (a scene's lit quad: no panels, over the whole picture)
+: window-over-all ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )  true swap window-panels or glass-in ;   \ (a scene's: over the whole picture)
 \ the room's placed objects, by name
 $14 constant turn-y
 : object-turn ( addr len F: by -- )   \ turned about its upright, wrapping
@@ -451,7 +556,8 @@ $8000 constant room-motion
 : use-motions ( id -- )  model-of dup 0< if  drop exit  then  true swap motions-use ;
 
 \ ---- exits: taken by the one played, free, in its area, its door open and not held ----
-: exit-open? ( exit -- flag )   \ (a doorway, or a door not locked with its opened mark)
+: exit-held? ( exit -- flag )  exit-door dup 0< if  drop false  else  doors:door-held?  then ;   \ (its door held - none: not)
+: exit-open? ( exit -- flag )   \ (a doorway, or a door not locked with its opened mark; no door: not)
     exit-door dup 0< if  drop false exit  then
     dup door-flags 1 and if  drop true exit  then
     dup doors:door-locked? if  drop false exit  then  doors:opened-bit doors:has? ;
@@ -461,7 +567,7 @@ $8000 constant room-motion
     {: ex :}  fiona-free? 0= if  exit  then
     fiona ex exit-area in-area? 0= if  exit  then
     ex exit-open? 0= if  exit  then
-    ex exit-door doors:door-held? if  exit  then
+    ex exit-held? if  exit  then
     ex take-exit ;
 : light-doorway ( F: x0 y0 z0 .. x3 y3 z3 -- )  light-blocker ;   \ (this frame: the characters' shadows kept off where the wall shades)
 
@@ -484,6 +590,10 @@ $A constant usual-layer   $1E constant before-reflections-layer   \ (a model's d
 : sounds-scaled ( F: v -- )  sound-scale! ;        \ (every sound of the story's scaled: 0 silent)
 : stage-music ( op a b -- )  s" music" actor-named send music-op ;
 $27 constant knock-sound
+$28 constant try-door-sound
+: door-tried ( exit -- )   \ (someone trying that door from beyond - heard there, unless it's open)
+    {: ex :}  ex exit-door dup 0< if  drop exit  then  door-open? if  exit  then
+    ex exit-stand 0= if  fdrop fdrop fdrop exit  then  try-door-sound common-bank bank-sound-at ;
 : knock ( exit -- )   \ (a knock at that door, unless it's open)
     {: ex :}  ex exit-door dup 0< if  drop exit  then  door-open? if  exit  then
     ex exit-stand 0= if  fdrop fdrop fdrop exit  then  knock-sound common-bank bank-sound-at ;
@@ -545,6 +655,10 @@ create spot-xts #activities cells allot
     hewie true hush  hewie bark-anim 10 start-blend  hewie bark-mark wait-mark
     hewie false hush  found-bark common-bank hewie sound-by  hewie true hush
     hewie wait-anim  hewie 10 idle  hewie false hush  10 frames  hewie keep  hewie send hewie-stay ;
+: hewie-stands-by ( F: x y z -- )   \ (the rooms' shared $8A: over to it, tense, his eyes on it a while, staying put)
+    {: F: x y z :}  hewie hold  hewie wait-move  hewie spot-move 0 0  x y z 0e  move  hewie wait-move
+    hewie hewie.anims:stance-anim start-anim  yield  hewie look-point-move 0 0  x y z 0e  move
+    120 frames  hewie -1 look-at  yield  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
 : hewie-sits-by ( F: x y z -- )   \ (the rooms' shared $89: turned to it, sitting a while, staying put)
     {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
     hewie hewie.anims:sit-a-while-anim 10 play-blend  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
@@ -555,7 +669,21 @@ create spot-xts #activities cells allot
 : floor-off ( group flags -- )  false -rot nav-group! ;
 : on-group? ( id group -- flag )   \ standing on a triangle of that group
     over here? 0= if  2drop false exit  then  swap body-tri dup 0< if  2drop false exit  then  swap nav-in-group? ;
+\ the push-boxes (the obstacles actor's): one placed on a square, one pushed home stopped there
+: obstacle-in ( i n kind a b -- )  s" obstacles" actor-named send place-obstacle ;   \ (box i - model "oshi0n", its kind - on square (a, b))
+: obstacle-fixed ( i -- )  s" obstacles" actor-named send stop-obstacle ;   \ (it can't be pushed any more)
+: obstacle-on-tri? ( i tri -- flag )  obstacle-on-square? ;   \ (it stands on that triangle's square)
+: obstacle-kept ( i n kind -- )  s" obstacles" actor-named send place-obstacle-kept ;   \ (placed where it was kept)
+: obstacle-keep ( i -- )   \ (its square kept for the next visit, and where its model stands)
+    dup s" obstacles" actor-named send keep-obstacle  s" obstacles" actor-named send keep-obstacle-spot ;
+: obstacle-kept-at ( i a b -- )  s" obstacles" actor-named send keep-obstacle-at ;   \ (square (a, b) kept for it: where it comes next visit)
+: obstacle-model-home ( i n -- )  s" obstacles" actor-named send obstacle-model-to-spot ;   \ (model "oshi0n" put where box i's spot was kept)
+: floor-tri-on ( tri flags -- )  true -rot nav-tri-flags! ;   \ (one triangle's floor: who it keeps off)
 : closed-off ( door -- )  dup doors-actor send close-off  lock ;   \ gone for good: its exits use another door
+: door-as ( door from -- )  doors-actor send copy-door ;   \ door takes on the other's open mark, lock and closing off
+: door-for ( door slot on -- )  doors-actor send lock-for ;   \ locked against the story slot's kind of character, or not
+: reopened ( door -- )  dup doors-actor send reopen  unlock ;  \ back again, unlocked (its exits theirs again)
+: open-mark ( door on -- )  doors-actor send door-opened ;     \ its opened mark set, or cleared
 : exits-redone ( -- )  doors-actor send rebuild-exits ;
 0 constant fiona-slot   1 constant hewie-slot   2 constant stalker-slot   \ (the story's character slots)
 : doors-into ( room slot on -- )  doors-actor send lock-room-for ;   \ every door into the room locked against them, or not
@@ -565,9 +693,15 @@ $FF constant no-track
 : music-part ( stage -- )  music send music-stage ;
 : rgba ( r g b a -- rgba )  {: r g b a :}  r 24 lshift  g 16 lshift or  b 8 lshift or  a or ;
 : flicker-at ( k F: x y z -- )  0 effects:flicker swap effect! ;   \ effect k: a sparkle
+: moths-at ( k n F: x y z -- )  effects:butterflies swap effect! ;   \ effect k: n moths (0: 8) making for the point (0x35)
+: moths-to ( k n F: x y z -- )   \ effect k's moths off for another point; n of them (0: as many as they are) - 0x33
+    {: k n F: x y z :}  k effect @ dup alive? 0= if  drop exit  then  >r  n x f>cell y f>cell z f>cell  r> send effect-to ;
+: moths-sound ( k id -- )   \ the room's sound id kept going where effect k's moths wander now
+    {: k id :}  k effect @ dup alive? 0= if  drop exit  then  >r  id story-volume or keep-playing or room-bank  r> send effect-sound ;
 : object ( obj op arg -- )  >r >r  this-room @ story.strings:room-string  r> r> placed-op ;   \ (the room's string names it)
 : object-hide ( obj -- )  0 1 object ;
 : object-show ( obj -- )  0 0 object ;
+: object-reset ( obj -- )  4 0 object ;   \ (shown, back as it was set: PlacedObject_ToDef)
 : object+! ( addr len off F: d -- )  {: a n off F: d :}  a n placed-here? 0= if  exit  then  a n off placed-f@ d f+  a n off placed-f! ;
 $28 constant place-z
 : morph ( a b addr len F: t -- )   \ (a morph object: its frames a and b shown, blended by t 0..1)
@@ -582,12 +716,116 @@ $28 constant place-z
 : object! ( addr len off F: v -- )  {: a n off F: v :}  a n placed-here? 0= if  exit  then  v a n off placed-f! ;
 $24 constant place-y
 : flame-at ( k kind F: x y z -- )  effects:flame swap effect! ;   \ effect k: a flame of that kind
+: wanderer-at ( k F: x y z rx rz tx ty tz -- )  effects:wander swap effect! ;   \ effect k: a flat thing wandering within (rx, rz), turned so (degrees)
 : dust ( F: x y z -- )  0 $80 $80 $80 16 effects:burst ;   \ grey dust thrown up there
+: dust-of ( kind r g b F: x y z -- )  16 effects:burst ;   \ dust of a kind and colour (the rooms' 0xC8 with its own)
 : rumble-pad ( motor strength frames -- )  story.words:rumble-pad ;   \ (motor 0 the small one, buzzing; else the large at that strength)
 : reverb ( core level -- )  sound-reverb! ;   \ (core 0 the music's, 1 the effects')
 : threat ( v -- )  0 max 100 min s>f f>cell s" panic" actor-named send threat ;   \ (her fright raised to it)
+: fright-up-to ( v -- )   \ (her fright raised by what her panic is short of v: Panic_FrightRaw)
+    panic-level-now @ -  dup 0< if  drop exit  then  s>f f>cell s" panic" actor-named send fright-raw ;
+: fright+ ( v -- )  s>f f>cell s" panic" actor-named send threat-acc ;   \ (her fright raised by so much: a scare)
 : room-noise ( loud tri -- )  this-room @ swap -1 world-noise s" acoustics" actor-named send noise ;
 : sound-there ( id bank F: x y z -- )  0 0 sound-at ;   \ a sound at the point
+
+\ ---- things that hang and swing (the room's objects by their strings) ----
+$10 constant turn-x   $18 constant turn-z   $20 constant place-x
+: object-to ( addr len F: x y z -- )  {: a n F: x y z :}  a n place-x x object!  a n place-y y object!  a n place-z z object! ;   \ (put there)
+: catches-light ( addr len F: turn -- )   \ an object catching the light: a flash at it, turned as it is and more by turn
+    {: a n F: turn :}  a n placed-here? 0= if  exit  then
+    a n place-x object@  a n place-y object@  a n place-z object@  a n turn-y object@ turn f+  effects:window-flash ;
+: object-mirror ( k strength model addr len F: nx ny nz -- )   \ effect k: one character's model reflected in an
+    {: k str model a n F: nx ny nz :}   \ object's plane (normal n, turned with it), an 8 x 8 square there (MirrorFragment)
+    a n placed-here? 0= if  k effect-off exit  then
+    nx ny nz  a n turn-x object@  a n turn-y object@  a n turn-z object@
+    a n place-x object@  a n place-y object@  a n place-z object@  mirror-square
+    k effect @ 0= if  k 3 and effects:reflection k effect!  then  k 3 and false str reflect!  k 3 and model reflect-only ;
+\ ---- dials: an object turned by the stick to a number (0..6, 30 degrees each from its base) kept in
+\ a progress variable; turned a degree a frame to it (room_dial: the castle's moon dials) ----
+create arrows-held 4 cells allot   \ (frames each arrow has been held: the pad's repeat)
+: arrow-keys ( i -- k1 k2 )   \ 0 up, 1 right, 2 down, 3 left (the arrows, or WASD)
+    case  0 of  key: Up key: W  endof  1 of  key: Right key: D  endof  2 of  key: Down key: S  endof
+          >r key: Left key: A r>  endcase ;
+: count-arrows ( -- )   \ (a frame's: how long each arrow has been held)
+    4 0 do  i cells arrows-held +  i arrow-keys key-down? swap key-down? or if  1 swap +!  else  0 swap !  then  loop ;
+: arrow-repeat? ( i -- flag )   \ (pressed, then again after 12 frames held, every 2: gMenuRepeat)
+    cells arrows-held + @  dup 1 = if  drop true exit  then  dup 13 < if  drop false exit  then  13 - 2 mod 0= ;
+: dial-angle ( var base -- ) ( F: -- rad )  swap var@ 30 * + s>f deg>rad ;
+: dial-set ( addr len var base -- )  {: a n var base :}  a n placed-here? 0= if  exit  then  var base dial-angle a n turn-y object! ;
+: dial-turns ( addr len var base -- there? )   \ (a degree a frame toward its number)
+    {: a n var base :}  a n placed-here? 0= if  true exit  then
+    a n turn-y object@ rad>deg  var base dial-angle rad>deg f-
+    fdup 1e f> if  fdrop -1e deg>rad a n turn-y object+!  false exit  then
+    -1e f< if  1e deg>rad a n turn-y object+!  false  else  true  then ;
+: dial-asked ( var -- n )   \ the stick this frame: 1 turned to another number, -1 done (cross or triangle), 0 nothing
+    {: var :}  count-arrows
+    cross button-pressed?  triangle button-pressed? or if  -1 exit  then
+    var var@  3 arrow-repeat? if  dup if  1-  then  else  1 arrow-repeat? if  dup 6 < if  1+  then  then  then
+    dup var var@ <> if  var var!  1  else  drop 0  then ;
+\ a dial turned by the stick (the moon dials): the stick's message up; each number she asks for
+\ turned to a degree a frame - the room's sound 0 as it sets off, a click (its sound 1) at the
+\ right one and its lens catching the light - till she is done (cross or triangle), its message up
+0 constant dial-rest-sound   1 constant dial-click-sound
+: dial-turning ( addr len var right base msg F: sx sy sz turn -- )
+    {: a n var right base msg F: sx sy sz turn | asking :}
+    -1 to asking  msg show
+    begin
+        asking if
+            var dial-asked  dup 1 = if  0 to asking  dial-rest-sound sx sy sz room-sound  then
+        else
+            a n var base dial-turns if
+                -1 to asking  var var@ right = if  dial-click-sound sx sy sz room-sound  a n turn catches-light  then
+            then  0
+        then
+    -1 <> while  yield  repeat ;   \ (its message left up: the caller closes it)
+$30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3C constant swing-pushed   \ (their own: floats)
+4 constant swing-back   \ (a whole number: swinging back)
+: hanging ( i -- addr len )  this-room @ story.strings:room-string ;
+: her-step ( F: -- d )   \ (how far she moved this frame)
+    fiona here? 0= if  0e exit  then  fiona-p /vec * was-at + fiona body-at vec-dist ;
+\ hung things she brushes as she walks by (hangers_swing): her steps add up - past `push` they
+\ swing for 20 frames, the first ringing (`on` / `off`, the room's sounds, in turn: `rung` a cell);
+\ a swing: on 36 degrees a frame, tilted 1 + sin of it (in degrees), each half a swing apart
+: chime-rest ( k a n -- )
+    {: k a n :}  a n placed-here? 0= if  exit  then
+    0e a n swing-phase object!  60e k s>f f* a n swing-offset object!  0e a n swing-left object!  0e a n swing-pushed object! ;
+: chimes-rest ( base n -- )  0 ?do  i  over i + hanging  chime-rest  loop  drop ;
+: chime ( k a n squared? rung on off F: push -- )
+    {: k a n sq rung on off F: push :}  a n placed-here? 0= if  exit  then
+    her-step  sq if  fdup f*  then  a n swing-pushed object+!
+    a n swing-pushed object@ push f> if
+        20e a n swing-left object!  0e a n swing-pushed object!
+        k 0= if  rung @ 0= dup rung !  if  off  else  on  then  room-bank fiona sound-by  then
+    then
+    a n swing-left object@ f0> 0= if  exit  then
+    a n swing-left object@ 1e f- 0e fmax a n swing-left object!
+    36e a n swing-phase object+!
+    a n swing-phase object@ a n swing-offset object@ f+ 360e f< 0= if  -360e a n swing-phase object+!  then
+    a n swing-phase object@ a n swing-offset object@ f+ deg>rad fsin 1e f+ deg>rad
+    fdup pi f> if  2e pi f* f-  then  a n turn-x object! ;
+: chimes ( base n squared? rung on off F: push -- )   \ (each frame she is among them)
+    {: base n sq rung on off F: push :}  n 0 ?do  i  base i + hanging  sq rung on off push chime  loop ;
+\ a hung thing set swaying - 12 degrees, away from who struck it - and left to settle: a step
+\ 22.5 degrees of its swing a frame, its size shrinking to 0.4 at each end; under half a degree, still
+: sway-start ( obj who -- )
+    {: obj who | a n F: dx F: dz F: d F: wx F: wz :}  obj hanging to n to a  a n placed-here? 0= if  exit  then
+    0 a n swing-back placed-l!  0e a n swing-phase object!  12e deg>rad a n swing-offset object!
+    who body-pos fswap fdrop to wz to wx
+    a n place-x object@ wx f- to dx  a n place-z object@ wz f- to dz
+    dx fdup f* dz fdup f* f+ fsqrt to d  d f0= if  exit  then
+    dz d f/ a n swing-left object!  dx d f/ fnegate a n swing-pushed object! ;
+: sway-step ( a n -- settled? )
+    {: a n :}
+    a n swing-back placed-l@ if  -22.5e  else  22.5e  then  deg>rad a n swing-phase object+!
+    a n swing-phase object@ fabs 1e deg>rad f< if  a n swing-offset object@ 0.4e f* a n swing-offset object!  then
+    a n swing-back placed-l@ if
+        a n swing-phase object@ pi f2/ fnegate f< if  0 a n swing-back placed-l!  then
+    else  a n swing-phase object@ pi f2/ f> if  1 a n swing-back placed-l!  then  then
+    a n swing-offset object@ 0.5e deg>rad f<= if  0e a n turn-x object!  0e a n turn-z object!  true exit  then
+    a n swing-left object@ a n swing-offset object@ f* a n swing-phase object@ fsin f*  a n turn-x object!
+    a n swing-pushed object@ a n swing-offset object@ f* a n swing-phase object@ fsin f*  a n turn-z object!  false ;
+: sways ( obj -- )   \ (an activity's: till it settles)
+    hanging {: a n :}  a n placed-here? 0= if  exit  then  begin  a n sway-step 0= while  yield  repeat ;
 
 \ ---- where things are seen and faced ----
 : unseen? ( id -- flag )  dup here? 0= if  drop true exit  then  body-at vec@ out-of-view? ;
@@ -617,11 +855,202 @@ $24 constant place-y
             body-point if  x y zz r h point-in? if  -1 to hit  then  then
         else  drop  then
     loop  hit ;
+: touching-at? ( v id F: x y z r h -- flag )   \ (its body, were it at v, overlapping the cylinder)
+    {: v id F: x y zz r h :}  v vec@ id body-dims {: F: cx cy cz cr ch :}
+    cy ch 2e f/ f+  y h 2e f/ f+ f- fabs  h fabs ch fabs f+ 2e f/ f<=
+    zz cz f- fdup f*  x cx f- fdup f* f+  r cr f+ fdup f* f<=  and ;
+: steps-into? ( id F: x y z r h -- flag )   \ touching the cylinder now, not at the last frame's end
+    {: id F: x y zz r h :}  id here? 0= if  false exit  then
+    id body-at id x y zz r h touching-at? 0= if  false exit  then
+    id person-of /vec * was-at + id x y zz r h touching-at? 0= ;
+: ambient-sounds ( first F: x y z -- )   \ (each frame: every 30 the next of the room's four sounds from first, in turn, there)
+    {: first F: x y zz :}  1 ambient-frames +!  ambient-frames @ 30 < if  exit  then
+    0 ambient-frames !  first ambient-step @ +  x y zz room-sound  ambient-step @ 1+ 4 mod ambient-step ! ;
+: flame-stirred ( k F: x y z r h -- )   \ (effect k, a flame: whoever steps into its draught - it told
+    {: k F: x y zz r h :}                   \ how: 1 they barely moved this frame, 2 moving - 0x87)
+    #people 0 do
+        i person-id  x y zz r h steps-into? if
+            i person-id body-at  i /vec * was-at +  vec-dist fdup f* 0.5e f< if  1  else  2  then
+            k effect @ dup alive? if  send effect-command  else  2drop  then
+        then
+    loop ;
+: splash-from ( id count F: x y z -- )   \ water thrown up there, away from who stepped in
+    {: id n F: x y zz :}  id body-pos  x y zz  n 2  $40 $50 $40 $80 rgba  effects:splash ;
+: blow-in? ( id F: x y z r h -- flag )   \ its blow (its point of contact) inside the cylinder
+    {: id F: x y zz r h :}  id here? 0= if  false exit  then
+    id body-point if  x y zz r h point-in?  else  false  then ;
+: her-blow-in? ( F: x y z r h -- flag )  fiona blow-in? ;   \ her own blow
+: his-blow ( -- n )  stalker-told? if  st-blow-now @  else  -1  then ;   \ (the stalker's attack's blow under way: its strength, -1 none)
 : left? ( id area -- flag )  crossed -1 = ;
 : near-xz? ( id F: x z r -- flag )   \ its body within r of the point across (any height)
     {: id F: x z r :}  id here? 0= if  false exit  then
     id body-pos fswap fdrop {: F: bx bz :}  id body-dims fdrop {: F: br :}
     bx x f- fdup f*  bz z f- fdup f* f+  r br f+ fdup f* f<= ;
+
+\ ---- breakables (a vase, a crate): whole or in pieces by a fact. A blow in its place breaks it,
+\ as every room has it: the parts swapped, its floor freed, shards thrown, the shatter heard,
+\ a noise made. `breakable:` names one; `shard-look`, `shard-uv`, `frees-floor`, `noise-from`
+\ say more of it; the place shows it as she comes in (`as-it-stands`) and each frame asks
+\ `breaks?` - true the frame it breaks, for what the room adds (the thing inside it) ----
+begin-structure /breakable
+  field: bk.fact  field: bk.whole  field: bk.broken  field: bk.group  field: bk.tri  field: bk.target
+  field: bk.sound  field: bk.bank
+  field: bk.rgba  field: bk.kind  field: bk.tex
+  ffield: bk.x  ffield: bk.y  ffield: bk.z  ffield: bk.r  ffield: bk.h
+  ffield: bk.u  ffield: bk.v  ffield: bk.du  ffield: bk.dv  ffield: bk.floor
+end-structure
+$88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant shard-grey
+: breakable: ( fact whole-part broken-part F: x y z r h "name" -- )   \ (struck within r of x z, h up from y)
+    create  here /breakable allot  {: f w b a F: x y z r h :}
+    f a bk.fact !  w a bk.whole !  b a bk.broken !  -1 a bk.group !  -1 a bk.tri !  breakables @ a bk.target !  1 breakables +!
+    shatter-sound a bk.sound !  common-bank a bk.bank !
+    shard-grey a bk.rgba !  0 a bk.kind !  0 a bk.tex !
+    x a bk.x f!  y a bk.y f!  z a bk.z f!  r a bk.r f!  h a bk.h f!
+    0e a bk.u f!  0e a bk.v f!  1e a bk.du f!  1e a bk.dv f!  0e a bk.floor f! ;
+: shard-look ( bk rgba kind tex -- )  {: a c k t :}  c a bk.rgba !  k a bk.kind !  t a bk.tex ! ;   \ (their colour, kind, texture)
+: shard-uv ( bk F: u v du dv -- )   \ (the cell of the texture they show)
+    {: a F: u v du dv :}  u a bk.u f!  v a bk.v f!  du a bk.du f!  dv a bk.dv f! ;
+: frees-floor ( bk group -- )  swap bk.group ! ;   \ (its floor's nav group: kept off while it stands)
+: noise-from ( bk tri -- )  swap bk.tri ! ;        \ (the triangle its noise comes from; none: no noise)
+: shatters-with ( bk sound bank -- )  rot {: a :}  a bk.bank !  a bk.sound ! ;   \ (its own shatter: the room's)
+: broken? ( bk -- flag )  bk.fact @ fact? ;
+: bk-floor ( bk on -- )  over bk.group @ 0< if  2drop exit  then  swap bk.group @ keeps-people-off nav-group! ;
+: as-it-stands ( bk -- )   \ (whole or in pieces, its floor kept off while whole)
+    dup broken? {: a b :}  a b 0= bk-floor
+    b if  a bk.whole @ hide-part  a bk.broken @ show-part  else  a bk.whole @ show-part  a bk.broken @ hide-part  then ;
+: at-it ( bk -- ) ( F: -- x y z )  dup bk.x f@  dup bk.y f@  bk.z f@ ;
+: smash ( bk -- )   \ (in pieces now)
+    {: a :}  a bk.fact @ fact!  a as-it-stands
+    a bk.rgba @ a bk.kind @ a bk.tex @  a at-it  a bk.u f@ a bk.v f@ a bk.du f@ a bk.dv f@  a bk.floor f@  shards
+    a bk.sound @ a bk.bank @ a at-it sound-there
+    a bk.tri @ 0< 0= if  shatter-loudness a bk.tri @ room-noise  then ;
+: a-target ( bk -- )   \ (whole: a stalker's blow may strike it instead of her - Events_NearestPoint)
+    dup bk.target @ swap at-it xyz>cells broadcast zone-target ;
+: breaks? ( bk -- flag )   \ (whole, a blow in its place: broken now)
+    dup broken? if  drop false exit  then  dup a-target
+    dup at-it  dup bk.r f@  dup bk.h f@  struck-in? 0= if  drop false exit  then  smash true ;
+
+\ ---- what every room says the same way, as tables: its ways in (the camera for each exit she
+\ comes in by), its cameras (an area and the camera whoever crosses into it takes), its ways
+\ out (an area and the exit loaded ahead as she enters it), what Hewie looks up at ----
+: way-in ( exit set path -- )   \ (she came by it: placed at it, its camera hers; whoever is in it, its camera)
+    {: ex set path :}  came-by @ ex = if  player ex at-exit  set path player-camera  then  ex set path exit-camera ;
+: ways-in ( table n -- )   \ (a set and path an exit, from 0)
+    0 ?do  i  over i 2* cells + @  2 pick i 2* 1+ cells + @  way-in  loop  drop ;
+: cameras-at ( table n -- )   \ (area set path, three cells a camera)
+    0 ?do  dup i 3 * cells +  dup @  over cell+ @  rot 2 cells + @  area-camera  loop  drop ;
+: exits-out ( n -- )  0 ?do  i exit-out  loop ;   \ (she goes by any of the first n when she can)
+: leaves-by ( area exit -- )   \ (the one played, in the area, free: through - the rooms' exit-check by an area)
+    {: area ex :}  player held? if  exit  then  player area in-area? 0= if  exit  then
+    ex exit-open? 0= if  exit  then  ex exit-held? if  exit  then  ex take-exit ;
+: way-out ( area exit -- )  swap fiona swap entered? if  prepare-exit  else  drop  then ;
+: ways-out ( table n -- )   \ (area exit: crossing into the area, the room behind that exit loaded ahead)
+    0 ?do  dup i 2* cells + @  over i 2* 1+ cells + @  way-out  loop  drop ;
+\ Hewie's looks (the rooms' 0xC5): a zone (an upright cylinder x y z, radius, height) and how high
+\ above its foot he looks; while he is in one, calm and at her command, he looks up there
+6 floats constant /look
+: look, ( F: x y z r h dy -- )  {: F: x y z r h dy :}  x f, y f, z f, r f, h f, dy f, ;
+: looks-at ( look -- )   \ (in its zone: up there)
+    {: a :}  hewie  a f@  a float+ f@  a 2 floats + f@  a 3 floats + f@  a 4 floats + f@  centred-in? 0= if  exit  then
+    a f@  a float+ f@ a 5 floats + f@ f+  a 2 floats + f@  hewie-scent ;
+: hewie-looks-at ( table n -- )
+    hewie-in?  danger-now @ calm = and  hewie-cmdable-now @ and 0= if  2drop exit  then
+    0 ?do  dup i /look * + looks-at  loop  drop ;
+$2A constant replay-var   \ (the story's variable: which movie the extras' theatre replays)
+\ which of the room's acts replays it (the shared script $26's list, by the variable: $FF none; three
+\ go by the story's variable $2C too)
+create replay-acts
+    $27 c,  $28 c,  $10 c,  $08 c,  $0C c,  $0D c,  $10 c,  $0C c,  $11 c,  $12 c,  $14 c,  $19 c,  $03 c,  $16 c,  $07 c,  $29 c,
+    $2A c,  $11 c,  $12 c,  $15 c,  $1A c,  $09 c,  $0D c,  $0C c,  $0D c,  $0E c,  $0E c,  $0F c,  $07 c,  $08 c,  $0A c,  $17 c,
+    $09 c,  $01 c,  $09 c,  $0A c,  $FF c,  $0C c,  $0D c,  $0E c,  $0F c,  $10 c,  $09 c,  $03 c,  $06 c,  $23 c,  $04 c,  $06 c,
+    $06 c,  $09 c,  $0F c,  $10 c,  $14 c,  $15 c,  $16 c,  $17 c,  $13 c,  $14 c,  $15 c,  $16 c,  $20 c,  $0E c,  $21 c,  $22 c,
+    $1B c,  $FF c,  $08 c,  $0E c,  $0F c,  $0A c,  $0B c,  $0A c,  $0B c,  $08 c,  $10 c,  $11 c,  $08 c,  $07 c,  $08 c,  $04 c,
+    $04 c,  $02 c,  $12 c,  $1A c,  $1B c,  $1C c,  $04 c,  $13 c,  $14 c,  $15 c,  $16 c,  $0C c,  $08 c,  $05 c,  $0B c,  $0C c,
+    $0D c,  $0B c,  $04 c,  $01 c,  $0F c,  $10 c,  $11 c,  $12 c,  $10 c,  $07 c,  $FF c,  $05 c,  $FF c,  $02 c,
+110 constant #replays
+: replay-act ( -- act | -1 )   \ (the original act number of the room it replays in)
+    replay-var var@ {: v :}  v #replays u< 0= if  -1 exit  then
+    v case
+        $24 of  $2C var@ 0= if  9  else  $B  then  endof
+        $6A of  $2C var@ 0= if  4  else  1  then  endof
+        $6C of  $2C var@ 0= if  6  else  5  then  endof
+        >r  v replay-acts + c@  dup $FF = if  drop -1  then  r>
+    endcase ;
+\ a replayed movie over (the extras' theatre): back to the extras, out by the forced way
+\ an item found (the rooms' pick-up): named; with 99 of it she can't carry it; else taken - its
+\ fact, its sparkle (an effect of the place's, -1 none) off - its tab shown, the fanfare
+: takes-up ( item fact fx -- )
+    {: it f fx :}  it item-named  it item-full? if  cant-carry-msg say exit  then
+    f fact!  fx 0< 0= if  fx effect-off  then  it 1 give-item  it show-item-tab  fanfare  obtained-msg say ;
+: takes-the ( item fact fx -- )   \ (a thing there is only one of: its fact, its sparkle off, given - "You've obtained the ...")
+    {: it f fx :}  f fact!  fx 0< 0= if  fx effect-off  then  it item-named  it 1 give-item  it show-item-tab  fanfare  obtained-2-msg say ;
+: picks-up ( item fact fx F: x z -- )   \ (on the floor there: turned to it, bent down to it - not in a panic)
+    fiona wait-move  fiona turn-to-xz  in-panic? if  drop 2drop exit  then
+    fiona fiona.anims:pick-up-anim play  4 frames  takes-up  fiona fiona.anims:up-from-pick-anim play ;
+: whine-due? ( addr -- flag )   \ (Hewie in the wire, now and then: a counter down a frame - at 0,
+    -1 over +!  dup @ 0> if  drop false exit  then   \ 3 in 10 a whine, then 180 frames; else 60)
+    30 chance?  dup if  180  else  60  then  rot ! ;
+\ hidden, the stalker coming in (the rooms' hiding places): whether he will find her - by the
+\ odds (by how often he has come), a creature moving about here gives her away, his alert 4 never
+: will-find? ( odds -- flag )  chance?  2 creature-moving? or  4 stalker-alert? 0= and ;
+: hidden-calm ( -- )   \ (a frame hidden: calmer; he came while she hid and is gone - the prompt again)
+    2 ease-panic  6 calm-her  $1E recover
+    came-while-hidden @  stalker-in? 0= and if  0 came-while-hidden !  1 avoid-prompt  then ;
+
+\ ---- a hiding place (the rooms' cupboards and wardrobes): she walks to it, slips in and lies low,
+\ calming; out by the circle button - or, found (or panicking, or he is in), hauled out. The room's
+\ motions for it (her file): 4 the walk there, 5 in, 1 lying low, 2 out, 3 hauled out; his (his
+\ file, Debilitas's): 0 the look in ----
+: hid-motion ( i -- anim )  room-motion + ;
+: hauled-out ( -- )
+    found-her @ if  2 avoid-prompt  then
+    fiona follow  fiona-hidden state-off  fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by
+    fiona 3 hid-motion 10 play-blend  fiona false noclip
+    found-her @ 0= if  stalker let-go  then ;
+: slips-out ( -- )
+    stalker-in? if  hauled-out exit  then
+    fiona follow  fiona-hidden state-off  fiona true noclip
+    fiona 2 hid-motion 5 start-blend8  5 frames  fiona.sounds:slide-sound common-bank fiona sound-by  fiona wait-anim
+    fiona false noclip ;
+: hides-in ( file tri deg cam F: x z -- )   \ (her motions' file; where she slips in from, facing it; the
+    {: file tri deg cam F: x z :}           \ room's camera set while she's in, -1 hers kept)
+    stalkers-stay state!  0 came-while-hidden !  fiona file motions-for  fiona wait-move  fiona use-motions
+    fiona walk-anim-move 4 hid-motion 5  tri x z floor-at  deg deg>yaw  move  fiona wait-move
+    fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by  fiona 5 hid-motion 10 start-blend8  fiona wait-anim
+    fiona 1 hid-motion 10 start-blend  fiona false noclip
+    stalkers-stay state-off  fiona-hidden state!  0 found-her !  0 avoid-prompt
+    cam 0< 0= if  cam -1 fixed-camera  then   \ (the room's own, following nobody: the original's self-who)
+    begin
+        circle button-pressed? if  slips-out exit  then
+        in-panic? found-her @ or if
+            in-panic? 0= if  fiona.sounds:seized-sound common-bank fiona sound-by  then  hauled-out exit
+        then
+        hidden-calm  yield
+    again ;
+\ the stalker in while she hides: whether he finds her - by the odds in a story variable (how
+\ often he has come: 25, 50, 75 in 100), a creature moving about giving her away; if not, he's off sooner
+: came-on-her? ( -- flag )  fiona-hidden state?  dup came-while-hidden ! ;   \ (as he comes in: she is hidden)
+: finding-odds ( var -- pct )  var@ case  1 of 25 endof  2 of 50 endof  3 of 75 endof  >r 0 r>  endcase ;
+: searches ( var file xt -- )   \ (xt: his going to her, found - started; his comings counted; file -1: none)
+    {: v file xt :}  debilitas?  file 0< 0= and if  stalker file motions-for  then
+    v finding-odds will-find? if  xt start drop  else  120 summoner-sooner  then  v var@ 1+ v var! ;
+: door-for-him ( exit -- )   \ (come by it, its door shut: he opens it)
+    dup stalker-came-by?  over exit-open? 0= and if  stalker swap open-door  else  drop  then ;
+: finds-her-at ( tri deg F: x z -- )   \ (to the hiding place: Debilitas looks in, the others see her)
+    {: tri deg F: x z :}  stalker tri deg x z walk-to
+    debilitas? if
+        stalker use-motions  stalker room-motion 10 start-blend  30 frames  -1 found-her !  stalker wait-anim
+    else  stalker stalker.anims:there-anim play  -1 found-her !  then
+    stalker 10 idle  begin  fiona held? while  yield  repeat  0 stalker-order ;
+\ she weak (since the chapter turned, till she rests in her bedroom): reaching to act - a button, a
+\ command - she flags (the rooms' own doing), her fear kept high
+: weak? ( -- flag )  over-music-b fact?  saturnus-hint-on fact? 0= and ;
+: reaching-to-act? ( -- flag )
+    square button-pressed?  l1 button-pressed? or  triangle button-pressed? or  fiona-cmd-now @ 0 5 within or ;
+: weakness ( xt -- )   \ (each frame: xt her flagging, started)
+    weak? 0= if  drop exit  then
+    reaching-to-act?  fiona-free? and if  start drop  else  drop  then  99 fiona send fear-to ;
+: replay-over ( -- )  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
 
 \ ---- the figures' own (the story's slots 3..5: a figure loaded there) ----
 : figure ( slot -- id | -1 )  story.words:slot-actor @ ;
@@ -630,6 +1059,10 @@ $24 constant place-y
 : figure-wait ( slot -- )   \ its animation come round
     dup figure 0< if  drop yield exit  then  3 - cells figure-ended +  0 over !  begin  yield  dup @ until  drop ;
 : figure-came-round? ( slot -- flag )  3 - cells figure-ended + @ 0<> ;   \ (its animation come round: the original's cond 0x56)
+: figure-goes ( slot sound F: x z -- )   \ (an animal - a rabbit: grazing, off to (x, z) as one comes near - its feet's
+    {: slot snd F: x z :}  slot figure dup 0< if  drop exit  then   \ sound snd, -1 none; waited till it is there)
+    0 slot 3 - cells figure-done + !  >r  snd x f>cell z f>cell  r> send animal-go
+    begin  yield  slot 3 - cells figure-done + @  slot figure 0< or  until ;
 : figure-at ( slot F: x y z deg -- )  deg>rad angle-wrap  figure dup 0< if  drop fdrop fdrop fdrop fdrop exit  then  >r xyzw>cells r> send place ;
 : figure-on ( slot -- )  figure dup 0< if  drop exit  then  send activate ;
 : figure-dressed-as ( slot other -- )   \ wearing the other's model
@@ -657,6 +1090,36 @@ $24 constant place-y
     id body-pos  ex door-side 1 = if  2  else  0  then  ex swap door-user-spot  dup 0< if  drop fdrop fdrop fdrop fdrop exit  then
     {: tri F: x y z yaw :}  id walk-move tri -1  x y z yaw  move  id wait-move ;
 : with-fiona-free ( -- )  begin  fiona-free? 0= while  yield  repeat ;
+\ a locked door tried (the rooms' own locked doors): to it, the knob rattled - slowly while chased or
+\ panicking, else with its remark; and a key used at one: to it, turned, the door unlocked, "Used ..."
+: tries-locked ( exit front? msg -- )
+    {: ex front msg :}  fiona ex to-door
+    in-panic? chased? or if
+        fiona front if  fiona.anims:rattle-front-slow-anim  else  fiona.anims:rattle-behind-slow-anim  then  play
+        fiona -1 idle  7 frames  exit
+    then
+    fiona front if  fiona.anims:rattle-front-anim  else  fiona.anims:rattle-behind-anim  then  play
+    fiona -1 idle  7 frames  msg say ;
+: key-turns ( exit door item anim sound bank -- )
+    {: ex door it anim snd bank :}  stalkers-stay state!  fiona hold  fiona ex to-door
+    fiona anim start-anim  20 frames  snd bank fiona sound-by
+    it item-named  it spend  door unlock  fiona 20 idle  20 frames  used-msg say  stalkers-stay state-off ;
+\ a door locked from this side (Progress_CharRequests' request $80000002: she in an exit's door
+\ area, its door locked - the room may let her unlock it, else her own try: locked from the other side)
+$72 constant unlock-sound   $8008 constant unlocked-msg   \ (the common bank's; "You unlocked the door.")
+: before-locked? ( exit -- flag )
+    {: ex :}  fiona here? 0=  ex door-here? 0= or if  false exit  then
+    ex exit-door dup 0< if  drop false exit  then  doors:door-locked? 0= if  false exit  then
+    fiona body-pos ex 0 door-in-area? ;
+: locked-request? ( n -- flag )   \ (her request at a locked door - before one of the first n exits' - or a creature's request 2 of her)
+    false swap 0 ?do  i before-locked? or  loop  request-now @ 2 = or ;
+: unlocks ( exit -- )   \ (to her spot by it - not with the stalker on her - a try, and it gives: unlocked)
+    {: ex :}  stalker-in?  fiona stalker 0 close-to? and if  exit  then
+    fiona ex to-door  stalker-in?  fiona stalker 0 close-to? and  in-panic? or if  exit  then
+    fiona body-pos ex 0 door-in-area? if  fiona fiona.anims:rattle-front-anim  else  fiona fiona.anims:rattle-behind-anim  then  start-anim
+    20 frames  in-panic? if  exit  then
+    unlock-sound common-bank fiona sound-by  ex exit-door unlock  unlocked-msg show
+    fiona 20 idle  20 frames  wait-closed ;
 
 : people-in ( -- )   \ (each person newly in the room: its arrival)
     #people 0 do
@@ -666,7 +1129,7 @@ $24 constant place-y
         i cells in-here + !
     loop ;
 : text-gone ( -- )  shown-msg @ 0< if  exit  then  shown-msg @ window send close-text  -1 shown-msg ! ;   \ (ours left up: closed)
-: frame-start ( -- )  0 offer-xt !  0 offer-msg ! ;
+: frame-start ( -- )  0 offer-xt !  0 offer-msg !  broadcast zone-targets-off ;   \ (the breakables say so again)
 \ what every room does, played as a place (story/common.fs: the original's shared scripts run
 \ after a room's own phases - crouching, ... - and the item uses' scripts)
 defer every-room ( -- )   ' noop is every-room
@@ -684,10 +1147,10 @@ behaviour placing
       -1 going !  -1 shown-msg !  #people 0 do  -1 i holder-of !  -1 i cells move-done + !  loop   \ (none held, none moving)
       self subscribe tick  self subscribe frame-end  self subscribe moving  self subscribe danger
       self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing
-      self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset
-      self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message
+      self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe stalker-blow  -1 st-blow-now !
+      self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
       self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
-      self subscribe item-event
+      self subscribe item-event  self subscribe stalker-ties
       room-starts  frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people
       camera-starts  camera-placed ;
   on tick ( -- )
@@ -708,25 +1171,29 @@ behaviour placing
   on text-closed ( msg answer -- )  answer !  shown-msg @ = if  -1 shown-msg !  then ;
   on fade-done ( -- )  0 fading ! ;
   on moving ( done ended events -- )
-      sender person-of dup 0< if  drop  3 0 do  i 3 + story.words:slot-actor @ sender = if  over i cells figure-ended + !  then  loop  drop 2drop exit  then
+      sender person-of dup 0< if  drop  3 0 do  i 3 + story.words:slot-actor @ sender = if  over i cells figure-ended + !  2 pick i cells figure-done + !  then  loop  drop 2drop exit  then
       tuck cells marks + !  tuck cells anim-ended + !  cells move-done + ! ;
   on scene-ready ( movie? -- )  scene-movie !  scene-is-ready scene-step ! ;
   on scene-shot ( shot -- )  cue-xt @ ?dup if  execute  else  drop  then ;
   on scene-over ( -- )  scene-ended scene-step ! ;
   on tab-done ( -- )  0 tab-moving ! ;
   on danger ( level -- )  danger-now ! ;
+  on hewie-came ( exit -- )  hewie-came-now ! ;
+  on stalker-blow ( n -- )  st-blow-now ! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       {: room mode sub cond hp hpmax kind alert came :}
       sender stalker =  sender s" story" actor-named = or  0= if  exit  then   \ (his own, or story's copy as we came in)
-      room st-room-now !  cond st-cond-now !  kind st-kind-now !  alert st-alert-now !  came st-came-now !  0 st-age !  -1 st-heard ! ;
+      room st-room-now !  mode st-mode-now !  sub st-sub-now !  cond st-cond-now !  kind st-kind-now !  alert st-alert-now !  came st-came-now !  0 st-age !  -1 st-heard ! ;
   on creature-doing ( slot room mode up -- )
       {: slot room mode up :}  slot 0 #creatures within 0= if  exit  then
       room slot cells cr-room + !  mode slot cells cr-mode + !  0 slot cells cr-age + ! ;
-  on panic ( stage level -- )  drop panic-stage ! ;
-  on fiona-doing ( mode sub cond cmd doing -- )  fiona-doing-now !  fiona-cmd-now !  drop drop  fiona-mode-now ! ;
+  on panic ( stage level -- )  cell>f f>s panic-level-now !  panic-stage ! ;
+  on fiona-doing ( mode sub cond cmd doing -- )  fiona-doing-now !  fiona-cmd-now !  drop  fiona-sub-now !  fiona-mode-now ! ;
+  on fiona-struck-by ( who -- )  struck-by-now ! ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       {: here act mode sub cond mood group cmdable near reach breakable way trust :}
-      act hewie-act-now !  cond hewie-cond-now !  reach hewie-reach-now !  cmdable hewie-cmdable-now !  near hewie-near-now !  breakable hewie-breakable-now ! ;
+      act hewie-act-now !  cond hewie-cond-now !  reach hewie-reach-now !  cmdable hewie-cmdable-now !  near hewie-near-now !  breakable hewie-breakable-now !
+      way hewie-way-now !  trust hewie-trust-now ! ;
   on panic-onset ( on -- )  onset ! ;
   on fiona-requested ( kind -- )  request-now ! ;
   on fiona-unseen ( on -- )  unseen-now ! ;
@@ -736,6 +1203,8 @@ behaviour placing
   on fiona-shaking ( n -- )  shook-now ! ;
   on fiona-message ( msg -- )   \ (her locked door's: not while Hewie is the one played)
       leaving @  shown-msg @ 0< 0= or  hewie-played? or if  drop exit  then  show ;
+  on stalker-ties ( scripted apart linked -- )  st-linked-now !  2drop ;
+  on grab-answer ( ok -- )  grab-ok-now !  0 grab-asked-now ! ;
   on item-event ( who ev var value -- )   \ (the room's own, else what every room does)
       leaving @ if  2drop 2drop exit  then
       ['] d.item hook ?dup if  >r 2over 2over r> execute if  2drop 2drop exit  then  then  item-used ;

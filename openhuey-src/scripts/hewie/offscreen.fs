@@ -31,7 +31,7 @@ defer when-idle ( -- )   ' noop is when-idle     \ Hewie_WhenIdle (hewie.mind)
     2dup 0 exit-way his-way !   \ (the half its exit opens onto)
     his-door !  body-room!  -1 body-tri!  0 his-at-door !  travelling-sub his-sub !  1 away!  0 ;
 \ arrived (in the room being played): seen, what he is alert to taken in
-: arrived ( -- )  0 away!  his-alert @ his-alert-was ! ;
+: arrived ( -- )  0 away!  his-alert @ his-alert-was !  his-door @ broadcast hewie-came ;
 \ the animation he comes in with when none: down, hurt, else standing
 : arrive-anim ( -- )  his-cond @ case  down-cond of  down-anim  endof  hurt-cond of  stand-hurt-anim  endof  >r stand-anim r>  endcase  play ;
 

@@ -139,6 +139,8 @@ void particles_command(int p, int v);
 void particles_place(int p, Vec3 at);
 void particles_rest(int p, int frames);
 void particles_butterflies_to(int p, Vec3 to, int count);
+/* butterflies: where they wander about now (an effect's +0x20, a sound there); 0 not butterflies */
+int particles_butterflies_at(int p, Vec3 *at);
 
 /* every system on a tick (the camera where it is: specks hide near it) */
 /* BloodSpray (HitEffect_Spawn): where a blow lands, 32 drops falling to the floor of triangle

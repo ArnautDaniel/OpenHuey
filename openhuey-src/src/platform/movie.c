@@ -578,8 +578,9 @@ static void ply_update(Ply *p, int ticks) {
             break;
         }
         if (!video_next(p)) {
-            /* the end: once the sound is out too */
-            if (p->adxHead != 1 || (p->rdPos == p->wrPos && (p->flac == NULL || p->flacDone))) {
+            /* the end: once the sound is out too (on the game clock - headless - the video's end:
+             * its sound drains in real time, which those runs outpace) */
+            if (sGameClock || p->adxHead != 1 || (p->rdPos == p->wrPos && (p->flac == NULL || p->flacDone))) {
                 p->stat = STAT_PLAYEND;
             }
             break;

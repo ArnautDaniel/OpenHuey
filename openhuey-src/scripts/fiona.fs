@@ -157,6 +157,7 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
     her-at self body-at vec-copy  self body-tri dup 0< if  drop  else  her-tri !  then ;
 : frame ( -- )
     hewie-played? if  run-frame exit  then  0 mate-was-run !
+    her-offered @ offer-stood !  0 her-offered !
     her-at her-was-at /vec move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
     look-cleared
     feel-the-panic
@@ -278,6 +279,7 @@ behaviour free
   \ examining (Progress_PlayerButtons): an action offered here, taken with the action button
   \ while she is free; a script of the room has her, or lets go; a message on screen
   on offer ( scene arg -- )
+      -1 her-offered !
       her-mode @ 0= her-doing @ 0= and  hands-off? 0= and  action-button? and
       sender alive? and  if  sender send take-offer  else  2drop  then ;   \ (its room gone meanwhile: nobody to answer)
   on scripted ( on -- )  idle  dup 0= her-scripted @ 0<> and if  script-over  then  her-scripted ! ;

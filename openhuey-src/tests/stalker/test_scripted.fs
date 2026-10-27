@@ -115,14 +115,15 @@ deb send activate  deliver  3 run-frames
 T{ held?  [: posed @ ;] his -> 0 0 }T
 debug:debilitas-out  5 run-frames
 
-testing a stalker as a scene's figure (Debilitas into slot 3): placed by the story, posed, shown there; started afresh, posed no more
+testing a stalker as a scene's figure (Debilitas into slot 3): his figure's model (DB0_200); placed by the story, posed, shown there; started afresh, posed no more; out, his own model again
+variable own-model  [: my-model @ ;] his own-model !
 2 3 $FF char-load  3 run-frames
-T{ 2 char-slot  [: in-game @ my-slot @ ;] his -> 3 0 3 }T
+T{ 2 char-slot  [: in-game @ my-slot @  figure-worn @  my-model @ own-model @ <> ;] his -> 3 0 3 -1 -1 }T
 2 her-tri 90 char-to-tri-facing  3 run-frames
-2 look-about-anim 1 0 char-anim-hold  3 run-frames
-T{ deb body-tri her-tri =  [: posed @  anim @ ;] his  [: my-model @ actor act.visible l@ ;] his -> -1 -1 look-about-anim 1 }T
+2 $9000 1 0 char-anim-hold  3 run-frames
+T{ deb body-tri her-tri =  [: posed @  anim @ ;] his  [: my-model @ actor act.visible l@ ;] his -> -1 -1 $9000 1 }T
 2 char-activate  3 run-frames
 T{ [: posed @ ;] his -> 0 }T
 3 0 char-remove  3 run-frames
-T{ [: my-model @ actor act.visible l@ ;] his -> 0 }T
+T{ [: my-model @ actor act.visible l@  figure-worn @  my-model @ own-model @ = ;] his -> 0 0 -1 }T
 test-summary

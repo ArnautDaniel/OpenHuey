@@ -6,6 +6,7 @@ USING: tester engine game-state actors messages common room-names game debug fla
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
 : deb! ( xt -- )  game:debilitas enter  execute  leave-actor ;
+-1 story:places-off !   \ (castle-1f-1 as its converted room: the machinery's host)
 free-play  castle-1f-1 room!  20 run-frames
 $B7 tri-center 0e tp-facing  5 run-frames  game:hewie send join-fiona  20 run-frames
 stalkers-blind state-flag-set  game:hewie body-tri debug:debilitas-tri  3 run-frames  [: 3 mode! ;] deb!  3 run-frames

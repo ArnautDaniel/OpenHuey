@@ -243,6 +243,8 @@ message hewie-met ( m0 m1 m2 m3 -- )           \ (Hewie) how often he leapt at e
 message fetch-this ( thing -- )                \ (Hewie) Fiona threw the ball: his to fetch (things.fs)
 message effect-place ( x y z -- )           \ (a room effect) moved there (f>cell)
 message effect-rest ( n -- )                \ (a flickering sprite) its rest before its next run
+message effect-to ( n x y z -- )            \ (butterflies, moths) off for that point (f>cell), n of them (0: as many)
+message effect-sound ( id bank -- )         \ (butterflies, moths) a sound played where they wander now
 message reflect-in ( slot -- )            \ (a reflection, effects.fs) its engine slot
 message keri-drop ( k tri x y z -- )         \ (things) the story's debris: a kind-9 thing carrying room object "keri<k>", falling from there (f>cell)
 message trap-place ( tri x y z -- )          \ (things) the story's trap: a kind-10 thing set down there (f>cell)
@@ -258,6 +260,7 @@ message hewie-doing ( here action mode sub cond mood group commandable near reac
                                              \ near enough for it (Hewie_FionaNearCommand), he can reach her
                                              \ (Hewie_FionaReachable), he may be broken off (Hewie_MayBreakOff), his
                                              \ half of the room (+0xF3668), his trust level
+message hewie-came ( exit -- )               \ broadcast as Hewie arrives in the room being played: the exit he came in by (-1 none: +0x14D4)
 message command ( code tri yaw x z -- )      \ Fiona's command (0x23 go there: the spot; floats f>cell)
 message reaction ( n -- )                    \ how her doing strikes him (Fiona_HewieReact's row: hewie-reaction)
 \ what she did, as it strikes Hewie: her "go", "come back", "come" / "stay", a scolding and a praise
@@ -335,6 +338,7 @@ message scene ( on -- )                      \ broadcast: a cutscene has the cha
 message scene-load ( room movie class cutscene -- )   \ (scenes) a room's scene made ready: its movie (a room string), how it shows, its cutscene; answered scene-ready
 message scene-ready ( movie? -- )             \ (to the place) ready: whether its movie is there to play
 message scene-run ( subtitles -- )            \ (scenes) played, the message as its subtitles ($FFFF none): scene-shot each new shot, scene-over at its end
+message scene-run-through ( subtitles -- )    \ (scenes) the same, never skipped, its last frame left up at its end (the game overs)
 message scene-shot ( shot -- )                \ (to the place) its shot now
 message scene-over ( -- )                     \ (to the place) over - played through or skipped - the world held, the camera back
 message scene-stop ( -- )                     \ (scenes) stopped at once (the place gone)

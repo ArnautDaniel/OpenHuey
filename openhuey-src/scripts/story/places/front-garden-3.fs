@@ -2,7 +2,7 @@
 \ starts: Fiona out of the cage in the opening, two figures in the trees; the box against the
 \ grate that Hewie helps her push; the breakable with magnesia; at night Hewie caught in the wire,
 \ freed; the refined magnesia he digs up. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms/front-garden-3.fs (converted from the game's).
+\ checking: story/rooms-ref/front-garden-3.fs (converted from the game's, not loaded).
 IN: story.places.front-garden-3
 USING: engine game-state actors messages common vectors facts flag-names story-names room-names floor-flags
     effects story.kit fiona.anims hewie.anims hewie-names scenes ;
@@ -23,13 +23,12 @@ $B constant cruel-msg            \ "I can't believe there are people out there t
 $C constant wire-bound-msg       \ "Unforgivable! A wire is bound to the poor animal. It is digging deeply into the dog's..."
 $D constant wire-snagged-msg     \ "The wire looks like it got snagged on something. So many wounds... So much blood... Yo..."
 0  constant go-now-msg           \ "Go, now. And don't get caught this time. Go..." (the freeing scene's subtitles)
-$8010 constant cant-carry-msg    \ "It's a . Unfortunately you can't carry anymore items."
-$8011 constant obtained-msg      \ "You've obtained ."
 
 \ ---- its own state ----
 own: tree-remarked
 own: stalkers-held      \ the stalkers kept away while Hewie is at his part (the grate)
 own: hewie-at-box       \ Hewie sitting by the box, waiting for her
+own: box-said          \ ... what she told him there this frame (1 come back, 2 on - through the hole)
 own: pushing            \ the push begun: Hewie goes through when she is by the box
 own: box-step           \ how far the push has gone (the two of them keep step by it)
 own: wire-noticed       \ Hewie has looked at what is about here (once a visit each)
@@ -53,12 +52,14 @@ $19 constant box-near-area   $1A constant hewie-box-area   $B constant figures-g
 0 constant whole-part   1 constant broken-part   2 constant grate-gone-part   \ (its parts: the breakable whole / in pieces, the grate pushed away)
 3 constant wire-hewie-part   4 constant wire-part                            \ (the wire with Hewie in it, the wire alone)
 0 constant breakable-group   1 constant solid-group   2 constant grate-group   3 constant dig-group   \ (nav groups)
+fg-3-breakable-broken whole-part broken-part  185.7e -0.1e -35.4e 5e 8e  breakable: the-box   \ (the crate by the wall)
+the-box shard-grey 0 $A shard-look  the-box 0.812e 0.687e 0.187e 0.312e shard-uv  the-box breakable-group frees-floor  the-box $2CF noise-from
 0 constant magnesia-fx   \ (the place's effect: the magnesia's sparkle)
 $2F constant grate-door
 $E constant figure-1-kind   $F constant figure-2-kind   3 constant figure-1   4 constant figure-2   \ (the figures in the trees, their slots)
 $1A constant castle-figure  \ (loaded for the way to the castle's door, exit 3)
 0 constant hewie-effort-sound   1 constant whine-sound   2 constant her-effort-sound   10 constant figure-cry-sound
-$88 constant breaking-sound   $2E constant go-for-it-call   \ (the common bank's)
+$2E constant go-for-it-call   \ (the common bank's)
 $92 constant magnesia   $95 constant refined-magnesia
 $200 constant opening-file   $205 constant freed-file   $8275 constant grate-file
 2 constant debilitas-kind-n   \ (the opening's stalker: Debilitas)
@@ -132,12 +133,8 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     night? if  night-specks  else  daylight  then  water-light
     grate-open fact? if  2 object-hide  3 object-hide  grate-gone-part show-part
     else  grate-group barred-floor floor-on  then
-    fg-3-breakable-broken fact? if
-        breakable-group keeps-people-off floor-off  whole-part hide-part  broken-part show-part
-        fg-3-magnesia fact? 0= if  magnesia-fx 185.7e 0.9e -35.4e flicker-at  then
-    else
-        breakable-group keeps-people-off floor-on  whole-part show-part  broken-part hide-part
-    then ;
+    the-box as-it-stands
+    the-box broken?  fg-3-magnesia fact? 0= and if  magnesia-fx 185.7e 0.9e -35.4e flicker-at  then ;
 
 \ ---- the box against the grate: Hewie through the hole, the two of them push ----
 : grate-pushed ( -- )   \ (the box on, the grate swung back and forth as it gives)
@@ -181,18 +178,18 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     -1 hewie-at-box !  hewie true noclip
     hewie $359 -90 $204 walk-move -30e 137e go-to
     hewie sit-down-anim play  hewie sit-anim play
+    0 box-said !
     begin
-        fiona box-near-area in-area?  started-now @ come-back-cmd = and if
-            0 hewie-at-box !  comes-back exit
-        then
-        fiona box-area in-area? if
-            started-now @ dup come-back-cmd =  over go-there-cmd = or  swap go-for-it-cmd = or if
-                0 box-step !  ['] push-starts start drop  through-the-hole exit
-            then
-            pushing @ if  through-the-hole exit  then
-        then
+        box-said @ 1 = if  0 hewie-at-box !  comes-back exit  then
+        box-said @ 2 = if  0 box-step !  ['] push-starts start drop  through-the-hole exit  then
+        fiona box-area in-area?  pushing @ and if  through-the-hole exit  then
         yield
     again ;
+: told-at-box ( -- )   \ (her command as he sits by the box: read as it comes, for him)
+    hewie-at-box @ 0= if  exit  then
+    fiona box-near-area in-area?  started-now @ come-back-cmd = and if  1 box-said ! exit  then
+    fiona box-area in-area?
+    started-now @ dup come-back-cmd =  over go-there-cmd = or  swap go-for-it-cmd = or  and if  2 box-said !  then ;
 : box ( -- )   \ (Fiona's act09: blocked - or, Hewie waiting by it, the push)
     hewie-at-box @ if  0 box-step !  -1 pushing !  she-pushes exit  then
     4 frames  world-frozen state!
@@ -214,9 +211,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
         hewie $37 -1 run-move path-to  hewie sit-a-while-anim play
         fiona-half-hidden state?  fiona held? 0= or if
             refined-magnesia item-full? 0= if  10 trust+  then
-            refined-magnesia item-named
-            refined-magnesia item-full? if  cant-carry-msg say
-            else  fg-3-refined-magnesia fact!  refined-magnesia 1 give-item  refined-magnesia show-item-tab  fanfare  obtained-msg say  then
+            refined-magnesia fg-3-refined-magnesia -1 takes-up
         then
     then
     hewie 238e -135e turn-to-xz
@@ -243,8 +238,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     cruel-msg say  freed-file give-file  stalkers-stay state-off ;
 : whines ( -- )   \ (now and then, from the wire)
     in-wire? 0= if  exit  then
-    -1 whine-frames +!  whine-frames @ 0> if  exit  then
-    30 chance? if  whine-sound room-bank hewie sound-by  180  else  60  then  whine-frames ! ;
+    whine-frames whine-due? if  whine-sound room-bank hewie sound-by  then ;
 
 \ ---- the movie replayed (the extras: its scripts held) ----
 : replay-freed ( -- )
@@ -268,18 +262,8 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
 : wire-snagged ( -- )
     fiona wait-move  fiona 228.1e 77.57e turn-to-xz
     fiona crouch-down-anim 10 play-blend  wire-snagged-msg say  fiona crouch-up-anim 10 play-blend ;
-: pick-magnesia ( -- )
-    fiona wait-move  fiona 185.7e -35.4e turn-to-xz
-    in-panic? if  exit  then
-    fiona pick-up-anim play  4 frames  magnesia item-named
-    magnesia item-full? if  cant-carry-msg say
-    else  fg-3-magnesia fact!  magnesia-fx effect-off  magnesia 1 give-item  magnesia show-item-tab  fanfare  obtained-msg say  then
-    fiona up-from-pick-anim play ;
-: breaks ( -- )   \ (a blow in the breakable's place: in pieces, the magnesia in it shows)
-    fg-3-breakable-broken fact!  breakable-group keeps-people-off floor-off  whole-part hide-part  broken-part show-part
-    $80303030 0 $A  185.7e -0.1e -35.4e  0.812e 0.687e 0.187e 0.312e  0e  shards
-    breaking-sound common-bank 185.7e -0.1e -35.4e sound-there  $40 $2CF room-noise
-    magnesia-fx 185.7e 0.9e -35.4e flicker-at ;
+: pick-magnesia ( -- )  magnesia fg-3-magnesia magnesia-fx 185.7e -35.4e picks-up ;
+: magnesia-shows ( -- )  magnesia-fx 185.7e 0.9e -35.4e flicker-at ;   \ (the box broken: the magnesia in it)
 : spots ( -- )
     night? if
         in-wire? if  fiona hewie 10 90 touches-facing? if  ['] frees-him unhurried offer  then
@@ -291,10 +275,10 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     fiona waking-area in-area?  fg-3-flag1 fact? 0= and if  ['] waking unhurried offer  then
     fiona cold-area in-area?  fg-3-flag2 fact? 0= and if  ['] cold unhurried offer  then
     fiona fountain-area 50 faces-area? if  ['] fountain unhurried offer  then
-    fg-3-breakable-broken fact? if
+    the-box broken? if
         fg-3-magnesia fact? 0=  fiona 185.7e 0.9e -35.4e 5e 5e touches? and if  ['] pick-magnesia calm-only offer  then
     else
-        185.7e -0.1e -35.4e 5e 8e struck-in? if  breaks  then
+        the-box breaks? if  magnesia-shows  then
     then ;
 : hewie-cues ( -- )   \ (her gestures to him: to the box, for the dig)
     hewie-in?  hewie-cond-now @ down-cond <> and  hewie held? 0= and 0= if  exit  then
@@ -335,10 +319,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     then ;
 
 \ ---- its ways out, its cameras ----
-: leaves-by ( area exit -- )   \ (the one played, in the area, free: through)
-    {: area ex :}  player held? if  exit  then  player area in-area? 0= if  exit  then
-    ex exit-open? 0= if  exit  then  ex exit-door doors:door-held? if  exit  then  ex take-exit ;
-: ways-out ( -- )
+: ways ( -- )
     0 0 leaves-by  1 1 leaves-by  gate-area 2 leaves-by
     fiona to-castle-area in-area?  fiona held? 0= and if  castle-figure figure-1 figure-in  3 take-exit  then
     fiona near-yard-area entered? if  1 prepare-exit  then
@@ -354,15 +335,11 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     stalkers-held @  hewie held? 0= and if  0 stalkers-held !  stalkers-stay state-off  then ;
 
 \ ---- she comes in by an exit: placed there, its camera ----
-: player-came ( -- )
-    came-by @ 0 = if  player 0 at-exit  1 0 player-camera  then  0 1 0 exit-camera
-    came-by @ 1 = if  player 1 at-exit  yard-camera player-camera  then  1 yard-camera exit-camera
-    came-by @ 2 = if  player 2 at-exit  5 4 player-camera  then  2 5 4 exit-camera
-    came-by @ 3 = if  player 3 at-exit  3 2 player-camera  then  3 3 2 exit-camera ;
+: player-came ( -- )  0 1 0 way-in  1 yard-camera way-in  2 5 4 way-in  3 3 2 way-in ;
 
 : each-frame ( -- )
     events-held state? if  exit  then
-    ways-out  cameras  back-to-cage  hewie-cues  stalkers-back  figures-near  whines  hewie-looks  spots ;
+    ways  cameras  back-to-cage  told-at-box  hewie-cues  stalkers-back  figures-near  whines  hewie-looks  spots ;
 : person-in ( i -- )
     fiona-p = if  events-held state? if  ['] replay-freed start drop exit  then  player-came  then ;
 : went ( -- )   \ (leaving: Hewie still in the wire out of the game, the first remarks made, the stalkers let go)

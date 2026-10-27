@@ -71,7 +71,7 @@ T{ [: awake @ ;] of7 -> -1 }T
 d-her constant d0
 T{ [: [: running @ 3 = ;] of7 ;] 900 soon -> -1 }T
 T{ d-her d0 < -> -1 }T
-T{ [: [: move-mode @ 8 = ;] of7 ;] 300 soon  [: 8 creature-action? ;] in-room-actor -> -1 -1 }T
+T{ [: [: move-mode @ 8 = ;] of7 ;] 300 soon  [: 8 story.kit:creature-moving? ;] in-room-actor -> -1 -1 }T
 T{ [: game:fiona h7 near-it? ;] 300 soon -> -1 }T   \ (the story's 0x58: touching it)
 
 : her ( xt -- x )  game:fiona enter  execute  leave-actor ;
