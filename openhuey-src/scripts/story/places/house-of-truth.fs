@@ -6,7 +6,7 @@
 \ these: `own-reset  truth-owns owns !`.
 IN: story.places.house-of-truth
 USING: engine game-state actors messages common facts flag-names story-names room-names stalker-names
-    floor-flags story.kit stalker.anims ;
+    floor-flags story.kit stalker.anims fiona.anims fiona.sounds ;
 
 own-reset
 
@@ -107,3 +107,18 @@ $31 constant quake-sound   $87 constant quake-bank
 : tremors ( -- )   \ (as she comes in)
     ht1f-9-flag2 fact? 0= if  exit  then
     over-music-f fact?  found-file-257 fact? 0= and if  ['] violent-tremors  else  ['] slight-tremors  then  start drop ;
+
+\ ---- the holes in the walls (1F-2, 1F-10): in at her yes, by the forced way ($FE: off-map-27's
+\ crawl); out of one into the room (her slide, the dark lifting) ----
+$FE constant hole-way
+fvariable hole-x   fvariable hole-z   variable hole-msg'
+: into-hole ( -- )   \ (an activity: turned to it, a close look, asked)
+    stalkers-stay state!  fiona wait-move  fiona hole-x f@ hole-z f@ turn-to-xz  fiona look-close-anim 10 play-blend
+    hole-msg' @ yes? if
+        15 screen:to-black fade  wait-fade  slide-sound common-bank fiona sound-by
+        world-held state!  hole-way take-exit
+    else  stalkers-stay state-off  then ;
+: hole-offer ( msg F: x z -- )  hole-z f!  hole-x f!  hole-msg' !  ['] into-hole unhurried offer ;
+: out-of-hole ( -- )   \ (an activity)
+    fiona hold  fiona wait-move  camera-restart  slide-sound common-bank fiona sound-by  1 map-page
+    15 screen:from-black fade  wait-fade  stalkers-stay state-off ;

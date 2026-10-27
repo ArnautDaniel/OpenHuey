@@ -7,9 +7,9 @@
 \ checking: story/rooms-ref/house-of-truth-1f-10.fs (converted from the game's, not loaded).
 IN: story.places.house-of-truth-1f-10
 USING: engine game-state actors messages common facts room-names flag-names story-names items.names
-    story.kit fiona.anims fiona.sounds stalker.anims keys ;
+    story.kit story.places.house-of-truth fiona.anims fiona.sounds stalker.anims keys ;
 
-own-reset
+own-reset  truth-owns owns !
 
 0 constant hole-msg        \ "A pungent odor and chapped, dry air coming from inside the hole wreak havoc on the sens..." (YES / NO)
 own: rung                  \ the first hung thing last rang "on" (they ring on and off in turn)
@@ -17,7 +17,7 @@ own: steady-on             \ its steady sound started
 own: hole-barked           \ Hewie has barked at the hole (once a visit)
 0 constant camomile-fx   $A constant hiding-area   3 constant clock-area   6 constant hole-area
 8 constant steady-sound   $A constant first-ambient   4 constant ring-on   5 constant ring-off
-$24 constant searches-var   $FE constant hole-way   $803 constant crouch-step   $207 constant hauled-step
+$24 constant searches-var   $803 constant crouch-step   $207 constant hauled-step
 4 constant hauled-anim
 
 \ ---- the hiding place ----
@@ -50,17 +50,6 @@ $24 constant searches-var   $FE constant hole-way   $803 constant crouch-step   
     searches-var mansion-odds chance?  2 creature-moving? or if  ['] found-there start drop  else  120 summoner-sooner  then
     searches-var var@ 1+ searches-var var! ;
 
-\ ---- the hole: in, by the forced way; out of it here ----
-: into-hole ( -- )
-    stalkers-stay state!  fiona wait-move  fiona 60e 55e turn-to-xz  fiona look-close-anim 10 play-blend
-    hole-msg yes? if
-        15 screen:to-black fade  wait-fade  slide-sound common-bank fiona sound-by
-        world-held state!  hole-way take-exit
-    else  stalkers-stay state-off  then ;
-: out-of-hole ( -- )
-    fiona hold  fiona wait-move  camera-restart  slide-sound common-bank fiona sound-by  1 map-page
-    15 screen:from-black fade  wait-fade  stalkers-stay state-off ;
-
 \ ---- what she may do here ----
 : pick-camomile ( -- )
     fiona wait-move  fiona 29.7e 32.54e turn-to-xz  in-panic? if  exit  then
@@ -70,7 +59,7 @@ $24 constant searches-var   $FE constant hole-way   $803 constant crouch-step   
         stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
     then
     fiona clock-area in-area?  fiona 90 50 heading? and if  ['] save-clock calm-hewie-up offer  then
-    fiona hole-area in-area?  fiona 0 50 heading? and if  ['] into-hole unhurried offer  then
+    fiona hole-area in-area?  fiona 0 50 heading? and if  hole-msg 60e 55e hole-offer  then
     ht1f-10-camomile fact? 0=  fiona 29.7e 5.25e 32.54e 5e 5e touches? and if  ['] pick-camomile calm-only offer  then ;
 
 \ ---- Hewie: his bark at the hole (once a visit, now and then), his look up there ----
