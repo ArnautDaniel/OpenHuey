@@ -379,6 +379,7 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
 $8010 constant cant-carry-msg   \ "It's a . Unfortunately you can't carry anymore items." (the item named)
 $8011 constant obtained-msg     \ "You've obtained ."
 $8012 constant obtained-2-msg   \ (the same, for a thing that isn't one of many)
+$8019 constant used-msg         \ "Used ." (the item named)
 : item-named ( item -- )  0 swap message-param! ;   \ (the next system message names it)
 : subscreen ( -- id )  s" subscreen" actor-named ;
 $8C constant fanfare-scene
@@ -463,6 +464,9 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
     st-kind-now @  dup debilitas-kind = over debilitas-6-kind = or swap debilitas-7-kind = or ;
 : partner ( -- id | -1 )  story.words:slot2 @ ;   \ the story's stalker (its slot 2): loaded, in the game or not
 : partner-kind ( -- kind )  story.words:slot2-kind @ ;
+: daniellas-model ( -- model | -1 )  partner-kind daniella-kind = if  daniella-kind cast-model  else  -1  then ;   \ (the stalker loaded Daniella)
+: hands-empty ( -- )  daniellas-model dup 0< if  drop exit  then  false false story.words:daniella-parts ;   \ (what she holds put away)
+: hands-back ( -- )  daniellas-model dup 0< if  drop exit  then  story.words:daniella-one ;   \ (what she holds shown again)
 : stalker-to ( room tri -- )  stalker dup 0< if  drop 2drop exit  then  send stalker-in ;   \ (into the game there)
 : his-own-time ( -- )  -1 s" summoner" actor-named send summoner-cooldown ;   \ (the summoner's wait: his own kind's)
 : summoner-sooner ( secs -- )  s" summoner" actor-named send summoner-cooldown-less ;

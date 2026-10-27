@@ -139,7 +139,8 @@ moving about, his alert 4; `door-for-him` opens a shut door he came by; `finds-h
 spot, Debilitas looking in, the others seeing her; the place's `found-her`, `came-while-hidden`);
 a placed object back as it was set (`object-reset`); the push-boxes (`obstacle-in`,
 `obstacle-fixed`, `obstacle-on-tri?`, `obstacle-kept`, `obstacle-keep`); a scene's lit quad over the
-picture (`lit-over-all`); an exit's door held (`exit-held?`: none, not); dust of a kind and colour (`dust-of`); an activity
+picture (`lit-over-all`); an exit's door held (`exit-held?`: none, not); Daniella's held things away or back
+(`hands-empty`, `hands-back`); "Used ..." (`used-msg`); dust of a kind and colour (`dust-of`); an activity
 stopped by its word (`stop-doing`); by one of the forced ways
 (`forced-way?`: $80 .. the last given - not a room entered by none, -1); one triangle's floor flags
 (`floor-tri-on`); before an exit's door (`before-door?`); within reach across, whatever the height
@@ -201,6 +202,14 @@ Places, each with its test in `tests/places/`:
 - castle-2f-4, the little TV room ($31): brought in by the forced way from the bedroom's TV, her
   nightmare (a scene: the lit quad over the picture and her layer and shadow by its shots), out by
   the way loaded ahead; the TV, the fan, the replay.
+- castle-2f-6, the study ($22): the desk locked (her blows on it), the Study Key used at it (the
+  drawer, the Lunar Refractor; the stalker stronger, the summoner on), the board (the Luminessants),
+  the shelves, the massive book and the desktop, the Lavender, Hewie's bark at the desk and his
+  looks up, the far view's depth.
+- castle-2f-9, the stair landing ($5): while the chapter has Daniella the maid, her cleaning here (on
+  her knees scrubbing; spoken to she stands - "It's cleaning time now" - then her strangeness; taken
+  as she leaves), her steady sound, Hewie wary of her and his look; the first time in, the screen
+  back.
 - castle-2f-10, the room of the four boxes ($17): the boxes pushed onto their squares (each fixed;
   all four, the scene - the way opened, the doors set anew - and out by the forced way), where they
   stand kept as she leaves, the replay.
