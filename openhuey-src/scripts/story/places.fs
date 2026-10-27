@@ -2,6 +2,7 @@
 \ here replaces its room's converted scripts (story/rooms/).
 IN: story.places
 USING:
+    story.places.old-mansion-b1-2
     story.places.old-mansion-2f-8
     story.places.old-mansion-1f-12
     story.places.old-mansion-2f-6

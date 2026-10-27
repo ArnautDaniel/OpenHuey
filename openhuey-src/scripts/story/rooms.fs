@@ -11,7 +11,7 @@ USING:
     story.rooms.off-map-33 story.rooms.off-map-34 story.rooms.off-map-35
     story.rooms.off-map-36 story.rooms.off-map-37
     story.rooms.old-mansion-1f-8
-    story.rooms.old-mansion-b1-2 story.rooms.old-mansion-b1-3
+    story.rooms.old-mansion-b1-3
     story.rooms.old-mansion-b1-4 story.rooms.old-mansion-b1-5 story.rooms.old-mansion-1f-15
     story.rooms.off-map-5a
     story.rooms.old-mansion-3f-1
