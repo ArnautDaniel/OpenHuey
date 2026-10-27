@@ -18,7 +18,7 @@ USING:
     story.rooms.off-map-64 story.rooms.off-map-65
    
     story.rooms.house-of-truth-1f-1 story.rooms.house-of-truth-2f-1
-    story.rooms.house-of-truth-2f-2 story.rooms.house-of-truth-b1-1 story.rooms.house-of-truth-b1-2 story.rooms.house-of-truth-1f-2
+    story.rooms.house-of-truth-2f-2 story.rooms.house-of-truth-1f-2
     story.rooms.house-of-truth-1f-3 story.rooms.house-of-truth-1f-4 story.rooms.house-of-truth-1f-5 story.rooms.house-of-truth-1f-6 story.rooms.house-of-truth-1f-7 story.rooms.house-of-truth-1f-8
     story.rooms.house-of-truth-1f-9
     story.rooms.house-of-truth-1f-10 story.rooms.water-tower-1f-1 story.rooms.water-tower-2f-1

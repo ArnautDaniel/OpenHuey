@@ -34,8 +34,9 @@ create heel-at /vec allot
     r> him-model act.visible l!
     along? if  1 model cast-as  then ;
 
-: place-on ( room tri -- )   \ (Hewie_PlaceInRoom: triangle -1 is that room, on none)
-    dup 0< if  0e 0e 0e  else  dup tri-center  then  body-place  model actor-settle ;
+: place-on ( room tri -- )   \ (Hewie_PlaceInRoom: triangle -1 is that room, on none; in another room
+    over room-id <>  over 0< or if  0e 0e 0e  else  dup tri-center  then   \ only his triangle - its mesh isn't this one)
+    body-place  model actor-settle ;
 behaviour hewie-own
   on spawned ( -- )
       6 0 do  16 i cells his-skill + !  loop   \ (Hewie_LoadState: his skills at fetching, middling)
