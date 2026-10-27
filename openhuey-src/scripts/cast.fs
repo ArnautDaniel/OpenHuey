@@ -22,10 +22,17 @@ USING: engine game-state actors messages common vectors facts floor-flags paths 
         >r 0 0 r>
     endcase ;
 9 constant hanging-lorenzo   13 constant fiona-double   14 constant crow   15 constant crow-2
-18 constant fiona-double-2   26 constant rabbit   33 constant kind-33
-\ the hard setting's textures (Kind09_ModelFiles: Lorenzo's hanging figure, LRM_000H)
+18 constant fiona-double-2   26 constant rabbit   32 constant kind-32   33 constant kind-33
+\ their textures when not the model's own: the hard setting's (Kind09_ModelFiles: Lorenzo's
+\ hanging figure, LRM_000H); Fiona's doubles' and kind 32's _200 models wear their _000 textures
+\ (Pursuer_ModelFiles' lists: FIN_200.PCK with FIN_000.TEX - FIN_200.TEX is another look)
 : kind-textures ( kind -- addr len | 0 0 )
-    hanging-lorenzo = hard-mode? and if  s" O_LRM/LRM_000H"  else  0 0  then ;
+    case
+        hanging-lorenzo of  hard-mode? if  s" O_LRM/LRM_000H"  else  0 0  then  endof
+        fiona-double of  s" O_FIN/FIN_000"  endof   fiona-double-2 of  s" O_FIW/FIW_000"  endof
+        kind-32 of  s" O_FIM/FIM_000"  endof
+        >r 0 0 r>
+    endcase ;
 \ the kinds' motion tables - their fades (each model class's SecondaryMotion; the plain model's
 \ kinds have none): Fiona's doubles hers, the crows', Lorenzo's hanging figure's, kind 33's
 \ (the executable's tables by name: exe-table, motion-table)

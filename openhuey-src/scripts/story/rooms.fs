@@ -3,7 +3,7 @@ IN: story.rooms
 USING:
    
     story.rooms.off-map-0d
-    story.rooms.castle-b1-1
+   
    
    
     story.rooms.off-map-27
