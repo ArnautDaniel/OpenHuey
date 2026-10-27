@@ -16,7 +16,6 @@ own-reset
 2 constant refreshed-msg   \ "Ah, that was quite refreshing."
 3 constant locked-msg      \ "The door is locked..."
 4 constant handprints-msg  \ "There are lots of grimy handprints littering the knob."
-$40A8 constant recovery-doc-msg   \ "'Recovery Points' Search a recovery point to calm Fiona from a state of pan..."
 
 \ ---- its own state (a visit) ----
 own: rested   own: locked-remarked
@@ -26,8 +25,8 @@ own: crawl         \ her crawl's frames: the curtain goes by them
 
 \ ---- the room's things ----
 0 constant camomile-fx   1 constant found-fx   0 constant her-motions   1 constant his-motions
-0 constant curtain-sound   1 constant calm-sound   2 constant key-sound   $84 constant calmed-sound
-1 constant locked-exit   $A constant smudged-door   $608 constant key-turn-anim   $A8 constant recovery-doc
+0 constant curtain-sound   1 constant calm-sound   2 constant key-sound
+1 constant locked-exit   $A constant smudged-door   $608 constant key-turn-anim
 $A constant toilets-area   $B constant water-area   $C constant shower-area
 $F constant search-var
 : daylight ( -- )  c2f-3-flag1 fact? 0= if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then ;   \ (the day's light)
@@ -103,18 +102,9 @@ $F constant search-var
 
 \ ---- what she may do or say here ----
 : toilets ( -- )  fiona wait-move  toilets-msg say ;
-: the-water ( -- )   \ (a recovery point: once a visit it calms her; its document the first time)
+: the-water ( -- )   \ (a recovery point: once a visit it calms her)
     rested @ if  fiona wait-move  refreshed-msg say exit  then
-    stalkers-stay state!  fiona her-motions motions-for  fiona wait-move
-    fiona $89 180 -9.659e 4.88e walk-to  1 25e 10e 0e 0e shot  water-msg say
-    fiona use-motions  fiona room-motion 4 + 10 start-blend  22 frames  calm-sound room-bank fiona sound-by  fiona wait-anim
-    $E4 ease-panic  fiona send calm-reset  3 avoid-prompt  -1 rested !
-    calmed-sound common-bank fiona sound-by  30 frames
-    got-doc-recovery fact? 0= if
-        15 screen:to-dim fade wait-fade  recovery-doc-msg say  15 screen:from-dim fade wait-fade
-        got-doc-recovery fact!  recovery-doc filed  4 frames
-    then
-    shot-off  stalkers-stay state-off ;
+    -1 rested !  water-msg her-motions calm-sound $89 180 -9.659e 4.88e recovery-point ;
 : tries-door ( -- )
     locked-remarked @ 0=  chased? or  in-panic? or if  locked-exit true locked-msg tries-locked  -1 locked-remarked !  exit  then
     fiona wait-move  fiona $95 -105 -58.5e 9.5e walk-to

@@ -531,6 +531,8 @@ create look-bytes 16 allot
 : depth-range ( F: a b c d -- )
     look-bytes 12 + sf!  look-bytes 8 + sf!  look-bytes 4 + sf!  look-bytes sf!  depth-slot look-bytes 16 look-set ;
 : depth-range-off ( -- )  depth-slot 0 0 look-set ;
+: fog ( a b F: near far -- )  true story.words:fog ;   \ (the picture fogged: colours a and b, near to far)
+: fog-off ( -- )  0 0 false 0e 0e story.words:fog ;
 : screen-blend ( rgba mode -- )  look-bytes 4 + c!  look-bytes l!  blend-slot look-bytes 5 look-set ;
 : screen-blend-off ( -- )  blend-slot 0 0 look-set ;
 : glow-at ( k rgba F: x y z size -- )  effects:glow swap effect! ;   \ effect k: a glow (Effect737D0)
@@ -672,6 +674,10 @@ create spot-xts #activities cells allot
     {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
     hewie hewie.anims:bark-tense-anim 10 play-blend  hewie hewie.anims:bark-tense-anim 0 play-blend
     hewie hewie.anims:bark-tense-anim 0 play-blend  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
+: hewie-sits-refusing ( F: x y z -- )   \ (the rooms' shared $93: turned to it, sitting down, his head turned away, staying put)
+    {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
+    hewie hewie.anims:sit-down-anim 10 play-blend  hewie hewie.anims:refuse-anim 0 play-blend
+    hewie hewie.anims:sit-anim 0 start-blend  10 frames  hewie keep  hewie send hewie-stay ;
 : notices? ( addr odds F: x y z r h -- flag )   \ (once a visit - addr its cell: Hewie well, at her command,
     {: a odds F: x y zz r h :}                  \ not chased, centred in the zone - by the odds)
     a @  hewie-in? 0= or  hewie-cond-now @ well-cond <> or  chased? or  hewie-cmdable-now @ 0= or if  false exit  then
@@ -698,6 +704,7 @@ create spot-xts #activities cells allot
 : obstacle-model-home ( i n -- )  s" obstacles" actor-named send obstacle-model-to-spot ;   \ (model "oshi0n" put where box i's spot was kept)
 : floor-tri-on ( tri flags -- )  true -rot nav-tri-flags! ;   \ (one triangle's floor: who it keeps off)
 : closed-off ( door -- )  dup doors-actor send close-off  lock ;   \ gone for good: its exits use another door
+: closed-off? ( door -- flag )  story.words:door-not-closed-off? 0= ;   \ (closed off for good)
 : door-as ( door from -- )  doors-actor send copy-door ;   \ door takes on the other's open mark, lock and closing off
 : door-for ( door slot on -- )  doors-actor send lock-for ;   \ locked against the story slot's kind of character, or not
 : reopened ( door -- )  dup doors-actor send reopen  unlock ;  \ back again, unlocked (its exits theirs again)
@@ -1017,6 +1024,22 @@ create replay-acts
     2 ease-panic  6 calm-her  $1E recover
     came-while-hidden @  stalker-in? 0= and if  0 came-while-hidden !  1 avoid-prompt  then ;
 
+\ ---- a recovery point (water to drink): walked to it, a sip, calmed - the room's motion 4 of her
+\ motions' file, its calm sound; the first time ever, its document. Once a visit: the room keeps that ----
+$84 constant calmed-sound   $40A8 constant recovery-doc-msg   $A8 constant recovery-doc
+: recovery-point ( msg file sound tri deg F: x z -- )   \ (msg: her question as she reaches it)
+    {: msg file snd tri deg F: x z :}
+    stalkers-stay state!  fiona file motions-for  fiona wait-move
+    fiona tri deg x z walk-to  1 25e 10e 0e 0e shot  msg say
+    fiona use-motions  fiona room-motion 4 + 10 start-blend  22 frames  snd room-bank fiona sound-by  fiona wait-anim
+    $E4 ease-panic  fiona send calm-reset  3 avoid-prompt
+    calmed-sound common-bank fiona sound-by  30 frames
+    got-doc-recovery fact? 0= if
+        15 screen:to-dim fade wait-fade  recovery-doc-msg say  15 screen:from-dim fade wait-fade
+        got-doc-recovery fact!  recovery-doc filed  4 frames
+    then
+    shot-off  stalkers-stay state-off ;
+
 \ ---- a hiding place (the rooms' cupboards and wardrobes): she walks to it, slips in and lies low,
 \ calming; out by the circle button - or, found (or panicking, or he is in), hauled out. The room's
 \ motions for it (her file): 4 the walk there, 5 in, 1 lying low, 2 out, 3 hauled out; his (his
@@ -1033,6 +1056,10 @@ create replay-acts
     fiona 2 hid-motion 5 start-blend8  5 frames  fiona.sounds:slide-sound common-bank fiona sound-by  fiona wait-anim
     fiona false noclip ;
 variable hide-unseen   \ (the hiding place next: she isn't drawn while in it - hides-in clears it)
+\ the old mansion's hiding places: a mandragora she carries cries out as she settles (the room's sound)
+variable hide-shriek   -1 hide-shriek !   \ (the hiding place next: that sound, -1 none - hides-in clears it)
+: mandragora? ( -- flag )  false  $1D $18 do  i items:items-of 0> or  loop ;   \ (the White .. Purple Mandragora)
+: shrieks ( -- )  hide-shriek @  -1 hide-shriek !  dup 0< mandragora? 0= or if  drop exit  then  room-bank fiona sound-by ;
 : hides-in ( file tri deg cam F: x z -- )   \ (her motions' file; where she slips in from, facing it; the
     {: file tri deg cam F: x z :}           \ room's camera set while she's in, -1 hers kept)
     stalkers-stay state!  0 came-while-hidden !  fiona file motions-for  fiona wait-move  fiona use-motions
@@ -1040,6 +1067,7 @@ variable hide-unseen   \ (the hiding place next: she isn't drawn while in it - h
     fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by  fiona 5 hid-motion 10 start-blend8  fiona wait-anim
     fiona 1 hid-motion 10 start-blend  fiona false noclip
     stalkers-stay state-off  fiona-hidden state!  0 found-her !  0 avoid-prompt
+    shrieks
     cam 0< 0= if  cam -1 fixed-camera  then   \ (the room's own, following nobody: the original's self-who)
     hide-unseen @ if  fiona false shown  0 hide-unseen !  then
     begin
@@ -1053,6 +1081,7 @@ variable hide-unseen   \ (the hiding place next: she isn't drawn while in it - h
 \ often he has come: 25, 50, 75 in 100), a creature moving about giving her away; if not, he's off sooner
 : came-on-her? ( -- flag )  fiona-hidden state?  dup came-while-hidden ! ;   \ (as he comes in: she is hidden)
 : finding-odds ( var -- pct )  var@ case  1 of 25 endof  2 of 50 endof  3 of 75 endof  >r 0 r>  endcase ;
+: mansion-odds ( var -- pct )  var@ case  0 of 10 endof  1 of 25 endof  2 of 50 endof  3 of 75 endof  >r 0 r>  endcase ;   \ (the old mansion's: 10 the first time)
 : searches ( var file xt -- )   \ (xt: his going to her, found - started; his comings counted; file -1: none)
     {: v file xt :}  debilitas?  file 0< 0= and if  stalker file motions-for  then
     v finding-odds will-find? if  xt start drop  else  120 summoner-sooner  then  v var@ 1+ v var! ;
