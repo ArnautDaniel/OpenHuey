@@ -23,7 +23,7 @@ $9002 constant hopping   $9003 constant hopping-back   $D constant cart-area
     hopper-slot figure-on  hopper-slot 6.38e 0e -112.79e 170e figure-at  hopper-slot hopping 1 0 figure-play ;
 : struck? ( -- flag )  6.38e 0e -112.79e 5e 10e struck-in? ;
 : lashes ( -- )   \ (out of patience: her fright up, the stalker told)
-    panic-stage @ 0= if  1 panic-to  else  15 fright+  then  0 stalker-order
+    panic-stage @ 0= if  1 panic-to  else  15 threat  then  0 stalker-order
     lash-sound room-bank hopper-slot figure sound-by ;
 : hopping-about ( -- )
     hopper-in

@@ -120,6 +120,7 @@ strings: old-mansion-3f-1$  EV0017  EV0017\EV0017.SFD  EV0018  EV0018\EV0018.SFD
      a_splinter19  a_splinter20  a_splinter21  a_splinter22  a_splinter23  O_DNL\DNL_203.TEX
      O_DNL\DNL_10A.MTN  a_buki ;  old-mansion-3f-1 room-strings!
 strings: old-mansion-2f-11$ step  book0 ;  old-mansion-2f-11 room-strings!
+strings: old-mansion-2f-12$ dial0  dial1  dial2  dial3  dial4  dial5 ;  old-mansion-2f-12 room-strings!   \ (its own: kDialNames)
 strings: old-mansion-3f-2$ DE0024  DE0024\DE0024.SFD  DE0025  DE0025\DE0025.SFD  DE1025
     DE1025\DE1025.SFD  DE2025  DE2025\DE2025.SFD  body  bowgun  dai  gen_0  gen_1  head  joint
     left_0  left_1  left_2  pol_detach  pol_detach1  right_0  right_1  right_2 ;  old-mansion-3f-2 room-strings!

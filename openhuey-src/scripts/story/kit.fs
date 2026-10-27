@@ -782,6 +782,7 @@ create arrows-held 4 cells allot   \ (frames each arrow has been held: the pad's
     4 0 do  i cells arrows-held +  i arrow-keys key-down? swap key-down? or if  1 swap +!  else  0 swap !  then  loop ;
 : arrow-repeat? ( i -- flag )   \ (pressed, then again after 12 frames held, every 2: gMenuRepeat)
     cells arrows-held + @  dup 1 = if  drop true exit  then  dup 13 < if  drop false exit  then  13 - 2 mod 0= ;
+: arrow-pressed? ( i -- flag )  cells arrows-held + @ 1 = ;   \ (just pressed this frame: gMenuPressed)
 : dial-angle ( var base -- ) ( F: -- rad )  swap var@ 30 * + s>f deg>rad ;
 : dial-set ( addr len var base -- )  {: a n var base :}  a n placed-here? 0= if  exit  then  var base dial-angle a n turn-y object! ;
 : dial-turns ( addr len var base -- there? )   \ (a degree a frame toward its number)
