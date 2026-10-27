@@ -132,14 +132,17 @@ own blow in a zone (`her-blow-in?`); hung things - the chimes she brushes walkin
 `chimes-rest`: hangers_swing) and one struck swaying away from who struck it till still
 (`sway-start`, `sways`); a hiding place - the rooms' usual cupboard (`hides-in`: her motions'
 file, the spot she slips in from, the camera while in; the room's motions 4 the walk there, 5 in,
-1 lying low, 2 out, 3 hauled out; out by the circle button, `slips-out`, or found, panicking or
+1 lying low, 2 out, 3 hauled out; the room's camera while she's in, following nobody; out by the circle button, `slips-out`, or found, panicking or
 him in, `hauled-out`; each frame `hidden-calm`), its stalker (`came-on-her?` as he comes in;
 `searches`: the odds by a story variable - `finding-odds` 25, 50, 75 - and `will-find?`, a creature
 moving about, his alert 4; `door-for-him` opens a shut door he came by; `finds-her-at`: to the
 spot, Debilitas looking in, the others seeing her; the place's `found-her`, `came-while-hidden`);
 a placed object back as it was set (`object-reset`); the push-boxes (`obstacle-in`,
-`obstacle-fixed`, `obstacle-on-tri?`, `obstacle-kept`, `obstacle-keep`); a scene's lit quad over the
-picture (`lit-over-all`); an exit's door held (`exit-held?`: none, not); Daniella's held things away or back
+`obstacle-fixed`, `obstacle-on-tri?`, `obstacle-kept`, `obstacle-keep`); a reflecting quad (`glass-in`: over the whole picture or on the quad, its strength's top bits side
+panels - `window-panels`, `door-panels`; `window-in`, `door-glass-in`, `window-over-all`), a scene's
+lit quad over the picture (`lit-over-all`); she weak since the chapter turned, till she rests
+(`weak?`; `reaching-to-act?`: a button, a command; `weakness` starts the room's flagging as she
+does, her fear kept at 99); Daniella's back for her hair (`her-back`: 0 standing, 1 flat, 2 bent); an exit's door held (`exit-held?`: none, not); Daniella's held things away or back
 (`hands-empty`, `hands-back`); "Used ..." (`used-msg`); a door tried from beyond (`door-tried`);
 another word plate to press (`plate-pressable?`); a thing wandering about its place (`wanderer-at`);
 a face's texture from a file (`face-on`); the stalker free (`stalker-free?`: here, not struck, held
@@ -249,9 +252,22 @@ Places, each with its test in `tests/places/`:
   brings it back (it had, he lies down over there); called back he leaps back; the stalker grabbing
   him from behind on the plank; climbing down to the great hall (Hewie left here); the statue turn
   and turn about; his bark across and his looks; the map's pages.
+- the bedroom (castle-2f-3, and castle-2f-5: the same room once the chapter has turned) shares its
+  things in `story/places/bedroom.fs` (vocab story.places.bedroom): the TV, the window's and the
+  door's glass, its sounds and fan, the fire, the portraits, the doll, the birdcage, the scales, the
+  chest (her costumes), the bed to hide under (Hewie under the other; `hide-under-bed` takes what
+  the room does once she's under and as she gets out), what Hewie sniffs out and looks up at; its
+  own cells come first (`own-reset  bedroom-owns owns !`).
 - castle-2f-3, the bedroom (44): every remark and spot, the clothes, the TV, the bed and the
   stalker's search, the maid's scene, the night, the attack lesson, the evasion tip, Hewie's
   find, the four replays.
+- castle-2f-5, the bedroom once the chapter has turned ($32): the mirror whole, then broken; she
+  weak (flagging as she reaches to act, at a locked door, at the jerky); resting on the bed - the
+  mirror's scene (it cracks and shatters as it goes, Daniella in a fragment, her face), well again,
+  the file, Hewie out from under the other bed, Daniella left in the room, the chapter's doors
+  open; the remarks, the TV, the windows (the glass sharp after), the chest, the clock; the bed to
+  hide under and Daniella's search (she looks under it); the chicken jerky Hewie sniffs out; the
+  replay.
 - front-garden-3, the cage's garden (24): the opening, the remarks, the breakable, the box and
   the grate with Hewie, Hewie freed from the wire at night (and gone, out of the game), the shared
   crouch and drink.

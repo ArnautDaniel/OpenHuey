@@ -485,7 +485,8 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : daniellas-model ( -- model | -1 )  partner-kind daniella-kind = if  daniella-kind cast-model  else  -1  then ;   \ (the stalker loaded Daniella)
 : hands-empty ( -- )  daniellas-model dup 0< if  drop exit  then  false false story.words:daniella-parts ;   \ (what she holds put away)
 : hands-back ( -- )  daniellas-model dup 0< if  drop exit  then  story.words:daniella-one ;   \ (what she holds shown again)
-: stalker-to ( room tri -- )  stalker dup 0< if  drop 2drop exit  then  send stalker-in ;   \ (into the game there)
+: her-back ( pose -- )  daniellas-model dup 0< if  2drop exit  then  swap cloth-back! ;   \ (Daniella's back for her hair: 0 standing, 1 flat, 2 bent)
+: stalker-to ( room tri -- )  partner dup 0< if  drop 2drop exit  then  send stalker-in ;   \ (the story's stalker into the game there, loaded: stalker-to-room)
 : his-own-time ( -- )  -1 s" summoner" actor-named send summoner-cooldown ;   \ (the summoner's wait: his own kind's)
 : summoner-sooner ( secs -- )  s" summoner" actor-named send summoner-cooldown-less ;
 : stalker-order ( mode -- )  stalker dup 0< if  2drop exit  then  send stalker-order ;
@@ -521,14 +522,15 @@ create look-bytes 16 allot
 : creature-facing ( room level tri kind reach yaw -- )   \ (one let out there, turned so: the creatures' own way about -
     -1 swap 0e f>cell  s" creatures" actor-named send creature-place ;   \ reach x 10 her nearness that wakes it)
 : creature-in ( room level tri kind reach -- )  0 creature-facing ;   \ (the room a forced exit leads to, loaded ahead)
-\ a reflecting window (Reflection): reflection k (0..3) on the quad's corners, its side panels a window's
-$10000000 constant window-panels
-: window-in ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )
-    {: k str :}  k effect @ 0= if  k effects:reflection k effect!  then  k false str window-panels or reflect! ;
-: lit-over-all ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )   \ (a scene's lit quad - a Reflection with no window
-    {: k str :}  k effect @ 0= if  k 3 and effects:reflection k effect!  then  k 3 and true str reflect! ;   \ panels - over the whole picture)
-: window-over-all ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )   \ (a scene's: over the whole picture)
-    {: k str :}  k effect @ 0= if  k effects:reflection k effect!  then  k true str window-panels or reflect! ;
+\ a reflecting quad (Reflection): reflection k (0..3: the effect k's, k and 3) on the quad's corners -
+\ over the whole picture or on the quad - at strength (0..$80), its top bits side panels: a window's or a door's
+$10000000 constant window-panels   $20000000 constant door-panels
+: glass-in ( k over-all? strength F: x0 y0 z0 .. x3 y3 z3 -- )
+    {: k all str :}  k effect @ 0= if  k 3 and effects:reflection k effect!  then  k 3 and all str reflect! ;
+: window-in ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )  false swap window-panels or glass-in ;   \ (a window: on its quad)
+: door-glass-in ( k over-all? strength F: x0 y0 z0 .. x3 y3 z3 -- )  door-panels or glass-in ;   \ (a door's)
+: lit-over-all ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )  true swap glass-in ;   \ (a scene's lit quad: no panels, over the whole picture)
+: window-over-all ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )  true swap window-panels or glass-in ;   \ (a scene's: over the whole picture)
 \ the room's placed objects, by name
 $14 constant turn-y
 : object-turn ( addr len F: by -- )   \ turned about its upright, wrapping
@@ -990,13 +992,13 @@ create replay-acts
     fiona 2 hid-motion 5 start-blend8  5 frames  fiona.sounds:slide-sound common-bank fiona sound-by  fiona wait-anim
     fiona false noclip ;
 : hides-in ( file tri deg cam F: x z -- )   \ (her motions' file; where she slips in from, facing it; the
-    {: file tri deg cam F: x z :}           \ camera set while she's in, -1 hers kept)
+    {: file tri deg cam F: x z :}           \ room's camera set while she's in, -1 hers kept)
     stalkers-stay state!  0 came-while-hidden !  fiona file motions-for  fiona wait-move  fiona use-motions
     fiona walk-anim-move 4 hid-motion 5  tri x z floor-at  deg deg>yaw  move  fiona wait-move
     fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by  fiona 5 hid-motion 10 start-blend8  fiona wait-anim
     fiona 1 hid-motion 10 start-blend  fiona false noclip
     stalkers-stay state-off  fiona-hidden state!  0 found-her !  0 avoid-prompt
-    cam 0< 0= if  fiona cam -1 camera-set  then
+    cam 0< 0= if  cam -1 fixed-camera  then   \ (the room's own, following nobody: the original's self-who)
     begin
         circle button-pressed? if  slips-out exit  then
         in-panic? found-her @ or if
@@ -1019,6 +1021,14 @@ create replay-acts
         stalker use-motions  stalker room-motion 10 start-blend  30 frames  -1 found-her !  stalker wait-anim
     else  stalker stalker.anims:there-anim play  -1 found-her !  then
     stalker 10 idle  begin  fiona held? while  yield  repeat  0 stalker-order ;
+\ she weak (since the chapter turned, till she rests in her bedroom): reaching to act - a button, a
+\ command - she flags (the rooms' own doing), her fear kept high
+: weak? ( -- flag )  over-music-b fact?  saturnus-hint-on fact? 0= and ;
+: reaching-to-act? ( -- flag )
+    square button-pressed?  l1 button-pressed? or  triangle button-pressed? or  fiona-cmd-now @ 0 5 within or ;
+: weakness ( xt -- )   \ (each frame: xt her flagging, started)
+    weak? 0= if  drop exit  then
+    reaching-to-act?  fiona-free? and if  start drop  else  drop  then  99 fiona send fear-to ;
 : replay-over ( -- )  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
 
 \ ---- the figures' own (the story's slots 3..5: a figure loaded there) ----

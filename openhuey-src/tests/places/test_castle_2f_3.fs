@@ -4,7 +4,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/places/test_castle_2f_3.fs
 IN: test-castle-2f-3
 USING: tester engine game-state actors messages keys room-names game debug facts flag-names story-names
-    fiona.state story.kit story.places.castle-2f-3 ;
+    fiona.state story.kit story.places.bedroom story.places.castle-2f-3 ;
 
 : window-shown ( -- msg )  game:window enter  window:shown @  leave-actor ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;

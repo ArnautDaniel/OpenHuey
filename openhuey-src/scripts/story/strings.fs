@@ -69,7 +69,8 @@ strings: castle-2f-14$  O_HEW\HEW_102.MTN  O_HEW\HEW_102.MTN  O_DNL\DNL_104.MTN 
 strings: castle-2f-15$ O_HEW\HEW_102.MTN  O_DNL\DNL_104.MTN ;  castle-2f-15 room-strings!
 strings: castle-2f-4$  EV0005  EV0005\EV0005.SFD  fan ;  castle-2f-4 room-strings!
 strings: castle-2f-5$ 8  O_FIN_M\FIN_101.MTN  O_HEW\HEW_101.MTN  O_DNL\DNL_101.MTN  12  EV0015
-    EV0015\EV0015.SFD ;  castle-2f-5 room-strings!
+    EV0015\EV0015.SFD  a_fragment0  a_fragment1  a_fragment2  a_fragment3  a_fragment4  a_fragment5
+    a_fragment6  a_fragment7  a_fragment8  a_fragment9  a_fragment10  fan ;  castle-2f-5 room-strings!   \ (14..: the next tables, read on into)
 strings: off-map-33$ EV1034  EV1034\EV1034.SFD ;  off-map-33 room-strings!
 strings: off-map-34$ EV0034  EV0034\EV0034.SFD ;  off-map-34 room-strings!
 strings: off-map-35$ EV0033  EV0033\EV0033.SFD  EV0031  EV0031\EV0031.SFD  EV0032

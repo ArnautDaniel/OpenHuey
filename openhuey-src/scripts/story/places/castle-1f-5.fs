@@ -38,7 +38,6 @@ $C constant chase-door
 c1f-5-breakable-broken 0 1  41e 0e -19e 5e 8e  breakable: the-vase
 the-vase $80101010 0 4 shard-look  the-vase 0.812e 0.687e 0.187e 0.312e shard-uv
 the-vase 0 frees-floor  the-vase $232 noise-from
-: weak? ( -- flag )  over-music-b fact?  saturnus-hint-on fact? 0= and ;   \ (since the chapter turned, till rested)
 : night? ( -- flag )  c2f-3-flag1 fact? ;
 
 \ ---- the flames (effects 0..2), each stirred as someone steps into its draught ----
@@ -107,11 +106,6 @@ create locked-doors   2 , $34 , $62 , $44 , $47 , $4F , $56 , $67 , $7D , $51 , 
     fiona hold  fiona wait-move  fiona knocked-anim start-anim  tired-sound room-bank fiona sound-by  20 frames
     tired-remarked @ if  0 tired-remarked !  rest-msg  else  -1 tired-remarked !  not-hot-msg  then  show
     fiona attack-anim 10 start-blend  wait-closed  fiona wait-anim ;
-: weakness ( -- )
-    weak? 0= if  exit  then
-    square button-pressed?  l1 button-pressed? or  triangle button-pressed? or  fiona-cmd-now @ 0 5 within or
-    fiona-free? and if  ['] flags start drop  then
-    99 fiona send fear-to ;
 
 \ ---- what she may do or say here ----
 : dim-corner ( -- )  fiona wait-move  fiona -177 turn  fiona look-close-anim play  dim-msg say ;
@@ -167,7 +161,7 @@ create entries  3 , -1 ,   0 , 0 ,   4 , 3 ,     \ (by exit 0, 1, 2: the camera)
     fiona gallery-area entered? if  -1 in-gallery !  then   fiona gallery-area left? if  0 in-gallery !  then
     fiona to-exit-2-area entered? if  3 map-page  then   fiona to-exit-2-area left? if  2 map-page  then ;
 : each-frame ( -- )
-    ways  shove?  weakness  draughts  spots  walls-shade
+    ways  shove?  ['] flags weakness  draughts  spots  walls-shade
     room-sounds-in? if  tired-sound keep-playing or room-bank fiona sound-by  then ;
 : person-in ( i -- )
     dup stalker-p = if  drop  0 him-sent ! exit  then
