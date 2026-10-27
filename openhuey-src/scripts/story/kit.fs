@@ -57,6 +57,7 @@ state: place-state
   cell field request-now        \ a creature's request of her this frame (fiona-requested)
   cell field unseen-now         \ she can't be seen (item $89 worn, still)
   cell field shook-now          \ she shook this frame (the stick swung or a button)
+  cell field shakes-now         \ her shakes counted so far (count-shakes on: old-mansion-b1-3)
   cell field started-now        \ the action she started for Hewie this frame (-1 none: fiona-started)
   cell field fiona-sub-now      \ her move mode's part (fiona-doing's sub)
   cell field straining-now      \ she strains at something that won't move (fiona-straining)
@@ -1416,7 +1417,7 @@ behaviour placing
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe stalker-blow  -1 st-blow-now !
       self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
       self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
-      self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !
+      self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe fiona-shakes  0 shakes-now !
       room-starts  frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people
       camera-starts  camera-placed ;
   on tick ( -- )
@@ -1467,6 +1468,7 @@ behaviour placing
   on fiona-started ( code -- )  started-now ! ;
   on fiona-straining ( on -- )  straining-now ! ;
   on fiona-shaking ( n -- )  shook-now ! ;
+  on fiona-shakes ( n -- )  shakes-now ! ;
   on fiona-message ( msg -- )   \ (her locked door's: not while Hewie is the one played)
       leaving @  shown-msg @ 0< 0= or  hewie-played? or if  drop exit  then  show ;
   on stalker-ties ( scripted apart linked -- )  st-linked-now !  2drop ;
