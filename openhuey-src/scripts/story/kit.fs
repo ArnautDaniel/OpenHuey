@@ -1124,6 +1124,46 @@ variable hide-shriek   -1 hide-shriek !   \ (the hiding place next: that sound, 
     begin  yield  slot 3 - cells figure-done + @  slot figure 0< or  until ;
 : figure-at ( slot F: x y z deg -- )  deg>rad angle-wrap  figure dup 0< if  drop fdrop fdrop fdrop fdrop exit  then  >r xyzw>cells r> send place ;
 : figure-on ( slot -- )  figure dup 0< if  drop exit  then  send activate ;
+\ ---- the hopping figure (kind $1C in slot 3; the old mansion's): it hops in place; struck where it
+\ stands it hops back - the third or fourth time maybe, the fifth surely, it lashes out (her fright
+\ up, the stalker told to come). `hopper:` names one: its hop and hop-back animations, its lash and
+\ hop sounds (the room's), where it stands. The room calls on its stillness (frames since it came round) ----
+$1C constant hopper-kind   3 constant hopper-slot
+begin-structure /hopper
+  field: hp.hop  field: hp.back  field: hp.lash  field: hp.sound  field: hp.hops  field: hp.still
+  ffield: hp.x  ffield: hp.y  ffield: hp.z  ffield: hp.deg
+end-structure
+: hopper: ( hop back lash-sound hop-sound F: x y z deg "name" -- )
+    create  here /hopper allot  {: hop back lash snd a F: x y z deg :}
+    hop a hp.hop !  back a hp.back !  lash a hp.lash !  snd a hp.sound !
+    x a hp.x f!  y a hp.y f!  z a hp.z f!  deg a hp.deg f! ;
+: hopper-still ( h -- frames )  hp.still @ ;   \ (frames since its hop came round, 0 then)
+: hopper-sound ( id -- )  room-bank hopper-slot figure sound-by ;
+: hopper-in ( h shown? -- )
+    {: a on :}  0 a hp.hops !  0 a hp.still !
+    hopper-kind hopper-slot figure-in  hopper-slot figure 0< if  yield  then
+    hopper-slot figure-on  hopper-slot  a hp.x f@ a hp.y f@ a hp.z f@ a hp.deg f@  figure-at  hopper-slot a hp.hop @ 1 0 figure-play
+    on 0= if  hopper-slot figure false shown  then ;
+: hopper-struck? ( h -- flag )  dup hp.x f@  dup hp.y f@  hp.z f@  5e 10e struck-in? ;
+: lashes ( h -- )   \ (out of patience: her fright up, the stalker told)
+    panic-stage @ 0= if  1 panic-to  else  15 threat  then  0 stalker-order  hp.lash @ hopper-sound ;
+: hops-back ( h -- )
+    {: a :}  0 a hp.still !  1 a hp.hops +!
+    a hp.hops @ 3 = if  33 chance? if  5 a hp.hops !  then  then
+    a hp.hops @ 4 = if  50 chance? if  5 a hp.hops !  then  then
+    a hp.hops @ 5 = if  a lashes  else  a hp.sound @ hopper-sound  then
+    fiona.sounds:shove-hit-sound common-bank fiona sound-by
+    hopper-slot a hp.back @ 0 3 figure-play  hopper-slot figure-wait
+    hopper-slot a hp.hop @ 0 3 figure-play  0 a hp.still !
+    a hp.hops @ 5 = if  hopper-slot figure-wait  0 a hp.hops !  then ;
+: hops-about ( h shown? -- )   \ (an activity: in, then hopping for good)
+    {: a on :}  a on hopper-in
+    begin
+        a hopper-struck? if  a hops-back  then
+        hopper-slot figure-came-round? if  hopper-slot a hp.hop @ 0 0 figure-play  0 a hp.still !  else  1 a hp.still +!  then
+        yield
+    again ;
+: hopper-gone ( -- )  hopper-slot figure dup 0< if  drop  else  let-go  then ;
 : figure-dressed-as ( slot other -- )   \ wearing the other's model
     story.words:slot-id @ cast-model dup 0< if  2drop exit  then  swap figure dup 0< if  2drop exit  then  send cast-dress ;
 : figure-shift ( slot F: dx dy dz -- )   \ moved by so much, its heading kept

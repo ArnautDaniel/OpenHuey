@@ -37,7 +37,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing coming in: the figure hopping, the hall hunted; struck where it stands
 room-afresh
 T{ [: hopper-slot figure 0< 0= ;] in-place  hunted state-flag? -> -1 -1 }T
-T{ -3e 5e 43e blow-at  [: struck? ;] in-place  [: body-point-off ;] as-her -> -1 }T
+T{ -3e 5e 43e blow-at  [: the-figure hopper-struck? ;] in-place  [: body-point-off ;] as-her -> -1 }T
 testing the hiding place: in, hidden; out by the button
 hide-area 90 at  circle press  [: hidden? ;] 600 soon drop
 T{ hidden? -> -1 }T
