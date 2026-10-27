@@ -1024,14 +1024,15 @@ create replay-acts
 : hid-motion ( i -- anim )  room-motion + ;
 : hauled-out ( -- )
     found-her @ if  2 avoid-prompt  then
-    fiona follow  fiona-hidden state-off  fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by
+    fiona follow  fiona true shown  fiona-hidden state-off  fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by
     fiona 3 hid-motion 10 play-blend  fiona false noclip
     found-her @ 0= if  stalker let-go  then ;
 : slips-out ( -- )
     stalker-in? if  hauled-out exit  then
-    fiona follow  fiona-hidden state-off  fiona true noclip
+    fiona follow  fiona true shown  fiona-hidden state-off  fiona true noclip
     fiona 2 hid-motion 5 start-blend8  5 frames  fiona.sounds:slide-sound common-bank fiona sound-by  fiona wait-anim
     fiona false noclip ;
+variable hide-unseen   \ (the hiding place next: she isn't drawn while in it - hides-in clears it)
 : hides-in ( file tri deg cam F: x z -- )   \ (her motions' file; where she slips in from, facing it; the
     {: file tri deg cam F: x z :}           \ room's camera set while she's in, -1 hers kept)
     stalkers-stay state!  0 came-while-hidden !  fiona file motions-for  fiona wait-move  fiona use-motions
@@ -1040,6 +1041,7 @@ create replay-acts
     fiona 1 hid-motion 10 start-blend  fiona false noclip
     stalkers-stay state-off  fiona-hidden state!  0 found-her !  0 avoid-prompt
     cam 0< 0= if  cam -1 fixed-camera  then   \ (the room's own, following nobody: the original's self-who)
+    hide-unseen @ if  fiona false shown  0 hide-unseen !  then
     begin
         circle button-pressed? if  slips-out exit  then
         in-panic? found-her @ or if
