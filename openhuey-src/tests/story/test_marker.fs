@@ -1,11 +1,19 @@
+\ The marker effect (house-of-truth-1f-5's scene: Lorenzo's end): made on the figure, sized, done -
+\ left to go out on its own (the place forgets it). Headless:
+\   build/openhuey --test tests/story/test_marker.fs
 IN: test-marker
-USING: tester engine game-state actors messages common room-names game debug story.state story.words
-  story.rooms.house-of-truth-1f-5 ;
-: room-actor ( -- id )  room-id room-name actor-named ;
-: in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
+USING: tester engine game-state actors messages common room-names game debug story.kit
+  story.places.house-of-truth-1f-5 ;
+: in-room ( xt -- x )  room-id room-name actor-named enter  execute  leave-actor ;
+: soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
+: marker-id ( -- id )  [: marker-fx effect @ ;] in-room ;
+variable was
 free-play  house-of-truth-1f-5 room!  20 run-frames
-T{ [: 0 house-of-truth-1f-5.cmd01  0 var @ alive? ;] in-room -> -1 }T
+end-figure 3 [: figure-in ;] in-room  5 run-frames
+T{ [: marker-in ;] in-room  marker-id alive? -> -1 }T
 5 run-frames
-T{ [: 1 40 var-set  5 house-of-truth-1f-5.cmd01  1 var @  0 var @ alive? ;] in-room -> 39 -1 }T
-T{ [: 2 house-of-truth-1f-5.cmd01 ;] in-room  3 run-frames  [: 0 var @ alive? ;] in-room -> 0 }T
+T{ [: 500 marker-to ;] in-room  5 run-frames  marker-id alive? -> -1 }T
+marker-id was !
+T{ [: marker-done  marker-fx effect @ ;] in-room -> 0 }T
+T{ [: was @ alive? 0= ;] 120 soon -> -1 }T   \ (gone out on its own)
 test-summary
