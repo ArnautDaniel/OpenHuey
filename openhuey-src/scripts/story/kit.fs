@@ -81,6 +81,7 @@ state: place-state
   \ the creatures, as they tell (creature-doing): each one's room, how it moves, frames since
   #creatures cells field cr-room  #creatures cells field cr-mode  #creatures cells field cr-age  #creatures cells field cr-id
   cell field found-her          \ a hiding place's: the stalker has found her there (she must flee)
+  cell field word-right-now     \ the word plate just used named what the room wanted (items.fs: word-right)
   cell field came-while-hidden  \ ... he came in while she hid (gone again: the prompt anew)
   cell field hewie-came-now   \ the exit Hewie came in by (hewie-came; -1 none)
   cell field st-blow-now      \ the stalker's blow under way (stalker-blow; -1 none)
@@ -552,6 +553,15 @@ create look-bytes 16 allot
 : story-spirit-in ( room level tri kind reach -- )   \ (the story's own spirit, slot 6, let out there)
     story-spirit 0 0e f>cell  s" creatures" actor-named send creature-place ;
 : creature-up? ( slot -- flag )  cells cr-age + @ 2 < ;   \ (in the game: it told us this frame or the last)
+: within-xz? ( id F: x z r -- flag )   \ (its body's place within r of (x, z), across)
+    {: id F: x z r :}  id body-pos fswap fdrop  z f- fdup f*  fswap x f- fdup f* f+  r fdup f* f< ;
+: spirit-put-away-near? ( F: x z r -- flag )   \ (the first spirit about within r of (x, z) put away there)
+    {: F: x z r :}
+    first-homunculus 0 do
+        i creature-up? if
+            i cells cr-id + @  dup body? if  dup x z r within-xz? if  send put-away  true unloop exit  then  then  drop
+        then
+    loop  false ;
 : creature-dropped ( room level tri kind reach yaw F: from -- )   \ (a homunculus: turned so, dropped from that height)
     -1 swap f>cell  s" creatures" actor-named send creature-place ;   \ (the room a forced exit leads to, loaded ahead)
 \ a reflecting quad (Reflection): reflection k (0..3: the effect k's, k and 3) on the quad's corners -
@@ -1264,7 +1274,7 @@ behaviour placing
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe stalker-blow  -1 st-blow-now !
       self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
       self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
-      self subscribe item-event  self subscribe stalker-ties
+      self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !
       room-starts  frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people
       camera-starts  camera-placed ;
   on tick ( -- )
@@ -1318,6 +1328,7 @@ behaviour placing
   on fiona-message ( msg -- )   \ (her locked door's: not while Hewie is the one played)
       leaving @  shown-msg @ 0< 0= or  hewie-played? or if  drop exit  then  show ;
   on stalker-ties ( scripted apart linked -- )  st-linked-now !  2drop ;
+  on item-event-bit ( n on -- )  nip word-right-now ! ;   \ (the word plate's: right or not, as the room's doing starts)
   on grab-answer ( ok -- )  grab-ok-now !  0 grab-asked-now ! ;
   on item-event ( who ev var value -- )   \ (the room's own, else what every room does)
       leaving @ if  2drop 2drop exit  then
