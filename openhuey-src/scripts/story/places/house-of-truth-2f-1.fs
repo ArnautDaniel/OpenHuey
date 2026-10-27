@@ -17,7 +17,7 @@ own-reset  truth-owns owns !
 2 constant corridor-msg    \ "This room connects to another corridor... But it doesn't seem like I can get through."
 own: locked-remarked       \ the locked remark made (in turn with the sun's)
 own: taken-on              \ her first steps in: on (once a visit)
-6 constant medallion-fx   7 constant viola-fx   3 constant key-sound   $609 constant key-anim
+6 constant medallion-fx   7 constant viola-fx   $609 constant key-anim
 $14 constant corridor-area   $E2 constant sun-door   $E6 constant other-door   $24F constant hall-file
 $80202020 constant crate-grey
 create flames  -102e f, 65.4e f, -31.4e f,   -43.2e f, 46e f, -31.2e f,   -72.4e f, 17.2e f, -1.75e f,
@@ -61,10 +61,7 @@ ht2f-1-breakable3-broken 4 5  -3e 70e -41e 5e 8e  breakable: crate-3         cra
     then
     4 frames  fiona $26E 0 -10e 135.3e place-at  world-frozen state!
     1 20e 0e 0e 2e shot  4 frames  sun-msg say  4 frames  shot-off  0 locked-remarked !  world-frozen state-off ;
-: turns-key ( -- )
-    fiona hold  fiona 0 to-door  fiona key-anim start-anim  20 frames  key-sound room-bank fiona sound-by
-    sol-key item-named  other-door doors:door-locked? 0= if  sol-key spend  then  sun-door unlock
-    fiona 20 idle  20 frames  used-msg say  stalkers-stay state-off ;
+: turns-key ( -- )  key-anim other-door sun-door sol-turned ;
 : items-used ( who ev var value -- handled? )
     2drop  swap 0<> if  drop false exit  then
     2 = if  ['] turns-key start drop  true  else  false  then ;

@@ -6,7 +6,7 @@
 \ these: `own-reset  truth-owns owns !`.
 IN: story.places.house-of-truth
 USING: engine game-state actors messages common facts flag-names story-names room-names stalker-names
-    floor-flags story.kit stalker.anims fiona.anims fiona.sounds ;
+    floor-flags items.names story.kit stalker.anims fiona.anims fiona.sounds ;
 
 own-reset
 
@@ -122,3 +122,11 @@ fvariable hole-x   fvariable hole-z   variable hole-msg'
 : out-of-hole ( -- )   \ (an activity)
     fiona hold  fiona wait-move  camera-restart  slide-sound common-bank fiona sound-by  1 map-page
     15 screen:from-black fade  wait-fade  stalkers-stay state-off ;
+
+\ ---- the Sol Key turned in a door (exit 0's: 1F-4's, 2F-1's): spent but while the other door is
+\ locked - its turning animation, the room's sound 3 ----
+3 constant key-sound
+: sol-turned ( anim other door -- )   \ (an activity)
+    {: anim other door :}  fiona hold  fiona 0 to-door  fiona anim start-anim  20 frames  key-sound room-bank fiona sound-by
+    sol-key item-named  other doors:door-locked? 0= if  sol-key spend  then  door unlock
+    fiona 20 idle  20 frames  used-msg say  stalkers-stay state-off ;

@@ -18,7 +18,7 @@ own: snag-tried            \ she has tried the snagged door (her rattle, once a 
 own: going-on              \ her first step in, the house coming down: on (once a visit)
 own: drone-on              \ the drone going
 3 constant magist-fx   $A constant clock-area   $B constant creatures-area   6 constant going-area
-$EB constant snagged-door   5 constant snag-sound   5 constant first-ambient   5 constant tremor-track
+$EB constant snagged-door   $91 constant snag-sound   5 constant first-ambient   5 constant tremor-track
 $30 constant drone-sound   $47 constant drone-bank   $1FC constant brought-tri   0 constant snag-var
 create flames  72.4e f, 17.2e f, 117.2e f,   101.9e f, 66e f, 87.1e f,   97.6e f, 29.5e f, 144.8e f,   101.9e f, 66e f, 87.4e f,
 create flame-kinds  1 , 4 , 1 , 4 ,
@@ -62,14 +62,14 @@ create flame-slots  0 , 1 , 2 , 4 ,
 : struck ( -- )   \ (her blow at it: worn by it - 1 the weak blow, else 5 - through at 0)
     snag-shut? if
         snag-var var@  fiona-sub-now @ story.words:weak-blow-sub = if  1  else  5  then  -  0 max  snag-var var!
-        snag-sound room-bank -37e 10e 177e room-sound
+        snag-sound common-bank -37e 10e 177e sound-there
         snag-var var@ 0= if  opened  then
     then  16 frames ;
 : leaps-in ( -- )   \ (Hewie, at her "go for it": a bark, round to it, a leap - through)
     hewie hold  hewie-bark  hewie wait-move
     hewie $202 -73 -1 walk-path-move -4.422e 167.237e go-to
     $90 50 -32e 0.5e 177.5e hewie-leap  8 frames
-    snag-shut? if  snagged-door unlock  snag-sound room-bank -37e 10e 177e room-sound  opened  then  hewie wait-move ;
+    snag-shut? if  snagged-door unlock  snag-sound common-bank -37e 10e 177e sound-there  opened  then  hewie wait-move ;
 : tries-snagged ( -- )   \ (the first time: to it, her rattle; then its remark)
     snag-tried @ 0= if
         fiona 0 to-door  fiona rattle-behind-slow-anim play  fiona -1 idle  7 frames  -1 snag-tried !
