@@ -27,5 +27,5 @@ USING:
     story.rooms.off-map-d6 story.rooms.off-map-d7 story.rooms.off-map-d8 story.rooms.off-map-d9 story.rooms.off-map-e0 story.rooms.off-map-e1
     story.rooms.off-map-e2 story.rooms.off-map-e3 story.rooms.off-map-e4 story.rooms.off-map-e5 story.rooms.off-map-e6 story.rooms.off-map-e7
     story.rooms.off-map-e8 story.rooms.off-map-e9
-    story.rooms.chaos-forest-10
-    story.rooms.chaos-forest-13 ;
+   
+    ;

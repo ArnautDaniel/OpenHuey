@@ -114,16 +114,25 @@ int area_cross(const Room *r, int area, Vec3 prev, Vec3 cur) {
     return 0;
 }
 
+/* the areas: the table of word offsets runs up to the first record (the first offset, in words),
+ * padded with zeros after its last area */
 int area_count(const Room *r) {
     size_t size;
     const uint8_t *sec = pac_section(&r->pac, PAC_EVENTS, &size);
-    uint32_t first;
+    uint32_t first, off, n, i;
 
     if (sec == NULL || size < 4) {
         return 0;
     }
     memcpy(&first, sec, 4);
-    return (int)(first / 4 < size / 4 ? first / 4 : size / 4);
+    n = first < size / 4 ? first : (uint32_t)(size / 4);
+    for (i = 0; i < n; i++) {
+        memcpy(&off, sec + i * 4, 4);
+        if (off == 0) {
+            break;
+        }
+    }
+    return (int)i;
 }
 
 int area_corner(const Room *r, int area, int k, Vec3 *out) {

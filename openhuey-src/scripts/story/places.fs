@@ -2,6 +2,8 @@
 \ here replaces its room's converted scripts (story/rooms/).
 IN: story.places
 USING:
+    story.places.chaos-forest-13
+    story.places.chaos-forest-10
     story.places.chaos-forest-8
     story.places.chaos-forest-1
     story.places.chaos-forest-12

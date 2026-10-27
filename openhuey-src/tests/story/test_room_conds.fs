@@ -4,8 +4,7 @@
 \ conditions on them. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_room_conds.fs
 IN: test-room-conds
-USING: tester engine game-state actors messages common room-names game debug fiona.state story.state story.words
-  story.rooms.chaos-forest-13 ;
+USING: tester engine game-state actors messages common room-names game debug fiona.state story.state story.words ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
@@ -28,11 +27,5 @@ T{ [: 3 story.kit:thing-lying? 0= ;] in-room -> -1 }T
 3 game:fiona body-tri  game:fiona body-pos f>cell >r f>cell >r f>cell r> r>  0 0 0  game:things send thing-made  deliver  2 run-frames
 T{ [: 3 story.kit:thing-lying? 0= ;] in-room -> 0 }T
 engine:things-clear
-
-testing the count while Hewie is down (chaos-forest-13): below 100, then 100
-T{ [: chaos-forest-13.cond00? ;] in-room -> 0 }T
-100 progress pr.hewie-mistreated l!
-T{ [: chaos-forest-13.cond00? ;] in-room -> -1 }T
-0 progress pr.hewie-mistreated l!
 
 test-summary
