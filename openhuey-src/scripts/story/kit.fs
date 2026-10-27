@@ -58,6 +58,7 @@ state: place-state
   cell field unseen-now         \ she can't be seen (item $89 worn, still)
   cell field shook-now          \ she shook this frame (the stick swung or a button)
   cell field shakes-now         \ her shakes counted so far (count-shakes on: old-mansion-b1-3)
+  cell field loud-now           \ frames left of a loud noise made here (noise-was: $20 or more)
   cell field started-now        \ the action she started for Hewie this frame (-1 none: fiona-started)
   cell field fiona-sub-now      \ her move mode's part (fiona-doing's sub)
   cell field straining-now      \ she strains at something that won't move (fiona-straining)
@@ -107,13 +108,16 @@ begin-structure /desc
   field: d.went        \ ( -- ) the room left
   field: d.item        \ ( who ev var value -- handled? ) an item used here starting one of its doings (items-here)
 end-structure
-create places  256 cells allot   places 256 cells 0 fill
-: place-of ( room -- desc | 0 )  dup 0 256 within if  cells places + @  else  drop 0  then ;
+512 constant #place-rooms   \ (room ids: up to $10B, the Chaos Forest's)
+create places  #place-rooms cells allot   places #place-rooms cells 0 fill
+: place-room ( room -- addr )   \ (its cell in the table: a room past it an error)
+    dup 0 #place-rooms within 0= abort" place!: a room id past #place-rooms"  cells places + ;
+: place-of ( room -- desc | 0 )  dup 0 #place-rooms within if  cells places + @  else  drop 0  then ;
 : place! ( came-in person-in frame went room -- )   \ a room is a place from now on
     {: c p fr w room | d :}  here to d  /desc allot
-    c d d.came-in !  p d d.person-in !  fr d d.frame !  w d d.went !  0 d d.item !  d room cells places + ! ;
+    c d d.came-in !  p d d.person-in !  fr d d.frame !  w d d.went !  0 d d.item !  d room place-room ! ;
 : hook ( field-xt -- xt | 0 )  desc @ dup if  swap execute @  else  nip  then ;   \ (one of the place's words)
-: items-here ( xt room -- )  cells places + @ d.item ! ;   \ (its own item uses: the plates' words, ...)
+: items-here ( xt room -- )  place-room @ d.item ! ;   \ (its own item uses: the plates' words, ...)
 : run-desc ( field-xt -- )  hook ?dup if  execute  then ;
 : run-desc-with ( x field-xt -- )  hook ?dup if  execute  else  drop  then ;
 
@@ -162,6 +166,9 @@ variable acting   -1 acting !   \ the activity being run (-1: none)
     person-of dup 0< if  drop exit  then  acting @ 0< abort" hold: not in an activity"
     dup holder-of @ acting @ = if  drop exit  then
     acting @ over holder-of !  0 over cells asked + !  -1 tell-held ;   \ (nothing asked of it yet)
+: hold-for ( id k -- )  acting @ >r  acting !  hold  r> acting ! ;   \ (held for activity k)
+: start-holding ( xt id -- k | -1 )   \ (an activity started holding id this frame: nothing else takes it first)
+    swap start dup 0< if  nip exit  then  tuck hold-for ;
 : let-go ( id -- )  person-of dup 0< if  drop exit  then  let-go-person ;
 : held? ( id -- flag )  person-of dup 0< if  drop false exit  then  holder-of @ 0< 0= ;
 : mine? ( i -- flag )  holder-of @  acting @ =  acting @ 0< 0= and ;
@@ -480,6 +487,7 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : stalker-told? ( -- flag )  st-heard @  st-age @ 2 < and ;
 : hewie-came-by? ( exit -- flag )  hewie-in? if  hewie-came-now @ =  else  drop false  then ;   \ (in, come by that exit: cond 0x30's)
 : stalker-came-by? ( exit -- flag )  stalker-in? stalker-told? and if  st-came-now @ =  else  drop false  then ;   \ (in, come by that exit)
+: loud-here? ( -- flag )  loud-now @ 0> ;   \ (a loud noise made here last frame: the rooms' +0x10D4)
 : stalker-alert? ( mode -- flag )  stalker-told? if  st-alert-now @ =  else  drop false  then ;
 : debilitas? ( -- flag )   \ (the stalker in the game Debilitas, in one of his kinds)
     stalker-told? 0= if  false exit  then
@@ -499,6 +507,7 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : face-on ( kind sel addr len -- )   \ a character's face: its texture sel the file's first (Progress_LoadSpeech / Speak)
     story.words:speech-load  {: kind sel :}  kind cast-model dup 0< if  drop exit  then
     sel story.words:speech-file story.words:speech-len @ actor-texture-swap drop ;
+: face-off ( kind -- )  cast-model dup 0< if  drop exit  then  actor-texture-restore ;   \ (its own face again)
 : daniellas-model ( -- model | -1 )  partner-kind daniella-kind = if  daniella-kind cast-model  else  -1  then ;   \ (the stalker loaded Daniella)
 : hands-empty ( -- )  daniellas-model dup 0< if  drop exit  then  false false story.words:daniella-parts ;   \ (what she holds put away)
 : hands-back ( -- )  daniellas-model dup 0< if  drop exit  then  story.words:daniella-one ;   \ (what she holds shown again)
@@ -1427,7 +1436,7 @@ behaviour placing
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe stalker-blow  -1 st-blow-now !
       self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
       self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
-      self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe item-var  self subscribe fiona-shakes  0 shakes-now !
+      self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe item-var  self subscribe fiona-shakes  0 shakes-now !  self subscribe noise-was  0 loud-now !
       room-starts  frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people
       camera-starts  camera-placed ;
   on tick ( -- )
@@ -1435,7 +1444,7 @@ behaviour placing
       people-in  frame-start  ['] d.frame run-desc  every-room  0 request-now !  -1 started-now !   \ (read: gone)
       offer-out  onset @ 0= if  run-acts  then ;
   on frame-end ( -- )
-      entered @ 0= if  exit  then  remember-people
+      entered @ 0= if  exit  then  remember-people  loud-now @ if  -1 loud-now +!  then
       st-age @ 100 < if  1 st-age +!  then  #creatures 0 do  i cells cr-age + dup @ 100 < if  1 swap +!  else  drop  then  loop
       going @ 0< 0= if  going @  -1 going !  -1 leaving !  rooms-actor send go-through  then ;
   on take-offer ( scene arg -- )
@@ -1479,6 +1488,7 @@ behaviour placing
   on fiona-straining ( on -- )  straining-now ! ;
   on fiona-shaking ( n -- )  shook-now ! ;
   on fiona-shakes ( n -- )  shakes-now ! ;
+  on noise-was ( loud room -- )  this-room @ =  swap $20 >= and if  2 loud-now !  then ;
   on fiona-message ( msg -- )   \ (her locked door's: not while Hewie is the one played)
       leaving @  shown-msg @ 0< 0= or  hewie-played? or if  drop exit  then  show ;
   on stalker-ties ( scripted apart linked -- )  st-linked-now !  2drop ;

@@ -60,4 +60,4 @@ USING:
     story.places.castle-b1-1 story.places.castle-b1-2 story.places.castle-b1-3 story.places.castle-b1-4 story.places.castle-b1-5 story.places.castle-b1-6 story.places.castle-b1-7
     story.places.castle-2f-9 story.places.castle-2f-6
     story.places.castle-2f-7 story.places.castle-2f-14 story.places.castle-2f-13
-    story.places.castle-2f-15 story.places.castle-2f-12 ;
+    story.places.castle-2f-15 story.places.castle-2f-12 story.places.chaos-forest-2 story.places.chaos-forest-3 story.places.chaos-forest-4 story.places.chaos-forest-5 story.places.chaos-forest-6 story.places.chaos-forest-7 ;
