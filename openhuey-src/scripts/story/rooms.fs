@@ -20,7 +20,7 @@ USING:
    
    
    
-    story.rooms.house-of-truth-1f-9
+   
     story.rooms.water-tower-1f-1 story.rooms.water-tower-2f-1
     story.rooms.water-tower-4f-1 story.rooms.off-map-c4 story.rooms.water-tower-7f-1 story.rooms.water-tower-7f-2 story.rooms.water-tower-8f-1
     story.rooms.off-map-d0 story.rooms.off-map-d1 story.rooms.off-map-d2 story.rooms.off-map-d3 story.rooms.off-map-d4 story.rooms.off-map-d5

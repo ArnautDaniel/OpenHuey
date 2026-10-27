@@ -16,13 +16,14 @@ own: through-reacted       \ out through a door already (once a visit)
 own: all-four              \ the four colours done as she neared the way on: the music let go with her
 owns @ constant truth-owns
 
-\ ---- Lorenzo's slam (his other form, kind $A): its impact this frame shakes the camera ----
+\ ---- Lorenzo's slam (his other form, kind $A - in 1F-9 also kind $27): its impact this frame shakes the camera ----
 $2301 constant slam-anim   $20 constant impact-key
-: slam-shake ( -- )
-    stalker-in?  partner-kind lorenzo2-kind = and 0= if  exit  then
+: slam-shake-of ( kind -- )
+    stalker-in?  partner-kind rot = and 0= if  exit  then
     stalker model-of dup 0< if  drop exit  then
     dup motion@ slam-anim <> if  drop exit  then
     0 0 1 motion-events impact-key and if  0.5e cam-shake!  then ;
+: slam-shake ( -- )  lorenzo2-kind slam-shake-of ;
 
 \ ---- the voices (the B1's colour rooms, shared $98): after 1800, 4500, 7200 frames in a room
 \ (the room's sounds in), one each - a sound of bank $86 and its line (the rooms' 5, 6, 7); after

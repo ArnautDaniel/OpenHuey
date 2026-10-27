@@ -727,7 +727,7 @@ effects and the Hewie-controlled clock rooms ($D0..$E9, 42 stubs).
 - **Not simulated here yet, kept as no-ops:** the stalker's and character $B's model springs
   (+0x9E0.., +0xCC8: the waits kept), model parts hidden by their flag 2 (old-mansion-b1-3,
   castle-2f-3), a character's doorway fade (+0xE4).
-Checked by `tests/story/test_old_mansion.fs` (17), `test_house_of_truth.fs` (18),
+Checked by `tests/story/test_old_mansion.fs` (17), `test_house_of_truth.fs` (18 - since folded into `tests/places/test_house_of_truth_1f_9.fs`),
 `test_water_tower.fs` (9), with `test_dial_lock.fs`, `test_curtain.fs`, `test_speech.fs`.
 
 **S5c, the third round** (2026-10-13): 243 of 311 stubs done. The rooms' effects, as particle
@@ -749,7 +749,7 @@ planet glows, the Chaos Forest's rain and ash; Lorenzo's marker (house-of-truth-
 the dials' lens flashes (castle-1f-12, castle-2f-1: `lens-flash`), the mirror fragments
 (castle-1f-12's lens, castle-2f-5's fragment: `mirror-fragment`) and the traps' smoke
 (house-of-truth-1f-9: started by the things actor's `trap-place`).
-Checked by `tests/story/test_marker.fs` (3), `test_mirror.fs` (8), `test_house_of_truth.fs` (22).
+Checked by `tests/story/test_marker.fs` (3), `test_mirror.fs` (8), `test_house_of_truth.fs` (22 - since folded into `tests/places/test_house_of_truth_1f_9.fs`).
 
 **S5c, the renderer's part** (2026-10-13): a character's draw layer (`char-layer`, the scripts'
 0xB5: `act.layer`) - $14 shines in the colour the marker gives (`post_shine`), $1E and up are

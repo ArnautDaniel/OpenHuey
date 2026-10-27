@@ -59,6 +59,8 @@ state: place-state
   cell field shook-now          \ she shook this frame (the stick swung or a button)
   cell field shakes-now         \ her shakes counted so far (count-shakes on: old-mansion-b1-3)
   cell field loud-now           \ frames left of a loud noise made here (noise-was: $20 or more)
+  cell field fell-now           \ the story's debris fallen through since the room last counted (keri-fell)
+  cell field hewie-mode-now     \ his move mode (hewie-doing's mode: 0 his own)
   cell field started-now        \ the action she started for Hewie this frame (-1 none: fiona-started)
   cell field fiona-sub-now      \ her move mode's part (fiona-doing's sub)
   cell field straining-now      \ she strains at something that won't move (fiona-straining)
@@ -1441,7 +1443,7 @@ behaviour placing
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe stalker-blow  -1 st-blow-now !
       self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
       self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
-      self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe item-var  self subscribe fiona-shakes  0 shakes-now !  self subscribe noise-was  0 loud-now !
+      self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe item-var  self subscribe fiona-shakes  0 shakes-now !  self subscribe noise-was  0 loud-now !  self subscribe keri-fell  0 fell-now !
       room-starts  frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people
       camera-starts  camera-placed ;
   on tick ( -- )
@@ -1483,7 +1485,7 @@ behaviour placing
   on fiona-struck-by ( who -- )  struck-by-now ! ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       {: here act mode sub cond mood group cmdable near reach breakable way trust :}
-      act hewie-act-now !  cond hewie-cond-now !  reach hewie-reach-now !  cmdable hewie-cmdable-now !  near hewie-near-now !  breakable hewie-breakable-now !
+      act hewie-act-now !  mode hewie-mode-now !  cond hewie-cond-now !  reach hewie-reach-now !  cmdable hewie-cmdable-now !  near hewie-near-now !  breakable hewie-breakable-now !
       way hewie-way-now !  trust hewie-trust-now ! ;
   on panic-onset ( on -- )  onset ! ;
   on fiona-requested ( kind -- )  request-now ! ;
@@ -1493,6 +1495,7 @@ behaviour placing
   on fiona-straining ( on -- )  straining-now ! ;
   on fiona-shaking ( n -- )  shook-now ! ;
   on fiona-shakes ( n -- )  shakes-now ! ;
+  on keri-fell ( k -- )  drop  1 fell-now +! ;
   on noise-was ( loud room -- )  this-room @ =  swap $20 >= and if  2 loud-now !  then ;
   on fiona-message ( msg -- )   \ (her locked door's: not while Hewie is the one played)
       leaving @  shown-msg @ 0< 0= or  hewie-played? or if  drop exit  then  show ;
