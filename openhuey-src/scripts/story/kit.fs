@@ -134,6 +134,8 @@ variable acting   -1 acting !   \ the activity being run (-1: none)
     drop -1 ;
 : running? ( xt -- flag )
     #activities 0 do  i act-slot @  over i cells act-xts + @ = and if  drop true unloop exit  then  loop  drop false ;
+: stop-doing ( xt -- )   \ (the activity running xt stopped, if one is)
+    #activities 0 do  i act-slot @  over i cells act-xts + @ = and if  i stop-act  then  loop  drop ;
 : start-only ( xt -- )  dup running? if  drop  else  start drop  then ;   \ (once, if it isn't already running)
 : run-acts ( -- )
     #activities 0 do
@@ -625,6 +627,10 @@ create spot-xts #activities cells allot
 : floor-off ( group flags -- )  false -rot nav-group! ;
 : on-group? ( id group -- flag )   \ standing on a triangle of that group
     over here? 0= if  2drop false exit  then  swap body-tri dup 0< if  2drop false exit  then  swap nav-in-group? ;
+\ the push-boxes (the obstacles actor's): one placed on a square, one pushed home stopped there
+: obstacle-in ( i n kind a b -- )  s" obstacles" actor-named send place-obstacle ;   \ (box i - model "oshi0n", its kind - on square (a, b))
+: obstacle-fixed ( i -- )  s" obstacles" actor-named send stop-obstacle ;   \ (it can't be pushed any more)
+: obstacle-on-tri? ( i tri -- flag )  obstacle-on-square? ;   \ (it stands on that triangle's square)
 : floor-tri-on ( tri flags -- )  true -rot nav-tri-flags! ;   \ (one triangle's floor: who it keeps off)
 : closed-off ( door -- )  dup doors-actor send close-off  lock ;   \ gone for good: its exits use another door
 : door-as ( door from -- )  doors-actor send copy-door ;   \ door takes on the other's open mark, lock and closing off
@@ -664,6 +670,7 @@ $28 constant place-z
 $24 constant place-y
 : flame-at ( k kind F: x y z -- )  effects:flame swap effect! ;   \ effect k: a flame of that kind
 : dust ( F: x y z -- )  0 $80 $80 $80 16 effects:burst ;   \ grey dust thrown up there
+: dust-of ( kind r g b F: x y z -- )  16 effects:burst ;   \ dust of a kind and colour (the rooms' 0xC8 with its own)
 : rumble-pad ( motor strength frames -- )  story.words:rumble-pad ;   \ (motor 0 the small one, buzzing; else the large at that strength)
 : reverb ( core level -- )  sound-reverb! ;   \ (core 0 the music's, 1 the effects')
 : threat ( v -- )  0 max 100 min s>f f>cell s" panic" actor-named send threat ;   \ (her fright raised to it)

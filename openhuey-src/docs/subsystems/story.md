@@ -137,7 +137,9 @@ him in, `hauled-out`; each frame `hidden-calm`), its stalker (`came-on-her?` as 
 `searches`: the odds by a story variable - `finding-odds` 25, 50, 75 - and `will-find?`, a creature
 moving about, his alert 4; `door-for-him` opens a shut door he came by; `finds-her-at`: to the
 spot, Debilitas looking in, the others seeing her; the place's `found-her`, `came-while-hidden`);
-a placed object back as it was set (`object-reset`); by one of the forced ways
+a placed object back as it was set (`object-reset`); the push-boxes (`obstacle-in`,
+`obstacle-fixed`, `obstacle-on-tri?`); dust of a kind and colour (`dust-of`); an activity
+stopped by its word (`stop-doing`); by one of the forced ways
 (`forced-way?`: $80 .. the last given - not a room entered by none, -1); one triangle's floor flags
 (`floor-tri-on`); before an exit's door (`before-door?`); within reach across, whatever the height
 (`reaches-across?`, the zone bit 2); the camera's near clip (`near-clip`); her fright raised up to
@@ -187,6 +189,14 @@ Places, each with its test in `tests/places/`:
   door unlocked and the creatures loose), the moonlight's scene as she comes up with castle-1f-12's
   dials right, the door unlocked from this side, the piano, the speakers, the Refined Magnesia Hewie
   sniffs out, the Lavender, his looks up, the walls' shade, the replay (on to castle-1f-12's).
+- castle-2f-2, the chandelier hall ($20): her first steps by the chandeliers (Debilitas's scene: he
+  comes in and looks about, the file), the box barring the way (pushed home: fixed, the door beyond
+  unlocked), the Bisque Doll knocked down by her blow, falling and landing (on open floor, picked
+  up), after the telephone's warning the ticking beyond the door and the door tried (seized: the
+  forced way; brought back pulled free, she flees - the file; its locked door then), the blood (a
+  fright the first time), the floor, the angel painting, the dark corner, the Album Medallion Hewie
+  sniffs out, his wary stand and sitting by, his looks up, the chandeliers swinging, two flames,
+  the wheel's sounds, Debilitas's far shove, the creatures, the walls' shade, the replay.
 - castle-2f-3, the bedroom (44): every remark and spot, the clothes, the TV, the bed and the
   stalker's search, the maid's scene, the night, the attack lesson, the evasion tip, Hewie's
   find, the four replays.
