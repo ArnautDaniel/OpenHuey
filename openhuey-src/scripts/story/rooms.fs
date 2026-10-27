@@ -17,7 +17,7 @@ USING:
     story.rooms.old-mansion-2f-8 story.rooms.old-mansion-3f-1
     story.rooms.old-mansion-3f-2 story.rooms.off-map-64 story.rooms.off-map-65 story.rooms.old-mansion-b1-6 story.rooms.chaos-forest-1
     story.rooms.old-mansion-1f-20
-    story.rooms.old-mansion-1f-22 story.rooms.house-of-truth-1f-1 story.rooms.house-of-truth-2f-1
+    story.rooms.house-of-truth-1f-1 story.rooms.house-of-truth-2f-1
     story.rooms.house-of-truth-2f-2 story.rooms.house-of-truth-b1-1 story.rooms.house-of-truth-b1-2 story.rooms.house-of-truth-b1-3 story.rooms.house-of-truth-b1-4 story.rooms.house-of-truth-1f-2
     story.rooms.house-of-truth-1f-3 story.rooms.house-of-truth-1f-4 story.rooms.house-of-truth-1f-5 story.rooms.house-of-truth-1f-6 story.rooms.house-of-truth-1f-7 story.rooms.house-of-truth-1f-8
     story.rooms.house-of-truth-1f-9 story.rooms.house-of-truth-b1-5 story.rooms.house-of-truth-b1-6 story.rooms.house-of-truth-b1-7 story.rooms.house-of-truth-b1-8 story.rooms.house-of-truth-b1-9
