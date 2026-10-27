@@ -371,6 +371,8 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
     slot story.words:cast-actor to a  a 0< if  exit  then
     a slot story.words:slot-actor !  kind slot story.words:slot-id !  kind a send cast-load ;
 : figure-out ( slot -- )  story.words:slot-clear ;
+: figure-in-by ( kind slot exit -- )   \ (a figure loaded, coming in by that exit of this room)
+    {: kind slot ex :}  kind slot figure-in  slot story.words:slot-actor @ dup 0< if  drop exit  then  ex swap send to-exit ;
 : no-shadow ( kind on -- )   \ a character's shadows off for a scene (or back) - by its kind (Fiona 0)
     {: kind on :}  kind cast-model dup 0< if  drop exit  then  actor act.shadow-off  on 0<> 1 and swap l! ;
 
@@ -406,7 +408,8 @@ $2D constant ending-var   \ (which of the endings caught her, for the game over'
     items-40-as-70 fact? 0= if  exit  then  hewie-trust-now @ dup 1 8 within if  $828E + give-file  else  drop  then ;
 : screen-dark ( alpha -- )  story.words:screen-fill ;   \ (this frame: the screen darkened by alpha, to $80)
 : spirits-gone ( -- )  1 s" creatures" actor-named send creatures-clear ;   \ (the spirits about the castle away)
-: panic-over ( -- )  0 s" panic" actor-named send panic-stage! ;
+: panic-to ( stage -- )  s" panic" actor-named send panic-stage! ;
+: panic-over ( -- )  0 panic-to ;
 
 \ ---- the panic, Fiona ----
 : calm-her ( n -- )  fiona send fear-less ;
@@ -532,7 +535,9 @@ create look-bytes 16 allot
     128 0 do  i thing-used? if  i thing-kind over = if  drop true unloop exit  then  then  loop  drop false ;
 : creature-facing ( room level tri kind reach yaw -- )   \ (one let out there, turned so: the creatures' own way about -
     -1 swap 0e f>cell  s" creatures" actor-named send creature-place ;   \ reach x 10 her nearness that wakes it)
-: creature-in ( room level tri kind reach -- )  0 creature-facing ;   \ (the room a forced exit leads to, loaded ahead)
+: creature-in ( room level tri kind reach -- )  0 creature-facing ;
+: creature-dropped ( room level tri kind reach yaw F: from -- )   \ (a homunculus: turned so, dropped from that height)
+    -1 swap f>cell  s" creatures" actor-named send creature-place ;   \ (the room a forced exit leads to, loaded ahead)
 \ a reflecting quad (Reflection): reflection k (0..3: the effect k's, k and 3) on the quad's corners -
 \ over the whole picture or on the quad - at strength (0..$80), its top bits side panels: a window's or a door's
 $10000000 constant window-panels   $20000000 constant door-panels
@@ -659,6 +664,15 @@ create spot-xts #activities cells allot
     {: F: x y z :}  hewie hold  hewie wait-move  hewie spot-move 0 0  x y z 0e  move  hewie wait-move
     hewie hewie.anims:stance-anim start-anim  yield  hewie look-point-move 0 0  x y z 0e  move
     120 frames  hewie -1 look-at  yield  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
+: hewie-barks-tense ( F: x y z -- )   \ (the rooms' shared $92: turned to it, three tense barks, staying put)
+    {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
+    hewie hewie.anims:bark-tense-anim 10 play-blend  hewie hewie.anims:bark-tense-anim 0 play-blend
+    hewie hewie.anims:bark-tense-anim 0 play-blend  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
+: notices? ( addr odds F: x y z r h -- flag )   \ (once a visit - addr its cell: Hewie well, at her command,
+    {: a odds F: x y zz r h :}                  \ not chased, centred in the zone - by the odds)
+    a @  hewie-in? 0= or  hewie-cond-now @ well-cond <> or  chased? or  hewie-cmdable-now @ 0= or if  false exit  then
+    hewie x y zz r h centred-in? 0= if  false exit  then
+    -1 a !  odds chance? ;
 : hewie-sits-by ( F: x y z -- )   \ (the rooms' shared $89: turned to it, sitting a while, staying put)
     {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
     hewie hewie.anims:sit-a-while-anim 10 play-blend  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
@@ -953,9 +967,11 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
 : looks-at ( look -- )   \ (in its zone: up there)
     {: a :}  hewie  a f@  a float+ f@  a 2 floats + f@  a 3 floats + f@  a 4 floats + f@  centred-in? 0= if  exit  then
     a f@  a float+ f@ a 5 floats + f@ f+  a 2 floats + f@  hewie-scent ;
-: hewie-looks-at ( table n -- )
-    hewie-in?  danger-now @ calm = and  hewie-cmdable-now @ and 0= if  2drop exit  then
+: hewie-looks-if ( table n ok? -- )   \ (while ok: his looks at the table's zones, at her command)
+    hewie-in? and  hewie-cmdable-now @ and 0= if  2drop exit  then
     0 ?do  dup i /look * + looks-at  loop  drop ;
+: hewie-looks-at ( table n -- )  danger-now @ calm = hewie-looks-if ;   \ (calm)
+: hewie-looks-unchased ( table n -- )  chased? 0= hewie-looks-if ;   \ (the rooms' other: not chased)
 $2A constant replay-var   \ (the story's variable: which movie the extras' theatre replays)
 \ which of the room's acts replays it (the shared script $26's list, by the variable: $FF none; three
 \ go by the story's variable $2C too)
