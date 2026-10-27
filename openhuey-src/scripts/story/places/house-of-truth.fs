@@ -88,3 +88,22 @@ create colour-cameras  4 , 0 , 0 ,  5 , 1 , 1 ,
     {: tri deg :}  stalker-present  stalker hold  stalker false shown  stalker wait-move  stalker true shown
     stalker tri deg place-on-tri  stalker 1 1 camera-set  stalker look-about-3-anim 0 play-blend  0 stalker-order ;
 : sent-in ( room tri -- )  stalker-to  0 stalker-order ;   \ (into that room on the triangle, about his own way)
+
+\ ---- the tremors (shared $95, once the house has begun to come down - ht1f-9-flag2): with the
+\ stalker still about it (her track $F, file 257 not yet found) the violent ones - now and then a
+\ quake that may throw her down; else slight ones now and then ----
+$31 constant quake-sound   $87 constant quake-bank
+: shaken ( frames F: v -- )  {: n F: v :}  n 0 ?do  v cam-shake!  yield  loop ;
+: slight-tremors ( -- )   \ (an activity: for good)
+    begin  60 frames  25 chance? if  30 frames  then  25 chance? if  30 frames  then  30 0.1e shaken  again ;
+: standing? ( -- )  fiona-doing-now @ dup 0= swap 5 = or  fiona held? 0= and ;   \ (on her feet, her own)
+: thrown-down ( -- )  -1 true fiona send throw-down ;
+: quake ( -- )   \ (one: the rumble growing, the thump - she is thrown down if standing - dying away)
+    1 $80 30 rumble-pad  30 0.5e shaken  0 0 30 rumble-pad  1 $FF 30 rumble-pad
+    quake-sound quake-bank bank-sound
+    false 30 0 do  dup 0=  standing? and if  drop true  thrown-down  then  1e cam-shake!  yield  loop  drop
+    1 $80 30 rumble-pad  30 0.5e shaken ;
+: violent-tremors ( -- )  begin  90 0.1e shaken  quake  again ;
+: tremors ( -- )   \ (as she comes in)
+    ht1f-9-flag2 fact? 0= if  exit  then
+    over-music-f fact?  found-file-257 fact? 0= and if  ['] violent-tremors  else  ['] slight-tremors  then  start drop ;
