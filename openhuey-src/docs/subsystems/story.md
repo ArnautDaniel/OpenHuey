@@ -224,6 +224,14 @@ Places, each with its test in `tests/places/`:
   stand kept as she leaves, the replay.
 - castle-2f-11, the corridor of the slanted crest ($1F): the doll and the swing rocking, the crest,
   the specks, Hewie's look up.
+- the suspended bridge's hall (castle-2f-13, -14, -15: the same hall at three times) shares its
+  bridge in `story/places/bridge.fs` (vocab story.places.bridge): the bridge and the statue in
+  turn, Hewie's fetch of the Medallion across the gap and his calling back, the stalker's grab on
+  the plank, Hewie's bark and look across, climbing down; each room names its far side's triangles
+  as it comes in (`far-side!`).
+- castle-2f-15, the hall with its far way open ($30): climbing down, the statue, the Prima Magnesia
+  Hewie sniffs out, Daniella's motions loaded on the way out while she is the maid, the bridge's
+  Hewie (on his side of the hall), the map's pages.
 - castle-2f-13, the suspended bridge's hall before the great hall's balcony fell ($28): out on the
   balcony a while (she, or the stalker after her), it gives - to black, the doors set anew, down to
   the great hall by the forced way (her way the balcony's fall, his her seizing), Hewie sent there

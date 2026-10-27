@@ -12,4 +12,5 @@ USING: story.places.castle-2f-3 story.places.front-garden-3 story.places.castle-
     story.places.castle-1f-15 story.places.castle-1f-13 story.places.castle-1f-2 story.places.castle-2f-1
     story.places.castle-2f-2 story.places.castle-2f-11 story.places.castle-2f-4 story.places.castle-2f-10
     story.places.castle-2f-9 story.places.castle-2f-6
-    story.places.castle-2f-7 story.places.castle-2f-14 story.places.castle-2f-13 ;
+    story.places.castle-2f-7 story.places.castle-2f-14 story.places.castle-2f-13
+    story.places.castle-2f-15 ;

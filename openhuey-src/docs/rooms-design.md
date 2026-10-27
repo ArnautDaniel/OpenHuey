@@ -199,7 +199,7 @@ says what happens, and nothing in it can leave Fiona stuck.
 - The shared pieces (step 4): done - the kit's components (story.md, "What most rooms have").
 - The front garden and the lake pathway (step 5's first area): done, every room a place.
 - Castle 1F (step 5): all done (castle-1f-1 .. -19).
-- Castle 2F: castle-2f-1, -2, -3, -4, -6, -7, -8, -9, -10, -11, -13, -14 done; -5, -12, -15 next.
+- Castle 2F: castle-2f-1, -2, -3, -4, -6, -7, -8, -9, -10, -11, -13, -14, -15 done; -5, -12 next.
 
 ## Questions (answered)
 
