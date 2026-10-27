@@ -125,7 +125,7 @@ create locked-doors   2 , $34 , $62 , $44 , $47 , $4F , $56 , $67 , $7D , $51 , 
     fiona box-area 45 faces-area? if  ['] the-box unhurried offer  then
     fiona painting-area in-area?  fiona 45 50 heading? and if  ['] the-painting unhurried offer  then
     fiona twin-area in-area?  fiona 45 50 heading? and if  ['] the-twin unhurried offer  then
-    weak?  0 before-locked?  1 before-locked? or  2 before-locked? or  request-now @ 2 = or and if  ['] flags any-time offer  then
+    weak?  3 locked-request? and if  ['] flags any-time offer  then
     the-vase broken? if
         c1f-5-antimony-powder fact? 0=  fiona 41e 1e -19e 5e 5e touches? and if  ['] pick-antimony calm-only offer  then
     else  the-vase breaks? if  antimony-fx 41e 1e -19e flicker-at  then  then ;

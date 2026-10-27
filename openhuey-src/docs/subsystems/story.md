@@ -151,7 +151,15 @@ or linked, not leading her, not in a doorway - cond 0x65); his grab of Hewie fro
 stopped by its word (`stop-doing`); by one of the forced ways
 (`forced-way?`: $80 .. the last given - not a room entered by none, -1); one triangle's floor flags
 (`floor-tri-on`); before an exit's door (`before-door?`); within reach across, whatever the height
-(`reaches-across?`, the zone bit 2); the camera's near clip (`near-clip`); her fright raised up to
+(`reaches-across?`, the zone bit 2); the camera's near clip (`near-clip`); the rooms' four ambient sounds in turn
+(`ambient-sounds`); her request at a locked door (`locked-request?`), a locked door tried
+(`tries-locked`), a key turned in one (`key-turns`); the boxes' squares kept and models put back
+(`obstacle-kept-at`, `obstacle-model-home`); an object put somewhere (`object-to`); a thing there is
+one of taken (`takes-the`); the exit Hewie came in by (`hewie-came-by?`, the `hewie-came` message);
+Fiona's move part (`fiona-sub-now`); a blow in a cylinder by anyone (`blow-in?`) and the stalker's
+blow's strength (`his-blow`); the other game's file for Hewie's trust (`trust-file`); the screen
+darkened a frame (`screen-dark`); the spirits away (`spirits-gone`); the panic over (`panic-over`);
+her fright raised up to
 a level (`fright-up-to`: Panic_FrightRaw by what she is short of it); the stalker's move mode
 (`st-mode-now`); an animation come round this time
 (`went-round?`: its motion's $20 key, the original's cond 0x48); a scene's signal counted past
@@ -261,6 +269,14 @@ Places, each with its test in `tests/places/`:
 - castle-2f-3, the bedroom (44): every remark and spot, the clothes, the TV, the bed and the
   stalker's search, the maid's scene, the night, the attack lesson, the evasion tip, Hewie's
   find, the four replays.
+- castle-3f-1 ($6): the boxes below, the symbol door (its file; the Saturnus Key: Daniella's
+  "Dinner is served" before the chapter turns, else it unlocks), Daniella busy there after the
+  rest, the replay. castle-3f-2 ($2C): Daniella ahead the first time on after the rest.
+- castle-b1-2 (the washroom), -3 (the store room: the Metal Boots, the Castle Gate Key), -4 (the
+  spiral stair), -5 (the dark passage: Hewie tense, sent ahead; the pit), -6 (the chapel: the
+  statue and the Saturnus Key, Debilitas, the stands and the chandelier, the five replays), -7
+  (behind the furniture: the Study Key Hewie fetches through the hole, the blocked door and the
+  stalker trying it, the Medallions).
 - castle-2f-5, the bedroom once the chapter has turned ($32): the mirror whole, then broken; she
   weak (flagging as she reaches to act, at a locked door, at the jerky); resting on the bed - the
   mirror's scene (it cracks and shatters as it goes, Daniella in a fragment, her face), well again,

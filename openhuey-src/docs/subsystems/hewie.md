@@ -46,6 +46,7 @@ Declared in `scripts/messages.fs`.
 | `bite` / `shaken-off` / `snap` | | to the stalker | A bite while holding on; he let go; growled or barked at him. |
 | `blow` | `( kind damage how -- )` | in | Struck: by the stalker (his blows, his throw $B), by her (shove, kick: answered `blow-taken`), by a door (5). |
 | `hewie-doing` | `( here action mode sub cond mood group -- )` | broadcast, each frame (and again when a message changes what he does) | here: 0 out of the game, 1 in another room, 2 with her; his action, move mode and its part, condition, mood, pose group. Fiona chooses her commands by it. |
+| `hewie-came` | `( exit -- )` | broadcast as he arrives in the room being played | the exit he came in by (-1 none: his +0x14D4); the rooms' cond 0x30 for him (castle-b1-5). |
 | `command` | `( code tri yaw x z -- )` | in (Fiona) | Her command (the original's request 13). 0x23 "go there" carries the spot (floats `f>cell`). |
 | `reaction` | `( n -- )` | in (Fiona) | How her doing strikes him (Fiona_HewieReact's row): patience spent while he waits, a praise due. |
 | `meet-me` / `meet-at` / `meet-refused` | `( type )` / `( tri x y z face )` / `( )` | in / out | The meeting by his side, first part (type 0 scold, 2 praise, 4 stay): he finds her place and turns to her (0x48), or refuses. |

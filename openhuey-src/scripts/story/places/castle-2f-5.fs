@@ -39,7 +39,7 @@ $E constant first-fragment   11 constant #fragments   \ (its objects a_fragment0
 
 \ ---- as she comes in ----
 : came-in ( exit -- )
-    drop  room-sounds  tv-in  medallion-sparkle  0 ambient-next !  0 ambient-frames !
+    drop  room-sounds  tv-in  medallion-sparkle
     glass  mirror-now  false fragments ;
 
 \ ---- she weak (till she has rested): reaching to act, she flags ----
@@ -142,7 +142,7 @@ $E constant first-fragment   11 constant #fragments   \ (its objects a_fragment0
     window-area 44 60 facing? if  ['] window-night unhurried offer  then
     window-2-area 44 60 facing? if  ['] window-2 unhurried offer  then
     clock-area -90 50 facing? if  ['] save-clock calm-hewie-up offer  then
-    weak?  0 before-locked?  1 before-locked? or  request-now @ 2 = or and if  ['] tired any-time offer  then
+    weak?  2 locked-request? and if  ['] tired any-time offer  then
     c2f-3-medallion-found fact?  c2f-3-medallion fact? 0= and  fiona -9e 1e -11e 5e 5e touches? and if
         weak? if  ['] tired  else  ['] jerky  then  calm-only offer
     then ;

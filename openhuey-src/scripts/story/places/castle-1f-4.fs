@@ -41,7 +41,6 @@ own: plate-frames       \ the mechanism's frames up (0..24): castle-1f-7's gate 
 own: plate-act          \ the mechanism's doing (one at a time: a new one replaces it)
 own: hewie-noticed      \ Hewie has barked at the wall (once a visit)
 own: hewie-at-spot      \ Hewie at his spot by the clock (his action there made)
-own: ambient-step   own: ambient-frames
 own: marionette-step    \ the marionette's scene: done (her part waits for it)
 
 \ ---- its places, its things ----
@@ -127,7 +126,7 @@ defer the-trap
     else  wall-part show-part  0 sparkle-shown !  then
     got-cracked-plate-key fact? if  plate-key-part hide-part  else  plate-key-part show-part  then
     slot-door doors:door-locked? if  key-in-slot-part hide-part  else  key-in-slot-part show-part  then
-    0 ambient-step !  0 ambient-frames !  1 $2300 reverb ;
+    1 $2300 reverb ;
 
 \ ---- Riccardo, at night (back with the castle's sketch): the scene, then out to $31 ----
 : riccardo-shots ( shot -- )   \ (the original's act11: the stalker's shadow off for two shots)
@@ -261,11 +260,8 @@ defer the-trap
 : ambience ( -- )
     room-sounds-in? 0= if  exit  then
     mechanism-sound-now -72e 10e 15e keep-sound
-    1 ambient-frames +!  ambient-frames @ 30 = if
-        0 ambient-frames !  first-ambient ambient-step @ + -17e 22e -9e room-sound
-        ambient-step @ 1+ 4 mod ambient-step !
-    then ;
-: flame-stirs ( -- )  flame-fx 22.8e 10.65e 68.75e 8e 4e flame-stirred ;   \ (someone stepping into its draught)
+    first-ambient -17e 22e -9e ambient-sounds ;
+: flame-stirs ( -- )  flame-fx 22.8e 10.65e 68.75e 8e -4e flame-stirred ;   \ (someone stepping into its draught)
 : barks-at-wall ( -- )  140e -10e 94e hewie-barks-at ;
 : hewie-looks ( -- )
     hewie-in?  hewie-cond-now @ well-cond = and 0= if  exit  then

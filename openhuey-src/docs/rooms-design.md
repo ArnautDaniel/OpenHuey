@@ -200,7 +200,11 @@ says what happens, and nothing in it can leave Fiona stuck.
 - The front garden and the lake pathway (step 5's first area): done, every room a place.
 - Castle 1F (step 5): all done (castle-1f-1 .. -19).
 - Castle 2F: all done (castle-2f-1 .. -15).
-- Castle 3F and B1: next.
+- Castle 3F: all done (castle-3f-1, -2).
+- Castle B1: castle-b1-2 .. -7 done; castle-b1-1 next.
+- Open from them: in castle-b1-2 her walk from the locked door's spot to its knob ($95) never
+  arrives (her second try, "grimy handprints"); in castle-b1-7 no test spot was found where her
+  request at the blocked door is made (its remark untested).
 
 ## Questions (answered)
 

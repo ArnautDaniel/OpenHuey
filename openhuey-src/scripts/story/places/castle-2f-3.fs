@@ -44,7 +44,7 @@ $3C constant hall-door   $3D constant west-door   \ (its doors)
     found-file-202 fact? 0= if  west-door lock  then
     c2f-3-flag1 fact?  hewie-found-in-wire fact? 0= and if  west-door lock  then
     found-file-201 fact?  found-file-202 fact? 0= and  clothes-part swap part
-    0 ambient-next !  0 ambient-frames !  30 whine-frames !
+    30 whine-frames !
     got-castle-sketch fact? 0= if  daylight-tint  then
     glass ;
 

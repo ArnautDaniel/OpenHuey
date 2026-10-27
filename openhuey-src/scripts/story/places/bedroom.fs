@@ -13,8 +13,6 @@ own-reset
 \ ---- its own state (a visit) ----
 own: portrait-1-remarked   own: portrait-2-remarked   own: portrait-3-remarked   own: doll-remarked
 own: sounds-on             \ its steady sounds started
-own: ambient-next          \ which ambient sound next (0..3)
-own: ambient-frames        \ frames to it (every 30)
 own: hiding-step           \ how far the hiding is: Hewie goes by it (0 going in, 1 under, 2 out by herself)
 own: hewie-along           \ he came to hide too
 own: hewie-in-place        \ he's at the other bed, ready
@@ -77,10 +75,7 @@ $40 constant glass-strength
         tv-on? if  tv-static-sound  0e 3e 7e  room-sound  then
         room-loop-sound  -42e 4e -63e  room-sound  -1 sounds-on !  exit
     then
-    1 ambient-frames +!  ambient-frames @ 30 = if
-        0 ambient-frames !  first-ambient ambient-next @ +  -47e 12e -28e  room-sound
-        ambient-next @ 1+ 4 mod ambient-next !
-    then
+    first-ambient -47e 12e -28e ambient-sounds
     tv-on? if  tv-static-sound  0e 3e 7e  keep-sound  then
     room-loop-sound  -42e 4e -63e  keep-sound ;
 : fan ( -- )  s" fan" 0.0200713e object-turn ;   \ (1.15 degrees a frame, but while a movie plays)

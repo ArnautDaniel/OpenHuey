@@ -18,8 +18,6 @@ own-reset
 \ ---- its own state (a visit) ----
 own: sounds-started        \ the room's sounds begun (then kept up)
 own: painting-remarked     \ the painting's first remark made (in turn with the second)
-own: ambient-at            \ which of the room's sounds next (0..3)
-own: ambient-frames        \ frames to it (30)
 
 \ ---- the room's things ----
 0 constant tv-fx   1 constant magnesia-fx   0 constant tv-off-part
@@ -48,10 +46,7 @@ own: ambient-frames        \ frames to it (30)
     sounds-started @ 0= if
         room-sounds-in? if  tv-on? if  running-sound running-at room-sound  then  -1 sounds-started !  then  exit
     then
-    1 ambient-frames +!  ambient-frames @ 30 = if
-        0 ambient-frames !  first-ambient ambient-at @ +  27e 15e -6e room-sound
-        ambient-at @ 1+ 3 and ambient-at !
-    then
+    first-ambient 27e 15e -6e ambient-sounds
     c1f-16-flag1 fact? if  running-sound running-at keep-sound  then ;
 
 \ ---- the TV switched: on (its noise heard; the first time ever, a fright) or off - not once

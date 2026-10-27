@@ -1,13 +1,13 @@
 \ story/rooms.fs - every room's event scripts (story/rooms/*.fs), loaded.
 IN: story.rooms
 USING:
-    story.rooms.castle-3f-1 story.rooms.castle-b1-4 story.rooms.castle-b1-5
-    story.rooms.castle-b1-6 story.rooms.off-map-0d
-    story.rooms.castle-b1-1 story.rooms.castle-b1-2 story.rooms.castle-b1-3
-    story.rooms.castle-b1-7
+   
+    story.rooms.off-map-0d
+    story.rooms.castle-b1-1
+   
    
     story.rooms.off-map-27
-    story.rooms.castle-3f-2 story.rooms.old-mansion-1f-1
+    story.rooms.old-mansion-1f-1
     story.rooms.off-map-33 story.rooms.off-map-34 story.rooms.off-map-35
     story.rooms.off-map-36 story.rooms.off-map-37 story.rooms.old-mansion-1f-2 story.rooms.old-mansion-1f-3 story.rooms.old-mansion-1f-4 story.rooms.old-mansion-1f-5
     story.rooms.old-mansion-b1-1 story.rooms.old-mansion-2f-1 story.rooms.old-mansion-1f-6 story.rooms.old-mansion-1f-7 story.rooms.old-mansion-1f-8 story.rooms.old-mansion-1f-9

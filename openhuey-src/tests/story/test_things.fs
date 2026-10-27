@@ -17,9 +17,10 @@ variable want-n  variable want-a
 
 3 run-frames
 castle-b1-6 room!  5 run-frames
-testing entering castle-b1-6: its door shows its part (group 22), its object 6 (the scenes' door) is hidden
+testing entering castle-b1-6 (its place): its door shows its part (group 22), its object 6 (the scenes' door) is hidden
 T{ 0 22 door-group?  0 0 door-group?  0 23 door-group? -> -1 -1 0 }T
 T{ 6 object-shown? -> 0 }T
+-1 story:places-off !  castle-b1-6 room!  5 run-frames   \ (the room as a converted one: the scripts' words' host)
 testing the scripts' words: an object shown (its +0 0), a door part off
 T{ [: 6 0 object-hidden  1 0 $14 door-bits ;] in-room  6 object-shown?  0 22 door-group? -> -1 0 }T
 

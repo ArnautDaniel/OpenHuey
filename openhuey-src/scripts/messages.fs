@@ -260,6 +260,7 @@ message hewie-doing ( here action mode sub cond mood group commandable near reac
                                              \ near enough for it (Hewie_FionaNearCommand), he can reach her
                                              \ (Hewie_FionaReachable), he may be broken off (Hewie_MayBreakOff), his
                                              \ half of the room (+0xF3668), his trust level
+message hewie-came ( exit -- )               \ broadcast as Hewie arrives in the room being played: the exit he came in by (-1 none: +0x14D4)
 message command ( code tri yaw x z -- )      \ Fiona's command (0x23 go there: the spot; floats f>cell)
 message reaction ( n -- )                    \ how her doing strikes him (Fiona_HewieReact's row: hewie-reaction)
 \ what she did, as it strikes Hewie: her "go", "come back", "come" / "stay", a scolding and a praise
