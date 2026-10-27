@@ -101,7 +101,7 @@ strings: old-mansion-b1-5$ DE001F  DE001F\DE001F.SFD  DE101F  DE101F\DE101F.SFD 
     O_HEW\HEW_100.MTN  O_DNL\DNL_100.MTN  O_FIN_M\FIN_102.MTN ;  old-mansion-b1-5 room-strings!
 strings: old-mansion-1f-13$ DE002C  DE002C\DE002C.SFD  mandor_0  mandor_1  mandor_2  mandor_3
     mandor_4  mandor_5  mandor_6  mandor_7 ;  old-mansion-1f-13 room-strings!
-strings: old-mansion-1f-14$ DE0035\FILM.SFD ;  old-mansion-1f-14 room-strings!
+strings: old-mansion-1f-14$ DE0035\FILM.SFD  2 DE0035\FILM.SFD  4 DE0035\FILM.SFD  6 EV0016  EV0016\EV0016.SFD  arm  chair ;  old-mansion-1f-14 room-strings!
 strings: old-mansion-1f-15$ movebook_blue  hondana_a0  hondana_a1  hondana_a2  movebook_yellow
     hondana_b0  hondana_b1  hondana_b2  movebook_red  hondana_c0  hondana_c1  hondana_c2 ;  old-mansion-1f-15 room-strings!
 strings: old-mansion-1f-16$ O_DNL\DNL_109.MTN  DE002D  DE002D\DE002D.SFD ;  old-mansion-1f-16 room-strings!

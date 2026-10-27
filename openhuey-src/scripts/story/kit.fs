@@ -371,6 +371,8 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
     slot story.words:cast-actor to a  a 0< if  exit  then
     a slot story.words:slot-actor !  kind slot story.words:slot-id !  kind a send cast-load ;
 : figure-out ( slot -- )  story.words:slot-clear ;
+: figure-in-by ( kind slot exit -- )   \ (a figure loaded, coming in by that exit of this room)
+    {: kind slot ex :}  kind slot figure-in  slot story.words:slot-actor @ dup 0< if  drop exit  then  ex swap send to-exit ;
 : no-shadow ( kind on -- )   \ a character's shadows off for a scene (or back) - by its kind (Fiona 0)
     {: kind on :}  kind cast-model dup 0< if  drop exit  then  actor act.shadow-off  on 0<> 1 and swap l! ;
 
@@ -406,7 +408,8 @@ $2D constant ending-var   \ (which of the endings caught her, for the game over'
     items-40-as-70 fact? 0= if  exit  then  hewie-trust-now @ dup 1 8 within if  $828E + give-file  else  drop  then ;
 : screen-dark ( alpha -- )  story.words:screen-fill ;   \ (this frame: the screen darkened by alpha, to $80)
 : spirits-gone ( -- )  1 s" creatures" actor-named send creatures-clear ;   \ (the spirits about the castle away)
-: panic-over ( -- )  0 s" panic" actor-named send panic-stage! ;
+: panic-to ( stage -- )  s" panic" actor-named send panic-stage! ;
+: panic-over ( -- )  0 panic-to ;
 
 \ ---- the panic, Fiona ----
 : calm-her ( n -- )  fiona send fear-less ;
@@ -497,7 +500,11 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : hands-empty ( -- )  daniellas-model dup 0< if  drop exit  then  false false story.words:daniella-parts ;   \ (what she holds put away)
 : hands-back ( -- )  daniellas-model dup 0< if  drop exit  then  story.words:daniella-one ;   \ (what she holds shown again)
 : her-back ( pose -- )  daniellas-model dup 0< if  2drop exit  then  swap cloth-back! ;   \ (Daniella's back for her hair: 0 standing, 1 flat, 2 bent)
-: stalker-to ( room tri -- )  partner dup 0< if  drop 2drop exit  then  send stalker-in ;   \ (the story's stalker into the game there, loaded: stalker-to-room)
+: stalker-present ( -- )   \ (in an activity: a few frames for the stalker sent in to have his body)
+    20 0 do  stalker 0< 0= if  unloop exit  then  yield  loop ;
+: stalker-to ( room tri -- )   \ (the story's stalker into the game there, loaded: stalker-to-room - in an
+    partner dup 0< if  drop 2drop exit  then  send stalker-in   \ activity, there by the time it goes on)
+    acting @ 0< 0= if  stalker-present  then ;
 : his-own-time ( -- )  -1 s" summoner" actor-named send summoner-cooldown ;   \ (the summoner's wait: his own kind's)
 : summoner-sooner ( secs -- )  s" summoner" actor-named send summoner-cooldown-less ;
 : stalker-order ( mode -- )  stalker dup 0< if  2drop exit  then  send stalker-order ;
@@ -532,7 +539,9 @@ create look-bytes 16 allot
     128 0 do  i thing-used? if  i thing-kind over = if  drop true unloop exit  then  then  loop  drop false ;
 : creature-facing ( room level tri kind reach yaw -- )   \ (one let out there, turned so: the creatures' own way about -
     -1 swap 0e f>cell  s" creatures" actor-named send creature-place ;   \ reach x 10 her nearness that wakes it)
-: creature-in ( room level tri kind reach -- )  0 creature-facing ;   \ (the room a forced exit leads to, loaded ahead)
+: creature-in ( room level tri kind reach -- )  0 creature-facing ;
+: creature-dropped ( room level tri kind reach yaw F: from -- )   \ (a homunculus: turned so, dropped from that height)
+    -1 swap f>cell  s" creatures" actor-named send creature-place ;   \ (the room a forced exit leads to, loaded ahead)
 \ a reflecting quad (Reflection): reflection k (0..3: the effect k's, k and 3) on the quad's corners -
 \ over the whole picture or on the quad - at strength (0..$80), its top bits side panels: a window's or a door's
 $10000000 constant window-panels   $20000000 constant door-panels
@@ -659,6 +668,15 @@ create spot-xts #activities cells allot
     {: F: x y z :}  hewie hold  hewie wait-move  hewie spot-move 0 0  x y z 0e  move  hewie wait-move
     hewie hewie.anims:stance-anim start-anim  yield  hewie look-point-move 0 0  x y z 0e  move
     120 frames  hewie -1 look-at  yield  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
+: hewie-barks-tense ( F: x y z -- )   \ (the rooms' shared $92: turned to it, three tense barks, staying put)
+    {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
+    hewie hewie.anims:bark-tense-anim 10 play-blend  hewie hewie.anims:bark-tense-anim 0 play-blend
+    hewie hewie.anims:bark-tense-anim 0 play-blend  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
+: notices? ( addr odds F: x y z r h -- flag )   \ (once a visit - addr its cell: Hewie well, at her command,
+    {: a odds F: x y zz r h :}                  \ not chased, centred in the zone - by the odds)
+    a @  hewie-in? 0= or  hewie-cond-now @ well-cond <> or  chased? or  hewie-cmdable-now @ 0= or if  false exit  then
+    hewie x y zz r h centred-in? 0= if  false exit  then
+    -1 a !  odds chance? ;
 : hewie-sits-by ( F: x y z -- )   \ (the rooms' shared $89: turned to it, sitting a while, staying put)
     {: F: x y z :}  hewie hold  hewie wait-move  hewie x z turn-to-xz
     hewie hewie.anims:sit-a-while-anim 10 play-blend  hewie 10 idle  10 frames  hewie keep  hewie send hewie-stay ;
@@ -953,9 +971,11 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
 : looks-at ( look -- )   \ (in its zone: up there)
     {: a :}  hewie  a f@  a float+ f@  a 2 floats + f@  a 3 floats + f@  a 4 floats + f@  centred-in? 0= if  exit  then
     a f@  a float+ f@ a 5 floats + f@ f+  a 2 floats + f@  hewie-scent ;
-: hewie-looks-at ( table n -- )
-    hewie-in?  danger-now @ calm = and  hewie-cmdable-now @ and 0= if  2drop exit  then
+: hewie-looks-if ( table n ok? -- )   \ (while ok: his looks at the table's zones, at her command)
+    hewie-in? and  hewie-cmdable-now @ and 0= if  2drop exit  then
     0 ?do  dup i /look * + looks-at  loop  drop ;
+: hewie-looks-at ( table n -- )  danger-now @ calm = hewie-looks-if ;   \ (calm)
+: hewie-looks-unchased ( table n -- )  chased? 0= hewie-looks-if ;   \ (the rooms' other: not chased)
 $2A constant replay-var   \ (the story's variable: which movie the extras' theatre replays)
 \ which of the room's acts replays it (the shared script $26's list, by the variable: $FF none; three
 \ go by the story's variable $2C too)
@@ -1004,14 +1024,15 @@ create replay-acts
 : hid-motion ( i -- anim )  room-motion + ;
 : hauled-out ( -- )
     found-her @ if  2 avoid-prompt  then
-    fiona follow  fiona-hidden state-off  fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by
+    fiona follow  fiona true shown  fiona-hidden state-off  fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by
     fiona 3 hid-motion 10 play-blend  fiona false noclip
     found-her @ 0= if  stalker let-go  then ;
 : slips-out ( -- )
     stalker-in? if  hauled-out exit  then
-    fiona follow  fiona-hidden state-off  fiona true noclip
+    fiona follow  fiona true shown  fiona-hidden state-off  fiona true noclip
     fiona 2 hid-motion 5 start-blend8  5 frames  fiona.sounds:slide-sound common-bank fiona sound-by  fiona wait-anim
     fiona false noclip ;
+variable hide-unseen   \ (the hiding place next: she isn't drawn while in it - hides-in clears it)
 : hides-in ( file tri deg cam F: x z -- )   \ (her motions' file; where she slips in from, facing it; the
     {: file tri deg cam F: x z :}           \ room's camera set while she's in, -1 hers kept)
     stalkers-stay state!  0 came-while-hidden !  fiona file motions-for  fiona wait-move  fiona use-motions
@@ -1020,6 +1041,7 @@ create replay-acts
     fiona 1 hid-motion 10 start-blend  fiona false noclip
     stalkers-stay state-off  fiona-hidden state!  0 found-her !  0 avoid-prompt
     cam 0< 0= if  cam -1 fixed-camera  then   \ (the room's own, following nobody: the original's self-who)
+    hide-unseen @ if  fiona false shown  0 hide-unseen !  then
     begin
         circle button-pressed? if  slips-out exit  then
         in-panic? found-her @ or if
@@ -1073,6 +1095,14 @@ create replay-acts
 : stalker-ready ( kind -- )  story.words:partner-load ;   \ the game's stalker: that kind, loaded and started
 : stalker-unloaded ( -- )  story.words:slot-unload ;   \ the game's stalker out (the story's slot 2 emptied)
 : movie-key ( a b -- )  -1 -rot movie-compose ;   \ (the keyed movie's luminance key: its threshold and range)
+: film ( name class -- )   \ (a movie alone - the projector's: played through, the start button stops it)
+    {: n cls :}  n this-room @ story.strings:room-string movie-open drop  1 movie-pause
+    cls story.words:class>compo $10 $20 movie-compose
+    begin  scenes:movie-state 1 =  while  yield  repeat   \ (made ready)
+    scenes:movie-state 0< if  exit  then
+    1e movie-volume!  0 movie-pause  yield  world-held state!
+    begin  scenes:movie-state 0< 0=  start-button button-pressed? 0= and  while  yield  repeat
+    movie-close  begin  scenes:movie-state 0< 0= while  yield  repeat  yield  world-held state-off ;
 
 \ ---- items counted ----
 : has-items? ( item n -- flag )  swap items:items-of swap < 0= ;

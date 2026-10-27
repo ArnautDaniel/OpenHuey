@@ -50,7 +50,7 @@ create there 12 allot
     done  to-idle ;
 
 \ ---- 5 straight: to the spot facing the heading (Fiona_DoorFrame, as at a door) ----
-: to-spot ( -- )  walk-to-spot dup 0< if  drop to-idle exit  then  0= if  done  then ;
+: to-spot ( -- )  walk-to-spot dup 0< if  drop to-idle done exit  then  0= if  done  then ;   \ (no way there: idle - the scripts' wait over, as the original's waits for her idle)
 
 \ ---- turning on the spot (14 / 15: Fiona_StateTurnOnSpot / TurnStanding, then her idle step) ----
 : idle-step ( -- )   \ Fiona_StateIdleStep: standing played out - done; else her idle
@@ -75,7 +75,7 @@ create there 12 allot
 
 \ ---- Fiona_Requests: a move given ----
 : path-start ( -- )   \ (a way to the spot; none: idle)
-    plan-move if  ['] path-turn her-act !  else  to-idle  then ;
+    plan-move if  ['] path-turn her-act !  else  to-idle done  then ;
 : start-move ( kind -- )
     0 her-move-done !  led-mode her-mode !
     case

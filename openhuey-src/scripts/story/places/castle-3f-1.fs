@@ -39,7 +39,7 @@ create first-squares  $584 , $DF8 ,   $65C , $ED0 ,   $76A , $FDE ,   $36E , $BE
 \ ---- Daniella here, once she has rested (till the corridor): busy at her task, unafraid of, no camera ----
 : daniella-due? ( -- flag )  c1f-14-flag2 fact?  c3f-2-flag1 fact? 0= and ;
 : busy-here ( -- )
-    stalker hold  stalker true noclip  stalker $129 180 -4.85e -47.03e place-at  stalker -1 -1 camera-set
+    stalker-present  stalker hold  stalker true noclip  stalker $129 180 -4.85e -47.03e place-at  stalker -1 -1 camera-set
     stalker wait-move  stalker use-motions  begin  stalker room-motion 1+ play  again ;
 : daniella-busy ( -- )
     force-followed state!  stalker-no-fear state!  no-stalker-camera state!

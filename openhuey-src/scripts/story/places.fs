@@ -1,7 +1,25 @@
 \ story/places.fs - the rooms written as places (story/kit.fs, docs/rooms-design.md). Each one
 \ here replaces its room's converted scripts (story/rooms/).
 IN: story.places
-USING: story.places.castle-2f-3 story.places.front-garden-3 story.places.castle-2f-8 story.places.castle-1f-4
+USING:
+    story.places.old-mansion-1f-16
+    story.places.old-mansion-2f-13
+    story.places.old-mansion-1f-24
+    story.places.old-mansion-1f-19
+    story.places.old-mansion-1f-3
+    story.places.old-mansion-1f-1
+    story.places.old-mansion-1f-14
+    story.places.old-mansion-1f-21
+    story.places.old-mansion-2f-2
+    story.places.old-mansion-2f-4
+    story.places.old-mansion-b1-7
+    story.places.old-mansion-2f-10
+    story.places.old-mansion-1f-5
+    story.places.old-mansion-1f-18
+    story.places.old-mansion-2f-9
+    story.places.old-mansion-1f-10
+    story.places.old-mansion-2f-1
+    story.places.old-mansion-2f-7 story.places.castle-2f-3 story.places.front-garden-3 story.places.castle-2f-8 story.places.castle-1f-4
     story.places.lake-pathway-2 story.places.lake-pathway-1 story.places.front-garden-4
     story.places.front-garden-2 story.places.front-garden-5 story.places.front-garden-1
     story.places.castle-1f-17 story.places.castle-1f-1 story.places.castle-1f-10
