@@ -1,10 +1,10 @@
 \ The old mansion's room commands (S5c; src/game/rooms/room_4C.c, room_5C.c): the four floor
 \ plates pressed in by their event bits (old-mansion-b1-3), her shakes counted (the same room).
-\ (old-mansion-2f-8's curtain: tests/places/test_old_mansion_2f_8.fs.) Headless:
+\ (old-mansion-2f-8's curtain, old-mansion-1f-15's shelves: their place tests.) Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_old_mansion.fs
 IN: test-old-mansion
 USING: tester engine game-state actors messages common room-names game debug story.state story.words
-  story.rooms.old-mansion-b1-3 story.rooms.old-mansion-1f-15 ;
+  story.rooms.old-mansion-b1-3 ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
@@ -24,12 +24,6 @@ T{ [: 99 fiona-shook !  0 old-mansion-b1-3.cmd01 ;] in-room -> }T
 3 run-frames
 T{ [: fiona-shook @ ;] in-room -> 0 }T
 T{ [: 35 fiona-shook !  1 old-mansion-b1-3.cmd01  $13 ebit? ;] in-room -> -1 }T
-
-old-mansion-1f-15 room!  20 run-frames
-testing old-mansion-1f-15: the yellow shelves moved back 0.25 in x a step, held at their stop (39)
-T{ [: s" hondana_b0" object-here? ;] in-room -> -1 }T
-T{ [: 8 4 do  40e i shelf place-x object!  loop  0 ebit-set  1 1 old-mansion-1f-15.cmd00  s" hondana_b0" place-x object@ 39.75e ~=  0 ebit? ;] in-room -> -1 -1 }T
-T{ [: 5 0 do  1 1 old-mansion-1f-15.cmd00  loop  s" hondana_b0" place-x object@ 39e ~=  0 ebit? ;] in-room -> -1 0 }T
 
 testing swim paths: a fish's way stays in its box (2 x 3 x 5 cells from (30, 0, 50)), turning 3.6 degrees a frame at most
 : within? ( F: v lo hi -- ) ( -- flag )  frot fswap fover f>= >r f<= r> and ;

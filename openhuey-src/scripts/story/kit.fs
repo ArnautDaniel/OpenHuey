@@ -723,6 +723,7 @@ create spot-xts #activities cells allot
 : obstacle-kept-at ( i a b -- )  s" obstacles" actor-named send keep-obstacle-at ;   \ (square (a, b) kept for it: where it comes next visit)
 : obstacle-model-home ( i n -- )  s" obstacles" actor-named send obstacle-model-to-spot ;   \ (model "oshi0n" put where box i's spot was kept)
 : floor-tri-on ( tri flags -- )  true -rot nav-tri-flags! ;   \ (one triangle's floor: who it keeps off)
+: floor-tri-off ( tri flags -- )  false -rot nav-tri-flags! ;
 : closed-off ( door -- )  dup doors-actor send close-off  lock ;   \ gone for good: its exits use another door
 : closed-off? ( door -- flag )  story.words:door-not-closed-off? 0= ;   \ (closed off for good)
 : door-as ( door from -- )  doors-actor send copy-door ;   \ door takes on the other's open mark, lock and closing off
