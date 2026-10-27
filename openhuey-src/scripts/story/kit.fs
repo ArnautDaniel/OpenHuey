@@ -304,6 +304,7 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 \ ---- exits ----
 : rooms-actor ( -- id )  s" rooms" actor-named ;
 $80 constant forced-exit   \ (an exit's bit: not by a door - to the room loaded ahead, prepare-exit's)
+: forced-way? ( last -- flag )  came-by @ forced-exit rot 1+ within ;   \ (she came by one of the forced ways $80 .. last)
 : take-exit ( exit -- )  going ! ;   \ (after this frame)
 : at-exit ( id exit -- )  over 0< if  2drop exit  then  swap send to-exit ;   \ (on its outside spot, facing in)
 : prepare-exit ( exit -- )  rooms-actor send exit-prepare ;   \ (the room behind it loaded ahead)
@@ -705,6 +706,22 @@ create arrows-held 4 cells allot   \ (frames each arrow has been held: the pad's
     cross button-pressed?  triangle button-pressed? or if  -1 exit  then
     var var@  3 arrow-repeat? if  dup if  1-  then  else  1 arrow-repeat? if  dup 6 < if  1+  then  then  then
     dup var var@ <> if  var var!  1  else  drop 0  then ;
+\ a dial turned by the stick (the moon dials): the stick's message up; each number she asks for
+\ turned to a degree a frame - the room's sound 0 as it sets off, a click (its sound 1) at the
+\ right one and its lens catching the light - till she is done (cross or triangle), its message up
+0 constant dial-rest-sound   1 constant dial-click-sound
+: dial-turning ( addr len var right base msg F: sx sy sz turn -- )
+    {: a n var right base msg F: sx sy sz turn | asking :}
+    -1 to asking  msg show
+    begin
+        asking if
+            var dial-asked  dup 1 = if  0 to asking  dial-rest-sound sx sy sz room-sound  then
+        else
+            a n var base dial-turns if
+                -1 to asking  var var@ right = if  dial-click-sound sx sy sz room-sound  a n turn catches-light  then
+            then  0
+        then
+    -1 <> while  yield  repeat ;   \ (its message left up: the caller closes it)
 $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3C constant swing-pushed   \ (their own: floats)
 4 constant swing-back   \ (a whole number: swinging back)
 : hanging ( i -- addr len )  this-room @ story.strings:room-string ;

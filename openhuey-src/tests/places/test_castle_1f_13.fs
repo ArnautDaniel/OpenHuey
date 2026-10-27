@@ -42,6 +42,7 @@ testing coming in (the balcony fallen): the door shut, the Jerky and the Antimon
 found-file-227 story-flag-set  found-file-227-2 story-flag-set  c1f-13-chicken-jerky story-flag-clear
 c1f-13-antimony-powder-found story-flag-set  c1f-13-antimony-powder story-flag-clear  room-afresh
 T{ door-shut-part part?  door-open-part part?  [: jerky-fx effect @ 0<>  antimony-fx effect @ 0<> ;] in-place -> -1 0 -1 -1 }T
+T{ doing-busy? -> 0 }T   \ (not come by a forced way: no scene)
 testing ... its door open
 hall-door s" doors" actor-named send unlock  [: hall-door true open-mark ;] in-place  room-afresh
 T{ door-open-part part? -> -1 }T

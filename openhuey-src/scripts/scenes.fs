@@ -38,9 +38,10 @@ end-state
 : fade-to ( kind -- )  -1 fading !  scene-fade swap screen-actor send fade ;
 
 \ ---- the steps ----
+: asker ( -- id | -1 )  asked-by @ dup alive? 0= if  drop -1  then ;   \ (the place that asked, still there: else none - gone with its room)
 : tell ( -- )   \ (the place told of each new shot)
     cutscene-frame cutscene-shot-at  dup shot-was @ = if  drop exit  then
-    dup shot-was !  asked-by @ send scene-shot ;
+    dup shot-was !  asker dup 0< if  2drop  else  send scene-shot  then ;
 : cue-step ( -- )   \ (the director kept with the movie's frame; its signal flips movie-opaque)
     cue @ cue-was !  movie-frame cue !  cue @ cutscene-frame!
     opaque-signal cutscene-signals 1 and if
@@ -58,10 +59,10 @@ end-state
     black-frame  movie-close  0 movie-up !  world-held state-flag-set
     pause-wanted state-flag-set
     false cam-scene!  cutscene-end  movie-opaque state-flag-clear  0 broadcast scene
-    no-scene step !  asked-by @ send scene-over ;
+    no-scene step !  asker dup 0< if  drop  else  send scene-over  then ;
 : through-ends ( -- )   \ (played through: its subtitles gone, the movie and the director left as they are)
     $FFFF window-actor send close-text  -1 subtitles !  0 through !
-    no-scene step !  asked-by @ send scene-over ;
+    no-scene step !  asker dup 0< if  drop  else  send scene-over  then ;
 : stop-now ( -- )   \ (the place gone: nothing told)
     movie-up @ if  movie-close  0 movie-up !  then
     cutscene-active? if  false cam-scene!  cutscene-end  movie-opaque state-flag-clear  0 broadcast scene  then
@@ -114,7 +115,7 @@ behaviour scening
   on tick ( -- )
       step @ case
           readying of  cutscene-run  cutscene-status director-ready = if
-                           ready step !  movie-up @ asked-by @ send scene-ready  then  endof
+                           ready step !  movie-up @ asker dup 0< if  2drop  else  send scene-ready  then  then  endof
           running of  run-frame if  ending step !  then  endof
           ending of  through @ if  through-ends  else  scene-ends  then  endof
       endcase ;

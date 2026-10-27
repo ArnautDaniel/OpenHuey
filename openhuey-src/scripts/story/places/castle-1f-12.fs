@@ -28,7 +28,6 @@ own: wall-remarked         \ the wall's first remark made
 0 constant locked-exit   1 constant doors-floor   $1B constant lens-fx
 6 constant lens-device-area   $C constant dial-area   $D constant dial-1-area   $E constant wall-area
 3 constant to-exit-1-area   4 constant to-exit-0-area   5 constant to-exit-2-area
-0 constant rest-sound   1 constant click-sound
 3 constant lens-movie   0 constant lens-cutscene   5 constant moon-movie   4 constant moon-cutscene
 $22 constant moon-door   $C constant his-motions   -90 constant dial-base
 : solved? ( -- flag )  0 var@ 5 =  1 var@ 2 = and  3 var@ 3 = and ;   \ (both dials here, castle-2f-1's: the moon let through)
@@ -62,19 +61,8 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
 : moonlight ( -- )   \ (out to castle-2f-1, the light let through there; back by the forced way)
     stalkers-stay state!  15 screen:to-black-2 with-music or fade  castle-2f-1 preload  wait-fade
     force-calm state!  world-held state!  forced-exit take-exit ;
-: turning ( addr len var right F: sx sy sz turn -- )   \ (at the dial, the stick's message up, until she is done)
-    {: a n var right F: sx sy sz turn | asking :}
-    -1 to asking  rotate-msg show
-    begin
-        asking if
-            var dial-asked  dup 1 = if  0 to asking  rest-sound sx sy sz room-sound  then
-        else
-            a n var dial-base dial-turns if
-                -1 to asking  var var@ right = if  click-sound sx sy sz room-sound  a n turn catches-light  then
-            then  0
-        then
-    -1 <> while  yield  repeat
-    text-gone  shot-off  world-frozen state-off
+: turning ( addr len var right F: sx sy sz turn -- )   \ (at the dial till she is done; then, all right, the moon)
+    dial-base rotate-msg dial-turning  text-gone  shot-off  world-frozen state-off
     solved? if  ['] moonlight start drop  then ;
 : remarked-device ( -- )   \ (the first time: what it might be)
     device-remarked @ if  exit  then  -1 device-remarked !  device-msg say  8 frames ;

@@ -212,7 +212,7 @@ create entries  4 , -1 ,   1 , 1 ,   2 , 2 ,   3 , 3 ,   \ (by exit 0..3: the ca
                 endcase  exit
             then
             entries 4 ways-in
-            came-by @ forced-exit and if
+            $82 forced-way? if
                 fiona $10E 70 place-on-tri  0 0 player-camera  camera-restart
                 came-by @ seized-way = if  ['] seized  else  ['] balcony-falls  then  start drop
             then  endof

@@ -59,6 +59,7 @@ testing coming in, the gate shut: the cage down, the lever up; the vases whole; 
 c1f-2-flag1 story-flag-clear  c1f-2-breakable1-broken story-flag-clear  c1f-2-breakable2-broken story-flag-clear  room-afresh
 T{ cage-y 11e f-  fabs 0.01e f<  gate-open-part part?  1 part?  3 part?  [: embers-fx effect @ 0<>  moths-fx effect @ 0<> ;] in-place
    -> -1 0 -1 -1 -1 -1 }T
+T{ [: through-gate @ ;] in-place  doing-busy? -> 0 0 }T   \ (not come by the gate's way)
 testing ... the gate open: the cage up
 c1f-2-flag1 story-flag-set  room-afresh
 T{ cage-y cage-top f-  fabs 0.01e f<  gate-open-part part? -> -1 -1 }T
@@ -122,10 +123,10 @@ T{ c1f-2-rubrum-medallion story-flag?  rubrum-medallion items:items-of -> -1 bef
 testing Hewie: a bark at the shut gate, at the pond; wary by the far wall (the voices due)
 c1f-2-flag1 story-flag-clear  room-afresh  50e -10e 160e hewie-here
 T{ [: [: gate-noticed @ ;] in-place ;] 60 soon -> -1 }T
-200 run-frames  5.346e -9.5e 80.917e hewie-spot
+200 run-frames  room-afresh  10e -9.5e 85e hewie-here   \ (afresh: at her command again)
 T{ [: [: pond-noticed @ ;] in-place ;] 60 soon -> -1 }T
 200 run-frames  got-study-key story-flag-set  got-scrawled-memo story-flag-clear  c1f-12-flag1 story-flag-clear
--142e 0e 175e hewie-spot
+room-afresh  -142e 0e 175e hewie-here
 T{ [: [: wary-noticed @ ;] in-place ;] 60 soon -> -1 }T
 300 run-frames
 

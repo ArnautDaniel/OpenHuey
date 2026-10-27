@@ -198,7 +198,8 @@ says what happens, and nothing in it can leave Fiona stuck.
 - front-garden-3, castle-2f-8, castle-1f-4: done; story/common.fs for what every room does.
 - The shared pieces (step 4): done - the kit's components (story.md, "What most rooms have").
 - The front garden and the lake pathway (step 5's first area): done, every room a place.
-- Castle 1F (step 5): all done (castle-1f-1 .. -19). Castle 2F next.
+- Castle 1F (step 5): all done (castle-1f-1 .. -19).
+- Castle 2F: castle-2f-1, -3, -8 done; the rest next.
 
 ## Questions (answered)
 

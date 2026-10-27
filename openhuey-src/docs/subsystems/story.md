@@ -137,7 +137,8 @@ him in, `hauled-out`; each frame `hidden-calm`), its stalker (`came-on-her?` as 
 `searches`: the odds by a story variable - `finding-odds` 25, 50, 75 - and `will-find?`, a creature
 moving about, his alert 4; `door-for-him` opens a shut door he came by; `finds-her-at`: to the
 spot, Debilitas looking in, the others seeing her; the place's `found-her`, `came-while-hidden`);
-a placed object back as it was set (`object-reset`); one triangle's floor flags
+a placed object back as it was set (`object-reset`); by one of the forced ways
+(`forced-way?`: $80 .. the last given - not a room entered by none, -1); one triangle's floor flags
 (`floor-tri-on`); before an exit's door (`before-door?`); within reach across, whatever the height
 (`reaches-across?`, the zone bit 2); the camera's near clip (`near-clip`); her fright raised up to
 a level (`fright-up-to`: Panic_FrightRaw by what she is short of it); the stalker's move mode
@@ -150,7 +151,8 @@ its nth this frame (`signal-passed?`, the original's cond 0x3B); the stalker's s
 wanders); Hewie's wary stand at a point (`hewie-stands-by`, the shared $8A); an item used up
 (`spend`); the map's page (`map-page`); a scare (`fright+`, her fright raised by so much); put on a triangle, its heading kept (`put-on-tri`); on a triangle with these floor flags (`on-floor-of?`); she thrown down
 by someone (`throws-her`); a door taking on another's state (`door-as`); the summoner's wait his
-kind's own (`his-own-time`); dials (`dial-set`, `dial-turns`, `dial-asked`: a number 0..6 in a progress
+kind's own (`his-own-time`); dials (`dial-turning`: the stick's message up, each number turned to, the rest sound and
+the right one's click and glint, till she is done; `dial-set`, `dial-turns`, `dial-asked`: a number 0..6 in a progress
 variable, 30 degrees each, the stick's repeat); an object catching the light (`catches-light`);
 one character reflected in an object (`object-mirror`: MirrorFragment); who struck her (`struck-by-now`), Hewie's
 side of a split room (`hewie-way-now`); the story's stalker in its slot, in the game or not (`partner`,
@@ -180,6 +182,11 @@ creature's request of her (`request-now`) are gone by the time the doings run: t
 read them (and tell a doing, as castle-1f-2's gap and front-garden-3's box do).
 
 Places, each with its test in `tests/places/`:
+- castle-2f-1, the music room ($A): the third moon dial (turned by the stick; all three right, the
+  moonlight's scene and down to castle-1f-12 by the forced way; brought back up set right, the moon
+  door unlocked and the creatures loose), the moonlight's scene as she comes up with castle-1f-12's
+  dials right, the door unlocked from this side, the piano, the speakers, the Refined Magnesia Hewie
+  sniffs out, the Lavender, his looks up, the walls' shade, the replay (on to castle-1f-12's).
 - castle-2f-3, the bedroom (44): every remark and spot, the clothes, the TV, the bed and the
   stalker's search, the maid's scene, the night, the attack lesson, the evasion tip, Hewie's
   find, the four replays.
