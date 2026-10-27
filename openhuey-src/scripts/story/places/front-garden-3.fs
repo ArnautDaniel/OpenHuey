@@ -28,6 +28,7 @@ $D constant wire-snagged-msg     \ "The wire looks like it got snagged on someth
 own: tree-remarked
 own: stalkers-held      \ the stalkers kept away while Hewie is at his part (the grate)
 own: hewie-at-box       \ Hewie sitting by the box, waiting for her
+own: box-said          \ ... what she told him there this frame (1 come back, 2 on - through the hole)
 own: pushing            \ the push begun: Hewie goes through when she is by the box
 own: box-step           \ how far the push has gone (the two of them keep step by it)
 own: wire-noticed       \ Hewie has looked at what is about here (once a visit each)
@@ -177,18 +178,18 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     -1 hewie-at-box !  hewie true noclip
     hewie $359 -90 $204 walk-move -30e 137e go-to
     hewie sit-down-anim play  hewie sit-anim play
+    0 box-said !
     begin
-        fiona box-near-area in-area?  started-now @ come-back-cmd = and if
-            0 hewie-at-box !  comes-back exit
-        then
-        fiona box-area in-area? if
-            started-now @ dup come-back-cmd =  over go-there-cmd = or  swap go-for-it-cmd = or if
-                0 box-step !  ['] push-starts start drop  through-the-hole exit
-            then
-            pushing @ if  through-the-hole exit  then
-        then
+        box-said @ 1 = if  0 hewie-at-box !  comes-back exit  then
+        box-said @ 2 = if  0 box-step !  ['] push-starts start drop  through-the-hole exit  then
+        fiona box-area in-area?  pushing @ and if  through-the-hole exit  then
         yield
     again ;
+: told-at-box ( -- )   \ (her command as he sits by the box: read as it comes, for him)
+    hewie-at-box @ 0= if  exit  then
+    fiona box-near-area in-area?  started-now @ come-back-cmd = and if  1 box-said ! exit  then
+    fiona box-area in-area?
+    started-now @ dup come-back-cmd =  over go-there-cmd = or  swap go-for-it-cmd = or  and if  2 box-said !  then ;
 : box ( -- )   \ (Fiona's act09: blocked - or, Hewie waiting by it, the push)
     hewie-at-box @ if  0 box-step !  -1 pushing !  she-pushes exit  then
     4 frames  world-frozen state!
@@ -338,7 +339,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
 
 : each-frame ( -- )
     events-held state? if  exit  then
-    ways  cameras  back-to-cage  hewie-cues  stalkers-back  figures-near  whines  hewie-looks  spots ;
+    ways  cameras  back-to-cage  told-at-box  hewie-cues  stalkers-back  figures-near  whines  hewie-looks  spots ;
 : person-in ( i -- )
     fiona-p = if  events-held state? if  ['] replay-freed start drop exit  then  player-came  then ;
 : went ( -- )   \ (leaving: Hewie still in the wire out of the game, the first remarks made, the stalkers let go)

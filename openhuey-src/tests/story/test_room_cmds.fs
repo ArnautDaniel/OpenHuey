@@ -2,20 +2,12 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_room_cmds.fs
 IN: test-room-cmds
 USING: tester engine game-state actors messages common room-names game debug story.state facts story.words
-  story.rooms.castle-1f-2
   story.rooms.castle-2f-2 story.rooms.castle-2f-12 ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
 : ~= ( F: a b -- flag )  f- fabs 0.001e f< ;
 free-play
-
-castle-1f-2 room!  20 run-frames
-testing castle-1f-2: the cage set low (11), raised 0.25 a step; the drum can struck and wobbling back to rest
-T{ [: s" ori" object-here?  0 castle-1f-2.cmd00  s" ori" place-y object@ 11e ~=  1 castle-1f-2.cmd00  s" ori" place-y object@ 11.25e ~= ;] in-room -> -1 -1 -1 }T
-: wobbles ( -- n )  [: 0 castle-1f-2.cmd03  2 castle-1f-2.cmd03  0  begin  1+  1 castle-1f-2.cmd03  s" doramukan" $34 object@ f0=  over 50 > or  until ;] in-room ;
-T{ wobbles  [: s" doramukan" place-y object@ s" doramukan" $38 object@ ~= ;] in-room -> 6 -1 }T   \ (1 less 0.2 five times: just above 0 in single floats)
-
 
 castle-2f-2 room!  20 run-frames
 testing castle-2f-2: the doll put back, knocked (a push up), falling and landing on the floor, settled

@@ -84,6 +84,11 @@ key: I true key-hold  game-tick  key: I false key-hold  60 run-frames   \ (the s
 T{ [: hewie held? ;] in-place -> -1 }T
 400 run-frames
 T{ [: hewie-at-box @ ;] in-place -> -1 }T
+testing ... called back from the box ("come back"): he comes back; sent again
+[: come-back-cmd started-now ! ;] in-place
+T{ [: [: hewie-at-box @ 0= ;] in-place ;] 30 soon  [: [: hewie held? 0= ;] in-place ;] 600 soon -> -1 -1 }T
+-90 0e 138e by  key: I true key-hold  game-tick  key: I false key-hold  460 run-frames
+T{ [: hewie-at-box @ ;] in-place -> -1 }T
 box-area -45 at  circle press  900 play-on
 T{ grate-open story-flag?  grate-door doors:door-locked?  $275 filed?  free? -> -1 0 0 -1 }T   \ ($8275: filed in the other game only)
 

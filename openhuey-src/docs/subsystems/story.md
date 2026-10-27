@@ -137,7 +137,11 @@ him in, `hauled-out`; each frame `hidden-calm`), its stalker (`came-on-her?` as 
 `searches`: the odds by a story variable - `finding-odds` 25, 50, 75 - and `will-find?`, a creature
 moving about, his alert 4; `door-for-him` opens a shut door he came by; `finds-her-at`: to the
 spot, Debilitas looking in, the others seeing her; the place's `found-her`, `came-while-hidden`);
-a placed object back as it was set (`object-reset`); an animation come round this time
+a placed object back as it was set (`object-reset`); one triangle's floor flags
+(`floor-tri-on`); before an exit's door (`before-door?`); within reach across, whatever the height
+(`reaches-across?`, the zone bit 2); the camera's near clip (`near-clip`); her fright raised up to
+a level (`fright-up-to`: Panic_FrightRaw by what she is short of it); the stalker's move mode
+(`st-mode-now`); an animation come round this time
 (`went-round?`: its motion's $20 key, the original's cond 0x48); a scene's signal counted past
 its nth this frame (`signal-passed?`, the original's cond 0x3B); the stalker's sound bank
 (`stalker-bank`); a breakable's own shatter
@@ -171,7 +175,9 @@ up), her drink ($8D), Hewie fed ($8E-$91). A place also starts as the converted 
 wanted till asked, the camera started for the room), its doings wait out her panic's onset, it
 shows her locked door's message, and it takes its own item uses (`items-here`: the plates'
 words, a marionette) before the shared ones. A doing whose character another doing takes ends,
-as the original's action replaced.
+as the original's action replaced. What she commanded Hewie this frame (`started-now`) and a
+creature's request of her (`request-now`) are gone by the time the doings run: the frame's words
+read them (and tell a doing, as castle-1f-2's gap and front-garden-3's box do).
 
 Places, each with its test in `tests/places/`:
 - castle-2f-3, the bedroom (44): every remark and spot, the clothes, the TV, the bed and the
@@ -243,6 +249,16 @@ Places, each with its test in `tests/places/`:
   doors anew, Daniella the stalker, her costume and Hewie's coat afresh, the stage music) and her
   weakness after it; three flames, the vase's Antimony Powder, the box, the dim corner, the twin
   paintings, the map's pages.
+- castle-1f-2, the courtyard (2): the gate's lever (the cage rising, the door beyond unlocked, the
+  creatures out), Hewie sent under the gate - through the gap, sitting there; sent on, he fetches
+  the Fresh Flowers back to her; called, he crawls back; the hole in the wall (the voices: a scene,
+  the Scrawled Memo; else the breeze, never again), the fireplace (the embers in its draught, the
+  drum can struck, the fire and the doll in turn), a place to hide (the stalker searching - likelier
+  each time he comes, or seeing her), in by the gate's way (Debilitas knocked down beyond it, no
+  going back), Debilitas shoving the rubble by the hall and far off, two vases (the Viola
+  Medallion, the Onion), the Rubrum Medallion Hewie sniffs out, the flowers and the fence in turn,
+  the pond's splashes, Hewie's barks and wary stand and his look up, the machine's hum, the moths,
+  the specks, the steady sounds, the walls' shade, the map's pages, the replay.
 - castle-1f-3, the library (9): the awakening at the Garden Key the first time (the voice, the thing
   set on the table; a scene), the key taken after; chased by Debilitas while he is elsewhere - the
   hint and its while, and in behind the bookshelf she knocks it down on him (a scene: he lies

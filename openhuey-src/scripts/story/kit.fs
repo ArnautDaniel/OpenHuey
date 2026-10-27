@@ -52,7 +52,7 @@ state: place-state
   \ the offer this frame (the action prompt): its doing (an xt, 0 none), whether a message
   cell field offer-xt  cell field offer-msg
   \ what the others tell
-  cell field danger-now  cell field panic-stage
+  cell field danger-now  cell field panic-stage  cell field panic-level-now   \ (her panic's level, 0..100)
   cell field onset              \ her panic's first frames (the room's doings wait: SubPlay's frame flag bit 3)
   cell field request-now        \ a creature's request of her this frame (fiona-requested)
   cell field unseen-now         \ she can't be seen (item $89 worn, still)
@@ -70,6 +70,7 @@ state: place-state
   #room-effects cells field effects   \ the effects the place made (actors; 0 none), gone with it (RoomEffects: 32)
   cell field tab-moving         \ the item's tab sliding (the sub screen tells when it's done)
   \ the stalker in the game, as he tells (stalker-doing): his room, condition, kind, alert (his mode)
+  cell field st-mode-now        \ his move mode (hewie-mode's names: free, off screen, struck, ...)
   cell field st-room-now  cell field st-cond-now  cell field st-kind-now  cell field st-alert-now  cell field st-came-now  cell field st-age
   cell field st-heard           \ he has told us at all (in the game: st-age frames ago)
   \ the creatures, as they tell (creature-doing): each one's room, how it moves, frames since
@@ -265,6 +266,11 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 : centre-across? ( id F: x z r -- flag )   \ its centre within r of (x, z) across - anyone or anything with a body
     {: id F: x z r :}  id dup 0< swap body? 0= or if  false exit  then   \ (the rooms' zone bit 8)
     id body-pos fswap fdrop {: F: cx cz :}  cx x f- fdup f*  cz z f- fdup f* f+  r fdup f* f<= ;
+: reaches-across? ( id F: x z r -- flag )   \ its body within r of (x, z) across, whatever its height (the rooms' zone bit 2)
+    {: id F: x z r :}  id here? 0= if  false exit  then
+    id body-at vec@ id body-dims {: F: cx cy cz cr ch :}  cx x f- fdup f*  cz z f- fdup f* f+  r cr f+ fdup f* f<= ;
+: before-door? ( id exit -- flag )   \ before the exit's door (the original's cond 0x18)
+    {: id ex :}  id here? 0= if  false exit  then  id body-pos ex 0 door-in-area? ;
 : at-locked-exit? ( id -- flag )   \ in an exit's area, its door locked (trying it)
     {: id :}  8 0 do
         i exit-door dup 0< 0= if  doors:door-locked? id i exit-area in-area? and if  true unloop exit  then  else  drop  then
@@ -288,6 +294,7 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 : exit-camera ( exit set path -- )   \ whoever is inside the exit's area takes that camera (as they come in)
     {: ex set path :}  #people 0 do  i person-id dup ex exit-area in-area? if  set path camera-set  else  drop  then  loop ;
 : her-camera ( set path -- )  fiona -rot camera-set  fiona follow ;   \ (her setup, and the camera on her)                                \ the camera follows who
+: near-clip ( F: v -- )  engine:camera cam.near sf! ;   \ (the camera's near clip: 1 the usual)
 : fixed-camera ( set path -- )  cam-setup  -1 cam-followed! ;   \ the room's own camera, following nobody
 : shot ( on F: dist pitch yaw rise -- )   \ the story's own shot of the one followed (0: back)
     {: on F: d p y r :}  on  d 1000e f* f>s  p 1000e f* f>s  y 1000e f* f>s  r 1000e f* f>s  camera-actor send event-shot ;
@@ -617,6 +624,7 @@ create spot-xts #activities cells allot
 : floor-off ( group flags -- )  false -rot nav-group! ;
 : on-group? ( id group -- flag )   \ standing on a triangle of that group
     over here? 0= if  2drop false exit  then  swap body-tri dup 0< if  2drop false exit  then  swap nav-in-group? ;
+: floor-tri-on ( tri flags -- )  true -rot nav-tri-flags! ;   \ (one triangle's floor: who it keeps off)
 : closed-off ( door -- )  dup doors-actor send close-off  lock ;   \ gone for good: its exits use another door
 : door-as ( door from -- )  doors-actor send copy-door ;   \ door takes on the other's open mark, lock and closing off
 : door-for ( door slot on -- )  doors-actor send lock-for ;   \ locked against the story slot's kind of character, or not
@@ -658,6 +666,8 @@ $24 constant place-y
 : rumble-pad ( motor strength frames -- )  story.words:rumble-pad ;   \ (motor 0 the small one, buzzing; else the large at that strength)
 : reverb ( core level -- )  sound-reverb! ;   \ (core 0 the music's, 1 the effects')
 : threat ( v -- )  0 max 100 min s>f f>cell s" panic" actor-named send threat ;   \ (her fright raised to it)
+: fright-up-to ( v -- )   \ (her fright raised by what her panic is short of v: Panic_FrightRaw)
+    panic-level-now @ -  dup 0< if  drop exit  then  s>f f>cell s" panic" actor-named send fright-raw ;
 : fright+ ( v -- )  s>f f>cell s" panic" actor-named send threat-acc ;   \ (her fright raised by so much: a scare)
 : room-noise ( loud tri -- )  this-room @ swap -1 world-noise s" acoustics" actor-named send noise ;
 : sound-there ( id bank F: x y z -- )  0 0 sound-at ;   \ a sound at the point
@@ -1067,11 +1077,11 @@ behaviour placing
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       {: room mode sub cond hp hpmax kind alert came :}
       sender stalker =  sender s" story" actor-named = or  0= if  exit  then   \ (his own, or story's copy as we came in)
-      room st-room-now !  cond st-cond-now !  kind st-kind-now !  alert st-alert-now !  came st-came-now !  0 st-age !  -1 st-heard ! ;
+      room st-room-now !  mode st-mode-now !  cond st-cond-now !  kind st-kind-now !  alert st-alert-now !  came st-came-now !  0 st-age !  -1 st-heard ! ;
   on creature-doing ( slot room mode up -- )
       {: slot room mode up :}  slot 0 #creatures within 0= if  exit  then
       room slot cells cr-room + !  mode slot cells cr-mode + !  0 slot cells cr-age + ! ;
-  on panic ( stage level -- )  drop panic-stage ! ;
+  on panic ( stage level -- )  cell>f f>s panic-level-now !  panic-stage ! ;
   on fiona-doing ( mode sub cond cmd doing -- )  fiona-doing-now !  fiona-cmd-now !  drop drop  fiona-mode-now ! ;
   on fiona-struck-by ( who -- )  struck-by-now ! ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
