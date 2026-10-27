@@ -500,7 +500,11 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : hands-empty ( -- )  daniellas-model dup 0< if  drop exit  then  false false story.words:daniella-parts ;   \ (what she holds put away)
 : hands-back ( -- )  daniellas-model dup 0< if  drop exit  then  story.words:daniella-one ;   \ (what she holds shown again)
 : her-back ( pose -- )  daniellas-model dup 0< if  2drop exit  then  swap cloth-back! ;   \ (Daniella's back for her hair: 0 standing, 1 flat, 2 bent)
-: stalker-to ( room tri -- )  partner dup 0< if  drop 2drop exit  then  send stalker-in ;   \ (the story's stalker into the game there, loaded: stalker-to-room)
+: stalker-present ( -- )   \ (in an activity: a few frames for the stalker sent in to have his body)
+    20 0 do  stalker 0< 0= if  unloop exit  then  yield  loop ;
+: stalker-to ( room tri -- )   \ (the story's stalker into the game there, loaded: stalker-to-room - in an
+    partner dup 0< if  drop 2drop exit  then  send stalker-in   \ activity, there by the time it goes on)
+    acting @ 0< 0= if  stalker-present  then ;
 : his-own-time ( -- )  -1 s" summoner" actor-named send summoner-cooldown ;   \ (the summoner's wait: his own kind's)
 : summoner-sooner ( secs -- )  s" summoner" actor-named send summoner-cooldown-less ;
 : stalker-order ( mode -- )  stalker dup 0< if  2drop exit  then  send stalker-order ;
@@ -1089,6 +1093,14 @@ create replay-acts
 : stalker-ready ( kind -- )  story.words:partner-load ;   \ the game's stalker: that kind, loaded and started
 : stalker-unloaded ( -- )  story.words:slot-unload ;   \ the game's stalker out (the story's slot 2 emptied)
 : movie-key ( a b -- )  -1 -rot movie-compose ;   \ (the keyed movie's luminance key: its threshold and range)
+: film ( name class -- )   \ (a movie alone - the projector's: played through, the start button stops it)
+    {: n cls :}  n this-room @ story.strings:room-string movie-open drop  1 movie-pause
+    cls story.words:class>compo $10 $20 movie-compose
+    begin  scenes:movie-state 1 =  while  yield  repeat   \ (made ready)
+    scenes:movie-state 0< if  exit  then
+    1e movie-volume!  0 movie-pause  yield  world-held state!
+    begin  scenes:movie-state 0< 0=  start-button button-pressed? 0= and  while  yield  repeat
+    movie-close  begin  scenes:movie-state 0< 0= while  yield  repeat  yield  world-held state-off ;
 
 \ ---- items counted ----
 : has-items? ( item n -- flag )  swap items:items-of swap < 0= ;
