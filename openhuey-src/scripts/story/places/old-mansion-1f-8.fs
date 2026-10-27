@@ -6,7 +6,7 @@
 \ lays it to rest, opening the way out, the others only rouse it); the glow at the back Hewie
 \ fetches at her "go for it" (the Prima Materia), the Antimony Tube across the wall; the Beef
 \ Jerky, the Album Medallion; the back door unlocked from this side (the stalker sent on); the
-\ hangers Hewie brushes, the splashes in the pond, his barks and looks; the replays. Never offered
+\ hangers Hewie brushes, its steady sound, the splashes in the pond, his barks and looks; the replays. Never offered
 \ in the original: its act03 (the Lavender here - its sparkle shows). A place (story/kit.fs). The
 \ original's scripts, for checking: story/rooms-ref/old-mansion-1f-8.fs (converted from the game's,
 \ not loaded).
@@ -44,11 +44,12 @@ own: fetched               \ the glow's find handed over (her doing waits for it
 own: rung                  \ the first hanger last rang "on" (they ring on and off in turn)
 own: hewie-gone            \ Hewie was here as a scene began: out of it till it ends
 own: stalker-leaving       \ the back door unlocked: the stalker to be sent on
+own: steady-on             \ its steady sound started (then kept up)
 
 \ ---- the room's things ----
 0 constant jerky-fx   1 constant lavender-fx   2 constant medallion-fx   3 constant glow-fx   4 constant shadow-fx
 0 constant halves-group   2 constant thicket-group   3 constant back-group   4 constant door-group
-1 constant back-door-area   $F constant glow-area   $17 constant back-area   $15 constant mausoleum-area
+0 constant yard-sound   1 constant back-door-area   $F constant glow-area   $17 constant back-area   $15 constant mausoleum-area
 $16 constant thicket-area   6 constant map-area
 $7D constant back-door   $7C constant hand-door   $79 constant leaving-door   $89 constant leaving-from
 2 constant first-hanger   4 constant creak-on   5 constant creak-off
@@ -373,6 +374,7 @@ create ahead  $C , 0 ,   $D , 2 ,   $E , 5 ,   \ (area, exit loaded ahead)
     fiona map-area entered? if  2 map-page  then
     fiona map-area left? if  1 map-page  then ;
 : each-frame ( -- )
+    steady-on yard-sound -138e 8e 12e steady
     ways  hewie-here  splashes  spots
     stalker-leaving @  0 exit-held? 0= and if  sent-on  then ;
 : person-in ( i -- )

@@ -80,7 +80,7 @@ create entries  2 , 2 ,  1 , 1 ,  1 , 1 ,  3 , 3 ,   \ (by exit 0 .. 3: the came
         cf-10-flag1 fact!  panic-eased  ['] bandaged start drop
     then
     maze-frame
-    hurt? if  whine-frames whine-due? if  hurt-whine room-bank hewie sound-by  then  then
+    hurt? if  whine-frames whine-due? if  hurt-whine story-volume or room-bank hewie sound-by  else  hurt-whine story-volume or hewie kept-by  then  then
     spots ;
 : person-in ( i -- )
     fiona-p <> if  exit  then

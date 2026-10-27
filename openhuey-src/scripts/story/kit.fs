@@ -352,6 +352,8 @@ $80000000 constant keep-playing   \ (a sound's id bit: one already playing kept 
 5 constant common-bank   \ (the sounds every room has: knocks, Hewie's find)
 7 constant stalker-bank  \ (the stalker's own: each kind's set)
 : sound-by ( id bank who -- )  {: id bank who :}  who dup 0< if  drop exit  then  body? 0= if  exit  then  who body-pos {: F: x y z :}  id bank 0 0  x y z  sound-at ;   \ (at a character)
+: kept-by ( id who -- )   \ (a sound of the room's playing at a character, kept on it as it moves - not started anew)
+    {: id who :}  id keep-playing or room-bank who sound-by ;
 
 \ ---- scenes (scenes.fs): made ready while the screen is black, then played ----
 enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running scene-ended ;
@@ -526,6 +528,9 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 \ ---- the room's own: its sounds, effects, look, objects, motions ----
 : room-sounds ( -- )  0 $1B0C00 sound-stop-voices  room-bank sound-load ;   \ (the last room's voices stopped, this one's loaded)
 : room-sounds-in? ( -- flag )  room-bank sound-loaded? ;
+: steady ( started id F: x y z -- )   \ (a room's steady sound: started once its sounds are in - started a cell - then kept up)
+    {: a id F: x y z :}  a @ if  id x y z keep-sound exit  then
+    room-sounds-in? 0= if  exit  then  id x y z room-sound  -1 a ! ;
 : effect ( k -- addr )  cells effects + ;
 : effect! ( id k -- )   \ the place's effect k (the one there before gone)
     dup effect @ ?dup if  dup alive? if  kill  else  drop  then  then  effect ! ;

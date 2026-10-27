@@ -51,6 +51,8 @@ none-glowing  white-mandragora-used story-flag-clear  om1f-8-flag2 story-flag-cl
 om1f-8-beef-jerky story-flag-clear  om1f-8-album-medallion story-flag-clear  om1f-5-lavender story-flag-clear
 om1f-12-flag1 story-flag-set  om1f-8-flag1 story-flag-clear  om1f-8-antimony-tube story-flag-clear
 room-afresh
+testing coming in: its steady sound started once its sounds are in
+T{ [: [: steady-on @ ;] in-place ;] 120 soon -> -1 }T
 testing coming in: the sparkles, the glow at the back, the hand loaded there, the shadow, the creatures let out
 T{ jerky-fx fx-alive?  lavender-fx fx-alive?  medallion-fx fx-alive?  glow-fx fx-alive?  shadow-fx fx-alive? -> -1 -1 -1 -1 -1 }T
 T{ [: glow-shown @  hand 0< 0= ;] in-place  om1f-8-flag1 story-flag? -> -1 -1 -1 }T
