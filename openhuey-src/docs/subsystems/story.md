@@ -272,7 +272,8 @@ Places, each with its test in `tests/places/`:
 - castle-3f-1 ($6): the boxes below, the symbol door (its file; the Saturnus Key: Daniella's
   "Dinner is served" before the chapter turns, else it unlocks), Daniella busy there after the
   rest, the replay. castle-3f-2 ($2C): Daniella ahead the first time on after the rest.
-- castle-b1-2 (the washroom), -3 (the store room: the Metal Boots, the Castle Gate Key), -4 (the
+- castle-b1-1 (the kitchen: the sketch, Daniella at the stove, Riccardo's scene, the cupboard, the
+  plywood door, the jerky and Lavender), castle-b1-2 (the washroom), -3 (the store room: the Metal Boots, the Castle Gate Key), -4 (the
   spiral stair), -5 (the dark passage: Hewie tense, sent ahead; the pit), -6 (the chapel: the
   statue and the Saturnus Key, Debilitas, the stands and the chandelier, the five replays), -7
   (behind the furniture: the Study Key Hewie fetches through the hole, the blocked door and the

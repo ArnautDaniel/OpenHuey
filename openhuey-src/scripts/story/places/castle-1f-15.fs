@@ -70,7 +70,7 @@ $8278 constant saved-file   $8279 constant failed-file
 \ ---- chased along the balcony: the encounter ----
 : he-hunts-her? ( -- flag )   \ (Debilitas in the game, not down, she chased - and he elsewhere or 30 off)
     debilitas?  st-cond-now @ down-cond <> and  chased? and 0= if  false exit  then
-    st-room-now @ castle-1f-15 <> if  true exit  then
+    st-room-now @ castle-1f-15 <>  stalker-in? 0= or if  true exit  then   \ (elsewhere, or gone from here)
     stalker body-at fiona body-at vec-dist 30e f< 0= ;
 : encounter-begins ( movie cutscene -- )   \ (the stalkers held off, blind; to black, the scene loaded)
     {: movie cut :}  stalkers-stay state!  fiona hold  stalkers-blind state!
