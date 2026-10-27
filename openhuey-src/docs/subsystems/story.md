@@ -224,6 +224,11 @@ Places, each with its test in `tests/places/`:
   stand kept as she leaves, the replay.
 - castle-2f-11, the corridor of the slanted crest ($1F): the doll and the swing rocking, the crest,
   the specks, Hewie's look up.
+- castle-2f-13, the suspended bridge's hall before the great hall's balcony fell ($28): out on the
+  balcony a while (she, or the stalker after her), it gives - to black, the doors set anew, down to
+  the great hall by the forced way (her way the balcony's fall, his her seizing), Hewie sent there
+  or kept here; the bridge, Hewie's fetch of the Medallion and his calling back, the stalker's grab
+  on the plank, the statue as castle-2f-14; Hewie wary on the balcony, the sparkles.
 - castle-2f-14, the suspended bridge's hall ($2F): the first time in, the screen back (the crows'
   file); the raised bridge in turn; Hewie pointed across the gap leaps over to the Medallion and
   brings it back (it had, he lies down over there); called back he leaps back; the stalker grabbing
