@@ -83,6 +83,7 @@ state: place-state
   #creatures cells field cr-room  #creatures cells field cr-mode  #creatures cells field cr-age  #creatures cells field cr-id
   cell field found-her          \ a hiding place's: the stalker has found her there (she must flee)
   cell field word-right-now     \ the word plate just used named what the room wanted (items.fs: word-right)
+  2 cells field word-vars       \ the word plate's letters, as items.fs hands them (item-var 0 and 1: four bytes each)
   cell field came-while-hidden  \ ... he came in while she hid (gone again: the prompt anew)
   cell field hewie-came-now   \ the exit Hewie came in by (hewie-came; -1 none)
   cell field st-blow-now      \ the stalker's blow under way (stalker-blow; -1 none)
@@ -521,7 +522,10 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
     dup effect @ ?dup if  dup alive? if  kill  else  drop  then  then  effect ! ;
 : effect-off ( k -- )  0 swap effect! ;
 : effects-gone ( -- )  #room-effects 0 do  i effect-off  loop ;
-: tell-effect ( v k -- )  effect @ dup alive? if  send effect-command  else  2drop  then ;
+: live-effect ( k -- id flag )  effect @ dup 0<>  over alive? and ;   \ (the place's effect k, and whether it's there - 0 none)
+: tell-effect ( v k -- )  live-effect if  send effect-command  else  2drop  then ;
+: dies-down ( k -- )   \ (effect k - a fire, steam - left to die down on its own: forgotten, so it's never
+    -1 over tell-effect  0 swap effect ! ;   \ killed later by an id another actor may have by then)
 \ the room's tint (Tint_SetParams: the look's slot): the glow colour and the contrast colour, RGBA
 $1F constant tint-slot
 create tint-bytes 9 allot
@@ -742,9 +746,9 @@ $FF constant no-track
 : flicker-at ( k F: x y z -- )  0 effects:flicker swap effect! ;   \ effect k: a sparkle
 : moths-at ( k n F: x y z -- )  effects:butterflies swap effect! ;   \ effect k: n moths (0: 8) making for the point (0x35)
 : moths-to ( k n F: x y z -- )   \ effect k's moths off for another point; n of them (0: as many as they are) - 0x33
-    {: k n F: x y z :}  k effect @ dup alive? 0= if  drop exit  then  >r  n x f>cell y f>cell z f>cell  r> send effect-to ;
+    {: k n F: x y z :}  k live-effect 0= if  drop exit  then  >r  n x f>cell y f>cell z f>cell  r> send effect-to ;
 : moths-sound ( k id -- )   \ the room's sound id kept going where effect k's moths wander now
-    {: k id :}  k effect @ dup alive? 0= if  drop exit  then  >r  id story-volume or keep-playing or room-bank  r> send effect-sound ;
+    {: k id :}  k live-effect 0= if  drop exit  then  >r  id story-volume or keep-playing or room-bank  r> send effect-sound ;
 : object ( obj op arg -- )  >r >r  this-room @ story.strings:room-string  r> r> placed-op ;   \ (the room's string names it)
 : object-hide ( obj -- )  0 1 object ;
 : object-show ( obj -- )  0 0 object ;
@@ -919,7 +923,7 @@ $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3
     #people 0 do
         i person-id  x y zz r h steps-into? if
             i person-id body-at  i /vec * was-at +  vec-dist fdup f* 0.5e f< if  1  else  2  then
-            k effect @ dup alive? if  send effect-command  else  2drop  then
+            k live-effect if  send effect-command  else  2drop  then
         then
     loop ;
 : splash-from ( id count F: x y z -- )   \ water thrown up there, away from who stepped in
@@ -1417,7 +1421,7 @@ behaviour placing
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe stalker-blow  -1 st-blow-now !
       self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
       self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
-      self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe fiona-shakes  0 shakes-now !
+      self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe item-var  self subscribe fiona-shakes  0 shakes-now !
       room-starts  frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people
       camera-starts  camera-placed ;
   on tick ( -- )
@@ -1473,6 +1477,7 @@ behaviour placing
       leaving @  shown-msg @ 0< 0= or  hewie-played? or if  drop exit  then  show ;
   on stalker-ties ( scripted apart linked -- )  st-linked-now !  2drop ;
   on item-event-bit ( n on -- )  nip word-right-now ! ;   \ (the word plate's: right or not, as the room's doing starts)
+  on item-var ( var value -- )  over 2 u< if  swap cells word-vars + !  else  2drop  then ;   \ (its letters: old-mansion-b1-6)
   on grab-answer ( ok -- )  grab-ok-now !  0 grab-asked-now ! ;
   on item-event ( who ev var value -- )   \ (the room's own, else what every room does)
       leaving @ if  2drop 2drop exit  then

@@ -15,7 +15,7 @@ USING:
    
     story.rooms.off-map-5a
    
-    story.rooms.off-map-64 story.rooms.off-map-65 story.rooms.old-mansion-b1-6 story.rooms.chaos-forest-1
+    story.rooms.off-map-64 story.rooms.off-map-65 story.rooms.chaos-forest-1
    
     story.rooms.house-of-truth-1f-1 story.rooms.house-of-truth-2f-1
     story.rooms.house-of-truth-2f-2 story.rooms.house-of-truth-b1-1 story.rooms.house-of-truth-b1-2 story.rooms.house-of-truth-b1-3 story.rooms.house-of-truth-b1-4 story.rooms.house-of-truth-1f-2

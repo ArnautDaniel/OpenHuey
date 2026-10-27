@@ -29,8 +29,8 @@ $237 constant journal-file   $67 constant near-door
 create key-at /vec allot   fvariable key-speed
 
 \ ---- the key on the stepladder: shaken nearer the edge, at last falling (bouncing till it rests) ----
-: key-moved ( -- )  key-fx effect @ dup alive? 0= if  drop exit  then  >r  key-at vec@ xyz>cells  r> send effect-place ;
-: key-rest ( n -- )  key-fx effect @ dup alive? if  send effect-rest  else  2drop  then ;
+: key-moved ( -- )  key-fx live-effect 0= if  drop exit  then  >r  key-at vec@ xyz>cells  r> send effect-place ;
+: key-rest ( n -- )  key-fx live-effect if  send effect-rest  else  2drop  then ;
 : key-up-there ( -- )  5.19e 35.3e -34e key-at vec!  key-fx key-at vec@ flicker-at  0e key-speed f! ;
 : key-on-floor ( -- )  key-fx 7.3e 0.7e -28.3e flicker-at ;
 : shaken-nearer ( -- )  key-at v.z sf@ 0.5e f+ key-at v.z sf!  key-moved ;
@@ -55,9 +55,9 @@ create key-at /vec allot   fvariable key-speed
         a n swing-phase 60e object+!  a n swing-offset -0.001e object+!
         a n swing-offset object@ f0> while  yield
     repeat ;
-: wobble-sound ( -- )  s" step" placed-here? 0= if  exit  then
+: wobble-heard ( -- )  s" step" placed-here? 0= if  exit  then
     wobble-sound room-bank  s" step" place-x object@  s" step" place-y object@  s" step" place-z object@  sound-there ;
-: wobbles ( -- )  s" step" wobble-start  s" book0" wobble-start  wobble-sound  s" step" wobbling  s" book0" wobbling ;
+: wobbles ( -- )  s" step" wobble-start  s" book0" wobble-start  wobble-heard  s" step" wobbling  s" book0" wobbling ;
 : struck ( -- )   \ (she strikes it: it wobbles - the third time the key falls)
     ['] wobbles start drop  1 tries +!
     tries @ 3 = if  om2f-11-flag1 fact!  falls  key-on-floor  else  shaken-nearer  then

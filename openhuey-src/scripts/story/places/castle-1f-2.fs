@@ -101,7 +101,7 @@ $30 constant drum-phase   $34 constant drum-strength   $38 constant drum-rest
 
 \ ---- the fireplace's embers: lit, blown back in a draught, a lot flung away ----
 : embers-lit ( -- )  -1 effects:embers embers-fx effect! ;
-: embers-gust ( -- )  embers-fx effect @ dup alive? if  0 swap send effect-command  else  drop  then ;
+: embers-gust ( -- )  embers-fx live-effect if  0 swap send effect-command  else  drop  then ;
 : embers-flung ( -- )  1 effects:embers drop ;
 
 \ ---- as she comes in ----
