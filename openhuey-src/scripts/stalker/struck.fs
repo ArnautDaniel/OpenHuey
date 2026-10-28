@@ -149,6 +149,10 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     kind killing-blow = if  0 hp !  then
     kind blow-dir {: dir :}
     kind dir tackled
+    bitten @ if   \ (Hewie on him - Pursuer_Hit's move part 9: a cry, no more - he falls as Hewie lets go;
+        kind bite-blow =  how stumbles and 0<> and if  hurt-cond cond !  900 hurt-t !  -1 growl-after !  then
+        striker @ hewie = if  hurt-cry  else  grunt-sound  then  7 sound exit   \ a stumbling bite hurts him)
+    then
     unshaken @  kind shove-blow = and  hp @ 0> and if  grunt-sound 7 sound exit  then
     striker @ fiona = if  -1 by-her !  then
     kind door-blow = if  let-her-go combo-over 0 hold-off !  how door-struck exit  then   \ (a door slammed on him: how is its exit)

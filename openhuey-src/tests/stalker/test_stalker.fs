@@ -85,6 +85,11 @@ testing ... no way home even afresh, after her (Debilitas_CarryOn); down, waitin
 T{ [: held-off mode!  1 mode-t !  stalker.search:stand ;] his  5 run-frames  [: my-mode @ ;] his -> 4 }T
 T{ [: own-a @  -1 own-a !  stalker.travel:off-home  my-mode @  swap own-a ! ;] his -> 0 }T
 T{ [: down-cond cond !  after-her mode! ;] his  2 run-frames  [: my-mode @  well-cond cond ! ;] his -> 3 }T
+testing struck while Hewie is on him (Pursuer_Hit's move part 9): the damage and a cry, no more - not felled
+testing ... out of health till Hewie lets go
+[: near-flank-attack bitten !  -1 reeling !  1 hp !  0 hits ! ;] his  kick-blow 5 0 game:debilitas send blow  2 run-frames
+T{ [: hp @  hits @  cond @ down-cond =  bitten @ 0<> ;] his -> 0 5 0 -1 }T
+[: 0 bitten !  0 reeling !  70 hp !  0 hits ! ;] his  2 run-frames
 testing his combo over, no move of it is left to run (Pursuer_BehaviourEnded): its act none
 T{ [: 0 combo-start  combo-over  act-xt @ ['] noop =  combo @ ;] his -> -1 -1 }T
 testing through a door, what he was about in the room he left is let go (Pursuer_ThroughDoor): unshaken,
