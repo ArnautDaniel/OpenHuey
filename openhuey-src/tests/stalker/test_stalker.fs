@@ -86,6 +86,11 @@ testing through a door, what he was about in the room he left is let go (Pursuer
 testing ... whom he struck and who struck him, his attack's wait, his cry, his blow's hold
 [: -1 unshaken !  1 took !  -1 by-her !  30 hold-off !  5 cry !  3 freeze-t !  room-id 0 room-exit-leads drop 0< 0= ;] his drop
 T{ [: 0 through  unshaken @ took @ by-her @ hold-off @ cry @ freeze-t @  my-room room-id <> ;] his -> 0 0 0 0 -1 0 -1 }T
+testing ... and as she leaves his room (Pursuer_LeaveScreen's Pursuer_ResetForRoom), and as he comes in (Pursuer_Reset)
+[: -1 unshaken !  3 freeze-t !  2 combo ! ;] his  front-garden-3 room!  5 run-frames
+T{ [: unshaken @ freeze-t @ combo @ ;] his -> 0 0 -1 }T
+[: -1 unshaken !  -1 by-her ! ;] his  s" fiona" actor-named body-tri debug:debilitas-tri  2 run-frames
+T{ [: unshaken @ by-her @ ;] his -> 0 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 

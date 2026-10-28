@@ -291,7 +291,8 @@ create fs-a /vec allot  create fs-b /vec allot
 \ of sight, his walk stopped; she came into his - put on its floor (Pursuer_BackOnMesh: near
 \ the door he made for - within 80 of it - there, facing it; else by the door he came in by,
 \ facing in; else anywhere) ----
-: gone-from-view ( -- )
+: gone-from-view ( -- )   \ (Pursuer_LeaveScreen: the room's doings forgotten - Pursuer_ResetForRoom)
+    door-passed  -1 combo !  0 combo-step !
     0 out-going !  -1 body-tri!  my-path path-clear  ['] noop step !  no-search search-phase !  -1 anim !
     my-mode @ after-her = if  avoid-clear  her-room route! drop  then ;
 : back-on-floor ( -- )
