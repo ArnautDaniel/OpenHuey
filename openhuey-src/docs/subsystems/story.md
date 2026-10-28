@@ -2,91 +2,36 @@
 
 ## Purpose
 
-The rooms' event scripts: what happens in each room. They place the characters as they come
-in, give the camera its setups as characters move through a room's parts, open and close ways,
-take exits, start scenes, show messages, hand out items, and run the characters' scripted
-actions. The original runs them from bytecode (`event.c`); new-src converted all 170 rooms'
-scripts to Forth once (`tools/events2forth.py`). They are data written in a language of their
-own: ~460 words, one per command and condition of the bytecode.
+What happens in each room: the characters placed as they come in, the camera's setups as they
+move through a room's parts, ways opened and closed, exits taken, scenes started, messages shown,
+items handed out, the characters' scripted actions. The original runs them from bytecode
+(`event.c`). new-src converted all 170 rooms' scripts to Forth once (`tools/events2forth.py`),
+and OpenHuey ran those for a while; since 0.2.20 every room is a **place** written anew in the
+kit's words (below), and the converted scripts and their ~460 opcode words are gone (they are in
+the history, `scripts/story/rooms-ref/` and `scripts/story/words.fs`, for checking a place
+against the original).
 
 ## Structure
 
 | Actor | What |
 |---|---|
-| `story` (one) | Spawns an actor for each room as it comes in (`arrived`), tells it when it is being left (`leaving-room`) and when the next room is in, and retires it once it reports done. |
-| a room (named for it: `front-garden-2`) | The played room's scripts run as this actor. Its fields are the event state. |
+| `story` (one) | Spawns the place of each room as it comes in (`arrived`), tells it when it is being left (`leaving-room`) and when the next room is in (`room-left`), and retires it once it reports done. A room with no place has no actor. |
+| a place (named for its room: `front-garden-2`) | The played room's doings, as one actor: its description (`came-in`, `person-in`, `each-frame`, `went`), its own cells, its activities. |
 
-- **The phases are its handlers.** Entering (`room-enter`): phase 0 (the event state anew),
-  each character's entering script, phase 3. Each `tick`: phase 1 and the shared
-  after-phase-1 script, phase 2 and after-phase-2, then the action scripts. At `frame-end`:
-  phase 3, and an exit asked for is taken (`go-through` to the rooms). Leaving (`room-leave`):
-  phase 4. Left (`room-left`, the next room in): phase 5, then `room-done`.
-- **The action scripts are its coroutines**, in 17 slots (0..5 the characters', 6..16 the
-  scenes' 0xF0..0xFA), each given one turn a frame in slot order. They share the room's state
-  as the original's scripts share the event object, without another actor's fields being touched.
-- The order matches the original's (`scene_game.c`): the characters act first (they were
-  spawned before any room), then phases 1 and 2, the scripts, and phase 3 last.
-
-Files: `scripts/story.fs` (the story actor), `scripts/story/room.fs` (a room's behaviour),
-`scripts/story/state.fs` (its fields), `scripts/story/words.fs` (the words),
-`scripts/story/shared.fs` (the shared scripts 0x80..), `scripts/story/rooms/<name>.fs` (each
-room's scripts: `<name>.enter`, `.char-enter`, `.phase1`..`.phase5`, `.act00`.., `.cmd00`..,
-registered by name), `scripts/story/rooms.fs` (all loaded). Generated once by
-`tools/story_convert.py` from new-src; edited by hand since. A word not written yet is a stub
-(`stub-step` / `stub-flag` in `words.fs`; `.missing` lists those reached).
-
-By name: the character slots the scripts know (`char-slot#`: Fiona, Hewie, the stalker, the
-figures; `self-who`, `stalker-who`), the phases (`phase#`), the scene slots and the zones (a
-`/zone` structure) are in `story/state.fs`; the words' own numbers - door bits, look slots, the
-cutscene's ops (`scene-op`), the movie's classes, the maze's deal, the stalker's gift rows (by item
-name) - beside the words that use them. The rooms' strings and the music's files are `strings:`
-lists (story/strings.fs).
-
-The rooms (converted once from the bytecode) were then reworked by tools, each run once:
-`tools/story_rename.py` renamed the words the converter had named for opcodes and offsets
-(`char-C4?` is `char-cond?`, ...) - and two commands that shadowed facts of the same name
-(`stalker-mode`, `hewie-action`: now `stalker-command`, `hewie-do`; the facts
-`stalker-move-mode`, `hewie-act-now`); `tools/story_who.py` named the character arguments
-(`fiona-who 5 char-in-area?`); `tools/story_idioms.py` put the repeated idioms as words -
-`scene-wait-ready`, `scene-play`, `scene-play-through`, `player-camera`, `item-fanfare`,
-`panic-eased`; `tools/story_messages.py` wrote each message's text beside the line that shows
-it (it runs the game: it needs the game's data).
-
-A room registers its scripts by their names: `castle-1f-2 register-scripts` finds
-`castle-1f-2.enter`, `.phase1` .. `.phase5`, `.char-enter` and `.act00` .. `.act7F` and puts each in
-its place (`register-shared` the same for `shared.act80` ..); only a script registered under another
-name is written out. Fiona's action offered on her action button is `act when offer-action` -
-`when` the original's kind by when it may be: `unhurried` (not in a panic; chased, her "no time"
-message instead), `always`, `calm` (not in a panic), `calm-hewie-up` (the hiding places: not in a
-panic, nor in hard mode while Hewie is down; busy - chased, a stalker or figure in the room, or
-someone but Hewie held by a script: SceneGame_Busy - her "no time" message instead).
-
-The ways a room opens and closes are its nav triangles' flags, by name (scripts/floor-flags.fs:
-who each keeps off - `keeps-people-off`, `keeps-hewie-off`, `solid-floor`, ... - and what the
-floor is): `2 keeps-people-off floor-on` / `floor-off` on a group of triangles, `tri-floor-on` /
-`tri-floor-off` on one. Its own model parts - a breakable whole or broken, a leaf open or shut -
-are `3 part-shown` / `part-hidden`.
-
-The animations a script plays itself are by name - Fiona's, Hewie's or the stalkers' (each
-script's character is known from the room's calls; tools/story_anims.py), Fiona's story ones
-named from how they look played (fiona/anims.fs) - and a room's own motion file's are `i
-room-motion`. The variables the rooms hand Hewie for his finds and looks are `found-flag-var`
-.. `hewie-zone-var`. A room's own event bits, script variables and sounds (bank 6, loaded for
-it) are named in a block after its USING: line, with what each is for (tools/story_room_names.py;
-a `?` where the evidence was thin). A sound's flag bits are words: `kept-going` (one already playing
-is moved, not restarted) and `volume-scaled` (by the story's volume setting).
-
-The converter's long-hand is said by words (tools/story_flow.py): `N wait-frames`, `anim
-play-out` / `anim b blend-out` (played to its end), `msg say` (shown and waited out), `[: cond ;]
-wait-until` / `wait-while`, and `player-who` - the one played, Fiona or Hewie in his sections -
-where the two branches differed only in who. The scenes' slots: `n track` ($F0..$F8),
-`cutscene-track`, `fade-track`.
+Files: `scripts/story.fs` (the story actor), `scripts/story/kit.fs` (the words a place is
+written in), `scripts/story/places/<room>.fs` (each place; shared pieces of an area in their own
+files there - forest.fs, house-of-truth.fs, walkway.fs, bedroom.fs, bridge.fs, clock-run.fs),
+`scripts/story/places.fs` (all loaded), `scripts/story/common.fs` (what every room does),
+`scripts/story/base.fs` (what the story kept of the old machinery: the character slots - the
+stalker the story loaded, the scenes' figures - the stalkers' gifts, the maze's deal, the screen
+filled black for a frame, and a few pieces as the original has them), `scripts/story/clock.fs`
+(the clock run's clock), `scripts/story/strings.fs` (the rooms' strings and the music's files).
 
 ## Places: rooms written anew
 
 A room listed in `scripts/story/places.fs` is a **place** (docs/rooms-design.md): `story` spawns
-it instead of the converted scripts, and it says what happens in the room as a program. The
-converted file stays for the rooms not yet moved; a room is one or the other.
+it, and it says what happens in the room as a program. Every room with anything of the story's
+has one.
 
 - **The kit** (`scripts/story/kit.fs`, vocab `story.kit`): a place's state (`place-state`, its
   own cells by `own:`), its description (`' came-in ' person-in ' each-frame ' went room place!`),
@@ -180,10 +125,7 @@ mark (`open-mark`); a creature let out turned (`creature-facing`); the
 game over (`game-over`, its kind; `ending-var` which ending caught her). A place has the original's
 32 effect slots. A
 whole breakable is a target a stalker's blow may strike instead of her (`zone-target`, cleared as
-each frame starts: Events_NearestPoint, as the converted rooms' zones of kind bit 1). The
-converted files of the rooms that are places are kept, unloaded, in `scripts/story/rooms-ref/`.
-Tests of the converted rooms' machinery set `story:places-off` to run a room so even if it is a
-place (its converted scripts or none); it goes with the machinery.
+each frame starts: Events_NearestPoint, as the original's zones of kind bit 1).
 
 The old mansion's pieces: the hopping figure (`hopper:` - its hops, sounds, place; `hopper-in`,
 `hopper-struck?`, `hops-back`, `hops-about`, `hopper-calls`, `hopper-gone`); the cabinet to hide in
@@ -240,6 +182,30 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   `time-up-leaves` (Riccardo taken off when his time is up out of her sight), `creature-slot-in`,
   `hewie-side`, `grab-ready?` / `grab-forget` (his last answer to the grab from behind, kept),
   `far-clip`, `gs-tint` (the rooms' char-tint colour).
+- the off-map rooms (every room a place): the clock run - `story/places/clock-run.fs` what its
+  twenty rooms share ($D9 .. $D0 the forest's, $E0 .. $E9 the castle's: their rooms again, Hewie the
+  one played, Fiona following): the clock shown each frame (`story/clock.fs` - its saved time kept
+  by it now, `clock-draw-saved` given whether to show it), Hewie's ways ahead (`his-ways`,
+  `his-way-back`), exits by their areas (`by-areas`), the run set out in $D9 / $E0 (`run-begins`,
+  `music-taken`, `run-stage`), its goal in $D0 / $E9 (`at-goal`, `run-over`: the time kept, the
+  results' menus, out to the extras room), the castle's hiding places in the run (`hide-cue?`:
+  Fiona slips in at Hewie's command as he stands by one; `run-searches`, `run-finds-her`; left
+  behind, `left-hidden`). The forest's copies use `story/places/forest.fs` (its wisp, rabbit and
+  bush - the bush's floor flag now `bush-floor`, the leaves pushed by anyone: `leaves-pushed-by`).
+  The ending scenes ($33 the ending D, $34 Lorenzo's, $35 the three with Hewie, $36 the ending A,
+  each with its replays), the garden's hidden room ($27: the topping-up machine, the slot machine's
+  jewellery, the book, the chests of clothes), the extras room ($37: the corners named on the floor
+  - `show-text` straight to the window, not the place's message, so the action still works - the
+  theatre, the mini-game's challenges with their first rooms, the galleries, the changing area, the
+  exit; in from the title, back from a replay, back from the run), and $0D, $65 (its data has no
+  exits), $64, $C4 and $5A (no data on the disc: never entered). Kit: exits by the one played
+  (`player-free?`, `own-pace?`, `player-kind`, `passable?`, `exit-checked` - the rooms'
+  exit-check: not locked, passable from their side, at their own pace; `exit-out` and `leaves-by`
+  now go by it), Hewie's gesture while played (`gesture-now`, `played-gesture`; `wants-out?` - a
+  hiding place left at his next command), `fiona-idle?` (Fiona_IsIdle), `stands-on?`,
+  `scene-shot?` / `scene-at?` / `scene-near-end?` (a scene's shot, cue, end), `clothes-changed`
+  (the costumes' menu closed: what she chose put on, his coat posed - `hewie-recoated`, from the
+  bedroom).
 
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
 after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
@@ -449,84 +415,66 @@ Declared in `scripts/messages.fs`.
 | Message | Stack | Direction | Meaning |
 |---|---|---|---|
 | `arrived` / `leaving-room` | | in (rooms broadcast) | A room comes in / is being left. |
-| `room-enter` | `( room exit -- )` | story → room | The room is in, entered by `exit`. |
-| `room-leave` / `room-left` | | story → room | Phase 4 / phase 5. |
-| `room-done` | | room → story | Finished: it may go. |
-| `story-stop` | | → story | No more room scripts (the others' tests; the console). |
-| `danger`, `panic`, `fiona-doing`, `hewie-doing` | | in (broadcasts) | Facts the conditions read (game mode, panic stage, Fiona's mode). With `stalker-doing`, who is in the room: one coming in runs its entering script. |
-| `fiona-requested` | `( kind -- )` | in (Fiona's broadcast) | A creature's request of her this frame (cond 0x64: a spirit's, $D). |
-| `go-through` | `( exit -- )` | → rooms | An exit taken (`exit-check`), after the frame. |
-| `to-exit` | `( exit -- )` | → a character | Put yourself on the exit's outside spot, facing in (`char-to-exit`). |
-| `cam-char-setup`, `cam-on` (C words), `camera-restart` | | → camera | `char-camera`, `area-camera`, `chars-area-camera`, `camera-follow`. |
-| `lock`, `unlock` | | → doors | `door-lock`, `door-unlock`. |
-| `noise` | | → acoustics | A noise of the room's (source `world-noise`). |
-| `panic-stage!` | | → panic | `panic-stage`. |
+| `room-enter` | `( room exit -- )` | story → place | The room is in, entered by `exit`: `came-in`, each person's `person-in`. |
+| `room-leave` / `room-left` | | story → place | Being left / left (its doings stopped, `went`). |
+| `room-done` | | place → story | Finished: it may go. |
+| `story-stop` | | → story | No more places (the others' tests; the console). |
+| `danger`, `panic`, `fiona-doing`, `hewie-doing`, `stalker-doing`, `creature-doing`, ... | | in (broadcasts) | What the others tell; the place keeps it (`danger-now`, `fiona-mode-now`, `st-room-now`, ...). |
+| `go-through` | `( exit -- )` | → rooms | An exit taken (`take-exit`), after the frame. |
+| `to-exit` | `( exit -- )` | → a character | Put yourself on the exit's outside spot, facing in (`at-exit`). |
+| `cam-char-setup`, `cam-on` (C words), `camera-restart` | | → camera | `camera-set`, `area-camera`, `camera-out`, `follow`. |
+| `lock`, `unlock`, `door-opened`, ... | | → doors | `lock`, `unlock`, `door-shut`, ... |
+| `panic-stage!` | | → panic | `panic-eased`, `panic-to`. |
 
-**Facts read:** the progress (story, state and resident flags, the byte variables, the
-visited rooms, door states), bodies (where the characters are, their triangles and headings),
-the room's event areas (crossing tests), the nav mesh. **Facts kept (the story owns them):** the
-story, state and resident flags and variables the scripts set; the room's nav-mesh groups.
+**Facts read:** the progress (story, state and resident flags, the byte variables, the visited
+rooms, door states), bodies (where the characters are, their triangles and headings), the room's
+event areas (crossing tests), the nav mesh. **Facts kept (the story owns them):** the story,
+state and resident flags and variables the places set; the room's nav-mesh groups.
 
 ## State
 
-A room's fields (`story/state.fs`): its room and the exit it was entered by; the script
-variables (32), event bits, the counter, the exit taken, frames, the result; the message
-window's text, answer and owner; the 17 slots (task, character, id, frames); the running
-context (slot, character, id); each character's place at the last frame's end (for areas
-entered / left) and whether a script of this room has it (scripted); who the camera follows;
-what it was told (danger, panic, Fiona's mode, Hewie's action).
+A place's fields (`place-state` in story/kit.fs): its room, the exit it was entered by, the exit to
+take; its activities (tasks) and who each holds; each person's place at the last frame's end (for
+areas entered / left) and whether they are in; the offer this frame; what the others told; its
+effects (32 slots); its own cells (`own:`). The character slots the story keeps across rooms (the
+stalker it loaded, the scenes' figures in 3..5) are story/base.fs's.
 
 ## Rules
 
-From `event.c` (`Events_RunPhase`, `Events_CharEnter`, `Events_RunCharScripts`, the commands and
-conditions), `scene_game.c` (the order), `progress.c`.
+From `event.c`, `scene_game.c` (the order), `progress.c`.
 
-1. **Characters by slot:** 0 Fiona, 1 Hewie, 2 the stalker, 3.. the event characters' figures
-   (`cast-actor`: docs/subsystems/cast.md); 0xFF the
-   script's own character; 0xFE the active stalker. A script's context has its character's id
-   (+0x153C: `cs>id` - Fiona 0, Hewie 1, the stalker his kind, a figure the id it was loaded as):
-   `self-is?` (cond 0x17) compares it, $FE the stalker's while he is in the game. `char-camera`
-   with $FF is the director's own setup, followed by nobody (Progress_SlotOfId gives none).
-   The facing conditions (0x05, 0x06) want the character in the game, in any room (cond_char).
-2. **Entering scripts** (Events_CharEnter): each character in the room as it is entered, then
-   each coming in while it is played, as it tells (`fiona-doing`, `hewie-doing`, `stalker-doing`):
-   Hewie arriving or placed here, Fiona back in view, the stalker through a door - not put here by
-   a script (his came-by -1, as Pursuer +0x64 runs none). Run in the character's context, the
-   running script's put back after.
-3. **Areas entered / left** compare where a character was at the last frame's end with where
-   it is now (the original's previous position).
-4. **Taking an exit** (cmd 0x00): with bit 7, at once; otherwise if its door isn't locked, is
-   passable from the one played's side (Fiona's bit $10, Hewie's $20), and the one played moves
-   on their own (Fiona: mode 0 or 0xA; Hewie: 0) - a script holding her doesn't stop it. **An
-   exit usable** (cond 0x07): the one played free (no script, and that mode), in the exit's area,
-   its door open, and the door not held. Arrivals are on the exit's outside spot, outside its area: nothing else stops a
-   bounce, as in the original.
-5. **Actions** (cmd 0x05 / 0x92): a scene's script in its slot if free (0x92: always); a
-   character's in its slot, unless it already has one (0x92: always), the character then
-   scripted until its script ends (`self-idle-or-end`). No new action once an exit is taken.
-6. **`events-held`** runs only phase 3 and a shared script for characters entering.
+1. **Characters by slot:** 0 Fiona, 1 Hewie, 2 the stalker the story loaded (`partner-load`), 3..5
+   the event characters' figures (`figure-in`: docs/subsystems/cast.md).
+2. **A person coming in** while the room is played runs the place's `person-in`, as the
+   original's entering scripts (Events_CharEnter): Hewie arriving or placed here, Fiona back in
+   view, the stalker through a door.
+3. **Areas entered / left** compare where a person was at the last frame's end with where they
+   are now (the original's previous position).
+4. **Taking an exit** (cmd 0x00, `exit-checked`): its door not locked, passable from the one
+   played's side (Fiona's bit $10, Hewie's $20), and the one played at their own pace (Fiona: mode
+   0 or 0xA; Hewie: 0). **An exit usable** (cond 0x07, `exit-out`): the one played free, in the
+   exit's area, its door open, and the door not held. A forced exit ($80 and up) goes to the room
+   loaded ahead - the room left, unless another was loaded since.
+5. **Activities** hold whom they move; a move is sent only for a character the running activity
+   holds; let go as it ends or the room is left.
 
 ## Design notes
 
-- The rooms are named (`scripts/room-names.fs`): words and registrations use the names. Rooms
-  on no page of the pause map are `off-map-XX` until named.
-- Words not written yet are stubs: each says so once (`story: <word> - not written yet`), does
-  nothing, and a condition is false. A waiting word's stub still waits a frame, so a script
-  looping on it gives up its turn. `.missing` lists the ones met.
-- The words are re-written for actors, not ported: what they changed directly in the original
-  (a character's fields, the camera director, a door's state) is now a message to its owner.
-- Room numbers inside the scripts (arguments of `stalker-to-room`, `hewie-to-room`, ...) are
-  still numbers.
-- `door-bits` sets which parts of the room's door models and of the room mesh itself are drawn
-  (`door-group!`, `room-group!`): the breakables - a vase whole (group $15), its shards ($16) -
-  are the room mesh's batches, the doors' parts their models'.
+- The rooms are named (`scripts/room-names.fs`). Rooms on no page of the pause map are
+  `off-map-XX`.
+- No opcode words: a place sends messages and uses the kit's words. Room numbers are names.
+- A room's own model parts (a breakable whole or broken, a door's leaf) are `n show-part` /
+  `hide-part` (the room mesh's and the doors' groups from $15).
 - castle-2f-8's golem is the room mesh's own parts (standing, moved to the door, crumbled); the
   placed golem 50 above the room is only the plate scenes' puppet, left up there as the original
   leaves it.
-- The camera's nearest-set stand-in stays as a fallback for a character the scripts give no
-  setup.
+- The camera's nearest-set stand-in stays as a fallback for a character with no setup.
 
 ## Status
+
+The history below runs from the converted rooms' machinery (S1 .. S5: the rooms' bytecode
+scripts as Forth, their opcode words - gone in 0.2.20, every room a place since) to the places.
+Tests named there that went with the machinery are gone too.
 
 The opening from a new game (no `free-play`): `tests/story/test_opening.fs` (7) - the cage room's
 entering script (Fiona's act01: the doors locked, the opening's music and figures, the fade in),

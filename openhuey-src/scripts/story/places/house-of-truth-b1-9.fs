@@ -1,7 +1,8 @@
 \ story/places/house-of-truth-b1-9.fs - the House of Truth's B1 ($97) where the dark takes her: one
 \ step in and she is in the white room again (Lorenzo let go, the B1's track); its door kept from
 \ Hewie and the stalker; his slam's shake. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/house-of-truth-b1-9.fs (converted from the game's, not loaded).
+\ checking: story/rooms-ref/house-of-truth-b1-9.fs in the history (converted from the game's; gone
+\ with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-b1-9
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     story.kit story.places.house-of-truth ;

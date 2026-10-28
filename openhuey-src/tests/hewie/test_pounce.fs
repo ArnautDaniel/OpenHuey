@@ -3,7 +3,7 @@
 \ Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/hewie/test_pounce.fs
 IN: test-pounce
-USING: tester engine game-state actors messages common facts room-names game debug flag-names hewie.state hewie.body hewie.model hewie.states hewie.fight hewie.pounce hewie.more fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.bitten story.words creatures ;
+USING: tester engine game-state actors messages common facts room-names game debug flag-names hewie.state hewie.body hewie.model hewie.states hewie.fight hewie.pounce hewie.more fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.bitten creatures ;
 
 : his@ ( xt -- x )  game:hewie enter  execute  leave-actor ;
 : his! ( xt -- )  game:hewie enter  execute  leave-actor ;
@@ -55,7 +55,7 @@ debug:debilitas-out  10 run-frames
 : h7 ( -- id )  game:creatures enter  7 slot@  leave-actor ;
 : of7 ( xt -- x )  h7 enter  execute  leave-actor ;
 s" fiona" actor-named body-tri constant fiona-tri
-[: room-id 2 fiona-tri $80 0 -1 0 0e creature-place ;] room-actor enter execute leave-actor  deliver  5 run-frames
+[: room-id 2 fiona-tri $80 0 -1 0 0e f>cell game:creatures send creature-place ;] room-actor enter execute leave-actor  deliver  5 run-frames
 T{ [: creatures.homunculus:awake @ ;] of7 -> -1 }T
 T{ [: pick-target ;] his@ h7 = -> -1 }T
 h7 constant the-homunculus

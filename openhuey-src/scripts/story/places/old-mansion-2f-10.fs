@@ -1,7 +1,8 @@
-\ story/places/old-mansion-2f-10.fs - the old mansion's 2F room of the bull statues: the vase (broken by
-\ a blow: the Weeping Stone in it), the two statues' remark in turn, the flame and its draught; once the
-\ 1F's way is open, a creature let out next door; Hewie's looks. A place (story/kit.fs). The original's
-\ scripts, for checking: story/rooms-ref/old-mansion-2f-10.fs (converted from the game's, not loaded).
+\ story/places/old-mansion-2f-10.fs - the old mansion's 2F room of the bull statues: the vase
+\ (broken by a blow: the Weeping Stone in it), the two statues' remark in turn, the flame and its
+\ draught; once the 1F's way is open, a creature let out next door; Hewie's looks. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-2f-10.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-2f-10
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags items.names story.kit fiona.anims ;
 

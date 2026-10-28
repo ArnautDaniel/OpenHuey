@@ -1,11 +1,11 @@
 \ The stalker down on his front, searched (the shared $80, offered by the shared after-phase 2 -
 \ cond 0x4B, Pursuer_InStance2Anim): close and facing him, she bends to him and finds the next of
-\ his kind's gifts (0xB6) - in a place (story/common.fs) and in a room of converted scripts. Down on
+\ his kind's gifts (0xB6: story/base.fs) - in any place (story/common.fs). Down on
 \ his back he isn't offered. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_searched.fs
 IN: test-searched
 USING: tester engine game-state actors messages keys room-names game debug facts flag-names
-    items.names stalker.state stalker.struck stalker.anims fiona.state ;
+ items.names stalker.state stalker.struck stalker.anims fiona.state ;
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : window-shown ( -- msg )  game:window enter  window:shown @  leave-actor ;
@@ -23,7 +23,7 @@ USING: tester engine game-state actors messages keys room-names game debug facts
     circle press  60 0 do  window-shown 0< 0= if  cross press  then  5 run-frames  loop ;
 
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set
-2 story.words:partner-load  5 run-frames   \ (Debilitas the story's stalker, as the story has him)
+2 story.base:partner-load  5 run-frames   \ (Debilitas the story's stalker, as the story has him)
 
 testing in a place (front-garden-3): down on his front, she beside him facing him - searched, his first gift (chicken jerky, $8011)
 front-garden-3 room!  30 run-frames
@@ -34,10 +34,10 @@ circle press  T{ [: window-shown $8011 = ;] 200 soon -> -1 }T
 searched
 T{ jerky  gifts  progress pr.gift-next l@ -> before @ 1+  1 1 }T
 testing ... after the first a gift is due 1 in 10 (counted to 8); none due, he comes round (his time down over)
-: dues ( n -- hits )  0 swap 0 ?do  story.words:gift-due? if  1+  1 progress pr.gifts l!  then  loop ;
+: dues ( n -- hits )  0 swap 0 ?do  story.base:gift-due? if  1+  1 progress pr.gifts l!  then  loop ;
 1 progress pr.gifts l!
 T{ 2000 dues 140 260 within -> -1 }T   \ (about 200)
-: rolls ( n -- )  0 ?do  story.words:gift-due? drop  loop ;
+: rolls ( n -- )  0 ?do  story.base:gift-due? drop  loop ;
 8 progress pr.gifts l!  200 rolls  T{ gifts -> 8 }T   \ (not past 8)
 1 progress pr.gifts l!
 game:debilitas send stalker-down-over
@@ -51,8 +51,8 @@ beside  searched
 T{ jerky  gifts  [: anim @ lying-back-anim = ;] his -> before @  1 -1 }T
 debug:debilitas-out  2 run-frames
 
-testing in a room of converted scripts (front-garden-2 run so): the same offer (cond 0x4B), the next of his row once due (beef jerky)
--1 story:places-off !  front-garden-2 room!  30 run-frames  beef before !  0 progress pr.gifts l!
+testing in another place (front-garden-2): the same offer, the next of his row once due (beef jerky)
+front-garden-2 room!  30 run-frames  beef before !  0 progress pr.gifts l!
 : her-y ( F: -- y )  s" fiona" actor-named body-pos fdrop fswap fdrop ;
 140.64e her-y -217.33e 0e tp-facing  5 run-frames   \ (an open spot)
 ' leg-down felled  T{ ' lying? 120 soon -> -1 }T
@@ -60,5 +60,5 @@ beside
 circle press  T{ [: window-shown $8011 = ;] 200 soon -> -1 }T
 searched
 T{ beef  gifts  progress pr.gift-next l@ -> before @ 1+  1 2 }T
-debug:debilitas-out  2 run-frames  0 story:places-off !
+debug:debilitas-out  2 run-frames
 test-summary

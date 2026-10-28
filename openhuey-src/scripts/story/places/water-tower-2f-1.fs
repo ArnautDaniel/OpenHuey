@@ -1,11 +1,11 @@
-\ story/places/water-tower-2f-1.fs - the Water Tower's 2F ($C2): the walkway (the object move00) turned
-\ by its lever from one landing to the other - Hewie on it brought along; Riccardo heard prowling
-\ above, then come for her (once, by her way up; after, 1800 frames after each time he left); taken
-\ off as she comes in, and when his time is up and she can't see him; the summoner off while she's
-\ here; the crate (a creature let out); the Medallion Hewie sniffs out; the Refined Antimony; Hewie's
-\ bark at the walkway's far end (till it first turns); the map's pages. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/water-tower-2f-1.fs (converted from the game's,
-\ not loaded).
+\ story/places/water-tower-2f-1.fs - the Water Tower's 2F ($C2): the walkway (the object move00)
+\ turned by its lever from one landing to the other - Hewie on it brought along; Riccardo heard
+\ prowling above, then come for her (once, by her way up; after, 1800 frames after each time he
+\ left); taken off as she comes in, and when his time is up and she can't see him; the summoner off
+\ while she's here; the crate (a creature let out); the Medallion Hewie sniffs out; the Refined
+\ Antimony; Hewie's bark at the walkway's far end (till it first turns); the map's pages. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/water-tower-2f-1.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.water-tower-2f-1
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit story.places.walkway fiona.anims ;

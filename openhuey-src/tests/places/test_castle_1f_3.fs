@@ -69,7 +69,7 @@ T{ [: [: hewie-wary @ ;] in-place ;] 120 soon -> -1 }T
 300 run-frames
 
 testing chased, Debilitas elsewhere, coming in: the hint - the stalkers kept off, then let go
-2 story.words:partner-load  5 run-frames  castle-1f-4 100 game:debilitas send stalker-in  10 run-frames
+2 story.base:partner-load  5 run-frames  castle-1f-4 100 game:debilitas send stalker-in  10 run-frames
 c1f-3-bookshelf-hint story-flag-clear  force-chased state-flag-set  room-afresh
 T{ c1f-3-bookshelf-hint story-flag?  [: window-shown hint-msg = ;] 120 soon  [: chase-scene @ ;] in-place -> -1 -1 -1 }T
 500 read-on

@@ -58,7 +58,7 @@ T{ fiona-hidden state-flag? -> -1 }T
 T{ fiona-hidden state-flag? -> 0 }T
 
 testing the stalker coming while she hides, the TV on: Debilitas turns it off (its offs counted)
-c1f-16-flag2 story-flag-set  room-afresh  2 story.words:partner-load  5 run-frames
+c1f-16-flag2 story-flag-set  room-afresh  2 story.base:partner-load  5 run-frames
 hiding-area 45 at  circle press  300 run-frames
 castle-1f-16 $CE game:debilitas send stalker-in  600 run-frames
 T{ c1f-16-flag2 story-flag?  9 progress pr.vars + c@ -> 0 1 }T

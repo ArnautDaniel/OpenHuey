@@ -2,9 +2,9 @@
 \ scales (a coin on one pan); an ore laid on them - its scene, the ore gone, a Handful of Ash; a
 \ Godstone laid on them - its scene: the scales level, the great door unlocked (the Godstone may be
 \ taken back while she's still here); the great door (its inscription and the file; pushed, it won't
-\ give); two save clocks; the Camomile; eight candles; Hewie's look; its sounds; the replays. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-2.fs
-\ (converted from the game's, not loaded).
+\ give); two save clocks; the Camomile; eight candles; Hewie's look; its sounds; the replays. A
+\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-2.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-2
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit fiona.anims scenes ;

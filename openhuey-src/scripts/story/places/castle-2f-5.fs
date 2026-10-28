@@ -1,10 +1,11 @@
 \ story/places/castle-2f-5.fs - the bedroom in Belli Castle's 2F ($32) once the chapter has turned:
 \ Daniella the stalker, Fiona weak ("I don't feel so hot") till she rests on the bed - the mirror's
-\ scene ("I am not complete.": it cracks, shatters, Daniella in its fragments, her face), well again,
-\ Hewie back from under the other bed, Daniella left in the room; the bed to hide under (Daniella
-\ looking under it), the chicken jerky Hewie sniffs out by the wall, the windows after dark, the
-\ movie replayed (the bedroom's own things: story/places/bedroom.fs). A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/castle-2f-5.fs (converted from the game's, not loaded).
+\ scene ("I am not complete.": it cracks, shatters, Daniella in its fragments, her face), well
+\ again, Hewie back from under the other bed, Daniella left in the room; the bed to hide under
+\ (Daniella looking under it), the chicken jerky Hewie sniffs out by the wall, the windows after
+\ dark, the movie replayed (the bedroom's own things: story/places/bedroom.fs). A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-2f-5.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-2f-5
 USING: engine game-state actors messages common facts flag-names story-names room-names stalker-names
     items.names story.kit fiona.anims scenes story.places.bedroom ;

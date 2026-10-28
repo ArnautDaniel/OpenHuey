@@ -3,7 +3,7 @@
 \ the timed effects; the story's words. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/items/test_items.fs
 IN: test-items
-USING: tester engine game-state actors messages game room-names items items.names items.tables fiona.state story-names story.state facts story.words flag-names fiona.moving debug ;
+USING: tester engine game-state actors messages game room-names items items.names items.tables fiona.state story-names facts flag-names fiona.moving debug ;
 
 : give ( id n -- )  game:items send give-item  deliver ;
 : ids ( list -- a b c )  dup 0 item-at  over 1 item-at  rot 2 item-at ;
@@ -104,10 +104,10 @@ testing the Fresh Flowers wither after 9000 frames: the Withered Flowers instead
 T{ fresh-flowers items-of  withered-flowers items-of  flowers-withered story-flag? -> 0 1 -1 }T
 
 testing the story's words: counted and given, the count; a mark and its test; the reward
-camomile 2 item-give-count  deliver
-T{ camomile 98 item-count?  camomile 100 item-count? -> -1 0 }T
-T{ 7 subscreen-bit?  7 subscreen-bit  deliver  7 subscreen-bit? -> 0 -1 }T
-45 progress pr.hewie-mistreated l!  reward-item  deliver
+camomile 2 story.kit:give-item  deliver
+T{ camomile 98 story.kit:has-items?  camomile 100 story.kit:has-items? -> -1 0 }T
+T{ 7 items:item-bit?  7 game:items send item-bit  deliver  7 items:item-bit? -> 0 -1 }T
+45 progress pr.hewie-mistreated l!  story.base:reward-item  deliver
 T{ files 1- file@ -> $271 }T
 
 testing a key at its place: the room's doing for her starts (the gate key: the front garden's

@@ -4,7 +4,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/places/test_castle_1f_10.fs
 IN: test-castle-1f-10
 USING: tester engine game-state actors messages keys room-names game debug facts flag-names story-names
-    floor-flags fiona.state story.kit story.places.castle-1f-10 items.names ;
+ floor-flags fiona.state story.kit story.places.castle-1f-10 items.names ;
 
 : window-shown ( -- msg )  game:window enter  window:shown @  leave-actor ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
@@ -48,7 +48,7 @@ T{ c1f-10-beef-jerky story-flag?  beef-jerky items:items-of -> -1 before @ 1+ }T
 
 testing the stalker with his doll (the file found): sitting there; beside him, the scene - the Smudged Key; then his doll's dance
 found-file-20b story-flag-set  c1f-10-flag1 story-flag-clear  c1f-10-flag2 story-flag-clear  room-afresh
-castle-1f-2 room!  30 run-frames  [: 2 3 0 story.words:char-load ;] in-place  10 run-frames   \ (castle-1f-2 loads his figure on her way)
+castle-1f-2 room!  30 run-frames  [: 2 3 0 figure-in-by ;] in-place  10 run-frames   \ (castle-1f-2 loads his figure on her way)
 castle-1f-10 room!  60 run-frames
 T{ [: him here?  he-sits? ;] in-place -> -1 -1 }T
 smudged-key items:items-of before !

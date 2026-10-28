@@ -72,20 +72,20 @@ $18 constant first-mandragora   5 constant #mandragoras
     then ;
 : rewards ( -- )   \ (the other game: Hewie's hints for how he has been treated)
     items-40-as-70 fact? 0= if  exit  then
-    fiona held?  hewie held? or  if  exit  then  hewie-act-now @ 0= if  story.words:reward-item  then ;
+    fiona held?  hewie held? or  if  exit  then  hewie-act-now @ 0= if  story.base:reward-item  then ;
 \ ---- the stalker down on his front: searched (shared $80, offered as the shared after-phase 2
-\ has it) - she bends to him and finds the next of his kind's gifts (story.words, 0xB6) ----
+\ has it) - she bends to him and finds the next of his kind's gifts (story/base.fs, 0xB6) ----
 : lying-on-front? ( -- flag )   \ (down, lying on his front or twitching so: Pursuer_InStance2Anim)
     stalker-in?  fiona here? and  st-cond-now @ down-cond = and 0= if  false exit  then
     stalker model-of dup 0< if  drop false exit  then  motion@
     dup stalker.anims:lying-front-anim =  swap stalker.anims:lying-front-anim 1- = or ;
 : over-him? ( -- flag )   \ (close - 2 more than their sizes across - and facing him within 50 degrees)
-    fiona stalker 2 0 story.words:touching? 0= if  false exit  then
-    fiona stalker story.words:heading-between  fiona body-yaw f- angle-wrap fabs rad>deg  50e f<= ;
+    fiona stalker 2 0 story.base:touching? 0= if  false exit  then
+    fiona stalker story.base:heading-between  fiona body-yaw f- angle-wrap fabs rad>deg  50e f<= ;
 : found-on-him ( -- )   \ (his gift, if one is due: given and named, or none left)
-    story.words:gift-due? 0= if  stalker send stalker-down-over exit  then   \ (none: he comes round)
-    st-kind-now @ story.words:next-gift  dup 0< if  drop story.words:no-gift-message show exit  then
-    dup item-named  dup 1 items send give-item  show-item-tab  fanfare  story.words:gift-message show ;
+    story.base:gift-due? 0= if  stalker send stalker-down-over exit  then   \ (none: he comes round)
+    st-kind-now @ story.base:next-gift  dup 0< if  drop story.base:no-gift-message show exit  then
+    dup item-named  dup 1 items send give-item  show-item-tab  fanfare  story.base:gift-message show ;
 : search-him ( -- )
     fiona hold  fiona wait-move  fiona stalker face-toward  fiona wait-move
     fiona pick-up-anim play  4 frames  found-on-him  8 frames  fiona up-from-pick-anim play  wait-closed ;

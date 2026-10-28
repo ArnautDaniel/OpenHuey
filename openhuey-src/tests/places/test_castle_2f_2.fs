@@ -98,7 +98,7 @@ c2f-2-flag2 story-flag-clear  c1f-8-flag1 story-flag-clear  box-door s" doors" a
 T{ c2f-2-flag2 story-flag?  box-door door-locked? -> -1 0 }T
 
 testing Debilitas's far shove: then gone
-2 story.words:partner-load  5 run-frames  room-afresh  castle-2f-2 $1A2 game:debilitas send stalker-in  30 run-frames
+2 story.base:partner-load  5 run-frames  room-afresh  castle-2f-2 $1A2 game:debilitas send stalker-in  30 run-frames
 [: ['] shoves-far start drop ;] in-place
 T{ [: [: his-shove @ 0= ;] in-place ;] 1500 soon -> -1 }T
 game:debilitas send stalker-out  60 run-frames
@@ -113,10 +113,10 @@ game:debilitas send stalker-out  60 run-frames
 testing after the warning, the door beyond tried: seized in there (the forced way)
 c1f-8-flag1 story-flag-set  found-file-209 story-flag-clear  room-afresh
 beyond-exit 0 door-user-spot drop fdrop spot vec!  spot vec@ tp  10 run-frames
-T{ circle press  [: room-id castle-2f-2 <> ;] 900 soon -> -1 }T
-free-play  10 run-frames  0 game:fiona send costume
-testing ... brought back pulled free: the file; then its locked door - "I have to get out"
-castle-2f-2 forced-exit rooms send go-to-room  5 run-frames
+beyond-exit game:rooms send exit-prepare  5 run-frames   \ (the room beyond loaded ahead, as her way to it does: put there, she didn't come by it)
+T{ circle press  [: room-id castle-2f-7 = ;] 900 soon -> -1 }T   \ (castle-2f-7: Daniella's scene)
+testing ... brought back pulled free (2f-7's scene over, its forced way back to the room left): the file; then its locked door - "I have to get out"
+T{ [: movie-skipped state-flag-set  room-id castle-2f-2 = ;] 1500 soon -> -1 }T
 T{ [: doing-busy? 0= ;] 600 soon -> -1 }T
 T{ found-file-209 story-flag? -> -1 }T
 T{ fled-file filed? -> -1 }T

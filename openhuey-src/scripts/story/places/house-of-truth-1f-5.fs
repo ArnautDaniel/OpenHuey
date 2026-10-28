@@ -1,11 +1,12 @@
-\ story/places/house-of-truth-1f-5.fs - the House of Truth's 1F hall of the door ($8D): with her track on
-\ and the file not yet found, the stalkers held till she steps further in - then the scene (Lorenzo's
-\ end: the marker shining between its cues; the door shut behind her, the file); after it her remarks
-\ ("I have to get out of here now!"), his body, and the door of mystical power (open: by the forced way
-\ to off-map-35, the sounds stopped, the music changed); before it, the door welded shut, the doors
-\ locked from this side, the clock; the tremors and the stones, the drone; its sounds; the slam's
-\ shake; the replay. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ house-of-truth-1f-5.fs (converted from the game's, not loaded).
+\ story/places/house-of-truth-1f-5.fs - the House of Truth's 1F hall of the door ($8D): with her
+\ track on and the file not yet found, the stalkers held till she steps further in - then the scene
+\ (Lorenzo's end: the marker shining between its cues; the door shut behind her, the file); after it
+\ her remarks ("I have to get out of here now!"), his body, and the door of mystical power (open: by
+\ the forced way to off-map-35, the sounds stopped, the music changed); before it, the door welded
+\ shut, the doors locked from this side, the clock; the tremors and the stones, the drone; its
+\ sounds; the slam's shake; the replay. A place (story/kit.fs). The original's scripts, for
+\ checking: story/rooms-ref/house-of-truth-1f-5.fs in the history (converted from the game's; gone
+\ with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-1f-5
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     effects story.kit story.places.house-of-truth fiona.anims scenes ;
@@ -28,8 +29,8 @@ $A constant clock-area   $B constant further-area   $C constant door-area   0 co
 $EA constant hall-door   $257 constant lorenzo-file   $828E constant end-other-file   $51 constant end-seen
 $1C constant door-track   $81 constant mystic-way
 : stones-fall ( -- )   \ (the ceiling coming down: stones of three kinds falling from 60)
-    7 60e 0e 0.5e 0.5e story.words:stones-falling  4 60e 0e 0e 0.5e story.words:stones-falling
-    3 60e 0e 0e 1e story.words:stones-falling ;
+    7 60e 0e 0.5e 0.5e story.base:stones-falling  4 60e 0e 0e 0.5e story.base:stones-falling
+    3 60e 0e 0e 1e story.base:stones-falling ;
 : came-in ( exit -- )
     drop  room-sounds
     over-music-f fact?  found-file-257 fact? 0= and  dup held-back !  if  stalkers-stay state!  then

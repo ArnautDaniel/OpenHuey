@@ -120,7 +120,7 @@ T{ [: [: hiding? 0= ;] in-place ;] 900 soon -> -1 }T
 testing the ambush: Hewie in the thicket, Daniella by it - the scene, its file, his trust
 room-afresh  hewie-brought  -90 90e 7e -9e put  60 run-frames  go-there-cmd command
 T{ [: [: hiding? ;] in-place ;] 900 soon -> -1 }T
-90 40e 7e 40e put  3 story.words:partner-load  5 run-frames
+90 40e 7e 40e put  3 story.base:partner-load  5 run-frames
 old-mansion-1f-8 $1DE game:daniella send stalker-in  5 run-frames
 60e 7e -10e stalker-at
 T{ [: movie-skipped state-flag-set  ambush-seen resident-flag? ;] 1500 soon  ambush-file filed? -> -1 -1 }T

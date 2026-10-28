@@ -2,7 +2,7 @@
 \ the room, Fiona's place and Hewie with her as they were. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/saves/test_saves.fs
 IN: test-saves
-USING: tester engine game-state actors messages room-names game facts flag-names story-names story.words fiona.state hewie.state stalker.state debug ;
+USING: tester engine game-state actors messages room-names game facts flag-names story-names fiona.state hewie.state stalker.state debug story.base ;
 
 : in-saves ( xt -- )  game:saves enter  execute  leave-actor ;
 : her-x ( -- n )  game:fiona body-pos fdrop fdrop fround f>s ;

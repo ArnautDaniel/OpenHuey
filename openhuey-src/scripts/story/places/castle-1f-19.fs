@@ -1,10 +1,10 @@
 \ story/places/castle-1f-19.fs - the flooded passage in Belli Castle's 1F ($1E): a hole low in the
 \ wall Hewie can hide in at her "go there" (out again at her "come back"); Debilitas passing his
-\ hiding place sets him on the stalker - the ambush, a scene; across the water the Rubrum
-\ Medallion, fetched by Hewie at her "go there"; splashes as someone steps into the water, Hewie's
-\ bark at the hole, his look at the far side; the hole's remarks. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/castle-1f-19.fs (converted from the game's, not
-\ loaded).
+\ hiding place sets him on the stalker - the ambush, a scene; across the water the Rubrum Medallion,
+\ fetched by Hewie at her "go there"; splashes as someone steps into the water, Hewie's bark at the
+\ hole, his look at the far side; the hole's remarks. A place (story/kit.fs). The original's
+\ scripts, for checking: story/rooms-ref/castle-1f-19.fs in the history (converted from the game's;
+\ gone with the old machinery in 0.2.20).
 IN: story.places.castle-1f-19
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects story.kit fiona.anims hewie.anims hewie-names scenes ;

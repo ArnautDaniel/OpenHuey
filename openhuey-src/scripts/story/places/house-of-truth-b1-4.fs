@@ -1,9 +1,9 @@
 \ story/places/house-of-truth-b1-4.fs - the House of Truth's white room in the B1 ($87), where the
 \ colours begin (story/places/house-of-truth.fs): the four colours undone and their doors shut each
-\ time she comes in; its inscription; its two doors into the dark (the red and the blue rooms ahead);
-\ in by the forced way - the first time its fact, after that its file. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/house-of-truth-b1-4.fs (converted from the
-\ game's, not loaded).
+\ time she comes in; its inscription; its two doors into the dark (the red and the blue rooms
+\ ahead); in by the forced way - the first time its fact, after that its file. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-b1-4.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-b1-4
 USING: engine game-state actors messages common facts room-names flag-names story-names story.kit
     story.places.house-of-truth ;

@@ -5,7 +5,8 @@
 \ her through blocked floor; the plain figures' models have no legs to fit. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/cast/test_cast_legs.fs
 IN: test-cast-legs
-USING: tester engine game-state actors messages room-names game debug story.words story.state ;
+USING: tester engine game-state actors messages room-names game debug ;
+: char-load ( id slot exit -- )  drop story.kit:figure-in ;   \ (a figure into a story slot: the kit's)
 
 : model3 ( -- m )  [: cast.private:model @ ;] game:cast3 enter execute leave-actor ;
 : put3 ( F: x y z yaw -- )  f>cell >r f>cell >r f>cell >r f>cell r> r> r>  game:cast3 send place ;

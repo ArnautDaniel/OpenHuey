@@ -1,10 +1,11 @@
-\ story/places/house-of-truth-1f-10.fs - the House of Truth's 1F storeroom ($9B): the hiding place under
-\ the hung things (in at her examine - not with the stalker here: "no time" - out at circle, hauled out
-\ panicking or found); the stalker's search as he comes in on her hidden (by the odds); the hung things
-\ swinging as she pushes by; the hole in the wall (in, by the forced way to off-map-27 - and out of it
-\ here); the clock (the save); the Camomile; Hewie's bark at the hole, his look; its steady sound and
-\ four in turn; the walls' shade; the map's pages. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/house-of-truth-1f-10.fs (converted from the game's, not loaded).
+\ story/places/house-of-truth-1f-10.fs - the House of Truth's 1F storeroom ($9B): the hiding place
+\ under the hung things (in at her examine - not with the stalker here: "no time" - out at circle,
+\ hauled out panicking or found); the stalker's search as he comes in on her hidden (by the odds);
+\ the hung things swinging as she pushes by; the hole in the wall (in, by the forced way to
+\ off-map-27 - and out of it here); the clock (the save); the Camomile; Hewie's bark at the hole,
+\ his look; its steady sound and four in turn; the walls' shade; the map's pages. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-1f-10.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-1f-10
 USING: engine game-state actors messages common facts room-names flag-names story-names items.names
     story.kit story.places.house-of-truth fiona.anims fiona.sounds stalker.anims keys ;

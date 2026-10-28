@@ -1,8 +1,9 @@
-\ story/places/castle-2f-4.fs - the little TV room in Belli Castle's 2F ($31): brought in by the forced
-\ way from the bedroom's TV, her nightmare (a scene - "No---!! This isn't real" - the lit quad over
-\ the picture at its shots, her layer and shadow by them) and out by the way loaded ahead; the TV, the
-\ fan. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-2f-4.fs
-\ (converted from the game's, not loaded).
+\ story/places/castle-2f-4.fs - the little TV room in Belli Castle's 2F ($31): brought in by the
+\ forced way from the bedroom's TV, her nightmare (a scene - "No---!! This isn't real" - the lit
+\ quad over the picture at its shots, her layer and shadow by them) and out by the way loaded ahead;
+\ the TV, the fan. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/castle-2f-4.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.castle-2f-4
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     effects story.kit scenes ;

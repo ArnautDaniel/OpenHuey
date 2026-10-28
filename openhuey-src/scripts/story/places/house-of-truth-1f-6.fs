@@ -1,12 +1,13 @@
 \ story/places/house-of-truth-1f-6.fs - the House of Truth's 1F room Lorenzo shuts her in ($8E):
-\ brought here before he has had his way (her track $E not yet on) - the door slammed behind her, his
-\ voice - and from then on, by stages, his taunts, each with its music and its line: the locked door
-\ tried (three times), hidden, half hidden, her defence, the far door opened, a spot she examines, the
-\ shelf falling, time passing (and again), standing still; the hiding place behind the cabinet (Hewie
-\ hidden beside her, if he is by her); late, the far door open, as she steps away - the scene ("Come to
-\ me, Fiona...": the door opened), then out by the forced way; the flame stirred; the replay. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-1f-6.fs
-\ (converted from the game's, not loaded).
+\ brought here before he has had his way (her track $E not yet on) - the door slammed behind her,
+\ his voice - and from then on, by stages, his taunts, each with its music and its line: the locked
+\ door tried (three times), hidden, half hidden, her defence, the far door opened, a spot she
+\ examines, the shelf falling, time passing (and again), standing still; the hiding place behind the
+\ cabinet (Hewie hidden beside her, if he is by her); late, the far door open, as she steps away -
+\ the scene ("Come to me, Fiona...": the door opened), then out by the forced way; the flame
+\ stirred; the replay. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/house-of-truth-1f-6.fs in the history (converted from the game's; gone with the
+\ old machinery in 0.2.20).
 IN: story.places.house-of-truth-1f-6
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags story.kit story.places.house-of-truth fiona.anims fiona.sounds scenes keys ;

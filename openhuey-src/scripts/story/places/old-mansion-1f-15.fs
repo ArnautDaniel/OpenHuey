@@ -1,10 +1,11 @@
-\ story/places/old-mansion-1f-15.fs - the library of the old mansion's 1F: three books to find (on the
-\ table; under the stand, the box pushed aside; one standing out on a shelf) and three lecterns to
-\ lay them on - each lectern's own author: its shelves slide back, the way through (another book
+\ story/places/old-mansion-1f-15.fs - the library of the old mansion's 1F: three books to find (on
+\ the table; under the stand, the box pushed aside; one standing out on a shelf) and three lecterns
+\ to lay them on - each lectern's own author: its shelves slide back, the way through (another book
 \ there may be taken back); the shelves by author (their remarks), the door atop one; two save
 \ clocks; the Refined Antimony; the Antimony Tube and the Rubrum Medallion Hewie sniffs out; Hewie
 \ by the stand; its sounds. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-1f-15.fs (converted from the game's, not loaded).
+\ story/rooms-ref/old-mansion-1f-15.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-1f-15
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names story.kit fiona.anims ;
@@ -124,7 +125,7 @@ create lectern-spots   $36 , -90 , 35e f, -52e f, 25e f, 20e f, -50e f, 2e f,
 : lays-1 ( b -- )
     {: b :}  1 at-lectern
     b 1 = if
-        3 story.words:things-off-group
+        3 story.base:things-off-group
         $18A hole-floor floor-tri-off  $1D3 hole-floor floor-tri-off
         $187 hole-floor floor-tri-on  $1D0 hole-floor floor-tri-on  $188 hole-floor floor-tri-on  $1D1 hole-floor floor-tri-on
         1 its-own  fiona look-point-move 0 0  40e 15e 25e 0e  move  yield

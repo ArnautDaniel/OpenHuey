@@ -1,10 +1,10 @@
-\ story/places/old-mansion-2f-5.fs - a hall of the old mansion's 2F with a hopping figure (kind $1C):
-\ it hops in place, calling as it comes round; struck, it hops back - the fifth time it lashes out
-\ (her fright up, the stalker told to come); a hiding place (the kit's; the stalker's search - he
-\ finds her by the odds); two vases (the Medallion in one); after the 3F's turn three homunculi
+\ story/places/old-mansion-2f-5.fs - a hall of the old mansion's 2F with a hopping figure (kind
+\ $1C): it hops in place, calling as it comes round; struck, it hops back - the fifth time it lashes
+\ out (her fright up, the stalker told to come); a hiding place (the kit's; the stalker's search -
+\ he finds her by the odds); two vases (the Medallion in one); after the 3F's turn three homunculi
 \ dropped in, once; the Viride Medallion Hewie sniffs out; Hewie wary of the figure, his look. A
-\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-2f-5.fs
-\ (converted from the game's, not loaded).
+\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-2f-5.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-2f-5
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit fiona.anims fiona.sounds ;

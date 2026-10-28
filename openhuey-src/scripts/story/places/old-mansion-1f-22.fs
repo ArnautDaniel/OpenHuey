@@ -1,7 +1,8 @@
 \ story/places/old-mansion-1f-22.fs - a room of the old mansion's 1F with a cabinet to hide in (the
-\ kit's: Hewie beside her; the stalker's grab, or his opening it). The scene's figure kept by its near way; two candles;
-\ the Refined Antimony; the doorways' shade. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/old-mansion-1f-22.fs (converted from the game's, not loaded).
+\ kit's: Hewie beside her; the stalker's grab, or his opening it). The scene's figure kept by its
+\ near way; two candles; the Refined Antimony; the doorways' shade. A place (story/kit.fs). The
+\ original's scripts, for checking: story/rooms-ref/old-mansion-1f-22.fs in the history (converted
+\ from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-22
 USING: engine game-state actors messages common vectors facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit fiona.anims ;

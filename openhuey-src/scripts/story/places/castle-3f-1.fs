@@ -3,9 +3,9 @@
 \ left; once the way is open, where they ended); the door with the strange symbol, locked (the
 \ Saturnus Key's file) - the key used there before the chapter turns, Daniella's "Dinner is served"
 \ (out by the forced way), after it unlocking it; once she has rested, Daniella here, busy, before
-\ she stands in the corridor beyond; the doorways' shade; the movie replayed. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/castle-3f-1.fs (converted from the game's,
-\ not loaded).
+\ she stands in the corridor beyond; the doorways' shade; the movie replayed. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-3f-1.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-3f-1
 USING: engine game-state actors messages common facts flag-names story-names room-names stalker-names
     items.names story.kit fiona.anims scenes ;

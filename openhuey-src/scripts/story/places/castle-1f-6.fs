@@ -1,9 +1,9 @@
-\ story/places/castle-1f-6.fs - the long dining room in Belli Castle's 1F ($11): thirteen candles
-\ on the table, each flame stirring as someone passes; the second cracked plate-key on it; the
+\ story/places/castle-1f-6.fs - the long dining room in Belli Castle's 1F ($11): thirteen candles on
+\ the table, each flame stirring as someone passes; the second cracked plate-key on it; the
 \ Medallion Hewie sniffs out; the tapestry; the door to unlock from this side; at night Daniella
-\ about beyond (exit 1); brought in by the forced way: Daniella's scene. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/castle-1f-6.fs (converted from the game's,
-\ not loaded).
+\ about beyond (exit 1); brought in by the forced way: Daniella's scene. A place (story/kit.fs). The
+\ original's scripts, for checking: story/rooms-ref/castle-1f-6.fs in the history (converted from
+\ the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-1f-6
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects story.kit fiona.anims scenes ;

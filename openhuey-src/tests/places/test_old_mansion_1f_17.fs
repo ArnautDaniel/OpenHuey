@@ -52,6 +52,7 @@ T{ 1 part?  0 part? -> -1 0 }T
 0 43e 0e -44e put  circle press  300 read-on
 T{ om1f-17-magnesia story-flag?  magnesia items:items-of -> -1 before @ 1+ }T
 testing brought in by the way behind the wall: the movie, out by the forced way
+off-map-0d room!  30 run-frames   \ (from another room: the forced way out goes back to the room left)
 om2f-8-flag1 story-flag-set  old-mansion-1f-17 forced-exit rooms send go-to-room  5 run-frames
 T{ [: cutscene-active? movie-status 1 = or ;] 200 soon -> -1 }T
 T{ [: movie-skipped state-flag-set  room-id old-mansion-1f-17 <> ;] 1500 soon -> -1 }T

@@ -4,11 +4,11 @@
 \ fireplace (its embers in the draught, the drum can struck, the doll inside in turn); a place to
 \ hide (the stalker searching - finding her more likely each time he comes, or seeing her); in by
 \ the gate's way (Debilitas knocked down beyond it, no going back); Debilitas shoving the rubble
-\ down here and there; two vases (the Viola Medallion, the Onion), the Rubrum Medallion Hewie
-\ sniffs out; the flowers and the fence in turn, the splashes in the pond, what Hewie barks at,
-\ stands wary of and looks up at, the moths, the specks, the steady sounds, the walls' shade, the
-\ map's pages. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ castle-1f-2.fs (converted from the game's, not loaded).
+\ down here and there; two vases (the Viola Medallion, the Onion), the Rubrum Medallion Hewie sniffs
+\ out; the flowers and the fence in turn, the splashes in the pond, what Hewie barks at, stands wary
+\ of and looks up at, the moths, the specks, the steady sounds, the walls' shade, the map's pages. A
+\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-2.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-1f-2
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects keys story.kit fiona.anims fiona.sounds hewie.anims stalker.anims scenes ;

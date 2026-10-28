@@ -1,12 +1,13 @@
-\ story/places/castle-b1-1.fs - the kitchen in Belli Castle's B1 ($12): the Castle Sketch on the wall;
-\ once Hewie is found in the wire (till his file), Daniella at the stove - her scene the first time she
-\ comes near (the ladle, the smoke), "She looks busy..." after; with the sketch, before nightfall, the
-\ scene as she steps in (Riccardo, Debilitas sent in; out by the near door); the cupboards to hide in
-\ (the stalker always finds her, but on his alert 4), the plywood door she breaks through, the vase
-\ and its Chicken Jerky, the Lavender Hewie sniffs out, the jerky on the shelf; the china, the box,
-\ the wine rack, the sink, the pot, the meat; Hewie wary of Daniella; the replays. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-b1-1.fs (converted
-\ from the game's, not loaded). (Its act $3, unlocking door 4, is never started by its phases: left out.)
+\ story/places/castle-b1-1.fs - the kitchen in Belli Castle's B1 ($12): the Castle Sketch on the
+\ wall; once Hewie is found in the wire (till his file), Daniella at the stove - her scene the first
+\ time she comes near (the ladle, the smoke), "She looks busy..." after; with the sketch, before
+\ nightfall, the scene as she steps in (Riccardo, Debilitas sent in; out by the near door); the
+\ cupboards to hide in (the stalker always finds her, but on his alert 4), the plywood door she
+\ breaks through, the vase and its Chicken Jerky, the Lavender Hewie sniffs out, the jerky on the
+\ shelf; the china, the box, the wine rack, the sink, the pot, the meat; Hewie wary of Daniella; the
+\ replays. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/castle-b1-1.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20). (Its act $3, unlocking door 4, is never started by its phases: left out.)
 IN: story.places.castle-b1-1
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects story.kit fiona.anims scenes ;
@@ -50,7 +51,7 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
 \ ---- Daniella at the stove (Hewie found in the wire, his file not yet) ----
 : cooking? ( -- flag )  hewie-found-in-wire fact?  found-file-208 fact? 0= and ;
 : her-hands ( on? -- )   \ (the figure's held things: shown or put away)
-    daniella-kind cast-model dup 0< if  2drop exit  then  swap if  story.words:daniella-one  else  false false story.words:daniella-parts  then ;
+    daniella-kind cast-model dup 0< if  2drop exit  then  swap if  story.base:daniella-one  else  false false story.base:daniella-parts  then ;
 : at-the-stove ( -- )
     daniella-slot figure-on  false her-hands  daniella-slot $9000 1 0 figure-play
     daniella-slot $2A 14.85e 17.65e floor-at 0e figure-at ;

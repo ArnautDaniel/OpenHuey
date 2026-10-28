@@ -5,7 +5,16 @@
 \ started afresh; a stalker loaded as a scene's figure placed, posed and shown. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_scripted.fs
 IN: test-stalker-scripted
-USING: stalker-names facts story.words tester engine game-state actors messages common room-names game debug paths doors vectors flag-names stalker stalker.state stalker.anims stalker.search stalker.moving ;
+USING: stalker-names facts tester engine game-state actors messages common room-names game debug paths doors vectors flag-names stalker stalker.state stalker.anims stalker.search stalker.moving ;
+: char-load ( id slot exit -- )  drop story.kit:figure-in ;   \ (a figure into a story slot: the kit's)
+: no-place ( F: -- x y z yaw )  0e 0e 0e 0e ;
+\ (the story's figure slots - story/base.fs - as the rooms' scripts used them)
+: char-slot ( id -- slot | -1 )  6 3 do  i story.base:slot-id @ over = if  drop i unloop exit  then  loop  drop -1 ;
+: char-to-tri-facing ( id tri face -- )
+    rot char-slot story.base:slot-actor @ >r  swap tri-center  s>f deg>rad  xyzw>cells  r> send place ;
+: char-anim-hold ( id anim flags blend -- )  {: id a fl bl :}  id char-slot story.base:slot-actor @ >r  a fl bl  r> send hold-anim ;
+: char-activate ( id -- )  char-slot story.base:slot-actor @ send activate ;
+: char-remove ( slot how -- )  drop story.base:slot-clear ;
 
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;

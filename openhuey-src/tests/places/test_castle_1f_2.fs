@@ -156,7 +156,7 @@ hiding-area 0 at  circle press  [: hidden? ;] 600 soon drop
 T{ hidden? -> 0 }T
 
 testing the stalker coming while she hides: his comings counted
-2 story.words:partner-load  5 run-frames
+2 story.base:partner-load  5 run-frames
 hiding-area 0 at  circle press  [: hidden? ;] 600 soon drop
 search-var var@ before !
 castle-1f-2 $132 game:debilitas send stalker-in  10 run-frames   \ (whether he finds her: by chance, and by the camera)

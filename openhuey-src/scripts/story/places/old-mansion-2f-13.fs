@@ -1,9 +1,10 @@
-\ story/places/old-mansion-2f-13.fs - the old mansion's 2F room of the curtained mirror: she draws the
-\ curtain back from it (its glass lit) or across again; Daniella, coming in while it's bare, smashes it
-\ in a rage (the floor flooded since); "The glass has been shattered"; brought in by the forced way,
-\ the door behind her won't do ("Only a fool..."); the scene figures loaded by its ways; the Rubrum
-\ Medallion Hewie sniffs out. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-2f-13.fs (converted from the game's, not loaded).
+\ story/places/old-mansion-2f-13.fs - the old mansion's 2F room of the curtained mirror: she draws
+\ the curtain back from it (its glass lit) or across again; Daniella, coming in while it's bare,
+\ smashes it in a rage (the floor flooded since); "The glass has been shattered"; brought in by the
+\ forced way, the door behind her won't do ("Only a fool..."); the scene figures loaded by its ways;
+\ the Rubrum Medallion Hewie sniffs out. A place (story/kit.fs). The original's scripts, for
+\ checking: story/rooms-ref/old-mansion-2f-13.fs in the history (converted from the game's; gone
+\ with the old machinery in 0.2.20).
 IN: story.places.old-mansion-2f-13
 USING: engine game-state actors messages common vectors facts room-names flag-names story-names stalker-names
     floor-flags items.names effects story.kit fiona.anims fiona.sounds ;

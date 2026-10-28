@@ -1,7 +1,8 @@
 \ story/places/lake-pathway-2.fs - the lake pathway by the bridge ($80): once the bridge is gone
 \ (the story's over-music-d), its far end is barred, she remarks on it, and Hewie may bark at the
-\ gap. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/lake-pathway-2.fs
-\ (converted from the game's, not loaded).
+\ gap. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/lake-pathway-2.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.lake-pathway-2
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     effects story.kit fiona.anims ;

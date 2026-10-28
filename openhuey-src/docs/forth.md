@@ -111,9 +111,8 @@ share: `progress` (`pr.story pr.state pr.vars pr.resident pr.visited`: flag word
 `slot.task slot.who slot.id slot.frames`, `char.present char.id char.room char.scripted
 char.actor`), with their sizes (`story-flags`, `script-slots`, `/slot`, `/char`, ...).
 
-The rooms' event scripts are `scripts/story/rooms/` (converted once from the game's bytecode,
-edited by hand since): one vocabulary per room, `story.rooms.<name>`, on the words of
-`scripts/story/words.fs` (docs/subsystems/story.md).
+What happens in each room is its place, `scripts/story/places/<name>.fs`: one vocabulary per room,
+`story.places.<name>`, on the words of the kit, `scripts/story/kit.fs` (docs/subsystems/story.md).
 
 ## Tests
 

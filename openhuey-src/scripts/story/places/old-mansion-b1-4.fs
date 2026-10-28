@@ -4,8 +4,8 @@
 \ now: "She's right there"), and going up to her, her scene: Daniella turns, and gives chase as the
 \ next of her; the wax figures, the chess board, the hourglass, the models, the flask, the kiln, the
 \ still; six candles; the file once its flag is set; Hewie tense at her, his looks; its hum. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-b1-4.fs
-\ (converted from the game's, not loaded).
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-b1-4.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-b1-4
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit fiona.anims scenes ;

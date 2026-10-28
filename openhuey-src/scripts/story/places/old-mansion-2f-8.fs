@@ -7,7 +7,8 @@
 \ Camomile, the Lavender; the candle's flame; brought here the first time (Hewie by her, the doors
 \ shut behind, the spirits gone, the file) or by the way behind the wall; Hewie's looks; its sounds;
 \ the doorways' shade. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-2f-8.fs (converted from the game's, not loaded).
+\ story/rooms-ref/old-mansion-2f-8.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-2f-8
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names keys story.kit fiona.anims fiona.sounds ;

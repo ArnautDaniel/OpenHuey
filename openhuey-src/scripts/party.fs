@@ -6,7 +6,7 @@
 \ Hewie is brought in, Fiona put in her regular clothes for it. The story is stopped meanwhile;
 \ `party-over` puts the golems away, her own costume back on, and lets Fiona and Hewie go.
 IN: party
-USING: engine game-state actors messages common vectors story.words ;
+USING: engine game-state actors messages common vectors ;
 
 \ ---- what they do (edit these lists: each played through, then round again) ----
 create her-dances  $1D00 , $1D01 , $1D02 , $A00 , $A01 , $A02 , $905 ,
@@ -76,7 +76,7 @@ $26 constant costume-var#   \ (the progress variable her costume is kept in)
     {: model last :}  model motion-done?
     model actor act.frame sf@ f>s  dup last @ <  swap last !  or ;
 : dancing ( -- )   \ (their models read afresh: hers changes with her costume)
-    fiona-who char-model her-model !  hewie-who char-model his-model !
+    0 cast-model her-model !  1 cast-model his-model !
     1 her-t +!  1 his-t +!   \ (and, whatever, 10 s each)
     her-model @ her-last came-round?  her-t @ 300 > or if  her-next  then
     his-model @ his-last came-round?  his-t @ 300 > or if  his-next  then ;
@@ -91,12 +91,12 @@ behaviour partying
       her-place vec@ facing f@ place-msg  fiona-id send place
       0e hewie-beside out-by  spot vec@ facing f@ place-msg  hewie-id send place
       -1 fiona-id send scripted  -1 hewie-id send scripted
-      dance-music 1 1e bgm  10 settle-t !
+      dance-music 1 1e f>cell music-id send bgm-want  10 settle-t !
       self subscribe tick ;
   on tick ( -- )
       settle-t @ if  -1 settle-t +!  exit  then
       her-model @ 0< if   \ (their models, once they are placed: the story's slots 0 and 1)
-          fiona-who char-model her-model !  hewie-who char-model his-model !
+          0 cast-model her-model !  1 cast-model his-model !
           her-next  his-next  exit
       then
       dancing ;

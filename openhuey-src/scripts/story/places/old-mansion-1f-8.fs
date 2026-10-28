@@ -1,15 +1,15 @@
 \ story/places/old-mansion-1f-8.fs - the old mansion's graveyard ($48): six graves of Aureolus Belli
-\ (read in turn: once two are read, a grave read again says they all bear his name); the
-\ mausoleum's words; the thicket by the pond Hewie can lie hidden in at her "go there" (out again at
-\ her "come back") - Daniella passing it sets him on her: the ambush, a scene; the hand in the dark
-\ at the back (what she sees there the first time; a mandragora fed to it - the White Mandragora
-\ lays it to rest, opening the way out, the others only rouse it); the glow at the back Hewie
-\ fetches at her "go for it" (the Prima Materia), the Antimony Tube across the wall; the Beef
-\ Jerky, the Album Medallion; the back door unlocked from this side (the stalker sent on); the
-\ hangers Hewie brushes, its steady sound, the splashes in the pond, his barks and looks; the replays. Never offered
-\ in the original: its act03 (the Lavender here - its sparkle shows). A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/old-mansion-1f-8.fs (converted from the game's,
-\ not loaded).
+\ (read in turn: once two are read, a grave read again says they all bear his name); the mausoleum's
+\ words; the thicket by the pond Hewie can lie hidden in at her "go there" (out again at her "come
+\ back") - Daniella passing it sets him on her: the ambush, a scene; the hand in the dark at the
+\ back (what she sees there the first time; a mandragora fed to it - the White Mandragora lays it to
+\ rest, opening the way out, the others only rouse it); the glow at the back Hewie fetches at her
+\ "go for it" (the Prima Materia), the Antimony Tube across the wall; the Beef Jerky, the Album
+\ Medallion; the back door unlocked from this side (the stalker sent on); the hangers Hewie brushes,
+\ its steady sound, the splashes in the pond, his barks and looks; the replays. Never offered in the
+\ original: its act03 (the Lavender here - its sparkle shows). A place (story/kit.fs). The
+\ original's scripts, for checking: story/rooms-ref/old-mansion-1f-8.fs in the history (converted
+\ from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-8
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names effects story.kit fiona.anims fiona.sounds hewie.anims hewie-names scenes ;

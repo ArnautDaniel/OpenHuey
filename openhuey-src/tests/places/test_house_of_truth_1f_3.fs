@@ -53,7 +53,7 @@ T{ [: ht1f-3-viola-medallion-found story-flag? ;] 600 soon  viola-fx fx? -> -1 -
 400 run-frames  viola-medallion items:items-of before !
 T{ 0 3e 1e 168e put  circle press  300 read-on  ht1f-3-viola-medallion story-flag?  viola-medallion items:items-of -> -1 before @ 1+ }T
 testing the first time she goes on from the hall: the scene - its fact; Lorenzo after her
-ht1f-3-flag1 story-flag-clear  lorenzo2-kind story.words:partner-load  5 run-frames  room-afresh
+ht1f-3-flag1 story-flag-clear  lorenzo2-kind story.base:partner-load  5 run-frames  room-afresh
 0 -12.5e 0e 17e put
 T{ 0 -12.5e 0e 37e put  ht1f-3-flag1 story-flag? -> -1 }T
 T{ [: movie-skipped state-flag-set  hall-seen resident-flag? ;] 2000 soon -> -1 }T

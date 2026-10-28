@@ -3,7 +3,7 @@
 \ hanging about her while she hides, following her out, kept in the progress. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/creatures/test_spirits.fs
 IN: test-spirits
-USING: tester engine game-state actors messages room-names flag-names facts paths saves game fiona.state story.state story.words creatures creatures.trip creatures.state creatures.spirit debug ;
+USING: tester engine game-state actors messages room-names flag-names facts paths saves game fiona.state creatures creatures.trip creatures.state creatures.spirit debug ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room-actor ( xt -- )  room-actor enter  execute  leave-actor ;
@@ -20,7 +20,7 @@ create centre 12 allot
 variable p-tri  variable p-kind  variable p-reach
 : place-spirit ( tri kind reach -- )   \ in her room, level 2, a free slot
     p-reach !  p-kind !  p-tri !
-    [: room-id 2 p-tri @ p-kind @ p-reach @ -1 0 0e creature-place ;] in-room-actor  deliver  1 run-frames ;
+    [: room-id 2 p-tri @ p-kind @ p-reach @ -1 0 0e f>cell game:creatures send creature-place ;] in-room-actor  deliver  1 run-frames ;
 60 run-frames
 front-garden-2 -1 game:rooms send go-to-room  5 run-frames
 0 game:fiona send costume  deliver  2 run-frames   \ (her clothes: the slip has no falls)
@@ -121,7 +121,7 @@ testing the story's count (0x99): five spirits scattered as a room comes in - ea
 : spirit-id ( i -- id )  game:creatures enter  slot@  leave-actor ;
 : next-to-hers? ( room -- flag )  false  8 0 do  over room-id i room-exit-leads drop = or  loop  nip ;
 0 game:creatures send creatures-clear  deliver  1 run-frames
-5 0 creature-count  deliver
+creatures-on state-flag-set  5 0 game:creatures send creature-count  deliver
 front-garden-2 -1 game:rooms send go-to-room  5 run-frames
 : scattered? ( i -- flag )
     spirit-id dup alive? 0= if  drop false exit  then

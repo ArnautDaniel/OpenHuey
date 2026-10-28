@@ -2,9 +2,9 @@
 \ fire's flame stirring as someone passes, the beef jerky; once the file's found (castle-b1-6)
 \ Debilitas sits here with his doll (a figure, loaded by castle-1f-2 on her way) - beside him, the
 \ scene (the Smudged Key), then his doll's dance; chased by Debilitas out of his sight, she hides -
-\ his scene; later the Bisque Doll on show to take.
-\ A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-10.fs
-\ (converted from the game's, not loaded).
+\ his scene; later the Bisque Doll on show to take. A place (story/kit.fs). The original's scripts,
+\ for checking: story/rooms-ref/castle-1f-10.fs in the history (converted from the game's; gone with
+\ the old machinery in 0.2.20).
 IN: story.places.castle-1f-10
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects scenes stalker-names story.kit fiona.anims ;

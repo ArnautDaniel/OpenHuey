@@ -1,11 +1,12 @@
-\ story/places/house-of-truth-1f-8.fs - the House of Truth's 1F corridor of flames ($91): brought here by
-\ the forced way, the first tremor (she crouches; "I should crouch down during large tremors..." - the
-\ house's tremors from then on, Lorenzo sent ahead); the door snagged on the far side (broken through by
-\ her blows, or Hewie leaping in at her "go for it"); once the house is coming down, its stones falling,
-\ the drone, and her first step in taking her on; the three flames stirred; the Magist Medallion Hewie
-\ sniffs out; the clock; two creatures let out; its sounds in turn; the slam's shake. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-1f-8.fs
-\ (converted from the game's, not loaded).
+\ story/places/house-of-truth-1f-8.fs - the House of Truth's 1F corridor of flames ($91): brought
+\ here by the forced way, the first tremor (she crouches; "I should crouch down during large
+\ tremors..." - the house's tremors from then on, Lorenzo sent ahead); the door snagged on the far
+\ side (broken through by her blows, or Hewie leaping in at her "go for it"); once the house is
+\ coming down, its stones falling, the drone, and her first step in taking her on; the three flames
+\ stirred; the Magist Medallion Hewie sniffs out; the clock; two creatures let out; its sounds in
+\ turn; the slam's shake. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/house-of-truth-1f-8.fs in the history (converted from the game's; gone with the
+\ old machinery in 0.2.20).
 IN: story.places.house-of-truth-1f-8
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names effects story.kit story.places.house-of-truth fiona.anims fiona.sounds ;
@@ -25,8 +26,8 @@ create flame-kinds  1 , 4 , 1 , 4 ,
 create flame-slots  0 , 1 , 2 , 4 ,
 : flame@ ( k -- ) ( F: -- x y z )  3 * floats flames +  dup f@  dup float+ f@  2 floats + f@ ;
 : stones-fall ( -- )   \ (the ceiling coming down: stones of three kinds falling from 70)
-    1 70e 0e 0e 0.5e story.words:stones-falling  3 70e 0e 0e 0.5e story.words:stones-falling
-    11 70e 0e 0.5e 0.5e story.words:stones-falling ;
+    1 70e 0e 0e 0.5e story.base:stones-falling  3 70e 0e 0e 0.5e story.base:stones-falling
+    11 70e 0e 0.5e 0.5e story.base:stones-falling ;
 : drone ( -- )  drone-sound story-volume or drone-bank bank-sound  -1 drone-on ! ;
 : came-in ( exit -- )
     room-sounds
@@ -61,7 +62,7 @@ create flame-slots  0 , 1 , 2 , 4 ,
 : snag-shut? ( -- flag )  0 exit-open? 0= ;
 : struck ( -- )   \ (her blow at it: worn by it - 1 the weak blow, else 5 - through at 0)
     snag-shut? if
-        snag-var var@  fiona-sub-now @ story.words:weak-blow-sub = if  1  else  5  then  -  0 max  snag-var var!
+        snag-var var@  fiona-sub-now @ story.base:weak-blow-sub = if  1  else  5  then  -  0 max  snag-var var!
         snag-sound common-bank -37e 10e 177e sound-there
         snag-var var@ 0= if  opened  then
     then  16 frames ;

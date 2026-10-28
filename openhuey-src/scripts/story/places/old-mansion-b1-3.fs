@@ -3,12 +3,13 @@
 \ out one of the four flames (2 and 3, 1 and 4, 2 and 4, 1 and 3), side by side (1 and 2, 3 and 4)
 \ they all light again; all four out, the statue's scene (the figure drained); the corpse in its
 \ chair - the first time a scene, then reaching for it she is held (struggling free - her shakes,
-\ her panic, or Hewie at it), after the statue the Venus Key from it, then its remarks; the
-\ engraved tool and its text; the iron maiden (its spikes, lowered by the lever - then a place to
-\ hide: the stalker's search; Daniella shuts it on her - the game over); the oven, the birdcage,
-\ the stretcher, the sabers, the breaker, the instruments; the Camomile; Hewie tense, wary, his
-\ looks; its hum; the replays. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-b1-3.fs (converted from the game's, not loaded).
+\ her panic, or Hewie at it), after the statue the Venus Key from it, then its remarks; the engraved
+\ tool and its text; the iron maiden (its spikes, lowered by the lever - then a place to hide: the
+\ stalker's search; Daniella shuts it on her - the game over); the oven, the birdcage, the
+\ stretcher, the sabers, the breaker, the instruments; the Camomile; Hewie tense, wary, his looks;
+\ its hum; the replays. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/old-mansion-b1-3.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-b1-3
 USING: engine game-state actors messages common vectors facts room-names flag-names story-names stalker-names
     floor-flags items.names keys story.kit fiona.anims fiona.sounds scenes ;

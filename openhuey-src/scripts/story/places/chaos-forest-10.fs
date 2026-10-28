@@ -1,10 +1,10 @@
-\ story/places/chaos-forest-10.fs - the Chaos Forest's glade where Hewie lies shot ($108): once he is
-\ found (chaos-forest-8's scene) and until the heart's scene, he lies here hurt (his hurt face, unless
-\ he wears his other coat), whining now and then; the first time she comes up, the scene (her
+\ story/places/chaos-forest-10.fs - the Chaos Forest's glade where Hewie lies shot ($108): once he
+\ is found (chaos-forest-8's scene) and until the heart's scene, he lies here hurt (his hurt face,
+\ unless he wears his other coat), whining now and then; the first time she comes up, the scene (her
 \ bandage: the files, his trust; the stalker sent in after her); then her word to him; the crate
 \ broken by a blow, the Medallion behind it; the maze dealt; the replay. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/chaos-forest-10.fs (converted from the game's,
-\ not loaded).
+\ original's scripts, for checking: story/rooms-ref/chaos-forest-10.fs in the history (converted
+\ from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.chaos-forest-10
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names effects story.kit story.places.forest fiona.anims hewie.sounds scenes ;

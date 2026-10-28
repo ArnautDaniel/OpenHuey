@@ -4,8 +4,8 @@
 \ 1, 0, 2: the doors unlocked, the water drained; the file once the reservoir's been seen); the
 \ locked door, water spilling under it; the books on the table; the save clock; two vases; the
 \ Antimony Powder Hewie sniffs out; his looks; its ambient sounds; the doorway's shade. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-2f-12.fs
-\ (converted from the game's, not loaded).
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-2f-12.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-2f-12
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names keys story.kit fiona.anims ;

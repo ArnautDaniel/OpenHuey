@@ -2,7 +2,7 @@
 \ the character's own, and its own again. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_speech.fs
 IN: test-speech
-USING: tester engine game-state actors messages common room-names game debug story.state story.words ;
+USING: tester engine game-state actors messages common room-names game debug ;
 free-play  front-garden-2 room!  10 run-frames
 testing Fiona's face from O_FIO/FIO_201.TEX, then her own; Hewie's from HEW_201
 T{ 0 cast-model 0 s" O_FIO/FIO_201.TEX" actor-texture-swap -> -1 }T

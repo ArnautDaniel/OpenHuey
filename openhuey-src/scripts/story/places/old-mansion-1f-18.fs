@@ -1,9 +1,9 @@
 \ story/places/old-mansion-1f-18.fs - a crossing of the old mansion's 1F: the red-painted walls (her
 \ remark, then the smell); four ways out; in from the first, the scene's figure loaded (gone as she
-\ stands at that way); Daniella's motions loaded on the way to the far ways while the White Mandragora
-\ isn't used; Hewie barking tense at one corner, wary at the other, his looks. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/old-mansion-1f-18.fs (converted from the
-\ game's, not loaded).
+\ stands at that way); Daniella's motions loaded on the way to the far ways while the White
+\ Mandragora isn't used; Hewie barking tense at one corner, wary at the other, his looks. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-18.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-18
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names story.kit fiona.anims ;
 

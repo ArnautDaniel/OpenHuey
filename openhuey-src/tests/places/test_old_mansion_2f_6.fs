@@ -58,7 +58,7 @@ om2f-6-lavender story-flag-clear  room-afresh  lavender items:items-of before !
 0 4.58e 0e 10.22e put  circle press  300 read-on
 T{ om2f-6-lavender story-flag?  lavender items:items-of -> -1 before @ 1+ }T
 testing hiding in the near locker from Daniella: her scene, the locker gone
-daniella-kind story.words:partner-load  10 run-frames  room-afresh
+daniella-kind story.base:partner-load  10 run-frames  room-afresh
 T{ [: ['] near-locker-hides start drop ;] in-place  [: cutscene-active? movie-status 1 = or ;] 300 soon -> -1 }T
 T{ [: movie-skipped state-flag-set  doing-busy? 0= ;] 1500 soon  om2f-6-flag2 story-flag? -> -1 -1 }T
 partner send stalker-out  10 run-frames

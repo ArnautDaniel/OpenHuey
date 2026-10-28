@@ -2,7 +2,8 @@
 \ other side until, Hewie found in the wire, it swings open (a scene); three crates, a Medallion in
 \ one; the windows' light; at night Hewie's whine from the wire, and - Hewie still caught - she
 \ won't go on toward the cage but turns back for him. A place (story/kit.fs). The original's
-\ scripts, for checking: story/rooms-ref/front-garden-2.fs (converted from the game's, not loaded).
+\ scripts, for checking: story/rooms-ref/front-garden-2.fs in the history (converted from the
+\ game's; gone with the old machinery in 0.2.20).
 IN: story.places.front-garden-2
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects story.kit fiona.anims scenes ;

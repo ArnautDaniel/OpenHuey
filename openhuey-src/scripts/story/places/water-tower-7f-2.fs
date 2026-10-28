@@ -1,9 +1,10 @@
 \ story/places/water-tower-7f-2.fs - the Water Tower's 7F, past the planets ($C6): come in after the
-\ planets' scene (by the forced way: Hewie gone ahead to his spot, the sounds silenced, the world let go
-\ and faded in - the other game's file); back by the second forced way (Hewie by her); the clock; the
-\ inscription; the Rubrum Medallion Hewie sniffs out; hunted while she's here; its four sounds in
-\ turn; the map's pages. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/water-tower-7f-2.fs (converted from the game's, not loaded).
+\ planets' scene (by the forced way: Hewie gone ahead to his spot, the sounds silenced, the world
+\ let go and faded in - the other game's file); back by the second forced way (Hewie by her); the
+\ clock; the inscription; the Rubrum Medallion Hewie sniffs out; hunted while she's here; its four
+\ sounds in turn; the map's pages. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/water-tower-7f-2.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.water-tower-7f-2
 USING: engine game-state actors messages common facts room-names flag-names story-names
     items.names story.kit fiona.anims ;

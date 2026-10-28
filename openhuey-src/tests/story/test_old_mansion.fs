@@ -1,9 +1,9 @@
-\ The fish's swim paths (story.words: swim-path / swim-step). The old mansion's room commands this
+\ The fish's swim paths (the engine's swim-path / swim-step). The old mansion's room commands this
 \ tested once - b1-3's plates and shakes, 2f-8's curtain, 1f-15's shelves - are their places' tests
 \ now (tests/places/). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_old_mansion.fs
 IN: test-old-mansion
-USING: tester engine game-state actors messages common room-names game debug story.state story.words ;
+USING: tester engine game-state actors messages common room-names game debug ;
 
 free-play  20 run-frames
 

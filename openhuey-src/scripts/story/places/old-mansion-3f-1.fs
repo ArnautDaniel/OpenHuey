@@ -1,12 +1,12 @@
-\ story/places/old-mansion-3f-1.fs - the glass-floored hall of the old mansion's 3F: four boxes pushed
-\ onto their squares (each one stopping there - the floor's light up a step, the hum begun); the
-\ first time she steps in, the scene ("Blood, Flesh Woman") - Daniella after her, the door shut
+\ story/places/old-mansion-3f-1.fs - the glass-floored hall of the old mansion's 3F: four boxes
+\ pushed onto their squares (each one stopping there - the floor's light up a step, the hum begun);
+\ the first time she steps in, the scene ("Blood, Flesh Woman") - Daniella after her, the door shut
 \ behind; all four set, Daniella stepping onto the middle - the glass gives, and her death (the
 \ scene; the files, Hewie's trust); after, her body pinned (its remarks), the Mars Key; the locked
 \ door ("Damn!"); the doorways' shade; the replays. A place (story/kit.fs). The original's scripts,
-\ for checking: story/rooms-ref/old-mansion-3f-1.fs (converted from the game's, not loaded). Its
-\ acts 2 and 4 (the same death another way) nothing starts; the stalker's springs and the corners'
-\ cones of light aren't drawn.
+\ for checking: story/rooms-ref/old-mansion-3f-1.fs in the history (converted from the game's; gone
+\ with the old machinery in 0.2.20). Its acts 2 and 4 (the same death another way) nothing starts;
+\ the stalker's springs and the corners' cones of light aren't drawn.
 IN: story.places.old-mansion-3f-1
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names effects story.kit fiona.anims scenes ;

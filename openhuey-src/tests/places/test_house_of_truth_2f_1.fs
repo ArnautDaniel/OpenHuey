@@ -69,7 +69,7 @@ T{ [: ht2f-1-medallion-found story-flag? ;] 600 soon -> -1 }T
 400 run-frames  medallion items:items-of before !
 T{ 0 -50e 71e -15e put  circle press  300 read-on  ht2f-1-medallion story-flag?  medallion items:items-of -> -1 before @ 1+ }T
 testing back by the forced way: her clothes as they were, the doors shut on her, Lorenzo loose, the file
-3 costume-var [: var! ;] in-place  lorenzo2-kind story.words:partner-load  5 run-frames
+3 costume-var [: var! ;] in-place  lorenzo2-kind story.base:partner-load  5 run-frames
 house-of-truth-2f-1 forced-exit rooms send go-to-room
 T{ [: hall-file filed? ;] 900 soon  other-door doors:door-locked?  summoner-on state-flag?  new-game-sounds state-flag? -> -1 -1 -1 -1 }T
 300 play-on  summoner-on state-flag-clear  game:lorenzo2 send stalker-out  10 run-frames

@@ -53,7 +53,7 @@ T{ [: c1f-19-rubrum-medallion story-flag? ;] 1500 soon  rubrum-medallion items:i
 testing the ambush: Hewie in the hole, Debilitas by it - the scene, its file, his trust
 room-afresh  hewie-brought  0 -10e 0e -145e put  60 run-frames  go-there-cmd command
 T{ [: [: hiding? ;] in-place ;] 900 soon -> -1 }T
--90 -60e 0e -200e put  2 story.words:partner-load  5 run-frames
+-90 -60e 0e -200e put  2 story.base:partner-load  5 run-frames
 castle-1f-19 $47 game:debilitas send stalker-in  5 run-frames
 -10e 0e -140e debilitas-at   \ (by the hole)
 T{ [: movie-skipped state-flag-set  $23 resident-flag? ;] 1500 soon  $22E filed? -> -1 -1 }T

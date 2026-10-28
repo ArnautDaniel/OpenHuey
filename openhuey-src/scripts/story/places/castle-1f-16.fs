@@ -1,9 +1,9 @@
 \ story/places/castle-1f-16.fs - the TV room in Belli Castle's 1F ($1A): the fan turning, the TV
 \ (her switching it on and off - the first time a fright - its noise heard about), a place to hide
-\ (the kit's; the stalker coming in: Debilitas turns the TV off, else he searches - finding
-\ her more likely each time he comes), the cracked mirror, the red painting, the Magnesia, the clock. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-16.fs (converted
-\ from the game's, not loaded).
+\ (the kit's; the stalker coming in: Debilitas turns the TV off, else he searches - finding her more
+\ likely each time he comes), the cracked mirror, the red painting, the Magnesia, the clock. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-16.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-1f-16
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects keys story.kit fiona.anims fiona.sounds stalker.anims ;

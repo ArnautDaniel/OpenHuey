@@ -1,10 +1,11 @@
-\ story/places/old-mansion-1f-13.fs - the mandragora garden of the old mansion's 1F: the first time she
-\ steps out of the entrance, the scene (the mandragoras' bed revealed); the five beds (a mandragora
-\ pulled from each - her fright up; one at a time; the stalker sent toward her once the beds are
-\ revealed); the dried-out plant; the info sheet; the flower bed below; Hebel's Perfume used by
-\ Hewie: he leads her to a spot; the story's spirit about; Hewie's looks; dripping water, the
-\ specks in the light. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-1f-13.fs (converted from the game's, not loaded).
+\ story/places/old-mansion-1f-13.fs - the mandragora garden of the old mansion's 1F: the first time
+\ she steps out of the entrance, the scene (the mandragoras' bed revealed); the five beds (a
+\ mandragora pulled from each - her fright up; one at a time; the stalker sent toward her once the
+\ beds are revealed); the dried-out plant; the info sheet; the flower bed below; Hebel's Perfume
+\ used by Hewie: he leads her to a spot; the story's spirit about; Hewie's looks; dripping water,
+\ the specks in the light. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/old-mansion-1f-13.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-1f-13
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names effects story.kit fiona.anims scenes ;

@@ -1,9 +1,9 @@
-\ story/places/old-mansion-1f-21.fs - a long room of the old mansion's 1F with four vases: each broken
-\ by a blow (the first holds the Album Medallion); the door unlocked from this side; the scene's
-\ figure loaded and let go by its ways; after the 3F's turn, two homunculi dropped in, once; Hewie
-\ sitting by the medallion's vase a while; the map's pages, the doorways' shade. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-21.fs
-\ (converted from the game's, not loaded).
+\ story/places/old-mansion-1f-21.fs - a long room of the old mansion's 1F with four vases: each
+\ broken by a blow (the first holds the Album Medallion); the door unlocked from this side; the
+\ scene's figure loaded and let go by its ways; after the 3F's turn, two homunculi dropped in, once;
+\ Hewie sitting by the medallion's vase a while; the map's pages, the doorways' shade. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-21.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-21
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names story.kit fiona.anims ;

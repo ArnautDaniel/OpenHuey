@@ -1,9 +1,9 @@
-\ story.fs - the story (docs/subsystems/story.md): the played room's event scripts, as an
-\ actor for the room. As a room comes in its actor is spawned and entered; as Fiona leaves it,
-\ it runs its leaving phase, and once the next room is in, its last, then goes.
-\ The rooms' scripts: story/rooms/*.fs (converted from the game's); their words: story/words.fs.
+\ story.fs - the story (docs/subsystems/story.md): the played room's place, as an actor for the
+\ room. As a room comes in its place is spawned and entered; as Fiona leaves it, it is told, and
+\ once the next room is in, it ends, then goes. The places: story/places/*.fs (story/places.fs
+\ lists them), written in the kit (story/kit.fs). A room with no place has no actor.
 IN: story
-USING: engine actors messages story.state story.words story.shared story.rooms story.room story.kit story.common story.places ;
+USING: engine actors messages story.base story.kit story.common story.places ;
 
 state: story-state
   cell field current       \ the played room's actor (-1: none)
@@ -15,9 +15,6 @@ end-state
     stalker-age @ 2 < 0= if  drop exit  then
     >r  9 0 do  i cells last-stalker + @  loop  r> send stalker-doing ;
 
-\ the tests of the converted rooms' machinery (story/words.fs) run a room so even if it is a place:
-\ its converted scripts, or none (theirs unloaded) - gone with the machinery (docs/rooms-design.md)
-variable places-off
 behaviour telling
   on spawned ( -- )  -1 current !  -1 old !  100 stalker-age !
       self subscribe leaving-room  self subscribe arrived  self subscribe stalker-doing  self subscribe tick ;
@@ -28,9 +25,10 @@ behaviour telling
   on arrived ( room exit -- )   \ (a room still current - two arrivals without a leaving, a jump - goes too)
       old @ dup 0< 0= if  send room-left  else  drop  then
       current @ dup 0< 0= if  send room-left  else  drop  then
-      over dup place-of  places-off @ 0= and if  place-spawn  dup tell-stalker  else  room-spawn  then  dup current !  send room-enter ;   \ (a place: written anew; else its converted scripts)
+      over place-of 0= if  2drop exit  then   \ (no place: nothing of the story's)
+      over place-spawn  dup tell-stalker  dup current !  send room-enter ;
   on room-done ( -- )  sender dup alive? if  kill  else  drop  then  sender old @ = if  -1 old !  then ;
-  on story-stop ( -- )   \ (each room frees its scripts and reports done)
+  on story-stop ( -- )   \ (each place stops its doings and reports done)
       current @ dup 0< if  drop  else  send story-stop  then  old @ dup 0< if  drop  else  send story-stop  then
       -1 current !  -1 old !  self unsubscribe leaving-room  self unsubscribe arrived ;
 end-behaviour

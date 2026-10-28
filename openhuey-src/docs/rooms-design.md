@@ -187,7 +187,8 @@ says what happens, and nothing in it can leave Fiona stuck.
    then `tests/places/test_<room>.fs`; each PR: the full suite, no "hides" warnings, the
    words' resolution unchanged where not meant to.
 6. Once the last room is moved: the opcode words in `story/words.fs`, the slot machinery and
-   `rooms-ref/` are deleted.
+   `rooms-ref/` are deleted. Done in 0.2.20: what the places still use of it (the character slots,
+   the gifts, the maze's deal, the screen fill, a few pieces) is `story/base.fs`.
 
 ## Status
 
@@ -209,6 +210,24 @@ says what happens, and nothing in it can leave Fiona stuck.
   tremors, the holes in the walls, the Sol Key).
 - The Water Tower: all done (water-tower-1f-1, -2f-1, -4f-1, -7f-1, -7f-2, -8f-1); what 2F and 4F share
   in story/places/walkway.fs (the turning walkway).
+- The off-map rooms: all done - the clock run ($D0 .. $D9, $E0 .. $E9; what they share in
+  story/places/clock-run.fs), the ending scenes ($33 .. $36), the garden's hidden room ($27), the
+  extras room ($37), $0D, $65; $64, $C4 and $5A have no data on the disc (never entered: their
+  places written, their tests only that they are there). Every room is now a place.
+- Fixed on the way: the kit's exits went by Fiona and by the door being open; the rooms' exit-check
+  goes by the one played (Hewie in the run), the door not locked, passable from their side, at their
+  own pace (`exit-checked`; `exit-out`, `leaves-by`). A hiding place in the run is left at Hewie's
+  next command, the camera kept on him (`wants-out?`). story/clock.fs keeps the run's saved time
+  itself (no event variables).
+- Fixed on the way: the room left stays loaded ahead (rooms.fs), as the original's two room slots
+  swap (SceneGame_LeaveRoom) - a forced exit with nothing else loaded goes back there: $27's way out,
+  the replays' last scenes back to the extras room. (The mini-game's challenges load their first
+  room ahead themselves, as the original's extras room does.)
+- The old machinery is gone (step 6): story/words.fs, shared.fs, room.fs, rooms.fs, state.fs,
+  rooms/ and rooms-ref/ (in the history for checking a place); story.fs spawns places only; what
+  is kept is story/base.fs. The tests of the opcode words went with them; the tests that used the
+  words for their own ends use the kit's, base.fs's or the actors' messages now. The kit's frame
+  end draws the screen fill (`screen-dark` drew nothing in places before: only room.fs did).
 - Fixed on the way: the actors' ids now go round (hactor.c's spawn: the next free one after the last
   given) - a place's effect slot held a glow that had died, its id reused at once by the next room's
   place, and the old place's clean-up killed the new one (7F-2 dead after the planets' scene); kit's

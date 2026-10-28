@@ -1,10 +1,10 @@
 \ story/places/old-mansion-1f-17.fs - a room of the old mansion's 1F with the "Blue Flame, Secret
-\ Ways" picture and the candle's flame (its draught stirred by whoever passes); once the 2F's way was
-\ found, the wall moved aside (brought in by it the first time: the movie, out by the forced way);
-\ the lever by the way she came; the "doll" that is a mummy; two vases (the Magnesia in
-\ one); the Chicken Jerky; the Medallion Hewie sniffs out; his looks. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/old-mansion-1f-17.fs (converted from the game's,
-\ not loaded).
+\ Ways" picture and the candle's flame (its draught stirred by whoever passes); once the 2F's way
+\ was found, the wall moved aside (brought in by it the first time: the movie, out by the forced
+\ way); the lever by the way she came; the "doll" that is a mummy; two vases (the Magnesia in one);
+\ the Chicken Jerky; the Medallion Hewie sniffs out; his looks. A place (story/kit.fs). The
+\ original's scripts, for checking: story/rooms-ref/old-mansion-1f-17.fs in the history (converted
+\ from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-17
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names story.kit fiona.anims fiona.sounds scenes ;

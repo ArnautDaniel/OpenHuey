@@ -1,9 +1,9 @@
-\ story/places/castle-2f-6.fs - the study in Belli Castle's 2F ($22): the desk (locked - her blows on
-\ it; the Study Key used: the drawer open, the Lunar Refractor - and the stalker stronger, the summoner
-\ on), the board (the Luminessants), the shelves, the massive book and the desktop in turn, the
-\ Lavender, what Hewie barks at and looks up at, the far view's depth. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/castle-2f-6.fs (converted from the game's, not
-\ loaded).
+\ story/places/castle-2f-6.fs - the study in Belli Castle's 2F ($22): the desk (locked - her blows
+\ on it; the Study Key used: the drawer open, the Lunar Refractor - and the stalker stronger, the
+\ summoner on), the board (the Luminessants), the shelves, the massive book and the desktop in turn,
+\ the Lavender, what Hewie barks at and looks up at, the far view's depth. A place (story/kit.fs).
+\ The original's scripts, for checking: story/rooms-ref/castle-2f-6.fs in the history (converted
+\ from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-2f-6
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects story.kit fiona.anims ;

@@ -1,10 +1,11 @@
-\ story/places/castle-2f-1.fs - the music room in Belli Castle's 2F ($A): the third moon dial (turned
-\ by the stick; set right with castle-1f-12's two, the moonlight scene and down to it; brought back
-\ up by the forced way, the moon door unlocked and the creatures loose), the moonlight's scene
-\ here as she comes up from castle-1f-12 with its dials right; the door unlocked from this side; the
-\ piano, the speakers, the Refined Magnesia Hewie sniffs out, the Lavender, what Hewie looks up at,
-\ the walls' shade. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ castle-2f-1.fs (converted from the game's, not loaded).
+\ story/places/castle-2f-1.fs - the music room in Belli Castle's 2F ($A): the third moon dial
+\ (turned by the stick; set right with castle-1f-12's two, the moonlight scene and down to it;
+\ brought back up by the forced way, the moon door unlocked and the creatures loose), the
+\ moonlight's scene here as she comes up from castle-1f-12 with its dials right; the door unlocked
+\ from this side; the piano, the speakers, the Refined Magnesia Hewie sniffs out, the Lavender, what
+\ Hewie looks up at, the walls' shade. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/castle-2f-1.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.castle-2f-1
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects story.kit fiona.anims scenes ;

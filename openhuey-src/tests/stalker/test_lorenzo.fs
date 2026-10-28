@@ -25,7 +25,7 @@ T{ [: step @ ['] pursue-run = ;] his -> -1 }T
 testing ... within reach: his attack; Fiona struck
 T{ [: [: her-mode @ 4 = ;] fiona@ ;] 600 soon -> -1 }T
 testing the story's kind 11 is him
-T{ 11 story.words:stalker-actor  lor = -> -1 }T
+T{ 11 story.base:stalker-actor  lor = -> -1 }T
 lor send stalker-out  3 run-frames
 
 \ ---- kind 12: unkillable; in her room it seizes her ----
@@ -37,7 +37,7 @@ room-id game:fiona body-tri k12 send stalker-in  3 run-frames
 testing ... in her room: it seizes her ($10), and is never hurt
 T{ [: [: her-mode @ 4 =  her-sub @ $10 = and ;] fiona@ ;] 30 soon -> -1 }T
 T{ k12 enter  100 hp !  kind12-frame  hp @  leave-actor -> 9999 }T
-T{ 12 story.words:stalker-actor  k12 = -> -1 }T
+T{ 12 story.base:stalker-actor  k12 = -> -1 }T
 testing ... its marker (Kind12_ShowUp: the Marker on it) while in her room; gone as it leaves
 T{ k12 enter  mark-id @ dup 0< 0= swap alive? and  leave-actor -> -1 }T
 k12 send stalker-out  3 run-frames

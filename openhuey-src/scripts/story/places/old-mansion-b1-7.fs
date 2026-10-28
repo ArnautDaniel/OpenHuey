@@ -1,8 +1,9 @@
-\ story/places/old-mansion-b1-7.fs - the aquarium in the old mansion's B1: three strange fish swimming
-\ the pool (the first glinting), the light shaft (its haze from the far camera), her remark; once all
-\ are in, Hewie's eyes on one fish then the next, 90 frames each; the Medallion Hewie sniffs out; the
-\ map's pages. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ old-mansion-b1-7.fs (converted from the game's, not loaded).
+\ story/places/old-mansion-b1-7.fs - the aquarium in the old mansion's B1: three strange fish
+\ swimming the pool (the first glinting), the light shaft (its haze from the far camera), her
+\ remark; once all are in, Hewie's eyes on one fish then the next, 90 frames each; the Medallion
+\ Hewie sniffs out; the map's pages. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/old-mansion-b1-7.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-b1-7
 USING: engine game-state actors messages common vectors facts room-names flag-names story-names floor-flags items.names
     effects story.kit fiona.anims ;

@@ -52,7 +52,7 @@ testing ... again: its remark, the screen
 T{ [: doing-busy? 0= ;] 300 soon -> -1 }T
 
 testing the golem done, someone trying the door from beyond (Debilitas loaded, out of the game): a fright
-golem-done story-flag-set  c2f-7-flag2 story-flag-clear  2 story.words:partner-load  10 run-frames  room-afresh
+golem-done story-flag-set  c2f-7-flag2 story-flag-clear  2 story.base:partner-load  10 run-frames  room-afresh
 [: door-0 true open-mark ;] in-place  10 run-frames
 45 30e 0e 18e put  circle press
 T{ [: c2f-7-flag2 story-flag? ;] 300 soon -> -1 }T
@@ -63,6 +63,7 @@ T{ 5 use-on-place  [: window-shown returned-msg = ;] 300 soon -> -1 }T
 200 read-on
 
 testing brought in by the forced way: Daniella's scene, out again
+off-map-0d room!  30 run-frames   \ (from another room: the forced way out goes back to the room left)
 castle-2f-7 forced-exit rooms send go-to-room  5 run-frames
 T{ [: movie-skipped state-flag-set  room-id castle-2f-7 <> ;] 1500 soon  old-man-seen resident-flag? -> -1 -1 }T
 free-play  10 run-frames  0 game:fiona send costume

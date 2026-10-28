@@ -5,8 +5,9 @@
 \ the first time; Hewie watching it), the box (its slot - the right thing used: it opens, the
 \ Inquisitor Earrings and the Jade Choker; else nothing), the caged doll and the rocking horse in
 \ turn, the doll in the chair, the crib, the Refined Antimony Hewie sniffs out, a vase (the
-\ Medallion). A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ castle-2f-12.fs (converted from the game's, not loaded).
+\ Medallion). A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/castle-2f-12.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.castle-2f-12
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects keys story.kit fiona.anims fiona.sounds stalker.anims ;

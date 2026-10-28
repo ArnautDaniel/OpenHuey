@@ -1,7 +1,8 @@
-\ story/places/house-of-truth-b1-3.fs - a corridor of the House of Truth's B1 ($86): the first time in,
-\ Lorenzo leaves her be (the summoner off); its echo; his slam's shake. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/house-of-truth-b1-3.fs (converted from the game's,
-\ not loaded). Never run in the original: its act00 (nothing in it).
+\ story/places/house-of-truth-b1-3.fs - a corridor of the House of Truth's B1 ($86): the first time
+\ in, Lorenzo leaves her be (the summoner off); its echo; his slam's shake. A place (story/kit.fs).
+\ The original's scripts, for checking: story/rooms-ref/house-of-truth-b1-3.fs in the history
+\ (converted from the game's; gone with the old machinery in 0.2.20). Never run in the original: its
+\ act00 (nothing in it).
 IN: story.places.house-of-truth-b1-3
 USING: engine game-state actors messages common facts room-names flag-names story-names story.kit
     story.places.house-of-truth ;

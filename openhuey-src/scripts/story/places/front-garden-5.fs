@@ -1,9 +1,10 @@
-\ story/places/front-garden-5.fs - the garden's far corner ($2D): Hewie's ways over its walls -
-\ her "go there" (or "come back" from across) sends him over at four places, and at two he snaps
-\ at the hung things (one drops the Viola Medallion); the chimes she brushes walking by; a crate
-\ (beef jerky), a Medallion Hewie sniffs out, the ball, the rusted door; and a hiding place, where
-\ the stalker may find her. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/front-garden-5.fs (converted from the game's, not loaded).
+\ story/places/front-garden-5.fs - the garden's far corner ($2D): Hewie's ways over its walls - her
+\ "go there" (or "come back" from across) sends him over at four places, and at two he snaps at the
+\ hung things (one drops the Viola Medallion); the chimes she brushes walking by; a crate (beef
+\ jerky), a Medallion Hewie sniffs out, the ball, the rusted door; and a hiding place, where the
+\ stalker may find her. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/front-garden-5.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.front-garden-5
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects keys story.kit fiona.anims fiona.sounds hewie.sounds stalker.anims ;

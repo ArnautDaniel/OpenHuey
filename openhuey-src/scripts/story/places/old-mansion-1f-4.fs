@@ -3,8 +3,9 @@
 \ way, the first time, an incubator bursts - two homunculi loose); the incubators (something inside;
 \ the burst ones empty); a hopping figure (the kit's hopper, its calls); the Chicken Jerky; Hewie
 \ wary of the figure, his looks; the holes things fall through. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/old-mansion-1f-4.fs (converted from the game's,
-\ not loaded). Its act 3 (two lines read in the dim) nothing starts.
+\ original's scripts, for checking: story/rooms-ref/old-mansion-1f-4.fs in the history (converted
+\ from the game's; gone with the old machinery in 0.2.20). Its act 3 (two lines read in the dim)
+\ nothing starts.
 IN: story.places.old-mansion-1f-4
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names story.kit fiona.anims fiona.sounds ;

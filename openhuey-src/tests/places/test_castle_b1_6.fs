@@ -72,7 +72,7 @@ testing ... the chandelier after: her remark, then how near she came; the pulley
 T{ chandelier-area 0 at  said  chandelier-area 0 at  said -> chandelier-msg killed-msg }T
 T{ pulley-1-area 180 at  said -> broken-msg }T
 
-testing the movies replayed (the extras): played, out
-: replays ( v -- room held )  $2A var!  events-held state-flag-set  room-afresh  1500 play-on  room-id  events-held state-flag? ;
-T{ 4 replays -> castle-b1-6 0 room-exit-leads drop 0 }T   \ (4: the extras list's act $C, the statue's)
+testing the movies replayed (the extras): played, back to the extras room
+: replays ( v -- room held )  off-map-37 room!  30 run-frames  $2A var!  events-held state-flag-set  room-afresh  1500 play-on  room-id  events-held state-flag? ;   \ (from the extras room)
+T{ 4 replays -> off-map-37 0 }T   \ (4: the extras list's act $C, the statue's)
 test-summary

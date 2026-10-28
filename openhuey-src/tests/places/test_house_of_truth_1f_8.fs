@@ -39,7 +39,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 ht1f-9-flag2 story-flag-clear  over-music-f story-flag-clear  tremor-warned story-flag-clear  tremor-warned-2 story-flag-clear
 ht1f-8-flag1 story-flag-clear  ht1f-8-magist-medallion-found story-flag-clear  ht1f-8-magist-medallion story-flag-clear
 testing brought here by the forced way: the first tremor - she crouches; its facts, the track; Lorenzo sent ahead
-lorenzo2-kind story.words:partner-load  5 run-frames
+lorenzo2-kind story.base:partner-load  5 run-frames
 house-of-truth-1f-8 forced-exit rooms send go-to-room  5 run-frames
 T{ [: [: ['] first-tremor running? ;] in-place ;] 120 soon  [: window-shown 0< 0= if  cross press  then  tremor-warned-2 story-flag? ;] 900 soon -> -1 -1 }T
 T{ over-music-f story-flag?  tremor-warned story-flag?  [: snag-var var@ ;] in-place -> -1 -1 5 }T

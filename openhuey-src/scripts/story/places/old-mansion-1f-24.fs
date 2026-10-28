@@ -1,9 +1,10 @@
 \ story/places/old-mansion-1f-24.fs - a hall of the old mansion's 1F where Daniella scrubs the floor
-\ (the White Mandragora not used, she not about): no fright from her, no camera on her; spoken to, she
-\ looks up - Hebel's Perfume the first time ("a filthy little princess"), else "It's cleaning time" -
-\ and back to scrubbing; Hewie wary of her; the covered statue; the vase and its Beef Jerky, the
-\ Rubrum Medallion. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ old-mansion-1f-24.fs (converted from the game's, not loaded).
+\ (the White Mandragora not used, she not about): no fright from her, no camera on her; spoken to,
+\ she looks up - Hebel's Perfume the first time ("a filthy little princess"), else "It's cleaning
+\ time" - and back to scrubbing; Hewie wary of her; the covered statue; the vase and its Beef Jerky,
+\ the Rubrum Medallion. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/old-mansion-1f-24.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-1f-24
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit fiona.anims ;

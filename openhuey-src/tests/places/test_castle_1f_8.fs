@@ -73,7 +73,7 @@ T{ hidden? -> -1 }T
 T{ hidden? -> 0 }T
 
 testing the stalker coming while she hides: his comings counted
-2 story.words:partner-load  5 run-frames
+2 story.base:partner-load  5 run-frames
 hiding-area 90 at  circle press  300 run-frames
 search-var var@ before !
 castle-1f-8 $B2 game:debilitas send stalker-in  60 run-frames

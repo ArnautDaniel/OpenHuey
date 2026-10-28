@@ -80,7 +80,7 @@ daniella-kind 3 story.kit:figure-in  room-afresh
 T{ cb1-1-flag1 story-flag?  $226 filed? -> -1 -1 }T
 
 testing the stalker coming in while she hides: he finds her (but on his alert 4)
-hewie-found-in-wire story-flag-clear  got-castle-sketch story-flag-set  2 story.words:partner-load  5 run-frames  kitchen-afresh
+hewie-found-in-wire story-flag-clear  got-castle-sketch story-flag-set  2 story.base:partner-load  5 run-frames  kitchen-afresh
 -90 -30e -50e -30e put  circle press  [: hidden? ;] 600 soon drop
 castle-b1-1 $1FE game:debilitas send stalker-in
 T{ [: [: found-her @ ;] in-place ;] 900 soon -> -1 }T

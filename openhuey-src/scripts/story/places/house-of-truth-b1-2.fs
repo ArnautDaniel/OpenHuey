@@ -1,9 +1,9 @@
-\ story/places/house-of-truth-b1-2.fs - the House of Truth's B1 room she wakes in ($85): brought here
-\ the first time, Lorenzo's words (the scene, the file, the doors shut on her); its door locked from
-\ the far side (tried); the other door - the first time through it, to Lorenzo (B1-1); the clock (the
-\ save); the Lavender; its sounds in turn; his slam's shake; the replay. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/house-of-truth-b1-2.fs (converted from the
-\ game's, not loaded).
+\ story/places/house-of-truth-b1-2.fs - the House of Truth's B1 room she wakes in ($85): brought
+\ here the first time, Lorenzo's words (the scene, the file, the doors shut on her); its door locked
+\ from the far side (tried); the other door - the first time through it, to Lorenzo (B1-1); the
+\ clock (the save); the Lavender; its sounds in turn; his slam's shake; the replay. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-b1-2.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-b1-2
 USING: engine game-state actors messages common facts room-names flag-names story-names items.names
     story.kit story.places.house-of-truth fiona.anims scenes ;

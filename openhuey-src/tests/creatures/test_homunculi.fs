@@ -3,7 +3,7 @@
 \ no strength left, dropped from a height, kept in the progress. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/creatures/test_homunculi.fs
 IN: test-homunculi
-USING: tester engine game-state actors messages room-names flag-names facts paths saves game debug fiona.state story.state story.words creatures creatures.trip creatures.homunculus ;
+USING: tester engine game-state actors messages room-names flag-names facts paths saves game debug fiona.state creatures creatures.trip creatures.homunculus ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room-actor ( xt -- )  room-actor enter  execute  leave-actor ;
@@ -19,7 +19,7 @@ create centre 12 allot
 variable p-tri  variable p-sight  fvariable p-height
 : place-one ( tri sight -- ) ( F: height -- )   \ kind $80 in her room, facing 0
     p-sight !  p-tri !  p-height f!
-    [: room-id 2 p-tri @ $80 p-sight @ -1 0 p-height f@ creature-place ;] in-room-actor  deliver  1 run-frames ;
+    [: room-id 2 p-tri @ $80 p-sight @ -1 0 p-height f@ f>cell game:creatures send creature-place ;] in-room-actor  deliver  1 run-frames ;
 : soon ( xt n -- flag )  0 ?do  game-tick  dup execute if  drop true unloop exit  then  loop  drop false ;
 60 run-frames
 front-garden-2 -1 game:rooms send go-to-room  5 run-frames
@@ -47,7 +47,7 @@ T{ [: leaving want !  store-record  my-record kc.used l@  watching want !  store
 2 game:creatures send creatures-clear  deliver  1 run-frames
 testing kind $88 placed: blocking nothing, its paths $40080
 2 game:creatures send creatures-clear  deliver  1 run-frames
-: place-88 ( -- )  [: room-id 0 far-tri $88 1 -1 0 0e creature-place ;] in-room-actor  deliver  1 run-frames ;
+: place-88 ( -- )  [: room-id 0 far-tri $88 1 -1 0 0e f>cell game:creatures send creature-place ;] in-room-actor  deliver  1 run-frames ;
 place-88
 T{ [: to-spot-free @  path-mask  stand-mask  k ;] of7 -> -1 $40080 0 8 }T
 2 game:creatures send creatures-clear  deliver  1 run-frames
@@ -72,6 +72,8 @@ d-her constant d0
 T{ [: [: running @ 3 = ;] of7 ;] 900 soon -> -1 }T
 T{ d-her d0 < -> -1 }T
 T{ [: [: move-mode @ 8 = ;] of7 ;] 300 soon  [: 8 story.kit:creature-moving? ;] in-room-actor -> -1 -1 }T
+: near-it? ( me it -- flag )   \ (touching: its own radius and height the margins - the rooms' cond 0x58)
+    {: me it | r h :}  it body-dims fround f>s to h  fround f>s to r  me it r h story.base:touching? ;
 T{ [: game:fiona h7 near-it? ;] 300 soon -> -1 }T   \ (the story's 0x58: touching it)
 
 : her ( xt -- x )  game:fiona enter  execute  leave-actor ;

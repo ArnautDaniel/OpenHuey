@@ -1,8 +1,9 @@
 \ story/places/water-tower-1f-1.fs - the Water Tower's 1F ($C1): the water (a recovery point, once a
 \ visit; then its second remark); the clock; the Medallion Hewie sniffs out; Riccardo taken off when
-\ his time is up and she can't see him; its four sounds in turn; the holes in its floor; the doorway's
-\ shade. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/water-tower-1f-1.fs (converted from the game's, not loaded).
+\ his time is up and she can't see him; its four sounds in turn; the holes in its floor; the
+\ doorway's shade. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/water-tower-1f-1.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.water-tower-1f-1
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit fiona.anims ;

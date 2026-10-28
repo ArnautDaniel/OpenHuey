@@ -1,13 +1,13 @@
-\ story/places/house-of-truth-1f-9.fs - the House of Truth's 1F hall of the pit ($92): the hole by the
-\ wall where something was once set in - her remarks, the odd smell; Hewie sniffing it out (her
+\ story/places/house-of-truth-1f-9.fs - the House of Truth's 1F hall of the pit ($92): the hole by
+\ the wall where something was once set in - her remarks, the odd smell; Hewie sniffing it out (her
 \ word, or her remark with him by: file 255); the Cane of Caduceus set in it - the scene: Lorenzo in
 \ his last form, the door locked behind, the fans turning, the house coming down (debris falling -
 \ the traps it springs, smoke rising - the drones and sparks at either side, their blows, the plates
 \ rising under them); Lorenzo brought down - the scene: he falls, the house freed (file 256), the
 \ doors as they are left; the pit's remark; "Oh no! It's locked!"; brought in by the forced way, the
-\ scene there (out again by it); two flames; Hewie's bark at the hole, his look; the replays. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-1f-9.fs
-\ (converted from the game's, not loaded).
+\ scene there (out again by it); two flames; Hewie's bark at the hole, his look; the replays. A
+\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-1f-9.fs
+\ in the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-1f-9
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit story.places.house-of-truth fiona.anims scenes ;
@@ -49,8 +49,8 @@ $2E constant gesture-call
 $ED constant locked-door   $255 constant hole-file   $256 constant freed-file
 : flames ( -- )  flame-0-fx 1 -36.4e 13.4e 54.4e flame-at  flame-1-fx 1 58.7e 10e -29.9e flame-at ;
 : stones-fall ( -- )   \ (the ceiling coming down: stones of three kinds falling from 50)
-    2 50e 0e 0e 0.5e story.words:stones-falling  7 50e 0e 0e 0.5e story.words:stones-falling
-    5 50e 0.5e 0e 0.5e story.words:stones-falling ;
+    2 50e 0e 0e 0.5e story.base:stones-falling  7 50e 0e 0e 0.5e story.base:stones-falling
+    5 50e 0.5e 0e 0.5e story.base:stones-falling ;
 : debris-hidden ( -- )  $10 $A do  i object-hide  loop ;   \ ("keri0".."keri5": shown as they fall)
 : haze-on ( -- )  effects:heat-haze haze-fx effect! ;   \ (the heat haze: its wave eased to a mark - +256 at once)
 : embers ( flames? -- )  effects:pit-embers embers-fx effect! ;

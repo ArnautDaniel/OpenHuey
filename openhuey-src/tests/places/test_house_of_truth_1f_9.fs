@@ -98,6 +98,7 @@ room-afresh
 T{ hole-area 0 at  said  said -> moaning-msg get-out-msg }T
 T{ 0 0e 0e -21e put  said  said -> toast-msg get-out-msg }T
 testing brought in by the forced way: its scene, out again by it
+off-map-0d room!  30 run-frames   \ (from another room: the forced way out goes back to the room left)
 T{ house-of-truth-1f-9 forced-exit rooms send go-to-room  5 run-frames  [: movie-skipped state-flag-set  $4F resident-flag? ;] 3000 soon -> -1 }T
 T{ [: room-id house-of-truth-1f-9 <> ;] 600 soon -> -1 }T
 testing the movies replayed (the extras)

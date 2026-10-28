@@ -2,7 +2,7 @@
 \ (docs/subsystems/story.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_things.fs
 IN: test-things
-USING: tester engine game-state actors messages room-names game debug flag-names story.state story.words story.strings ;
+USING: tester engine game-state actors messages room-names game debug flag-names story.strings story.kit ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
@@ -20,18 +20,17 @@ castle-b1-6 room!  5 run-frames
 testing entering castle-b1-6 (its place): its door shows its part (group 22), its object 6 (the scenes' door) is hidden
 T{ 0 22 door-group?  0 0 door-group?  0 23 door-group? -> -1 -1 0 }T
 T{ 6 object-shown? -> 0 }T
--1 story:places-off !  castle-b1-6 room!  5 run-frames   \ (the room as a converted one: the scripts' words' host)
-testing the scripts' words: an object shown (its +0 0), a door part off
-T{ [: 6 0 object-hidden  1 0 $14 door-bits ;] in-room  6 object-shown?  0 22 door-group? -> -1 0 }T
+testing the kit's words: an object shown (its +0 0), a part off (group $14 + 1 + part)
+T{ [: 6 object-show  1 hide-part ;] in-room  6 object-shown?  0 22 door-group? -> -1 0 }T
 
 testing a light scaled and back to the room's own
 T{ 0 light@ fswap f0> -> -1 }T   fdrop
-0 light@ fdrop fconstant own
-T{ [: 1 0 0.5e light ;] in-room  0 light@ fdrop  own 0.5e f* f- fabs 0.001e f< -> -1 }T
-T{ [: 0 0 1e light ;] in-room  0 light@ fdrop own f- fabs 0.001e f< -> -1 }T
+0 light@ fdrop fconstant own-level
+T{ [: 0 0.5e light-brighter ;] in-room  0 light@ fdrop  own-level 0.5e f* f- fabs 0.001e f< -> -1 }T
+T{ [: 0 light-back ;] in-room  0 light@ fdrop own-level f- fabs 0.001e f< -> -1 }T
 
 testing the look: fog and the depth range on and off
-T{ [: $40424C74 $4244489C 1 8.54e 25.61e fog  1e 1e 1e 48.6e depth-range ;] in-room  $1D look-on?  $1C look-on? -> -1 -1 }T
-T{ [: 0 0 0 0e 0e fog  depth-range-off ;] in-room  $1D look-on?  $1C look-on? -> 0 0 }T
+T{ [: $40424C74 $4244489C 8.54e 25.61e fog  1e 1e 1e 48.6e depth-range ;] in-room  $1D look-on?  $1C look-on? -> -1 -1 }T
+T{ [: fog-off  depth-range-off ;] in-room  $1D look-on?  $1C look-on? -> 0 0 }T
 
 test-summary

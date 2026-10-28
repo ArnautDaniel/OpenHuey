@@ -1,10 +1,11 @@
-\ story/places/old-mansion-1f-9.fs - a room of the old mansion's 1F caged in steel: the plate pressing
-\ machine (a plate pressed while fewer than ten are made; a plate given back); the window - the
-\ first time she asks, Daniella's scene (the cage's windows opened, her after her, the file), then
-\ only the dark outside; the water to drink (a recovery point - its document the first time); the
-\ tub; "The Three Spiritual Substances"; the Refined Antimony, the Refined Magnesia Hewie sniffs out;
-\ his looks; the holes things fall through. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/old-mansion-1f-9.fs (converted from the game's, not loaded).
+\ story/places/old-mansion-1f-9.fs - a room of the old mansion's 1F caged in steel: the plate
+\ pressing machine (a plate pressed while fewer than ten are made; a plate given back); the window -
+\ the first time she asks, Daniella's scene (the cage's windows opened, her after her, the file),
+\ then only the dark outside; the water to drink (a recovery point - its document the first time);
+\ the tub; "The Three Spiritual Substances"; the Refined Antimony, the Refined Magnesia Hewie sniffs
+\ out; his looks; the holes things fall through. A place (story/kit.fs). The original's scripts, for
+\ checking: story/rooms-ref/old-mansion-1f-9.fs in the history (converted from the game's; gone with
+\ the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-9
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names effects story.kit fiona.anims fiona.sounds scenes ;

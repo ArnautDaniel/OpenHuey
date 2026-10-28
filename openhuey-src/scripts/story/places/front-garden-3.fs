@@ -1,8 +1,9 @@
 \ story/places/front-garden-3.fs - Belli Castle's front garden by the cage ($2A), where a new game
-\ starts: Fiona out of the cage in the opening, two figures in the trees; the box against the
-\ grate that Hewie helps her push; the breakable with magnesia; at night Hewie caught in the wire,
-\ freed; the refined magnesia he digs up. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/front-garden-3.fs (converted from the game's, not loaded).
+\ starts: Fiona out of the cage in the opening, two figures in the trees; the box against the grate
+\ that Hewie helps her push; the breakable with magnesia; at night Hewie caught in the wire, freed;
+\ the refined magnesia he digs up. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/front-garden-3.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.front-garden-3
 USING: engine game-state actors messages common vectors facts flag-names story-names room-names floor-flags
     effects story.kit fiona.anims hewie.anims hewie-names scenes ;

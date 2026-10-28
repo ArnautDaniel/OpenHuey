@@ -1,7 +1,7 @@
 \ The camera (docs/subsystems/camera.md; src/game/camera.c CamDirector_*, Progress_Camera*). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/camera/test_camera.fs
 IN: test-camera
-USING: tester engine game-state actors messages room-names game fiona.state story.state story.words debug flag-names ;
+USING: tester engine game-state actors messages room-names game fiona.state debug flag-names ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
@@ -41,11 +41,11 @@ false cam-scene!  1 run-frames  T{ cam-set@ 0< 0=  cam-changed? -> -1 -1 }T
 
 testing the story's shot: the room's depth range off meanwhile, back after (CamDirector_HoldEffect1C)
 create range 16 allot
-[: 20e 30e 2000e 2000e depth-range ;] in-room
+[: 20e 30e 2000e 2000e story.kit:depth-range ;] in-room
 T{ $1C range look@ 0> -> -1 }T
-[: 1 3000e 20e 0e 0e event-camera ;] in-room  2 run-frames
+[: 1 3000e 20e 0e 0e story.kit:shot ;] in-room  2 run-frames
 T{ cam-event?  $1C range look@ -> -1 0 }T
-[: 0 0e 0e 0e 0e event-camera ;] in-room  2 run-frames
+[: 0 0e 0e 0e 0e story.kit:shot ;] in-room  2 run-frames
 T{ cam-event?  $1C range look@ 0> -> 0 -1 }T
 
 testing the game over (CamDirector_NextSetup): the room's next set, nobody followed, from there on

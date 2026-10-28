@@ -1,11 +1,11 @@
-\ story/places/house-of-truth-1f-7.fs - the House of Truth's 1F hall of the trap ($8F): file 255 found,
-\ Hewie barking at the wall - her look, his scene (the wall opened); the Cane of Caduceus behind it;
-\ her track on, the first time she steps in - the scene: the trap (she struggles against it, shaking
-\ free at 100 - or Lorenzo reaches her first: the game over); the hiding place (the kit's) and the
-\ stalker's search; the door unlocked from this side; the Antimony Tube; a creature let out; the
-\ tremors, the stones, the drone; five flames; the walls' shade; the replays. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/house-of-truth-1f-7.fs (converted from the
-\ game's, not loaded).
+\ story/places/house-of-truth-1f-7.fs - the House of Truth's 1F hall of the trap ($8F): file 255
+\ found, Hewie barking at the wall - her look, his scene (the wall opened); the Cane of Caduceus
+\ behind it; her track on, the first time she steps in - the scene: the trap (she struggles against
+\ it, shaking free at 100 - or Lorenzo reaches her first: the game over); the hiding place (the
+\ kit's) and the stalker's search; the door unlocked from this side; the Antimony Tube; a creature
+\ let out; the tremors, the stones, the drone; five flames; the walls' shade; the replays. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-1f-7.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-1f-7
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit story.places.house-of-truth fiona.anims fiona.sounds stalker.anims
@@ -30,7 +30,7 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
 : flame@ ( k -- ) ( F: -- x y z )  3 * floats flames +  dup f@  dup float+ f@  2 floats + f@ ;
 : lit ( -- )  5 0 do  i 1  i flame@  flame-at  loop ;
 : stones-fall ( -- )   \ (the ceiling coming down: stones of three kinds falling from 50)
-    0 50e 0e 0e 1e story.words:stones-falling  1 50e 0e 0e 1e story.words:stones-falling  6 50e 0e 0e 1e story.words:stones-falling ;
+    0 50e 0e 0e 1e story.base:stones-falling  1 50e 0e 0e 1e story.base:stones-falling  6 50e 0e 0e 1e story.base:stones-falling ;
 : wall ( opened? -- )  if  2 object-hide  3 object-hide  else  2 object-show  3 object-show  0 solid-floor floor-on  then ;
 : drone ( -- )  drone-sound story-volume or drone-bank bank-sound  -1 drone-on ! ;
 : came-in ( exit -- )

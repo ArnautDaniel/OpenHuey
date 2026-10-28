@@ -1,10 +1,11 @@
 \ story/places/castle-1f-3.fs - the library in Belli Castle's 1F ($9): the first time at the Garden
 \ Key, the scene of her awakening (the voice, the thing on the table); the key taken after; chased
 \ by Debilitas while he is elsewhere - the hint ("hide behind it?"), and in behind the bookshelf she
-\ knocks it down on him (a scene: he is knocked out under it, she runs out); pushing it before
-\ then, her thought; the books, the harp, the creepy thing in turn, the Camomile, what Hewie looks
-\ up at and stands wary of, the walls' shade. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/castle-1f-3.fs (converted from the game's, not loaded).
+\ knocks it down on him (a scene: he is knocked out under it, she runs out); pushing it before then,
+\ her thought; the books, the harp, the creepy thing in turn, the Camomile, what Hewie looks up at
+\ and stands wary of, the walls' shade. A place (story/kit.fs). The original's scripts, for
+\ checking: story/rooms-ref/castle-1f-3.fs in the history (converted from the game's; gone with the
+\ old machinery in 0.2.20).
 IN: story.places.castle-1f-3
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     stalker-names items.names effects story.kit fiona.anims scenes ;

@@ -139,20 +139,10 @@ $40 constant glass-strength
     look-done ;
 
 \ the chest of clothes: her costumes (and his coats), once she has them (the front garden's $AE)
-7 constant costume-menu
-$2100 constant coat-pose-1   $1F00 constant coat-pose-2   $2000 constant coat-pose-3   \ ? his poses played as his coat changes
-: hewie-recoated ( -- )   \ (his new coat posed: lying hurt, or as he stands)
-    hewie-in? 0= if  exit  then
-    hewie-cond-now @ down-cond = if  hewie.anims:down-anim hewie send hewie-play exit  then
-    hewie.anims:sit-anim hewie send hewie-play  coat-pose-1 hewie send hewie-play
-    coat-pose-2 hewie send hewie-play  coat-pose-3 hewie send hewie-play ;
 : chest-costumes ( -- )
     stalkers-stay state!  fiona wait-move  fiona 180 turn  20e 10e 0e 0e looking
     chest-change-msg yes? if
-        costume-menu open-subscreen  look-done
-        costume-var costume-worn-var var-same? 0=  coat-var coat-worn-var var-same? 0= or if  wrong-sound room-bank fiona sound-by  then
-        costume-var costume-worn-var var-same? 0= if  costume-var var@ dress  steps-in  fiona -1 idle  7 frames  then
-        coat-var coat-worn-var var-same? 0= if  coat-var var@ coat  hewie-recoated  then
+        costume-menu open-subscreen  look-done  wrong-sound clothes-changed
         15 screen:from-black with-music or fade wait-fade
     else  16 frames  look-done  then
     stalkers-stay state-off ;

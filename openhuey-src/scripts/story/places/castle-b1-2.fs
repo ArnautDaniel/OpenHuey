@@ -3,7 +3,8 @@
 \ dragging her out); the water that calms her (a recovery point, its document the first time), the
 \ toilets, the door locked with its grimy knob (the Smudged Key opens it), the Chamomile, the
 \ Medallion Hewie sniffs out. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/castle-b1-2.fs (converted from the game's, not loaded).
+\ story/rooms-ref/castle-b1-2.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.castle-b1-2
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     items.names story.kit fiona.anims fiona.sounds keys ;

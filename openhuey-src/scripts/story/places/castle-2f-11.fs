@@ -1,7 +1,8 @@
 \ story/places/castle-2f-11.fs - the corridor of the slanted crest in Belli Castle's 2F ($1F): the
 \ hanging doll and swing rocking (the first creaking each turn), the crest, the specks, what Hewie
-\ looks up at. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ castle-2f-11.fs (converted from the game's, not loaded).
+\ looks up at. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/castle-2f-11.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.castle-2f-11
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     effects story.kit fiona.anims ;

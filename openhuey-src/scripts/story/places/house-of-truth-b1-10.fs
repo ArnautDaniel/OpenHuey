@@ -1,6 +1,7 @@
-\ story/places/house-of-truth-b1-10.fs - a corridor of the House of Truth's B1 ($98): the first time she comes through,
-\ Lorenzo ahead of her, looking about; his slam's shake. A place (story/kit.fs). The original's
-\ scripts, for checking: story/rooms-ref/house-of-truth-b1-10.fs (converted from the game's, not loaded).
+\ story/places/house-of-truth-b1-10.fs - a corridor of the House of Truth's B1 ($98): the first time
+\ she comes through, Lorenzo ahead of her, looking about; his slam's shake. A place (story/kit.fs).
+\ The original's scripts, for checking: story/rooms-ref/house-of-truth-b1-10.fs in the history
+\ (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-b1-10
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     story.kit story.places.house-of-truth ;

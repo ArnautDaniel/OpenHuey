@@ -4,8 +4,9 @@
 \ leaves); the box before the door to castle-1f-18 (pushed off its square the door unlocks; her
 \ pushing it locks it again) and the stalker trying that door while it's blocked; the vase and its
 \ Medallion, the Medallion Hewie sniffs out, the one in the drain; the covered furniture, the flame,
-\ the far view. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ castle-b1-7.fs (converted from the game's, not loaded).
+\ the far view. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/castle-b1-7.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.castle-b1-7
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects story.kit fiona.anims hewie.anims hewie-names ;
