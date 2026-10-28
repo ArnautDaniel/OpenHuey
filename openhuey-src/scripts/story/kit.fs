@@ -262,7 +262,9 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 : fade ( frames kind -- )   \ (kind: screen.fs's fade-kind, or'd with with-music or music-cut)
     {: frames kind :}  kind fade-music
     kind $F and 1 and if  world-held state-off  then   \ (coming in: the world let go)
-    frames 0> fading !  frames kind $F and screen send fade ;
+    kind $F and screen:to-dim = if  true broadcast characters-still  then     \ (OpenHuey's, not the original's:
+    kind $F and screen:from-dim = if  false broadcast characters-still  then  \ a reading on the dimmed screen
+    frames 0> fading !  frames kind $F and screen send fade ;                 \ holds the others still)
 : wait-fade ( -- )  begin  fading @ while  yield  repeat ;
 : fade-out ( frames -- )  screen:to-black-2 with-music or fade wait-fade ;   \ (a scene's: to black, the music away)
 : fade-in ( frames -- )  screen:from-black with-music or fade wait-fade ;

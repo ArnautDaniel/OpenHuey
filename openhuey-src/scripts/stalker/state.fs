@@ -203,4 +203,5 @@ state: stalker-state
   \ coming into her room by a shut door: its hold asked (Pursuer_EnterRoom's DoorHold_Take); refused, he
   \ barges it open (action $C, Pursuer_DoorBarge) and then walks in
   cell field entering  cell field barging
+  cell field still-held         \ held still while she reads on the dimmed screen (OpenHuey's, not the original's)
 end-state

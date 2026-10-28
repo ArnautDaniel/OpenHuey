@@ -297,6 +297,7 @@ message show-text ( msg -- )                 \ (the window) show message msg; it
 message close-text ( msg -- )                \ (the window) close it if it shows msg ($FFFF: whatever it shows)
 message text-closed ( msg answer -- )        \ (to who showed it) closed; the option chosen (-1 none)
 message text-shown ( on -- )                 \ broadcast: the window opened / closed (Fiona stands while it's open)
+message characters-still ( on -- )           \ broadcast: the stalkers, Hewie and the summoner held still or let go (OpenHuey's: a reading on the dimmed screen)
 message thing-made ( kind tri x y z vx vy vz -- )   \ (Fiona's let go) a thing at her hand, on its way (floats f>cell; things.fs)
 message fiona-message ( msg -- )             \ broadcast (Fiona: a locked door's built-in script) the room shows system message msg
 message prompt ( kind -- )                   \ (the window) an action is offered here this frame (the action prompt)

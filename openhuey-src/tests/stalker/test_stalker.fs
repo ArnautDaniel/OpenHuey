@@ -69,6 +69,15 @@ game:fiona enter  fiona.slam:recoil  leave-actor
 [: blow-request 0 10e f>cell fiona send hit ;] his  2 run-frames
 T{ recoil@ frozen? -> 0 0 }T
 30 run-frames
+testing held still while she reads on the dimmed screen (OpenHuey's, the user's call: a tip read in
+testing ... peace), then on again: the kit's dim fade tells the stalkers, Hewie and the summoner
+: where ( -- ) ( F: -- x z )  game:debilitas body-pos fswap fdrop ;
+: moved? ( F: x z -- flag )  where {: F: x z x' z' :}  x x' f- fabs  z z' f- fabs f+ 0.01e f> ;
+[: after-her my-mode !  chase-begin ;] his  5 run-frames
+true broadcast characters-still  2 run-frames  where
+T{ 30 run-frames  moved?  [: still-held @ ;] his  game:summoner enter summoner:held-still @ leave-actor -> 0 -1 -1 }T
+false broadcast characters-still  where
+T{ 30 run-frames  moved?  [: still-held @ ;] his -> -1 0 }T
 testing his combo over, no move of it is left to run (Pursuer_BehaviourEnded): its act none
 T{ [: 0 combo-start  combo-over  act-xt @ ['] noop =  combo @ ;] his -> -1 -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)

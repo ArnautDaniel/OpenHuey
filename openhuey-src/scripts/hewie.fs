@@ -47,7 +47,7 @@ behaviour hewie-own
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe write-save
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end
       self subscribe stalker-doing  self subscribe stalker-ties  self subscribe creature-doing  self subscribe scene  self subscribe camera-cut  -1 st-id !  100 st-age !  -1 his-grip !
-      self subscribe danger-signals  self subscribe fiona-struck-by  -1 her-struck-by !
+      self subscribe danger-signals  self subscribe fiona-struck-by  -1 her-struck-by !  self subscribe characters-still
       -1 his-heard-src !  0 hewie-noise s" acoustics" actor-named send listen   \ (Character_Hearing: any noise but his own)
       #creatures 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop ;
   on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
@@ -127,8 +127,9 @@ behaviour hewie-own
   on noclip ( on -- )  0<> 1 and his-2b ! ;
   on aside ( on -- )  0<> 1 and his-2d ! ;
   on activate ( -- )  0 his-2b !  0 his-2d !  0 his-stay !  100 hp!  hewie-played? if  start-afresh  then ;   \ (+0xF3588 cleared too)   \ (the story's 0x15, Hewie_Activate: afresh, at full health - in the run, played: Hewie_StartScene)
+  on characters-still ( on -- )  his-held-still ! ;   \ (OpenHuey's: a reading on the dimmed screen)
   on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model)
-      along? if  model scene-has? dup his-in-cast !  if  tell-doing  else  frame  then  else  tell-doing  then
+      along? his-held-still @ 0= and if  model scene-has? dup his-in-cast !  if  tell-doing  else  frame  then  else  tell-doing  then
       -1 his-heard !  0 his-signals ! ;
   \ what he hears (the acoustics, each frame's end), the danger's signals, who has hold of her
   on heard ( loud room tri door source -- )  his-heard-src !  2drop  his-heard-room !  drop ;

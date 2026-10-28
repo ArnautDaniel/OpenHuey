@@ -148,7 +148,8 @@ $602 constant tv-switch-anim   \ (his reach to the TV's switch)
 \ his first coming: she is told to hide (the evasion points, filed)
 $40A5 constant evasion-doc-msg   \ "'Evasion Points' Press the button when near closets or beds to hide and escape..."
 $A5 constant evasion-doc
-: told-to-hide ( -- )
+: told-to-hide ( -- )   \ (the others held still the whole tip - OpenHuey's: read in peace; let go as it brightens)
+    true broadcast characters-still
     fiona hold  stalkers-stay state!  fiona wait-move  fiona 0 shut-door
     fiona rest-anim 10 start-blend  what-now-msg show  fiona wait-anim  fiona 10 idle  wait-closed
     15 screen:to-dim fade wait-fade  evasion-doc-msg say  15 screen:from-dim fade wait-fade

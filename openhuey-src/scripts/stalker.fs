@@ -353,11 +353,13 @@ behaviour stalking
   on noclip ( on -- )  dup 0<> noclipped !  if  0  else  my-floor @  then  body-mask! ;   \ (the story's 0x20: through blocked floor - at doors)
   on drawn-to ( tri -- )  in-game @ if  go-for-doll  else  drop  then ;
   on stalker-hunt ( -- )  in-game @ if  heading-for-her mode!  away? 0= if  search-again  then  then ;
-  on entered-room ( room exit -- )  her-came !  room-changed  in-game @ if  pose  then ;
+  on entered-room ( room exit -- )  0 still-held !  her-came !  room-changed  in-game @ if  pose  then ;
+  on characters-still ( on -- )  still-held ! ;
   on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model;
       \ given back he is shown, as the cast was made active: Cutscene_ReleaseActors' +0x29)
       my-model @ scene-has?  dup 0=  in-cast @ and if  0 hidden !  then  in-cast !
       in-game @ in-cast @ and if  tell-doing  loaded @ if  status  then  exit  then
+      in-game @ still-held @ and if  tell-doing  loaded @ if  status  then  exit  then   \ (held still: OpenHuey's)
       in-game @ if  frame  script-held @ 0= if  own-frame @ ?dup if  execute  then  then  tell-doing  then   \ (held: his Think, not his own frame)
       figure? self body? and  in-game @ 0= and if  posed @ if  posed-frame  else  pose  then  then   \ (a scene's figure: moved only posed)
       loaded @ if  status  then ;
@@ -429,7 +431,8 @@ end-behaviour
 \ ---- each one's own: his model, his body ----
 : bodied ( floor -- ) ( F: width height -- )
     body-size  dup my-floor !  body-mask!  body-off  0 in-game !
-    self subscribe tick  self subscribe entered-room  self subscribe write-save  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
+    self subscribe tick  self subscribe entered-room  self subscribe write-save  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end
+    self subscribe characters-still ;
 
 \ ---- Debilitas (debilitas.c Debilitas_Setup, DebilitasModel): 70 health (hard: 110), 5 across,
 \ 20 tall; his model O_DB0/DB0_000, its motion table, his sounds (bank 7); his own room (his
