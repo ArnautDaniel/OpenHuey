@@ -372,6 +372,8 @@ message stalker-ties ( scripted apart linked -- )   \ broadcast each frame by a 
 message stalker-blow ( n -- )                \ broadcast each frame by a stalker in the game, after stalker-doing:
                                              \ the blow of his attack under way (its move's damage), -1 none
                                              \ (Pursuer_PathNodeSound, as hg names it)
+message stalker-sees ( flag -- )             \ broadcast each frame by a stalker in the game, after stalker-doing: Fiona
+                                             \ seen or within his reach (+0x1544, NPC_FionaInReach - the story's cond 0x23 asks it)
 message do-action ( action arg -- )          \ 0x39: his action (Hewie_SetAction)
 message trust+ ( n -- )                      \ 0x85: his trust (Hewie_AddTrust)
 message mood! ( mood -- )                    \ 0xC4: his mood (Hewie_SetMode, its own time)

@@ -45,25 +45,32 @@ enum: seize-answer  no-answer she-came she-refused she-broke-free ;
               act-xt !  endof
         she-refused of  0 leading !  pick-attack  endof
     endcase ;
-\ ---- closing on her (Pursuer_CloseOnFiona): in reach (20) and facing her (20 degrees): taken
-\ if she may be (else his table for her out of reach); given up after 120 frames ----
-: closing ( -- )
-    1 step-t +!  step-t @ 120 > if  -1 step-done !  exit  then
+\ ---- a look round (Pursuer_StateLookAround, action $16): his look round ($1A00) to its end, a
+\ fright to her (Pursuer_Threat: Pursuer_ThreatAmount 20) ----
+: looking-round ( -- )  ended? if  -1 step-done !  else  root-move  then ;
+: look-round ( -- )  20e threat  glance-round-anim play  ['] looking-round look-around-act act! ;
+\ ---- closing on her (Pursuer_StateFaceFiona / StateWalkOn, Pursuer_CloseOnFiona): on along his
+\ way while his motion fades in (Pursuer_WalkOn), turning to her - by the hand, his stand then fading in too; then
+\ once: she on a ladder, his attack; in reach (20) and facing her (20 degrees), taken if she may
+\ be and her floor is free for him (else his attack; not to be taken, his table for her out of
+\ reach); not, a look round ----
+: walk-on? ( -- walking? )   \ (Pursuer_WalkOn)
+    settled? if  false exit  then
+    my-path path-left? if  walk-stride drop  else  root-move  then  true ;
+: close-check ( -- )
+    her-ladder-on @ 0< 0= if  pick-attack exit  then
     d-her 20e f<  d-her f0< 0= and
-    fiona body-at heading-to yaw f- angle-wrap fabs 20e deg>rad f< and if
-        may-take? if
-            no-answer answer !  1 leading !  lead-type @ fiona send seize  still-anim play   \ (asked: let go if he moves on)
-            ['] awaiting act-xt !  exit
-        then
-        unreachable-plight choose exit
-    then
-    fiona body-at turn-rate turn-to fdrop
-    fiona self body-mask straight? if  fiona body-at step-toward  else  walk-stride drop  then ;
+    fiona body-at heading-to yaw f- angle-wrap fabs 20e deg>rad f< and 0= if  look-round exit  then
+    may-take? 0= if  unreachable-plight choose exit  then
+    her-floor-free? 0= if  pick-attack exit  then
+    no-answer answer !  1 leading !  lead-type @ fiona send seize   \ (asked: let go if he moves on)
+    ['] awaiting act-xt ! ;
+: closing ( -- )   \ (while his motion fades in, turned toward her too)
+    walk-on? if  fiona body-at turn-rate turn-to fdrop exit  then  close-check ;
+: facing-up ( -- )   \ (Pursuer_StateFaceFiona: the walk faded, his stand; then closing)
+    walk-on? if  exit  then  still-anim play  ['] closing act-xt !  closing ;
 :noname ( type -- )
-    her-floor-free? 0= if  drop pick-attack exit  then
-    dup lead-type !  by-the-hand = if  still-anim  else  walk-fast  then  play
-    fiona body-tri dup 0< 0= if  fiona body-at plan drop  else  drop  then
-    ['] closing take-by-hand-act act! ; is take-her
+    dup lead-type !  by-the-hand = if  ['] facing-up take-by-hand-act  else  ['] closing take-walking-act  then  act! ; is take-her
 
 \ ---- his lunge: her panic calming down, on into his seize (combo 8) ----
 $1306 constant lunge-anim   $E06 constant grab-dog-anim   \ (Debilitas's)

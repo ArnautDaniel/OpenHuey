@@ -201,7 +201,13 @@ create family-acts  ' wander-about , ' turn-at-her , ' lunge , ' grab-dog ,
 : attack! ( -- )
     her-plight @ dup unreachable-plight = if  drop exit  then   \ (out of reach: struck already, hidden)
     dup free-plight calming-plight 1+ within 0= if  drop free-plight  then  choose ;
-: moving-act? ( -- flag )  chase-act @ dup watch-act =  over walk-at-act = or  swap stalk-act = or ;
+\ round her, or his third taunt with its gesture's flag (Debilitas_Chase $1A / $19): her more than
+\ 100 off, stalking her (his chase table's eighth: seen near); else, over, standing
+: far-stalk ( far-stalks? -- )
+    d-her 100e f> and if  stalk-act seen-near stalk-frames hold-for exit  then
+    step-done @ if  stand-watch  then ;
+: moving-act? ( -- flag )   \ (his steps that leave his next free - PURSUER_STEP_NEXT: his attack may come)
+    chase-act @ dup watch-act =  over walk-at-act = or  over stalk-act = or  swap look-around-act = or ;
 \ (Pursuer_FrameUpdate: each step he finishes, first whether he gives up - stalker/struck.fs)
 defer gave-up? ( -- flag )   ' false is gave-up?
 : chase-run ( -- )
@@ -214,9 +220,13 @@ defer gave-up? ( -- flag )   ' false is gave-up?
         walk-at-act of  walking-choice  endof
         stalk-act of  stalking-choice  endof
         combo-act of  step-done @ if  took @ if  struck-her  else  missed-her  then  choose  0 took !  exit  then  endof
+        round-act of  true far-stalk  endof
+        taunt-3-act of  taunt-gesture @ gesture-flag? far-stalk  endof
         >r  step-done @ if  stand-watch  then  r>
     endcase
-    moving-act? if  in-reach? if  attack!  then  then ;
+    moving-act? 0= if  exit  then
+    her-stage @ calming-down = if  chase-begin exit  then   \ (her panic calming down: the Pursuer's chase - Debilitas_ChaseDecision)
+    in-reach? if  attack!  then ;
 
 \ ---- the chase begins (Debilitas_Behaviour): she facing him or not, near or far ----
 : chase-now ( -- )

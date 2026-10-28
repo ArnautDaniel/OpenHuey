@@ -103,7 +103,7 @@ create pond-look  -33.33e -16.93e 69.69e 40e 6e 6e look,
     draw-when-frozen state-off  world-frozen state-off ;
 : tip ( -- )
     got-doc-crouch-evasion fact?  fiona tip-area in-area? 0= or  fiona-free? 0= or if  exit  then
-    chased?  fiona stalker 70 close-to? and if  exit  then
+    chased?  70e noticed-near? and if  exit  then
     got-doc-crouch-evasion fact!  panic-eased  ['] crouch-tip start drop ;
 
 \ ---- what she may say here ----

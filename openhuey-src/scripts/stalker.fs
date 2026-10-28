@@ -196,6 +196,7 @@ $1300 constant gesture-anims
     d-fiona f@ f>cell broadcast stalker-reach
     tell-stride
     away? 0=  combo @ 0< 0= and if  mv-damage  else  -1  then  broadcast stalker-blow
+    sees-fiona @ 0<>  away? 0= and  broadcast stalker-sees
     tell-ties ;
 \ the family's setup (Pursuer_Setup): his sight 150 ahead, 60 degrees either side; Fiona and
 \ Hewie known; listening for noises above his threshold (not his own)

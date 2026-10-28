@@ -93,6 +93,7 @@ state: place-state
   cell field hewie-came-now   \ the exit Hewie came in by (hewie-came; -1 none)
   cell field gesture-now      \ Hewie's gesture this frame, while he is the one played (hewie-gesture; -1 none)
   cell field st-blow-now      \ the stalker's blow under way (stalker-blow; -1 none)
+  cell field st-sees-now      \ the stalker has her in sight or reach (stalker-sees: +0x1544)
   cell field ambient-step  cell field ambient-frames   \ the room's four ambient sounds in turn: which next, frames to it
   #own cells field own
 end-state
@@ -1230,6 +1231,9 @@ variable cab-searched
     cab @ cb.fact @ fact? if  0 show-part  0 barred-floor floor-on  cab-door object-hide  cab-door 1+ object-hide
     else  0 hide-part  0 barred-floor floor-off  cab-door object-show  cab-door 1+ object-show  then ;
 : near-her? ( id F: d -- flag )  {: id F: d :}  id here? 0= if  false exit  then  fiona body-at id body-at vec-dist d f<= ;
+\ she within d of the stalker while he has her in sight or reach (cond 0x23 from Fiona to a
+\ stalker: only with his +0x1544 set - else he hasn't found her, however near)
+: noticed-near? ( F: d -- flag )  stalker-told? st-sees-now @ 0<> and 0= if  fdrop false exit  then  stalker near-her? ;
 : daniella-here? ( -- flag )  st-kind-now @ dup daniella-kind = swap kind34-kind = or ;
 : cab-out ( -- )  2 cab-steps !  fiona follow  fiona-hidden state-off ;
 : cab-faces-him ( -- )   \ (out, the stalker here: her eyes on him, turned to him)
@@ -1275,7 +1279,7 @@ variable cab-searched
             in-panic? if  cab-bursts-out exit  then
             hidden-calm  yield
         else
-            stalker 50e near-her? if  cab-bursts-out exit  then
+            50e noticed-near? if  cab-bursts-out exit  then
             cab-steps-out  0 barred-floor floor-off  exit
         then
     again ;
@@ -1490,7 +1494,7 @@ behaviour placing
       -1 going !  -1 shown-msg !  #people 0 do  -1 i holder-of !  -1 i cells move-done + !  loop   \ (none held, none moving)
       self subscribe tick  self subscribe frame-end  self subscribe moving  self subscribe danger
       self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing
-      self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe hewie-gesture  -1 gesture-now !  self subscribe stalker-blow  -1 st-blow-now !
+      self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe hewie-gesture  -1 gesture-now !  self subscribe stalker-blow  -1 st-blow-now !  self subscribe stalker-sees  0 st-sees-now !
       self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
       self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
       self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe item-var  self subscribe fiona-shakes  0 shakes-now !  self subscribe noise-was  0 loud-now !  self subscribe keri-fell  0 fell-now !  self subscribe summoner-cooldown-is  -1 summoner-secs-now !
@@ -1523,6 +1527,7 @@ behaviour placing
   on danger ( level -- )  danger-now ! ;
   on hewie-came ( exit -- )  hewie-came-now ! ;
   on stalker-blow ( n -- )  st-blow-now ! ;
+  on stalker-sees ( flag -- )  st-sees-now ! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       {: room mode sub cond hp hpmax kind alert came :}
       sender stalker =  sender s" story" actor-named = or  0= if  exit  then   \ (his own, or story's copy as we came in)
