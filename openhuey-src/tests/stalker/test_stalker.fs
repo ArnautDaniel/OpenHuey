@@ -68,7 +68,9 @@ T{ recoil@ frozen?  6 run-frames  recoil@ frozen? -> 5 -1 0 0 }T
 game:fiona enter  fiona.slam:recoil  leave-actor
 [: blow-request 0 10e f>cell fiona send hit ;] his  2 run-frames
 T{ recoil@ frozen? -> 0 0 }T
-30 run-frames
+: on-her-feet ( -- )   \ (her reaction over: free again, as the tests after want her)
+    600 0 do  game:fiona enter  her-mode @ 0=  leave-actor  if  unloop exit  then  game-tick  loop ;
+on-her-feet  30 run-frames
 testing held still while she reads on the dimmed screen (OpenHuey's, the user's call: a tip read in
 testing ... peace), then on again: the kit's dim fade tells the stalkers, Hewie and the summoner
 : where ( -- ) ( F: -- x z )  game:debilitas body-pos fswap fdrop ;
@@ -80,6 +82,10 @@ false broadcast characters-still  where
 T{ 30 run-frames  moved?  [: still-held @ ;] his -> -1 0 }T
 testing his combo over, no move of it is left to run (Pursuer_BehaviourEnded): its act none
 T{ [: 0 combo-start  combo-over  act-xt @ ['] noop =  combo @ ;] his -> -1 -1 }T
+testing through a door, what he was about in the room he left is let go (Pursuer_ThroughDoor): unshaken,
+testing ... whom he struck and who struck him, his attack's wait, his cry, his blow's hold
+[: -1 unshaken !  1 took !  -1 by-her !  30 hold-off !  5 cry !  3 freeze-t !  room-id 0 room-exit-leads drop 0< 0= ;] his drop
+T{ [: 0 through  unshaken @ took @ by-her @ hold-off @ cry @ freeze-t @  my-room room-id <> ;] his -> 0 0 0 0 -1 0 -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 
@@ -152,6 +158,7 @@ testing ... barges it open (action $C, Pursuer_DoorBarge) and only then walks in
 32 opened-bit clear-bits  32 changed  2 run-frames
 : door-32-exit ( -- exit )  8 0 do  room-id i room-exit-door 32 = if  i unloop exit  then  loop  -1 ;
 room-id door-32-exit 1 doors-id send hold-door  2 run-frames   \ (held by her)
+stalkers-blind state-flag-set   \ (the door alone: he doesn't go for her once in)
 castle-1f-10 debug:debilitas-hunt  2 run-frames
 [: after-her my-mode !  castle-1f-2 body-room!  door-32-exit came-by !  enter-her-room ;] his
 : beyond? ( -- flag )   \ (at its spot 12 beyond, in the doorway outside)
@@ -162,7 +169,7 @@ T{ [: barging @ ;] 30 wait-for  beyond? -> -1 -1 }T
     32 state@ opened-bit and 0=  [: entering @ 0= ;] his and ;
 : watched ( n -- bad? )  false swap 0 ?do  shut-and-in? or  game-tick  loop ;
 T{ 200 watched  32 state@ opened-bit and 0<>  [: entering @ barging @ ;] his -> 0 -1 0 0 }T
-debug:debilitas-out  32 held-bit clear-bits  32 changed  2 run-frames
+debug:debilitas-out  32 held-bit clear-bits  32 changed  stalkers-blind state-flag-clear  2 run-frames
 testing ... one who shuts the doors he comes in by (Riccardo, Daniella: DoorBreak): shut again once he is clear of it
 32 opened-bit clear-bits  32 changed  2 run-frames
 castle-1f-10 debug:debilitas-hunt  [: shuts-doors door-manner ! ;] his  2 run-frames

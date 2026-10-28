@@ -159,10 +159,16 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
         came-by @ open-for-me  -1 entering !  still-anim play-now  ['] in-doorway step!  exit
     then
     walk-in ;
+\ what he was about in the room he leaves let go (Pursuer_ThroughDoor): whom he struck (+0x1760)
+\ and who struck him (+0x1761), the wait before his next attack (+0x178C), his cry (+0x1764), his
+\ blow's hold (+0x14D0), the growl after a stumble (+0x16F5), unshaken (+0x16F7), a stop's wait (+0x1798)
+: door-passed ( -- )
+    0 took !  0 by-her !  0 hold-off !  -1 cry !  0 growl-after !  0 unshaken !  0 stop-wait !
+    freeze-t @ if  0 freeze-t !  unfrozen  then ;
 : through ( exit -- )
     {: e :}  my-room e room-exit-leads {: room' exit' :}
     room' 0< if  my-room e room-exit-door avoid-door  goal-room @ route! drop  exit  then
-    exit' came-by !  room' body-room!  -1 body-tri!
+    door-passed  exit' came-by !  room' body-room!  -1 body-tri!
     1 door-i +!  -1 making-for !  0 knock-t !
     my-room room-id = if  enter-her-room exit  then
     route-over? if
