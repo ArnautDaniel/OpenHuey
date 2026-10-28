@@ -176,6 +176,7 @@ create drawn-at /vec allot
     here-played? 0= if  exit  then
     at-a-ladder? if  exit  then   \ (to a ladder or on it: over first)
     reeling @ at-dog @ or if  exit  then   \ (struck: his reaction first; after Hewie)
+    entering @ if  exit  then   \ (coming in by a shut door: in first - opened, or barged open: action $C)
     out-going @ if   \ (on his way out by a door: that first - unless he's only wandering off, when the
         wandering-out @ 0=  sees-fiona @ did-hear @ or 0=  or if  exit  then   \ sight of her or a noise
         out-cancelled  0 wandering-out !                                     \ turns him back: Pursuer_PickTarget)

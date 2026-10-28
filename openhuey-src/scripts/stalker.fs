@@ -97,7 +97,7 @@ create figure-pck 32 allot   create figure-tex 32 allot
     well-cond cond !  0 reeling !  0 hits !
     route-clear  my-path path-clear  waiting-about mode!  stand-anim play-now  stand  settle  pose   \ (Pursuer_PlaceInRoom)
     -1 came-by !  -1 to-shut !  -1 at-ladder !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
-    unheld  0 apart !  0 link-t !  out-over  -1 held-door !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
+    unheld  0 apart !  0 link-t !  out-over  -1 held-door !  0 entering !  0 barging !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
     away? 0= if  search-start  then ;
 : go-out ( -- )  let-her-go  let-door-go  out-over  forget-leads  0 in-game !  body-off  0 him act.visible l! ;
 

@@ -126,6 +126,22 @@ T{ [: step-foot @ 0> ;] his -> -1 }T
 T{ [: my-room castle-1f-2 = ;] 200 wait-for  game:debilitas body-tri 0< 0= -> -1 -1 }T
 T{ 30 run-frames  32 state@ opened-bit and 0<> -> -1 }T
 debug:debilitas-out  2 run-frames
+testing ... taken hold of by her as he comes through (the doors refuse him): he waits beyond it,
+testing ... barges it open (action $C, Pursuer_DoorBarge) and only then walks in - never in past it shut
+32 opened-bit clear-bits  32 changed  2 run-frames
+: door-32-exit ( -- exit )  8 0 do  room-id i room-exit-door 32 = if  i unloop exit  then  loop  -1 ;
+room-id door-32-exit 1 doors-id send hold-door  2 run-frames   \ (held by her)
+castle-1f-10 debug:debilitas-hunt  2 run-frames
+[: after-her my-mode !  castle-1f-2 body-room!  door-32-exit came-by !  enter-her-room ;] his
+: beyond? ( -- flag )   \ (at its spot 12 beyond, in the doorway outside)
+    door-32-exit 1 exit-spot drop  game:debilitas body-pos  {: F: x y z ax ay az :}  x ax f- fabs 1e f<  z az f- fabs 1e f< and ;
+T{ beyond?  [: entering @ ;] his -> -1 -1 }T
+T{ [: barging @ ;] 30 wait-for  beyond? -> -1 -1 }T
+: shut-and-in? ( -- flag )   \ (on through it - in-doorway over - while it is not yet open)
+    32 state@ opened-bit and 0=  [: entering @ 0= ;] his and ;
+: watched ( n -- bad? )  false swap 0 ?do  shut-and-in? or  game-tick  loop ;
+T{ 200 watched  32 state@ opened-bit and 0<>  [: entering @ barging @ ;] his -> 0 -1 0 0 }T
+debug:debilitas-out  32 held-bit clear-bits  32 changed  2 run-frames
 testing ... one who shuts the doors he comes in by (Riccardo, Daniella: DoorBreak): shut again once he is clear of it
 32 opened-bit clear-bits  32 changed  2 run-frames
 castle-1f-10 debug:debilitas-hunt  [: shuts-doors door-manner ! ;] his  2 run-frames
@@ -269,7 +285,9 @@ testing struck (P3a): her shove makes him flinch, her kick takes 5; out of healt
     s" fiona" actor-named body-tri  -500e her-y -500e tp  2 run-frames  debug:debilitas-tri  1 run-frames
     [: 340e deg>rad body-turn ;] his  1 run-frames
     game:debilitas body-pos dz f! dy f! dx f!
-    340e deg>rad fsin 7e f* dx f@ f+  dy f@  340e deg>rad fcos 7e f* dz f@ f+  160e tp-facing  3 run-frames ;
+    340e deg>rad fsin 7e f* dx f@ f+  dy f@  340e deg>rad fcos 7e f* dz f@ f+  160e tp-facing  3 run-frames
+    [: dx f@ dy f@ dz f@ body-place-at  340e deg>rad body-turn ;] his  1 run-frames ;   \ (him back on his spot:
+    \ whatever he was about before, he stands where the test says - clear of the doorway nearby)
 : flinching? ( -- flag )  [: anim @ $1000 $1006 within ;] his ;
 close-up  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press   \ (not mid-move: in an unshaken move a shove only gets a grunt)
 T{ ' flinching? 60 soon  [: hp @ hits @ ;] his -> -1 69 1 }T

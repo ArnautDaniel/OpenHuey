@@ -64,6 +64,7 @@ defer script-door-over ( -- )   ' noop is script-door-over
     1 step-t +!  step-t @ 3 < if  exit  then               \ (the doors take it up next frame)
     making-for @ door-animating? if  exit  then
     door-script @ if  let-door-go  out-over  script-door-over exit  then   \ (the story's: done with it)
+    barging @ if  0 barging !  let-door-go  out-over  ['] in-doorway step!  exit  then   \ (barged into her room: in once it stands open)
     let-door-go  0 apart !  on-through ;   \ (Pursuer_Door1C4: in contact again)
 : door-swinging ( -- )
     root-move  settled? 0= if  exit  then
@@ -161,7 +162,15 @@ create re-list 8 cells allot
 \ ---- the doors' answers to his asking ----
 : held-answer ( exit -- )   \ (`door-held`: his to open; else the door he came in by - swung open)
     dup asked @ = if  drop got-door exit  then  swing-open ;
+\ the door he came into her room by won't give (held - she is shutting it -, locked meanwhile):
+\ he barges it open from where he stands and walks in, the pad rumbling (Pursuer_EnterRoom's
+\ refused DoorHold_Take: action $C - Pursuer_Door1E4, Pursuer_DoorBarge, rumble 3 $80 15)
+: barge-in ( exit -- )
+    {: e :}  e making-for !
+    my-at vec@ e door-side 0> if  in-front-use  else  from-behind-use  then  e kind-at open-way = 1 and +  door-use !
+    -1 barging !  $80 15 stalker-jolt  got-door ;
 : refused-answer ( exit -- )   \ (`door-refused`: as he finds it now - shaken, it won't give)
+    entering @ barging @ 0= and if  dup came-by @ = if  barge-in exit  then  then
     asked @ <> if  exit  then  -1 asked !  $80 15 stalker-jolt
     door-script @ if  script-door-failed exit  then  at-exit ;
 

@@ -200,4 +200,7 @@ state: stalker-state
   cell field look-on  /vec field look-pt
   cell field door-script
   cell field take-asked         \ the story's action for him asked (+0x14E8 5: taken at his next frame, if in the room played)
+  \ coming into her room by a shut door: its hold asked (Pursuer_EnterRoom's DoorHold_Take); refused, he
+  \ barges it open (action $C, Pursuer_DoorBarge) and then walks in
+  cell field entering  cell field barging
 end-state

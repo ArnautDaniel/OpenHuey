@@ -113,6 +113,7 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
 \ from the doorway on in to the spot 12 inside (Pursuer_SearchRouteIn), then as in-play has it
 : walking-in ( -- )  walking  step-done @ if  0 step-done !  come-into-play  then ;
 : walk-in ( -- )
+    0 entering !
     in-tri @ 0< if  come-into-play exit  then
     goal-at in-at vec-copy  in-tri @ goal-at plan 0> 0= if   \ (no way in yet - the door still
         room-id in-tri @ in-at vec@ body-place  come-into-play exit   \ swinging open: inside at once)
@@ -124,6 +125,12 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
 : open-for-me ( exit -- )   \ (the shut door into her room taken - DoorHold_Take - and swung open: `door-held`)
     room-id swap stalker-kind doors-id send hold-door ;
 : swing-open ( exit -- )  true self doors-id send swing-door ;
+\ by a shut door into her room he waits in its doorway, beyond it, for the doors' answer: his to
+\ open, it swings open and he walks in once it stands open; refused, he barges it open
+\ (stalker/doorway.fs's barge-in) - never in past it shut (Pursuer_EnterRoom)
+: in-doorway ( -- )
+    barging @ if  exit  then
+    room-id came-by @ room-exit-door door-open? if  walk-in  then ;
 \ ---- the door he came into her room by, shut behind him once he is clear of it and it stands
 \ open (Riccardo_DoorBreak, Daniella_DoorBreak, TintStalker_BreakDoor: DoorHold_Take then
 \ DoorHold_Shut); Daniella in her rage leaves it open (Daniella_ExitArg). Debilitas, Lorenzo and
@@ -145,17 +152,19 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
     room-id over room-exit-door door-open? 0= if  drop exit  then
     self doors-id send pull-shut  -1 to-shut ! ;
 
+: enter-her-room ( -- )   \ (into her room by the exit came-by: Pursuer_EnterRoom)
+    came-by @ came-in-by
+    came-by @ come-through 0= if  placed-anywhere  come-into-play exit  then
+    room-id came-by @ room-exit-door door-kind open-way <> if   \ (a door not standing open: shut, held, locked)
+        came-by @ open-for-me  -1 entering !  still-anim play-now  ['] in-doorway step!  exit
+    then
+    walk-in ;
 : through ( exit -- )
     {: e :}  my-room e room-exit-leads {: room' exit' :}
     room' 0< if  my-room e room-exit-door avoid-door  goal-room @ route! drop  exit  then
     exit' came-by !  room' body-room!  -1 body-tri!
     1 door-i +!  -1 making-for !  0 knock-t !
-    my-room room-id = if
-        room-id came-by @ room-exit-door door-kind shut-way = if  came-by @ open-for-me  then
-        came-by @ came-in-by
-        came-by @ come-through 0= if  placed-anywhere  come-into-play exit  then
-        walk-in exit
-    then
+    my-room room-id = if  enter-her-room exit  then
     route-over? if
         my-mode @ heading-for-her = my-room goal-room @ = and if  searching mode!  then
         my-mode @ searching held-off within if  search-stops 150 * away-search !  then
