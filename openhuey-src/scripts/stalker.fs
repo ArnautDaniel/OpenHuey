@@ -109,7 +109,7 @@ create figure-pck 32 allot   create figure-tex 32 allot
     away-base @  cool-secs @  beaten @  s" summoner" actor-named send stalker-status ;
 : summoned ( room exit found plan -- )
     {: room e found plan :}
-    room -1 come-in  e came-by !
+    room -1 come-in  e came-by !  hp-max @ hp !   \ (a stalk afresh: his health full - beaten or worn, he was out a while)
     found if
         her-room my-room = if  search-again  else  heading-for-her mode!  avoid-clear  head-for-her  then
     else

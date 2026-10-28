@@ -138,6 +138,8 @@ message overlay-held ( -- )                  \ (the panic) the screen's fade ste
 message panic-onset ( on -- )                \ broadcast by the panic: her panic's start - her scream, its first 30 frames (SceneGame +0xF6CD24 bit 3) - begun (-1) or over (0)
 message panic-stage! ( stage -- )
 message panic-level! ( level -- )
+message panic-restore ( stage left hold beat level passing lasting -- )   \ (the panic) as a save had it - the progress' +0x7B0, kept in a save (Progress_Sub7B0); the floats f>cell
+message panic-reset ( -- )                  \ (the panic) calm, as a new game starts it (Panic_Reset): a save without its line
 message hewie-near ( near -- )               \ broadcast by Hewie each frame she is with him: 1 within 20, 2 within 50, 3 further (the progress' +0x7B9: how the panic weighs its inputs)
 message calm-add ( amount -- )               \ (the panic) calming this frame, weighed as the story's (the progress' +0x7E4; f>cell)
 message panic ( stage level -- )             \ broadcast each frame

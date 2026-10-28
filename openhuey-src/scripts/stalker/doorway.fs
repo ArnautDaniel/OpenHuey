@@ -95,7 +95,7 @@ defer at-exit ( -- )
 \ while he waits, the door swinging toward him (between 10 and 80 open) and her behind it (its
 \ area 2) or holding it: it is pushed into her (her request 5: thrown by the door)
 : door-on-her? ( -- flag )
-    making-for @ door-angle fdup -80e f> fswap -10e f< and 0= if  false exit  then
+    making-for @ door-angle fdup -80e f>  -10e f< and 0= if  false exit  then
     making-for @ 2 fiona body-at vec@ door-in-area?
     my-room making-for @ room-exit-door door-held? or ;
 : push-door ( -- )  door-on-her? if  door-request making-for @ 20e f>cell fiona send hit  then ;

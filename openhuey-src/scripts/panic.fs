@@ -220,7 +220,7 @@ create weights   \ (fright, fear, calming)
 : updating? ( -- flag )  cam-scene? 0=  panic-held state-flag? 0= and ;
 
 behaviour measuring
-  on spawned ( -- )  1e scale f!  1e fade f!  2 st-cond !  $80 pulse !  self subscribe hewie-near  self subscribe tick  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing  self subscribe stalker-doing ;
+  on spawned ( -- )  1e scale f!  1e fade f!  2 st-cond !  $80 pulse !  self subscribe hewie-near  self subscribe tick  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing  self subscribe stalker-doing  self subscribe write-save ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop st-kind !  2drop st-cond !  st-sub !  st-mode !  st-room ! ;
   on danger ( level -- )  the-danger ! ;
   on hewie-near ( near -- )  weighing ! ;   \ (report_fiona_near: Hewie with her - 1 within 20, 2 within 50, 3 further)
@@ -251,6 +251,16 @@ behaviour measuring
       s>f fear-d f@ f+ fear-d f!
       s>f fdup calm-b f@ f+ calm-b f!  lasting f@ f-  fdup f0< if  fdrop  else  recovering f@ f+ recovering f!  then ;
   on panic-level! ( level -- )  set-level ;
+  \ (saves.fs) kept in a save as the original's progress +0x7B0 is (Progress_Sub7B0): her stage,
+  \ her panic's time, the fright's hold, her next breath, the level and its parts; loaded, back
+  on write-save ( -- )
+      stage @ .  panic-left @ .  hold @ .  beat @ .  level f@ f>cell .  passing f@ f>cell .  lasting f@ f>cell .
+      ." panic-was" cr ;
+  on panic-restore ( stage left hold beat level passing lasting -- )
+      cell>f lasting f!  cell>f passing f!  cell>f level f!  beat !  hold !  panic-left !  stage !  inputs-clear ;
+  on panic-reset ( -- )   \ (Panic_Reset)
+      composed stage !  0 panic-left !  0 hold !  0 beat !  0e level f!  0e passing f!  0e lasting f!  inputs-clear
+      $80 pulse !  0 shake !  0 jolting !  1e fade f! ;
   \ (SceneGame_PlayStart: not while a cutscene has the camera nor under flag $F; first in the frame,
   \ so the camera is still unless her panic - or the story, after it - shakes it)
   on tick ( -- )  updating? if  jolting @ if  0.2e  else  0e  then  cam-shake!  then ;

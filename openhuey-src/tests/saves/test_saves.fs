@@ -50,6 +50,14 @@ T{ [: in-game @ ;] his -> 0 }T
 T{ [: in-game @ 0<>  hp @ ;] his  game:debilitas body-room -> -1 7 front-garden-2 }T
 T{ [: hits @  temper @ ;] his -> 12 300 }T
 
+testing her panic kept (the progress +0x7B0): as she saved, not as she was when loading
+: her-level ( -- n )  game:panic enter  panic:level f@ f>s  leave-actor ;
+50 game:panic send panic-level!  deliver
+' saves:quick-save in-saves  deliver  2 run-frames
+95 game:panic send panic-level!  deliver  2 run-frames
+' saves:quick-load in-saves  deliver  2 run-frames
+T{ her-level 45 51 within  game:panic enter  panic:stage @  leave-actor -> -1 0 }T
+20 run-frames
 testing the summoner's record kept (its progress +0x764), not zeroed by the stalker loaded again
 : summ ( xt -- x )  game:summoner enter  execute  leave-actor ;
 [: 1234 summoner:away !  900 summoner:cooldown !  7 summoner:waited !  2 summoner:took-kind ! ;] summ

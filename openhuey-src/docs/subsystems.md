@@ -50,7 +50,8 @@ Also: the title and the opening (`opening.fs`), the avoid prompt (`avoid.fs`), t
 **Saving.** A save is a Forth file in the user's folder, read back by running it. `saves` writes
 the progress (the doors' held bits left out, as `Progress_CopyState` clears them), then
 broadcasts `write-save` and each actor (Fiona, Hewie, the stalker, the summoner - its record, the
-progress' +0x764 -, the sub screen - the map's page she is on, the save's +0x18F0 -, the things)
+progress' +0x764 -, the panic - her stage, level and its parts, the progress' +0x7B0: read back
+at once, a save without it calm as `Panic_Reset` -, the sub screen - the map's page she is on, the save's +0x18F0 -, the things)
 prints its own line. Loading puts the progress back (held bits cleared from an older save),
 broadcasts `game-loaded` (the music makes the stage music the story has come to again:
 `SceneGame_LoadedStart`), plays the room again and puts them where they were - the summoner's
