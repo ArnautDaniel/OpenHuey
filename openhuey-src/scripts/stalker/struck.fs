@@ -106,7 +106,7 @@ create ahead-at /vec allot
 : fall ( anim lie -- )
     lie-anim !  play-now  falling down-stage !
     hp @ 0> 0= if
-        down-frames @ down-t !  down-cond cond !  -1 beaten !  1 knockouts +!  down-for-good
+        down-frames @ down-t !  down-cond cond !  1 knockouts +!  down-for-good
     else  0 down-t !  then
     let-her-go  0 sees-fiona !  0 sees-hewie !  -1 reeling !  ['] downed step! ;
 : knock-down ( -- )  floor-ahead? if  fall-front-anim lying-front-anim  else  fall-back-anim lying-back-anim  then  fall ;

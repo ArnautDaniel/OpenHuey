@@ -420,7 +420,7 @@ message shaken-off ( -- )                    \ (Hewie -> the stalker) he let go 
 message snap ( -- )                          \ (Hewie -> the stalker) growled at, barked at (Relation kind 6): his temper up
 
 \ ---- the summoner (docs/subsystems/summoner.md) ----
-message stalker-status ( room mode in-game own away cool beaten -- )   \ (the stalker in slot 2, each frame while loaded) where he is, his mode, in the game, in his own rooms, his time-away base (frames), his cooldown (s), knocked out of health
+message stalker-status ( room mode in-game own away cool beaten -- )   \ (the stalker in slot 2, each frame while loaded) where he is, his mode, in the game, in his own rooms, his time-away base (frames), his cooldown (s), down now (out of health: +0xC4 2)
 message stalker-summoned ( room exit found plan -- )  \ (a stalker) in out of sight in `room` by `exit`; found: after her; else waiting about, plan: heading for her
 message summoner-cooldown-is ( secs -- )      \ broadcast each frame by the summoner: its cooldown left, in seconds (the rooms' scripts)
 message animal-go ( sound x z -- )            \ (a rabbit, the cast) grazing where it is; off to (x, z) when one comes near (Kind26_MoveToB)

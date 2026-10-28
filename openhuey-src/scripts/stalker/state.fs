@@ -17,8 +17,6 @@ state: stalker-state
   cell field my-model           \ its model (an Actor)
   cell field in-game            \ in the game (stalker-in .. stalker-out)
   cell field my-mode            \ +0x16C8: stalker-mode (messages.fs: after her, heading for her room, searching it, waiting about, held off)
-  cell field beaten             \ (+0xC4 2) knocked out of health this time in the game: the summoner takes
-                                \ him for longer
   cell field my-floor           \ the floor he may walk (his kind's mask; 0 while the story's 0x20 has him through anything)
   cell field drawn-tri          \ the doll's triangle he is drawn to (its search stop; -1 none)
   cell field hp  cell field hp-max

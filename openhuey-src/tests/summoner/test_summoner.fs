@@ -60,13 +60,17 @@ variable expected  far? 0= expected !
 [: 4 my-mode ! ;] his  155 run-frames
 T{ in-game? -> expected @ }T
 
-testing in play: beaten (knocked out of health: +0xC4 2) away from her for 5 s, taken as beaten (kind 2)
+testing in play: down (knocked out of health: +0xC4 2) away from her for 5 s, taken as beaten (kind 2)
 0 story.kit:summon-take  2 run-frames
 [: 1 away ! ;] its  3 run-frames
 far? 0= expected !
-[: 3 my-mode !  -1 beaten ! ;] his  155 run-frames
+[: 3 my-mode !  down-cond cond ! ;] his  155 run-frames
 T{ in-game?  expected @ = -> -1 }T
 : taken-as ( -- kind )  expected @ if  2  else  [: took-kind @ ;] its  then ;   \ (still in: nothing to check)
 T{ taken-as -> 2 }T   \ (taken: as beaten)
+testing ... up again, no longer: what he tells is his condition now, not that he was beaten once
+0 story.kit:summon-take  2 run-frames  [: 1 away ! ;] its  3 run-frames
+[: down-cond cond ! ;] his  2 run-frames  [: well-cond cond ! ;] his  2 run-frames
+T{ [: s-beaten @ ;] its -> 0 }T
 
 test-summary

@@ -88,7 +88,7 @@ create figure-pck 32 allot   create figure-tex 32 allot
     0 script-held !  0 posed !  0 take-asked !  0 look-on !  -1 sm-who !  0e 0e 0e look-pt vec!  0 door-script !
     0 noclipped !  my-floor @ body-mask! ;
 : come-in ( room tri -- )
-    loaded @ 0= if  play-slot load  then  forget-leads  0 beaten !
+    loaded @ 0= if  play-slot load  then  forget-leads
     {: room tri :}
     room room-id = if  room tri dup tri-center body-place
     else  room -1 0e 0e 0e body-place  then                         \ (out of sight: in that room, nowhere yet)
@@ -106,7 +106,7 @@ create figure-pck 32 allot   create figure-tex 32 allot
 \ heading for her, without one off by an exit at random ----
 : status ( -- )
     in-game @ if  my-room  else  -1  then  my-mode @  in-game @ 0<>  in-game @ if  own-room?  else  false  then
-    away-base @  cool-secs @  beaten @  s" summoner" actor-named send stalker-status ;
+    away-base @  cool-secs @  cond @ down-cond =  s" summoner" actor-named send stalker-status ;   \ (down now: +0xC4 2)
 : summoned ( room exit found plan -- )
     {: room e found plan :}
     room -1 come-in  e came-by !  hp-max @ hp !   \ (a stalk afresh: his health full - beaten or worn, he was out a while)
@@ -252,7 +252,7 @@ $1300 constant gesture-anims
     endcase ;
 : activated ( -- )
     hewie-played? if  run-temper  then
-    forget-leads  0 beaten !  -1 making-for !  0 down-t !  waiting-about mode!  900 mode-t !  0 raging !
+    forget-leads  -1 making-for !  0 down-t !  waiting-about mode!  900 mode-t !  0 raging !
     hp @ 0> 0= if  hp-max @ hp !  then ;
 : unload ( -- )   \ (a scene's figure placed: out of the room too)
     0 loaded !  unheld  in-game @ if  go-out  else  body-off  my-model @ 0< 0= if  0 him act.visible l!  then  then

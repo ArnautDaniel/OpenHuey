@@ -21,7 +21,7 @@ state: summoner-state
   \ while loaded: 0 this frame, 1 the last - for the messages between frames; more: none loaded)
   cell field s-id  cell field s-room  cell field s-mode  cell field s-in  cell field s-own
   cell field s-away  cell field s-cool  cell field s-age
-  cell field s-beaten   \ (knocked out of health)
+  cell field s-beaten   \ (down now, out of health: +0xC4 2)
   \ Fiona's room and the exit she came in by; the danger
   cell field her-room  cell field her-exit  cell field the-danger
   \ working lists: the rooms near hers (SceneGame_RoomsNear), the ways in to pick from
@@ -145,7 +145,7 @@ create no-avoid 13 cells allot  no-avoid 13 cells 0 fill
         her-room @ s-room @ =  near-her? or if  0 waited !  false exit  then
     then
     1 waited +!
-    s-beaten @ waited @ 151 >= and if  taken-beaten take-him  true exit  then   \ (beaten: away from her 5 s)
+    s-beaten @ waited @ 151 >= and if  taken-beaten take-him  true exit  then   \ (down: away from her 5 s)
     s-mode @ held-off = waited @ 151 >= and if  taken-held-off take-him  true exit  then
     cooldown @ if  false exit  then
     s-mode @ waiting-about = waited @ 91 >= and if  taken-by-story take-him  true exit  then
