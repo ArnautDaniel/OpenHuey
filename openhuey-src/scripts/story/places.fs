@@ -2,6 +2,37 @@
 \ here replaces its room's converted scripts (story/rooms/).
 IN: story.places
 USING:
+    story.places.off-map-5a
+    story.places.off-map-37
+    story.places.off-map-27
+    story.places.off-map-36
+    story.places.off-map-35
+    story.places.off-map-34
+    story.places.off-map-33
+    story.places.off-map-e9
+    story.places.off-map-e8
+    story.places.off-map-e7
+    story.places.off-map-e6
+    story.places.off-map-e5
+    story.places.off-map-e4
+    story.places.off-map-e3
+    story.places.off-map-e2
+    story.places.off-map-e1
+    story.places.off-map-e0
+    story.places.off-map-d9
+    story.places.off-map-d8
+    story.places.off-map-d7
+    story.places.off-map-d6
+    story.places.off-map-d5
+    story.places.off-map-d4
+    story.places.off-map-d3
+    story.places.off-map-d2
+    story.places.off-map-d1
+    story.places.off-map-d0
+    story.places.off-map-c4
+    story.places.off-map-65
+    story.places.off-map-64
+    story.places.off-map-0d
     story.places.water-tower-8f-1
     story.places.water-tower-7f-2
     story.places.water-tower-7f-1

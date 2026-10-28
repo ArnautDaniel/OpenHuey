@@ -31,20 +31,21 @@ $1F constant deals-var
 : leaf-still ( a n -- )
     {: a n :}  a n placed-here? 0= if  exit  then
     0e a n swing-phase object!  0e a n swing-left object!  0.9e a n swing-pushed object! ;
-: leaf-push ( first? a n -- )   \ (her step, squared, adds up - past 1, 20 frames of swing; not while it swings hard)
-    {: first a n :}  a n placed-here? 0= if  exit  then
+: leaf-push ( first? id a n -- )   \ (its step, squared, adds up - past 1, 20 frames of swing; not while it swings hard)
+    {: first id a n :}  a n placed-here? 0= if  exit  then
     a n swing-left object@ 8e f> if  exit  then
-    her-step fdup f* a n swing-pushed object+!
+    id step-of fdup f* a n swing-pushed object+!
     a n swing-pushed object@ 1e f> 0= if  exit  then
     20e a n swing-left object!  0e a n swing-pushed object!
-    first if  rustled @ 0= dup rustled !  if  rustle-2-sound  else  rustle-sound  then  room-bank fiona sound-by  then ;
+    first if  rustled @ 0= dup rustled !  if  rustle-2-sound  else  rustle-sound  then  room-bank id sound-by  then ;
 : leaf-swing ( a n -- )   \ (a frame of its swing: on 36 degrees, tilted 1 + sin of it)
     {: a n :}  a n placed-here? 0= if  exit  then  a n swing-left object@ f0> 0= if  exit  then
     a n swing-left object@ 1e f- 0e fmax a n swing-left object!
     36e a n swing-phase object+!  a n swing-phase object@ 360e f< 0= if  -360e a n swing-phase object+!  then
     a n swing-phase object@ deg>rad fsin 1e f+ deg>rad  fdup pi f> if  2e pi f* f-  then  a n turn-x object! ;
 : leaves-still ( -- )  3 0 do  i hanging leaf-still  loop ;
-: leaves-pushed ( -- )  3 0 do  i 0=  i hanging leaf-push  loop ;
+: leaves-pushed-by ( id -- )  {: id :}  3 0 do  i 0=  id  i hanging leaf-push  loop ;   \ (by whoever pushes through)
+: leaves-pushed ( -- )  fiona leaves-pushed-by ;
 : leaves-swing ( -- )  3 0 do  i hanging leaf-swing  loop ;
 
 \ ---- the bush to crouch in (rooms 4 .. 7): where it is, the exit the stalker comes by to search it,
@@ -52,22 +53,23 @@ $1F constant deals-var
 0 constant bush-group   4 constant hauled-anim
 fvariable bush-x   fvariable bush-z   variable bush-exit   variable bush-var
 variable find-tri   variable find-deg   fvariable find-x   fvariable find-z
+variable bush-floor   \ (its floor's flag while she's in: no one stands there - the run's $D6, the spirits keep off)
 : bush ( exit var tri deg F: x z fx fz -- )
-    find-z f!  find-x f!  bush-z f!  bush-x f!  find-deg !  find-tri !  bush-var !  bush-exit ! ;
+    find-z f!  find-x f!  bush-z f!  bush-x f!  find-deg !  find-tri !  bush-var !  bush-exit !  solid-floor bush-floor ! ;
 : in-bush? ( -- flag )  fiona bush-x f@ bush-z f@ 5e centre-across? ;
 : from-his-way? ( -- flag )  bush-exit @ stalker-came-by? ;   \ (he came by the bush's side)
 : out-of-bush ( -- )
-    stalkers-stay state!  fiona false noclip  stalkers-stay state-off  bush-group solid-floor floor-off ;
+    stalkers-stay state!  fiona false noclip  stalkers-stay state-off  bush-group bush-floor @ floor-off ;
 : hauled-from-bush ( -- )   \ (found, or panicking: up and out, her eyes on him)
     found-her @ if  2 avoid-prompt  then
     fiona-hidden state-off  fiona follow  stalkers-stay state!
     fiona stalker look-at  yield  fiona hauled-anim $14 play-blend  fiona -1 look-at  yield  out-of-bush ;
 : in-the-bush ( -- )
-    fiona hold  stalkers-stay state!  bush-group solid-floor floor-on  0 came-while-hidden !  fiona true noclip  0 found-her !
+    fiona hold  stalkers-stay state!  bush-group bush-floor @ floor-on  0 came-while-hidden !  fiona true noclip  0 found-her !
     fiona wait-move  fiona crouch-down-anim play  fiona crouching-anim start-anim
     fiona-hidden state!  stalkers-stay state-off  0 avoid-prompt
     begin
-        circle button-pressed? if
+        wants-out? if
             fiona-hidden state-off  fiona follow  stalker let-go
             chased? if  hauled-from-bush exit  then
             stalkers-stay state!  fiona crouch-up-anim play  out-of-bush exit

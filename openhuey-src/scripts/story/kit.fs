@@ -91,6 +91,7 @@ state: place-state
   2 cells field word-vars       \ the word plate's letters, as items.fs hands them (item-var 0 and 1: four bytes each)
   cell field came-while-hidden  \ ... he came in while she hid (gone again: the prompt anew)
   cell field hewie-came-now   \ the exit Hewie came in by (hewie-came; -1 none)
+  cell field gesture-now      \ Hewie's gesture this frame, while he is the one played (hewie-gesture; -1 none)
   cell field st-blow-now      \ the stalker's blow under way (stalker-blow; -1 none)
   cell field ambient-step  cell field ambient-frames   \ the room's four ambient sounds in turn: which next, frames to it
   #own cells field own
@@ -231,6 +232,7 @@ create mv-at /vec allot
 : on-floor-of? ( id flags -- flag )   \ standing on a triangle with any of these flags
     over here? 0= if  2drop false exit  then  swap body-tri dup 0< if  2drop false exit  then  nav-flags and 0<> ;
 : throws-her ( id -- )  false fiona send throw-down ;   \ she is thrown down by it
+: stands-on? ( id tri -- flag )  over here? 0= if  2drop false exit  then  swap body-tri = ;   \ (standing on that triangle)
 : put-on-tri ( id tri -- )   \ put on its middle at once, its heading kept
     {: id tri | F: x F: y F: z :}  tri tri-center to z to y to x
     x f>cell y f>cell z f>cell id body-yaw f>cell  id send place ;
@@ -315,6 +317,7 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 : follow ( id -- )  cam-on ;
 : player ( -- id )  hewie-played? if  hewie  else  fiona  then ;   \ (the one played)
 : player-camera ( set path -- )  player -rot camera-set  player follow ;
+: played-gesture ( -- g )  hewie-played? if  gesture-now @  else  fiona-cmd-now @  then ;   \ the one played's command this frame (-1 none: the rooms' control-action?)
 : exit-camera ( exit set path -- )   \ whoever is inside the exit's area takes that camera (as they come in)
     {: ex set path :}  #people 0 do  i person-id dup ex exit-area in-area? if  set path camera-set  else  drop  then  loop ;
 : her-camera ( set path -- )  fiona -rot camera-set  fiona follow ;   \ (her setup, and the camera on her)                                \ the camera follows who
@@ -373,6 +376,9 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
     dup 0< if  drop $FFFF  then  scene-running scene-step !  scenes send scene-run-through
     begin  scene-step @ scene-running = while  yield  repeat  0 cue-xt ! ;
 : at-shots ( xt -- )  cue-xt ! ;
+: scene-shot? ( shot -- flag )  cutscene-frame cutscene-shot-at = ;   \ (the scene's frame at that shot's start: cond 0x4A)
+: scene-at? ( frame -- flag )  cutscene-frame swap < 0= ;            \ (the scene that far: its cue reached, cond 0x38)
+: scene-near-end? ( -- flag )  cutscene-near? ;                       \ (cond 0x40)
 : signal-passed? ( k n -- flag )   \ the scene's signal k, counted, passing its nth this frame (the original's cond 0x3B)
     over cutscene-signals dup 0> 0= if  drop 2drop false exit  then     ( k n new )
     rot cutscene-signal-total                                          ( n new total )
@@ -446,6 +452,20 @@ $26 constant costume-var   $27 constant coat-var   $28 constant costume-worn-var
     bare-feet? if  new-game-sounds state!  1  else  new-game-sounds state-off  0  then  sound-set! ;
 : steps-in ( -- )  begin  yield  steps-bank sound-loaded? until ;   \ (the step sounds of the new set in)
 : coat ( kind -- )  dup coat-var var!  hewie send hewie-costume ;
+\ the costume menu (the sub screen's mode 7) closed: what she chose put on - the room's sound
+\ (snd) if anything changed - her new steps in, a moment idle; his coat, posed (lying hurt, or as he
+\ stands)
+7 constant costume-menu
+$2100 constant coat-pose-1   $1F00 constant coat-pose-2   $2000 constant coat-pose-3   \ ? his poses played as his coat changes
+: hewie-recoated ( -- )
+    hewie here? 0= if  exit  then
+    hewie-cond-now @ down-cond = if  hewie.anims:down-anim hewie send hewie-play exit  then
+    hewie.anims:sit-anim hewie send hewie-play  coat-pose-1 hewie send hewie-play
+    coat-pose-2 hewie send hewie-play  coat-pose-3 hewie send hewie-play ;
+: clothes-changed ( snd -- )
+    costume-var costume-worn-var var-same? 0=  coat-var coat-worn-var var-same? 0= or if  room-bank fiona sound-by  else  drop  then
+    costume-var costume-worn-var var-same? 0= if  costume-var var@ dress  steps-in  fiona -1 idle  7 frames  then
+    coat-var coat-worn-var var-same? 0= if  coat-var var@ coat  hewie-recoated  then ;
 
 \ ---- Hewie ----
 : hewie-in? ( -- flag )  hewie here? ;
@@ -629,12 +649,24 @@ $8000 constant room-motion
     dup doors:door-locked? if  drop false exit  then  doors:opened-bit doors:has? ;
 : fiona-free? ( -- flag )   \ (on her own or down, nobody holding her)
     fiona-mode-now @ dup own-mode = swap down-mode = or  fiona-p holder-of @ 0< and ;
-: exit-out ( exit -- )   \ (each frame: she goes when she can)
-    {: ex :}  fiona-free? 0= if  exit  then
-    fiona ex exit-area in-area? 0= if  exit  then
+: fiona-idle? ( -- flag )   \ (Fiona_IsIdle: on her own, not pushing, in a panic attack or out of breath; not in a panic)
+    fiona-mode-now @ own-mode =  fiona-doing-now @ dup attack-doing = over push-doing = or swap breathless-doing = or 0= and
+    in-panic? 0= and ;
+: own-pace? ( -- flag )   \ (the one played: Fiona moving on her own or down, Hewie at his own pace)
+    hewie-played? if  hewie-mode-now @ 0=  else  fiona-mode-now @ dup own-mode =  swap down-mode = or  then ;
+: player-free? ( -- flag )  own-pace?  player held? 0= and ;   \ (and nobody holding them)
+: player-kind ( -- kind )  hewie-played? if  hewie-kind  else  fiona-kind  then ;
+: passable? ( exit -- flag )   \ (its door not locked against the one played; no door: not)
+    exit-door dup 0< if  drop false exit  then  player-kind doors:locked-against? 0= ;
+: exit-checked ( exit -- )   \ (the rooms' exit check: its door not locked, passable, the one played at their own pace)
+    {: ex :}  ex exit-door doors:door-locked? if  exit  then
+    ex passable? 0= if  exit  then  own-pace? 0= if  exit  then  ex take-exit ;
+: exit-out ( exit -- )   \ (each frame: the one played goes when they can - free, in its area, its door open, not held)
+    {: ex :}  player-free? 0= if  exit  then
+    player ex exit-area in-area? 0= if  exit  then
     ex exit-open? 0= if  exit  then
     ex exit-held? if  exit  then
-    ex take-exit ;
+    ex exit-checked ;
 : light-doorway ( F: x0 y0 z0 .. x3 y3 z3 -- )  light-blocker ;   \ (this frame: the characters' shadows kept off where the wall shades)
 
 \ ---- characters, wholesale ----
@@ -1029,9 +1061,8 @@ $88 constant shatter-sound   $40 constant shatter-loudness   $80303030 constant 
 : cameras-at ( table n -- )   \ (area set path, three cells a camera)
     0 ?do  dup i 3 * cells +  dup @  over cell+ @  rot 2 cells + @  area-camera  loop  drop ;
 : exits-out ( n -- )  0 ?do  i exit-out  loop ;   \ (she goes by any of the first n when she can)
-: leaves-by ( area exit -- )   \ (the one played, in the area, free: through - the rooms' exit-check by an area)
-    {: area ex :}  player held? if  exit  then  player area in-area? 0= if  exit  then
-    ex exit-open? 0= if  exit  then  ex exit-held? if  exit  then  ex take-exit ;
+: leaves-by ( area exit -- )   \ (the one played, in the area, not held: through - the rooms' exit-check by an area)
+    {: area ex :}  player held? if  exit  then  player area in-area? 0= if  exit  then  ex exit-checked ;
 : way-out ( area exit -- )  swap fiona swap entered? if  prepare-exit  else  drop  then ;
 : ways-out ( table n -- )   \ (area exit: crossing into the area, the room behind that exit loaded ahead)
     0 ?do  dup i 2* cells + @  over i 2* 1+ cells + @  way-out  loop  drop ;
@@ -1111,12 +1142,12 @@ $84 constant calmed-sound   $40A8 constant recovery-doc-msg   $A8 constant recov
 : hid-motion ( i -- anim )  room-motion + ;
 : hauled-out ( -- )
     found-her @ if  2 avoid-prompt  then
-    fiona follow  fiona true shown  fiona-hidden state-off  fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by
+    hewie-played? 0= if  fiona follow  then  fiona true shown  fiona-hidden state-off  fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by
     fiona 3 hid-motion 10 play-blend  fiona false noclip
     found-her @ 0= if  stalker let-go  then ;
 : slips-out ( -- )
     stalker-in? if  hauled-out exit  then
-    fiona follow  fiona true shown  fiona-hidden state-off  fiona true noclip
+    hewie-played? 0= if  fiona follow  then  fiona true shown  fiona-hidden state-off  fiona true noclip   \ (in the run the camera stays on Hewie)
     fiona 2 hid-motion 5 start-blend8  5 frames  fiona.sounds:slide-sound common-bank fiona sound-by  fiona wait-anim
     fiona false noclip ;
 variable hide-unseen   \ (the hiding place next: she isn't drawn while in it - hides-in clears it)
@@ -1124,6 +1155,8 @@ variable hide-unseen   \ (the hiding place next: she isn't drawn while in it - h
 variable hide-shriek   -1 hide-shriek !   \ (the hiding place next: that sound, -1 none - hides-in clears it)
 : mandragora? ( -- flag )  false  $1D $18 do  i items:items-of 0> or  loop ;   \ (the White .. Purple Mandragora)
 : shrieks ( -- )  hide-shriek @  -1 hide-shriek !  dup 0< mandragora? 0= or if  drop exit  then  room-bank fiona sound-by ;
+: wants-out? ( -- flag )   \ (hidden: the circle button - in the run, Hewie's next command)
+    hewie-played? if  played-gesture -1 <>  else  circle button-pressed?  then ;
 : hides-in ( file tri deg cam F: x z -- )   \ (her motions' file; where she slips in from, facing it; the
     {: file tri deg cam F: x z :}           \ room's camera set while she's in, -1 hers kept)
     stalkers-stay state!  0 came-while-hidden !  fiona file motions-for  fiona wait-move  fiona use-motions
@@ -1135,7 +1168,7 @@ variable hide-shriek   -1 hide-shriek !   \ (the hiding place next: that sound, 
     cam 0< 0= if  cam -1 fixed-camera  then   \ (the room's own, following nobody: the original's self-who)
     hide-unseen @ if  fiona false shown  0 hide-unseen !  then
     begin
-        circle button-pressed? if  slips-out exit  then
+        wants-out? if  slips-out exit  then
         in-panic? found-her @ or if
             in-panic? 0= if  fiona.sounds:seized-sound common-bank fiona sound-by  then  hauled-out exit
         then
@@ -1456,7 +1489,7 @@ behaviour placing
       -1 going !  -1 shown-msg !  #people 0 do  -1 i holder-of !  -1 i cells move-done + !  loop   \ (none held, none moving)
       self subscribe tick  self subscribe frame-end  self subscribe moving  self subscribe danger
       self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing
-      self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe stalker-blow  -1 st-blow-now !
+      self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe hewie-gesture  -1 gesture-now !  self subscribe stalker-blow  -1 st-blow-now !
       self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
       self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
       self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe item-var  self subscribe fiona-shakes  0 shakes-now !  self subscribe noise-was  0 loud-now !  self subscribe keri-fell  0 fell-now !  self subscribe summoner-cooldown-is  -1 summoner-secs-now !
@@ -1497,6 +1530,7 @@ behaviour placing
       {: slot room mode up :}  slot 0 #creatures within 0= if  exit  then
       room slot cells cr-room + !  mode slot cells cr-mode + !  0 slot cells cr-age + !  sender slot cells cr-id + ! ;
   on panic ( stage level -- )  cell>f f>s panic-level-now !  panic-stage ! ;
+  on hewie-gesture ( g -- )  gesture-now ! ;
   on fiona-doing ( mode sub cond cmd doing -- )  fiona-doing-now !  fiona-cmd-now !  drop  fiona-sub-now !  fiona-mode-now ! ;
   on fiona-struck-by ( who -- )  struck-by-now ! ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )

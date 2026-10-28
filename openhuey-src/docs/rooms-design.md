@@ -209,6 +209,15 @@ says what happens, and nothing in it can leave Fiona stuck.
   tremors, the holes in the walls, the Sol Key).
 - The Water Tower: all done (water-tower-1f-1, -2f-1, -4f-1, -7f-1, -7f-2, -8f-1); what 2F and 4F share
   in story/places/walkway.fs (the turning walkway).
+- The off-map rooms: all done - the clock run ($D0 .. $D9, $E0 .. $E9; what they share in
+  story/places/clock-run.fs), the ending scenes ($33 .. $36), the garden's hidden room ($27), the
+  extras room ($37), $0D, $65; $64, $C4 and $5A have no data on the disc (never entered: their
+  places written, their tests only that they are there). Every room is now a place.
+- Fixed on the way: the kit's exits went by Fiona and by the door being open; the rooms' exit-check
+  goes by the one played (Hewie in the run), the door not locked, passable from their side, at their
+  own pace (`exit-checked`; `exit-out`, `leaves-by`). A hiding place in the run is left at Hewie's
+  next command, the camera kept on him (`wants-out?`). story/clock.fs keeps the run's saved time
+  itself (no event variables).
 - Fixed on the way: the actors' ids now go round (hactor.c's spawn: the next free one after the last
   given) - a place's effect slot held a glow that had died, its id reused at once by the next room's
   place, and the old place's clean-up killed the new one (7F-2 dead after the planets' scene); kit's
@@ -227,6 +236,10 @@ says what happens, and nothing in it can leave Fiona stuck.
 - Fixed on the way: the rooms' `point-on-camera?` (cond 0x4F) is the camera's out-of-view test, so
   their `point-on-camera? not` is the point on the screen (`point-seen?`) - the places converted
   before had it the other way (Hewie's errands, the thicket and hole hideouts, front-garden-5's ways).
+- Open from the off-map rooms: a forced exit with nothing loaded ahead - the original's two room
+  slots swap (SceneGame_LeaveRoom), so it goes back to the room left; rooms.fs doesn't keep that room
+  (keeping it broke the mini-game's way out, which OpenHuey's menu leaves to exit 0's door), so $27's
+  way out ($FE) and $35's "Wait up" replay go nowhere yet - as with the converted scripts.
 - Open from them: in castle-b1-2 her walk from the locked door's spot to its knob ($95) never
   arrives (her second try, "grimy handprints"); in castle-b1-7 no test spot was found where her
   request at the blocked door is made (its remark untested); castle-b1-1's step-in scene tested

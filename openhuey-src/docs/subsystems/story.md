@@ -240,6 +240,30 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   `time-up-leaves` (Riccardo taken off when his time is up out of her sight), `creature-slot-in`,
   `hewie-side`, `grab-ready?` / `grab-forget` (his last answer to the grab from behind, kept),
   `far-clip`, `gs-tint` (the rooms' char-tint colour).
+- the off-map rooms (every room a place): the clock run - `story/places/clock-run.fs` what its
+  twenty rooms share ($D9 .. $D0 the forest's, $E0 .. $E9 the castle's: their rooms again, Hewie the
+  one played, Fiona following): the clock shown each frame (`story/clock.fs` - its saved time kept
+  by it now, `clock-draw-saved` given whether to show it), Hewie's ways ahead (`his-ways`,
+  `his-way-back`), exits by their areas (`by-areas`), the run set out in $D9 / $E0 (`run-begins`,
+  `music-taken`, `run-stage`), its goal in $D0 / $E9 (`at-goal`, `run-over`: the time kept, the
+  results' menus, out to the extras room), the castle's hiding places in the run (`hide-cue?`:
+  Fiona slips in at Hewie's command as he stands by one; `run-searches`, `run-finds-her`; left
+  behind, `left-hidden`). The forest's copies use `story/places/forest.fs` (its wisp, rabbit and
+  bush - the bush's floor flag now `bush-floor`, the leaves pushed by anyone: `leaves-pushed-by`).
+  The ending scenes ($33 the ending D, $34 Lorenzo's, $35 the three with Hewie, $36 the ending A,
+  each with its replays), the garden's hidden room ($27: the topping-up machine, the slot machine's
+  jewellery, the book, the chests of clothes), the extras room ($37: the corners named on the floor
+  - `show-text` straight to the window, not the place's message, so the action still works - the
+  theatre, the mini-game's challenges with their first rooms, the galleries, the changing area, the
+  exit; in from the title, back from a replay, back from the run), and $0D, $65 (its data has no
+  exits), $64, $C4 and $5A (no data on the disc: never entered). Kit: exits by the one played
+  (`player-free?`, `own-pace?`, `player-kind`, `passable?`, `exit-checked` - the rooms'
+  exit-check: not locked, passable from their side, at their own pace; `exit-out` and `leaves-by`
+  now go by it), Hewie's gesture while played (`gesture-now`, `played-gesture`; `wants-out?` - a
+  hiding place left at his next command), `fiona-idle?` (Fiona_IsIdle), `stands-on?`,
+  `scene-shot?` / `scene-at?` / `scene-near-end?` (a scene's shot, cue, end), `clothes-changed`
+  (the costumes' menu closed: what she chose put on, his coat posed - `hewie-recoated`, from the
+  bedroom).
 
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
 after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
