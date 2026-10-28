@@ -242,7 +242,13 @@ recovery past $1C3: (3150 - recovery) / 1800 x 1.5 - and the more frightened - f
 wall between her and her hand (the walk from her triangle to it, over flags $20018: Actor_TriTo)
 it ends: blended into standing over 10 (Motion_PlayWith flags $101), and once that has faded
 in Hewie is told (`reaction` 10, unless she struck him) and she stands - the shove's own end
-tells him nothing. The kick ($E01: her cry $3D, a step of 1.0756 a frame while it fades in)
+tells him nothing. *By design* (the user's call, 2026-10-28 - not the original's): her shove
+animation has next to no root step, so a step back left her short of him; she lunges 12 ahead
+over its first 30 frames (x its pace), until a blow lands, and the stalker is struck whenever her
+hand reaches him or she touches him (1 round) - from the frame she sets off, not only at its key.
+Met before the key, the shove goes on from it (frame 18), so the rest of it leaves her no more
+open to him than the original's. Hewie is struck at the key alone. Reach, him still: the
+original's up to 16 apart, now 26. The kick ($E01: her cry $3D, a step of 1.0756 a frame while it fades in)
 meets whom she touches while its key is clear: a `blow` 2, damage 5, he may stumble (`how` 1:
 rolled by him); at its end her fear up 10. Each reaches the stalker and Hewie once a blow;
 struck home (`blow-taken`) she's held still 5 frames ($90 kicked, $8F shoved). Hewie is told
