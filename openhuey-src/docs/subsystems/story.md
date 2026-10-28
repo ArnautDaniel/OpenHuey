@@ -208,8 +208,11 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   bedroom).
 
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
-after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
-while she is half hidden, the mandragora's spell, the other game's rewards, searching the
+after their phases and for item uses - crouching ($81 / $82 / $87: found, and startled, when the
+stalker in her room has her in sight or reach and is within 70 of her - the story's cond 0x23 from
+her to a stalker asks his +0x1544, `noticed-near?` on `stalker-sees`; only near is not found, and
+L1 near him only turns her head to him once he has her), the camera on the stalker while she is
+half hidden, the mandragora's spell, the other game's rewards, searching the
 stalker ($80, offered by the shared after-phase 2: down on his front - $1806 or its twitch
 $1805, Pursuer_InStance2Anim, the converted rooms' cond 0x4B - she close, 2 more than their
 sizes, and facing him within 50 degrees; she bends to him and finds the next of his kind's

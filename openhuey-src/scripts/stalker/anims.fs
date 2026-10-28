@@ -39,6 +39,7 @@ $1005 constant flinch-door-low-anim   \ (also staggered back from a door)
 $1006 constant powdered-anim       \ his hands to his face
 \ ---- searching (Pursuer_StateWalkGesture) ----
 $1302 constant look-about-anim   $1303 constant look-about-2-anim   $1305 constant look-about-3-anim
+$1A00 constant glance-round-anim     \ closing on her and she out of reach: a look round (Pursuer_StateLookAround)
 \ ---- standing about ($1600 ..) ----
 $1600 constant stand-about-anims
 $1601 constant there-anim          \ seeing her anew

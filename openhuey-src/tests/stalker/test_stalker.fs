@@ -1,7 +1,7 @@
 \ The stalkers, P1: Debilitas in the house (docs/subsystems/stalker.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_stalker.fs
 IN: test-stalker
-USING: stalker-names tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.head stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam story.base ;
+USING: stalker-names tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.head stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam story.base stalker.names stalker.pursue ;
 fvariable dx  fvariable dy  fvariable dz  fvariable dyaw
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
@@ -50,7 +50,7 @@ testing ... his head looks at her (look mode 1): turned toward her, his sight wi
 40e there  [: 0.4e yaw f+ body-turn  1 stalker.state:look-mode ! ;] his  1 run-frames
 T{ [: head-yaw f@ fabs 0.05e f>  view-heading f@ yaw head-yaw f@ f+ angle-wrap f- fabs 0.01e f< ;] his -> -1 -1 }T
 testing ... but one step (8 degrees) at most: his Think eases it back each frame before his HeadLook
-[: 1 stalker.state:look-mode ! ;] his  10 run-frames
+[: 1 stalker.state:look-mode ! ;] his  1 run-frames   \ (a frame: going after her he turns, his head with him)
 T{ [: head-yaw f@ fabs 8e deg>rad f- fabs 0.001e f< ;] his -> -1 }T
 testing his head bones by his model (+0x8B0 / +0x8B4): Debilitas's $16 / $F; the tinted ones' (Kind23Model) $23 / $1A
 T{ [: head-bone @ neck-bone @ ;] his -> $16 $F }T
@@ -170,8 +170,8 @@ testing seized (P2b): taken by the hand - led to his side, dragged; six drags an
     game:gameover enter  -1 gameover:step !  leave-actor
     0 still!  panic-held state-flag-clear  world-held state-flag-clear ;
 variable take-type
-: be-taken ( type -- )   \ (face to face; then he takes her)
-    take-type !  face-off  [: chase-now  take-type @ take-her ;] his ;
+: be-taken ( type -- )   \ (face to face, no way of his left to walk on; then he takes her)
+    take-type !  face-off  [: chase-now  my-path path-clear  take-type @ take-her ;] his ;
 : led? ( -- flag )  [: her-led @ ;] hers ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
 300 up drop  6 be-taken
@@ -194,6 +194,44 @@ testing carried off walking: at its end the game's over
 8 be-taken
 T{ ' led? 60 soon  ' over? 600 soon -> -1 -1 }T
 unover  debug:debilitas-out  10 run-frames  [: free! 0 her-mode ! ;] hers
+testing ... taking her, he looks once as his stand fades in (Pursuer_CloseOnFiona): not facing her
+testing ... (20 degrees) or out of reach (20), she isn't taken - a look round ($1A00, action $16)
+: looked-round? ( -- flag )  [: chase-act @ look-around-act =  anim @ $1A00 = and ;] his ;
+: take-turned ( -- )   \ (face to face, him turned 90 degrees off her)
+    face-off  [: chase-now  my-path path-clear  yaw 90e deg>rad f+ body-turn  by-the-hand take-her ;] his ;
+take-turned
+T{ ' looked-round? 60 soon  led? -> -1 0 }T
+: take-far ( -- )   \ (face to face, her 25 off)
+    face-off  340e deg>rad fsin 25e f* dx f@ f+  dy f@  340e deg>rad fcos 25e f* dz f@ f+  160e tp-facing  2 run-frames
+    [: chase-now  my-path path-clear  by-the-hand take-her ;] his ;
+take-far
+T{ ' looked-round? 60 soon  led? -> -1 0 }T
+testing her panic calming down, his chase is the Pursuer's (Debilitas_ChaseDecision: progress $7B8 at 5)
+\ (her stage as he was told it: the panic tells it again each frame)
+face-off
+T{ [: calming-down her-stage !  chase-begin  stalker.state:step @ ['] pursue-run = ;] his -> -1 }T
+T{ [: composed her-stage !  chase-begin  stalker.state:step @ ['] chase-run = ;] his -> -1 }T
+testing round her, her past 100 off: he stalks her (Debilitas_Chase $1A, his chase table's eighth)
+T{ [: chase-now  round-her  150e d-fiona f!  chase-run  chase-act @ stalk-act =  hold-t @ seen-near stalk-frames = ;] his -> -1 -1 }T
+testing ... and in his own chase, at a step's end (Debilitas_Chase: his next free)
+T{ [: chase-now  calming-down her-stage !  chase-run  stalker.state:step @ ['] pursue-run = ;] his -> -1 }T
+testing crouched (L1) with him in her room 25 off, his back to her: not found while he hasn't her in
+testing ... sight or reach - the story's cond 0x23 from her to him asks his +0x1544; he turns, finds her: startled
+\ (a script has him, so he stays put; his senses go on)
+: crouched? ( -- flag )  fiona-half-hidden state-flag? ;
+: behind-him ( -- )   \ (him facing 160 degrees, her 25 behind him)
+    face-off  [: -1 script-held !  160e deg>rad body-turn ;] his
+    340e deg>rad fsin 25e f* dx f@ f+  dy f@  340e deg>rad fcos 25e f* dz f@ f+  160e tp-facing  5 run-frames ;
+fvariable kept-yaw
+: facing ( n F: deg -- )   \ (n frames, him kept facing so)
+    deg>rad kept-yaw f!  0 ?do  [: kept-yaw f@ body-turn ;] his  game-tick  loop ;
+no-flee state-flag-clear  behind-him
+key: Q true key-hold  60 160e facing
+T{ crouched?  [: sees-fiona @ ;] his -> -1 0 }T
+30 340e facing
+T{ [: sees-fiona @ ;] his  crouched? -> -1 0 }T
+key: Q false key-hold  [: 0 script-held ! ;] his  120 run-frames
+debug:debilitas-out  10 run-frames
 testing seized outright (a kind 3 hold): held, at its key the game's over
 s" fiona" actor-named body-tri debug:debilitas-tri  2 run-frames
 T{ [: 3 0 30e f>cell stalker.senses:fiona send hit ;] his  3 run-frames  her-sub? -> $10 }T

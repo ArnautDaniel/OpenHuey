@@ -29,7 +29,7 @@ $23 constant drink-sound   $2D constant crouch-recovery
     unseen-now @ if
         fiona stalker touching?  st-cond-now @ down-cond <> and  near-homunculus? or  in-panic? or exit
     then
-    chased?  stalker-in? and  fiona stalker 70 close-to? and  in-panic? or ;
+    chased?  stalker-in? and  70e noticed-near? and  in-panic? or ;   \ (found: he has her in sight or reach)
 : startled ( -- )   \ ($82: up, seized, turned to him)
     fiona-half-hidden state-off  fiona follow  16 frames
     fiona stalker look-at  yield
@@ -53,7 +53,7 @@ $23 constant drink-sound   $2D constant crouch-recovery
     fading @ 0= and  world-held state? 0= and  world-frozen state? 0= and ;
 : crouching ( -- )
     may-crouch? 0= if  exit  then
-    chased?  tremor-warned-2 fact? 0= and  fiona stalker 70 close-to? and if  stalker 30 head-on exit  then   \ (too near him: she only looks)
+    chased?  tremor-warned-2 fact? 0= and  70e noticed-near? and if  stalker 30 head-on exit  then   \ (found and near him: she only looks)
     fiona low-floor on-flags? if  ['] ducks  else  ['] crouches  then  start drop ;
 
 \ ---- the rest of what every room does each frame ----

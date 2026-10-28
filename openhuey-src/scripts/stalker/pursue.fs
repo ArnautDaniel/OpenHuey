@@ -65,7 +65,9 @@ USING: engine game-state actors messages common facts flag-names paths stalker.a
     then
     pick-pace ;
 
-\ the chase begins by his own: Debilitas's, or the Pursuer's
+\ the chase begins by his own: Debilitas's, or the Pursuer's - Debilitas's too while her panic is
+\ calming down (Debilitas_ChaseDecision)
 :noname ( -- )   \ (his own: Riccardo's)
-    own-chase @ ?dup if  execute exit  then  base-chase @ if  pursue-now  else  chase-now  then ; is chase-begin
+    own-chase @ ?dup if  execute exit  then
+    base-chase @  her-stage @ calming-down = or if  pursue-now  else  chase-now  then ; is chase-begin
 :noname ( -- flag )  step @ dup ['] chase-run =  over ['] pursue-run = or  swap own-run @ = own-run @ 0<> and or ; is chasing?

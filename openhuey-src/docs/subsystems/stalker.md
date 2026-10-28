@@ -164,7 +164,11 @@ stands (`fiona-plight`: 0 calm, 1 fleeing, 2 panicking, 4 / 5 the panic's stages
 reach - none). Rows: a combo ($13), a taunt ($17..$19: his gesture table), round her ($1A /
 $1B: 5 degrees a step at his distance, the way she isn't facing; 30 of it or 120 frames),
 taking her ($14 by the hand, $15 walking), his lunge ($1002), his grab ($1003). After a combo his table 12
-(it struck her) or 13 (taunts), held off 90 frames if it struck her, else 30.
+(it struck her) or 13 (taunts), held off 90 frames if it struck her, else 30. Round her ($1A), or
+his third taunt ($19) with its gesture's flag, her more than 100 off: stalking her for his chase
+table's eighth (seen near). Her panic calming down (the panic's stage 5) his chase is the
+Pursuer's (Debilitas_ChaseDecision: `stalker/pursue.fs`) - as it begins, and at the end of any
+step of his own chase that leaves him free to attack.
 
 **The attacks** (`stalker/attack.fs`): a combo is up to 4 moves; each needs her within 50 (or
 the ground he gains; a hold any distance). A blow ($E00..$E03, $205: kind 2 knocks her down, 4
@@ -200,10 +204,16 @@ he lies his whole time down. Searched with no gift due (`stalker-down-over`, the
 his time down is over. The others never do (Pursuer_GivesUp: kinds 7 and 27 too).
 
 **Taking her** (P2b, `stalker/grab.fs`; Pursuer_StateFaceFiona / StateWalkOn, Pursuer_CloseOnFiona):
-her floor not free for him (flags $80001) - his attack tables 6 / 7 instead (7 from the panic's
-stage 4). Else he closes on her; within 20, facing her within 20 degrees, he asks her (`seize`:
-6 by the hand, 8 walking) - she may not be had (out of reach, the stalkers blind): his table for
-being near her (3); given up after 120 frames. Refused (`seize-refused`): his attack tables.
+he walks on along his way while his motion fades in (Pursuer_WalkOn) - by the hand, then his
+stand fading in too, turning to her meanwhile - and then looks once: she on a ladder, his attack
+tables; within 20 and facing her within 20 degrees (Debilitas_ReachFiona, Debilitas_AttackAngle:
+vtable +0x2E4 / +0x2EC) - she may not be had (out of reach, the stalkers blind): his table for
+being near her (3); her floor not free for him (flags $80001): his attack tables 6 / 7 (7 from
+the panic's stage 4); else he asks her (`seize`: 6 by the hand, 8 walking). Not within 20 or not
+facing her: a look round ($1A00, action $16 - Pursuer_StateLookAround: a fright of 20,
+Pursuer_ThreatAmount). Refused (`seize-refused`): his attack tables. (He decides at about the
+ground he gains - 16 and his next 5 frames' strides - so a take from 15 or so off is the
+original's: she is led to her spot by him a fifth of the way a frame, Fiona's led_step.)
 Taken by the hand: his taunting hold - $1900, then $1901 again and again, a fright to her
 each time (10 the first, 5 after); she breaks free (`broke-free`) - he lets go ($1903, held off
 90); the sixth - he holds on ($1904) while she's dragged off. Taken walking: his grab ($1A01),
@@ -227,7 +237,9 @@ seized outright). His grab ($E06): at its key, Hewie by his hand (bone $1E, with
 Also (2026-10-13): the doll draws him (`drawn-to`: searching the room being played, seeing it and
 with a way there - his search's one stop, `go-for-doll`); the story's 0x20 through blocked floor
 at doors (`noclip`: his floor mask, `my-floor`, to 0 and back); his blow under way told
-(`stalker-blow`, after `stalker-doing`); a door that won't open for him shakes the pad ($80, 15).
+(`stalker-blow`, after `stalker-doing`); whether he has her in sight or reach (`stalker-sees`, +0x1544:
+the story's cond 0x23 from her to him asks it - her crouch, the hiding places' "found"); a door
+that won't open for him shakes the pad ($80, 15).
 Leads (`stalker/leads.fs`; the original's +0x16C9..+0x16CC): a noise heard in the room being
 played pulls him to it when it pulls at least as hard as the lead he follows (`pull-fiona` 5,
 `pull-noise` 4, `pull-hewie` 1); a noise already in view is ignored; his alarm is kept at its
@@ -279,7 +291,7 @@ the hard setting and her rage), her throws off Hewie (moves 11 / 12), Hewie's gr
 reach for Hewie 12, never giving up after damage (Pursuer_GivesUp), her walks the Pursuer's
 (slow in every mode: $206 after her, $201 else; $205 in a rage - Debilitas too). *The
 Pursuer's chase* (`stalker/pursue.fs`; Pursuer_ChaseDecision, BehaviourStalk, HoldOff,
-StateWalkThen404) for her - Debilitas keeps his own: close and in front of her, not panicking
+StateWalkThen404) for her - Debilitas keeps his own but in the panic's stage 5: close and in front of her, not panicking
 past stage 3 - standing to her; else by her row walking at her ($200) or stalking her ($201) for
 its frames; walking, her time out or Fiona past 100 - stalking; stalking, her time out within
 100 - her table 10; touching - a step back facing her ($404), and the row again once 5 further

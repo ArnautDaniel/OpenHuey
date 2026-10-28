@@ -156,7 +156,7 @@ $30 constant rock-phase   $34 constant rock-size   $38 constant rock-fade   $3C 
             in-panic? if  out-in-panic exit  then
             hidden-calm  yield
         else
-            stalker-in? if  fiona body-at stalker body-at vec-dist 50e f<= if  out-in-panic exit  then  then
+            stalker-in? if  50e noticed-near? if  out-in-panic exit  then  then
             out-quietly  wardrobe-floor barred-floor floor-off  exit
         then
     again ;
