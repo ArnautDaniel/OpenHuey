@@ -13,5 +13,6 @@ T{ s" ADX02/AD_60.ADX" 0 0 music-play  music-playing? -> -1 -1 }T
 music-stop
 testing one that isn't there
 T{ s" ADX00\AD_99.ADX" -1 0 music-play  music-playing? -> 0 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

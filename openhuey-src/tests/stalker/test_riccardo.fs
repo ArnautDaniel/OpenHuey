@@ -85,6 +85,7 @@ testing ... in her room: seen a while (150 frames), then gone
 T{ ts enter  unseen @  tint-t @ 0>  my-model @ actor act.visible l@  leave-actor -> 0 -1 1 }T
 testing ... its tint (TintStalker_Fade): shown at 112 of 128; its while over, fading out by 4 a frame, then gone
 T{ ts enter  tint-alpha f@ f>s  my-model @ actor act.alpha sf@ 0.875e f- fabs 0.01e f<  leave-actor -> 112 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ [: ts enter  tint-fade @ tint-out =  leave-actor ;] 200 soon  ts enter tint-alpha f@ f>s leave-actor  1 run-frames  ts enter tint-alpha f@ f>s leave-actor - -> -1 4 }T
 T{ [: ts enter  unseen @  leave-actor ;] 200 soon -> -1 }T
 T{ 23 story.base:stalker-actor  ts = -> -1 }T

@@ -70,6 +70,7 @@ clock-start  30 run-frames   \ (the run: Hewie the one played)
 testing in by exit 0 (camera 5), 1 (2): at it; the flame lit; the plywood's parts away, its floor let through
 T{ 1 by  room-id  his-camera@  [: 0 effect @ 0<> ;] in-place -> off-map-e3 2 -1 -1 }T
 T{ 0 by  his-camera@  [: 3 part?  4 part? ;] in-place  2 group-tri nav-flags floor-flags:barred-floor and -> 5 -1 0 0 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing its cameras: area 2 / 5 / $10 set 1, 3 set 2, 6 / 8 set 3, 7 set 0, $11 set 5
 T{ 3 hinto  his-camera@  6 hinto  his-camera@  7 hinto  his-camera@  $11 hinto  his-camera@ -> 2 -1 3 1 0 -1 5 -1 }T
 T{ 2 hinto  his-camera@  8 hinto  his-camera@  5 hinto  his-camera@  $10 hinto  his-camera@ -> 1 0 3 1 1 0 1 0 }T

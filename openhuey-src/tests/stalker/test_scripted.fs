@@ -79,6 +79,7 @@ walk-move far-tri @ -1  far-at vec@ 45e deg>rad move
 T{ done? -> 0 }T
 10 run-frames
 T{ anim? $FF00 and dup walk-anim = swap turn-anims = or  done? -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ ' done? 600 soon  deb body-tri far-tri @ =  45e deg>rad facing? -> -1 -1 -1 }T
 T{ deb body-at far-at vec-dist-xz 0.5e f< -> -1 }T
 testing a look at a point (13), standing (his action 0: no look of his own): his head turned toward it - past his own looks' one step

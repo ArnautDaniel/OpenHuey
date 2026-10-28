@@ -10,5 +10,6 @@ T{ 0 cast-model 0 s" O_FIO/FIO_201.TEX" actor-texture-swap -> -1 }T
 game:hewie send join-fiona  10 run-frames
 T{ 1 cast-model 1 s" O_HEW/HEW_201.TEX" actor-texture-swap -> -1 }T
 T{ 1 cast-model 1 s" O_DNL/DNL_201.TEX" actor-texture-swap -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 1 cast-model actor-texture-restore  2 run-frames
 test-summary

@@ -42,6 +42,7 @@ room-afresh
 T{ mirror -> -1 0 0 0 }T
 saturnus-hint-on story-flag-set  room-afresh
 T{ mirror -> 0 -1 -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 saturnus-hint-on story-flag-clear
 testing ... the first fragment reflecting Daniella (the scene's): the door's glass made over
 daniella-kind story.base:partner-load  5 run-frames  room-afresh

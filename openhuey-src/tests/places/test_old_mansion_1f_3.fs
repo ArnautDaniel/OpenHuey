@@ -31,6 +31,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing coming in: the figure hopping by the far wall
 room-afresh
 T{ [: hopper-slot figure 0< 0= ;] in-place  hunted state-flag? -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the cart
 T{ cart-area -140 at  said -> cart-msg }T
 testing the Medallion on the shelf: taken

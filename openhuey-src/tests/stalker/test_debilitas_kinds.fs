@@ -83,5 +83,6 @@ T{ [: 150e d-fiona f!  -1 step-done !  0 taunt-gesture !  taunt-gesture @ gestur
 T{ [: 150e d-fiona f!  -1 step-done !  false round-or-taunt  chase-act @ ;] dan -> walk-at-act }T
 testing ... the flag his gesture table's (Debilitas: $1302 flagged, $1306 not)
 T{ [: 1 gesture-flag?  2 gesture-flag? ;] his -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

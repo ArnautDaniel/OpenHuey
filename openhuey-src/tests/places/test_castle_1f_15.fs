@@ -49,6 +49,7 @@ testing coming in: the Camomile and the Medallion Hewie found showing
 c1f-15-camomile-found story-flag-set  c1f-15-camomile story-flag-clear
 c1f-15-medallion-found story-flag-set  c1f-15-medallion story-flag-clear  room-afresh
 T{ [: camomile-fx effect @ 0<>  medallion-fx effect @ 0<> ;] in-place -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the remarks: the diorama, the spear in turn, the armour in turn, the handrail in turn
 T{ 180 -0.195e 50e -27.107e put  said -> diorama-msg }T   \ (where she reads it: the area's middle is on blocked floor)

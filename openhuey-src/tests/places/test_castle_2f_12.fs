@@ -54,6 +54,7 @@ T{ rocks 5000 < -> -1 }T
 testing ... a blow by the first: rocking again
 room-afresh  [: 3 0 do  i chair-still  loop ;] in-place  -4e 1e 4e blow-at   \ (the frame's check, as the blow lands)
 T{ [: -4e 0e 4e 4e 7e struck-in? if  true chairs-set  then  still-rocking? ;] in-place -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: body-point-off ;] as-her
 
 testing the remarks: the caged doll in turn, the horse in turn, the doll in the chair, the box in turn, the crib

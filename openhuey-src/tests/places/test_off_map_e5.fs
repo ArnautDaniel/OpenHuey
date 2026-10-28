@@ -68,6 +68,7 @@ clock-start  30 run-frames   \ (the run: Hewie the one played)
 : curtain-t ( F: -- t )  [: s" Cartain" $7C object@ ;] in-place ;   \ (its morph's blend: +$7C)
 testing in by exit 0: at it, camera 0; the curtain as it hangs
 T{ 0 by  room-id  his-camera@  curtain-t f0= -> off-map-e5 0 0 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing its cameras: area 5 / 6 set 0, 7 set 2, 8 set 3, 9 set 1; area 4 crossed out of - set 0
 T{ 7 hinto  his-camera@  8 hinto  his-camera@  9 hinto  his-camera@  5 hinto  his-camera@ -> 2 -1 3 -1 1 -1 0 0 }T
 T{ 7 hinto  6 hinto  his-camera@ -> 0 0 }T

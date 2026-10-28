@@ -31,6 +31,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing the moths at the lamp (the door shut): eleven swarms
 flowers-laid story-flag-clear  [: lamp-door lock ;] in-place  room-afresh
 T{ moths  lamp-door doors:door-locked?  flowers-part part? -> #swarms -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 : swarm-at ( k -- ok ) ( F: -- x y z )  [: effect @ ;] in-place enter  effects:particles @  leave-actor  butterflies-at ;
 : near? ( F: x y z x' y' z' -- flag )  {: F: x y z a b c :}  x a f- fabs 6e f<  y b f- fabs 6e f<  and  z c f- fabs 6e f<  and ;   \ (they wander about it)
 [: 3 0 -30e 12e -41e moths-to ;] in-place  400 run-frames   \ (sent off: 0.4 a frame - there by now)

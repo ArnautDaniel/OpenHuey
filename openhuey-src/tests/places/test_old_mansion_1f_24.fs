@@ -32,6 +32,7 @@ game:debilitas send stalker-out  daniella-kind story.base:partner-load  5 run-fr
 testing Daniella scrubbing: in, held at her task
 white-mandragora-used story-flag-clear  room-afresh
 T{ [: scrubbing @ ;] in-place  partner body-room -> -1 old-mansion-1f-24 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing ... spoken to: Hebel's Perfume the first time, then cleaning time
 0 -76e 0e -48e put  180 -76e 0e -48e put   \ (just before her, facing her)
 T{ said  hebels-perfume items:items-of 0> -> princess-msg -1 }T

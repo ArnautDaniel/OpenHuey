@@ -52,6 +52,7 @@ testing coming in (after her first steps): the doll up, the flames lit, the chan
 c2f-2-flag1 story-flag-set  c2f-2-flag5 story-flag-clear  got-bisque-doll story-flag-clear  c1f-8-flag1 story-flag-clear  room-afresh
 T{ [: doll-down @  dool place-y object@ 0.51e ~=  flame-1-fx effect @ 0<> ;] in-place -> -1 -1 -1 }T
 T{ chandelier-turn  10 run-frames  chandelier-turn f- fabs 0.001e f> -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the remarks: the blood (the first time a fright, then its wonder), the floor, the angel, the box, the dark corner
 c2f-2-flag4 story-flag-clear

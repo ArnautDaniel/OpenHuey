@@ -38,6 +38,7 @@ medallion-40-done story-flag-clear  room-afresh
 testing the scales: the remark, then the coin
 T{ $11 180 at  said -> scales-msg }T
 T{ $11 180 at  said -> coin-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the great door: its inscription and file; then it won't open
 T{ $12 0 at  said -> door-msg }T
 300 read-on

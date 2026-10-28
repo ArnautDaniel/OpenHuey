@@ -18,6 +18,7 @@ testing calm at the start
 T{ stage -> 0 }T
 testing a level set by the story: its stage
 T{ 70 game:panic send panic-level!  game-tick  stage -> 1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing calming with time (calm danger: 0.1 a frame) - down to stage 0 under 60
 T{ 99 run-frames  level 60e about -> -1 }T
 T{ 5 run-frames  stage -> 0 }T

@@ -40,7 +40,7 @@ T{ [: stalker-touching?  touching ;] her@ -> 0 0 }T
 
 testing push-out (Actor_PushOut): out of a body to their radii + 0.01 apart, on her floor
 create pt 12 allot
-: pushed ( -- tri d )   \ (from a point just beside herself: out of her own body)
+: pushed ( -- tri ) ( F: -- d )   \ (from a point just beside herself: out of her own body)
     pt her-at vec-copy  pt v.x sf@ 0.1e f+ pt v.x sf!
     pt her-tri @ self blocked-floor push-out  pt self body-at vec-dist-xz ;
 : two-radii ( F: -- d )  self body-dims fdrop 2e f* 0.01e f+ ;
@@ -59,6 +59,7 @@ T{ [: thrown-r her-sub !  thrown-floor 1 and  door-thrown-r her-sub !  thrown-fl
 
 testing down after a hard fall: her shakes start over (Fiona_StateAfterThrow's floored)
 T{ [: 0 her-shake-rest !  1e her-shake-a f!  5 her-attack-t !  lie-down  her-shake-rest @  her-shake-a f@ f0=  her-attack-t @  her-mode @ ;] her@ -> -1 -1 0 $A }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 : up? ( n -- flag )  0 ?do  game-tick  mode 0= if  true unloop exit  then  loop  false ;
 T{ 600 up? -> -1 }T
 

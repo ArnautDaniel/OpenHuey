@@ -19,6 +19,7 @@ USING: tester engine game-state actors messages keys room-names game debug flag-
 60 run-frames
 testing out of a scene: her face drawn as her own (the mouth and the eyelids)
 T{ her act.face-all l@ -> 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing her eyelids half shut by a blink, then a scene takes her: open, and every shape of her face drawn by it
 \ (the scene: Hewie freed from the wire, at night - front-garden-3's place)
 c2f-3-flag1 story-flag-set  0 game:fiona send costume  castle-2f-3 room!  30 run-frames

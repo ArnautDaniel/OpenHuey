@@ -15,6 +15,7 @@ caught state-flag-set  3 run-frames
 T{ step? 0< 0=  caught state-flag?  panic-held state-flag? -> -1 0 -1 }T
 testing the characters hidden, the room drawn alone (GameOver: each one's +0x29)
 T{ game:fiona enter  fiona.state:her-model @ actor act.visible l@  leave-actor -> 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the tint goes purple over 60 frames (after the music's start)
 : purple? ( -- flag )  tint $AA0000C8 = ;
 T{ ' purple? 400 soon -> -1 }T

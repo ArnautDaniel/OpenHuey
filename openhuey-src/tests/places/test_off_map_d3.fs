@@ -56,6 +56,7 @@ clock-start  30 run-frames   \ (the run: Hewie the one played)
 : out-by ( exit -- room )  dup by  0 hat  [: room-id off-map-d3 <> ;] 300 soon drop  room-id ;
 testing in by exit 0 (camera set 2), 1, 2 (set 1), 3 (set 3): at it
 T{ 0 by  room-id  his-camera@ -> off-map-d3 2 2 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 1 by  his-camera@  2 by  his-camera@  3 by  his-camera@ -> 1 1 1 1 3 3 }T
 testing its cameras: area 8 set 2, 9 / $A / $C set 0, $B set 3 ($D's, set 4: no corners in its data)
 T{ 8 hinto  his-camera@  9 hinto  his-camera@  $B hinto  his-camera@ -> 2 2 0 0 3 3 }T

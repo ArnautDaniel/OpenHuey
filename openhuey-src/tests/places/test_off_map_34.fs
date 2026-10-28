@@ -66,4 +66,5 @@ T{ [: room-id off-map-34 <> ;] 1500 played-till  room-id -> -1 off-map-33 }T
 testing replayed from the extras: on to $33's replay - the theatre's chain variable set
 caught state-flag-clear  events-held state-flag-set  2 replay-for  0 $2C var!
 T{ off-map-34 forced-exit room-by!  5 run-frames  [: room-id off-map-34 <> ;] 1500 played-till  room-id  $2C var@  events-held state-flag? -> -1 off-map-33 1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

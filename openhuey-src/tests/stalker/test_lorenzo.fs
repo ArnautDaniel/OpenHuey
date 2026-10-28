@@ -22,6 +22,7 @@ room-id game:fiona body-tri lor send stalker-in  3 run-frames
 fvariable dx  fvariable dz  lor body-pos dz f! fdrop dx f!
 340e deg>rad fsin 30e f* dx f@ f+  lor body-pos fdrop fswap fdrop  340e deg>rad fcos 30e f* dz f@ f+  160e tp-facing  3 run-frames
 T{ [: step @ ['] pursue-run = ;] his -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing ... within reach: his attack; Fiona struck
 T{ [: [: her-mode @ 4 = ;] fiona@ ;] 600 soon -> -1 }T
 testing the story's kind 11 is him

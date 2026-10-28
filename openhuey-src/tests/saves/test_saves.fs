@@ -104,5 +104,6 @@ T{ saves:options 2 cells + @  saves:options? @ -> 64 -1 }T
 [: 128 subscreen.state:volume !  1 subscreen.state:vibration ! ;] sub
 saves:options-out  deliver
 T{ [: subscreen.state:volume @  subscreen.state:vibration @ ;] sub -> 64 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: subscreen.options:defaults ;] sub
 test-summary

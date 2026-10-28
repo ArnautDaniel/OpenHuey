@@ -40,6 +40,7 @@ T{ c2f-3-portrait-1-examined story-flag? -> 0 }T
 testing the maid: crossing the gate toward the door, Daniella's scene, the clothes laid out, file $201
 180 -35e -16e by  180 -35e -24e by
 T{ doing-busy? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 600 play-on
 T{ found-file-201 story-flag?  $201 filed?  doing-busy?  free? -> -1 -1 0 -1 }T
 testing ... once: crossing again, nothing

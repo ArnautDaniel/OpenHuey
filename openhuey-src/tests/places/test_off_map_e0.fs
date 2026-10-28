@@ -76,6 +76,7 @@ T{ off-map-e0 forced-exit room-by!  5 run-frames  hewie-played?  $30 var@  $33 v
 T{ [: her-tri @ ;] her  his-tri  game:fiona cam-setup-of -> $55 $114 0 0 }T
 T{ [: stalker body-room ;] in-place  $11D shut?  $127 shut?  $127 doors:door-locked?  $123 doors:door-locked?  -> off-map-e1 -1 -1 -1 0 }T
 T{ [: world-held state-flag? 0= ;] 200 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: stalker-unloaded ;] in-place  10 run-frames
 testing the run going on, in by exit 0: at it, camera 1; part 0 shown, 1 not; the glass; the fan turning
 T{ 0 by  room-id  his-camera@  [: 0 part?  1 part? ;] in-place -> off-map-e0 1 1 -1 0 }T

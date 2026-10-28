@@ -29,4 +29,5 @@ T{ feet  l1 f@ f- fabs  fswap r1 f@ f- fabs  fmax 0.2e f> -> -1 }T
 testing let go again, planted as before
 0 game:cast3 send scripted  0 game:cast3 send noclip  deliver  10 run-frames
 T{ feet  l1 f@ f- fabs  fswap r1 f@ f- fabs  fmax 0.01e f< -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

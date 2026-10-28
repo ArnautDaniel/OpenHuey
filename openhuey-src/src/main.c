@@ -9,6 +9,8 @@
  *     --mods folder     the folder of mods (instead of mods/ beside the library)
  *     --title           the title even without a window (its tests; else, hidden, a new game at once)
  *     --update          a release updated to the newest build (platform/update.c), then out
+ *     --test file.fs    the test file run, headless; its exit status the test's. A quick run: the file
+ *                       ends at its `full-suite` (tester) - all of it with --full or $OPENHUEY_FULL_TESTS
  *
  * The game data: a disc image or folder named (read as it is), else the library
  * (platform/library.c), else - with a window - the player is asked for the disc to import.
@@ -46,6 +48,7 @@
 #define MAX_EVALS 16
 
 static int sTestStatus;
+static int sFullTests;   /* (a full test run: --full, $OPENHUEY_FULL_TESTS - `full-tests?`) */
 static void p_exit_status(Forth *f, Word *w) {   /* ( n -- ) a test's exit status (--test) */
     (void)w;
     sTestStatus = (int)forth_pop(f);
@@ -65,6 +68,7 @@ typedef struct Options {
     int update;         /* --update: updated to the newest release, then out */
     int title;          /* --title: the title, hidden too (tests) */
     const char *test;   /* --test FILE: run it after the scripts, headless, and exit with its status */
+    int full;           /* --full (or $OPENHUEY_FULL_TESTS): the test file all through, not to its full-suite */
     const char *mods[MAX_EVALS];   /* --mod DIR: a mod's folder, on (the tests' only mods) */
     const char *mods_folder;       /* --mods DIR: the folder of mods instead of <base>mods/ (the tests' too) */
     int nmods;
@@ -75,6 +79,7 @@ static int parse_options(int argc, char **argv, Options *o) {
 
     memset(o, 0, sizeof(*o));
     o->data = getenv("HG_DATA");   /* (none: the disc chosen before, or ask) */
+    o->full = getenv("OPENHUEY_FULL_TESTS") != NULL && strcmp(getenv("OPENHUEY_FULL_TESTS"), "0") != 0;
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--hidden") == 0) {
             o->hidden = 1;
@@ -92,11 +97,13 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->mods_folder = argv[++i];
         } else if (strcmp(argv[i], "--mod") == 0 && i + 1 < argc && o->nmods < MAX_EVALS) {
             o->mods[o->nmods++] = argv[++i];
+        } else if (strcmp(argv[i], "--full") == 0) {
+            o->full = 1;
         } else if (strcmp(argv[i], "--test") == 0 && i + 1 < argc) {
             o->test = argv[++i];
             o->hidden = 1;
         } else if (argv[i][0] == '-') {
-            fprintf(stderr, "usage: openhuey [--hidden] [--frames N] [--eval code] [--test file.fs] [--mod folder|zip] [--mods folder] [--import disc.iso] [--update] [--title] [disc.iso | data folder]\n");
+            fprintf(stderr, "usage: openhuey [--hidden] [--frames N] [--eval code] [--test file.fs [--full]] [--mod folder|zip] [--mods folder] [--import disc.iso] [--update] [--title] [disc.iso | data folder]\n");
             return 0;
         } else {
             o->data = argv[i];
@@ -733,6 +740,7 @@ static void start_scripts(Engine *e, int hidden) {
     forth_set_effect(e->forth, forth_prim(e->forth, "exit-status", p_exit_status), "( n -- )");
     forth_set_effect(e->forth, forth_prim(e->forth, "error-count", p_error_count), "( -- n )");
     forth_constant(e->forth, "hidden?", hidden ? -1 : 0);   /* (no window: tests, screenshots - no title, a new game at once; --title: the title even so) */
+    forth_constant(e->forth, "full-tests?", sFullTests ? -1 : 0);   /* (a full test run: the long tests too) */
     if (!load_scripts(e->forth)) {
         fprintf(stderr, "openhuey: the scripts didn't load (see above); the console is open\n");
         e->console.open = 1;
@@ -830,6 +838,7 @@ int main(int argc, char **argv) {
     }
     e->testing = opt.test != NULL;
     movie_game_clock(opt.test != NULL || opt.frames > 0);   /* (headless runs: the same frames each run) */
+    sFullTests = opt.full;
     start_scripts(e, opt.hidden && !opt.title);
     for (i = 0; i < opt.nevals; i++) {
         forth_eval(e->forth, opt.evals[i], strlen(opt.evals[i]), "--eval");
@@ -848,6 +857,10 @@ int main(int argc, char **argv) {
                 *slash = 0;
                 forth_add_root(e->forth, root);
             }
+        }
+        if (!opt.full) {   /* (a quick run: to the file's full-suite) */
+            static const char quick[] = "USING: tester ; -1 quick-tests !";
+            forth_eval(e->forth, quick, strlen(quick), "--test");
         }
         failed = forth_include(e->forth, opt.test) != 0;
         return failed ? 1 : sTestStatus;

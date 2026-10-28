@@ -37,6 +37,7 @@ om1f-6-flag1 story-flag-set
 testing coming in: the figure hopping, the hall hunted
 room-afresh
 T{ [: hopper-slot figure 0< 0= ;] in-place  hunted state-flag? -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the sheet, the cage
 T{ $C facing-middle  said -> sheet-msg }T
 T{ $D 45 at  said -> cage-msg }T

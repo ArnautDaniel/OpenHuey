@@ -16,4 +16,5 @@ T{ [: 500 marker-to ;] in-room  5 run-frames  marker-id alive? -> -1 }T
 marker-id was !
 T{ [: marker-done  marker-fx effect @ ;] in-room -> 0 }T
 T{ [: was @ alive? 0= ;] 120 soon -> -1 }T   \ (gone out on its own)
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

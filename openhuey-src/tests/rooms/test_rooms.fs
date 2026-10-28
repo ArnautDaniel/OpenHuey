@@ -63,5 +63,6 @@ testing no lights section: no lights, the ambient 128 (Lights_Reset); off the na
 T{ $D room  room-ambient f>s f>s f>s  0e 0e 0e lights-at -> 128 128 128 -1 -1 -1 }T
 T{ front-garden-3 room  0 light@ fdrop f0> -> -1 }T
 T{ 0e 100000e 0e lights-at -> 0 -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

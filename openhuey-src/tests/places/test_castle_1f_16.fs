@@ -31,6 +31,7 @@ T{ fan-turn  10 run-frames  fan-turn f- fabs 0.1e f>  tv-off-part part?  [: tv-f
 
 testing the remarks: the mirror, the painting in turn
 T{ mirror-area -144 at  said -> mirror-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ painting-area 0 at  said  painting-area 0 at  said -> painting-msg painting-2-msg }T
 
 testing the Magnesia: reached, taken

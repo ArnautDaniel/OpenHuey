@@ -56,6 +56,7 @@ clock-start  30 run-frames   \ (the run: Hewie the one played)
 : by ( exit -- )  off-map-d0 swap room-by!  60 run-frames ;
 testing in by exit 1: at it, its camera (set 0) - exit 0 (camera 3) isn't in the room's data: no area, no spot
 T{ 1 by  room-id  his-camera@  0 exit-area -> off-map-d0 0 0 $FFFF }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing its cameras: area 2 set 0, 3 set 1, 5 set 2, 6 set 4, 7 set 5, 8 set 3
 T{ 2 hinto  his-camera@  3 hinto  his-camera@  5 hinto  his-camera@ -> 0 0 1 1 2 2 }T
 T{ 6 hinto  his-camera@  7 hinto  his-camera@  8 hinto  his-camera@ -> 4 4 5 5 3 3 }T

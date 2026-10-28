@@ -35,6 +35,7 @@ room-afresh
 
 testing the toilets
 T{ toilets-area 180 at  said -> toilets-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the water: calming, the recovery document the first time; again, refreshed
 got-doc-recovery story-flag-clear
 water-area 180 at  circle press  900 play-on

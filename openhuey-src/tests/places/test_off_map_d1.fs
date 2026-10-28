@@ -61,6 +61,7 @@ T{ 0 by  room-id  his-camera@ -> off-map-d1 0 0 }T
 T{ 1 by  his-camera@ -> 1 1 }T
 testing its cameras: area 4 set 0, area 5 set 1
 T{ 4 hinto  his-camera@  5 hinto  his-camera@ -> 0 0 1 1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the room behind exit 0 loaded ahead as he crosses into area 2
 T{ 0 by  2 hinto  spare@ -> off-map-d1 0 leads }T
 testing the way on (area 3): a rabbit and the wisp loaded, the room beyond ahead; back out: gone

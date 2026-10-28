@@ -37,6 +37,7 @@ T{ 5 180 at  said -> wax-msg }T
 T{ 6 90 at  said -> chess-msg }T
 T{ 7 -90 at  said -> hourglass-msg }T
 T{ 8 -90 at  said -> models-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 9 -90 at  said -> flask-msg }T
 T{ $A -90 at  said -> kiln-msg }T
 T{ $B 180 at  said -> still-msg }T

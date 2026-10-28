@@ -42,6 +42,7 @@ T{ settles 300 <  gate-y -25.3e f- fabs 0.001e f<  gate-rising story-flag? -> -1
 
 testing the remarks: the gate shut, the doll in turn
 T{ gate-area -90 at  said -> gate-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ $A -90 at  said  $B 180 at  said  $E 0 at  said -> doll-msg doll-2-msg doll-3-msg }T
 
 testing the door (exit 0, 9) locked: tried, it won't open

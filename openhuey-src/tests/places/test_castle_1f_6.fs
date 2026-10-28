@@ -32,6 +32,7 @@ T{ flames  plate-key-part part? -> #candles -1 }T
 
 testing the candlesticks (by day, by night), the tapestry
 T{ table-area -90 at  said -> candles-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 c2f-3-flag1 story-flag-set  room-afresh
 T{ table-2-area 90 at  said -> candles-night-msg }T
 c2f-3-flag1 story-flag-clear

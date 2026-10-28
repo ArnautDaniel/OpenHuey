@@ -37,6 +37,7 @@ T{ throw  [: [: his-follows @ 0< 0= ;] his@ ;] 60 soon -> -1 }T
 T{ [: action $78 = ;] 300 soon -> -1 }T
 [: 0 0 want ;] his!  [: -1 his-follows ! ;] his!  things-clear  10 run-frames   \ (the thrown one gone: she has none)
 T{ ball-ahead  [: [: his-follows @ 0< 0= ;] his@ ;] 5 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: $78 0 want  10000 his-wait ! ;] his!   \ (his wait for the next thing to do held off)
 testing ... at it, he picks it up - gone; hers again (she has none)
 T{ [: balls 0= ;] 900 soon  $90 count-of -> -1 1 }T

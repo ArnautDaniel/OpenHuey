@@ -92,5 +92,6 @@ false blind
 testing she leaves by an exit: nearer its door than she is (Hewie_Vt34's Actor_NearerRoom - then through it with her, $88)
 T{ [: 0 1 exit-spot drop his-place  0 nearer-door? ;] his@ -> -1 }T
 T{ [: fiona-at vec@ his-place  0 nearer-door? ;] his@ -> 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: room-id s" fiona" actor-named body-tri dup tri-center body-place ;] his!
 test-summary

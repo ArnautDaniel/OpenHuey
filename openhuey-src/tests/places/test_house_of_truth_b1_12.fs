@@ -39,6 +39,7 @@ testing the first time she comes through: its fact; Lorenzo there ahead of her, 
 T{ 0 -43e 2e -53e put  htb1-12-flag1 story-flag? -> -1 }T
 T{ [: lorenzo-here? ;] 300 soon  [: $429 on-tri? ;] 300 soon -> -1 -1 }T
 T{ [: [: ['] there running? 0= ;] in-place ;] 600 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 lorenzo-out
 testing not again
 room-afresh  0 -43e 2e -73e put  0 -43e 2e -53e put

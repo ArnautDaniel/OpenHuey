@@ -32,4 +32,5 @@ T{ hard-mode?  progress pr.vars $26 + c@ -> -1 1 }T
 testing the extras: straight into their room, in her clothes
 extras  30 run-frames
 T{ room-id off-map-37 =  progress pr.vars $26 + c@ -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

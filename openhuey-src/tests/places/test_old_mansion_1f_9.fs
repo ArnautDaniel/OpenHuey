@@ -34,6 +34,7 @@ om1f-13-flag1 story-flag-set  om1f-9-flag1 story-flag-clear  room-afresh
 testing a plate given back: her word
 0 1 -1 0 broadcast item-event
 T{ shown-soon -> returned-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 200 read-on
 testing the window: the blinds opened; once seen, the dark
 T{ 1 -45 at  said -> blinds-msg }T

@@ -76,6 +76,7 @@ $10 resident-flag-clear  $13 resident-flag-clear  doc-secret-room items:items-of
 T{ 0 in-by  [: her-tri @ ;] her  hewie-commandable state-flag?  hewie-no-attack state-flag?  $10C doors:door-locked?  $10D doors:door-locked? -> $15 -1 -1 -1 -1 }T
 testing ... the unlocks that follow (all four of the first marked: $15); the fan turning
 T{ $15 resident-flag?  fan@  10 run-frames  fan@ f= -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing ... the "Secret Room" document, the first time; the costume earned ($13 by the first's mark)
 T{ 600 read-on  $10 resident-flag?  doc-secret-room items:items-of  $13 resident-flag?  $25C filed? -> -1 before @ 1+ -1 -1 }T
 testing ... again: the document not said again (given once more: still the one)

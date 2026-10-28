@@ -56,6 +56,7 @@ T{ [: [: steady-on @ ;] in-place ;] 120 soon -> -1 }T
 testing coming in: the sparkles, the glow at the back, the hand loaded there, the shadow, the creatures let out
 T{ jerky-fx fx-alive?  lavender-fx fx-alive?  medallion-fx fx-alive?  glow-fx fx-alive?  shadow-fx fx-alive? -> -1 -1 -1 -1 -1 }T
 T{ [: glow-shown @  hand 0< 0= ;] in-place  om1f-8-flag1 story-flag? -> -1 -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the Beef Jerky and the Album Medallion picked up
 beef-jerky items:items-of before !

@@ -23,9 +23,10 @@ break existing libraries), the save files `hga-*.fs` (players' saves). Mods may 
 
 ```sh
 git submodule update --init                          # the Forth (ClankForth) once
-cmake -S . -B build && cmake --build build -j
-cd build && SDL_AUDIO_DRIVER=dummy ctest -j8          # everything (needs the game's data)
-SDL_AUDIO_DRIVER=dummy ./openhuey --test ../tests/<sub>/test_<x>.fs   # one test file
+cmake -S . -B build && cmake --build build -j3
+cd build && SDL_AUDIO_DRIVER=dummy ctest -j3          # the quick run (needs the game's data): each file to its full-suite
+cd build && SDL_AUDIO_DRIVER=dummy OPENHUEY_FULL_TESTS=1 ctest -j3   # the full run: every test (long - only when asked)
+SDL_AUDIO_DRIVER=dummy ./openhuey --test ../tests/<sub>/test_<x>.fs   # one test file, quick (--full: all of it)
 SDL_AUDIO_DRIVER=dummy ./openhuey --title --test ../tests/title/title.fs   # --title: the title too, without a window
 SDL_AUDIO_DRIVER=dummy ./openhuey --hidden --frames 3 --eval "..."    # headless; `screenshot` for a PNG
 ```
@@ -52,7 +53,9 @@ SDL_AUDIO_DRIVER=dummy ./openhuey --hidden --frames 3 --eval "..."    # headless
 - **Docs move with the code**: a subsystem's page (`docs/subsystems/<name>.md`) records its
   messages, rules and status - update it in the same change. Keep "Not yet" / "Left" lists true.
 - **Tests with every change**: a `T{ ... -> ... }T` test in the subsystem's `tests/` folder;
-  before / after screenshots for anything drawn.
+  before / after screenshots for anything drawn. Tests check the actors' state after words are run;
+  one that simulates frames or waits goes below the file's `full-suite` line (the full run's -
+  docs/forth.md "Tests"). Run the quick suite by default; the full one only when asked.
 - **Library conversions are exact**: a converted format must give the engine the same data as
   the original (each kind has a `tests/*_check.c` that proves it).
 - One branch and one pull request per piece of work.

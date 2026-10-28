@@ -18,6 +18,7 @@ T{ room-id  subscreen-wanted state-flag? -> off-map-37 -1 }T
 testing challenge A picked (down to it, the cross): its room, the clock started, Hewie played
 key: Down press-key  key: X press-key
 T{ progress pr.vars $2E + c@ -> 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 600 run-frames
 T{ room-id  hewie-played? -> off-map-d9 -1 }T
 T{ [: his-action @ ;] his@ -> steered-act }T

@@ -36,6 +36,7 @@ T{ her-x -> reported-x }T
 
 testing every actor's state, by its fields
 T{ game:fiona alive? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 game:fiona .state
 
 test-summary

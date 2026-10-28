@@ -35,4 +35,5 @@ T{ $1D0 on-tri  her-camera@  $E0 on-tri  her-camera@ -> 4 -1 4 -1 }T
 T{ $BB on-tri  $1F1 on-tri  her-camera@  $BB on-tri  $1ED on-tri  her-camera@  $BB on-tri  $EA on-tri  her-camera@ -> 5 -1 5 -1 5 -1 }T
 testing out by exit 1 from area 0
 T{ 0 0 at  [: room-id off-map-0d <> ;] 300 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

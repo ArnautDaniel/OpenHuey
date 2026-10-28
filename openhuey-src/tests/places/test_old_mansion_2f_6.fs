@@ -40,6 +40,7 @@ T{ 7 45 at  said -> medicine-msg }T
 T{ 7 45 at  said -> acetic-msg }T
 T{ 8 -45 at  said -> chemicals-msg }T
 T{ 8 -45 at  said -> sulfuric-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the water: calmed; then refreshed
 T{ 9 0 at  said -> water-msg }T
 300 play-on

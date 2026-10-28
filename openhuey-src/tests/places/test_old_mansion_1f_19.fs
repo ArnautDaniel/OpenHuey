@@ -34,6 +34,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing the hole: asked - no, she stays
 room-afresh
 T{ hole-area 180 at  circle press  shown-soon -> hole-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 answer-no
 T{ room-id  doing-busy? -> old-mansion-1f-19 0 }T
 testing the hiding place: in, hidden and unseen; out by the button, seen again

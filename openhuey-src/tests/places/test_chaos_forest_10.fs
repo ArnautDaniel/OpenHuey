@@ -40,6 +40,7 @@ testing the room's areas: fourteen (its table padded after them)
 T{ area-count -> 14 }T
 testing the crate broken by a blow, the Medallion behind it, taken
 T{ 76.5e -25e 134.5e blow-at  [: the-crate breaks? dup if  medallion-shows  then ;] in-place -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: body-point-off ;] her  medallion items:items-of before !
 T{ 0 76.5e -25.5e 134.5e put  circle press  300 read-on  cf-10-medallion story-flag?  medallion items:items-of -> -1 before @ 1+ }T
 testing Hewie found (and the heart's scene not yet): lying here hurt, whining now and then

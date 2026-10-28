@@ -43,6 +43,7 @@ T{ 0 part?  3 part?  5 part?  [: medallion-fx effect @ 0<> ;] in-place -> -1 -1 
 
 testing the lever: jolted to -10 degrees, back 2 a frame, never past 0
 T{ [: lever-jolts ;] in-place  tilt -10e ~=  [: lever-back ;] in-place  tilt -8e ~= -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the clamp's remark (facing it: the room's 90, cond 0x05's half-degrees, is 180 - at 90 nothing)
 T{ clamp-area 90 at  circle press  60 run-frames  window-shown 0<  doing-busy? -> -1 0 }T

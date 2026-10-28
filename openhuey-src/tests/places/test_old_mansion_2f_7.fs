@@ -29,4 +29,5 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing coming in: its five flames
 old-mansion-2f-7 room!  60 run-frames
 T{ [: 0  #flames 0 do  i effect @ 0<> -  loop ;] in-place -> 5 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

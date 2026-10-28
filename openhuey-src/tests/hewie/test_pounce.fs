@@ -62,5 +62,6 @@ h7 constant the-homunculus
 calm-him  [: 2 his-hits !  the-homunculus his-target !  close-in ;] his!
 T{ [: [: creatures.homunculus:move-mode @ 4 = ;] of7 ;] 200 soon -> -1 }T
 T{ [: [: his-hits @ ;] his@ 1 = ;] 5 soon  [: creatures.homunculus:strength @ ;] of7 -> -1 0 }T   \ (5 less his bite's 5: it leaves)
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

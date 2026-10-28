@@ -127,6 +127,7 @@ testing a room script's blocker (0x66) lasts its frame
 130e 30e -40e 120e 30e -40e 130e 10e -40e 120e 10e -40e light-blocker
 T{ light-blockers -> 1 }T
 T{ 1 run-frames  light-blockers -> 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 0 -1 0e door-swing  2 run-frames
 front-garden-2 -1 rooms send go-to-room  2 run-frames
 

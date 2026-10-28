@@ -20,6 +20,7 @@ testing a noise in his room (one of the world's): he starts - turned to it, a mo
 T{ [: lead @ ;] his -> 0 }T
 spot @ world-noise noise-at  3 run-frames
 T{ [: lead @  lead-alarm @  start-t @ 0> ;] his -> 4 5 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 95 run-frames
 T{ [: start-t @  route-end @  0 stop @ ;] his  spot @ = -> 0 1 -1 }T
 testing a weaker lead than his (Hewie's noise after a noise): let be

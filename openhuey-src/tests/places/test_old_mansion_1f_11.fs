@@ -34,6 +34,7 @@ testing the water in the way; then the door beyond it
 omb1-5-flag3 story-flag-clear  room-afresh
 T{ $12 -90 at  said -> water-msg }T
 T{ $12 -90 at  said -> far-door-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the collapsed floor, ahead and behind
 omb1-5-flag3 story-flag-set  room-afresh
 T{ $10 0 at  said -> collapsed-msg }T

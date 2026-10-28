@@ -68,6 +68,7 @@ clock-start  30 run-frames   \ (the run: Hewie the one played)
 testing in by exit 1, 2, 3: at it, camera 0; the flame lit; parts 1, 3, 5 shown, 0, 2, 4 not
 T{ 1 by  room-id  his-camera@  [: 0 effect @ 0<> ;] in-place -> off-map-e4 0 0 -1 }T
 T{ parts -> 0 -1 0 -1 0 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 2 by  his-camera@  3 by  his-camera@ -> 0 0 0 0 }T
 testing the floor plate: up; Hewie on it - down (by 0.2 a frame), his call made; off - up again
 1 by

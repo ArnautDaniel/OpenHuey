@@ -48,4 +48,5 @@ her true doorway-fades
 T{ mx f@ mz f@ put  3 run-frames  0 cast-model doorway-faded  0.05e f< -> -1 }T
 T{ mx f@ ox f@ f+ f2/  mz f@ oz f@ f+ f2/ put  3 run-frames  0 cast-model doorway-faded  fdup 0.2e f>  0.95e f< -> -1 -1 }T
 T{ her false doorway-fades  0 cast-model doorway-faded f0= -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

@@ -67,6 +67,7 @@ T{ 0 by  room-id  his-camera@  [: s" kousi" place-y object@ ;] in-place -25.3e f
 T{ 1 by  his-camera@ -> 0 0 }T
 testing the barred floor (group 0); part 0 shown, 1 not
 T{ [: 0 part?  1 part? ;] in-place -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing its cameras: area 4 / 7 set 0; 5, 6 crossed out of - set 1
 T{ 5 both-ways  his-camera@  4 hinto  his-camera@  6 both-ways  his-camera@  7 hinto  his-camera@ -> 1 -1 0 0 1 -1 0 0 }T
 testing the rooms ahead: out of area 2 exit 0's, into area 3 exit 1's

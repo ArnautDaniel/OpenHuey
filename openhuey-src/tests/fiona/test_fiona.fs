@@ -55,6 +55,7 @@ testing at a door, the action button: she holds it, opens it by hand, lets it go
 clean0 at-door
 T{ key: C press-key  doing -> 3 }T
 T{ 30 $600 watch-anim  state0 -> -1 1 }T          \ her animation, the door held
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 120 run-frames  state0  doing -> 2 0 }T            \ let go open; free again
 \ (her animation takes her into the exit's area; the story takes the exit: tests/story/test_story.fs)
 front-garden-2 -1 rooms send go-to-room  5 run-frames

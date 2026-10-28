@@ -32,4 +32,5 @@ T{ free-tri @ at out mask @ walkable  out at vec-dist f0= -> free-tri @ -1 }T
 testing his way to the goal not his: planned (to the walkable point nearest it)
 shut-tri @ tri-center at vec!
 T{ [: shut-tri @ at plan 0> ;] his -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

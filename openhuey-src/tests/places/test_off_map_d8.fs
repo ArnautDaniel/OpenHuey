@@ -59,6 +59,7 @@ clock-start  30 run-frames   \ (the run: Hewie the one played)
 x-d8-flag1 story-flag-set
 testing in by exit 0 (camera 1), 1, 2, 3 (0): at it
 T{ 0 by  room-id  his-camera@ -> off-map-d8 1 1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 1 by  his-camera@  2 by  his-camera@  3 by  his-camera@ -> 0 0 0 0 0 0 }T
 testing its cameras: area $C set 0, $D set 1
 T{ $D hinto  his-camera@  $C hinto  his-camera@ -> 1 1 0 0 }T

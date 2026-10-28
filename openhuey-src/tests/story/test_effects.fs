@@ -24,6 +24,7 @@ T{ 1 run-frames  0 slot frame-of  f0 1+ 16 mod = -> -1 }T
 
 testing commanded (the scripts' 0x87), a fire throws sparks that end by themselves
 T{ 2 0 slot send effect-command  deliver  sparks# -> 8 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 120 run-frames  sparks# -> 4 }T
 
 testing an effect removed (its actor gone)

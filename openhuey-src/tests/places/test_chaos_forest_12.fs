@@ -37,6 +37,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 cf-12-flag1 story-flag-clear  cf-12-camomile story-flag-clear  room-afresh
 testing coming in: the Camomile's sparkle; the wisp hovering
 T{ [: camomile-fx effect @ 0<> ;] in-place  wisp-hovers? -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the Camomile picked up
 camomile items:items-of before !
 T{ 0 -253.83e 5.54e -217.28e put  circle press  300 read-on  cf-12-camomile story-flag?  camomile items:items-of -> -1 before @ 1+ }T

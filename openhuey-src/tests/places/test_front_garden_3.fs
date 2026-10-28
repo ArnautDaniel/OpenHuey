@@ -29,6 +29,7 @@ testing a new game: the opening - the doors locked, the figures in the trees, th
 T{ room-id  opening-done story-flag?  $200 filed? -> front-garden-3 -1 -1 }T
 T{ 3 story.base:slot-actor @ 0< 0=  4 story.base:slot-actor @ 0< 0= -> -1 -1 }T
 T{ 0 doors:door-locked?  free? -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 0 game:fiona send costume  10 run-frames
 
 testing what she says as she looks about: "Where am I?", the cold, the fountain, the tree (once, then another)

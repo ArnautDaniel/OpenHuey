@@ -30,6 +30,7 @@ T{ [: [: his-act @ ['] st-tackle-lands = ;] his@ ;] 60 soon  [: anim@ ;] his@ ->
 T{ [: [: bitten @ ;] deb@ leg-attack = ;] 60 soon -> -1 }T
 testing ... landed: the bite of 30, holding on with one bite left - then he lets go ($2219) and the stalker is up again
 T{ [: [: his-act @ ['] st-bite-hold = ;] his@ ;] 60 soon  [: hp @ ;] deb@  [: his-bites @ ;] his@ -> -1 40 1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ [: [: anim@ $2219 = ;] his@ ;] 300 soon -> -1 }T
 T{ [: [: bitten @ 0= ;] deb@ ;] 600 soon -> -1 }T
 testing ... his hold by his mood (never rolled against): angry 110, upset none, else (his feeling + 10) x 5

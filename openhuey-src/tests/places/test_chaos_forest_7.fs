@@ -41,6 +41,7 @@ game:daniella send stalker-out  10 run-frames
 testing its bush: crouching at L1, up again at circle
 by-bush
 T{ l1 press  [: hidden? ;] 300 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 60 run-frames  circle press  [: hidden? 0= ;] 300 soon drop  [: doing-busy? 0= ;] 300 soon drop
 T{ hidden?  free? -> 0 -1 }T
 testing the stalker coming to search it: his searches counted (here $1E); found, she is hauled out

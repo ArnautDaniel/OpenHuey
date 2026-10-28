@@ -46,6 +46,7 @@ T{ swing-left leaf@ f0>  [: rustled @ ;] in-place -> -1 -1 }T
 testing crouching in the bush at her examine; up again at circle
 by-bush  circle press  [: hidden? ;] 300 soon drop
 T{ hidden?  [: fiona held? ;] in-place -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 60 run-frames  circle press  [: hidden? 0= ;] 300 soon drop  [: doing-busy? 0= ;] 300 soon drop
 T{ hidden?  free? -> 0 -1 }T
 

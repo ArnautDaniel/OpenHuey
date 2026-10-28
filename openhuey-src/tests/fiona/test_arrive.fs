@@ -23,4 +23,5 @@ T{ at-rest? -> -1 }T
 testing ... and back up
 front-garden-2 room!  2 run-frames
 T{ at-rest? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

@@ -29,6 +29,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing the Sylvesta Esca: sparkling, taken
 got-sylvesta-esca story-flag-clear  old-mansion-2f-9 room!  60 run-frames  sylvesta-esca items:items-of before !
 T{ [: esca-fx effect @ 0<> ;] in-place -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 0 42e 50e 3e put  circle press  300 read-on
 T{ got-sylvesta-esca story-flag?  sylvesta-esca items:items-of -> -1 before @ 1+ }T
 testing the chimera

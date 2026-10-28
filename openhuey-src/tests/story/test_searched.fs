@@ -31,6 +31,7 @@ variable before  jerky before !  0 progress pr.gifts l!  0 progress pr.gift-next
 ' leg-down felled  T{ ' lying? 120 soon -> -1 }T
 beside
 circle press  T{ [: window-shown $8011 = ;] 200 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 searched
 T{ jerky  gifts  progress pr.gift-next l@ -> before @ 1+  1 1 }T
 testing ... after the first a gift is due 1 in 10 (counted to 8); none due, he comes round (his time down over)

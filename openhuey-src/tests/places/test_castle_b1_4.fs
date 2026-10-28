@@ -28,6 +28,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing coming in: its five flames
 room-afresh
 T{ [: 0  #flames 0 do  i effect @ 0<> -  loop ;] in-place -> 5 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the inscription
 T{ inscription-area 0 at  said -> darkness-msg }T
 testing the clock: saving (or Hewie not by her) - no

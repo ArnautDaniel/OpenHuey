@@ -54,6 +54,7 @@ testing in play: held off (mode 4) away from her for 5 s, he is taken
 [: 1 away ! ;] its  3 run-frames
 : far? ( -- flag )  his-room  [: summoner:next-to-hers? ;] its 0=  his-room room-id <> and ;
 T{ in-game? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 \ (two rooms off he is taken; next door, held off out of his own rooms, he isn't)
 variable expected  far? 0= expected !
 [: 4 my-mode ! ;] his  155 run-frames

@@ -43,6 +43,7 @@ room-afresh
 T{ [: 1 plate-on !  0 plate-on !  0 shots !  2 plate-on ! ;] in-place  [: plate-now ;] in-place -> 0 }T
 T{ [: ['] first-shot start drop  1 shots ! ;] in-place  [: cutscene-active? movie-status 1 = or ;] 300 soon -> -1 }T
 T{ [: movie-skipped state-flag-set  doing-busy? 0= ;] 1500 soon  [: armor-on @ ;] in-place -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the armour's button: pushed - the trap disarmed; then its remark
 6 0 at  circle press  shown-soon drop  yes-it  300 play-on
 T{ armor-button-pushed story-flag? -> -1 }T

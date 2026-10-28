@@ -67,6 +67,7 @@ clock-start  30 run-frames   \ (the run: Hewie the one played)
 testing in by exit 1 (camera 0), 2 (4, path 3): at it; the three flames lit
 T{ 1 by  room-id  his-camera@  lit? -> off-map-e1 0 0 3 }T
 T{ 2 by  his-camera@ -> 4 3 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing its cameras: area 7 set 2, 8 / $A set 1, 9 / $D set 0, $16 set 4 (path 3)
 T{ 7 hinto  his-camera@  8 hinto  his-camera@  9 hinto  his-camera@ -> 2 2 1 1 0 0 }T
 T{ $16 hinto  his-camera@  $A hinto  his-camera@  $D hinto  his-camera@ -> 4 3 1 1 0 0 }T

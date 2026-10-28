@@ -28,6 +28,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing coming in: the four boxes where they were kept
 room-afresh
 T{ 0 placed?  3 placed? -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing leaving: the boxes kept where they stand (out by exit 0)
 variable the-door  room-afresh  0 exit-door the-door !   \ (its door open)

@@ -59,6 +59,7 @@ T{ wt2f-1-flag3 story-flag?  walkway-angle 0e ~=  [: home-part part?  across-par
 T{ [: medallion-fx effect @ 0<>  antimony-fx effect @ 0<>  summoner-was-on @ ;] in-place  summoner-on state-flag? -> -1 -1 -1 0 }T
 testing the walkway half way on its turn: 45 degrees
 T{ [: 60 turn-step !  eased ;] in-place  45e ~= -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the lever pulled: the walkway across (its parts, the flags)
 T{ lever-area -90 at  circle press  [: lever-done ;] 900 soon -> -1 }T
 T{ wt2f-1-flag3 story-flag?  wt2f-1-flag4 story-flag?  walkway-angle pi f2/ ~=  [: home-part part?  across-part part? ;] in-place -> -1 -1 -1 0 -1 }T

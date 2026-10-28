@@ -41,6 +41,7 @@ ht1f-2-prima-magnesia-found story-flag-clear  ht1f-2-prima-magnesia story-flag-c
 room-afresh
 testing coming in: its steady sound, its holes in the floor
 T{ [: steady-on @ ;] in-place  $51 nav-flags floor-flags:hole-floor and 0<> -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the water: a recovery point (its document the first time); then "Ah, that tasted good."
 T{ water-area 0 at  circle press  [: window-shown 0< 0= if  cross press  then  got-doc-recovery story-flag? ;] 900 soon -> -1 }T
 300 read-on  [: doing-busy? 0= ;] 600 soon drop

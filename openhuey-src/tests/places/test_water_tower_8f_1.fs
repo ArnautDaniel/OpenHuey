@@ -62,6 +62,7 @@ key: Right false key-hold  key: Up false key-hold  5 run-frames
 testing the Bronze Figurine at the diorama: it won't go - put away (triangle)
 diorama-area 180 at
 T{ 3 use-on-place  [: [: miniature? @ 0=  ['] sets-figure running? and ;] in-place ;] 200 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 60 run-frames  triangle press
 T{ [: [: ['] sets-figure running? 0= ;] in-place ;] 300 soon  [: model-set @ ;] in-place  world-frozen state-flag? -> -1 0 0 }T
 testing the Wooden Miniature in its place: Lorenzo comes (the door shut behind, the scene's flag)

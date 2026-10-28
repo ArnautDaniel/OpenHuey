@@ -76,6 +76,7 @@ testing ... Lavender: its effect for 300 frames, running down - calming 0.27 a f
 70 game:panic send panic-level!  1 run-frames
 T{ 1 1 use  calm-boost boost-on? -> 1 -1 }T
 T{ panic-level@  30 run-frames  panic-level@ f-  fdup 10e f>  11.5e f< -> -1 -1 }T   \ (0.1 calm, 0.27 Lavender's)
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 270 run-frames  calm-boost boost-on? -> 0 }T
 50 game:panic send panic-level!  1 run-frames
 T{ panic-level@  30 run-frames  panic-level@ f-  fdup 2.5e f>  3.5e f< -> -1 -1 }T   \ (0.1 calm alone)

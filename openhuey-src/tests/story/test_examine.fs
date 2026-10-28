@@ -31,5 +31,6 @@ front-garden-2 -1 rooms send go-to-room  30 run-frames
 testing a locked door's script: the place shows "locked from the other side" for her
 T{ $8001 broadcast fiona-message  deliver  2 run-frames  shown  [: story.kit:shown-msg @ ;] in-room -> $8001 $8001 }T
 T{ cross press  5 run-frames  [: story.kit:shown-msg @ ;] in-room  shown -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

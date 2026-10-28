@@ -39,5 +39,6 @@ T{ dark-door 2 doors:locked-against?  dark-door 1 doors:locked-against? -> -1 -1
 testing a step in: the dark takes her - the white room
 [: house-of-truth-b1-4 preload ;] in-place
 T{ 0 0 at  [: room-id house-of-truth-b1-4 = ;] 900 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 600 play-on
 test-summary

@@ -52,6 +52,7 @@ testing the crate: a blow breaks it, the beef jerky in it; picked up
 fg-5-breakable-broken story-flag-clear  fg-5-beef-jerky story-flag-clear  room-afresh
 -14e -9e 97e blow-at  [: spots ;] in-place
 T{ fg-5-breakable-broken story-flag?  [: jerky-fx effect @ 0<> ;] in-place -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: body-point-off ;] as-her
 variable before  beef-jerky items:items-of before !
 -14e -10e 97e picked

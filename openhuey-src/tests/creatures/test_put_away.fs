@@ -21,4 +21,5 @@ T{ spirit0 alive?  [: 0e 0e 3e spirit-put-away-near? ;] in-room-actor -> -1 0 }T
 fvariable sx  fvariable sz  spirit0 constant s0
 s0 body-at dup sf@ sx f!  8 + sf@ sz f!
 T{ [: sx f@ sz f@ 3e spirit-put-away-near? ;] in-room-actor  deliver 2 run-frames  s0 alive? -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

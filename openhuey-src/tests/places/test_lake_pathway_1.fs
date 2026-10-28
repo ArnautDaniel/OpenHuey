@@ -25,6 +25,7 @@ free-play  10 run-frames  0 game:fiona send costume
 testing before the books' second event: the path collapsed (its floor barred), its two remarks in turn
 c7-second-event story-flag-clear  over-music-d story-flag-clear  room-afresh
 T{ path-barred?  way-part part? -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ path-end-area 0 at  said  path-end-area 0 at  said  path-end-area 0 at  said -> collapsed-msg the-light-msg collapsed-msg }T
 T{ body-side-area 180 at  said -> -1 }T   \ (the body not offered yet)
 

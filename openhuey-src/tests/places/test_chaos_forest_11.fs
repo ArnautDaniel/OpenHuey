@@ -39,6 +39,7 @@ T{ [: rabbit-kind rabbit-slot figure-in  ['] rabbit start drop ;] in-place  [: [
 T{ 0 12e 31.5e 228e put  [: [: rabbit-slot figure 0< ;] in-place ;] 900 soon -> -1 }T
 testing the wisp hovering; she comes near it: startled - its fact, risen and gone
 T{ wisp-hovers? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 0 -24e 8.31e -132e put  cf-11-flag1 story-flag?  [: wisp-gone? ;] 300 soon -> -1 -1 }T
 testing ... not there again
 room-afresh

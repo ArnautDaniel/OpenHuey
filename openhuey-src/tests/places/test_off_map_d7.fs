@@ -58,6 +58,7 @@ clock-start  30 run-frames   \ (the run: Hewie the one played)
 x-d7-flag1 story-flag-clear  x-d5-flag1 story-flag-set  x-d8-flag1 story-flag-set   \ (the rooms beyond: no wisp of theirs)
 testing in by exit 0: at it, its camera (set 0); the wisp hovering
 T{ 0 by  room-id  his-camera@  wisp?  [: wisp-up @ ;] in-place -> off-map-d7 0 0 -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing a loud noise: the wisp stays, its flag unset
 T{ loud  100 run-frames  wisp?  x-d7-flag1 story-flag? -> -1 0 }T
 testing ... once its flag is set: no wisp

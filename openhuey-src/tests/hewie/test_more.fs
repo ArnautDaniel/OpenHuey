@@ -28,5 +28,6 @@ T{ $72 0 order  [: [: his-at behind-spot drop behind-at vec-dist 10e f< ;] his@ 
 testing 0x82: no target near - himself again
 hewie enter -1 his-target ! leave-actor
 T{ $82 0 order  2 run-frames  action $82 = -> 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

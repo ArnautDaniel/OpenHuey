@@ -37,4 +37,5 @@ T{ ' fiona.moving:root-move feet-off-act?  ' fiona.hurt:spirit-fall feet-off-act
 testing the points along her step on a slope: 11 back and 1 ahead; running 5 and 0.5
 T{ [: walk-anim -1 play-table  feet-way ;] hers  -1e f=  11e f= -> -1 -1 }T
 T{ [: run-anim -1 play-table  feet-way ;] hers  0.5e f=  5e f= -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

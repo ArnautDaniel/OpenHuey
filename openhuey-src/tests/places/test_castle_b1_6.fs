@@ -40,6 +40,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing the pulley in turn, before he's come
 reset-chapel  room-afresh
 T{ pulley-1-area 180 at  said  pulley-1-area 180 at  said -> pulley-msg fastened-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the stands weakened only while he's after her: his blow of 7 takes 25 to 18, then 11; none, nothing
 room-afresh  cb1-6-flag1 story-flag-set

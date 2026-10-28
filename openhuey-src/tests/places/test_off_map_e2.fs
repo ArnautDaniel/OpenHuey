@@ -69,6 +69,7 @@ T{ 1 by  room-id  his-camera@  lit?  [: 1 part? ;] in-place -> off-map-e2 1 1 13
 T{ 0 by  his-camera@ -> 0 0 }T
 testing its cameras: area 2 set 0, 8 set 1 (9's, set 2: no corners in its data); area 3 crossed out of, set 1
 T{ 2 hinto  his-camera@  8 hinto  his-camera@  9 0 area-corner >r fdrop fdrop fdrop r> -> 0 0 1 1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 2 hinto  3 both-ways  his-camera@ -> 1 1 }T
 testing the rooms ahead: into area 2 exit 0's, out of area 3 exit 1's
 T{ 1 by  2 hinto  spare@ -> off-map-e2 0 leads }T

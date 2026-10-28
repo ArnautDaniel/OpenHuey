@@ -43,6 +43,7 @@ T{ -61e 1e -52e blow-at  [: vase-1 breaks? ;] in-place -> -1 }T
 -66e 1e 55e blow-at  [: spots ;] in-place  [: body-point-off ;] as-her
 T{ c1f-14-breakable2-broken story-flag?  c1f-14-breakable3-broken story-flag?  1 part?  3 part?  5 part? -> -1 -1 -1 -1 -1 }T
 T{ [: jerky-fx effect @ 0<>  antimony-fx effect @ 0<> ;] in-place -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the jerky and the antimony picked up
 chicken-jerky items:items-of before !

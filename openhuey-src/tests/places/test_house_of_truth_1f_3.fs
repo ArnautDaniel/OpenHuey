@@ -36,6 +36,7 @@ got-golden-candlestick story-flag-clear  ht1f-3-rubrum-medallion story-flag-clea
 ht1f-3-viola-medallion story-flag-clear  ht1f-3-flag1 story-flag-set  items-40-as-70 story-flag-clear  room-afresh
 testing coming in: the flames lit, the candlestick there, the Rubrum Medallion's sparkle
 T{ 0 fx?  3 fx?  candlestick-part [: part? ;] in-place  rubrum-fx fx? -> -1 -1 -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the Golden Candlestick taken: its part gone, its file
 golden-candlestick items:items-of before !
 T{ candlestick-area 0 at  circle press  300 read-on  got-golden-candlestick story-flag?  candlestick-part [: part? ;] in-place -> -1 0 }T

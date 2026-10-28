@@ -13,6 +13,7 @@
 
 #include "../src/data/flacenc.h"
 #include "../src/data/musicsrc.h"
+#include "full_only.h"
 
 static int sBad, sTracks;
 static long long sAdxBytes, sFlacBytes;
@@ -122,6 +123,8 @@ static SDL_EnumerationResult one(void *user, const char *dir, const char *name) 
 int main(int argc, char **argv) {
     char data[1100];
     clock_t t0 = clock();
+
+    full_only("music-check");
 
     if (argc != 2) {
         fprintf(stderr, "usage: music-check <data folder>\n");

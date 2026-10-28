@@ -23,6 +23,7 @@ T{ vols -> 0 255 255 0 }T
 testing followed: the calm parts fade out over 90 frames
 force-followed danger!  5 run-frames
 T{ state -> sm-fading }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 100 run-frames
 T{ vols -> 0 0 0 0 }T
 testing chased, no stalker in the game: the chase from its start, silent (MusicDir_ChaseStep: none)

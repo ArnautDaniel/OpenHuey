@@ -22,6 +22,7 @@ T{ key: W true key-hold  20 run-frames  key: W false key-hold  was game:fiona bo
 testing "Where am I?" - in area $11 the room offers its action 4; taken, its message, and the flag set
 T{ fg-3-flag1 story-flag? -> 0 }T
 T{ $11 0 tp-area-facing  3 run-frames  [: story.kit:offer-xt @ ;] in-room -> ' story.places.front-garden-3:waking }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ circle press  300 [: shown 6 = ;] within -> -1 }T   \ (her waking animation first: about 170 frames)
 T{ cross press  120 [: fg-3-flag1 story-flag? ;] within -> -1 }T
 

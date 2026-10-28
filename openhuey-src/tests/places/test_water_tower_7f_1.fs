@@ -59,6 +59,7 @@ T{ hewie-off  geared -> 8 }T
 testing Hewie sent to the next plate as she points him at it
 free-him  8 her-on  geared drop  -176 57.25e 0e 57.25e put
 T{ geared  [: go-there-cmd started-now !  sends-him  ['] runs-to running? ;] in-place -> 7 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ [: [: ['] runs-to running? 0= ;] in-place ;] 600 soon  [: his-plate @ ;] in-place  geared -> -1 7 6 }T
 testing ... not when she's facing away
 off-plates  hewie-off  free-him  60 run-frames  8 her-on  4 57.25e 0e 57.25e put

@@ -43,6 +43,7 @@ T{ [: sparkle-fx effect @ 0<>  medallion-fx effect @ 0<> ;] in-place -> -1 -1 }T
 
 testing the remarks: the bridge in turn, the statue turn and turn about
 T{ bridge-area 180 at  said  bridge-area 180 at  said -> bridge-msg lower-it-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ statue-area 90 at  said  statue-area 90 at  said  statue-area 90 at  said -> statue-msg gargoyles-msg statue-msg }T
 
 testing Hewie: wary on the balcony (once a visit)

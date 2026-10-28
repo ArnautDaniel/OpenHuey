@@ -20,6 +20,7 @@ T{ apart 20e f< -> -1 }T
 T{ hewie body-tri 0< -> 0 }T
 T{ [: his-model @ actor act.visible l@ ;] his@ -> 1 }T
 T{ [: his-hp @ his-cond @ his-trust @ ;] his@ -> 100 0 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing left to himself he does one thing after another, on the floor
 variable seen   \ a bit an action (under 0x40)

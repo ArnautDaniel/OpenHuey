@@ -36,6 +36,7 @@ ht1f-1-flag1 story-flag-clear  ht1f-1-album-medallion-found story-flag-clear  ht
 got-doc-recovery story-flag-set  room-afresh
 testing coming in: the wall whole, the flame, the holes in the floor, its steady sound
 T{ 0 [: part? ;] in-place  1 [: part? ;] in-place  [: flame-fx effect @ 0<>  steady-on @ ;] in-place  $51 nav-flags floor-flags:hole-floor and 0<> -> -1 0 -1 -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the water: a recovery point; then its second remark
 T{ water-area 0 at  circle press  [: window-shown 0< 0= if  cross press  then  [: rested @ ;] in-place  doing-busy? 0= and ;] 900 soon -> -1 }T
 T{ water-area 0 at  said -> good-water-msg }T

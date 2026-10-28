@@ -38,5 +38,6 @@ T{ door-shades -> 2 }T
 T{ 0 door-shade f>s -> 0 0 18 }T
 0 -1 -70e door-swing  2 run-frames
 T{ door-shades -> 2 }T                       \ (open at all: its shadow; blocking the lights is past 78.75)
+full-suite   \ (on: waits, scenes, walks - the full run's)
 0 -1 0e door-swing  2 run-frames
 test-summary

@@ -34,6 +34,7 @@ T{ [: 0 0 story.kit:fade ;] in-room  2 run-frames  screen-level -> 1000 }T
 [: 0 1 story.kit:fade ;] in-room
 T{ [: 10 6 story.kit:fade ;] in-room  15 run-frames  screen-level -> 500 }T
 T{ [: 10 7 story.kit:fade ;] in-room  15 run-frames  screen-level -> 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the scene (Hewie freed from the wire, at night): the movie, the cutscene, Fiona in it, its subtitles
 c2f-3-flag1 story-flag-set  0 game:fiona send costume  castle-2f-3 room!  30 run-frames

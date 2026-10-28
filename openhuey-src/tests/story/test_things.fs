@@ -32,5 +32,6 @@ T{ [: 0 light-back ;] in-room  0 light@ fdrop own-level f- fabs 0.001e f< -> -1 
 testing the look: fog and the depth range on and off
 T{ [: $40424C74 $4244489C 8.54e 25.61e fog  1e 1e 1e 48.6e depth-range ;] in-room  $1D look-on?  $1C look-on? -> -1 -1 }T
 T{ [: fog-off  depth-range-off ;] in-room  $1D look-on?  $1C look-on? -> 0 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

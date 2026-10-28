@@ -4,5 +4,6 @@ USING: tester ;
 
 testing the scripts load with no warnings
 T{ warnings -> 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary
