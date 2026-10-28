@@ -29,7 +29,7 @@ create spot 12 allot
 variable before
 : room-afresh ( -- )  house-of-truth-b1-9 room!  60 run-frames ;
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
-: lorenzo-loaded ( -- )  lorenzo2-kind story.words:partner-load  5 run-frames ;
+: lorenzo-loaded ( -- )  lorenzo2-kind story.base:partner-load  5 run-frames ;
 : lorenzo-out ( -- )  game:lorenzo2 send stalker-out  10 run-frames ;
 : lorenzo-here? ( -- flag )  [: stalker-in? ;] in-place ;
 : on-tri? ( tri -- flag )  [: stalker body-tri = ;] in-place ;

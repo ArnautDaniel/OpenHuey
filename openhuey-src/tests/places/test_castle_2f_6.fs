@@ -52,7 +52,7 @@ testing the Study Key used at the desk: the drawer, the Lunar Refractor - the st
 study-key 1 items send give-item  10 run-frames  lunar-refractor items:items-of before !
 0 -3e 0e 31e put  5 use-on-place  600 read-on
 T{ got-lunar-refractor story-flag?  lunar-refractor items:items-of  study-key items:items-of  summoner-on state-flag? -> -1 before @ 1+ 0 -1 }T
-T{ story.words:slot2-kind @ -> debilitas-7-kind }T
+T{ story.base:slot2-kind @ -> debilitas-7-kind }T
 summoner-on state-flag-clear
 
 testing Hewie: a bark at the desk (the refractor in it still), once a visit

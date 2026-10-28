@@ -1,11 +1,12 @@
-\ story/places/water-tower-7f-1.fs - the Water Tower's 7F, the hall of the planets ($C5): eight plates,
-\ one under each planet, lit in turn from Saturn's (the eighth, lit as she comes in) down to the
-\ middle one - each lit while she or Hewie stands on the one before (left: dark again down to the
-\ last one still stood on); each plate stepped onto rings; Hewie sent to the next one when she
+\ story/places/water-tower-7f-1.fs - the Water Tower's 7F, the hall of the planets ($C5): eight
+\ plates, one under each planet, lit in turn from Saturn's (the eighth, lit as she comes in) down to
+\ the middle one - each lit while she or Hewie stands on the one before (left: dark again down to
+\ the last one still stood on); each plate stepped onto rings; Hewie sent to the next one when she
 \ points him at it, and he sits on any he reaches; all lit - the scene: the way on opened, the door
 \ behind her closed for good, Hewie gone ahead; the clock; the inscription; hunted while she's here;
 \ its four sounds in turn; the replay. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/water-tower-7f-1.fs (converted from the game's, not loaded).
+\ story/rooms-ref/water-tower-7f-1.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.water-tower-7f-1
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     items.names story.kit fiona.anims scenes ;

@@ -398,7 +398,7 @@ after: better-textures   \ loaded after that mod, if it's on
    first, so the flowers' own use (the vase) is untouched. `mods_flower_scent` (ctest) runs it.
 
 Later, if mods ask for it: replacing one of the game's script files outright (a mod's
-`scripts/story/rooms/castle-1f-4.fs` over the game's). It would break with every change to that
+`scripts/story/places/castle-1f-4.fs` over the game's). It would break with every change to that
 file; the mods menu would mark such mods "replaces game scripts".
 
 ### The mods menu

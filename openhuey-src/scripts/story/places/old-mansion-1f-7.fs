@@ -1,10 +1,11 @@
-\ story/places/old-mansion-1f-7.fs - the extractor's room of the old mansion's 1F: the extractor (its
-\ plaque, and the file of it; the Prima Materia put in, Sulfuric Ore out - anything else, nothing);
-\ the large device; the high windows ("If I get caught now..."); brought in by the forced way the
-\ first time, the scene ("come with me...") and the chapter's turn - out by the forced way, the
-\ mansion's doors anew, the stalker in; the Album Medallion Hewie sniffs out; his looks; its hum.
-\ A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-7.fs
-\ (converted from the game's, not loaded).
+\ story/places/old-mansion-1f-7.fs - the extractor's room of the old mansion's 1F: the extractor
+\ (its plaque, and the file of it; the Prima Materia put in, Sulfuric Ore out - anything else,
+\ nothing); the large device; the high windows ("If I get caught now..."); brought in by the forced
+\ way the first time, the scene ("come with me...") and the chapter's turn - out by the forced way,
+\ the mansion's doors anew, the stalker in; the Album Medallion Hewie sniffs out; his looks; its
+\ hum. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/old-mansion-1f-7.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-1f-7
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     items.names story.kit fiona.anims scenes ;

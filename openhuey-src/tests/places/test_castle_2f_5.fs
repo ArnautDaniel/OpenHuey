@@ -44,7 +44,7 @@ saturnus-hint-on story-flag-set  room-afresh
 T{ mirror -> 0 -1 -1 0 }T
 saturnus-hint-on story-flag-clear
 testing ... the first fragment reflecting Daniella (the scene's): the door's glass made over
-daniella-kind story.words:partner-load  5 run-frames  room-afresh
+daniella-kind story.base:partner-load  5 run-frames  room-afresh
 T{ [: fragment-glint  door-fx effect @ 0<> ;] in-place -> -1 }T
 room-afresh
 

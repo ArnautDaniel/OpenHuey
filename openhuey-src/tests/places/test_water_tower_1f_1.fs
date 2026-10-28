@@ -55,7 +55,7 @@ T{ [: medallion-fx effect @ 0<> ;] in-place -> 0 }T
 T{ [: wt1f-1-medallion-found story-flag? ;] 600 soon -> -1 }T
 400 run-frames
 testing Riccardo: in her sight, his time up - he stays; out of her sight - taken off (not while the summoner still counts)
-game:hewie send part-from-fiona  room-afresh  4 story.words:partner-load  5 run-frames
+game:hewie send part-from-fiona  room-afresh  4 story.base:partner-load  5 run-frames
 water-area -44 at  [: 60 summoner-waits ;] in-place  5 run-frames
 [: water-tower-1f-1 200 stalker-to ;] in-place  30 run-frames  [: 0 summoner-waits ;] in-place  60 run-frames
 T{ [: stalker-in?  stalker unseen? ;] in-place -> -1 0 }T

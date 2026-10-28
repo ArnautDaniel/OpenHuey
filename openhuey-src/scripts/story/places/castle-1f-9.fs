@@ -3,8 +3,8 @@
 \ well, the bench facing the wall, two vases (the Magnesia behind one), the Rubrum Medallion Hewie
 \ sniffs out, the garden door - locked, the Garden Key opening it and the Luminessants' scene; her
 \ first fright here; the motes rising, the tint by day, specks by night. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/castle-1f-9.fs (converted from the game's, not
-\ loaded).
+\ original's scripts, for checking: story/rooms-ref/castle-1f-9.fs in the history (converted from
+\ the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-1f-9
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects story.kit fiona.anims hewie.anims scenes ;

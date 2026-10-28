@@ -2,7 +2,8 @@
 \ into the lake until the way across is open (the books' second event, c7-second-event, and the
 \ bridge not yet gone); the body she remarks on, the collapsed path, the lavender by the water,
 \ Hewie's look at the drop. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/lake-pathway-1.fs (converted from the game's, not loaded).
+\ story/rooms-ref/lake-pathway-1.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.lake-pathway-1
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects story.kit fiona.anims ;

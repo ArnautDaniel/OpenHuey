@@ -1,7 +1,7 @@
 \ The stalkers, P1: Debilitas in the house (docs/subsystems/stalker.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_stalker.fs
 IN: test-stalker
-USING: stalker-names story.words tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.head stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam ;
+USING: stalker-names tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.head stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam story.base ;
 fvariable dx  fvariable dy  fvariable dz  fvariable dyaw
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;

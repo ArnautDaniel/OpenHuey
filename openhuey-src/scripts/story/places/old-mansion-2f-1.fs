@@ -1,7 +1,7 @@
 \ story/places/old-mansion-2f-1.fs - the old mansion's 2F landing ($45): the curtain, the barred
 \ way; once its floor has fallen (old-mansion-b1-5's flag), her remark at the gap from either side.
 \ A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-2f-1.fs
-\ (converted from the game's, not loaded).
+\ in the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-2f-1
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags story.kit ;
 

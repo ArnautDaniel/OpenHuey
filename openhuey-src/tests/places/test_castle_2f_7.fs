@@ -52,7 +52,7 @@ testing ... again: its remark, the screen
 T{ [: doing-busy? 0= ;] 300 soon -> -1 }T
 
 testing the golem done, someone trying the door from beyond (Debilitas loaded, out of the game): a fright
-golem-done story-flag-set  c2f-7-flag2 story-flag-clear  2 story.words:partner-load  10 run-frames  room-afresh
+golem-done story-flag-set  c2f-7-flag2 story-flag-clear  2 story.base:partner-load  10 run-frames  room-afresh
 [: door-0 true open-mark ;] in-place  10 run-frames
 45 30e 0e 18e put  circle press
 T{ [: c2f-7-flag2 story-flag? ;] 300 soon -> -1 }T

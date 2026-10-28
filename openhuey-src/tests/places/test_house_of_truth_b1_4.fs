@@ -59,7 +59,7 @@ T{ [: 7199 frames-here ! ;] in-place  shown-soon  shared-flag3 story-flag? -> 7 
 300 read-on
 T{ [: 7499 frames-here ! ;] in-place  5 run-frames  shared-flag4 story-flag? -> -1 }T
 testing then Lorenzo waiting here as she comes in
-lorenzo2-kind story.words:partner-load  5 run-frames  room-afresh
+lorenzo2-kind story.base:partner-load  5 run-frames  room-afresh
 T{ [: [: stalker-in? ;] in-place ;] 120 soon -> -1 }T
 game:lorenzo2 send stalker-out  10 run-frames
 test-summary

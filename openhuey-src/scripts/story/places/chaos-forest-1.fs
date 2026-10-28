@@ -1,8 +1,9 @@
-\ story/places/chaos-forest-1.fs - the Chaos Forest's edge ($67): the hopping figure (the kit's hopper -
-\ struck it hops back, the fifth time it lashes out) and its calls; the Forest Map on the stump; Hewie
-\ wary of the figure, his look at it; the way on before Hewie is found - into chaos-forest-8's scene.
-\ A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/chaos-forest-1.fs
-\ (converted from the game's, not loaded).
+\ story/places/chaos-forest-1.fs - the Chaos Forest's edge ($67): the hopping figure (the kit's
+\ hopper - struck it hops back, the fifth time it lashes out) and its calls; the Forest Map on the
+\ stump; Hewie wary of the figure, his look at it; the way on before Hewie is found - into
+\ chaos-forest-8's scene. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/chaos-forest-1.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.chaos-forest-1
 USING: engine game-state actors messages common facts room-names flag-names story-names items.names
     effects story.kit fiona.anims ;

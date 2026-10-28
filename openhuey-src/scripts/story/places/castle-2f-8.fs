@@ -1,9 +1,10 @@
 \ story/places/castle-2f-8.fs - the kiln room in Belli Castle's 2F ($24): an earth doll - a golem -
-\ blocks the door; the word plate brings it to life (EMETH: it walks to the door's side) or to
-\ dust (METH), or sets it dancing (SALTATIO); the old parchment, the kiln, the mark, a breakable,
-\ the obsidian choker. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/castle-2f-8.fs (converted from the game's, not loaded). The golem is the room's own model -
-\ before the kiln (part 0), at the door (part 1), crumbled (part 2): there is one.
+\ blocks the door; the word plate brings it to life (EMETH: it walks to the door's side) or to dust
+\ (METH), or sets it dancing (SALTATIO); the old parchment, the kiln, the mark, a breakable, the
+\ obsidian choker. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/castle-2f-8.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20). The golem is the room's own model - before the kiln (part 0), at the door
+\ (part 1), crumbled (part 2): there is one.
 IN: story.places.castle-2f-8
 USING: engine game-state actors messages common vectors facts flag-names story-names room-names floor-flags
     effects story.kit fiona.anims fiona.sounds scenes ;

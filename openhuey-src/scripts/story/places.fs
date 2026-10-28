@@ -1,5 +1,5 @@
-\ story/places.fs - the rooms written as places (story/kit.fs, docs/rooms-design.md). Each one
-\ here replaces its room's converted scripts (story/rooms/).
+\ story/places.fs - the rooms written as places (story/kit.fs, docs/rooms-design.md): every room
+\ with anything of the story's (they replaced its converted scripts, gone in 0.2.20).
 IN: story.places
 USING:
     story.places.off-map-5a

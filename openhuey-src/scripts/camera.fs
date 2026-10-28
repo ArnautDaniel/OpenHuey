@@ -1,7 +1,7 @@
 \ camera.fs - the game's camera (docs/subsystems/camera.md). The director in C (game/camdirector.c)
 \ keeps whom it follows and each character's setup, and does the cuts, the paths and the easing;
-\ the story calls it itself where the original does (story/words.fs: cam-char-setup, cam-on,
-\ cam-shake!, cam-restart; story/room.fs: the room's start). This actor runs it each frame in the
+\ the story calls it itself where the original does (story/kit.fs: camera-set, follow, the
+\ shake, camera-restart; the place's start: camera-starts). This actor runs it each frame in the
 \ original's order (SceneGame's play frame: CamDirector_Ease first, then whom it follows and their
 \ setup, CamDirector_Track, CamDirector_Update) and takes the story's own shot of the one followed.
 IN: camera
@@ -52,7 +52,7 @@ behaviour filming
   on spawned ( -- )  cam-forget-setups  self subscribe tick  self subscribe frame-end  self subscribe arrived ;
   \ a fresh start (a new game, a load - SceneGame_RoomIn: CamDirector_NewRoom, the camera on
   \ Fiona); from room to room the director goes on - its shake, its shot, whom it follows - and
-  \ only the characters' setups go. The room's script starts it (story/room.fs).
+  \ only the characters' setups go. The place starts it (story/kit.fs: camera-starts).
   on arrived ( room exit -- )
       nip 0 held !  cam-stop
       0< if  fresh-start  else  cam-forget-setups  then ;

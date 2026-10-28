@@ -1,9 +1,10 @@
-\ story/places/old-mansion-1f-16.fs - the reservoir hall of the old mansion's 1F: the light rippling off
-\ the water (the ceiling's glass; once drained, low down, drops falling); the first time she stands
-\ by the way in, she goes on; at the door to the waterway, Daniella's scene (the creatures gone, out
-\ by it); the locked door with its odd marking (the Mars Key opens it); the water pooled below; the
-\ Refined Magnesia; the map's pages. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-1f-16.fs (converted from the game's, not loaded).
+\ story/places/old-mansion-1f-16.fs - the reservoir hall of the old mansion's 1F: the light rippling
+\ off the water (the ceiling's glass; once drained, low down, drops falling); the first time she
+\ stands by the way in, she goes on; at the door to the waterway, Daniella's scene (the creatures
+\ gone, out by it); the locked door with its odd marking (the Mars Key opens it); the water pooled
+\ below; the Refined Magnesia; the map's pages. A place (story/kit.fs). The original's scripts, for
+\ checking: story/rooms-ref/old-mansion-1f-16.fs in the history (converted from the game's; gone
+\ with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-16
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names effects story.kit fiona.anims scenes ;

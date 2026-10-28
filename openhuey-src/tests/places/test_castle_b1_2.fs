@@ -67,7 +67,7 @@ circle press  [: doing-busy? 0= ;] 600 soon drop
 T{ hidden?  free? -> 0 -1 }T
 
 testing the stalker coming in while she hides: he searches - his comings counted
-2 story.words:partner-load  5 run-frames  room-afresh
+2 story.base:partner-load  5 run-frames  room-afresh
 shower-area 180 at  circle press  [: hidden? ;] 600 soon drop
 search-var var@ before !
 castle-b1-2 $FA game:debilitas send stalker-in  10 run-frames

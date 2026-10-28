@@ -1,7 +1,7 @@
 \ story/places/off-map-c4.fs - room $C4 (on no map page): in by exit 1, out by it from area 1; its
 \ cameras; the rooms beyond exits 0 and 1 loaded ahead as she nears them. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/off-map-c4.fs (converted from the game's,
-\ not loaded).
+\ The original's scripts, for checking: story/rooms-ref/off-map-c4.fs in the history (converted from
+\ the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-c4
 USING: engine game-state actors messages common flag-names room-names story.kit ;
 

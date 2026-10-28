@@ -14,7 +14,7 @@ enum: person  fiona-p hewie-p stalker-p ;
 : hewie ( -- id )  s" hewie" actor-named ;
 : figure-of? ( id -- flag )   \ (in one of the story's slots 3..5: a scene's figure - a stalker's actor too)
     dup 0< if  drop false exit  then
-    3 0 do  i 3 + story.words:slot-actor @ over = if  drop true unloop exit  then  loop  drop false ;
+    3 0 do  i 3 + story.base:slot-actor @ over = if  drop true unloop exit  then  loop  drop false ;
 : stalker ( -- id )   \ (the one with a body, not a scene's figure)
     #stalkers 0 do  i stalker# dup 0< 0= if  dup body?  over figure-of? 0= and if  unloop exit  then  then  drop  loop  -1 ;
 : person-id ( i -- id )  case  fiona-p of fiona endof  hewie-p of hewie endof  stalker-p of stalker endof  >r -1 r>  endcase ;
@@ -344,7 +344,7 @@ $80 constant forced-exit   \ (an exit's bit: not by a door - to the room loaded 
 : door-shut ( door -- )  0 doors-actor send door-opened ;   \ (its opened mark cleared)
 : doors-redone ( -- )  doors-actor send redo-doors ;
 
-\ ---- the room's parts (its mesh's own groups, and its doors' models': story.words door-bits) ----
+\ ---- the room's parts (its mesh's own groups, and its doors' models': the doors' parts) ----
 $14 constant parts-base
 : part ( n on -- )  swap parts-base + 1+ swap  2dup door-group!  room-group! ;
 : part? ( n -- flag )  parts-base + 1+ room-group? ;   \ (shown)
@@ -388,14 +388,14 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
 \ ---- the story's character slots (shared with the converted rooms): figures for a scene ----
 3 constant first-figure-slot
 : figure-in ( kind slot -- )   \ a stalker by his kind, else an event figure (cast.fs), where it is
-    {: kind slot | a :}  kind story.words:stalker-actor to a
-    a 0< 0= if  a slot story.words:slot-actor !  kind slot story.words:slot-id !  slot a send stalker-load exit  then
-    slot story.words:slot-actor @ 0< 0= if  exit  then
-    slot story.words:cast-actor to a  a 0< if  exit  then
-    a slot story.words:slot-actor !  kind slot story.words:slot-id !  kind a send cast-load ;
-: figure-out ( slot -- )  story.words:slot-clear ;
+    {: kind slot | a :}  kind story.base:stalker-actor to a
+    a 0< 0= if  a slot story.base:slot-actor !  kind slot story.base:slot-id !  slot a send stalker-load exit  then
+    slot story.base:slot-actor @ 0< 0= if  exit  then
+    slot story.base:cast-actor to a  a 0< if  exit  then
+    a slot story.base:slot-actor !  kind slot story.base:slot-id !  kind a send cast-load ;
+: figure-out ( slot -- )  story.base:slot-clear ;
 : figure-in-by ( kind slot exit -- )   \ (a figure loaded, coming in by that exit of this room)
-    {: kind slot ex :}  kind slot figure-in  slot story.words:slot-actor @ dup 0< if  drop exit  then  ex swap send to-exit ;
+    {: kind slot ex :}  kind slot figure-in  slot story.base:slot-actor @ dup 0< if  drop exit  then  ex swap send to-exit ;
 : no-shadow ( kind on -- )   \ a character's shadows off for a scene (or back) - by its kind (Fiona 0)
     {: kind on :}  kind cast-model dup 0< if  drop exit  then  actor act.shadow-off  on 0<> 1 and swap l! ;
 
@@ -429,7 +429,7 @@ $2D constant ending-var   \ (which of the endings caught her, for the game over'
 : filed ( doc -- )  dup item-named  1 give-item  fanfare  filed-message say ;   \ a document filed, said so
 : trust-file ( -- )   \ (in the other game: the file for Hewie's trust now, levels 1..7 - the shared $9C)
     items-40-as-70 fact? 0= if  exit  then  hewie-trust-now @ dup 1 8 within if  $828E + give-file  else  drop  then ;
-: screen-dark ( alpha -- )  story.words:screen-fill ;   \ (this frame: the screen darkened by alpha, to $80)
+: screen-dark ( alpha -- )  story.base:screen-fill ;   \ (this frame: the screen darkened by alpha, to $80)
 : spirits-gone ( -- )  1 s" creatures" actor-named send creatures-clear ;   \ (the spirits about the castle away)
 : panic-to ( stage -- )  s" panic" actor-named send panic-stage! ;
 : panic-over ( -- )  0 panic-to ;
@@ -532,15 +532,15 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
     grab-asked-now @ 0=  stalker 0< 0= and if  -1 grab-asked-now !  stalker send grab-hewie  then  false ;
 : grab-ready? ( -- flag )  grabs-hewie? drop  grab-last-now @ ;   \ (asked each frame: his last answer - a frame old)
 : grab-forget ( -- )  0 grab-last-now ! ;   \ (not by Hewie now: no answer kept)
-: partner ( -- id | -1 )  story.words:slot2 @ ;   \ the story's stalker (its slot 2): loaded, in the game or not
-: partner-kind ( -- kind )  story.words:slot2-kind @ ;
+: partner ( -- id | -1 )  story.base:slot2 @ ;   \ the story's stalker (its slot 2): loaded, in the game or not
+: partner-kind ( -- kind )  story.base:slot2-kind @ ;
 : face-on ( kind sel addr len -- )   \ a character's face: its texture sel the file's first (Progress_LoadSpeech / Speak)
-    story.words:speech-load  {: kind sel :}  kind cast-model dup 0< if  drop exit  then
-    sel story.words:speech-file story.words:speech-len @ actor-texture-swap drop ;
+    story.base:speech-load  {: kind sel :}  kind cast-model dup 0< if  drop exit  then
+    sel story.base:speech-file story.base:speech-len @ actor-texture-swap drop ;
 : face-off ( kind -- )  cast-model dup 0< if  drop exit  then  actor-texture-restore ;   \ (its own face again)
 : daniellas-model ( -- model | -1 )  partner-kind daniella-kind = if  daniella-kind cast-model  else  -1  then ;   \ (the stalker loaded Daniella)
-: hands-empty ( -- )  daniellas-model dup 0< if  drop exit  then  false false story.words:daniella-parts ;   \ (what she holds put away)
-: hands-back ( -- )  daniellas-model dup 0< if  drop exit  then  story.words:daniella-one ;   \ (what she holds shown again)
+: hands-empty ( -- )  daniellas-model dup 0< if  drop exit  then  false false story.base:daniella-parts ;   \ (what she holds put away)
+: hands-back ( -- )  daniellas-model dup 0< if  drop exit  then  story.base:daniella-one ;   \ (what she holds shown again)
 : her-back ( pose -- )  daniellas-model dup 0< if  2drop exit  then  swap cloth-back! ;   \ (Daniella's back for her hair: 0 standing, 1 flat, 2 bent)
 : stalker-present ( -- )   \ (in an activity: a few frames for the stalker sent in to have his body)
     20 0 do  stalker 0< 0= if  unloop exit  then  yield  loop ;
@@ -578,13 +578,14 @@ create tint-bytes 9 allot
 : room-tint ( gr gg gb ga cr cg cb ca -- )   \ (its mode 0)
     0 tint-bytes 8 + c!  8 0 do  tint-bytes 7 i - + c!  loop  tint-slot tint-bytes 9 look-set ;
 \ the look's other slots: the depth range (its far view's: Room_DepthRange), the screen's blend
-$1C constant depth-slot   $1E constant blend-slot
+$1C constant depth-slot   $1D constant fog-slot   $1E constant blend-slot
 create look-bytes 16 allot
 : depth-range ( F: a b c d -- )
     look-bytes 12 + sf!  look-bytes 8 + sf!  look-bytes 4 + sf!  look-bytes sf!  depth-slot look-bytes 16 look-set ;
 : depth-range-off ( -- )  depth-slot 0 0 look-set ;
-: fog ( a b F: near far -- )  true story.words:fog ;   \ (the picture fogged: colours a and b, near to far)
-: fog-off ( -- )  0 0 false 0e 0e story.words:fog ;
+: fog ( a b F: near far -- )   \ (the picture fogged: colours a and b, near to far - the look's slot $1D)
+    look-bytes 4 + l!  look-bytes l!  look-bytes 12 + sf!  look-bytes 8 + sf!  fog-slot look-bytes 16 look-set ;
+: fog-off ( -- )  fog-slot 0 0 look-set ;
 : screen-blend ( rgba mode -- )  look-bytes 4 + c!  look-bytes l!  blend-slot look-bytes 5 look-set ;
 : screen-blend-off ( -- )  blend-slot 0 0 look-set ;
 : glow-at ( k rgba F: x y z size -- )  effects:glow swap effect! ;   \ effect k: a glow (Effect737D0)
@@ -792,7 +793,7 @@ create spot-xts #activities cells allot
 : floor-tri-on ( tri flags -- )  true -rot nav-tri-flags! ;   \ (one triangle's floor: who it keeps off)
 : floor-tri-off ( tri flags -- )  false -rot nav-tri-flags! ;
 : closed-off ( door -- )  dup doors-actor send close-off  lock ;   \ gone for good: its exits use another door
-: closed-off? ( door -- flag )  story.words:door-not-closed-off? 0= ;   \ (closed off for good)
+: closed-off? ( door -- flag )  story.base:door-not-closed-off? 0= ;   \ (closed off for good)
 : door-as ( door from -- )  doors-actor send copy-door ;   \ door takes on the other's open mark, lock and closing off
 : door-for ( door slot on -- )  doors-actor send lock-for ;   \ locked against the story slot's kind of character, or not
 : reopened ( door -- )  dup doors-actor send reopen  unlock ;  \ back again, unlocked (its exits theirs again)
@@ -832,7 +833,7 @@ $24 constant place-y
 : wanderer-at ( k F: x y z rx rz tx ty tz -- )  effects:wander swap effect! ;   \ effect k: a flat thing wandering within (rx, rz), turned so (degrees)
 : dust ( F: x y z -- )  0 $80 $80 $80 16 effects:burst ;   \ grey dust thrown up there
 : dust-of ( kind r g b F: x y z -- )  16 effects:burst ;   \ dust of a kind and colour (the rooms' 0xC8 with its own)
-: rumble-pad ( motor strength frames -- )  story.words:rumble-pad ;   \ (motor 0 the small one, buzzing; else the large at that strength)
+: rumble-pad ( motor strength frames -- )  story.base:rumble-pad ;   \ (motor 0 the small one, buzzing; else the large at that strength)
 : reverb ( core level -- )  sound-reverb! ;   \ (core 0 the music's, 1 the effects')
 : threat ( v -- )  0 max 100 min s>f f>cell s" panic" actor-named send threat ;   \ (her fright raised to it)
 : fright-up-to ( v -- )   \ (her fright raised by what her panic is short of v: Panic_FrightRaw)
@@ -1342,7 +1343,7 @@ variable cab-searched
 : replay-over ( -- )  forced-exit take-exit  events-held state-off  hewie send part-from-fiona ;
 
 \ ---- the figures' own (the story's slots 3..5: a figure loaded there) ----
-: figure ( slot -- id | -1 )  story.words:slot-actor @ ;
+: figure ( slot -- id | -1 )  story.base:slot-actor @ ;
 : figure-play ( slot anim loop? fade -- )   \ held in it (loop? 1: over and over)
     {: slot anim lp fade :}  slot figure dup 0< if  drop exit  then  >r  anim lp fade  r> send hold-anim ;
 : figure-wait ( slot -- )   \ its animation come round
@@ -1399,16 +1400,16 @@ end-structure
     33 chance? if  snd  else  50 chance? if  snd 1+  else  snd 2 +  then  then  hopper-sound ;
 : hopper-gone ( -- )  hopper-slot figure dup 0< if  drop  else  let-go  then ;
 : figure-dressed-as ( slot other -- )   \ wearing the other's model
-    story.words:slot-id @ cast-model dup 0< if  2drop exit  then  swap figure dup 0< if  2drop exit  then  send cast-dress ;
+    story.base:slot-id @ cast-model dup 0< if  2drop exit  then  swap figure dup 0< if  2drop exit  then  send cast-dress ;
 : figure-shift ( slot F: dx dy dz -- )   \ moved by so much, its heading kept
     {: slot F: dx dy dz :}  slot figure dup 0< if  drop exit  then  {: a :}
     a body-pos {: F: x y z :}  x dx f+  y dy f+  z dz f+  a body-yaw  xyzw>cells a send place ;
-: stalker-ready ( kind -- )  story.words:partner-load ;   \ the game's stalker: that kind, loaded and started
-: stalker-unloaded ( -- )  story.words:slot-unload ;   \ the game's stalker out (the story's slot 2 emptied)
+: stalker-ready ( kind -- )  story.base:partner-load ;   \ the game's stalker: that kind, loaded and started
+: stalker-unloaded ( -- )  story.base:slot-unload ;   \ the game's stalker out (the story's slot 2 emptied)
 : movie-key ( a b -- )  -1 -rot movie-compose ;   \ (the keyed movie's luminance key: its threshold and range)
 : film ( name class -- )   \ (a movie alone - the projector's: played through, the start button stops it)
     {: n cls :}  n this-room @ story.strings:room-string movie-open drop  1 movie-pause
-    cls story.words:class>compo $10 $20 movie-compose
+    cls story.base:class>compo $10 $20 movie-compose
     begin  scenes:movie-state 1 =  while  yield  repeat   \ (made ready)
     scenes:movie-state 0< if  exit  then
     1e movie-volume!  0 movie-pause  yield  world-held state!
@@ -1425,7 +1426,7 @@ end-structure
     {: id tri face b kind F: x z :}  id kind tri b  tri x z floor-at  face deg>yaw  move  id wait-move ;
 : path-to ( id tri b kind -- )  {: id tri b kind :}  id kind tri b  tri tri-center  id body-yaw  move  id wait-move ;
 : tint ( id rgba -- )  swap model-of dup 0< if  2drop exit  then  actor act.tint l! ;   \ ($80808080 as it is)
-: gs-tint ( id gs -- )  story.words:gs>rgba tint ;   \ (a GS colour, $AABBGGRR - the rooms' char-tint)
+: gs-tint ( id gs -- )  story.base:gs>rgba tint ;   \ (a GS colour, $AABBGGRR - the rooms' char-tint)
 : doorway-fades ( id on -- )  0<> 1 and  swap model-of dup 0< if  2drop exit  then  actor act.doorway-fade l! ;
 : to-door ( id exit -- )   \ (walking to its door's spot on her side - to try it)
     {: id ex :}  id here? 0= if  exit  then
@@ -1500,7 +1501,7 @@ behaviour placing
       people-in  frame-start  ['] d.frame run-desc  every-room  0 request-now !  -1 started-now !   \ (read: gone)
       offer-out  onset @ 0= if  run-acts  then ;
   on frame-end ( -- )
-      entered @ 0= if  exit  then  remember-people  loud-now @ if  -1 loud-now +!  then
+      entered @ 0= if  exit  then  remember-people  loud-now @ if  -1 loud-now +!  then  story.base:fill-frame
       st-age @ 100 < if  1 st-age +!  then  #creatures 0 do  i cells cr-age + dup @ 100 < if  1 swap +!  else  drop  then  loop
       going @ 0< 0= if  going @  -1 going !  -1 leaving !  rooms-actor send go-through  then ;
   on take-offer ( scene arg -- )
@@ -1513,7 +1514,7 @@ behaviour placing
   on text-closed ( msg answer -- )  answer !  shown-msg @ = if  -1 shown-msg !  then ;
   on fade-done ( -- )  0 fading ! ;
   on moving ( done ended events -- )
-      sender person-of dup 0< if  drop  3 0 do  i 3 + story.words:slot-actor @ sender = if  over i cells figure-ended + !  2 pick i cells figure-done + !  then  loop  drop 2drop exit  then
+      sender person-of dup 0< if  drop  3 0 do  i 3 + story.base:slot-actor @ sender = if  over i cells figure-ended + !  2 pick i cells figure-done + !  then  loop  drop 2drop exit  then
       tuck cells marks + !  tuck cells anim-ended + !  cells move-done + ! ;
   on scene-ready ( movie? -- )  scene-movie !  scene-is-ready scene-step ! ;
   on scene-shot ( shot -- )  cue-xt @ ?dup if  execute  else  drop  then ;

@@ -1,9 +1,10 @@
-\ story/places/old-mansion-1f-19.fs - a room of the old mansion's 1F with a hole in the wall ("Enter the
-\ hole?": through it, out by the far way; back through it, here) and a hiding place out of sight (the
-\ kit's; Daniella's search - she looks in); after the 3F's turn a homunculus dropped in, once; the
-\ scene's figure loaded on the way to the far door; Hewie barking at a spot, his look; its sound. A
-\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-19.fs
-\ (converted from the game's, not loaded).
+\ story/places/old-mansion-1f-19.fs - a room of the old mansion's 1F with a hole in the wall ("Enter
+\ the hole?": through it, out by the far way; back through it, here) and a hiding place out of sight
+\ (the kit's; Daniella's search - she looks in); after the 3F's turn a homunculus dropped in, once;
+\ the scene's figure loaded on the way to the far door; Hewie barking at a spot, his look; its
+\ sound. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/old-mansion-1f-19.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-1f-19
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     story.kit fiona.anims fiona.sounds ;

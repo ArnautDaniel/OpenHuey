@@ -1,8 +1,8 @@
-\ story/places/off-map-36.fs - room $36 (on no map page), an ending's scene: brought in by the forced
-\ way - the world held, Hewie let go; the scene, then the game over of the story's end (the ending
-\ A); replayed from the extras: the same scene, she unseen, then back. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/off-map-36.fs (converted from the game's, not
-\ loaded).
+\ story/places/off-map-36.fs - room $36 (on no map page), an ending's scene: brought in by the
+\ forced way - the world held, Hewie let go; the scene, then the game over of the story's end (the
+\ ending A); replayed from the extras: the same scene, she unseen, then back. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/off-map-36.fs in the history
+\ (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-36
 USING: engine game-state actors messages common flag-names facts room-names story-names
     story.kit scenes ;

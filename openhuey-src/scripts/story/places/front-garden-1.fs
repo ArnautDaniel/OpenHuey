@@ -1,9 +1,9 @@
-\ story/places/front-garden-1.fs - Belli Castle's gate and the drive before it ($00): the gate
-\ shut and locked (the opening's scene there, at first), the castle gate key's way in; the broken
-\ marionette up in the tree - her look at it (a scene) and Hewie fetching it; the lamps that
-\ flicker at night; a breakable, two Medallions (one Hewie sniffs out), two spirits let out once.
-\ A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/front-garden-1.fs
-\ (converted from the game's, not loaded).
+\ story/places/front-garden-1.fs - Belli Castle's gate and the drive before it ($00): the gate shut
+\ and locked (the opening's scene there, at first), the castle gate key's way in; the broken
+\ marionette up in the tree - her look at it (a scene) and Hewie fetching it; the lamps that flicker
+\ at night; a breakable, two Medallions (one Hewie sniffs out), two spirits let out once. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/front-garden-1.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.front-garden-1
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects scenes story.kit fiona.anims hewie.anims ;

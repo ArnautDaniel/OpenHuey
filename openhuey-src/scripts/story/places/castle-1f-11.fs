@@ -3,7 +3,8 @@
 \ the far side shoving the rubble down, throwing her if she is in his way; three vases (the Beef
 \ Jerky and the Magnesia behind two); the Medallion Hewie fetches across the gap at her "go for it";
 \ the map's pages; the walls' shade. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/castle-1f-11.fs (converted from the game's, not loaded).
+\ story/rooms-ref/castle-1f-11.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.castle-1f-11
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects story.kit fiona.anims hewie.anims scenes ;

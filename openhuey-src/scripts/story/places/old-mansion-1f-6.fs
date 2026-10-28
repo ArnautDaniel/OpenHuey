@@ -1,11 +1,12 @@
 \ story/places/old-mansion-1f-6.fs - the caged hall of the old mansion's 1F: a hopping figure (the
 \ kit's hopper, its calls); before the 3F's turn, coming in by the far way, the scene's figure there
 \ - as she steps further in it turns round and walks off, and once she is by the cage a homunculus
-\ drops in in its place; a hiding place (the kit's; the stalker he-searches it once while she hides -
-\ he finds her by the odds); the sheet over the thing; the cage; two candles (their flames stirred
+\ drops in in its place; a hiding place (the kit's; the stalker he-searches it once while she hides
+\ - he finds her by the odds); the sheet over the thing; the cage; two candles (their flames stirred
 \ by whoever passes); the Medallion; Hewie wary of the figure, his look; the map's pages; the
 \ doorway's shade. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-1f-6.fs (converted from the game's, not loaded).
+\ story/rooms-ref/old-mansion-1f-6.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-1f-6
 USING: engine game-state actors messages common vectors facts room-names flag-names story-names stalker-names
     items.names story.kit fiona.anims ;

@@ -37,7 +37,7 @@ T{ 0 part?  1 part?  8 part? -> -1 0 -1 }T
 0 0 0 $20A $4D8 obstacle-in  20 run-frames
 T{ [: stopped-mask @  set-boxes @ ;] in-place  3 part? -> 1 1 -1 }T
 testing the first time in: the scene, Daniella after her, the door shut behind
-daniella-kind story.words:partner-load  10 run-frames  room-afresh
+daniella-kind story.base:partner-load  10 run-frames  room-afresh
 T{ [: ['] stepped-in-first start drop ;] in-place  [: cutscene-active? movie-status 1 = or ;] 600 soon -> -1 }T
 [: movie-skipped state-flag-set  doing-busy? 0= ;] 2000 soon drop  100 run-frames
 T{ om3f-1-flag1 story-flag?  hall-door doors:door-locked?  partner-kind -> -1 -1 35 }T

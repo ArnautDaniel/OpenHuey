@@ -1,11 +1,12 @@
 \ story/places/water-tower-4f-1.fs - the Water Tower's 4F ($C3): the walkway (see walkway.fs) turned
 \ by its lever - its doors open only while it's across, creatures let out the first time each visit
-\ it gets there; the drum (the object doramukan) falling as she first goes on - a jolt, a fright, and
-\ Riccardo come for her; after, back 1800 frames after each time he left; taken off as she comes in,
-\ and when his time is up and she can't see him; the summoner off while she's here; the box (the
+\ it gets there; the drum (the object doramukan) falling as she first goes on - a jolt, a fright,
+\ and Riccardo come for her; after, back 1800 frames after each time he left; taken off as she comes
+\ in, and when his time is up and she can't see him; the summoner off while she's here; the box (the
 \ Camomile in it); the Medallion; Hewie's bark at the walkway's far end (till it first turns); the
 \ map's pages. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/water-tower-4f-1.fs (converted from the game's, not loaded).
+\ story/rooms-ref/water-tower-4f-1.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.water-tower-4f-1
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit story.places.walkway fiona.anims ;

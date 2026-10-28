@@ -1,8 +1,8 @@
 \ story/places/castle-b1-4.fs - the spiral stair down to Belli Castle's B1 ($7): its five flames
-\ (stirred as someone steps into their draught), its sounds, the map's pages as she goes up and down,
-\ the clock, the inscription ("The path beyond is the road of darkness..."). A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/castle-b1-4.fs (converted from the game's,
-\ not loaded).
+\ (stirred as someone steps into their draught), its sounds, the map's pages as she goes up and
+\ down, the clock, the inscription ("The path beyond is the road of darkness..."). A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-b1-4.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-b1-4
 USING: engine game-state actors messages common facts flag-names story-names room-names story.kit fiona.anims ;
 

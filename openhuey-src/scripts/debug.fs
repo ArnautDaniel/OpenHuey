@@ -6,9 +6,8 @@
 \   2 tp-exit                       into exit 2's area             $1F2 tp-tri                on a nav triangle's middle
 \   10e 0e 20e walk                 walking there (over the nav mesh)
 \   circle press                    a button pressed for a frame   .here                      where she is
-\   0 act                           the room's action script 0, as Fiona's (a scene: try front-garden-3's)
 IN: debug
-USING: engine game-state actors messages keys room-names flag-names facts story.words ;
+USING: engine game-state actors messages keys room-names flag-names facts ;
 
 \ a jump (`room!`) - nothing the original can do - leaves her without a camera setup where the
 \ room's scripts give none by an exit: she gets the room's set nearest her (room-label, below)
@@ -42,10 +41,6 @@ variable jumped
     ." room " room-id room-name type  ."  at " fiona-id body-pos  frot f. fswap f. f.
     ." tri " fiona-id body-tri .  ." areas:"
     area-count 0 ?do  fiona-id body-pos i area-in? if  space i .  then  loop  cr ;
-: act ( n -- )   \ (the world let go first: the new game holds it until the opening has played)
-    world-held state-flag-clear
-    room-id room-name actor-named dup 0< if  2drop ." no room actor" cr exit  then
-    enter  0 0 rot action  leave-actor ;
 \ the stalker: Debilitas into Fiona's room on a triangle (her own: `fiona-id body-tri debilitas-tri`), or out
 : debilitas-tri ( tri -- )  room-id swap debilitas-id send stalker-in ;
 : debilitas-out ( -- )  debilitas-id send stalker-out ;

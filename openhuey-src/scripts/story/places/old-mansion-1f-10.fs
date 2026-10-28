@@ -1,7 +1,7 @@
 \ story/places/old-mansion-1f-10.fs - a crossing of the old mansion's 1F ($4C): four ways out; Hewie
 \ (once a visit, now and then) barking tense at one corner, wary at the other; his looks there. A
 \ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-10.fs
-\ (converted from the game's, not loaded).
+\ in the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-10
 USING: engine game-state actors messages common facts room-names flag-names story.kit ;
 

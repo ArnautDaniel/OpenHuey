@@ -42,14 +42,14 @@ T{ [: sink-start  chase-act @ ;] his -> $13 }T
 testing his reach from afar ($E01)
 T{ [: grab-start  anim @ ;] his -> $E01 }T
 testing the story's kind 10 is him
-T{ 10 story.words:stalker-actor  ly = -> -1 }T
+T{ 10 story.base:stalker-actor  ly = -> -1 }T
 ly send stalker-out  3 run-frames
 
 \ ---- kind 39: the same class with its own tables, no "rage" ----
 : k39 ( -- id )  s" kind39" actor-named ;
 testing kind 39: its kit, his own actions, his reach 18 whatever the panic
 T{ k39 enter  kit @ kind39-kit =  own-acts @ lorenzo2-acts =  hp @  my-kind @  attack-range f@ f>s  leave-actor -> -1 -1 250 39 18 }T
-T{ 39 story.words:stalker-actor  k39 = -> -1 }T
+T{ 39 story.base:stalker-actor  k39 = -> -1 }T
 
 testing his swaying points (Lorenzo2Model_SwayPoints): as drawn, each hanging 2.125 from the one before (bones 6 to 7, $16 to $17)
 castle-1f-3 room!  20 run-frames   \ (a room whose camera has him in view: posed as drawn)

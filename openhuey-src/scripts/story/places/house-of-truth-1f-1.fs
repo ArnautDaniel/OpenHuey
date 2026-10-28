@@ -1,10 +1,11 @@
-\ story/places/house-of-truth-1f-1.fs - the House of Truth's 1F hall of the blasted wall ($81): Lorenzo
-\ following her and the Golden Candlestick in hand, as she comes to the wall - the scene (the wall blown
-\ open, the candlestick spent, the way through unlocked; Lorenzo laid in the rubble, the summoner off);
-\ the water (a recovery point); the "Extremely Flammable" sign, the fire before the wall, the wreckage
-\ after; the Album Medallion Hewie sniffs out; the flame and its sounds; the holes in its floor; the
-\ walls' shade; the other game's creatures; the replay. A place (story/kit.fs). The original's
-\ scripts, for checking: story/rooms-ref/house-of-truth-1f-1.fs (converted from the game's, not loaded).
+\ story/places/house-of-truth-1f-1.fs - the House of Truth's 1F hall of the blasted wall ($81):
+\ Lorenzo following her and the Golden Candlestick in hand, as she comes to the wall - the scene
+\ (the wall blown open, the candlestick spent, the way through unlocked; Lorenzo laid in the rubble,
+\ the summoner off); the water (a recovery point); the "Extremely Flammable" sign, the fire before
+\ the wall, the wreckage after; the Album Medallion Hewie sniffs out; the flame and its sounds; the
+\ holes in its floor; the walls' shade; the other game's creatures; the replay. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-1f-1.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-1f-1
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit story.places.house-of-truth fiona.anims scenes ;

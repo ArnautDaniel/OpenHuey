@@ -48,7 +48,7 @@ T{ generator-area 90 at  said  generator-area 90 at  said -> dead-gen-msg jolt-m
 T{ demolisher-area 0 at  [: fiona demolisher-area 50 faces-area? ;] in-place -> -1 }T
 T{ said  demolisher-area 0 at  said -> demolisher-msg not-running-msg }T
 testing a full blow at it (one jolt left): the first time the scene - its file, the door locked behind, the belt running
-lorenzo2-kind story.words:partner-load  5 run-frames
+lorenzo2-kind story.base:partner-load  5 run-frames
 T{ [: 1 jolts !  ['] jolted start drop ;] in-place  [: movie-skipped state-flag-set  found-file-250 story-flag? ;] 2000 soon -> -1 }T
 T{ [: [: belt-running @ ;] in-place ;] 600 soon  study-door doors:door-locked?  scene-5-pending state-flag?  demolisher-file filed? -> -1 -1 -1 -1 }T
 300 play-on

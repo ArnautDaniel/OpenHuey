@@ -1,7 +1,8 @@
 \ story/places/castle-b1-3.fs - the store room in Belli Castle's B1 ($16): the Metal Boots on the
 \ shelf (had already: a Magist Medallion there instead), the Castle Gate Key once she has her
 \ costumes (and hasn't it); the doorways' shade. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/castle-b1-3.fs (converted from the game's, not loaded).
+\ checking: story/rooms-ref/castle-b1-3.fs in the history (converted from the game's; gone with the
+\ old machinery in 0.2.20).
 IN: story.places.castle-b1-3
 USING: engine game-state actors messages common facts flag-names story-names room-names items.names
     story.kit fiona.anims ;

@@ -1,8 +1,8 @@
 \ The story, S2: examining things (the action prepared, the action button, her action script),
-\ the message window, items, zones (docs/subsystems/story.md, window.md). Headless:
+\ the message window (docs/subsystems/story.md, window.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_examine.fs
 IN: test-examine
-USING: tester engine game-state actors messages keys room-names game debug flag-names fiona.state fiona.model story.state facts story.words ;
+USING: tester engine game-state actors messages keys room-names game debug flag-names fiona.state fiona.model facts ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
@@ -26,39 +26,10 @@ testing the button closes it; she gets up (0x802), her script goes on to its end
 T{ cross press  5 run-frames  [: story.kit:shown-msg @ ;] in-room  shown  [: fiona.model:anim@ ;] hers -> -1 -1 $802 }T
 T{ 120 [: [: her-scripted @ ;] hers 0= ;] within  [: her-reading @ ;] hers -> -1 0 }T
 
-\ ---- the converted rooms' words (front-garden-2, run as its converted room) ----
--1 story:places-off !   \ (front-garden-2 as its converted room: the machinery's host)
+\ ---- what every place does with her messages (the kit's) ----
 front-garden-2 -1 rooms send go-to-room  30 run-frames
-testing 0xA5: a message offered on the action button; taken, it opens and she looks at character 2
-T{ [: -1 prep-scene !  $8016 examine-message  prep-scene @ prep-arg @ ;] in-room -> read-message $8016 }T
-T{ [: -1 prep-scene !  scene-locked state-flag-set  $8016 examine-message  scene-locked state-flag-clear  prep-scene @ ;] in-room -> -1 }T
-T{ read-message $8016 room-actor send take-offer  deliver  [: msg @ ;] in-room  [: her-look-hold @ ;] hers -> $8016 30 }T
-T{ cross press  5 run-frames  [: msg @ ;] in-room -> $8016 }T   \ (it closes itself: 0x10 62 - no button)
-T{ 70 run-frames  [: msg @ ;] in-room -> -1 }T
-
-testing a locked door's script: the room shows "locked from the other side" for her
-T{ $8001 broadcast fiona-message  deliver  2 run-frames  shown -> $8001 }T
-T{ cross press  5 run-frames  [: msg @ ;] in-room  shown -> -1 -1 }T
-
-testing a message with a choice: the answer chosen comes back (answer?)
-: show ( msg -- )  [: story.words:show-message ;] in-room  deliver ;
-T{ [: 42 answer ! ;] in-room  10 show  2 run-frames  cross press  3 run-frames  [: answer @ ;] in-room -> -1 }T   \ (no choice: -1)
-
-testing items: a file given with the pickup (once), an item counted and given (items.fs: at the next delivery)
-T{ [: $205 item-give  $205 item-give ;] in-room  deliver  progress pr.files w@  progress pr.files 2 + w@ -> $205 0 }T
-T{ [: $40 2 item-give-count ;] in-room  deliver  [: $40 2 item-count?  $40 3 item-count? ;] in-room -> -1 0 }T
-
-testing zones: a cylinder set this frame, her body against it
-: zone-here ( -- )   \ zone 3 around her: radius 10, height 30
-    [: 3 10 30 0  game:fiona body-pos  zone  0 3 3 char-zone-bits? ;] in-room ;
-T{ zone-here -> -1 }T
-T{ [: 0 3 3 char-zone-bits? ;] in-room -> -1 }T
-T{ [: zones-off  0 3 3 char-zone-bits? ;] in-room -> 0 }T
-testing her blow's point in a zone (cond 0x37): her kick's (10 up, her radius ahead); none when not striking
-: kick-point ( -- )  game:fiona enter  8 her-mode !  $1B her-sub !  fiona.defend:tell-point  0 her-mode !  0 her-sub !  leave-actor ;
-: no-point ( -- )  game:fiona enter  fiona.defend:tell-point  leave-actor ;
-zone-here
-T{ kick-point  [: 0 3 char-in-zone?  $FF 3 char-in-zone? ;] in-room -> -1 -1 }T
-T{ no-point  [: 0 3 char-in-zone? ;] in-room -> 0 }T
+testing a locked door's script: the place shows "locked from the other side" for her
+T{ $8001 broadcast fiona-message  deliver  2 run-frames  shown  [: story.kit:shown-msg @ ;] in-room -> $8001 $8001 }T
+T{ cross press  5 run-frames  [: story.kit:shown-msg @ ;] in-room  shown -> -1 -1 }T
 
 test-summary

@@ -1,8 +1,8 @@
 \ story/places/off-map-d1.fs - the clock run's forest (, chaos-forest-8's ground again): a drop
-\ falling now and then; its two ways - as Hewie nears the way on, a rabbit and the wisp loaded at
-\ it (gone again as he turns back); the rooms ahead loaded; the clock.
-\ A place (story/kit.fs, story/places/clock-run.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-d1.fs (converted from the game's, not loaded).
+\ falling now and then; its two ways - as Hewie nears the way on, a rabbit and the wisp loaded at it
+\ (gone again as he turns back); the rooms ahead loaded; the clock. A place (story/kit.fs,
+\ story/places/clock-run.fs). The original's scripts, for checking: story/rooms-ref/off-map-d1.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-d1
 USING: engine game-state actors messages common flag-names facts room-names effects story.kit story.clock
     story.places.clock-run ;

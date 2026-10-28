@@ -1,9 +1,10 @@
 \ story/places/castle-1f-4.fs - Belli Castle's 1F hall by the puppet room ($F): the puppet room's
-\ door with no knob (the broken marionette opens it), the floor plate that holds castle-1f-7's
-\ gate up (the mechanism's sound while it rises and falls), the weak wall that gives at the third
-\ blow (bugs, the refined antimony), the plate-key's slot (REST), the cracked plate key, the
-\ chairs, a save clock - and at night, back with the castle's sketch, Riccardo met here. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-4.fs (not loaded).
+\ door with no knob (the broken marionette opens it), the floor plate that holds castle-1f-7's gate
+\ up (the mechanism's sound while it rises and falls), the weak wall that gives at the third blow
+\ (bugs, the refined antimony), the plate-key's slot (REST), the cracked plate key, the chairs, a
+\ save clock - and at night, back with the castle's sketch, Riccardo met here. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-4.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-1f-4
 USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names floor-flags
     effects story.kit fiona.anims fiona.sounds scenes ;

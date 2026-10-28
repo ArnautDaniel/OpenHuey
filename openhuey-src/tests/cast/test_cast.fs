@@ -1,10 +1,21 @@
-\ The event characters (docs/subsystems/cast.md): the story's figures in slots 3..5 - loaded by
-\ the scripts' 0x12 / 0xB9, found by their id, placed, moved by the story, out of the scene, one
+\ The event characters (docs/subsystems/cast.md): the story's figures in slots 3..5 (story/base.fs) -
+\ loaded (the scripts' 0x12 / 0xB9: the kit's figure-in), found by their id, placed, moved by the story, out of the scene, one
 \ wearing another's model (0xBA), removed. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/cast/test_cast.fs
 IN: test-cast
-USING: tester engine game-state actors messages room-names game debug facts story.words story.state vectors ;
+USING: tester engine game-state actors messages room-names game debug facts vectors ;
 
+\ the story's figure slots (story/base.fs), as the rooms' scripts used them: a figure loaded into a
+\ slot (the kit's figure-in: a slot taken - nothing), found by its id, out of the scene, wearing
+\ another's model, removed
+: char-load ( id slot exit -- )  drop story.kit:figure-in ;
+: figure-load ( id slot -- )  story.kit:figure-in ;
+: char-loaded? ( slot id -- flag )  swap story.base:slot-id @ = ;
+: char-actor ( slot -- id | -1 )  story.base:slot-actor @  dup 0< if  exit  then  dup body? 0= if  drop -1  then ;
+: char-slot ( id -- slot | -1 )  6 3 do  i story.base:slot-id @ over = if  drop i unloop exit  then  loop  drop -1 ;
+: char-done ( id -- )  char-slot dup 0< if  drop exit  then  story.base:slot-actor @ send cast-out ;
+: char-hand-over ( from to -- )  story.base:slot-id @ cast-model swap story.base:slot-actor @ send cast-dress ;
+: char-remove ( slot how -- )  drop story.base:slot-clear ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
 : c3 ( xt -- x )  game:cast3 enter  execute  leave-actor ;
 : c4 ( xt -- x )  game:cast4 enter  execute  leave-actor ;
@@ -71,7 +82,7 @@ testing ... to a triangle slowly (11): done as soon as it is on it
 11 game:fiona body-tri -1  0e 0e 0e 0e move5  5 run-frames
 T{ done5?  anim5 $FF00 and dup $201 = swap $400 = or -> 0 -1 }T
 T{ ' done5? 600 soon  game:cast5 body-tri game:fiona body-tri = -> -1 -1 }T
-5 slot-clear  2 run-frames
+5 story.base:slot-clear  2 run-frames
 
 testing the scripts' 0x14: out of the scene - gone from the room, still loaded
 $1C char-done  2 run-frames

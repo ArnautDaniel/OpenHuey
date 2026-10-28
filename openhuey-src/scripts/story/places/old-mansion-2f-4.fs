@@ -2,7 +2,8 @@
 \ Sulfuric Ore laid in it turned to Silver Ore; another ore - nothing happens, handed back), the
 \ inscription naming Torva and Weltigo, the desk, the passage's warm wind, the Viride Medallion; a
 \ figure loaded on the way to the far door; Hewie's look. A place (story/kit.fs). The original's
-\ scripts, for checking: story/rooms-ref/old-mansion-2f-4.fs (converted from the game's, not loaded).
+\ scripts, for checking: story/rooms-ref/old-mansion-2f-4.fs in the history (converted from the
+\ game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-2f-4
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags items.names
     story.kit fiona.anims ;

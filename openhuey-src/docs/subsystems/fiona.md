@@ -249,7 +249,7 @@ struck home (`blow-taken`) she's held still 5 frames ($90 kicked, $8F shoved). H
 panic attack or out of breath (Fiona_IsIdle). Her gestures to Hewie are read during a shove only
 as it comes round (Fiona_ReadsPad: mode 8, her action 5, the motion's flag $20).
 
-## F5: the story's words about her (`scripts/story/words.fs`)
+## F5: what the story knows of her and asks of her (the kit's: `scripts/story/kit.fs`)
 
 She tells, in `fiona-doing`, her action too (+0x1AD580: `her-doing`). Conditions 0x3F her action,
 0x3D free (Fiona_IsIdle: her mode 0, not 1 / $E / $F; the panic's stage below 4), 0x26 the action
@@ -258,7 +258,9 @@ she started this frame (Fiona_MarkActionStart: her command to Hewie, cleared eac
 60 / n frames (Fiona_LowerRecovery). The panic's (`docs/subsystems/panic.md`): 0x43 the threat
 (Threat_Raise - as a fright, into the weighted parts; `threat`), 0xC0 its accumulator, 0x93
 calming (the converter's `panic-grow`: bit $80 128 at once, else v / 30), 0xC9 the level set to
-one it hasn't passed. Checked by `tests/story/test_hewie_fiona_words.fs` (13, with Hewie's).
+one it hasn't passed. (The opcode words' own test went with them in 0.2.20: the kit keeps these as
+`fiona-mode-now`, `fiona-idle?`, `started-now`, `calm-her`, `recover`, `threat`, `panic-to`, and the
+places' tests check them in use.)
 
 ## F4d: slamming a door (`scripts/fiona/slam.fs`)
 

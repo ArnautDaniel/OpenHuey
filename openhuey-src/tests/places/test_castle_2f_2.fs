@@ -98,7 +98,7 @@ c2f-2-flag2 story-flag-clear  c1f-8-flag1 story-flag-clear  box-door s" doors" a
 T{ c2f-2-flag2 story-flag?  box-door door-locked? -> -1 0 }T
 
 testing Debilitas's far shove: then gone
-2 story.words:partner-load  5 run-frames  room-afresh  castle-2f-2 $1A2 game:debilitas send stalker-in  30 run-frames
+2 story.base:partner-load  5 run-frames  room-afresh  castle-2f-2 $1A2 game:debilitas send stalker-in  30 run-frames
 [: ['] shoves-far start drop ;] in-place
 T{ [: [: his-shove @ 0= ;] in-place ;] 1500 soon -> -1 }T
 game:debilitas send stalker-out  60 run-frames

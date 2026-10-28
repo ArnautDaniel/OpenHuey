@@ -2,8 +2,8 @@
 \ its screen; the Film Reel used there - the film played (the start button stops it); Daniella the
 \ stalker then: the screen slashed, her scene ("I was being filmed...") and her after her; the
 \ mannequins, the shelves of old books, the mannequin parts; the Chicken Jerky; the replay. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-14.fs
-\ (converted from the game's, not loaded).
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-14.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-14
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     items.names story.kit fiona.anims scenes ;

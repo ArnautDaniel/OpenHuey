@@ -1,8 +1,8 @@
 \ story/places/off-map-d5.fs - the clock run's forest (, chaos-forest-11's crossing again): five
 \ ways; a rabbit now and then, off into the trees; the wisp startled as she or Hewie comes near it;
-\ the rooms ahead loaded; the clock.
-\ A place (story/kit.fs, story/places/clock-run.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-d5.fs (converted from the game's, not loaded).
+\ the rooms ahead loaded; the clock. A place (story/kit.fs, story/places/clock-run.fs). The
+\ original's scripts, for checking: story/rooms-ref/off-map-d5.fs in the history (converted from the
+\ game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-d5
 USING: engine game-state actors messages common flag-names facts room-names story-names story.kit story.clock
     story.places.forest story.places.clock-run ;

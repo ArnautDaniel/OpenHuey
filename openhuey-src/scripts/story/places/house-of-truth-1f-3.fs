@@ -3,7 +3,7 @@
 \ corridor; the Rubrum Medallion; the Viola Medallion Hewie sniffs out, his look at the candlestick;
 \ the first time she goes on from the hall, the scene (Lorenzo let loose after her); the replay. A
 \ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-1f-3.fs
-\ (converted from the game's, not loaded).
+\ in the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-1f-3
 USING: engine game-state actors messages common facts room-names flag-names story-names items.names
     story.kit fiona.anims scenes ;

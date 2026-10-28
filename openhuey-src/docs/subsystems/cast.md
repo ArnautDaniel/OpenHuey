@@ -21,12 +21,11 @@ Declared in `scripts/messages.fs`; to a figure (`cast3`..`cast5`, one a slot).
 
 It broadcasts `moving ( done ended events )` at each frame's end, as the others do.
 
-The story's words (`story/words.fs`): `char-load` (0x12: a stalker by kind, else a figure into
-slots 3..5, at that exit of the room or as it is), `char-load-2` (0xB9), `char-remove` (0x40),
-`char-done` (0x14), `char-hand-over` (0xBA), `char-loaded?` (cond 0x63); the slots' table
-(`slot-actors`, `slot-chars`: the actor and the character's script id in each) finds a character
-by its id (`char-slot`, Progress_SlotOfId) and a slot's actor (`char-actor`; `slot-actor-of`
-placed or not, for the placing words).
+The story's slots (`story/base.fs`: `slot-actors`, `slot-chars` - the actor and the character's id
+in each) and the kit's words (`story/kit.fs`): `figure-in` (0x12 / 0xB9: a stalker by kind, else
+a figure into slots 3..5, as it is), `figure-in-by` (at that exit of the room), `figure-out`
+(0x40), `figure-dressed-as` (0xBA), `figure` (a slot's actor), `figure-at`, `figure-play`,
+`figure-on`.
 
 Engine words: `cast-model ( id -- model )` (the model cast as a script id), `model-file ( model
 -- addr len )` (the files a model came from).

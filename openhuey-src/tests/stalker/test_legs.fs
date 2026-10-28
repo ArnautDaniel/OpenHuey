@@ -3,7 +3,7 @@
 \ and leg bones, his body down at the lower of his feet on the castle's steps. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_legs.fs
 IN: test-stalker-legs
-USING: story.words tester engine game-state actors messages common room-names game debug facts flag-names stalker.state stalker ;
+USING: tester engine game-state actors messages common room-names game debug facts flag-names stalker.state stalker story.base ;
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : as ( kind -- )  partner-load  deliver  2 run-frames ;

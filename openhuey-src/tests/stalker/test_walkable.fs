@@ -4,7 +4,7 @@
 \ a goal on his floor is as it is. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_walkable.fs
 IN: test-walkable
-USING: stalker-names facts story.words tester engine game-state actors messages room-names game debug vectors flag-names stalker.state stalker.moving ;
+USING: stalker-names facts tester engine game-state actors messages room-names game debug vectors flag-names stalker.state stalker.moving ;
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 variable mask  variable shut-tri  variable free-tri

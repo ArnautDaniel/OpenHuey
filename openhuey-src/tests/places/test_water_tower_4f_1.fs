@@ -81,7 +81,7 @@ T{ [: ['] barks-at-end start drop ;] in-place  [: doing-busy? 0= ;] 600 soon -> 
 game:hewie send part-from-fiona  60 run-frames
 testing the drum falling as she first goes on: her fright; Riccardo come for her
 wt2f-1-flag2 story-flag-set  wt4f-1-flag1 story-flag-clear  c7-second-event story-flag-clear
-4 story.words:partner-load  5 run-frames  0 by-exit
+4 story.base:partner-load  5 run-frames  0 by-exit
 T{ on-area 5e across  [: ['] drum-falls running? ;] in-place  wt4f-1-flag2 story-flag? -> -1 -1 }T
 T{ [: [: stalker-in? ;] in-place ;] 200 soon  wt4f-1-flag1 story-flag? -> -1 -1 }T
 testing ... gone, back 1800 frames after (by the walkway's side: across, its far end)

@@ -1,11 +1,12 @@
-\ story/places/house-of-truth-1f-2.fs - the House of Truth's 1F entrance hall ($88): in from the B1 by
-\ the forced way (the colours done: the summoner on); the water to drink (a recovery point - its
-\ document the first time - once a visit, then "Ah, that tasted good."); the hole (in at her yes, and
-\ out of it here); the crate on the ledge (broken by a blow: the Refined Antimony); the Refined
+\ story/places/house-of-truth-1f-2.fs - the House of Truth's 1F entrance hall ($88): in from the B1
+\ by the forced way (the colours done: the summoner on); the water to drink (a recovery point - its
+\ document the first time - once a visit, then "Ah, that tasted good."); the hole (in at her yes,
+\ and out of it here); the crate on the ledge (broken by a blow: the Refined Antimony); the Refined
 \ Magnesia; the Prima Magnesia Hewie sniffs out; not going back; Hewie's bark at the hole, his look;
 \ its holes in the floor; its steady sound and four in turn; the walls' shade; the slam's shake; the
-\ map's pages. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ house-of-truth-1f-2.fs (converted from the game's, not loaded).
+\ map's pages. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/house-of-truth-1f-2.fs in the history (converted from the game's; gone with the
+\ old machinery in 0.2.20).
 IN: story.places.house-of-truth-1f-2
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names story.kit story.places.house-of-truth fiona.anims ;

@@ -1,7 +1,8 @@
-\ story/places/off-map-e8.fs - the clock run's castle ($E8, castle-1f-14's ground again): two ways out;
-\ its cameras; the rooms ahead loaded as Hewie nears their ways; the walls' shade; the clock. A place
-\ (story/kit.fs, story/places/clock-run.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-e8.fs (converted from the game's, not loaded).
+\ story/places/off-map-e8.fs - the clock run's castle ($E8, castle-1f-14's ground again): two ways
+\ out; its cameras; the rooms ahead loaded as Hewie nears their ways; the walls' shade; the clock. A
+\ place (story/kit.fs, story/places/clock-run.fs). The original's scripts, for checking:
+\ story/rooms-ref/off-map-e8.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.off-map-e8
 USING: engine game-state actors messages common flag-names facts room-names story.kit story.clock
     story.places.clock-run ;

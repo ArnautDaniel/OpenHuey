@@ -1,7 +1,8 @@
 \ story/places/castle-2f-10.fs - the room of the four boxes in Belli Castle's 2F ($17): the boxes
 \ pushed onto their squares (each fixed there; all four, the scene - the way opened, and out by the
 \ forced way), where they stand kept as she leaves. A place (story/kit.fs). The original's scripts,
-\ for checking: story/rooms-ref/castle-2f-10.fs (converted from the game's, not loaded).
+\ for checking: story/rooms-ref/castle-2f-10.fs in the history (converted from the game's; gone with
+\ the old machinery in 0.2.20).
 IN: story.places.castle-2f-10
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     effects story.kit fiona.anims scenes ;

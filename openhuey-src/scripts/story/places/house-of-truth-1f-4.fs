@@ -1,12 +1,12 @@
 \ story/places/house-of-truth-1f-4.fs - the House of Truth's 1F room of the demolisher ($8C): the
-\ generator that won't run - jolted by her blows (the dynamo shaking) it runs: the first time the scene
-\ (Lorenzo let in, the door locked behind - "No! It's locked!"), then the demolisher's belt for 240
-\ frames; while it runs, Lorenzo stepping under it - crushed (the scene; the Sol Key there) - or she -
-\ caught (the game over); Hewie moved off its way as she comes back; the generator's and the
-\ demolisher's remarks; the locked door - its remark in turn with the symbol carved in it (its file) -
-\ and the Sol Key turned in it; the Sol Key taken; Hewie's look; the replays. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/house-of-truth-1f-4.fs (converted from the
-\ game's, not loaded).
+\ generator that won't run - jolted by her blows (the dynamo shaking) it runs: the first time the
+\ scene (Lorenzo let in, the door locked behind - "No! It's locked!"), then the demolisher's belt
+\ for 240 frames; while it runs, Lorenzo stepping under it - crushed (the scene; the Sol Key there)
+\ - or she - caught (the game over); Hewie moved off its way as she comes back; the generator's and
+\ the demolisher's remarks; the locked door - its remark in turn with the symbol carved in it (its
+\ file) - and the Sol Key turned in it; the Sol Key taken; Hewie's look; the replays. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-1f-4.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-1f-4
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit story.places.house-of-truth fiona.anims gameover scenes ;
@@ -65,7 +65,7 @@ $E5 constant study-door   $E2 constant sun-door   $E6 constant other-door   $608
     run-down-sound 24e 5e 65e room-sound  0 belt-running !  belt-part hide-part
     belt-there? if  begin  belt-step  -0.01e belt $30 object+!  belt $30 object@ f0> while  yield  repeat  0e belt $30 object!  then
     0 keeps-hewie-off floor-off  3 jolts !  belt-part hide-part ;
-: under-gone ( -- )  $B story.words:things-age-out-in ;   \ (what lies under the demolisher: gone)
+: under-gone ( -- )  $B story.base:things-age-out-in ;   \ (what lies under the demolisher: gone)
 
 \ ---- the first time it runs: Lorenzo let in ----
 create belt-cues  $F , $12 , $13 , $14 , $17 , $28 , $29 , $2A , $2B , $2C , $31 , $37 , $38 , $39 , $3A , $3B , $3C ,
@@ -92,7 +92,7 @@ create belt-cues  $F , $12 , $13 , $14 , $17 , $28 , $29 , $2A , $2B , $2C , $31
 \ ---- her blows at the generator ----
 : jolted ( -- )   \ (an activity: a jolt - worn by her blow, the dynamo shaken; at none it runs)
     start-sound room-bank fiona sound-by  1 $FF 4 rumble-pad
-    jolts @  fiona-sub-now @ story.words:weak-blow-sub = if  1  else  5  then  -  0 max  jolts !
+    jolts @  fiona-sub-now @ story.base:weak-blow-sub = if  1  else  5  then  -  0 max  jolts !
     shakes
     jolts @ 0= if
         found-file-250 fact? 0= if

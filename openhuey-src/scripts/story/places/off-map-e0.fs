@@ -1,15 +1,15 @@
-\ story/places/off-map-e0.fs - the clock run's start in the castle ($E0, castle-2f-3's bedroom again):
-\ its parts; the fan turning; the day's light in the run's second kind; the glass of the window and
-\ the door; its steady sound and four others in turn; brought in by the forced way, Fiona played -
-\ the run set out (the room ahead loaded, Fiona off by exit 0's way, the hiding places' counts
-\ afresh, Fiona and Hewie at their spots, the stalker into $E1, the summoner his own wait, the
-\ stage music by the run's kind, the clock from 0 and Hewie played, the castle's doors on the way
-\ shut - the far ones locked); then Hewie's - the world let go, faded in; out by exit 0; its
+\ story/places/off-map-e0.fs - the clock run's start in the castle ($E0, castle-2f-3's bedroom
+\ again): its parts; the fan turning; the day's light in the run's second kind; the glass of the
+\ window and the door; its steady sound and four others in turn; brought in by the forced way, Fiona
+\ played - the run set out (the room ahead loaded, Fiona off by exit 0's way, the hiding places'
+\ counts afresh, Fiona and Hewie at their spots, the stalker into $E1, the summoner his own wait,
+\ the stage music by the run's kind, the clock from 0 and Hewie played, the castle's doors on the
+\ way shut - the far ones locked); then Hewie's - the world let go, faded in; out by exit 0; its
 \ cameras; the wardrobe - Fiona slips in at Hewie's command as he stands by it, out at his next
 \ (found or panicking: hauled out); the stalker coming in while she hides finds her by the odds;
-\ left behind in it, she's out in front; the clock. A place (story/kit.fs, story/places/clock-run.fs).
-\ The original's scripts, for checking: story/rooms-ref/off-map-e0.fs (converted from the game's,
-\ not loaded).
+\ left behind in it, she's out in front; the clock. A place (story/kit.fs,
+\ story/places/clock-run.fs). The original's scripts, for checking: story/rooms-ref/off-map-e0.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-e0
 USING: engine game-state actors messages common flag-names facts room-names story.kit story.clock
     story.places.clock-run ;

@@ -28,7 +28,7 @@ create spot 12 allot
 variable before
 : room-afresh ( -- )  old-mansion-1f-1 room!  60 run-frames ;
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
-game:debilitas send stalker-out  daniella-kind story.words:partner-load  5 run-frames   \ (one stalker in the game)
+game:debilitas send stalker-out  daniella-kind story.base:partner-load  5 run-frames   \ (one stalker in the game)
 testing the first time in: Daniella's scene - its file, her at her task in the hall
 found-file-233 story-flag-clear  found-file-234 story-flag-clear  room-afresh
 0 0e 70e 46e put  0 0e 70e 34e put  1500 play-on   \ (across the gate, from the stairs)

@@ -44,7 +44,7 @@ T{ sign-area 0 at  [: fiona sign-area 50 faces-area? ;] in-place -> -1 }T
 T{ said  wall-area 45 at  said -> flammable-msg fire-msg }T
 testing the blast: the wall blown, the candlestick spent, the door unlocked; Lorenzo laid there, the summoner off
 golden-candlestick [: 1 give-item ;] in-place  5 run-frames  golden-candlestick items:items-of before !
-lorenzo2-kind story.words:partner-load  5 run-frames  summoner-on state-flag-set  blasted-door [: lock ;] in-place
+lorenzo2-kind story.base:partner-load  5 run-frames  summoner-on state-flag-set  blasted-door [: lock ;] in-place
 [: ['] blast start drop ;] in-place
 T{ [: movie-skipped state-flag-set  blast-seen resident-flag? ;] 2000 soon -> -1 }T
 T{ 1 [: part? ;] in-place  golden-candlestick items:items-of  blasted-door doors:door-locked?  summoner-on state-flag? -> -1 before @ 1- 0 0 }T

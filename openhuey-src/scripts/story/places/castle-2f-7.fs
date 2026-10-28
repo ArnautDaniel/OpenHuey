@@ -1,11 +1,11 @@
 \ story/places/castle-2f-7.fs - the plate press room in Belli Castle's 2F ($23): the plate pressing
 \ machine (the first time a scene - "It's not a computer" - and the press; a word plate made, its
-\ scene and the file; again while fewer than ten are made, else none left; a plate given back);
-\ once the golem is done, someone trying the door as she stands at the machine (a fright); brought
-\ in by the forced way, Daniella's scene ("Where is the old man?" - her face); the birdcage in
-\ turn, the ruin, the thing wandering, what Hewie looks up at. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/castle-2f-7.fs (converted from the game's,
-\ not loaded).
+\ scene and the file; again while fewer than ten are made, else none left; a plate given back); once
+\ the golem is done, someone trying the door as she stands at the machine (a fright); brought in by
+\ the forced way, Daniella's scene ("Where is the old man?" - her face); the birdcage in turn, the
+\ ruin, the thing wandering, what Hewie looks up at. A place (story/kit.fs). The original's scripts,
+\ for checking: story/rooms-ref/castle-2f-7.fs in the history (converted from the game's; gone with
+\ the old machinery in 0.2.20).
 IN: story.places.castle-2f-7
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects story.kit fiona.anims fiona.sounds scenes ;

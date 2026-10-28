@@ -1,7 +1,8 @@
-\ story/places/chaos-forest-12.fs - the Chaos Forest's ($10A) way to its heart: the Camomile; the wisp
-\ (story/places/forest.fs) startled by a loud noise; once Hewie is found shot, the stalker loaded
-\ ahead as she heads for the way on (exit 2); the maze dealt. A place (story/kit.fs). The original's
-\ scripts, for checking: story/rooms-ref/chaos-forest-12.fs (converted from the game's, not loaded).
+\ story/places/chaos-forest-12.fs - the Chaos Forest's ($10A) way to its heart: the Camomile; the
+\ wisp (story/places/forest.fs) startled by a loud noise; once Hewie is found shot, the stalker
+\ loaded ahead as she heads for the way on (exit 2); the maze dealt. A place (story/kit.fs). The
+\ original's scripts, for checking: story/rooms-ref/chaos-forest-12.fs in the history (converted
+\ from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.chaos-forest-12
 USING: engine game-state actors messages common facts room-names flag-names story-names items.names
     story.kit story.places.forest ;

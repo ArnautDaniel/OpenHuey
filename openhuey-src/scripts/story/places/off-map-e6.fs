@@ -1,8 +1,8 @@
 \ story/places/off-map-e6.fs - the clock run's castle ($E6, castle-1f-7's passage again): its barred
 \ floor; the lattice down out of the way; its parts; two ways out (one by an area); its cameras; the
 \ rooms ahead loaded as Hewie nears their ways; the walls' shade; the clock. A place (story/kit.fs,
-\ story/places/clock-run.fs). The original's scripts, for checking: story/rooms-ref/off-map-e6.fs
-\ (converted from the game's, not loaded).
+\ story/places/clock-run.fs). The original's scripts, for checking: story/rooms-ref/off-map-e6.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-e6
 USING: engine game-state actors messages common flag-names facts room-names floor-flags story.kit
     story.clock story.places.clock-run ;

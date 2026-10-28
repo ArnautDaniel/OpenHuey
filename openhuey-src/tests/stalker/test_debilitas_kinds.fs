@@ -6,7 +6,7 @@
 \ (Pursuer_BehaviourStalk $19 / $1A). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_debilitas_kinds.fs
 IN: test-debilitas-kinds
-USING: story.words tester engine game-state actors messages common room-names game debug flag-names facts stalker.state stalker.tables stalker.search stalker.struck stalker.chase stalker.pursue stalker.names ;
+USING: tester engine game-state actors messages common room-names game debug flag-names facts stalker.state stalker.tables stalker.search stalker.struck stalker.chase stalker.pursue stalker.names story.base ;
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : as ( kind -- )  partner-load  deliver  2 run-frames ;
@@ -43,7 +43,7 @@ testing his attack tables are his kind's (situation 0, normal and hard)
 T{ 6 as  [: 0 false table  0 true table ;] his -> db6-tables @  db6-tables 34 cells + @ }T
 
 testing the cutscenes find him by his kind (char-model, speak, reflections: slot 2's kind)
-T{ 6 as  6 cast-model  [: my-model @ ;] his =  stalker-who char-model  [: my-model @ ;] his = -> -1 -1 }T
+T{ 6 as  6 cast-model  [: my-model @ ;] his =  story.base:slot2-kind @ cast-model  [: my-model @ ;] his = -> -1 -1 }T
 T{ 27 as  27 cast-model  [: my-model @ ;] his =  2 cast-model 0< -> -1 -1 }T
 T{ 2 as  2 cast-model  [: my-model @ ;] his =  6 cast-model 0< -> -1 -1 }T
 

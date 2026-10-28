@@ -1,9 +1,9 @@
-\ story/places/house-of-truth-b1-1.fs - the House of Truth's B1 room where Lorenzo waits ($84): brought
-\ here by the forced way (through B1-2's door the first time), his scene - "Daddy?" (the file; her
-\ clothes and Hewie's coat as they were, the door to B1-2 open, Lorenzo let loose in the B1, Hewie
-\ in the next room); its things; his slam's shake; the replay. A place (story/kit.fs). The original's
-\ scripts, for checking: story/rooms-ref/house-of-truth-b1-1.fs (converted from the game's, not
-\ loaded).
+\ story/places/house-of-truth-b1-1.fs - the House of Truth's B1 room where Lorenzo waits ($84):
+\ brought here by the forced way (through B1-2's door the first time), his scene - "Daddy?" (the
+\ file; her clothes and Hewie's coat as they were, the door to B1-2 open, Lorenzo let loose in the
+\ B1, Hewie in the next room); its things; his slam's shake; the replay. A place (story/kit.fs). The
+\ original's scripts, for checking: story/rooms-ref/house-of-truth-b1-1.fs in the history (converted
+\ from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-b1-1
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     story.kit story.places.house-of-truth scenes ;

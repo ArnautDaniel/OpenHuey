@@ -1,9 +1,10 @@
 \ story/places/old-mansion-2f-2.fs - the old mansion's 2F corridor by the furnace room: its door
 \ blocked from inside ("It won't budge", then the tiny window); Hewie, hidden in old-mansion-2f-3's
 \ hole, come through to the furnace room - barking inside ("Hey! Hewie is inside!"); her call: his
-\ scene, the way opened (the wood gone), the door unlocked, his file; the Viride Medallion's sparkle,
-\ the Medallion Hewie sniffs out. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-2f-2.fs (converted from the game's, not loaded).
+\ scene, the way opened (the wood gone), the door unlocked, his file; the Viride Medallion's
+\ sparkle, the Medallion Hewie sniffs out. A place (story/kit.fs). The original's scripts, for
+\ checking: story/rooms-ref/old-mansion-2f-2.fs in the history (converted from the game's; gone with
+\ the old machinery in 0.2.20).
 IN: story.places.old-mansion-2f-2
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names hewie-names story.kit fiona.anims ;

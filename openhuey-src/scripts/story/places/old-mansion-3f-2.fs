@@ -1,11 +1,12 @@
-\ story/places/old-mansion-3f-2.fs - the armour's corridor of the old mansion's 3F: the first time in,
-\ its scene; till the button on the armour's back is pushed, the floor's plates set it off - her
+\ story/places/old-mansion-3f-2.fs - the armour's corridor of the old mansion's 3F: the first time
+\ in, its scene; till the button on the armour's back is pushed, the floor's plates set it off - her
 \ first step onto a new plate a warning shot (its scene), the second another, the third her death
 \ (the game over); Hewie, kept off the plates, can be sent along them (her "go there" toward either
 \ end; "come back" to her; called while going, he sits and waits); the button (pushed: the trap
 \ disarmed, his trust up); Hewie tense at the corridor (its files), his look; the specks in the
 \ light; the replays. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-3f-2.fs (converted from the game's, not loaded).
+\ story/rooms-ref/old-mansion-3f-2.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-3f-2
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags effects story.kit fiona.anims scenes ;

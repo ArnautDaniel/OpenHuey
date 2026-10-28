@@ -3,9 +3,10 @@
 \ the weak floor (it creaks underfoot; the stalker crossing it once the chapter has turned, it gives
 \ way under him - he falls, gone); the crawl space Hewie squeezes into at her "go there" (out at
 \ "come back") till the furnace room is reached; the notes on the dog; the research gear (the Album
-\ Medallion inside); Hewie barking at a spot, his looks; the doorway's shade. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/old-mansion-2f-3.fs (converted from the
-\ game's, not loaded). Its act 1 - her dropping through to the room below - nothing starts.
+\ Medallion inside); Hewie barking at a spot, his looks; the doorway's shade. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-2f-3.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20). Its act 1 - her
+\ dropping through to the room below - nothing starts.
 IN: story.places.old-mansion-2f-3
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names hewie-names story.kit fiona.anims ;

@@ -53,7 +53,7 @@ room-afresh  by-the-door  1 use-on-place  900 play-on
 T{ room-id castle-3f-1 = -> 0 }T
 
 testing Daniella here once she has rested: busy at her task, unafraid of, no camera on her - let be as she leaves
-c1f-14-flag2 story-flag-set  c3f-2-flag1 story-flag-clear  daniella-kind story.words:partner-load  5 run-frames
+c1f-14-flag2 story-flag-set  c3f-2-flag1 story-flag-clear  daniella-kind story.base:partner-load  5 run-frames
 room-afresh
 T{ partner body-room  stalker-no-fear state-flag?  no-stalker-camera state-flag?  force-followed state-flag? -> castle-3f-1 -1 -1 -1 }T
 castle-1f-1 room!  20 run-frames

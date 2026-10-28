@@ -4,8 +4,8 @@
 \ shattered"; the way blocked by water ("I can see a door on the other side" after); once B1's floor
 \ gave way, the collapsed floor; Hewie sitting down, refusing, by the bare mirror; the Album
 \ Medallion he sniffs out; the scene figure kept by its far way; light rippling. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-11.fs
-\ (converted from the game's, not loaded).
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-11.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-11
 USING: engine game-state actors messages common vectors facts room-names flag-names story-names stalker-names
     floor-flags items.names effects story.kit fiona.anims ;

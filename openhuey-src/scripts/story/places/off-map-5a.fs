@@ -1,13 +1,14 @@
 \ story/places/off-map-5a.fs - room $5A (on no map page). The room has no data on the disc (no
 \ ST_05A.PAC): it is never entered, its messages' texts aren't known, and its dials' own steps (the
-\ original's Room5A_Cmd00) are a stub here - so its scripts are kept as the executable has them,
-\ for completeness: its four ways (the rooms beyond loaded ahead as she nears them); brought in by
-\ the forced way - at exit 1, faded in, a sound; the dials (her question; at them the world frozen,
-\ the close camera, the board up while she turns them; after, a look up at a sound); before exit
-\ 1's shut door once the scene is over, a remark; the wall's remarks in turn; leaving with the
-\ stalker down out of sight, he is let go and taken. (Its act 0 - an item used, another given - and
-\ act 4 are never started by its scripts.) A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/off-map-5a.fs (converted from the game's, not loaded).
+\ original's Room5A_Cmd00) are a stub here - so its scripts are kept as the executable has them, for
+\ completeness: its four ways (the rooms beyond loaded ahead as she nears them); brought in by the
+\ forced way - at exit 1, faded in, a sound; the dials (her question; at them the world frozen, the
+\ close camera, the board up while she turns them; after, a look up at a sound); before exit 1's
+\ shut door once the scene is over, a remark; the wall's remarks in turn; leaving with the stalker
+\ down out of sight, he is let go and taken. (Its act 0 - an item used, another given - and act 4
+\ are never started by its scripts.) A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/off-map-5a.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.off-map-5a
 USING: engine game-state actors messages common flag-names facts room-names story.kit fiona.anims ;
 

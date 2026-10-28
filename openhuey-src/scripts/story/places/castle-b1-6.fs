@@ -2,10 +2,11 @@
 \ inscription (Hermes' cane: the Saturnus Key's scene, the castle opened up); with the key, stepping
 \ in - Debilitas comes for her (a scene, the door locked behind); the two stands that hold the
 \ chandelier's ropes, struck (by her or by him) till they break, swinging as they're hit - both
-\ broken, the chandelier falls on him (two scenes, his end); or he goes down - the way out (a scene);
-\ "Oh no! It's locked!" while he's after her; the pulley, the chandelier, him lying there; Hewie's
-\ look up at the statue; the five movies replayed. A place (story/kit.fs). The original's scripts,
-\ for checking: story/rooms-ref/castle-b1-6.fs (converted from the game's, not loaded).
+\ broken, the chandelier falls on him (two scenes, his end); or he goes down - the way out (a
+\ scene); "Oh no! It's locked!" while he's after her; the pulley, the chandelier, him lying there;
+\ Hewie's look up at the statue; the five movies replayed. A place (story/kit.fs). The original's
+\ scripts, for checking: story/rooms-ref/castle-b1-6.fs in the history (converted from the game's;
+\ gone with the old machinery in 0.2.20).
 IN: story.places.castle-b1-6
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects story.kit fiona.anims scenes ;

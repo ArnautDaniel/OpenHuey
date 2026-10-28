@@ -1,9 +1,10 @@
-\ story/places/off-map-33.fs - room $33 (on no map page), an ending's scene: brought in by the forced
-\ way once the forest's heart is behind her - the world held, her panic eased; the scene (her
+\ story/places/off-map-33.fs - room $33 (on no map page), an ending's scene: brought in by the
+\ forced way once the forest's heart is behind her - the world held, her panic eased; the scene (her
 \ double's - the TintStalker - figure without its shadow, the room's part away from its fourth
 \ shot), then the game over of the story's end (the ending D); replayed from the extras: the same
 \ scene, then back. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-33.fs (converted from the game's, not loaded).
+\ story/rooms-ref/off-map-33.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.off-map-33
 USING: engine game-state actors messages common flag-names facts room-names story-names stalker-names
     story.kit scenes ;

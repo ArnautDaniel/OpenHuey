@@ -2,14 +2,14 @@
 \ command and not to attack, the unlocks that follow from others marked, its two doors locked, the
 \ fan turning; in from the title (exit 0) - placed, the "Secret Room" document the first time, the
 \ costumes earned since given; back from a replay ($80) - at the theatre, its menu again; back from
-\ the mini-game's run ($81) - at the door, its unlocks; the title's MINI-GAME - its menu at once. Its
-\ corners, each named on the floor as she faces it (a label up while she's free): the theatre (the
-\ movies: a replay - its room loaded, out by the forced way; the film - played, then back at it),
-\ the mini-game (its menu: the challenge's stalker and the story as it needs, her costume and his
-\ coat back on, out to the run), the changing area (the costumes' menu), the galleries (the models,
-\ the music, the art, the play types), the exit (out to the title); its cameras. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/off-map-37.fs (converted
-\ from the game's, not loaded).
+\ the mini-game's run ($81) - at the door, its unlocks; the title's MINI-GAME - its menu at once.
+\ Its corners, each named on the floor as she faces it (a label up while she's free): the theatre
+\ (the movies: a replay - its room loaded, out by the forced way; the film - played, then back at
+\ it), the mini-game (its menu: the challenge's stalker and the story as it needs, her costume and
+\ his coat back on, out to the run), the changing area (the costumes' menu), the galleries (the
+\ models, the music, the art, the play types), the exit (out to the title); its cameras. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/off-map-37.fs in the history
+\ (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-37
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     items.names story.kit fiona.anims scenes ;

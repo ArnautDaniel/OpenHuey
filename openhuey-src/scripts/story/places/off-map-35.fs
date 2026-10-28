@@ -1,10 +1,11 @@
 \ story/places/off-map-35.fs - room $35 (on no map page), the scenes with Hewie at the end: by the
-\ first forced way - "Thanks, Hewie. Come on, boy!" (the room's look for it: its tint, the blend, the
-\ fog; their shadows off), on to room $E; by the second - with Hewie's file found, "Thanks, Hewie.
-\ Hewie!" (Debilitas's figure, her shadow off for two shots), on to room $36; else "... Wait up,
-\ boy!" and the game over of the story's end (the ending B); each replayed from the extras, on to
-\ the next room's replay or back. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-35.fs (converted from the game's, not loaded).
+\ first forced way - "Thanks, Hewie. Come on, boy!" (the room's look for it: its tint, the blend,
+\ the fog; their shadows off), on to room $E; by the second - with Hewie's file found, "Thanks,
+\ Hewie. Hewie!" (Debilitas's figure, her shadow off for two shots), on to room $36; else "... Wait
+\ up, boy!" and the game over of the story's end (the ending B); each replayed from the extras, on
+\ to the next room's replay or back. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/off-map-35.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.off-map-35
 USING: engine game-state actors messages common flag-names facts room-names story-names stalker-names
     story.kit scenes ;

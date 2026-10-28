@@ -1,11 +1,11 @@
 \ story/places/castle-1f-5.fs - the long gallery in Belli Castle's 1F ($10): Debilitas coming in
 \ (the golem done, she back by exit 1 - he bursts through after her), his shove bringing the rubble
 \ down; brought in after Daniella's scene (castle-1f-6): the chapter turns - the castle's doors set
-\ anew, Daniella the stalker now, Hewie gone back to his room, she weak ("I don't feel so hot")
-\ till rested; three flames stirring as someone passes, a vase (the Antimony Powder), the box, the
-\ dim corner, the twin paintings, the map's pages, the walls' shade. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/castle-1f-5.fs (converted from the game's, not
-\ loaded).
+\ anew, Daniella the stalker now, Hewie gone back to his room, she weak ("I don't feel so hot") till
+\ rested; three flames stirring as someone passes, a vase (the Antimony Powder), the box, the dim
+\ corner, the twin paintings, the map's pages, the walls' shade. A place (story/kit.fs). The
+\ original's scripts, for checking: story/rooms-ref/castle-1f-5.fs in the history (converted from
+\ the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-1f-5
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects keys story.kit fiona.anims ;

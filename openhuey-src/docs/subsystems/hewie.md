@@ -213,8 +213,8 @@ grip holds). Held by the stalker's grab (`hit` 6): its damage, not taken as a bl
 original. (The tackles, growling at the
 stalker, the door pushing him out and the creatures came with H5, below.)
 
-**H4: the story's words about him** (`scripts/story/words.fs`; EventCmd_Hewie, event.c's
-conditions). He tells each frame, in `hewie-doing`, besides what he does: whether she may command
+**H4: what the story knows of him and asks of him** (the kit's, `scripts/story/kit.fs`; EventCmd_Hewie,
+event.c's conditions). He tells each frame, in `hewie-doing`, besides what he does: whether she may command
 him (Hewie_FionaCanCommand: with her, not scripted, idle, not angry, a command word that takes
 one, no meeting), near enough for it (Hewie_FionaNearCommand: within 150 by his way over the floor,
 planned apart - Hewie_WalkDistance), whether he can reach her (Hewie_FionaReachable: only while scripted, a way planned apart -
@@ -226,9 +226,8 @@ converter's `hewie-stays?`: he *may* be broken off), 0x33, 0x61. Orders: 0x39 hi
 0xC5 / 0xC6 a point to look to if he has none (a zone's - in a script variable - or a
 character's place, raised: `scent-at`), his moves 0x78 bark, 0x7A / 0xB0 to a point (Hewie_Requests
 0x12, 0x13, 0x14, 0x0D), and as the script's own 0x20 through blocked floor (`his-2b`), 0x21 left
-alone (`his-2d`). Checked by `tests/story/test_hewie_fiona_words.fs`. His model swapped (0xB7
-`hewie-model`), 0xBB's forced choice (`hewie-wait-5`), his animations (0x77 `hewie-anim`, 0xC3
-`hewie-anim-root`) are built; 0x63 (his heading, then action $72) is used by no room's script.
+alone (`his-2d`). (The opcode words' own test went with them in 0.2.20; the places' tests check
+these in use.) His model swapped (0xB7, the kit's `coat`), his animations are built; 0x63 (his heading, then action $72) is used by no room's script.
 
 **H4 begun** (with the story's S3): the story's moves (`scripted-move` → his actions 0x3B..0x47,
 0x7F; `scripted` on / off: Hewie_Think while a script has him; `hold-anim`, `show`; `moving`

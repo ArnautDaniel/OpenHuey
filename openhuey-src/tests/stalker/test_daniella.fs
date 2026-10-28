@@ -51,7 +51,7 @@ T{ 35 later enter  kit @ kind35-kit =  numbers  leave-actor -> -1 35 65 120 3000
 T{ 36 later enter  kit @ kind36-kit =  numbers  leave-actor -> -1 36 65 120 3000 }T
 T{ 34 later enter  stalker:file s" O_DNL/DNL_001" s=  leave-actor  35 later enter  stalker:file s" O_DNL/DNL_000" s=  leave-actor -> -1 -1 }T
 testing ... the story's slot 2 holds her own for each (`stalker-actor`)
-T{ 34 story.words:stalker-actor 34 later =  36 story.words:stalker-actor 36 later = -> -1 -1 }T
+T{ 34 story.base:stalker-actor 34 later =  36 story.base:stalker-actor 36 later = -> -1 -1 }T
 testing ... in her room (kind 34): the Pursuer's chase, as hers
 room-id game:fiona body-tri 34 later send stalker-in  3 run-frames
 T{ [: [: step @ ['] pursue-run = ;] 34 later enter execute leave-actor ;] 30 soon -> -1 }T

@@ -2,9 +2,9 @@
 \ first time she steps in, the scene (Riccardo; the ash rising between its cues, the doorway's light
 \ after) - then on: dressed anew (her bare feet's sounds) to the water tower (or, the cage's garden
 \ seen, the old mansion's 2F); with Hewie never bandaged and mistreated, out the other way. The room
-\ ahead loaded as she crosses toward the way out; the maze dealt; the replay. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/chaos-forest-13.fs (converted from the
-\ game's, not loaded).
+\ ahead loaded as she crosses toward the way out; the maze dealt; the replay. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/chaos-forest-13.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.chaos-forest-13
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     effects story.kit story.places.forest scenes ;

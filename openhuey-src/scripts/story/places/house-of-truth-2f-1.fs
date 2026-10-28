@@ -1,11 +1,11 @@
 \ story/places/house-of-truth-2f-1.fs - the House of Truth's 2F hall ($82): her first steps in (her
-\ track not yet on) take her on by the forced way (to Lorenzo's study); back from it, her clothes and
-\ Hewie's coat as they were, the doors shut on her, Lorenzo let loose (the file); the locked door - its
-\ remark in turn with the sun carved in it - and the Sol Key turned in it; the barred corridor; three
-\ crates (broken by a blow: the Viola Medallion behind one, a creature let out behind another); the
-\ Medallion Hewie sniffs out; eight flames, six stirred as anyone passes. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/house-of-truth-2f-1.fs (converted from the game's,
-\ not loaded).
+\ track not yet on) take her on by the forced way (to Lorenzo's study); back from it, her clothes
+\ and Hewie's coat as they were, the doors shut on her, Lorenzo let loose (the file); the locked
+\ door - its remark in turn with the sun carved in it - and the Sol Key turned in it; the barred
+\ corridor; three crates (broken by a blow: the Viola Medallion behind one, a creature let out
+\ behind another); the Medallion Hewie sniffs out; eight flames, six stirred as anyone passes. A
+\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-2f-1.fs
+\ in the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.house-of-truth-2f-1
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit story.places.house-of-truth fiona.anims ;

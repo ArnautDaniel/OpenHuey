@@ -1,8 +1,9 @@
 \ story/places/castle-2f-3.fs - the bedroom in Belli Castle's 2F ($21), where Fiona wakes in a
-\ sheet: Daniella brings her clothes, she changes, the stalker comes, she hides under the bed;
-\ at night she hears the dog; later Hewie learns to attack here (the bedroom's own things: story/
-\ places/bedroom.fs). A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ castle-2f-3.fs (converted from the game's, not loaded).
+\ sheet: Daniella brings her clothes, she changes, the stalker comes, she hides under the bed; at
+\ night she hears the dog; later Hewie learns to attack here (the bedroom's own things: story/
+\ places/bedroom.fs). A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/castle-2f-3.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.castle-2f-3
 USING: engine game-state actors messages common vectors facts flag-names story-names room-names stalker-names
     story.kit fiona.anims fiona.sounds hewie.anims stalker.anims scenes keys story.places.bedroom ;

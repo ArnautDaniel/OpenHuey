@@ -48,7 +48,7 @@ antimony-powder items:items-of before !
 T{ c1f-5-antimony-powder story-flag?  antimony-powder items:items-of -> -1 before @ 1+ }T
 
 testing Debilitas coming in (the golem done, she back by exit 1, he loaded but not yet in the game)
-golem-done story-flag-set  c1f-5-flag1 story-flag-clear  2 story.words:partner-load  5 run-frames  game:debilitas send stalker-out  5 run-frames
+golem-done story-flag-set  c1f-5-flag1 story-flag-clear  2 story.base:partner-load  5 run-frames  game:debilitas send stalker-out  5 run-frames
 castle-1f-5 1 rooms send go-to-room  60 run-frames
 T{ c1f-5-flag1 story-flag?  game:debilitas body?  game:debilitas body-room -> -1 -1 castle-1f-5 }T
 600 run-frames
@@ -61,7 +61,7 @@ game:debilitas send stalker-out  60 run-frames
 
 testing the chapter turning (brought in after Daniella's scene): the doors anew, Daniella the stalker, she weak
 c1f-6-flag1 story-flag-set  over-music-b story-flag-clear  castle-1f-5 1 rooms send go-to-room  60 run-frames
-T{ [: over-music-b story-flag? ;] 300 soon  $D doors:door-locked?  1 doors:door-locked?  story.words:slot2-kind @ -> -1 0 -1 daniella-kind }T
+T{ [: over-music-b story-flag? ;] 300 soon  $D doors:door-locked?  1 doors:door-locked?  story.base:slot2-kind @ -> -1 0 -1 daniella-kind }T
 300 run-frames
 testing ... she weak: reaching to act, she flags - "I don't feel so hot"
 saturnus-hint-on story-flag-clear  room-afresh

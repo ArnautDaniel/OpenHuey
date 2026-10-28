@@ -1,8 +1,9 @@
 \ story/places/off-map-e2.fs - the clock run's castle ($E2, castle-1f-6's long dining room again):
 \ thirteen candles, each flame stirring as someone passes; the plate-key's part away; the day's
 \ light in the run's second kind; two ways out; its cameras; the rooms ahead loaded as Hewie nears
-\ their ways; the clock. A place (story/kit.fs, story/places/clock-run.fs). The original's
-\ scripts, for checking: story/rooms-ref/off-map-e2.fs (converted from the game's, not loaded).
+\ their ways; the clock. A place (story/kit.fs, story/places/clock-run.fs). The original's scripts,
+\ for checking: story/rooms-ref/off-map-e2.fs in the history (converted from the game's; gone with
+\ the old machinery in 0.2.20).
 IN: story.places.off-map-e2
 USING: engine game-state actors messages common flag-names facts room-names story.kit story.clock
     story.places.clock-run ;

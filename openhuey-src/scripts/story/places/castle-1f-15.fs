@@ -5,8 +5,9 @@
 \ it by her choice; dropped in from it above, she lands); the diorama, the spear and the armour in
 \ turn, the broken handrail in turn, the Camomile and the Medallion Hewie sniffs out, what he barks
 \ at and looks up at, the steady sound, the far view's depth, the walls' shade, the other game's
-\ creature. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ castle-1f-15.fs (converted from the game's, not loaded).
+\ creature. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/castle-1f-15.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.castle-1f-15
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects story.kit fiona.anims fiona.sounds scenes ;

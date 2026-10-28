@@ -1,14 +1,14 @@
-\ story/places/off-map-27.fs - room $27 (on no map page), the garden's hidden room: brought in by its
-\ way ($FE: the front garden's) - placed, the world let go and faded in; the first time with the
-\ costumes unlocked (and the castle's not yet behind her), the "Costumes" document filed; the machine
-\ that tops up her Antimony Powder and Magnesia to one each (its sparkle while there's something for
-\ her; taken - "There is nothing here." after); the slot machine - the word plate's words (ALCHYMIA,
-\ ADAMAS, POWDER, MORGAN: items.fs) each give a piece of jewellery once, the Magist Medallion if
-\ she has it already; any other word nothing; its remarks; the inscription on it; the book of
-\ combinations; the chests of clothes - the costumes' menu (and before the castle's outfit, the
-\ castle's and the "Under the Scalpel" outfits in turn); out by its way, faded. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/off-map-27.fs (converted from
-\ the game's, not loaded).
+\ story/places/off-map-27.fs - room $27 (on no map page), the garden's hidden room: brought in by
+\ its way ($FE: the front garden's) - placed, the world let go and faded in; the first time with the
+\ costumes unlocked (and the castle's not yet behind her), the "Costumes" document filed; the
+\ machine that tops up her Antimony Powder and Magnesia to one each (its sparkle while there's
+\ something for her; taken - "There is nothing here." after); the slot machine - the word plate's
+\ words (ALCHYMIA, ADAMAS, POWDER, MORGAN: items.fs) each give a piece of jewellery once, the Magist
+\ Medallion if she has it already; any other word nothing; its remarks; the inscription on it; the
+\ book of combinations; the chests of clothes - the costumes' menu (and before the castle's outfit,
+\ the castle's and the "Under the Scalpel" outfits in turn); out by its way, faded. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/off-map-27.fs in the history
+\ (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-27
 USING: engine game-state actors messages common facts flag-names story-names room-names items.names
     story.kit fiona.anims ;

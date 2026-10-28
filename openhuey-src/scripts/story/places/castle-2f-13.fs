@@ -4,9 +4,9 @@
 \ there or kept here); the raised bridge in turn; Hewie, pointed across the gap, leaps over to the
 \ Medallion and brings it back (it had: he lies down over there); called back he leaps back; the
 \ stalker grabbing him from behind on the plank; the statue in turn (the hall's own: story/places/
-\ bridge.fs); the sparkles, Hewie wary on the balcony, the map's pages. A place (story/kit.fs). The original's
-\ scripts, for checking: story/rooms-ref/castle-2f-13.fs (converted from the game's, not loaded).
-\ (castle-2f-14 is the same hall after.)
+\ bridge.fs); the sparkles, Hewie wary on the balcony, the map's pages. A place (story/kit.fs). The
+\ original's scripts, for checking: story/rooms-ref/castle-2f-13.fs in the history (converted from
+\ the game's; gone with the old machinery in 0.2.20). (castle-2f-14 is the same hall after.)
 IN: story.places.castle-2f-13
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects story.kit fiona.anims story.places.bridge ;

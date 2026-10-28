@@ -70,7 +70,7 @@ balcony-area 0 at
 T{ [: movie-skipped state-flag-set  room-id castle-1f-13 = ;] 600 soon -> -1 }T
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 testing ... the stalker on it after her: it gives - down the other forced way (seized)
-2 story.words:partner-load  10 run-frames  found-file-227 story-flag-clear  room-afresh
+2 story.base:partner-load  10 run-frames  found-file-227 story-flag-clear  room-afresh
 castle-2f-13  balcony-area area-middle drop nav-tri  game:debilitas send stalker-in
 T{ [: movie-skipped state-flag-set  room-id castle-2f-13 <> ;] 900 soon -> -1 }T
 test-summary

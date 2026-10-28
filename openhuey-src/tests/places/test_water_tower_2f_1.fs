@@ -99,7 +99,7 @@ T{ 0 0 at  [: room-id water-tower-2f-1 <> ;] 300 soon  [: self body-tri ;] his -
 game:hewie send part-from-fiona  60 run-frames
 testing Riccardo: heard prowling once she leaves the landing; stopped at the top; come for her by her way up
 wt2f-1-flag2 story-flag-set  wt2f-1-flag1 story-flag-clear  c7-second-event story-flag-clear
-4 story.words:partner-load  5 run-frames  0 by-exit
+4 story.base:partner-load  5 run-frames  0 by-exit
 landing-area 5e across
 T{ [: ['] prowls running?  prowl-begun @ ;] in-place -> -1 -1 }T
 T{ top-area 5e across  [: ['] prowls running? ;] in-place -> 0 }T

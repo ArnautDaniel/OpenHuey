@@ -2,8 +2,8 @@
 \ Daniella's scene (the glass over the picture, the far view opening out) - after it Daniella at her
 \ task there (her sound, no fright, no camera on her) and Hewie wary of her; "She's gone utterly
 \ mad..."; once the hall has flooded, its water; the map's pages. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/old-mansion-1f-1.fs (converted from the game's,
-\ not loaded).
+\ original's scripts, for checking: story/rooms-ref/old-mansion-1f-1.fs in the history (converted
+\ from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-1
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags story.kit fiona.anims scenes ;

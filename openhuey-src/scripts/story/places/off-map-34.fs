@@ -3,8 +3,8 @@
 \ you're up. Fiona..."; the room's six parts shown and hidden by its cues), the figure and $33's
 \ figure loaded, on to $33 by the forced way; replayed from the extras: the same, its double loaded
 \ for it, on to $33's replay. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-34.fs (converted from the game's, not loaded; its act $4D is read past
-\ the room's table and never runs).
+\ story/rooms-ref/off-map-34.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20; its act $4D is read past the room's table and never runs).
 IN: story.places.off-map-34
 USING: engine game-state actors messages common flag-names facts room-names story-names stalker-names
     story.kit scenes ;

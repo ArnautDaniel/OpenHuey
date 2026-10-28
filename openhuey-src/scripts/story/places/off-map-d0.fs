@@ -1,9 +1,9 @@
 \ story/places/off-map-d0.fs - the clock run's goal in the forest ($D0, chaos-forest-1's ground
-\ again): two of its floor's triangles let through; its specks; Fiona reaching the goal's area -
-\ the time kept and shown, the results, out to the extras room (story/places/clock-run.fs); the
-\ room beyond exit 1 loaded ahead as Hewie nears it; out by exit 1; the clock. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/off-map-d0.fs (converted
-\ from the game's, not loaded).
+\ again): two of its floor's triangles let through; its specks; Fiona reaching the goal's area - the
+\ time kept and shown, the results, out to the extras room (story/places/clock-run.fs); the room
+\ beyond exit 1 loaded ahead as Hewie nears it; out by exit 1; the clock. A place (story/kit.fs).
+\ The original's scripts, for checking: story/rooms-ref/off-map-d0.fs in the history (converted from
+\ the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-d0
 USING: engine game-state actors messages common flag-names facts room-names story-names floor-flags effects
     story.kit story.clock story.places.clock-run ;

@@ -57,7 +57,7 @@ T{ [: [: panicking panic-stage ! ;] in-place  hidden? 0= ;] 300 soon  [: doing-b
 60 run-frames
 
 testing the stalker's search: his searches counted; found - she is hauled out (the avoid prompt)
-3 story.words:partner-load  5 run-frames
+3 story.base:partner-load  5 run-frames
 chaos-forest-4 $E0 game:daniella send stalker-in  30 run-frames
 by-bush  circle press  [: hidden? ;] 300 soon drop  60 run-frames
 $1B progress pr.vars + c@ before !

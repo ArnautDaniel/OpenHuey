@@ -3,8 +3,8 @@
 \ call), the line cut since, a place to hide (the kit's; the stalker coming in searches - finding
 \ her more likely each time he comes), four flames stirring as someone passes, the chair, the
 \ ornaments, the Magnesia, the Album Medallion Hewie sniffs out, the walls' shade by the doors. A
-\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-8.fs
-\ (converted from the game's, not loaded).
+\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-8.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-1f-8
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects story.kit fiona.anims scenes ;

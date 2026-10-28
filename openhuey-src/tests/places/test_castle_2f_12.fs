@@ -106,7 +106,7 @@ testing ... in a panic: out, the doors left open
 T{ hidden?  c2f-12-flag1 story-flag? -> 0 -1 }T
 
 testing the stalker coming while she hides: his search counted
-2 story.words:partner-load  5 run-frames  c2f-12-flag1 story-flag-clear  room-afresh
+2 story.base:partner-load  5 run-frames  c2f-12-flag1 story-flag-clear  room-afresh
 22 20e 0e 32e put  circle press  [: hidden? ;] 600 soon drop
 search-var var@ before !
 castle-2f-12 $3A game:debilitas send stalker-in  10 run-frames

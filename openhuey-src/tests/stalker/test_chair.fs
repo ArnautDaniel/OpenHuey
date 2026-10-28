@@ -3,7 +3,7 @@
 \ ahead and 8 behind lie - and on the level floor it doesn't. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_chair.fs
 IN: test-stalker-chair
-USING: story.words tester engine game-state actors messages common room-names game debug facts flag-names stalker.state stalker ;
+USING: tester engine game-state actors messages common room-names game debug facts flag-names stalker.state stalker story.base ;
 
 : lorenzo-id ( -- id )  s" lorenzo" actor-named ;
 : his ( xt -- x )  lorenzo-id enter  execute  leave-actor ;

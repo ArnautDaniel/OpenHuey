@@ -1,10 +1,11 @@
 \ story/places/castle-1f-7.fs - the breaker room in Belli Castle's 1F ($15): the gate (a lid,
 \ "kousi") over the way in, held up while someone stands on castle-1f-4's floor plate - it falls
-\ once nobody does and nobody is under it; the breaker box humming - in among its wires before
-\ its handle is lowered, she is killed (a game over); lowered, the door (9) unlocked; the stabbed
-\ doll; Hewie barking at the breaker; brought back in by the forced way, the gate rattles shut on
-\ her and she is sent back. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/castle-1f-7.fs (converted from the game's, not loaded).
+\ once nobody does and nobody is under it; the breaker box humming - in among its wires before its
+\ handle is lowered, she is killed (a game over); lowered, the door (9) unlocked; the stabbed doll;
+\ Hewie barking at the breaker; brought back in by the forced way, the gate rattles shut on her and
+\ she is sent back. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/castle-1f-7.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.castle-1f-7
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects story.kit fiona.anims hewie.anims hewie-names scenes ;

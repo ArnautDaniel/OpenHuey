@@ -1,11 +1,12 @@
 \ story/places/castle-1f-13.fs - the great hall in Belli Castle's 1F ($8): brought in by the forced
 \ way - the balcony collapsing under her (a scene: she comes to below, Debilitas stalking along the
-\ balcony above and shoving its rubble down on her; the crows' file), or seized and carried off
-\ (a scene, out by the way loaded ahead); a place to crouch hidden behind (the stalker searching -
+\ balcony above and shoving its rubble down on her; the crows' file), or seized and carried off (a
+\ scene, out by the way loaded ahead); a place to crouch hidden behind (the stalker searching -
 \ finding her more likely each time he comes); the fallen balcony and the false doors in turn, the
 \ Chicken Jerky, the Antimony Powder Hewie sniffs out, the hanging thing she sets swinging, the
 \ specks, the walls' shade, the creatures. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/castle-1f-13.fs (converted from the game's, not loaded).
+\ checking: story/rooms-ref/castle-1f-13.fs in the history (converted from the game's; gone with the
+\ old machinery in 0.2.20).
 IN: story.places.castle-1f-13
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects keys story.kit fiona.anims fiona.sounds stalker.anims scenes ;

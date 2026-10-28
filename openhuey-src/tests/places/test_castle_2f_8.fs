@@ -20,7 +20,7 @@ USING: tester engine game-state actors messages keys room-names game debug facts
     100 0 do  window-shown 0< 0= if  cross press  then  10 run-frames  doing-busy? 0= window-shown 0< and if  leave  then  loop ;
 : play-on ( n -- )
     0 ?do  window-shown 0< 0= if  i 20 mod 0= if  cross press  then  then  movie-skipped state-flag-set  game-tick  loop ;
-: no-golem-figure? ( -- flag )  golem-figure story.words:slot-actor @ 0< ;
+: no-golem-figure? ( -- flag )  golem-figure story.base:slot-actor @ 0< ;
 : word ( ev -- )  0 swap -1 0 broadcast item-event ;   \ (the word plate used at the golem: its event)
 : room-afresh ( -- )  castle-2f-8 room!  60 run-frames ;
 

@@ -2,8 +2,8 @@
 \ break (the Chicken Jerky behind one, the Antimony Powder behind another), the Viride Medallion
 \ Hewie sniffs out, the door to unlock from this side, the map turning to the next floor's page by
 \ the stairs, the walls' shade; brought here caught (a forced way in): the game over's scene. A
-\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-14.fs
-\ (converted from the game's, not loaded).
+\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-14.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-1f-14
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects story.kit fiona.anims scenes ;

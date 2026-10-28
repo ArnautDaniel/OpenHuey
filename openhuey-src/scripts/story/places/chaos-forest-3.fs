@@ -1,6 +1,6 @@
-\ story/places/chaos-forest-3.fs - a room of the Chaos Forest's maze ($101): its four ways. A
-\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/chaos-forest-3.fs
-\ (converted from the game's, not loaded).
+\ story/places/chaos-forest-3.fs - a room of the Chaos Forest's maze ($101): its four ways. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/chaos-forest-3.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.chaos-forest-3
 USING: engine game-state actors messages common facts room-names story.kit ;
 

@@ -1,12 +1,13 @@
-\ story/places/castle-2f-2.fs - the chandelier hall in Belli Castle's 2F ($20): her first steps by the
-\ chandeliers (Debilitas's scene: he comes in, looks about), the box barring the way (pushed home: the
-\ door beyond unlocked); the Bisque Doll knocked down by her blow, fallen and picked up; after the
-\ telephone's warning, the door that won't open (inside, she is seized - the forced way; pulled free
-\ she flees here: the file); the blood (the first time a fright), the floor, the angel painting, the
-\ dark corner; the Album Medallion Hewie sniffs out, what he stands wary of, sits by and looks up at;
-\ the chandeliers swinging, two flames, the wheel's sounds, the ticking beyond the door, Debilitas's
-\ shove far off, the creatures, the walls' shade. A place (story/kit.fs). The original's scripts,
-\ for checking: story/rooms-ref/castle-2f-2.fs (converted from the game's, not loaded).
+\ story/places/castle-2f-2.fs - the chandelier hall in Belli Castle's 2F ($20): her first steps by
+\ the chandeliers (Debilitas's scene: he comes in, looks about), the box barring the way (pushed
+\ home: the door beyond unlocked); the Bisque Doll knocked down by her blow, fallen and picked up;
+\ after the telephone's warning, the door that won't open (inside, she is seized - the forced way;
+\ pulled free she flees here: the file); the blood (the first time a fright), the floor, the angel
+\ painting, the dark corner; the Album Medallion Hewie sniffs out, what he stands wary of, sits by
+\ and looks up at; the chandeliers swinging, two flames, the wheel's sounds, the ticking beyond the
+\ door, Debilitas's shove far off, the creatures, the walls' shade. A place (story/kit.fs). The
+\ original's scripts, for checking: story/rooms-ref/castle-2f-2.fs in the history (converted from
+\ the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-2f-2
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects vectors story.kit fiona.anims fiona.sounds stalker.anims scenes ;

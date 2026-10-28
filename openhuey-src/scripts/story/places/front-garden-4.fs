@@ -2,7 +2,8 @@
 \ cages, a boarded door, the big rusted door, a breakable, the camomile, the Album Medallion Hewie
 \ sniffs out; now and then a rabbit grazing that runs off; the stalker who, finding her hidden here
 \ by the open door, looks about and shuts it. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/front-garden-4.fs (converted from the game's, not loaded).
+\ checking: story/rooms-ref/front-garden-4.fs in the history (converted from the game's; gone with
+\ the old machinery in 0.2.20).
 IN: story.places.front-garden-4
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names cast effects story.kit fiona.anims stalker.anims ;

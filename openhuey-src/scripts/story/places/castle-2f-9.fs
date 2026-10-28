@@ -2,8 +2,8 @@
 \ Daniella the maid (after the Saturnus hint, before castle-3f-2), her cleaning here - on her knees
 \ scrubbing, harmless: spoken to she stands, "It's cleaning time now" (after, her strangeness); her
 \ steady sound, Hewie wary of her and looking her way; the first time in, the screen back. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-2f-9.fs (converted
-\ from the game's, not loaded).
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-2f-9.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-2f-9
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags effects story.kit ;

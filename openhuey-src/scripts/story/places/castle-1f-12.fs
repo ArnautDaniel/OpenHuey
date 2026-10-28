@@ -1,10 +1,10 @@
 \ story/places/castle-1f-12.fs - the moon dials' room in Belli Castle's 1F ($04): two devices with
 \ dials, turned by the stick to a number (the first only once the Lunar Refractor is set in it - a
-\ scene, its lens throwing her reflection); set right, with castle-2f-1's dial, the moonlight is
-\ let through upstairs and down (scenes by way of castle-2f-1) and the five doors here open; a vase
-\ (a Medallion), the moon on the wall, the door to unlock from this side. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/castle-1f-12.fs (converted from the game's,
-\ not loaded).
+\ scene, its lens throwing her reflection); set right, with castle-2f-1's dial, the moonlight is let
+\ through upstairs and down (scenes by way of castle-2f-1) and the five doors here open; a vase (a
+\ Medallion), the moon on the wall, the door to unlock from this side. A place (story/kit.fs). The
+\ original's scripts, for checking: story/rooms-ref/castle-1f-12.fs in the history (converted from
+\ the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-1f-12
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects keys story.kit fiona.anims scenes ;

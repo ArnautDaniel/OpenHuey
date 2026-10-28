@@ -1,10 +1,10 @@
-\ story/places/old-mansion-1f-20.fs - the long corridor of the old mansion's 1F: a hopping figure (the
-\ kit's hopper; struck the fifth time it lashes out at her - thrown down, her panic up); the rotted
-\ door (its knob gone; kicked in, the way through); the scales; the Weeping Stone; three Medallions
-\ and the Prima Magnesia Hewie sniffs out; after the 3F's turn, stepping in the first time, she is
-\ taken out by the forced way; Hewie wary of the figure, his look; the map's pages. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-20.fs
-\ (converted from the game's, not loaded).
+\ story/places/old-mansion-1f-20.fs - the long corridor of the old mansion's 1F: a hopping figure
+\ (the kit's hopper; struck the fifth time it lashes out at her - thrown down, her panic up); the
+\ rotted door (its knob gone; kicked in, the way through); the scales; the Weeping Stone; three
+\ Medallions and the Prima Magnesia Hewie sniffs out; after the 3F's turn, stepping in the first
+\ time, she is taken out by the forced way; Hewie wary of the figure, his look; the map's pages. A
+\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-20.fs
+\ in the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-20
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names effects story.kit fiona.anims fiona.sounds ;

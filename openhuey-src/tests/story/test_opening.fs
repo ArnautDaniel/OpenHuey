@@ -4,7 +4,7 @@
 \ I?" (area $11). Not free-play: from the new game itself. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_opening.fs
 IN: test-opening
-USING: tester engine game-state actors messages keys room-names game debug flag-names story-names story.state facts story.words ;
+USING: tester engine game-state actors messages keys room-names game debug flag-names story-names facts ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;

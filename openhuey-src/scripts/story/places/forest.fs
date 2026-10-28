@@ -19,7 +19,7 @@ owns @ constant forest-owns
 
 \ ---- the maze (the six rooms $100 ..: their doors dealt from a row - while under 4 deals) ----
 $1F constant deals-var
-: deal-maze ( -- )  story.words:deal-things ;   \ (0xCE: the rooms dealt, a stalker in them sent on, the exits rebuilt)
+: deal-maze ( -- )  story.base:deal-things ;   \ (0xCE: the rooms dealt, a stalker in them sent on, the exits rebuilt)
 : maze-in ( -- )   \ (as she comes in: never dealt - dealt now)
     deals-var var@ 0= if  deal-maze  then  in-panic? was-panicking ! ;
 : maze-frame ( -- )   \ (her panic setting in: dealt anew, once a visit)

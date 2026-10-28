@@ -59,7 +59,7 @@ T{ hidden? -> -1 }T
 circle press  [: doing-busy? 0= ;] 900 soon drop
 T{ hidden?  free? -> 0 -1 }T
 testing Daniella waiting inside it the first time: she bursts out at her
-omb1-5-flag5 story-flag-clear  omb1-5-flag4 story-flag-clear  daniella-kind story.words:partner-load  10 run-frames  room-afresh
+omb1-5-flag5 story-flag-clear  omb1-5-flag4 story-flag-clear  daniella-kind story.base:partner-load  10 run-frames  room-afresh
 T{ [: waiting @ ;] in-place -> -1 }T
 cabinet-area 90 at  circle press  [: doing-busy? 0= ;] 1200 soon drop
 T{ omb1-5-flag5 story-flag?  omb1-5-flag4 story-flag? -> -1 -1 }T

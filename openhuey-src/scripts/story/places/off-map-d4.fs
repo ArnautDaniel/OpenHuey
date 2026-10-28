@@ -1,7 +1,7 @@
-\ story/places/off-map-d4.fs - the clock run's forest ($D4): four ways, each by
-\ its own area; the room behind each loaded ahead as Hewie nears it; the clock.
-\ A place (story/kit.fs, story/places/clock-run.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-d4.fs (converted from the game's, not loaded).
+\ story/places/off-map-d4.fs - the clock run's forest ($D4): four ways, each by its own area; the
+\ room behind each loaded ahead as Hewie nears it; the clock. A place (story/kit.fs,
+\ story/places/clock-run.fs). The original's scripts, for checking: story/rooms-ref/off-map-d4.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-d4
 USING: engine game-state actors messages common flag-names facts room-names story.kit story.clock
     story.places.clock-run ;

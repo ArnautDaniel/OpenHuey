@@ -1,10 +1,11 @@
-\ story/places/house-of-truth-2f-2.fs - the House of Truth's 2F study ($83): brought here by the forced
-\ way, Lorenzo's scene ("Who's there? Poor Fiona...": his door shut behind, the music's stage on); the
-\ Mystery Sketch; the painting's title; the closet; the bobbles; the bookshelves - the untitled book
-\ (in turn with the first remark), the Rubrum Medallion wedged in another; the name of a medicine
-\ (marked in her menu); the Viride Medallion Hewie sniffs out; the doorways' shade; the replay. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/house-of-truth-2f-2.fs
-\ (converted from the game's, not loaded).
+\ story/places/house-of-truth-2f-2.fs - the House of Truth's 2F study ($83): brought here by the
+\ forced way, Lorenzo's scene ("Who's there? Poor Fiona...": his door shut behind, the music's stage
+\ on); the Mystery Sketch; the painting's title; the closet; the bobbles; the bookshelves - the
+\ untitled book (in turn with the first remark), the Rubrum Medallion wedged in another; the name of
+\ a medicine (marked in her menu); the Viride Medallion Hewie sniffs out; the doorways' shade; the
+\ replay. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/house-of-truth-2f-2.fs in the history (converted from the game's; gone with the
+\ old machinery in 0.2.20).
 IN: story.places.house-of-truth-2f-2
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     items.names story.kit fiona.anims scenes ;

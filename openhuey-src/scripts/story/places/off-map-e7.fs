@@ -1,10 +1,10 @@
 \ story/places/off-map-e7.fs - the clock run's castle ($E7, castle-1f-8's sitting room again): four
 \ flames, each stirred as someone steps into its draught; two ways out; its cameras; the rooms ahead
-\ loaded as Hewie nears their ways; the hiding place - Fiona slips in at his command as he stands
-\ by it, out at his next (found or panicking: hauled out); the stalker coming in while she hides
-\ finds her by the odds; left behind in it, she's out at its front; the clock. A place
-\ (story/kit.fs, story/places/clock-run.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-e7.fs (converted from the game's, not loaded).
+\ loaded as Hewie nears their ways; the hiding place - Fiona slips in at his command as he stands by
+\ it, out at his next (found or panicking: hauled out); the stalker coming in while she hides finds
+\ her by the odds; left behind in it, she's out at its front; the clock. A place (story/kit.fs,
+\ story/places/clock-run.fs). The original's scripts, for checking: story/rooms-ref/off-map-e7.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-e7
 USING: engine game-state actors messages common flag-names facts room-names story.kit story.clock
     story.places.clock-run ;

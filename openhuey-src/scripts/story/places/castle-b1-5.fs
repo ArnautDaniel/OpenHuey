@@ -2,7 +2,8 @@
 \ it she falls (the game over); Hewie, the first time he comes in by the near door, tense at the
 \ dark, barking; sent on ahead (her "go there" toward one of the three ways, a way off from it), he
 \ barks and runs there, turns to her and waits. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/castle-b1-5.fs (converted from the game's, not loaded).
+\ checking: story/rooms-ref/castle-b1-5.fs in the history (converted from the game's; gone with the
+\ old machinery in 0.2.20).
 IN: story.places.castle-b1-5
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     story.kit hewie.anims ;

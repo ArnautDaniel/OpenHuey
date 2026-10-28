@@ -1,12 +1,13 @@
-\ story/places/off-map-e3.fs - the clock run's castle ($E3, castle-b1-1's kitchen again): the flame; the
-\ day's light in the run's second kind; the two things wandering about; the plywood's parts away, its
-\ floor let through; two ways out; its cameras; the rooms ahead loaded as Hewie nears their ways;
-\ the two cupboards - Fiona slips into the near one at Hewie's command as he stands by it (she here,
-\ nobody after her, no stalker), or the far one (she idle too), out at his next (found or
-\ panicking: hauled out); the stalker coming in while she hides, or here as she hides, searches -
-\ and always finds her; left behind in one, she's out in front; the walls' shade; the clock. A
-\ place (story/kit.fs, story/places/clock-run.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-e3.fs (converted from the game's, not loaded).
+\ story/places/off-map-e3.fs - the clock run's castle ($E3, castle-b1-1's kitchen again): the flame;
+\ the day's light in the run's second kind; the two things wandering about; the plywood's parts
+\ away, its floor let through; two ways out; its cameras; the rooms ahead loaded as Hewie nears
+\ their ways; the two cupboards - Fiona slips into the near one at Hewie's command as he stands by
+\ it (she here, nobody after her, no stalker), or the far one (she idle too), out at his next (found
+\ or panicking: hauled out); the stalker coming in while she hides, or here as she hides, searches -
+\ and always finds her; left behind in one, she's out in front; the walls' shade; the clock. A place
+\ (story/kit.fs, story/places/clock-run.fs). The original's scripts, for checking:
+\ story/rooms-ref/off-map-e3.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.off-map-e3
 USING: engine game-state actors messages common flag-names facts room-names floor-flags story.kit
     story.clock story.places.clock-run ;

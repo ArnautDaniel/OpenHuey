@@ -1,10 +1,10 @@
-\ story/places/old-mansion-1f-3.fs - a room of the old mansion's 1F with a hopping figure (kind $1C):
-\ it hops in place, calling now and then; struck, it hops back - the fifth time it lashes out (her
-\ fright up, the stalker told to come); the medicine cart; the Medallion on the shelf, the Refined
-\ Antimony Hewie sniffs out; the door unlocked from this side; brought in by the forced way, she lies
-\ and gets up; Hewie sitting by one spot, wary of the figure; the doorways' shade. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-3.fs (converted
-\ from the game's, not loaded).
+\ story/places/old-mansion-1f-3.fs - a room of the old mansion's 1F with a hopping figure (kind
+\ $1C): it hops in place, calling now and then; struck, it hops back - the fifth time it lashes out
+\ (her fright up, the stalker told to come); the medicine cart; the Medallion on the shelf, the
+\ Refined Antimony Hewie sniffs out; the door unlocked from this side; brought in by the forced way,
+\ she lies and gets up; Hewie sitting by one spot, wary of the figure; the doorways' shade. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/old-mansion-1f-3.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-3
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names story.kit fiona.anims fiona.sounds ;

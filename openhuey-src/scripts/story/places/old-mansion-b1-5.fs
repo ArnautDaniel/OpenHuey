@@ -1,12 +1,12 @@
 \ story/places/old-mansion-b1-5.fs - the trap workshop of the old mansion's B1 (B1-4's double): a
 \ cabinet to hide in (the kit's, its doors objects 8 and 9; the stalker's grab, or his opening it);
-\ the first time, Daniella waiting inside it - going to hide there, she bursts out at her; six things
-\ to search "more thoroughly": the wax figures, the chess board, the hourglass each a scene that
-\ opens a way (and something moves - the door unlocked again); the models, the flask, the kiln,
+\ the first time, Daniella waiting inside it - going to hide there, she bursts out at her; six
+\ things to search "more thoroughly": the wax figures, the chess board, the hourglass each a scene
+\ that opens a way (and something moves - the door unlocked again); the models, the flask, the kiln,
 \ the still a trick - the door slams and locks; tried while it's locked, the trap's end (the game
 \ over); Hewie wary, tense, his looks; six candles; its hum; the replays. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/old-mansion-b1-5.fs (converted from the
-\ game's, not loaded).
+\ The original's scripts, for checking: story/rooms-ref/old-mansion-b1-5.fs in the history
+\ (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-b1-5
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit fiona.anims fiona.sounds scenes ;
@@ -94,8 +94,8 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
 : slams ( -- )   \ (a trick: the door slams shut and locks)
     fiona reach-out-anim start-anim
     0 exit-open? if
-        0 door-swing-anim story.words:door-play  fiona wait-anim  fiona look-point-move 0 0  0e 10e -40e 0e  move  yield
-        fiona reach-back-anim start-anim  0 story.words:door-wait  16 frames
+        0 door-swing-anim story.base:door-play  fiona wait-anim  fiona look-point-move 0 0  0e 10e -40e 0e  move  yield
+        fiona reach-back-anim start-anim  0 story.base:door-wait  16 frames
     else
         fiona wait-anim  fiona look-point-move 0 0  0e 10e -40e 0e  move  yield  fiona reach-back-anim start-anim
     then

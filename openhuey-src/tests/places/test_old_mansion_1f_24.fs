@@ -28,7 +28,7 @@ create spot 12 allot
 variable before
 : room-afresh ( -- )  old-mansion-1f-24 room!  60 run-frames ;
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
-game:debilitas send stalker-out  daniella-kind story.words:partner-load  5 run-frames
+game:debilitas send stalker-out  daniella-kind story.base:partner-load  5 run-frames
 testing Daniella scrubbing: in, held at her task
 white-mandragora-used story-flag-clear  room-afresh
 T{ [: scrubbing @ ;] in-place  partner body-room -> -1 old-mansion-1f-24 }T

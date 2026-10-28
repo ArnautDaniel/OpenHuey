@@ -1,15 +1,15 @@
 \ story/places/water-tower-8f-1.fs - the top of the Water Tower ($C7): Riccardo's end. Coming up the
 \ first time after the garden's scene - the scene (Lorenzo takes Riccardo's Azoth), on by the forced
-\ way. The diorama (her remark; with the Folded Memo, the magisterium; after, the switch): a figure set
-\ in it - with the Wooden Miniature, at the spot picked with a cursor - brings Lorenzo, Riccardo
+\ way. The diorama (her remark; with the Folded Memo, the magisterium; after, the switch): a figure
+\ set in it - with the Wooden Miniature, at the spot picked with a cursor - brings Lorenzo, Riccardo
 \ loose again. The three models on the walls, worn by her blows till they fall (the third into the
 \ water below); the walls' remark; the drop's two remarks in turn; the holes Hewie fits in - at her
-\ sign he hides in one, lying in wait, eyes on whoever is near; at her "go for it" with Riccardo by the
-\ hole, he grabs him from behind - by the first hole, with its model down, her sign ends it: the
+\ sign he hides in one, lying in wait, eyes on whoever is near; at her "go for it" with Riccardo by
+\ the hole, he grabs him from behind - by the first hole, with its model down, her sign ends it: the
 \ final scenes (Riccardo falls; the doors opened, the files); at her "come back" he leaves it. The
 \ locked door; the light on the water; the walls' shade; Hewie's bark at the drop; the replays. A
-\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/water-tower-8f-1.fs
-\ (converted from the game's, not loaded).
+\ place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/water-tower-8f-1.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.water-tower-8f-1
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names keys story.kit fiona.anims scenes ;
@@ -92,7 +92,7 @@ $103 constant top-door   $100 constant stairs-door   $E0 constant down-door   $8
 \ ---- the models on the walls: her blows wear them (a weak one 1, else 5) - dust; down, its debris
 \ falls and the wall's other part shows ----
 : worn ( stage -- )   \ (a blow)
-    dup @  fiona-sub-now @ story.words:weak-blow-sub = if  1  else  5  then  -  0 max  swap ! ;
+    dup @  fiona-sub-now @ story.base:weak-blow-sub = if  1  else  5  then  -  0 max  swap ! ;
 : model-1 ( -- )
     crumble-sound room-bank fiona sound-by  stage-1 worn  -1e 623e 77e dust  4e 623e 77e dust
     stage-1 @ 0= if  falls-sound room-bank fiona sound-by  0 effects:debris  3 effects:debris  2 hide-part  3 show-part  wt8f-1-flag1 fact!  then
@@ -216,10 +216,10 @@ create hole-areas  5 , 6 , 7 ,   create by-areas  8 , 9 , $A ,   create her-area
 \ ---- the diorama: a figure set in it, at a spot picked with the cursor - the miniature, in its
 \ place, brings Lorenzo ----
 : cursor-draw ( -- )
-    ps2-screen:frame!  story.words:cursor-layer ui-clear
-    story.words:cursor-layer  cursor-x @ ps2-screen:sx  cursor-y @ ps2-screen:sy  20 ps2-screen:sw  28 ps2-screen:sy
+    ps2-screen:frame!  story.base:cursor-layer ui-clear
+    story.base:cursor-layer  cursor-x @ ps2-screen:sx  cursor-y @ ps2-screen:sy  20 ps2-screen:sw  28 ps2-screen:sy
     0 $C -1  176 0 80 112  $FFFFFFFF  ui-image ;
-: cursor-off ( -- )  story.words:cursor-layer ui-clear ;
+: cursor-off ( -- )  story.base:cursor-layer ui-clear ;
 : cursor-step ( -- )   \ (4 a frame by the arrows held: x 0..492, y 0..420)
     count-arrows
     1 cells arrows-held + @ 0>  3 cells arrows-held + @ 0> <> if

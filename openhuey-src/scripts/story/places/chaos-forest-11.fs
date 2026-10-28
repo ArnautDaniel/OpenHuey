@@ -1,7 +1,8 @@
 \ story/places/chaos-forest-11.fs - the Chaos Forest's crossing ($109): five ways; a rabbit now and
-\ then, off into the trees; the wisp (story/places/forest.fs) startled as she or Hewie comes near it;
-\ the maze dealt. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ chaos-forest-11.fs (converted from the game's, not loaded).
+\ then, off into the trees; the wisp (story/places/forest.fs) startled as she or Hewie comes near
+\ it; the maze dealt. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/chaos-forest-11.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.chaos-forest-11
 USING: engine game-state actors messages common facts room-names flag-names story-names story.kit
     story.places.forest ;

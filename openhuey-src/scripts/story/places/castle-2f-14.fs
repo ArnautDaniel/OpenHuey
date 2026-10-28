@@ -1,9 +1,9 @@
 \ story/places/castle-2f-14.fs - the suspended bridge's hall in Belli Castle's 2F ($2F), the great
 \ hall's balcony fallen: the first time in, the screen back (the crows' file); climbing down to the
 \ great hall; the bridge, Hewie's fetch of the Medallion across the gap, his calling back, the
-\ stalker's grab on the plank, the statue (the hall's own: story/places/bridge.fs); the map's
-\ pages. A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/
-\ castle-2f-14.fs (converted from the game's, not loaded).
+\ stalker's grab on the plank, the statue (the hall's own: story/places/bridge.fs); the map's pages.
+\ A place (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-2f-14.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-2f-14
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects story.kit story.places.bridge ;

@@ -1,12 +1,13 @@
 \ story/places/old-mansion-b1-6.fs - the mud maze of the old mansion's B1: four walls of flame (each
 \ gate's steam; stepping close, her fright and "A wall of flame..."); the golem raced through the
 \ maze by a word plate set in the altar - at each turning the word's next L or R; the right way
-\ takes it into a gate's fire, which it puts out sinking (a door unlocked), a wrong one into a
-\ blaze (the circle button makes it run); SALTATIO and it dances (it calms her); the plate pressing
+\ takes it into a gate's fire, which it puts out sinking (a door unlocked), a wrong one into a blaze
+\ (the circle button makes it run); SALTATIO and it dances (it calms her); the plate pressing
 \ machine; the corpse on the altar (its tablet's text); the golem statue; "METH" burned into the
 \ ground; three Medallions; the figures kept by its far ways; the candles; Hewie's looks; its two
 \ hums; the replay. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-b1-6.fs (converted from the game's, not loaded).
+\ story/rooms-ref/old-mansion-b1-6.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-b1-6
 USING: engine game-state actors messages common vectors facts room-names flag-names story-names stalker-names
     floor-flags items.names effects keys story.kit fiona.anims fiona.sounds scenes ;

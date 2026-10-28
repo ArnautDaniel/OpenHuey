@@ -1,10 +1,10 @@
 \ story/places/off-map-e5.fs - the clock run's castle ($E5, castle-b1-2's washroom again): the day's
 \ light in the run's second kind; the curtain as it hangs; out by exit 0; its cameras; the curtain
-\ to hide behind - Fiona crawls in at Hewie's command as he stands by it (drawn as she goes), out
-\ at his next (found or panicking: hauled out); the stalker coming in while she hides finds her by
-\ the odds; left behind there, she's out in front of it; the clock. A place (story/kit.fs,
-\ story/places/clock-run.fs). The original's scripts, for checking: story/rooms-ref/off-map-e5.fs
-\ (converted from the game's, not loaded).
+\ to hide behind - Fiona crawls in at Hewie's command as he stands by it (drawn as she goes), out at
+\ his next (found or panicking: hauled out); the stalker coming in while she hides finds her by the
+\ odds; left behind there, she's out in front of it; the clock. A place (story/kit.fs,
+\ story/places/clock-run.fs). The original's scripts, for checking: story/rooms-ref/off-map-e5.fs in
+\ the history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-e5
 USING: engine game-state actors messages common flag-names facts room-names story.kit story.clock
     fiona.sounds story.places.clock-run ;

@@ -33,7 +33,7 @@ variable before
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 room-afresh
 : by-bush ( -- )  0 -4.49e 9e -66.28e put ;
-3 story.words:partner-load  5 run-frames
+3 story.base:partner-load  5 run-frames
 testing "no time" by it as he has come by its side (exit 0)
 chaos-forest-7 $E0 game:daniella send stalker-in  30 run-frames  by-bush  10 run-frames
 T{ [: 0 st-came-now !  1 st-age !  0 offer-msg !  0 offer-xt !  stalker-in? if  bush-frame  offer-msg @  else  -2  then ;] in-place -> no-time-message }T

@@ -93,7 +93,7 @@ castle-1f-15 hole-exit rooms send go-to-room  60 run-frames
 T{ [: doing-busy? 0= ;] 300 soon  map-page@  stalkers-stay state-flag? -> -1 3 0 }T
 
 testing the balcony's encounter, no Hewie: caught - left lying, frightened
-2 story.words:partner-load  5 run-frames  game:hewie send part-from-fiona  room-afresh  hunted-down
+2 story.base:partner-load  5 run-frames  game:hewie send part-from-fiona  room-afresh  hunted-down
 balcony-area 0 at
 T{ encounter-over?  caught-seen resident-flag?  game:debilitas body-room -> -1 -1 castle-1f-15 }T
 120 read-on  force-chased state-flag-clear  game:debilitas send stalker-out

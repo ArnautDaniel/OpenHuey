@@ -46,7 +46,7 @@ T{ hidden? -> -1 }T
 circle press  [: doing-busy? 0= ;] 900 soon drop
 T{ hidden?  free? -> 0 -1 }T
 testing Daniella at the kiln: the cabinet no use; her scene - the next of her after Fiona
-x-37-flag1 story-flag-clear  om1f-13-flag2 story-flag-clear  daniella-kind story.words:partner-load  10 run-frames  room-afresh
+x-37-flag1 story-flag-clear  om1f-13-flag2 story-flag-clear  daniella-kind story.base:partner-load  10 run-frames  room-afresh
 T{ [: waiting @ ;] in-place  partner body-room -> -1 old-mansion-b1-4 }T
 T{ cabinet-area 0 at  said -> right-there-msg }T
 T{ [: ['] she-turns start drop ;] in-place  [: cutscene-active? movie-status 1 = or ;] 300 soon -> -1 }T

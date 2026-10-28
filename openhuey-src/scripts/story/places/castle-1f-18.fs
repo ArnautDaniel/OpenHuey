@@ -1,8 +1,8 @@
 \ story/places/castle-1f-18.fs - the moth room in Belli Castle's 1F ($1C): moths swarm round the
-\ lamp by the door (exit 1), shut till the Fresh Flowers are laid in the vase - the scene, the
-\ moths drawn to the flowers instead; the torn picture, the clock, Hewie wary of the moths. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-18.fs (converted
-\ from the game's, not loaded).
+\ lamp by the door (exit 1), shut till the Fresh Flowers are laid in the vase - the scene, the moths
+\ drawn to the flowers instead; the torn picture, the clock, Hewie wary of the moths. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-1f-18.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-1f-18
 USING: engine game-state actors messages common facts flag-names story-names room-names floor-flags
     items.names effects story.kit fiona.anims ;

@@ -2,7 +2,7 @@
 \ pause (docs/subsystems/story.md, screen.md, music.md, pause.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_scene.fs
 IN: test-scene
-USING: tester engine game-state actors messages keys room-names game debug flag-names story-names fiona.state story.state facts story.words screen music pause ;
+USING: tester engine game-state actors messages keys room-names game debug flag-names story-names fiona.state facts screen music pause ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
@@ -20,22 +20,21 @@ testing a new game: the cage room's opening - its stage music made, the backgrou
 T{ bgm-playing  game:music enter sm-stage @ sm-step @ leave-actor -> $16 0 4 }T
 T{ screen-level [: story.kit:fading @ ;] in-room -> 0 0 }T   \ (front-garden-3: a place)
 
-\ ---- the converted rooms' fades (front-garden-2, run as its converted room) ----
--1 story:places-off !  front-garden-2 -1 rooms send go-to-room  30 run-frames
-testing a fade out from the room's scripts: black after its frames, the room told it is over (kind 4: 15 frames later, $BC)
-[: 20 4 story.words:fade ;] in-room
-T{ 10 run-frames  screen-level dup 0> swap 1000 < and  [: story.state:fading @ ;] in-room -> -1 -1 }T
-T{ 15 run-frames  screen-level [: story.state:fading @ ;] in-room -> 1000 -1 }T
-T{ 15 run-frames  [: story.state:fading @ ;] in-room -> 0 }T
-[: 0 1 story.words:fade ;] in-room  2 run-frames
+\ ---- a place's fades (the kit's fade: front-garden-2's place) ----
+front-garden-2 -1 rooms send go-to-room  30 run-frames
+testing a fade out from a place: black after its frames, the room told it is over (kind 4: 15 frames later, $BC)
+[: 20 4 story.kit:fade ;] in-room
+T{ 10 run-frames  screen-level dup 0> swap 1000 < and  [: story.kit:fading @ ;] in-room -> -1 -1 }T
+T{ 15 run-frames  screen-level [: story.kit:fading @ ;] in-room -> 1000 -1 }T
+T{ 15 run-frames  [: story.kit:fading @ ;] in-room -> 0 }T
+[: 0 1 story.kit:fade ;] in-room  2 run-frames
 T{ screen-level -> 0 }T
 testing the other kinds: 0 out (to black), 6 to half dark and 7 back (the instructions' pages)
-T{ [: 0 0 story.words:fade ;] in-room  2 run-frames  screen-level -> 1000 }T
-[: 0 1 story.words:fade ;] in-room
-T{ [: 10 6 story.words:fade ;] in-room  15 run-frames  screen-level -> 500 }T
-T{ [: 10 7 story.words:fade ;] in-room  15 run-frames  screen-level -> 0 }T
+T{ [: 0 0 story.kit:fade ;] in-room  2 run-frames  screen-level -> 1000 }T
+[: 0 1 story.kit:fade ;] in-room
+T{ [: 10 6 story.kit:fade ;] in-room  15 run-frames  screen-level -> 500 }T
+T{ [: 10 7 story.kit:fade ;] in-room  15 run-frames  screen-level -> 0 }T
 
-0 story:places-off !
 testing the scene (Hewie freed from the wire, at night): the movie, the cutscene, Fiona in it, its subtitles
 c2f-3-flag1 story-flag-set  0 game:fiona send costume  castle-2f-3 room!  30 run-frames
 front-garden-3 room!  60 run-frames

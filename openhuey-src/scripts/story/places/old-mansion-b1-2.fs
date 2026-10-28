@@ -1,12 +1,13 @@
-\ story/places/old-mansion-b1-2.fs - the long hall of the old mansion's B1: the curtained mirror (she
-\ draws the curtain back from it, or across; Daniella, coming to it while it's bare, smashes it in a
-\ rage - the floor flooded since; "The glass has been shattered"); the plaque on the two paths; two
-\ doors locked with odd symbols (the Jupiter Key turns in either; spent once both are open); the
+\ story/places/old-mansion-b1-2.fs - the long hall of the old mansion's B1: the curtained mirror
+\ (she draws the curtain back from it, or across; Daniella, coming to it while it's bare, smashes it
+\ in a rage - the floor flooded since; "The glass has been shattered"); the plaque on the two paths;
+\ two doors locked with odd symbols (the Jupiter Key turns in either; spent once both are open); the
 \ door unlocked from this side; the book ("Glowing Sun..." - read twice, the file); two dolls; two
 \ vases (the Viola and Rubrum Medallions in them); the Refined Magnesia; the story's spirit about;
 \ four candles; Hewie wary, sitting down by the bare mirror, his looks; the map's pages; the
 \ doorways' shade. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-b1-2.fs (converted from the game's, not loaded).
+\ story/rooms-ref/old-mansion-b1-2.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-b1-2
 USING: engine game-state actors messages common vectors facts room-names flag-names story-names stalker-names
     floor-flags items.names effects story.kit fiona.anims ;

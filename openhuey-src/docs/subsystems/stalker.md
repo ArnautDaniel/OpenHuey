@@ -250,8 +250,8 @@ title. P3a done: struck by her
 the doors in her room, round to her across his own room, slammed doors; also the coming-in
 spot fixed (below). P3c done (`stalker/bitten.fs`, with Hewie's H3): Hewie's attacks taken or
 refused, bitten, throwing him off, his temper and going for Hewie; his blows reach Hewie too.
-`tests/stalker/test_stalker.fs` (64), `tests/hewie/test_fight.fs` (22), `tests/stalker/test_leads.fs` (7), `tests/stalker/test_tackles.fs` (9). P4a done (below;
-`tests/story/test_stalker_words.fs`, 13). P4b begun: Daniella (below;
+`tests/stalker/test_stalker.fs` (64), `tests/hewie/test_fight.fs` (22), `tests/stalker/test_leads.fs` (7), `tests/stalker/test_tackles.fs` (9). P4a done (below; its opcode words'
+own test went with them in 0.2.20). P4b begun: Daniella (below;
 `tests/stalker/test_daniella.fs`, 15), his footsteps through the walls and his lair (below; 3
 more in `tests/stalker/test_stalker.fs`, 61). Next: P4c.
 
@@ -348,7 +348,8 @@ goes for one or climbs, his modes wait. (Not here: the original's turn back half
 behaviour re-aims him mid-climb, and its putting him at the nearer end when she leaves the room -
 OpenHuey puts him by a door when she comes back.) `tests/fiona/test_ladder.fs` (29).
 
-**P4a - the story's words about him** (`scripts/story/words.fs`, src/game/event.c). He tells
+**P4a - what the story knows of him** (once `scripts/story/words.fs`, now the kit's -
+`scripts/story/kit.fs`, `story/base.fs`'s slot 2; src/game/event.c). He tells
 each frame (`stalker-doing`) his room, move mode and part, condition, health and its most, kind, his alert (his mode: Progress_StalkerAlert) and the exit he
 came in by (+0x14D4); the room keeps it, with Fiona's and Hewie's conditions from their own
 broadcasts. Conditions: 0x55 in the game (told within a frame), 0x54 his kind (the kind

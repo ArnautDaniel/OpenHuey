@@ -4,8 +4,9 @@
 \ their shelves' remarks (the medicine, the chemicals); the water (a recovery point); the measuring
 \ device; the locked cabinet; the canister; the containers; the operating table; the Lavender; back
 \ by the forced way from the forest, the "2 or 3 days" scene; the replays. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/old-mansion-2f-6.fs (converted from the
-\ game's, not loaded). (The stalker's model's springs, its cmd 0, aren't simulated.)
+\ The original's scripts, for checking: story/rooms-ref/old-mansion-2f-6.fs in the history
+\ (converted from the game's; gone with the old machinery in 0.2.20). (The stalker's model's
+\ springs, its cmd 0, aren't simulated.)
 IN: story.places.old-mansion-2f-6
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     items.names story.kit fiona.anims scenes ;

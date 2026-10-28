@@ -1,11 +1,11 @@
-\ story/places/off-map-e9.fs - the clock run's goal in the castle ($E9, front-garden-1's ground again):
-\ the day's light in the run's second kind - else the night's look (the blend, the lamps lit with
-\ their glows, the specks under them); in the run's fourth kind the lamps flicker as Fiona passes
-\ under them, and now and then by themselves; the near depth range on its camera 2; the walls'
-\ shade; out by exit 0; its cameras; Fiona reaching the goal - the time kept and shown, the results,
-\ out to the extras room (story/places/clock-run.fs); the clock. A place (story/kit.fs). The
-\ original's scripts, for checking: story/rooms-ref/off-map-e9.fs (converted from the game's, not
-\ loaded).
+\ story/places/off-map-e9.fs - the clock run's goal in the castle ($E9, front-garden-1's ground
+\ again): the day's light in the run's second kind - else the night's look (the blend, the lamps lit
+\ with their glows, the specks under them); in the run's fourth kind the lamps flicker as Fiona
+\ passes under them, and now and then by themselves; the near depth range on its camera 2; the
+\ walls' shade; out by exit 0; its cameras; Fiona reaching the goal - the time kept and shown, the
+\ results, out to the extras room (story/places/clock-run.fs); the clock. A place (story/kit.fs).
+\ The original's scripts, for checking: story/rooms-ref/off-map-e9.fs in the history (converted from
+\ the game's; gone with the old machinery in 0.2.20).
 IN: story.places.off-map-e9
 USING: engine game-state actors messages common flag-names facts room-names effects story.kit
     story.clock story.places.clock-run ;

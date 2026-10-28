@@ -1,9 +1,9 @@
-\ story/places/chaos-forest-8.fs - the Chaos Forest's clearing ($106): coming in the first time,
-\ the scene - Hewie found (the file, his trust); seven crates (broken by a blow - the Medallion behind
+\ story/places/chaos-forest-8.fs - the Chaos Forest's clearing ($106): coming in the first time, the
+\ scene - Hewie found (the file, his trust); seven crates (broken by a blow - the Medallion behind
 \ the first, the Chicken Jerky the fifth); the sundial (its remark, then the save); the drop falling
 \ now and then; figures loaded ahead for the ways on; the maze dealt; the replay. A place
-\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/chaos-forest-8.fs (converted
-\ from the game's, not loaded).
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/chaos-forest-8.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.chaos-forest-8
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags
     items.names effects story.kit story.places.forest fiona.anims scenes ;

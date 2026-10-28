@@ -1,9 +1,10 @@
 \ story/places/off-map-e4.fs - the clock run's castle ($E4, castle-1f-4's hall again): its parts and
-\ objects as the run has them; the day's light in the run's second kind; the flame; its four
-\ sounds in turn; the floor plate - down while someone stands on it, with a sound as the first
-\ steps on; three ways out (one by an area); its cameras; the rooms ahead loaded as Hewie nears
-\ their ways; the clock. A place (story/kit.fs, story/places/clock-run.fs). The original's
-\ scripts, for checking: story/rooms-ref/off-map-e4.fs (converted from the game's, not loaded).
+\ objects as the run has them; the day's light in the run's second kind; the flame; its four sounds
+\ in turn; the floor plate - down while someone stands on it, with a sound as the first steps on;
+\ three ways out (one by an area); its cameras; the rooms ahead loaded as Hewie nears their ways;
+\ the clock. A place (story/kit.fs, story/places/clock-run.fs). The original's scripts, for
+\ checking: story/rooms-ref/off-map-e4.fs in the history (converted from the game's; gone with the
+\ old machinery in 0.2.20).
 IN: story.places.off-map-e4
 USING: engine game-state actors messages common flag-names facts room-names story.kit story.clock
     story.places.clock-run ;

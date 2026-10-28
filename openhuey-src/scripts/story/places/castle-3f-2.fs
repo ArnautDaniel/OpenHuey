@@ -1,9 +1,9 @@
 \ story/places/castle-3f-2.fs - the 3F corridor of Belli Castle ($2C): once she has rested (the
-\ Saturnus hint), the first time she steps on from the door, the door tried behind her (a knock first
-\ if it's shut) and Daniella standing ahead of her - the door locked behind, Hewie brought by her;
-\ Daniella kept from her alert after, until the old mansion's first file. A place (story/kit.fs).
-\ The original's scripts, for checking: story/rooms-ref/castle-3f-2.fs (converted from the game's,
-\ not loaded).
+\ Saturnus hint), the first time she steps on from the door, the door tried behind her (a knock
+\ first if it's shut) and Daniella standing ahead of her - the door locked behind, Hewie brought by
+\ her; Daniella kept from her alert after, until the old mansion's first file. A place
+\ (story/kit.fs). The original's scripts, for checking: story/rooms-ref/castle-3f-2.fs in the
+\ history (converted from the game's; gone with the old machinery in 0.2.20).
 IN: story.places.castle-3f-2
 USING: engine game-state actors messages common facts flag-names story-names room-names stalker-names
     story.kit fiona.anims ;

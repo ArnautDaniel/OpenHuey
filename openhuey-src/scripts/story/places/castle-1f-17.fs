@@ -1,7 +1,8 @@
 \ story/places/castle-1f-17.fs - the specimen room in Belli Castle's 1F ($1B): the pendulums
 \ swinging, a rug that was an animal, the anatomical model, the insect models, the pool table, the
 \ lavender, the door to unlock from this side. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/castle-1f-17.fs (converted from the game's, not loaded).
+\ checking: story/rooms-ref/castle-1f-17.fs in the history (converted from the game's; gone with the
+\ old machinery in 0.2.20).
 IN: story.places.castle-1f-17
 USING: engine game-state actors messages common facts flag-names story-names room-names
     items.names effects story.kit fiona.anims ;

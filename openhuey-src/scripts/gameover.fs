@@ -111,7 +111,7 @@ $10C constant run-door   $81 constant run-again-exit
     run-door 0 s" doors" actor-named send door-opened
     room-id 1 0 s" doors" actor-named send lock-room-for
     off-map-37 -1 0 s" hewie" actor-named send hewie-place
-    story.words:slot-unload
+    story.base:slot-unload
     off-map-37 run-again-exit s" rooms" actor-named send go-to-room ;
 : run ( -- )
     step @ case

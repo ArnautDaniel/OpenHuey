@@ -23,7 +23,7 @@ USING: tester engine game-state actors messages keys room-names game debug facts
 
 
 
-: daniella-in ( -- )  daniella-kind story.words:partner-load  10 run-frames ;
+: daniella-in ( -- )  daniella-kind story.base:partner-load  10 run-frames ;
 
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 testing the first time in: the screen back

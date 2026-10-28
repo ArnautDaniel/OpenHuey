@@ -1,10 +1,11 @@
 \ story/places/old-mansion-2f-11.fs - the library of the old mansion's 2F: the rusty stepladder with
-\ something on top (struck, it wobbles - the third time it falls: the Jupiter Key on the
-\ floor); the books, their remarks in turn; the journals (and their file); the two notes on
-\ combinations (their recipes marked); the save clock; the Magnesia; the door unlocked from this
-\ side; Hewie sitting by one spot, his look; in the other game a homunculus dropped in, once; its
-\ ambient sounds; the doorway's shade. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/old-mansion-2f-11.fs (converted from the game's, not loaded).
+\ something on top (struck, it wobbles - the third time it falls: the Jupiter Key on the floor); the
+\ books, their remarks in turn; the journals (and their file); the two notes on combinations (their
+\ recipes marked); the save clock; the Magnesia; the door unlocked from this side; Hewie sitting by
+\ one spot, his look; in the other game a homunculus dropped in, once; its ambient sounds; the
+\ doorway's shade. A place (story/kit.fs). The original's scripts, for checking:
+\ story/rooms-ref/old-mansion-2f-11.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.old-mansion-2f-11
 USING: engine game-state actors messages common vectors facts room-names flag-names story-names
     items.names story.kit fiona.anims ;

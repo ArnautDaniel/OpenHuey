@@ -2,7 +2,8 @@
 \ a mandragora she carries cries out as she settles; the stalker's search - he finds her by the
 \ odds); the save clock; the Mansion Sketch; the Viride Medallion and the Medallion Hewie sniffs
 \ out; the holes things fall through; its ambient sounds. A place (story/kit.fs). The original's
-\ scripts, for checking: story/rooms-ref/old-mansion-1f-23.fs (converted from the game's, not loaded).
+\ scripts, for checking: story/rooms-ref/old-mansion-1f-23.fs in the history (converted from the
+\ game's; gone with the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-23
 USING: engine game-state actors messages common facts room-names flag-names story-names stalker-names
     floor-flags items.names story.kit fiona.anims ;

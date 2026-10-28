@@ -2,9 +2,10 @@
 \ again): brought in by the forced way, Fiona played - the run set out (the room ahead loaded, the
 \ clock from 0 and Hewie played, his searches counted afresh, Fiona and Hewie at their spots, the
 \ stalker into $D8, the summoner his own wait, the stage music by the run's kind, held and let go,
-\ Fiona off by exit 0's way); then Hewie's - the world let go, faded in; out by exit 0; the clock.
-\ A place (story/kit.fs, story/places/clock-run.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-d9.fs (converted from the game's, not loaded).
+\ Fiona off by exit 0's way); then Hewie's - the world let go, faded in; out by exit 0; the clock. A
+\ place (story/kit.fs, story/places/clock-run.fs). The original's scripts, for checking:
+\ story/rooms-ref/off-map-d9.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.off-map-d9
 USING: engine game-state actors messages common flag-names facts room-names story-names story.kit story.clock
     story.places.clock-run ;

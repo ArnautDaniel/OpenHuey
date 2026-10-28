@@ -1,11 +1,12 @@
-\ story/places/off-map-d6.fs - the clock run's forest ($D6, a bush's ground as chaos-forest-7's): four
-\ ways, each by its own area; the rooms ahead loaded as Hewie nears them; the bush - Fiona crouches
-\ in it at his command as he stands by it (she came by exit 1, nobody chasing; no stalker, or not
-\ one come her way), lying low till his next command, panicking or found; the stalker coming in by
-\ her side searches it by the odds; its three hanging leaves swing as she, Hewie or the stalker
-\ pushes through; left behind in it, she's out at its front; the clock. A place (story/kit.fs,
-\ story/places/forest.fs, story/places/clock-run.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-d6.fs (converted from the game's, not loaded).
+\ story/places/off-map-d6.fs - the clock run's forest ($D6, a bush's ground as chaos-forest-7's):
+\ four ways, each by its own area; the rooms ahead loaded as Hewie nears them; the bush - Fiona
+\ crouches in it at his command as he stands by it (she came by exit 1, nobody chasing; no stalker,
+\ or not one come her way), lying low till his next command, panicking or found; the stalker coming
+\ in by her side searches it by the odds; its three hanging leaves swing as she, Hewie or the
+\ stalker pushes through; left behind in it, she's out at its front; the clock. A place
+\ (story/kit.fs, story/places/forest.fs, story/places/clock-run.fs). The original's scripts, for
+\ checking: story/rooms-ref/off-map-d6.fs in the history (converted from the game's; gone with the
+\ old machinery in 0.2.20).
 IN: story.places.off-map-d6
 USING: engine game-state actors messages common flag-names facts room-names floor-flags story.kit story.clock
     story.places.forest story.places.clock-run ;

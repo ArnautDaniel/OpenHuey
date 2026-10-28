@@ -66,7 +66,7 @@ T{ hiding-area 90 at  circle press  [: hidden? ;] 900 soon -> -1 }T
 60 run-frames  circle press  [: hidden? 0= ;] 600 soon drop  [: doing-busy? 0= ;] 600 soon drop
 T{ hidden? -> 0 }T
 testing the stalker coming on her hidden: his search - found, hauled out
-lorenzo2-kind story.words:partner-load  5 run-frames
+lorenzo2-kind story.base:partner-load  5 run-frames
 hiding-area 90 at  circle press  [: hidden? ;] 900 soon drop  60 run-frames
 house-of-truth-1f-7 $FE game:lorenzo2 send stalker-in  30 run-frames
 : try-find ( -- flag )  [: found-her @ ;] in-place  dup 0= if  [: 3 searches-var var!  0 searched !  ['] found-there running? 0= if  searched-hidden  then ;] in-place  then ;

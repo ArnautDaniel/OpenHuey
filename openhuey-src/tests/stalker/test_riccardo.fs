@@ -43,12 +43,12 @@ testing his flurry: 1..7 blows; on her floor a swing ($E00 / $E04)
 [: flurry-start ;] his
 T{ [: chase-act @  blows @ 1 8 within  anim @ dup $E00 = swap $E04 = or ;] his -> $1000 -1 -1 }T
 testing ... a barrier by her (the story's zone of a kind with bit 1: Events_NearestPoint) - his shot strikes it instead, and it breaks ($210)
-ric story.words:slot2 !   \ (the story's slot 2 holds him, as partner-load does: its zones see his point)
+ric story.base:slot2 !   \ (the story's slot 2 holds him, as partner-load does: its zones see his point)
 T{ [: $210 facts:story-flag? ;] 200 soon  [: [: her-mode @ 4 = ;] fiona@ ;] 1 soon -> -1 0 }T
 testing ... the barrier gone, at its key it strikes her: within 10 his grab (3) - she is seized ($10)
 [: 0 blows !  flurry-start ;] his
 T{ [: [: her-mode @ 4 = ;] fiona@ ;] 200 soon  [: her-sub @ ;] fiona@ -> -1 $10 }T
--1 story.words:slot2 !
+-1 story.base:slot2 !
 
 testing his lunge ($1300), and his tables' own actions ($1000 the flurry, $1001 the lunge)
 [: lunge-start ;] his 
@@ -60,7 +60,7 @@ testing his rage at the panic's stage 5, and out of it below
 T{ [: raging @  4 her-stage !  riccardo-frame  raging @ ;] his -> -1 0 }T
 
 testing the story's kind 4 is him
-T{ 4 story.words:stalker-actor  ric = -> -1 }T
+T{ 4 story.base:stalker-actor  ric = -> -1 }T
 ric send stalker-out  3 run-frames
 
 \ ---- his other class (kind 37): his chase with its own tables; struck enough, alerted ----
@@ -70,7 +70,7 @@ T{ k37 enter  kit @ kind37-kit =  own-chase @ ' ric-begin =  come-reach f>s  hp 
 testing ... struck to 100 alerted (hurt): its alert tables and waits; calmer below
 T{ k37 enter  120 hits !  0 cond !  kind37-frame  cond @  alt-tables @  0 wait#  leave-actor -> 1 -1 150 }T
 T{ k37 enter  0 hits !  kind37-frame  cond @  alt-tables @  0 wait#  leave-actor -> 0 0 60 }T
-T{ 37 story.words:stalker-actor  k37 = -> -1 }T
+T{ 37 story.base:stalker-actor  k37 = -> -1 }T
 testing ... its tint (Kind37_Update): whole while its hold runs (150 frames), then pulsing in and out
 : k37-pulse ( -- flag )   \ (its hold over: within 400 frames below half)
     0 tint-t !  false  400 0 do  kind37-frame  my-model @ actor act.alpha sf@ 0.5e f< if  drop true leave  then  loop ;
@@ -87,7 +87,7 @@ testing ... its tint (TintStalker_Fade): shown at 112 of 128; its while over, fa
 T{ ts enter  tint-alpha f@ f>s  my-model @ actor act.alpha sf@ 0.875e f- fabs 0.01e f<  leave-actor -> 112 -1 }T
 T{ [: ts enter  tint-fade @ tint-out =  leave-actor ;] 200 soon  ts enter tint-alpha f@ f>s leave-actor  1 run-frames  ts enter tint-alpha f@ f>s leave-actor - -> -1 4 }T
 T{ [: ts enter  unseen @  leave-actor ;] 200 soon -> -1 }T
-T{ 23 story.words:stalker-actor  ts = -> -1 }T
+T{ 23 story.base:stalker-actor  ts = -> -1 }T
 ts send stalker-out  3 run-frames
 
 testing his hanging parts (RiccardoModel_Springs): as drawn, his coat's pairs at their length ($A to $B 1.1), those drawn along their bones too ($26 to $27 0.67)

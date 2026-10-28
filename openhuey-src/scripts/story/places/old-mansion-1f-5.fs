@@ -1,8 +1,9 @@
 \ story/places/old-mansion-1f-5.fs - the old mansion's kitchen: the big fire and its sound; the pot
-\ (burnt meat; then it moves - she starts, panicking; then a child...); the Lavender; the jerky and the
-\ Album Medallion sparkling (the kitchen's later room takes them), the ores' place while she has none;
-\ the Refined Magnesia Hewie sniffs out. A place (story/kit.fs). The original's scripts, for
-\ checking: story/rooms-ref/old-mansion-1f-5.fs (converted from the game's, not loaded).
+\ (burnt meat; then it moves - she starts, panicking; then a child...); the Lavender; the jerky and
+\ the Album Medallion sparkling (the kitchen's later room takes them), the ores' place while she has
+\ none; the Refined Magnesia Hewie sniffs out. A place (story/kit.fs). The original's scripts, for
+\ checking: story/rooms-ref/old-mansion-1f-5.fs in the history (converted from the game's; gone with
+\ the old machinery in 0.2.20).
 IN: story.places.old-mansion-1f-5
 USING: engine game-state actors messages common facts room-names flag-names story-names floor-flags items.names effects
     story.kit fiona.anims fiona.sounds ;

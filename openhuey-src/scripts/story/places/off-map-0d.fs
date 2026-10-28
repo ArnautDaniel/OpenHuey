@@ -1,6 +1,7 @@
 \ story/places/off-map-0d.fs - room $D (on no map page): in by exit 1, out by it from area 0; her
 \ camera by the floor she stands on. A place (story/kit.fs). The original's scripts, for checking:
-\ story/rooms-ref/off-map-0d.fs (converted from the game's, not loaded).
+\ story/rooms-ref/off-map-0d.fs in the history (converted from the game's; gone with the old
+\ machinery in 0.2.20).
 IN: story.places.off-map-0d
 USING: engine game-state actors messages common flag-names room-names story.kit ;
 

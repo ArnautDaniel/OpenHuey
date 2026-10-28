@@ -4,7 +4,8 @@
 \ Fiona double (kind 13, EventHumanModel, head $21) turns hers. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/cast/test_cast_head.fs
 IN: test-cast-head
-USING: tester engine game-state actors messages room-names game debug story.words story.state ;
+USING: tester engine game-state actors messages room-names game debug ;
+: char-load ( id slot exit -- )  drop story.kit:figure-in ;   \ (a figure into a story slot: the kit's)
 
 : c3 ( xt -- x )  game:cast3 enter  execute  leave-actor ;
 : model3 ( -- m )  [: cast.private:model @ ;] c3 ;

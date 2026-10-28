@@ -8,7 +8,7 @@
 \ was. This actor writes the progress, then asks the others (`write-save`) for their own lines -
 \ Fiona's, Hewie's - and closes it. So a save can be read, sent along, or edited by hand.
 IN: saves
-USING: engine game-state actors messages keys facts flag-names story.words ;
+USING: engine game-state actors messages keys facts flag-names story.base ;
 
 \ ---- the files ----
 create path-buf 256 allot   variable path-len

@@ -46,7 +46,7 @@ testing the hung things swinging as she pushes by
 room-afresh  0 30.47e 0e 20e put   \ (out of their reach, then one step among them)
 T{ 0 30.47e 0e -9.97e put  [: rung @ ;] in-place  [: 0 hanging swing-left object@ f0> ;] in-place -> -1 -1 }T
 testing "no time" there with the stalker here
-lorenzo2-kind story.words:partner-load  5 run-frames  house-of-truth-1f-10 $11F game:lorenzo2 send stalker-in  30 run-frames
+lorenzo2-kind story.base:partner-load  5 run-frames  house-of-truth-1f-10 $11F game:lorenzo2 send stalker-in  30 run-frames
 hiding-area 0 at
 T{ [: 0 offer-msg !  0 offer-xt !  stalker-in? if  spots  offer-msg @  else  -2  then ;] in-place -> no-time-message }T
 testing his search as he comes in on her hidden: found - hauled out

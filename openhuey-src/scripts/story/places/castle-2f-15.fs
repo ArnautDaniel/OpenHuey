@@ -3,7 +3,7 @@
 \ back, the stalker's grab on the plank, the statue (the hall's own: story/places/bridge.fs); the
 \ Prima Magnesia Hewie sniffs out; Daniella's motions loaded ahead on the way out while she is the
 \ maid; the map's pages. A place (story/kit.fs). The original's scripts, for checking: story/
-\ rooms-ref/castle-2f-15.fs (converted from the game's, not loaded).
+\ rooms-ref/castle-2f-15.fs in the history (converted from the game's; gone in 0.2.20).
 IN: story.places.castle-2f-15
 USING: engine game-state actors messages common facts flag-names story-names stalker-names room-names
     floor-flags items.names effects story.kit fiona.anims story.places.bridge ;
