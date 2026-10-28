@@ -36,13 +36,13 @@ c1f-3-camomile story-flag-clear  room-afresh
 T{ key-part part?  thing-part part?  table-part part?  fallen-part part?  [: camomile-fx effect @ 0<> ;] in-place -> -1 -1 0 0 -1 }T
 
 testing the remarks: the shelf from before and behind, the books in turn, the harp in turn
-T{ shelf-area 90 at  said  behind-shelf-area 0 at  said -> shelf-msg shelf-msg }T
-T{ books-area -67 at  said  books-area -67 at  said -> books-msg books-2-msg }T
-T{ harp-area 45 at  said  harp-area 45 at  said -> harp-msg harp-2-msg }T
+T{ shelf-area 180 at  said  behind-shelf-area 0 at  said -> shelf-msg shelf-msg }T
+T{ books-area -134 at  said  books-area -134 at  said -> books-msg books-2-msg }T
+T{ harp-area 90 at  said  harp-area 90 at  said -> harp-msg harp-2-msg }T
 testing ... the creepy thing: in turn (awakened); before, snooping
-T{ thing-area -45 at  said  thing-area -45 at  said  thing-area -45 at  said -> creepy-msg creepy-2-msg creepy-2-msg }T
+T{ thing-area -90 at  said  thing-area -90 at  said  thing-area -90 at  said -> creepy-msg creepy-2-msg creepy-2-msg }T
 c1f-3-flag1 story-flag-clear
-T{ thing-area -45 at  said -> snooping-msg }T
+T{ thing-area -90 at  said -> snooping-msg }T
 c1f-3-flag1 story-flag-set
 
 testing pushing the shelf: her thought

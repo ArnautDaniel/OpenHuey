@@ -167,14 +167,14 @@ create cameras  1 , 0 , 0 ,   2 , 2 , 2 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   \ (area,
     noticed-1 100 1.58e 0e -9.28e 16e 8e notices? if  ['] tense start drop  then
     looks 3 hewie-looks-at
     5 0 facing? if  ['] wax unhurried offer  then
-    6 45 facing? if  ['] chess unhurried offer  then
-    7 -45 facing? if  ['] hourglass unhurried offer  then
-    8 -45 facing? if  ['] models unhurried offer  then
-    9 -45 facing? if  ['] flask unhurried offer  then
-    $A -45 facing? if  ['] kiln unhurried offer  then
+    6 90 facing? if  ['] chess unhurried offer  then
+    7 -90 facing? if  ['] hourglass unhurried offer  then
+    8 -90 facing? if  ['] models unhurried offer  then
+    9 -90 facing? if  ['] flask unhurried offer  then
+    $A -90 facing? if  ['] kiln unhurried offer  then
     $B 0 facing? if  ['] still unhurried offer  then
     8 locked-request? if  ['] trap-shut any-time offer  then
-    fiona cabinet-area in-area?  fiona 90 60 heading? and if
+    fiona cabinet-area in-area?  fiona 180 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now
         else  waiting @  trap-door doors:door-locked? 0= and if  ['] she-was-inside  else  ['] hides  then  calm-only offer  then
     then ;

@@ -110,8 +110,8 @@ create at-scene   \ as the scene begins (the single one by the doorway)
 : spots ( -- )
     laid? 0=  fiona vase-area 90 faces-area? and if  ['] empty-vase unhurried offer  then
     fiona-mode-now @ own-mode =  in-panic? 0= and  fiona lamp-x 10e 5e steps-into? and if  ['] sees-moths start drop  then
-    fiona clock-area in-area?  fiona 90 50 heading? and if  ['] save-clock calm-hewie-up offer  then
-    fiona picture-area in-area?  fiona 45 50 heading? and if  ['] torn-picture unhurried offer  then ;
+    fiona clock-area in-area?  fiona 180 50 heading? and if  ['] save-clock calm-hewie-up offer  then
+    fiona picture-area in-area?  fiona 90 50 heading? and if  ['] torn-picture unhurried offer  then ;
 
 \ ---- Hewie wary of them: once a visit, near them, he goes over and stands tense (less likely once laid) ----
 : stands-by-them ( -- )  lamp-x hewie-stands-by ;

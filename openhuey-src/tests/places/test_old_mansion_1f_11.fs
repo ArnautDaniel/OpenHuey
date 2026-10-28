@@ -32,12 +32,12 @@ variable before
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 testing the water in the way; then the door beyond it
 omb1-5-flag3 story-flag-clear  room-afresh
-T{ $12 -45 at  said -> water-msg }T
-T{ $12 -45 at  said -> far-door-msg }T
+T{ $12 -90 at  said -> water-msg }T
+T{ $12 -90 at  said -> far-door-msg }T
 testing the collapsed floor, ahead and behind
 omb1-5-flag3 story-flag-set  room-afresh
 T{ $10 0 at  said -> collapsed-msg }T
-T{ $11 90 at  said -> collapsed-msg }T
+T{ $11 180 at  said -> collapsed-msg }T
 omb1-5-flag3 story-flag-clear
 testing the curtain: drawn back, the glass lit; across again
 om1f-11-breakable-broken story-flag-clear  om1f-11-flag1 story-flag-clear  room-afresh

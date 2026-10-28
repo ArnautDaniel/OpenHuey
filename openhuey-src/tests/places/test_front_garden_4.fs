@@ -32,7 +32,7 @@ free-play  10 run-frames  0 game:fiona send costume
 testing the remarks: the cages (then the feathers), the boarded door, the large door - a look; once dressed, she tries it
 found-file-202 story-flag-clear  room-afresh
 T{ cages-area -140e 0e facing  said  cages-area -140e 0e facing  said -> cages-msg feathers-msg }T
-T{ boarded-area 90 at  said -> boarded-msg }T
+T{ boarded-area 180 at  said -> boarded-msg }T
 T{ large-door-area 0 at  said -> large-door-msg }T
 found-file-202 story-flag-set
 T{ large-door-area 0 at  said -> rusted-msg }T

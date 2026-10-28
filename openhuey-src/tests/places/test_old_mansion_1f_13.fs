@@ -54,9 +54,9 @@ T{ 8 facing-middle  said -> no-thanks-msg }T
 white-mandragora-used story-flag-clear
 testing the plant, the sheet, the flower bed
 T{ 6 facing-middle  said -> dried-msg }T
-T{ $C 90 at  said -> sheet-msg }T
+T{ $C 180 at  said -> sheet-msg }T
 200 read-on
-T{ $D -90 at  said -> flower-bed-msg }T
+T{ $D -180 at  said -> flower-bed-msg }T
 testing Hebel's Perfume by Hewie: he leads her (Hewie away here: she sprays, done)
 0 $B -1 0 broadcast item-event  300 play-on
 T{ doing-busy? -> 0 }T

@@ -166,12 +166,12 @@ $18 constant shelf-seen   $19 constant shelf-night-seen   $E constant shelf-door
 : spots ( -- )
     straining-now @  fiona held? 0= and if  ['] will-it-move start drop  exit  then
     shelf-down? 0= if
-        fiona shelf-area in-area?  fiona 90 45 heading? and if  ['] shelf unhurried offer  then
+        fiona shelf-area in-area?  fiona 180 45 heading? and if  ['] shelf unhurried offer  then
         fiona behind-shelf-area in-area?  fiona 0 45 heading? and if  ['] behind-shelf unhurried offer  then
     then
-    fiona books-area in-area?  fiona -67 90 heading? and if  ['] books unhurried offer  then
-    fiona harp-area in-area?  fiona 45 45 heading? and if  ['] harp unhurried offer  then
-    fiona thing-area in-area?  fiona -45 45 heading? and if  ['] creepy-thing unhurried offer  then
+    fiona books-area in-area?  fiona -134 90 heading? and if  ['] books unhurried offer  then
+    fiona harp-area in-area?  fiona 90 45 heading? and if  ['] harp unhurried offer  then
+    fiona thing-area in-area?  fiona -90 45 heading? and if  ['] creepy-thing unhurried offer  then
     c1f-3-camomile fact? 0=  fiona -6e 11.5e -46e 5e 5e touches? and if  ['] reach-camomile calm-only offer  then
     got-garden-key fact? 0=  fiona 10e 6e -17e 5e 5e touches? and if  ['] at-the-key calm-only offer  then ;
 

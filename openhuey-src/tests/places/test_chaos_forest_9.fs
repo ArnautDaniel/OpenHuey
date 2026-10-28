@@ -49,7 +49,7 @@ testing the Refined Antimony picked up
 refined-antimony items:items-of before !
 T{ 0 -298.4e 72.6e -365.4e put  circle press  300 read-on  cf-9-refined-antimony story-flag?  refined-antimony items:items-of -> -1 before @ 1+ }T
 testing her remarks at the lake: the tower, then no way on (and on)
-T{ lake-area 90 at  said  lake-area 90 at  said  lake-area 90 at  said -> lake-msg no-way-msg no-way-msg }T
+T{ lake-area 180 at  said  lake-area 180 at  said  lake-area 180 at  said -> lake-msg no-way-msg no-way-msg }T
 testing the wisp startled by a loud noise: its fact, risen and gone
 T{ loud  cf-9-flag1 story-flag?  [: wisp-gone? ;] 300 soon -> -1 -1 }T
 testing ... not there again

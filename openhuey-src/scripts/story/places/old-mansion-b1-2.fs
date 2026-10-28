@@ -163,12 +163,12 @@ create far-looks  -101.62e 0e 100.21e  20e 6e 6e look,   -132.75e 0e 71.15e  20e
     fiona $12 entered? if  0 map-page  then  fiona $12 left? if  1 map-page  then
     drawing @ 0= if  smash-due  then  hewie-about
     locked-doors
-    fiona $19 in-area?  fiona 45 50 heading? and if  ['] the-plaque unhurried offer  then
+    fiona $19 in-area?  fiona 90 50 heading? and if  ['] the-plaque unhurried offer  then
     by-the-mirror
     omb1-2-refined-magnesia fact? 0=  fiona -109.83e 12e 72.62e 5e 5e touches? and if  ['] take-magnesia calm-only offer  then
     fiona -29.58e 0e 75.55e 7e 10e touches?  fiona 60 -30e 76e faces-point? and if  ['] near-doll unhurried offer  then
     fiona -133.09e 0e 71.35e 7e 10e touches?  fiona 60 -133e 71e faces-point? and if  ['] far-doll unhurried offer  then
-    fiona $1D in-area?  fiona -45 50 heading? and if  ['] the-book unhurried offer  then
+    fiona $1D in-area?  fiona -90 50 heading? and if  ['] the-book unhurried offer  then
     viola-vase broken? if
         omb1-2-viola-medallion fact? 0=  fiona 13.5e -10e -75e 5e 5e touches? and if  ['] take-viola calm-only offer  then
     else  viola-vase breaks? if  viola-shows  then  then

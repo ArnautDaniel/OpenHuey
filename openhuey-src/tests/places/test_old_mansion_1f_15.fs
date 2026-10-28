@@ -39,19 +39,19 @@ testing the books found: on the table, standing out on a shelf
 T{ 9 facing-middle  said -> table-book-msg }T
 200 read-on
 T{ got-cathedral-secrets story-flag?  cathedral-secrets items:items-of 0> -> -1 -1 }T
-T{ $A 90 at  said -> stands-out-msg }T
+T{ $A 180 at  said -> stands-out-msg }T
 200 read-on
 T{ got-wisemans-crafts story-flag? -> -1 }T
 testing a book on a lectern not its own: shown; taken back
 occult-philosophy 1 items send give-item  10 run-frames
 0 1 -1 0 broadcast item-event  400 play-on
 T{ lectern-0-book-1 story-flag?  $B part?  occult-philosophy items:items-of -> -1 -1 0 }T
-T{ $D -45 at  circle press  300 play-on  lectern-0-book-1 story-flag?  occult-philosophy items:items-of -> 0 1 }T
+T{ $D -90 at  circle press  300 play-on  lectern-0-book-1 story-flag?  occult-philosophy items:items-of -> 0 1 }T
 testing each lectern's own: its shelves back at their stop
 0 0 -1 0 broadcast item-event  1200 play-on
 T{ books-placed story-flag?  [: s" movebook_red" place-x object@ 0e ~= ;] in-place -> -1 -1 }T
 testing the shelves by author; the door atop
-T{ $1C 90 at  said -> author-4-msg }T
+T{ $1C 180 at  said -> author-4-msg }T
 T{ $1D 0 at  said -> author-4-msg }T
 testing the Refined Antimony: taken
 om1f-15-refined-antimony story-flag-clear  room-afresh  refined-antimony items:items-of before !

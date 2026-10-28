@@ -82,12 +82,12 @@ own: shelves-remarked  own: book-remarked  own: hewie-noticed
 : spots ( -- )
     c2f-6-lavender fact? 0=  fiona -22.26e 8.5e -41.95e 5e 5e touches? and if  ['] reach-lavender calm-only offer  then
     refractor-had? 0=  fiona desk-area in-area? and  fiona 0 45 heading? and if  ['] desk-locked unhurried offer  then
-    fiona board-area in-area?  fiona -45 45 heading? and if  ['] the-board unhurried offer  then
-    fiona desktop-area in-area?  fiona -67 50 heading? and if  ['] desktop unhurried offer  then
-    fiona 7 in-area?  fiona 9 in-area? or  fiona -45 45 heading? and if  ['] shelves unhurried offer  then
+    fiona board-area in-area?  fiona -90 45 heading? and if  ['] the-board unhurried offer  then
+    fiona desktop-area in-area?  fiona -134 50 heading? and if  ['] desktop unhurried offer  then
+    fiona 7 in-area?  fiona 9 in-area? or  fiona -90 45 heading? and if  ['] shelves unhurried offer  then
     fiona 8 in-area?  fiona $B in-area? or  fiona 0 45 heading? and if  ['] shelves unhurried offer  then
-    fiona $A in-area?  fiona $D in-area? or  fiona 45 45 heading? and if  ['] shelves unhurried offer  then
-    fiona $C in-area?  fiona 90 45 heading? and if  ['] shelves unhurried offer  then
+    fiona $A in-area?  fiona $D in-area? or  fiona 90 45 heading? and if  ['] shelves unhurried offer  then
+    fiona $C in-area?  fiona 180 45 heading? and if  ['] shelves unhurried offer  then
     fiona book-area 50 faces-area? if  ['] the-book unhurried offer  then ;
 
 \ ---- Hewie: a bark at the desk once a visit (the refractor in it still), his looks up ----

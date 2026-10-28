@@ -45,12 +45,12 @@ testing Hewie by the wall: he barks at it; her look there - the scene, the wall 
 hewie-freed story-flag-set  hewie-commandable state-flag-set  game:hewie send join-fiona  60 run-frames
 house-of-truth-1f-7 -68e 0e 75e nav-tri 0 game:hewie send hewie-place  30 run-frames
 T{ [: [: hewie-at-wall @ ;] in-place ;] 300 soon -> -1 }T
-T{ wall-area -45 at  circle press  [: window-shown 0< 0= if  cross press  then  movie-skipped state-flag-set  ht1f-7-flag1 story-flag? ;] 2000 soon -> -1 }T
+T{ wall-area -90 at  circle press  [: window-shown 0< 0= if  cross press  then  movie-skipped state-flag-set  ht1f-7-flag1 story-flag? ;] 2000 soon -> -1 }T
 T{ [: $4C resident-flag? ;] 600 soon -> -1 }T
 300 play-on
 testing the Cane of Caduceus behind it
 cane-of-caduceus items:items-of before !
-T{ wall-area -45 at  circle press  300 read-on  got-cane-of-caduceus story-flag?  cane-of-caduceus items:items-of -> -1 before @ 1+ }T
+T{ wall-area -90 at  circle press  300 read-on  got-cane-of-caduceus story-flag?  cane-of-caduceus items:items-of -> -1 before @ 1+ }T
 testing a creature let out as she crosses on (once)
 0 49e 0e 40e put
 T{ 0 29e 0e 40e put  ht1f-7-flag3 story-flag? -> -1 }T
@@ -62,12 +62,12 @@ T{ [: 100 shakes-now ! ;] in-place  [: [: trapped @ 0= ;] in-place ;] 600 soon -
 300 play-on
 testing the hiding place: in at her examine, out at circle
 room-afresh
-T{ hiding-area 90 at  circle press  [: hidden? ;] 900 soon -> -1 }T
+T{ hiding-area 180 at  circle press  [: hidden? ;] 900 soon -> -1 }T
 60 run-frames  circle press  [: hidden? 0= ;] 600 soon drop  [: doing-busy? 0= ;] 600 soon drop
 T{ hidden? -> 0 }T
 testing the stalker coming on her hidden: his search - found, hauled out
 lorenzo2-kind story.base:partner-load  5 run-frames
-hiding-area 90 at  circle press  [: hidden? ;] 900 soon drop  60 run-frames
+hiding-area 180 at  circle press  [: hidden? ;] 900 soon drop  60 run-frames
 house-of-truth-1f-7 $FE game:lorenzo2 send stalker-in  30 run-frames
 : try-find ( -- flag )  [: found-her @ ;] in-place  dup 0= if  [: 3 searches-var var!  0 searched !  ['] found-there running? 0= if  searched-hidden  then ;] in-place  then ;
 T{ [: try-find ;] 3000 soon  [: hidden? 0= ;] 600 soon -> -1 -1 }T

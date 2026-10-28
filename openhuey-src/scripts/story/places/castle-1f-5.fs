@@ -121,10 +121,10 @@ create locked-doors   2 , $34 , $62 , $44 , $47 , $4F , $56 , $67 , $7D , $51 , 
     fiona $19A 90 -1 walk-move 94e 27.5e go-to  1 15e 0e 0e 8e shot  4 frames  twins-msg say  4 frames  shot-off ;
 : pick-antimony ( -- )  antimony-powder c1f-5-antimony-powder antimony-fx 41e -19e picks-up ;
 : spots ( -- )
-    fiona dim-area in-area?  fiona 90 50 heading? and if  ['] dim-corner unhurried offer  then
+    fiona dim-area in-area?  fiona 180 50 heading? and if  ['] dim-corner unhurried offer  then
     fiona box-area 45 faces-area? if  ['] the-box unhurried offer  then
-    fiona painting-area in-area?  fiona 45 50 heading? and if  ['] the-painting unhurried offer  then
-    fiona twin-area in-area?  fiona 45 50 heading? and if  ['] the-twin unhurried offer  then
+    fiona painting-area in-area?  fiona 90 50 heading? and if  ['] the-painting unhurried offer  then
+    fiona twin-area in-area?  fiona 90 50 heading? and if  ['] the-twin unhurried offer  then
     weak?  3 locked-request? and if  ['] flags any-time offer  then
     the-vase broken? if
         c1f-5-antimony-powder fact? 0=  fiona 41e 1e -19e 5e 5e touches? and if  ['] pick-antimony calm-only offer  then

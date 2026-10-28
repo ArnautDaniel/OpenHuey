@@ -149,11 +149,11 @@ $30 constant not-landed   $34 constant speed   -25.3e fconstant shut-y
     in-panic?  chased? or if  fiona rattle-front-slow-anim play  fiona -1 idle  7 frames  exit  then
     fiona rattle-front-anim play  fiona -1 idle  7 frames  locked-msg say ;
 : spots ( -- )
-    fiona breaker-area in-area?  fiona -45 45 heading? and if  ['] breaker unhurried offer  then
-    lowered? 0=  floor-plate-pressed fact? 0= and  fiona gate-area in-area? and  fiona -45 45 heading? and if
+    fiona breaker-area in-area?  fiona -90 45 heading? and if  ['] breaker unhurried offer  then
+    lowered? 0=  floor-plate-pressed fact? 0= and  fiona gate-area in-area? and  fiona -90 45 heading? and if
         ['] gate-shut-msg unhurried offer  then
-    fiona $A in-area?  fiona -45 45 heading? and  fiona $B in-area?  fiona 90 45 heading? and or
-    fiona $C in-area?  fiona $D in-area? or  fiona 45 45 heading? and or
+    fiona $A in-area?  fiona -90 45 heading? and  fiona $B in-area?  fiona 180 45 heading? and or
+    fiona $C in-area?  fiona $D in-area? or  fiona 90 45 heading? and or
     fiona $E in-area?  fiona 0 45 heading? and or if  ['] doll unhurried offer  then
     locked-exit before-locked? if  ['] rattles-locked any-time offer  then ;
 

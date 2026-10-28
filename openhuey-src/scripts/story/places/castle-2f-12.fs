@@ -253,13 +253,13 @@ $30 constant rock-phase   $34 constant rock-size   $38 constant rock-fade   $3C 
 : pick-antimony ( -- )  refined-antimony c2f-12-refined-antimony antimony-fx 22.9e -9.7e picks-up ;
 : pick-medallion ( -- )  medallion c2f-12-medallion medallion-fx -17.5e 47e picks-up ;
 : spots ( -- )
-    fiona wardrobe-area in-area?  fiona 22 60 heading? and if
+    fiona wardrobe-area in-area?  fiona 44 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
     then
     fiona cage-area 60 faces-area? if  ['] caged-doll unhurried offer  then
-    fiona horse-area in-area?  fiona 75 50 heading? and if  ['] horse unhurried offer  then
+    fiona horse-area in-area?  fiona 150 50 heading? and if  ['] horse unhurried offer  then
     fiona chair-area 60 faces-area? if  ['] chair-doll unhurried offer  then
-    fiona box-area in-area?  fiona 90 50 heading? and if  ['] the-box unhurried offer  then
+    fiona box-area in-area?  fiona 180 50 heading? and if  ['] the-box unhurried offer  then
     fiona crib-area 60 faces-area? if  ['] crib unhurried offer  then
     c2f-12-refined-antimony-found fact?  c2f-12-refined-antimony fact? 0= and  fiona 22.9e 1e -9.7e 5e 5e touches? and if
         ['] pick-antimony calm-only offer  then

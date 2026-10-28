@@ -31,11 +31,11 @@ got-cracked-plate-key-2 story-flag-clear  c2f-3-flag1 story-flag-clear  room-afr
 T{ flames  plate-key-part part? -> #candles -1 }T
 
 testing the candlesticks (by day, by night), the tapestry
-T{ table-area -45 at  said -> candles-msg }T
+T{ table-area -90 at  said -> candles-msg }T
 c2f-3-flag1 story-flag-set  room-afresh
-T{ table-2-area 45 at  said -> candles-night-msg }T
+T{ table-2-area 90 at  said -> candles-night-msg }T
 c2f-3-flag1 story-flag-clear
-T{ tapestry-area 90 at  said -> tapestry-msg }T
+T{ tapestry-area 180 at  said -> tapestry-msg }T
 
 testing the plate-key on the table: reached, taken
 room-afresh  cracked-plate-key-2 items:items-of before !

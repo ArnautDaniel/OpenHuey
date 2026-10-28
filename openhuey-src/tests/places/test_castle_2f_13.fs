@@ -42,8 +42,8 @@ c2f-13-flag1 story-flag-clear  c2f-13-medallion story-flag-clear  found-file-227
 T{ [: sparkle-fx effect @ 0<>  medallion-fx effect @ 0<> ;] in-place -> -1 -1 }T
 
 testing the remarks: the bridge in turn, the statue turn and turn about
-T{ bridge-area 90 at  said  bridge-area 90 at  said -> bridge-msg lower-it-msg }T
-T{ statue-area 45 at  said  statue-area 45 at  said  statue-area 45 at  said -> statue-msg gargoyles-msg statue-msg }T
+T{ bridge-area 180 at  said  bridge-area 180 at  said -> bridge-msg lower-it-msg }T
+T{ statue-area 90 at  said  statue-area 90 at  said  statue-area 90 at  said -> statue-msg gargoyles-msg statue-msg }T
 
 testing Hewie: wary on the balcony (once a visit)
 hewie-freed story-flag-set  hewie-commandable state-flag-set  game:hewie send join-fiona  room-afresh

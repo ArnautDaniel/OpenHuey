@@ -41,8 +41,8 @@ gate-rising story-flag-set
 T{ settles 300 <  gate-y -25.3e f- fabs 0.001e f<  gate-rising story-flag? -> -1 -1 0 }T
 
 testing the remarks: the gate shut, the doll in turn
-T{ gate-area -45 at  said -> gate-msg }T
-T{ $A -45 at  said  $B 90 at  said  $E 0 at  said -> doll-msg doll-2-msg doll-3-msg }T
+T{ gate-area -90 at  said -> gate-msg }T
+T{ $A -90 at  said  $B 180 at  said  $E 0 at  said -> doll-msg doll-2-msg doll-3-msg }T
 
 testing the door (exit 0, 9) locked: tried, it won't open
 breaker-door s" doors" actor-named send lock  room-afresh
@@ -50,10 +50,10 @@ breaker-door s" doors" actor-named send lock  room-afresh
 T{ said -> locked-msg }T
 
 testing the breaker: lowered (yes) - the hum gone, the door unlocked, the file only in the other game
-T{ breaker-area -45 at  said -> breaker-msg }T
+T{ breaker-area -90 at  said -> breaker-msg }T
 300 read-on
 T{ breaker-lowered story-flag?  breaker-door doors:door-locked?  spark-part part?  breaker-file $7FFF and filed? -> -1 0 0 0 }T
-T{ breaker-area -45 at  said -> lowered-msg }T
+T{ breaker-area -90 at  said -> lowered-msg }T
 
 testing the gate held up as she comes by castle-1f-4's way (exit 1, the plate pressed): up, then - nobody on the plate - falling shut
 floor-plate-pressed story-flag-set  1 by-exit

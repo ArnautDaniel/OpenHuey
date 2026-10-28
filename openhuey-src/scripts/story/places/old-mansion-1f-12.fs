@@ -168,16 +168,16 @@ create calm-looks  38.13e 0e -9.78e  30e 30e 30e look,   -35.94e 0e -7.54e  16e 
     far-looks 3 hewie-looks-unchased  calm-looks 2 hewie-looks-at
     om1f-12-rubrum-medallion-found fact? 0=  scrambling? and  hewie 52.04e 0e 5.68e 10e 5e touches? and if  ['] medallion-sniffed start-only  then
     1 locked-request?  fiona 0 before-door? and if  ['] the-door any-time offer  then
-    fiona 5 in-area?  fiona 90 50 heading? and if
+    fiona 5 in-area?  fiona 180 50 heading? and if
         om1f-12-flag4 fact?  got-film-reel fact? 0= and if  ['] the-statue calm-only  else  ['] the-statue unhurried  then  offer
     then
     fiona 6 50 faces-area? if  ['] the-pillar unhurried offer  then
     fiona 7 in-area?  fiona 0 50 heading? and if  ['] climbs-down unhurried offer  then
     got-torn-letter fact? 0=  om1f-12-flag2 fact? 0= and if
         fiona 12e 13e -24e 4e 4e touches? if  ['] the-letter calm-only offer  then
-    else  fiona 8 in-area?  fiona 90 50 heading? and if  ['] the-dragon unhurried offer  then  then
-    fiona 9 in-area?  fiona 90 50 heading? and if  ['] the-dragon unhurried offer  then
-    fiona $F in-area?  fiona -45 60 heading? and if  ['] the-ivy unhurried offer  then
+    else  fiona 8 in-area?  fiona 180 50 heading? and if  ['] the-dragon unhurried offer  then  then
+    fiona 9 in-area?  fiona 180 50 heading? and if  ['] the-dragon unhurried offer  then
+    fiona $F in-area?  fiona -90 60 heading? and if  ['] the-ivy unhurried offer  then
     om1f-12-rubrum-medallion-found fact?  om1f-12-rubrum-medallion fact? 0= and  fiona 52.04e 0e 5.68e 5e 5e touches? and if
         ['] take-medallion calm-only offer
     then ;

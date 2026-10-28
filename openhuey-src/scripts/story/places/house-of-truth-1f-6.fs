@@ -156,7 +156,7 @@ create ahead  2 , 0 ,  3 , 1 ,   \ (area, exit loaded ahead)
     then
     stages  1 exit-open? if  -1 far-open !  then ;
 : spots ( -- )
-    fiona hiding-area in-area?  fiona -45 60 heading? and if
+    fiona hiding-area in-area?  fiona -90 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
     then
     8 locked-request?  fiona 0 before-door? and if  ['] tries-door any-time offer  then

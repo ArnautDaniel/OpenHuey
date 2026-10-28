@@ -37,12 +37,12 @@ T{ moths  lamp-door doors:door-locked?  flowers-part part? -> #swarms -1 0 }T
 T{ 3 swarm-at  -30e 12e -41e near? -> -1 -1 }T
 
 testing the remarks: the torn picture (in turn), the empty vase
-T{ 45 55e 4e -6e put  said -> torn-picture-msg }T
-T{ 45 55e 4e -6e put  said -> torn-again-msg }T
+T{ 90 55e 4e -6e put  said -> torn-picture-msg }T
+T{ 90 55e 4e -6e put  said -> torn-again-msg }T
 T{ -90 -22.35e 0e -42.76e put  said -> empty-vase-msg }T
 
 testing stepping near the moths: turned to them, the remark, the file
-T{ 90 43e 4e -30e put  shown-soon  50 play-on  moths-file filed? -> moths-msg -1 }T
+T{ 180 43e 4e -30e put  shown-soon  50 play-on  moths-file filed? -> moths-msg -1 }T
 
 testing Hewie near them, at her command: once a visit he goes over, wary
 hewie-freed story-flag-set  hewie-commandable state-flag-set  room-afresh
@@ -59,7 +59,7 @@ T{ -90 -25e 0e -44e put  shown-soon  50 play-on -> moths-gone-msg }T   \ (steppi
 
 testing the clock: saving (or Hewie not by her)
 room-afresh
-T{ 90 0e 4e -40e put  circle press  shown-soon  dup $8014 =  swap $8024 = or -> -1 }T
+T{ 180 0e 4e -40e put  circle press  shown-soon  dup $8014 =  swap $8024 = or -> -1 }T
 60 run-frames  cross press  30 run-frames  key: Down tap  10 run-frames  cross press  100 run-frames   \ (the text out; no)
 T{ doing-busy?  window-shown 0< -> 0 -1 }T
 

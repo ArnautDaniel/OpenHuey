@@ -60,7 +60,7 @@ testing the Camomile
 room-afresh  camomile items:items-of before !
 T{ 0 29.7e 5.25e 32.54e put  circle press  300 read-on  ht1f-10-camomile story-flag?  camomile items:items-of -> -1 before @ 1+ }T
 testing the clock: the save asked (no)
-T{ clock-area 90 at  circle press  shown-soon -> clock-msg }T
+T{ clock-area 180 at  circle press  shown-soon -> clock-msg }T
 1 choose-answer  300 read-on
 testing Hewie's bark at the hole (once a visit)
 hewie-freed story-flag-set  hewie-commandable state-flag-set  room-afresh  game:hewie send join-fiona  60 run-frames

@@ -50,7 +50,7 @@ T{ hall-door doors:door-locked?  stalkers-stay state-flag? -> -1 0 }T
 300 play-on
 testing after it: "I have to get out of here now!", his body
 room-afresh
-T{ clock-area 67 at  said -> get-out-msg }T
+T{ clock-area 134 at  said -> get-out-msg }T
 T{ 0 0e 0e 74.25e put  said -> dead-msg }T
 testing the tremors - the house coming down (the stalker dealt with: slight)
 ht1f-9-flag2 story-flag-set  room-afresh

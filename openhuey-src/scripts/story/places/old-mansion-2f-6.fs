@@ -136,13 +136,13 @@ create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   5 , 1 , 
     else  remark unhurried offer  then ;
 : each-frame ( -- )
     0 exit-out  cameras 6 cameras-at
-    om2f-6-flag2 7 45 ['] near-locker-hides ['] the-medicine a-locker
-    om2f-6-flag1 8 -45 ['] far-locker-hides ['] the-chemicals a-locker
+    om2f-6-flag2 7 90 ['] near-locker-hides ['] the-medicine a-locker
+    om2f-6-flag1 8 -90 ['] far-locker-hides ['] the-chemicals a-locker
     fiona 9 in-area?  fiona 0 50 heading? and if  ['] the-water unhurried offer  then
-    fiona $A in-area?  fiona -15 60 heading? and  fiona $B in-area?  fiona 60 -16e -17e faces-point? and or if  ['] the-device unhurried offer  then
-    fiona $C in-area?  fiona -35 60 heading? and if  ['] the-cabinet unhurried offer  then
+    fiona $A in-area?  fiona -30 60 heading? and  fiona $B in-area?  fiona 60 -16e -17e faces-point? and or if  ['] the-device unhurried offer  then
+    fiona $C in-area?  fiona -70 60 heading? and if  ['] the-cabinet unhurried offer  then
     fiona $E in-area?  fiona 0 60 heading? and if  ['] the-canister unhurried offer  then
-    fiona $D in-area?  fiona 10 60 heading? and if  ['] the-containers unhurried offer  then
+    fiona $D in-area?  fiona 20 60 heading? and if  ['] the-containers unhurried offer  then
     om2f-6-lavender fact? 0=  fiona 4.58e 9e 14.22e 5e 5e touches? and if  ['] take-lavender calm-only offer  then
     fiona $F 60 faces-area? if  ['] the-table unhurried offer  then ;
 : person-in ( i -- )

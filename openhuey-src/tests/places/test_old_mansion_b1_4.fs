@@ -33,13 +33,13 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 game:debilitas send stalker-out  5 run-frames
 x-37-flag1 story-flag-set  room-afresh
 testing what she may look at
-T{ 5 90 at  said -> wax-msg }T
-T{ 6 45 at  said -> chess-msg }T
-T{ 7 -45 at  said -> hourglass-msg }T
-T{ 8 -45 at  said -> models-msg }T
-T{ 9 -45 at  said -> flask-msg }T
-T{ $A -45 at  said -> kiln-msg }T
-T{ $B 90 at  said -> still-msg }T
+T{ 5 180 at  said -> wax-msg }T
+T{ 6 90 at  said -> chess-msg }T
+T{ 7 -90 at  said -> hourglass-msg }T
+T{ 8 -90 at  said -> models-msg }T
+T{ 9 -90 at  said -> flask-msg }T
+T{ $A -90 at  said -> kiln-msg }T
+T{ $B 180 at  said -> still-msg }T
 testing the cabinet: in, hidden; out by the button
 cabinet-area 0 at  circle press  [: hidden? ;] 900 soon drop
 T{ hidden? -> -1 }T

@@ -24,16 +24,16 @@ free-play  10 run-frames  0 game:fiona send costume
 testing the bridge there: shown, its floor free, nothing said at its end
 over-music-d story-flag-clear  room-afresh
 T{ bridge-part part?  gap-barred? -> -1 0 }T
-T{ bridge-end-area 90 at  said -> -1 }T
+T{ bridge-end-area 180 at  said -> -1 }T
 
 testing the bridge gone: its floor barred; at its end facing the gap, the remark - then the other one
 over-music-d story-flag-set  room-afresh
 T{ gap-barred? -> -1 }T
-T{ bridge-end-area 90 at  said -> bridge-gone-msg }T
-T{ bridge-end-area 90 at  said -> no-way-back-msg }T
+T{ bridge-end-area 180 at  said -> bridge-gone-msg }T
+T{ bridge-end-area 180 at  said -> no-way-back-msg }T
 testing ... a new visit: the first remark again
 room-afresh
-T{ bridge-end-area 90 at  said -> bridge-gone-msg }T
+T{ bridge-end-area 180 at  said -> bridge-gone-msg }T
 testing ... facing away: nothing
 T{ bridge-end-area -90 at  said -> -1 }T
 

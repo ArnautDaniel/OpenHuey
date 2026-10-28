@@ -32,7 +32,7 @@ create holes  $13 , $124 , $6B , $69 , $54 ,   \ (things lying about fall throug
 : pick-magnesia ( -- )  prima-magnesia c2f-15-prima-magnesia magnesia-fx -105e 23e picks-up ;
 : spots ( -- )
     climb-spot
-    fiona statue-area in-area?  fiona 45 50 heading? and if  ['] the-statue unhurried offer  then
+    fiona statue-area in-area?  fiona 90 50 heading? and if  ['] the-statue unhurried offer  then
     c2f-15-prima-magnesia-found fact?  c2f-15-prima-magnesia fact? 0= and  fiona -105e 135e 23e 5e 5e touches? and if
         ['] pick-magnesia calm-only offer  then ;
 

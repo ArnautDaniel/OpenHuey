@@ -33,11 +33,11 @@ c2f-6-lavender story-flag-clear  got-lunar-refractor story-flag-clear  room-afre
 T{ [: lavender-fx effect @ 0<> ;] in-place -> -1 }T
 
 testing the remarks: the shelves in turn, the massive book in turn, the desktop, the board (the Luminessants)
-T{ 7 -45 at  said  7 -45 at  said -> shelves-msg study-msg }T
-T{ 45 -4e 0e -19e put  said  45 -4e 0e -19e put  said -> book-msg greek-msg }T   \ (facing its middle)
-T{ desktop-area -67 at  said -> desktop-msg }T
+T{ 7 -90 at  said  7 -90 at  said -> shelves-msg study-msg }T
+T{ 90 -4e 0e -19e put  said  90 -4e 0e -19e put  said -> book-msg greek-msg }T   \ (facing its middle)
+T{ desktop-area -134 at  said -> desktop-msg }T
 got-doc-luminessants story-flag-clear
-T{ board-area -45 at  circle press  [: window-shown board-msg = ;] 300 soon  [: window-shown 0< 0= if  window-shown no-clue-msg = if  true exit  then  cross press  then  false ;] 900 soon -> -1 -1 }T
+T{ board-area -90 at  circle press  [: window-shown board-msg = ;] 300 soon  [: window-shown 0< 0= if  window-shown no-clue-msg = if  true exit  then  cross press  then  false ;] 900 soon -> -1 -1 }T
 300 read-on
 
 testing the desk locked: her blows on it
@@ -45,7 +45,7 @@ T{ 0 -3e 0e 31e put  said -> locked-msg }T   \ (off its middle: the desk's floor
 
 testing the Lavender: reached, taken
 lavender items:items-of before !
-90 -26e 0e -42e put  circle press  300 read-on
+180 -26e 0e -42e put  circle press  300 read-on
 T{ c2f-6-lavender story-flag?  lavender items:items-of -> -1 before @ 1+ }T
 
 testing the Study Key used at the desk: the drawer, the Lunar Refractor - the stalker stronger, the summoner on

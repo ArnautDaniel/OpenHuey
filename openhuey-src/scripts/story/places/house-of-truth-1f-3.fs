@@ -55,7 +55,7 @@ create flames  -42.5e f, 45.4e f, -36.9e f,   -72.4e f, 17.2e f, -7.1e f,   -42.
 create candlestick-look  -61.25e 0e -4.27e  17e 15e 15e look,
 : spots ( -- )
     got-golden-candlestick fact? 0=  fiona candlestick-area in-area? and  fiona 0 50 heading? and if  ['] takes-candlestick calm-only offer  then
-    fiona bars-area in-area?  fiona 45 50 heading? and if  ['] the-bars unhurried offer  then
+    fiona bars-area in-area?  fiona 90 50 heading? and if  ['] the-bars unhurried offer  then
     ht1f-3-rubrum-medallion fact? 0=  fiona -23.41e 1e -14.78e 5e 5e touches? and if  ['] pick-rubrum calm-only offer  then
     ht1f-3-viola-medallion-found fact?  ht1f-3-viola-medallion fact? 0= and  fiona 3e 1e 168e 5e 5e touches? and if  ['] pick-viola calm-only offer  then ;
 

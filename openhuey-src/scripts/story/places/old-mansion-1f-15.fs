@@ -212,37 +212,37 @@ create ahead  4 , 1 ,   5 , 0 ,   6 , 2 ,   7 , 3 ,   \ (area, exit loaded ahead
     om1f-15-rubrum-medallion-found fact? 0=  hewie -23.61e 50e -61.37e 10e 5e touches? and if  ['] medallion-sniffed start-only  then ;
 : shelves-by-author ( -- )
     books-placed fact? 0= if
-        $C 45 facing? if  [: 90 author-1-msg author ;] unhurried offer  then
+        $C 90 facing? if  [: 90 author-1-msg author ;] unhurried offer  then
     else
-        $10 -45 facing? if  [: -90 author-1-msg author ;] unhurried offer  then
-        $F 45 facing? if  [: 90 author-1-msg author ;] unhurried offer  then
+        $10 -90 facing? if  [: -90 author-1-msg author ;] unhurried offer  then
+        $F 90 facing? if  [: 90 author-1-msg author ;] unhurried offer  then
     then
-    lectern-1-book-1 fact? if  $13 45 facing? if  [: 90 author-2-msg author ;] unhurried offer  then  then
+    lectern-1-book-1 fact? if  $13 90 facing? if  [: 90 author-2-msg author ;] unhurried offer  then  then
     lectern-2-book-2 fact? if
-        $17 90 facing? if  [: 180 author-3-msg author ;] unhurried offer  then
+        $17 180 facing? if  [: 180 author-3-msg author ;] unhurried offer  then
         $18 0 facing? if  [: 0 author-3-msg author ;] unhurried offer  then
     else  $15 0 facing? if  [: 0 author-3-msg author ;] unhurried offer  then  then
-    $19 90 facing? if  [: 180 author-3-msg author ;] unhurried offer  then
+    $19 180 facing? if  [: 180 author-3-msg author ;] unhurried offer  then
     $1B 0 facing? if  [: 0 author-3-msg author ;] unhurried offer  then
-    $1C 90 facing? if  [: 180 author-4-msg author ;] unhurried offer  then
+    $1C 180 facing? if  [: 180 author-4-msg author ;] unhurried offer  then
     $1D 0 facing? if  [: 0 author-4-msg author ;] unhurried offer  then
-    $20 -45 facing? if  [: -90 author-5-msg author ;] unhurried offer  then
-    fiona $21 in-area?  fiona $22 in-area? or  fiona 45 50 heading? and if  [: 90 author-5-msg author ;] unhurried offer  then
-    $1E 90 facing? if  [: 180 author-5-msg author ;] unhurried offer  then
+    $20 -90 facing? if  [: -90 author-5-msg author ;] unhurried offer  then
+    fiona $21 in-area?  fiona $22 in-area? or  fiona 90 50 heading? and if  [: 90 author-5-msg author ;] unhurried offer  then
+    $1E 180 facing? if  [: 180 author-5-msg author ;] unhurried offer  then
     $1F 0 facing? if  [: 0 author-5-msg author ;] unhurried offer  then
-    books-placed fact? 0=  $1A 90 facing? and if  ['] door-atop unhurried offer  then ;
+    books-placed fact? 0=  $1A 180 facing? and if  ['] door-atop unhurried offer  then ;
 : each-frame ( -- )
     4 exits-out  cameras 3 cameras-at  $26 1 -1 camera-out  ahead 4 ways-out  ambient
     0 $148 obstacle-on-tri? if  om1f-15-flag1 fact!  else  om1f-15-flag1 fact-off  then
     sniffed  hewie-about
     got-cathedral-secrets fact? 0=  fiona 9 50 faces-area? and if  ['] on-the-table calm-only offer  then
     got-occult-philosophy fact? 0=  fiona $B in-area? and  om1f-15-flag1 fact? and if  ['] under-the-stand calm-only offer  then
-    got-wisemans-crafts fact? 0=  $A 90 facing? and if  ['] on-a-shelf calm-only offer  then
-    books-placed fact? 0=  $D -45 facing? and if  0 ['] lectern-0 lectern-offer  then
-    lectern-1-book-1 fact? 0=  $11 45 facing? and if  1 ['] lectern-1 lectern-offer  then
-    lectern-2-book-2 fact? 0=  $14 90 facing? and if  2 ['] lectern-2 lectern-offer  then
+    got-wisemans-crafts fact? 0=  $A 180 facing? and if  ['] on-a-shelf calm-only offer  then
+    books-placed fact? 0=  $D -90 facing? and if  0 ['] lectern-0 lectern-offer  then
+    lectern-1-book-1 fact? 0=  $11 90 facing? and if  1 ['] lectern-1 lectern-offer  then
+    lectern-2-book-2 fact? 0=  $14 180 facing? and if  2 ['] lectern-2 lectern-offer  then
     shelves-by-author
-    8 22 facing?  fiona $23 50 faces-area? or if  ['] save-clock calm-hewie-up offer  then
+    8 44 facing?  fiona $23 50 faces-area? or if  ['] save-clock calm-hewie-up offer  then
     om1f-15-refined-antimony fact? 0=  fiona 36.86e 50e -27.91e 5e 5e touches? and if  ['] take-antimony calm-only offer  then
     om1f-15-antimony-tube-found fact?  om1f-15-antimony-tube fact? 0= and  fiona 39.16e 0e -38.76e 5e 5e touches? and if
         ['] take-tube calm-only offer

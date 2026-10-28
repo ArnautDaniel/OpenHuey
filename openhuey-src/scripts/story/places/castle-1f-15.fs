@@ -129,11 +129,11 @@ $8278 constant saved-file   $8279 constant failed-file
 : pick-camomile ( -- )  camomile c1f-15-camomile camomile-fx 34.3e -13.7e picks-up ;
 : pick-medallion ( -- )  medallion c1f-15-medallion medallion-fx 56.3e -71.5e picks-up ;
 : spots ( -- )
-    fiona diorama-area in-area?  fiona 90 45 heading? and if  ['] diorama unhurried offer  then
+    fiona diorama-area in-area?  fiona 180 45 heading? and if  ['] diorama unhurried offer  then
     fiona spear-area 60 faces-area? if  ['] spear unhurried offer  then
-    fiona armour-area in-area?  fiona armour-2-area in-area? or  fiona 90 45 heading? and if  ['] armour unhurried offer  then
-    fiona handrail-area in-area?  fiona -45 90 heading? and if  ['] handrail unhurried offer  then
-    fiona hole-area in-area?  fiona -45 50 heading? and if  ['] the-hole unhurried offer  then
+    fiona armour-area in-area?  fiona armour-2-area in-area? or  fiona 180 45 heading? and if  ['] armour unhurried offer  then
+    fiona handrail-area in-area?  fiona -90 90 heading? and if  ['] handrail unhurried offer  then
+    fiona hole-area in-area?  fiona -90 50 heading? and if  ['] the-hole unhurried offer  then
     c1f-15-camomile-found fact?  c1f-15-camomile fact? 0= and  fiona 34.3e 1e -13.7e 5e 5e touches? and if
         ['] pick-camomile calm-only offer  then
     c1f-15-medallion-found fact?  c1f-15-medallion fact? 0= and  fiona 56.3e 51e -71.5e 5e 5e touches? and if

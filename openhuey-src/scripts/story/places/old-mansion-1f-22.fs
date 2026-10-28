@@ -33,7 +33,7 @@ create entries  0 , 0 ,   1 , 1 ,   \ (by exit 0, 1: the camera)
     0 exit-out  1 1 leaves-by  cameras 2 cameras-at
     fiona 2 entered? if  0 prepare-exit  scene-figure figure-slot 0 figure-in-by  then
     fiona 3 entered? if  1 prepare-exit  figure-slot figure-out  then
-    fiona cabinet-area in-area?  fiona 45 60 heading? and if
+    fiona cabinet-area in-area?  fiona 90 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
     then
     om1f-22-refined-antimony fact? 0=  fiona 147.17e 11e 86.89e 5e 5e touches? and if  ['] take-antimony calm-only offer  then

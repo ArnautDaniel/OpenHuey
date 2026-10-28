@@ -68,7 +68,7 @@ the-crate breakable-group frees-floor  the-crate $124 noise-from
 : pick-medallion ( -- )  album-medallion fg-4-album-medallion medallion-fx -283.8e 15.5e picks-up ;
 : spots ( -- )
     fiona cages-area in-area?  fiona 60 -140e 0e faces-point? and if  ['] cages unhurried offer  then
-    fiona boarded-area in-area?  fiona 90 60 heading? and if  ['] boarded unhurried offer  then
+    fiona boarded-area in-area?  fiona 180 60 heading? and if  ['] boarded unhurried offer  then
     fiona large-door-area in-area?  fiona 0 60 heading? and if  ['] the-large-door unhurried offer  then
     fg-4-camomile fact? 0=  fiona -202.89e 1e -6.76e 5e 5e touches? and if  ['] pick-camomile calm-only offer  then
     fg-4-album-medallion-found fact?  fg-4-album-medallion fact? 0= and

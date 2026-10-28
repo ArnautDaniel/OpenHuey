@@ -100,11 +100,11 @@ own: painting-remarked     \ the painting's first remark made (in turn with the 
     fiona reach-out-anim play  4 frames  magnesia c1f-16-magnesia magnesia-fx takes-up  fiona reach-back-anim play ;
 : spots ( -- )
     fiona clock-area 50 faces-area? if  ['] save-clock calm-hewie-up offer  then
-    fiona tv-area in-area?  fiona 60 90 heading? and if  ['] tv unhurried offer  then
-    fiona hiding-area in-area?  fiona 45 60 heading? and if
+    fiona tv-area in-area?  fiona 120 90 heading? and if  ['] tv unhurried offer  then
+    fiona hiding-area in-area?  fiona 90 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
     then
-    fiona mirror-area in-area?  fiona -72 50 heading? and if  ['] mirror unhurried offer  then
+    fiona mirror-area in-area?  fiona -144 50 heading? and if  ['] mirror unhurried offer  then
     fiona painting-area in-area?  fiona 0 50 heading? and if  ['] painting unhurried offer  then
     c1f-16-magnesia fact? 0=  fiona -25e 10e 13e 5e 5e touches? and if  ['] reach-magnesia calm-only offer  then ;
 

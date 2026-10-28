@@ -131,7 +131,7 @@ create album-look  -33.85e 42.7e 15.04e 44e 30e 10e look,
 : spots ( -- )
     c1f-9-rubrum-medallion-found fact?  c1f-9-rubrum-medallion fact? 0= and  fiona 60e 1e 37.2e 5e 5e touches? and if
         ['] pick-rubrum calm-only offer  then
-    fiona stairs-area in-area?  fiona 45 50 heading? and if  ['] the-stairs unhurried offer  then
+    fiona stairs-area in-area?  fiona 90 50 heading? and if  ['] the-stairs unhurried offer  then
     fiona well-area 50 faces-area? if  ['] the-well unhurried offer  then
     fiona bench-area in-area?  fiona 50 35e -45e faces-point? and if  ['] the-bench unhurried offer  then
     garden-exit before-locked? if  ['] rattles-locked any-time offer  then

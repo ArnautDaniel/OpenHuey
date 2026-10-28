@@ -103,13 +103,13 @@ create looks  19.24e 0e -32.32e  22e 18e 18e look,   -32.619e 0e -33.47e  22e 18
         room-sounds-in?  partner-kind daniella-kind = and if  presence-sound keep-playing or room-bank stalker sound-by  then
     then
     looks 3 hewie-looks-at
-    5 90 facing? if  ['] wax unhurried offer  then
-    6 45 facing? if  ['] chess unhurried offer  then
-    7 -45 facing? if  ['] hourglass unhurried offer  then
-    8 -45 facing? if  ['] models unhurried offer  then
-    9 -45 facing? if  ['] flask unhurried offer  then
-    waiting @ 0=  $A -45 facing? and if  ['] kiln unhurried offer  then
-    $B 90 facing? if  ['] still unhurried offer  then
+    5 180 facing? if  ['] wax unhurried offer  then
+    6 90 facing? if  ['] chess unhurried offer  then
+    7 -90 facing? if  ['] hourglass unhurried offer  then
+    8 -90 facing? if  ['] models unhurried offer  then
+    9 -90 facing? if  ['] flask unhurried offer  then
+    waiting @ 0=  $A -90 facing? and if  ['] kiln unhurried offer  then
+    $B 180 facing? if  ['] still unhurried offer  then
     fiona cabinet-area in-area?  fiona 0 60 heading? and if
         waiting @ if  ['] right-there unhurried offer
         else  stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then  then

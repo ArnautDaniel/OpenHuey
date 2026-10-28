@@ -34,10 +34,10 @@ create blow-pt 3 floats allot
 free-play  10 run-frames  0 game:fiona send costume
 testing the gate shut (castle-1f-2's way not yet open): shown, its floor solid; facing it, she says so
 c1f-2-flag1 story-flag-clear  room-afresh
-T{ gate-shut-part part?  gate-area -67 at  said -> -1 gate-shut-msg }T
+T{ gate-shut-part part?  gate-area -134 at  said -> -1 gate-shut-msg }T
 testing ... open: the other part, nothing said
 c1f-2-flag1 story-flag-set  room-afresh
-T{ gate-open-part part?  gate-area -67 at  said -> -1 -1 }T
+T{ gate-open-part part?  gate-area -134 at  said -> -1 -1 }T
 
 testing the pond: a splash as she steps in (once a visit)
 room-afresh

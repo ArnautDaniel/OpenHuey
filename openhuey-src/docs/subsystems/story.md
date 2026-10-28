@@ -457,6 +457,10 @@ From `event.c`, `scene_game.c` (the order), `progress.c`.
    loaded ahead - the room left, unless another was loaded since.
 5. **Activities** hold whom they move; a move is sent only for a character the running activity
    holds; let go as it ends or the room is left.
+6. **Facing a way** (cond 0x05, `heading?`): the room's value is in half degrees (it compares
+   against `(s8)pc[2] * 2`), its "within" in whole degrees. A place writes the whole degrees: the
+   room's 45 is `90`, its -67 is `-134`, its 90 is `180`. Placing and turning (`place-at`,
+   `turn`, `walk-to`) take whole degrees as the room gives them.
 
 ## Design notes
 

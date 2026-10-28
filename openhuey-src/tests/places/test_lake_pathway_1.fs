@@ -26,7 +26,7 @@ testing before the books' second event: the path collapsed (its floor barred), i
 c7-second-event story-flag-clear  over-music-d story-flag-clear  room-afresh
 T{ path-barred?  way-part part? -> -1 0 }T
 T{ path-end-area 0 at  said  path-end-area 0 at  said  path-end-area 0 at  said -> collapsed-msg the-light-msg collapsed-msg }T
-T{ body-side-area 90 at  said -> -1 }T   \ (the body not offered yet)
+T{ body-side-area 180 at  said -> -1 }T   \ (the body not offered yet)
 
 testing the way across open: shown, the floor free; the body - by it, then up close, then again
 c7-second-event story-flag-set  room-afresh
@@ -34,10 +34,10 @@ T{ path-barred?  way-part part? -> 0 -1 }T
 T{ by-body-area 0 at  said  by-body-area 0 at  said  by-body-area 0 at  said -> twisted-msg leathery-msg twisted-msg }T
 testing ... from its side, turned to the drop: the other remark
 room-afresh
-T{ body-side-area 90 at  said -> the-fall-msg }T
+T{ body-side-area 180 at  said -> the-fall-msg }T
 testing ... the bridge gone: the path barred again, the body still there to see
 over-music-d story-flag-set  room-afresh
-T{ path-barred?  body-side-area 90 at  said -> -1 the-fall-msg }T
+T{ path-barred?  body-side-area 180 at  said -> -1 the-fall-msg }T
 over-music-d story-flag-clear
 
 testing the lavender by the water: picked up once

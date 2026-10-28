@@ -143,7 +143,7 @@ create medallion-look  9.646e 0.163e 27.266e 30e 6e 6e look,
         c1f-11-magnesia fact? 0=  fiona 53e 114e -113.5e 5e 5e touches? and if  ['] pick-magnesia calm-only offer  then
     else  vase-2 breaks? if  magnesia-shows  then  then
     vase-3 breaks? drop
-    fiona clamp-area in-area?  fiona 90 50 heading? and if  ['] at-the-clamp unhurried offer  then ;
+    fiona clamp-area in-area?  fiona 180 50 heading? and if  ['] at-the-clamp unhurried offer  then ;
 
 \ ---- the map's pages ----
 : map-pages ( -- )

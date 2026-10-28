@@ -38,9 +38,9 @@ free-play  10 run-frames  0 game:fiona send costume
 testing the grate bolted: shut, the floor before it barred; facing it, she says so (whatever goes on)
 fg-2-flag1 story-flag-clear  hewie-found-in-wire story-flag-clear  room-afresh
 T{ shut-grate-group barred?  open-grate-group barred?  grate-turn 0e ~= -> -1 0 -1 }T
-T{ grate-area -45 at  said -> bolted-msg }T
+T{ grate-area -90 at  said -> bolted-msg }T
 testing the windows: the flickering light, from either
-T{ window-area 90 at  said  window-2-area -45 at  said -> flicker-msg flicker-msg }T
+T{ window-area 180 at  said  window-2-area -90 at  said -> flicker-msg flicker-msg }T
 
 testing Hewie found in the wire: crossing by the grate, it swings open (the scene) - the door unlocked, the floor behind it barred
 hewie-found-in-wire story-flag-set  room-afresh
@@ -48,7 +48,7 @@ by-grate-area 0 at  10 run-frames
 T{ [: fg-2-flag1 story-flag? ;] 60 soon -> -1 }T
 600 play-on
 T{ grate-turn pi f2/ fnegate ~=  shut-grate-group barred?  open-grate-group barred?  grate-door doors:door-locked? -> -1 0 -1 0 }T
-T{ grate-area -45 at  said -> -1 }T   \ (open now: nothing said)
+T{ grate-area -90 at  said -> -1 }T   \ (open now: nothing said)
 
 testing the crates: each broken by a blow in its place; the second has the Medallion
 fg-2-breakable1-broken story-flag-clear  fg-2-breakable2-broken story-flag-clear  fg-2-breakable3-broken story-flag-clear

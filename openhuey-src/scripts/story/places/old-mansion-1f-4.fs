@@ -100,11 +100,11 @@ create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   3 , 0 , 0 ,   4 , 2 , 2 ,   \ (area,
 create looks  45.1e 0e 31.88e  28e 18e 18e look,   54.4e 0e -20.46e  25e 16e 16e look,
 : facing? ( area deg -- flag )  {: a d :}  fiona a in-area?  fiona d 60 heading? and ;
 : incubators ( -- )
-    7 90 facing? if  ['] by-the-door unhurried offer  then
-    8 90 facing? if  ['] second unhurried offer  then
-    9 90 facing? if  ['] third unhurried offer  then
-    $A 0 facing?  $C 90 facing? or if  ['] fourth unhurried offer  then
-    $B 0 facing?  $D 90 facing? or if  ['] burst-one unhurried offer  then
+    7 180 facing? if  ['] by-the-door unhurried offer  then
+    8 180 facing? if  ['] second unhurried offer  then
+    9 180 facing? if  ['] third unhurried offer  then
+    $A 0 facing?  $C 180 facing? or if  ['] fourth unhurried offer  then
+    $B 0 facing?  $D 180 facing? or if  ['] burst-one unhurried offer  then
     $E 0 facing? if  ['] sixth unhurried offer  then
     $F 0 facing? if  ['] far-one unhurried offer  then
     $10 0 facing? if  ['] last-one unhurried offer  then ;
@@ -113,7 +113,7 @@ create looks  45.1e 0e 31.88e  28e 18e 18e look,   54.4e 0e -20.46e  25e 16e 16e
     the-figure hopper-still dup 21 =  swap 66 = or if  call-sound hopper-sound  then
     figure-noticed 80 54.4e 0e -20.46e 25e 16e notices? if  ['] wary-of-it start drop  then
     looks 2 danger-now @ followed = hewie-looks-if
-    fiona 5 in-area?  fiona 20 50 heading? and if  ['] the-transmuter unhurried offer  then
+    fiona 5 in-area?  fiona 40 50 heading? and if  ['] the-transmuter unhurried offer  then
     om1f-4-chicken-jerky fact? 0=  fiona -51.07e 0e 19.59e 5e 5e touches? and if  ['] take-jerky calm-only offer  then
     incubators ;
 : person-in ( i -- )  fiona-p = if  0 0 0 way-in  then ;

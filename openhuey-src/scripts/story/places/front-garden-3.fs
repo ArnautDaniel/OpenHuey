@@ -271,8 +271,8 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
         else  fiona 228.1e 77.57e 10e near-xz?  fiona 90 228e 77e faces-point? and if  ['] wire-snagged unhurried offer  then  then
     then
     fiona tree-area 60 faces-area? if  ['] tree unhurried offer  then
-    grate-open fact? 0=  fiona box-area in-area? and  fiona -45 50 heading? and if  ['] box unhurried offer  then
-    fiona hole-area in-area?  fiona -45 50 heading? and if  ['] hole unhurried offer  then
+    grate-open fact? 0=  fiona box-area in-area? and  fiona -90 50 heading? and if  ['] box unhurried offer  then
+    fiona hole-area in-area?  fiona -90 50 heading? and if  ['] hole unhurried offer  then
     fiona waking-area in-area?  fg-3-flag1 fact? 0= and if  ['] waking unhurried offer  then
     fiona cold-area in-area?  fg-3-flag2 fact? 0= and if  ['] cold unhurried offer  then
     fiona fountain-area 50 faces-area? if  ['] fountain unhurried offer  then

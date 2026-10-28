@@ -36,7 +36,7 @@ the-crate shard-grey 0 $B shard-look  the-crate 0.812e 0.687e 0.187e 0.312e shar
     the-crate broken? if
         cf-9-refined-antimony fact? 0=  fiona -298.4e 72.6e -365.4e 5e 5e touches? and if  ['] pick-antimony calm-only offer  then
     else  the-crate breaks? if  antimony-shows  then  then
-    fiona lake-area in-area?  fiona 90 45 heading? and if  ['] the-lake unhurried offer  then ;
+    fiona lake-area in-area?  fiona 180 45 heading? and if  ['] the-lake unhurried offer  then ;
 : each-frame ( -- )
     0 0 leaves-by  maze-frame
     wisp-up @  cf-9-flag1 fact? 0= and  loud-here? and if  cf-9-flag1 startled  then

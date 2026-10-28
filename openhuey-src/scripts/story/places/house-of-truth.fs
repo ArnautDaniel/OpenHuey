@@ -79,7 +79,7 @@ variable said-msg
     stalkers-stay state!  fiona hold  fiona wait-move  fiona -90 turn
     15 screen:to-dim fade wait-fade  said-msg @ say  15 screen:from-dim fade wait-fade  stalkers-stay state-off ;
 : reads ( msg -- )   \ (by the wall, facing it: offered)
-    fiona inscription-area in-area?  fiona -45 50 heading? and if  said-msg !  ['] inscription unhurried offer  else  drop  then ;
+    fiona inscription-area in-area?  fiona -90 50 heading? and if  said-msg !  ['] inscription unhurried offer  else  drop  then ;
 create colour-cameras  4 , 0 , 0 ,  5 , 1 , 1 ,
 : colour-frame ( msg -- )  colour-cameras 2 cameras-at  doors-through  voices  slam-shake  reads ;
 : colour-went ( -- )  scene-locked state-off ;

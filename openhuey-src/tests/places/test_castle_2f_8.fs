@@ -31,8 +31,8 @@ T{ golem-part part?  golem-moved-part part?  golem-dust-part part?  no-golem-fig
 
 testing its remarks: the golem (once, then another), the equipment, the kiln, the mark
 T{ 180 10e 0e -28e put  said  180 10e 0e -28e put  said -> golem-msg golem-again }T   \ (before it, where she stands to look)
-T{ kiln-area 45 at  said -> kiln-msg }T
-T{ mark-area 90 at  said -> mark-msg }T
+T{ kiln-area 90 at  said -> kiln-msg }T
+T{ mark-area 180 at  said -> mark-msg }T
 testing the old parchment, taken
 T{ 0 7.826e 0e -7.168e put  said  got-old-parchment story-flag?  parchment-part part? -> file-here-msg -1 0 }T
 

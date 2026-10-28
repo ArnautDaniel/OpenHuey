@@ -41,7 +41,7 @@ T{ c1f-12-flag1 story-flag?  doing-busy? -> 0 0 }T   \ (not come by a forced way
 
 testing the remarks: the piano, the speakers
 T{ 90 10e 80e -16e put  said -> piano-msg }T   \ (facing its middle)
-T{ speakers-area 90 at  said -> speakers-msg }T
+T{ speakers-area 180 at  said -> speakers-msg }T
 
 testing the device: its first remark; the dial turned on a number by the stick (to 3, the right one: the lens's glint)
 0 -36e 90e -2e put  circle press   \ (facing its middle)

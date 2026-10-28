@@ -36,8 +36,8 @@ variable before
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 medallion-40-done story-flag-clear  room-afresh
 testing the scales: the remark, then the coin
-T{ $11 90 at  said -> scales-msg }T
-T{ $11 90 at  said -> coin-msg }T
+T{ $11 180 at  said -> scales-msg }T
+T{ $11 180 at  said -> coin-msg }T
 testing the great door: its inscription and file; then it won't open
 T{ $12 0 at  said -> door-msg }T
 300 read-on
@@ -51,7 +51,7 @@ testing a Godstone laid on the scales: level, the great door unlocked; taken bac
 great-door s" doors" actor-named send lock  white-godstone 1 items send give-item  10 run-frames
 0 godstone-laid 0 white-godstone broadcast item-event  1500 play-on
 T{ medallion-40-done story-flag?  great-door doors:door-locked?  white-godstone items:items-of -> -1 0 0 }T
-$11 90 at  circle press  shown-soon drop  yes-it  300 play-on
+$11 180 at  circle press  shown-soon drop  yes-it  300 play-on
 T{ white-godstone items:items-of  [: placed @ ;] in-place -> 1 0 }T
 testing the Camomile: taken
 om1f-2-camomile story-flag-clear  room-afresh  camomile items:items-of before !

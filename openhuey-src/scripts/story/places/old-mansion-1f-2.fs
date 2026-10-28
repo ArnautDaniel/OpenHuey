@@ -141,7 +141,7 @@ create looks  0.56e 0e 14.62e  35e 22e 22e look,
 : each-frame ( -- )
     0 exit-out  1 exit-out  2 exit-out  4 exit-out  5 5 leaves-by  cameras 6 cameras-at  ahead 5 ways-out
     looks 1 hewie-looks-at  hum  ambient
-    fiona $11 in-area?  fiona 90 50 heading? and if  ['] the-scales unhurried offer  then
+    fiona $11 in-area?  fiona 180 50 heading? and if  ['] the-scales unhurried offer  then
     medallion-40-done fact? 0=  fiona $12 in-area? and  fiona 0 50 heading? and if  ['] the-great-door unhurried offer  then
     fiona $13 in-area?  fiona 0 50 heading? and  fiona $14 in-area?  fiona 0 50 heading? and or if  ['] save-clock calm-hewie-up offer  then
     om1f-2-camomile fact? 0=  fiona -72.34e 59e -34.25e 5e 5e touches? and if  ['] take-camomile calm-only offer  then ;

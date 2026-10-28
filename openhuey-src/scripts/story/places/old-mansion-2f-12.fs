@@ -138,10 +138,10 @@ create looks  -103.36e 30e -72.17e  25e 18e 18e look,   288.99e 0e -98.66e  25e 
     one-vase breaks? drop  other-vase breaks? drop
     room-sounds-in? if  first-ambient 74e 30e -110e ambient-sounds  then
     fiona $A 50 faces-area? if  ['] the-pipe unhurried offer  then
-    fiona $B in-area?  fiona -45 50 heading? and if  ['] the-synthesizer unhurried offer  then
-    fiona $C in-area?  fiona 22 60 heading? and if  ['] the-books unhurried offer  then
+    fiona $B in-area?  fiona -90 50 heading? and if  ['] the-synthesizer unhurried offer  then
+    fiona $C in-area?  fiona 44 60 heading? and if  ['] the-books unhurried offer  then
     1 locked-request?  fiona 0 before-door? and if  ['] the-door any-time offer  then
-    fiona $D in-area?  fiona 50 50 heading? and if  ['] save-clock calm-hewie-up offer  then
+    fiona $D in-area?  fiona 100 50 heading? and if  ['] save-clock calm-hewie-up offer  then
     om2f-12-antimony-powder-found fact?  om2f-12-antimony-powder fact? 0= and  fiona 82.73e 30e -85.2e 5e 5e touches? and if
         ['] take-powder calm-only offer
     then

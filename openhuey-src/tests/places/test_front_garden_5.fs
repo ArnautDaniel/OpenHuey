@@ -75,7 +75,7 @@ ball items:items-of before !
 T{ got-ball story-flag?  ball items:items-of -> -1 before @ 1+ }T
 
 testing the rusted door
-T{ door-area 90 at  said -> rusted-msg }T
+T{ door-area 180 at  said -> rusted-msg }T
 
 testing the hiding place (her clothes found): in, crouched and hidden; out again by the button
 found-file-202 story-flag-set  room-afresh
