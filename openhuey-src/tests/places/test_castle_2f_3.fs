@@ -152,13 +152,15 @@ variable before  medallions before !
 0 -9e -14e by  circle press  400 play-on
 T{ c2f-3-medallion story-flag?  medallions -> -1 before @ 1+ }T
 
-testing the movies replayed (the extras: its scripts held, the movie by variable $2A) - each played, her costume kept, out
+testing the movies replayed (the extras: its scripts held, the movie by variable $2A) - each played, her costume kept, back to the extras room
 : replayed ( movie -- room held costume )
+    off-map-37 room!  30 run-frames   \ (from the extras room, as the theatre sends her)
     $2A progress pr.vars + c!  2 $26 progress pr.vars + c!  events-held state-flag-set
     castle-2f-3 room!  5 run-frames  300 play-on
-    room-id  events-held state-flag?  $26 var ;
-T{ 0 replayed -> castle-2f-3 0 room-exit-leads drop 0 2 }T     \ (the maid)
-T{ 1 replayed -> castle-2f-3 0 room-exit-leads drop 0 2 }T     \ (the dressing)
-T{ $F replayed -> castle-2f-3 0 room-exit-leads drop 0 2 }T    \ (Hewie trapped)
-T{ $10 replayed -> castle-2f-3 0 room-exit-leads drop 0 2 }T   \ (Hewie saved)
+    room-id  events-held state-flag?  $26 var
+    [: subscreen-wanted state-flag? 0= dup 0= if  triangle press  then ;] 300 soon drop  30 run-frames ;   \ (the theatre's menu again: shut)
+T{ 0 replayed -> off-map-37 0 2 }T     \ (the maid)
+T{ 1 replayed -> off-map-37 0 2 }T     \ (the dressing)
+T{ $F replayed -> off-map-37 0 2 }T    \ (Hewie trapped)
+T{ $10 replayed -> off-map-37 0 2 }T   \ (Hewie saved)
 test-summary

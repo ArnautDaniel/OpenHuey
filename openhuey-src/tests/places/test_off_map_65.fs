@@ -58,7 +58,8 @@ T{ off-map-65 1 room-by!  60 run-frames  room-id  her-camera@ -> off-map-65 0 -1
 T{ off-map-65 2 room-by!  60 run-frames  room-id  her-camera@ -> off-map-65 0 -1 }T
 testing its exits lead nowhere: none loaded ahead as she nears them (areas 3, 4, 5)
 T{ off-map-65 0 leads  off-map-65 1 leads  off-map-65 2 leads -> -1 -1 -1 }T
-T{ 3 into  spare@  4 into  spare@  5 into  spare@ -> -1 -1 -1 }T
+variable was   \ (what is loaded ahead: the room she came from, kept)
+T{ spare@ was !  3 into  spare@ was @ =  4 into  spare@ was @ =  5 into  spare@ was @ = -> -1 -1 -1 }T
 testing ... nor taken: no area, no door - she stays
 T{ 0 exit-area  0 exit-door  [: 0 exit-open? ;] in-place  60 run-frames  room-id -> $FFFF -1 0 off-map-65 }T
 test-summary

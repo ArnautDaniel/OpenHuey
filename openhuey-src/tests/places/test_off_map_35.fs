@@ -58,6 +58,7 @@ USING: tester engine game-state actors messages keys room-names game debug facts
         window-shown 0< 0= if  i 20 mod 0= if  cross press  then  then  movie-skipped state-flag-set  game-tick  loop
     drop false ;
 : quiet ( -- )  events-held state-flag-clear  off-map-0d 1 room-by!  30 run-frames  world-held state-flag-set ;   \ (between replays: a room of no scenes)
+variable before
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 testing by the first forced way: "Come on, boy!" - on to room $E
 world-held state-flag-set
@@ -76,8 +77,7 @@ events-held state-flag-set  6 replay-for  0 $2C var!
 T{ off-map-35 forced-exit room-by!  5 run-frames  [: room-id off-map-35 <> ;] 1500 played-till  room-id  $2C var@  events-held state-flag? -> -1 $E 1 -1 }T
 quiet  events-held state-flag-set  4 replay-for  0 $2C var!
 T{ off-map-35 forced-exit room-by!  5 run-frames  [: room-id off-map-35 <> ;] 1500 played-till  room-id  $2C var@ -> -1 off-map-36 1 }T
-testing ... "Wait up" (5): played, the replay over - the theatre let go, the forced way taken (nothing is loaded
-testing    ahead for it and the room has no exit 0: in the original its two room slots swap, back to where it came from)
+testing ... "Wait up" (5): the replay over, the theatre let go - back by the forced way to the room it came from
 quiet  events-held state-flag-set  5 replay-for
-T{ off-map-35 forced-exit room-by!  5 run-frames  [: events-held state-flag? 0= ;] 1500 played-till  [: doing-busy? 0= ;] 300 soon -> -1 -1 }T
+T{ off-map-35 forced-exit room-by!  5 run-frames  [: room-id off-map-35 <> ;] 1500 played-till  room-id  events-held state-flag? -> -1 off-map-0d 0 }T
 test-summary

@@ -60,7 +60,8 @@ castle-1f-1 room!  20 run-frames
 T{ force-followed state-flag? -> 0 }T
 c1f-14-flag2 story-flag-clear  partner send stalker-out  stalker-no-fear state-flag-clear  no-stalker-camera state-flag-clear
 
-testing the movie replayed (the extras): played, out
+testing the movie replayed (the extras): played, back to the extras room
+off-map-37 room!  30 run-frames   \ (from the extras room, as the theatre sends her)
 0 $2A var!  events-held state-flag-set  room-afresh  600 play-on
-T{ room-id  events-held state-flag? -> castle-3f-1 0 room-exit-leads drop 0 }T
+T{ room-id  events-held state-flag? -> off-map-37 0 }T
 test-summary

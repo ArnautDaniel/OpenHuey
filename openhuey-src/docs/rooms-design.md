@@ -218,6 +218,10 @@ says what happens, and nothing in it can leave Fiona stuck.
   own pace (`exit-checked`; `exit-out`, `leaves-by`). A hiding place in the run is left at Hewie's
   next command, the camera kept on him (`wants-out?`). story/clock.fs keeps the run's saved time
   itself (no event variables).
+- Fixed on the way: the room left stays loaded ahead (rooms.fs), as the original's two room slots
+  swap (SceneGame_LeaveRoom) - a forced exit with nothing else loaded goes back there: $27's way out,
+  the replays' last scenes back to the extras room. (The mini-game's challenges load their first
+  room ahead themselves, as the original's extras room does.)
 - Fixed on the way: the actors' ids now go round (hactor.c's spawn: the next free one after the last
   given) - a place's effect slot held a glow that had died, its id reused at once by the next room's
   place, and the old place's clean-up killed the new one (7F-2 dead after the planets' scene); kit's
@@ -236,10 +240,6 @@ says what happens, and nothing in it can leave Fiona stuck.
 - Fixed on the way: the rooms' `point-on-camera?` (cond 0x4F) is the camera's out-of-view test, so
   their `point-on-camera? not` is the point on the screen (`point-seen?`) - the places converted
   before had it the other way (Hewie's errands, the thicket and hole hideouts, front-garden-5's ways).
-- Open from the off-map rooms: a forced exit with nothing loaded ahead - the original's two room
-  slots swap (SceneGame_LeaveRoom), so it goes back to the room left; rooms.fs doesn't keep that room
-  (keeping it broke the mini-game's way out, which OpenHuey's menu leaves to exit 0's door), so $27's
-  way out ($FE) and $35's "Wait up" replay go nowhere yet - as with the converted scripts.
 - Open from them: in castle-b1-2 her walk from the locked door's spot to its knob ($95) never
   arrives (her second try, "grimy handprints"); in castle-b1-7 no test spot was found where her
   request at the blocked door is made (its remark untested); castle-b1-1's step-in scene tested

@@ -23,8 +23,8 @@ end-state
 behaviour rooming
   on spawned ( -- )  -1 played !  -1 came-by !  -1 spare ! ;
   \ (the spare slot: SceneGame_LoadSpareRoom, the scripts' 0x3A; SceneGame_PrepareExit, the room
-  \ behind an exit. Not kept: the room left - the original's slots swap - so a forced exit with
-  \ nothing loaded ahead in the room still takes exit 0's door)
+  \ behind an exit. The room left stays in it - the original's two slots swap (SceneGame_LeaveRoom)
+  \ - so a forced exit with nothing else loaded ahead goes back there)
   on room-preload ( room -- )  spare ! ;
   on exit-prepare ( exit -- )  played @ swap room-exit-leads drop  dup 0< if  drop exit  then  spare ! ;
   on go-through ( exit -- )   \ the room behind it, arriving by the exit on its side
@@ -36,7 +36,7 @@ behaviour rooming
   on go-to-room ( room exit -- )  -1 leaving  self send rooms-load ;
   on rooms-load ( room exit -- )
       over room-exists? 0= if  ." go-to-room: no room " swap . drop cr exit  then
-      over room  over played !  dup came-by !  -1 spare !
+      over room  played @ spare !  over played !  dup came-by !   \ (the room left: the spare now)
       2dup broadcast arrived  self send rooms-enter ;
   on rooms-enter ( room exit -- )  broadcast entered-room ;
 end-behaviour

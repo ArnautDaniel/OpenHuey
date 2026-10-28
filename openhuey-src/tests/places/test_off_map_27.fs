@@ -3,7 +3,7 @@
 \ nothing; the slot machine - a right word's jewellery once (the Magist Medallion if she has it),
 \ any other nothing; its remarks; the inscription; the book (the combinations marked read); the
 \ slots' menu; the chest before her costumes (the castle's outfit, the one she took off), the
-\ costumes' chest after; out by its way, faded (its forced way: nowhere yet). Headless:
+\ costumes' chest after; out by its way, faded - back to the room she came from. Headless:
 \   build/openhuey --test tests/places/test_off_map_27.fs
 IN: test-off-map-27
 USING: tester engine game-state actors messages keys room-names game debug facts flag-names story-names
@@ -62,6 +62,7 @@ USING: tester engine game-state actors messages keys room-names game debug facts
         window-shown 0< 0= if  i 20 mod 0= if  cross press  then  then  movie-skipped state-flag-set  game-tick  loop
     drop false ;
 : quiet ( -- )  events-held state-flag-clear  off-map-0d 1 room-by!  30 run-frames  world-held state-flag-set ;   \ (between replays: a room of no scenes)
+variable before
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 : answer-no ( -- )  60 run-frames  cross press  30 run-frames  key: Down dup true key-hold  game-tick  false key-hold  game-tick  10 run-frames  cross press  100 run-frames ;
 : in ( -- )  off-map-27 $FE room-by!  60 run-frames  300 read-on ;
@@ -112,7 +113,7 @@ T{ second-chest-area 180 at  said -> plate-key-msg }T
 testing ... any other word: nothing happened
 T{ no-medallion-ev ev  [: window-shown nothing-happened-msg = ;] 600 soon -> -1 }T
 300 read-on
-testing out by its way ($FE): faded, the world held, the way taken - it leads nowhere yet (the original's
-testing    two room slots swap, so its forced way goes back to the room she came from: rooms.fs doesn't keep it)
-T{ way-out-area 90 at  circle press  [: world-held state-flag? ;] 400 soon  [: doing-busy? 0= ;] 300 soon -> -1 -1 }T
+testing out by its way ($FE): faded, the world held - back to the room she came from (kept loaded ahead)
+front-garden-3 0 room-by!  60 run-frames  in
+T{ way-out-area 90 at  circle press  [: room-id off-map-27 <> ;] 400 soon  room-id  world-held state-flag? -> -1 front-garden-3 -1 }T
 test-summary

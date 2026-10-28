@@ -137,7 +137,8 @@ chicken-jerky items:items-of before !
 0 -9e -14e by  circle press  400 play-on
 T{ c2f-3-medallion story-flag?  chicken-jerky items:items-of -> -1 before @ 1+ }T
 
-testing the movie replayed (the extras): played, out
+testing the movie replayed (the extras): played, back to the extras room
+off-map-37 room!  30 run-frames   \ (from the extras room, as the theatre sends her)
 game:hewie send part-from-fiona  $2D $2A var!  events-held state-flag-set  room-afresh  600 play-on
-T{ room-id  events-held state-flag? -> castle-2f-5 0 room-exit-leads drop 0 }T
+T{ room-id  events-held state-flag? -> off-map-37 0 }T
 test-summary

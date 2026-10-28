@@ -49,8 +49,9 @@ From `SceneGame_LeaveRoom`, the play sub-state (`scene_game.c` ~1033-1095), `Sce
    says to keep them (*to name*).
 5. A forced exit ($80 and up: the scripts' cmd_exit with bit 7) goes to the room loaded ahead
    into the spare slot - `room-preload` (event 0x3A) or `exit-prepare` (0x01: the room behind an
-   exit) - arriving by that same number (SceneGame_LeaveRoom). Without one it still takes exit
-   0's door (the original's spare slot would hold the room left: not kept here).
+   exit) - arriving by that same number (SceneGame_LeaveRoom). The room left stays in the spare
+   slot (the original's two slots swap), so a forced exit with nothing else loaded ahead goes back
+   to it; with no room left either (a new game, a jump) it takes exit 0's door.
 
 ## Drawing
 

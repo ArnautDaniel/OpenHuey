@@ -63,6 +63,7 @@ T{ 5 use-on-place  [: window-shown returned-msg = ;] 300 soon -> -1 }T
 200 read-on
 
 testing brought in by the forced way: Daniella's scene, out again
+off-map-0d room!  30 run-frames   \ (from another room: the forced way out goes back to the room left)
 castle-2f-7 forced-exit rooms send go-to-room  5 run-frames
 T{ [: movie-skipped state-flag-set  room-id castle-2f-7 <> ;] 1500 soon  old-man-seen resident-flag? -> -1 -1 }T
 free-play  10 run-frames  0 game:fiona send costume
