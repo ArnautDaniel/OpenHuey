@@ -81,7 +81,7 @@ $803 constant creeping-anim   $207 constant fleeing-anim   \ (her creep behind t
 
 \ ---- brought in by the forced way: the balcony falls (the first time; else she just comes to) ----
 : hewie-kept ( -- )  hewie hold  begin  yield  again ;   \ (through it and after: taken off elsewhere)
-: crows-scene ( -- )   \ (the crows' movie - the figures loaded before she came, the one wearing the other's)
+: crows-scene ( -- movie? )   \ (the crows' movie - the figures loaded before she came, the one wearing the other's)
     crows-movie scenes:keyed-movie crows-cutscene load-scene
     hewie false shown  2 cutscene-leave-alone  $1E $C8 movie-key  yield  4 3 figure-dressed-as ;
 : balcony-falls ( -- )

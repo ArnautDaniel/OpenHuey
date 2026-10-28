@@ -61,7 +61,7 @@ create first-squares  $584 , $DF8 ,   $65C , $ED0 ,   $76A , $FDE ,   $36E , $BE
     symbol-file give-file ;
 
 \ ---- the Saturnus Key at it: before the chapter turns, Daniella's scene; after, it unlocks ----
-: dinner-scene ( -- )
+: dinner-scene ( -- movie? )
     daniella-kind stalker-ready  yield
     dinner-movie scenes:unseen-movie dinner-cutscene load-scene ;
 : dinner-served ( movie? -- )  scene-part show-part  panic-eased  if  dinner-msg run-scene  then ;

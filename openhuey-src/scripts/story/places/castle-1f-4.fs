@@ -193,7 +193,7 @@ defer the-trap
     fiona $1FD -90 -1 walk-move -16e 14e go-to  world-frozen state!  1 20e -10e 0e 0e shot
     no-knob-remarked @ if  pupa-cella-msg  else  -1 no-knob-remarked !  no-knob-msg  then  say
     16 frames  world-frozen state-off  shot-off  puppet-file give-file ;
-: wont-open ( -- )  locked-remarked @ if  no-luck-msg  else  -1 locked-remarked !  wont-open-msg  then ;
+: wont-open ( -- msg )  locked-remarked @ if  no-luck-msg  else  -1 locked-remarked !  wont-open-msg  then ;
 : strains ( -- )   \ (act06: pushing at the puppet door)
     fiona hold  fiona strain-anim 0 start-blend  16 frames  fiona let-go-push-anim play
     wont-open show  fiona -1 idle  7 frames  wait-closed ;

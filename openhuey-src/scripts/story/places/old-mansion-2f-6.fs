@@ -55,7 +55,7 @@ own: device-remarked  own: cabinet-remarked
 : may-hide? ( -- flag )   \ (one of them after her - chased, not in a panic, him not down)
     hers?  partner-kind riccardo-kind = or  chased? and  in-panic? 0= and  st-cond-now @ down-cond <> and ;
 : knocks ( -- )  0 exit-open? 0= if  15 frames  0 knock  then ;   \ (him at the door)
-: locker-scene ( movie cutscene kept -- )
+: locker-scene ( movie cutscene kept -- movie? )
     {: m c kept :}  15 screen:to-black-2 with-music or fade
     m scenes:keyed-movie c load-scene  kept cutscene-keep-model  wait-fade  hewie-for-scene ;
 : near-locker-hides ( -- )   \ (he comes and goes)
@@ -120,7 +120,7 @@ own: device-remarked  own: cabinet-remarked
     cabinet-remarked @ 0= if  -1 cabinet-remarked !  cabinet-msg say exit  then
     fiona rattle-front-slow-anim start-anim  11 frames  try-door-sound common-bank fiona sound-by  fiona wait-anim
     locked-msg show  fiona -1 idle  7 frames  wait-closed ;
-: eyes-on ( x z anim msg -- )  {: anim msg F: x z :}  fiona wait-move  fiona x z turn-to-xz  fiona anim start-anim  40 frames  msg say  fiona wait-anim ;
+: eyes-on ( anim msg -- ) ( F: x z -- )  {: anim msg F: x z :}  fiona wait-move  fiona x z turn-to-xz  fiona anim start-anim  40 frames  msg say  fiona wait-anim ;
 : the-canister ( -- )  2e 45e look-low-anim canister-msg eyes-on ;
 : the-containers ( -- )  14.2e 44.7e look-close-anim containers-msg eyes-on ;
 : the-table ( -- )  6.5e 14.5e look-low-anim table-msg eyes-on ;

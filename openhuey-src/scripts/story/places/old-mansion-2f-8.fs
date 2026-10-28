@@ -40,9 +40,9 @@ own: wall-seen  own: looked-round  own: spot-noticed  own: sounds-on  own: frame
         frames-in @ last <  while
         frames-in @ at = if  curtain-sound room-bank fiona sound-by  then  1 frames-in +!
     repeat  fiona wait-anim  fiona false noclip ;
-: curtain-in ( -- )  fiona room-motion 56 44 $2B $38 0 1 13e drawn ;
-: curtain-out ( -- )  fiona room-motion 1+ 32 13 $C $20 1 0 20e drawn ;
-: curtain-flung ( -- )  fiona room-motion 2 + 18 6 7 $12 1 0 11e drawn ;
+: curtain-in ( -- )  room-motion 56 44 $2B $38 0 1 13e drawn ;
+: curtain-out ( -- )  room-motion 1+ 32 13 $C $20 1 0 20e drawn ;
+: curtain-flung ( -- )  room-motion 2 + 18 6 7 $12 1 0 11e drawn ;
 : pulled-back ( -- )   \ (found, or in a panic)
     found-her @ if  2 avoid-prompt  then
     fiona follow  fiona-hidden state-off  curtain-flung

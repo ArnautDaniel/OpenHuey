@@ -52,7 +52,7 @@ $187 constant far-tri   $11F constant near-tri   $195 constant back-tri   $30 co
 
 \ ---- the plates: a warning shot, another, then her death ----
 : armor-back ( -- )  $17 8 do  i object-hide  loop  0 show-part ;   \ (the bolts and fixings gone, the armour as it was)
-: shot-scene ( n -- )   \ (the plate's scene n)
+: shot-scene ( n -- movie? )   \ (the plate's scene n)
     2* cells shot-movies +  dup @ scenes:keyed-movie  rot cell+ @ load-scene ;
 : warned ( n -- )
     stalkers-stay state!  fiona hold  -1 armor-on !  15 screen:to-black-2 with-music or fade
