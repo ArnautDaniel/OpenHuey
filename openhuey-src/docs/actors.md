@@ -8,6 +8,8 @@ the Forth words `actor-load` and `act.*`) is something else: an animated model t
 draws. In the docs and scripts, "actor" means an HActor; an animated model is a "model".
 
 Every actor has an **id**: a small number, given by `spawn`, that messages are addressed to.
+The ids go round (0 .. 255: the next free one after the last given), so one just freed is not
+handed out again at once - an id kept after its actor died names nobody, not a newcomer.
 
 ## Forth words
 

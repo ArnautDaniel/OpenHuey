@@ -228,6 +228,18 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   Lorenzo's fall), its 2F (the crates, the study). Kit: `steady` (a room's steady sound: started once
   its sounds are in, then kept up), `kept-by` (a sound kept on a moving character), `fell-now` (the
   debris fallen through: the things' `keri-fell`), `hewie-mode-now` (his move mode).
+- the Water Tower (every room a place; `story/places/walkway.fs` what 2F and 4F share - the walkway
+  turned by its lever, a `walkway:` each: which way, its height, the lever, Hewie's spots on it, what
+  the room adds as it's across and once it has stopped): its 1F (the water, the clock), 2F (Riccardo
+  heard prowling above, then come for her; back 1800 frames after he left), 4F (the drum falling, the
+  doors open only while the walkway is across), the hall of the planets (the plates lit in turn while
+  the one before is stood on, Hewie sitting on the ones he reaches and sent to the next), 7F-2, the
+  top (the models worn by her blows, Hewie lying in wait in a hole - his grab of Riccardo, the final
+  scenes; the diorama and its aiming cursor - the miniature brings Lorenzo; the Azoth scene). Kit:
+  `summoner-due?` (its countdown run out: `summoner-secs-now`), `partner-is?`, `riccardo?`,
+  `time-up-leaves` (Riccardo taken off when his time is up out of her sight), `creature-slot-in`,
+  `hewie-side`, `grab-ready?` / `grab-forget` (his last answer to the grab from behind, kept),
+  `far-clip`, `gs-tint` (the rooms' char-tint colour).
 
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
 after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
@@ -738,7 +750,7 @@ effects and the Hewie-controlled clock rooms ($D0..$E9, 42 stubs).
   (+0x9E0.., +0xCC8: the waits kept), model parts hidden by their flag 2 (old-mansion-b1-3,
   castle-2f-3), a character's doorway fade (+0xE4).
 Checked by `tests/story/test_old_mansion.fs` (17), `test_house_of_truth.fs` (18 - since folded into `tests/places/test_house_of_truth_1f_9.fs`),
-`test_water_tower.fs` (9), with `test_dial_lock.fs`, `test_curtain.fs`, `test_speech.fs`.
+`test_water_tower.fs` (9 - since folded into `tests/places/test_water_tower_2f_1.fs` and `_8f_1.fs`), with `test_dial_lock.fs`, `test_curtain.fs`, `test_speech.fs`.
 
 **S5c, the third round** (2026-10-13): 243 of 311 stubs done. The rooms' effects, as particle
 classes (`docs/subsystems/effects.md`): the falling stones of the House of Truth, the water

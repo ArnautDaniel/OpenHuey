@@ -207,6 +207,14 @@ says what happens, and nothing in it can leave Fiona stuck.
 - The House of Truth: all done (house-of-truth-b1-1 .. -12, -1f-1 .. -10, -2f-1, -2); what its rooms
   share in story/places/house-of-truth.fs (the slam's shake, the voices, the colour rooms, the
   tremors, the holes in the walls, the Sol Key).
+- The Water Tower: all done (water-tower-1f-1, -2f-1, -4f-1, -7f-1, -7f-2, -8f-1); what 2F and 4F share
+  in story/places/walkway.fs (the turning walkway).
+- Fixed on the way: the actors' ids now go round (hactor.c's spawn: the next free one after the last
+  given) - a place's effect slot held a glow that had died, its id reused at once by the next room's
+  place, and the old place's clean-up killed the new one (7F-2 dead after the planets' scene); kit's
+  `effect!` also keeps an effect whose id is the one already there.
+- Fixed on the way: a place's `went` runs once the next room's floor is in - a check of the nav groups
+  there reads the wrong room; 2F-1 and 8F-1 keep what they need from the last frame.
 - Fixed on the way: the area tables have gaps (an entry of 0: no area there - area-count to the last
   real one); effects told nothing at id 0 (the acoustics actor, `fx-live?`); Hewie put in another
   room than the one on screen (no triangle to stand on: `place-on`); the steady sounds (`steady`,

@@ -64,6 +64,7 @@ static int sNBehaviours;
 static HStateType sTypes[STATE_TYPES_MAX];
 static int sNTypes;
 static HActor sActors[HACTOR_MAX];
+static int sNextId;   /* where the next spawn looks first: ids go round, so one just freed isn't reused at once (a stale id kept somewhere then names nobody, not a newcomer) */
 static uint32_t sSubs[HKINDS_MAX][HACTOR_MAX / 32];
 static HMessage *sQueue;
 static int sQueueN, sQueueCap;
@@ -339,6 +340,7 @@ void hactor_reset(void) {
     sSelf = sSender = -1;
     sFrame = 0;
     sDeadLetters = 0;
+    sNextId = 0;
 }
 
 /* ---- the words ---- */
@@ -618,16 +620,18 @@ PRIM(p_end_state) {
 PRIM(p_spawn) {
     Cell len = POP(), addr = POP(), type = POP();
     HBehaviour *b = behaviour_arg(f, POP(), "spawn");
-    int id;
+    int id, k;
 
     if (type < -1 || type >= sNTypes) {
         forth_error(f, "spawn: no state type %ld", (long)type);
     }
-    for (id = 0; id < HACTOR_MAX && sActors[id].used; id++) {
+    for (k = 0; k < HACTOR_MAX && sActors[(sNextId + k) % HACTOR_MAX].used; k++) {
     }
-    if (id == HACTOR_MAX) {
+    if (k == HACTOR_MAX) {
         forth_error(f, "spawn: too many actors");
     }
+    id = (sNextId + k) % HACTOR_MAX;
+    sNextId = (id + 1) % HACTOR_MAX;
     memset(&sActors[id], 0, sizeof(HActor));
     sActors[id].used = 1;
     snprintf(sActors[id].name, sizeof(sActors[id].name), "%.*s", (int)len, (const char *)addr);
