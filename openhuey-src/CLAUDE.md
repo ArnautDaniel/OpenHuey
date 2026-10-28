@@ -47,6 +47,8 @@ SDL_AUDIO_DRIVER=dummy ./openhuey --hidden --frames 3 --eval "..."    # headless
   work becomes a C helper. Gauge the original's intent; don't port its control flow line by line.
 - **Everything is actors passing messages**; an actor never writes another's state. New messages
   are declared in `scripts/messages.fs` with their stack comment.
+- **Stack comments are checked**: the scripts load with no warnings - a word's code must do what its comment says
+  (ClankForth's "Stack effects"), and a new C word carries its effect in its table entry (docs/forth.md).
 - **Docs move with the code**: a subsystem's page (`docs/subsystems/<name>.md`) records its
   messages, rules and status - update it in the same change. Keep "Not yet" / "Left" lists true.
 - **Tests with every change**: a `T{ ... -> ... }T` test in the subsystem's `tests/` folder;

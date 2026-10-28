@@ -102,7 +102,7 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
 
 \ ---- back by the forced way: the moonlight's scene here; then up to castle-2f-1 again, or - its
 \ dial unset there - the moon door unlocked and these doors open ----
-: moon-scene ( -- )  moon-movie scenes:keyed-movie moon-cutscene load-scene  $10 $FF movie-key ;
+: moon-scene ( -- movie? )  moon-movie scenes:keyed-movie moon-cutscene load-scene  $10 $FF movie-key ;
 : moon-comes ( -- )
     fiona hold  stalker-in? if  stalker hold  yield  then  world-frozen state!
     moon-scene  came-by @ forced-exit = if  castle-2f-1 preload  else  castle-1f-7 preload  then  wait-fade

@@ -83,7 +83,7 @@ $18 constant shelf-seen   $19 constant shelf-night-seen   $E constant shelf-door
 : hewie-aside ( -- )   \ (off to the wall, kept from the shelf's floor after)
     hewie hold  hewie $D 0 -1 walk-path-move 4e 13e go-to  hewie-off-floor keeps-hewie-off floor-on ;
 : him-in ( tri -- )  partner dup 0< if  2drop exit  then  >r castle-1f-3 swap r> send stalker-in ;
-: shelf-scene ( night? -- )   \ (the movie, by day or by night)
+: shelf-scene ( night? -- movie? )   \ (the movie, by day or by night)
     if  shelf-night-movie scenes:unseen-4-movie shelf-night-cutscene
     else  shelf-movie scenes:unseen-4-movie shelf-cutscene  then  load-scene ;
 : knocks-it-down ( -- )

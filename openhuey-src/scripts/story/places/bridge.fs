@@ -36,7 +36,7 @@ variable bridge-remarked  variable statue-remarked  variable medallion-noticed
 \ ---- Hewie over the gap: back across it (its plank opened for him) ----
 : to-far-spot ( -- )  hewie far-spot @ -90 -1 walk-move -149e -51e go-to ;
 : leaps-back ( -- )
-    to-far-spot  plank-open  hewie $139 100 -195e 0.5e -51e hewie-leap  hewie wait-move  plank-shut ;
+    to-far-spot  plank-open  $139 100 -195e 0.5e -51e hewie-leap  hewie wait-move  plank-shut ;
 : called-back ( -- )  hewie hold  hewie wait-move  hewie-bark  hewie wait-move  leaps-back ;
 : crosses-back ( -- )  hewie hold  hewie wait-move  leaps-back  0 crossing ! ;
 : fetches ( -- )   \ (pointed across: over the gap to the Medallion, back with it - had before, he lies down over there)

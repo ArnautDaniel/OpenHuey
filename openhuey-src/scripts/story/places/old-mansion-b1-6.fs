@@ -82,7 +82,7 @@ create camera-areas  $D , 3 , 1 ,   $11 , 5 , 3 ,   $13 , 6 , 4 ,   $F , 4 , 2 ,
         golem-y -24e f< if  sink-fx dies-down  then
         golem-y -25e f< 0= while  yield
     repeat ;
-: gate-steam ( k -- )  first-steam + ;
+: gate-steam ( k -- steam )  first-steam + ;
 : into-gate ( k fact door other -- )   \ (the gate's fire put out by it: the door beyond unlocked)
     {: k f door other :}
     f fact? 0= if  k gate-steam dies-down  then

@@ -331,7 +331,7 @@ forced-exit 1 or constant from-the-wire   \ (sent from the front garden, Hewie f
     c2f-3-flag2 fact? if  exit  then
     hewie-found-in-wire fact?  hewie-freed fact? 0= and 0= if  exit  then
     0e sounds-scaled  fiona $128 90 -38.951e -26.464e place-at  ['] attack-tutorial start drop  c2f-3-flag2 fact! ;
-: stalker-hunting? ( -- )   \ (he is about in the castle, not down, Debilitas, not in here)
+: stalker-hunting? ( -- flag )   \ (he is about in the castle, not down, Debilitas, not in here)
     stalker-told?  st-cond-now @ down-cond <> and  st-kind-now @ debilitas-kind = and
     st-room-now @ this-room @ <> and ;
 : fiona-came ( -- )

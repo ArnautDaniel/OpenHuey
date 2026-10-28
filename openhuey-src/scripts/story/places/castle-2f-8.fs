@@ -88,7 +88,7 @@ fvariable kiln-phase
     again ;
 
 \ ---- the word plate's three: the golem moved, crumbled, dancing; any other word nothing ----
-: golem-scene ( movie cutscene -- )   \ (made ready under black, played: the golem the scene's figure meanwhile)
+: golem-scene ( movie cutscene -- movie? )   \ (made ready under black, played: the golem the scene's figure meanwhile)
     {: movie cut :}  15 screen:to-black-2 with-music or fade
     movie scenes:keyed-movie cut load-scene  wait-fade
     golem-part hide-part  fiona false shown ;

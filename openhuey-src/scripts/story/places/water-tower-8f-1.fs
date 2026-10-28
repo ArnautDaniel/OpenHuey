@@ -71,7 +71,7 @@ $103 constant top-door   $100 constant stairs-door   $E0 constant down-door   $8
     begin  hewie-tint @ dup hewie-shown  target <> while  step hewie-tint +!  yield  repeat
     hewie $80808080 tint ;
 : him-shown ( gs -- )  stalker swap gs-tint ;
-: him-fading ( from rate -- )   \ (each frame: his alpha up rate a frame from the scene's frame `from` - full before it)
+: him-fading ( from -- ) ( F: rate -- )   \ (each frame: his alpha up rate a frame from the scene's frame `from` - full before it)
     {: from F: rate :}  cutscene-frame dup from < if  drop $80  else  from - s>f rate f* f>s $80 min  then
     24 lshift $808080 or  him-shown ;
 : him-as-he-is ( -- )  stalker $80808080 tint ;
@@ -116,6 +116,7 @@ $103 constant top-door   $100 constant stairs-door   $E0 constant down-door   $8
 \ he grabs Riccardo at her "go for it", or comes out at her "come back" ----
 create holes  -6 , -12 ,  -9 , 10 ,  12 , 7 ,     \ (where she points: each hole)
 create hole-areas  5 , 6 , 7 ,   create by-areas  8 , 9 , $A ,   create her-areas  $F , $10 , $11 ,
+create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap lands)
 : hole@ ( table -- n )  hole @ cells + @ ;
 : hole-point ( k -- ) ( F: -- x z )  2* cells holes +  dup @ s>f  cell+ @ s>f ;
 : hewie-to-hole ( -- )
@@ -367,7 +368,7 @@ create cameras  1 , 0 , 0 ,  2 , 0 , 0 ,  3 , 1 , -1 ,  4 , 1 , -1 ,   \ (area, 
     0 0 0 way-in ;
 : went ( -- )   \ (Hewie left on the holes' floor: out by the hole he went for - on its triangle, as he can be put once she's gone)
     hewie-in-hole @ 0= if  exit  then  hewie let-go
-    this-room @  hole @ case  0 of  $33  endof  1 of  $38  endof  2 of  $4C  endof  endcase  hewie-way-now @  hewie-to ;
+    this-room @  out-tris hole@  hewie-way-now @  hewie-to ;
 
 ' came-in ' person-in ' each-frame ' went water-tower-8f-1 place!
 ' items-used water-tower-8f-1 items-here

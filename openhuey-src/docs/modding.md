@@ -129,11 +129,14 @@ The rules (they are the game's own: `docs/design.md`, `docs/actors.md`):
 - **Messages are declared once** (`message name ( args -- )`), the stack comment is the
   declaration: `scripts/messages.fs` holds the game's, each with what it means. A mod declares its
   own the same way in its own file.
-- **A handler takes exactly its message's arguments** off the stack and leaves nothing (the
-  kernel reports one that doesn't, and puts the stacks back).
+- **A handler takes exactly its message's arguments** off the stack and leaves nothing: its stack comment must say
+  so, and its code is checked against it as it loads (a warning); the kernel reports one that doesn't anyway.
+- **Every word's stack comment is checked** against its code as it loads (ClankForth's "Stack effects"): the game
+  loads with no warnings, and a mod should too.
 - **Facts** (the engine's C words: `room-id`, `body-pos`, the progress' flags `story-flag?`,
   `state-flag?` ...) may be read by anyone; they are `engine`, `facts`, `game-state`.
-- **A handler never waits.** A sequence over time is a task (`spawn` a word; `yield`, `n wait`).
+- **A sequence over time is a task** (`spawn` a word; `yield`, `n wait`) - or a handler that waits (`await` a
+  message, `n wait`): its actor busy meanwhile, its messages kept for after (external/clankforth/docs/actors.md).
 
 ### The game's vocabularies a mod usually uses
 

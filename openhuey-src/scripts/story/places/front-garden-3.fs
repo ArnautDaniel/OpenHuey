@@ -76,7 +76,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
 : figure-2-idles ( -- )
     figure-2 figure-1 figure-dressed-as  figure-2 figure-on  figure-2 229.0e 38.3e -55.3e 0e figure-at  figure-2 figure-idles ;
 : figure-2-rises ( -- )   \ (she comes near: it cries out and rises out of sight, 90 frames)
-    figure-cry-sound room-bank  figure-2 figure dup 0< if  2drop  else  sound-by  then
+    figure-cry-sound room-bank  figure-2 figure dup 0< if  drop 2drop  else  sound-by  then
     figure-2 $9002 1 0 figure-play  8 frames
     90 0 do  figure-2 0e 0.5e 2e figure-shift  yield  loop ;
 : the-opening ( -- )   \ (Fiona's act01)

@@ -97,7 +97,7 @@ $31 constant quake-sound   $87 constant quake-bank
 : shaken ( frames F: v -- )  {: n F: v :}  n 0 ?do  v cam-shake!  yield  loop ;
 : slight-tremors ( -- )   \ (an activity: for good)
     begin  60 frames  25 chance? if  30 frames  then  25 chance? if  30 frames  then  30 0.1e shaken  again ;
-: standing? ( -- )  fiona-doing-now @ dup 0= swap 5 = or  fiona held? 0= and ;   \ (on her feet, her own)
+: standing? ( -- flag )  fiona-doing-now @ dup 0= swap 5 = or  fiona held? 0= and ;   \ (on her feet, her own)
 : thrown-down ( -- )  -1 true fiona send throw-down ;
 : quake ( -- )   \ (one: the rumble growing, the thump - she is thrown down if standing - dying away)
     1 $80 30 rumble-pad  30 0.5e shaken  0 0 30 rumble-pad  1 $FF 30 rumble-pad

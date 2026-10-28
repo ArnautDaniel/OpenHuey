@@ -214,6 +214,9 @@ create mv-at /vec allot
 : run-to ( id tri face F: x z -- )
     {: id tri face F: x z :}  id run-move tri -1  tri x z floor-at  face deg>yaw  move  id wait-move ;
 : walk-to-tri ( id tri -- )  {: id tri :}  id walk-path-move tri -1  tri tri-center 0e  move  id wait-move ;
+: go-to ( id tri face b kind F: x z -- )   \ (a move to (x, z) on tri, then facing: b its animation, -1 the usual)
+    {: id tri face b kind F: x z :}  id kind tri b  tri x z floor-at  face deg>yaw  move  id wait-move ;
+: path-to ( id tri b kind -- )  {: id tri b kind :}  id kind tri b  tri tri-center  id body-yaw  move  id wait-move ;
 : play ( id anim -- )  {: id anim :}  id anim-move anim -1  0e 0e 0e 0e  move  id wait-anim ;   \ (played out)
 : play-blend ( id anim frames -- )  {: id anim n :}  id blend-move anim n  0e 0e 0e 0e  move  id wait-anim ;
 : start-anim ( id anim -- )  {: id anim :}  id anim-move anim -1  0e 0e 0e 0e  move ;   \ (not waited for)
@@ -1426,9 +1429,6 @@ end-structure
 \ ---- Hewie's own moves ----
 : hewie-bark ( -- )  hewie bark-move 0 0  0e 0e 0e 0e  move ;
 : hewie-leap ( tri b F: x y z -- )  {: tri b F: x y z :}  hewie leap-move tri b  x y z 0e  move ;
-: go-to ( id tri face b kind F: x z -- )   \ (a move to (x, z) on tri, then facing: b its animation, -1 the usual)
-    {: id tri face b kind F: x z :}  id kind tri b  tri x z floor-at  face deg>yaw  move  id wait-move ;
-: path-to ( id tri b kind -- )  {: id tri b kind :}  id kind tri b  tri tri-center  id body-yaw  move  id wait-move ;
 : tint ( id rgba -- )  swap model-of dup 0< if  2drop exit  then  actor act.tint l! ;   \ ($80808080 as it is)
 : gs-tint ( id gs -- )  story.base:gs>rgba tint ;   \ (a GS colour, $AABBGGRR - the rooms' char-tint)
 : doorway-fades ( id on -- )  0<> 1 and  swap model-of dup 0< if  2drop exit  then  actor act.doorway-fade l! ;

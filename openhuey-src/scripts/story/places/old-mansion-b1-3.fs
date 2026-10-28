@@ -95,7 +95,7 @@ create plate-tris  $89 , $B1 ,  $90 , $B2 ,  $97 , $B3 ,  $83 , $B0 ,
 \ ---- all four out: the statue's scene ----
 : hewie-hidden-by ( -- )  hewie hold  hewie false shown  1 dog-step !  begin  dog-step @ 2 < while  yield  repeat  hewie true shown ;
 : statue-scene ( -- )   \ (her shadow off the corpse till shot 2)
-    corpse cast-model dup 0< 0= if  drop  corpse true no-shadow  then
+    corpse cast-model 0< 0= if  corpse true no-shadow  then
     begin  cutscene-frame cutscene-shot-at 2 <> while  yield  repeat  corpse false no-shadow ;
 : all-out ( -- )
     0 dog-step !  stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade

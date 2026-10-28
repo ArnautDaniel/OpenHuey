@@ -1,28 +1,15 @@
-/* The actor kernel: HActors ("Haunting actors" - not to be confused with `Actor`, an animated
- * model in game/actor.h) with private state, a behaviour (a table of message handlers written
- * in Forth) and messages queued between them. C keeps the actors, the queue and the schedule;
- * Forth declares messages, behaviours and state types and writes the handlers.
- *
- * A frame: `tick` to its subscribers, deliver, `frame-end` to its subscribers, deliver. Deliver
- * runs in rounds - what a round sends waits for the next - until the queue is empty (or a
- * limit: the rest waits for the next frame). Everything is first in, first out, and
- * broadcasts go in spawn order, so a frame always runs the same way.
- *
- * Docs: docs/actors.md. */
+/* OpenHuey's side of the actor kernel. The kernel is ClankForth's (external/clankforth/src/actors.h, its
+ * docs/actors.md): actors with private state, a behaviour (message handlers written in Forth) and messages queued
+ * between them. OpenHuey's part is each actor's body - where it is in the house - and these names for the
+ * kernel's calls, as the engine's C makes them. ("HActor": Haunting actor - not `Actor`, an animated model in
+ * game/actor.h.) Docs: docs/actors.md. */
 #ifndef HACTOR_H
 #define HACTOR_H
 
-#include "forth.h"
+#include "actors.h"
 
-#define HACTOR_MAX 256      /* actors alive at once */
-#define HMSG_ARGS 16        /* cells a message carries */
-#define HKINDS_MAX 512      /* message kinds */
-#define HNAME_MAX 31
-
-/* the kernel's own message kinds */
-enum { HK_TICK, HK_FRAME_END, HK_SPAWNED, HK_KILLED, HK_HELD_TICK, HK_KERNEL_KINDS };
-
-typedef struct HBehaviour HBehaviour;
+#define HACTOR_MAX FORTH_ACTORS_MAX   /* actors alive at once */
+#define HMSG_ARGS FORTH_MSG_ARGS      /* cells a message carries */
 
 /* where an actor physically is: a fact anyone may read, changed only by the actor itself
  * (docs/design.md, "Bodies"). The engine moves bodies over the nav mesh (bind_engine.c). */
@@ -43,7 +30,7 @@ int hactor_self(void);
 const char *hactor_name(int id);   /* its name, "" if none */
 int hactor_kind(const char *name);   /* a message kind by name, -1 if there is none */
 
-/* the words (vocabulary `actors`) */
+/* the kernel's words and the bodies' (vocabulary `actors`) */
 void bind_hactor(Forth *f);
 /* one frame of the actors (the engine calls it each tick) */
 void hactor_frame(Forth *f);

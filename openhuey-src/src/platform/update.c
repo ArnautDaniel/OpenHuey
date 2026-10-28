@@ -407,11 +407,11 @@ static void p_build(Forth *f, Word *w) {   /* ( -- addr len ) this build: its ve
 }
 
 void bind_update(Forth *f) {
-    forth_prim(f, "updater?", p_updater);
-    forth_prim(f, "update-start", p_update_start);
-    forth_prim(f, "update-state", p_update_state);
-    forth_prim(f, "update-progress", p_update_progress);
-    forth_prim(f, "update-text", p_update_text);
-    forth_prim(f, "update-restart", p_update_restart);
-    forth_prim(f, "openhuey-build", p_build);
+    forth_set_effect(f, forth_prim(f, "updater?", p_updater), "( -- flag )");
+    forth_set_effect(f, forth_prim(f, "update-start", p_update_start), "( -- )");
+    forth_set_effect(f, forth_prim(f, "update-state", p_update_state), "( -- n )");
+    forth_set_effect(f, forth_prim(f, "update-progress", p_update_progress), "( -- done total )");
+    forth_set_effect(f, forth_prim(f, "update-text", p_update_text), "( -- addr len )");
+    forth_set_effect(f, forth_prim(f, "update-restart", p_update_restart), "( -- flag )");
+    forth_set_effect(f, forth_prim(f, "openhuey-build", p_build), "( -- addr len )");
 }

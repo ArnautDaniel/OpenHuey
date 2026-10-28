@@ -48,7 +48,7 @@ create flames  34.2e 18.3e 14.2e f, f, f,   34.2e 18.3e -14.2e f, f, f,
 
 \ ---- the call: the voice's warning (the movie, a figure in it), then the stalker in after her ----
 : shadow-shot ( shot -- )  8 = if  0 true no-shadow  then ;   \ (her shadow off from its eighth shot)
-: the-call ( -- )   \ (the movie, keyed; her shadow back after)
+: the-call ( -- movie? )   \ (the movie, keyed; her shadow back after)
     voice-kind figure-slot figure-in  yield
     call-movie scenes:unseen-movie call-cutscene load-scene  ['] shadow-shot at-shots ;
 : call-over ( -- )  world-held state!  0 false no-shadow  figure-slot figure-out ;

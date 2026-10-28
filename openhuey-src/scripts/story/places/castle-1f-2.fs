@@ -190,7 +190,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
 \ ---- the hole in the wall: the voices - her hand in it (a scene: the Scrawled Memo) ----
 : voices-shots ( shot -- )   \ (her shadow off from the second shot to the eighth)
     dup 2 = if  0 true no-shadow  then  8 = if  0 false no-shadow  then ;
-: voices-scene ( -- )
+: voices-scene ( movie? -- )
     ['] voices-shots at-shots  voices-kind true no-shadow  0.9e near-clip
     panic-eased  if  -1 run-scene  then  1e near-clip ;
 : hand-in ( -- )

@@ -73,7 +73,7 @@ $8278 constant saved-file   $8279 constant failed-file
     debilitas?  st-cond-now @ down-cond <> and  chased? and 0= if  false exit  then
     st-room-now @ castle-1f-15 <>  stalker-in? 0= or if  true exit  then   \ (elsewhere, or gone from here)
     stalker body-at fiona body-at vec-dist 30e f< 0= ;
-: encounter-begins ( movie cutscene -- )   \ (the stalkers held off, blind; to black, the scene loaded)
+: encounter-begins ( movie cutscene -- movie? )   \ (the stalkers held off, blind; to black, the scene loaded)
     {: movie cut :}  stalkers-stay state!  fiona hold  stalkers-blind state!
     15 screen:to-black-2 with-music or fade  fiona wait-move
     movie scenes:unseen-movie cut load-scene  wait-fade ;

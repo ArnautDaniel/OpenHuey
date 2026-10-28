@@ -59,7 +59,7 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
     trap-door doors:door-locked? if  16 frames  unlock-sound common-bank 0e 0e -40e sound-there  trap-door unlock  then ;
 : stalker-off-to-b1-2 ( -- )   \ (him about but elsewhere: off to the B1's hall)
     stalker-in? 0=  stalker-told? and  st-cond-now @ down-cond <> and if  old-mansion-b1-2 -1 stalker-to  then ;
-: way-scene ( movie class cutscene -- )
+: way-scene ( movie class cutscene -- movie? )
     {: m cls c :}  15 screen:to-black-2 with-music or fade  m cls c load-scene  wait-fade ;
 : wax ( -- )
     omb1-5-flag1 fact? if  fiona wait-move  searched-msg say exit  then

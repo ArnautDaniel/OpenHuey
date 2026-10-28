@@ -45,8 +45,8 @@ void bind_state(Forth *f) {
 
     forth_set_current(f, v);   /* scripts say USING: game-state ; */
     v->state = VOCAB_LOADED;
-    forth_prim(f, "progress", p_progress);
-    forth_prim(f, "event-state", p_event_state);
+    forth_set_effect(f, forth_prim(f, "progress", p_progress), "( -- addr )");
+    forth_set_effect(f, forth_prim(f, "event-state", p_event_state), "( -- addr )");
     forth_prim(f, "progress-reset", p_progress_reset);   /* ( -- ) a new game's (Progress_Reset) */
     /* sizes */
     forth_constant(f, "progress-size", (Cell)sizeof(Progress));   /* bytes (a save writes them) */

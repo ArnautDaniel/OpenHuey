@@ -730,8 +730,8 @@ static void start_scripts(Engine *e, int hidden) {
     bind_mods(e->forth);
     forth_report_crashes(e->forth);   /* (a crash names the Forth words running) */
     bind_update(e->forth);
-    forth_prim(e->forth, "exit-status", p_exit_status);
-    forth_prim(e->forth, "error-count", p_error_count);
+    forth_set_effect(e->forth, forth_prim(e->forth, "exit-status", p_exit_status), "( n -- )");
+    forth_set_effect(e->forth, forth_prim(e->forth, "error-count", p_error_count), "( -- n )");
     forth_constant(e->forth, "hidden?", hidden ? -1 : 0);   /* (no window: tests, screenshots - no title, a new game at once; --title: the title even so) */
     if (!load_scripts(e->forth)) {
         fprintf(stderr, "openhuey: the scripts didn't load (see above); the console is open\n");
