@@ -609,14 +609,14 @@ static void p_menu_save(Forth *f, Word *w) {   /* ( -- flag ) mods/order.txt wri
 }
 
 void bind_mods(Forth *f) {
-    forth_prim(f, "mods-menu-count", p_menu_count);
-    forth_prim(f, "mods-menu-mod", p_menu_mod);
-    forth_prim(f, "mods-menu-why", p_menu_why);
-    forth_prim(f, "mods-menu-switch", p_menu_switch);
-    forth_prim(f, "mods-menu-move", p_menu_move);
-    forth_prim(f, "mods-menu-changed?", p_menu_changed);
-    forth_prim(f, "mods-menu-save", p_menu_save);
-    forth_prim(f, ".mods", p_mods);
-    forth_prim(f, "mod-on?", p_mod_on);
+    forth_set_effect(f, forth_prim(f, "mods-menu-count", p_menu_count), "( -- n )");
+    forth_set_effect(f, forth_prim(f, "mods-menu-mod", p_menu_mod), "( i -- addr len on? )");
+    forth_set_effect(f, forth_prim(f, "mods-menu-why", p_menu_why), "( i -- addr len )");
+    forth_set_effect(f, forth_prim(f, "mods-menu-switch", p_menu_switch), "( i -- )");
+    forth_set_effect(f, forth_prim(f, "mods-menu-move", p_menu_move), "( i delta -- i' )");
+    forth_set_effect(f, forth_prim(f, "mods-menu-changed?", p_menu_changed), "( -- flag )");
+    forth_set_effect(f, forth_prim(f, "mods-menu-save", p_menu_save), "( -- flag )");
+    forth_set_effect(f, forth_prim(f, ".mods", p_mods), "( -- )");
+    forth_set_effect(f, forth_prim(f, "mod-on?", p_mod_on), "( addr len -- flag )");
     forth_constant(f, "mod-api", MODS_API_MAJOR * 100 + MODS_API_MINOR);
 }
