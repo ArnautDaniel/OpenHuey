@@ -280,6 +280,19 @@ settled  close-up  [: 1 hp ! ;] his  square debug:press
 T{ [: [: cond @ 2 = ;] his ;] 60 soon  [: hp @  down-t @ 0> ;] his -> -1 0 -1 }T
 [: 1 down-t ! ;] his
 T{ [: [: cond @ 0=  reeling @ 0= and ;] his ;] 400 soon  [: hp @ hp-max @ = ;] his -> -1 -1 }T
+testing her shove carries her (OpenHuey's): from 20 apart, him held still, she lunges on to him and it lands
+: face-apart ( F: d -- )   \ (face to face d apart, as close-up)
+    {: F: d :}  true blind  140.64e her-y -217.33e 0e tp-facing  2 run-frames
+    s" fiona" actor-named body-tri  -500e her-y -500e tp  2 run-frames  debug:debilitas-tri  1 run-frames
+    [: 340e deg>rad body-turn ;] his  1 run-frames
+    game:debilitas body-pos dz f! dy f! dx f!
+    340e deg>rad fsin d f* dx f@ f+  dy f@  340e deg>rad fcos d f* dz f@ f+  160e tp-facing  3 run-frames ;
+: held-still ( n -- )  0 do  [: dx f@ dy f@ dz f@ body-place-at ;] his  1 run-frames  loop ;
+settled  20e face-apart  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press  45 held-still
+T{ [: hits @ ;] his -> 1 }T
+testing ... met as she sets off: struck at once, her shove on from its key (frame 18)
+settled  7e face-apart  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press  2 held-still
+T{ [: hits @ ;] his  [: her act.frame sf@ 18e f< 0= ;] hers -> 1 -1 }T
 testing ... 20 damage and he gives up: his cry, held off (mode 4), out of the room
 settled  close-up  [: 70 hp !  25 hits ! ;] his  square debug:press
 T{ [: [: my-mode @ 4 = ;] his ;] 300 soon  [: hits @ ;] his -> -1 0 }T

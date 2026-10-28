@@ -81,29 +81,57 @@ $8000 constant stumble-blow
         else  her-struck @ 2 and 0= if  shove-reaction hewie-id send reaction  then  shove-done exit  then
     then
     moving ;
+\ ---- (OpenHuey's, not the original's - the user's call, 2026-10-28) the shove reaches: her
+\ shove animation has next to no root step, so a step back left her short of him. She lunges 12
+\ ahead over its first 30 frames (at its pace - slower when frightened), until a blow lands; and
+\ the stalker is struck the moment her hand reaches him or she touches him, not only at its key.
+\ Hewie is struck at its key alone, as before ----
+12e fconstant lunge-length   30 constant lunge-frames
+variable lunge-t
+fvariable shove-pace
+: lunge ( -- )
+    her-struck @  her-recoil @ or  lunge-t @ lunge-frames >= or if  exit  then
+    1 lunge-t +!
+    0e  lunge-length lunge-frames s>f f/ shove-pace f@ f*  her-yaw f@ rotate-by move-by ;
+: reaches-him? ( -- flag )   \ (her hand, or herself: 1 margin round, to his height)
+    blow-point  hand stalker-in-room blow-reach f@ near-point?
+    stalker-in-room dup 0< if  drop false  else  self swap 1e 0e bodies-touching?  then  or ;
+: blow-lands ( mask -- )   \ (her blow on whom it reaches, worked out afresh)
+    blow-power  blow-dmg @ boosted blow-dmg !
+    blow-kind @ blow-dmg @ blow-how @ rot strike ;
+\ met before its key, her shove goes on from there: the rest of it as after a blow at its key,
+\ no longer open to him than the original's (its key at frame 19 - Motion_EventFlags dt -1; the
+\ special costumes' strikes on as they are)
+18e fconstant shove-key-frame
+: to-key ( -- )  special? if  exit  then  her act.frame sf@ shove-key-frame f< if  shove-key-frame her act.frame sf!  then ;
+: meet-him ( -- )   \ (the stalker met before or after her shove's key)
+    her-struck @ 1 and  reaches-him? 0= or if  exit  then
+    to-key  1 blow-lands ;
 : shoving ( -- )   \ (Fiona_StateStrike: at its end she stands)
     recoil-down
     ended? if  shove-done exit  then
-    moving
-    events-last 2 and 0= if  exit  then   \ (Fiona_StateStrike: dt -1)
+    moving  lunge
+    events-last 2 and 0= if  meet-him exit  then   \ (Fiona_StateStrike: dt -1)
     blow-point
     hand true slam-door if  exit  then                     \ (a door there slammed)
     special? 0=  hand $20018 body-tri-to 0< and if  settled? if  wall-end  then  ['] shove-end her-act ! exit  then   \ (a wall before her hand)
-    blow-power  blow-dmg @ boosted blow-dmg !
-    0  hand stalker-in-room blow-reach f@ near-point? 1 and or  hand dog-in-room blow-reach f@ near-point? 2 and or  {: mask :}
-    mask if  blow-kind @ blow-dmg @ blow-how @ mask strike  then
+    0  hand stalker-in-room blow-reach f@ near-point? reaches-him? or 1 and or  hand dog-in-room blow-reach f@ near-point? 2 and or  {: mask :}
+    mask if  mask blow-lands  then
     blow-dmg @ hand vec@ blow-reach f@ blow-at ;
-fvariable shove-pace
-: shove-start ( -- )
-    moving
-    settled? 0= if  exit  then
-    special? if  shove-anim -1 play-table  else   \ (the special costumes: their own, at its pace)
+\ the swing begun (Fiona_StateShoveStart, once what she was doing has faded out - or at once,
+\ the stalker met as she sets off)
+: swing ( -- )
+    special? if  1e shove-pace f!  shove-anim -1 play-table  else   \ (the special costumes: their own, at its pace)
         1e  her-recovery @ $1C3 < 0= if  fdrop 3150 her-recovery @ - s>f 1800e f/ 1.5e f*  then
         1e  her-fear f@ 40e f> if  fdrop 160e her-fear f@ f- 120e f/  then
         fmin shove-pace f!
         shove-anim 2 play-table  shove-pace f@ weight!   \ (slower by her fright: blended with motion 2, kept in step)
     then
-    1 her-blow-n +!  0 her-struck !  ['] shoving her-act ! ;
+    1 her-blow-n +!  ['] shoving her-act ! ;
+: shove-start ( -- )
+    moving  lunge
+    her-struck @ 1 and 0=  reaches-him? and if  swing meet-him exit  then
+    settled? if  swing  then ;
 
 \ ---- the kick: a step ahead while it fades in; while its key is clear it meets whom it
 \ touches (a kick, damage 5 - x3 with Fortis's - he may stumble); at its end her fear up 10 ----
@@ -129,7 +157,7 @@ create ahead-pt /vec allot   \ (her radius ahead)
 \ ---- the square button (Progress_PlayerButtons, Fiona_StateBlock 8) ----
 : shove-sub ( -- n )  $1A ;   : kick-sub ( -- n )  $1B ;   \ (her sub defending)
 : start-kick ( -- )  kick-doing her-doing !  defend-mode her-mode !  kick-sub her-sub !  ['] kick-start her-act ! ;
-: start-shove ( -- )  shove-doing her-doing !  defend-mode her-mode !  shove-sub her-sub !  ['] shove-start her-act ! ;
+: start-shove ( -- )  0 her-struck !  0 lunge-t !  1e shove-pace f!  shove-doing her-doing !  defend-mode her-mode !  shove-sub her-sub !  ['] shove-start her-act ! ;
 \ a shove or a kick by her pose (Fiona_StateBlock 8): fleeing, a kick; standing, walking, resting -
 \ or just set off running, or running still frightened - a shove; running, a kick
 : defend-by-pose ( -- )
