@@ -103,6 +103,7 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
     \ down (knocked out of health out of her sight): lying there, his time down running
     \ held off, on home - she coming into his room doesn't turn him back (Pursuer_StanceByFiona's held off)
     cond @ down-cond = if  -1 anim !  lying-on exit  then
+    away-search @ {: left :}
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
     my-mode @ held-off = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
@@ -110,6 +111,7 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
     then
     my-mode @ held-off = if  off-home exit  then
     my-mode @ after-her = if  chase-start exit  then
+    my-mode @ searching waiting-about 1+ within if  left search-left exit  then
     my-mode @ heading-for-her = if  searching mode!  then
     search-again ;
 

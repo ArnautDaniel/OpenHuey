@@ -163,6 +163,11 @@ defer lead-taken? ( -- flag )   ' false is lead-taken?   \ (a lead he heard: sta
 defer starting? ( -- flag )   ' false is starting?      \ (starting at one)
 defer leads-forgotten ( -- )   ' noop is leads-forgotten
 : search-again ( -- )  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  search-stops add-stops  search-start ;
+\ met in a room he was searching out of her sight (Pursuer_SearchOffscreen): on with the stops his
+\ time left there would take (150 frames each); none, he is waiting about
+: search-left ( frames -- )
+    150 / dup 0> if  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  add-stops  search-start exit  then
+    drop  waiting-about mode!  route-clear  -1 route-done ! ;
 \ the doll (Thing03_StalkerCheck): searching the room being played, he sees it and has a way
 \ there - it is his one stop, his search going on from it
 create drawn-at /vec allot

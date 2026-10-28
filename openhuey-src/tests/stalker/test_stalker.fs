@@ -146,6 +146,15 @@ T{ game:debilitas body-tri drawn? -> -1 0 }T
 front-garden-3 room!  3 run-frames
 T{ game:debilitas body-tri 0< 0=  drawn?  game:debilitas body-room -> -1 -1 front-garden-3 }T
 debug:debilitas-out  2 run-frames
+testing ... searching out of her sight, she comes in: on with the stops his time left there would take (Pursuer_SearchOffscreen:
+testing ... 150 frames each); none left, waiting about
+castle-1f-10 room!  5 run-frames  front-garden-2 debug:debilitas-hunt  3 run-frames
+[: searching mode!  route-clear  -1 route-done !  301 away-search ! ;] his  front-garden-2 room!  2 run-frames
+T{ [: my-mode @  route-end @ route-next @ - ;] his -> 2 2 }T
+castle-1f-10 room!  5 run-frames
+[: searching mode!  route-clear  -1 route-done !  0 away-search ! ;] his  front-garden-2 room!  2 run-frames
+T{ [: my-mode @ ;] his -> 3 }T
+debug:debilitas-out  2 run-frames
 testing ... held off (given up), she follows him into his room: still held off, on out by his way home
 front-garden-2 room!  10 run-frames  front-garden-3 0 game:debilitas send stalker-in  2 run-frames
 [: 4 mode!  30 hp ! ;] his  5 run-frames  front-garden-3 room!  3 run-frames
