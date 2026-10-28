@@ -20,6 +20,7 @@ defer door-done ( -- )   ' stand is door-done          \ given up on the way out
 defer round-done ( -- )   ' stand is round-done        \ a door opened to get at her: his chase again (stalker/ladder.fs)
 defer round-failed ( -- )   ' stand is round-failed    \ ... given up (stalker/ladder.fs)
 defer door-recovered ( -- )   ' stand is door-recovered   \ a door's blow over (struck.fs)
+defer down-away ( -- )   ' noop is down-away   \ knocked out of health out of her sight (struck.fs)
 
 \ ---- a door as he finds it at an exit of his room (travel's door-kind) ----
 : kind-at ( exit -- k )  my-room swap room-exit-door door-kind ;
@@ -249,7 +250,7 @@ create dr-at /vec allot
     my-room push-exit @ room-exit-leads drop my-room = if   \ (between his room's halves)
         hp @ 0> 0= if  1 hp !  then  -1 push-exit !  door-recovered exit
     then
-    hp @ 0> 0= if  hp-max @ hp !  held-off mode!  then    \ (beaten: as he gives up - stalker.md P3a)
+    hp @ 0> 0= if  down-away  then    \ (out of health: down beyond it - Pursuer_StateBargedThrough's +0xC4 2)
     150 stun-t !  push-exit @ making-for !  -1 push-exit !  out ;
 : staggered-back ( -- )   \ (back from it to its end; then off any floor not his)
     root-move

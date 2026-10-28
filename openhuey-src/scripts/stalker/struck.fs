@@ -109,6 +109,12 @@ create ahead-at /vec allot
         down-frames @ down-t !  down-cond cond !  1 knockouts +!  down-for-good
     else  0 down-t !  then
     let-her-go  0 sees-fiona !  0 sees-hewie !  -1 reeling !  ['] downed step! ;
+\ knocked out of health out of her sight (Pursuer_StateBargedThrough out of the room, Pursuer_HitOffscreen):
+\ down for good where he is, on his back ($1802, +0xC4 2) - lying there if she comes in, else the
+\ summoner takes him as beaten
+:noname ( -- )
+    down-frames @ down-t !  down-cond cond !  1 knockouts +!  down-for-good  let-her-go
+    lying-back-anim lie-anim !  lying down-stage !  0 sees-fiona !  0 sees-hewie !  -1 reeling !  ['] downed step! ; is down-away
 : knock-down ( -- )  floor-ahead? if  fall-front-anim lying-front-anim  else  fall-back-anim lying-back-anim  then  fall ;
 : leg-down ( -- )  leg-fall-anim lying-front-anim fall ;
 

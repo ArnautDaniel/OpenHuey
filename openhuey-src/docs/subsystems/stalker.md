@@ -412,9 +412,12 @@ damage, how: the exit) - after her again (mode 0). In its way (within 9 of the d
 passage) and it not locked against him: knocked on through it ($1004), pushed 3 a frame away
 from her side until clear of it; where it leads out of the room, out (Pursuer_ThroughDoor),
 stunned there 150 frames (+0x1664); between his room's halves, on. Else staggered back from it
-($1005) and on. Out of health: not below 1 (knocked out of the room: as he gives up, health
-back, `beaten` set: the summoner takes him as beaten). Off screen, the door he makes for slammed
-with him within 15 of it: its damage (not below 1), after her.
+($1005) and on. Out of health: not below 1 in the room; knocked out of it, down there for good
+(+0xC4 2: on his back, $1802), not travelling - she coming in finds him lying there, up when his
+time down is out; else the summoner takes him as beaten (kind 2). Off screen, the door he makes for
+slammed with him within 15 of it (Pursuer_HitOffscreen kind 5; not while down or stunned): its
+damage, counted toward his giving up; health left, stunned 60, 90 or 120 frames with his cry at the
+door, after her; none, down there (his cry $1B).
 
 **P3c - Hewie** (`stalker/bitten.fs`; Pursuer_EventConcerns kind 9, Pursuer_GrabOrder /
 GrabHewieSpot, Pursuer_StateHewieBites / TurnAnim / HewieHolds / BackOnFeet, Pursuer_Hit

@@ -211,19 +211,23 @@ $1300 constant gesture-anims
     self subscribe hewie-doing  self subscribe scene  0 script-held !  0 in-scene !  well-cond dog-cond !
     my-kind @ head-bones!  ahead-look look-mode ! ;
 
-\ a door slammed off screen, the one he makes for: right behind it, its damage (not below 1) and
-\ he is after her
-: door-slammed-away ( damage exit -- )
-    behind-door? 0= if  drop exit  then
-    hp @ swap - 1 max hp !  after-her mode! ;
+\ a door slammed off screen, the one he makes for: right behind it (Pursuer_HitOffscreen kind 5) -
+\ not while down or stunned already; its damage (and the damage he's had); health left, stunned
+\ 60, 90 or 120 frames, crying out, after her; none, down there (his cry)
+: door-cry ( id -- )   \ (at the door he would come into her room by)
+    world-held state-flag? hushed @ or if  drop exit  then
+    next-door dup 0< if  2drop exit  then  room-id door-exit-in dup 0< if  2drop exit  then
+    1 exit-spot drop  7 bank-sound-at ;
+: struck-away ( damage -- )
+    cond @ down-cond =  stun-t @ 0<> or if  drop exit  then
+    dup hits @ + 999 min hits !  hp @ swap - 0 max hp !
+    hp @ 0> if  3e rnd f* f>s 30 * 60 + stun-t !  hurt-cry door-cry  after-her mode!
+    else  down-cry door-cry  down-away  then ;
+: door-slammed-away ( damage exit -- )  behind-door? if  struck-away  else  drop  then ;
 \ Hewie's scuffle with him off screen (Pursuer_Hit kind 8): its damage (not below 1), held those
 \ frames more; hurt, his cry from the door he would come into her room by
-: cry-through-door ( -- )
-    world-held state-flag? hushed @ or if  exit  then
-    next-door dup 0< if  drop exit  then  room-id door-exit-in dup 0< if  drop exit  then
-    1 exit-spot drop  hurt-cry 7 bank-sound-at ;
 : scuffled ( damage frames -- )
-    stun-t +!  dup hp @ swap - 1 max hp !  0> if  cry-through-door  then ;
+    stun-t +!  dup hp @ swap - 1 max hp !  0> if  hurt-cry door-cry  then ;
 : blow-away ( kind damage how -- )
     rot case
         door-blow of  door-slammed-away  endof

@@ -99,7 +99,9 @@ variable in-tri
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place  settle ;
 defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home - stalker/struck.fs)
 : come-into-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first);
+    \ down (knocked out of health out of her sight): lying there, his time down running
     \ held off, on home - she coming into his room doesn't turn him back (Pursuer_StanceByFiona's held off)
+    cond @ down-cond = if  -1 anim !  lie-anim @ play-now  exit  then
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
     my-mode @ held-off = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
@@ -284,7 +286,9 @@ create fs-a /vec allot  create fs-b /vec allot
     endcase ;                                                                    \ takes him out, and brings him in afresh)
 : away ( -- )   \ (stunned a while once knocked out of her room by a door: stalker/doorway.fs; held
     \ off in his own room he stays there - Pursuer_TravelOffscreen)
-    stun-t @ if  -1 stun-t +!  exit  then  modes-away
+    stun-t @ if  -1 stun-t +!  exit  then
+    cond @ down-cond = if  exit  then   \ (down: where he fell, till she comes or the summoner takes him)
+    modes-away
     my-mode @ held-off = own-room? and if  exit  then  travel ;
 
 \ ---- the room being played changes (Fiona went through a door): his room no longer it - out

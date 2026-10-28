@@ -390,6 +390,27 @@ T{ [: [: anim @ $1004 = ;] his ;] 5 soon  [: hp @ ;] his -> -1 67 }T
 T{ [: [: away? ;] his ;] 30 soon  [: stun-t @ 100 > ;] his -> -1 -1 }T
 T{ [: [: door0 door-open? 0=  door0 door-held? 0= and ;] his ;] 30 soon -> -1 }T
 debug:debilitas-out  2 run-frames
+testing ... out of health as it knocks him out of the room (Pursuer_StateBargedThrough: +0xC4 2): down there,
+testing ... on his back, not travelling; she comes in after him: lying there, getting up when his time is out
+s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+door0 opened-bit set-bits  room-in  5 run-frames
+68e 124e -174e 180e tp-facing  3 run-frames
+[: 1 hp !  room-id d-at v-tri d-at vec@ body-place  0e body-turn ;] his  2 run-frames
+T{ [: goal-spot true slam-door ;] hers -> -1 }T
+T{ [: [: away? ;] his ;] 30 soon  [: cond @ down-cond =  lie-anim @  stalker.state:step @ ['] downed = ;] his -> -1 -1 $1802 -1 }T
+T{ [: my-room ;] his  30 run-frames  [: my-room ;] his = -> -1 }T   \ (not travelling while down)
+[: 100 down-t ! ;] his  [: my-room ;] his room!  10 run-frames
+T{ [: away?  anim @  stalker.state:step @ ['] downed = ;] his -> 0 $1802 -1 }T
+T{ [: [: cond @ well-cond = ;] his ;] 400 soon -> -1 }T
+debug:debilitas-out  front-garden-2 room!  10 run-frames
+testing ... off screen behind the door he makes for (Pursuer_HitOffscreen kind 5): its damage counted toward his
+testing ... giving up; health left, stunned 60..120 frames; out of health, down there; not again while stunned or down
+castle-1f-10 debug:debilitas-hunt  2 run-frames
+T{ [: 70 hp !  0 hits !  0 stun-t !  3 struck-away  hp @ hits @  stun-t @ 60 121 within ;] his -> 67 3 -1 }T
+T{ [: 3 struck-away  hp @ ;] his -> 67 }T   \ (stunned: not again)
+T{ [: 0 stun-t !  2 hp !  3 struck-away  hp @  cond @ down-cond =  lie-anim @ ;] his -> 0 -1 $1802 }T
+T{ [: 0 stun-t !  3 struck-away  hits @ ;] his -> 6 }T   \ (down: not again)
+debug:debilitas-out  2 run-frames
 testing ... away from it (not in its way): staggered back ($1005), still in the room, after her
 s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
 5 3 0 game:debilitas send blow  2 run-frames
