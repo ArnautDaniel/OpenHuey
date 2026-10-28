@@ -233,7 +233,7 @@ create door-pt /vec allot
     f>cell s" panic" actor-named send fright
     dup caught-r = charmed? and if  drop false exit  then   \ (wearing the charm: she can't be caught)
     her-doing @ door-doing = if  drop-door  then
-    -1 her-fall-turn !  0 her-busy-t !
+    -1 her-fall-turn !  0 her-busy-t !  fiona.slam:recoil-off   \ (her own blow's hold on her let go)
     thrown-mode her-mode !  thrown-doing her-doing !  dup her-sub !
     dup knocked-or-thrown? if   \ (a blow: the danger told only of one by somebody other than Hewie;
         by-somebody? if  fiona-struck danger-id send danger-signal  then   \ a stumble resets her recovery)

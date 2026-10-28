@@ -75,7 +75,6 @@ $8000 constant stumble-blow
 \ (if not struck) and she stands
 : wall-end ( -- )  stand-anim -1 10 $101 start ;
 : shove-end ( -- )
-    recoil-down
     settled? if
         anim@ shove-anim = if  wall-end
         else  her-struck @ 2 and 0= if  shove-reaction hewie-id send reaction  then  shove-done exit  then
@@ -108,7 +107,6 @@ fvariable shove-pace
     her-struck @ 1 and  reaches-him? 0= or if  exit  then
     to-key  1 blow-lands ;
 : shoving ( -- )   \ (Fiona_StateStrike: at its end she stands)
-    recoil-down
     ended? if  shove-done exit  then
     moving  lunge
     events-last 2 and 0= if  meet-him exit  then   \ (Fiona_StateStrike: dt -1)
@@ -138,7 +136,6 @@ fvariable shove-pace
 create ahead-pt /vec allot   \ (her radius ahead)
 : ahead-pt! ( -- )  her-yaw f@ self body-dims fdrop ahead-pt her-at vec-ahead ;
 : kicking ( -- )
-    recoil-down
     her-recoil @ 0= if  settled? 0= if  0e 1.0756e her-yaw f@ rotate-by move-by  else  root-move  then  then
     ended? if
         her-struck @ 2 and 0= if  kick-reaction hewie-id send reaction  then

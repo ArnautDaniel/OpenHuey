@@ -23,9 +23,11 @@ USING: engine vectors game-state actors messages common floor-flags doors rumble
 $40 constant motion-frozen   \ (her motion's flag: held still)
 \ ---- held still a moment by a blow struck home or a door slammed (Motion_Freeze, 5 frames) ----
 : recoil ( -- )  5 her-recoil !  her act.mflags dup l@ motion-frozen or swap l! ;
-: recoil-down ( -- )
+: unfreeze ( -- )  her act.mflags dup l@ motion-frozen invert and swap l! ;
+: recoil-down ( -- )   \ (each frame, whatever she is doing: Fiona_Panic's timers)
     her-recoil @ 0= if  exit  then
-    -1 her-recoil +!  her-recoil @ 0= if  her act.mflags dup l@ motion-frozen invert and swap l!  then ;
+    -1 her-recoil +!  her-recoil @ 0= if  unfreeze  then ;
+: recoil-off ( -- )  0 her-recoil !  unfreeze ;   \ (struck herself: Fiona_React)
 
 \ ---- where someone stands by a door (Progress_WhoIsWhere's bits): at its front (its area 0),
 \ on its far side (Doors_Side 1), in its way (on its passage: its sides' triangles) ----

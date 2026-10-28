@@ -59,6 +59,18 @@ T{ [: tintstalker-kind head-bones!  head-bone @ neck-bone @  kind37-kind head-bo
 : heard-any ( -- flag )   \ (a noise each frame; heard on the frame after its end)
     0 10 0 do  $14 room-id s" fiona" actor-named body-tri -1 0 game:acoustics send noise  game-tick  [: did-hear @ ;] his or  loop ;
 T{ heard-any -> -1 }T
+testing her shove's hold on her (struck home: 5 frames still) runs out whatever she is doing (Fiona_Panic's
+testing ... timers), and his blow on her lets it go at once (Fiona_React) - not left frozen in his reaction
+: frozen? ( -- flag )  [: her act.mflags l@ fiona.slam:motion-frozen and 0<> ;] game:fiona enter execute leave-actor ;
+: recoil@ ( -- n )  game:fiona enter  her-recoil @  leave-actor ;
+game:fiona enter  fiona.slam:recoil  leave-actor
+T{ recoil@ frozen?  6 run-frames  recoil@ frozen? -> 5 -1 0 0 }T
+game:fiona enter  fiona.slam:recoil  leave-actor
+[: blow-request 0 10e f>cell fiona send hit ;] his  2 run-frames
+T{ recoil@ frozen? -> 0 0 }T
+30 run-frames
+testing his combo over, no move of it is left to run (Pursuer_BehaviourEnded): its act none
+T{ [: 0 combo-start  combo-over  act-xt @ ['] noop =  combo @ ;] his -> -1 -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 

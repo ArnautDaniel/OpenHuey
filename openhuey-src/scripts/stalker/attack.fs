@@ -75,7 +75,8 @@ create blow-at /vec allot
 : quarry ( -- id )  at-dog @ if  hewie  else  fiona  then ;
 : d-quarry ( F: -- d )  at-dog @ if  d-hewie  else  d-fiona  then  f@ ;
 defer to-stand ( -- )
-: combo-over ( -- )  -1 combo !  0 combo-step !  -1 step-done !  0 unshaken ! ;
+: combo-over ( -- )   \ (its move no longer his act: none left to run - Pursuer_BehaviourEnded's state reset)
+    -1 combo !  0 combo-step !  -1 step-done !  0 unshaken !  ['] noop act-xt ! ;
 \ after it: held off a while (Pursuer_StateAttackStep: struck her, his rests' first - Debilitas 90;
 \ else his rests' second at least - 30)
 : held-off-after ( -- )  took @ if  rest-struck  else  hold-off @ rest-missed max  then  hold-off ! ;
