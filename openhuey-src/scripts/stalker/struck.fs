@@ -69,7 +69,6 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 \ ---- powdered (a powder trodden on - Pursuer_StateSpecialAnim): his hands to his face for the
 \ powder's loops (4 / 6 / 8, a loop a key $400), its cloud dripping from him; struck by one
 \ again meanwhile, its loops and a new cloud; done, on as after a blow ----
-variable powder-loops  variable powder-how   \ (its loops as it struck)
 defer powder-cloud ( loops -- )   ' drop is powder-cloud   \ (the cloud: stalker/powder.fs)
 $400 constant loop-key   \ (the motion's key flag: at its last frame)
 $7FFF constant loops-mask
@@ -112,9 +111,10 @@ create ahead-at /vec allot
 \ knocked out of health out of her sight (Pursuer_StateBargedThrough out of the room, Pursuer_HitOffscreen):
 \ down for good where he is, on his back ($1802, +0xC4 2) - lying there if she comes in, else the
 \ summoner takes him as beaten
+:noname ( -- )  lie-anim @ play-now  lying down-stage !  -1 reeling !  ['] downed step! ; is lying-on
 :noname ( -- )
     down-frames @ down-t !  down-cond cond !  1 knockouts +!  down-for-good  let-her-go
-    lying-back-anim lie-anim !  lying down-stage !  0 sees-fiona !  0 sees-hewie !  -1 reeling !  ['] downed step! ; is down-away
+    lying-back-anim lie-anim !  0 sees-fiona !  0 sees-hewie !  lying-on ; is down-away
 : knock-down ( -- )  floor-ahead? if  fall-front-anim lying-front-anim  else  fall-back-anim lying-back-anim  then  fall ;
 : leg-down ( -- )  leg-fall-anim lying-front-anim fall ;
 

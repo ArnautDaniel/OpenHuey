@@ -372,7 +372,7 @@ behaviour stalking
   on dog-attack ( kind -- )  dog-attacked ;
   on dog-tackle ( -- )  dog-tackled ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
-      2drop 2drop 2drop 2drop  dog-cond !  2drop 2drop ;   \ (his condition: the chance roll's)
+      dog-trust !  2drop 2drop 2drop drop  dog-cond !  2drop 2drop ;   \ (his condition: the chance roll's; his trust)
   \ the story's: a script of the room has him (in the room being played: +0xE0) or lets go (posed:
   \ held till started afresh); its moves (stalker/scripted.fs: carried out while held - each clears
   \ his done, +0xE1); shown or hidden (0x1F: +0x29); posed (0x9D)

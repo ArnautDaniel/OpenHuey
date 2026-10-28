@@ -202,4 +202,10 @@ state: stalker-state
   \ barges it open (action $C, Pursuer_DoorBarge) and then walks in
   cell field entering  cell field barging
   cell field still-held         \ held still while she reads on the dimmed screen (OpenHuey's, not the original's)
+  \ his own across frames (were shared variables): the powder's loops left and as it struck (+0x1624);
+  \ the lead he started at (stalker/leads.fs); the spot 12 inside the door he comes in by and its
+  \ triangle (stalker/travel.fs: walked to once the door stands open)
+  cell field powder-loops  cell field powder-how  cell field go-pull
+  cell field in-tri  /vec field in-at
+  cell field dog-trust          \ Hewie's trust as he tells it (+0xF35CC: how long he keeps a stalker busy)
 end-state

@@ -48,7 +48,6 @@ create there /vec allot
         pull-noise of  to-the-noise  endof
         pull-hewie of  to-hewie  endof
     endcase ;
-variable go-pull   \ (the lead he started at: followed once the start is over)
 : go-after-it ( -- )  go-pull @ go-after ;
 
 \ ---- each frame, searching the room being played: true when a lead took him ----

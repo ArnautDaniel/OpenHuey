@@ -20,7 +20,6 @@ defer door-done ( -- )   ' stand is door-done          \ given up on the way out
 defer round-done ( -- )   ' stand is round-done        \ a door opened to get at her: his chase again (stalker/ladder.fs)
 defer round-failed ( -- )   ' stand is round-failed    \ ... given up (stalker/ladder.fs)
 defer door-recovered ( -- )   ' stand is door-recovered   \ a door's blow over (struck.fs)
-defer down-away ( -- )   ' noop is down-away   \ knocked out of health out of her sight (struck.fs)
 
 \ ---- a door as he finds it at an exit of his room (travel's door-kind) ----
 : kind-at ( exit -- k )  my-room swap room-exit-door door-kind ;

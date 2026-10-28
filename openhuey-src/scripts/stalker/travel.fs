@@ -78,7 +78,7 @@ enum: door-way  2 held-way barred-way open-way shut-way ;
 \ exit's spots are 4 inside, 12 beyond, 12 inside), facing in - or, by the door he made for,
 \ facing it (Pursuer_BackOnMesh); after her and not seeing her, or come to her room, he
 \ searches it ----
-create in-at /vec allot  create out-at /vec allot
+create out-at /vec allot
 : settle ( -- )  my-model @ dup 0< if  drop  else  actor-settle  then ;   \ (put somewhere: his hanging parts afresh - Pursuer_Place's +0x850)
 : place-at-exit ( exit facing-in? -- ok? )
     {: e facing-in :}
@@ -86,7 +86,6 @@ create in-at /vec allot  create out-at /vec allot
     in-at vec!  e 0 exit-spot drop out-at vec!
     room-id tri in-at vec@ body-place  settle
     facing-in if  out-at in-at  else  in-at out-at  then  vec-heading body-turn  true ;
-variable in-tri
 \ through a door into her room he comes from its doorway - the exit's spot 12 beyond it - turned
 \ in, and walks in (Pursuer_EnterRoom: Rooms_ExitTriIn, the exit's heading turned round)
 : come-through ( exit -- ok? )
@@ -97,11 +96,13 @@ variable in-tri
 : placed-anywhere ( -- )   \ (Actor_TeleportRandom: no exit to stand at)
     random-tri dup 0< if  drop fiona body-tri  then
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place  settle ;
+defer down-away ( -- )   ' noop is down-away   \ knocked out of health out of her sight (stalker/struck.fs)
+defer lying-on ( -- )   ' noop is lying-on   \ down, coming into view: lying, his time down running (stalker/struck.fs)
 defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home - stalker/struck.fs)
 : come-into-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first);
     \ down (knocked out of health out of her sight): lying there, his time down running
     \ held off, on home - she coming into his room doesn't turn him back (Pursuer_StanceByFiona's held off)
-    cond @ down-cond = if  -1 anim !  lie-anim @ play-now  exit  then
+    cond @ down-cond = if  -1 anim !  lying-on exit  then
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
     my-mode @ held-off = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
@@ -295,8 +296,16 @@ create fs-a /vec allot  create fs-b /vec allot
 \ of sight, his walk stopped; she came into his - put on its floor (Pursuer_BackOnMesh: near
 \ the door he made for - within 80 of it - there, facing it; else by the door he came in by,
 \ facing in; else anywhere) ----
+\ as she leaves: Hewie still on him, held there a while by Hewie's trust - (trust+1) x 15 and 30, 60
+\ at his head or leg; out of health, down there (Pursuer_HewieDelay). Powdered, its loops' while
+: held-as-she-goes ( -- )
+    bitten @ if
+        hp @ 0> if  dog-trust @ 1+ 15 *  bitten @ head-on-attack < if  30  else  60  then  +  stun-t !
+        else  cond @ down-cond <> if  down-away  then  then
+    else  anim @ powdered-anim = if  powder-how @ 30 * stun-t !  then  then
+    0 bitten !  cond @ down-cond <> if  0 reeling !  then ;   \ (the bite and the powder over with the room)
 : gone-from-view ( -- )   \ (Pursuer_LeaveScreen: the room's doings forgotten - Pursuer_ResetForRoom)
-    door-passed  -1 combo !  0 combo-step !
+    held-as-she-goes  door-passed  -1 combo !  0 combo-step !
     0 out-going !  -1 body-tri!  my-path path-clear  ['] noop step !  no-search search-phase !  -1 anim !
     my-mode @ after-her = if  avoid-clear  her-room route! drop  then ;
 : back-on-floor ( -- )

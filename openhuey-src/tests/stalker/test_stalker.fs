@@ -411,6 +411,20 @@ T{ [: 3 struck-away  hp @ ;] his -> 67 }T   \ (stunned: not again)
 T{ [: 0 stun-t !  2 hp !  3 struck-away  hp @  cond @ down-cond =  lie-anim @ ;] his -> 0 -1 $1802 }T
 T{ [: 0 stun-t !  3 struck-away  hits @ ;] his -> 6 }T   \ (down: not again)
 debug:debilitas-out  2 run-frames
+testing she leaves the room with Hewie still on him (Pursuer_LeaveScreen): held there (Hewie's trust + 1) x 15
+testing ... and 30 (60 at his head or leg); out of health, down there; powdered, its loops x 30
+s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+[: 70 hp !  near-flank-attack bitten !  -1 reeling ! ;] his  front-garden-3 room!  1 run-frames
+: held-for? ( -- flag )   \ ((trust + 1) x 15 + 30, a frame or two counted off already)
+    [: stun-t @  dog-trust @ 1+ 15 * 30 + ;] his {: s e :}  s  e 2 -  e 1+  within ;
+T{ held-for?  [: bitten @  reeling @ ;] his -> -1 0 0 }T
+debug:debilitas-out  front-garden-2 room!  10 run-frames
+s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+[: 0 hp !  leg-attack bitten !  -1 reeling ! ;] his  front-garden-3 room!  3 run-frames
+T{ [: cond @ down-cond = ;] his -> -1 }T
+[: my-room ;] his room!  10 run-frames
+T{ [: away?  anim @  stalker.state:step @ ['] downed = ;] his -> 0 $1802 -1 }T
+debug:debilitas-out  front-garden-2 room!  10 run-frames
 testing ... away from it (not in its way): staggered back ($1005), still in the room, after her
 s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
 5 3 0 game:debilitas send blow  2 run-frames
