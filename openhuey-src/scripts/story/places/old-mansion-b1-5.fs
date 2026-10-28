@@ -173,7 +173,7 @@ create cameras  1 , 0 , 0 ,   2 , 2 , 2 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   \ (area,
     9 -45 facing? if  ['] flask unhurried offer  then
     $A -45 facing? if  ['] kiln unhurried offer  then
     $B 0 facing? if  ['] still unhurried offer  then
-    request-now @ 2 = if  ['] trap-shut any-time offer  then
+    8 locked-request? if  ['] trap-shut any-time offer  then
     fiona cabinet-area in-area?  fiona 90 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now
         else  waiting @  trap-door doors:door-locked? 0= and if  ['] she-was-inside  else  ['] hides  then  calm-only offer  then

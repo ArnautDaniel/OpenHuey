@@ -218,6 +218,16 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   bandage scene), the heart (Riccardo; dressed anew, on to the water tower). Kit: `start-holding`
   (an activity that holds someone from the frame it starts - nothing else takes them first),
   `loud-here?` (a loud noise made here last frame), `face-off`.
+- the House of Truth (every room a place; `story/places/house-of-truth.fs` what they share - Lorenzo's
+  slam shaking the camera (`slam-shake`, `slam-shake-of` a kind), the B1's voices, the colour rooms
+  (the way on decided by the colours done, the inscription, the dark between them), Lorenzo coming in
+  ahead (`appears`), the tremors once the house begins to come down (`tremors`: the violent ones with
+  her quake, else slight), the holes in the walls (`hole-offer`, `out-of-hole`), the Sol Key turned
+  (`sol-turned`)): its B1 (the colour rooms, the shower, the gas), its 1F (the blasted wall, the
+  marker, the demolisher, the furnace, the trap, the pit - the cane set in, the house coming down,
+  Lorenzo's fall), its 2F (the crates, the study). Kit: `steady` (a room's steady sound: started once
+  its sounds are in, then kept up), `kept-by` (a sound kept on a moving character), `fell-now` (the
+  debris fallen through: the things' `keri-fell`), `hewie-mode-now` (his move mode).
 
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
 after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
@@ -727,7 +737,7 @@ effects and the Hewie-controlled clock rooms ($D0..$E9, 42 stubs).
 - **Not simulated here yet, kept as no-ops:** the stalker's and character $B's model springs
   (+0x9E0.., +0xCC8: the waits kept), model parts hidden by their flag 2 (old-mansion-b1-3,
   castle-2f-3), a character's doorway fade (+0xE4).
-Checked by `tests/story/test_old_mansion.fs` (17), `test_house_of_truth.fs` (18),
+Checked by `tests/story/test_old_mansion.fs` (17), `test_house_of_truth.fs` (18 - since folded into `tests/places/test_house_of_truth_1f_9.fs`),
 `test_water_tower.fs` (9), with `test_dial_lock.fs`, `test_curtain.fs`, `test_speech.fs`.
 
 **S5c, the third round** (2026-10-13): 243 of 311 stubs done. The rooms' effects, as particle
@@ -749,7 +759,7 @@ planet glows, the Chaos Forest's rain and ash; Lorenzo's marker (house-of-truth-
 the dials' lens flashes (castle-1f-12, castle-2f-1: `lens-flash`), the mirror fragments
 (castle-1f-12's lens, castle-2f-5's fragment: `mirror-fragment`) and the traps' smoke
 (house-of-truth-1f-9: started by the things actor's `trap-place`).
-Checked by `tests/story/test_marker.fs` (3), `test_mirror.fs` (8), `test_house_of_truth.fs` (22).
+Checked by `tests/story/test_marker.fs` (3), `test_mirror.fs` (8), `test_house_of_truth.fs` (22 - since folded into `tests/places/test_house_of_truth_1f_9.fs`).
 
 **S5c, the renderer's part** (2026-10-13): a character's draw layer (`char-layer`, the scripts'
 0xB5: `act.layer`) - $14 shines in the colour the marker gives (`post_shine`), $1E and up are

@@ -204,6 +204,16 @@ says what happens, and nothing in it can leave Fiona stuck.
 - Castle B1: all done (castle-b1-1 .. -7).
 - The old mansion: all done (old-mansion-1f-1 .. -24, -2f-1 .. -13, -3f-1, -2, -b1-1 .. -7).
 - The Chaos Forest: all done (chaos-forest-1 .. -13); what its rooms share in story/places/forest.fs.
+- The House of Truth: all done (house-of-truth-b1-1 .. -12, -1f-1 .. -10, -2f-1, -2); what its rooms
+  share in story/places/house-of-truth.fs (the slam's shake, the voices, the colour rooms, the
+  tremors, the holes in the walls, the Sol Key).
+- Fixed on the way: the area tables have gaps (an entry of 0: no area there - area-count to the last
+  real one); effects told nothing at id 0 (the acoustics actor, `fx-live?`); Hewie put in another
+  room than the one on screen (no triangle to stand on: `place-on`); the steady sounds (`steady`,
+  `kept-by`: started once the room's sounds are in, then kept up - old-mansion-1f-8's yard was silent).
+- Fixed on the way: the locked door's request (the rooms' `-2147483646 scene-request?`: she before
+  any exit's locked door) was taken for a creature's request 2 in seven House of Truth places and
+  old-mansion-b1-5 - their doors' own answers never came; now `8 locked-request?`.
 - Fixed on the way: the places table held rooms below $100 (the forest's corrupted what followed:
   512 now, an error past it); the engine's area-count (the event table's entries, not a quarter of them).
 - Fixed on the way: the rooms' `point-on-camera?` (cond 0x4F) is the camera's out-of-view test, so

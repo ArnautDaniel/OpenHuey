@@ -427,12 +427,13 @@ $E constant nudged-who   \ (the one lifted: a figure's id)
 create effect-bytes 64 allot  variable #effect-bytes
 \ the look's slots: the depth range, the fog, the screen blend, the tint
 $1C constant depth-slot   $1D constant fog-slot   $1E constant blend-slot   $1F constant tint-slot
+: fx-live? ( id -- flag )  dup 0<> swap alive? and ;   \ (an effect's id: 0 is none - the acoustics actor's)
 : effect-string ( fx text.. n -- )   \ 0x33: the bytes to room effect fx - a look slot's,
     dup 64 min #effect-bytes !                      \ else the first as its effect's command (a TV on / off)
     0 ?do  i #effect-bytes @ < if  effect-bytes #effect-bytes @ i - 1- + c!  else  drop  then  loop
     dup depth-slot < if
         dup #effects u< 0= if  drop exit  then
-        cells fx-ids + @ dup alive? if  effect-bytes c@ swap send effect-command  else  drop  then  exit
+        cells fx-ids + @ dup fx-live? if  effect-bytes c@ swap send effect-command  else  drop  then  exit
     then
     effect-bytes #effect-bytes @ look-set ;
 
@@ -1182,7 +1183,7 @@ create made-at /vec allot   \ (where the next effect is made)
 \ (lit_quad_in) room effect fx a reflecting quad (corners 0 1 2 3) at strength (0..$80): b0 1
 \ removed; 2 over the whole picture, else on the quad
 : reflection? ( fx -- flag )
-    fx-id @ dup alive? 0= if  drop false exit  then  actor-name s" reflection" compare 0= ;
+    fx-id @ dup fx-live? 0= if  drop false exit  then  actor-name s" reflection" compare 0= ;
 : lit-quad ( b0 fx strength F: x0 y0 z0 .. x3 y3 z3 -- )
     {: b0 fx str :}
     b0 1 = if  12 0 do  fdrop  loop  fx effect-remove  exit  then
@@ -1209,7 +1210,7 @@ fvariable flash-turn
     rot 0= if  execute var-set exit  then
     drop  var @ dup alive? if  kill  else  drop  then ;
 : effect-out ( v -- )   \ (the effect kept in variable v sent -1: a fire put out, left to die down)
-    var @ dup alive? if  -1 swap send effect-command  else  drop  then ;
+    var @ dup fx-live? if  -1 swap send effect-command  else  drop  then ;
 : effect-moved ( fx -- )   \ (its place, as kept, told to its effect)
     {: fx | id :}  fx fx-id @ to id  id alive? 0= if  exit  then
     fx fx-place vec@ xyz>cells  id send effect-place ;
@@ -1221,13 +1222,13 @@ fvariable flash-turn
     {: fx x y z :}  fx var @  x thousandths  y thousandths  z thousandths  flicker-sprite ;
 : zone-at-effect ( z fx r h kind -- )   \ 0x7D: zone z around the effect's place
     {: z fx r h kind :}
-    fx #effects u< 0= if  exit  then  fx fx-id @ alive? 0= if  exit  then
+    fx #effects u< 0= if  exit  then  fx fx-id @ fx-live? 0= if  exit  then
     z r h kind  fx fx-place vec@  zone ;
 : char-effect-moving ( who fx -- )   \ 0x87: 1 if the character is where it was last frame, else 2
     dup #effects u< 0= if  2drop exit  then
     swap who>cs dup char-here 0= if  2drop exit  then
     dup char-at swap char-was vec-dist fdup f* 0.5e f< if  1  else  2  then
-    swap fx-id @ dup alive? if  send effect-command  else  2drop  then ;
+    swap fx-id @ dup fx-live? if  send effect-command  else  2drop  then ;
 : rgba ( r g b a -- rgba )  {: r g b a :}  r 24 lshift  g 16 lshift or  b 8 lshift or  a or ;
 : scatter-specks ( a b c0 c1 c2 c3 F: x y z -- )   \ 0x9F: a swarm of a specks straying b about the point, colour c0..c3
     rgba effects:specks ;
