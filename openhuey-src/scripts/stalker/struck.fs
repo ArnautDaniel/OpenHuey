@@ -32,8 +32,9 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 :noname ( -- flag )  give-up? dup if  give-up  then ; is gave-up?
 \ on as before by his stance (Pursuer_StanceByFiona, PickStep): held off, on home; seeing her,
 \ his chase; else after her, or searching
-:noname ( -- )   \ (held off: on home - no way there, he stands till his clock runs out)
-    way-home 0= if  stand exit  then
+:noname ( -- )   \ (held off: on home - no way there even with the doors that let him down forgotten, after
+    \ her again: Debilitas_CarryOn's retry, his clock emptied - Pursuer_ModesSearching's mode 4 ends)
+    way-home 0= if  avoid-clear  way-home 0= if  after-her mode!  chase-start exit  then  then
     making-for @ 0< if  come-into-play  else  making-for @ leave-by  then ; is off-home
 : on-as-before ( -- )
     my-mode @ held-off = if  off-home exit  then   \ (held off already: on home)

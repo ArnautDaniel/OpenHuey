@@ -80,6 +80,11 @@ true broadcast characters-still  2 run-frames  where
 T{ 30 run-frames  moved?  [: still-held @ ;] his  game:summoner enter summoner:held-still @ leave-actor -> 0 -1 -1 }T
 false broadcast characters-still  where
 T{ 30 run-frames  moved?  [: still-held @ ;] his -> -1 0 }T
+testing held off in her room he keeps to it - no clock sends him after her (Pursuer_ModesSearching mode 4);
+testing ... no way home even afresh, after her (Debilitas_CarryOn); down, waiting about (mode 3)
+T{ [: held-off mode!  1 mode-t !  stalker.search:stand ;] his  5 run-frames  [: my-mode @ ;] his -> 4 }T
+T{ [: own-a @  -1 own-a !  stalker.travel:off-home  my-mode @  swap own-a ! ;] his -> 0 }T
+T{ [: down-cond cond !  after-her mode! ;] his  2 run-frames  [: my-mode @  well-cond cond ! ;] his -> 3 }T
 testing his combo over, no move of it is left to run (Pursuer_BehaviourEnded): its act none
 T{ [: 0 combo-start  combo-over  act-xt @ ['] noop =  combo @ ;] his -> -1 -1 }T
 testing through a door, what he was about in the room he left is let go (Pursuer_ThroughDoor): unshaken,

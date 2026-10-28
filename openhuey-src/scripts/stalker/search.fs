@@ -172,8 +172,12 @@ create drawn-at /vec allot
     drawn-at in-view? 0= if  drop exit  then
     dup drawn-at plan 0> 0= if  drop exit  then
     dup drawn-tri !  searching mode!  route-clear  0 route-add  search-start ;
+\ down (+0xC4 2): waiting about, nothing else (Pursuer_ModesSearching - in the room or out of it)
+: down-waits? ( -- flag )
+    cond @ down-cond = dup if  my-mode @ waiting-about <> if  waiting-about mode!  then  then ;
 : modes ( -- )
     here-played? 0= if  exit  then
+    down-waits? if  exit  then
     at-a-ladder? if  exit  then   \ (to a ladder or on it: over first)
     reeling @ at-dog @ or if  exit  then   \ (struck: his reaction first; after Hewie)
     entering @ if  exit  then   \ (coming in by a shut door: in first - opened, or barged open: action $C)
@@ -200,5 +204,5 @@ create drawn-at /vec allot
         \ Pursuer_GoAfterFiona - Pursuer_PlanWhere's mode 3 - out of the room by an exit at random)
         waiting-about of  route-done @ if  0 route-done !  leave-at-random  then  endof   \ (no clock here: a lead or
         \ the sight of her moves him on; his route over, out as above)
-        held-off of  tick-down if  after-her mode!  chase-start  then  endof
-    endcase ;
+        held-off of  endof   \ (held off he keeps to it, on his way home - no clock: Pursuer_ModesSearching's
+    endcase ;              \ mode 4 waits for his clock to be emptied, by Debilitas_CarryOn finding no way home)

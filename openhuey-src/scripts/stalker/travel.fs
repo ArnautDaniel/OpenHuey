@@ -274,6 +274,7 @@ create fs-a /vec allot  create fs-b /vec allot
     own-b @ route! {: nb :}   \ (his route there now: the shorter kept)
     na 0> if  nb 0> 0=  nb na > or if  own-a @ route! drop  then  then ;
 : modes-away ( -- )
+    down-waits? if  exit  then
     my-mode @ case
         after-her of  head-for-her  tick-down if  heading-for-her mode!  then  endof
         heading-for-her of  head-for-her  endof

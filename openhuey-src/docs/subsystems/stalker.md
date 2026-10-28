@@ -104,9 +104,9 @@ her he is after her (mode 0) and his clock restarts (his setup's +0x16D4, Pursue
 Debilitas 300 frames, hard 540; the others' in their sections); out of sight it
 runs down, then he searches the room (mode 2, 600 frames' clock, 2..5 stops); his route over
 he waits about (mode 3, 900 frames), then searches again. Heading for her room (1) he searches
-it once in; held off (4) in her room he is after her again when his clock runs out - out of
-sight he stays held off, going home, till the summoner takes him (*by design*: held off he keeps
-away). She following him into his room held off, he goes on out by his way home - not a search.
+it once in; held off (4) he keeps to it, going home, in her room or out of sight, till the
+summoner takes him - no clock ends it; only no way home (even with the doors that let him down
+forgotten: Debilitas_CarryOn) sends him after her again. Down (+0xC4 2) he is waiting about (3). She following him into his room held off, he goes on out by his way home - not a search.
 Brought in by the summoner his health is full (a stalk afresh); till then a beating stays with
 him. Coming into the game
 he waits about (3) and walks to one stop at random first. *Simplified so far*: the original's
