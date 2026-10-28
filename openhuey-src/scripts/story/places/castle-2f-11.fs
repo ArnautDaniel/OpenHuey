@@ -38,7 +38,7 @@ own-reset
 
 \ ---- what she may do or say here ----
 : crest ( -- )  fiona wait-move  fiona 60 turn  crest-msg say ;
-: spots ( -- )  fiona crest-area in-area?  fiona 30 50 heading? and if  ['] crest unhurried offer  then ;
+: spots ( -- )  fiona crest-area in-area?  fiona 60 50 heading? and if  ['] crest unhurried offer  then ;
 
 \ ---- every frame ----
 create looks  -366.29e 0e -24.86e  35e 29e 29e look,

@@ -332,18 +332,18 @@ variable noticed   \ (notices?'s cell: one of hewie-noticed's bits)
 : unlocks-it ( -- )  unlocks-back ;
 : spots ( -- )
     1 before-locked?  fiona back-door-area in-area? and if  ['] unlocks-it any-time offer  then
-    glow-shown @  fiona glow-area in-area? and  fiona -60 60 heading? and if  ['] the-glow unhurried offer  then
+    glow-shown @  fiona glow-area in-area? and  fiona -120 60 heading? and if  ['] the-glow unhurried offer  then
     om1f-8-beef-jerky fact? 0=  fiona 122.09e 8.28e 10.26e 5e 5e touches? and if  ['] pick-jerky calm-only offer  then
     om1f-8-album-medallion fact? 0=  fiona -140.37e 16e -25.97e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then
-    fiona $18 in-area?  fiona -40 60 heading? and if  ['] grave-1 unhurried offer  then
+    fiona $18 in-area?  fiona -80 60 heading? and if  ['] grave-1 unhurried offer  then
     fiona $10 in-area?  fiona 0 60 heading? and if  ['] grave-2 unhurried offer  then
-    fiona $11 in-area?  fiona -40 60 heading? and if  ['] grave-3 unhurried offer  then
-    fiona $12 in-area?  fiona -60 60 heading? and if  ['] grave-4 unhurried offer  then
-    fiona $13 in-area?  fiona 45 60 heading? and if  ['] grave-5 unhurried offer  then
-    fiona $14 in-area?  fiona 62 60 heading? and if  ['] grave-6 unhurried offer  then
-    fiona mausoleum-area in-area?  fiona 90 60 heading? and if  ['] the-mausoleum unhurried offer  then
-    fiona thicket-area in-area?  fiona -30 60 heading? and if  ['] the-thicket unhurried offer  then
-    fiona back-area in-area?  fiona 45 60 heading? and if  ['] the-back unhurried offer  then ;
+    fiona $11 in-area?  fiona -80 60 heading? and if  ['] grave-3 unhurried offer  then
+    fiona $12 in-area?  fiona -120 60 heading? and if  ['] grave-4 unhurried offer  then
+    fiona $13 in-area?  fiona 90 60 heading? and if  ['] grave-5 unhurried offer  then
+    fiona $14 in-area?  fiona 124 60 heading? and if  ['] grave-6 unhurried offer  then
+    fiona mausoleum-area in-area?  fiona 180 60 heading? and if  ['] the-mausoleum unhurried offer  then
+    fiona thicket-area in-area?  fiona -60 60 heading? and if  ['] the-thicket unhurried offer  then
+    fiona back-area in-area?  fiona 90 60 heading? and if  ['] the-back unhurried offer  then ;
 
 \ ---- the movies replayed (the extras) ----
 : replay-ambush ( -- )

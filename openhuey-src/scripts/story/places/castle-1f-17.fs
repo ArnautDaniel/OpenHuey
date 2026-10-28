@@ -72,10 +72,10 @@ own: shelf-noticed           \ Hewie has sat by the shelf (once a visit)
     0 before-locked?  1 before-locked? or if  ['] unlocks-it any-time offer  then   \ (either exit: the act unlocks exit 1's)
     fiona rug-area in-area? if  ['] rug unhurried offer  then
     fiona model-area in-area?  fiona 0 50 heading? and if  ['] anatomy unhurried offer  then
-    fiona insects-area in-area?  fiona -45 50 heading? and if  ['] insects unhurried offer  then
-    fiona insects-area 1+ in-area?  fiona 90 50 heading? and if  ['] insects unhurried offer  then
-    fiona insects-area 2 + in-area?  fiona 90 50 heading? and if  ['] insects unhurried offer  then
-    fiona insects-area 3 + in-area?  fiona 45 50 heading? and if  ['] insects unhurried offer  then
+    fiona insects-area in-area?  fiona -90 50 heading? and if  ['] insects unhurried offer  then
+    fiona insects-area 1+ in-area?  fiona 180 50 heading? and if  ['] insects unhurried offer  then
+    fiona insects-area 2 + in-area?  fiona 180 50 heading? and if  ['] insects unhurried offer  then
+    fiona insects-area 3 + in-area?  fiona 90 50 heading? and if  ['] insects unhurried offer  then
     c1f-17-lavender fact? 0=  fiona -6e 8.5e -5e 8e 4e touches? and if  ['] reach-lavender calm-only offer  then
     fiona pool-table-area 50 faces-area? if  ['] pool-table unhurried offer  then ;
 

@@ -68,7 +68,7 @@ create looks  -2.18e 0e 42.94e  32e 11e 11e look,
     figure-noticed 80 -2.18e 0e 42.94e 32e 11e notices? if  ['] wary-of-it start drop  then
     looks 1 danger-now @ followed = hewie-looks-if
     om2f-5-viride-medallion-found fact? 0=  scrambling? and  hewie 7.38e 0e 20.58e 10e 5e touches? and if  ['] viride-sniffed start-only  then
-    fiona hide-area in-area?  fiona 90 60 heading? and if
+    fiona hide-area in-area?  fiona 180 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
     then
     near-vase broken? if

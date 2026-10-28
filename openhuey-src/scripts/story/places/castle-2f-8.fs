@@ -190,8 +190,8 @@ fvariable kiln-phase
     fiona parchment-area in-area?  got-old-parchment fact? 0= and if
         fiona 0 50 heading? if  ['] parchment calm-only offer  then
     else  fiona equipment-area 60 faces-area? if  ['] equipment unhurried offer  then  then
-    fiona kiln-area in-area?  fiona 45 45 heading? and if  ['] the-kiln unhurried offer  then
-    fiona mark-area in-area?  fiona mark-2-area in-area? or  fiona 90 45 heading? and if  ['] the-mark unhurried offer  then
+    fiona kiln-area in-area?  fiona 90 45 heading? and if  ['] the-kiln unhurried offer  then
+    fiona mark-area in-area?  fiona mark-2-area in-area? or  fiona 180 45 heading? and if  ['] the-mark unhurried offer  then
     choker-fx effect @  fiona 10e -25e 4e near-xz? and if  ['] choker calm-only offer  then
     the-vase breaks? drop ;
 

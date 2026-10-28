@@ -30,7 +30,7 @@ c1f-16-flag1 story-flag-clear  c1f-16-flag2 story-flag-clear  c1f-16-magnesia st
 T{ fan-turn  10 run-frames  fan-turn f- fabs 0.1e f>  tv-off-part part?  [: tv-fx effect @ 0<> ;] in-place -> -1 -1 -1 }T
 
 testing the remarks: the mirror, the painting in turn
-T{ mirror-area -72 at  said -> mirror-msg }T
+T{ mirror-area -144 at  said -> mirror-msg }T
 T{ painting-area 0 at  said  painting-area 0 at  said -> painting-msg painting-2-msg }T
 
 testing the Magnesia: reached, taken
@@ -40,26 +40,26 @@ T{ c1f-16-magnesia story-flag?  magnesia items:items-of -> -1 before @ 1+ }T
 
 testing the TV: on (the first time a fright), then off
 0 9 progress pr.vars + c!
-60 16.67e 0e 10.12e put  circle press  400 read-on   \ (the area's middle is on the furniture)
+120 16.67e 0e 10.12e put  circle press  400 read-on   \ (the area's middle is on the furniture)
 T{ c1f-16-flag2 story-flag?  c1f-16-flag1 story-flag?  tv-off-part part? -> -1 -1 0 }T
-60 16.67e 0e 10.12e put  circle press  300 read-on
+120 16.67e 0e 10.12e put  circle press  300 read-on
 T{ c1f-16-flag2 story-flag?  tv-off-part part? -> 0 -1 }T
 
 testing the hiding place: in (hidden), out by the button
-hiding-area 45 at  circle press  300 run-frames
+hiding-area 90 at  circle press  300 run-frames
 T{ fiona-hidden state-flag? -> -1 }T
 circle press  200 run-frames
 T{ fiona-hidden state-flag? -> 0 }T
 
 testing ... found: pulled out, the avoid prompt
-hiding-area 45 at  circle press  300 run-frames
+hiding-area 90 at  circle press  300 run-frames
 T{ fiona-hidden state-flag? -> -1 }T
 [: -1 found-her ! ;] in-place  200 run-frames
 T{ fiona-hidden state-flag? -> 0 }T
 
 testing the stalker coming while she hides, the TV on: Debilitas turns it off (its offs counted)
 c1f-16-flag2 story-flag-set  room-afresh  2 story.base:partner-load  5 run-frames
-hiding-area 45 at  circle press  300 run-frames
+hiding-area 90 at  circle press  300 run-frames
 castle-1f-16 $CE game:debilitas send stalker-in  600 run-frames
 T{ c1f-16-flag2 story-flag?  9 progress pr.vars + c@ -> 0 1 }T
 testing ... the TV off: he searches (his comings counted)

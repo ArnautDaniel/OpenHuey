@@ -109,7 +109,7 @@ create pond-look  -33.33e -16.93e 69.69e 40e 6e 6e look,
 \ ---- what she may say here ----
 : gate-shut ( -- )  fiona wait-move  fiona hands-clasped-anim 10 start-blend  gate-shut-msg say  fiona wait-anim ;
 : spots ( -- )
-    gate-open? 0=  fiona gate-area in-area? and  fiona -67 45 heading? and if  ['] gate-shut unhurried offer  then
+    gate-open? 0=  fiona gate-area in-area? and  fiona -134 45 heading? and if  ['] gate-shut unhurried offer  then
     hall-exit exit-open? 0=  hewie-arrived @ and  fiona body-pos hall-exit 0 door-in-area? and if  too-dangerous-msg offer-remark-now  then ;
 
 \ ---- every frame ----

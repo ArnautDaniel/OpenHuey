@@ -321,8 +321,8 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
     then
     fiona lever-area in-area?  fiona 0 50 heading? and if  ['] lever unhurried offer  then
     fiona hole-area in-area?  fiona 0 50 heading? and if  ['] the-hole unhurried offer  then
-    fiona fence-area in-area?  fiona -45 50 heading? and if  ['] fence unhurried offer  then
-    fiona gate-far-area in-area?  fiona 90 50 heading? and if  ['] flowers unhurried offer  then
+    fiona fence-area in-area?  fiona -90 50 heading? and if  ['] fence unhurried offer  then
+    fiona gate-far-area in-area?  fiona 180 50 heading? and if  ['] flowers unhurried offer  then
     fiona 276.5e -145.9e 7e reaches-across?  fiona 50 276e -146e faces-point? and if  ['] fireplace unhurried offer  then
     0 exit-open? 0=  through-gate @ and  fiona 0 before-door? and if  no-way-back-msg offer-remark-now  then
     c1f-2-rubrum-medallion-found fact?  c1f-2-rubrum-medallion fact? 0= and  fiona 292.2e 0e -61.8e 5e 5e touches? and if

@@ -72,8 +72,8 @@ T{ wobbles  [: drum place-y object@ drum drum-rest object@ ~= ;] in-place -> 6 -
 c1f-2-flag1 story-flag-set  room-afresh
 
 testing the remarks: the flowers and the fence in turn, the flowers by the gate, the fire in turn, the lever pulled
-T{ fence-area -45 at  said  fence-area -45 at  said -> flowers-msg fence-msg }T
-T{ gate-far-area 90 at  said -> flowers-msg }T
+T{ fence-area -90 at  said  fence-area -90 at  said -> flowers-msg fence-msg }T
+T{ gate-far-area 180 at  said -> flowers-msg }T
 T{ 180 276.5e 0e -137e put  said  180 276.5e 0e -137e put  said -> fire-msg doll-msg }T
 T{ lever-area 0 at  said -> pulled-msg }T
 testing ... the hole: the breeze; once her hand has been in, never again
@@ -141,7 +141,7 @@ testing ... sent on: he fetches the Fresh Flowers back to her
 withered-flowers 1 items send give-item  10 run-frames  fresh-flowers items:items-of before !
 room-afresh  60e -10e 110e hewie-here  -90 65e -10e 70e put  go-there-cmd started
 T{ [: room-flag-2d state-flag? ;] 600 soon -> -1 }T
-300 run-frames  gate-far-area 90 at  go-there-cmd started   \ (from by the flowers: sent on, whatever he is doing)
+300 run-frames  gate-far-area 180 at  go-there-cmd started   \ (from by the flowers: sent on, whatever he is doing)
 T{ [: window-shown 0< 0= if  cross press  then  fresh-flowers items:items-of before @ > ;] 1500 soon  withered-flowers items:items-of -> -1 0 }T
 300 read-on  game:hewie send part-from-fiona
 

@@ -74,7 +74,7 @@ ht2f-1-breakable3-broken 4 5  -3e 70e -41e 5e 8e  breakable: crate-3         cra
 : medallion-sniffed ( -- )  ht2f-1-medallion-found ht2f-1-medallion medallion-fx  -50e 71e -15e  hewie-finds ;
 : spots ( -- )
     8 locked-request?  fiona 0 before-door? and if  ['] the-door any-time offer  then
-    fiona corridor-area in-area?  fiona 45 50 heading? and if  ['] the-corridor unhurried offer  then
+    fiona corridor-area in-area?  fiona 90 50 heading? and if  ['] the-corridor unhurried offer  then
     ht2f-1-medallion-found fact?  ht2f-1-medallion fact? 0= and  fiona -50e 71e -15e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then
     crate-2 broken? if
         ht2f-1-viola-medallion fact? 0=  fiona -17e 71e -41e 5e 5e touches? and if  ['] pick-viola calm-only offer  then

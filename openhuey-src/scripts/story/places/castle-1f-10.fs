@@ -108,8 +108,8 @@ $22 constant chase-seen   $29 constant doll-seen   $20 constant chase-door   3 c
         c1f-10-flag2 fact? 0= if  ['] doll-scene unhurried offer
         else  doll-danced @ 0= if  ['] doll-dance unhurried offer  then  then
     then
-    fiona bed-area in-area?  fiona -45 50 heading? and if  ['] not-lying unhurried offer  then
-    fiona chest-area in-area?  fiona 45 50 heading? and if  ['] out-of-sight unhurried offer  then
+    fiona bed-area in-area?  fiona -90 50 heading? and if  ['] not-lying unhurried offer  then
+    fiona chest-area in-area?  fiona 90 50 heading? and if  ['] out-of-sight unhurried offer  then
     doll-to-take @  fiona bisque-area 60 faces-area? and if  ['] take-bisque calm-only offer  then ;
 
 \ ---- the movies replayed (the extras: the stalker's scene, his doll's) ----

@@ -34,19 +34,19 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 got-mystery-sketch story-flag-clear  ht2f-2-rubrum-medallion story-flag-clear  ht2f-2-viride-medallion-found story-flag-clear
 ht2f-2-viride-medallion story-flag-clear  room-afresh
 testing the remarks: the title, the closet, the bobbles, the books (two shelves)
-T{ 4 -34 at  said  5 32 at  said  6 -3 at  said -> title-msg closet-msg bobbles-msg }T
-T{ 7 46 at  said  9 -35 at  said -> books-msg books-msg }T
+T{ 4 -68 at  said  5 64 at  said  6 -6 at  said -> title-msg closet-msg bobbles-msg }T
+T{ 7 92 at  said  9 -70 at  said -> books-msg books-msg }T
 testing the untitled book, in turn with the books' remark
-T{ 8 -41 at  said  8 -41 at  said  8 -41 at  said -> books-msg untitled-msg books-msg }T
+T{ 8 -82 at  said  8 -82 at  said  8 -82 at  said -> books-msg untitled-msg books-msg }T
 testing the Mystery Sketch
 mystery-sketch items:items-of before !
-T{ 3 52 at  circle press  300 read-on  got-mystery-sketch story-flag?  sketch-part [: part? ;] in-place  mystery-sketch items:items-of -> -1 0 before @ 1+ }T
+T{ 3 104 at  circle press  300 read-on  got-mystery-sketch story-flag?  sketch-part [: part? ;] in-place  mystery-sketch items:items-of -> -1 0 before @ 1+ }T
 testing the Rubrum Medallion wedged between two books; then the books
 rubrum-medallion items:items-of before !
-T{ $A -24 at  said  ht2f-2-rubrum-medallion story-flag?  rubrum-medallion items:items-of -> wedged-msg -1 before @ 1+ }T
-T{ $A -24 at  said -> books-msg }T
+T{ $A -48 at  said  ht2f-2-rubrum-medallion story-flag?  rubrum-medallion items:items-of -> wedged-msg -1 before @ 1+ }T
+T{ $A -48 at  said -> books-msg }T
 testing the medicine's name: marked in her menu
-T{ $B 12 at  said  fortis-bit items:item-bit? -> written-msg -1 }T
+T{ $B 24 at  said  fortis-bit items:item-bit? -> written-msg -1 }T
 testing the Viride Medallion: Hewie sniffs it out; taken
 hewie-freed story-flag-set  hewie-commandable state-flag-set  room-afresh  game:hewie send join-fiona  60 run-frames
 [: ['] viride-sniffed start drop ;] in-place

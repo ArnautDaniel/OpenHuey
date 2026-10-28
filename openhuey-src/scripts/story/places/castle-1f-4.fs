@@ -244,17 +244,17 @@ defer the-trap
 : spots ( -- )
     fiona puppet-door-area in-area? if
         straining-now @  fiona held? 0= and if  ['] strains start drop
-        else  broken-marionette-used fact? 0=  fiona -45 45 heading? and if  ['] no-knob unhurried offer  then  then
+        else  broken-marionette-used fact? 0=  fiona -90 45 heading? and if  ['] no-knob unhurried offer  then  then
     then
-    fiona chair-area in-area?  fiona 90 45 heading? and if  ['] chair unhurried offer  then
+    fiona chair-area in-area?  fiona 180 45 heading? and if  ['] chair unhurried offer  then
     fiona chair-2-area in-area?  fiona 0 45 heading? and if  ['] chair-2 unhurried offer  then
     fiona plate-area in-area? if  ['] the-floor unhurried offer  then
-    fiona clock-area in-area?  fiona -45 50 heading? and if  ['] save-clock calm-hewie-up offer  then
+    fiona clock-area in-area?  fiona -90 50 heading? and if  ['] save-clock calm-hewie-up offer  then
     sparkle-shown @  c1f-4-refined-antimony fact? 0= and if
         fiona 140e -9e 94e 5e 5e touches? if  ['] antimony calm-only offer  then
-    else  fiona 140e 94e 6e near-xz?  fiona 45 50 heading? and if  ['] the-wall unhurried offer  then  then
+    else  fiona 140e 94e 6e near-xz?  fiona 90 50 heading? and if  ['] the-wall unhurried offer  then  then
     2 before-locked? if  ['] tries-the-door any-time offer  then
-    fiona slot-area in-area?  fiona -45 50 heading? and if  ['] the-slot unhurried offer  then
+    fiona slot-area in-area?  fiona -90 50 heading? and if  ['] the-slot unhurried offer  then
     got-cracked-plate-key fact? 0=  fiona 131.392e -30e 147.223e 5e 5e touches? and if  ['] plate-key calm-only offer  then ;
 
 \ ---- every frame ----

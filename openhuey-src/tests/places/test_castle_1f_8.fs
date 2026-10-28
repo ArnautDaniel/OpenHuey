@@ -41,10 +41,10 @@ c1f-8-flag1 story-flag-set  c1f-8-magnesia story-flag-clear  c1f-8-album-medalli
 T{ flames-up  [: magnesia-fx effect @ 0<>  album-fx effect @ ;] in-place  receiver-part part? -> 4 -1 0 -1 }T
 
 testing the remarks: the dead line, the chair, nothing much, the ornaments
-T{ 75 19e 0e -19e put  said -> line-cut-msg }T   \ (the area's middle is by the table, on blocked floor)
-T{ chair-area 45 at  said -> chair-msg }T
+T{ 150 19e 0e -19e put  said -> line-cut-msg }T   \ (the area's middle is by the table, on blocked floor)
+T{ chair-area 90 at  said -> chair-msg }T
 T{ 53 -8e 0e 22e put  said -> nothing-msg }T   \ (facing its middle, clear of the Magnesia)
-T{ ornaments-area -67 at  said -> ornaments-msg }T
+T{ ornaments-area -134 at  said -> ornaments-msg }T
 
 testing the Magnesia: reached, taken
 magnesia items:items-of before !
@@ -62,19 +62,19 @@ album-medallion items:items-of before !
 T{ c1f-8-album-medallion story-flag?  album-medallion items:items-of -> -1 before @ 1+ }T
 
 testing the hiding place: in (hidden), out by the button
-room-afresh  hiding-area 90 at  circle press  300 run-frames
+room-afresh  hiding-area 180 at  circle press  300 run-frames
 T{ hidden? -> -1 }T
 circle press  200 run-frames
 T{ hidden? -> 0 }T
 testing ... found: hauled out
-hiding-area 90 at  circle press  300 run-frames
+hiding-area 180 at  circle press  300 run-frames
 T{ hidden? -> -1 }T
 [: -1 found-her ! ;] in-place  200 run-frames
 T{ hidden? -> 0 }T
 
 testing the stalker coming while she hides: his comings counted
 2 story.base:partner-load  5 run-frames
-hiding-area 90 at  circle press  300 run-frames
+hiding-area 180 at  circle press  300 run-frames
 search-var var@ before !
 castle-1f-8 $B2 game:debilitas send stalker-in  60 run-frames
 T{ hidden?  [: came-while-hidden @ ;] in-place  search-var var@ -> -1 -1 before @ 1+ }T

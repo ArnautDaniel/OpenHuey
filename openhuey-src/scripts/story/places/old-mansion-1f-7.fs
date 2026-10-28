@@ -107,10 +107,10 @@ create pod-look  -1.06e 0e -0.54e  38e 17e 17e look,
     pod-noticed 50 -1.06e 0e -0.54e 38e 17e notices? if  ['] wary-of-it start drop  then
     pod-look 1 hewie-looks-unchased
     om1f-7-album-medallion-found fact? 0=  scrambling? and  hewie -30.81e 0e -21.85e 10e 5e touches? and if  ['] medallion-sniffed start-only  then
-    fiona 8 in-area?  fiona -45 50 heading? and if  ['] the-extractor unhurried offer  then
+    fiona 8 in-area?  fiona -90 50 heading? and if  ['] the-extractor unhurried offer  then
     fiona 9 in-area?  fiona 50 0e 0e faces-point? and if  ['] left-window unhurried offer  then
     fiona $A in-area?  fiona 50 0e 0e faces-point? and if  ['] right-window unhurried offer  then
-    fiona $B in-area?  fiona -25 60 heading? and  fiona $C in-area?  fiona 45 60 heading? and or if  ['] the-device unhurried offer  then
+    fiona $B in-area?  fiona -50 60 heading? and  fiona $C in-area?  fiona 90 60 heading? and or if  ['] the-device unhurried offer  then
     om1f-7-album-medallion-found fact?  om1f-7-album-medallion fact? 0= and  fiona -30.81e 0e -21.85e 5e 5e touches? and if
         ['] take-medallion calm-only offer
     then ;

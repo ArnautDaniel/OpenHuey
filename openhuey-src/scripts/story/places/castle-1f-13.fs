@@ -163,8 +163,8 @@ $803 constant creeping-anim   $207 constant fleeing-anim   \ (her creep behind t
         stalker-in? if  no-time-message offer-remark-now  else  ['] crouches calm-only offer  then
     then
     fiona balcony-area 50 faces-area? if  ['] fallen-balcony unhurried offer  then
-    fiona false-door-area in-area?  fiona 45 50 heading? and if  ['] false-door-1 unhurried offer  then
-    fiona false-door-2-area in-area?  fiona 45 50 heading? and if  ['] false-door-2 unhurried offer  then
+    fiona false-door-area in-area?  fiona 90 50 heading? and if  ['] false-door-1 unhurried offer  then
+    fiona false-door-2-area in-area?  fiona 90 50 heading? and if  ['] false-door-2 unhurried offer  then
     c1f-13-antimony-powder-found fact?  c1f-13-antimony-powder fact? 0= and  fiona -254.5e 1e -95e 5e 5e touches? and if
         ['] pick-antimony calm-only offer  then ;
 

@@ -98,11 +98,11 @@ create looks  20.8e 0e -104.26e  30e 15e 15e look,
     looks 1 danger-now @ followed = hewie-looks-if
     flame-fx -122.2e 13.1e 139e 8e -4e flame-stirred  flame-2-fx -120.5e 12.8e 140.35e 8e -4e flame-stirred
     om1f-6-medallion fact? 0=  fiona -119.67e 9e 151.64e 5e 5e touches? and if  ['] take-medallion calm-only offer  then
-    fiona hide-area in-area?  fiona -45 60 heading? and if
+    fiona hide-area in-area?  fiona -90 60 heading? and if
         stalker-busy? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
     then
     fiona $C 60 faces-area? if  ['] the-sheet unhurried offer  then
-    fiona $D in-area?  fiona 45 60 heading? and if  ['] the-cage unhurried offer  then
+    fiona $D in-area?  fiona 90 60 heading? and if  ['] the-cage unhurried offer  then
     cam-set@ 4 <> if  -111.5e 18e 114e  -94e 18e 93e  -111.5e 0e 114e  -94e 0e 93e  light-doorway  then ;
 : person-in ( i -- )
     case

@@ -85,7 +85,7 @@ own: frames-in  own: hewie-away  own: perfume-step
     fiona 9 60 faces-area? if  ['] yellow bed-offer  then
     fiona 8 60 faces-area? if  ['] red bed-offer  then
     fiona $B 60 faces-area? if  ['] blue bed-offer  then
-    fiona 7 in-area?  fiona 90 60 heading? and if  ['] purple bed-offer  then ;
+    fiona 7 in-area?  fiona 180 60 heading? and if  ['] purple bed-offer  then ;
 
 \ ---- Hebel's Perfume used by Hewie: he leads her to a spot ----
 : perfume-wait ( n -- )  begin  perfume-step @ over < while  yield  repeat  drop ;
@@ -120,9 +120,9 @@ create looks  -48.85e 0e -48.91e  33e 11e 11e look,   48.42e -6e 28e  26e 11e 11
     om1f-13-flag2 fact? 0=  fiona 5 left? and if  panic-eased  ['] the-garden start drop  then
     looks 5 hewie-looks-at
     fiona 6 60 faces-area? if  ['] the-plant unhurried offer  then
-    fiona $C in-area?  fiona 90 60 heading? and if  ['] the-sheet unhurried offer  then
+    fiona $C in-area?  fiona 180 60 heading? and if  ['] the-sheet unhurried offer  then
     the-beds
-    fiona $D in-area?  fiona -90 60 heading? and  fiona $E in-area?  fiona -90 60 heading? and or if  ['] the-flower-bed unhurried offer  then ;
+    fiona $D in-area?  fiona -180 60 heading? and  fiona $E in-area?  fiona -180 60 heading? and or if  ['] the-flower-bed unhurried offer  then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
     events-held state? if  hewie send part-from-fiona  ['] replayed start drop  exit  then

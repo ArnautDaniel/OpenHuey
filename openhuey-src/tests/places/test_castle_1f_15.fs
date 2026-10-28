@@ -51,10 +51,10 @@ c1f-15-medallion-found story-flag-set  c1f-15-medallion story-flag-clear  room-a
 T{ [: camomile-fx effect @ 0<>  medallion-fx effect @ 0<> ;] in-place -> -1 -1 }T
 
 testing the remarks: the diorama, the spear in turn, the armour in turn, the handrail in turn
-T{ 90 -0.195e 50e -27.107e put  said -> diorama-msg }T   \ (where she reads it: the area's middle is on blocked floor)
+T{ 180 -0.195e 50e -27.107e put  said -> diorama-msg }T   \ (where she reads it: the area's middle is on blocked floor)
 T{ 45 45e 50e -99e put  said  45 45e 50e -99e put  said -> spear-msg spear-2-msg }T   \ (facing its middle)
-T{ armour-area 90 at  said  armour-2-area 90 at  said -> armour-msg armour-2-msg }T
-T{ handrail-area -45 at  said  handrail-area -45 at  said -> handrail-msg handrail-2-msg }T
+T{ armour-area 180 at  said  armour-2-area 180 at  said -> armour-msg armour-2-msg }T
+T{ handrail-area -90 at  said  handrail-area -90 at  said -> handrail-msg handrail-2-msg }T
 
 testing the Camomile and the Medallion: picked up
 camomile items:items-of before !
@@ -77,12 +77,12 @@ T{ [: [: hewie-noticed @ ;] in-place ;] 60 soon -> -1 }T
 200 run-frames
 
 testing the hole: not down it; down it (to the room below, loaded ahead)
-room-afresh  hole-area -45 at  circle press  [: window-shown hole-msg = ;] 300 soon drop
+room-afresh  hole-area -90 at  circle press  [: window-shown hole-msg = ;] 300 soon drop
 answers-no
 T{ room-id -> castle-1f-15 }T
 T{ doing-busy? -> 0 }T
 T{ stalkers-stay state-flag? -> 0 }T
-below-room s" rooms" actor-named send room-preload  hole-area -45 at
+below-room s" rooms" actor-named send room-preload  hole-area -90 at
 circle press
 T{ [: window-shown 0< 0= if  cross press  then  room-id below-room = ;] 900 soon -> -1 }T   \ (yes)
 free-play  10 run-frames  0 game:fiona send costume

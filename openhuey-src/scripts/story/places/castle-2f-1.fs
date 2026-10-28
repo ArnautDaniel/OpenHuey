@@ -80,7 +80,7 @@ own: solved-here           \ the dials set right here, this visit: down to castl
     locked-exit before-locked? if  ['] unlocks-it any-time offer  then
     fiona device-area 50 faces-area? if  ['] the-device unhurried offer  then
     fiona piano-area 50 faces-area? if  ['] piano unhurried offer  then
-    fiona speakers-area in-area?  fiona 90 50 heading? and if  ['] speakers unhurried offer  then
+    fiona speakers-area in-area?  fiona 180 50 heading? and if  ['] speakers unhurried offer  then
     c2f-1-refined-magnesia-found fact?  c2f-1-refined-magnesia fact? 0= and  fiona 39.5e 81e -38.8e 5e 5e touches? and if
         ['] pick-magnesia calm-only offer  then
     c2f-1-lavender fact? 0=  fiona 41.5e 69e 31e 5e 5e touches? and if  ['] pick-lavender calm-only offer  then ;

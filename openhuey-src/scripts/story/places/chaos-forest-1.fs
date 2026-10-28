@@ -56,7 +56,7 @@ create ahead  3 , 0 ,  2 , 1 ,   \ (area, exit loaded ahead)
     cameras 13 cameras-at  ahead 2 ways-out ;
 : each-frame ( -- )
     ways  the-figure calls first-call hopper-calls  hewie-here
-    got-forest-map fact? 0=  fiona map-area in-area? and  fiona 90 50 heading? and if  ['] takes-map calm-only offer  then ;
+    got-forest-map fact? 0=  fiona map-area in-area? and  fiona 180 50 heading? and if  ['] takes-map calm-only offer  then ;
 create entries  3 , 3 ,  0 , 0 ,   \ (by exit 0, 1: the camera)
 : person-in ( i -- )  fiona-p = if  entries 2 ways-in  then ;
 : went ( -- )  going-on @ 0= if  hopper-slot figure-out  then ;

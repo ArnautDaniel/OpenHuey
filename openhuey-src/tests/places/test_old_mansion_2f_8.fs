@@ -39,19 +39,19 @@ variable before
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 found-file-234 story-flag-set  om2f-8-flag1 story-flag-clear  room-afresh
 testing the curtain: in, drawn round her; out by the button
-$18 90 at  circle press  [: hidden? ;] 900 soon drop
+$18 180 at  circle press  [: hidden? ;] 900 soon drop
 T{ hidden?  [: curtain 1e f- fabs 0.01e f< ;] in-place -> -1 -1 }T
 circle press  [: doing-busy? 0= ;] 900 soon drop
 T{ hidden?  free? -> 0 -1 }T
 testing the lamp: unlit
 T{ $16 facing-middle  said -> unlit-msg }T
 testing the hole: no
-$17 90 at  circle press  shown-soon drop  no-it  200 read-on
+$17 180 at  circle press  shown-soon drop  no-it  200 read-on
 T{ room-id -> old-mansion-2f-8 }T
 testing the painting: insects, then the mother; the bones; the book
-T{ $1A 45 at  said -> insects-msg }T
-T{ $1A 45 at  said -> mother-msg }T
-T{ $1B -90 at  said -> bones-msg }T
+T{ $1A 90 at  said -> insects-msg }T
+T{ $1A 90 at  said -> mother-msg }T
+T{ $1B -180 at  said -> bones-msg }T
 T{ $1C 0 at  said -> written-msg }T
 300 read-on
 T{ $43 items:item-bit?  $45 items:item-bit? -> -1 -1 }T

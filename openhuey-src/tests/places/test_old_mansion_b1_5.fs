@@ -50,18 +50,18 @@ T{ window-shown  omb1-5-flag1 story-flag? -> moved-msg -1 }T
 T{ 5 0 at  said -> searched-msg }T
 testing a trick: the door slams and locks
 trap-door s" doors" actor-named send unlock  10 run-frames
-8 -45 at  circle press  shown-soon drop  0 choose  600 play-on
+8 -90 at  circle press  shown-soon drop  0 choose  600 play-on
 T{ trap-door doors:door-locked? -> -1 }T
 trap-door s" doors" actor-named send unlock  10 run-frames
 testing the cabinet: in, hidden; out by the button
-cabinet-area 90 at  circle press  [: hidden? ;] 900 soon drop
+cabinet-area 180 at  circle press  [: hidden? ;] 900 soon drop
 T{ hidden? -> -1 }T
 circle press  [: doing-busy? 0= ;] 900 soon drop
 T{ hidden?  free? -> 0 -1 }T
 testing Daniella waiting inside it the first time: she bursts out at her
 omb1-5-flag5 story-flag-clear  omb1-5-flag4 story-flag-clear  daniella-kind story.base:partner-load  10 run-frames  room-afresh
 T{ [: waiting @ ;] in-place -> -1 }T
-cabinet-area 90 at  circle press  [: doing-busy? 0= ;] 1200 soon drop
+cabinet-area 180 at  circle press  [: doing-busy? 0= ;] 1200 soon drop
 T{ omb1-5-flag5 story-flag?  omb1-5-flag4 story-flag? -> -1 -1 }T
 partner send stalker-out  10 run-frames
 testing the movies replayed (the extras): played, then back by the forced way

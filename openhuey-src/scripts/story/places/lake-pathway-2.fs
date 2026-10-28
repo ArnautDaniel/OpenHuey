@@ -45,7 +45,7 @@ $18 constant lake-track
     then  fiona wait-anim ;
 : spots ( -- )
     bridge-gone? 0= if  exit  then
-    fiona bridge-end-area in-area?  fiona 90 50 heading? and if  ['] the-gap unhurried offer  then ;
+    fiona bridge-end-area in-area?  fiona 180 50 heading? and if  ['] the-gap unhurried offer  then ;
 
 \ ---- Hewie: the gap (the bridge gone) - now and then he barks at it ----
 : barks-at-gap ( -- )  -2.26e 38e -25.57e hewie-barks-at ;

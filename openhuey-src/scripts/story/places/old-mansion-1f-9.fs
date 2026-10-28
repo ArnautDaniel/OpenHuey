@@ -118,8 +118,8 @@ create looks  21.03e 0e -17.8e  20e 12e 12e look,   -41.22e 4.5e -4.36e  28e 12e
     0 exit-out  looks 2 hewie-looks-at
     om1f-9-refined-magnesia-found fact? 0=  scrambling? and  hewie 7.72e 0e 15.08e 10e 5e touches? and if  ['] magnesia-sniffed start-only  then
     fiona 2 50 faces-area? if  ['] the-press unhurried offer  then
-    fiona 1 in-area?  fiona -45 50 heading? and if  ['] the-window unhurried offer  then
-    fiona 3 in-area?  fiona 15 50 heading? and if  ['] the-water unhurried offer  then
+    fiona 1 in-area?  fiona -90 50 heading? and if  ['] the-window unhurried offer  then
+    fiona 3 in-area?  fiona 30 50 heading? and if  ['] the-water unhurried offer  then
     fiona 4 in-area?  fiona 50 -6e -22e faces-point? and if  ['] the-tub unhurried offer  then
     fiona 5 in-area?  fiona 0 50 heading? and if  ['] the-title unhurried offer  then
     om1f-9-refined-antimony fact? 0=  fiona -7.97e 12.42e 21.3e 5e 5e touches? and if  ['] take-antimony calm-only offer  then

@@ -112,9 +112,9 @@ create ahead  4 , 0 ,   5 , 1 ,   \ (area, exit loaded ahead)
     om1f-11-album-medallion-found fact? 0=  scrambling? and  hewie 13.96e 50e -5.34e 10e 5e touches? and if  ['] medallion-sniffed start-only  then
     omb1-5-flag3 fact? if
         fiona $10 in-area?  fiona 0 50 heading? and if  ['] floor-ahead unhurried offer  then
-        fiona $11 in-area?  fiona 90 50 heading? and if  ['] floor-behind unhurried offer  then
+        fiona $11 in-area?  fiona 180 50 heading? and if  ['] floor-behind unhurried offer  then
     else
-        fiona $12 in-area?  fiona -45 50 heading? and if  ['] the-water unhurried offer  then
+        fiona $12 in-area?  fiona -90 50 heading? and if  ['] the-water unhurried offer  then
     then
     by-the-mirror
     om1f-11-album-medallion-found fact?  om1f-11-album-medallion fact? 0= and  fiona 13.96e 50e -5.34e 5e 5e touches? and if

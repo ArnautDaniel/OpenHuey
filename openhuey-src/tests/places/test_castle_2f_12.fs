@@ -59,9 +59,9 @@ T{ [: -4e 0e 4e 4e 7e struck-in? if  true chairs-set  then  still-rocking? ;] in
 testing the remarks: the caged doll in turn, the horse in turn, the doll in the chair, the box in turn, the crib
 room-afresh
 T{ 49 16e 0e -2e put  said  49 16e 0e -2e put  said -> caged-doll-msg so-real-msg }T
-T{ horse-area 75 at  said  horse-area 75 at  said -> horse-msg childhood-msg }T
+T{ horse-area 150 at  said  horse-area 150 at  said -> horse-msg childhood-msg }T
 T{ 74 -6e 0e -3e put  said -> chair-doll-msg }T
-T{ 90 2e 0e -33e put  said  90 2e 0e -33e put  said -> box-msg slot-msg }T   \ (off its middle)
+T{ 180 2e 0e -33e put  said  180 2e 0e -33e put  said -> box-msg slot-msg }T   \ (off its middle)
 T{ 53 -27e 0e -25e put  said -> crib-msg }T
 
 testing Hewie watching the rocking chair
@@ -71,11 +71,11 @@ T{ [: [: watching @ ;] in-place ;] 120 soon -> -1 }T
 
 testing the box: the right thing in its slot - open: the Earrings and the Jade Choker; else nothing happens
 jade-choker items:items-of before !
-90 2e 0e -33e put  $B use-on-place  600 read-on
+180 2e 0e -33e put  $B use-on-place  600 read-on
 T{ got-jade-choker story-flag?  jade-choker items:items-of  inquisitor-earrings items:items-of 0> -> -1 before @ 1+ -1 }T
 T{ $C use-on-place  [: window-shown nothing-msg = ;] 300 soon -> -1 }T
 200 read-on
-T{ 90 2e 0e -33e put  said -> box-open-msg }T
+T{ 180 2e 0e -33e put  said -> box-open-msg }T
 
 testing the vase broken: the Medallion; picked up
 c2f-12-breakable-broken story-flag-clear  c2f-12-medallion story-flag-clear  room-afresh
@@ -96,18 +96,18 @@ refined-antimony items:items-of before !
 T{ c2f-12-refined-antimony story-flag?  refined-antimony items:items-of -> -1 before @ 1+ }T
 
 testing the wardrobe: in (hidden), out by the button
-room-afresh  22 20e 0e 32e put  circle press  [: hidden? ;] 600 soon drop
+room-afresh  44 20e 0e 32e put  circle press  [: hidden? ;] 600 soon drop
 T{ hidden? -> -1 }T
 circle press  [: doing-busy? 0= ;] 600 soon drop
 T{ hidden?  c2f-12-flag1 story-flag? -> 0 0 }T
 testing ... in a panic: out, the doors left open
-22 20e 0e 32e put  circle press  [: hidden? ;] 600 soon drop
+44 20e 0e 32e put  circle press  [: hidden? ;] 600 soon drop
 [: out-in-panic ;] drop  [: ['] out-in-panic start drop ;] in-place  [: doing-busy? 0= ;] 600 soon drop
 T{ hidden?  c2f-12-flag1 story-flag? -> 0 -1 }T
 
 testing the stalker coming while she hides: his search counted
 2 story.base:partner-load  5 run-frames  c2f-12-flag1 story-flag-clear  room-afresh
-22 20e 0e 32e put  circle press  [: hidden? ;] 600 soon drop
+44 20e 0e 32e put  circle press  [: hidden? ;] 600 soon drop
 search-var var@ before !
 castle-2f-12 $3A game:debilitas send stalker-in  10 run-frames
 T{ [: came-while-hidden @ ;] in-place  search-var var@ c2f-12-flag3 story-flag? or 0<> -> -1 -1 }T

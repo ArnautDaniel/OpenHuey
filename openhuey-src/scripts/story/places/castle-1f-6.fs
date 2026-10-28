@@ -70,9 +70,9 @@ create candles
     got-cracked-plate-key-2 fact? 0=  fiona 4e 8.5e -20e 5e 5e touches? and if  ['] reach-plate-key calm-only offer  then
     c1f-6-medallion-found fact?  c1f-6-medallion fact? 0= and  fiona 34.2e 1e 60.5e 5e 5e touches? and if
         ['] pick-medallion calm-only offer  then
-    fiona table-area in-area?  fiona -45 60 heading? and if  ['] candlesticks unhurried offer  then
-    fiona table-2-area in-area?  fiona 45 60 heading? and if  ['] candlesticks unhurried offer  then
-    fiona tapestry-area in-area?  fiona 90 50 heading? and if  ['] tapestry unhurried offer  then
+    fiona table-area in-area?  fiona -90 60 heading? and if  ['] candlesticks unhurried offer  then
+    fiona table-2-area in-area?  fiona 90 60 heading? and if  ['] candlesticks unhurried offer  then
+    fiona tapestry-area in-area?  fiona 180 50 heading? and if  ['] tapestry unhurried offer  then
     locked-exit before-locked? if  ['] unlocks-it any-time offer  then ;
 
 \ ---- Hewie: the medallion he sniffs out (scrambling about by it) ----

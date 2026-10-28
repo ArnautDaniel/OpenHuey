@@ -141,8 +141,8 @@ create looks  32.38e 0e -0.63e  22e 10e 0e look,   31.11e 0e 48.2e  30e 15e 18e 
     spot-noticed 50 -42.06e 0e -0.81e 26e 5e notices? if  ['] barks-at-spot start drop  then
     looks 2 hewie-looks-at
     fiona 4 in-area?  fiona 0 50 heading? and if  ['] the-decomposer unhurried offer  then
-    fiona 5 in-area?  fiona -45 50 heading? and if  ['] the-crawl-space unhurried offer  then
-    fiona 6 in-area?  fiona 90 50 heading? and if  ['] the-notes unhurried offer  then
+    fiona 5 in-area?  fiona -90 50 heading? and if  ['] the-crawl-space unhurried offer  then
+    fiona 6 in-area?  fiona 180 50 heading? and if  ['] the-notes unhurried offer  then
     om2f-3-flag1 fact? if  fiona 3 50 faces-area? if  ['] fell-out unhurried offer  then
     else  fiona weak-floor? if  ['] weak-floor unhurried offer  then  then
     fiona 7 60 faces-area? if  ['] the-gear unhurried offer  then

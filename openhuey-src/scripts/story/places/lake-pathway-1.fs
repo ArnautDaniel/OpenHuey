@@ -57,7 +57,7 @@ $18 constant lake-track
 : spots ( -- )   \ (by the books' second event the body is there to see; before it, the collapsed path)
     c7-second-event fact? if
         fiona by-body-area in-area?  fiona 0 50 heading? and if  ['] the-body unhurried offer  then
-        fiona body-side-area in-area?  fiona 90 50 heading? and if  ['] the-body unhurried offer  then
+        fiona body-side-area in-area?  fiona 180 50 heading? and if  ['] the-body unhurried offer  then
     else
         fiona path-end-area in-area?  fiona 0 50 heading? and if  ['] the-path unhurried offer  then
     then

@@ -44,7 +44,7 @@ testing the dynamo's shake: its size down a quarter a frame; the belt's step: 0.
 T{ [: dynamo placed-here?  belt-there? ;] in-place -> -1 -1 }T
 T{ [: belt-set  belt-step  belt place-x object@ 0.4e ~=  roller turn-y object@ 0.05e ~= ;] in-place -> -1 -1 }T
 testing the generator's remarks in turn; the demolisher's
-T{ generator-area 90 at  said  generator-area 90 at  said -> dead-gen-msg jolt-msg }T
+T{ generator-area 180 at  said  generator-area 180 at  said -> dead-gen-msg jolt-msg }T
 T{ demolisher-area 0 at  [: fiona demolisher-area 50 faces-area? ;] in-place -> -1 }T
 T{ said  demolisher-area 0 at  said -> demolisher-msg not-running-msg }T
 testing a full blow at it (one jolt left): the first time the scene - its file, the door locked behind, the belt running

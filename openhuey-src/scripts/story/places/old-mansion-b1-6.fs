@@ -194,8 +194,8 @@ defer leg-01  defer leg-02  defer leg-03  defer leg-04  defer leg-05  defer leg-
     else  fiona d3 30 heading? if  stagger-anim  else  doubled-over-anim  then  then  then  fiona swap start-anim
     stalker-in? 0= if  16 frames  flame-wall-msg show  then
     fiona wait-anim  fiona -1 idle  7 frames  0 wall-reacting ! ;
-: wall-0 ( -- )  -45 45 0 recoils ;   : wall-1 ( -- )  45 -45 90 recoils ;
-: wall-2 ( -- )  0 90 45 recoils ;     : wall-3 ( -- )  45 -45 90 recoils ;
+: wall-0 ( -- )  -90 90 0 recoils ;   : wall-1 ( -- )  90 -90 180 recoils ;
+: wall-2 ( -- )  0 180 90 recoils ;    : wall-3 ( -- )  90 -90 180 recoils ;
 : walls ( -- )
     wall-reacting @ if  exit  then
     omb1-6-flag2 fact? 0=  fiona $1C entered? and if  panic-eased  ['] wall-0 start drop  then

@@ -102,13 +102,13 @@ create flames  34.2e 18.3e 14.2e f, f, f,   34.2e 18.3e -14.2e f, f, f,
     fiona reach-out-anim play  4 frames  magnesia c1f-8-magnesia magnesia-fx takes-up  fiona reach-back-anim play ;
 : spots ( -- )
     c1f-8-magnesia fact? 0=  fiona 0e 8.5e 25e 5e 5e touches? and if  ['] reach-magnesia calm-only offer  then
-    fiona hiding-area in-area?  fiona 90 60 heading? and if
+    fiona hiding-area in-area?  fiona 180 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
     then
-    called?  fiona phone-area in-area? and  fiona 75 45 heading? and if  ['] telephone unhurried offer  then
-    fiona chair-area in-area?  fiona 45 45 heading? and if  ['] chair unhurried offer  then
+    called?  fiona phone-area in-area? and  fiona 150 45 heading? and if  ['] telephone unhurried offer  then
+    fiona chair-area in-area?  fiona 90 45 heading? and if  ['] chair unhurried offer  then
     fiona nothing-area 45 faces-area? if  ['] nothing-here unhurried offer  then
-    fiona ornaments-area in-area?  fiona -67 45 heading? and if  ['] ornaments unhurried offer  then
+    fiona ornaments-area in-area?  fiona -134 45 heading? and if  ['] ornaments unhurried offer  then
     c1f-8-album-medallion-found fact?  c1f-8-album-medallion fact? 0= and  fiona -25.6e 1e 27.6e 5e 5e touches? and if
         ['] pick-album calm-only offer  then ;
 

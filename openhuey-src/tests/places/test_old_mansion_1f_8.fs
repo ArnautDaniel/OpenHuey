@@ -63,22 +63,22 @@ T{ 0 122.09e 8.28e 10.26e put  circle press  300 read-on  om1f-8-beef-jerky stor
 T{ 0 -140.37e 16e -25.97e put  circle press  300 read-on  om1f-8-album-medallion story-flag?  medallion-fx fx-alive? -> -1 0 }T
 
 testing the graves: each its name; once two are read, one read again says they bear the same name
-T{ $18 -40 to-a-grave  $10 0 to-a-grave  $18 -40 to-a-grave -> 1 2 same-name-msg }T
-T{ $11 -40 to-a-grave  $12 -60 to-a-grave  $13 45 to-a-grave  $14 62 to-a-grave -> 3 4 5 6 }T
+T{ $18 -80 to-a-grave  $10 0 to-a-grave  $18 -80 to-a-grave -> 1 2 same-name-msg }T
+T{ $11 -80 to-a-grave  $12 -120 to-a-grave  $13 90 to-a-grave  $14 124 to-a-grave -> 3 4 5 6 }T
 
 testing the mausoleum: its words, then the second remark, in turn
-T{ mausoleum-area 90 at  said  mausoleum-area 90 at  said  mausoleum-area 90 at  said -> mausoleum-msg spirits-msg mausoleum-msg }T
+T{ mausoleum-area 180 at  said  mausoleum-area 180 at  said  mausoleum-area 180 at  said -> mausoleum-msg spirits-msg mausoleum-msg }T
 
 testing the thicket's remark; the glow at the back
-T{ thicket-area -30 at  said -> opening-msg }T
-T{ glow-area -60 at  said -> glow-msg }T
+T{ thicket-area -60 at  said -> opening-msg }T
+T{ glow-area -120 at  said -> glow-msg }T
 
 testing the back the first time: too dark - looked closer, the hand grabs at her (her fright)
-T{ back-area 45 at  circle press  shown-soon -> too-dark-msg }T
+T{ back-area 90 at  circle press  shown-soon -> too-dark-msg }T
 yes-it  [: om1f-8-flag2 story-flag? ;] 900 soon drop  [: doing-busy? 0= ;] 600 soon drop  0 panic-to  60 run-frames
 T{ om1f-8-flag2 story-flag? -> -1 }T
 testing then her remarks there in turn
-T{ back-area 45 at  said  back-area 45 at  said  back-area 45 at  said  back-area 45 at  said -> not-dangerous-msg wants-msg traces-msg not-dangerous-msg }T
+T{ back-area 90 at  said  back-area 90 at  said  back-area 90 at  said  back-area 90 at  said -> not-dangerous-msg wants-msg traces-msg not-dangerous-msg }T
 
 testing a mandragora other than the white fed to it: the scene, the hand roused
 yellow-mandragora give  yellow-mandragora items:items-of before !
@@ -91,7 +91,7 @@ white-mandragora give
 T{ 0 use-on-place  started? -> -1 }T
 T{ [: movie-skipped state-flag-set  doing-busy? 0= ;] 2000 soon  white-mandragora-used story-flag?  hand-door doors:door-locked?  shadow-fx fx-alive? -> -1 -1 0 0 }T
 testing and the back after it: what the mandragora is for
-T{ back-area 45 at  said -> substitute-msg }T
+T{ back-area 90 at  said -> substitute-msg }T
 60 run-frames
 
 testing the back door unlocked from this side: the stalker sent on (the way out the other door's)
@@ -113,7 +113,7 @@ testing Hewie into the thicket at her "go there" toward it, out at her "come bac
 room-afresh  hewie-brought  -90 90e 7e -9e put  60 run-frames
 go-there-cmd command
 T{ [: [: hiding? ;] in-place ;] 900 soon -> -1 }T
-T{ thicket-area -30 at  said -> eyes-msg }T
+T{ thicket-area -60 at  said -> eyes-msg }T
 come-back-cmd command
 T{ [: [: hiding? 0= ;] in-place ;] 900 soon -> -1 }T
 

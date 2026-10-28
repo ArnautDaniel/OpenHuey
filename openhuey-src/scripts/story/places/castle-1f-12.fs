@@ -121,7 +121,7 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
 : unlocks-it ( -- )  locked-exit unlocks ;
 : spots ( -- )
     locked-exit before-locked? if  ['] unlocks-it any-time offer  then
-    opened? 0=  fiona wall-area in-area? and  fiona -45 50 heading? and if  ['] the-wall unhurried offer  then
+    opened? 0=  fiona wall-area in-area? and  fiona -90 50 heading? and if  ['] the-wall unhurried offer  then
     fiona dial-area in-area?  fiona 50 54e 49e faces-point? and if  ['] at-dial-2 unhurried offer  then
     fiona dial-1-area in-area?  fiona 50 30e -51e faces-point? and if  ['] at-dial-1 unhurried offer  then
     the-vase broken? if

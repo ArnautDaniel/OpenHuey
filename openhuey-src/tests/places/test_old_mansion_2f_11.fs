@@ -37,8 +37,8 @@ create blow-pt 3 floats allot
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 testing the stepladder: its state, then what's on top
 om2f-11-flag1 story-flag-clear  room-afresh
-T{ 9 60 at  said -> ladder-msg }T
-T{ 9 60 at  said -> on-top-msg }T
+T{ 9 120 at  said -> ladder-msg }T
+T{ 9 120 at  said -> on-top-msg }T
 testing the stepladder struck: wobbling, the third time the key falls
 T{ strike  om2f-11-flag1 story-flag?  [: tries @ ;] in-place -> -1 0 1 }T
 T{ strike drop  strike drop  om2f-11-flag1 story-flag? -> -1 }T
@@ -47,20 +47,20 @@ om2f-11-flag1 story-flag-set  got-jupiter-key story-flag-clear  room-afresh  jup
 0 7.3e 0e -32.3e put  circle press  300 read-on
 T{ got-jupiter-key story-flag?  jupiter-key items:items-of -> -1 before @ 1+ }T
 testing the books: their remarks in turn
-T{ $B 90 at  said -> books-msg }T
+T{ $B 180 at  said -> books-msg }T
 T{ $C 0 at  said -> languages-msg }T
-T{ $E 90 at  said -> titles-msg }T
-T{ $B 90 at  said -> books-msg }T
+T{ $E 180 at  said -> titles-msg }T
+T{ $B 180 at  said -> books-msg }T
 testing the journals: their file
 journals-examined story-flag-clear
-T{ $A -10 at  said  journals-examined story-flag? -> journals-msg -1 }T
+T{ $A -20 at  said  journals-examined story-flag? -> journals-msg -1 }T
 200 read-on
 T{ journal-file filed? -> -1 }T
 testing the notes: their recipes marked
-T{ $11 -45 at  said -> written-msg }T
+T{ $11 -90 at  said -> written-msg }T
 300 read-on
 T{ $63 items:item-bit?  $65 items:item-bit? -> -1 -1 }T
-T{ $12 -45 at  said -> written-msg }T
+T{ $12 -90 at  said -> written-msg }T
 300 read-on
 T{ $46 items:item-bit?  $47 items:item-bit? -> -1 -1 }T
 testing the Magnesia: taken

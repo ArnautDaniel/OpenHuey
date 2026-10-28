@@ -35,10 +35,10 @@ room-afresh
 T{ flames-up  0 part? -> 3 -1 }T
 
 testing the remarks: the dim corner, the box in turn, the paintings in turn, their twin
-T{ dim-area 90 at  said -> dim-msg }T
+T{ dim-area 180 at  said -> dim-msg }T
 T{ 0 41e 0e -15e put  said  0 41e 0e -15e put  said -> empty-box-msg dust-box-msg }T
-T{ painting-area 45 at  said  painting-area 45 at  said -> painting-msg painting-2-msg }T
-T{ twin-area 45 at  said -> twins-msg }T
+T{ painting-area 90 at  said  painting-area 90 at  said -> painting-msg painting-2-msg }T
+T{ twin-area 90 at  said -> twins-msg }T
 
 testing the vase broken: the Antimony Powder; picked up
 ' spots 41e 1e -19e struck

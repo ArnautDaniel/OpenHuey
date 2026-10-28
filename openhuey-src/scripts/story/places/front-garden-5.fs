@@ -183,7 +183,7 @@ create looks
     then
     fg-5-flag1 fact?  fg-5-viola-medallion fact? 0= and  fiona -265e -9e 160e 5e 5e touches? and if  ['] pick-viola calm-only offer  then
     fg-5-medallion-found fact?  fg-5-medallion fact? 0= and  fiona -228.4e -9e 103.2e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then
-    fiona door-area in-area?  fiona 90 60 heading? and if  ['] rusted-door unhurried offer  then
+    fiona door-area in-area?  fiona 180 60 heading? and if  ['] rusted-door unhurried offer  then
     the-crate broken? if
         fg-5-beef-jerky fact? 0=  fiona -14e -9e 97e 5e 5e touches? and if  ['] pick-jerky calm-only offer  then
     else  the-crate breaks? if  jerky-fx -14e -9e 97e flicker-at  then  then

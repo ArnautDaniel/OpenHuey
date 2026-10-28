@@ -53,22 +53,22 @@ T{ got-venus-key story-flag?  venus-key items:items-of 0> -> -1 -1 }T
 T{ 4 10e 0e toward  said -> drained-msg }T
 T{ 4 10e 0e toward  said -> peaceful-msg }T
 testing the tool and its engraving
-T{ 3 90 at  said -> tool-msg }T
+T{ 3 180 at  said -> tool-msg }T
 300 play-on
 testing the oven, the birdcage, the stretcher, the sabers, the breaker, the tools
-T{ 7 55 at  said -> oven-msg }T
-T{ 8 45 at  said -> birdcage-msg }T
-T{ 8 45 at  said -> person-msg }T
+T{ 7 110 at  said -> oven-msg }T
+T{ 8 90 at  said -> birdcage-msg }T
+T{ 8 90 at  said -> person-msg }T
 T{ 9 0 at  said -> stretcher-msg }T
-T{ $A -22 at  said -> sabers-msg }T
-T{ $B -45 at  said -> breaker-msg }T
-T{ $B -45 at  said -> chair-msg }T
-T{ $C -45 at  said -> tools-msg }T
+T{ $A -44 at  said -> sabers-msg }T
+T{ $B -90 at  said -> breaker-msg }T
+T{ $B -90 at  said -> chair-msg }T
+T{ $C -90 at  said -> tools-msg }T
 testing the iron maiden: its spikes; the lever lowers them; inside, hidden; out
-T{ maiden-area 45 at  said -> spikes-msg }T
+T{ maiden-area 90 at  said -> spikes-msg }T
 6 0 at  circle press  [: doing-busy? 0= ;] 600 soon drop
 T{ omb1-3-flag3 story-flag? -> -1 }T
-maiden-area 45 at  circle press  [: hidden? ;] 900 soon drop
+maiden-area 90 at  circle press  [: hidden? ;] 900 soon drop
 T{ hidden? -> -1 }T
 circle press  [: doing-busy? 0= ;] 900 soon drop
 T{ hidden?  free? -> 0 -1 }T

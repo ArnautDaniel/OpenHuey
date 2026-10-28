@@ -44,8 +44,9 @@ T{ 0 part?  3 part?  5 part?  [: medallion-fx effect @ 0<> ;] in-place -> -1 -1 
 testing the lever: jolted to -10 degrees, back 2 a frame, never past 0
 T{ [: lever-jolts ;] in-place  tilt -10e ~=  [: lever-back ;] in-place  tilt -8e ~= -> -1 -1 }T
 
-testing the clamp's remark
-T{ clamp-area 90 at  said -> clamp-msg }T
+testing the clamp's remark (facing it: the room's 90, cond 0x05's half-degrees, is 180 - at 90 nothing)
+T{ clamp-area 90 at  circle press  60 run-frames  window-shown 0<  doing-busy? -> -1 0 }T
+T{ clamp-area 180 at  said -> clamp-msg }T
 
 testing the vases: broken by her blows - the jerky and the magnesia showing; picked up
 ' spots 72.5e 49e 8.5e struck  ' spots 53e 114e -113.5e struck  ' spots 53e 114e -107e struck
@@ -74,7 +75,7 @@ T{ [: hits @ ;] in-place -> 2 }T
 T{ [: movie-skipped state-flag-set  c1f-11-flag1 story-flag? ;] 1500 soon -> -1 }T
 300 play-on
 T{ far-door doors:door-locked?  s" hanebasi1" turn-x object@ rad>deg -60e ~=  bridge-file filed? -> -1 -1 -1 }T
-T{ clamp-area 90 at  said -> clamp-off-msg }T
+T{ clamp-area 180 at  said -> clamp-off-msg }T
 free-play  10 run-frames  0 game:fiona send costume
 
 testing the movie replayed (the extras): played, then back by the forced way

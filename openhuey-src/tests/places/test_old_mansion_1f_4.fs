@@ -34,11 +34,11 @@ om1f-4-flag1 story-flag-clear  room-afresh
 testing coming in: the figure hopping, the room hunted
 T{ [: hopper-slot figure 0< 0= ;] in-place  hunted state-flag? -> -1 -1 }T
 testing the transmuter: its plaque, then her wonder; its file
-T{ 5 20 at  said  transmuter-file filed? -> plaque-msg -1 }T
-T{ 5 20 at  said -> transmuter-msg }T
+T{ 5 40 at  said  transmuter-file filed? -> plaque-msg -1 }T
+T{ 5 40 at  said -> transmuter-msg }T
 testing the incubators: something inside, then meat
-T{ 8 90 at  said -> incubator-msg }T
-T{ 9 90 at  said -> meat-msg }T
+T{ 8 180 at  said -> incubator-msg }T
+T{ 9 180 at  said -> meat-msg }T
 testing the White Godstone put in: the Red Godstone out; an incubator burst
 white-godstone 1 items send give-item  10 run-frames  red-godstone items:items-of before !
 0 changes-it -1 0 broadcast item-event  900 play-on

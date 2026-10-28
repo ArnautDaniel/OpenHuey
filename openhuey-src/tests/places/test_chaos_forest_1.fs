@@ -45,7 +45,7 @@ T{ 5 run-frames  [: the-figure hp.hops @ ;] in-place -> 1 }T
 [: body-point-off ;] her  60 run-frames
 testing the Forest Map taken: its part gone
 forest-map items:items-of before !
-T{ map-area 90 at  circle press  300 read-on  got-forest-map story-flag?  map-part [: part? ;] in-place  forest-map items:items-of -> -1 0 before @ 1+ }T
+T{ map-area 180 at  circle press  300 read-on  got-forest-map story-flag?  map-part [: part? ;] in-place  forest-map items:items-of -> -1 0 before @ 1+ }T
 testing Hewie by the figure: wary once a visit
 hewie-freed story-flag-set  hewie-commandable state-flag-set  room-afresh
 chaos-forest-1 22.39e -16e 144.46e nav-tri 0 game:hewie send hewie-place  30 run-frames  22.39e -16e 144.46e hewie-spot

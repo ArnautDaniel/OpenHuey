@@ -93,8 +93,8 @@ create mummy-look  68.2e 0e 31.14e  20e 12e 12e look,
     cameras 4 cameras-at  ahead 4 ways-out  map-pages
     low-vase breaks? drop  hewie-about
     flame-fx -84e -19e 13.7e 8e -4e flame-stirred
-    om2f-8-flag1 fact? 0=  fiona $E in-area? and  fiona -45 50 heading? and if  ['] the-picture unhurried offer  then
-    fiona $10 in-area?  fiona 45 60 heading? and if  ['] the-mummy unhurried offer  then
+    om2f-8-flag1 fact? 0=  fiona $E in-area? and  fiona -90 50 heading? and if  ['] the-picture unhurried offer  then
+    fiona $10 in-area?  fiona 90 60 heading? and if  ['] the-mummy unhurried offer  then
     om1f-17-chicken-jerky fact? 0=  fiona -137.37e -41e -14.57e 5e 5e touches? and if  ['] take-jerky calm-only offer  then
     om1f-17-medallion-found fact?  om1f-17-medallion fact? 0= and  fiona 68.99e 0e 19.99e 5e 5e touches? and if
         ['] take-medallion calm-only offer

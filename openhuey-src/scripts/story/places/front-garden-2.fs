@@ -84,9 +84,9 @@ crate-1 2 crate   crate-2 3 crate   crate-3 4 crate
 : pick-medallion ( -- )  medallion fg-2-medallion medallion-fx 130e -237e picks-up ;
 : medallion-shows ( -- )  medallion-fx 130e 61e -237e flicker-at ;
 : spots ( -- )
-    fg-2-flag1 fact? 0=  fiona grate-area in-area? and  fiona -45 50 heading? and if  ['] bolted any-time offer  then
-    fiona window-area in-area?  fiona 90 60 heading? and if  ['] window-1 unhurried offer  then
-    fiona window-2-area in-area?  fiona -45 60 heading? and if  ['] window-2 unhurried offer  then
+    fg-2-flag1 fact? 0=  fiona grate-area in-area? and  fiona -90 50 heading? and if  ['] bolted any-time offer  then
+    fiona window-area in-area?  fiona 180 60 heading? and if  ['] window-1 unhurried offer  then
+    fiona window-2-area in-area?  fiona -90 60 heading? and if  ['] window-2 unhurried offer  then
     crate-1 breaks? drop  crate-3 breaks? drop
     crate-2 broken? if
         fg-2-medallion fact? 0=  fiona 130e 61e -237e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then

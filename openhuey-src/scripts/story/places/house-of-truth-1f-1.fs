@@ -84,9 +84,9 @@ create holes  $51 , $21C , $2F , $54 , $23B , $43 , $22C , $44 , $22D , $45 , $2
     fiona water-area in-area?  fiona 0 50 heading? and if  ['] the-water unhurried offer  then
     ht1f-1-flag1 fact? 0= if
         fiona sign-area 50 faces-area? if  ['] the-sign unhurried offer  then
-        fiona wall-area in-area?  fiona 45 50 heading? and if  ['] the-fire unhurried offer  then
+        fiona wall-area in-area?  fiona 90 50 heading? and if  ['] the-fire unhurried offer  then
     else
-        fiona wreckage-area in-area?  fiona 30 50 heading? and  blasted @ and if  ['] the-wreckage unhurried offer  then
+        fiona wreckage-area in-area?  fiona 60 50 heading? and  blasted @ and if  ['] the-wreckage unhurried offer  then
     then
     ht1f-1-album-medallion-found fact?  ht1f-1-album-medallion fact? 0= and  fiona -78e 1e 39e 5e 5e touches? and if  ['] pick-album calm-only offer  then ;
 

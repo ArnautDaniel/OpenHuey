@@ -47,10 +47,10 @@ silver-ore 1 items send give-item  10 run-frames  silver-ore items:items-of befo
 0 nothing-from-it 0 silver-ore broadcast item-event  600 play-on
 T{ silver-ore items:items-of -> before @ }T
 testing the crawl space: the draught, then too tight; the furnace lit
-T{ 5 -45 at  said -> draught-msg }T
-T{ 5 -45 at  said -> too-tight-msg }T
+T{ 5 -90 at  said -> draught-msg }T
+T{ 5 -90 at  said -> too-tight-msg }T
 testing the notes on the dog: their file
-T{ 6 90 at  said  notes-file filed? -> notes-msg -1 }T
+T{ 6 180 at  said  notes-file filed? -> notes-msg -1 }T
 300 read-on
 testing the weak floor: her remark
 T{ 0 35e 0e 0e put  said -> weak-floor-msg }T
@@ -65,5 +65,5 @@ T{ [: gives-way ;] in-place  [: doing-busy? 0= ;] 600 soon drop  om2f-3-flag1 st
 room-afresh
 T{ 3 facing-middle  said -> fell-out-msg }T
 om2f-2-flag1 story-flag-set  room-afresh
-T{ 5 -45 at  said -> furnace-msg }T
+T{ 5 -90 at  said -> furnace-msg }T
 test-summary

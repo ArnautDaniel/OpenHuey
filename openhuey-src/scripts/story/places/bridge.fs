@@ -74,8 +74,8 @@ variable bridge-remarked  variable statue-remarked  variable medallion-noticed
     fiona wait-move  fiona 90 turn
     statue-remarked @ if  0 statue-remarked !  gargoyles-msg  else  -1 statue-remarked !  statue-msg  then  say ;
 : bridge-spots ( -- )
-    fiona bridge-area in-area?  fiona 90 50 heading? and if  ['] the-bridge unhurried offer  then
-    fiona statue-area in-area?  fiona 45 50 heading? and if  ['] the-statue unhurried offer  then ;
+    fiona bridge-area in-area?  fiona 180 50 heading? and if  ['] the-bridge unhurried offer  then
+    fiona statue-area in-area?  fiona 90 50 heading? and if  ['] the-statue unhurried offer  then ;
 
 \ ---- Hewie's bark at the Medallion across the gap (once a visit), his look up there ----
 create medallion-look  -149.92e 60e -50.71e  54e 36e 36e look,

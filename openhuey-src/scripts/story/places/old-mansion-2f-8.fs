@@ -159,13 +159,13 @@ create looks  141.32e 0e -60.6e  20e 21e 21e look,   59.37e 0e 0.93e  20e 12e 12
     flame-fx 48.8e 10.3e -50.7e 8e -4e flame-stirred
     room-sounds-in? if  first-ambient 45.32e 0e 23.5e ambient-sounds  then
     fiona $16 50 faces-area? if  ['] the-lamp unhurried offer  then
-    fiona $17 in-area?  fiona 90 50 heading? and if  ['] the-hole unhurried offer  then
-    fiona $18 in-area?  fiona 90 60 heading? and if
+    fiona $17 in-area?  fiona 180 50 heading? and if  ['] the-hole unhurried offer  then
+    fiona $18 in-area?  fiona 180 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
     then
-    fiona $19 in-area?  fiona -15 50 heading? and if  ['] save-clock calm-hewie-up offer  then
-    fiona $1A in-area?  fiona 45 60 heading? and if  ['] the-painting unhurried offer  then
-    fiona $1B in-area?  fiona -90 60 heading? and if  ['] the-bones unhurried offer  then
+    fiona $19 in-area?  fiona -30 50 heading? and if  ['] save-clock calm-hewie-up offer  then
+    fiona $1A in-area?  fiona 90 60 heading? and if  ['] the-painting unhurried offer  then
+    fiona $1B in-area?  fiona -180 60 heading? and if  ['] the-bones unhurried offer  then
     fiona $1C in-area?  fiona 0 60 heading? and if  ['] the-book unhurried offer  then
     1 locked-request?  fiona 0 before-door? and if  ['] water-in any-time offer  then
     om2f-8-camomile fact? 0=  fiona 48e 8e -53e 5e 5e touches? and if  ['] take-camomile calm-only offer  then

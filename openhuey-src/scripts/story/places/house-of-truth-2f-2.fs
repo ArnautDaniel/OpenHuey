@@ -85,16 +85,16 @@ $43 constant study-seen   $28 constant gasp-sound   $4B constant fortis-bit
 : pick-viride ( -- )  viride-medallion ht2f-2-viride-medallion viride-fx 37e 84e picks-up ;
 : viride-sniffed ( -- )  ht2f-2-viride-medallion-found ht2f-2-viride-medallion viride-fx  37e 1e 84e  hewie-finds ;
 : spots ( -- )
-    got-mystery-sketch fact? 0=  fiona 3 in-area? and  fiona 52 50 heading? and if  ['] takes-sketch calm-only offer  then
-    fiona 4 in-area?  fiona -34 50 heading? and if  ['] the-title unhurried offer  then
-    fiona 5 in-area?  fiona 32 50 heading? and if  ['] the-closet unhurried offer  then
-    fiona 6 in-area?  fiona -3 50 heading? and if  ['] the-bobbles unhurried offer  then
-    fiona 7 in-area?  fiona 46 50 heading? and if  ['] the-books unhurried offer  then
-    fiona 9 in-area?  fiona -35 50 heading? and if  ['] the-books unhurried offer  then
-    fiona 8 in-area?  fiona -41 50 heading? and if  ['] the-untitled unhurried offer  then
-    fiona $A in-area?  fiona -24 50 heading? and if  ['] the-wedged unhurried offer  then
+    got-mystery-sketch fact? 0=  fiona 3 in-area? and  fiona 104 50 heading? and if  ['] takes-sketch calm-only offer  then
+    fiona 4 in-area?  fiona -68 50 heading? and if  ['] the-title unhurried offer  then
+    fiona 5 in-area?  fiona 64 50 heading? and if  ['] the-closet unhurried offer  then
+    fiona 6 in-area?  fiona -6 50 heading? and if  ['] the-bobbles unhurried offer  then
+    fiona 7 in-area?  fiona 92 50 heading? and if  ['] the-books unhurried offer  then
+    fiona 9 in-area?  fiona -70 50 heading? and if  ['] the-books unhurried offer  then
+    fiona 8 in-area?  fiona -82 50 heading? and if  ['] the-untitled unhurried offer  then
+    fiona $A in-area?  fiona -48 50 heading? and if  ['] the-wedged unhurried offer  then
     ht2f-2-viride-medallion-found fact?  ht2f-2-viride-medallion fact? 0= and  fiona 37e 1e 84e 5e 5e touches? and if  ['] pick-viride calm-only offer  then
-    fiona $B in-area?  fiona 12 50 heading? and if  ['] the-medicine unhurried offer  then ;
+    fiona $B in-area?  fiona 24 50 heading? and if  ['] the-medicine unhurried offer  then ;
 
 \ ---- every frame ----
 create cameras  1 , 0 , -1 ,  2 , 1 , 0 ,   \ (area, set, path)

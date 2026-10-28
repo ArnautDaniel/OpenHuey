@@ -99,7 +99,7 @@ $1C constant door-track   $81 constant mystic-way
 : his-body ( -- )  fiona wait-move  fiona look-low-anim start-anim  16 frames  dead-msg say  fiona wait-anim ;
 : spots-by ( done -- )
     {: done :}
-    fiona clock-area in-area?  fiona 67 50 heading? and if
+    fiona clock-area in-area?  fiona 134 50 heading? and if
         done if  ['] get-out unhurried offer  else  ['] save-clock calm-hewie-up offer  then
     then
     fiona door-area in-area?  fiona 0 50 heading? and if
