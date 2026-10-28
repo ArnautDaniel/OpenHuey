@@ -80,8 +80,10 @@ state: place-state
   cell field st-sub-now         \ ... and its part (leading her: leading-sub ..)
   cell field st-linked-now      \ linked to someone (stalker-ties: Progress_IsLinked)
   cell field grab-asked-now  cell field grab-ok-now   \ the grab of Hewie from behind asked of him, his yes
+  cell field grab-last-now      \ ... his last answer, kept (grab-ready?)
   cell field st-room-now  cell field st-cond-now  cell field st-kind-now  cell field st-alert-now  cell field st-came-now  cell field st-age
   cell field st-heard           \ he has told us at all (in the game: st-age frames ago)
+  cell field summoner-secs-now  \ the summoner's countdown left, in seconds, as it tells (summoner-cooldown-is; -1 not yet)
   \ the creatures, as they tell (creature-doing): each one's room, how it moves, frames since
   #creatures cells field cr-room  #creatures cells field cr-mode  #creatures cells field cr-age  #creatures cells field cr-id
   cell field found-her          \ a hiding place's: the stalker has found her there (she must flee)
@@ -317,6 +319,7 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
     {: ex set path :}  #people 0 do  i person-id dup ex exit-area in-area? if  set path camera-set  else  drop  then  loop ;
 : her-camera ( set path -- )  fiona -rot camera-set  fiona follow ;   \ (her setup, and the camera on her)                                \ the camera follows who
 : near-clip ( F: v -- )  engine:camera cam.near sf! ;   \ (the camera's near clip: 1 the usual)
+: far-clip ( F: v -- )  engine:camera cam.far sf! ;   \ (its far clip)
 : fixed-camera ( set path -- )  cam-setup  -1 cam-followed! ;   \ the room's own camera, following nobody
 : shot ( on F: dist pitch yaw rise -- )   \ the story's own shot of the one followed (0: back)
     {: on F: d p y r :}  on  d 1000e f* f>s  p 1000e f* f>s  y 1000e f* f>s  r 1000e f* f>s  camera-actor send event-shot ;
@@ -449,6 +452,7 @@ $26 constant costume-var   $27 constant coat-var   $28 constant costume-worn-var
 : hewie-doing? ( act -- flag )  hewie-in? if  hewie-act-now @ =  else  drop false  then ;
 : hewie-do ( a b -- )  hewie send do-action ;
 : hewie-to ( room tri side -- )  hewie send hewie-place ;   \ (put in that room on the triangle, at her side: Hewie_PlaceInRoom)
+: hewie-side ( side -- )  hewie dup 0< if  2drop exit  then  send hewie-side! ;   \ (his half of a split room: 0..2, else none - 0xD0)
 100 constant scramble-2-act   \ (Hewie_SetAction's $64: into his scramble, as scramble-act)
 : scrambling? ( -- flag )  hewie-act-now @ dup scramble-act = swap scramble-2-act = or  hewie-in? and ;
 : hush ( id on -- )  over 0< if  2drop exit  then  swap send silent ;   \ (its own sounds kept quiet)
@@ -506,6 +510,8 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : grabs-hewie? ( -- flag )   \ (asked of the stalker - can he grab Hewie from behind? - his yes a frame on, once)
     grab-ok-now @ if  0 grab-ok-now !  true exit  then
     grab-asked-now @ 0=  stalker 0< 0= and if  -1 grab-asked-now !  stalker send grab-hewie  then  false ;
+: grab-ready? ( -- flag )  grabs-hewie? drop  grab-last-now @ ;   \ (asked each frame: his last answer - a frame old)
+: grab-forget ( -- )  0 grab-last-now ! ;   \ (not by Hewie now: no answer kept)
 : partner ( -- id | -1 )  story.words:slot2 @ ;   \ the story's stalker (its slot 2): loaded, in the game or not
 : partner-kind ( -- kind )  story.words:slot2-kind @ ;
 : face-on ( kind sel addr len -- )   \ a character's face: its texture sel the file's first (Progress_LoadSpeech / Speak)
@@ -526,6 +532,9 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : stalker-order ( mode -- )  stalker dup 0< if  2drop exit  then  send stalker-order ;
 : summoner ( -- id )  s" summoner" actor-named ;
 : summoner-waits ( secs -- )  summoner send summoner-cooldown ;
+: partner-is? ( kind -- flag )  partner 0< if  drop false exit  then  partner-kind = ;   \ (the story's stalker that kind: cond 0x54)
+: riccardo? ( -- flag )  riccardo-kind partner-is?  tintstalker-kind partner-is? or ;   \ (the story's stalker Riccardo, or his tinted self)
+: summoner-due? ( -- flag )  summoner-secs-now @ 0= ;   \ (its countdown run out: progress +0x764)
 
 \ ---- the room's own: its sounds, effects, look, objects, motions ----
 : room-sounds ( -- )  0 $1B0C00 sound-stop-voices  room-bank sound-load ;   \ (the last room's voices stopped, this one's loaded)
@@ -534,7 +543,8 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
     {: a id F: x y z :}  a @ if  id x y z keep-sound exit  then
     room-sounds-in? 0= if  exit  then  id x y z room-sound  -1 a ! ;
 : effect ( k -- addr )  cells effects + ;
-: effect! ( id k -- )   \ the place's effect k (the one there before gone)
+: effect! ( id k -- )   \ the place's effect k (the one there before gone - unless it died and its id is the new one's)
+    2dup effect @ = if  effect !  exit  then
     dup effect @ ?dup if  dup alive? if  kill  else  drop  then  then  effect ! ;
 : effect-off ( k -- )  0 swap effect! ;
 : effects-gone ( -- )  #room-effects 0 do  i effect-off  loop ;
@@ -571,6 +581,8 @@ create look-bytes 16 allot
         then
     loop ;
 : creature-in ( room level tri kind reach -- )  0 creature-facing ;
+: creature-slot-in ( room level tri kind reach slot -- )   \ (one let out there into that slot of theirs)
+    0 0e f>cell  s" creatures" actor-named send creature-place ;
 : story-spirit-in ( room level tri kind reach -- )   \ (the story's own spirit, slot 6, let out there)
     story-spirit 0 0e f>cell  s" creatures" actor-named send creature-place ;
 : creature-up? ( slot -- flag )  cells cr-age + @ 2 < ;   \ (in the game: it told us this frame or the last)
@@ -902,6 +914,9 @@ $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3
 
 \ ---- where things are seen and faced ----
 : unseen? ( id -- flag )  dup here? 0= if  drop true exit  then  body-at vec@ out-of-view? ;
+: time-up-leaves ( -- )   \ (each frame: Riccardo here, free and out of her sight, his time up - taken off)
+    riccardo? 0= if  exit  then  stalker-in? stalker-told? and  stalker held? 0= and  0= if  exit  then
+    summoner-due?  stalker unseen? and if  stalker let-go  1 summon-take  then ;
 : point-unseen? ( F: x y z -- flag )  out-of-view? ;
 : point-seen? ( F: x y z -- flag )  out-of-view? 0= ;   \ (on the screen: the rooms' "point-on-camera? not" - their cond 0x4F is the camera's out-of-view test)
 : faces-point? ( id within F: x z -- flag )   \ facing the point, within so many degrees
@@ -1377,6 +1392,7 @@ end-structure
     {: id tri face b kind F: x z :}  id kind tri b  tri x z floor-at  face deg>yaw  move  id wait-move ;
 : path-to ( id tri b kind -- )  {: id tri b kind :}  id kind tri b  tri tri-center  id body-yaw  move  id wait-move ;
 : tint ( id rgba -- )  swap model-of dup 0< if  2drop exit  then  actor act.tint l! ;   \ ($80808080 as it is)
+: gs-tint ( id gs -- )  story.words:gs>rgba tint ;   \ (a GS colour, $AABBGGRR - the rooms' char-tint)
 : doorway-fades ( id on -- )  0<> 1 and  swap model-of dup 0< if  2drop exit  then  actor act.doorway-fade l! ;
 : to-door ( id exit -- )   \ (walking to its door's spot on her side - to try it)
     {: id ex :}  id here? 0= if  exit  then
@@ -1443,7 +1459,7 @@ behaviour placing
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe stalker-blow  -1 st-blow-now !
       self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
       self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
-      self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe item-var  self subscribe fiona-shakes  0 shakes-now !  self subscribe noise-was  0 loud-now !  self subscribe keri-fell  0 fell-now !
+      self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe item-var  self subscribe fiona-shakes  0 shakes-now !  self subscribe noise-was  0 loud-now !  self subscribe keri-fell  0 fell-now !  self subscribe summoner-cooldown-is  -1 summoner-secs-now !
       room-starts  frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people
       camera-starts  camera-placed ;
   on tick ( -- )
@@ -1496,13 +1512,14 @@ behaviour placing
   on fiona-shaking ( n -- )  shook-now ! ;
   on fiona-shakes ( n -- )  shakes-now ! ;
   on keri-fell ( k -- )  drop  1 fell-now +! ;
+  on summoner-cooldown-is ( secs -- )  summoner-secs-now ! ;
   on noise-was ( loud room -- )  this-room @ =  swap $20 >= and if  2 loud-now !  then ;
   on fiona-message ( msg -- )   \ (her locked door's: not while Hewie is the one played)
       leaving @  shown-msg @ 0< 0= or  hewie-played? or if  drop exit  then  show ;
   on stalker-ties ( scripted apart linked -- )  st-linked-now !  2drop ;
   on item-event-bit ( n on -- )  nip word-right-now ! ;   \ (the word plate's: right or not, as the room's doing starts)
   on item-var ( var value -- )  over 2 u< if  swap cells word-vars + !  else  2drop  then ;   \ (its letters: old-mansion-b1-6)
-  on grab-answer ( ok -- )  grab-ok-now !  0 grab-asked-now ! ;
+  on grab-answer ( ok -- )  dup grab-last-now !  grab-ok-now !  0 grab-asked-now ! ;
   on item-event ( who ev var value -- )   \ (the room's own, else what every room does)
       leaving @ if  2drop 2drop exit  then
       ['] d.item hook ?dup if  >r 2over 2over r> execute if  2drop 2drop exit  then  then  item-used ;

@@ -90,12 +90,21 @@ mortal counter-state s" m" spawn constant m1
 mortal counter-state s" m" spawn constant m2
 T{ m1 kill  m1 alive?  log @ length  log @ 0 swap nth -> 0 1 7 }T
 T{ 0 m2 send ping  deliver  m2 alive?  log @ 1 swap nth  log @ 2 swap nth -> 0 7 8 }T
-testing what was on its way to a killed actor isn't the next one's (its id used again)
+testing the ids go round: one just freed isn't the next one's
 actors-reset  list log !
 mortal counter-state s" m" spawn constant m3
 0 m3 send ping   m3 kill
 mortal counter-state s" m" spawn constant m4
-T{ m4 m3 =  deliver  log @ length -> -1 1 }T   \ (only m3's last words)
+T{ m4 m3 = -> 0 }T
+testing what was on its way to a killed actor isn't the next one's (its id used again, once round)
+behaviour quiet  on ping ( n -- )  drop  9 note ;  end-behaviour   \ (no last words; a ping noted)
+: round-to ( id -- id' )   \ (quiet ones spawned and killed till the next spawn gets id)
+    256 0 do  quiet counter-state s" r" spawn  2dup = if  nip unloop exit  then  kill  loop ;
+m4 kill  deliver  list log !   \ (its and m3's last words, cleared)
+mortal counter-state s" m" spawn constant m5
+0 m5 send ping   m5 kill
+m5 round-to constant m6
+T{ m6 m5 =  deliver  log @ length -> -1 1 }T   \ (only m5's last words: its ping not m6's)
 
 testing a handler sees only its arguments: taking more is an error, the deliverer's stack untouched
 actors-reset
