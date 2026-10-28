@@ -185,6 +185,40 @@ converted files of the rooms that are places are kept, unloaded, in `scripts/sto
 Tests of the converted rooms' machinery set `story:places-off` to run a room so even if it is a
 place (its converted scripts or none); it goes with the machinery.
 
+The old mansion's pieces: the hopping figure (`hopper:` - its hops, sounds, place; `hopper-in`,
+`hopper-struck?`, `hops-back`, `hops-about`, `hopper-calls`, `hopper-gone`); the cabinet to hide in
+(`cabinet:`, `cabinet-doors`, `cabinet-shown`, `hides-in-cabinet`, `cabinet-stalker-came`: Hewie
+beside her, the stalker's grab or opening); a recovery point (`recovery-point`: its message, motions,
+sound, its document the first time); a mandragora carried shrieking as she hides (`hide-shriek`,
+`mandragora?`, `shrieks`); the mansion's finding odds (`mansion-odds`); doors closed off for good
+(`closed-off?`); one triangle's floor flags off (`floor-tri-off`); fog (`fog`, `fog-off`); an arrow
+pressed this frame (`arrow-pressed?`); the creatures - the homunculi on a nav group gone
+(`homunculi-off`), the story's spirit let out (`story-spirit-in`), one in the game (`creature-up?`),
+a body within reach across (`within-xz?`), a spirit put away there (`spirit-put-away-near?`), the
+ones here all on level 0 (`creatures-grounded`); Hewie sitting with his head turned away
+(`hewie-sits-refusing`, the shared $93); the word plate's answer and letters (`word-right-now`,
+`word-vars`), her shakes counted (`shakes-now`); hangers pushed by anyone's step (`step-of`,
+`chime-push`, `chime-swing`: Room48's are pushed by Hewie). An effect's slot: `live-effect` (0 is
+none), `tell-effect`, and `dies-down` for one left to burn out on its own (forgotten, so a later
+clear-up never kills an actor that took its id). A point on the screen: `point-seen?` - the rooms'
+`point-on-camera? not`, their cond 0x4F being the camera's out-of-view test (+0xD4, as cond
+0x45's); `point-unseen?` the other way.
+- the old mansion (every room a place): its 1F (the scales, the transmuter, the dragon, the
+  library's shelves, the garden of mandragoras, the graveyard - the graves, the mausoleum, the
+  thicket Hewie lies hidden in and Daniella's ambush, the hand at the back fed the mandragoras,
+  Hewie's errands for the glow and the Antimony Tube, the back door), its 2F (the laboratory's
+  lockers, the gallery, the dial lock), its 3F (the boxes, Daniella's death; the armour's
+  corridor), its B1 (the mirror and symbol doors, Daniella at the kiln, the trap workshop, the
+  torture chamber, the golem race).
+- the Chaos Forest (every room a place; `story/places/forest.fs` what they share - the maze dealt
+  anew, as she comes in to a room never dealt and as her panic sets in; the bushes of -4 .. -7 to
+  crouch in, the stalker's search of them by the odds, their leaves; the wisp startled by a noise or
+  someone near; the rabbit): its edge (the hopper, the Forest Map), the clearing (Hewie found, seven
+  crates, the sundial), the lake, the crossing, the way to its heart, Hewie shot (his hurt face, the
+  bandage scene), the heart (Riccardo; dressed anew, on to the water tower). Kit: `start-holding`
+  (an activity that holds someone from the frame it starts - nothing else takes them first),
+  `loud-here?` (a loud noise made here last frame), `face-off`.
+
 **What every room does** (`scripts/story/common.fs`): the shared scripts the converted rooms ran
 after their phases and for item uses - crouching ($81 / $82 / $87), the camera on the stalker
 while she is half hidden, the mandragora's spell, the other game's rewards, searching the

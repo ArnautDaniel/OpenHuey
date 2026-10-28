@@ -12,41 +12,20 @@ USING: engine game-state actors messages common facts room-names flag-names stor
 own-reset
 
 0 constant cart-msg   \ "A cart with some medicine on it. There may be some medicine here that I can use, but al..."
-own: hops  own: call-frames  own: spot-noticed  own: figure-noticed
-0 constant medallion-fx   1 constant antimony-fx   $1C constant hopper   3 constant hopper-slot
+own: spot-noticed  own: figure-noticed
+0 constant medallion-fx   1 constant antimony-fx
 0 constant lash-sound   1 constant hop-sound   2 constant call-sound
-$9002 constant hopping   $9003 constant hopping-back   $D constant cart-area
+$D constant cart-area
 
-\ ---- the figure: hopping; struck, it hops back - the fifth time, it lashes out ----
-: hopper-in ( -- )
-    hopper hopper-slot figure-in  hopper-slot figure 0< if  yield  then
-    hopper-slot figure-on  hopper-slot 6.38e 0e -112.79e 170e figure-at  hopper-slot hopping 1 0 figure-play ;
-: struck? ( -- flag )  6.38e 0e -112.79e 5e 10e struck-in? ;
-: lashes ( -- )   \ (out of patience: her fright up, the stalker told)
-    panic-stage @ 0= if  1 panic-to  else  15 fright+  then  0 stalker-order
-    lash-sound room-bank hopper-slot figure sound-by ;
-: hopping-about ( -- )
-    hopper-in
-    begin
-        struck? if
-            0 call-frames !  1 hops +!
-            hops @ 3 = if  33 chance? if  5 hops !  then  then
-            hops @ 4 = if  50 chance? if  5 hops !  then  then
-            hops @ 5 = if  lashes  else  hop-sound room-bank hopper-slot figure sound-by  then
-            shove-hit-sound common-bank fiona sound-by
-            hopper-slot hopping-back 0 3 figure-play  hopper-slot figure-wait
-            hopper-slot hopping 0 3 figure-play  0 call-frames !
-            hops @ 5 = if  hopper-slot figure-wait  0 hops !  then
-        then
-        hopper-slot figure-came-round? if  hopper-slot hopping 0 0 figure-play  0 call-frames !  else  1 call-frames +!  then
-        yield
-    again ;
+\ ---- the figure (the kit's hopper) ----
+$9002 $9003 lash-sound hop-sound  6.38e 0e -112.79e 170e  hopper: the-figure
+: hopping-about ( -- )  the-figure true hops-about ;
 
 \ ---- as she comes in ----
 : antimony-shows ( -- )
     om1f-3-refined-antimony-found fact?  om1f-3-refined-antimony fact? 0= and if  antimony-fx -19.52e 1e -13.68e flicker-at  then ;
 : came-in ( exit -- )
-    drop  room-sounds  0 call-frames !  ['] hopping-about start drop  hunted state!
+    drop  room-sounds  ['] hopping-about start drop  hunted state!
     om2f-3-flag1 fact? if
         hewie-in?  hewie 0 on-group? and if  hewie $13 put-on-tri  then
         0 show-part  0 barred-floor floor-on
@@ -84,7 +63,7 @@ create looks  7.31e 0e -110.05e  30e 6e 6e look,
     -40e 17e -83.5e  -34e 17e -83.5e  -40e 8e -83.5e  -34e 8e -83.5e  light-doorway ;
 : each-frame ( -- )
     3 exits-out  cameras 6 cameras-at  ahead 4 ways-out
-    call-frames @ dup 7 =  swap 47 = or if  call-sound room-bank hopper-slot figure sound-by  then
+    the-figure hopper-still dup 7 =  swap 47 = or if  call-sound hopper-sound  then
     om1f-3-refined-antimony-found fact? 0=  scrambling? and  hewie -19.52e 0e -13.68e 10e 5e touches? and if  ['] antimony-sniffed start-only  then
     spot-noticed 30 -25.44e 0e -54.79e 12e 10e notices? if  ['] sits-by start drop  then
     figure-noticed 80 7.31e 0e -110.05e 30e 6e notices? if  ['] wary-of-it start drop  then
@@ -100,6 +79,6 @@ create looks  7.31e 0e -110.05e  30e 6e 6e look,
     fiona-p <> if  exit  then
     entries 3 ways-in
     came-by @ forced-exit = if  fiona $1A 160 place-on-tri  1 1 player-camera  ['] wakes start drop  then ;
-: went ( -- )  fiona 2 in-area? if  hopper-slot figure dup 0< if  drop  else  let-go  then  then ;
+: went ( -- )  fiona 2 in-area? if  hopper-gone  then ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-3 place!

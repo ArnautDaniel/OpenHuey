@@ -122,7 +122,7 @@ vase-1 0 $80505050 $111 vase   vase-2 2 $80404040 $122 vase   vase-3 1 $80404040
     hewie-in?  hewie-cond-now @ down-cond <> and  hewie held? 0= and  chased? 0= and 0= if  exit  then
     fiona one-half on-floor-of? if  exit  then
     fiona-cmd-now @ go-for-it-gesture <> if  exit  then
-    4e 0e 45e point-unseen?  fiona unseen? 0= and  hewie unseen? 0= and 0= if  exit  then
+    4e 0e 45e point-seen?  fiona unseen? 0= and  hewie unseen? 0= and 0= if  exit  then
     fiona 50 4e 45e faces-point?  hewie-breakable-now @ and if  ['] sends-him start drop  then ;
 create medallion-look  9.646e 0.163e 27.266e 30e 6e 6e look,
 

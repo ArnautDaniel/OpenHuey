@@ -118,7 +118,7 @@ create far-look  46.51e 0e -267.37e 28e 6e 6e look,
         hewie-breakable-now @ if  ['] into-hole start drop  then  exit
     then
     c1f-19-rubrum-medallion fact?  chased? or if  exit  then
-    68e 0e -274e point-unseen? 0=  fiona unseen? or  hewie unseen? or if  exit  then
+    68e 0e -274e point-seen? 0=  fiona unseen? or  hewie unseen? or if  exit  then
     fiona 50 68e -274e faces-point?  hewie held? 0= and  hewie-breakable-now @ and if  ['] sends-him start drop  then ;
 
 \ ---- the water: a splash as someone steps in (each spot once a visit) ----

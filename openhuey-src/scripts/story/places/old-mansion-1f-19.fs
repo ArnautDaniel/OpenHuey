@@ -39,11 +39,10 @@ $1C constant scene-figure   3 constant figure-slot   $FE constant through-hole  
     her-looker? if  stalker use-motions  1 her-back  stalker room-motion play  0 her-back
     else  stalker stalker.anims:there-anim play  then
     -1 found-her !  stalker 10 idle  begin  fiona held? while  yield  repeat  0 stalker-order ;
-: search-odds ( -- pct )  search-var var@ case  0 of 10 endof  1 of 25 endof  2 of 50 endof  3 of 75 endof  >r 0 r>  endcase ;
 : stalker-came ( -- )
     came-on-her? 0= if  exit  then
     her-looker? if  stalker her-look-motions motions-for  then
-    search-odds chance?  2 creature-moving? or if  ['] looks-in start drop  else  120 summoner-sooner  then
+    search-var mansion-odds chance?  2 creature-moving? or if  ['] looks-in start drop  else  120 summoner-sooner  then
     search-var var@ 1+ search-var var! ;
 
 : barks-at-spot ( -- )  0.75e 0e -116.99e hewie-barks-at ;

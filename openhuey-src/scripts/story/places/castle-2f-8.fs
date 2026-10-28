@@ -43,7 +43,7 @@ the-vase shard-grey 0 7 shard-look  the-vase 0.812e 0.687e 0.187e 0.312e shard-u
 0 constant choker-fx
 $13 constant golem-door
 8 constant golem-kind   3 constant golem-figure   \ (the scenes' golem: a figure in slot 3)
-0 constant try-sound   9 constant room-loop-sound   $84 constant calmed-sound
+0 constant try-sound   9 constant room-loop-sound
 $A0 constant old-parchment   $8D constant obsidian-choker   $75 constant choker-other   \ (items)
 $16 constant emeth-seen   $17 constant meth-seen   \ (the system data's flags: the scenes seen)
 6 constant debilitas-6    \ (the stalker after it: Debilitas)

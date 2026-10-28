@@ -76,7 +76,7 @@ $28 constant arrival-sound   $2E constant go-for-it-call   0 constant go-for-it-
     c1f-1-refined-magnesia fact? if  exit  then
     hewie-in?  hewie-cond-now @ down-cond <> and  hewie held? 0= and  chased? 0= and 0= if  exit  then
     fiona-cmd-now @ go-for-it-gesture <> if  exit  then
-    -40e -16e 60e point-unseen?  fiona unseen? 0= and  hewie unseen? 0= and 0= if  exit  then   \ (the spot off the screen, they on it)
+    -40e -16e 60e point-seen?  fiona unseen? 0= and  hewie unseen? 0= and 0= if  exit  then   \ (the spot on the screen, they too)
     fiona 50 -40e 60e faces-point?  hewie-breakable-now @ and if  ['] sends-him start drop  then ;
 : barks-at-pond ( -- )  -33.33e -16.93e 69.69e hewie-barks-at ;
 create pond-look  -33.33e -16.93e 69.69e 40e 6e 6e look,

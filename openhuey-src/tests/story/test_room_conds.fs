@@ -4,8 +4,7 @@
 \ conditions on them. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_room_conds.fs
 IN: test-room-conds
-USING: tester engine game-state actors messages common room-names game debug fiona.state story.state story.words
-  story.rooms.old-mansion-b1-6 story.rooms.chaos-forest-13 ;
+USING: tester engine game-state actors messages common room-names game debug fiona.state story.state story.words ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;
@@ -28,22 +27,5 @@ T{ [: 3 story.kit:thing-lying? 0= ;] in-room -> -1 }T
 3 game:fiona body-tri  game:fiona body-pos f>cell >r f>cell >r f>cell r> r>  0 0 0  game:things send thing-made  deliver  2 run-frames
 T{ [: 3 story.kit:thing-lying? 0= ;] in-room -> 0 }T
 engine:things-clear
-
-testing the letters (old-mansion-b1-6): "LRL" from place 0 - L (on), R wanted at 1 (on), R wanted at 2: no
-: letters! ( -- )   \ (var 0's bytes: 'L' 'R' 'L' 0)
-    [: 0  [char] L  [char] R 8 lshift or  [char] L 16 lshift or  var-set  1 0 var-set  2 0 var-set ;] in-room ;
-letters!
-T{ [: 0 old-mansion-b1-6.cond00?  1 old-mansion-b1-6.cond00?  1 old-mansion-b1-6.cond00?  2 var @ ;] in-room -> -1 -1 0 2 }T
-
-testing her x past a line (old-mansion-b1-6 cond01): at least x - 1 yes, x + 1 no
-: x-word ( F: x -- ) ( -- b1 b2 b3 b4 )  1000e f* f>s {: n :}  n 24 rshift $FF and  n 16 rshift $FF and  n 8 rshift $FF and  n $FF and ;
-: past? ( F: dx -- flag )  game:fiona body-at sf@ f+  [: 0 ctx-who !  0 x-word old-mansion-b1-6.cond01? ;] in-room ;   \ (as Fiona's script)
-T{ -1e past?  1e past? -> -1 0 }T
-
-testing the count while Hewie is down (chaos-forest-13): below 100, then 100
-T{ [: chaos-forest-13.cond00? ;] in-room -> 0 }T
-100 progress pr.hewie-mistreated l!
-T{ [: chaos-forest-13.cond00? ;] in-room -> -1 }T
-0 progress pr.hewie-mistreated l!
 
 test-summary
