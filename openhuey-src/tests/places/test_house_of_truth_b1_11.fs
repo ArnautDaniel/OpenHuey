@@ -39,6 +39,7 @@ room-afresh
 testing going on, Lorenzo not here: he leaves her be at once
 0 -48e 2e -9e put
 T{ 0 -48e 2e 11e put  htb1-11-flag1 story-flag? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing ... Lorenzo here: he glances, then leaves her be
 htb1-11-flag1 story-flag-clear  lorenzo-loaded  house-of-truth-b1-11 $136 game:lorenzo2 send stalker-in  30 run-frames  room-afresh
 T{ lorenzo-here? -> -1 }T

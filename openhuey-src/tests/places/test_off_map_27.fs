@@ -8,6 +8,7 @@
 IN: test-off-map-27
 USING: tester engine game-state actors messages keys room-names game debug facts flag-names story-names
     stalker-names fiona.state story.kit items.names gameover story.places.off-map-27 ;
+full-suite   \ (on: waits, scenes, walks - the full run's)
 : window-shown ( -- msg )  game:window enter  window:shown @  leave-actor ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
 : her ( xt -- x )  game:fiona enter  execute  leave-actor ;

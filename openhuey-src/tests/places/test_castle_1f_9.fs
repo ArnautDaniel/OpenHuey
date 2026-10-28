@@ -38,6 +38,7 @@ testing coming in: the vases whole, the Album Medallion's sparkle up the stairs
 c1f-9-breakable1-broken story-flag-clear  c1f-9-breakable2-broken story-flag-clear  c1f-9-album-medallion story-flag-clear
 c1f-9-flag1 story-flag-set  room-afresh
 T{ 0 part?  2 part?  [: album-fx effect @ 0<> ;] in-place -> -1 -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the remarks: the stairs in turn, the well, the bench
 T{ stairs-area 45 at  said  stairs-area 45 at  said -> stairs-msg stairs-2-msg }T

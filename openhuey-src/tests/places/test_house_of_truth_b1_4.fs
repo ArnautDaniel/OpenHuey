@@ -38,6 +38,7 @@ htb1-5-flag1 story-flag-set  htb1-7-flag1 story-flag-set  $F1 true [: open-mark 
 room-afresh
 testing coming in: the colours undone, their doors' opened marks cleared
 T{ htb1-5-flag1 story-flag?  htb1-7-flag1 story-flag?  $F1 opened? -> 0 0 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the inscription by the wall
 T{ inscription-area -45 at  said -> inscription-msg }T
 testing crossing toward the first door: the red room loaded ahead; through the door - in there, the dark lifting

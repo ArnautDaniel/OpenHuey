@@ -37,6 +37,7 @@ T{ key: K press-key  [: her-mode @ her-sub @ ;] her@ -> $D $2C }T
 T{ 200 $1D takes? -> -1 }T
 T{ [: his-cmd-was @ ;] his@ -> $2C }T
 T{ 200 $D takes? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 120 run-frames
 
 testing "come back" on the move (walking): no stop for a gesture; she glances at him (30 frames)

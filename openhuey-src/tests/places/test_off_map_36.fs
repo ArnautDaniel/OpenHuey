@@ -66,4 +66,5 @@ T{ [: caught state-flag? ;] 1500 played-till  $2D var@  over-kind -> -1 0 2 }T
 testing replayed from the extras: the scene, then back by the forced way
 caught state-flag-clear  0 game:gameover send game-over-kind  events-held state-flag-set  1 replay-for
 T{ off-map-36 forced-exit room-by!  5 run-frames  [: room-id off-map-36 <> ;] 1500 played-till  events-held state-flag? -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

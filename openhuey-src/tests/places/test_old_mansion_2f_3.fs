@@ -37,6 +37,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 om2f-3-flag1 story-flag-clear  om2f-2-flag1 story-flag-clear  room-afresh
 testing the decomposer: its plaque, then her wonder; its file
 T{ 4 0 at  said  decomposer-file filed? -> plaque-msg -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 4 0 at  said -> decomposer-msg }T
 testing the Handful of Ash put in: the Prima Materia out
 handful-of-ash 1 items send give-item  10 run-frames  prima-materia items:items-of before !

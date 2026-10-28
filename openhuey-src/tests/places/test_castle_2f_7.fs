@@ -37,6 +37,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing coming in: the thing wandering, the cube away, the room as before Daniella came
 room-afresh
 T{ [: wander-fx effect @ 0<> ;] in-place  cube-shown?  before-part part?  after-part part? -> -1 0 -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the remarks: the birdcage in turn, the ruin
 T{ 90 -42e 0e 33e put  said  90 -42e 0e 33e put  said -> birdcage-msg animals-msg }T   \ (facing its middle)

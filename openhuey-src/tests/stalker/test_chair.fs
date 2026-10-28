@@ -27,6 +27,7 @@ T{ [: chaired @ ;] his -> -1 }T
 testing on the steps his body and his chair's front tilt with the floor (facing up or down them)
 room-id 342 lorenzo-id send stalker-in  deliver  40 run-frames
 T{ tilts tilted? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing on a level floor (the bedroom's, where Fiona stands) neither does
 castle-2f-5 room!  20 run-frames
 room-id s" fiona" actor-named body-tri lorenzo-id send stalker-in  deliver  40 run-frames

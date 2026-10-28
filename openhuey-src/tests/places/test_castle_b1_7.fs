@@ -38,6 +38,7 @@ T{ flame-fx fx?  key-fx fx? -> -1 -1 }T
 
 testing the furniture
 T{ furniture-area 0 at  said -> sheets-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 \ (the blocked door's remark not checked: no test spot found where her request at it is made - see
 \ docs/rooms-design.md)
 

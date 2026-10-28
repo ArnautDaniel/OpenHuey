@@ -30,4 +30,5 @@ T{ [: doing 2 = ;] 30 soon -> -1 }T
 fx f@ 45e f+ fy f@ fz f@ 0e tp-facing
 T{ [: doing 3 = ;] 30 soon -> -1 }T
 T{ [: done? ;] 900 soon  game:cast3 body-at sf@ fx f@ 120e f+ f- fabs 2e f< -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

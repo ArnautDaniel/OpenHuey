@@ -14,6 +14,7 @@
 #include "../src/data/tex.h"
 #include "../src/data/texbank.h"
 #include "../src/platform/disc.h"
+#include "full_only.h"
 
 typedef struct Bank {
     char path[512];   /* in the data folder: "SYSTEM/TITLE.TEX" (a room's: "ST_000/ST_003.room/textures.TEX") */
@@ -102,6 +103,8 @@ int main(int argc, char **argv) {
     char data[1100], scratch[1100], dir[1700];
     long compared = 0, raw_bytes = 0;
     int i, bad = 0, converted = 0;
+
+    full_only("texbank-check");
 
     if (argc != 3) {
         fprintf(stderr, "usage: texbank-check <data folder> <scratch folder>\n");

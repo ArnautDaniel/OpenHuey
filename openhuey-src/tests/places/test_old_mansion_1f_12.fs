@@ -36,6 +36,7 @@ om1f-12-flag1 story-flag-clear  om1f-12-flag2 story-flag-clear  om1f-12-flag3 st
 got-torn-letter story-flag-set  room-afresh
 testing the dragon: its open mouths
 T{ 9 180 at  said -> dragon-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing a wrong plate in the right head: nothing happened
 false right-plate plate  600 play-on
 T{ om1f-12-flag2 story-flag? -> 0 }T

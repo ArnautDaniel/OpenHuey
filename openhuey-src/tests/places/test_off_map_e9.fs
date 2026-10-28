@@ -69,6 +69,7 @@ T{ 0 by  room-id  his-camera@  glows  [: 3 part? ;] in-place -> off-map-e9 0 -1 
 testing ... another kind: the night's look - the lamps lit, their four glows
 0 $2E var!
 T{ 0 by  glows  [: 3 part?  8 part?  0 part? ;] in-place -> 4 -1 -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing its cameras: area 6 set 1, 7 / 9 set 0 (no path), 8 set 2 (path 0)
 T{ 6 hinto  his-camera@  7 hinto  his-camera@  8 hinto  his-camera@  9 hinto  his-camera@ -> 1 1 0 -1 2 0 0 -1 }T
 testing out by exit 0 (its door open)

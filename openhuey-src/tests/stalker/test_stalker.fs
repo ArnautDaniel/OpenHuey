@@ -59,6 +59,7 @@ T{ [: tintstalker-kind head-bones!  head-bone @ neck-bone @  kind37-kind head-bo
 : heard-any ( -- flag )   \ (a noise each frame; heard on the frame after its end)
     0 10 0 do  $14 room-id s" fiona" actor-named body-tri -1 0 game:acoustics send noise  game-tick  [: did-hear @ ;] his or  loop ;
 T{ heard-any -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 
 testing searching (P1c): he sets off for a stop; his route over, waiting about (mode 3) he makes for an exit at random to go

@@ -34,6 +34,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 om2f-12-flag1 story-flag-clear  0 $18 var!  0 $19 var!  0 $1A var!  room-afresh
 testing the synthesizer: its plaque, then her wonder; its file
 T{ $B -45 at  said  synthesizer-file filed? -> plaque-msg -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ $B -45 at  said -> synthesizer-msg }T
 testing the Silver Ore put in: the White Godstone out
 silver-ore 1 items send give-item  10 run-frames  white-godstone items:items-of before !

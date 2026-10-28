@@ -49,6 +49,7 @@ T{ [: window-shown device-msg = ;] 300 soon -> -1 }T
 : past-remark ( -- )  begin  window-shown device-msg = while  cross press  10 run-frames  repeat ;
 past-remark  [: window-shown rotate-msg = ;] 300 soon drop  key: Right tap
 T{ [: s" window-flash" actor-named 0< 0= ;] 200 soon  3 var@ -> -1 3 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 cross press  60 run-frames
 T{ doing-busy?  window-shown 0< -> 0 -1 }T
 testing ... the moon let through: its remark

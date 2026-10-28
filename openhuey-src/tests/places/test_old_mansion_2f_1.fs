@@ -29,6 +29,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing coming in: the curtain
 omb1-5-flag3 story-flag-clear  old-mansion-2f-1 room!  60 run-frames
 T{ curtain-part part? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the floor fallen: her remark at the gap, from either side
 omb1-5-flag3 story-flag-set  old-mansion-2f-1 room!  60 run-frames
 T{ $10 0 at  said -> collapsed-msg }T

@@ -5,6 +5,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/fiona/test_face.fs
 IN: test-face
 USING: tester engine game-state actors messages game fiona.state debug ;
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 : model ( -- id )  game:fiona enter  her-model @  leave-actor ;
 : lid ( F: -- w )  model actor act.face 7 4 * + sf@ ;

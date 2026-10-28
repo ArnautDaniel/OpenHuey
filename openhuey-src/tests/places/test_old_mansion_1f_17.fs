@@ -34,6 +34,7 @@ testing the picture: its title, then the lady with the lamp
 om2f-8-flag1 story-flag-clear  room-afresh
 T{ $E -45 at  said -> picture-msg }T
 T{ $E -45 at  said -> lamp-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the mummy: the fright the first time, then the question
 mummy-examined story-flag-clear
 T{ $10 45 at  said  mummy-examined story-flag? -> mummy-msg -1 }T

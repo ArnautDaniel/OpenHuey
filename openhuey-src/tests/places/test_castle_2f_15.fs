@@ -42,6 +42,7 @@ testing coming in: the Prima Magnesia Hewie found, the Medallion across the gap
 c2f-15-prima-magnesia-found story-flag-set  c2f-15-prima-magnesia story-flag-clear  c2f-13-medallion story-flag-clear
 found-file-227 story-flag-set  room-afresh
 T{ [: magnesia-fx effect @ 0<>  medallion-fx effect @ 0<> ;] in-place -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the statue turn and turn about (no remark on the bridge here)
 T{ statue-area 45 at  said  statue-area 45 at  said -> statue-msg gargoyles-msg }T

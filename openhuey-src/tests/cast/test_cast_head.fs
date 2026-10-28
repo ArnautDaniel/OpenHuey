@@ -48,4 +48,5 @@ testing a door's use naming exit 5 since: the point now
 look-move -1 $FF  0e 0e 0e 0e move3  open-door-move 5 -1  0e 0e 0e 0e move3
 look-point-move 0 -1  px f@ 20e f+  py f@ 16e f+  pz f@  0e move3  40 run-frames
 T{ head-yaw3 90e deg>rad f- fabs 0.001e f< -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

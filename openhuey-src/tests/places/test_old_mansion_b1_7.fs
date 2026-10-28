@@ -32,6 +32,7 @@ old-mansion-b1-7 room!  120 run-frames
 : fish-x ( -- F: x )  [: 3 figure body-pos fdrop fdrop ;] in-place ;
 T{ [: fish-in @  shaft-fx effect @ 0<> ;] in-place -> 3 -1 }T
 T{ fish-x  60 run-frames  fish-x  f- fabs 0.01e f> -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the aquarium
 T{ aquarium-area 0 at  said -> aquarium-msg }T
 testing the Medallion Hewie sniffed out: taken

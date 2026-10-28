@@ -33,6 +33,7 @@ c1f-14-flag2 story-flag-clear  over-music-b story-flag-clear
 testing the boxes below once the way is open: where they ended
 c2f-9-flag1 story-flag-set  room-afresh
 T{ s" oshi00" place-x object@ -35e ~=  s" oshi03" place-z object@ 35e ~= -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 c2f-9-flag1 story-flag-clear
 
 testing the symbol door locked: tried ("locked"), then its symbol - the file both times

@@ -52,4 +52,5 @@ USING: tester engine game-state actors messages keys room-names game debug facts
 : filed? ( id -- flag )  false  128 0 do  over progress pr.files i 2* + w@ = or  loop  nip ;
 testing its place is the room's (written, though the room can't be entered)
 T{ off-map-5a place-of 0<> -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

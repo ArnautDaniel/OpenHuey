@@ -23,6 +23,7 @@ daniella-kind story.base:partner-load  5 run-frames
 testing before she has rested: on from the door, nothing
 c1f-14-flag2 story-flag-clear  c3f-2-flag1 story-flag-clear  room-afresh  stepped-on
 T{ doing-busy?  c3f-2-flag1 story-flag? -> 0 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing once she has rested: Daniella ahead - the door locked behind, Hewie brought, she free after
 c1f-14-flag2 story-flag-set  hewie-freed story-flag-set  room-afresh  the-door unlock  doors-redone  stepped-on

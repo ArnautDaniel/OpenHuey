@@ -62,5 +62,6 @@ testing by its way in while the run goes on: placed at it, its camera; nothing s
 T{ off-map-d9 0 room-by!  60 run-frames  his-camera@  $2F var@ -> 0 0 0 }T
 testing out by exit 0
 T{ 0 0 hat  [: room-id off-map-d9 <> ;] 300 soon  room-id -> -1 off-map-d9 0 leads }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 0 hewie-played !  [: stalker-unloaded ;] in-place
 test-summary

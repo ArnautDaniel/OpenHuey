@@ -38,6 +38,7 @@ free-play  10 run-frames  0 game:fiona send costume
 testing the grate bolted: shut, the floor before it barred; facing it, she says so (whatever goes on)
 fg-2-flag1 story-flag-clear  hewie-found-in-wire story-flag-clear  room-afresh
 T{ shut-grate-group barred?  open-grate-group barred?  grate-turn 0e ~= -> -1 0 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ grate-area -90 at  said -> bolted-msg }T
 testing the windows: the flickering light, from either
 T{ window-area 180 at  said  window-2-area -90 at  said -> flicker-msg flicker-msg }T

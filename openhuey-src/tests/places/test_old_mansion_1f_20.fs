@@ -38,6 +38,7 @@ testing coming in: the figure hopping, the hall hunted; struck where it stands
 om1f-20-breakable-broken story-flag-clear  room-afresh
 T{ [: hopper-slot figure 0< 0= ;] in-place  hunted state-flag? -> -1 -1 }T
 T{ 12e 5e 0e blow-at  [: the-figure hopper-struck? ;] in-place  [: body-point-off ;] as-her -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the rotted door: its knob, then the rot
 T{ 0 -50e 50e 351e put  said -> knob-msg }T
 T{ 0 -50e 50e 351e put  said -> rotted-msg }T

@@ -34,6 +34,7 @@ over-music-c story-flag-set
 testing the extractor: its plaque, then her wonder; its file
 room-afresh
 T{ 8 -45 at  said  extractor-file filed? -> plaque-msg -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 8 -45 at  said -> extractor-msg }T
 testing the Prima Materia put in: Sulfuric Ore out
 prima-materia 1 items send give-item  sulfuric-ore items:items-of before !  10 run-frames

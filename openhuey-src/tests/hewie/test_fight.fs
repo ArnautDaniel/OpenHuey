@@ -29,6 +29,7 @@ $1F go
 T{ [: [: bitten @ ;] deb@ 14 = ;] 120 soon  [: his-grip @ ;] his@ -> -1 0 }T
 T{ [: [: anim@ $2215 = ;] his@ ;] 60 soon  [: hp @ ;] deb@ -> -1 60 }T
 T{ [: temper @ 10 >= ;] deb@ -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing ... let go: both on again, the stalker after his reaction's end ($1707)
 T{ [: [: bitten @ 0= ;] deb@ ;] 600 soon  [: reeling @ ;] deb@ -> -1 0 }T
 T{ [: [: his-act @ ['] st-clamped <> his-action @ $1F <> and ;] his@ ;] 300 soon -> -1 }T

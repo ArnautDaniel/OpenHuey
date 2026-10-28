@@ -56,6 +56,7 @@ clock-start  30 run-frames   \ (the run: Hewie the one played)
 : out-by ( exit -- room )  dup by  0 hat  [: room-id off-map-d4 <> ;] 300 soon drop  room-id ;
 testing in by exit 0, 1 (camera set 1), 2, 3 (set 0): at it
 T{ 0 by  room-id  his-camera@ -> off-map-d4 1 1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 1 by  his-camera@  2 by  his-camera@  3 by  his-camera@ -> 1 1 0 0 0 0 }T
 testing the room behind exit 0 .. 2 loaded ahead as Hewie crosses into area 4 .. 6
 T{ 0 by  4 hinto  spare@ -> off-map-d4 0 leads }T

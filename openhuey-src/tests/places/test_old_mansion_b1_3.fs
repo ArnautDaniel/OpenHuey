@@ -45,6 +45,7 @@ T{ [: 9 plates-on !  flames-puzzle  flames-out @ ;] in-place -> 3 }T
 T{ [: 3 plates-on !  flames-puzzle  flames-out @ ;] in-place -> 0 }T
 testing all four out: the statue's scene
 T{ [: $F flames-out !  omb1-3-flag2 fact!  ['] all-out start drop ;] in-place  [: cutscene-active? movie-status 1 = or ;] 600 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: movie-skipped state-flag-set  doing-busy? 0= ;] 2000 soon drop  200 play-on
 T{ doing-busy?  free? -> 0 -1 }T   \ (its file the other game's: not here)
 testing the Venus Key from the corpse; then its remarks

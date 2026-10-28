@@ -59,5 +59,6 @@ create b1-at 12 allot  create b2-at 12 allot
     [: my-model @ ;] his swap bone-pos b2-at vec!  [: my-model @ ;] his swap bone-pos b1-at vec!  b1-at b2-at vec-dist ;
 : ~ ( F: a b -- flag )  f- fabs 0.05e f< ;
 T{ [: 6 7 bones-apart 2.125e ~  $16 $17 bones-apart 2.125e ~ and ;] 10 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 ly send stalker-out  3 run-frames
 test-summary

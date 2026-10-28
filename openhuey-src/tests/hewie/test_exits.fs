@@ -41,5 +41,6 @@ game:hewie send join-fiona  20 run-frames  calm
 testing in a door's gap, not on its exit's area (Hewie_FirstDoor, StateSqueeze): he squeezes out ($65) - off the gap, then himself again
 [: room-id 680 dup tri-center body-place  0 0 want ;] his!
 T{ [: [: his-action @ $65 = ;] his@ ;] 10 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ [: [: on-gap? 0=  his-action @ $65 <> and ;] his@ ;] 120 soon -> -1 }T
 test-summary

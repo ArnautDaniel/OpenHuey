@@ -39,6 +39,7 @@ house-of-truth-b1-1 forced-exit rooms send go-to-room  5 run-frames
 T{ [: cutscene-active? movie-status 1 = or ;] 600 soon -> -1 }T
 T{ [: movie-skipped state-flag-set  lorenzo-seen resident-flag? ;] 2000 soon  over-music-e story-flag?  lorenzo-file filed? -> -1 -1 -1 }T
 T{ b1-2-door doors:door-locked?  b1-2-door opened?  new-game-sounds state-flag? -> 0 -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 300 play-on  1e sound-scale!  summoner-on state-flag-clear
 testing the movie replayed (the extras): played, then back by the forced way
 events-held state-flag-set  house-of-truth-b1-1 -1 rooms send go-to-room  5 run-frames

@@ -51,6 +51,7 @@ testing the lens: her reflection in it (an effect), gone; its glint
 T{ [: lens-fx $60 0 cast-model s" lens" 640e -560e 1000e object-mirror  lens-fx effect @ 0<> ;] in-place -> -1 }T
 T{ [: lens-fx effect-off  lens-fx effect @ ;] in-place -> 0 }T
 T{ [: s" syuukouki1" 0e catches-light ;] in-place  2 run-frames  s" window-flash" actor-named 0< -> 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the wall: its remarks in turn
 T{ wall-area -45 at  said  wall-area -45 at  said -> wall-msg moon-msg }T

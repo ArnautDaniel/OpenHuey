@@ -42,6 +42,7 @@ T{ [: doing-busy? 0= ;] 300 soon  found-file-227 story-flag?  $227 filed?  [: me
 
 testing the remarks: the bridge in turn, the statue turn and turn about
 T{ bridge-area 180 at  said  bridge-area 180 at  said -> bridge-msg lower-it-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ statue-area 90 at  said  statue-area 90 at  said  statue-area 90 at  said -> statue-msg gargoyles-msg statue-msg }T
 
 testing climbing down: not now; then down to the great hall (Hewie left here)

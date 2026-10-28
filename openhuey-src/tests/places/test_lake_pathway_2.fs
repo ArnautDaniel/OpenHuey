@@ -24,6 +24,7 @@ free-play  10 run-frames  0 game:fiona send costume
 testing the bridge there: shown, its floor free, nothing said at its end
 over-music-d story-flag-clear  room-afresh
 T{ bridge-part part?  gap-barred? -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ bridge-end-area 180 at  said -> -1 }T
 
 testing the bridge gone: its floor barred; at its end facing the gap, the remark - then the other one

@@ -28,6 +28,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing the Metal Boots on the shelf: sparkling, taken
 got-metal-boots story-flag-clear  fg-3-flag3 story-flag-clear  room-afresh
 T{ boots-fx fx?  key-fx fx? -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 metal-boots items:items-of before !
 180 -2e 0e 2e put  circle press  300 read-on
 T{ got-metal-boots story-flag?  metal-boots items:items-of  boots-fx fx? -> -1 before @ 1+ 0 }T

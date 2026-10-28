@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.2.26 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.2.27 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -84,7 +84,9 @@ if(HGA_RELEASE)
     endif()
 endif()
 
-# the subsystems' tests: headless in the game (they need the game's data), tests/<subsystem>/test_*.fs
+# the subsystems' tests: headless in the game (they need the game's data), tests/<subsystem>/test_*.fs.
+# `ctest` is a quick run: each file to its `full-suite` (the tests checking state after words run),
+# the long conversion checks skipped; `OPENHUEY_FULL_TESTS=1 ctest` the full one - every test, all through
 file(GLOB GAME_TESTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/*/test_*.fs")
 foreach(t ${GAME_TESTS})
     get_filename_component(name "${t}" NAME_WE)
@@ -174,8 +176,9 @@ set_tests_properties(mods_menu_after PROPERTIES FIXTURES_REQUIRED "mods_menu_fol
 add_test(NAME title_title COMMAND hga --title --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/title/title.fs")
 # back to the title from a game (pause.fs's quit, the game over, the ending all `soft-reset`): the
 # game's particle systems must go with the sprites they draw into, or the title's next tick crashes
+# (300 frames: a full run's - in a quick one it ends at once)
 add_test(NAME title_back_to_title COMMAND hga --hidden --title --frames 300 --eval
-    "variable n  : back  1 n +!  n @ 30 = if free-play then  n @ 200 = if soft-reset then ;  ' back on-tick")
+    "variable n  : back  1 n +!  n @ 30 = if free-play then  n @ 200 = if soft-reset then ;  ' back on-tick  : quick  full-tests? 0= if  bye  then ;  quick")
 set_tests_properties(title_back_to_title PROPERTIES ENVIRONMENT "OPENHUEY_HOME=${CMAKE_CURRENT_BINARY_DIR}/back-to-title.scratch")
 # the updater: against releases made in the test (file://), and the title's UPDATE page
 if(NOT WIN32)

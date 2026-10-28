@@ -43,6 +43,7 @@ chaos-forest-8 0 rooms send go-to-room  5 run-frames
 T{ [: cutscene-active? movie-status 1 = or ;] 600 soon -> -1 }T
 T{ [: movie-skipped state-flag-set  found-file-247 story-flag? ;] 2000 soon  [: doing-busy? 0= ;] 900 soon -> -1 -1 }T
 T{ found-file filed?  plain-commands state-flag? -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 300 play-on
 testing then the crates whole as she comes in; a blow elsewhere misses; on the third breaks it
 room-afresh

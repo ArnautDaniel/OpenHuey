@@ -40,6 +40,7 @@ T{ [: lrl word-vars !  0 word-vars cell+ !  0 read-at !  false letter?  true let
 testing a plate given back: her word
 0 plate-back -1 0 broadcast item-event
 T{ shown-soon -> returned-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 200 read-on
 testing the altar, the golem statue, METH
 T{ $15 facing-middle  said -> altar-msg }T

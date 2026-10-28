@@ -36,6 +36,7 @@ house-of-truth-b1-2 forced-exit rooms send go-to-room  5 run-frames
 T{ [: cutscene-active? movie-status 1 = or ;] 600 soon -> -1 }T
 T{ [: movie-skipped state-flag-set  belli-seen resident-flag? ;] 2000 soon  found-file-252 story-flag?  belli-file filed? -> -1 -1 -1 }T
 T{ hall-door doors:door-locked?  b1-1-door doors:door-locked? -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 300 play-on
 testing the Lavender (facing away from the clock: it is offered first)
 room-afresh  lavender items:items-of before !

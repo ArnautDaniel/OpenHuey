@@ -38,6 +38,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 ht1f-10-camomile story-flag-clear  room-afresh
 testing its steady sound started
 T{ [: steady-on @ ;] in-place -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing hiding at her examine; out at circle
 T{ hiding-area 0 at  circle press  [: hidden? ;] 300 soon -> -1 }T
 60 run-frames  circle press  [: hidden? 0= ;] 300 soon drop  [: doing-busy? 0= ;] 300 soon drop

@@ -36,6 +36,7 @@ testing its ways: out by an open one
 room-afresh
 T{ open-way 0< 0= -> -1 }T
 T{ open-way 0 at  [: room-id chaos-forest-3 <> ;] 300 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing ... in by each of its four: came by it
 : in-by ( exit -- n )  chaos-forest-3 swap rooms send go-to-room  60 run-frames  [: came-by @ ;] in-place ;
 T{ 0 in-by  1 in-by  2 in-by  3 in-by -> 0 1 2 3 }T

@@ -77,6 +77,7 @@ fx f@ 10e f+  game:fiona body-pos fdrop fswap fdrop  fz f@  0e put5  3 run-frame
 fx f@ 10e f+  game:fiona body-pos fdrop fswap fdrop  fz f@ 20e f+  spot vec!  spot v-tri spot-tri !
 5 spot-tri @ -1  spot vec@  pi f2/ move5  5 run-frames
 T{ done5?  anim5 $FF00 and  dup $200 = swap $400 = or -> 0 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ ' done5? 600 soon  game:cast5 body-at spot vec-dist-xz 1e f<  yaw5 -> -1 -1 90 }T
 testing ... to a triangle slowly (11): done as soon as it is on it
 11 game:fiona body-tri -1  0e 0e 0e 0e move5  5 run-frames

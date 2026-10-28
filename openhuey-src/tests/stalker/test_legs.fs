@@ -7,7 +7,7 @@ USING: tester engine game-state actors messages common room-names game debug fac
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : as ( kind -- )  partner-load  deliver  2 run-frames ;
-: fits ( -- )   \ ( F: -- slow-back slow-front back front )
+: fits ( F: -- slow-back slow-front back front )
     feet-slow-back f@ feet-slow-front f@ feet-back f@ feet-front f@ ;
 : fits? ( F: a b c d slow-back slow-front back front -- ) ( -- flag )   \ (the four alike)
     {: F: a b c d e g h k :}  a e f=  b g f= and  c h f= and  d k f= and ;
@@ -28,4 +28,5 @@ T{ sunk 0.2e f>  sunk 4e f< -> -1 -1 }T
 testing on the level floor well back from their top, at his place
 393 debilitas-tri  40 run-frames
 T{ sunk fabs 0.05e f< -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

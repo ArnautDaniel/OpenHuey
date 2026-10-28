@@ -44,6 +44,7 @@ far-tri 4 0 place-spirit
 d-her constant d0
 20 run-frames
 T{ [: come @ ;] of0  d-her d0 < -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 : gone-in? ( n -- flag )  0 ?do  game-tick  spirit0 alive? 0= if  true unloop exit  then  loop  false ;
 : touched? ( n -- flag )  0 ?do  game-tick  [: vanishing @ ;] of0 if  true unloop exit  then  loop  false ;
 : her ( xt -- x )  game:fiona enter  execute  leave-actor ;

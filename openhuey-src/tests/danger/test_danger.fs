@@ -31,6 +31,7 @@ T{ next-door 3 20 with-him  level -> 2 }T
 T{ next-door 3 15 with-him  level -> 1 }T
 testing gone: calm once the hold is over
 T{ 3 run-frames  level -> 1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 500 run-frames  level -> 0 }T
 
 testing flag 0x22 makes calm tense (hold 450)

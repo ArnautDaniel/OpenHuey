@@ -37,6 +37,7 @@ T{ key: X tap  $2A story-var@ $2B story-var@ -> 7 7 }T
 T{ shut?  kind@ -> -1 0 }T
 T{ 8 open-mode  at@  key: V tap  $2A story-var@ $2B story-var@ -> 7 $FF 7 }T
 T{ shut? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the models: a figure unlocked shown alone, its motions stepped; back to the list, the scene again
 T{ $B open-mode  key: X tap  20 run-frames  [: gal-model @ ;] menu@ 0< 0= -> -1 }T

@@ -16,6 +16,7 @@
 #include "../src/data/flacenc.h"
 #include "../src/data/musicsrc.h"
 #include "../src/data/sfd.h"
+#include "full_only.h"
 
 static int sMovies, sBad, sSilent;
 static long long sSfd, sMpg, sFlac, sPackets, sSamples;
@@ -208,6 +209,8 @@ static SDL_EnumerationResult one(void *user, const char *dir, const char *name) 
 
 int main(int argc, char **argv) {
     char data[1100];
+
+    full_only("movie-check");
 
     if (argc != 2) {
         fprintf(stderr, "usage: movie-check <data folder>\n");

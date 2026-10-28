@@ -45,6 +45,7 @@ T{ 150 19e 0e -19e put  said -> line-cut-msg }T   \ (the area's middle is by the
 T{ chair-area 90 at  said -> chair-msg }T
 T{ 53 -8e 0e 22e put  said -> nothing-msg }T   \ (facing its middle, clear of the Magnesia)
 T{ ornaments-area -134 at  said -> ornaments-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the Magnesia: reached, taken
 magnesia items:items-of before !

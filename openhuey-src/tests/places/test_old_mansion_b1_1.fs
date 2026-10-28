@@ -41,6 +41,7 @@ T{ 39.3e 5e 50.4e blow-at  [: the-figure hopper-struck? ;] in-place  [: body-poi
 testing the vase broken: its Chicken Jerky taken
 omb1-1-breakable-broken story-flag-set  omb1-1-chicken-jerky story-flag-clear  room-afresh  chicken-jerky items:items-of before !
 T{ 1 part?  0 part? -> -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 0 60.5e 0e -37.4e put  circle press  300 read-on
 T{ omb1-1-chicken-jerky story-flag?  chicken-jerky items:items-of -> -1 before @ 1+ }T
 testing Hewie fetching the Album Medallion off the ledge

@@ -80,4 +80,5 @@ T{ off-map-35 forced-exit room-by!  5 run-frames  [: room-id off-map-35 <> ;] 15
 testing ... "Wait up" (5): the replay over, the theatre let go - back by the forced way to the room it came from
 quiet  events-held state-flag-set  5 replay-for
 T{ off-map-35 forced-exit room-by!  5 run-frames  [: room-id off-map-35 <> ;] 1500 played-till  room-id  events-held state-flag? -> -1 off-map-0d 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

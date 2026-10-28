@@ -31,6 +31,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing coming in: the vases whole; broken, in pieces
 om1f-21-breakable1-broken story-flag-clear  om1f-21-breakable2-broken story-flag-set  room-afresh
 T{ 0 part?  1 part?  2 part?  3 part? -> -1 0 0 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the first broken: its Album Medallion taken
 om1f-21-breakable1-broken story-flag-set  om1f-21-album-medallion story-flag-clear  room-afresh
 album-medallion items:items-of before !

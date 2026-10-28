@@ -31,4 +31,5 @@ T{ swing-turn  5 run-frames  swing-turn f- fabs 0.0001e f> -> -1 }T
 
 testing the crest
 T{ crest-area 30 at  said -> crest-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

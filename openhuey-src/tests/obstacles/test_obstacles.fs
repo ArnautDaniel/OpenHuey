@@ -80,5 +80,6 @@ s" oshi00" 0e 0e 0e placed-at   \ (the model taken elsewhere)
 T{ model-x model-z -> 0 0 }T
 0 0 story.kit:obstacle-model-home  1 frames-camera-still
 T{ model-x model-z  obst-x obst-z -> -32 -6 -32 -6 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

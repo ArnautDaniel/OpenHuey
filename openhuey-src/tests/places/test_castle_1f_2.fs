@@ -69,6 +69,7 @@ c1f-2-flag1 story-flag-clear  room-afresh
 T{ [: cage-set  cage place-y object@ 11e ~=  0.25e cage-by  cage place-y object@ 11.25e ~= ;] in-place -> -1 -1 }T
 : wobbles ( -- n )  [: drum-still  drum-struck!  0  begin  1+  drum-bobs  drum drum-strength object@ f0=  over 50 > or  until ;] in-place ;
 T{ wobbles  [: drum place-y object@ drum drum-rest object@ ~= ;] in-place -> 6 -1 }T   \ (1 less 0.2 five times: just above 0 in single floats)
+full-suite   \ (on: waits, scenes, walks - the full run's)
 c1f-2-flag1 story-flag-set  room-afresh
 
 testing the remarks: the flowers and the fence in turn, the flowers by the gate, the fire in turn, the lever pulled

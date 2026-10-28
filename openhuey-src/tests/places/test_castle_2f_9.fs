@@ -29,6 +29,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing the first time in: the screen back
 c2f-9-flag1 story-flag-clear  c1f-14-flag2 story-flag-clear  room-afresh
 T{ [: doing-busy? 0= ;] 120 soon  c2f-9-flag1 story-flag? -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing Daniella cleaning (after the Saturnus hint): in, on her knees - her floor kept from her
 daniella-in  c1f-14-flag2 story-flag-set  c3f-2-flag1 story-flag-clear  c2f-9-flag2 story-flag-clear  room-afresh  30 run-frames

@@ -43,6 +43,7 @@ lorenzo2-kind story.base:partner-load  5 run-frames
 house-of-truth-1f-8 forced-exit rooms send go-to-room  5 run-frames
 T{ [: [: ['] first-tremor running? ;] in-place ;] 120 soon  [: window-shown 0< 0= if  cross press  then  tremor-warned-2 story-flag? ;] 900 soon -> -1 -1 }T
 T{ over-music-f story-flag?  tremor-warned story-flag?  [: snag-var var@ ;] in-place -> -1 -1 5 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 300 read-on  1e sound-scale!  game:lorenzo2 send stalker-out  10 run-frames
 testing the snagged door: her try at it, its remark
 snagged-door [: lock ;] in-place  room-afresh  0 by-door

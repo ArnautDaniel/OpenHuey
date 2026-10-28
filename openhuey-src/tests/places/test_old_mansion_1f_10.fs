@@ -31,4 +31,5 @@ hewie-freed story-flag-set  hewie-commandable state-flag-set  game:hewie send jo
 testing Hewie by a corner: noticed once a visit (barking now and then)
 old-mansion-1f-10 room!  60 run-frames  -24.64e 0e 27.03e hewie-at
 T{ [: [: corner-1-noticed @ ;] in-place ;] 300 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

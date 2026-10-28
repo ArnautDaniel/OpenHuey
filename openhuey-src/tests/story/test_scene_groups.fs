@@ -17,6 +17,7 @@ USING: tester engine game-state actors messages keys room-names game debug flag-
 castle-2f-3 room!  30 run-frames
 testing before the scene: the picture on the wall, shown
 T{ pic-y 80e f=  pic-shown? -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the change of clothes (the clothes on the bed taken: EV0003): the picture moved by the scene's keys
 $10 area-middle 180e tp-facing  10 run-frames  circle press  30 run-frames
 20 answering  600 answering

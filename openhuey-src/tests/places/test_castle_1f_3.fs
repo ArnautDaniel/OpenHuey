@@ -34,6 +34,7 @@ testing coming in (awakened, the shelf up): the key and the thing on the table, 
 c1f-3-flag1 story-flag-set  c1f-3-bookshelf-examined story-flag-clear  got-garden-key story-flag-clear
 c1f-3-camomile story-flag-clear  room-afresh
 T{ key-part part?  thing-part part?  table-part part?  fallen-part part?  [: camomile-fx effect @ 0<> ;] in-place -> -1 -1 0 0 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the remarks: the shelf from before and behind, the books in turn, the harp in turn
 T{ shelf-area 180 at  said  behind-shelf-area 0 at  said -> shelf-msg shelf-msg }T

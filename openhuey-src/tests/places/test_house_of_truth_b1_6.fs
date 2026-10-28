@@ -34,6 +34,7 @@ shared-flag1 story-flag-set  shared-flag2 story-flag-set  shared-flag3 story-fla
 htb1-6-flag1 story-flag-clear  room-afresh
 testing coming in: its colour done
 T{ htb1-6-flag1 story-flag? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing its inscription by the wall
 T{ inscription-area -45 at  said -> inscription-msg }T
 testing in by the forced way: at its spot, Hewie by her, the dark lifting

@@ -34,6 +34,7 @@ T{ 3 0 at  said  3 0 at  said -> projector-msg screen-set-msg }T
 T{ 4 180 at  said -> screen-msg }T
 testing the mannequins, the books, the parts
 T{ 5 -90 at  said -> mannequin-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 8 -90 at  said -> books-msg }T
 T{ $B 0 at  said -> parts-msg }T
 testing the Film Reel used (no Daniella about): played - the reel spent

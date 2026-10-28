@@ -34,6 +34,7 @@ key: I press-key
 T{ [: his-gesture @ ;] his@ -> 0 }T   \ (up: read the frame it came)
 5 run-frames
 T{ action steered-act <> -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 200 run-frames
 T{ action -> steered-act }T
 

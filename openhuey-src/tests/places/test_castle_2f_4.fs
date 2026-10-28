@@ -37,4 +37,5 @@ free-play  10 run-frames  0 game:fiona send costume
 testing the movie replayed (the extras)
 events-held state-flag-set  castle-2f-4 -1 rooms send go-to-room  5 run-frames
 T{ replayed? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

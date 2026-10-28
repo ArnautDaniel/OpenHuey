@@ -56,6 +56,7 @@ T{ stage? ending:staff-roll ending:staff-fade 1+ within  world-held state-flag? 
 T{ ' start-on 600 soon -> -1 }T
 : results? ( -- flag )  stage? ending:results = ;
 T{ ' results? 60 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the record shows; a button and the picture goes; then back to the title
 : text-up? ( -- flag )  0 [: drop ending:text-a @ $80 = ;] in-ending ;
 T{ ' text-up? 600 soon -> -1 }T

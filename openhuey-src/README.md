@@ -31,7 +31,7 @@ build/openhuey-src/openhuey --import disc.iso     # import a disc into the libra
 build/openhuey-src/openhuey --update            # a release: updated to the newest build (the title's UPDATE too)
 build/openhuey-src/openhuey --mod path/to/mod     # with a mod on (mods/ beside OpenHuey holds the installed ones)
 build/openhuey-src/openhuey --hidden --frames 300 --eval "..."   # headless, for tests
-ctest --test-dir build/openhuey-src    # all the tests
+ctest --test-dir build/openhuey-src    # the quick tests (OPENHUEY_FULL_TESTS=1: all of them)
 build/openhuey-src/openhuey --test openhuey-src/tests/acoustics/test_hearing.fs   # one subsystem's
 ```
 

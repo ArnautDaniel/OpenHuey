@@ -38,6 +38,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing the stepladder: its state, then what's on top
 om2f-11-flag1 story-flag-clear  room-afresh
 T{ 9 120 at  said -> ladder-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 9 120 at  said -> on-top-msg }T
 testing the stepladder struck: wobbling, the third time the key falls
 T{ strike  om2f-11-flag1 story-flag?  [: tries @ ;] in-place -> -1 0 1 }T

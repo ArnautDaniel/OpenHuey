@@ -4,6 +4,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_dressing.fs
 IN: test-dressing
 USING: tester engine game-state actors messages keys room-names game debug flag-names fiona.state story.kit screen facts story-names ;
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;

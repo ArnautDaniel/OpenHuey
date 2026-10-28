@@ -33,6 +33,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 om1f-4-flag1 story-flag-clear  room-afresh
 testing coming in: the figure hopping, the room hunted
 T{ [: hopper-slot figure 0< 0= ;] in-place  hunted state-flag? -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the transmuter: its plaque, then her wonder; its file
 T{ 5 40 at  said  transmuter-file filed? -> plaque-msg -1 }T
 T{ 5 40 at  said -> transmuter-msg }T

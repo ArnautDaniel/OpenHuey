@@ -26,5 +26,6 @@ T{ key: X key-push  cross button-pressed? -> 0 }T
 T{ key: R key-push  cross button-pressed? -> -1 }T
 testing the defaults back
 T{ controls-reset  run 0 control-binding run 1 control-binding  pause 0 control-binding -> key: X key: Space key: Return }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

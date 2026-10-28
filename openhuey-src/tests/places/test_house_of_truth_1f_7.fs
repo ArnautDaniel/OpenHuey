@@ -41,6 +41,7 @@ ht1f-7-antimony-tube story-flag-clear  over-music-f story-flag-clear  ht1f-9-fla
 room-afresh
 testing coming in: the cane there, the wall whole, the flames lit, the tube's sparkle
 T{ cane-part [: part? ;] in-place  [: 0 effect @ 0<>  4 effect @ 0<>  tube-fx effect @ 0<> ;] in-place -> -1 -1 -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing Hewie by the wall: he barks at it; her look there - the scene, the wall opened
 hewie-freed story-flag-set  hewie-commandable state-flag-set  game:hewie send join-fiona  60 run-frames
 house-of-truth-1f-7 -68e 0e 75e nav-tri 0 game:hewie send hewie-place  30 run-frames

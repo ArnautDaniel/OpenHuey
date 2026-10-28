@@ -19,6 +19,7 @@ the-door s" doors" actor-named send lock  house-of-truth-1f-7 room!  30 run-fram
 testing locked, she before it: her request (2), for the place's action to answer
 before-it
 T{ s" fiona" actor-named body-pos 0 0 door-in-area?  asking  requested @ -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing ... the action button: to the door, a try - unlocked, said so
 circle press  300 read-on
 T{ the-door door-locked? -> 0 }T

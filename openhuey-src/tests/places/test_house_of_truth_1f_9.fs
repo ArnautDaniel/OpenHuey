@@ -44,6 +44,7 @@ tremor-warned story-flag-clear
 room-afresh
 testing coming in: the flames lit, the debris hidden, the cane not yet set in
 T{ [: flame-0-fx effect @ 0<>  flame-1-fx effect @ 0<>  cane-part part? ;] in-place  [: 0 keri$ placed-shown? ;] in-place -> -1 -1 0 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the hole, Hewie not by: the branch, then the smell
 T{ hole-area 0 at  said  said -> branch-msg smell-msg }T
 testing the corners before the cane: a sound as someone steps in, again once all are out

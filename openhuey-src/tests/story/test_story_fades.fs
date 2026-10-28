@@ -64,6 +64,7 @@ variable turns
 T{ turns @  2 run-frames  turns @ swap - -> 2 }T
 T{ -1 broadcast panic-onset  1 run-frames  turns @  2 run-frames  turns @ swap - -> 0 }T
 T{ 0 broadcast panic-onset  2 run-frames  turns @  2 run-frames  turns @ swap - -> 2 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: ['] counting stop-doing ;] in-room
 
 test-summary

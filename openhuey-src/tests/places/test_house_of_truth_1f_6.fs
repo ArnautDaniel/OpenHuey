@@ -36,6 +36,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 over-music-e story-flag-clear  room-afresh
 testing shut in: the door slammed, his voice; the time started
 T{ shown-soon -> naughty-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 300 read-on  [: doing-busy? 0= ;] 300 soon drop
 T{ slammed-door doors:door-locked?  [: time-here @ 0< 0= ;] in-place -> -1 -1 }T
 testing his taunt as time passes (450 frames)

@@ -30,6 +30,7 @@ puppet-door s" doors" actor-named send lock  slot-door s" doors" actor-named sen
 room-afresh
 testing by day: the puppet door shut, the hall's door at exit 1 its own (part 3), the plate key lying there
 T{ puppet-door-part part?  exit-1-door-part part?  plate-key-part part?  puppet-door doors:door-locked? -> -1 -1 -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the puppet door: no knob (once, then the words on it - the puppet room's file); pushing it, it won't open
 T{ -90 -16e 0e 14e put  said  puppet-file filed? -> no-knob-msg -1 }T

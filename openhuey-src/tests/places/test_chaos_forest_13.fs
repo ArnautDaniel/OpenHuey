@@ -46,6 +46,7 @@ T{ [: way-on ;] in-place -> mansion-way }T
 fg-3-flag3 story-flag-clear  0 progress pr.hewie-mistreated l!
 testing its way out
 T{ 0 0 at  [: room-id chaos-forest-13 <> ;] 300 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the first time in, Hewie found: the scene - its fact; dressed anew, out by the forced way to the tower
 cf-13-flag1 story-flag-clear  room-afresh
 0 25e 30e -20e put

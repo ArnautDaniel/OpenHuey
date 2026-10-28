@@ -36,6 +36,7 @@ testing the boxes: a box on its square - stopped, the light up a step
 T{ 0 part?  1 part?  8 part? -> -1 0 -1 }T
 0 0 0 $20A $4D8 obstacle-in  20 run-frames
 T{ [: stopped-mask @  set-boxes @ ;] in-place  3 part? -> 1 1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the first time in: the scene, Daniella after her, the door shut behind
 daniella-kind story.base:partner-load  10 run-frames  room-afresh
 T{ [: ['] stepped-in-first start drop ;] in-place  [: cutscene-active? movie-status 1 = or ;] 600 soon -> -1 }T

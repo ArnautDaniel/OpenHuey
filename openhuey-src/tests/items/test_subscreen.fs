@@ -108,6 +108,7 @@ T{ told@  [: tab @ ;] menu@ -> 1 2 }T
 T{ told@ -> 2 }T
 4 camomile ask  25 run-frames
 T{ told@  [: tab @ ;] menu@ -> 3 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the word plate (the scripts' 0x6D, mode 2): letters typed, one taken back, done makes the plate
 : plate-open ( -- )  2 game:subscreen send menu-mode  subscreen-wanted state-flag-set  deliver  20 run-frames ;

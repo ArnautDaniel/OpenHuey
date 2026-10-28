@@ -42,6 +42,7 @@ T{ summoner-on state-flag? -> -1 }T
 summoner-on state-flag-clear
 testing its ways: out by exit 1's area; in by each
 T{ 1 0 at  [: room-id house-of-truth-b1-3 <> ;] 300 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 : in-by ( exit -- n )  house-of-truth-b1-3 swap rooms send go-to-room  60 run-frames  [: came-by @ ;] in-place ;
 T{ 0 in-by  1 in-by -> 0 1 }T
 test-summary

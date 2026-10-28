@@ -34,6 +34,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 testing the hiding place: in, hidden; out by the button
 room-afresh  hide-area -45 at  circle press  [: hidden? ;] 600 soon drop
 T{ hidden? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 circle press  [: doing-busy? 0= ;] 600 soon drop
 T{ hidden?  free? -> 0 -1 }T
 testing the clock: saving (or Hewie not by her)

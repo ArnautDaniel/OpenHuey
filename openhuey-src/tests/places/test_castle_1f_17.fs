@@ -36,6 +36,7 @@ testing the pendulums swinging (each its own period and swing)
 room-afresh
 fvariable was  0 pendulum-turn was f!  20 run-frames
 T{ 0 pendulum-turn was f@ f- fabs 0.0001e f> -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the remarks: the rug, the anatomical model, the insects (then the other), the pool table (in turn)
 T{ rug-area 0 at  said -> rug-msg }T

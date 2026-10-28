@@ -44,6 +44,7 @@ testing the crate: a blow elsewhere misses it; in its place it breaks - in piece
 T{ -250e 72e -365e blow-at  [: the-crate breaks? ;] in-place -> 0 }T
 T{ -298.4e 72e -365.4e blow-at  [: the-crate breaks? dup if  antimony-shows  then ;] in-place -> -1 }T
 T{ cf-9-breakable-broken story-flag?  [: antimony-fx effect @ 0<> ;] in-place -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: body-point-off ;] her
 testing the Refined Antimony picked up
 refined-antimony items:items-of before !

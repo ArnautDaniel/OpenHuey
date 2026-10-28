@@ -20,6 +20,7 @@ testing in her room, Fiona 30 ahead: the Pursuer's chase - walking at her ($200)
 fvariable dx  fvariable dz  dan body-pos dz f! fdrop dx f!
 340e deg>rad fsin 30e f* dx f@ f+  dan body-pos fdrop fswap fdrop  340e deg>rad fcos 30e f* dz f@ f+  160e tp-facing  3 run-frames
 T{ [: step @ ['] pursue-run =  chase-act @  anim @  hold-t @ 290 > ;] hers -> -1 5 $200 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing ... within reach: a combo from her tables; Fiona struck
 T{ [: [: chase-act @ $13 = ;] hers ;] 120 soon  [: [: her-mode @ 4 = ;] fiona@ ;] 60 soon -> -1 -1 }T
 testing in a rage (0x31): her slow walk $205, her stance 3, her rage's row (walking 150 frames)

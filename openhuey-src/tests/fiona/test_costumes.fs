@@ -28,6 +28,7 @@ testing ... her neck, as high as a head is (13 to 16 over her feet)
 T{ 0 wearing? drop bones  1 wearing? drop bones  2 wearing? drop bones  3 wearing? drop bones
    -> $21 $17 $35 $2B $21 $17 $1D $13 }T
 T{ 6 wearing? drop bones  7 wearing? drop bones  8 wearing? drop bones -> $14 $A $16 $A $13 $B }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 0 headed?  1 headed?  2 headed?  3 headed?  6 headed?  7 headed?  8 headed? -> -1 -1 -1 -1 -1 -1 -1 }T
 
 test-summary

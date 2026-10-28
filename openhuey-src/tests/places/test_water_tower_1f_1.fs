@@ -35,6 +35,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 wt1f-1-medallion-found story-flag-set  wt1f-1-medallion story-flag-clear  got-doc-recovery story-flag-set  room-afresh
 testing coming in: the holes in its floor, the Medallion's sparkle (found, not taken)
 T{ $1F nav-flags floor-flags:hole-floor and 0<>  $89 nav-flags floor-flags:hole-floor and 0<>  [: medallion-fx effect @ 0<> ;] in-place -> -1 -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the water: a recovery point; then its second remark
 T{ water-area -44 at  circle press  [: window-shown 0< 0= if  cross press  then  [: rested @ ;] in-place  doing-busy? 0= and ;] 900 soon -> -1 }T
 T{ water-area -44 at  said -> helped-msg }T

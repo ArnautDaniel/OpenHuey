@@ -46,6 +46,7 @@ T{ doing-busy? -> 0 }T   \ (not come by a forced way: no scene)
 testing ... its door open
 hall-door s" doors" actor-named send unlock  [: hall-door true open-mark ;] in-place  room-afresh
 T{ door-open-part part? -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: hall-door false open-mark ;] in-place
 
 testing the remarks: the fallen balcony in turn, the false doors (each in turn)

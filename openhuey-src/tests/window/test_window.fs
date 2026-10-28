@@ -83,4 +83,5 @@ T{ shown? -> -1 }T
 testing a line to the right (0x14) and the options taking no room (Task_CollectChoices: the hand before them)
 T{ $8006 message-layout drop  1 1 message-align  1 0 message-align -> 2 0 }T
 T{ 1 message-option-at  1 1 message-line nip -> 1 1 6 8 }T   \ ("YES   NO")
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

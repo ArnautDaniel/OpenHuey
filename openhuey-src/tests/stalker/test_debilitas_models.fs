@@ -27,5 +27,6 @@ testing he comes into her room as kind 7, shown, blinking
 7 as
 s" fiona" actor-named body-tri debug:debilitas-tri  5 run-frames
 T{ [: my-model @ ;] his actor dup act.visible l@  swap act.alive l@ -> 1 1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

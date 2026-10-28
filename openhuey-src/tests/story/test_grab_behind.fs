@@ -13,4 +13,5 @@ stalkers-blind state-flag-set  game:hewie body-tri debug:debilitas-tri  3 run-fr
 testing asked: no at once; a frame on, yes - and Hewie's spot by him
 T{ [: grabs-hewie? ;] in-room -> 0 }T
 T{ deliver 2 run-frames  [: grabs-hewie? ;] in-room  game:hewie enter his-to-tri @ leave-actor 0< 0= -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

@@ -28,6 +28,7 @@ free-play  10 run-frames  0 game:fiona send costume  no-flee state-flag-clear
 room-afresh
 testing one golem: the room's own, before the kiln - nothing else standing in for it
 T{ golem-part part?  golem-moved-part part?  golem-dust-part part?  no-golem-figure? -> -1 0 0 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing its remarks: the golem (once, then another), the equipment, the kiln, the mark
 T{ 180 10e 0e -28e put  said  180 10e 0e -28e put  said -> golem-msg golem-again }T   \ (before it, where she stands to look)

@@ -39,6 +39,7 @@ mirror-area 0 at  circle press  [: doing-busy? 0= ;] 600 soon drop
 T{ omb1-2-flag1 story-flag?  [: glass-fx effect @ 0<>  s" Curtain" $7C object@ 0e ~= ;] in-place -> -1 -1 -1 }T
 mirror-area 0 at  circle press  [: doing-busy? 0= ;] 600 soon drop
 T{ omb1-2-flag1 story-flag?  [: glass-fx effect @ 0<>  s" Curtain" $7C object@ 1e ~= ;] in-place -> 0 0 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the mirror smashed: the floor flooded, its remark
 omb1-2-breakable3-broken story-flag-set  room-afresh
 T{ 4 part?  mirror-area 0 at  said -> -1 shattered-msg }T

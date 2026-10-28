@@ -133,4 +133,12 @@ the totals and sets the exit status.
   `deliver` delivers what is queued; `key: X true key-hold` holds a key. Run them with
   `SDL_AUDIO_DRIVER=dummy` (and `--hidden` for other headless runs).
 - `ctest` runs both, and the C checks of the library's conversions (`tests/*_check.c`).
+- **Quick and full runs.** A test should check the actors' state after words are run; one that
+  simulates frames or waits (`soon`, long `run-frames`, scenes, walks) belongs to the full run. Each
+  game test file has a `full-suite` line (the tester's): the tests above it make the quick run - set up
+  with words and a few frames, then checked - and those below it only the full run. `openhuey --test`
+  and `ctest` are quick (the file ends at `full-suite`; the long conversion checks `movie-check`,
+  `texbank-check`, `music-check` skipped); `--full`, or `OPENHUEY_FULL_TESTS=1` in the environment,
+  runs everything (`full-tests?` says which, for an `--eval` test). A new test that only checks state
+  goes above the marker.
 - Mods' tests: `docs/modding.md`.

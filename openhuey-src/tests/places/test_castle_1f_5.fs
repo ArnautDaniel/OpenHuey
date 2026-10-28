@@ -33,6 +33,7 @@ testing coming in: the three flames, the vase whole
 c1f-5-breakable-broken story-flag-clear  over-music-b story-flag-clear  c1f-6-flag1 story-flag-clear  c1f-5-flag1 story-flag-set
 room-afresh
 T{ flames-up  0 part? -> 3 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the remarks: the dim corner, the box in turn, the paintings in turn, their twin
 T{ dim-area 180 at  said -> dim-msg }T

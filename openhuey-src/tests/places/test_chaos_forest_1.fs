@@ -42,6 +42,7 @@ testing the figure struck: it hops back (once counted)
 : hit ( -- )  the-figure hops-back ;
 T{ 22e -10e 145e blow-at  [: the-figure hopper-struck? dup if  ['] hit start drop  then ;] in-place -> -1 }T
 T{ 5 run-frames  [: the-figure hp.hops @ ;] in-place -> 1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 [: body-point-off ;] her  60 run-frames
 testing the Forest Map taken: its part gone
 forest-map items:items-of before !

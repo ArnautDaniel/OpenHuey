@@ -53,6 +53,7 @@ wt4f-1-breakable-broken story-flag-clear  wt4f-1-medallion story-flag-clear  wt4
 testing coming in by exit 0: the walkway home, its doors locked; the drum; the sparkle; the summoner off
 T{ wt4f-1-flag3 story-flag?  walkway-angle 0e ~=  [: home-part part?  across-part part? ;] in-place  locked? -> 0 -1 -1 0 -1 -1 }T
 T{ [: medallion-fx effect @ 0<>  summoner-was-on @ ;] in-place  summoner-on state-flag? -> -1 -1 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the lever pulled: the walkway across (-90 degrees), its doors open, creatures let out
 T{ lever-area 180 at  circle press  [: lever-done ;] 900 soon -> -1 }T
 T{ wt4f-1-flag3 story-flag?  wt4f-1-flag4 story-flag?  walkway-angle pi f2/ fnegate ~=  locked? -> -1 -1 -1 0 0 }T

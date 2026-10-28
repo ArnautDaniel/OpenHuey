@@ -5,6 +5,7 @@
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_breakables.fs
 IN: test-breakables
 USING: tester engine game-state actors messages room-names game debug keys facts flag-names story-names vectors fiona.state fiona.slam ;
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 
 free-play  10 run-frames  0 game:fiona send costume  castle-1f-11 room!  200 run-frames

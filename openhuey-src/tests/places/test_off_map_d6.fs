@@ -62,6 +62,7 @@ clock-start  30 run-frames   \ (the run: Hewie the one played)
 : her-here ( -- )  0 75e 0e -10e put ;   \ (Fiona by the bush, free)
 testing in by exit 0 (camera 0), 1 (1), 2, 3 (0): at it
 T{ 0 by  room-id  his-camera@ -> off-map-d6 0 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 1 by  his-camera@  2 by  his-camera@  3 by  his-camera@ -> 1 1 0 0 0 0 }T
 testing the room behind exit 0, 2, 3 loaded ahead as Hewie crosses into area 4, 6, 7 (area 5: none)
 T{ 1 by  4 hinto  spare@ -> off-map-d6 0 leads }T

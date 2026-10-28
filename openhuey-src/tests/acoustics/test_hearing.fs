@@ -95,5 +95,6 @@ T{ $80 front-garden-3 -1 door2 hewie-noise make  outcome -> hewie-noise $80 }T
 testing a listener with no body hears nothing (and no message)
 ear enter body-off leave-actor
 T{ $80 front-garden-2 100 -1 fiona-noise make  -5 got !  0 got-loud !  outcome -> -5 0 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

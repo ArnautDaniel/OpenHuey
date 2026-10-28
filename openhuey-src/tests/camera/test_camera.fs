@@ -63,6 +63,7 @@ engine:camera cam.far sf@ fvalue was-far
 T{ 1000e ahead out-of-view?  3000e ahead out-of-view? -> 0 -1 }T
 20000e engine:camera cam.far sf!
 T{ 3000e ahead out-of-view?  -100e ahead out-of-view? -> 0 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 was-far engine:camera cam.far sf!
 
 test-summary

@@ -40,6 +40,7 @@ ht2f-1-viola-medallion story-flag-clear  ht2f-1-medallion-found story-flag-clear
 over-music-d story-flag-set  room-afresh
 testing coming in: the crates whole, the flames lit
 T{ [: crate-1 broken?  crate-2 broken?  0 effect @ 0<>  9 effect @ 0<> ;] in-place -> 0 0 -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the locked door: its remark, then the sun carved in it, in turn
 T{ [: ['] the-door fiona start-holding drop ;] in-place  shown-soon -> locked-msg }T
 300 read-on  [: doing-busy? 0= ;] 300 soon drop

@@ -45,6 +45,7 @@ testing a mandragora pulled: the yellow one; then one only
 white-mandragora-used story-flag-clear  got-yellow-mandragora story-flag-clear
 9 facing-middle  circle press
 T{ shown-soon -> pull-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 yes-it  300 play-on
 T{ got-yellow-mandragora story-flag?  yellow-mandragora items:items-of 0> -> -1 -1 }T
 T{ 8 facing-middle  said -> one-only-msg }T

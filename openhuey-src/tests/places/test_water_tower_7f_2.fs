@@ -44,6 +44,7 @@ world-held state-flag-set  back-way by-exit
 T{ [: self body-tri ;] his  world-held state-flag?  [: doing-busy? ;] drop  0 -> $344 0 0 }T
 testing the clock: saving (or Hewie not by her) - no
 T{ clock-area 0 at  circle press  shown-soon  dup $8014 =  swap $8024 = or -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 answer-no
 T{ doing-busy? -> 0 }T
 testing the inscription

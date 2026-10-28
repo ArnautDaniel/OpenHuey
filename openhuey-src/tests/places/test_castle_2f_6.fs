@@ -34,6 +34,7 @@ T{ [: lavender-fx effect @ 0<> ;] in-place -> -1 }T
 
 testing the remarks: the shelves in turn, the massive book in turn, the desktop, the board (the Luminessants)
 T{ 7 -90 at  said  7 -90 at  said -> shelves-msg study-msg }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ 90 -4e 0e -19e put  said  90 -4e 0e -19e put  said -> book-msg greek-msg }T   \ (facing its middle)
 T{ desktop-area -134 at  said -> desktop-msg }T
 got-doc-luminessants story-flag-clear

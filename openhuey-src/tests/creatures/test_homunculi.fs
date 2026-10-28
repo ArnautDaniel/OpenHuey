@@ -68,6 +68,7 @@ T{ 180 face  code -> $23 }T
 testing sight 0: it wakes, turns to her and comes; close, it closes in to grab her (move 8)
 5 run-frames
 T{ [: awake @ ;] of7 -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 d-her constant d0
 T{ [: [: running @ 3 = ;] of7 ;] 900 soon -> -1 }T
 T{ d-her d0 < -> -1 }T

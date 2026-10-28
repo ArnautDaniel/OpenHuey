@@ -43,6 +43,7 @@ T{ [: jolts @ ;] in-place  force-followed state-flag? -> 3 -1 }T
 testing the dynamo's shake: its size down a quarter a frame; the belt's step: 0.4 along, the wheel 0.05 round
 T{ [: dynamo placed-here?  belt-there? ;] in-place -> -1 -1 }T
 T{ [: belt-set  belt-step  belt place-x object@ 0.4e ~=  roller turn-y object@ 0.05e ~= ;] in-place -> -1 -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the generator's remarks in turn; the demolisher's
 T{ generator-area 180 at  said  generator-area 180 at  said -> dead-gen-msg jolt-msg }T
 T{ demolisher-area 0 at  [: fiona demolisher-area 50 faces-area? ;] in-place -> -1 }T

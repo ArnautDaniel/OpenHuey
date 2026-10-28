@@ -42,4 +42,5 @@ key: Tab press-key  key: Down press-key  key: X press-key  key: V press-key
 T{ stage? -> open }T
 key: Return press-key  6 run-frames
 T{ stage? -> closed }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

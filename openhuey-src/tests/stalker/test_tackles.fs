@@ -30,4 +30,5 @@ T{ s" kind35" actor-named enter  knock-sound  leave-actor -> $21 }T
 testing his hanging parts (DebilitasModel_Springs): as drawn, the first from bone 10 and the other three all from its end (together)
 : y-of ( b -- ) ( F: -- y )  [: my-model @ ;] his swap bone-pos fdrop fswap fdrop ;
 T{ [: 11 y-of 13 y-of f- fabs 0.001e f<  12 y-of 13 y-of f- fabs 0.001e f< and ;] 10 soon -> -1 }T
+full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary
