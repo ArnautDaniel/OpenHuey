@@ -32,11 +32,11 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 :noname ( -- flag )  give-up? dup if  give-up  then ; is gave-up?
 \ on as before by his stance (Pursuer_StanceByFiona, PickStep): held off, on home; seeing her,
 \ his chase; else after her, or searching
+:noname ( -- )   \ (held off: on home - no way there, he stands till his clock runs out)
+    way-home 0= if  stand exit  then
+    making-for @ 0< if  come-into-play  else  making-for @ leave-by  then ; is off-home
 : on-as-before ( -- )
-    my-mode @ held-off = if   \ (held off already: on home)
-        way-home 0= if  stand exit  then
-        making-for @ 0< if  come-into-play  else  making-for @ leave-by  then  exit
-    then
+    my-mode @ held-off = if  off-home exit  then   \ (held off already: on home)
     sees-fiona @ if  chase-begin  else  my-mode @ after-her = if  chase-start  else  search-again  then  then ;
 : recovered ( -- )
     0 reeling !  0 apart !   \ (his step done: in contact again - Pursuer_FrameUpdate)

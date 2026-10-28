@@ -73,6 +73,7 @@ variable sw-in  variable sw-room  variable sw-tri  variable sw-hp  variable sw-m
 create sw-more 8 cells allot   variable sw-more?   \ (a save without them: as he was)
 create sm-was 7 cells allot   variable sm-was?        \ the summoner's record (progress +0x764)
 variable was-map-page                                \ the map's page she was on (the save's +0x18F0; -1 none)
+create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7B0)
 
 : progress-clear ( -- )  progress progress-size 0 fill ;
 : progress-word! ( v i -- )  4 * progress + l! ;
@@ -82,7 +83,7 @@ variable was-map-page                                \ the map's page she was on
 : in-room ( room -- )
     dup was-room !  hw-room !  -1 hw-tri !  2 hw-side !  hw-mood 7 cells 0 fill
     false was-hewie !  -1 was-stalker !  6 0 do  16 i cells was-skills + !  loop  was-met 4 cells 0 fill
-    false sm-was? !  -1 was-map-page ! ;
+    false sm-was? !  -1 was-map-page !  false pn-was? ! ;
 : fiona-was ( costume -- ) ( F: x y z yaw -- )  was-yaw f!  was-z f!  was-y f!  was-x f!  was-costume ! ;
 : hewie-was ( trust points hp -- ) ( F: x y z yaw -- )
     hw-yaw f!  hw-z f!  hw-y f!  hw-x f!  was-hp !  was-points !  was-trust !  true was-hewie ! ;
@@ -97,6 +98,7 @@ variable was-map-page                                \ the map's page she was on
 : stalker-more ( cond hp-max rage temper hits mode-t down-t yaw -- )  0 7 do  i cells sw-more + !  -1 +loop  true sw-more? ! ;
 : summoner-was ( away called cooldown room waited mode kind -- )  0 6 do  i cells sm-was + !  -1 +loop  true sm-was? ! ;
 : map-page-was ( page -- )  was-map-page ! ;
+: panic-was ( stage left hold beat level passing lasting -- )  0 6 do  i cells pn-was + !  -1 +loop  true pn-was? ! ;
 
 \ ---- writing ----
 : .f ( F: r -- )  6 f>s$ type space ;   \ (always with a point: read back as a float)
@@ -120,6 +122,9 @@ variable was-map-page                                \ the map's page she was on
 
 \ ---- loading: the progress back, the room played, then everyone put where they were ----
 : place-msg ( F: x y z yaw -- ) ( -- x y z yaw )  {: F: x y z yaw :}  x f>cell y f>cell z f>cell yaw f>cell ;
+: panic-back ( -- )   \ (her panic as the save had it; a save without it: calm, as a new game)
+    pn-was? @ 0= if  s" panic" actor-named send panic-reset exit  then
+    7 0 do  i cells pn-was + @  loop  s" panic" actor-named send panic-restore ;
 : summoner-back ( -- )   \ (its record, as the save's progress keeps it; a save without it: its time away rolled anew)
     sm-was? @ 0= if  summoner-timing state-flag-clear exit  then
     7 0 do  i cells sm-was + @  loop  s" summoner" actor-named send summoner-restore ;
@@ -203,6 +208,7 @@ create records-written 36 allot          \ (and the mini-game's best times)
 : load-file ( -- )
     save-path file-exists? 0= if  ." no save at " save-path type cr exit  then
     keep-unlocks  save-path included  unlocks-back  0 hewie-played !   \ (SceneGame_ctor: Fiona played)
+    panic-back   \ (at once: not the panic she had as she loaded)
     doors-unheld   \ (a save made before they were left out)
     subscreen-wanted state-flag-clear   \ (a save point's save was made with the save screen up: not again)
     new-game-sounds state-flag? 1 and sound-set!   \ (SceneGame_StateEntry: bank 4's set by the flag - bare feet or boots)

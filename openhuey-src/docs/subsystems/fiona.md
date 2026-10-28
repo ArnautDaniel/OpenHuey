@@ -237,7 +237,8 @@ The square button (E), while she's free (mode 0), not past the panic's stage 3 a
 off running (her recovery under way, or under $3D frames of running) - a shove; running, or
 turning to flee - a kick. The shove ($E00, its pace slower the longer she's been shaken -
 recovery past $1C3: (3150 - recovery) / 1800 x 1.5 - and the more frightened - fear past 40:
-(160 - fear) / 120) reaches 2 round her hand (bone 9) at its key: a `blow` 1, damage 1; with a
+(160 - fear) / 120) reaches 2 round her hand (bone 9) at its key - read a frame behind
+(Motion_EventFlags dt -1: her arm out; at dt 0 it fell a frame short) -: a `blow` 1, damage 1; with a
 wall between her and her hand (the walk from her triangle to it, over flags $20018: Actor_TriTo)
 it ends: blended into standing over 10 (Motion_PlayWith flags $101), and once that has faded
 in Hewie is told (`reaction` 10, unless she struck him) and she stands - the shove's own end

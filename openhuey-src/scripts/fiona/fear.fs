@@ -147,6 +147,7 @@ create next-at /vec allot
 \ is slammed (fiona/slam.fs); Hewie's reaction: with him ----
 : add-fear ( F: amount -- )  choker-fear her-fear f@ f+ 0e fmax 100e fmin her-fear f! ;   \ Fiona_AddPanic
 : events-now ( -- bits )  her-model @ 0 0 1 motion-events ;
+: events-last ( -- bits )  her-model @ 0 -1 1 motion-events ;   \ (a frame behind: Motion_EventFlags dt -1 - her shove's key, her arm out)
 : costume ( -- n )  $26 progress pr.vars + c@ ;
 create behind-pt /vec allot   \ (her radius behind her: a door slammed as she turns from it)
 : flee-turn ( -- )

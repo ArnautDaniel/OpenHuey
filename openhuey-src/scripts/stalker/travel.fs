@@ -97,12 +97,15 @@ variable in-tri
 : placed-anywhere ( -- )   \ (Actor_TeleportRandom: no exit to stand at)
     random-tri dup 0< if  drop fiona body-tri  then
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place  settle ;
-: come-into-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first)
+defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home - stalker/struck.fs)
+: come-into-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first);
+    \ held off, on home - she coming into his room doesn't turn him back (Pursuer_StanceByFiona's held off)
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
     my-mode @ held-off = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
         own-tri dup tri-center goal-at vec!  goal-at plan 0> if  walk-slow play  ['] walking step!  else  stand  then  exit
     then
+    my-mode @ held-off = if  off-home exit  then
     my-mode @ after-her = if  chase-start exit  then
     my-mode @ heading-for-her = if  searching mode!  then
     search-again ;
@@ -218,7 +221,8 @@ create fs-a /vec allot  create fs-b /vec allot
 \ ---- his modes out of sight (Pursuer_ModesSearching, Pursuer_PlanToGoal): after her he
 \ heads for her room, his route anew as she moves on; his clock out, heading there; at the
 \ room he searches it (its stops x 150 frames), then waits about (900); his wait over, he
-\ heads for her room unless she is in his or one next to it - then out by a door at random ----
+\ heads for her room unless she is in his or one next to it - then out by a door at random; held
+\ off, home and away till the summoner takes him ----
 : next-to-hers? ( -- flag )
     her-room dup 0< if  drop false exit  then
     dup my-room = if  drop true exit  then
@@ -261,8 +265,8 @@ create fs-a /vec allot  create fs-b /vec allot
         waiting-about of  route-over? if
                   tick-down if  next-to-hers? if  wander  else  heading-for-her mode!  head-for-her  then  900 mode-t !  then
               then  endof
-        held-off of  own-room? 0= route-over? and if  head-home  then  tick-down if  after-her mode!  then  endof
-    endcase ;
+        held-off of  own-room? 0= route-over? and if  head-home  then  endof   \ (held off he stays away: the summoner
+    endcase ;                                                                    \ takes him out, and brings him in afresh)
 : away ( -- )   \ (stunned a while once knocked out of her room by a door: stalker/doorway.fs; held
     \ off in his own room he stays there - Pursuer_TravelOffscreen)
     stun-t @ if  -1 stun-t +!  exit  then  modes-away

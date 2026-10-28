@@ -85,7 +85,7 @@ $8000 constant stumble-blow
     recoil-down
     ended? if  shove-done exit  then
     moving
-    events-now 2 and 0= if  exit  then
+    events-last 2 and 0= if  exit  then   \ (Fiona_StateStrike: dt -1)
     blow-point
     hand true slam-door if  exit  then                     \ (a door there slammed)
     special? 0=  hand $20018 body-tri-to 0< and if  settled? if  wall-end  then  ['] shove-end her-act ! exit  then   \ (a wall before her hand)
@@ -176,7 +176,7 @@ create poi /vec allot
         events-now 2 and if  body-point-off exit  then
         10e self body-dims fdrop point-ahead  poi vec@ body-point! exit
     then
-    her-sub @ shove-sub <>  events-now 2 and 0= or if  body-point-off exit  then
+    her-sub @ shove-sub <>  events-last 2 and 0= or if  body-point-off exit  then   \ (dt -1, as her shove's)
     form cowgirl-outfit = if  2.5e 10e point-ahead  poi vec@ body-point! exit  then
     form illegal-outfit = if  0e 6e hand-bone at-bone  hand vec@ fdrop her-at v.y sf@ 2.5e f+ fswap body-point! exit  then
     her-model @ 9 bone-pos body-point! ;

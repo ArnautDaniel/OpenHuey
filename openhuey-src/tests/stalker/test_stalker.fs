@@ -103,6 +103,18 @@ T{ game:debilitas body-tri drawn? -> -1 0 }T
 front-garden-3 room!  3 run-frames
 T{ game:debilitas body-tri 0< 0=  drawn?  game:debilitas body-room -> -1 -1 front-garden-3 }T
 debug:debilitas-out  2 run-frames
+testing ... held off (given up), she follows him into his room: still held off, on out by his way home
+front-garden-2 room!  10 run-frames  front-garden-3 0 game:debilitas send stalker-in  2 run-frames
+[: 4 mode!  30 hp ! ;] his  5 run-frames  front-garden-3 room!  3 run-frames
+T{ [: my-mode @  out-going @ 0<>  making-for @ 0< 0=  hp @ ;] his -> 4 -1 -1 30 }T
+T{ 120 run-frames  [: my-mode @  chasing? ;] his -> 4 0 }T
+testing ... held off out of sight, his clock out: still held off - away till the summoner takes him
+castle-1f-10 room!  3 run-frames  [: 4 mode!  1 mode-t ! ;] his  5 run-frames
+T{ [: away?  my-mode @  hp @ ;] his -> -1 4 30 }T
+testing ... brought in afresh by the summoner: his health full
+debug:debilitas-out  2 run-frames  front-garden-3 0 0 0 game:debilitas send stalker-summoned  2 run-frames
+T{ [: hp @ hp-max @ =  my-mode @ ;] his -> -1 3 }T
+debug:debilitas-out  2 run-frames
 
 testing at a shut door into her room he knocks, waits, then comes in and it swings open
 castle-1f-2 room!  10 run-frames
