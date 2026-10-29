@@ -132,6 +132,7 @@ $1304 constant turn-in-anim   $205 constant charge-anim   $1004 constant stun-an
     blow-at walled? if  stun exit  then
     charge-hits ?dup 0= if  root-move exit  then
     move4 m.stumble f@ stumble-roll {: bits how :}
+    12 cry !   \ (his cry as it strikes home: Debilitas_StateBlow's +0x1764)
     bits touched-her and if  move4 m.kind @ how move4 m.threat f@ f>cell fiona send hit  then
     bits touched-him and if  move4 m.kind @ move4 m.damage @ how hewie send blow  then
     -1 sent !  stun ;
