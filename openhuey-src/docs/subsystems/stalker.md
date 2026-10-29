@@ -167,10 +167,17 @@ facing her within 20 degrees on her floor, and not held off, he attacks: his tab
 stands (`fiona-plight`: 0 calm, 1 fleeing, 2 panicking, 4 / 5 the panic's stages; 3 out of
 reach - none). Rows: a combo ($13), a taunt ($17..$19: his gesture table), round her ($1A /
 $1B: 5 degrees a step at his distance, the way she isn't facing; 30 of it or 120 frames),
-taking her ($14 by the hand, $15 walking), his lunge ($1002), his grab ($1003). After a combo his table 12
-(it struck her) or 13 (taunts), held off 90 frames if it struck her, else 30. Round her ($1A), or
-his third taunt ($19) with its gesture's flag, her more than 100 off: stalking her for his chase
-table's eighth (seen near). Her panic calming down (the panic's stage 5) his chase is the
+taking her ($14 by the hand, $15 walking), his lunge ($1002), his grab ($1003). Whatever he picks
+from a table runs to its end by its own rules (Pursuer_Behaviour288 / Pursuer_BehaviourAttack,
+`attack-run`): a combo or a take over - his wait out (held off 90 frames if it struck her, else
+30) or her past 100: over; within 20, a step back; else his table 12 (it struck her) or 13 again.
+Standing: his wait out, over; else the table again when its frames are up. A gesture, a taunt,
+his second way round: over at their end (a flagged taunt sooner, her out of his sight or 60 off).
+A turn or his way round over: her free and his wait out, or 40 off - over; else turned to her, or
+standing 30, or a step back (her within 20, floor behind him). A step back: her free and his wait
+out - over, else (her past 20, or nowhere behind him) the table again. His look round over:
+turned to her, or her past 20 over, else his rest and a step back. Over: in front of him within
+reach on her floor, at her at once; else his own chase picks anew (Debilitas_ChaseDecision). Her panic calming down (the panic's stage 5) his chase is the
 Pursuer's (Debilitas_ChaseDecision: `stalker/pursue.fs`) - as it begins, and at the end of any
 step of his own chase that leaves him free to attack.
 

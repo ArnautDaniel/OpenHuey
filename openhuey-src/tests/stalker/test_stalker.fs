@@ -90,6 +90,16 @@ testing ... out of health till Hewie lets go
 [: near-flank-attack bitten !  -1 reeling !  1 hp !  0 hits ! ;] his  kick-blow 5 0 game:debilitas send blow  2 run-frames
 T{ [: hp @  hits @  cond @ down-cond =  bitten @ 0<> ;] his -> 0 5 0 -1 }T
 [: 0 bitten !  0 reeling !  70 hp !  0 hits ! ;] his  2 run-frames
+testing what he picked from his tables runs to its end by Pursuer_BehaviourAttack's rules: a combo over - his
+testing ... wait out, over (his behaviour picks anew); within 20, a step back; else the table again (after a miss)
+: combo-over-with ( hold-off F: d -- )   \ (as if his combo just ended, her d off)
+    {: h F: d :}  [: -1 in-attack !  combo-act chase-act !  -1 step-done !  0 took ! ;] his
+    h d [: d-fiona f!  hold-off !  stalker.chase:attack-run ;] his ;
+T{ 0 50e combo-over-with  [: in-attack @ ;] his -> 0 }T
+T{ 30 5e combo-over-with  [: in-attack @  chase-act @ back-off-act = ;] his -> -1 -1 }T
+T{ 30 50e combo-over-with  [: in-attack @ ;] his -> -1 }T
+T{ 30 150e combo-over-with  [: in-attack @ ;] his -> 0 }T
+[: 0 in-attack !  0 hold-off ! ;] his  2 run-frames
 testing his combo over, no move of it is left to run (Pursuer_BehaviourEnded): its act none
 T{ [: 0 combo-start  combo-over  act-xt @ ['] noop =  combo @ ;] his -> -1 -1 }T
 testing through a door, what he was about in the room he left is let go (Pursuer_ThroughDoor): unshaken,

@@ -21,11 +21,6 @@ USING: engine game-state actors messages common facts flag-names paths stalker.a
 : pick-pace ( -- )
     her-stage @ pursue-row
     rnd 100e f*  dup f@ f<= if  walk-at-act swap walk-frames#  else  stalk-act swap stalk-frames#  then  hold-for ;
-\ a step back facing her, to its end (Pursuer_StateWalkThen404)
-: backing ( -- )
-    fiona body-at turn-rate turn-to fdrop  root-move
-    ended? if  -1 step-done !  then ;
-: step-back ( -- )  step-back-anim play-now  ['] backing back-off-act act! ;
 \ round her, or his third taunt with its gesture's flag (Pursuer_BehaviourStalk $1A / $19): more
 \ than 100 from her, stalking her for the row's frames; else, over, walking at her for the row's
 \ ($1B, his second way round, has no case there)
@@ -41,6 +36,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.a
     1 chase-t +!
     hold-off @ if  -1 hold-off +!  then
     act-xt @ execute
+    in-attack @ if  attack-run exit  then   \ (what he picked from his tables: Pursuer_BehaviourAttack)
     chase-act @ case
         back-off-act of  d-her touch 5e f+ f< 0=  d-her f0< or if  pick-pace  then  endof
         stalk-act of  hold-t @ 0> 0=  d-her 100e f< and if  lunge-situation choose exit  then
@@ -59,7 +55,7 @@ USING: engine game-state actors messages common facts flag-names paths stalker.a
 \ Pursuer_ChaseDecision: close and in front of him on her floor, not past the panic's stage 3 -
 \ standing to her; else by the row
 : pursue-now ( -- )
-    no-search search-phase !  ['] pursue-run step!  0 chase-t !  0 hold-off !  -1 combo !
+    no-search search-phase !  ['] pursue-run step!  0 chase-t !  0 hold-off !  -1 combo !  0 in-attack !
     d-her ground-gained f<  d-her f0< 0= and  same-floor? and  in-front? and  her-stage @ panicking < and if
         stand-watching  0 hold-t !  exit
     then

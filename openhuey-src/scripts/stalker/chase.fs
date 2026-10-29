@@ -42,6 +42,11 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 : walk-at ( act -- )   \ walking at her (fast) or stalking her (slow)
     0 no-way !  dup walk-at-act = if  walk-fast  else  walk-slow  then  play  ['] at-her swap act! ;
 : hold-for ( act frames -- )  hold-t !  walk-at ;
+\ a step back facing her, to its end (Pursuer_StateWalkThen404)
+: backing ( -- )
+    fiona body-at turn-rate turn-to fdrop  root-move
+    ended? if  -1 step-done !  then ;
+: step-back ( -- )  step-back-anim play-now  ['] backing back-off-act act! ;
 \ turned on the spot toward her
 : turning-to ( -- )  root-move  ended? if  -1 step-done !  then ;
 : turn-to-her ( way -- )  turn-base + play-now  ['] turning-to turn-act act! ;
@@ -151,7 +156,9 @@ create family-acts  ' wander-about , ' turn-at-her , ' lunge , ' grab-dog ,
         take-by-hand-act of  drop by-the-hand take-her  endof   take-walking-act of  drop walked-off take-her  endof
         >r drop stand-watch r>
     endcase ;
-: choose ( situation -- )  hard-mode? table row  dup r.act @ swap r.arg @ do-row ;   \ (Pursuer_PickFromTable)
+: choose ( situation -- )   \ (Pursuer_PickFromTable: then Pursuer_Behaviour288 - his BehaviourAttack - has him)
+    hard-mode? table row  dup r.act @ swap r.arg @ do-row  -1 in-attack ! ;
+defer look-about-her ( -- )   ' noop is look-about-her   \ (his look round: stalker/grab.fs)
 \ Pursuer_PickAttack: by the panic's stage
 :noname ( -- )  her-stage @ panicking >= if  attack-panic  else  attack-calm  then  choose ; is pick-attack
 
@@ -208,6 +215,63 @@ create family-acts  ' wander-about , ' turn-at-her , ' lunge , ' grab-dog ,
     step-done @ if  stand-watch  then ;
 : moving-act? ( -- flag )   \ (his steps that leave his next free - PURSUER_STEP_NEXT: his attack may come)
     chase-act @ dup watch-act =  over walk-at-act = or  over stalk-act = or  swap look-around-act = or ;
+\ ---- what he picked from his tables, to its end (Pursuer_BehaviourAttack): by what it is - standing,
+\ his wait out, again from the table for how it went (after a blow that struck her or missed); a
+\ gesture, a taunt, his way round, over (a taunt with its flag: her out of his sight, or 60 off);
+\ a turn or his way round over - her free and his wait out, or 40 off: over; else turned to her,
+\ or standing 30, or a step back when she is within 20 and there's floor behind him; a step back -
+\ her free and his wait out: over, else (her past 20, or nowhere to step) the table again; his look
+\ round over - turned to her, or her past 20 over, else his rest and a step back; anything else (a
+\ combo, a take) over - his wait out or her past 100: over, within 20 a step back, else the table
+\ again. Over: in front of him within reach on her floor, at her at once; else his behaviour picks
+\ anew (Pursuer_PickStep: Debilitas_ChaseDecision) ----
+create side-pt /vec allot
+: room-behind? ( -- flag )   \ (floor 2 off him, behind or 110 either side, from her: Npc_TargetSideWalkable)
+    3 0 do
+        fiona body-at heading-to  i case  0 of  pi  endof  1 of  110e deg>rad  endof  >r -110e deg>rad r>  endcase  f+
+        2e side-pt my-at vec-ahead
+        side-pt self body-mask body-tri-to  dup 0< if  drop  else  nav-flags self body-mask and 0= if  true unloop exit  then  then
+    loop  false ;
+: may-go? ( -- flag )  her-plight @ unreachable-plight <>  stalkers-blind state-flag? 0= and ;   \ (Pursuer_MayGo)
+: turn-way ( -- way )  fiona body-at 60e deg>rad 150e deg>rad way-past ;   \ (Pursuer_TurnDir; no-turn: none)
+: attack-again ( -- )  took @ if  struck-her  else  missed-her  then  choose ;   \ (Pursuer_AttackAgain)
+: attack-over ( -- )
+    0 in-attack !  0 took !  0 hold-off !  0 hold-t !
+    sees-fiona @ if
+        d-her fdup ground-gained f<  fdup 10e f< or  f0> and
+        fiona body-at heading-to yaw f- angle-wrap fabs 20e deg>rad f<  same-floor? and  and if  attack! exit  then
+    then
+    sees-fiona @ if  chase-begin  else  chase-start  then ;
+: turn-or-stand ( -- )   \ (a turn or his way round over: Pursuer_BehaviourAttack 3 / $1A)
+    may-go? hold-off @ 0= and  d-her 40e f>  d-her f0< or  or if  attack-over exit  then
+    turn-way dup no-turn <> if  turn-to-her exit  then  drop
+    d-her 20e f>  room-behind? 0= or if  30 hold-t !  stand-watch exit  then
+    step-back ;
+: attack-run ( -- )
+    chase-act @ case
+        watch-act of  hold-off @ 0= if  attack-over exit  then
+            hold-t @  -1 hold-t +!  0> 0= if  attack-again  then  endof
+        gesture-act of  step-done @ if  attack-over  then  endof
+        taunt-act of  step-done @ if  attack-over exit  then
+            taunt-gesture @ gesture-flag? if  sees-fiona @ 0=  d-her 60e f< 0=  or  d-her f0< or if  attack-over  then  then  endof
+        round-2-act of  step-done @ if  attack-over  then  endof
+        back-off-act of  may-go?  hold-off @ 0= and if  attack-over exit  then
+            d-her 20e f>  room-behind? 0= or if  attack-again  then  endof
+        taunt-2-act of
+            taunt-gesture @ gesture-flag? if  turn-way dup no-turn <> if  0 hold-off !  turn-to-her exit  then  drop  then
+            step-done @ if  turn-or-stand  then  endof
+        turn-act of  step-done @ if  turn-or-stand  then  endof
+        round-act of  step-done @ if  turn-or-stand  then  endof
+        look-around-act of  step-done @ 0= if  exit  then
+            turn-way dup no-turn <> if  turn-to-her exit  then  drop
+            d-her 20e f> if  attack-over exit  then
+            rest-missed hold-off !  step-back  endof
+        >r  step-done @ if
+            at-dog @ if  false chance-roll drop  then
+            hold-off @ 0=  d-her 100e f>  or if  attack-over
+            else  d-her 20e f<= if  step-back  else  attack-again  then  then
+        then  r>
+    endcase ;
 \ (Pursuer_FrameUpdate: each step he finishes, first whether he gives up - stalker/struck.fs)
 defer gave-up? ( -- flag )   ' false is gave-up?
 : chase-run ( -- )
@@ -215,6 +279,7 @@ defer gave-up? ( -- flag )   ' false is gave-up?
     hold-off @ if  -1 hold-off +!  then
     act-xt @ execute
     step-done @ if  gave-up? if  exit  then  then
+    in-attack @ if  attack-run exit  then   \ (what he picked from his tables: its own rules)
     chase-act @ case
         watch-act of  standing-choice  endof
         walk-at-act of  walking-choice  endof
@@ -230,7 +295,7 @@ defer gave-up? ( -- flag )   ' false is gave-up?
 
 \ ---- the chase begins (Debilitas_Behaviour): she facing him or not, near or far ----
 : chase-now ( -- )
-    no-search search-phase !  ['] chase-run step!  0 chase-t !  0 hold-off !  -1 combo !
+    no-search search-phase !  ['] chase-run step!  0 chase-t !  0 hold-off !  -1 combo !  0 in-attack !
     watch-frames watch-t !
     rnd 100e f*
     faces-me? 0= if

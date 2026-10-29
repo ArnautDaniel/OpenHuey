@@ -49,6 +49,7 @@ enum: seize-answer  no-answer she-came she-refused she-broke-free ;
 \ fright to her (Pursuer_Threat: Pursuer_ThreatAmount 20) ----
 : looking-round ( -- )  ended? if  -1 step-done !  else  root-move  then ;
 : look-round ( -- )  20e threat  glance-round-anim play  ['] looking-round look-around-act act! ;
+' look-round is look-about-her
 \ ---- closing on her (Pursuer_StateFaceFiona / StateWalkOn, Pursuer_CloseOnFiona): on along his
 \ way while his motion fades in (Pursuer_WalkOn), turning to her - by the hand, his stand then fading in too; then
 \ once: she on a ladder, his attack; in reach (20) and facing her (20 degrees), taken if she may

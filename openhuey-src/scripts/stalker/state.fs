@@ -208,4 +208,5 @@ state: stalker-state
   cell field powder-loops  cell field powder-how  cell field go-pull
   cell field in-tri  /vec field in-at
   cell field dog-trust          \ Hewie's trust as he tells it (+0xF35CC: how long he keeps a stalker busy)
+  cell field in-attack          \ in what he picked from his tables (Pursuer_BehaviourAttack: its own rules till it is over)
 end-state
