@@ -464,6 +464,11 @@ From `event.c`, `scene_game.c` (the order), `progress.c`.
    against `(s8)pc[2] * 2`), its "within" in whole degrees. A place writes the whole degrees: the
    room's 45 is `90`, its -67 is `-134`, its 90 is `180`. Placing and turning (`place-at`,
    `turn`, `walk-to`) take whole degrees as the room gives them.
+7. **Reading on the dimmed screen** (OpenHuey's, not the original's - the user's call, 0.2.28):
+   the kit's `fade` to-dim broadcasts `characters-still` on, from-dim off - the stalkers, Hewie
+   and the summoner hold still while a tip, a plaque or a note is read (the original runs on
+   through its messages and the half-dark fade). castle-2f-3's evasion tip holds them from its
+   start, as she shuts the door.
 
 ## Design notes
 

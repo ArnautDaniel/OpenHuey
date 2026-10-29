@@ -251,7 +251,9 @@ open to him than the original's. Hewie is struck at the key alone. Reach, him st
 original's up to 16 apart, now 26. The kick ($E01: her cry $3D, a step of 1.0756 a frame while it fades in)
 meets whom she touches while its key is clear: a `blow` 2, damage 5, he may stumble (`how` 1:
 rolled by him); at its end her fear up 10. Each reaches the stalker and Hewie once a blow;
-struck home (`blow-taken`) she's held still 5 frames ($90 kicked, $8F shoved). Hewie is told
+struck home (`blow-taken`) she's held still 5 frames ($90 kicked, $8F shoved) - counted down each
+frame whatever she is doing (Fiona_Panic's timers), let go at once if she is struck meanwhile
+(Fiona_React). Hewie is told
 (`reaction` 11) when her kick ends without striking him. Not while she is turning to push, in a
 panic attack or out of breath (Fiona_IsIdle). Her gestures to Hewie are read during a shove only
 as it comes round (Fiona_ReadsPad: mode 8, her action 5, the motion's flag $20).
