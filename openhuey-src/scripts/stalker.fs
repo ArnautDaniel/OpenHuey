@@ -88,7 +88,7 @@ create figure-pck 32 allot   create figure-tex 32 allot
     0 script-held !  0 posed !  0 take-asked !  0 look-on !  -1 sm-who !  0e 0e 0e look-pt vec!  0 door-script !
     0 noclipped !  my-floor @ body-mask! ;
 : come-in ( room tri -- )
-    loaded @ 0= if  play-slot load  then  forget-leads  0 beaten !
+    loaded @ 0= if  play-slot load  then  forget-leads
     {: room tri :}
     room room-id = if  room tri dup tri-center body-place
     else  room -1 0e 0e 0e body-place  then                         \ (out of sight: in that room, nowhere yet)
@@ -97,7 +97,8 @@ create figure-pck 32 allot   create figure-tex 32 allot
     well-cond cond !  0 reeling !  0 hits !
     route-clear  my-path path-clear  waiting-about mode!  stand-anim play-now  stand  settle  pose   \ (Pursuer_PlaceInRoom)
     -1 came-by !  -1 to-shut !  -1 at-ladder !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
-    unheld  0 apart !  0 link-t !  out-over  -1 held-door !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
+    door-passed  -1 combo !  0 combo-step !  0 chase-t !  0 in-attack !   \ (Pursuer_Reset's)
+    unheld  0 apart !  0 link-t !  out-over  -1 held-door !  0 entering !  0 barging !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
     away? 0= if  search-start  then ;
 : go-out ( -- )  let-her-go  let-door-go  out-over  forget-leads  0 in-game !  body-off  0 him act.visible l! ;
 
@@ -106,7 +107,7 @@ create figure-pck 32 allot   create figure-tex 32 allot
 \ heading for her, without one off by an exit at random ----
 : status ( -- )
     in-game @ if  my-room  else  -1  then  my-mode @  in-game @ 0<>  in-game @ if  own-room?  else  false  then
-    away-base @  cool-secs @  beaten @  s" summoner" actor-named send stalker-status ;
+    away-base @  cool-secs @  cond @ down-cond =  s" summoner" actor-named send stalker-status ;   \ (down now: +0xC4 2)
 : summoned ( room exit found plan -- )
     {: room e found plan :}
     room -1 come-in  e came-by !  hp-max @ hp !   \ (a stalk afresh: his health full - beaten or worn, he was out a while)
@@ -210,19 +211,23 @@ $1300 constant gesture-anims
     self subscribe hewie-doing  self subscribe scene  0 script-held !  0 in-scene !  well-cond dog-cond !
     my-kind @ head-bones!  ahead-look look-mode ! ;
 
-\ a door slammed off screen, the one he makes for: right behind it, its damage (not below 1) and
-\ he is after her
-: door-slammed-away ( damage exit -- )
-    behind-door? 0= if  drop exit  then
-    hp @ swap - 1 max hp !  after-her mode! ;
+\ a door slammed off screen, the one he makes for: right behind it (Pursuer_HitOffscreen kind 5) -
+\ not while down or stunned already; its damage (and the damage he's had); health left, stunned
+\ 60, 90 or 120 frames, crying out, after her; none, down there (his cry)
+: door-cry ( id -- )   \ (at the door he would come into her room by)
+    world-held state-flag? hushed @ or if  drop exit  then
+    next-door dup 0< if  2drop exit  then  room-id door-exit-in dup 0< if  2drop exit  then
+    1 exit-spot drop  7 bank-sound-at ;
+: struck-away ( damage -- )
+    cond @ down-cond =  stun-t @ 0<> or if  drop exit  then
+    dup hits @ + 999 min hits !  hp @ swap - 0 max hp !
+    hp @ 0> if  3e rnd f* f>s 30 * 60 + stun-t !  hurt-cry door-cry  after-her mode!
+    else  down-cry door-cry  down-away  then ;
+: door-slammed-away ( damage exit -- )  behind-door? if  struck-away  else  drop  then ;
 \ Hewie's scuffle with him off screen (Pursuer_Hit kind 8): its damage (not below 1), held those
 \ frames more; hurt, his cry from the door he would come into her room by
-: cry-through-door ( -- )
-    world-held state-flag? hushed @ or if  exit  then
-    next-door dup 0< if  drop exit  then  room-id door-exit-in dup 0< if  drop exit  then
-    1 exit-spot drop  hurt-cry 7 bank-sound-at ;
 : scuffled ( damage frames -- )
-    stun-t +!  dup hp @ swap - 1 max hp !  0> if  cry-through-door  then ;
+    stun-t +!  dup hp @ swap - 1 max hp !  0> if  hurt-cry door-cry  then ;
 : blow-away ( kind damage how -- )
     rot case
         door-blow of  door-slammed-away  endof
@@ -252,7 +257,7 @@ $1300 constant gesture-anims
     endcase ;
 : activated ( -- )
     hewie-played? if  run-temper  then
-    forget-leads  0 beaten !  -1 making-for !  0 down-t !  waiting-about mode!  900 mode-t !  0 raging !
+    forget-leads  -1 making-for !  0 down-t !  waiting-about mode!  900 mode-t !  0 raging !
     hp @ 0> 0= if  hp-max @ hp !  then ;
 : unload ( -- )   \ (a scene's figure placed: out of the room too)
     0 loaded !  unheld  in-game @ if  go-out  else  body-off  my-model @ 0< 0= if  0 him act.visible l!  then  then
@@ -353,11 +358,13 @@ behaviour stalking
   on noclip ( on -- )  dup 0<> noclipped !  if  0  else  my-floor @  then  body-mask! ;   \ (the story's 0x20: through blocked floor - at doors)
   on drawn-to ( tri -- )  in-game @ if  go-for-doll  else  drop  then ;
   on stalker-hunt ( -- )  in-game @ if  heading-for-her mode!  away? 0= if  search-again  then  then ;
-  on entered-room ( room exit -- )  her-came !  room-changed  in-game @ if  pose  then ;
+  on entered-room ( room exit -- )  0 still-held !  her-came !  room-changed  in-game @ if  pose  then ;
+  on characters-still ( on -- )  still-held ! ;
   on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model;
       \ given back he is shown, as the cast was made active: Cutscene_ReleaseActors' +0x29)
       my-model @ scene-has?  dup 0=  in-cast @ and if  0 hidden !  then  in-cast !
       in-game @ in-cast @ and if  tell-doing  loaded @ if  status  then  exit  then
+      in-game @ still-held @ and if  tell-doing  loaded @ if  status  then  exit  then   \ (held still: OpenHuey's)
       in-game @ if  frame  script-held @ 0= if  own-frame @ ?dup if  execute  then  then  tell-doing  then   \ (held: his Think, not his own frame)
       figure? self body? and  in-game @ 0= and if  posed @ if  posed-frame  else  pose  then  then   \ (a scene's figure: moved only posed)
       loaded @ if  status  then ;
@@ -365,7 +372,7 @@ behaviour stalking
   on dog-attack ( kind -- )  dog-attacked ;
   on dog-tackle ( -- )  dog-tackled ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
-      2drop 2drop 2drop 2drop  dog-cond !  2drop 2drop ;   \ (his condition: the chance roll's)
+      dog-trust !  2drop 2drop 2drop drop  dog-cond !  2drop 2drop ;   \ (his condition: the chance roll's; his trust)
   \ the story's: a script of the room has him (in the room being played: +0xE0) or lets go (posed:
   \ held till started afresh); its moves (stalker/scripted.fs: carried out while held - each clears
   \ his done, +0xE1); shown or hidden (0x1F: +0x29); posed (0x9D)
@@ -429,7 +436,8 @@ end-behaviour
 \ ---- each one's own: his model, his body ----
 : bodied ( floor -- ) ( F: width height -- )
     body-size  dup my-floor !  body-mask!  body-off  0 in-game !
-    self subscribe tick  self subscribe entered-room  self subscribe write-save  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end ;
+    self subscribe tick  self subscribe entered-room  self subscribe write-save  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end
+    self subscribe characters-still ;
 
 \ ---- Debilitas (debilitas.c Debilitas_Setup, DebilitasModel): 70 health (hard: 110), 5 across,
 \ 20 tall; his model O_DB0/DB0_000, its motion table, his sounds (bank 7); his own room (his

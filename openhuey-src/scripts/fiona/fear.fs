@@ -51,7 +51,8 @@ USING: engine vectors keys game-state actors messages common facts items.names f
             endcase
         else her-mode @ ladder-mode = if  fear-down  then then
     then
-    her-mode @ own-mode <> if  0 her-run-t !  then ;
+    her-mode @ own-mode <> if  0 her-run-t !  then
+    recoil-down ;   \ (her blow's hold on her: Fiona_Panic's timers)
 
 \ ---- the panic attack (at full fear: 150 frames, her cry 0x44, animation 2) ----
 : in-attack ( -- )
@@ -151,7 +152,6 @@ create next-at /vec allot
 : costume ( -- n )  $26 progress pr.vars + c@ ;
 create behind-pt /vec allot   \ (her radius behind her: a door slammed as she turns from it)
 : flee-turn ( -- )
-    recoil-down
     ended? if  flee-reaction s" hewie" actor-named send reaction  to-idle exit  then   \ (Hewie told)
     events-now $20 and if
         her-yaw f@ pi f+ angle-wrap self body-dims fdrop behind-pt her-at vec-ahead  behind-pt false slam-door drop

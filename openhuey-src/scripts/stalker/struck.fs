@@ -32,8 +32,9 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 :noname ( -- flag )  give-up? dup if  give-up  then ; is gave-up?
 \ on as before by his stance (Pursuer_StanceByFiona, PickStep): held off, on home; seeing her,
 \ his chase; else after her, or searching
-:noname ( -- )   \ (held off: on home - no way there, he stands till his clock runs out)
-    way-home 0= if  stand exit  then
+:noname ( -- )   \ (held off: on home - no way there even with the doors that let him down forgotten, after
+    \ her again: Debilitas_CarryOn's retry, his clock emptied - Pursuer_ModesSearching's mode 4 ends)
+    way-home 0= if  avoid-clear  way-home 0= if  after-her mode!  chase-start exit  then  then
     making-for @ 0< if  come-into-play  else  making-for @ leave-by  then ; is off-home
 : on-as-before ( -- )
     my-mode @ held-off = if  off-home exit  then   \ (held off already: on home)
@@ -69,7 +70,6 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 \ ---- powdered (a powder trodden on - Pursuer_StateSpecialAnim): his hands to his face for the
 \ powder's loops (4 / 6 / 8, a loop a key $400), its cloud dripping from him; struck by one
 \ again meanwhile, its loops and a new cloud; done, on as after a blow ----
-variable powder-loops  variable powder-how   \ (its loops as it struck)
 defer powder-cloud ( loops -- )   ' drop is powder-cloud   \ (the cloud: stalker/powder.fs)
 $400 constant loop-key   \ (the motion's key flag: at its last frame)
 $7FFF constant loops-mask
@@ -106,9 +106,16 @@ create ahead-at /vec allot
 : fall ( anim lie -- )
     lie-anim !  play-now  falling down-stage !
     hp @ 0> 0= if
-        down-frames @ down-t !  down-cond cond !  -1 beaten !  1 knockouts +!  down-for-good
+        down-frames @ down-t !  down-cond cond !  1 knockouts +!  down-for-good
     else  0 down-t !  then
     let-her-go  0 sees-fiona !  0 sees-hewie !  -1 reeling !  ['] downed step! ;
+\ knocked out of health out of her sight (Pursuer_StateBargedThrough out of the room, Pursuer_HitOffscreen):
+\ down for good where he is, on his back ($1802, +0xC4 2) - lying there if she comes in, else the
+\ summoner takes him as beaten
+:noname ( -- )  lie-anim @ play-now  lying down-stage !  -1 reeling !  ['] downed step! ; is lying-on
+:noname ( -- )
+    down-frames @ down-t !  down-cond cond !  1 knockouts +!  down-for-good  let-her-go
+    lying-back-anim lie-anim !  0 sees-fiona !  0 sees-hewie !  lying-on ; is down-away
 : knock-down ( -- )  floor-ahead? if  fall-front-anim lying-front-anim  else  fall-back-anim lying-back-anim  then  fall ;
 : leg-down ( -- )  leg-fall-anim lying-front-anim fall ;
 
@@ -142,6 +149,10 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     kind killing-blow = if  0 hp !  then
     kind blow-dir {: dir :}
     kind dir tackled
+    bitten @ if   \ (Hewie on him - Pursuer_Hit's move part 9: a cry, no more - he falls as Hewie lets go;
+        kind bite-blow =  how stumbles and 0<> and if  hurt-cond cond !  900 hurt-t !  -1 growl-after !  then
+        striker @ hewie = if  hurt-cry  else  grunt-sound  then  7 sound exit   \ a stumbling bite hurts him)
+    then
     unshaken @  kind shove-blow = and  hp @ 0> and if  grunt-sound 7 sound exit  then
     striker @ fiona = if  -1 by-her !  then
     kind door-blow = if  let-her-go combo-over 0 hold-off !  how door-struck exit  then   \ (a door slammed on him: how is its exit)

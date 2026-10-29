@@ -98,6 +98,7 @@ create ex-in /vec allot   create ex-out /vec allot   create ex-best /vec allot
         dup mate-period-len !  mate-period !
     then
     mate-say-t @ if  -1 mate-say-t +!  else  20e rnd f* f>s 30 * 300 + mate-say-t !  then
+    recoil-down   \ (her blow's hold on her: Fiona_Timers)
     mate-look-t @ 0= if  30  else  mate-look-t @ 1-  then  mate-look-t ! ;
 : nudge ( near far -- )   \ (Fiona_NudgePeriod: him within 50 / 100)
     dog-near 50e f< if  drop mate-period +! exit  then  nip

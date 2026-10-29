@@ -75,7 +75,8 @@ create blow-at /vec allot
 : quarry ( -- id )  at-dog @ if  hewie  else  fiona  then ;
 : d-quarry ( F: -- d )  at-dog @ if  d-hewie  else  d-fiona  then  f@ ;
 defer to-stand ( -- )
-: combo-over ( -- )  -1 combo !  0 combo-step !  -1 step-done !  0 unshaken ! ;
+: combo-over ( -- )   \ (its move no longer his act: none left to run - Pursuer_BehaviourEnded's state reset)
+    -1 combo !  0 combo-step !  -1 step-done !  0 unshaken !  ['] noop act-xt ! ;
 \ after it: held off a while (Pursuer_StateAttackStep: struck her, his rests' first - Debilitas 90;
 \ else his rests' second at least - 30)
 : held-off-after ( -- )  took @ if  rest-struck  else  hold-off @ rest-missed max  then  hold-off ! ;
@@ -147,7 +148,6 @@ defer next-move ( -- )
 
 \ ---- his blow struck home (`hit-taken`, Pursuer_CryHeard): held off his rests' first, his cry, held still 5 frames; his blow's mark on the
 \ one struck, as they cry out (his own: Riccardo_CryHit, Daniella_BlowEffect) ----
-$40 constant motion-frozen   \ (his motion's flag: held still)
 : struck-home ( kind -- )
     drop  1 took !  rest-struck hold-off !
     own-mark @ ?dup if  sender swap execute  then
@@ -155,7 +155,7 @@ $40 constant motion-frozen   \ (his motion's flag: held still)
     5 freeze-t !  model act.mflags dup l@ motion-frozen or swap l! ;
 : thaw ( -- )   \ (each frame: the hold counted down)
     freeze-t @ 0= if  exit  then
-    -1 freeze-t +!  freeze-t @ 0= if  model act.mflags dup l@ motion-frozen invert and swap l!  then ;
+    -1 freeze-t +!  freeze-t @ 0= if  unfrozen  then ;
 
 \ ---- his chance roll (Pursuer_ChanceRoll): his kit's table (+0x1740) - its row {chance, rise}: Hewie
 \ down, his blow struck Hewie in this attack, struck by someone (struck?), else. Won: his temper with

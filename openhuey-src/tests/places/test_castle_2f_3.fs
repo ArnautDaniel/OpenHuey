@@ -111,7 +111,11 @@ debilitas-out  600 play-on
 testing the evasion tip: Debilitas about the castle, she comes in by the hall door - told to hide, the doors locked
 c2f-3-flag3 story-flag-clear  golem-done story-flag-clear
 castle-1f-1 debilitas-hunt  castle-2f-3 0 rooms send go-to-room  5 run-frames
+: held? ( -- flag )  game:debilitas enter  stalker.state:still-held @  leave-actor ;
+T{ held? -> -1 }T   \ (OpenHuey's: the others held still while the tip is read)
+T{ [: window-shown evasion-doc-msg = ;] 300 soon  held? -> -1 -1 }T
 400 play-on
+T{ held? -> 0 }T
 T{ c2f-3-flag3 story-flag?  $A5 items:items-of 0>  free? -> -1 -1 -1 }T   \ (the document among her items)
 T{ [: hiding-offered @ ;] in-place -> -1 }T
 testing ... she hides under the bed, he comes in: no search (she was told to), the chase over

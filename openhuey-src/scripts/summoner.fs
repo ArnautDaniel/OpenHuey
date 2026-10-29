@@ -21,13 +21,14 @@ state: summoner-state
   \ while loaded: 0 this frame, 1 the last - for the messages between frames; more: none loaded)
   cell field s-id  cell field s-room  cell field s-mode  cell field s-in  cell field s-own
   cell field s-away  cell field s-cool  cell field s-age
-  cell field s-beaten   \ (knocked out of health)
+  cell field s-beaten   \ (down now, out of health: +0xC4 2)
   \ Fiona's room and the exit she came in by; the danger
   cell field her-room  cell field her-exit  cell field the-danger
   \ working lists: the rooms near hers (SceneGame_RoomsNear), the ways in to pick from
   #near-max cells field near-list  cell field near-n
   #near-max cells field picks  cell field picks-n
   8 cells field seen   \ (neighbours: the rooms counted)
+  cell field held-still   \ held while she reads on the dimmed screen (OpenHuey's, not the original's)
 end-state
 
 : reset ( -- )
@@ -144,7 +145,7 @@ create no-avoid 13 cells allot  no-avoid 13 cells 0 fill
         her-room @ s-room @ =  near-her? or if  0 waited !  false exit  then
     then
     1 waited +!
-    s-beaten @ waited @ 151 >= and if  taken-beaten take-him  true exit  then   \ (beaten: away from her 5 s)
+    s-beaten @ waited @ 151 >= and if  taken-beaten take-him  true exit  then   \ (down: away from her 5 s)
     s-mode @ held-off = waited @ 151 >= and if  taken-held-off take-him  true exit  then
     cooldown @ if  false exit  then
     s-mode @ waiting-about = waited @ 91 >= and if  taken-by-story take-him  true exit  then
@@ -198,10 +199,11 @@ create waits  0 , 10 , 30 , 30 ,                                   \ D_00419DC0:
 behaviour summoning
   on spawned ( -- )
       reset  100 s-age !  -1 her-room !  -1 her-exit !  calm the-danger !
-      self subscribe frame-end  self subscribe entered-room  self subscribe danger  self subscribe noise-made  self subscribe write-save ;
+      self subscribe frame-end  self subscribe entered-room  self subscribe danger  self subscribe noise-made  self subscribe write-save  self subscribe characters-still ;
   on stalker-status ( room mode in-game own away cool beaten -- )
       s-beaten !  s-cool !  s-away !  s-own !  s-in !  s-mode !  s-room !  sender s-id !  0 s-age ! ;
-  on entered-room ( room exit -- )  her-exit !  her-room ! ;
+  on entered-room ( room exit -- )  her-exit !  her-room !  0 held-still ! ;
+  on characters-still ( on -- )  held-still ! ;
   on danger ( level -- )  the-danger ! ;
   on noise-made ( loud room door -- )  noise ;
   on summoner-take ( kind -- )  take-him ;
@@ -213,7 +215,7 @@ behaviour summoning
       away @ .  called @ .  cooldown @ .  took-room @ .  waited @ .  last-mode @ .  took-kind @ .  ." summoner-was" cr ;
   on summoner-restore ( away called cooldown room waited mode kind -- )
       took-kind !  last-mode !  waited !  took-room !  cooldown !  called !  away ! ;
-  on frame-end ( -- )  decide  s-age @ 100 < if  1 s-age +!  then
+  on frame-end ( -- )  held-still @ 0= if  decide  then  s-age @ 100 < if  1 s-age +!  then
       cooldown @ dup 30 /  swap 0<> over 0= and if  drop 1  then   \ (Countdown_Seconds: at least 1 while it runs)
       broadcast summoner-cooldown-is ;
 end-behaviour

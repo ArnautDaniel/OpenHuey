@@ -163,6 +163,11 @@ defer lead-taken? ( -- flag )   ' false is lead-taken?   \ (a lead he heard: sta
 defer starting? ( -- flag )   ' false is starting?      \ (starting at one)
 defer leads-forgotten ( -- )   ' noop is leads-forgotten
 : search-again ( -- )  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  search-stops add-stops  search-start ;
+\ met in a room he was searching out of her sight (Pursuer_SearchOffscreen): on with the stops his
+\ time left there would take (150 frames each); none, he is waiting about
+: search-left ( frames -- )
+    150 / dup 0> if  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  add-stops  search-start exit  then
+    drop  waiting-about mode!  route-clear  -1 route-done ! ;
 \ the doll (Thing03_StalkerCheck): searching the room being played, he sees it and has a way
 \ there - it is his one stop, his search going on from it
 create drawn-at /vec allot
@@ -172,10 +177,15 @@ create drawn-at /vec allot
     drawn-at in-view? 0= if  drop exit  then
     dup drawn-at plan 0> 0= if  drop exit  then
     dup drawn-tri !  searching mode!  route-clear  0 route-add  search-start ;
+\ down (+0xC4 2): waiting about, nothing else (Pursuer_ModesSearching - in the room or out of it)
+: down-waits? ( -- flag )
+    cond @ down-cond = dup if  my-mode @ waiting-about <> if  waiting-about mode!  then  then ;
 : modes ( -- )
     here-played? 0= if  exit  then
+    down-waits? if  exit  then
     at-a-ladder? if  exit  then   \ (to a ladder or on it: over first)
     reeling @ at-dog @ or if  exit  then   \ (struck: his reaction first; after Hewie)
+    entering @ if  exit  then   \ (coming in by a shut door: in first - opened, or barged open: action $C)
     out-going @ if   \ (on his way out by a door: that first - unless he's only wandering off, when the
         wandering-out @ 0=  sees-fiona @ did-hear @ or 0=  or if  exit  then   \ sight of her or a noise
         out-cancelled  0 wandering-out !                                     \ turns him back: Pursuer_PickTarget)
@@ -199,5 +209,5 @@ create drawn-at /vec allot
         \ Pursuer_GoAfterFiona - Pursuer_PlanWhere's mode 3 - out of the room by an exit at random)
         waiting-about of  route-done @ if  0 route-done !  leave-at-random  then  endof   \ (no clock here: a lead or
         \ the sight of her moves him on; his route over, out as above)
-        held-off of  tick-down if  after-her mode!  chase-start  then  endof
-    endcase ;
+        held-off of  endof   \ (held off he keeps to it, on his way home - no clock: Pursuer_ModesSearching's
+    endcase ;              \ mode 4 waits for his clock to be emptied, by Debilitas_CarryOn finding no way home)

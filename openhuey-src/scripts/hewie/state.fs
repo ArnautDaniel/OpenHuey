@@ -163,6 +163,7 @@ state: hewie-state
   1 floats field his-stick-x  1 floats field his-stick-z  1 floats field his-last-x  1 floats field his-last-z
   1 floats field his-steer-yaw  1 floats field his-rot-yaw  cell field his-sprint
   1 floats field his-spin-to  1 floats field his-spin-rate  cell field his-cam-cut  cell field his-gesture  cell field his-mash
+  cell field his-held-still     \ held still while she reads on the dimmed screen (OpenHuey's, not the original's)
 end-state
 
 \ what may break in on an action (his-cmd's bits; the top bit: nothing does, whatever the rest)

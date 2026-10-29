@@ -6,6 +6,8 @@ IN: stalker.moving
 USING: engine game-state actors messages common facts flag-names paths vectors stalker-names stalker.state stalker.senses stalker.tables stalker.anims floor-flags ;
 
 : model ( -- a )  my-model @ actor ;
+$40 constant motion-frozen   \ (his motion's flag: held still - a blow of his struck home)
+: unfrozen ( -- )  model act.mflags dup l@ motion-frozen invert and swap l! ;
 : sound ( id bank -- )   \ Pursuer_Sound: at him (not while the world is held, nor silenced)
     world-held state-flag? hushed @ or if  2drop exit  then  {: id bank :}  my-at vec@  id bank  bank-sound-at ;
 : yaw ( F: -- a )  self body-yaw ;

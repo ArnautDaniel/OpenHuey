@@ -59,6 +59,58 @@ T{ [: tintstalker-kind head-bones!  head-bone @ neck-bone @  kind37-kind head-bo
 : heard-any ( -- flag )   \ (a noise each frame; heard on the frame after its end)
     0 10 0 do  $14 room-id s" fiona" actor-named body-tri -1 0 game:acoustics send noise  game-tick  [: did-hear @ ;] his or  loop ;
 T{ heard-any -> -1 }T
+testing her shove's hold on her (struck home: 5 frames still) runs out whatever she is doing (Fiona_Panic's
+testing ... timers), and his blow on her lets it go at once (Fiona_React) - not left frozen in his reaction
+: frozen? ( -- flag )  [: her act.mflags l@ fiona.slam:motion-frozen and 0<> ;] game:fiona enter execute leave-actor ;
+: recoil@ ( -- n )  game:fiona enter  her-recoil @  leave-actor ;
+game:fiona enter  fiona.slam:recoil  leave-actor
+T{ recoil@ frozen?  6 run-frames  recoil@ frozen? -> 5 -1 0 0 }T
+game:fiona enter  fiona.slam:recoil  leave-actor
+[: blow-request 0 10e f>cell fiona send hit ;] his  2 run-frames
+T{ recoil@ frozen? -> 0 0 }T
+: on-her-feet ( -- )   \ (her reaction over: free again, as the tests after want her)
+    600 0 do  game:fiona enter  her-mode @ 0=  leave-actor  if  unloop exit  then  game-tick  loop ;
+on-her-feet  30 run-frames
+testing held still while she reads on the dimmed screen (OpenHuey's, the user's call: a tip read in
+testing ... peace), then on again: the kit's dim fade tells the stalkers, Hewie and the summoner
+: where ( -- ) ( F: -- x z )  game:debilitas body-pos fswap fdrop ;
+: moved? ( F: x z -- flag )  where {: F: x z x' z' :}  x x' f- fabs  z z' f- fabs f+ 0.01e f> ;
+[: after-her my-mode !  chase-begin ;] his  5 run-frames
+true broadcast characters-still  2 run-frames  where
+T{ 30 run-frames  moved?  [: still-held @ ;] his  game:summoner enter summoner:held-still @ leave-actor -> 0 -1 -1 }T
+false broadcast characters-still  where
+T{ 30 run-frames  moved?  [: still-held @ ;] his -> -1 0 }T
+testing held off in her room he keeps to it - no clock sends him after her (Pursuer_ModesSearching mode 4);
+testing ... no way home even afresh, after her (Debilitas_CarryOn); down, waiting about (mode 3)
+T{ [: held-off mode!  1 mode-t !  stalker.search:stand ;] his  5 run-frames  [: my-mode @ ;] his -> 4 }T
+T{ [: own-a @  -1 own-a !  stalker.travel:off-home  my-mode @  swap own-a ! ;] his -> 0 }T
+T{ [: down-cond cond !  after-her mode! ;] his  2 run-frames  [: my-mode @  well-cond cond ! ;] his -> 3 }T
+testing struck while Hewie is on him (Pursuer_Hit's move part 9): the damage and a cry, no more - not felled
+testing ... out of health till Hewie lets go
+[: near-flank-attack bitten !  -1 reeling !  1 hp !  0 hits ! ;] his  kick-blow 5 0 game:debilitas send blow  2 run-frames
+T{ [: hp @  hits @  cond @ down-cond =  bitten @ 0<> ;] his -> 0 5 0 -1 }T
+[: 0 bitten !  0 reeling !  70 hp !  0 hits ! ;] his  2 run-frames
+testing what he picked from his tables runs to its end by Pursuer_BehaviourAttack's rules: a combo over - his
+testing ... wait out, over (his behaviour picks anew); within 20, a step back; else the table again (after a miss)
+: combo-over-with ( hold-off F: d -- )   \ (as if his combo just ended, her d off)
+    {: h F: d :}  [: -1 in-attack !  combo-act chase-act !  -1 step-done !  0 took ! ;] his
+    h d [: d-fiona f!  hold-off !  stalker.chase:attack-run ;] his ;
+T{ 0 50e combo-over-with  [: in-attack @ ;] his -> 0 }T
+T{ 30 5e combo-over-with  [: in-attack @  chase-act @ back-off-act = ;] his -> -1 -1 }T
+T{ 30 50e combo-over-with  [: in-attack @ ;] his -> -1 }T
+T{ 30 150e combo-over-with  [: in-attack @ ;] his -> 0 }T
+[: 0 in-attack !  0 hold-off ! ;] his  2 run-frames
+testing his combo over, no move of it is left to run (Pursuer_BehaviourEnded): its act none
+T{ [: 0 combo-start  combo-over  act-xt @ ['] noop =  combo @ ;] his -> -1 -1 }T
+testing through a door, what he was about in the room he left is let go (Pursuer_ThroughDoor): unshaken,
+testing ... whom he struck and who struck him, his attack's wait, his cry, his blow's hold
+[: -1 unshaken !  1 took !  -1 by-her !  30 hold-off !  5 cry !  3 freeze-t !  room-id 0 room-exit-leads drop 0< 0= ;] his drop
+T{ [: 0 through  unshaken @ took @ by-her @ hold-off @ cry @ freeze-t @  my-room room-id <> ;] his -> 0 0 0 0 -1 0 -1 }T
+testing ... and as she leaves his room (Pursuer_LeaveScreen's Pursuer_ResetForRoom), and as he comes in (Pursuer_Reset)
+[: -1 unshaken !  3 freeze-t !  2 combo ! ;] his  front-garden-3 room!  5 run-frames
+T{ [: unshaken @ freeze-t @ combo @ ;] his -> 0 0 -1 }T
+[: -1 unshaken !  -1 by-her ! ;] his  s" fiona" actor-named body-tri debug:debilitas-tri  2 run-frames
+T{ [: unshaken @ by-her @ ;] his -> 0 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 
@@ -104,6 +156,15 @@ T{ game:debilitas body-tri drawn? -> -1 0 }T
 front-garden-3 room!  3 run-frames
 T{ game:debilitas body-tri 0< 0=  drawn?  game:debilitas body-room -> -1 -1 front-garden-3 }T
 debug:debilitas-out  2 run-frames
+testing ... searching out of her sight, she comes in: on with the stops his time left there would take (Pursuer_SearchOffscreen:
+testing ... 150 frames each); none left, waiting about
+castle-1f-10 room!  5 run-frames  front-garden-2 debug:debilitas-hunt  3 run-frames
+[: searching mode!  route-clear  -1 route-done !  301 away-search ! ;] his  front-garden-2 room!  2 run-frames
+T{ [: my-mode @  route-end @ route-next @ - ;] his -> 2 2 }T
+castle-1f-10 room!  5 run-frames
+[: searching mode!  route-clear  -1 route-done !  0 away-search ! ;] his  front-garden-2 room!  2 run-frames
+T{ [: my-mode @ ;] his -> 3 }T
+debug:debilitas-out  2 run-frames
 testing ... held off (given up), she follows him into his room: still held off, on out by his way home
 front-garden-2 room!  10 run-frames  front-garden-3 0 game:debilitas send stalker-in  2 run-frames
 [: 4 mode!  30 hp ! ;] his  5 run-frames  front-garden-3 room!  3 run-frames
@@ -126,6 +187,23 @@ T{ [: step-foot @ 0> ;] his -> -1 }T
 T{ [: my-room castle-1f-2 = ;] 200 wait-for  game:debilitas body-tri 0< 0= -> -1 -1 }T
 T{ 30 run-frames  32 state@ opened-bit and 0<> -> -1 }T
 debug:debilitas-out  2 run-frames
+testing ... taken hold of by her as he comes through (the doors refuse him): he waits beyond it,
+testing ... barges it open (action $C, Pursuer_DoorBarge) and only then walks in - never in past it shut
+32 opened-bit clear-bits  32 changed  2 run-frames
+: door-32-exit ( -- exit )  8 0 do  room-id i room-exit-door 32 = if  i unloop exit  then  loop  -1 ;
+room-id door-32-exit 1 doors-id send hold-door  2 run-frames   \ (held by her)
+stalkers-blind state-flag-set   \ (the door alone: he doesn't go for her once in)
+castle-1f-10 debug:debilitas-hunt  2 run-frames
+[: after-her my-mode !  castle-1f-2 body-room!  door-32-exit came-by !  enter-her-room ;] his
+: beyond? ( -- flag )   \ (at its spot 12 beyond, in the doorway outside)
+    door-32-exit 1 exit-spot drop  game:debilitas body-pos  {: F: x y z ax ay az :}  x ax f- fabs 1e f<  z az f- fabs 1e f< and ;
+T{ beyond?  [: entering @ ;] his -> -1 -1 }T
+T{ [: barging @ ;] 30 wait-for  beyond? -> -1 -1 }T
+: shut-and-in? ( -- flag )   \ (on through it - in-doorway over - while it is not yet open)
+    32 state@ opened-bit and 0=  [: entering @ 0= ;] his and ;
+: watched ( n -- bad? )  false swap 0 ?do  shut-and-in? or  game-tick  loop ;
+T{ 200 watched  32 state@ opened-bit and 0<>  [: entering @ barging @ ;] his -> 0 -1 0 0 }T
+debug:debilitas-out  32 held-bit clear-bits  32 changed  stalkers-blind state-flag-clear  2 run-frames
 testing ... one who shuts the doors he comes in by (Riccardo, Daniella: DoorBreak): shut again once he is clear of it
 32 opened-bit clear-bits  32 changed  2 run-frames
 castle-1f-10 debug:debilitas-hunt  [: shuts-doors door-manner ! ;] his  2 run-frames
@@ -269,7 +347,9 @@ testing struck (P3a): her shove makes him flinch, her kick takes 5; out of healt
     s" fiona" actor-named body-tri  -500e her-y -500e tp  2 run-frames  debug:debilitas-tri  1 run-frames
     [: 340e deg>rad body-turn ;] his  1 run-frames
     game:debilitas body-pos dz f! dy f! dx f!
-    340e deg>rad fsin 7e f* dx f@ f+  dy f@  340e deg>rad fcos 7e f* dz f@ f+  160e tp-facing  3 run-frames ;
+    340e deg>rad fsin 7e f* dx f@ f+  dy f@  340e deg>rad fcos 7e f* dz f@ f+  160e tp-facing  3 run-frames
+    [: dx f@ dy f@ dz f@ body-place-at  340e deg>rad body-turn ;] his  1 run-frames ;   \ (him back on his spot:
+    \ whatever he was about before, he stands where the test says - clear of the doorway nearby)
 : flinching? ( -- flag )  [: anim @ $1000 $1006 within ;] his ;
 close-up  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press   \ (not mid-move: in an unshaken move a shove only gets a grunt)
 T{ ' flinching? 60 soon  [: hp @ hits @ ;] his -> -1 69 1 }T
@@ -339,6 +419,41 @@ T{ [: [: anim @ $1004 = ;] his ;] 5 soon  [: hp @ ;] his -> -1 67 }T
 T{ [: [: away? ;] his ;] 30 soon  [: stun-t @ 100 > ;] his -> -1 -1 }T
 T{ [: [: door0 door-open? 0=  door0 door-held? 0= and ;] his ;] 30 soon -> -1 }T
 debug:debilitas-out  2 run-frames
+testing ... out of health as it knocks him out of the room (Pursuer_StateBargedThrough: +0xC4 2): down there,
+testing ... on his back, not travelling; she comes in after him: lying there, getting up when his time is out
+s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+door0 opened-bit set-bits  room-in  5 run-frames
+68e 124e -174e 180e tp-facing  3 run-frames
+[: 1 hp !  room-id d-at v-tri d-at vec@ body-place  0e body-turn ;] his  2 run-frames
+T{ [: goal-spot true slam-door ;] hers -> -1 }T
+T{ [: [: away? ;] his ;] 30 soon  [: cond @ down-cond =  lie-anim @  stalker.state:step @ ['] downed = ;] his -> -1 -1 $1802 -1 }T
+T{ [: my-room ;] his  30 run-frames  [: my-room ;] his = -> -1 }T   \ (not travelling while down)
+[: 100 down-t ! ;] his  [: my-room ;] his room!  10 run-frames
+T{ [: away?  anim @  stalker.state:step @ ['] downed = ;] his -> 0 $1802 -1 }T
+T{ [: [: cond @ well-cond = ;] his ;] 400 soon -> -1 }T
+debug:debilitas-out  front-garden-2 room!  10 run-frames
+testing ... off screen behind the door he makes for (Pursuer_HitOffscreen kind 5): its damage counted toward his
+testing ... giving up; health left, stunned 60..120 frames; out of health, down there; not again while stunned or down
+castle-1f-10 debug:debilitas-hunt  2 run-frames
+T{ [: 70 hp !  0 hits !  0 stun-t !  3 struck-away  hp @ hits @  stun-t @ 60 121 within ;] his -> 67 3 -1 }T
+T{ [: 3 struck-away  hp @ ;] his -> 67 }T   \ (stunned: not again)
+T{ [: 0 stun-t !  2 hp !  3 struck-away  hp @  cond @ down-cond =  lie-anim @ ;] his -> 0 -1 $1802 }T
+T{ [: 0 stun-t !  3 struck-away  hits @ ;] his -> 6 }T   \ (down: not again)
+debug:debilitas-out  2 run-frames
+testing she leaves the room with Hewie still on him (Pursuer_LeaveScreen): held there (Hewie's trust + 1) x 15
+testing ... and 30 (60 at his head or leg); out of health, down there; powdered, its loops x 30
+s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+[: 70 hp !  near-flank-attack bitten !  -1 reeling ! ;] his  front-garden-3 room!  1 run-frames
+: held-for? ( -- flag )   \ ((trust + 1) x 15 + 30, a frame or two counted off already)
+    [: stun-t @  dog-trust @ 1+ 15 * 30 + ;] his {: s e :}  s  e 2 -  e 1+  within ;
+T{ held-for?  [: bitten @  reeling @ ;] his -> -1 0 0 }T
+debug:debilitas-out  front-garden-2 room!  10 run-frames
+s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+[: 0 hp !  leg-attack bitten !  -1 reeling ! ;] his  front-garden-3 room!  3 run-frames
+T{ [: cond @ down-cond = ;] his -> -1 }T
+[: my-room ;] his room!  10 run-frames
+T{ [: away?  anim @  stalker.state:step @ ['] downed = ;] his -> 0 $1802 -1 }T
+debug:debilitas-out  front-garden-2 room!  10 run-frames
 testing ... away from it (not in its way): staggered back ($1005), still in the room, after her
 s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
 5 3 0 game:debilitas send blow  2 run-frames

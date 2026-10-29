@@ -297,6 +297,7 @@ message show-text ( msg -- )                 \ (the window) show message msg; it
 message close-text ( msg -- )                \ (the window) close it if it shows msg ($FFFF: whatever it shows)
 message text-closed ( msg answer -- )        \ (to who showed it) closed; the option chosen (-1 none)
 message text-shown ( on -- )                 \ broadcast: the window opened / closed (Fiona stands while it's open)
+message characters-still ( on -- )           \ broadcast: the stalkers, Hewie and the summoner held still or let go (OpenHuey's: a reading on the dimmed screen)
 message thing-made ( kind tri x y z vx vy vz -- )   \ (Fiona's let go) a thing at her hand, on its way (floats f>cell; things.fs)
 message fiona-message ( msg -- )             \ broadcast (Fiona: a locked door's built-in script) the room shows system message msg
 message prompt ( kind -- )                   \ (the window) an action is offered here this frame (the action prompt)
@@ -419,7 +420,7 @@ message shaken-off ( -- )                    \ (Hewie -> the stalker) he let go 
 message snap ( -- )                          \ (Hewie -> the stalker) growled at, barked at (Relation kind 6): his temper up
 
 \ ---- the summoner (docs/subsystems/summoner.md) ----
-message stalker-status ( room mode in-game own away cool beaten -- )   \ (the stalker in slot 2, each frame while loaded) where he is, his mode, in the game, in his own rooms, his time-away base (frames), his cooldown (s), knocked out of health
+message stalker-status ( room mode in-game own away cool beaten -- )   \ (the stalker in slot 2, each frame while loaded) where he is, his mode, in the game, in his own rooms, his time-away base (frames), his cooldown (s), down now (out of health: +0xC4 2)
 message stalker-summoned ( room exit found plan -- )  \ (a stalker) in out of sight in `room` by `exit`; found: after her; else waiting about, plan: heading for her
 message summoner-cooldown-is ( secs -- )      \ broadcast each frame by the summoner: its cooldown left, in seconds (the rooms' scripts)
 message animal-go ( sound x z -- )            \ (a rabbit, the cast) grazing where it is; off to (x, z) when one comes near (Kind26_MoveToB)

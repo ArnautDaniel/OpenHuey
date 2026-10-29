@@ -62,7 +62,7 @@ one off by an exit at random.
 
 **In play** (Summoner_InPlay): the cooldown runs down. His mode changed: the wait restarts.
 Fiona in his room, or he next to hers where he isn't hunting her (not mode 4, or not in his own
-rooms): likewise. Else the wait counts up; after 5 s beaten (knocked out of health: kind 2), after 5 s held
+rooms): likewise. Else the wait counts up; after 5 s down (knocked out of health, lying there: +0xC4 2, kind 2), after 5 s held
 off (mode 4: kind 1), or with the
 cooldown over and 3 s waiting about (mode 3: kind 0), he is taken.
 

@@ -17,8 +17,6 @@ state: stalker-state
   cell field my-model           \ its model (an Actor)
   cell field in-game            \ in the game (stalker-in .. stalker-out)
   cell field my-mode            \ +0x16C8: stalker-mode (messages.fs: after her, heading for her room, searching it, waiting about, held off)
-  cell field beaten             \ (+0xC4 2) knocked out of health this time in the game: the summoner takes
-                                \ him for longer
   cell field my-floor           \ the floor he may walk (his kind's mask; 0 while the story's 0x20 has him through anything)
   cell field drawn-tri          \ the doll's triangle he is drawn to (its search stop; -1 none)
   cell field hp  cell field hp-max
@@ -200,4 +198,15 @@ state: stalker-state
   cell field look-on  /vec field look-pt
   cell field door-script
   cell field take-asked         \ the story's action for him asked (+0x14E8 5: taken at his next frame, if in the room played)
+  \ coming into her room by a shut door: its hold asked (Pursuer_EnterRoom's DoorHold_Take); refused, he
+  \ barges it open (action $C, Pursuer_DoorBarge) and then walks in
+  cell field entering  cell field barging
+  cell field still-held         \ held still while she reads on the dimmed screen (OpenHuey's, not the original's)
+  \ his own across frames (were shared variables): the powder's loops left and as it struck (+0x1624);
+  \ the lead he started at (stalker/leads.fs); the spot 12 inside the door he comes in by and its
+  \ triangle (stalker/travel.fs: walked to once the door stands open)
+  cell field powder-loops  cell field powder-how  cell field go-pull
+  cell field in-tri  /vec field in-at
+  cell field dog-trust          \ Hewie's trust as he tells it (+0xF35CC: how long he keeps a stalker busy)
+  cell field in-attack          \ in what he picked from his tables (Pursuer_BehaviourAttack: its own rules till it is over)
 end-state

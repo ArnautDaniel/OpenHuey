@@ -104,9 +104,9 @@ her he is after her (mode 0) and his clock restarts (his setup's +0x16D4, Pursue
 Debilitas 300 frames, hard 540; the others' in their sections); out of sight it
 runs down, then he searches the room (mode 2, 600 frames' clock, 2..5 stops); his route over
 he waits about (mode 3, 900 frames), then searches again. Heading for her room (1) he searches
-it once in; held off (4) in her room he is after her again when his clock runs out - out of
-sight he stays held off, going home, till the summoner takes him (*by design*: held off he keeps
-away). She following him into his room held off, he goes on out by his way home - not a search.
+it once in; held off (4) he keeps to it, going home, in her room or out of sight, till the
+summoner takes him - no clock ends it; only no way home (even with the doors that let him down
+forgotten: Debilitas_CarryOn) sends him after her again. Down (+0xC4 2) he is waiting about (3). She following him into his room held off, he goes on out by his way home - not a search.
 Brought in by the summoner his health is full (a stalk afresh); till then a beating stays with
 him. Coming into the game
 he waits about (3) and walks to one stop at random first. *Simplified so far*: the original's
@@ -167,10 +167,17 @@ facing her within 20 degrees on her floor, and not held off, he attacks: his tab
 stands (`fiona-plight`: 0 calm, 1 fleeing, 2 panicking, 4 / 5 the panic's stages; 3 out of
 reach - none). Rows: a combo ($13), a taunt ($17..$19: his gesture table), round her ($1A /
 $1B: 5 degrees a step at his distance, the way she isn't facing; 30 of it or 120 frames),
-taking her ($14 by the hand, $15 walking), his lunge ($1002), his grab ($1003). After a combo his table 12
-(it struck her) or 13 (taunts), held off 90 frames if it struck her, else 30. Round her ($1A), or
-his third taunt ($19) with its gesture's flag, her more than 100 off: stalking her for his chase
-table's eighth (seen near). Her panic calming down (the panic's stage 5) his chase is the
+taking her ($14 by the hand, $15 walking), his lunge ($1002), his grab ($1003). Whatever he picks
+from a table runs to its end by its own rules (Pursuer_Behaviour288 / Pursuer_BehaviourAttack,
+`attack-run`): a combo or a take over - his wait out (held off 90 frames if it struck her, else
+30) or her past 100: over; within 20, a step back; else his table 12 (it struck her) or 13 again.
+Standing: his wait out, over; else the table again when its frames are up. A gesture, a taunt,
+his second way round: over at their end (a flagged taunt sooner, her out of his sight or 60 off).
+A turn or his way round over: her free and his wait out, or 40 off - over; else turned to her, or
+standing 30, or a step back (her within 20, floor behind him). A step back: her free and his wait
+out - over, else (her past 20, or nowhere behind him) the table again. His look round over:
+turned to her, or her past 20 over, else his rest and a step back. Over: in front of him within
+reach on her floor, at her at once; else his own chase picks anew (Debilitas_ChaseDecision). Her panic calming down (the panic's stage 5) his chase is the
 Pursuer's (Debilitas_ChaseDecision: `stalker/pursue.fs`) - as it begins, and at the end of any
 step of his own chase that leaves him free to attack.
 
@@ -412,9 +419,12 @@ damage, how: the exit) - after her again (mode 0). In its way (within 9 of the d
 passage) and it not locked against him: knocked on through it ($1004), pushed 3 a frame away
 from her side until clear of it; where it leads out of the room, out (Pursuer_ThroughDoor),
 stunned there 150 frames (+0x1664); between his room's halves, on. Else staggered back from it
-($1005) and on. Out of health: not below 1 (knocked out of the room: as he gives up, health
-back, `beaten` set: the summoner takes him as beaten). Off screen, the door he makes for slammed
-with him within 15 of it: its damage (not below 1), after her.
+($1005) and on. Out of health: not below 1 in the room; knocked out of it, down there for good
+(+0xC4 2: on his back, $1802), not travelling - she coming in finds him lying there, up when his
+time down is out; else the summoner takes him as beaten (kind 2). Off screen, the door he makes for
+slammed with him within 15 of it (Pursuer_HitOffscreen kind 5; not while down or stunned): its
+damage, counted toward his giving up; health left, stunned 60, 90 or 120 frames with his cry at the
+door, after her; none, down there (his cry $1B).
 
 **P3c - Hewie** (`stalker/bitten.fs`; Pursuer_EventConcerns kind 9, Pursuer_GrabOrder /
 GrabHewieSpot, Pursuer_StateHewieBites / TurnAnim / HewieHolds / BackOnFeet, Pursuer_Hit
