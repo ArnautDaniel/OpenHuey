@@ -109,6 +109,190 @@ int navmesh_find(const NavMesh *n, Vec3 p, float climb, float *height) {
     return best;
 }
 
+/* NavTri_ExitEdge / ExitEdgeHit: the edge of t the step from -> to leaves by, 3 inside, 4 outside
+ * crossing none; hit (none: NULL) where it crosses */
+static int exit_edge(const NavTri *t, Vec3 from, Vec3 to, Vec3 *hit) {
+    unsigned inside = 0, tested = 0;
+    int e;
+
+    for (e = 0; e < 3; e++) {
+        const Vec3 *a = &t->v[e], *b = &t->v[e < 2 ? e + 1 : 0];
+        float ez = b->z - a->z, ex = b->x - a->x, p, q, dx, dz, den, s, u;
+
+        tested |= 1u << e;
+        if (!((to.x - a->x) * ez - (to.z - a->z) * ex < 0.0f)) {
+            inside |= 1u << e;
+            continue;
+        }
+        q = (from.z - a->z) * ex;
+        p = (from.x - a->x) * ez;
+        if (p - q < 0.0f) {
+            continue;
+        }
+        dx = to.x - from.x;
+        dz = to.z - from.z;
+        den = dx * ez - dz * ex;
+        if (den == 0.0f) {
+            continue;
+        }
+        s = (q - p) / den;
+        if (s < 0.0f || !(s <= 1.0f)) {
+            continue;
+        }
+        u = fabsf(ex) <= fabsf(ez) ? (from.z + s * dz - a->z) / ez : (from.x + s * dx - a->x) / ex;
+        if (u < 0.0f || !(u <= 1.0f)) {
+            continue;
+        }
+        if (hit != NULL) {
+            *hit = vec3(from.x + s * dx, from.y, from.z + s * dz);
+        }
+        return e;
+    }
+    return inside == tested ? 3 : 4;
+}
+
+/* NavMesh_OntoPlane: its height on t's plane */
+static void onto_plane(const NavTri *t, Vec3 *p) {
+    Vec3 e1 = vec3_sub(t->v[1], t->v[0]), e2 = vec3_sub(t->v[2], t->v[0]);
+    float nx = e1.y * e2.z - e2.y * e1.z, nz = e1.x * e2.y - e2.x * e1.y, ny = e1.z * e2.x - e2.z * e1.x;
+
+    p->y = t->v[0].y - ((p->z - t->v[0].z) * nz + (p->x - t->v[0].x) * nx) / ny;
+}
+
+/* NavTri_Slide: `to` pulled back over the edge it left by, along its inward normal (1.1 x the overshoot,
+ * 0.05 more each try, up to 8, until it is inside) */
+static Vec3 slide_back(const NavTri *t, int k, Vec3 to) {
+    const Vec3 *a = &t->v[k], *b = &t->v[k < 2 ? k + 1 : 0];
+    float ex = b->x - a->x, ez = b->z - a->z, cx = to.x - a->x, cz = to.z - a->z;
+    float cy = ez * cx - ex * cz;                      /* (e x c, on y) */
+    float nx = -ez * cy, nz = ex * cy, len = sqrtf(nx * nx + nz * nz), over, s = 1.1f;
+    Vec3 out = to;
+    int i;
+
+    if (len > 0.0f) {
+        nx /= len;
+        nz /= len;
+    }
+    over = (a->x - to.x) * nx + (a->z - to.z) * nz;
+    for (i = 0; i < 8; i++) {
+        out.x = to.x + nx * over * s;
+        out.z = to.z + nz * over * s;
+        if (!((out.x - a->x) * ez - (out.z - a->z) * ex <= 0.0f)) {
+            break;
+        }
+        s += 0.05f;
+    }
+    return out;
+}
+
+static int point_in(const NavTri *t, Vec3 p) {   /* NavMesh_PointInTri */
+    int e;
+
+    for (e = 0; e < 3; e++) {
+        const Vec3 *a = &t->v[e], *b = &t->v[e < 2 ? e + 1 : 0];
+
+        if ((p.x - a->x) * (b->z - a->z) - (p.z - a->z) * (b->x - a->x) < 0.0f) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int neighbour_at(const NavMesh *n, int t, Vec3 p, uint32_t mask) {   /* NavMesh_NeighbourAt */
+    int k;
+
+    for (k = 0; k < 3; k++) {
+        int a = n->tris[t].next[k];
+
+        if (a >= 0 && !(n->tris[a].flags & mask) && point_in(&n->tris[a], p)) {
+            return a;
+        }
+    }
+    return -1;
+}
+
+static int find_from(const NavMesh *n, int t, Vec3 p, uint32_t mask) {   /* NavMesh_FindFrom */
+    int k, j, r;
+
+    if (!(n->tris[t].flags & mask) && point_in(&n->tris[t], p)) {
+        return t;
+    }
+    r = neighbour_at(n, t, p, mask);
+    if (r >= 0) {
+        return r;
+    }
+    for (k = 0; k < 3; k++) {
+        int a = n->tris[t].next[k];
+
+        if (a < 0) {
+            continue;
+        }
+        r = neighbour_at(n, a, p, mask);
+        if (r >= 0) {
+            return r;
+        }
+        for (j = 0; j < 3; j++) {
+            int b = n->tris[a].next[j];
+
+            if (b < 0) {
+                continue;
+            }
+            r = neighbour_at(n, b, p, mask);
+            if (r >= 0) {
+                return r;
+            }
+        }
+    }
+    return -1;
+}
+
+int navmesh_slide(const NavMesh *n, int tri, Vec3 from, Vec3 to, uint32_t mask, Vec3 *out) {
+    Vec3 p = to;
+    int cur = tri, slides = 0;
+
+    if (tri < 0 || tri >= n->ntris) {
+        return -1;
+    }
+    for (;;) {
+        int edge = exit_edge(&n->tris[cur], from, p, NULL), prev, next;
+
+        if (edge == 4) {
+            prev = find_from(n, cur, p, mask);
+            if (prev < 0) {
+                return -1;
+            }
+            onto_plane(&n->tris[prev], &p);
+            *out = p;
+            return prev;
+        }
+        if (edge == 3) {
+            onto_plane(&n->tris[cur], &p);
+            *out = p;
+            return cur;
+        }
+        prev = cur;
+        next = n->tris[cur].next[edge];
+        if (next >= 0 && !(mask & n->tris[next].flags)) {
+            cur = next;
+            continue;
+        }
+        if (slides >= 4) {   /* (up to the wall) */
+            Vec3 q = p;
+
+            exit_edge(&n->tris[prev], from, p, &q);
+            if (!point_in(&n->tris[prev], q)) {
+                return -1;
+            }
+            onto_plane(&n->tris[prev], &q);
+            *out = q;
+            return prev;
+        }
+        p = slide_back(&n->tris[prev], edge, p);
+        cur = tri;
+        slides++;
+    }
+}
+
 Vec3 navmesh_move(const NavMesh *n, Vec3 p, float dx, float dz, float climb, float radius) {
     const float tries[3][2] = {{dx, dz}, {dx, 0.0f}, {0.0f, dz}};   /* straight, else slide */
     NavMesh *m = (NavMesh *)n;

@@ -46,7 +46,7 @@ create flames  -42.5e f, 45.4e f, -36.9e f,   -72.4e f, 17.2e f, -7.1e f,   -42.
     fiona wait-move  fiona -62.5e -1e turn-to-xz  fiona reach-out-anim play  candlestick-part hide-part
     items-40-as-70 fact? 0= if  candlestick-file give-file  then
     golden-candlestick got-golden-candlestick -1 takes-the  fiona reach-back-anim play
-    items-40-as-70 fact? 0= if  candlestick-sound fanfare-bank bank-sound  then ;
+    items-40-as-70 fact? 0= if  candlestick-sound common-bank bank-sound  then ;
 : the-bars ( -- )
     fiona wait-move  fiona $4F 90 -33e -24e place-at  1 42e 10e -160e 0e shot  bars-msg say  16 frames  shot-off ;
 : pick-rubrum ( -- )  rubrum-medallion ht1f-3-rubrum-medallion rubrum-fx -23.41e -14.78e picks-up ;

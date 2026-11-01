@@ -429,6 +429,9 @@ static void advance(Actor *a) {
     int frames, loop;
     float s0, s1;
 
+    if (a->fade <= 0.0f && (a->mflags & 8)) {   /* (Motion_Update, before it moves on: flag 8 holds it only while it fades in) */
+        a->mflags &= ~0x10;
+    }
     if (a->motion < 0 || (a->mflags & 0x40)) {
         return;
     }
@@ -461,9 +464,6 @@ static void advance(Actor *a) {
             step_time(&a->prev_vframe, a->rate * s1, model_motion_frames(&a->model, a->prev_variant), 1);
         }
         a->fade -= 1.0f;
-    }
-    if (a->fade <= 0.0f && (a->mflags & 8)) {   /* (Motion_Update: flag 8 holds it only while it fades in) */
-        a->mflags &= ~0x10;
     }
 }
 
@@ -573,8 +573,8 @@ void actor_body_start(Actor *a, int index, int flags, float blend) {
         a->frame = 0.0f;
     }
     a->motion = index;
+    a->prev_frozen = (flags & 8) != 0 || (a->mflags & 0x10) != 0;   /* (Motion_StartBody: its slot's +0x10 stays with it) */
     a->mflags = (flags & 0xFFFF) | (flags & 8 ? 0x10 : 0);
-    a->prev_frozen = (flags & 8) != 0;
     a->prev_held = ended;
     a->loop = flags & 1;
 }

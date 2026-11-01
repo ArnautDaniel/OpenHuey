@@ -24,7 +24,7 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
     dup 0 exit-spot 0< if  fdrop fdrop fdrop  drop arrive-anywhere exit  then
     drop  her-yaw f@ put ;
 : stand-free ( -- )   \ (Fiona_ToIdle but for the turn mode: free, standing, her moves her own)
-    free-doing her-doing !  own-mode her-mode !  her-yaw f@ her-heading f!  0 her-rest !
+    free-doing her-doing !  own-mode her-mode !  her-yaw f@ her-heading f!  0 her-rest !  0 her-out-of-reach !
     -1 idle-anim  ['] idle-move her-act ! ;
 : idle ( -- )   \ Fiona_ToIdle: free, standing, the stick by the camera now (+0x1AD588 0)
     camera-relative her-turn-mode !  stand-free ;
@@ -46,7 +46,7 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
         fdup her-yaw f!  her-heading f!  door-steered her-turn-mode !
     else  fdrop  then ;
 : fresh ( -- )   \ standing, the controls as new
-    free-doing her-doing !  own-mode her-mode !  0 her-sub !  6 her-still !  0 her-lock !
+    free-doing her-doing !  own-mode her-mode !  0 her-sub !  6 her-still !  0 her-lock !  0 her-out-of-reach !  0 her-noclip !
     her-turn-mode @ door-steered <> if  camera-relative her-turn-mode !  then   \ (a door's held stick kept through the arrival)
     1e her-stick-k f!  -1 her-variant !  1e her-tired-w f!  0 her-rest !  0 her-run-t !
     -1 her-cmd !  0 her-busy-t !  0 her-scripted !  0 her-move !  -1 her-move-done !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  stand-free ;   \ (the turn mode as set above)
@@ -109,8 +109,8 @@ variable stalker-apart   \ (the stalker out of contact, as he tells it - his +0x
 \ - humanlegs.c): each frame she is on her feet (+0x1AD5BC) but in the states that clear it -
 \ thrown, down and getting up, seized, led and dragged, on a ladder and falling off it, the
 \ story's step while through blocked floor (Fiona_StateStep with +0x2B). On them, her body is set
-\ by her feet: 11 back and 1 ahead along her step on a slope, 5 and 0.5 while running, turning to
-\ flee, kicking or out of breath (Fiona_AnimGroup 2, 9, 10, 3); then her feet are planted. Off
+\ by her feet: 11 back and 1 ahead along her step on a slope, 5 and 0.5 while running, stepping
+\ back, shoving or out of breath (Fiona_AnimGroup 2, 9, 10, 3); then her feet are planted. Off
 \ them, her model at her place, her feet as they are ----
 create feet-off-acts   \ (the states that clear +0x1AD5BC)
     ' fiona.fear:getting-up ,   ' fiona.fear:fallen ,   ' fiona.fear:panic-fall ,          \ SpecialEntry, Fallen, PanicFall
@@ -127,7 +127,7 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
 : feet-set ( -- )   \ (before her state runs)
     her-act @ feet-off-act?  her-act @ ['] root-move = her-noclip @ and  or 0= her-feet ! ;
 : feet-way ( F: -- back front )   \ (by the group of her animation)
-    group dup running-group = over turning-to-flee-group = or over kicking-group = or swap breathless-group = or
+    group dup running-group = over backstep-group = or over shoving-group = or swap breathless-group = or
     if  5e 0.5e  else  11e -1e  then ;
 : fit-legs ( -- )
     her-model @ 0< if  exit  then
@@ -150,7 +150,7 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
     looks  tell-point
     command-sounds  motion-sounds
     footsteps
-    show-her  fit-legs ;
+    show-her  weapon-shown  fit-legs ;
 
 \ ---- each frame (Fiona_Update, the parts built so far) ----
 : followed ( -- )
@@ -163,12 +163,12 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
     feel-the-panic
     read-controls
     her-mode @ own-mode = if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
-    hands-off? if  -1 her-cmd !  else  read-command  try-flee  try-defend  try-doors  try-ladders  try-let-go  then
+    hands-off? if  -1 her-cmd !  else  read-command  try-backstep  try-defend  try-doors  try-ladders  try-let-go  then
     touching 1 =  feet-set  her-act @ execute  keep-apart
     looks  tell-point
     command-sounds  motion-sounds
     footsteps
-    show-her  fit-legs ;
+    show-her  weapon-shown  fit-legs ;
 
 \ her earrings and choker on the costumes that have them (Fiona_ShowEquipment, by the model's
 \ ShowParts: EventHumanModel_ShowParts for her clothes, Costume2Model_ShowParts for O_FIH): the pair
@@ -286,7 +286,7 @@ behaviour free
   on noclip ( on -- )  her-noclip ! ;   \ (the story's 0x20)
   on aside ( on -- )  her-aside ! ;     \ (0x21: out of reach of attacks)
   on activate ( -- )  0 her-noclip !  0 her-aside !  idle ;   \ (the story's 0x15, Fiona_Activate: afresh, standing)
-  on costume ( n -- )  wear  show-her ;
+  on costume ( n -- )  wear  show-her  weapon-shown ;
   on fiona-request ( kind x y z threat -- )   \ (a creature's, Progress_Noise: $D a spirit - she falls; 3 a red one
       >r cells>xyz from-pt vec!   \ going - grabbed; $C homunculi - held down)
       dup broadcast fiona-requested  0 -1 r> cell>f struck drop ;   \ (its threat her fright: Fiona_React)
@@ -317,7 +317,7 @@ behaviour free
   on unhand ( -- )  0 her-led ! ;
   on flinch ( -- )  flinch ;   \ (a room's command)
   on count-shakes ( on? -- )  if  0 her-shake-count !  -1 her-shake-rest !  else  -1 her-shake-count !  then ;
-  on blow-taken ( -- )  struck-home ;   \ (her shove or kick struck home)
+  on blow-taken ( -- )  struck-home ;   \ (her kick or shove struck home)
   on danger ( level -- )  her-danger ! ;
   on panic ( stage level -- )  cell>f her-panic-level f!  her-panic-stage ! ;
   on door-held ( room exit -- )  2drop  got-hold ;

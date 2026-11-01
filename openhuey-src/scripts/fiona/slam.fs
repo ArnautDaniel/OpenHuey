@@ -1,5 +1,5 @@
 \ fiona/slam.fs - Fiona slamming a door on whoever is behind it (src/game/fiona.c Fiona_SlamDoor;
-\ her flee turn, her kick and her shove try it). A door of the room at rest that she faces within
+\ her step back, her shove and her kick try it). A door of the room at rest that she faces within
 \ 45 degrees (her way, or looking back), on her way to a point on a door's passage (triangle
 \ flag $20000):
 \ - shut, her in its area 4, neither locked nor stuck: burst open (`barge`);

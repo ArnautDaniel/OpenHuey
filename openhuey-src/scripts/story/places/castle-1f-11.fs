@@ -1,6 +1,6 @@
 \ story/places/castle-1f-11.fs - the drawbridge room in Belli Castle's 1F ($03): the clamp on the
 \ winch - struck, its lever jolts; the third blow and the drawbridge falls (a scene), Debilitas on
-\ the far side shoving the rubble down, throwing her if she is in his way; three vases (the Beef
+\ the far side kicking the rubble down, throwing her if she is in his way; three vases (the Beef
 \ Jerky and the Magnesia behind two); the Medallion Hewie fetches across the gap at her "go for it";
 \ the map's pages; the walls' shade. A place (story/kit.fs). The original's scripts, for checking:
 \ story/rooms-ref/castle-1f-11.fs in the history (converted from the game's; gone with the old
@@ -59,7 +59,7 @@ vase-1 0 $80505050 $111 vase   vase-2 2 $80404040 $122 vase   vase-3 1 $80404040
     specks-about
     c1f-11-medallion fact? 0= if  medallion-fx 9.646e 0.163e 27.266e flicker-at  then ;
 
-\ ---- the bridge falls: the scene; then Debilitas on the far side, shoving the rubble down ----
+\ ---- the bridge falls: the scene; then Debilitas on the far side, kicking the rubble down ----
 : shoves ( -- )   \ (into place unseen, then his shove - throwing her if she is in his way; the dust as it lands)
     -1 his-scene !  stalker hold  stalker his-motions motions-for  stalker use-motions  stalker true noclip  yield
     stalker $132 180 -37.43e 44.367e place-at  stalker 0 0 camera-set  stalker true shown  stalker false hush

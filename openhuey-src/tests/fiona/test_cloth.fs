@@ -26,7 +26,7 @@ testing put somewhere by the story mid-stride (Fiona_PlaceOn), it is settled afr
 \ was (on out to 1.8, unsettled)
 : put-by ( F: dx -- )   \ (a few units over, as the story's scripts place her)
     fiona body-pos {: F: dx x y z :}  x dx f+ y z 0e  f>cell >r f>cell >r f>cell >r f>cell r> r> r>  game:fiona send place ;
-key: W true key-hold  20 run-frames  key: W false key-hold
+key: W true key-hold  10 run-frames  key: W false key-hold   \ (short of the wall south of here)
 T{ 5e put-by  deliver  3 run-frames  $B $E xz-apart  1.5e f< -> -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 test-summary

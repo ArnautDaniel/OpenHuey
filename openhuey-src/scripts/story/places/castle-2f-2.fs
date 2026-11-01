@@ -29,7 +29,7 @@ own: fled                  \ she fled out of the room beyond (pulled free): "I h
 own: doll-down             \ the doll lying on open floor (to be knocked, or picked up)
 own: doll-falling          \ ... falling
 own: first-steps           \ her first steps by the chandeliers made (once a visit)
-own: his-shove             \ Debilitas shoving the rubble far off (at the room's end taken)
+own: his-shove             \ Debilitas kicking the rubble far off (at the room's end taken)
 own: tick-chosen  own: tick-count   \ the ticking beyond the door: how many, in threes
 own: wary-noticed  own: sits-noticed   \ (Hewie: once a visit each)
 

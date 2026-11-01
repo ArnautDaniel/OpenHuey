@@ -40,7 +40,7 @@ USING: engine actors vectors messages fiona.state fiona.anims ;
 
 \ the group an animation belongs to (Fiona_AnimGroup)
 enum: anim-group  standing-group walking-group running-group breathless-group lying-group resting-group pushing-group climbing-group hanging-group
-    turning-to-flee-group kicking-group other-group ;
+    backstep-group shoving-group other-group ;
 : anim-group ( anim -- g )
     case
         stand-anim of standing-group endof  attack-anim of standing-group endof  3 of standing-group endof
@@ -57,7 +57,7 @@ enum: anim-group  standing-group walking-group running-group breathless-group ly
         off-ladder-foot-anim of climbing-group endof  on-ladder-foot-anim of climbing-group endof  rung-up-anim of climbing-group endof
         rung-up-end-anim of climbing-group endof  off-ladder-top-anim of climbing-group endof
         ladder-hold-anim of hanging-group endof  ladder-hold-2-anim of hanging-group endof
-        flee-turn-anim of turning-to-flee-group endof  kick-anim of kicking-group endof
+        backstep-anim of backstep-group endof  shove-anim of shoving-group endof
         >r other-group r>
     endcase ;
 : group ( -- g )  anim@ anim-group ;
@@ -118,3 +118,7 @@ enum: anim-group  standing-group walking-group running-group breathless-group ly
     her-fear-bits @ 2 and if  anim@ panic-run-anim <> if  panic-run-anim -1 play-table  1e weight!  then  exit  then
     run-anim run-scared-anim run-shaken-anim move-look ;
 : stand ( -- )  0 her-rest !  -1 idle-anim ;   \ Fiona_Stand
+: free-to-act? ( -- flag )   \ (Progress_PlayerButtons, Fiona_IsIdle, Fiona_StateBlock: her own, not at a push, panic attack or out of breath, not at 100)
+    her-mode @ own-mode =  her-sub @ pushing-sub <> and
+    her-doing @ dup attack-doing <> over push-doing <> and swap breathless-doing <> and  and
+    her-fear f@ 100e f< and ;

@@ -365,6 +365,7 @@ $80000000 constant keep-playing   \ (a sound's id bit: one already playing kept 
 : keep-sound ( id F: x y z -- )  {: id F: x y z :}  id story-volume or keep-playing or room-bank 0 0  x y z  sound-at ;
 5 constant common-bank   \ (the sounds every room has: knocks, Hewie's find)
 7 constant stalker-bank  \ (the stalker's own: each kind's set)
+: camera-sound ( id bank -- )  0 0  cam-pos  sound-at ;   \ (cmd_sound's other way: where the camera is)
 : sound-by ( id bank who -- )  {: id bank who :}  who dup 0< if  drop exit  then  body? 0= if  exit  then  who body-pos {: F: x y z :}  id bank 0 0  x y z  sound-at ;   \ (at a character)
 : kept-by ( id who -- )   \ (a sound of the room's playing at a character, kept on it as it moves - not started anew)
     {: id who :}  id keep-playing or room-bank who sound-by ;
@@ -422,17 +423,21 @@ $8019 constant used-msg         \ "Used ." (the item named)
 : plate-pressable? ( -- flag )  items:plates 10 < ;   \ (fewer than ten word plates made: another may be pressed)
 : item-named ( item -- )  0 swap message-param! ;   \ (the next system message names it)
 : subscreen ( -- id )  s" subscreen" actor-named ;
-$8C constant fanfare-scene
-$83 constant fanfare-sound   $85 constant fanfare-bank
-: fanfare ( -- )  fanfare-sound fanfare-bank bank-sound ;   \ (the item's jingle)
-: show-item-tab ( item -- )   \ (its tab slid in to show her: waited out)
-    -1 tab-moving !  0 swap subscreen send tab-op  begin  tab-moving @ while  yield  repeat ;
+$83 constant jingle-sound
+: jingle ( -- )  jingle-sound common-bank bank-sound ;
+: tab-op-done ( op item -- )  -1 tab-moving !  subscreen send tab-op  begin  tab-moving @ while  yield  repeat ;
+: show-item-tab ( item -- )  0 swap tab-op-done ;   \ (its picture made ready)
+\ the item's tab beside what is said of it (the shared act $8C, on track 0): slid in, there till
+\ the message is closed, slid out
+: tab-shows ( -- )  2 0 tab-op-done  wait-closed  4 0 tab-op-done ;
+: fanfare ( -- )  ['] tab-shows dup stop-doing start drop  jingle ;   \ (the item's jingle, its tab)
+: tab-gone ( -- )  ['] tab-shows running? if  4 0 subscreen send tab-op  then ;   \ (the place left with it out)
 $801B constant filed-message    \ "has been saved to your file."
 : spend ( item -- )  items send take-item ;   \ one of it used up
 : map-page ( page -- )  s" subscreen" actor-named send map-turn-to ;   \ the map opens at that page (its floor)
 $2D constant ending-var   \ (which of the endings caught her, for the game over's kind 2)
 : game-over ( kind -- )  s" gameover" actor-named send game-over-kind  caught state! ;   \ the game ends that way
-: filed ( doc -- )  dup item-named  1 give-item  fanfare  filed-message say ;   \ a document filed, said so
+: filed ( doc -- )  dup item-named  1 give-item  jingle  filed-message say ;   \ a document filed, said so
 : trust-file ( -- )   \ (in the other game: the file for Hewie's trust now, levels 1..7 - the shared $9C)
     items-40-as-70 fact? 0= if  exit  then  hewie-trust-now @ dup 1 8 within if  $828E + give-file  else  drop  then ;
 : screen-dark ( alpha -- )  story.base:screen-fill ;   \ (this frame: the screen darkened by alpha, to $80)
@@ -1392,7 +1397,7 @@ end-structure
     a hp.hops @ 3 = if  33 chance? if  5 a hp.hops !  then  then
     a hp.hops @ 4 = if  50 chance? if  5 a hp.hops !  then  then
     a hp.hops @ 5 = if  a lashes  else  a hp.sound @ hopper-sound  then
-    fiona.sounds:shove-hit-sound common-bank fiona sound-by
+    fiona.sounds:kick-hit-sound common-bank fiona sound-by
     hopper-slot a hp.back @ 0 3 figure-play  hopper-slot figure-wait
     hopper-slot a hp.hop @ 0 3 figure-play  0 a hp.still !
     a hp.hops @ 5 = if  hopper-slot figure-wait  0 a hp.hops !  then ;
@@ -1566,8 +1571,8 @@ behaviour placing
       leaving @ if  2drop 2drop exit  then
       ['] d.item hook ?dup if  >r 2over 2over r> execute if  2drop 2drop exit  then  then  item-used ;
   on room-leave ( -- )  -1 leaving ! ;
-  on room-left ( -- )  scene-step @ scene-running = if  scenes send scene-stop  then  text-gone  stop-all  effects-gone  ['] d.went run-desc  s" story" actor-named send room-done ;
-  on story-stop ( -- )  text-gone  stop-all  effects-gone  s" story" actor-named send room-done ;
+  on room-left ( -- )  scene-step @ scene-running = if  scenes send scene-stop  then  text-gone  tab-gone  stop-all  effects-gone  ['] d.went run-desc  s" story" actor-named send room-done ;
+  on story-stop ( -- )  text-gone  tab-gone  stop-all  effects-gone  s" story" actor-named send room-done ;
 end-behaviour
 
 \ a place's actor for its room, ready to be entered (story.fs)

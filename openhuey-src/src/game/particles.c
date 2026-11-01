@@ -12,7 +12,7 @@
 #define PI 3.14159265f
 #define MAX_PARTS 256   /* (most have 16; the blood spray 32, the rising smoke 64, the dust shaft 256) */
 
-enum { FLICKER, SPARKS, FLAME, SWARM, SPLASH, BURST, SHARDS, MOTE, BUTTERFLIES, SPIRIT, VANISH, WANDER, SPRAY, SPLAT, PUFFS, STONES, DEBRIS, SMOKE, DUST, SPIRAL, DRIPS, RING, DROPLETS, ONEDRIP, MOTES, EMBERS, FLECKS, CHIMNEY, WALLSHADOW, FIRE, STEAM, FLOORGLOW, TV, BIGFIRE, SHAFT, GLINT, HAZE, CAUSTIC, GLOWSPOT, WISPCOL, SPARKSPRAY, HEAT, EMBERS2, LEAVES, LOOPSPRITE, OBJGLOW, RAIN, ASH, MARKER, WINDOWFLASH, SMOKETRAIL, MAGBURST, DROPFLASH, BONESMOKE, SPARK2, SINKRING, WELLING };
+enum { FLICKER, SPARKS, FLAME, SWARM, SPLASH, BURST, SHARDS, MOTE, BUTTERFLIES, SPIRIT, VANISH, WANDER, SPRAY, SPLAT, PUFFS, STONES, DEBRIS, SMOKE, DUST, SPIRAL, DRIPS, RING, DROPLETS, ONEDRIP, MOTES, EMBERS, FLECKS, CHIMNEY, WALLSHADOW, FIRE, STEAM, FLOORGLOW, TV, BIGFIRE, SHAFT, GLINT, HAZE, CAUSTIC, GLOWSPOT, WISPCOL, SPARKSPRAY, HEAT, EMBERS2, LEAVES, LOOPSPRITE, OBJGLOW, RAIN, ASH, MARKER, WINDOWFLASH, SMOKETRAIL, MAGBURST, DROPFLASH, BONESMOKE, STRIKEMARK, SPARK2, SINKRING, WELLING };
 
 typedef struct Part {
     Vec3 at, v;
@@ -1601,6 +1601,98 @@ int particles_bone_smoke(Vec3 at) {
     }
     s->timer = 0;
     return h;
+}
+
+/* ---- StrikeMark: in a frame along the line (z from back to at): a glow 2 x 2 at `at` (cell (320, 128)
+ * 32 x 32), two streaks 2 wide from 0.2 behind to 3.8 beyond (cell (256, 128) 64 x 32), additive ---- */
+static Vec3 mark_corner(const System *s, float x, float y, float z) {
+    return vec3_add(s->at, vec3_add(vec3_scale(s->c, x), vec3_add(vec3_scale(s->wander, y), vec3_scale(s->target, z))));
+}
+
+static void strike_mark_write(System *s) {
+    Sprite *g = sprites_records(s->batch, 1), *k = sprites_records(s->batch2, 2);
+    Vec3 q[4];
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        q[i] = mark_corner(s, i & 1 ? 1.0f : -1.0f, i & 2 ? -1.0f : 1.0f, 0.3f);
+    }
+    quad(&g[0], 0x80464680u, q);
+    for (i = 0; i < 4; i++) {
+        q[i] = mark_corner(s, 0.0f, i & 2 ? -1.0f : 1.0f, i & 1 ? 3.8f : -0.2f);
+    }
+    quad(&k[0], 0x80464680u, q);
+    for (i = 0; i < 4; i++) {
+        q[i] = mark_corner(s, i & 2 ? -1.0f : 1.0f, 0.0f, i & 1 ? 3.8f : -0.2f);
+    }
+    quad(&k[1], 0x80464680u, q);
+}
+
+/* with `at` in view, a faint grey band over the bottom 64 of the screen's 448 lines at its depth (the
+ * original's eight 64-wide sprites, layer $1E, alpha 8) */
+static void strike_band_write(System *s) {
+    const Camera *c = &gEngine.camera;
+    Vec3 fwd = vec3(sinf(c->yaw) * cosf(c->pitch), sinf(c->pitch) * c->up, -cosf(c->yaw) * cosf(c->pitch));
+    Vec3 right = vec3(cosf(c->yaw), 0.0f, sinf(c->yaw)), up = vec3_norm(vec3_cross(right, fwd));
+    Vec3 d = vec3_sub(s->at, c->pos), mid, q[4];
+    float depth = vec3_dot(d, fwd), h = depth * tanf(c->fov * 0.5f), w = h * 2.0f, y;
+    int i;
+
+    if (s->batch3 < 0) {
+        return;
+    }
+    if (depth <= 0.0f || fabsf(vec3_dot(d, up)) > h || fabsf(vec3_dot(d, right)) > w) {
+        sprites_records(s->batch3, 0);
+        return;
+    }
+    mid = vec3_add(c->pos, vec3_scale(fwd, depth));
+    for (i = 0; i < 4; i++) {
+        y = i & 2 ? -h : -h + 2.0f * h * (64.0f / 448.0f);
+        q[i] = vec3_add(mid, vec3_add(vec3_scale(right, i & 1 ? w : -w), vec3_scale(up, y)));
+    }
+    quad(sprites_records(s->batch3, 1), 0x1B1B1B08u, q);   /* (grey $80 in the PS2's gamma: 0.21 linear, as we blend) */
+}
+
+int particles_strike_mark(Vec3 at, Vec3 back) {
+    int h = new_system(STRIKEMARK, at);
+    System *s;
+    Vec3 z, up;
+
+    if (h < 0) {
+        return -1;
+    }
+    s = &sSys[h];
+    look(s, 0x10, 1, -1, 0x140, 0x80, 0x20, 0x20, 1, SPRITE_ADD | SPRITE_CORNERS);
+    s->batch2 = sprites_new();
+    if (s->batch2 >= 0) {
+        sprites_texture(s->batch2, 0x10, 1, -1);
+        sprites_cells(s->batch2, 0x100, 0x80, 0x40, 0x20, 512, 256, 1);
+        sprites_flags(s->batch2, SPRITE_ADD | SPRITE_CORNERS, 0x19);
+    }
+    s->batch3 = sprites_new();
+    if (s->batch3 >= 0) {
+        sprites_texture(s->batch3, -1, 0, -1);   /* (untextured) */
+        sprites_flags(s->batch3, SPRITE_CORNERS, 0x1E);
+    }
+    s->engines = 1;
+    s->n = 0;
+    s->timer = 2;
+    z = vec3_norm(vec3_sub(at, back));
+    up = z.y < 1.0f && !(z.y <= -1.0f) ? vec3(0, 1, 0) : vec3(0, 0, 1);
+    s->c = vec3_norm(vec3_cross(up, z));   /* (the frame's axes: c, wander, target) */
+    s->wander = vec3_norm(vec3_cross(z, s->c));
+    s->target = z;
+    strike_mark_write(s);   /* (drawn from this frame: 2 in all) */
+    strike_band_write(s);
+    return h;
+}
+
+static int strike_mark_step(System *s) {   /* StrikeMark_Update */
+    if (--s->timer > 0) {
+        return 1;
+    }
+    particles_bone_smoke(s->at);
+    return 0;
 }
 
 static int bone_smoke_step(System *s) {   /* BoneSmoke_Update */
@@ -5238,6 +5330,7 @@ void particles_tick(Vec3 camera) {
             case MAGBURST: going = mag_burst_step(s); break;
             case DROPFLASH: going = drop_flash_step(s); break;
             case BONESMOKE: going = bone_smoke_step(s); break;
+            case STRIKEMARK: going = strike_mark_step(s); break;
             case SPARK2: going = spark2_step(s); break;
             case SINKRING: going = sink_ring_step(s); break;
             case WELLING: going = welling_step(s); break;
@@ -5271,6 +5364,7 @@ void particles_tick(Vec3 camera) {
         case STEAM: write(s); steam_glow(s); break;
         case DRIPS: drips_write(s); break;
         case RING: ring_write(s); break;
+        case STRIKEMARK: strike_mark_write(s); strike_band_write(s); break;
         case FLECKS: flecks_write(s); break;
         case WALLSHADOW: wall_shadow_write(s); break;
         case FLOORGLOW: floor_glow_write(s); break;

@@ -367,8 +367,34 @@ static HBody *any_body(Forth *f, Cell id, const char *what) {
     }
     return b;
 }
-static void body_move(HBody *b, uint32_t mask, float dx, float dz) {
-    NavMesh *n = nav_masked(mask);
+/* Actor_Move: over the floor from its triangle; a triangle that isn't its any more (put there since):
+ * found afresh, once. 1 moved */
+static int slid(NavMesh *n, int *tri, float *v, float dx, float dz, uint32_t mask) {
+    Vec3 from = vec3(v[0], v[1], v[2]), to = vec3(v[0] + dx, v[1], v[2] + dz), out;
+    float h;
+    int t = navmesh_slide(n, *tri, from, to, mask, &out);
+
+    if (t < 0) {
+        int here;
+
+        n->block = 0;
+        here = navmesh_find(n, from, 4.0f, &h);
+        if (here < 0 || here == *tri) {
+            return 0;
+        }
+        t = navmesh_slide(n, here, from, to, mask, &out);
+        if (t < 0) {   /* (no way on: but its triangle known again) */
+            *tri = here;
+            return 1;
+        }
+    }
+    v[0] = out.x;
+    v[1] = out.y;
+    v[2] = out.z;
+    *tri = t;
+    return 1;
+}
+static void body_move_free(HBody *b, NavMesh *n, float dx, float dz) {   /* (no triangle yet: by the heights) */
     Vec3 p = navmesh_move(n, vec3(b->pos[0], b->pos[1], b->pos[2]), dx, dz, 8.0f, 0.0f);
     float h;
     int t;
@@ -381,6 +407,27 @@ static void body_move(HBody *b, uint32_t mask, float dx, float dz) {
     if (t >= 0) {
         b->tri = t;
     }
+}
+static void body_move(HBody *b, uint32_t mask, float dx, float dz) {
+    NavMesh *n = nav_masked(mask);
+
+    if (b->tri >= 0) {
+        slid(n, &b->tri, b->pos, dx, dz, mask);
+        n->block = 0;
+        return;
+    }
+    body_move_free(b, n, dx, dz);
+}
+PRIM(p_v_slide) {   /* ( v tri mask -- tri' | -1 ) ( F: dx dz -- ) v moved by (dx, dz) from its triangle over the
+                     * floor the mask lets on, sliding along walls (Actor_Move); -1: not moved */
+    uint32_t mask = (uint32_t)POP();
+    int tri = (int)POP(), ok;
+    float *v = vec_arg(f), dz = (float)FPOP(), dx = (float)FPOP();
+    NavMesh *n = nav_masked(mask);
+
+    ok = slid(n, &tri, v, dx, dz, mask);
+    n->block = 0;
+    PUSH(ok ? tri : -1);
 }
 PRIM(p_body_move) {   /* ( F: dx dz -- ) by (dx, dz) as far as its mask allows, sliding along walls */
     HBody *b = own_body(f, "body-move");
@@ -402,48 +449,9 @@ PRIM(p_body_advance) {   /* ( F: x z speed -- ) ( -- there? ) straight toward (x
     body_move(b, b->mask, dx / d * speed, dz / d * speed);
     PUSH(0);
 }
-/* over any triangle along the mesh's own links, whatever the heights (Actor_MoveAny's NavMesh_Slide
- * with no mask: straight on, else along x or z alone, else up to the edge first met) */
+/* over any triangle (Actor_MoveAny: NavMesh_Walk with no mask) */
 static void body_slide_any(HBody *b, float dx, float dz) {
-    NavMesh *n = nav_masked(0);
-    const float tries[3][2] = {{dx, dz}, {dx, 0.0f}, {0.0f, dz}};
-    Vec3 a = vec3(b->pos[0], b->pos[1], b->pos[2]);
-    float reach;
-    int i, t;
-
-    if (b->tri < 0) {
-        body_move(b, 0, dx, dz);
-        return;
-    }
-    for (i = 0; i < 3; i++) {
-        Vec3 to = vec3(a.x + tries[i][0], a.y, a.z + tries[i][1]);
-
-        if (tries[i][0] == 0.0f && tries[i][1] == 0.0f) {
-            continue;
-        }
-        t = navmesh_walk(n, b->tri, a, to, NULL);
-        if (t >= 0) {
-            b->pos[0] = to.x;
-            b->pos[2] = to.z;
-            b->pos[1] = navmesh_height(n, t, to.x, to.z);
-            b->tri = t;
-            return;
-        }
-    }
-    navmesh_walk(n, b->tri, a, vec3(a.x + dx, a.y, a.z + dz), &reach);   /* (up to the edge) */
-    reach -= 0.01f;
-    if (reach > 0.0f) {
-        float len = sqrtf(dx * dx + dz * dz);
-        Vec3 to = vec3(a.x + dx * reach / len, a.y, a.z + dz * reach / len);
-
-        t = navmesh_walk(n, b->tri, a, to, NULL);
-        if (t >= 0) {
-            b->pos[0] = to.x;
-            b->pos[2] = to.z;
-            b->pos[1] = navmesh_height(n, t, to.x, to.z);
-            b->tri = t;
-        }
-    }
+    body_move(b, 0, dx, dz);
 }
 PRIM(p_body_move_any) {   /* ( F: dx dz -- ) the same over any triangle, along the mesh's links */
     HBody *b = own_body(f, "body-move-any");
@@ -1165,6 +1173,11 @@ PRIM(p_debris_cloud) {   /* ( r g b F: x y z -- ) droplets flung where a shot st
 }
 PRIM(p_gun_smoke) {   /* ( F: x y z -- ) smoke rising from a gun as it fires (BoneSmoke; the engine's) */
     particles_bone_smoke(fpop3(f));
+}
+PRIM(p_strike_mark) {   /* ( F: x y z bx by bz -- ) a shot's flash from (bx by bz) out to (x y z), then smoke (StrikeMark; the engine's) */
+    Vec3 back = fpop3(f), at = fpop3(f);
+
+    particles_strike_mark(at, back);
 }
 PRIM(p_spark) {   /* ( life F: x y z rise size growth -- ) a spark that grows and fades (LorenzoSpark; the engine's) */
     float growth = (float)FPOP(), size = (float)FPOP(), rise = (float)FPOP();
@@ -3147,7 +3160,7 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its parts shown or hi
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.9") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.29") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
@@ -3893,8 +3906,8 @@ void bind_engine(Forth *f) {
         {"camera", p_camera, "( -- addr )"},
         {"cam-new-room", p_cam_new_room, "( -- )"}, {"cam-room-start", p_cam_room_start, "( -- )"}, {"cam-setup", p_cam_setup, "( set path -- )"},
         {"body-move", p_body_move, "( F: dx dz -- )"}, {"body-move-any", p_body_move_any, "( F: dx dz -- )"}, {"body-move-local", p_body_move_local, "( F: x z -- )"}, {"body-climb", p_body_climb, "( F: x y z -- )"}, {"body-turn-toward", p_body_turn_toward, "( F: target step -- F: left )"}, {"body-heading-to", p_body_heading_to, "( id v -- ) ( F: -- F: yaw )"}, {"body-place-at", p_body_place_at, "( F: x y z -- )"}, {"body-tri-to", p_body_tri_to, "( v mask -- tri )"}, {"body-free", p_body_free, "( mask -- ) ( F: yaw d -- F: free )"}, {"bodies-touching?", p_bodies_touching, "( a b -- flag ) ( F: margin vmargin -- )"}, {"cam-on", p_cam_on, "( id -- )"}, {"cam-followed", p_cam_followed, "( -- id )"}, {"cam-followed!", p_cam_followed_set, "( id -- )"}, {"cam-target", p_cam_target_id, "( -- id )"}, {"cam-player!", p_cam_player, "( id -- )"}, {"cam-char-setup", p_cam_char_setup, "( who set path -- )"}, {"cam-forget-setups", p_cam_forget_setups, "( -- )"}, {"cam-setup-of", p_cam_setup_of, "( who -- set path )"}, {"cam-take-followed", p_cam_take_followed, "( -- )"}, {"cam-scene!", p_cam_scene, "( flag -- )"}, {"cam-scene?", p_cam_scene_q, "( -- flag )"}, {"cam-next-set", p_cam_next_set, "( -- )"}, {"cam-rate!", p_cam_rate, "( F: r -- )"}, {"cam-shake!", p_cam_shake, "( F: a -- )"}, {"cam-cut?", p_cam_cut, "( -- flag )"}, {"cam-remember", p_cam_remember, "( -- )"}, {"cam-started?", p_cam_started, "( -- flag )"}, {"cam-stop", p_cam_stop, "( -- )"}, {"cam-angle", p_cam_angle, "( F: -- deg )"}, {"cam-ease", p_cam_ease, "( -- )"}, {"cam-event?", p_cam_event, "( -- flag )"}, {"cam-event!", p_cam_event_set, "( flag -- )"}, {"cam-track", p_cam_track, "( -- )"}, {"push-out", p_push_out, "( v tri other mask -- tri' )"},
-        {"cam-update", p_cam_update, "( -- )"}, {"cam-restart", p_cam_restart, "( -- )"}, {"cam-changed?", p_cam_changed, "( -- flag )"}, {"cam-set@", p_cam_set, "( -- set )"}, {"actor-load-textured", p_actor_load_textured, "( addr len tex-addr tex-len -- id )"}, {"motions-load", p_motions_load, "( addr len model -- flag )"}, {"motions-use", p_motions_use, "( on model -- )"}, {"cam-place", p_cam_place, "( F: ex ey ez lx ly lz -- )"}, {"cam-retake", p_cam_retake, "( -- )"}, {"frame-blend", p_frame_blend, "( a -- )"}, {"frame-blend-off", p_frame_blend_off, "( -- )"}, {"panic-negative", p_panic_negative, "( -- )"}, {"zoom-blur", p_zoom_blur, "( -- )"}, {"panic-tint", p_panic_tint, "( limit amount -- )"}, {"flicker-new", p_flicker_new, "( slow F: x y z -- p )"}, {"flame-new", p_flame_new, "( kind F: x y z -- p )"}, {"swarm-new", p_swarm_new, "( count spread rgba F: x y z -- p )"}, {"splash-new", p_splash_new, "( count spread rgba F: x y z from-x from-y from-z -- p )"}, {"burst-new", p_burst_new, "( kind r g b top F: x y z -- p )"}, {"spray", p_spray, "( tri heavy F: x y z -- )"}, {"thing-new", p_thing_new, "( kind room tri F: x y z vx vy vz -- i | -1 )"}, {"thing-free", p_thing_free, "( i -- )"}, {"things-clear", p_things_clear, "( -- )"}, {"thing-used?", p_thing_used, "( i -- flag )"}, {"thing-kind", p_thing_kind, "( i -- kind )"}, {"thing-room", p_thing_room, "( i -- room )"}, {"thing-tri", p_thing_tri, "( i -- tri )"}, {"thing-age", p_thing_age, "( i -- frames )"}, {"thing-state", p_thing_state, "( i -- state )"}, {"thing-at", p_thing_at, "( i -- v )"}, {"thing-speed", p_thing_speed, "( i -- ) ( F: -- F: s )"}, {"thing-age!", p_thing_age_store, "( age i -- )"}, {"thing-place", p_thing_place, "( i room tri F: x y z -- )"}, {"thing-kick", p_thing_kick, "( i F: dx dy dz -- )"}, {"thing-fade", p_thing_fade, "( i -- )"}, {"thing-events", p_thing_events, "( i -- bits )"}, {"thing-turn", p_thing_turn, "( i -- 0..255 )"}, {"things-step", p_things_step, "( room running -- )"}, {"thing-reaches?", p_thing_reaches, "( body i F: across high -- flag )"}, {"puffs", p_puffs, "( F: x y z -- )"}, {"debris-cloud", p_debris_cloud, "( r g b F: x y z -- )"}, {"gun-smoke", p_gun_smoke, "( F: x y z -- )"}, {"spark", p_spark, "( life F: x y z rise size growth -- )"}, {"particles-engines", p_particles_engines, "( p -- )"}, {"sink-ring", p_sink_ring, "( rising F: x y z -- )"}, {"water-step", p_water_step, "( big v -- )"}, {"welling", p_welling, "( tri F: x y z -- )"}, {"shards-new", p_shards_new, "( gs kind tex F: x y z u v du dv floor -- p )"}, {"butterflies-new", p_butterflies_new, "( count F: x y z -- p )"}, {"butterflies-to", p_butterflies_to, "( p count F: x y z -- )"}, {"butterflies-at", p_butterflies_at, "( p -- ok ) ( F: -- F: x y z | )"}, {"wander-new", p_wander_new, "( F: x y z rx rz tx ty tz -- ) ( -- p )"}, {"spirit-new", p_spirit_new, "( red F: x y z bob -- p )"}, {"spirit-at", p_spirit_at, "( p shown F: x y z -- )"}, {"spirit-vanish", p_spirit_vanish, "( p seen -- )"}, {"vanish-new", p_vanish_new, "( r g b a -- p ) ( F: x y z -- )"}, {"stones-new", p_stones_new, "( gs tex F: height u v du dv -- p )"}, {"reflect!", p_reflect_set, "( slot screen strength F: x0 y0 z0 .. x3 y3 z3 -- )"}, {"reflect-off", p_reflect_off, "( slot -- )"}, {"reflect-only", p_reflect_only, "( slot model -- )"}, {"debris-new", p_debris_new, "( kind -- p )"}, {"rising-smoke-new", p_rising_smoke_new, "( -- p )"}, {"dust-shaft-new", p_dust_shaft_new, "( -- p )"}, {"spiral-smoke-new", p_spiral_smoke_new, "( -- p )"}, {"drips-new", p_drips_new, "( -- p )"}, {"one-drip-new", p_one_drip_new, "( -- p )"}, {"rising-motes-new", p_rising_motes_new, "( -- p )"}, {"embers-new", p_embers_new, "( ending -- p )"}, {"flecks-new", p_flecks_new, "( F: x y z half-w depth tx ty tz -- ) ( -- p )"}, {"smoke-puffs-new", p_smoke_puffs_new, "( -- p )"}, {"wall-shadow-new", p_wall_shadow_new, "( -- p )"}, {"fire-new", p_fire_new, "( spot big -- p )"}, {"steam-new", p_steam_new, "( spot -- p )"}, {"floor-glow-new", p_floor_glow_new, "( -- p )"}, {"tv-new", p_tv_new, "( which -- p )"}, {"big-fire-new", p_big_fire_new, "( -- p )"}, {"light-shaft-new", p_light_shaft_new, "( -- p )"}, {"glint-new", p_glint_new, "( model -- p )"}, {"marker-new", p_marker_new, "( model other second? F: size -- p )"}, {"window-flash-new", p_window_flash_new, "( F: x y z turn -- ) ( -- p )"}, {"smoke-trail-new", p_smoke_trail_new, "( thing -- p )"}, {"mag-burst-new", p_mag_burst_new, "( prima? F: x y z nx ny nz -- p )"}, {"mirror-square", p_mirror_square, "( F: nx ny nz tx ty tz x y z -- F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 )"}, {"haze-new", p_haze_new, "( -- p )"}, {"caustic-new", p_caustic_new, "( tex rgba F: x y z size step turn -- p )"}, {"glow-new", p_glow_new, "( rgba F: x y z size -- p )"}, {"wisp-column-new", p_wisp_column_new, "( -- p )"}, {"spark-spray-new", p_spark_spray_new, "( side -- p )"}, {"heat-haze-new", p_heat_haze_new, "( -- p )"}, {"leaves-new", p_leaves_new, "( -- p )"}, {"loop-sprite-new", p_loop_sprite_new, "( F: x y z -- ) ( -- p )"}, {"object-glow-new", p_object_glow_new, "( idx F: x y z -- p )"}, {"rain-new", p_rain_new, "( -- p )"}, {"ash-new", p_ash_new, "( -- p )"}, {"pit-embers-new", p_pit_embers_new, "( flames? -- p )"}, {"particles-place", p_particles_place, "( p F: x y z -- )"}, {"particles-rest!", p_particles_rest, "( p frames -- )"}, {"swim-path", p_swim_path, "( i nx ny nz frames -- ) ( F: x y z -- )"}, {"swim-step", p_swim_step, "( i -- ) ( F: x y z yaw -- F: x y z yaw )"}, {"body-advance", p_body_advance, "( F: x z speed -- ) ( -- there? )"}, {"particles-command", p_particles_command, "( p v -- )"}, {"particles-alive?", p_particles_alive, "( p -- flag )"}, {"particles-children", p_particles_children, "( p -- n )"}, {"particles-free", p_particles_free, "( p -- )"}, {"particles-info", p_particles_info, "( p -- kind frame rest )"},
-        {".director", p_cam_info, "( -- )"}, {"area-in?", p_area_in, "( area -- flag ) ( F: x y z -- )"}, {"nav-path", p_nav_path, "( from to -- n ) ( F: ax ay az bx by bz -- )"}, {"v-nav-move", p_v_nav_move, "( v mask -- tri ) ( F: dx dz -- )"}, {"v-walk", p_v_walk, "( tri a b mask -- tri' )"}, {"can-walk-between?", p_can_walk_between, "( ta a tb b mask -- flag )"}, {"v-wall", p_v_wall, "( tri a b mask -- flag ) ( F: -- F: yaw )"}, {"nav-links", p_nav_links, "( -- n )"}, {"nav-next", p_nav_next, "( tri k -- tri' )"}, {"nav-link-tri", p_nav_link_tri, "( i side -- tri )"}, {"nav-link-yaw", p_nav_link_yaw, "( i side -- ) ( F: -- F: yaw )"}, {"nav-link-spot", p_nav_link_spot, "( i side -- ) ( F: -- F: x y z )"}, {"nav-link-at?", p_nav_link_at, "( v i -- flag )"}, {"nav-link-side", p_nav_link_side, "( v tri i -- side )"}, {"nav-link-front", p_nav_link_front, "( i side -- tri ) ( F: ox oz -- F: x y z )"}, {"v-free", p_v_free, "( tri v mask -- ) ( F: yaw dist -- F: free )"},
+        {"cam-update", p_cam_update, "( -- )"}, {"cam-restart", p_cam_restart, "( -- )"}, {"cam-changed?", p_cam_changed, "( -- flag )"}, {"cam-set@", p_cam_set, "( -- set )"}, {"actor-load-textured", p_actor_load_textured, "( addr len tex-addr tex-len -- id )"}, {"motions-load", p_motions_load, "( addr len model -- flag )"}, {"motions-use", p_motions_use, "( on model -- )"}, {"cam-place", p_cam_place, "( F: ex ey ez lx ly lz -- )"}, {"cam-retake", p_cam_retake, "( -- )"}, {"frame-blend", p_frame_blend, "( a -- )"}, {"frame-blend-off", p_frame_blend_off, "( -- )"}, {"panic-negative", p_panic_negative, "( -- )"}, {"zoom-blur", p_zoom_blur, "( -- )"}, {"panic-tint", p_panic_tint, "( limit amount -- )"}, {"flicker-new", p_flicker_new, "( slow F: x y z -- p )"}, {"flame-new", p_flame_new, "( kind F: x y z -- p )"}, {"swarm-new", p_swarm_new, "( count spread rgba F: x y z -- p )"}, {"splash-new", p_splash_new, "( count spread rgba F: x y z from-x from-y from-z -- p )"}, {"burst-new", p_burst_new, "( kind r g b top F: x y z -- p )"}, {"spray", p_spray, "( tri heavy F: x y z -- )"}, {"thing-new", p_thing_new, "( kind room tri F: x y z vx vy vz -- i | -1 )"}, {"thing-free", p_thing_free, "( i -- )"}, {"things-clear", p_things_clear, "( -- )"}, {"thing-used?", p_thing_used, "( i -- flag )"}, {"thing-kind", p_thing_kind, "( i -- kind )"}, {"thing-room", p_thing_room, "( i -- room )"}, {"thing-tri", p_thing_tri, "( i -- tri )"}, {"thing-age", p_thing_age, "( i -- frames )"}, {"thing-state", p_thing_state, "( i -- state )"}, {"thing-at", p_thing_at, "( i -- v )"}, {"thing-speed", p_thing_speed, "( i -- ) ( F: -- F: s )"}, {"thing-age!", p_thing_age_store, "( age i -- )"}, {"thing-place", p_thing_place, "( i room tri F: x y z -- )"}, {"thing-kick", p_thing_kick, "( i F: dx dy dz -- )"}, {"thing-fade", p_thing_fade, "( i -- )"}, {"thing-events", p_thing_events, "( i -- bits )"}, {"thing-turn", p_thing_turn, "( i -- 0..255 )"}, {"things-step", p_things_step, "( room running -- )"}, {"thing-reaches?", p_thing_reaches, "( body i F: across high -- flag )"}, {"puffs", p_puffs, "( F: x y z -- )"}, {"debris-cloud", p_debris_cloud, "( r g b F: x y z -- )"}, {"gun-smoke", p_gun_smoke, "( F: x y z -- )"}, {"strike-mark", p_strike_mark, "( F: x y z bx by bz -- )"}, {"spark", p_spark, "( life F: x y z rise size growth -- )"}, {"particles-engines", p_particles_engines, "( p -- )"}, {"sink-ring", p_sink_ring, "( rising F: x y z -- )"}, {"water-step", p_water_step, "( big v -- )"}, {"welling", p_welling, "( tri F: x y z -- )"}, {"shards-new", p_shards_new, "( gs kind tex F: x y z u v du dv floor -- p )"}, {"butterflies-new", p_butterflies_new, "( count F: x y z -- p )"}, {"butterflies-to", p_butterflies_to, "( p count F: x y z -- )"}, {"butterflies-at", p_butterflies_at, "( p -- ok ) ( F: -- F: x y z | )"}, {"wander-new", p_wander_new, "( F: x y z rx rz tx ty tz -- ) ( -- p )"}, {"spirit-new", p_spirit_new, "( red F: x y z bob -- p )"}, {"spirit-at", p_spirit_at, "( p shown F: x y z -- )"}, {"spirit-vanish", p_spirit_vanish, "( p seen -- )"}, {"vanish-new", p_vanish_new, "( r g b a -- p ) ( F: x y z -- )"}, {"stones-new", p_stones_new, "( gs tex F: height u v du dv -- p )"}, {"reflect!", p_reflect_set, "( slot screen strength F: x0 y0 z0 .. x3 y3 z3 -- )"}, {"reflect-off", p_reflect_off, "( slot -- )"}, {"reflect-only", p_reflect_only, "( slot model -- )"}, {"debris-new", p_debris_new, "( kind -- p )"}, {"rising-smoke-new", p_rising_smoke_new, "( -- p )"}, {"dust-shaft-new", p_dust_shaft_new, "( -- p )"}, {"spiral-smoke-new", p_spiral_smoke_new, "( -- p )"}, {"drips-new", p_drips_new, "( -- p )"}, {"one-drip-new", p_one_drip_new, "( -- p )"}, {"rising-motes-new", p_rising_motes_new, "( -- p )"}, {"embers-new", p_embers_new, "( ending -- p )"}, {"flecks-new", p_flecks_new, "( F: x y z half-w depth tx ty tz -- ) ( -- p )"}, {"smoke-puffs-new", p_smoke_puffs_new, "( -- p )"}, {"wall-shadow-new", p_wall_shadow_new, "( -- p )"}, {"fire-new", p_fire_new, "( spot big -- p )"}, {"steam-new", p_steam_new, "( spot -- p )"}, {"floor-glow-new", p_floor_glow_new, "( -- p )"}, {"tv-new", p_tv_new, "( which -- p )"}, {"big-fire-new", p_big_fire_new, "( -- p )"}, {"light-shaft-new", p_light_shaft_new, "( -- p )"}, {"glint-new", p_glint_new, "( model -- p )"}, {"marker-new", p_marker_new, "( model other second? F: size -- p )"}, {"window-flash-new", p_window_flash_new, "( F: x y z turn -- ) ( -- p )"}, {"smoke-trail-new", p_smoke_trail_new, "( thing -- p )"}, {"mag-burst-new", p_mag_burst_new, "( prima? F: x y z nx ny nz -- p )"}, {"mirror-square", p_mirror_square, "( F: nx ny nz tx ty tz x y z -- F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 )"}, {"haze-new", p_haze_new, "( -- p )"}, {"caustic-new", p_caustic_new, "( tex rgba F: x y z size step turn -- p )"}, {"glow-new", p_glow_new, "( rgba F: x y z size -- p )"}, {"wisp-column-new", p_wisp_column_new, "( -- p )"}, {"spark-spray-new", p_spark_spray_new, "( side -- p )"}, {"heat-haze-new", p_heat_haze_new, "( -- p )"}, {"leaves-new", p_leaves_new, "( -- p )"}, {"loop-sprite-new", p_loop_sprite_new, "( F: x y z -- ) ( -- p )"}, {"object-glow-new", p_object_glow_new, "( idx F: x y z -- p )"}, {"rain-new", p_rain_new, "( -- p )"}, {"ash-new", p_ash_new, "( -- p )"}, {"pit-embers-new", p_pit_embers_new, "( flames? -- p )"}, {"particles-place", p_particles_place, "( p F: x y z -- )"}, {"particles-rest!", p_particles_rest, "( p frames -- )"}, {"swim-path", p_swim_path, "( i nx ny nz frames -- ) ( F: x y z -- )"}, {"swim-step", p_swim_step, "( i -- ) ( F: x y z yaw -- F: x y z yaw )"}, {"body-advance", p_body_advance, "( F: x z speed -- ) ( -- there? )"}, {"particles-command", p_particles_command, "( p v -- )"}, {"particles-alive?", p_particles_alive, "( p -- flag )"}, {"particles-children", p_particles_children, "( p -- n )"}, {"particles-free", p_particles_free, "( p -- )"}, {"particles-info", p_particles_info, "( p -- kind frame rest )"},
+        {".director", p_cam_info, "( -- )"}, {"area-in?", p_area_in, "( area -- flag ) ( F: x y z -- )"}, {"nav-path", p_nav_path, "( from to -- n ) ( F: ax ay az bx by bz -- )"}, {"v-slide", p_v_slide, "( v tri mask -- tri' | -1 ) ( F: dx dz -- )"}, {"v-nav-move", p_v_nav_move, "( v mask -- tri ) ( F: dx dz -- )"}, {"v-walk", p_v_walk, "( tri a b mask -- tri' )"}, {"can-walk-between?", p_can_walk_between, "( ta a tb b mask -- flag )"}, {"v-wall", p_v_wall, "( tri a b mask -- flag ) ( F: -- F: yaw )"}, {"nav-links", p_nav_links, "( -- n )"}, {"nav-next", p_nav_next, "( tri k -- tri' )"}, {"nav-link-tri", p_nav_link_tri, "( i side -- tri )"}, {"nav-link-yaw", p_nav_link_yaw, "( i side -- ) ( F: -- F: yaw )"}, {"nav-link-spot", p_nav_link_spot, "( i side -- ) ( F: -- F: x y z )"}, {"nav-link-at?", p_nav_link_at, "( v i -- flag )"}, {"nav-link-side", p_nav_link_side, "( v tri i -- side )"}, {"nav-link-front", p_nav_link_front, "( i side -- tri ) ( F: ox oz -- F: x y z )"}, {"v-free", p_v_free, "( tri v mask -- ) ( F: yaw dist -- F: free )"},
         {"v-path", p_v_path, "( from a to b mask -- n )"}, {"v-path-curved", p_v_path_curved, "( from a to b mask -- n )"}, {"v-tri", p_v_tri, "( v -- tri )"}, {"nav-floor", p_nav_floor, "( -- found ) ( F: x y z -- F: y' )"}, {"v-tri-in", p_v_tri_in, "( v mask -- tri )"}, {"vec!", p_vec_store, "( v -- ) ( F: x y z -- )"}, {"vec@", p_vec_fetch, "( v -- ) ( F: -- F: x y z )"}, {"vec-copy", p_vec_copy, "( dst src -- )"},
         {"vec-dist", p_vec_dist, "( a b -- ) ( F: -- F: d )"}, {"vec-dist-xz", p_vec_dist_xz, "( a b -- ) ( F: -- F: d )"}, {"vec-heading", p_vec_heading, "( a b -- ) ( F: -- F: yaw )"}, {"vec-ahead", p_vec_ahead, "( dst src -- ) ( F: yaw d -- )"},
         {"angle-wrap", p_angle_wrap, "( F: a -- F: a' )"}, {"nav-walk", p_nav_walk, "( from -- tri ) ( F: ax ay az bx by bz -- F: reach )"}, {"nav-crosses?", p_nav_crosses, "( tri a b mask -- flag )"}, {"nav-path-point", p_nav_path_point, "( i -- ) ( F: -- F: x y z )"}, {"placed-op", p_placed_op, "( addr len op arg -- )"}, {"placed-at", p_placed_at, "( addr len -- ) ( F: x y z -- )"}, {"placed-f@", p_placed_f_fetch, "( addr len off -- ) ( F: -- F: v )"}, {"placed-f!", p_placed_f_store, "( addr len off -- ) ( F: v -- )"}, {"placed-l@", p_placed_l_fetch, "( addr len off -- n )"}, {"placed-l!", p_placed_l_store, "( n addr len off -- )"}, {"placed-here?", p_placed_here, "( addr len -- flag )"}, {"placed-shown?", p_placed_shown, "( addr len -- flag )"}, {"nav-square-step", p_nav_square_step, "( a b -- a' b' ok? ) ( F: dx dz -- )"}, {"obstacles-reset", p_obstacles_reset, "( -- )"}, {"obstacle-placed?", p_obstacle_placed, "( i -- flag )"}, {"obstacle-make", p_obstacle_make, "( i kind a b -- ok? )"}, {"obstacle-stop", p_obstacle_stop, "( i -- )"}, {"obstacle-square", p_obstacle_square, "( i -- a b )"}, {"obstacle-at", p_obstacle_at, "( i -- ) ( F: -- F: x y z )"}, {"obstacle-middle", p_obstacle_middle, "( i -- ) ( F: -- F: x y z )"}, {"obstacles-ring-mask", p_obstacles_ring_mask, "( tri -- bits )"}, {"obstacle-on-square?", p_obstacle_on_square, "( i tri -- flag )"}, {"obstacle-can-push?", p_obstacle_can_push, "( i tris n -- flag ) ( F: dx dz -- )"}, {"obstacle-push", p_obstacle_push, "( i -- ) ( F: dx dz -- )"}, {"obstacle-step", p_obstacle_step, "( i -- scrape? )"}, {"obstacle-moved", p_obstacle_moved, "( i -- )"}, {".placed", p_placed_list, "( -- )"}, {"door-swing", p_door_swing, "( exit at-once -- ) ( F: degrees -- )"}, {"door-shades", p_door_shades, "( -- n )"}, {"door-shade", p_door_shade, "( i -- exit light ) ( F: -- F: alpha )"}, {"light-blocker", p_light_blocker, "( F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 -- )"}, {"light-blockers", p_light_blockers, "( -- n )"}, {"light-blocked?", p_light_blocked, "( light -- flag ) ( F: x y z -- )"}, {"room-door-at", p_door_at, "( exit -- flag ) ( F: -- F: x y z )"}, {"door-user-spot", p_door_user_spot, "( exit anim -- tri ) ( F: -- F: x y z yaw )"},

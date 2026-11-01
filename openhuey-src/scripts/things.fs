@@ -85,7 +85,7 @@ end-state
     {: xt :}  first-homunculus 3 + first-homunculus do  i homunculus dup in-its-room? if  xt execute  else  drop  then  loop ;
 
 \ ---- their effects ----
-: go-burst ( -- )   \ (a magnesia going off: the plain one the shove's puffs, the refined and prima their own bursts)
+: go-burst ( -- )   \ (a magnesia going off: the plain one the kick's puffs, the refined and prima their own bursts)
     kind magnesia-thing = if  at vec@ puffs exit  then
     kind prima-thing =  at vec@  its-tri tri-normal  effects:mag-burst ;
 $8D constant splash-sound   $8E constant go-off-sound   $7C constant bounce-sound
@@ -159,13 +159,13 @@ $20 constant object-x   $24 constant object-y   $28 constant object-z   \ (a roo
 : magnesia-frame ( -- )   \ (thing_watch)
     age kind armed-at >= if
         reach-homunculi
-        sets-him-off? quiet? 0= and if  him-in-its-room kick-blow kind damage kind startle blow-him  then
+        sets-him-off? quiet? 0= and if  him-in-its-room heavy-blow kind damage kind startle blow-him  then
         here? if  go-off  else  gone  then  exit
     then
     quiet? if  exit  then
     tread-homunculi  here? if  stalker 0 treads?  else  false  then  {: homunculi? him? :}   \ (he only in her room)
     homunculi? him? or 0= if  here? if  kick  then  exit  then
-    him? if  kick-blow kind damage kind startle blow-stalker  then
+    him? if  heavy-blow kind damage kind startle blow-stalker  then
     go-off ;   \ (its sound and burst wherever it lies, as the original's: trodden on off screen too)
 : stone-frame ( -- )   \ (Thing08_Frame: armed, a noise the stalker hears - $4F at it - and gone)
     age 450 < if  kick exit  then

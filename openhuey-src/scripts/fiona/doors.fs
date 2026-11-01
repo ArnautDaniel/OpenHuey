@@ -26,10 +26,17 @@ USING: engine vectors keys actors messages common paths doors fiona.state fiona.
     room-id her-door-exit @ fiona-noise
     her-door-opens @ if  doors-id send let-go-open  else  doors-id send let-go-shut  then ;
 
-\ stepping out: free again at her animation's end, the door let go
+\ stepping out (Fiona_StateDoorStepOut): free again at her animation's end, the door let go; every
+\ frame after her step, out of the stalkers' reach once past the door from where she came, or
+\ before it on a floor flagged so - even the frame she's free, as the original
+$20000 constant door-floor
+: on-door-floor? ( -- flag )  her-tri @ dup 0< if  drop false  else  nav-flags door-floor and 0<>  then ;
+: past-the-door? ( exit -- flag )  her-pos door-side 1 = 1 and  her-door-side @ <> ;
 : stepping-out ( -- )
-    ended? if  leave-door  -1 her-door-exit !  door-over exit  then
-    root-move ;
+    her-door-exit @ {: door :}
+    ended? if  0 her-noclip !  leave-door  -1 her-door-exit !  door-over  then
+    root-move
+    door past-the-door? on-door-floor? or her-out-of-reach ! ;
 \ her animation fading in: then the door swings with her
 : swinging-in ( -- )
     settled? 0= if  exit  then
@@ -44,7 +51,7 @@ USING: engine vectors keys actors messages common paths doors fiona.state fiona.
     room-id her-door-exit @ fiona-kind doors-id send hold-door
     ['] awaiting-door her-act ! ;
 : got-hold ( -- )   \ (the answer: hers) her animation, the door with it
-    her-door-anim @ play-own  ['] swinging-in her-act ! ;
+    her-door-anim @ play-own  -1 her-noclip !  ['] swinging-in her-act ! ;   \ (+0x2B: over the doorway's floor, Fiona_StateDoorWalk)
 
 \ a locked door. Quick: at her spot she tries it, and as the built-in script has it (D_003B2450:
 \ the try, 7 frames, then - not while Hewie is the one played - "locked from the other side",
@@ -98,6 +105,7 @@ USING: engine vectors keys actors messages common paths doors fiona.state fiona.
 \ struck while using a door (Fiona_StartInDoor): a door she holds is let go as she meant it -
 \ open, or shut
 : drop-door ( -- )
+    0 her-noclip !   \ (Fiona_StartInDoor)
     her-door-exit @ dup 0< if  drop exit  then
     exit-door door-held? 0= if  -1 her-door-exit !  exit  then
     leave-door  -1 her-door-exit ! ;

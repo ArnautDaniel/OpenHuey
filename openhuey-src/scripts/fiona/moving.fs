@@ -12,10 +12,10 @@ USING: engine game-state actors messages common vectors facts items.names fiona.
 : root-step ( F: -- x z )  root@ {: F: turn x y z :}  x z ;
 : root-turn ( F: -- x y z )   \ (the turn taken: the step left)
     root@ {: F: turn x y z :}  her-yaw f@ turn f+ angle-wrap her-yaw f!  x y z ;
-\ a move by (x, z) in the room over the floor the mask lets her on, sliding along walls
-\ (Actor_Move); over her own floor
+\ a move by (x, z) in the room from her triangle over the floor the mask lets her on, sliding
+\ along walls (Actor_Move: NavMesh_Walk); over her own floor
 : move-within ( mask -- ) ( F: x z -- )
-    her-at swap v-nav-move  dup 0< if  drop  else  her-tri !  then ;
+    her-at her-tri @ rot v-slide  dup 0< if  drop  else  her-tri !  then ;
 : move-by ( F: x z -- )  blocked-floor move-within ;
 \ Model_SlopeKeep: on a slope (motion flag 4) the part of a step kept, by her facing along the fall
 4 constant on-slope-flag

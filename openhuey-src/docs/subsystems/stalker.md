@@ -20,6 +20,8 @@ danger actor it is in play each frame (`stalker-here`), makes noises (steps, gro
 them (acoustics), and acts on the others only by messages: blows (`hit`), grabs (`seize`), its
 requests to Fiona.
 
+
+What his model holds (`held-parts`, as he loads and each time he comes on): Daniella and kind 35 part 17, kinds 34 and 36 part 31, with her right hand's shape; the tint stalker and kind 37 no gun (Kind23Model's part 15); Riccardo keeps his (RiccardoModel's part 17).
 ## Phases
 
 | Phase | What | Needs |
@@ -45,7 +47,7 @@ requests to Fiona.
 | `stalker-status` | `( room mode in-game own away cool -- )` | out, to the summoner | Each frame while in slot 2 (docs/subsystems/summoner.md). |
 | `stalker-summoned` | `( room exit found plan -- )` | in, from the summoner | Come in out of sight by that exit: after her, or waiting about (Pursuer_IntoRoomByEvent) - heading for her, or past an exit at random (`route-at-random`: Pursuer_PlanWhere's mode 3). |
 | `stalker-doing` | `( room mode sub cond hp hp-max kind -- )` | out, broadcast each frame in the game | For Hewie: his room, how he moves (3 off screen, 4 struck, 8 taking her), what (9 bitten, $A down, $18 leading her), condition, health, kind. |
-| `blow` | `( kind damage how -- )` | in (Fiona: 1 shove, 2 kick, 5 a door - how its exit); out, to Hewie | Struck; his blows (and his throw, $B) strike Hewie. |
+| `blow` | `( kind damage how -- )` | in (Fiona: 1 her kick, 2 her shove, 5 a door - how its exit); out, to Hewie | Struck; his blows (and his throw, $B) strike Hewie. |
 | `dog-attack` / `dog-grip` / `dog-refused` | `( kind )` / `( tri x y z yaw )` / `( )` | in / out | Hewie's attack asked; taken (where Hewie leaps to) or not (P3c). |
 | `bite` | `( damage hard -- )` | in, from Hewie | A bite while he holds on. |
 | `shaken-off` | `( -- )` | in / out | Hewie let go / thrown off. |
@@ -193,12 +195,12 @@ bone). Struck home (`hit-taken`): his cry ($B / $C / $D, bank 7), held still 5 f
 **Struck** (P3a, `stalker/struck.fs`; Pursuer_Hit, Pursuer_StateFlinch / StateKnockedDown /
 StateHurt, Pursuer_FrameUpdate, Debilitas_GivesUp): a `blow` takes its damage from his health
 and adds it to the damage he's had (to 999); a killing one (3) all of it. Its side - in front
-or behind him, +2 a kick or hard one - picks his flinch ($1001 / $1000 / $1004 / $1003; in a
-doorway $1002 / $1005); in a move that leaves him unshaken (his move table's byte $1D) a shove
+or behind him, +2 a heavy or hard one - picks his flinch ($1001 / $1000 / $1004 / $1003; in a
+doorway $1002 / $1005); in a move that leaves him unshaken (his move table's byte $1D) a light blow
 only gets a grunt ($1C). Out of health he falls (forward $1804 with floor ahead, else back
 $1800), lies there his setup's frames (+0x16D0, Pursuer_NoGiveUp: Debilitas 1800, hard 1350;
 "hard" throughout is the hard mode, `hard-mode?`: story flag $AF) - a blow then a twitch - and gets up ($1807 /
-$1803) with his health back; in a doorway he's left at 1. A stumble ($8000, or her kick's
+$1803) with his health back; in a doorway he's left at 1. A stumble ($8000, or her shove's
 roll by how worn he is: his health over its most above 0.8 none, 0.6 2 in 100, 0.4 5, else 10)
 hurts him 900 frames: he stands 2, walks $202 / $203, turns $405.., and growls ($1F) after
 it. At his flinch's key, her blow, he may strike back: his table 8 (her in front) or 9.

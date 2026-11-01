@@ -60,6 +60,10 @@ int navmesh_link_front(const NavMesh *n, int i, int side, float ox, float oz, Ve
 int navmesh_find(const NavMesh *n, Vec3 p, float climb, float *height);
 /* move from p by (dx, dz), staying on the mesh with `radius` to spare ahead: sliding along
  * walls, following the floor */
+/* NavMesh_Walk (Actor_Move's slide): from `from` on triangle `tri` toward `to` over floor the mask lets
+ * on: across edges; at a wall the target pulled back along it and the walk begun again, 4 times, then
+ * up to the wall. *out on the floor there; its triangle, -1 off the mesh (*out as it was) */
+int navmesh_slide(const NavMesh *n, int tri, Vec3 from, Vec3 to, uint32_t mask, Vec3 *out);
 Vec3 navmesh_move(const NavMesh *n, Vec3 p, float dx, float dz, float climb, float radius);
 /* a way over the mesh from (tri `from`, point a) to (tri `to`, point b), keeping off the
  * `block` flags (the triangle it starts on excepted): A* over the triangles, then pulled

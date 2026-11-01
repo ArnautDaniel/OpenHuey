@@ -26,7 +26,7 @@ create mouth /vec allot
 : tackle-row ( behind? -- row )
     his-ready @ if  if  tackle-behind-charged-bite  else  tackle-front-charged-bite  then
     else  if  tackle-behind-bite  else  tackle-front-bite  then  then ;
-: blow-kind-of ( -- kind )  his-ready @ if  kick-blow  else  shove-blow  then ;   \ (charged: the harder)
+: blow-kind-of ( -- kind )  his-ready @ if  heavy-blow  else  light-blow  then ;   \ (charged: the harder)
 variable hewie-blow-n   -2000 hewie-blow-n !   \ (his blows' numbers for the homunculi: down from -2000)
 : new-bite ( -- )  -1 hewie-blow-n +! ;   \ (a rush's or a leap's: each homunculus bitten once in it)
 : bite-creatures ( damage -- )   \ (Hewie_Bite: the homunculi his mouth reaches - as a blow there, within 10 of its body)
@@ -98,7 +98,7 @@ variable hewie-blow-n   -2000 hewie-blow-n !   \ (his blows' numbers for the hom
     mouth!
     pursuer reaches?  her reaches? or if
         leap-snarl make-sound
-        pursuer reaches? if  shove-blow 5 bite-damage  rush-bite hard-bite? if $8000 else 0 then  pursuer send blow  then
+        pursuer reaches? if  light-blow 5 bite-damage  rush-bite hard-bite? if $8000 else 0 then  pursuer send blow  then
         her reaches? if  blow-request 0 20e f>cell her send hit  then
         no-call his-call !  ['] st-bitten behave exit   \ (Hewie_State1980: the call answered)
     then

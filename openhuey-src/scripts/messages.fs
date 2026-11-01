@@ -148,17 +148,17 @@ enum: panic-stage  composed shaken scared terrified panicking calming-down ;
 
 \ ---- Fiona (docs/subsystems/fiona.md) ----
 \ Fiona's mode (the original's moveMode): moving on her own; led (a door, a scripted move, a walk
-\ to a spot); on a ladder; thrown or stumbling; defending (a shove, a kick); request 9; down;
+\ to a spot); on a ladder; thrown or stumbling; defending (a kick, a shove); request 9; down;
 \ reacting (a flinch, fleeing, caught); held; commanding Hewie; letting go of a thing
 enum: fiona-mode  own-mode 2 led-mode ladder-mode thrown-mode 8 defend-mode request-9-mode down-mode
     react-mode held-mode command-mode throw-mode ;
 \ what she is doing (+0x1AD580, the story's condition 0x3F): nothing; turning to push; on a
-\ ladder; at a door; a shove; a kick; letting go of a thing; flinching; thrown; down;
+\ ladder; at a door; a kick; a shove; letting go of a thing; flinching; thrown; down;
 \ commanding; fleeing; a panic attack; out of breath; the story's moves - an animation, walking
 \ to a spot, along a path, running there, along a path, turning to someone, to a heading,
 \ walking in an animation
-enum: fiona-doing  free-doing push-doing ladder-doing door-doing 5 shove-doing kick-doing let-go-doing
-    flinch-doing 10 thrown-doing down-doing command-doing flee-doing attack-doing breathless-doing
+enum: fiona-doing  free-doing push-doing ladder-doing door-doing 5 kick-doing shove-doing let-go-doing
+    flinch-doing 10 thrown-doing down-doing command-doing backstep-doing attack-doing breathless-doing
     $11 anim-doing walk-to-doing walk-path-doing run-to-doing run-path-doing turn-who-doing
     turn-heading-doing walk-anim-doing ;
 \ her condition: well, hurt, down
@@ -221,12 +221,12 @@ message broke-free ( -- )                    \ to the stalker leading her: she s
 \ ---- her blows on him (F4, the stalkers' P3: Relation_Request kinds 1 / 2 from Fiona; 5 a door) ----
 message blow-from ( kind damage how x y z -- )   \ a blow from a point, not from anyone (Progress_Noise: the slot's +0x1060; xyz>cells)
 message blow ( kind damage how -- )          \ to a stalker (or Hewie): its kind (blow-kind); how: $8000 he stumbles,
-                                             \ 1 he may (her kick: by how worn he is - Fiona_ChaseRoll, rolled by
+                                             \ 1 he may (her shove: by how worn he is - Fiona_ChaseRoll, rolled by
                                              \ him); a door's: its exit
-\ the blows' kinds: a shove, a kick, a killing one, a hard one, a door; (6: one Hewie takes no
+\ the blows' kinds: a light one, a heavy one, a killing one, a hard one, a door; (6: one Hewie takes no
 \ notice of); a powder trodden on (how: its loops); a scuffle off screen (Hewie's and the
 \ stalker's); Hewie's hold, his bite (on the stalker); his throw (Hewie thrown off by it)
-enum: blow-kind  1 shove-blow kick-blow killing-blow hard-blow door-blow ignored-blow powder-blow scuffle-blow
+enum: blow-kind  1 light-blow heavy-blow killing-blow hard-blow door-blow ignored-blow powder-blow scuffle-blow
     $A hold-blow bite-blow  $B throw-off-blow ;
 message blow-taken ( -- )                    \ the answer: it struck him
 message game-over-kind ( kind -- )           \ (the game over) how the next one goes: 0 the movie's, 1 faded out, 2 the ending
@@ -266,11 +266,11 @@ message hewie-came ( exit -- )               \ broadcast as Hewie arrives in the
 message command ( code tri yaw x z -- )      \ Fiona's command (0x23 go there: the spot; floats f>cell)
 message reaction ( n -- )                    \ how her doing strikes him (Fiona_HewieReact's row: hewie-reaction)
 \ what she did, as it strikes Hewie: her "go", "come back", "come" / "stay", a scolding and a praise
-\ from afar, a scolding close up, a pat, rousing him; the story's (its 0xBC); her turn to flee, her
-\ shove, her kick, a throw; (13: none); her cry for help, her "attack now"; his nudge (obedience)
+\ from afar, a scolding close up, a pat, rousing him; the story's (its 0xBC); her step back, her
+\ kick, her shove, a throw; (13: none); her cry for help, her "attack now"; his nudge (obedience)
 enum: hewie-reaction  go-reaction come-back-reaction come-reaction scold-reaction praise-reaction
-    scold-close-reaction pat-reaction rouse-reaction story-reaction flee-reaction shove-reaction
-    kick-reaction throw-reaction 14 help-reaction attack-now-reaction nudge-reaction ;
+    scold-close-reaction pat-reaction rouse-reaction story-reaction backstep-reaction kick-reaction
+    shove-reaction throw-reaction 14 help-reaction attack-now-reaction nudge-reaction ;
 \ a joint action by his side: she asks (type 0 scold, 2 praise, 4 stay); he finds her place by
 \ him, or refuses; she goes there, he sits; then the second part (1 / 3 / 5)
 message meet-me ( type -- )

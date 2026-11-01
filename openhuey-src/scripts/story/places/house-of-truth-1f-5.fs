@@ -24,7 +24,7 @@ own: music-changed         \ through the mystical door: its sounds stopped
 own: drone-on              \ the drone going
 own: shrink                \ the marker shrinking by it (from 334)
 $A constant clock-area   $B constant further-area   $C constant door-area   0 constant marker-fx
-0 constant steady-sound   3 constant first-ambient   $30 constant drone-sound   $47 constant drone-bank   7 constant drone-stop-bank
+0 constant steady-sound   3 constant first-ambient   $30 constant drone-sound   7 constant drone-stop-bank
 1 constant end-movie   0 constant end-cutscene   $1E constant end-figure   $1F constant end-figure-2
 $EA constant hall-door   $257 constant lorenzo-file   $828E constant end-other-file   $51 constant end-seen
 $1C constant door-track   $81 constant mystic-way
@@ -72,7 +72,7 @@ $1C constant door-track   $81 constant mystic-way
     15 screen:from-black fade  wait-fade
     end-seen resident-flag-set  lorenzo-file give-file  end-other-file give-file
     stalkers-stay state-off  found-file-257 fact!  0 held-back !  tremors
-    drone-sound story-volume or drone-bank bank-sound ;
+    drone-sound story-volume or stalker-bank camera-sound ;
 : replayed ( -- )
     fiona hold  stones-fall  end-figure 3 figure-in  end-figure-2 4 figure-in  yield
     end-scene  3 figure-out  4 figure-out  replay-over ;
@@ -122,14 +122,14 @@ create ahead  5 , 0 ,  6 , 1 ,  7 , 2 ,   \ (area, exit loaded ahead)
     room-sounds-in? if  steady-sound 0e 20e 100e room-sound  -1 steady-on !  then ;
 : each-frame ( -- )
     steady-sounds
-    drone-on @ if  drone-sound story-volume or keep-playing or drone-bank bank-sound  then
+    drone-on @ if  drone-sound story-volume or keep-playing or stalker-bank camera-sound  then
     3 exits-out  cameras 2 cameras-at  ahead 3 ways-out
     fiona further-area entered?  held-back @ and if
         0 held-back !  panic-eased  ['] lorenzo-ends fiona start-holding drop
     then
     slam-shake
     music-changed @ 0=  room-sounds-in? and if  first-ambient 28e 20e -71e ambient-sounds  then
-    ht1f-9-flag2 fact?  drone-on @ 0= and if  drone-sound story-volume or drone-bank bank-sound  -1 drone-on !  then
+    ht1f-9-flag2 fact?  drone-on @ 0= and if  drone-sound story-volume or stalker-bank camera-sound  -1 drone-on !  then
     spots ;
 create entries  0 , 0 ,  0 , 0 ,  0 , 0 ,   \ (by exit 0 .. 2: the camera)
 : person-in ( i -- )

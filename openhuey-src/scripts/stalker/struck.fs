@@ -1,7 +1,7 @@
 \ stalker/struck.fs - a stalker struck (src/game/pursuer.c Pursuer_Hit, Pursuer_StateFlinch,
 \ Pursuer_StateKnockedDown / StateHurt, Pursuer_FrameUpdate; Debilitas_GivesUp): a `blow` (her
-\ shove or kick) takes his health and adds to the damage he's had; he flinches by the side and
-\ height it came from - in a move that leaves him unshaken a shove only gets a grunt - or, out
+\ kick or shove) takes his health and adds to the damage he's had; he flinches by the side and
+\ height it came from - in a move that leaves him unshaken a light blow only gets a grunt - or, out
 \ of health, he falls and stays down a while (his setup's frames: Debilitas 1800, hard 1350); a
 \ stumble hurts him a while (900 frames: his hurt walk). At his flinch's key he may strike back (his
 \ tables for in front, behind). After it, enough damage (Debilitas 20, kind 6 80) and he gives up:
@@ -138,7 +138,7 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     striker @ dup -2 = if  drop strike-pt heading-to
     else dup 0< 0= if  dup body? if  body-at heading-to  else  drop yaw  then  else  drop yaw  then then
     yaw f- angle-wrap fabs pi f2/ f< if  from-front  else  from-behind  then
-    swap dup kick-blow = swap hard-blow = or if  low-blow or  then ;
+    swap dup heavy-blow = swap hard-blow = or if  low-blow or  then ;
 : on-ladder? ( -- flag )  anim @ $FF00 and on-top-anim = ;
 : struck ( kind damage how -- )
     {: kind damage how :}
@@ -153,7 +153,7 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
         kind bite-blow =  how stumbles and 0<> and if  hurt-cond cond !  900 hurt-t !  -1 growl-after !  then
         striker @ hewie = if  hurt-cry  else  grunt-sound  then  7 sound exit   \ a stumbling bite hurts him)
     then
-    unshaken @  kind shove-blow = and  hp @ 0> and if  grunt-sound 7 sound exit  then
+    unshaken @  kind light-blow = and  hp @ 0> and if  grunt-sound 7 sound exit  then
     striker @ fiona = if  -1 by-her !  then
     kind door-blow = if  let-her-go combo-over 0 hold-off !  how door-struck exit  then   \ (a door slammed on him: how is its exit)
     hp @ 0> 0= if  at-door? if  1 hp !  else  knock-down exit  then  then
@@ -171,7 +171,7 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     then
     let-her-go  combo-over  0 hold-off !
     kind powder-blow = if  powder-how @ powdered exit  then
-    kind dup shove-blow = over kick-blow = or swap hard-blow = or if  dir flinch  then ;
+    kind dup light-blow = over heavy-blow = or swap hard-blow = or if  dir flinch  then ;
 \ each frame: his hurt worn off
 : hurt-down ( -- )
     hurt-t @ 0= if  exit  then  -1 hurt-t +!  hurt-t @ 0= cond @ hurt-cond = and if  well-cond cond !  then ;

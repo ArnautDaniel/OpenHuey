@@ -3,7 +3,7 @@
 \ Fresh Flowers - and back; the hole in the wall (the voices: a scene, the Scrawled Memo); the
 \ fireplace (its embers in the draught, the drum can struck, the doll inside in turn); a place to
 \ hide (the stalker searching - finding her more likely each time he comes, or seeing her); in by
-\ the gate's way (Debilitas knocked down beyond it, no going back); Debilitas shoving the rubble
+\ the gate's way (Debilitas knocked down beyond it, no going back); Debilitas kicking the rubble
 \ down here and there; two vases (the Viola Medallion, the Onion), the Rubrum Medallion Hewie sniffs
 \ out; the flowers and the fence in turn, the splashes in the pond, what Hewie barks at, stands wary
 \ of and looks up at, the moths, the specks, the steady sounds, the walls' shade, the map's pages. A
@@ -36,9 +36,9 @@ own: fetch-step            \ the fetch's turns: 1 she is free, 2 he is back with
 own: through-gate          \ she came in by the gate's way: no going back (till the stalker comes)
 own: searched              \ the stalker has searched her hiding place (once a visit, till she hides anew)
 own: search-on             \ his search begun this visit (the doors on his way opened only by them)
-own: his-shove             \ Debilitas shoving the rubble by the hall (at the room's end he is put back)
+own: his-shove             \ Debilitas kicking the rubble by the hall (at the room's end he is put back)
 own: his-shove-done        \ ... played (this time he came)
-own: his-far-shove         \ Debilitas shoving the rubble by the fireplace (then gone)
+own: his-far-shove         \ Debilitas kicking the rubble by the fireplace (then gone)
 own: drum-struck           \ someone at the drum can: struck once till she is no longer on guard
 own: hum-playing           \ the machine's hum playing out (75 frames)
 own: sounds-started  own: splash-1-made  own: splash-2-made

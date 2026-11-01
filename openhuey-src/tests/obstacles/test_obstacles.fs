@@ -42,7 +42,7 @@ testing pushing only in her own moves (Fiona_FindPushable: her move mode 0)
 T{ [: 3 her-mode !  true 3e fiona.push:find-pushable  0 her-mode ! ;] hers -> 0 }T
 
 testing Fiona walking into it from +z: she turns to it and leans on it ($1200), then pushes ($1201)
--32.5e  0 obstacle-at fdrop fswap fdrop  6e 180e tp-facing  5 frames-camera-still
+-32.5e  0 obstacle-at fdrop fswap fdrop  2e 180e tp-facing  5 frames-camera-still   \ (the free strip before its ring)
 key: W hold
 T{ [: anim $1200 = ;] 60 soon  [: anim $1201 = ;] 60 soon  [: her-push @ ;] hers -> -1 -1 0 }T
 testing ... it goes two squares (5) over its move, she after it; again; then it can't - she strains ($1203)

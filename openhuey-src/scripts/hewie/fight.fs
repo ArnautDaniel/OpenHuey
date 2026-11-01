@@ -406,9 +406,9 @@ defer close-by ( F: rest -- done? )   :noname fdrop false ; is close-by   \ (hew
     his-target2 @ 0< if  pick-target his-target2 !  then
     his-target2 @ dup with? if  his-target !  near-target-act close-on-act want  else  drop sniff-act 0 want  then ;
 
-\ ---- struck (Hewie_TakeBlow): `blow` by the stalker (his blows, the throw), by her (her shove
-\ or kick: twice its damage, and he is scolded - hit often, angry), or a door slammed on him.
-\ His yelp (loud for a shove), pushed back from whoever struck him (1.5 less 0.5 a frame; a
+\ ---- struck (Hewie_TakeBlow): `blow` by the stalker (his blows, the throw), by her (her kick
+\ or shove: twice its damage, and he is scolded - hit often, angry), or a door slammed on him.
+\ His yelp (loud for a light blow), pushed back from whoever struck him (1.5 less 0.5 a frame; a
 \ door 5 less 1), then at its event down (out of health) or on ----
 : yelped ( -- )   \ (Hewie_AfterYelp)
     his-hp @ 0= if   \ (down: counted for the dog's level at the end - not in a hard game)
@@ -433,7 +433,7 @@ defer close-by ( F: rest -- done? )   :noname fdrop false ; is close-by   \ (hew
     struck-mode his-mode !  0 his-cmd !  1.5e his-push f!  0.5e his-push-less f!
     from -2 = if  his-blow-pt heading-to pi f+ angle-wrap
     else from 0< 0= if  from his-target !  from body-at heading-to pi f+ angle-wrap  else  his-yaw  then then  his-push-yaw f!
-    yelp-anim play  kind shove-blow = if  shoved-yelp  else  yelp-sound  then  make-sound
+    yelp-anim play  kind light-blow = if  shoved-yelp  else  yelp-sound  then  make-sound
     yelp-act his-action !  ['] st-move-along behave ;
 : door-yelp ( F: yaw -- )   \ (back from the door's swing, along yaw)
     his-push-yaw f!

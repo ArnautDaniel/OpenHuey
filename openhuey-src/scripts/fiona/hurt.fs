@@ -16,9 +16,10 @@ defer knocked-off ( -- )   \ (struck on a ladder: fiona.ladder)
 defer drop-door ( -- )   ' noop is drop-door   \ (a door she held let go: fiona.doors)
 
 \ ---- how she stands for a stalker's attack (Pursuer_FionaState): out of reach while struck
-\ (her reactions, mode 4) or seized; the panic's stages 4 / 5; fleeing (mode $B); panicking
+\ (her reactions, mode 4), seized or stepping back; the panic's stages 4 / 5; mode $B; panicking
 \ (fear over 90, or the panic attack) ----
 : plight ( -- n )
+    her-out-of-reach @ if  unreachable-plight exit  then   \ (+0x2D: stepping back, at a door)
     her-mode @ thrown-mode =  her-sub @ grabbed-r = or  stalkers-blind state-flag? or  her-aside @ or if  unreachable-plight exit  then
     her-panic-stage @ panicking = if  panicking-plight exit  then
     her-panic-stage @ calming-down = if  calming-plight exit  then

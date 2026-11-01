@@ -107,7 +107,7 @@ state: stalker-state
   \ long he's hurt (+0x1790) and down (+0x1664), the damage he's taken since he last gave up
   \ (+0x16C4), reeling from a blow (his reactions run; his mode waits), struck while down, her
   \ blow (+0x1761 1: his counter at his flinch's key), his growl after a stumble (+0x16F5),
-  \ unshaken by a shove in this move (+0x16F7), the fall's lying pose and its stage, times down
+  \ unshaken by a light blow in this move (+0x16F7), the fall's lying pose and its stage, times down
   \ for good (progress +0xFBC)
   cell field cond  cell field hurt-t  cell field down-t  cell field hits
   cell field reeling  cell field twitch  cell field by-her  cell field growl-after  cell field unshaken

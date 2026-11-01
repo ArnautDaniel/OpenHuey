@@ -234,22 +234,22 @@ free ($F02). The game's over is the `caught` state flag (once; not with `capture
 
 The square button (E), while she's free (mode 0), not past the panic's stage 3 and not under
 `no-flee` (Progress_PlayerButtons; Fiona_StateBlock 8): standing, walking, resting, or just set
-off running (her recovery under way, or under $3D frames of running) - a shove; running, or
-turning to flee - a kick. The shove ($E00, its pace slower the longer she's been shaken -
-recovery past $1C3: (3150 - recovery) / 1800 x 1.5 - and the more frightened - fear past 40:
-(160 - fear) / 120) reaches 2 round her hand (bone 9) at its key - read a frame behind
-(Motion_EventFlags dt -1: her arm out; at dt 0 it fell a frame short) -: a `blow` 1, damage 1; with a
-wall between her and her hand (the walk from her triangle to it, over flags $20018: Actor_TriTo)
-it ends: blended into standing over 10 (Motion_PlayWith flags $101), and once that has faded
-in Hewie is told (`reaction` 10, unless she struck him) and she stands - the shove's own end
-tells him nothing. *By design* (the user's call, 2026-10-28 - not the original's): her shove
-animation has next to no root step, so a step back left her short of him; she lunges 12 ahead
-over its first 30 frames (x its pace), until a blow lands, and the stalker is struck whenever her
-hand reaches him or she touches him (1 round) - from the frame she sets off, not only at its key.
-Met before the key, the shove goes on from it (frame 18), so the rest of it leaves her no more
-open to him than the original's. Hewie is struck at the key alone. Reach, him still: the
-original's up to 16 apart, now 26. The kick ($E01: her cry $3D, a step of 1.0756 a frame while it fades in)
-meets whom she touches while its key is clear: a `blow` 2, damage 5, he may stumble (`how` 1:
+off running (her recovery under way, or under $3D frames of running) - a kick; running, or
+stepping back - a shove. *The names here are by what the animations show: the decomp calls the
+kick's states Fiona_StateShoveStart / StateStrike / StateShove and the shove's Fiona_StateKickStart
+/ StateKick; its "hand" comments on the kick are wrong too. In `$E00` her left foot (bone 9,
+`+0x8AC`, `HumanModel_Vt74`) swings to 9 ahead and 9 up, the other planted, with no root step at
+all.* The kick ($E00, its pace slower the longer she's been shaken - recovery past $1C3:
+(3150 - recovery) / 1800 x 1.5 - and the more frightened - fear past 40: (160 - fear) / 120)
+reaches 2 round that foot in its key window - read a frame behind (Motion_EventFlags dt -1) -: a
+`blow` 1, damage 1, more by her boots; with a wall between her and her foot (the walk from her
+triangle to it, over flags $20018: Actor_TriTo) it ends: blended into standing over 10
+(Motion_PlayWith flags $101), and once that has faded in Hewie is told (`reaction` 10, unless she
+struck him) and she stands - the kick's own end tells him nothing. Hewie, the stalker and the
+creatures are struck only in its key window; she doesn't move (the lunge and early contact hit of
+0.2.26 are gone: issue #101). The shove ($E01: her cry $3D; started by Motion_PlayOwnBlend, so held
+at its first frame with no root step while it fades in - she carries on 1.0756 a frame - then its
+root step) meets whom she touches while its key is clear: a `blow` 2, damage 5, he may stumble (`how` 1:
 rolled by him); at its end her fear up 10. Each reaches the stalker and Hewie once a blow;
 struck home (`blow-taken`) she's held still 5 frames ($90 kicked, $8F shoved) - counted down each
 frame whatever she is doing (Fiona_Panic's timers), let go at once if she is struck meanwhile
@@ -258,6 +258,22 @@ frame whatever she is doing (Fiona_Panic's timers), let go at once if she is str
 panic attack or out of breath (Fiona_IsIdle). Her gestures to Hewie are read during a shove only
 as it comes round (Fiona_ReadsPad: mode 8, her action 5, the motion's flag $20).
 
+
+**Costumes 6 and 7's weapons.** A part of each model is her weapon: part 25 of `O_FIB` (a thin
+weapon with a guard), part 35 of `O_FIC` (a revolver) - by `byte = $98 + 2 x part`, from the
+models' +0x2C / +0x30 (`Costume6Model_Vt2C`: +0xCA, `Costume7Model_Vt2C`: +0xDE). Hidden as they
+load, shown from her swing's start to its end or anything else taking her (`weapon-shown`); in the
+gallery only while $E00 plays (Gallery_ModelMotions). Costume 7's fires once a swing at its key (`fire`, `strike-mark`: StrikeMark,
+from bone $23's (-3.5, 0, 1) and (-1, 0, 1); then BoneSmoke). Riccardo's shots use the same mark.
+A faint grey band goes with it over the screen's bottom 64 of 448 lines, at the mark's depth and depth-tested, so the floor usually hides it (its colour $1B, not the original's $80: we blend in linear light).
+
+**Her step at a wall.** `move-within` is Actor_Move: `v-slide` from her triangle (`navmesh_slide`, NavMesh_Walk): across edges; at a wall or blocked floor the target is pulled back over that edge along its inward normal (1.1 x the overshoot) and the walk begins again, 4 times, then up to the wall. Nearly head on the pull-back carries her slightly backwards and Fiona_StateIdleMove's own check keeps her where she was. Bodies move the same way (`body_move`).
+
+**Out of reach (`her-out-of-reach`, +0x2D).** `plight` says unreachable: from R1 to the
+backstep's mark 2, and in a door's step (Fiona_StateDoorStepOut, each frame after her step) when
+she's past the door from where she came or on a floor flagged $20000. Cleared as she goes idle or
+arrives. The door's animation also lets her over the doorway's floor (`her-noclip`, +0x2B:
+Fiona_StateDoorWalk), off at its end or struck (Fiona_StartInDoor).
 ## F5: what the story knows of her and asks of her (the kit's: `scripts/story/kit.fs`)
 
 She tells, in `fiona-doing`, her action too (+0x1AD580: `her-doing`). Conditions 0x3F her action,
@@ -345,7 +361,7 @@ falling off it, the story's step while through blocked floor; `feet-off-acts`):
   mesh from her triangle to under each foot (Motion_OntoFloor: at a wall, its slope carried on);
   with motion flag $100 a foot not down counts at her height; on a slope motion (flag 4) the floor
   at two points along her step instead: 11 back and 1 ahead, 5 and 0.5 running, turning to flee,
-  kicking or out of breath (Fiona_AnimGroup 2, 9, 10, 3);
+  shoving or out of breath (Fiona_AnimGroup 2, 9, 10, 3);
 - **her feet** are put on the floor under them (on a slope motion their height over her eased by
   how much the slope faces her way: Model_SlopeKeep), and her legs - hip, knee, ankle (bones 2..4,
   6..8; feet 5, 9) - bent to reach them, two-bone, the knee to the side of the hip's Z (IK2); the

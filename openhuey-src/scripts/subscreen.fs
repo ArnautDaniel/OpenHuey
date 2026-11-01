@@ -116,10 +116,11 @@ USING: engine game-state actors messages keys facts flag-names items items.table
     endcase
     draw ;
 
-\ ---- the tab: told who asked once it is in or out ----
+\ ---- the tab: told who asked once it is in or out (the place may have gone meanwhile) ----
+: tell-asker ( -- )  tab-asker @ alive? if  tab-asker @ send tab-done  then ;
 : tab-frame ( -- )
-    tab @ 2 = if  tab-slide @ $3D < if  4 tab-slide +!  else  3 tab !  tab-asker @ send tab-done  then  then
-    tab @ 4 = if  tab-slide @ 4 >= if  -4 tab-slide +!  else  0 tab !  tab-asker @ send tab-done  then  then ;
+    tab @ 2 = if  tab-slide @ $3D < if  4 tab-slide +!  else  3 tab !  tell-asker  then  then
+    tab @ 4 = if  tab-slide @ 4 >= if  -4 tab-slide +!  else  0 tab !  tell-asker  then  then ;
 : tab-item ( id -- )   \ its picture, and the menu's art for the tab
     -1 shown-picture !  menu-art  item-picture dup if  picture-group load-bank  else  2drop  then ;
 PRIVATE>

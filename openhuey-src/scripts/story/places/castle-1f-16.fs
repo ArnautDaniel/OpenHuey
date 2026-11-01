@@ -64,7 +64,7 @@ own: painting-remarked     \ the painting's first remark made (in turn with the 
             c1f-16-flag2 fact-off  0 heard-about
         else
             c1f-16-flag2 fact!  switch-on-sound room-bank fiona sound-by
-            c1f-16-flag1 fact? if  running-sound running-at room-sound  else  first-on-sound $86 0e 0e 0e sound-there  then
+            c1f-16-flag1 fact? if  running-sound running-at room-sound  else  first-on-sound room-bank bank-sound  then
             $40 7 room-noise  1 heard-about
         then
         c1f-16-flag1 fact? 0= if  first-fright  else  fiona reach-back-anim play  then
