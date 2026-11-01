@@ -45,7 +45,7 @@ The doll (Thing03_StalkerCheck): Debilitas (kinds 2 6 7 $1B) in its room. Away f
 comes upon it once a visit - he hears it ($1F) and takes it unless he is after her. In her room,
 while he searches (modes 1..3), it makes its noise once and draws him (`drawn-to`: if he sees it
 and can get there it is his search's one stop - stalker/search.fs `go-for-doll`); within 10 of him
-it is taken. The magnesias' bursts: the plain one the shove's puffs; the refined one's BurstA and
+it is taken. The magnesias' bursts: the plain one the kick's puffs; the refined one's BurstA and
 the prima's BurstB (`mag-burst-new`: a flash, a ring on the floor, pieces thrown and puffs rising
 - three of each across the view for the prima).
 

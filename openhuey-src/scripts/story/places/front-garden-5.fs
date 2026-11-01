@@ -66,7 +66,7 @@ the-crate crate-group frees-floor  the-crate $10A noise-from  the-crate crate-so
     obj hewie sway-start  obj settles ;
 : snaps-at-b ( -- )  hanger-b -276e 160e snaps-at ;
 : snaps-at-a ( -- )  hanger-a -259.5e 190e snaps-at ;
-: shoved ( obj -- )  shove-hit-sound common-bank fiona sound-by  dup fiona sway-start  settles ;
+: shoved ( obj -- )  kick-hit-sound common-bank fiona sound-by  dup fiona sway-start  settles ;
 : shoved-a ( -- )  hanger-a shoved ;
 : shoved-b ( -- )  hanger-b shoved ;
 : shoves ( -- )   \ (her blow on one: it sways)

@@ -414,7 +414,7 @@ behaviour stalking
   on blow-from ( kind damage how x y z -- )   \ (from a point: Progress_Noise)
       script-held @ if  2drop 2drop 2drop exit  then
       cells>xyz strike-pt vec!  away? if  blow-away exit  then  -2 striker !  struck ;
-  on blow ( kind damage how -- )   \ (her shove or kick; a door she slammed: no answer)
+  on blow ( kind damage how -- )   \ (her kick or shove; a door she slammed: no answer)
       script-held @ if  2drop drop exit  then
       away? if  blow-away exit  then
       sender striker !  2 pick door-blow = {: door? :}  struck  door? 0= if  sender send blow-taken  then ;

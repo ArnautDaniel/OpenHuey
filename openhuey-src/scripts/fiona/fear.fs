@@ -151,24 +151,24 @@ create next-at /vec allot
 : events-last ( -- bits )  her-model @ 0 -1 1 motion-events ;   \ (a frame behind: Motion_EventFlags dt -1 - her shove's key, her arm out)
 : costume ( -- n )  $26 progress pr.vars + c@ ;
 create behind-pt /vec allot   \ (her radius behind her: a door slammed as she turns from it)
-: flee-turn ( -- )
-    ended? if  flee-reaction s" hewie" actor-named send reaction  to-idle exit  then   \ (Hewie told)
+: backstep ( -- )   \ (Fiona_StateFleeTurn, anim $403: she steps back along her root step, turning to the heading)
+    ended? if  backstep-reaction s" hewie" actor-named send reaction  to-idle exit  then   \ (Hewie told)
+    events-now 2 and if  own-mode her-mode !  0 her-dodging !  costume frog-outfit <> if  10e add-fear  then  then
     events-now $20 and if
         her-yaw f@ pi f+ angle-wrap self body-dims fdrop behind-pt her-at vec-ahead  behind-pt false slam-door drop
     then
-    events-now 2 and if  own-mode her-mode !  costume frog-outfit <> if  10e add-fear  then  then
     12e deg>rad turn-to-heading fdrop
     root-step her-heading f@ rotate-by move-by ;
-: flee-start ( -- )
+: backstep-start ( -- )   \ (Fiona_StateFleeStart: once what she was doing has faded in)
     root-move
     settled? 0= if  exit  then
-    her-yaw f@ her-heading f!                          \ (the stalker within 30: toward him - the turn spins her from him)
+    her-yaw f@ her-heading f!                          \ (the stalker within 30: facing him)
     stalker-in-room dup 0< 0= if
         dup body-at her-at vec-dist 30e f< if  her-at swap body-at vec-heading her-heading f!  else  drop  then
     else  drop  then
-    flee-turn-anim -1 play-table  ['] flee-turn her-act ! ;
-: flee-button? ( -- flag )  r1 button-pressed? ;   \ (Progress_PlayerButtons: R1)
-: try-flee ( -- )   \ (free, not under flag 0x14, recovered, not panicking)
-    her-mode @ own-mode <>  her-doing @ free-doing <> or  flee-button? 0= or if  exit  then
+    backstep-anim -1 play-table  ['] backstep her-act ! ;
+: backstep-button? ( -- flag )  r1 button-pressed? ;   \ (Progress_PlayerButtons: R1)
+: try-backstep ( -- )   \ (free again once past its mark, not under flag 0x14, recovered, not panicking; Fiona_StateBlock $B / $22)
+    backstep-button? 0=  free-to-act? 0= or if  exit  then
     no-flee state-flag?  her-recovery @ 360 < 0= or  her-panic-stage @ panicking < 0= or if  exit  then
-    react-mode her-mode !  flee-doing her-doing !  ['] flee-start her-act ! ;
+    -1 her-dodging !  react-mode her-mode !  backstep-doing her-doing !  ['] backstep-start her-act ! ;

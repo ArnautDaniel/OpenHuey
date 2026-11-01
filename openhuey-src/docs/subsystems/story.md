@@ -361,7 +361,7 @@ Places, each with its test in `tests/places/`:
   Medallion across the water, splashes, his bark at the hole and look across, the hole's remarks,
   the replay.
 - castle-1f-11, the drawbridge room (3): the clamp struck (the lever jolting; the third blow and
-  the bridge falls - a scene, the far door closed off, Debilitas shoving the rubble down, throwing
+  the bridge falls - a scene, the far door closed off, Debilitas kicking the rubble down, throwing
   her in his way), three vases (the Beef Jerky and the Magnesia), the Medallion Hewie fetches
   across the gap, the clamp's remarks, the map's pages, the replay.
 - castle-1f-12, the moon dials' room (4): two dials turned by the stick (clicking at a number, the
@@ -383,7 +383,7 @@ Places, each with its test in `tests/places/`:
   the Scrawled Memo; else the breeze, never again), the fireplace (the embers in its draught, the
   drum can struck, the fire and the doll in turn), a place to hide (the stalker searching - likelier
   each time he comes, or seeing her), in by the gate's way (Debilitas knocked down beyond it, no
-  going back), Debilitas shoving the rubble by the hall and far off, two vases (the Viola
+  going back), Debilitas kicking the rubble by the hall and far off, two vases (the Viola
   Medallion, the Onion), the Rubrum Medallion Hewie sniffs out, the flowers and the fence in turn,
   the pond's splashes, Hewie's barks and wary stand and his look up, the machine's hum, the moths,
   the specks, the steady sounds, the walls' shade, the map's pages, the replay.
@@ -393,7 +393,7 @@ Places, each with its test in `tests/places/`:
   knocked out under it, she runs out); her thought pushing it, the books, the harp, the creepy thing
   in turn, the Camomile, Hewie wary by the table and his looks, the walls' shade, the replays.
 - castle-1f-13, the great hall (8): brought in by the forced way - the balcony collapsing under her
-  (a scene: she comes to below, Debilitas stalking along the balcony above and shoving its rubble
+  (a scene: she comes to below, Debilitas stalking along the balcony above and kicking its rubble
   down, the crows' file), or seized and carried off (a scene, out by the way loaded ahead); a place
   to crouch hidden behind (the stalker searching, likelier each time), Debilitas back from
   castle-b1-7, the fallen balcony and the false doors in turn, the Chicken Jerky, the Antimony

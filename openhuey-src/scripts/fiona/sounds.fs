@@ -3,14 +3,14 @@
 \ (muffled under water: fiona/voice.fs).
 IN: fiona.sounds
 
-$0F constant flee-turn-sound       \ turning to flee
+$0F constant backstep-sound       \ turning to flee
 $1C constant muffled-sound         \ a cry under water (bank 6)
 $20 constant cowgirl-blow-sound    \ the special costumes' blows
 $21 constant illegal-blow-sound
 $22 constant illegal-hit-sound     \ ... landed
 $38 constant help-cry             \ her cry to Hewie (calling him; in the run, dragged off)
-$3C constant effort-sound          \ a throw, a shove
-$3D constant kick-sound
+$3C constant effort-sound          \ a throw, a kick
+$3D constant shove-sound
 $3E constant knocked-sound         \ struck
 $3F constant struck-hard-sound     \ struck hard, losing her hold
 $40 constant fall-sound            \ a fall, a slip
@@ -25,6 +25,6 @@ $7E constant slide-sound           \ sliding down after a panic fall
 $7F constant bump-sound            \ running blindly into a wall
 $80 constant falling-cry
 $81 constant long-fall-cry         \ off a ladder from high up
-$8F constant shove-hit-sound       \ her shove landed
-$90 constant kick-hit-sound        \ her kick landed
+$8F constant kick-hit-sound        \ her kick landed
+$90 constant shove-hit-sound       \ her shove landed
 $91 constant slam-sound            \ a door slammed shut

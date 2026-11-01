@@ -69,7 +69,7 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
 : grunts ( -- )   \ (her struggle this frame: new shakes counted, a grunt when the cool-down is out)
     cool-down @ if  -1 cool-down +!  then
     shakes-now @ last-shakes @ <> if
-        cool-down @ 0= if  2 random if  kick-sound 45  else  push-sound 60  then  cool-down !  common-bank fiona sound-by  then
+        cool-down @ 0= if  2 random if  shove-sound 45  else  push-sound 60  then  cool-down !  common-bank fiona sound-by  then
         shakes-now @ last-shakes !
     then
     shakes-now @ 100 >= if  -1 pushed !  then ;

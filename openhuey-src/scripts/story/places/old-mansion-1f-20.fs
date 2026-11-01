@@ -32,7 +32,7 @@ $900C $900D lash-sound hop-sound  12e 0e 0e -90e  hopper: the-figure
     {: a :}  0 a hp.still !  1 a hp.hops +!
     a hp.hops @ 3 = if  33 chance? if  5 a hp.hops !  then  then
     a hp.hops @ 4 = if  50 chance? if  5 a hp.hops !  then  then
-    hop-sound hopper-sound  shove-hit-sound common-bank fiona sound-by
+    hop-sound hopper-sound  kick-hit-sound common-bank fiona sound-by
     hopper-slot a hp.back @ 0 3 figure-play  hopper-slot figure-wait
     a hp.hops @ 5 = if  lashes-out  then
     hopper-slot a hp.hop @ 0 3 figure-play  0 a hp.still ! ;

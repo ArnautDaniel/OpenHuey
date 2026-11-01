@@ -25,7 +25,7 @@ only points there.
 | Obstacles | the things pushed about in the played room, their squares and the floor under them | `obstacles.fs` | `room_map.c` (`Obstacle_*`) | [obstacles](subsystems/obstacles.md) |
 | Things | what Fiona throws, drops or sets down, and what they do | `things.fs` | `placed.c` | [things](subsystems/things.md) |
 | Camera | the director: whom it follows, each character's setup, cuts and eases (in C), the story's shot | `camera.fs` | `camera.c`, `camdirector.c` | [camera](subsystems/camera.md) |
-| Fiona | her moves and actions (doors, ladders, items, pushing, shoving, kicking), being struck and seized, her fear | `fiona.fs`, `fiona/` | `fiona.c` | [fiona](subsystems/fiona.md) |
+| Fiona | her moves and actions (doors, ladders, items, pushing, kicking, shoving), being struck and seized, her fear | `fiona.fs`, `fiona/` | `fiona.c` | [fiona](subsystems/fiona.md) |
 | Panic | the panic meter: level, stage, her breath and scream | `panic.fs` | `Panic_*` | [panic](subsystems/panic.md) |
 | Hewie | his trust, her commands, his moods, his own mind | `hewie.fs`, `hewie/` | `hewie.c` | [hewie](subsystems/hewie.md) |
 | Stalkers | Debilitas, Daniella, Riccardo, Lorenzo: senses, search, chase, attacks, being struck | `stalker.fs`, `stalker/` | `pursuer.c`, `debilitas*.c`, `daniella.c`, `riccardo.c`, `lorenzo.c` | [stalker](subsystems/stalker.md) |

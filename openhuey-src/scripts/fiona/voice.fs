@@ -20,18 +20,18 @@ create head-spot /vec allot
 : on-key ( -- )   \ (event 1)
     anim@ case
         throw-anim of  effort-sound 0 her-sound  endof   aimed-throw-anim of  effort-sound 0 her-sound  endof   \ (letting go of a thing)
-        shove-anim of   \ (her shove: a grunt but in the special costumes; heard)
+        kick-anim of   \ (her kick: a grunt but in the special costumes; heard)
             costume dup illegal-outfit <> swap cowgirl-outfit <> and if  effort-sound 0 her-sound  then  $1F noise-here  endof
     endcase ;
 : on-mark ( -- )   \ (event $10)
     anim@ case
-        flee-turn-anim of  flee-turn-sound 0 her-sound  endof
+        backstep-anim of  backstep-sound 0 her-sound  endof
         pull-free-anim of  pull-free-cry voice  endof   dragged-off-anim of  pull-free-cry voice  endof   \ (pulling free, dragged, breaking away, carried)
         shake-free-anim of  pull-free-cry voice  endof   led-walking-anim of  pull-free-cry voice  endof
         lying-anim of  slide-sound 0 her-sound  endof                       \ (sliding down after a panic fall)
         thrown-back-anim of  falling-cry voice  endof   thrown-forward-anim of  falling-cry voice  endof   fall-anim of  falling-cry voice  endof
         rattle-behind-anim of  rattle-sound 0 her-sound  endof   rattle-front-anim of  rattle-sound 0 her-sound  endof
-        shove-anim of  costume case  illegal-outfit of  illegal-blow-sound 0 her-sound  endof  cowgirl-outfit of  cowgirl-blow-sound 0 her-sound  endof  endcase  endof
+        kick-anim of  costume case  illegal-outfit of  illegal-blow-sound 0 her-sound  endof  cowgirl-outfit of  cowgirl-blow-sound 0 her-sound  endof  endcase  endof
     endcase ;
 : motion-sounds ( -- )
     her-model @ 0< if  exit  then

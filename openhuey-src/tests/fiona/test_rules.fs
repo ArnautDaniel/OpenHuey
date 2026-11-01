@@ -59,12 +59,42 @@ T{ [: thrown-r her-sub !  thrown-floor 1 and  door-thrown-r her-sub !  thrown-fl
 
 testing down after a hard fall: her shakes start over (Fiona_StateAfterThrow's floored)
 T{ [: 0 her-shake-rest !  1e her-shake-a f!  5 her-attack-t !  lie-down  her-shake-rest @  her-shake-a f@ f0=  her-attack-t @  her-mode @ ;] her@ -> -1 -1 0 $A }T
+testing R1 and the square (Progress_PlayerButtons, Fiona_IsIdle, Fiona_StateBlock): not out of breath, in a panic attack, at a push or at 100; free again in her step back past its mark
+T{ [: own-mode her-mode !  0 her-sub !  free-doing her-doing !  0e her-fear f!  free-to-act? ;] her@ -> -1 }T
+T{ [: backstep-doing her-doing !  free-to-act? ;] her@ -> -1 }T
+T{ [: breathless-doing her-doing !  free-to-act? ;] her@ -> 0 }T
+T{ [: attack-doing her-doing !  free-to-act? ;] her@ -> 0 }T
+T{ [: free-doing her-doing !  pushing-sub her-sub !  free-to-act? ;] her@ -> 0 }T
+T{ [: 0 her-sub !  100e her-fear f!  free-to-act? ;] her@ -> 0 }T
+[: 0e her-fear f! ;] her@
+testing stepping back: out of the stalkers' reach till its mark (+0x2D), then not
+T{ [: -1 her-dodging !  react-mode her-mode !  plight ;] her@ -> unreachable-plight }T
+T{ [: 0 her-dodging !  plight ;] her@ -> fleeing-plight }T
+T{ [: own-mode her-mode !  -1 her-dodging !  plight  0 her-dodging ! ;] her@ -> free-plight }T
+free!
+testing the shove starts by Motion_PlayOwnBlend: at its first frame, no root step, while it fades in; then its own
+[: shove-doing her-doing !  defend-mode her-mode !  $1B her-sub !  ['] shove-start her-act ! ;] her@  25 run-frames
+T{ [: anim@ shove-anim =  her act.fade sf@ f0> or ;] her@ -> -1 }T
+free!  [: shove-doing her-doing !  defend-mode her-mode !  $1B her-sub !  ['] shove-start her-act ! ;] her@
+: shove-on? ( -- flag )  [: anim@ shove-anim = ;] her@ ;
+: till-shove ( -- )  60 0 do  shove-on? if  leave  then  game-tick  loop ;
+till-shove
+T{ [: her act.frame sf@ f0= ;] her@  3 run-frames  [: her act.frame sf@ f0= ;] her@ -> -1 -1 }T
+free!
+testing the kick: her feet where they are - no step of hers, all through it
+fvariable kx  fvariable kz
+: spot! ( -- )  s" fiona" actor-named body-pos kz f! fdrop kx f! ;
+: stayed? ( -- flag )  s" fiona" actor-named body-pos kz f@ f- fabs 0.001e f<  fdrop kx f@ f- fabs 0.001e f< and ;
+spot!  square debug:press  45 run-frames
+T{ stayed? -> -1 }T
+free!
+
 full-suite   \ (on: waits, scenes, walks - the full run's)
 : up? ( n -- flag )  0 ?do  game-tick  mode 0= if  true unloop exit  then  loop  false ;
 T{ 600 up? -> -1 }T
 
-testing a shove into a wall (Fiona_StateShove): blended into standing once it has faded in, then she stands
-[: shove-doing her-doing !  defend-mode her-mode !  $1A her-sub !  shove-anim -1 play-table  ['] shove-end her-act ! ;] her@
+testing a kick into a wall (Fiona_StateShove): blended into standing once it has faded in, then she stands
+[: kick-doing her-doing !  defend-mode her-mode !  $1A her-sub !  kick-anim -1 play-table  ['] kick-end her-act ! ;] her@
 : anim? ( a n -- flag )  0 ?do  game-tick  dup [: anim@ ;] her@ = if  drop true unloop exit  then  loop  drop false ;
 T{ stand-anim 60 anim?  60 up? -> -1 -1 }T
 

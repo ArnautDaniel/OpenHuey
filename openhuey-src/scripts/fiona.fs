@@ -109,8 +109,8 @@ variable stalker-apart   \ (the stalker out of contact, as he tells it - his +0x
 \ - humanlegs.c): each frame she is on her feet (+0x1AD5BC) but in the states that clear it -
 \ thrown, down and getting up, seized, led and dragged, on a ladder and falling off it, the
 \ story's step while through blocked floor (Fiona_StateStep with +0x2B). On them, her body is set
-\ by her feet: 11 back and 1 ahead along her step on a slope, 5 and 0.5 while running, turning to
-\ flee, kicking or out of breath (Fiona_AnimGroup 2, 9, 10, 3); then her feet are planted. Off
+\ by her feet: 11 back and 1 ahead along her step on a slope, 5 and 0.5 while running, stepping
+\ back, shoving or out of breath (Fiona_AnimGroup 2, 9, 10, 3); then her feet are planted. Off
 \ them, her model at her place, her feet as they are ----
 create feet-off-acts   \ (the states that clear +0x1AD5BC)
     ' fiona.fear:getting-up ,   ' fiona.fear:fallen ,   ' fiona.fear:panic-fall ,          \ SpecialEntry, Fallen, PanicFall
@@ -127,7 +127,7 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
 : feet-set ( -- )   \ (before her state runs)
     her-act @ feet-off-act?  her-act @ ['] root-move = her-noclip @ and  or 0= her-feet ! ;
 : feet-way ( F: -- back front )   \ (by the group of her animation)
-    group dup running-group = over turning-to-flee-group = or over kicking-group = or swap breathless-group = or
+    group dup running-group = over backstep-group = or over shoving-group = or swap breathless-group = or
     if  5e 0.5e  else  11e -1e  then ;
 : fit-legs ( -- )
     her-model @ 0< if  exit  then
@@ -163,7 +163,7 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
     feel-the-panic
     read-controls
     her-mode @ own-mode = if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
-    hands-off? if  -1 her-cmd !  else  read-command  try-flee  try-defend  try-doors  try-ladders  try-let-go  then
+    hands-off? if  -1 her-cmd !  else  read-command  try-backstep  try-defend  try-doors  try-ladders  try-let-go  then
     touching 1 =  feet-set  her-act @ execute  keep-apart
     looks  tell-point
     command-sounds  motion-sounds
@@ -317,7 +317,7 @@ behaviour free
   on unhand ( -- )  0 her-led ! ;
   on flinch ( -- )  flinch ;   \ (a room's command)
   on count-shakes ( on? -- )  if  0 her-shake-count !  -1 her-shake-rest !  else  -1 her-shake-count !  then ;
-  on blow-taken ( -- )  struck-home ;   \ (her shove or kick struck home)
+  on blow-taken ( -- )  struck-home ;   \ (her kick or shove struck home)
   on danger ( level -- )  her-danger ! ;
   on panic ( stage level -- )  cell>f her-panic-level f!  her-panic-stage ! ;
   on door-held ( room exit -- )  2drop  got-hold ;

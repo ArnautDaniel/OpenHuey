@@ -21,7 +21,7 @@ $207 constant out-of-breath-anim   \ bent over, out of breath
 $400 constant turn-left-anim       \ turning on the spot
 $401 constant turn-right-anim
 $402 constant turn-round-anim
-$403 constant flee-turn-anim       \ turning to flee (Fiona_StateFleeTurn)
+$403 constant backstep-anim        \ her step back, R1 (Fiona_StateFleeTurn)
 \ ---- doors ----
 $600 constant through-door-anim            \ through a door: $600 + its kind (FIN_D000.MTN)
 $608 constant rattle-front-anim    \ trying a locked door, from in front
@@ -63,8 +63,8 @@ $C0A constant tend-start-anim  $C0B constant tend-lead-in-anim  $C0C constant te
 $C0D constant scold-near-anim
 $C0E constant look-around-anim  $C0F constant look-around-end-anim   \ (attack now)
 \ ---- defending ----
-$E00 constant shove-anim           \ her hand
-$E01 constant kick-anim            \ her body
+$E00 constant kick-anim           \ her left foot swings out (no root step)
+$E01 constant shove-anim          \ running: her arms and body
 $F02 constant pull-free-anim       \ pulling free as he lets go
 \ ---- struck ----
 $1001 constant stumble-anim

@@ -9,7 +9,7 @@ USING: engine game-state common facts messages stalker.state ;
 begin-structure /row  field: r.act  field: r.arg  ffield: r.upto  end-structure
 \ a move: animation, bone, second bone (-1 none), reach, kind (her request: a blow, a hard one,
 \ a seize, a hold), damage, threat, stumble chance, turns with it, cry (-1 none), unshaken (a
-\ shove doesn't make him flinch during it)
+\ light blow doesn't make him flinch during it)
 begin-structure /move
     field: m.anim  field: m.bone  field: m.bone2  ffield: m.reach  field: m.kind  field: m.damage
     ffield: m.threat  ffield: m.stumble  field: m.turns  field: m.cry  field: m.unshaken

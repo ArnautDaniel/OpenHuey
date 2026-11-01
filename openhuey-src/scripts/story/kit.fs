@@ -1397,7 +1397,7 @@ end-structure
     a hp.hops @ 3 = if  33 chance? if  5 a hp.hops !  then  then
     a hp.hops @ 4 = if  50 chance? if  5 a hp.hops !  then  then
     a hp.hops @ 5 = if  a lashes  else  a hp.sound @ hopper-sound  then
-    fiona.sounds:shove-hit-sound common-bank fiona sound-by
+    fiona.sounds:kick-hit-sound common-bank fiona sound-by
     hopper-slot a hp.back @ 0 3 figure-play  hopper-slot figure-wait
     hopper-slot a hp.hop @ 0 3 figure-play  0 a hp.still !
     a hp.hops @ 5 = if  hopper-slot figure-wait  0 a hp.hops !  then ;

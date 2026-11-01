@@ -261,7 +261,7 @@ create ex-in /vec allot   create ex-out /vec allot   create ex-best /vec allot
     endcase ;
 
 \ ---- walking her (Fiona_MoveInput in the run): along her way to its point 1.5 on - walking off
-\ on her own, else running; the stalker in her way, at him and a shove (her request 8) ----
+\ on her own, else running; the stalker in her way, at him and a kick (her request 8) ----
 : dir-to ( v -- )   \ her stick's way toward v, and her heading
     {: v :}  v v.x sf@ her-at v.x sf@ f-  v v.z sf@ her-at v.z sf@ f-  {: F: dx F: dz :}
     dx dz vlen f0= if  exit  then

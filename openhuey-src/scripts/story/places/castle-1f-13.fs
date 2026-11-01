@@ -1,6 +1,6 @@
 \ story/places/castle-1f-13.fs - the great hall in Belli Castle's 1F ($8): brought in by the forced
 \ way - the balcony collapsing under her (a scene: she comes to below, Debilitas stalking along the
-\ balcony above and shoving its rubble down on her; the crows' file), or seized and carried off (a
+\ balcony above and kicking its rubble down on her; the crows' file), or seized and carried off (a
 \ scene, out by the way loaded ahead); a place to crouch hidden behind (the stalker searching -
 \ finding her more likely each time he comes); the fallen balcony and the false doors in turn, the
 \ Chicken Jerky, the Antimony Powder Hewie sniffs out, the hanging thing she sets swinging, the

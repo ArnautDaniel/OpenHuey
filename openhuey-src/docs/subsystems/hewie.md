@@ -191,7 +191,7 @@ a joint action - nothing; its damage (hers twice); angry, whoever struck him cal
 (`his-call`: her 0, another 2 - answered at his next bite or leap); by another than her a quarter
 of the time his feeling for the stalker down and her hits forgiven; by her scolded
 (praise-scold), hit lately counted (to 6; one less every 300 frames) and angry by chance
-(`angry-chance`: no call then); his yelp ($1000, $65 a shove, else $66), pushed back from whoever
+(`angry-chance`: no call then); his yelp ($1000, $65 a light blow, else $66), pushed back from whoever
 struck him 1.5 less 0.5 a frame (0x69, StateMoveAlong). A door only while it swings: she not in
 front of it, back along its turn through blocked floor (0x6B); she in front and he on its sides
 where he may pass, out by it (0x6C); else, off its gap, a quarter turn aside (0x6B) - 5 less 1;

@@ -31,14 +31,14 @@ T{ [: 0 his-trust !  dares? ;] his@ -> 0 }T
 testing struck while angry: whoever struck him calls him (her 0, another 2); her newly making him angry - no call
 : struck-by ( from -- call )
     [: {: from :}  angry-mood 450 set-mood  no-call his-call !  0 cond!  free-mode his-mode !  0 his-sub !  100 hp!
-       shove-blow 1 0 from take-blow drop  his-call @ ;] his@ ;
+       light-blow 1 0 from take-blow drop  his-call @ ;] his@ ;
 T{ game:fiona struck-by  game:hewie struck-by -> 0 2 }T   \ (another: anyone with a body but her)
 T{ [: normal-mood -1 set-mood  0 his-hits !  0 0 set-action ;] his! -> }T
 testing struck by another (not her): her hits held against him forgiven
-T{ [: 3 his-hits !  free-mode his-mode !  0 his-sub !  shove-blow 1 0 game:hewie take-blow drop  his-hits @ ;] his@ -> 0 }T
+T{ [: 3 his-hits !  free-mode his-mode !  0 his-sub !  light-blow 1 0 game:hewie take-blow drop  his-hits @ ;] his@ -> 0 }T
 testing down: a blow has him go limp ($74), the stalker's grab (6) does not
 T{ [: 0 0 set-action  0 hp!  down-cond cond!  ignored-blow 5 0 game:debilitas take-blow  his-action @ go-limp-act = ;] his@ -> 0 0 }T
-T{ [: shove-blow 1 0 game:debilitas take-blow  his-action @ ;] his@ -> -1 $74 }T
+T{ [: light-blow 1 0 game:debilitas take-blow  his-action @ ;] his@ -> -1 $74 }T
 [: 100 hp!  well-cond cond!  0 0 set-action ;] his!  10 run-frames
 
 testing near her for a command (Hewie_FionaNearCommand): by his way over the floor - never shorter than straight

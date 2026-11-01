@@ -3,7 +3,7 @@
 IN: stalker.sounds
 
 $10 constant swish-sound          \ a blow swung
-$1C constant grunt-sound          \ a shove he shrugs off
+$1C constant grunt-sound          \ a light blow he shrugs off
 $1B constant down-cry             \ knocked out of health by a door off screen
 $1D constant hurt-cry             \ struck: from a door; bitten
 $1F constant stumble-growl        \ over a stumble

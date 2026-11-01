@@ -1,7 +1,7 @@
 \ The stalkers, P1: Debilitas in the house (docs/subsystems/stalker.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_stalker.fs
 IN: test-stalker
-USING: stalker-names tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.head stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam story.base stalker.names stalker.pursue ;
+USING: stalker-names tester engine game-state actors messages room-names game debug paths doors stalker stalker.state stalker.head stalker.senses stalker.moving stalker.search stalker.travel stalker.attack stalker.chase stalker.grab fiona.state fiona.anims fiona.model fiona.seized keys facts flag-names gameover stalker.struck stalker.doorway fiona.defend fiona.slam story.base stalker.names stalker.pursue ;
 fvariable dx  fvariable dy  fvariable dz  fvariable dyaw
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
@@ -59,7 +59,7 @@ T{ [: tintstalker-kind head-bones!  head-bone @ neck-bone @  kind37-kind head-bo
 : heard-any ( -- flag )   \ (a noise each frame; heard on the frame after its end)
     0 10 0 do  $14 room-id s" fiona" actor-named body-tri -1 0 game:acoustics send noise  game-tick  [: did-hear @ ;] his or  loop ;
 T{ heard-any -> -1 }T
-testing her shove's hold on her (struck home: 5 frames still) runs out whatever she is doing (Fiona_Panic's
+testing her kick's hold on her (struck home: 5 frames still) runs out whatever she is doing (Fiona_Panic's
 testing ... timers), and his blow on her lets it go at once (Fiona_React) - not left frozen in his reaction
 : frozen? ( -- flag )  [: her act.mflags l@ fiona.slam:motion-frozen and 0<> ;] game:fiona enter execute leave-actor ;
 : recoil@ ( -- n )  game:fiona enter  her-recoil @  leave-actor ;
@@ -87,7 +87,7 @@ T{ [: own-a @  -1 own-a !  stalker.travel:off-home  my-mode @  swap own-a ! ;] h
 T{ [: down-cond cond !  after-her mode! ;] his  2 run-frames  [: my-mode @  well-cond cond ! ;] his -> 3 }T
 testing struck while Hewie is on him (Pursuer_Hit's move part 9): the damage and a cry, no more - not felled
 testing ... out of health till Hewie lets go
-[: near-flank-attack bitten !  -1 reeling !  1 hp !  0 hits ! ;] his  kick-blow 5 0 game:debilitas send blow  2 run-frames
+[: near-flank-attack bitten !  -1 reeling !  1 hp !  0 hits ! ;] his  heavy-blow 5 0 game:debilitas send blow  2 run-frames
 T{ [: hp @  hits @  cond @ down-cond =  bitten @ 0<> ;] his -> 0 5 0 -1 }T
 [: 0 bitten !  0 reeling !  70 hp !  0 hits ! ;] his  2 run-frames
 testing what he picked from his tables runs to its end by Pursuer_BehaviourAttack's rules: a combo over - his
@@ -341,7 +341,7 @@ s" fiona" actor-named body-tri debug:debilitas-tri
 T{ 10 reacted  [: her-unseen @ ;] hers -> $20 0 }T
 -1 wear-89  false blind  60 run-frames  debug:debilitas-out  10 run-frames  [: free! 0 her-mode ! ;] hers
 
-testing struck (P3a): her shove makes him flinch, her kick takes 5; out of health he's down a while, then up
+testing struck (P3a): her kick makes him flinch, her shove takes 5; out of health he's down a while, then up
 : close-up ( -- )   \ (face to face 7 apart, his attacks held)
     true blind  140.64e her-y -217.33e 0e tp-facing  2 run-frames
     s" fiona" actor-named body-tri  -500e her-y -500e tp  2 run-frames  debug:debilitas-tri  1 run-frames
@@ -351,17 +351,17 @@ testing struck (P3a): her shove makes him flinch, her kick takes 5; out of healt
     [: dx f@ dy f@ dz f@ body-place-at  340e deg>rad body-turn ;] his  1 run-frames ;   \ (him back on his spot:
     \ whatever he was about before, he stands where the test says - clear of the doorway nearby)
 : flinching? ( -- flag )  [: anim @ $1000 $1006 within ;] his ;
-close-up  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press   \ (not mid-move: in an unshaken move a shove only gets a grunt)
+close-up  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press   \ (not mid-move: in an unshaken move a light blow only gets a grunt)
 T{ ' flinching? 60 soon  [: hp @ hits @ ;] his -> -1 69 1 }T
-: kick ( -- )  [: 6 her-doing !  8 her-mode !  $1B her-sub !  ['] kick-start her-act ! ;] hers ;
+: shove ( -- )  [: 6 her-doing !  8 her-mode !  $1B her-sub !  ['] shove-start her-act ! ;] hers ;
 : settled ( -- )  [: [: reeling @ 0= ;] his  [: her-mode @ 0= ;] hers and ;] 300 soon drop ;
-settled  close-up  [: 70 hp !  0 hits ! ;] his  kick
+settled  close-up  [: 70 hp !  0 hits ! ;] his  shove
 T{ [: [: hits @ 0> ;] his ;] 90 soon  [: hp @ hits @ ;] his -> -1 65 5 }T
 settled  close-up  [: 1 hp ! ;] his  square debug:press
 T{ [: [: cond @ 2 = ;] his ;] 60 soon  [: hp @  down-t @ 0> ;] his -> -1 0 -1 }T
 [: 1 down-t ! ;] his
 T{ [: [: cond @ 0=  reeling @ 0= and ;] his ;] 400 soon  [: hp @ hp-max @ = ;] his -> -1 -1 }T
-testing her shove carries her (OpenHuey's): from 20 apart, him held still, she lunges on to him and it lands
+testing her kick as the original's: 20 apart, him held still - she stays where she is, it misses
 : face-apart ( F: d -- )   \ (face to face d apart, as close-up)
     {: F: d :}  true blind  140.64e her-y -217.33e 0e tp-facing  2 run-frames
     s" fiona" actor-named body-tri  -500e her-y -500e tp  2 run-frames  debug:debilitas-tri  1 run-frames
@@ -369,19 +369,33 @@ testing her shove carries her (OpenHuey's): from 20 apart, him held still, she l
     game:debilitas body-pos dz f! dy f! dx f!
     340e deg>rad fsin d f* dx f@ f+  dy f@  340e deg>rad fcos d f* dz f@ f+  160e tp-facing  3 run-frames ;
 : held-still ( n -- )  0 do  [: dx f@ dy f@ dz f@ body-place-at ;] his  1 run-frames  loop ;
-settled  20e face-apart  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press  45 held-still
-T{ [: hits @ ;] his -> 1 }T
-testing ... with no one before her she stays where she is: 40 off, or him behind her
 fvariable sx  fvariable sz
 : her-spot! ( -- )  s" fiona" actor-named body-pos sz f! fdrop sx f! ;
 : stayed? ( -- flag )  s" fiona" actor-named body-pos sz f@ f- fabs 0.01e f<  fdrop  sx f@ f- fabs 0.01e f< and ;
-settled  40e face-apart  her-spot!  square debug:press  30 held-still
-T{ stayed? -> -1 }T
-settled  10e face-apart  [: 340e deg>rad her-heading f!  340e deg>rad her-yaw f! ;] hers  1 run-frames  her-spot!  square debug:press  30 held-still
-T{ stayed? -> -1 }T
-testing ... met as she sets off: struck at once, her shove on from its key (frame 18)
-settled  7e face-apart  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press  2 held-still
-T{ [: hits @ ;] his  [: her act.frame sf@ 18e f< 0= ;] hers -> 1 -1 }T
+settled  20e face-apart  her-spot!  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press  45 held-still
+T{ stayed?  [: hits @ ;] his -> -1 0 }T
+testing ... close to, not before its key: 7 apart, untouched at frame 10, struck by its end
+settled  7e face-apart  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press
+: kick-frame ( -- n )  [: anim@ kick-anim = if  her act.frame sf@ f>s  else  -1  then ;] hers ;
+: to-frame ( f -- )  80 0 do  kick-frame over >= if  leave  then  1 held-still  loop  drop ;
+10 to-frame
+T{ [: hits @ ;] his -> 0 }T
+45 held-still
+T{ [: hits @ ;] his -> 1 }T
+testing stepping back: he may not take her till its mark, then he may
+settled  false blind  [: 0 her-recovery ! ;] hers  r1 debug:press  2 run-frames
+: dodging? ( -- flag )  [: her-dodging @ 0<> ;] hers ;
+T{ dodging?  [: may-take? ;] his -> -1 0 }T
+: past-mark ( -- )  60 0 do  dodging? 0= if  leave  then  1 run-frames  loop ;
+past-mark  2 run-frames
+T{ dodging?  [: may-take? ;] his -> 0 -1 }T
+testing ... and R1 again from there starts another (free once past its mark)
+r1 debug:press  2 run-frames
+T{ dodging? -> -1 }T
+testing ... with her recovery still 360 or more, R1 does nothing (Fiona_StateBlock $B / $22)
+settled  [: 400 her-recovery ! ;] hers  r1 debug:press  2 run-frames
+T{ dodging? -> 0 }T
+true blind  settled
 testing ... 20 damage and he gives up: his cry, held off (mode 4), out of the room
 settled  close-up  [: 70 hp !  25 hits ! ;] his  square debug:press
 T{ [: [: my-mode @ 4 = ;] his ;] 300 soon  [: hits @ ;] his -> -1 0 }T
@@ -389,7 +403,7 @@ T{ [: [: away? ;] his ;] 900 soon -> -1 }T
 testing ... (P3b) by its door: lined up, his animation ($602), the door swung open with it - left open
 T{ room-id 0 room-exit-door door-open?  room-id 0 room-exit-door door-held? -> -1 0 }T
 false blind  debug:debilitas-out  2 run-frames
-testing ... seeing her - striking back at her shove - he gives up all the same, at the end of that
+testing ... seeing her - striking back at her kick - he gives up all the same, at the end of that
 2 common:seed !   \ (his giving up is by chance: the rolls from here on fixed, whatever came before - Hewie's own)
 testing ... step (Pursuer_FrameUpdate); out by the first door of his way home (Debilitas_PickDestination)
 settled  close-up  false blind  [: 70 hp !  25 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press
@@ -400,7 +414,7 @@ debug:debilitas-out  2 run-frames
 testing ... in his own room (castle-2f-2): held off there, on in the room - not left flinching
 : struck-to-give-up ( room tri -- )   \ (in that room with her, on that triangle, 25 damage had: one more blow)
     swap room!  20 run-frames  debug:debilitas-tri  5 run-frames
-    [: 70 hp !  25 hits !  0 reeling !  0 unshaken ! ;] his  kick-blow 5 0 game:debilitas send blow ;
+    [: 70 hp !  25 hits !  0 reeling !  0 unshaken ! ;] his  heavy-blow 5 0 game:debilitas send blow ;
 : tri-she-is-on ( -- tri )  s" fiona" actor-named body-tri ;
 true blind  castle-2f-2 room!  20 run-frames  castle-2f-2 tri-she-is-on struck-to-give-up  90 run-frames
 T{ [: my-mode @  stalker.state:step @ ['] flinching =  making-for @ ;] his -> 4 0 -1 }T
