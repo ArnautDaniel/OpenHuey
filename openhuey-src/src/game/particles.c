@@ -1628,6 +1628,31 @@ static void strike_mark_write(System *s) {
     quad(&k[1], 0x80464680u, q);
 }
 
+/* with `at` in view, a faint grey band over the bottom 64 of the screen's 448 lines at its depth (the
+ * original's eight 64-wide sprites, layer $1E, alpha 8) */
+static void strike_band_write(System *s) {
+    const Camera *c = &gEngine.camera;
+    Vec3 fwd = vec3(sinf(c->yaw) * cosf(c->pitch), sinf(c->pitch) * c->up, -cosf(c->yaw) * cosf(c->pitch));
+    Vec3 right = vec3(cosf(c->yaw), 0.0f, sinf(c->yaw)), up = vec3_norm(vec3_cross(right, fwd));
+    Vec3 d = vec3_sub(s->at, c->pos), mid, q[4];
+    float depth = vec3_dot(d, fwd), h = depth * tanf(c->fov * 0.5f), w = h * 2.0f, y;
+    int i;
+
+    if (s->batch3 < 0) {
+        return;
+    }
+    if (depth <= 0.0f || fabsf(vec3_dot(d, up)) > h || fabsf(vec3_dot(d, right)) > w) {
+        sprites_records(s->batch3, 0);
+        return;
+    }
+    mid = vec3_add(c->pos, vec3_scale(fwd, depth));
+    for (i = 0; i < 4; i++) {
+        y = i & 2 ? -h : -h + 2.0f * h * (64.0f / 448.0f);
+        q[i] = vec3_add(mid, vec3_add(vec3_scale(right, i & 1 ? w : -w), vec3_scale(up, y)));
+    }
+    quad(sprites_records(s->batch3, 1), 0x1B1B1B08u, q);   /* (grey $80 in the PS2's gamma: 0.21 linear, as we blend) */
+}
+
 int particles_strike_mark(Vec3 at, Vec3 back) {
     int h = new_system(STRIKEMARK, at);
     System *s;
@@ -1644,6 +1669,11 @@ int particles_strike_mark(Vec3 at, Vec3 back) {
         sprites_cells(s->batch2, 0x100, 0x80, 0x40, 0x20, 512, 256, 1);
         sprites_flags(s->batch2, SPRITE_ADD | SPRITE_CORNERS, 0x19);
     }
+    s->batch3 = sprites_new();
+    if (s->batch3 >= 0) {
+        sprites_texture(s->batch3, -1, 0, -1);   /* (untextured) */
+        sprites_flags(s->batch3, SPRITE_CORNERS, 0x1E);
+    }
     s->engines = 1;
     s->n = 0;
     s->timer = 2;
@@ -1653,6 +1683,7 @@ int particles_strike_mark(Vec3 at, Vec3 back) {
     s->wander = vec3_norm(vec3_cross(z, s->c));
     s->target = z;
     strike_mark_write(s);   /* (drawn from this frame: 2 in all) */
+    strike_band_write(s);
     return h;
 }
 
@@ -5333,7 +5364,7 @@ void particles_tick(Vec3 camera) {
         case STEAM: write(s); steam_glow(s); break;
         case DRIPS: drips_write(s); break;
         case RING: ring_write(s); break;
-        case STRIKEMARK: strike_mark_write(s); break;
+        case STRIKEMARK: strike_mark_write(s); strike_band_write(s); break;
         case FLECKS: flecks_write(s); break;
         case WALLSHADOW: wall_shadow_write(s); break;
         case FLOORGLOW: floor_glow_write(s); break;

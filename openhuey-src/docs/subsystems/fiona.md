@@ -262,10 +262,12 @@ as it comes round (Fiona_ReadsPad: mode 8, her action 5, the motion's flag $20).
 **Costumes 6 and 7's weapons.** A part of each model is her weapon: part 25 of `O_FIB` (a thin
 weapon with a guard), part 35 of `O_FIC` (a revolver) - by `byte = $98 + 2 x part`, from the
 models' +0x2C / +0x30 (`Costume6Model_Vt2C`: +0xCA, `Costume7Model_Vt2C`: +0xDE). Hidden as they
-load (the gallery's too), shown from her swing's start to its end or anything else taking her
-(`weapon-shown`). Costume 7's fires once a swing at its key (`fire`, `strike-mark`: StrikeMark,
+load, shown from her swing's start to its end or anything else taking her (`weapon-shown`); in the
+gallery only while $E00 plays (Gallery_ModelMotions). Costume 7's fires once a swing at its key (`fire`, `strike-mark`: StrikeMark,
 from bone $23's (-3.5, 0, 1) and (-1, 0, 1); then BoneSmoke). Riccardo's shots use the same mark.
-Not ported: the mark's faint grey band over the screen's bottom 64 lines (alpha 8).
+A faint grey band goes with it over the screen's bottom 64 of 448 lines, at the mark's depth and depth-tested, so the floor usually hides it (its colour $1B, not the original's $80: we blend in linear light).
+
+**Her step at a wall.** `move-within` is Actor_Move: `v-slide` from her triangle (`navmesh_slide`, NavMesh_Walk): across edges; at a wall or blocked floor the target is pulled back over that edge along its inward normal (1.1 x the overshoot) and the walk begins again, 4 times, then up to the wall. Nearly head on the pull-back carries her slightly backwards and Fiona_StateIdleMove's own check keeps her where she was. Bodies move the same way (`body_move`).
 
 **Out of reach (`her-out-of-reach`, +0x2D).** `plight` says unreachable: from R1 to the
 backstep's mark 2, and in a door's step (Fiona_StateDoorStepOut, each frame after her step) when

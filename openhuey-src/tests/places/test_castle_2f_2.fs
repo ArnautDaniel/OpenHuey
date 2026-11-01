@@ -47,6 +47,7 @@ create blow-pt 3 floats allot
 create spot 12 allot
 variable before
 
+: her-state ( xt -- x )  game:fiona enter  execute  leave-actor ;
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 testing coming in (after her first steps): the doll up, the flames lit, the chandeliers swinging
 c2f-2-flag1 story-flag-set  c2f-2-flag5 story-flag-clear  got-bisque-doll story-flag-clear  c1f-8-flag1 story-flag-clear  room-afresh
@@ -122,6 +123,7 @@ T{ [: doing-busy? 0= ;] 600 soon -> -1 }T
 T{ found-file-209 story-flag? -> -1 }T
 T{ fled-file filed? -> -1 }T
 door-beyond s" doors" actor-named send lock  10 run-frames
+[: [: her-fear-bits @ 2 and 0= ;] her-state ;] 3000 soon drop   \ (her panic run from the seizing over: into walls it stumbles, its count paused)
 spot vec@ tp  10 run-frames
 T{ circle press  [: window-shown must-flee-msg = ;] 300 soon -> -1 }T
 300 read-on  free-play  10 run-frames  0 game:fiona send costume

@@ -87,7 +87,7 @@ create probe /vec allot  create up-was /vec allot  variable up-tri
     then
     root-turn fdrop fdrop fdrop  her-yaw f@ her-heading f!
     up-was her-at vec-copy  her-tri @ up-tri !
-    rx rz her-yaw f@ rotate-by  her-at blocked-floor 1 or v-nav-move  dup 0< if  drop  else  her-tri !  then
+    rx rz her-yaw f@ rotate-by  her-at her-tri @ blocked-floor 1 or v-slide  dup 0< if  drop  else  her-tri !  then
     if  probe-ok? 0= if  her-at up-was vec-copy  up-tri @ her-tri !  then  then   \ (moved off: back)
     her-attack-t @ $97 < if  shakes-now if  2 panic-id send panic-shorten  2 her-attack-t +!  then  then ;
 \ down after a hard fall (Fiona_StateFallen, Fiona_StateAfterThrow's floored): on the ground

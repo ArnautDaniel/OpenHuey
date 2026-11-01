@@ -20,6 +20,8 @@ danger actor it is in play each frame (`stalker-here`), makes noises (steps, gro
 them (acoustics), and acts on the others only by messages: blows (`hit`), grabs (`seize`), its
 requests to Fiona.
 
+
+What his model holds (`held-parts`, as he loads and each time he comes on): Daniella and kind 35 part 17, kinds 34 and 36 part 31, with her right hand's shape; the tint stalker and kind 37 no gun (Kind23Model's part 15); Riccardo keeps his (RiccardoModel's part 17).
 ## Phases
 
 | Phase | What | Needs |

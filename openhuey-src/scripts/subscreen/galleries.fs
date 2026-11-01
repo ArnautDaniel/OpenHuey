@@ -248,11 +248,18 @@ create second-ones  15 , 17 , 19 , 21 , 23 ,                               \ (bi
     k 25 = if  s" motions-homunculus" exit  then
     k 27 = if  s" motions-crow" exit  then
     0 0 ;
+: model-holds ( model -- model )   \ (Gallery_MakeModel: Daniella one of her things, Kind23Model no gun)
+    gal-at @ dup 11 = swap 12 = or if  dup 17 true actor-part-show  dup 31 false actor-part-show  1 over actor act.hand-default 4 + l!  then
+    gal-at @ dup 15 = swap 16 = or if  dup 15 false actor-part-show  then ;
 : play ( i -- )   \ (the entry's motion i: from its table, or - past $19 - blended in)
     gal-model @ swap motion-of
     gal-at @ $18 < gal-at @ $19 = or if  2dup motion-entry nip  else  5 1  then
     dup gal-loops !  motion-play ;
+: weapon-out ( -- )   \ (Gallery_ModelMotions: costumes 7 and 6, their weapon only in their swing, $E00)
+    gal-at @ dup 3 = swap 4 = or 0= if  exit  then
+    gal-model @  gal-at @ 3 = if  35  else  25  then  gal-model @ motion@ $E00 =  actor-part-show ;
 : model-step ( -- )   \ (Gallery_ModelMotions: one not looping, at its end, the first again)
+    weapon-out
     gal-at @ 5 = if   \ (the fifth's: $800, $801, $802 in turn)
         gal-model @ actor act.mflags l@ $20 and if
             gal-model @ motion@ case  $800 of  $801  endof  $801 of  $802  endof  >r -1 r>  endcase
@@ -265,8 +272,7 @@ create second-ones  15 , 17 , 19 , 21 , 23 ,                               \ (bi
     model-files$ {: pa pn ta tn t2a t2n ma mn :}
     pa pn ta tn actor-load-textured dup gal-model !
     mn if  dup ma mn actor-markers  then
-    gal-at @ 3 = if  dup 35 false actor-part-show  then   \ (Costume7Model_Loaded: the revolver hidden)
-    gal-at @ 4 = if  dup 25 false actor-part-show  then   \ (Costume6Model_Loaded: her weapon hidden)
+    model-holds
     gal-at @ kind-table ?dup if  motion-table  else  2drop  then
     1 gal-model @ actor act.visible l!
     1 gal-model @ actor act.alive l!   \ (it blinks, its hands posed by its motions: the gallery's Motion_Eyes / Motion_Hands)

@@ -79,8 +79,24 @@ create figure-pck 32 allot   create figure-tex 32 allot
 : wear-own ( -- )
     figure-worn @ 0= if  exit  then
     my-model @ actor-free  play-model @ my-model !  0 figure-worn !  0 him act.visible l! ;
+\ what his model holds, as he is loaded and each time he comes on (Pursuer_Setup / FilesLoaded, then
+\ Character_Enable's Model_ClearDraw): Daniella's kinds one of her two things, parts 17 (+0xBA) and 31
+\ (+0xD6), her right hand's shape with it (DaniellaModel_Vt30: +0x878, +0x880); Kind23Model's (the
+\ tint stalker, kind 37) no gun, part 15 (+0xB6; its +0x30 does nothing). Riccardo keeps his
+: holds-one ( shown hidden shape -- )
+    {: shown hidden shape :}  my-model @ {: m :}
+    m shown true actor-part-show  m hidden false actor-part-show  shape m actor act.hand-default 4 + l! ;
+: held-parts ( -- )
+    my-model @ 0< if  exit  then
+    my-kind @ case
+        daniella-kind of  17 31 1 holds-one  endof   kind35-kind of  17 31 1 holds-one  endof
+        kind34-kind of  31 17 2 holds-one  endof     kind36-kind of  31 17 2 holds-one  endof
+        tintstalker-kind of  my-model @ 15 false actor-part-show  endof
+        kind37-kind of  my-model @ 15 false actor-part-show  endof
+    endcase ;
 : load ( slot -- )   \ (slots 3..5 have no bank: Daniella as a scene's figure mid-Debilitas leaves his)
     dup my-slot !  -1 loaded !  dup play-slot = if  wear-own  else  wear-figure  then
+    held-parts
     my-kind @ my-model @ cast-as  play-slot = if  7 file sound-bank drop  then ;
 \ nothing of the story's on him (Character_Activate / Pursuer_EventReset's): not held nor posed,
 \ no look of its, through no blocked floor, his sounds his own
@@ -334,7 +350,7 @@ behaviour stalking
       dup debilitas-of? 0= if  drop exit  then
       dup debilitas-dress  debilitas-setup ;
   on stalker-unload ( -- )  unload ;
-  on stalker-in ( room tri -- )  come-in ;
+  on stalker-in ( room tri -- )  held-parts  come-in ;
   on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him; a scene's figure where the story puts it)
       in-game @ figure? or 0= if  2drop 2drop exit  then
       {: yaw :}  cells>xyz place-at vec!

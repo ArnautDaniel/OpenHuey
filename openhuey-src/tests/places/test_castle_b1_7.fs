@@ -37,7 +37,18 @@ got-study-key story-flag-clear  room-afresh
 T{ flame-fx fx?  key-fx fx? -> -1 -1 }T
 
 testing the furniture
-T{ furniture-area 0 at  said -> sheets-msg }T
+\ (its middle is inside the furniture, solid floor: she stands on free floor of this level in the
+\ area, turned to its middle)
+fvariable fx  fvariable fz
+: free-here? ( tri -- flag )
+    dup nav-flags $28020018 and if  drop false exit  then
+    tri-center {: F: x y z :}  y fabs 3e f<  x y z furniture-area area-in? and ;
+: turned-to-middle ( F: x z -- deg )  {: F: x z :}  fx f@ x f-  fz f@ z f-  fatan2 rad>deg f>s ;
+: stand-on ( tri -- )  tri-center {: F: x y z :}  x z turned-to-middle  x y z put ;
+: beside-furniture ( -- )
+    furniture-area area-middle drop fswap fdrop fz f! fx f!
+    nav-tris 0 do  i free-here? if  i stand-on  unloop exit  then  loop ;
+T{ beside-furniture  said -> sheets-msg }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 \ (the blocked door's remark not checked: no test spot found where her request at it is made - see
 \ docs/rooms-design.md)

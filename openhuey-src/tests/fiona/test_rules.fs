@@ -3,7 +3,7 @@
 \ out of others. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/fiona/test_rules.fs
 IN: test-fiona-rules
-USING: tester engine game-state actors messages room-names game keys items items.names facts flag-names vectors common fiona.state fiona.model fiona.anims fiona.moving fiona.controls fiona.slam fiona.fear fiona.hurt fiona.defend fiona.letgo fiona debug ;
+USING: floor-flags vectors tester engine game-state actors messages room-names game keys items items.names facts flag-names vectors common fiona.state fiona.model fiona.anims fiona.moving fiona.controls fiona.slam fiona.fear fiona.hurt fiona.defend fiona.letgo fiona debug ;
 
 : her@ ( xt -- x )  fiona enter  execute  leave-actor ;
 : mode ( -- n )  [: her-mode @ ;] her@ ;
@@ -113,6 +113,19 @@ T{ [: 0 fired !  fire  fired @ 0<>  ;] her@ -> -1 }T
 6 costume!
 T{ [: 0 fired !  fire  fired @ ;] her@ -> 0 }T
 0 costume!  free!
+
+testing her step at a wall (Actor_Move: NavMesh_Walk): along it, not through it - pulled back over the edge, not by x or z alone
+front-garden-3 room!  3 run-frames
+create pv /vec allot
+: from-wall ( F: dx dz -- tri )   \ (by a wall in the garden: blocked floor to the south of z -233)
+    209.445e 0e -232.937e pv vec!  pv 76 fiona-floor v-slide ;
+: across ( F: -- d )  pv v.x sf@ 209.445e f- fabs ;
+T{ -0.354e -0.354e from-wall  across 0.3e f>  pv v.z sf@ -233e f> -> 76 -1 -1 }T
+testing ... away from it, the whole step
+T{ 0e 0.5e from-wall drop  pv v.z sf@ -232.437e f- fabs 0.001e f< -> -1 }T
+testing ... a triangle she has left behind found afresh: she still moves
+T{ 0e 0.5e  209.445e 0e -232.937e pv vec!  pv 0 fiona-floor v-slide 0< 0=  pv v.z sf@ -232.5e f> and -> -1 }T
+free!
 
 full-suite   \ (on: waits, scenes, walks - the full run's)
 : up? ( n -- flag )  0 ?do  game-tick  mode 0= if  true unloop exit  then  loop  false ;
