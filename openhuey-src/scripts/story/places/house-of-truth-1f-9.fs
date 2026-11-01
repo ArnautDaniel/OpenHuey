@@ -40,8 +40,7 @@ $11 constant player-off-floor   \ (group 0: her and the others kept off, the pit
 3 constant hole-area   4 constant word-area   5 constant left-area   6 constant right-area
 7 constant left-way   8 constant right-way
 0 constant drone-high-sound   1 constant drone-sound   2 constant drone-left-sound   3 constant drone2-sound
-5 constant corner-sound   6 constant drone-right-sound   $30 constant deep-drone   $47 constant deep-bank
-$2E constant gesture-call
+5 constant corner-sound   6 constant drone-right-sound   $30 constant deep-drone   $2E constant gesture-call
 0 constant flame-0-fx   1 constant flame-1-fx   2 constant wisps-fx   3 constant haze-fx   4 constant embers-fx
 5 constant left-sparks-fx   6 constant right-sparks-fx
 3 constant lorenzo-movie   2 constant lorenzo-cutscene   1 constant fall-movie   0 constant fall-cutscene
@@ -55,7 +54,7 @@ $ED constant locked-door   $255 constant hole-file   $256 constant freed-file
 : haze-on ( -- )  effects:heat-haze haze-fx effect! ;   \ (the heat haze: its wave eased to a mark - +256 at once)
 : embers ( flames? -- )  effects:pit-embers embers-fx effect! ;
 : told-off ( k -- )  0 over tell-effect  0 swap effect ! ;   \ (an effect told 0 - off, fading - and forgotten)
-: drone ( -- )  deep-drone story-volume or deep-bank bank-sound ;
+: drone ( -- )  deep-drone story-volume or stalker-bank camera-sound ;
 
 \ ---- the fans "fan0", "fan1": turning at their speed (+0x30), eased by their pace ----
 enum: fan-pace  stopping steadying racing at-base ;   \ (to a stop by 5% of the base, up to it by 2%, up to the top by 10%, at the base)
@@ -311,7 +310,7 @@ create hewie-look  0.21e 0e 0.03e 33e 10e 0e look,
 : barks-at-hole ( -- )  1.06e 0e 59.99e hewie-barks-at ;
 : each-frame ( -- )
     drones
-    drone-on @ if  deep-drone story-volume or keep-playing or deep-bank bank-sound  then
+    drone-on @ if  deep-drone story-volume or keep-playing or stalker-bank camera-sound  then
     1 exits-out  cameras 2 cameras-at
     go-there?  fiona held? 0= and if  ['] sends-him fiona start-holding drop  then
     ht1f-9-flag1 fact?  ht1f-9-flag2 fact? 0= and  st-cond-now @ down-cond = and  stalker-in? and if

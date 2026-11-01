@@ -101,7 +101,7 @@ create medallion-look  -149.92e 60e -50.71e  54e 36e 36e look,
     stalkers-stay state!  castle-1f-13 preload  fiona wait-move
     climb-msg yes? if
         15 screen:to-black-2 fade  wait-fade  world-held state!  scene-locked state!
-        climb-sound $86 0e 0e 0e sound-there  180 frames
+        climb-sound room-bank bank-sound  180 frames
         hewie-in? if  room-id 288 0 hewie-to  then
         climb-way take-exit
     else  0 prepare-exit  stalkers-stay state-off  then ;

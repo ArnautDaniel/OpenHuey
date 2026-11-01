@@ -84,12 +84,20 @@ $8000 constant stumble-blow
 \ shove animation has next to no root step, so a step back left her short of him. She lunges 12
 \ ahead over its first 30 frames (at its pace - slower when frightened), until a blow lands; and
 \ the stalker is struck the moment her hand reaches him or she touches him, not only at its key.
-\ Hewie is struck at its key alone, as before ----
+\ Hewie is struck at its key alone, as before. With its feet still it reads as a slide, so only
+\ with him before her and in the lunge's reach (the shove's 16 and its 12, a little over) ----
 12e fconstant lunge-length   30 constant lunge-frames
+30e fconstant lunge-range   60e fconstant lunge-angle
 variable lunge-t
 fvariable shove-pace
+: him-before-her? ( -- flag )   \ (in the room, in reach, within its angle of her heading)
+    stalker-in-room {: id :}  id 0< if  false exit  then
+    id body-at her-at vec-dist-xz  lunge-range f< 0= if  false exit  then
+    id body-at v.x sf@ her-at v.x sf@ f-  id body-at v.z sf@ her-at v.z sf@ f-  fatan2
+    her-yaw f@ f- angle-wrap fabs  lunge-angle deg>rad f< ;
 : lunge ( -- )
     her-struck @  her-recoil @ or  lunge-t @ lunge-frames >= or if  exit  then
+    him-before-her? 0= if  exit  then
     1 lunge-t +!
     0e  lunge-length lunge-frames s>f f/ shove-pace f@ f*  her-yaw f@ rotate-by move-by ;
 : reaches-him? ( -- flag )   \ (her hand, or herself: 1 margin round, to his height)

@@ -371,6 +371,14 @@ testing her shove carries her (OpenHuey's): from 20 apart, him held still, she l
 : held-still ( n -- )  0 do  [: dx f@ dy f@ dz f@ body-place-at ;] his  1 run-frames  loop ;
 settled  20e face-apart  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press  45 held-still
 T{ [: hits @ ;] his -> 1 }T
+testing ... with no one before her she stays where she is: 40 off, or him behind her
+fvariable sx  fvariable sz
+: her-spot! ( -- )  s" fiona" actor-named body-pos sz f! fdrop sx f! ;
+: stayed? ( -- flag )  s" fiona" actor-named body-pos sz f@ f- fabs 0.01e f<  fdrop  sx f@ f- fabs 0.01e f< and ;
+settled  40e face-apart  her-spot!  square debug:press  30 held-still
+T{ stayed? -> -1 }T
+settled  10e face-apart  [: 340e deg>rad her-heading f!  340e deg>rad her-yaw f! ;] hers  1 run-frames  her-spot!  square debug:press  30 held-still
+T{ stayed? -> -1 }T
 testing ... met as she sets off: struck at once, her shove on from its key (frame 18)
 settled  7e face-apart  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press  2 held-still
 T{ [: hits @ ;] his  [: her act.frame sf@ 18e f< 0= ;] hers -> 1 -1 }T

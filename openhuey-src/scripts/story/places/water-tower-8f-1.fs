@@ -43,7 +43,7 @@ own: stage-1  own: stage-2  own: stage-3   \ each model's wear (3 .. 0: down)
 own: cursor-x  own: cursor-y               \ the aiming cursor (of the 512 x 448 screen)
 own: hewie-in-hole         \ Hewie on the holes' floor last frame (for leaving: the next room's floor is in by then)
 0 constant set-sound   1 constant cant-set-sound   7 constant crumble-sound   8 constant falls-sound
-$2C constant cancel-sound   $86 constant plain-bank   $2F constant gesture-sound
+$2C constant cancel-sound   $2F constant gesture-sound
 $1B constant tower-track   9 constant lorenzo-track
 $75 constant grab-act   $204 constant hewie-walk-anim   0 constant go-for-it-gesture   \ (her sign: gesture 0)
 0 constant hole-floor-group   \ (nav group 0: the holes' floor - solid, but Hewie's way while he goes in)
@@ -251,13 +251,13 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
     begin
         cursor-step  cursor-draw
         cross button-pressed? if
-            miniature? @ 0=  in-its-place? 0= or if  cant-set-sound plain-bank 0e 0e 0e sound-there
+            miniature? @ 0=  in-its-place? 0= or if  cant-set-sound room-bank bank-sound
             else
                 set-sound room-bank -1e 632e 31e sound-there  0 show-part  wooden-miniature spend  -1 model-set !
                 stalker-unloaded  kind37-kind stalker-ready  text-gone  cursor-off  30 frames  exit
             then
         then
-        triangle button-pressed? if  cancel-sound common-bank 0e 0e 0e sound-there  text-gone  cursor-off  30 frames  exit  then
+        triangle button-pressed? if  cancel-sound common-bank bank-sound  text-gone  cursor-off  30 frames  exit  then
         yield
     again ;
 : sets-figure ( -- )   \ (an activity: the figure used at the diorama)

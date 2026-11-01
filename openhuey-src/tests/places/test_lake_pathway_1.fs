@@ -25,7 +25,21 @@ free-play  10 run-frames  0 game:fiona send costume
 testing before the books' second event: the path collapsed (its floor barred), its two remarks in turn
 c7-second-event story-flag-clear  over-music-d story-flag-clear  room-afresh
 T{ path-barred?  way-part part? -> -1 0 }T
+testing an item given: its tab slides in with its jingle, stays while its message is up, slides out
+: tab-now ( -- n )  game:subscreen enter  subscreen.state:tab @  leave-actor ;
+: hands-lavender ( -- )  lavender item-named  lavender show-item-tab  fanfare  obtained-msg say ;
+room-afresh  [: ['] hands-lavender start drop ;] in-place
+T{ [: tab-now 3 = ;] 40 soon  window-shown 0< 0= -> -1 -1 }T
+cross press  [: window-shown 0< ;] 60 soon drop
+T{ [: tab-now 0= ;] 40 soon -> -1 }T
+testing ... the place left with it out: slid away, not left on the screen
+room-afresh  [: ['] hands-lavender start drop ;] in-place  [: tab-now 3 = ;] 40 soon drop
+front-garden-2 room!  40 run-frames
+T{ tab-now -> 0 }T
+
 full-suite   \ (on: waits, scenes, walks - the full run's)
+testing ... back on the path: its remarks in turn
+room-afresh
 T{ path-end-area 0 at  said  path-end-area 0 at  said  path-end-area 0 at  said -> collapsed-msg the-light-msg collapsed-msg }T
 T{ body-side-area 180 at  said -> -1 }T   \ (the body not offered yet)
 
@@ -46,7 +60,9 @@ variable before  lavender items:items-of before !
 lp-1-lavender story-flag-clear  room-afresh
 T{ [: lavender-fx effect @ 0<> ;] in-place -> -1 }T
 : read-on ( n -- )  0 ?do  window-shown 0< 0= if  cross press  then  game-tick  loop ;
-0 19.59e 39e -243e put  circle press  300 read-on
+0 19.59e 39e -243e put  circle press
+T{ [: tab-now 3 = ;] 240 soon -> -1 }T
+300 read-on
 T{ lp-1-lavender story-flag?  lavender items:items-of  [: lavender-fx effect @ ;] in-place -> -1 before @ 1+  0 }T
 
 testing Hewie by the drop (the path collapsed; with her, at her command): he looks at it once a visit

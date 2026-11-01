@@ -47,7 +47,7 @@ $28 constant arrival-sound   $2E constant go-for-it-call   0 constant go-for-it-
     force-followed state!  yield  force-followed state-off  world-held state-off
     items-40-as-70 fact? 0= if  arrived-file -1 items send add-file  then
     15 screen:from-black with-music or fade  wait-fade
-    items-40-as-70 fact? 0= if  $C $85 bank-sound  then ;
+    items-40-as-70 fact? 0= if  $C common-bank bank-sound  then ;
 : by-the-bookshelf-way ( -- )
     c1f-3-bookshelf-examined fact?  c1f-1-flag2 fact? 0= and 0= if  exit  then
     0e sounds-scaled  0 -1 player-camera  fiona $B7 0 place-on-tri

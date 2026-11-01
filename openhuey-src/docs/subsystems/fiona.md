@@ -244,7 +244,8 @@ it ends: blended into standing over 10 (Motion_PlayWith flags $101), and once th
 in Hewie is told (`reaction` 10, unless she struck him) and she stands - the shove's own end
 tells him nothing. *By design* (the user's call, 2026-10-28 - not the original's): her shove
 animation has next to no root step, so a step back left her short of him; she lunges 12 ahead
-over its first 30 frames (x its pace), until a blow lands, and the stalker is struck whenever her
+over its first 30 frames (x its pace), until a blow lands - only with him before her, within 60
+degrees and 30 of her, since with its feet still it reads as a slide (issue #101) - and the stalker is struck whenever her
 hand reaches him or she touches him (1 round) - from the frame she sets off, not only at its key.
 Met before the key, the shove goes on from it (frame 18), so the rest of it leaves her no more
 open to him than the original's. Hewie is struck at the key alone. Reach, him still: the

@@ -22,8 +22,7 @@ own: trapped               \ the trap scene's struggle under way
 own: drone-on   own: cool-down   own: pushing   own: last-shakes
 0 constant cane-part   5 constant tube-fx   $12 constant wall-area   $14 constant hiding-area   $11 constant trap-area
 $13 constant creature-area   $10 constant wall-hewie-area   $17 constant near-trap-area
-0 constant trap-start-sound   1 constant trap-close-sound   $30 constant drone-sound   $47 constant drone-bank
-1 constant wall-movie   0 constant wall-cutscene   7 constant trap-movie   6 constant trap-cutscene
+0 constant trap-start-sound   1 constant trap-close-sound   $30 constant drone-sound   1 constant wall-movie   0 constant wall-cutscene   7 constant trap-movie   6 constant trap-cutscene
 $25 constant searches-var   5 constant trap-motions   8 constant hide-motions   $E04 constant reach-anim
 create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e f, 19.8e f, -2.3e f,
     -57.4e f, 20e f, 24.4e f,   115.9e f, 19.5e f, 33.2e f,
@@ -32,7 +31,7 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
 : stones-fall ( -- )   \ (the ceiling coming down: stones of three kinds falling from 50)
     0 50e 0e 0e 1e story.base:stones-falling  1 50e 0e 0e 1e story.base:stones-falling  6 50e 0e 0e 1e story.base:stones-falling ;
 : wall ( opened? -- )  if  2 object-hide  3 object-hide  else  2 object-show  3 object-show  0 solid-floor floor-on  then ;
-: drone ( -- )  drone-sound story-volume or drone-bank bank-sound  -1 drone-on ! ;
+: drone ( -- )  drone-sound story-volume or stalker-bank camera-sound  -1 drone-on ! ;
 : came-in ( exit -- )
     drop  room-sounds
     got-cane-of-caduceus fact? if  cane-part hide-part  else  cane-part show-part  then
@@ -152,7 +151,7 @@ create ahead  2 , 0 ,  3 , 1 ,
         hewie-cond-now @ down-cond = if  1 hewie send heal  else  ['] barks-at-wall start drop  then
     then ;
 : each-frame ( -- )
-    drone-on @ if  drone-sound story-volume or keep-playing or drone-bank bank-sound  then
+    drone-on @ if  drone-sound story-volume or keep-playing or stalker-bank camera-sound  then
     2 exits-out  cam-set@ 7 = if  near-cameras 2 cameras-at  then  cameras 12 cameras-at  ahead 2 ways-out
     hewie-at-it
     over-music-f fact?  ht1f-7-flag2 fact? 0= and  fiona trap-area entered? and if

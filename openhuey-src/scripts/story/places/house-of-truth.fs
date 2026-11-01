@@ -26,11 +26,10 @@ $2301 constant slam-anim   $20 constant impact-key
 : slam-shake ( -- )  lorenzo2-kind slam-shake-of ;
 
 \ ---- the voices (the B1's colour rooms, shared $98): after 1800, 4500, 7200 frames in a room
-\ (the room's sounds in), one each - a sound of bank $86 and its line (the rooms' 5, 6, 7); after
+\ (the room's sounds in), one each - a sound of the room's and its line (the rooms' 5, 6, 7); after
 \ 7500 the last fact: Lorenzo waits in each colour room from then on ----
-$86 constant voices-bank
 : voice ( k -- )   \ (an activity)
-    {: k :}  scene-locked state!  k voices-bank bank-sound  k 5 + say  scene-locked state-off ;
+    {: k :}  scene-locked state!  k room-bank bank-sound  k 5 + say  scene-locked state-off ;
 : voice-0 ( -- )  0 voice ;   : voice-1 ( -- )  1 voice ;   : voice-2 ( -- )  2 voice ;
 : voice-on? ( -- flag )  ['] voice-0 running?  ['] voice-1 running? or  ['] voice-2 running? or ;
 : voices ( -- )   \ (each frame)
@@ -93,7 +92,7 @@ create colour-cameras  4 , 0 , 0 ,  5 , 1 , 1 ,
 \ ---- the tremors (shared $95, once the house has begun to come down - ht1f-9-flag2): with the
 \ stalker still about it (her track $F, file 257 not yet found) the violent ones - now and then a
 \ quake that may throw her down; else slight ones now and then ----
-$31 constant quake-sound   $87 constant quake-bank
+$31 constant quake-sound
 : shaken ( frames F: v -- )  {: n F: v :}  n 0 ?do  v cam-shake!  yield  loop ;
 : slight-tremors ( -- )   \ (an activity: for good)
     begin  60 frames  25 chance? if  30 frames  then  25 chance? if  30 frames  then  30 0.1e shaken  again ;
@@ -101,7 +100,7 @@ $31 constant quake-sound   $87 constant quake-bank
 : thrown-down ( -- )  -1 true fiona send throw-down ;
 : quake ( -- )   \ (one: the rumble growing, the thump - she is thrown down if standing - dying away)
     1 $80 30 rumble-pad  30 0.5e shaken  0 0 30 rumble-pad  1 $FF 30 rumble-pad
-    quake-sound quake-bank bank-sound
+    quake-sound stalker-bank bank-sound
     false 30 0 do  dup 0=  standing? and if  drop true  thrown-down  then  1e cam-shake!  yield  loop  drop
     1 $80 30 rumble-pad  30 0.5e shaken ;
 : violent-tremors ( -- )  begin  90 0.1e shaken  quake  again ;

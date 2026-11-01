@@ -20,7 +20,7 @@ own: going-on              \ her first step in, the house coming down: on (once 
 own: drone-on              \ the drone going
 3 constant magist-fx   $A constant clock-area   $B constant creatures-area   6 constant going-area
 $EB constant snagged-door   $91 constant snag-sound   5 constant first-ambient   5 constant tremor-track
-$30 constant drone-sound   $47 constant drone-bank   $1FC constant brought-tri   0 constant snag-var
+$30 constant drone-sound   $1FC constant brought-tri   0 constant snag-var
 create flames  72.4e f, 17.2e f, 117.2e f,   101.9e f, 66e f, 87.1e f,   97.6e f, 29.5e f, 144.8e f,   101.9e f, 66e f, 87.4e f,
 create flame-kinds  1 , 4 , 1 , 4 ,
 create flame-slots  0 , 1 , 2 , 4 ,
@@ -28,7 +28,7 @@ create flame-slots  0 , 1 , 2 , 4 ,
 : stones-fall ( -- )   \ (the ceiling coming down: stones of three kinds falling from 70)
     1 70e 0e 0e 0.5e story.base:stones-falling  3 70e 0e 0e 0.5e story.base:stones-falling
     11 70e 0e 0.5e 0.5e story.base:stones-falling ;
-: drone ( -- )  drone-sound story-volume or drone-bank bank-sound  -1 drone-on ! ;
+: drone ( -- )  drone-sound story-volume or stalker-bank camera-sound  -1 drone-on ! ;
 : came-in ( exit -- )
     room-sounds
     4 0 do  flame-slots i cells + @  flame-kinds i cells + @  i flame@  flame-at  loop
@@ -39,7 +39,7 @@ create flame-slots  0 , 1 , 2 , 4 ,
 
 \ ---- brought here: the first tremor ----
 : shakes ( -- )   \ (an activity: growing, the thump, dying - slight then, till stopped)
-    1 $80 30 rumble-pad  30 0.5e shaken  0 0 30 rumble-pad  1 $FF 30 rumble-pad  quake-sound quake-bank bank-sound
+    1 $80 30 rumble-pad  30 0.5e shaken  0 0 30 rumble-pad  1 $FF 30 rumble-pad  quake-sound stalker-bank bank-sound
     30 1e shaken  1 $80 30 rumble-pad  30 0.5e shaken
     begin  0.1e cam-shake!  yield  again ;
 : first-tremor ( -- )
@@ -94,7 +94,7 @@ create entries  0 , 0 ,  0 , 0 ,  2 , 2 ,   \ (by exit 0 .. 2: the camera)
 create cameras  6 , 0 , 0 ,  7 , 1 , 1 ,  8 , 1 , 1 ,  9 , 2 , 2 ,   \ (area, set, path)
 create ahead  3 , 0 ,  4 , 1 ,  5 , 2 ,   \ (area, exit loaded ahead)
 : each-frame ( -- )
-    drone-on @ if  drone-sound story-volume or keep-playing or drone-bank bank-sound  then
+    drone-on @ if  drone-sound story-volume or keep-playing or stalker-bank camera-sound  then
     3 exits-out  cameras 4 cameras-at  ahead 3 ways-out
     ht1f-9-flag2 fact?  over-music-f fact? 0= and  going-on @ 0= and  fiona going-area entered? and if
         -1 going-on !  panic-eased  ['] goes-on fiona start-holding drop

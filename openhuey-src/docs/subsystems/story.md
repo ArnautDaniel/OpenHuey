@@ -69,8 +69,9 @@ camera set and path per exit - placed at the one she came by - or `way-in` for o
 set, path; `camera-out` for one taken crossing out of its area); what Hewie looks up at (`look,` builds a table of zones - x y z, radius, height, how
 high - and `hewie-looks-at` runs it, while he is calm and at her command: the rooms' 0xC5); a
 replayed movie over (`replay-over`: back to the extras by the forced way); an item found
-(`picks-up`: turned to it, bent down, taken - `takes-up` the taking: named, full or given, its
-tab and fanfare); out by an area (`leaves-by`); Hewie's whine from the wire (`whine-due?`); an
+(`picks-up`: turned to it, bent down, taken - `takes-up` the taking: named, full or given;
+`fanfare` its jingle and its tab, there till the message is closed - a document `filed` has the
+jingle alone); out by an area (`leaves-by`); Hewie's whine from the wire (`whine-due?`); an
 animal figure sent off and waited for (`figure-goes`); anything's centre in a zone across
 (`centre-across?`, the rooms' zone bit 8 - `here?` and the zone words know only the people); her
 own blow in a zone (`her-blow-in?`); hung things - the chimes she brushes walking by (`chimes`,
