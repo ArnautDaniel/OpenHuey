@@ -153,7 +153,7 @@ create next-at /vec allot
 create behind-pt /vec allot   \ (her radius behind her: a door slammed as she turns from it)
 : backstep ( -- )   \ (Fiona_StateFleeTurn, anim $403: she steps back along her root step, turning to the heading)
     ended? if  backstep-reaction s" hewie" actor-named send reaction  to-idle exit  then   \ (Hewie told)
-    events-now 2 and if  own-mode her-mode !  0 her-dodging !  costume frog-outfit <> if  10e add-fear  then  then
+    events-now 2 and if  own-mode her-mode !  0 her-out-of-reach !  costume frog-outfit <> if  10e add-fear  then  then
     events-now $20 and if
         her-yaw f@ pi f+ angle-wrap self body-dims fdrop behind-pt her-at vec-ahead  behind-pt false slam-door drop
     then
@@ -171,4 +171,4 @@ create behind-pt /vec allot   \ (her radius behind her: a door slammed as she tu
 : try-backstep ( -- )   \ (free again once past its mark, not under flag 0x14, recovered, not panicking; Fiona_StateBlock $B / $22)
     backstep-button? 0=  free-to-act? 0= or if  exit  then
     no-flee state-flag?  her-recovery @ 360 < 0= or  her-panic-stage @ panicking < 0= or if  exit  then
-    -1 her-dodging !  react-mode her-mode !  backstep-doing her-doing !  ['] backstep-start her-act ! ;
+    -1 her-out-of-reach !  react-mode her-mode !  backstep-doing her-doing !  ['] backstep-start her-act ! ;

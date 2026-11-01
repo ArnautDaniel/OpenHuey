@@ -258,6 +258,20 @@ frame whatever she is doing (Fiona_Panic's timers), let go at once if she is str
 panic attack or out of breath (Fiona_IsIdle). Her gestures to Hewie are read during a shove only
 as it comes round (Fiona_ReadsPad: mode 8, her action 5, the motion's flag $20).
 
+
+**Costumes 6 and 7's weapons.** A part of each model is her weapon: part 25 of `O_FIB` (a thin
+weapon with a guard), part 35 of `O_FIC` (a revolver) - by `byte = $98 + 2 x part`, from the
+models' +0x2C / +0x30 (`Costume6Model_Vt2C`: +0xCA, `Costume7Model_Vt2C`: +0xDE). Hidden as they
+load (the gallery's too), shown from her swing's start to its end or anything else taking her
+(`weapon-shown`). Costume 7's fires once a swing at its key (`fire`, `strike-mark`: StrikeMark,
+from bone $23's (-3.5, 0, 1) and (-1, 0, 1); then BoneSmoke). Riccardo's shots use the same mark.
+Not ported: the mark's faint grey band over the screen's bottom 64 lines (alpha 8).
+
+**Out of reach (`her-out-of-reach`, +0x2D).** `plight` says unreachable: from R1 to the
+backstep's mark 2, and in a door's step (Fiona_StateDoorStepOut, each frame after her step) when
+she's past the door from where she came or on a floor flagged $20000. Cleared as she goes idle or
+arrives. The door's animation also lets her over the doorway's floor (`her-noclip`, +0x2B:
+Fiona_StateDoorWalk), off at its end or struck (Fiona_StartInDoor).
 ## F5: what the story knows of her and asks of her (the kit's: `scripts/story/kit.fs`)
 
 She tells, in `fiona-doing`, her action too (+0x1AD580: `her-doing`). Conditions 0x3F her action,

@@ -150,6 +150,9 @@ int particles_spray(Vec3 at, int tri, int heavy);
 /* DropletFlash (Riccardo_Debris): 32 droplets of colour r g b (0..127) flung from `at` and
  * slowing, a flash there first - the debris where his shot strikes. The engine's */
 int particles_drop_flash(Vec3 at, int r, int g, int b);
+/* StrikeMark: a shot's flash along the line from `back` to `at` - a glow at `at`, a streak 3.8 beyond it
+ * - for 2 frames, then BoneSmoke at `at`. The engine's */
+int particles_strike_mark(Vec3 at, Vec3 back);
 /* BoneSmoke: sixteen wisps of smoke rising from `at` (Riccardo's gun as it fires). The engine's */
 int particles_bone_smoke(Vec3 at);
 /* LorenzoSpark: two white sparks at `at`, rising 0.1 x rise, growing (growth - 1) x size a frame,

@@ -81,10 +81,18 @@ $8000 constant stumble-blow
     then
     moving ;
 : boosted-power ( -- )  blow-power  blow-dmg @ boosted blow-dmg ! ;
+\ costume 7's revolver fires, once a swing (StrikeMark: its flash along the barrel from her bone
+\ $23, 3.5 out and 1 out; then smoke)
+variable fired
+: fire ( -- )
+    form cowgirl-outfit <>  fired @ or if  exit  then
+    -1 fired !
+    her-model @ hand-bone -3.5e 0e 1e bone-point  her-model @ hand-bone -1e 0e 1e bone-point  strike-mark ;
 : kicking ( -- )   \ (Fiona_StateStrike: its root step, at its end she stands; its key a frame behind)
     moving
     ended? if  kick-done exit  then
     events-last 2 and 0= if  exit  then
+    fire
     blow-point
     blow-spot true slam-door {: slammed :}         \ (a door there slammed; a wall before it comes first)
     special? 0=  blow-spot $20018 body-tri-to 0< and if  settled? if  wall-end  then  ['] kick-end her-act ! exit  then
@@ -101,8 +109,15 @@ $8000 constant stumble-blow
         1e  her-fear f@ 40e f> if  fdrop 160e her-fear f@ f- 120e f/  then
         fmin  kick-anim 2 play-table  weight!
     then
-    0 her-struck !  1 her-blow-n +!  ['] kicking her-act ! ;
+    0 her-struck !  0 fired !  1 her-blow-n +!  ['] kicking her-act ! ;
 : kick-start ( -- )  settled? if  swing  then  moving ;
+\ costumes 6 and 7's weapons, in her hand only for her swing (their models' +0x30 as it starts,
+\ +0x2C as it ends or anything else takes her; hidden as they load): part 25, part 35
+: weapon-part ( -- part | -1 )
+    form case  illegal-outfit of  25  endof  cowgirl-outfit of  35  endof  >r -1 r>  endcase ;
+: weapon-shown ( -- )
+    weapon-part {: part :}  part 0<  her-model @ 0< or if  exit  then
+    her-model @ part  her-act @ dup ['] kicking = swap ['] kick-end = or  actor-part-show ;
 
 \ ---- the shove (Fiona_StateKickStart / StateKick): once what she was doing has faded out, her cry,
 \ its animation held at its first frame while it fades in (Motion_PlayOwnBlend) - she carries on

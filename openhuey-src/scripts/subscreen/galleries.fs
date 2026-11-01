@@ -265,6 +265,8 @@ create second-ones  15 , 17 , 19 , 21 , 23 ,                               \ (bi
     model-files$ {: pa pn ta tn t2a t2n ma mn :}
     pa pn ta tn actor-load-textured dup gal-model !
     mn if  dup ma mn actor-markers  then
+    gal-at @ 3 = if  dup 35 false actor-part-show  then   \ (Costume7Model_Loaded: the revolver hidden)
+    gal-at @ 4 = if  dup 25 false actor-part-show  then   \ (Costume6Model_Loaded: her weapon hidden)
     gal-at @ kind-table ?dup if  motion-table  else  2drop  then
     1 gal-model @ actor act.visible l!
     1 gal-model @ actor act.alive l!   \ (it blinks, its hands posed by its motions: the gallery's Motion_Eyes / Motion_Hands)

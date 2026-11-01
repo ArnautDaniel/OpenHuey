@@ -102,7 +102,7 @@ defer ric-begin ( -- )
 \ ---- where his shot strikes (Riccardo_BlowFloorPoint): aimed down 10 out along his gun, on the
 \ floor there; aimed level straight ahead to where the floor gives out, 15 up - none against a
 \ wall. Its debris there: a brown cloud (Riccardo_Debris) ----
-$31 constant gun-bone
+$31 constant gun-bone   $30 constant gun-back-bone
 create hit-at /vec allot   create probe /vec allot
 : slam? ( -- flag )  anim @ dup shot-down-anim = over shot-down-2-anim = or over aim-down-anim = or  swap taunt-anim = or ;
 : swing? ( -- flag )  anim @ dup swing-anim = swap swing-2-anim = or ;
@@ -126,7 +126,7 @@ defer cry-hit ( who -- )
 $40 constant shot-noise
 : impact ( -- )
     effect-key? 0= if  exit  then
-    my-model @ gun-bone bone-pos gun-smoke
+    my-model @ gun-bone bone-pos  my-model @ gun-back-bone bone-pos  strike-mark
     shot-noise room-id self body-tri -1 stalker-noise acoustics-id send noise
     anim @ dup shot-down-anim = over shot-down-2-anim = or swap taunt-anim = or if  floor-debris  then
     anim @ carry-anim = if  fiona cry-hit  then ;

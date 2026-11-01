@@ -384,7 +384,7 @@ T{ [: hits @ ;] his -> 0 }T
 T{ [: hits @ ;] his -> 1 }T
 testing stepping back: he may not take her till its mark, then he may
 settled  false blind  [: 0 her-recovery ! ;] hers  r1 debug:press  2 run-frames
-: dodging? ( -- flag )  [: her-dodging @ 0<> ;] hers ;
+: dodging? ( -- flag )  [: her-out-of-reach @ 0<> ;] hers ;
 T{ dodging?  [: may-take? ;] his -> -1 0 }T
 : past-mark ( -- )  60 0 do  dodging? 0= if  leave  then  1 run-frames  loop ;
 past-mark  2 run-frames

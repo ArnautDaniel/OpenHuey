@@ -68,9 +68,9 @@ T{ [: free-doing her-doing !  pushing-sub her-sub !  free-to-act? ;] her@ -> 0 }
 T{ [: 0 her-sub !  100e her-fear f!  free-to-act? ;] her@ -> 0 }T
 [: 0e her-fear f! ;] her@
 testing stepping back: out of the stalkers' reach till its mark (+0x2D), then not
-T{ [: -1 her-dodging !  react-mode her-mode !  plight ;] her@ -> unreachable-plight }T
-T{ [: 0 her-dodging !  plight ;] her@ -> fleeing-plight }T
-T{ [: own-mode her-mode !  -1 her-dodging !  plight  0 her-dodging ! ;] her@ -> free-plight }T
+T{ [: -1 her-out-of-reach !  react-mode her-mode !  plight ;] her@ -> unreachable-plight }T
+T{ [: 0 her-out-of-reach !  plight ;] her@ -> fleeing-plight }T
+T{ [: own-mode her-mode !  plight ;] her@ -> free-plight }T
 free!
 testing the shove starts by Motion_PlayOwnBlend: at its first frame, no root step, while it fades in; then its own
 [: shove-doing her-doing !  defend-mode her-mode !  $1B her-sub !  ['] shove-start her-act ! ;] her@  25 run-frames
@@ -88,6 +88,31 @@ fvariable kx  fvariable kz
 spot!  square debug:press  45 run-frames
 T{ stayed? -> -1 }T
 free!
+
+testing costumes 6 and 7: the weapon hidden until the swing starts (part 25, part 35: Costume6Model / Costume7Model +0x2C, +0x30)
+: part-on? ( part -- flag )  [: her-model @ ;] her@ actor act.parts-shown swap 1+ dup 5 rshift 4 * rot + l@ swap 31 and rshift 1 and 0<> ;
+: costume! ( n -- )  fiona send costume  2 run-frames  free! ;
+: swung ( -- )  [: ['] kicking her-act ! ;] her@  1 run-frames ;
+7 costume!
+T{ 35 part-on? -> 0 }T
+swung
+T{ 35 part-on? -> -1 }T
+[: kick-anim -1 play-table  ['] kick-end her-act ! ;] her@  1 run-frames
+T{ 35 part-on? -> -1 }T
+free!
+T{ 35 part-on? -> 0 }T
+6 costume!
+T{ 25 part-on? -> 0 }T
+swung
+T{ 25 part-on? -> -1 }T
+free!
+T{ 25 part-on? -> 0 }T
+testing ... costume 7's revolver fires once a swing, not costume 6's weapon
+7 costume!
+T{ [: 0 fired !  fire  fired @ 0<>  ;] her@ -> -1 }T
+6 costume!
+T{ [: 0 fired !  fire  fired @ ;] her@ -> 0 }T
+0 costume!  free!
 
 full-suite   \ (on: waits, scenes, walks - the full run's)
 : up? ( n -- flag )  0 ?do  game-tick  mode 0= if  true unloop exit  then  loop  false ;

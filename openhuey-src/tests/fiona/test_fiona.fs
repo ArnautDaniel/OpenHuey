@@ -60,6 +60,34 @@ T{ 120 run-frames  state0  doing -> 2 0 }T            \ let go open; free again
 \ (her animation takes her into the exit's area; the story takes the exit: tests/story/test_story.fs)
 front-garden-2 -1 rooms send go-to-room  5 run-frames
 
+testing at a door: over the doorway's floor from the animation on (+0x2B); out of the stalkers' reach (+0x2D) only past it or on a doorway floor (Fiona_StateDoorStepOut); neither after
+: reach-flag ( -- flag )  [: her-out-of-reach @ 0<> ;] her@ ;
+: noclip? ( -- flag )  [: her-noclip @ 0<> ;] her@ ;
+: stepping? ( -- flag )  [: her-act @ ['] stepping-out = ;] her@ ;
+: till-stepping ( -- )  60 0 do  stepping? if  leave  then  1 run-frames  loop ;
+: other-side ( -- )  [: her-door-side @ 0= 1 and her-door-side ! ;] her@ ;
+clean0  front-garden-2 -1 rooms send go-to-room  5 run-frames  at-door
+T{ reach-flag noclip? -> 0 0 }T
+key: C press-key  till-stepping
+T{ stepping?  noclip? -> -1 -1 }T
+1 run-frames
+T{ reach-flag [: plight ;] her@ unreachable-plight = -> 0 0 }T
+other-side  1 run-frames
+T{ reach-flag [: plight ;] her@ -> -1 unreachable-plight }T
+other-side  1 run-frames
+T{ reach-flag -> 0 }T
+: till-free ( -- )  120 0 do  stepping? 0= if  leave  then  1 run-frames  loop ;
+till-free  1 run-frames
+T{ reach-flag noclip? -> 0 0 }T
+testing ... on a doorway floor she is out of reach too
+T{ [: nav-tris 0 ?do  i nav-flags door-floor and if  i her-tri !  leave  then  loop  on-door-floor? ;] her@ -> -1 }T
+[: to-idle ;] her@  front-garden-2 -1 rooms send go-to-room  5 run-frames
+testing ... struck in the door, off the doorway's floor again (Fiona_StartInDoor)
+clean0  at-door  key: C press-key  till-stepping
+1 0 10e f>cell fiona send hit  deliver  2 run-frames
+T{ noclip? -> 0 }T
+[: to-idle ;] her@  front-garden-2 -1 rooms send go-to-room  5 run-frames
+
 testing a locked door: she tries it, and gives up (no story here: no message to wait on - test_examine)
 clean0  door0 doors send lock  deliver  at-door
 T{ key: C press-key  60 $609 watch-anim -> -1 }T

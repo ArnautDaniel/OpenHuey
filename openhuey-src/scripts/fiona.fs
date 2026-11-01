@@ -24,7 +24,7 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
     dup 0 exit-spot 0< if  fdrop fdrop fdrop  drop arrive-anywhere exit  then
     drop  her-yaw f@ put ;
 : stand-free ( -- )   \ (Fiona_ToIdle but for the turn mode: free, standing, her moves her own)
-    free-doing her-doing !  own-mode her-mode !  her-yaw f@ her-heading f!  0 her-rest !
+    free-doing her-doing !  own-mode her-mode !  her-yaw f@ her-heading f!  0 her-rest !  0 her-out-of-reach !
     -1 idle-anim  ['] idle-move her-act ! ;
 : idle ( -- )   \ Fiona_ToIdle: free, standing, the stick by the camera now (+0x1AD588 0)
     camera-relative her-turn-mode !  stand-free ;
@@ -46,7 +46,7 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
         fdup her-yaw f!  her-heading f!  door-steered her-turn-mode !
     else  fdrop  then ;
 : fresh ( -- )   \ standing, the controls as new
-    free-doing her-doing !  own-mode her-mode !  0 her-sub !  6 her-still !  0 her-lock !
+    free-doing her-doing !  own-mode her-mode !  0 her-sub !  6 her-still !  0 her-lock !  0 her-out-of-reach !  0 her-noclip !
     her-turn-mode @ door-steered <> if  camera-relative her-turn-mode !  then   \ (a door's held stick kept through the arrival)
     1e her-stick-k f!  -1 her-variant !  1e her-tired-w f!  0 her-rest !  0 her-run-t !
     -1 her-cmd !  0 her-busy-t !  0 her-scripted !  0 her-move !  -1 her-move-done !  1 her-step-l !  1 her-step-r !  -1 her-door-exit !  her-path path-clear  stand  stand-free ;   \ (the turn mode as set above)
@@ -150,7 +150,7 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
     looks  tell-point
     command-sounds  motion-sounds
     footsteps
-    show-her  fit-legs ;
+    show-her  weapon-shown  fit-legs ;
 
 \ ---- each frame (Fiona_Update, the parts built so far) ----
 : followed ( -- )
@@ -168,7 +168,7 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
     looks  tell-point
     command-sounds  motion-sounds
     footsteps
-    show-her  fit-legs ;
+    show-her  weapon-shown  fit-legs ;
 
 \ her earrings and choker on the costumes that have them (Fiona_ShowEquipment, by the model's
 \ ShowParts: EventHumanModel_ShowParts for her clothes, Costume2Model_ShowParts for O_FIH): the pair
@@ -286,7 +286,7 @@ behaviour free
   on noclip ( on -- )  her-noclip ! ;   \ (the story's 0x20)
   on aside ( on -- )  her-aside ! ;     \ (0x21: out of reach of attacks)
   on activate ( -- )  0 her-noclip !  0 her-aside !  idle ;   \ (the story's 0x15, Fiona_Activate: afresh, standing)
-  on costume ( n -- )  wear  show-her ;
+  on costume ( n -- )  wear  show-her  weapon-shown ;
   on fiona-request ( kind x y z threat -- )   \ (a creature's, Progress_Noise: $D a spirit - she falls; 3 a red one
       >r cells>xyz from-pt vec!   \ going - grabbed; $C homunculi - held down)
       dup broadcast fiona-requested  0 -1 r> cell>f struck drop ;   \ (its threat her fright: Fiona_React)
