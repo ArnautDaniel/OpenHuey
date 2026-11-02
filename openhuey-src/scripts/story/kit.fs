@@ -231,7 +231,7 @@ create mv-at /vec allot
     {: id who :}  id look-move who who person-of  0e 0e 0e 0e  move ;
 : place-at ( id tri face F: x z -- )   \ put there at once (the triangle's height)
     {: id tri face F: x z :}  tri x z floor-at  face deg>yaw  {: F: px py pz yaw :}
-    px f>cell py f>cell pz f>cell yaw f>cell  id send place ;
+    px f>cell py f>cell pz f>cell yaw f>cell  id send place  tri id send on-triangle ;
 : place-on-tri ( id tri face -- )  {: id tri face :}  id tri face  tri tri-center fswap fdrop  place-at ;
 : on-floor-of? ( id flags -- flag )   \ standing on a triangle with any of these flags
     over here? 0= if  2drop false exit  then  swap body-tri dup 0< if  2drop false exit  then  nav-flags and 0<> ;
@@ -239,7 +239,7 @@ create mv-at /vec allot
 : stands-on? ( id tri -- flag )  over here? 0= if  2drop false exit  then  swap body-tri = ;   \ (standing on that triangle)
 : put-on-tri ( id tri -- )   \ put on its middle at once, its heading kept
     {: id tri | F: x F: y F: z :}  tri tri-center to z to y to x
-    x f>cell y f>cell z f>cell id body-yaw f>cell  id send place ;
+    x f>cell y f>cell z f>cell id body-yaw f>cell  id send place  tri id send on-triangle ;
 : noclip ( id on -- )  swap send noclip ;   \ (through blocked floor)
 
 \ ---- the message window ----

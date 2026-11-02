@@ -13,7 +13,7 @@ USING: tester engine game-state actors messages keys room-names game debug facts
 : in-place ( xt -- x )  room-id room-name actor-named enter  execute  leave-actor ;
 : doing-busy? ( -- flag )  [: acts @ ;] in-place 0<> ;
 : on-floor ( F: x y z -- x y' z )  {: F: x y z :}  x  x y z nav-floor drop  z ;
-: put ( deg F: x y z -- )  on-floor s>f tp-facing  [: her-at $28020018 v-tri-in her-tri ! ;] as-her  10 run-frames ;
+: put ( deg F: x y z -- )  on-floor s>f tp-facing  10 run-frames ;
 : at ( area deg -- )  >r area-middle drop r> put ;
 : said ( -- msg )
     circle press  [: window-shown 0< 0= ;] 600 soon drop  window-shown
@@ -50,6 +50,9 @@ c1f-15-camomile-found story-flag-set  c1f-15-camomile story-flag-clear
 c1f-15-medallion-found story-flag-set  c1f-15-medallion story-flag-clear  room-afresh
 T{ [: camomile-fx effect @ 0<>  medallion-fx effect @ 0<> ;] in-place -> -1 -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
+
+testing put on blocked floor over a lower one: she stays on it, not on the floor below (Character_Place)
+T{ handrail-area -90 at  [: her-at vec@ fdrop fswap fdrop f>s  her-tri @ nav-flags $28020018 and 0<> ;] as-her -> 50 -1 }T
 
 testing the remarks: the diorama, the spear in turn, the armour in turn, the handrail in turn
 T{ 180 -0.195e 50e -27.107e put  said -> diorama-msg }T   \ (where she reads it: the area's middle is on blocked floor)

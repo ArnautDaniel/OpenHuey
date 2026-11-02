@@ -92,7 +92,7 @@ is st-wander
     else  stand-pose step-to-pose 0= if  bark  ['] st-barked behave  then  then ;
 
 \ ---- the leap (story-leap-act: Hewie_StateRunForSpot / Leap / TurnTo) ----
-: along-leap ( F: d -- )  {: F: d :}  his-jump-dir v.x sf@ d f*  his-jump-dir v.z sf@ d f*  body-move-any ;   \ (along the leap's way)
+: along-leap ( F: d -- )  {: F: d :}  his-jump-dir v.x sf@ d f*  his-jump-dir v.z sf@ d f*  body-move ;   \ (along the leap's way: Actor_Move, on the floor - its height the ground st-leap reads)
 : root-up ( F: -- up )  root@ {: F: turn x y z :}  y ;
 : st-turn-to ( -- )   \ (landed: round to his-to-yaw, carried on by the landing's step)
     his-to-yaw f@ his-yaw f- angle-wrap  fdup fabs 30e deg>rad f<  his-head-yaw f@ fover f* f0< 0= or if

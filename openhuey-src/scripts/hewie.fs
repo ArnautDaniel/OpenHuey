@@ -36,7 +36,7 @@ create heel-at /vec allot
 
 : place-on ( room tri -- )   \ (Hewie_PlaceInRoom: triangle -1 is that room, on none; in another room
     over room-id <>  over 0< or if  0e 0e 0e  else  dup tri-center  then   \ only his triangle - its mesh isn't this one)
-    body-place  model actor-settle ;
+    body-place  stand-anim placed-at-rest  model actor-settle ;
 behaviour hewie-own
   on spawned ( -- )
       6 0 do  16 i cells his-skill + !  loop   \ (Hewie_LoadState: his skills at fetching, middling)
@@ -75,9 +75,10 @@ behaviour hewie-own
   on set-hp ( n -- )  0 max 100 min hp! ;                 \ (a room's command: +0x14C8 put back)
   on hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  0 5 do  i cells his-skill + !  -1 +loop ;
   on hewie-met ( m0 m1 m2 m3 -- )  0 3 do  i cells his-met + !  -1 +loop ;
+  on on-triangle ( tri -- )  self body? if  room-id swap  self body-pos body-place  else  drop  then ;
   on place ( x y z yaw -- )   \ (the story puts him)
       along? 0= if  2drop 2drop exit  then
-      >r cells>xyz  his-place  r> cell>f his-yaw!  model actor-settle ;
+      >r cells>xyz  his-place  r> cell>f his-yaw!  rest-anim placed-at-rest  model actor-settle ;
   on leaving-room ( room exit -- )   \ (the old room still in; played, he goes with it)
       hewie-played? along? and if  2drop played-through exit  then
       2dup room-exit-leads drop fiona-room !  nip  along? if  fiona-left  else  drop  then ;

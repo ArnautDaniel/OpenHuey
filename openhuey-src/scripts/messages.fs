@@ -283,6 +283,7 @@ message meet-off ( -- )                      \ either gives it up
 \ ---- the story (docs/subsystems/story.md) ----
 message to-exit ( exit -- )                  \ (a character) put yourself on the exit's outside spot, facing in
 message place ( x y z yaw -- )               \ (a character) put yourself there, facing so (floats f>cell)
+message on-triangle ( tri -- )                \ (a character, just placed) on this triangle: the one the story names (Character_Place)
 message go-to ( x y z -- )                   \ (a character) walk there over the nav mesh, then stand (floats f>cell; debugging, the story's moves)
 message camera-restart ( -- )                \ (the camera) the director starts over
 message camera-hold ( -- )                   \ (the game over -> the camera) the room's next set, nobody followed, from there on

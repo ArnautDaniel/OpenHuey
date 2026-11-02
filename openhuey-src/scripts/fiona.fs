@@ -12,7 +12,7 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
     fdup her-yaw f!  her-heading f!
     her-at vec!
     her-model @ dup 0< if  drop  else  actor-settle  then
-    her-at blocked-floor v-tri-in dup 0< if  drop her-at v-tri  then  her-tri !
+    her-at blocked-floor v-tri-placed her-tri !
     her-at her-was-at /vec move  her-tri @ her-was-tri !
     show-her ;
 : camera-target ( F: -- x y z )   \ (the room's first camera's: where it looks)
@@ -21,8 +21,8 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
     room-cameras if  camera-target  else  0e 0e 0e  then
     nav-tris if  nav-nearest  then  0e put ;
 : arrive-at ( exit -- )   \ (the room scripts' char-to-exit: its outside spot, her heading kept)
-    dup 0 exit-spot 0< if  fdrop fdrop fdrop  drop arrive-anywhere exit  then
-    drop  her-yaw f@ put ;
+    0 exit-spot  dup 0< if  drop fdrop fdrop fdrop  arrive-anywhere exit  then
+    {: tri :}  her-yaw f@ put  tri her-tri !  tri her-was-tri ! ;   \ (on the exit's own triangle: over a storey, the search finds the one below)
 : stand-free ( -- )   \ (Fiona_ToIdle but for the turn mode: free, standing, her moves her own)
     free-doing her-doing !  own-mode her-mode !  her-yaw f@ her-heading f!  0 her-rest !  0 her-out-of-reach !
     -1 idle-anim  ['] idle-move her-act ! ;
@@ -307,6 +307,7 @@ behaviour free
       sender stalker-in-room = if  cell>f her-st-dz f!  cell>f her-st-dx f!  else  2drop  then ;
   on scene ( on -- )  her-in-scene ! ;   \ (a cutscene has her)
   on go-to ( x y z -- )  cells>xyz  go-to-point ;
+  on on-triangle ( tri -- )  dup her-tri !  her-was-tri ! ;
   on place ( x y z yaw -- )  cells>xyzw  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)
   on camera-cut ( -- )  -1 her-cut ! ;
   on meters? ( -- )  her-fear f@ f>s  her-fear-bits @ 1 and  her-panic-t @  sender send her-meters ;   \ (the debug overlay)
