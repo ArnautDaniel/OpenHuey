@@ -59,7 +59,7 @@ off). The hand-over (0xBA) waits in hg while the other's files load; OpenHuey lo
 
 The story's (`scripted-move` kinds; Pursuer_EventCommand): 7 an animation (a), 8 blended (a over b
 frames), 9 the same with no time of its own, 16 its stand (0) over b frames - done at once,
-moved by its root motion; 5 / 10 walking to the spot, 6 / 11 to triangle a (its middle) - 5 / 6
+moved by its root motion (kept at a height set well off the floor: the crows on their perches, the wisps); 5 / 10 walking to the spot, 6 / 11 to triangle a (its middle) - 5 / 6
 in b if it is one of the $2xx walks, else $200, 10 / 11 in $201 (Pursuer_ScriptMove,
 Pursuer_SlowWalkAnim: its +0x16C8 is 2 from Pursuer_Reset) - along its way as the stalkers'
 (Pursuer_WalkToGoal, StepBack, CloseInGoal: planned to the goal - NPC_GoTo: the move's point on its

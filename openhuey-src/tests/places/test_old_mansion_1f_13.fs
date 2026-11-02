@@ -13,7 +13,7 @@ USING: tester engine game-state actors messages keys room-names game debug facts
 : doing-busy? ( -- flag )  [: acts @ ;] in-place 0<> ;
 : on-floor ( F: x y z -- x y' z )  {: F: x y z :}  x  x y z nav-floor drop  z ;
 : put ( deg F: x y z -- )   \ (on the floor, on a triangle she walks - else the nearest the mesh has)
-    on-floor s>f tp-facing  [: her-at $28020018 v-tri-in  dup 0< if  drop her-at vec@ nav-tri  then  her-tri ! ;] her  10 run-frames ;
+    on-floor s>f tp-facing  10 run-frames ;
 : at ( area deg -- )  >r area-middle drop r> put ;
 : shown-soon ( -- msg )  [: window-shown 0< 0= ;] 600 soon drop  window-shown ;
 : said ( -- msg )

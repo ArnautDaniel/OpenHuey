@@ -127,6 +127,15 @@ testing ... a triangle she has left behind found afresh: she still moves
 T{ 0e 0.5e  209.445e 0e -232.937e pv vec!  pv 0 fiona-floor v-slide 0< 0=  pv v.z sf@ -232.5e f> and -> -1 }T
 free!
 
+testing placed on the triangle she is told: at an exit its own, by the story the one it names (Character_Place)
+T{ [: 0 fiona:arrive-at  her-tri @ ;] her@ -> 0 0 exit-spot fdrop fdrop fdrop }T
+T{ 5 fiona send on-triangle  deliver  [: her-tri @  her-was-tri @ ;] her@ -> 5 5 }T
+testing her move through anything (+0x2B) keeps her height, plus the step's rise; x and z by the walk (Actor_MoveAny)
+: her-y ( -- n )  [: her-at vec@ fdrop fswap fdrop f>s ;] her@ ;
+free!  [: her-at vec@ {: F: x y z :}  x 40e z her-at vec! ;] her@
+T{ [: 0e 0.1e 5e fiona.moving:move-any ;] her@  her-y -> 45 }T
+[: 0 fiona:arrive-at ;] her@  free!
+
 full-suite   \ (on: waits, scenes, walks - the full run's)
 : up? ( n -- flag )  0 ?do  game-tick  mode 0= if  true unloop exit  then  loop  false ;
 T{ 600 up? -> -1 }T

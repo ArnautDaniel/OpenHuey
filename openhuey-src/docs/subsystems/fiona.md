@@ -377,6 +377,14 @@ at her feet's height at once, not eased from where she was (the model's FeetUp: 
 feet planted afresh): coming out of a door into a room on another level nobody rises through the
 floor or comes down from above. Checked by `tests/fiona/test_legs.fs`, `tests/fiona/test_arrive.fs`.
 
+The original's placements are told their triangle (Character_Place). Ours pass it where it is known:
+an exit's own (`arrive-at`), the story's (`place-at`, `put-on-tri`: the `on-triangle` message). A
+spot alone finds it (`v-tri-placed`, also `body-place-at`, the stalker's and the figures' `place`) by
+the body's floor mask, unless that finds a floor more than a step below: the mask has skipped the
+blocked floor it was put on, and it stands on that floor, whatever its flags. Without these she
+drops a storey on her first step (the move lies on its triangle's plane). Through anything (+0x2B:
+`move-any`, Actor_MoveAny) her height stays her own, plus the step's rise.
+
 Her head (`fiona/looks.fs`) turns as her model is posed as the human models' do
 (HumanModel_AdjustBone; the engine's `head-bones`, `head-turn`: `humanhead_adjust`): the head bone
 in its own frame by the tilt and half the turn, the bone below it the other half about its own

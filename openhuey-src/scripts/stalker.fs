@@ -351,10 +351,11 @@ behaviour stalking
       dup debilitas-dress  debilitas-setup ;
   on stalker-unload ( -- )  unload ;
   on stalker-in ( room tri -- )  held-parts  come-in ;
+  on on-triangle ( tri -- )  self body? if  room-id swap  self body-pos body-place  else  drop  then ;
   on place ( x y z yaw -- )   \ (put there, facing so: where a cutscene left him; a scene's figure where the story puts it)
       in-game @ figure? or 0= if  2drop 2drop exit  then
       {: yaw :}  cells>xyz place-at vec!
-      room-id  place-at my-floor @ v-tri-in  place-at vec@ body-place  yaw cell>f body-turn  settle ;
+      room-id  place-at my-floor @ v-tri-placed  place-at vec@ body-place  yaw cell>f body-turn  settle ;
   on stalker-out ( -- )  go-out ;
   on write-save ( -- )   \ (saves.fs) loaded: his kind, in the game or not, his place, health and mode
       loaded @ 0=  my-slot @ play-slot <> or if  exit  then   \ (a scene's figure isn't the stalker in play)
