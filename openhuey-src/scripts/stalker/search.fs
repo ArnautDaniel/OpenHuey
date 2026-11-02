@@ -201,7 +201,7 @@ create drawn-at /vec allot
         run-pause? if  exit  then
         after-her-elsewhere if  exit  then
     then
-    lead-taken? if  exit  then
+    my-mode @ held-off <> if  lead-taken? if  exit  then  then   \ (held off a lead moves him no more than the sight of her: no mode of Pursuer_ModesSearching's follows it)
     my-mode @ case
         after-her of  tick-down if  search-again  then  endof
         heading-for-her of  search-again  endof
