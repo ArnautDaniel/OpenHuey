@@ -84,6 +84,12 @@ testing held off in her room he keeps to it - no clock sends him after her (Purs
 testing ... no way home even afresh, after her (Debilitas_CarryOn); down, waiting about (mode 3)
 T{ [: held-off mode!  1 mode-t !  stalker.search:stand ;] his  5 run-frames  [: my-mode @ ;] his -> 4 }T
 T{ [: own-a @  -1 own-a !  stalker.travel:off-home  my-mode @  swap own-a ! ;] his -> 0 }T
+testing ... and what he hears or sees of them moves him no more than the sight of her: a lead takes a search, not him
+: lead-ready ( mode -- )  mode!  0 out-going !  0 reeling !  0 entering !  0 at-dog !  0 start-t !  0 sees-fiona !  0 sees-hewie !  0 lead !  7 lead-alarm ! ;
+: hears-her ( -- )  -1 did-hear !  self body-room heard-room !  s" fiona" actor-named body-tri heard-tri !  fiona-noise heard-source ! ;
+T{ [: searching lead-ready  hears-her  stalker.search:modes  my-mode @ ;] his -> 0 }T
+T{ [: held-off lead-ready  hears-her  stalker.search:modes  my-mode @ ;] his -> 4 }T
+T{ [: held-off lead-ready  0 did-hear !  -1 sees-hewie !  stalker.search:modes  0 sees-hewie !  my-mode @ ;] his -> 4 }T
 T{ [: down-cond cond !  after-her mode! ;] his  2 run-frames  [: my-mode @  well-cond cond ! ;] his -> 3 }T
 testing struck while Hewie is on him (Pursuer_Hit's move part 9): the damage and a cry, no more - not felled
 testing ... out of health till Hewie lets go
