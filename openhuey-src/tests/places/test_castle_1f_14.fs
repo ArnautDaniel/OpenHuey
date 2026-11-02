@@ -12,7 +12,7 @@ USING: tester engine game-state actors messages keys room-names game debug facts
 : as-her ( xt -- x )  game:fiona enter  execute  leave-actor ;
 : in-place ( xt -- x )  room-id room-name actor-named enter  execute  leave-actor ;
 : on-floor ( F: x y z -- x y' z )  {: F: x y z :}  x  x y z nav-floor drop  z ;
-: put ( deg F: x y z -- )  on-floor s>f tp-facing  [: her-at $28020018 v-tri-in her-tri ! ;] as-her  10 run-frames ;
+: put ( deg F: x y z -- )  on-floor s>f tp-facing  10 run-frames ;
 : at ( area deg -- )  >r area-middle drop r> put ;
 : room-afresh ( -- )  castle-1f-14 room!  60 run-frames ;
 create blow-pt 3 floats allot

@@ -102,4 +102,10 @@ T{ game:hewie body? -> 0 }T   \ (not left lying by the wire)
 testing ... back in later: the wire alone, its remark
 front-garden-3 room!  60 run-frames
 T{ game:hewie body?  0 228.1e 70e by  said -> 0 wire-snagged-msg }T
+testing a crow on its perch stays up there as it idles, not on the floor below (Actor_Place keeps its height)
+: figure-y ( slot -- n )  figure body-pos fdrop fswap fdrop f>s ;
+[: figure-1-kind figure-1 figure-in  figure-2-kind figure-2 figure-in ;] in-place  20 run-frames
+[: ['] figure-2-idles start drop ;] in-place  30 run-frames
+T{ [: figure-2 figure-y ;] in-place -> 38 }T
+
 test-summary

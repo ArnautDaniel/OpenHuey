@@ -2,7 +2,7 @@
 \ (docs/subsystems/hewie.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/hewie/test_hewie.fs
 IN: test-hewie
-USING: tester engine game-state actors messages common room-names game hewie.state hewie.body hewie.model hewie.states fiona.state debug ;
+USING: hewie.anims tester engine game-state actors messages common room-names game hewie.state hewie.body hewie.model hewie.states fiona.state debug ;
 
 : his@ ( xt -- x )  hewie enter  execute  leave-actor ;
 : his! ( xt -- )  hewie enter  execute  leave-actor ;
@@ -20,6 +20,11 @@ T{ apart 20e f< -> -1 }T
 T{ hewie body-tri 0< -> 0 }T
 T{ [: his-model @ actor act.visible l@ ;] his@ -> 1 }T
 T{ [: his-hp @ his-cond @ his-trust @ ;] his@ -> 100 0 0 }T
+testing placed: his default animation by his state, not the walk he was in (Hewie_PlaceOn)
+: placed-here ( -- )  hewie body-at vec@ 0e xyzw>cells hewie send place  deliver ;
+T{ [: walk-anim play ;] his!  placed-here  [: anim@ ;] his@ -> stand-anim }T
+T{ [: 1 cond!  walk-anim play ;] his!  placed-here  [: anim@ ;] his@  [: 0 cond! ;] his! -> stand-hurt-anim }T
+
 full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing left to himself he does one thing after another, on the floor

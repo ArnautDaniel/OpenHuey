@@ -26,7 +26,13 @@ USING: engine game-state actors messages common vectors facts items.names fiona.
     nx nz vlen {: F: l :}  l f0= if  1e exit  then
     nx l f/ her-yaw f@ fsin f*  nz l f/ her-yaw f@ fcos f* f+ fabs
     1e ny fsq f- f*  1e fswap f- ;
-: root-move ( -- )  root-turn {: F: x y z :}  x z her-yaw f@ rotate-by move-by ;   \ Character_RootMove
+\ Actor_MoveAny (+0x2B set): over anything, x and z by the walk, her height her own and the step's rise
+: move-any ( F: x z up -- )
+    {: F: x z up :}  her-at vec@ {: F: ax ay az :}
+    x z her-at her-tri @ 0 v-slide  dup 0< if  drop exit  then  her-tri !
+    her-at vec@ {: F: nx ny nz :}  nx ay up f+ nz her-at vec! ;
+: root-move ( -- )   \ Character_RootMove
+    root-turn {: F: x y z :}  x z her-yaw f@ rotate-by  her-noclip @ if  y move-any  else  move-by  then ;
 : root-move-within ( mask -- )  root-turn {: F: x y z :}  x z her-yaw f@ rotate-by move-within ;
 : turn-to-heading ( F: step -- left )  her-yaw f@ her-heading f@ frot turn-toward fswap her-yaw f! ;
 

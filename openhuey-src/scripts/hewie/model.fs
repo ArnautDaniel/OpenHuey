@@ -1,7 +1,7 @@
 \ hewie/model.fs - Hewie's model: playing his animations, their groups, his poses (getting into
 \ one, holding it), how he stands and walks for the danger and his mood, his voice and his bark.
 IN: hewie.model
-USING: engine actors common messages hewie-names hewie.state hewie.body hewie.anims hewie.sounds ;
+USING: engine actors common facts messages hewie-names hewie.state hewie.body hewie.anims hewie.sounds ;
 
 : model ( -- n )  his-model @ ;
 : him-model ( -- a )  model actor ;
@@ -15,6 +15,10 @@ USING: engine actors common messages hewie-names hewie.state hewie.body hewie.an
     rate-1  {: anim n :}  model anim n  anim entry nip  motion-play ;
 : play-blend8 ( anim n -- )   \ Motion_PlayBlend8: and no time of its own
     rate-1  {: anim n :}  model anim n  anim entry nip 8 or  motion-play ;
+\ placed (Hewie_PlaceOn): his default animation by his state (Hewie_SetHealthState's), at once - not
+\ the walk he was in; the run's Hewie played keeps his
+: rest-anim ( -- anim )  his-cond @ case  hurt-cond of  stand-hurt-anim  endof  down-cond of  down-anim  endof  stand-anim swap  endcase ;
+: placed-at-rest ( anim -- )  hewie-played? if  drop  else  play-cut  then ;
 : play-if-not ( anim -- )  dup anim@ <> if  play  else  drop  then ;   \ Hewie_PlayIfNot
 : play-again ( anim -- )  dup anim@ <> if  play  else  play-cut  then ;
 : anim-done? ( -- flag )  him-model act.mflags l@ $20 and 0<> ;   \ came to its end this frame

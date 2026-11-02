@@ -98,7 +98,12 @@ end-state
 : settle ( -- )  done  ['] still act ! ;
 \ its root motion this frame: the turn, and the step across and ahead
 : root@ ( F: -- turn x z )  model @ root-delta  fswap fdrop ;   \ (no rise)
-: root-move ( -- )  root@ {: F: turn x z :}  yaw turn f+ angle-wrap body-turn  x z body-move-local ;
+\ (a figure set in the air stays there - the crows on their perches, the wisps: Actor_Place keeps the
+\ height it is given, not its floor's. Fitted to the floor only if already near it)
+: stays-up ( F: y -- )
+    {: F: was :}  my-at v.y sf@ was f- fabs 4e f> if  room-id self body-tri  my-at v.x sf@ was my-at v.z sf@  body-place  then ;
+: root-move ( -- )
+    my-at v.y sf@  root@ {: F: was turn x z :}  yaw turn f+ angle-wrap body-turn  x z body-move-local  was stays-up ;
 \ ---- the story's moves (Pursuer_EventCommand) ----
 $200 constant walk-anim
 $201 constant other-walk-anim   \ (Pursuer_SlowWalkAnim: $201 with its +0x16C8 set - Pursuer_Reset leaves it 2,
@@ -379,9 +384,10 @@ behaviour figure
       model @ 0< 0= self body? and if  mv-done @  ended?  model @ 0 0 1 motion-events  broadcast moving  then ;
   on scene ( on -- )  in-scene ! ;
   \ the story's
+  on on-triangle ( tri -- )  self body? if  room-id swap  self body-pos body-place  else  drop  then ;
   on place ( x y z yaw -- )
       cell>f mv-yaw f!  cells>xyz mv-at vec!
-      room-id  mv-at pursuer-floor v-tri-in  mv-at vec@ body-place  mv-yaw f@ body-turn  placed ;
+      room-id  mv-at pursuer-floor v-tri-placed  mv-at vec@ body-place  mv-yaw f@ body-turn  placed ;
   on to-exit ( exit -- )
       0 exit-spot dup 0< if  drop fdrop fdrop fdrop exit  then      ( tri ) ( F: x y z )
       room-id swap body-place  placed ;
