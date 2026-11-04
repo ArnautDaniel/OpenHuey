@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.2.31 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.2.32 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -141,6 +141,11 @@ add_executable(sound-check tests/sound_check.c)
 target_link_libraries(sound-check PRIVATE hgadata)
 add_test(NAME sound_check COMMAND sound-check "${DEFAULT_DATA}")
 set_tests_properties(sound_check PROPERTIES SKIP_RETURN_CODE 77)
+
+# the SPU's voices: a sample set on a playing voice waits for its key on (a kept loop plays on)
+add_executable(spu-check tests/spu_check.c src/platform/spu.c)
+target_link_libraries(spu-check PRIVATE hgadata)
+add_test(NAME spu_check COMMAND spu-check)
 
 # the movies' conversion: every SFD split as the import splits it - the same video packets, the same sound
 add_executable(movie-check tests/movie_check.c)

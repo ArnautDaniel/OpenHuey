@@ -227,8 +227,12 @@ static const char *kMeshFs =
      * character in the dark has no glowing outline) */
     "        c.rgb += rim * (u_room_lit != 0 ? light : max(light, u_ambient)) * clamp(c.rgb * 2.0, 0.0, 1.0) * c.a;\n"
     "    }\n"
-    "    if (u_receive != 0) {\n"   /* characters' shadows: PCF over 3 x 3, fading with distance */
+    "    if (u_receive != 0) {\n"   /* characters' shadows: PCF over a disc, softer and fading with distance */
     "        vec2 texel = 1.0 / vec2(textureSize(u_shadow, 0).xy);\n"
+    "        const vec2 disc[16] = vec2[16](vec2(-0.94, -0.40), vec2(0.95, -0.77), vec2(-0.09, -0.93), vec2(0.34, 0.29),\n"
+    "            vec2(-0.92, 0.46), vec2(-0.82, 0.15), vec2(-0.38, 0.28), vec2(-0.26, 0.98), vec2(0.97, 0.32),\n"
+    "            vec2(0.79, -0.24), vec2(-0.49, -0.75), vec2(0.20, 0.79), vec2(0.65, 0.68), vec2(0.21, -0.20),\n"
+    "            vec2(0.44, -0.94), vec2(-0.19, -0.37));\n"
     "        for (int i = 0; i < 12; i++) {\n"
     "            if (i >= u_nshadows) break;\n"
     "            if (blocked(i, v_pos)) continue;\n"
@@ -239,13 +243,23 @@ static const char *kMeshFs =
     "            if (lp.w <= 0.0) continue;\n"
     "            vec3 q = lp.xyz / lp.w * 0.5 + 0.5;\n"
     "            if (any(lessThan(q, vec3(0.0))) || any(greaterThan(q, vec3(1.0)))) continue;\n"
-    "            float lit = 0.0;\n"
-    "            for (int y = -1; y <= 1; y++)\n"
-    "                for (int x = -1; x <= 1; x++)\n"
-    "                    lit += texture(u_shadow, vec4(q.xy + vec2(x, y) * texel, float(i), q.z - 0.0005));\n"
-    "            lit /= 9.0;\n"
     "            float far = length(v_pos - u_shadow_info[i].xyz) / u_shadow_info[i].w;\n"
+    /* (sharp by the caster, softer the further it falls: the penumbra a lamp's size gives, not a
+     * cut-out's edge all the way to the shadow's end) */
+    "            float spread = mix(1.0, 5.0, smoothstep(0.5, 3.0, far));\n"
+    "            float lit = 0.0;\n"
+    "            for (int k = 0; k < 16; k++)\n"
+    "                lit += texture(u_shadow, vec4(q.xy + disc[k] * spread * texel, float(i), q.z - 0.0005));\n"
+    "            lit /= 16.0;\n"
     "            float fade = 1.0 - smoothstep(1.0, 5.0, far);\n"
+    /* (a character's side turned from the light is dark by its lighting already: shadowed again
+     * it went near black, cut off hard along the line where the body turns away - its own
+     * shadow eased out toward that line instead) */
+    "            if (u_lit != 0) {\n"
+    "                vec3 sn = normalize(v_normal);\n"
+    "                if (dot(sn, u_eye - v_pos) < 0.0) sn = -sn;\n"
+    "                fade *= smoothstep(0.0, 0.35, dot(sn, normalize(u_shadow_light[i].xyz - v_pos)));\n"
+    "            }\n"
     /* (darkening by the strength as it looks on screen, not in linear values) */
     "            c.rgb *= pow(1.0 - u_shadow_strength[i] * (1.0 - lit) * fade, 2.2);\n"
     "        }\n"

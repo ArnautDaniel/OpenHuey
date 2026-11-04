@@ -16,7 +16,8 @@
 void spu_lock(void);
 void spu_unlock(void);
 
-/* a voice's sample: `ssa` bytes into `mem` (the start of its 16-byte block); or the samples
+/* a voice's sample for its next key on (as the SSA register: one playing goes on with its own):
+ * `ssa` bytes into `mem` (the start of its 16-byte block); or the samples
  * themselves (the library's WAV: data/vag.h), `owner` whose they are */
 void spu_voice_sample(int v, const uint8_t *mem, size_t size, size_t ssa);
 void spu_voice_pcm(int v, const void *owner, const int16_t *pcm, long frames, long loop_start);

@@ -84,8 +84,12 @@ static const char *kAoFs =
     "    vec3 b = p - at(v_uv - vec2(0.0, t.y)), u = at(v_uv + vec2(0.0, t.y)) - p;\n"
     "    vec3 n = normalize(cross(abs(l.z) < abs(r.z) ? l : r, abs(b.z) < abs(u.z) ? b : u));\n"
     "    if (dot(n, p) > 0.0) n = -n;\n"
-    /* a hemisphere of 16 samples (a spiral), turned by a per-pixel angle */
-    "    float spin = 6.2831853 * fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));\n"
+    /* a hemisphere of 16 samples (a spiral), turned by a per-pixel angle: one of 16 over each 4 x 4
+     * square of pixels, so the 4 x 4 blur after takes in every turn once and evens them out (a
+     * gradient noise's turns - left for a frame-to-frame blur to even - stayed as diagonal bands) */
+    "    ivec2 cell = ivec2(gl_FragCoord.xy) & 3;\n"
+    "    const int kOrder[16] = int[16](0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5);\n"
+    "    float spin = 6.2831853 * (float(kOrder[cell.y * 4 + cell.x]) + 0.5) / 16.0;\n"
     "    vec3 side = normalize(abs(n.x) < 0.9 ? cross(n, vec3(1, 0, 0)) : cross(n, vec3(0, 1, 0)));\n"
     "    vec3 other = cross(n, side);\n"
     "    float hidden = 0.0;\n"
@@ -107,12 +111,12 @@ static const char *kBlurFs =   /* a 4 x 4 box, which also undoes the per-pixel s
     "in vec2 v_uv;\n"
     "layout(binding = 0) uniform sampler2D u_src;\n"
     "out float o_ao;\n"
-    "void main() {\n"
-    "    vec2 t = 1.0 / vec2(textureSize(u_src, 0));\n"
+    "void main() {\n"   /* (whole texels: each of the 4 x 4 turns weighed the same) */
+    "    ivec2 p = ivec2(gl_FragCoord.xy), top = textureSize(u_src, 0) - 1;\n"
     "    float s = 0.0;\n"
     "    for (int y = -2; y < 2; y++)\n"
     "        for (int x = -2; x < 2; x++)\n"
-    "            s += texture(u_src, v_uv + (vec2(x, y) + 0.5) * t).r;\n"
+    "            s += texelFetch(u_src, clamp(p + ivec2(x, y), ivec2(0), top), 0).r;\n"
     "    o_ao = s / 16.0;\n"
     "}\n";
 
@@ -404,7 +408,7 @@ static void make_targets(int w, int h, int msaa) {
     T.ao_w = w / 2 > 1 ? w / 2 : 1;
     T.ao_h = h / 2 > 1 ? h / 2 : 1;
     for (i = 0; i < 2; i++) {
-        T.ao[i] = texture2d(GL_R8, T.ao_w, T.ao_h);
+        T.ao[i] = texture2d(GL_R16F, T.ao_w, T.ao_h);
         T.ao_fbo[i] = framebuffer(T.ao[i], 0);
     }
     T.half_w = T.ao_w;

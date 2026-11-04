@@ -16,6 +16,8 @@ enum { ENV_OFF, ENV_ATTACK, ENV_DECAY, ENV_SUSTAIN, ENV_RELEASE };
 typedef struct Voice {
     VagCursor c;                /* its sample (data/vag.h): the bank's ADPCM, or the library's WAV */
     const void *owner;          /* (whose: spu_forget) */
+    VagCursor next;             /* the sample set for the next key on (the SSA register: read only then) */
+    const void *next_owner;
     unsigned pitch;
     unsigned adsr1, adsr2;
     int vl, vr;
@@ -124,6 +126,8 @@ static void key_on(Voice *v) {
     v->env = ENV_ATTACK;
     v->level = 0;
     v->counter = 0;
+    v->c = v->next;
+    v->owner = v->next_owner;
     vag_start(&v->c);
     if (v->c.ended) {
         v->env = ENV_OFF;
@@ -142,21 +146,21 @@ static void key_off(Voice *v) {
 
 void spu_voice_sample(int v, const uint8_t *mem, size_t size, size_t ssa) {
     if (v >= 0 && v < SPU_VOICES) {
-        memset(&S.voice[v].c, 0, sizeof(VagCursor));
-        S.voice[v].c.mem = mem;
-        S.voice[v].c.size = size;
-        S.voice[v].c.ssa = ssa & ~(size_t)0xF;
-        S.voice[v].owner = mem;
+        memset(&S.voice[v].next, 0, sizeof(VagCursor));
+        S.voice[v].next.mem = mem;
+        S.voice[v].next.size = size;
+        S.voice[v].next.ssa = ssa & ~(size_t)0xF;
+        S.voice[v].next_owner = mem;
     }
 }
 
 void spu_voice_pcm(int v, const void *owner, const int16_t *pcm, long frames, long loop_start) {
     if (v >= 0 && v < SPU_VOICES) {
-        memset(&S.voice[v].c, 0, sizeof(VagCursor));
-        S.voice[v].c.pcm = pcm;
-        S.voice[v].c.frames = frames;
-        S.voice[v].c.loop_start = loop_start;
-        S.voice[v].owner = owner;
+        memset(&S.voice[v].next, 0, sizeof(VagCursor));
+        S.voice[v].next.pcm = pcm;
+        S.voice[v].next.frames = frames;
+        S.voice[v].next.loop_start = loop_start;
+        S.voice[v].next_owner = owner;
     }
 }
 
@@ -234,6 +238,10 @@ void spu_forget(const void *owner) {
             S.voice[v].level = 0;
             memset(&S.voice[v].c, 0, sizeof(VagCursor));
             S.voice[v].owner = NULL;
+        }
+        if (S.voice[v].next_owner == owner) {
+            memset(&S.voice[v].next, 0, sizeof(VagCursor));
+            S.voice[v].next_owner = NULL;
         }
     }
 }

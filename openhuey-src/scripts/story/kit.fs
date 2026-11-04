@@ -303,10 +303,6 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
     id body-at vec@ id body-dims {: F: cx cy cz cr ch :}  cx x f- fdup f*  cz z f- fdup f* f+  r cr f+ fdup f* f<= ;
 : before-door? ( id exit -- flag )   \ before the exit's door (the original's cond 0x18)
     {: id ex :}  id here? 0= if  false exit  then  id body-pos ex 0 door-in-area? ;
-: at-locked-exit? ( id -- flag )   \ in an exit's area, its door locked (trying it)
-    {: id :}  8 0 do
-        i exit-door dup 0< 0= if  doors:door-locked? id i exit-area in-area? and if  true unloop exit  then  else  drop  then
-    loop  false ;
 : remember-people ( -- )
     #people 0 do
         i person-id dup here? over body? and if  body-at  i /vec * was-at +  swap vec-copy  -1 i cells seen + !   \ (vec-copy is dst src: the body only read)
