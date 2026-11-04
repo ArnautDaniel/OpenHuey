@@ -11,7 +11,7 @@ USING: engine game-state actors messages common vectors facts flag-names story-n
 own-reset  bedroom-owns owns !
 
 \ ---- what is said here (the room's messages) ----
-$C  constant sheets-msg          \ "I can't just walk around all day holding these sheets around me..."
+$20 constant sheets-msg          \ "I can't just walk around all day holding these sheets around me. Call me old-fashioned..."
 $1F constant change-clothes-msg  \ "There is a change of clothes that maid has apparently laid out. Change clothes? YES NO"
 $12 constant now-what-msg        \ "That worked... but now what should I do? If I could just find a map of this place..."
 $C  constant dog-alright-msg     \ "I wonder if that dog will be alright?" (night)
@@ -167,9 +167,9 @@ $A5 constant evasion-doc
     tv-area 180 90 facing? if  ['] tv or-sheets unhurried offer  then
     clothed? 0= if
         found-file-201 fact?  clothes-area 180 50 facing? and if  ['] change-clothes unhurried offer  then
-        fiona at-locked-exit? if  ['] remark-sheets any-time offer  then
+        8 locked-request? if  ['] remark-sheets any-time offer  then
     else night? if
-        fiona at-locked-exit? if  ['] remark-dog any-time offer  then
+        8 locked-request? if  ['] remark-dog any-time offer  then
         bed-area 180 60 facing? if  ['] remark-sleep unhurried offer  then
         window-area 44 60 facing? if  ['] window-dog unhurried offer  then
     else  by-the-bed  then then
@@ -185,7 +185,7 @@ $A5 constant evasion-doc
         c2f-3-flag1 fact? if  ['] window-night  else  ['] window-day  then  or-sheets unhurried offer
     then
     found-file-201 fact?  clock-area -90 50 facing? and if  ['] save-clock or-sheets calm-hewie-up offer  then
-    hiding-offered @  fiona at-locked-exit? and if  ['] remark-hide any-time offer  then
+    hiding-offered @  8 locked-request? and if  ['] remark-hide any-time offer  then
     c2f-3-medallion-found fact?  c2f-3-medallion fact? 0= and  fiona -9e 1e -11e 5e 5e touches? and if
         ['] medallion calm-only offer
     then ;
