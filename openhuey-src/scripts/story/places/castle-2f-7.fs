@@ -42,11 +42,12 @@ own: press-remarked  own: cage-looked
 : plate-cue ( -- )  begin  cutscene-frame $69 < while  yield  repeat  cue-sound 35e 10e 25e room-sound ;
 : plate-scene ( -- )
     plate-movie scenes:unseen-movie plate-cutscene load-scene  ['] plate-cue start drop
-    panic-eased  if  -1 run-scene  then ;
+    panic-eased  if  -1 run-scene  then
+    ['] plate-cue stop-doing ;   \ (the scene over - skipped before its cue, or not played: no frame $69 to wait for)
 : plate-shown ( -- )  word-plate-key item-named  word-plate-key show-item-tab  fanfare  obtained-2-msg say ;
-: plate-done ( -- )   \ (back from the scene: by the machine, the plate, its file once the cue is past)
+: plate-done ( -- )   \ (back from the scene: by the machine, the plate, its file)
     fiona $7A 33 31.61e 18.93e place-at  fiona 0 idle  camera-restart  15 screen:from-black fade  wait-fade
-    plate-shown  begin  ['] plate-cue running? while  yield  repeat  plate-file give-file ;
+    plate-shown  plate-file give-file ;
 : presses ( -- )   \ (the press's screen; a plate made: its scene)
     press-screen open-subscreen  yield
     plate-made fact? if
@@ -60,7 +61,7 @@ own: press-remarked  own: cage-looked
     press-screen open-subscreen  yield
     plate-made fact? if  plate-scene  world-held state!  cube-object object-hide  then
     fiona $7A 33 31.61e 18.93e place-at  fiona 0 idle  camera-restart  15 screen:from-black fade  wait-fade
-    plate-made fact? if  plate-shown  begin  ['] plate-cue running? while  yield  repeat  plate-file give-file  then
+    plate-made fact? if  plate-shown  plate-file give-file  then
     stalkers-stay state-off ;
 : nobody-by-the-door? ( -- flag )   \ (nobody in exit 0's area; Debilitas loaded, not in the game)
     fiona 0 exit-area in-area?  hewie 0 exit-area in-area? or  if  false exit  then

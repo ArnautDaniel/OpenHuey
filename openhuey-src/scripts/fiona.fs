@@ -170,7 +170,7 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
     feel-the-panic
     read-controls
     her-mode @ own-mode = if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
-    hands-off? if  -1 her-cmd !  else  read-command  try-backstep  try-defend  try-doors  try-ladders  try-let-go  then
+    hands-off? if  her-scripted @ if  read-command-scripted  else  -1 her-cmd !  then  else  read-command  try-backstep  try-defend  try-doors  try-ladders  try-let-go  then
     \ (her point of interest before her state runs: the original's room scripts test it - phases 1 to 3 - ahead
     \ of Progress_CharsThink, so a kick that lands on a wall still shows its point that frame; told after, the
     \ wall's end had already changed her motion and the point was never seen - a wall's or a board's kick lost)
@@ -319,7 +319,7 @@ behaviour free
   on scene ( on -- )  her-in-scene ! ;   \ (a cutscene has her)
   on go-to ( x y z -- )  cells>xyz  go-to-point ;
   on on-triangle ( tri -- )  dup her-tri !  her-was-tri ! ;
-  on place ( x y z yaw -- )  cells>xyzw  put  fresh ;   \ (the story puts her)   \ (the room's scripts: Rooms_ExitPointOut, facing in)
+  on place ( x y z yaw -- )  cells>xyzw  put  her-scripted @ >r  fresh  r> her-scripted ! ;   \ (the story puts her - its hold on her kept; the room's scripts: Rooms_ExitPointOut, facing in)
   on camera-cut ( -- )  -1 her-cut ! ;
   on meters? ( -- )  her-fear f@ f>s  her-fear-bits @ 1 and  her-panic-t @  sender send her-meters ;   \ (the debug overlay)
   \ struck or caught (F4: fiona.hurt)

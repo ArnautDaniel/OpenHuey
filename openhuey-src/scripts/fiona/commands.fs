@@ -253,3 +253,8 @@ create ch-at /vec allot
 : read-command ( -- )
     her-busy-t @ if  -1 her-busy-t +!  then
     reads-pad? if  gesture  else  no-gesture  then  her-cmd ! ;
+\ a script has her (Fiona_Think, the frame of a character in a script's hands): the gesture read
+\ whatever she is doing, while Hewie may be commanded and she isn't kept busy - the story's to
+\ read (the attack lesson's "push up on the right stick")
+: read-command-scripted ( -- )
+    hewie-commandable state-flag?  fiona-occupied state-flag? 0= and if  gesture  else  no-gesture  then  her-cmd ! ;

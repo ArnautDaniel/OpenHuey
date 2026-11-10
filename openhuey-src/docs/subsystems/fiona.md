@@ -148,7 +148,10 @@ shake-free of F4); the flee's door slam and Hewie's reaction; charms (with items
 
 **F3 built** (`scripts/fiona/commands.fs`, with Hewie's H2). The right stick's gestures (keys 1
 up, 2 down, 3 R3, 4 right - held for more praise, 5 left), read under `hewie-commandable` and not
-`fiona-occupied` (Fiona_ReadsPad) and acted on the next frame. The code by what Hewie is doing and where
+`fiona-occupied` (Fiona_ReadsPad) and acted on the next frame. While a script has her (`scripted`:
+the original's Fiona_Think) the gesture is read whatever she is doing, under those two flags alone,
+for the story to read (the attack lesson's tip) - and the story placing her (`place`) keeps its hold
+on her (before 0.2.36 it let go, and with the tip up her gesture was never read). The code by what Hewie is doing and where
 (Fiona_HewieCommandAction): go there / go for it, come back, stay / come, praise, scold (from
 afar or close up). Her gesture (mode 0xD: 0xC00..0xC0F), her lines on its key frames
 (Fiona_MotionSounds' event 1; Fiona_CallHewie, Fiona_OrderLine), the command on its event 2
