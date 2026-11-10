@@ -77,7 +77,9 @@ camera set and path per exit - placed at the one she came by - or `way-in` for o
 (`exits-out`, `ways-out`: an area and the exit loaded ahead), the area cameras (`cameras-at`: area,
 set, path; `camera-out` for one taken crossing out of its area); what Hewie looks up at (`look,` builds a table of zones - x y z, radius, height, how
 high - and `hewie-looks-at` runs it, while he is calm and at her command: the rooms' 0xC5); a
-replayed movie over (`replay-over`: back to the extras by the forced way); an item found
+replayed movie over (`replay-over`: back to the extras by the forced way; a place starts its replay
+with `fiona start-holding`, as the original's action makes her busy at once - started plainly, she was
+free for its first frame and water-tower-7f-1's exit check sent her out before it began); an item found
 (`picks-up`: turned to it, bent down, taken - `takes-up` the taking: named, full or given;
 `fanfare` its jingle and its tab, there till the message is closed - a document `filed` has the
 jingle alone); out by an area (`leaves-by`); Hewie's whine from the wire (`whine-due?`); an
@@ -180,7 +182,9 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   Lorenzo's fall), its 2F (the crates, the study). Kit: `steady` (a room's steady sound: started once
   its sounds are in, then kept up), `kept-by` (a sound kept on a moving character), `fell-now` (the
   debris fallen through: the things' `keri-fell`), `hewie-mode-now` (his move mode).
-- the Water Tower (every room a place; `story/places/walkway.fs` what 2F and 4F share - the walkway
+- the Water Tower (every room a place - its B1, Riccardo's dungeon: the cell she wakes in, Hewie
+  sent for its key, the pipes she kicks open, the Sublimatum container, the gap she hides in, the
+  hole into the hidden room; `story/places/walkway.fs` what 2F and 4F share - the walkway
   turned by its lever, a `walkway:` each: which way, its height, the lever, Hewie's spots on it, what
   the room adds as it's across and once it has stopped): its 1F (the water, the clock), 2F (Riccardo
   heard prowling above, then come for her; back 1800 frames after he left), 4F (the drum falling, the

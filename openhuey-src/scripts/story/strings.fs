@@ -152,6 +152,7 @@ strings: house-of-truth-1f-7$  DE0047  DE0047\DE0047.SFD  wall_l  wall_r  zou0  
 strings: house-of-truth-1f-9$  DE0049  DE0049\DE0049.SFD  DE0048  DE0048\DE0048.SFD  fan0  fan1
      EV0029  EV0029\EV0029.SFD  fumi0  fumi1  keri0  keri1  keri2  keri3  keri4  keri5 ;  house-of-truth-1f-9 room-strings!
 strings: house-of-truth-1f-10$ kaihi_a  kaihi_b  kaihi_c ;  house-of-truth-1f-10 room-strings!
+strings: water-tower-b1-1$ EV0023  EV0023\EV0023.SFD  EV0024  EV0024\EV0024.SFD  DE0036  DE0036\DE0036.SFD  ori ;  water-tower-b1-1 room-strings!
 strings: water-tower-1f-1$ O_FIN_M\FIN_108.MTN ;  water-tower-1f-1 room-strings!
 strings: water-tower-2f-1$ move00  move01  lever2  lever2_1  O_FIN_M\FIN_10C.MTN ;  water-tower-2f-1 room-strings!
 strings: water-tower-4f-1$  move00  move01  lever2  lever2_1  doramukan  O_FIN_M\FIN_10C.MTN ;  water-tower-4f-1 room-strings!

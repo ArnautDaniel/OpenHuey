@@ -184,7 +184,7 @@ create cameras  1 , 0 , 0 ,   2 , 2 , 2 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   \ (area,
             events-held state? if
                 hewie send part-from-fiona
                 replay-act case  $14 of  ['] replay-wax  endof  $15 of  ['] replay-chess  endof  $16 of  ['] replay-hourglass  endof
-                    >r ['] replay-trap r>  endcase  start drop  exit
+                    >r ['] replay-trap r>  endcase  fiona start-holding drop  exit
             then
             0 0 0 way-in
         endof

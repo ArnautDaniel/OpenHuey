@@ -103,7 +103,9 @@ Butterflies_SetParams) and play a sound where they wander about now (`effect-sou
   fireplace), **DriftingFlecks** (`flecks-new`: flat flecks drifting across an area, turned the
   way they drift), **Drips** (five spots of the old mansion's flooded room: ripples and their
   sounds - `engine_sound_at`), **OneDrip** (a drop in the Chaos Forest, with a **SplashRing** and
-  a **DropletSpray** where it lands), **WallShadow** (eight black quads stepping off a wall),
+  a **DropletSpray** where it lands), **CeilingDrips** (`ceiling-drips-new`: 14 drops from fixed
+  spots of the Water Tower B1's ceiling, a spray of 16 and a drip sound, one of three by turns,
+  where each lands), **WallShadow** (eight black quads stepping off a wall),
   **Fire** (64 flames at one of the old mansion B1's spots), **Room66Effect** (`steam-new`: white
   puffs and a glow), **FloorGlow** (a pool and a cone of light, white fading to nothing:
   `Sprite.shaded`, its corners' own colours).

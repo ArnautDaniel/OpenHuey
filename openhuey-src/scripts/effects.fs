@@ -70,6 +70,7 @@ end-behaviour
 : spiral-smoke ( -- id )  spiral-smoke-new  scene-effect s" spiral-smoke" effect-actor ;   \ (SpiralSmoke) the old mansion's fire
 : drips ( -- )  drips-new  scene-effect s" drips" effect-actor drop ;   \ (Drips) the old mansion's flooded room
 : one-drip ( -- )  one-drip-new  scene-effect s" drip" effect-actor drop ;   \ (OneDrip) the Chaos Forest's
+: ceiling-drips ( -- )  ceiling-drips-new  scene-effect s" ceiling-drips" effect-actor drop ;   \ (CeilingDrips) the Water Tower B1's
 : rising-motes ( -- )  rising-motes-new  scene-effect s" motes" effect-actor drop ;   \ (RisingMotes) castle 1F's hall
 : embers ( ending -- id )  embers-new  scene-effect s" embers" effect-actor ;   \ (OrangeSparks) castle 1F's fireplace
 : flecks ( F: x y z half-w depth tx ty tz -- )  flecks-new  scene-effect s" flecks" effect-actor drop ;   \ (DriftingFlecks)

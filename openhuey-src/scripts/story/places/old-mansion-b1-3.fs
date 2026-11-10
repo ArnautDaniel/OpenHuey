@@ -304,7 +304,7 @@ create cameras  1 , 0 , -1 ,   2 , 1 , -1 ,   \ (area, set, path)
             events-held state? if
                 hewie send part-from-fiona
                 replay-act case  $14 of  ['] replay-maiden  endof  $15 of  ['] replay-corpse  endof  >r ['] replay-statue r>  endcase
-                start drop  exit
+                fiona start-holding drop  exit
             then
             0 0 -1 way-in
         endof

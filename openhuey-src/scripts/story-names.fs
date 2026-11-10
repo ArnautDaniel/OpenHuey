@@ -161,12 +161,15 @@ $84   fact:    om2f-2-flag1                  \ ? after a scene
 $86   fact:    found-file-247                \ (chaos-forest-8)
 $87   fact:    cf-10-flag1                   \ ? after a scene; "You've been shot. You'll be all right. This will stop the b
 $88   fact:    cf-13-flag1                   \ ?
-$89   fact:    x-37-flag2                    \ ?
+$89   fact:    x-37-flag2                    \ ? (set as she wakes in the water tower's B1)
 $8A   fact:    cf-11-flag1                   \ ?
 $8B   fact:    wt2f-1-flag1                  \ ?
 $8C   fact:    wt4f-1-flag1                  \ ?
-$8D   fact:    wt2f-1-flag2                  \ ? never set by a room
+$8D   fact:    riccardo-come                 \ (water-tower-b1-1) his scene played: the tinted Riccardo let loose
+$8F   fact:    wtb1-pipe-2-burst             \ (water-tower-b1-1) the far pipe burst: the Wooden Miniature behind it
+$90   fact:    wtb1-miniature                \ (water-tower-b1-1) the Wooden Miniature taken
 $91   fact:    wt8f-1-flag1                  \ ?
+$92   fact:    out-of-cell                   \ (water-tower-b1-1) out of the cell: Hewie brought the key
 $93   fact:    wt8f-1-flag2                  \ ? after a scene; "Riccardo... You were always... incomplete. But now, I will
 $96   fact:    found-file-257                \ (house-of-truth-1f-5)
 $97   fact:    ht1f-3-flag1                  \ ?
@@ -396,13 +399,19 @@ $2CD  fact:    om2f-12-breakable2-broken     \
 $2CE  fact:    om1f-21-breakable2-broken     \
 $2CF  fact:    om1f-21-breakable3-broken     \
 $2D0  fact:    om1f-21-breakable4-broken     \
+$2D1  fact:    wtb1-pipe-1-burst             \ (water-tower-b1-1) the pipe by the hall burst (it knocked her over)
+$2D2  fact:    wtb1-pipe-3-burst             \ (water-tower-b1-1) the east wall's pipe burst: the Album Medallion behind it
 $2D3  fact:    got-metal-boots               \ (castle-b1-3)
+$2D4  fact:    wtb1-viride-found             \ (water-tower-b1-1) Hewie dug up the Viride Medallion
+$2D5  fact:    wtb1-viride                   \ (water-tower-b1-1) the Viride Medallion taken
 $2D6  fact:    wt1f-1-medallion-found        \ Hewie sniffs it out (his shared script $8B sets this); taking it: wt1f-1-medallion
 $2D7  fact:    wt1f-1-medallion              \ (water-tower-1f-1)
 $2D8  fact:    wt2f-1-medallion-found        \ Hewie sniffs it out (his shared script $8B sets this); taking it: wt2f-1-medallion
 $2D9  fact:    wt2f-1-medallion              \ (water-tower-2f-1)
 $2DA  fact:    wt7f-2-rubrum-medallion-found \ Hewie sniffs it out (his shared script $8B sets this); taking it: wt7f-2-rubrum-medallion
 $2DB  fact:    wt7f-2-rubrum-medallion       \ (water-tower-7f-2)
+$2DC  fact:    wtb1-beef-jerky               \ (water-tower-b1-1) the Beef Jerky taken
+$2DD  fact:    wtb1-album-medallion          \ (water-tower-b1-1) the Album Medallion taken
 $2DE  fact:    wt2f-1-refined-antimony       \ (water-tower-2f-1)
 $2DF  fact:    wt4f-1-medallion              \ (water-tower-4f-1)
 $2E0  fact:    lp-1-lavender                 \ (lake-pathway-1)
@@ -493,6 +502,9 @@ $337  fact:    film-reel-used-om1f-14-2      \ (old-mansion-1f-14)
 $338  fact:    om3f-1-flag3                  \ ?
 $339  fact:    mummy-examined                \ "This... isn't a doll! It's a mummy!" (old-mansion-1f-17)
 $33A  fact:    wt4f-1-flag2                  \ ?
+$33B  fact:    wtb1-map                      \ (water-tower-b1-1) the Tower Sketch and the Folded Memo taken
+$33C  fact:    wtb1-figurine                 \ (water-tower-b1-1) the Bronze Figurine taken
+$33D  fact:    wtb1-disc                     \ (water-tower-b1-1) the Silver Disc taken
 $33E  fact:    wt8f-1-flag3                  \ ?
 $33F  fact:    wt8f-1-flag4                  \ ?
 $340  fact:    got-doc-crouch-evasion        \ (castle-1f-1)
@@ -527,6 +539,7 @@ $363  fact:    got-red-mandragora            \ (old-mansion-1f-13)
 $364  fact:    got-blue-mandragora           \ (old-mansion-1f-13)
 $365  fact:    got-purple-mandragora         \ (old-mansion-1f-13)
 $366  fact:    got-hebels-perfume            \ (old-mansion-1f-24)
+$367  fact:    wtb1-container-used           \ (water-tower-b1-1) something laid in the Sublimatum container
 $368  fact:    x-27-magist-medallion         \ (off-map-27)
 $369  fact:    x-27-magist-medallion-2       \ (off-map-27)
 $36A  fact:    x-27-magist-medallion-3       \ (off-map-27)

@@ -168,7 +168,7 @@ create ahead  2 , 0 ,  3 , 1 ,
 : person-in ( i -- )
     dup stalker-p = if  drop  fiona-hidden state? if  searched-hidden  else  0 came-while-hidden !  then  exit  then
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  replay-act $F = if  ['] replay-wall  else  ['] replay-trap  then  start drop exit  then
+    events-held state? if  hewie send part-from-fiona  replay-act $F = if  ['] replay-wall  else  ['] replay-trap  then  fiona start-holding drop exit  then
     0 0 0 way-in  1 4 4 way-in ;
 : went ( -- ) ;
 

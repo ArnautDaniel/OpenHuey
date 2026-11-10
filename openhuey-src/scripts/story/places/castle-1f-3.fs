@@ -222,9 +222,9 @@ create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   3 , 0 , 0 ,   4 , 1 , 1 ,   \ (area,
     events-held state? if
         hewie send part-from-fiona
         replay-act case
-            $10 of  ['] replay-awakening start drop  endof
-            $11 of  [: false replay-shelf ;] start drop  endof
-            $12 of  [: true replay-shelf ;] start drop  endof
+            $10 of  ['] replay-awakening fiona start-holding drop  endof
+            $11 of  [: false replay-shelf ;] fiona start-holding drop  endof
+            $12 of  [: true replay-shelf ;] fiona start-holding drop  endof
         endcase  exit
     then
     0 0 0 way-in  ['] hint-on-entering start drop ;

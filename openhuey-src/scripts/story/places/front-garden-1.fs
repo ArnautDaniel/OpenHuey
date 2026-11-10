@@ -193,7 +193,7 @@ create entries  0 , -1 ,   1 , 1 ,                                 \ (by exit 0,
     fiona hold  gate-movie scenes:unseen-movie gate-cutscene load-scene  night-look  marionette-part show-part  panic-eased
     if  -1 run-scene  then  replay-over ;
 : replaying ( -- )   \ (the extras' list: its rows for these two)
-    hewie send part-from-fiona  replay-var var@ 8 = if  ['] replay-tree  else  ['] replay-gate  then  start drop ;
+    hewie send part-from-fiona  replay-var var@ 8 = if  ['] replay-tree  else  ['] replay-gate  then  fiona start-holding drop ;
 
 : each-frame ( -- )
     events-held state? if  depth wall-shade exit  then

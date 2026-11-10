@@ -208,8 +208,11 @@ says what happens, and nothing in it can leave Fiona stuck.
 - The House of Truth: all done (house-of-truth-b1-1 .. -12, -1f-1 .. -10, -2f-1, -2); what its rooms
   share in story/places/house-of-truth.fs (the slam's shake, the voices, the colour rooms, the
   tremors, the holes in the walls, the Sol Key).
-- The Water Tower: all done (water-tower-1f-1, -2f-1, -4f-1, -7f-1, -7f-2, -8f-1); what 2F and 4F share
-  in story/places/walkway.fs (the turning walkway).
+- The Water Tower: all done (water-tower-b1-1, -1f-1, -2f-1, -4f-1, -7f-1, -7f-2, -8f-1); what 2F and 4F
+  share in story/places/walkway.fs (the turning walkway). B1 ($C0) came last (0.2.41): the original's
+  symbol file never named its script tables, so the first conversion skipped it, and for a while
+  the old mansion's "2 or 3 days" scene sent her into an empty room - ported then from the game's
+  bytecode (the archived events2forth.py, with the tables' addresses read off its class's vtable).
 - The off-map rooms: all done - the clock run ($D0 .. $D9, $E0 .. $E9; what they share in
   story/places/clock-run.fs), the ending scenes ($33 .. $36), the garden's hidden room ($27), the
   extras room ($37), $0D, $65; $64, $C4 and $5A have no data on the disc (never entered: their

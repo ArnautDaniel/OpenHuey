@@ -154,7 +154,7 @@ fvariable kiln-phase
 : replaying ( -- )   \ (the extras' list: its rows for this room's two scenes)
     hewie send part-from-fiona
     replay-var var@ case  4 of  ['] replay-alive  endof  7 of  ['] replay-alive  endof  $17 of  ['] replay-alive  endof
-        $25 of  ['] replay-alive  endof  >r ['] replay-crumbles r>  endcase  start drop ;
+        $25 of  ['] replay-alive  endof  >r ['] replay-crumbles r>  endcase  fiona start-holding drop ;
 
 \ ---- what she may do or say here ----
 : golem ( -- )

@@ -195,7 +195,7 @@ create machine-look  44.93e 0e -26.49e  27e 10e 10e look,
     events-held state? if
         hewie send part-from-fiona
         replay-act case  $B of  ['] replay-let-in  endof  $C of  ['] replay-caught  endof  >r ['] replay-crushed r>  endcase
-        start drop exit
+        fiona start-holding drop exit
     then
     0 0 0 way-in  1 3 3 way-in ;
 : went ( -- )  force-followed state-off ;

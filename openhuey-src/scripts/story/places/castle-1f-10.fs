@@ -130,7 +130,7 @@ create looks  7.42e 0e 22.15e 15e 9e 9e look,
     flame-fx 24.35e 9e 19.7e 8e -4e flame-stirred
     looks 1 hewie-looks-at  spots ;
 : replaying ( -- )   \ (the extras' list: its rows for the two)
-    hewie send part-from-fiona  replay-act 8 = if  ['] replay-chase  else  ['] replay-doll  then  start drop ;
+    hewie send part-from-fiona  replay-act 8 = if  ['] replay-chase  else  ['] replay-doll  then  fiona start-holding drop ;
 : person-in ( i -- )
     fiona-p = if  events-held state? if  replaying exit  then  0 1 -1 way-in  then ;
 : went ( -- ) ;   \ (Debilitas's figure: taken out by castle-1f-2 as she goes on)

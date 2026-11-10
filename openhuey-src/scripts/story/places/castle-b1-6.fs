@@ -246,7 +246,7 @@ $28 constant chapel-door   $11 constant far-door   0 constant fallen-floor
     replay-act case
         $C of  ['] replay-statue  endof   $D of  ['] replay-comes  endof   $E of  ['] replay-falls  endof
         $F of  ['] replay-calm  endof    $10 of  ['] replay-down  endof   >r 0 r>
-    endcase  ?dup if  start drop  then ;
+    endcase  ?dup if  fiona start-holding drop  then ;
 
 \ ---- every frame ----
 create cameras  1 , 0 , -1 ,   2 , 1 , 0 ,   3 , 1 , 0 ,   4 , 2 , 1 ,   8 , 0 , -1 ,   9 , 1 , 0 ,   $A , 0 , -1 ,   $B , 1 , 0 ,   \ (area, set, path)

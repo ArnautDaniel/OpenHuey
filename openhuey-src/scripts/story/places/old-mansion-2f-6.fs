@@ -155,7 +155,7 @@ create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   5 , 1 , 
             $10 of  [: riccardo-kind 5 4 5 far-locker replay-locker ;]  endof
             $11 of  [: riccardo-kind 7 6 5 near-locker replay-locker ;]  endof
             >r ['] replay-days r>
-        endcase  start drop  exit
+        endcase  fiona start-holding drop  exit
     then
     0 0 0 way-in
     from-forest @ if  fiona $4B 0 place-on-tri  world-held state!  0e sounds-scaled  panic-eased  ['] back-from-forest start drop  then ;

@@ -208,8 +208,8 @@ create entries  4 , -1 ,   1 , 1 ,   2 , 2 ,   3 , 3 ,   \ (by exit 0..3: the ca
             events-held state? if
                 hewie send part-from-fiona
                 replay-act case
-                    $E of  [: seized-movie seized-cutscene false replay ;] start drop  endof
-                    $F of  [: crows-movie crows-cutscene true replay ;] start drop  endof
+                    $E of  [: seized-movie seized-cutscene false replay ;] fiona start-holding drop  endof
+                    $F of  [: crows-movie crows-cutscene true replay ;] fiona start-holding drop  endof
                 endcase  exit
             then
             entries 4 ways-in
