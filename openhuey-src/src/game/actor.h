@@ -49,8 +49,7 @@ typedef struct Actor {
     int32_t prev_variant;
     float prev_vframe, prev_vweight;
     int32_t prev_frozen;    /* the motion fading out held still (the new one has flag 8) */
-    int32_t prev_held;      /* ... or come to its end, not looping: its pose kept at its last frame
-                             * (its time and root go on as before) */
+    int32_t prev_held;      /* ... or come to its end, not looping: its pose kept at its last frame */
     int32_t prev_old_flags, prev_old_frames;   /* the motion before's flags, length and time as */
     float prev_old_frame;                      /* this one started (its variant's phase) */
     const uint8_t *table;   /* the model's motion table (6 bytes a motion, in bank order: its fade
@@ -86,7 +85,7 @@ typedef struct Actor {
      * channels): a body motion with data for a part plays it there too, else the part goes back
      * to its own motion (a motion with no body: Hewie's ears, tail and jaw overlays) */
     struct ActorPart {
-        int32_t motion, own, prev, flags, pending;
+        int32_t motion, own, prev, flags, prev_flags, pending;
         float frame, prev_frame, fade, fade_len;
     } parts[3];
     /* bones turned where it looks (Hewie's neck: DogModel_AdjustBone) */

@@ -102,8 +102,17 @@ end-state
     settled 0< if  exit  then
     room-id ex  ex user @  settled let-go ;
 
+\ the room left (Doors_SaveAll): a door still held there - its swing not come to rest, its user
+\ struck or gone - is let go as it was going, open or shut; left held, nobody could use it again
+: let-go-all ( room -- )
+    {: room :}
+    8 0 do
+        i door-here?  room i door-of door-held? and if  room i  i user @  i door-closing? 0=  let-go  then
+    loop ;
+
 behaviour keeping
-  on spawned ( -- )  self subscribe tick  self subscribe entered-room  users 8 cells -1 fill ;
+  on spawned ( -- )  self subscribe tick  self subscribe entered-room  self subscribe leaving-room  users 8 cells -1 fill ;
+  on leaving-room ( room exit -- )  drop let-go-all ;
   on entered-room ( room exit -- )  2drop  room-in  users 8 cells -1 fill ;
   on redo-doors ( -- )  room-in ;   \ (Doors_RoomIn, for the story)
   on lock ( door -- )  dup locked-bit set-bits  changed ;

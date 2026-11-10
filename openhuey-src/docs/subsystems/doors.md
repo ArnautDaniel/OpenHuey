@@ -60,6 +60,9 @@ From `doors.c` (`Doors_*`), `progress.c` (`Progress_*Door*`), `room_map.c` (clos
 7. Letting go (`DoorHold_Open` / `DoorHold_Shut`): only a held, unlocked, non-doorway door;
    open also fails if it's stuck (bit 2). Either way it's no longer held. Off-screen, the door is
    heard (0xF at the door, from the user's source); in the played room its own sounds are.
+   When the played room is left, each door still held there - its swing not come to rest, its
+   user struck or gone - is let go as it was going, open or shut (`Doors_SaveAll`): a door left
+   held could be used by nobody again.
 8. In the played room a door model swings (`Door_Swing`): along its user's animation, by 5
    degrees a frame, or slammed by 15. The creak (0x27) as it starts to open along an animation
    and the latch (0x28) as it shuts past -6 degrees are heard at 0xF. A slam's latch is heard at
@@ -88,10 +91,10 @@ From `doors.c` (`Doors_*`), `progress.c` (`Progress_*Door*`), `room_map.c` (clos
 ## Status
 
 **Built** (`scripts/doors.fs`; the swing in C `room.c` now follows `Door_Swing`'s three modes and
-reports each frame's sound and rest). Checked by `tests/doors/test_doors.fs` (39 tests: locking;
+reports each frame's sound and rest). Checked by `tests/doors/test_doors.fs` (53 tests: locking;
 the locked-door quirk; holding once; letting go open / shut / not held; locked against a kind; a
 doorway; a door used off-screen heard at 0xF from its user's source; a held door swung open in
-the played room settles open; a slam's latch heard at 0x5F and the door left shut; set opened by
+the played room settles open; one still held when the room is left let go, open or shut; a slam's latch heard at 0x5F and the door left shut; set opened by
 a room's script - 15 a frame, the passage at once, the creak and latch heard at 0x5F; a door
 without a nav triangle not swung).
 
