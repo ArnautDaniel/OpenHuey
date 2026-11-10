@@ -67,6 +67,7 @@ void sprites_uv(int b, float u0, float v0, float u1, float v1);   /* a cell in t
 Sprite *sprites_records(int b, int n);
 
 void sprites_draw(const Mat4 *view_proj, const Mat4 *view);
+void sprites_draw_layer(const Mat4 *view_proj, const Mat4 *view, int layer, int last);   /* one renderer layer's batches (`last`: the highest layer) */
 /* the glow pass: whether any batch drawn this frame glows; those drawn again (after sprites_draw) */
 int sprites_glowing(void);
 void sprites_draw_glow(const Mat4 *view_proj);

@@ -449,6 +449,26 @@ void sprites_draw(const Mat4 *view_proj, const Mat4 *view) {
     }
 }
 
+/* the batches of one of the renderer's layers (the effects' drawers' +0x20: most $19), in the
+ * frame's order of layers - after the room's parts and the characters of that layer, before
+ * whatever the later layers draw over them (the room's reflecting part $1F, a softened figure $1C) */
+void sprites_draw_layer(const Mat4 *view_proj, const Mat4 *view, int layer, int last) {
+    int b;
+
+    for (b = 0; b < SPRITE_BATCHES; b++) {
+        Batch *x = batch(b);
+        int l;
+
+        if (x == NULL || x->n <= 0) {
+            continue;
+        }
+        l = x->layer < 0 ? 0 : x->layer > last ? last : x->layer;
+        if (l == layer) {
+            draw_batch(x, view_proj, view);
+        }
+    }
+}
+
 int sprites_glowing(void) {
     int b;
 

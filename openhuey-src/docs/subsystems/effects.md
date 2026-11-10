@@ -129,9 +129,8 @@ Butterflies_SetParams) and play a sound where they wander about now (`effect-sou
   round it, counting spheres where they show: here a glow sprite. `effect-command`: -1 done, -2
   no sparks a frame, else its size x 1000.
 - **WindowFlash** (`window-flash-new`, the dials' lenses: the story's `lens-flash`): five frames of
-  white fans through a ring at the object, turned with it. The original draws it into the
-  bloom's mask and brightens the screen through it; there is no bloom pass yet, so the shape is
-  added itself.
+  white fans through a ring at the object, turned with it, drawn into the bloom's mask (layer $26)
+  with the screen brightened through it (`post_bloom`), as the original.
 - **MirrorFragment** (the story's `mirror-fragment`): a reflection (as the lit quads') in the
   plane of a normal turned with an object, seen in an 8 x 8 square there (`mirror-square`; hg's
   approximation too - the original's extent is not known), reflecting only its character
@@ -170,6 +169,18 @@ solid and see-through parts (layer 8) and not what follows - the characters, the
 the glows; at $21 everything before it. Done in the composite, with the scene's second target's
 g: set where a depth-writing draw came after the fog's layer (`render_fog_after`). A cutscene
 keeps the fog's colours and range only (+16 back to 0).
+
+**Layers.** A batch is drawn in its renderer layer (its drawer's +0x20: most $19, the sky's 1, the
+reflections' $1E, the bloom mask's $26), in the frame's order of the original's 53 - after the room's
+parts and the characters of that layer, before whatever a later layer draws: so under the fog's pass
+($21, or 9 drawn early), under the room's reflecting part ($1F) and a softened figure ($1C). (They
+were all drawn after the last layer. The room's fog itself is laid on in the composite, by what wrote
+the depth behind a sprite: that is as it was.)
+
+**A character fading** (through a doorway, a creature leaving, the tinted stalkers: the original's
+fading layers $0F / $1A / $23 - what the layer drew goes back to the screen behind it by one alpha)
+fades as a whole: its depth is drawn first, then only its nearest surface is blended (`render_mesh`
+with a tint's alpha under 1), not each triangle over its own far side and insides.
 
 Untextured batches: group -1 (white). A batch can take a GPU texture of its own
 (`sprites_raw_texture`).
