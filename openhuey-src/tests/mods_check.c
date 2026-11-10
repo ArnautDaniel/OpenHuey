@@ -96,7 +96,7 @@ static void le(uint8_t *p, uint32_t v, int n) {
     int i;
 
     for (i = 0; i < n; i++) {
-        p[i] = (uint8_t)(v >> (8 * i));
+        p[i] = i < 4 ? (uint8_t)(v >> (8 * i)) : 0;   /* (a field wider than the value: zeros above it) */
     }
 }
 

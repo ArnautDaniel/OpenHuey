@@ -49,7 +49,10 @@ has one.
   and what they last told (`fiona-doing`, `hewie-doing`, `stalker-doing`, `creature-doing`).
   `story` keeps the stalker's last report and gives it to a new place before `room-enter` (the
   original reads him directly as a character enters); the stalker counts as in once he has told
-  the place what he is.
+  the place what he is. Hewie's last report goes the same way - he tells it anew as she leaves his
+  room (`leaving-room`, after he has chosen what to do left behind), so the room she comes into
+  reads it in its first frame: castle-1f-7's gate stays up while he waits on castle-1f-4's plate
+  (before 0.2.35 that frame saw no report and the gate fell as she stepped through).
 - **Story facts** by name: `fact:` in `story-names.fs`; saves write `fact <name>`.
 
 **Scenes** are the `scenes` actor's (`scripts/scenes.fs`): `scene-load ( room movie class cutscene )`

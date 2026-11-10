@@ -438,6 +438,13 @@ void camdir_new_room(CamDirector *d) {
     d->shown_now = d->shown_before = -1;
 }
 
+void camdir_room_gone(CamDirector *d) {
+    sSets = NULL;
+    sNsets = 0;
+    d->data = NULL;
+    memset(&d->path, 0, sizeof(d->path));
+}
+
 void camdir_room_start(CamDirector *d, const float *sets, int nsets, const int32_t *paths) {
     float fov_deg, lim_deg;
 

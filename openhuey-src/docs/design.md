@@ -88,7 +88,9 @@ The keyboard, and a gamepad played as the keyboard (src/platform/platform.c, as 
 native/platform/input.c lays it out): its buttons hold the keys the scripts read for the pad's
 (scripts/keys.fs - circle C, square Z, triangle V, cross X, L1 Q, R1 E, start Return, select
 Tab), the d-pad the arrows, the left stick W A S D past half way - and its own reading, `pad-stick`,
-for Fiona's walk as far as it is pushed. Its motors take the rumble (src/game/rumble.c, the
+for Fiona's walk as far as it is pushed. The right stick commands Hewie as the original's does: a
+push past 0.9 of its reach, from under 0.4, within 0.6 rad of up / down / right / left presses I /
+K / L / J once (L held while it is held right: the praise that goes on); R3 is F. Its motors take the rumble (src/game/rumble.c, the
 original's gRumble: a channel for each who asks - Fiona, the story, a scene, the stalker, and a
 sequence for the panic's beat - the strongest felt; off while paused or by the options).
 

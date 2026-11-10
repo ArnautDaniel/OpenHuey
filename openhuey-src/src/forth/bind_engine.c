@@ -58,6 +58,7 @@ static void field(Forth *f, const char *name, size_t offset) {
 PRIM(p_room) {   /* ( id -- ) load a room */
     Cell id = POP();
 
+    camdir_room_gone(&gCamDir);   /* (its sets and paths lie in the room's data) */
     if (!room_load(&gEngine.room, (int)id)) {
         forth_error(f, "room: no room %lX", (long)id);
     }
@@ -2369,7 +2370,7 @@ PRIM(p_stage_ambient) {   /* ( F: r g b -- ) */
 
     gEngine.stage_ambient = vec3(r, g, b);
 }
-PRIM(p_room_clear) { room_free(&gEngine.room); }   /* ( -- ) no room: nothing drawn round the actors */
+PRIM(p_room_clear) { camdir_room_gone(&gCamDir); room_free(&gEngine.room); }   /* ( -- ) no room: nothing drawn round the actors */
 
 /* ---- movies (platform/movie.c) ---- */
 
