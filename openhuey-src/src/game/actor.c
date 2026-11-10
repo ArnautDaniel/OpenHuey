@@ -270,7 +270,7 @@ static void part_tick(Actor *a, struct ActorPart *p) {
     }
     if (p->fade > 0.0f) {
         if (p->prev >= 0) {
-            step_time(&p->prev_frame, 1.0f, model_motion_frames(&a->model, p->prev), 1);
+            step_time(&p->prev_frame, 1.0f, model_motion_frames(&a->model, p->prev), p->prev_flags & 1);
         }
         p->fade -= 1.0f;
     }
@@ -457,11 +457,13 @@ static void advance(Actor *a) {
     if (a->fade > 0.0f) {   /* the motion before goes on while it fades out (not with flag 8) */
         keep_in_step(a, a->prev_motion, a->prev_frame, a->prev_variant, &a->prev_vframe);
         step_speeds(a, a->prev_motion, a->prev_variant, a->prev_vweight, &s0, &s1);
+        /* (by its own flags, as the current one - Motion_Advance: one that doesn't loop stops at
+         * its last frame, its root's step there kept; wrapped, it would walk its start again) */
         if (a->prev_motion >= 0 && !a->prev_frozen) {
-            step_time(&a->prev_frame, a->rate * s0, model_motion_frames(&a->model, a->prev_motion), 1);
+            step_time(&a->prev_frame, a->rate * s0, model_motion_frames(&a->model, a->prev_motion), a->prev_old_flags & 1);
         }
         if (a->prev_variant >= 0 && !a->prev_frozen) {
-            step_time(&a->prev_vframe, a->rate * s1, model_motion_frames(&a->model, a->prev_variant), 1);
+            step_time(&a->prev_vframe, a->rate * s1, model_motion_frames(&a->model, a->prev_variant), a->prev_old_flags & 1);
         }
         a->fade -= 1.0f;
     }
@@ -471,6 +473,7 @@ static void part_start(struct ActorPart *p, int index, int flags, float blend) {
     if (p->motion >= 0 && blend > 0.0f) {
         p->prev = p->motion;
         p->prev_frame = p->frame;
+        p->prev_flags = p->flags;
         p->fade = p->fade_len = blend;
     } else {
         p->fade = p->fade_len = 0.0f;
@@ -548,8 +551,7 @@ static int model_motion_entry_flags(const Actor *a, int index) {
 void actor_body_start(Actor *a, int index, int flags, float blend) {
     int frames = model_motion_frames(&a->model, index);
     /* the motion before had come to its end, not looping: it fades out posed at its last frame
-     * (stepped on, it would wrap to its first - a crouch's end back to standing); only its pose:
-     * its root goes on as it did (Hewie's turns while fading rest on it) */
+     * (its time stays there: actor_tick steps it by its own flags) */
     int ended = a->motion >= 0 && !(a->loop || (a->mflags & 1)) && (a->mflags & 0x400);
 
     if (a->motion >= 0 && blend > 0.0f) {

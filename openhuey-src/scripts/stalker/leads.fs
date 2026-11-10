@@ -7,7 +7,7 @@
 \ seeing her anew, his "there". (A noise he can see is nothing: let be.) His
 \ leads are forgotten as a new search begins.
 IN: stalker.leads
-USING: engine game-state actors messages common facts flag-names paths vectors rumble stalker.anims stalker.sounds stalker.state stalker.senses stalker.moving stalker.search stalker.chase ;
+USING: engine game-state actors messages common facts flag-names paths vectors rumble stalker.anims stalker.sounds stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.pursue ;
 
 5 constant pull-fiona   4 constant pull-noise   1 constant pull-hewie
 7 constant saw-her   6 constant heard-her   5 constant heard-noise   2 constant saw-hewie   1 constant heard-hewie
@@ -76,13 +76,15 @@ create there /vec allot
     then
     pull-hewie go-after  true ;
 : lead-now ( -- took? )  follow-heard dup if  exit  then  drop  follow-seen-dog ;
-\ seeing her anew (alarm 7 over what he had): his "there" before the chase
+\ seeing her anew (alarm 7 over what he had): his "there" before the chase - his own, the Pursuer's or
+\ Debilitas's (this file loads after stalker/pursue.fs: its `chase-begin` is the last set)
 : chase-seen ( -- )
     lead-alarm @ saw-her < if
         pull-fiona lead !  saw-her lead-alarm !
-        ['] chase-now there-anim  fiona body-at vec@  start exit
+        my-model @ there-anim has-motion? 0= if  chase-by-kind exit  then   \ (a model without it: none)
+        ['] chase-by-kind there-anim  fiona body-at vec@  start exit
     then
-    chase-now ;
+    chase-by-kind ;
 ' chase-seen is chase-begin
 ' lead-now is lead-taken?
 :noname ( -- flag )  step @ ['] starting = ; is starting?

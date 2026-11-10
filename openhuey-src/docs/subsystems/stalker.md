@@ -121,7 +121,8 @@ is, 60 in 100, the room's next search spot (the room class's table +0x38, genera
 at random he may stand on (not both $100000 and $200000). A stop he has no way to is skipped;
 past 8 the route is given up. A stop picked at random gets at most 150 frames' walk.
 
-**At a stop** (Debilitas_AttackTable "searched", $3AFA40): 50 walk on (standing a moment), 20
+**At a stop** (Debilitas_AttackTable "searched", $3AFA40): 50 his stand and look about him (action 9:
+Pursuer_WalkAside, Pursuer_LookAround - 90 frames), 20
 look about $1302, 20 $1303, 10 $1305 (his gesture table $3AF6F0), played to its end.
 
 **Walking** (`stalker/moving.fs`): by his animation's root motion; along his way a stride at a
@@ -143,7 +144,10 @@ waits; locked against him, locked or stuck - not that way again (a fresh route a
 a doorway or open - through; shut - through, but into her room he first knocks (a sound by
 his kit's knocks, +0x16B0: Debilitas $28 or $23, Daniella $21 / $19 / $1A, ...; none of his
 own the Pursuer's $21; bank 7, at the door on her side) and waits 60..120 frames. Into her room he comes
-just inside the exit, facing in; a shut door he came by is taken (`hold-door`) and swung open.
+in its doorway, facing in; a shut door he came by is taken (`hold-door`) and opened by hand - his door
+animation, the door along it, the pad rumbling (Pursuer_EnterRoom's action $C, Pursuer_DoorBarge) - and he
+walks in once it stands open. Refused (she holds it): no door action; he is about his business from the
+doorway beyond it, and his ways to her or out find the door as it is - held, he waits by it.
 His modes out there: after her he heads for her room (a new route as she moves on), his
 clock out - heading for it (1); come to the room he heads for he searches it (its stops x 150
 frames), then waits about (900); his wait over he heads for her room unless she is in his or
@@ -167,8 +171,9 @@ Walking or stalking, near and faced he stops to watch; his time out (counted onl
 he taunts or picks again. Within 24 - and within the ground he gains in 5 frames or 10 -
 facing her within 20 degrees on her floor, and not held off, he attacks: his table for how she
 stands (`fiona-plight`: 0 calm, 1 fleeing, 2 panicking, 4 / 5 the panic's stages; 3 out of
-reach - none). Rows: a combo ($13), a taunt ($17..$19: his gesture table), round her ($1A /
-$1B: 5 degrees a step at his distance, the way she isn't facing; 30 of it or 120 frames),
+reach or thrown - his table for being by her: taunts, his second way round. Knocked down she is as she
+stands: Pursuer_FionaState counts only her being thrown, moveSub $A / $B). Rows: a combo ($13), a taunt ($17..$19: his gesture table), round her ($1A /
+$1B: 5 degrees a step at his distance, the way she isn't facing, to and fro each 30 of it for 120 frames),
 taking her ($14 by the hand, $15 walking), his lunge ($1002), his grab ($1003). Whatever he picks
 from a table runs to its end by its own rules (Pursuer_Behaviour288 / Pursuer_BehaviourAttack,
 `attack-run`): a combo or a take over - his wait out (held off 90 frames if it struck her, else
@@ -209,7 +214,9 @@ At the end of each step - a blow's reaction, his striking back, any move of his 
 in a doorway) and a way home: he gives up - his cry ($20), held off (mode 4, 900 frames), the
 damage count back to 0 - and goes out by the first door of his route to the nearer of his own
 rooms (Debilitas $20; kind 6 $20, $02; in one of them, to its spot: Debilitas_PickDestination;
-there already, he stands). No route home: he doesn't give up. A door of his way home he can't
+there already, he stands). On his way to a door and through it whoever
+he touches is shouldered aside - Pursuer_RaiseThreat's light blow (kind 4, damage 5, a fright of 10:
+Debilitas_HeadingStep, his kinds' own step for the doors). No route home: he doesn't give up. A door of his way home he can't
 line up at (no way to his spot by it) is avoided as Pursuer_OnToNextExit marks it, and his way
 home planned again without it - the doors avoided kept till he next gives up. While he reels
 (struck, down) his search waits - the original picks its behaviour only at a step's end - so
@@ -635,3 +642,36 @@ Debilitas set up as Debilitas3 (the table above): the Pursuer's chase. Searching
 instead (Pursuer_Modes' mode 3: SetTarget(Hewie) - here, to the room played, Hewie's, to search
 it: `hunting-dog`). The summoner doesn't bring him in during the run (Summoner_RoomStart). The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,
 `char-loaded?`) is the event characters' (`docs/subsystems/cast.md`).
+
+## Read against the original, 2026-11 (PR #108)
+
+Found different and put right: his way in by a shut door (taken: opened by hand; refused: he stays
+beyond it); Debilitas's and kind 6's shoulder-past on their way to a door, unshaken on their way
+home; her plight (`Pursuer_FionaState`: thrown is out of reach, knocked down is not; table 3 picked);
+seen with no way to her his search goes on (`Pursuer_ChaseFionaHere`); his walks to a goal checked 30
+ahead (`Npc_PathClear`); his way round her to and fro (`Pursuer_StateSidestep`); his search over with
+no exit to leave by - searched again (`Pursuer_GoAfterFiona`); struck or bitten in his door animation
+the door is let go (`Npc_LeaveDoor`); his start at the sight of her (it was never run); his light blow
+on her as he goes for Hewie (`Pursuer_BehaviourHewie`).
+
+The behaviours' table (the PTMFs of `Pursuer_PickStep`: vtable slots): down - `BehaviourEnded`; mode 0
+seeing her `ChaseDecision` (+0x264), not `ChaseFiona` (+0x278); 1 `GoAfterFiona` (+0x280); 2 with a
+lead (4 / 1 / 5) `ChaseFiona` to it, else the search `Behaviour25C`; 3 his route used up
+`GoAfterFiona`, else the search; 4 `GoForFiona` (+0x2AC: Debilitas's and kind 6's - the others'
+is empty, as their `HeadingStep` and `CarryOn` are). `Pursuer_PickStepAlt` is the mini-game run's.
+
+Second pass (the kinds' own files, `Pursuer_ShowUp`, the run's `Pursuer_BehaviourFollow`): each kind's
+frights - his hold's first, each taunt's, his look round's (vtable +0x300 / +0x304 / +0x308: the
+Pursuer's 10 / 5 / 20; Daniella's kinds 5 / 5 / 15; Lorenzo's other class 10 / 5 / 20, hard 30 / 8 / 45;
+kind 37 20 / 7 / 20; the tint stalker 30 / 10 / 20); a move's points (+0x138: Daniella's strikes 3.5 out
+along her hand, Riccardo's heavy blow at her herself); Riccardo's table picks by
+`Pursuer_BehaviourAttack`'s rules; a door being used while he stands in its way - he steps back from it
+(`Pursuer_DoorNear`, action $10); his blow's key read a frame back (`Motion_EventFlags(-1)`); kept on
+floor he may stand on (`Pursuer_KeepOnWalkable`). `Pursuer_BehaviourFollow` is `BehaviourStalk` with
+the way after her through the doors - ours `pursue-run` with `after-her-elsewhere`: no difference found.
+
+*Not ported*: `Pursuer_ShowUp`'s pictures as she comes back in - Hewie still on him when she left
+(his letting go played from where the bite was: $1707 / $1704 / $1701), just fallen (his fall shown,
+not lying already); `Pursuer_DoorNear`'s cases for a door between the halves of one room and for him
+already down (action $11); the sight's wobble of `Pursuer_LookAround` (0.12 a frame: his head eased back the same
+frame); `Pursuer_StateKnockedThrough`'s down-between-halves case (his health back, time 1).

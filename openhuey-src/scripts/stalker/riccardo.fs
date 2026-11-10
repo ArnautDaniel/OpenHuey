@@ -56,13 +56,17 @@ defer ric-begin ( -- )
     1 chase-t +!
     hold-off @ if  -1 hold-off +!  then
     act-xt @ execute
+    in-attack @ if  attack-run exit  then   \ (what he picked from his tables: its own rules - Pursuer_BehaviourAttack, as every kind's)
     calming? moving-act? and if  pursue-now exit  then   \ (her panic calming down: the Pursuer's chase)
     chase-act @ case
         watch-act of  standing-step  endof
         walk-at-act of  walking-step  endof
         stalk-act of  stalking-step  endof
         round-act of  d-her 100e f> if  stalk-act far-stalk-wait wait# hold-for  else  step-done @ if  stand-watch  then  then  endof
-        >r  step-done @ if  ric-begin  then  r>
+        taunt-3-act of   \ (his third taunt, its gesture flagged: as his way round - Riccardo_Chase $19)
+            taunt-gesture @ gesture-flag?  d-her 100e f> and if  stalk-act far-stalk-wait wait# hold-for
+            else  step-done @ if  stand-watch  then  then  endof
+        >r  step-done @ if  stand-watch  then  r>   \ (a turn, a door, a ladder, his start over: standing - his count of comings and his chase's frames kept)
     endcase
     moving-act? if  in-reach? if  attack!  then  then ;
 \ his behaviour (Riccardo_ChaseDecision / StateBehaviour): the Pursuer's while her panic calms down
@@ -356,5 +360,5 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
     world-held state-flag?  stalkers-blind state-flag? or if  exit  then
     her-costume dup illegal-outfit = swap cowgirl-outfit = or if  exit  then
     fiona here? 0= if  exit  then
-    her-plight @ unreachable-plight = if  exit  then   \ (struck or held already)
+    her-reach @ if  exit  then   \ (struck or held already)
     grab-request 0 100e f>cell fiona send hit ;

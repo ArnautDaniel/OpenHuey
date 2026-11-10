@@ -79,6 +79,17 @@ T{ front-garden-2 0 fiona-kind hold -> 1 }T
 T{ slammed -> fiona-noise $5F }T
 T{ door0 door-open? -> 0 }T
 
+testing the room left with a door still held - its swing not at rest: let go as it was going, open
+testing or shut (Doors_SaveAll); left held, nobody could use it again
+door0 clean
+T{ front-garden-2 0 stalker-kind hold -> 1 }T
+T{ as-user 0 true stalker-noise doors send swing-door leave-actor  3 run-frames  door0 state@ 3 and -> 1 }T
+T{ front-garden-2 -1 rooms send go-to-room  3 run-frames  door0 state@ 3 and -> 2 }T
+T{ front-garden-2 0 stalker-kind hold -> 1 }T
+T{ as-user 0 false stalker-noise doors send swing-door leave-actor  3 run-frames  door0 state@ 3 and -> 3 }T
+T{ front-garden-2 -1 rooms send go-to-room  3 run-frames  door0 state@ 3 and -> 0 }T
+listen-here
+
 testing a room's script sets it swinging open (Doors_SetOpened): 15 degrees a frame, its passage over
 testing at once, a loud creak heard from Fiona's source, the door's state not opened
 : side-tri ( side -- tri )   \ a nav triangle of only that side of the door

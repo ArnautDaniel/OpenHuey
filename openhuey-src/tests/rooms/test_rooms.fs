@@ -63,6 +63,17 @@ testing no lights section: no lights, the ambient 128 (Lights_Reset); off the na
 T{ $D room  room-ambient f>s f>s f>s  0e 0e 0e lights-at -> 128 128 128 -1 -1 -1 }T
 T{ front-garden-3 room  0 light@ fdrop f0> -> -1 }T
 T{ 0e 100000e 0e lights-at -> 0 -1 -1 }T
+
+testing an exit's spots found from the door's own spot (Doors_NavSpot / NavTri_ExitEdge): a spot on a
+testing triangle's edge is in it - the chandelier hall's way back from the kiln room, 4 and 12 inside
+: spot-at ( exit which -- tri x z )  exit-spot  fswap fdrop  fswap fround f>s  fround f>s ;
+T{ castle-2f-2 room  4 0 spot-at  4 2 spot-at  4 1 spot-at -> 909 38 110  946 30 110  681 54 110 }T
+T{ 2 2 exit-spot  fdrop fdrop fdrop  0< -> 0 }T
+T{ castle-1f-6 room  0 0 exit-spot  fdrop fdrop fdrop  0< -> 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
+
+testing back out of the kiln room: she stands by its door in the hall, not by the one across
+: her-xz ( -- x z )  fiona body-pos  fswap fdrop  fswap fround f>s  fround f>s ;
+T{ castle-2f-2 4 rooms send go-to-room  5 actor-frames  room-id  her-xz -> castle-2f-2 38 110 }T
 
 test-summary

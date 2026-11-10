@@ -19,6 +19,7 @@ testing in her room, Fiona 30 ahead: the Pursuer's chase - walking at her ($200)
 [: 340e deg>rad body-turn ;] hers  1 run-frames
 fvariable dx  fvariable dz  dan body-pos dz f! fdrop dx f!
 340e deg>rad fsin 30e f* dx f@ f+  dan body-pos fdrop fswap fdrop  340e deg>rad fcos 30e f* dz f@ f+  160e tp-facing  3 run-frames
+[: [: start-t @ 0= ;] hers ;] 300 soon drop   \ (her start at the sight of her - $1601 - over)
 T{ [: step @ ['] pursue-run =  chase-act @  anim @  hold-t @ 290 > ;] hers -> -1 5 $200 -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 testing ... within reach: a combo from her tables; Fiona struck
@@ -55,6 +56,6 @@ testing ... the story's slot 2 holds her own for each (`stalker-actor`)
 T{ 34 story.base:stalker-actor 34 later =  36 story.base:stalker-actor 36 later = -> -1 -1 }T
 testing ... in her room (kind 34): the Pursuer's chase, as hers
 room-id game:fiona body-tri 34 later send stalker-in  3 run-frames
-T{ [: [: step @ ['] pursue-run = ;] 34 later enter execute leave-actor ;] 30 soon -> -1 }T
+T{ [: [: step @ ['] pursue-run = ;] 34 later enter execute leave-actor ;] 300 soon -> -1 }T   \ (after her start at the sight of her)
 34 later send stalker-out  3 run-frames
 test-summary

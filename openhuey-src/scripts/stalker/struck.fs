@@ -22,20 +22,22 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
     own-a @ 0< if  false exit  then
     own-room? if  -1 making-for !  true exit  then
     head-home  route-over? 0= ;
+\ on his way home he is unshaken (Debilitas_GoForFiona's +0x16F7): her light blow gets a grunt, no flinch
+: heading-home ( -- )  my-mode @ held-off = if  -1 unshaken !  then ;
 : give-up? ( -- flag )   \ (Debilitas_GivesUp: his damage to give up at, not held off already, not in a
     gives-up @ 0= if  false exit  then   \ doorway, and a way home - else on after her; the Pursuer's: never)
     hits @ give-up-hits @ <  my-mode @ held-off = or  at-door? or if  false exit  then
     avoid-clear  way-home ;   \ (afresh: the doors that let him down on his way home kept till then)
 : give-up ( -- )   \ (out by the first door of his way home; in one of his rooms, to its spot)
     0 hits !  give-up-cry 7 sound  held-off mode!  no-search search-phase !
-    making-for @ 0< if  come-into-play  else  making-for @ leave-by  then ;
+    making-for @ 0< if  come-into-play  else  making-for @ leave-by  then  heading-home ;
 :noname ( -- flag )  give-up? dup if  give-up  then ; is gave-up?
 \ on as before by his stance (Pursuer_StanceByFiona, PickStep): held off, on home; seeing her,
 \ his chase; else after her, or searching
 :noname ( -- )   \ (held off: on home - no way there even with the doors that let him down forgotten, after
     \ her again: Debilitas_CarryOn's retry, his clock emptied - Pursuer_ModesSearching's mode 4 ends)
     way-home 0= if  avoid-clear  way-home 0= if  after-her mode!  chase-start exit  then  then
-    making-for @ 0< if  come-into-play  else  making-for @ leave-by  then ; is off-home
+    making-for @ 0< if  come-into-play  else  making-for @ leave-by  then  heading-home ; is off-home
 : on-as-before ( -- )
     my-mode @ held-off = if  off-home exit  then   \ (held off already: on home)
     sees-fiona @ if  chase-begin  else  my-mode @ after-her = if  chase-start  else  search-again  then  then ;
@@ -49,9 +51,10 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 \ ---- flinching (Pursuer_StateFlinch: by the side and height - in front, behind, a low one; in
 \ a doorway the short ones); her blow: at its key he may strike back ----
 0 constant from-front   1 constant from-behind   2 constant low-blow   \ (a blow's direction: bits)
+: flinch-key? ( -- flag )  my-model @ 0 0 0 motion-events 2 and 0<> ;   \ (his flinch's key, this frame: Pursuer_FrameUpdate)
 : flinching ( -- )
     root-move
-    key?  by-her @ and  my-mode @ held-off <> and  her-plight @ unreachable-plight <> and if
+    flinch-key?  by-her @ and  my-mode @ held-off <> and  her-reach @ 0= and if
         0 by-her !  0 reeling !
         ['] chase-run step!  0 chase-t !  -1 combo !
         fiona body-at heading-to yaw f- angle-wrap fabs pi f2/ f< if  strike-back-front  else  strike-back-behind  then  choose  exit
@@ -117,7 +120,9 @@ create ahead-at /vec allot
     down-frames @ down-t !  down-cond cond !  1 knockouts +!  down-for-good  let-her-go
     lying-back-anim lie-anim !  0 sees-fiona !  0 sees-hewie !  lying-on ; is down-away
 : knock-down ( -- )  floor-ahead? if  fall-front-anim lying-front-anim  else  fall-back-anim lying-back-anim  then  fall ;
-: leg-down ( -- )  leg-fall-anim lying-front-anim fall ;
+\ (Pursuer_StateDownAndUp: brought down by the leg in a doorway with no health left, he is left at 1 -
+\ not down for good, no knock-out counted - and gets up)
+: leg-down ( -- )  hp @ 0> 0=  at-door? and if  1 hp !  then  leg-fall-anim lying-front-anim fall ;
 
 \ ---- a stumble by how worn he is (Fiona_ChaseRoll: his health over its most - over 0.8 none,
 \ 0.6 2 in 100, 0.4 5, else 10) ----
@@ -145,10 +150,10 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     kind powder-blow = if  how loops-mask and powder-how !  then
     cond @ down-cond = if  kind door-blow <> if  -1 twitch !  then  exit  then   \ (down: a twitch)
     hp @ damage abs - 0 max hp !  hits @ damage + 999 min hits !     \ (his health, the damage he's had)
-    on-ladder? if  hp @ 1 max hp !  exit  then                     \ (on a ladder: hurt, but no fall)
     kind killing-blow = if  0 hp !  then
     kind blow-dir {: dir :}
     kind dir tackled
+    on-ladder? if  hp @ 1 max hp !  exit  then                     \ (on a ladder: hurt - Hewie's temper counted - but no fall)
     bitten @ if   \ (Hewie on him - Pursuer_Hit's move part 9: a cry, no more - he falls as Hewie lets go;
         kind bite-blow =  how stumbles and 0<> and if  hurt-cond cond !  900 hurt-t !  -1 growl-after !  then
         striker @ hewie = if  hurt-cry  else  grunt-sound  then  7 sound exit   \ a stumbling bite hurts him)
@@ -156,6 +161,7 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     unshaken @  kind light-blow = and  hp @ 0> and if  grunt-sound 7 sound exit  then
     striker @ fiona = if  -1 by-her !  then
     kind door-blow = if  let-her-go combo-over 0 hold-off !  how door-struck exit  then   \ (a door slammed on him: how is its exit)
+    leave-door   \ (struck in his door animation: the door let go - Npc_LeaveDoor)
     hp @ 0> 0= if  at-door? if  1 hp !  else  knock-down exit  then  then
     kind powder-blow = powdered? and if  how loops-mask and dup powder-loops !  powder-cloud exit  then   \ (powdered again)
     reeling @ if  exit  then                                       \ (already reeling: the damage only)
@@ -172,6 +178,31 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     let-her-go  combo-over  0 hold-off !
     kind powder-blow = if  powder-how @ powdered exit  then
     kind dup light-blow = over heavy-blow = or swap hard-blow = or if  dir flinch  then ;
+\ ---- a door of the room being used - held - while he stands in its way (each frame: Pursuer_DoorNear,
+\ Npc_DoorOnWay; his action $10: Pursuer_DoorBackAway / DoorBackOff): he steps back from it ($404),
+\ turned to it, away from the side she is on, till it is let go; after her from then (his lead 6 / 7) ----
+: door-in-my-way ( -- exit | -1 )   \ (a door someone else holds, he in its area)
+    8 0 do
+        i door-here? if
+            room-id i room-exit-door  dup 0< 0=  swap doors:door-held? and
+            held-door @ i <> and  i 0 my-at vec@ door-in-area? and if  i unloop exit  then
+        then
+    loop  -1 ;
+: backing-from-door ( -- )
+    push-way f@ pi f+ angle-wrap turn-rate body-turn-toward fdrop
+    ended? 0= if  root-move  then
+    room-id push-exit @ room-exit-door doors:door-held? if  exit  then
+    ended? settled? or 0= if  exit  then
+    -1 push-exit !  recovered ;
+: door-watch ( -- )
+    here-played? 0= if  exit  then
+    reeling @  bitten @ or  leading @ or  cond @ down-cond = or  entering @ or  apart @ or  held-door @ 0< 0= or if  exit  then
+    door-in-my-way dup 0< if  drop exit  then  {: e :}
+    let-her-go  combo-over  0 hold-off !  out-over
+    e push-exit !  e door-heading push-way f!
+    after-her mode!  7 lead-alarm !
+    step-back-anim play-now  -1 reeling !  ['] backing-from-door step! ;
+
 \ each frame: his hurt worn off
 : hurt-down ( -- )
     hurt-t @ 0= if  exit  then  -1 hurt-t +!  hurt-t @ 0= cond @ hurt-cond = and if  well-cond cond !  then ;
