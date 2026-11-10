@@ -41,7 +41,9 @@ testing ... a stalker after her in the room (Npc_OpenDoorFionaHides, his action 
 : his-anim ( -- a )  [: stalker.state:anim @ ;] his ;
 : his-height ( -- n )  [: self body-at 4 + sf@ f>s ;] his ;
 : after-her ( tri -- )   \ (after her at once: by its doorway he would wander off)
-    stalkers-blind state-flag-set  debug:debilitas-tri  deliver  [: 0 stalker:ordered ;] his  3 run-frames  stalkers-blind state-flag-clear ;
+    stalkers-blind state-flag-set  debug:debilitas-tri  deliver  [: 0 stalker:ordered ;] his  3 run-frames
+    [: 0 start-t !  7 lead-alarm !  messages:after-her mode!  stalker.chase:chase-now ;] his   \ (his start at the sight of her over: in his chase)
+    stalkers-blind state-flag-clear ;
 368 after-her
 T{ [: [: at-ladder @ 0=  ladder-side @ 0= and ;] his ;] 30 soon -> -1 }T
 T{ [: his-anim $704 = ;] 300 soon  [: his-anim $705 = ;] 300 soon -> -1 -1 }T

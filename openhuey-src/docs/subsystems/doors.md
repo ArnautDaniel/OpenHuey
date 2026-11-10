@@ -23,7 +23,7 @@ Declared in `scripts/messages.fs`. Kinds of character (for locks): `fiona-kind` 
 | `swing-door` | `( exit open source -- )` | doors | Swung open / shut by 5 degrees a frame. |
 | `set-door-opened` | `( exit open -- )` | doors | A room's script sets it swinging (`Doors_SetOpened`): open with a loud creak (0x91, heard 0x5F from Fiona's source) or shut, by 15 degrees a frame; its passage moves over at once; its state isn't changed (nobody holds it). |
 | `slam` | `( exit source -- )` | doors | Slammed shut (15 a frame, a loud latch); taken hold of first, let go at rest. |
-| `barge` | `( exit source -- )` | doors | Burst open (15 a frame); taken hold of first, let go at rest (Fiona_SlamDoor). |
+| `barge` | `( exit source -- )` | doors | Burst open (15 a frame) with its bang (sound 0x91, loud, at the door: Doors_SetOpened how 0 - silent before 0.2.37); taken hold of first, let go at rest (Fiona_SlamDoor). |
 | `pull-shut` | `( exit source -- )` | doors | Taken hold of and swung shut by 5 degrees a frame, let go shut at rest: a stalker's door behind him (his DoorBreak: DoorHold_Take, DoorHold_Shut). |
 | `door-changed` | `( door -- )` | broadcast | Its state changed. |
 | `noise` | | acoustics | The doors are heard. |
