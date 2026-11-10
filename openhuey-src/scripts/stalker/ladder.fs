@@ -128,3 +128,8 @@ create her-mid /vec allot   create end-at /vec allot
     her-ladder-on @  dup ladder-foot beside if  ladder-foot climb-to exit  then
     dup ladder-top beside if  ladder-top climb-to exit  then
     drop  chasing? if  to-stand  then ;
+
+\ ---- Debilitas's kinds heading for a door of the room played (Debilitas_HeadingStep): whom he
+\ touches gets his light blow (Pursuer_RaiseThreat) - held off, he shoulders her out of his way.
+\ His kinds are the ones that growl (Debilitas_Update) ----
+:noname ( -- )  growls @ if  bump  then ; is shoulder-past

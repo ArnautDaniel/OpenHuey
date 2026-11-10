@@ -191,10 +191,12 @@ T{ [: knock-t @ 0> ;] 900 wait-for  [: away? ;] his -> -1 -1 }T
 testing ... coming up to it his footsteps were heard through the wall (P4b)
 T{ [: step-foot @ 0> ;] his -> -1 }T
 T{ [: my-room castle-1f-2 = ;] 200 wait-for  game:debilitas body-tri 0< 0= -> -1 -1 }T
-T{ 30 run-frames  32 state@ opened-bit and 0<> -> -1 }T
+testing ... his to open (Pursuer_EnterRoom's take, action $C): from the doorway beyond it, by hand - his door animation
+T{ [: entering @  barging @  anim @ $FF00 and ;] his -> -1 -1 $600 }T
+T{ [: 32 state@ opened-bit and 0<> ;] 200 wait-for  [: entering @ 0= ;] 200 wait-for  [: barging @ ;] his -> -1 -1 0 }T
 debug:debilitas-out  2 run-frames
-testing ... taken hold of by her as he comes through (the doors refuse him): he waits beyond it,
-testing ... barges it open (action $C, Pursuer_DoorBarge) and only then walks in - never in past it shut
+testing ... taken hold of by her as he comes through (the doors refuse him): no door action - he is about
+testing ... his business from the doorway beyond it, never in past it shut
 32 opened-bit clear-bits  32 changed  2 run-frames
 : door-32-exit ( -- exit )  8 0 do  room-id i room-exit-door 32 = if  i unloop exit  then  loop  -1 ;
 room-id door-32-exit 1 doors-id send hold-door  2 run-frames   \ (held by her)
@@ -204,11 +206,11 @@ castle-1f-10 debug:debilitas-hunt  2 run-frames
 : beyond? ( -- flag )   \ (at its spot 12 beyond, in the doorway outside)
     door-32-exit 1 exit-spot drop  game:debilitas body-pos  {: F: x y z ax ay az :}  x ax f- fabs 1e f<  z az f- fabs 1e f< and ;
 T{ beyond?  [: entering @ ;] his -> -1 -1 }T
-T{ [: barging @ ;] 30 wait-for  beyond? -> -1 -1 }T
-: shut-and-in? ( -- flag )   \ (on through it - in-doorway over - while it is not yet open)
-    32 state@ opened-bit and 0=  [: entering @ 0= ;] his and ;
-: watched ( n -- bad? )  false swap 0 ?do  shut-and-in? or  game-tick  loop ;
-T{ 200 watched  32 state@ opened-bit and 0<>  [: entering @ barging @ ;] his -> 0 -1 0 0 }T
+T{ 3 run-frames  beyond?  [: entering @ barging @ ;] his -> -1 0 0 }T
+: inside? ( -- flag )   \ (past the door: on its inner side)
+    game:debilitas body-pos door-32-exit door-side  door-32-exit 2 exit-spot drop door-32-exit door-side = ;
+: watched ( n -- bad? )  false swap 0 ?do  32 state@ opened-bit and 0=  inside? and or  game-tick  loop ;
+T{ 200 watched  32 state@ opened-bit and -> 0 0 }T
 debug:debilitas-out  32 held-bit clear-bits  32 changed  stalkers-blind state-flag-clear  2 run-frames
 testing ... one who shuts the doors he comes in by (Riccardo, Daniella: DoorBreak): shut again once he is clear of it
 32 opened-bit clear-bits  32 changed  2 run-frames

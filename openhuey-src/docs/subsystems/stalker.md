@@ -143,7 +143,10 @@ waits; locked against him, locked or stuck - not that way again (a fresh route a
 a doorway or open - through; shut - through, but into her room he first knocks (a sound by
 his kit's knocks, +0x16B0: Debilitas $28 or $23, Daniella $21 / $19 / $1A, ...; none of his
 own the Pursuer's $21; bank 7, at the door on her side) and waits 60..120 frames. Into her room he comes
-just inside the exit, facing in; a shut door he came by is taken (`hold-door`) and swung open.
+in its doorway, facing in; a shut door he came by is taken (`hold-door`) and opened by hand - his door
+animation, the door along it, the pad rumbling (Pursuer_EnterRoom's action $C, Pursuer_DoorBarge) - and he
+walks in once it stands open. Refused (she holds it): no door action; he is about his business from the
+doorway beyond it, and his ways to her or out find the door as it is - held, he waits by it.
 His modes out there: after her he heads for her room (a new route as she moves on), his
 clock out - heading for it (1); come to the room he heads for he searches it (its stops x 150
 frames), then waits about (900); his wait over he heads for her room unless she is in his or
@@ -209,7 +212,9 @@ At the end of each step - a blow's reaction, his striking back, any move of his 
 in a doorway) and a way home: he gives up - his cry ($20), held off (mode 4, 900 frames), the
 damage count back to 0 - and goes out by the first door of his route to the nearer of his own
 rooms (Debilitas $20; kind 6 $20, $02; in one of them, to its spot: Debilitas_PickDestination;
-there already, he stands). No route home: he doesn't give up. A door of his way home he can't
+there already, he stands). On his way to a door and through it whoever
+he touches is shouldered aside - Pursuer_RaiseThreat's light blow (kind 4, damage 5, a fright of 10:
+Debilitas_HeadingStep, his kinds' own step for the doors). No route home: he doesn't give up. A door of his way home he can't
 line up at (no way to his spot by it) is avoided as Pursuer_OnToNextExit marks it, and his way
 home planned again without it - the doors avoided kept till he next gives up. While he reels
 (struck, down) his search waits - the original picks its behaviour only at a step's end - so
