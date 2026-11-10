@@ -233,7 +233,8 @@ create side-pt /vec allot
         2e side-pt my-at vec-ahead
         side-pt self body-mask body-tri-to  dup 0< if  drop  else  nav-flags self body-mask and 0= if  true unloop exit  then  then
     loop  false ;
-: may-go? ( -- flag )  her-plight @ unreachable-plight <>  stalkers-blind state-flag? 0= and ;   \ (Pursuer_MayGo)
+: may-go? ( -- flag )  her-reach @ 1 and 0= ;   \ (Pursuer_MayGo)
+: her-up? ( -- flag )  her-reach @ 2 and 0= ;   \ (not thrown: her mode isn't 4)
 : turn-way ( -- way )  fiona body-at 60e deg>rad 150e deg>rad way-past ;   \ (Pursuer_TurnDir; no-turn: none)
 : attack-again ( -- )  took @ if  struck-her  else  missed-her  then  choose ;   \ (Pursuer_AttackAgain)
 : attack-over ( -- )
@@ -244,7 +245,7 @@ create side-pt /vec allot
     then
     sees-fiona @ if  chase-begin  else  chase-start  then ;
 : turn-or-stand ( -- )   \ (a turn or his way round over: Pursuer_BehaviourAttack 3 / $1A)
-    may-go? hold-off @ 0= and  d-her 40e f>  d-her f0< or  or if  attack-over exit  then
+    may-go? her-up? and hold-off @ 0= and  d-her 40e f>  d-her f0< or  or if  attack-over exit  then
     turn-way dup no-turn <> if  turn-to-her exit  then  drop
     d-her 20e f>  room-behind? 0= or if  30 hold-t !  stand-watch exit  then
     step-back ;
@@ -255,8 +256,9 @@ create side-pt /vec allot
         gesture-act of  step-done @ if  attack-over  then  endof
         taunt-act of  step-done @ if  attack-over exit  then
             taunt-gesture @ gesture-flag? if  sees-fiona @ 0=  d-her 60e f< 0=  or  d-her f0< or if  attack-over  then  then  endof
-        round-2-act of  step-done @ if  attack-over  then  endof
-        back-off-act of  may-go?  hold-off @ 0= and if  attack-over exit  then
+        round-2-act of  step-done @ if  attack-over exit  then   \ (his second way round: over sooner too - her out of his sight, or 60 off)
+            sees-fiona @ 0=  d-her 60e f< 0=  or  d-her f0< or if  attack-over  then  endof
+        back-off-act of  may-go? her-up? and  hold-off @ 0= and if  attack-over exit  then
             d-her 20e f>  room-behind? 0= or if  attack-again  then  endof
         taunt-2-act of
             taunt-gesture @ gesture-flag? if  turn-way dup no-turn <> if  0 hold-off !  turn-to-her exit  then  drop  then

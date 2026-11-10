@@ -439,7 +439,7 @@ behaviour stalking
       leading @ if  she-came answer !  else  fiona send unhand  then ;
   on seize-refused ( -- )  she-refused answer ! ;
   on broke-free ( -- )  she-broke-free answer ! ;              \ (his blow struck her: his cry)
-  on fiona-plight ( state ladder -- )  her-ladder-on !  her-plight ! ;
+  on fiona-plight ( state ladder reach -- )  her-reach !  her-ladder-on !  her-plight ! ;
   on zone-targets-off ( -- )  target-on #targets cells 0 fill ;
   on zone-target ( zone x y z -- )   \ (its centre: cells of floats)
       {: zone x y z :}  zone #targets u< 0= if  exit  then

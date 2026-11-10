@@ -356,5 +356,5 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
     world-held state-flag?  stalkers-blind state-flag? or if  exit  then
     her-costume dup illegal-outfit = swap cowgirl-outfit = or if  exit  then
     fiona here? 0= if  exit  then
-    her-plight @ unreachable-plight = if  exit  then   \ (struck or held already)
+    her-reach @ if  exit  then   \ (struck or held already)
     grab-request 0 100e f>cell fiona send hit ;

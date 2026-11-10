@@ -14,9 +14,9 @@ enum: seize-answer  no-answer she-came she-refused she-broke-free ;
 \ her floor free for him to take her on (Actor_TriFreeFor: not where nothing may stand)
 : her-floor-free? ( -- flag )
     fiona body-tri dup 0< if  drop false exit  then  nav-flags doorway-or-step and 0= ;
-\ she may be taken (Pursuer_MayGoForTarget: not out of reach - struck, seized -, not with the
-\ stalkers blind)
-: may-take? ( -- flag )  her-plight @ unreachable-plight <>  stalkers-blind state-flag? 0= and ;
+\ she may be taken (Pursuer_MayGoForTarget: not out of reach - stepping back, at a door, seized -,
+\ not with the stalkers blind)
+: may-take? ( -- flag )  her-reach @ 1 and 0= ;
 
 \ ---- taken by the hand: his taunting hold, a fright each time (10 the first, then 5); she
 \ breaks free - he lets go (held off his rests' first after: Pursuer_StateTauntHold); the sixth - he holds on while she's dragged off ----

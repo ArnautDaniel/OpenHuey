@@ -168,7 +168,7 @@ create spot /vec allot   fvariable turn   fvariable off
     come @ 0= if  comes? if  -1 come !  then  then
     in-play? if  in-her-room  else  elsewhere  then
     vanishing @ if  exit  then
-    come @ touching-her? and fiona-hidden? 0= and held? 0= and her-plight @ unreachable-plight <> and if  touched  show exit  then   \ (left be while out of reach)
+    come @ touching-her? and fiona-hidden? 0= and held? 0= and her-reach @ 0= and if  touched  show exit  then   \ (left be while out of reach)
     in-play? come @ and time @ lifetime >= and if  fade-away  then
     show store-record ;
 
@@ -190,7 +190,7 @@ behaviour spirit
       true out !  false come !  4 random 1+ minutes rest !  start ;
   on tick ( -- )  glow @ 0< if  exit  then  frame ;
   on fiona-doing ( mode sub cond cmd doing -- )  her-doing !  2drop drop  her-mode ! ;
-  on fiona-plight ( state ladder -- )  drop her-plight ! ;
+  on fiona-plight ( state ladder reach -- )  her-reach !  2drop ;
   on leaving-room ( room exit -- )   \ she leaves: in her room and after her, it follows
       over my-room @ = come @ and vanishing @ 0= and if  trip swap follow-out drop exit  then  2drop ;
   on arrived ( room exit -- )   \ a room in: back on its floor if it's there, else out of play

@@ -338,7 +338,7 @@ behaviour free
       her-doing @ push-doing =  anim@ strain-anim = and  broadcast fiona-straining
       shook-from-rest broadcast fiona-shaking
       her-shake-count @ 0< 0= if  shakes-now her-shake-count +!  her-shake-count @ broadcast fiona-shakes  then   \ (a story counting them)
-      plight  her-mode @ 3 = if  her-ladder @  else  -1  then  broadcast fiona-plight
+      plight  her-mode @ 3 = if  her-ladder @  else  -1  then  reach  broadcast fiona-plight
       tell-head
       her-move-done @  ended?  her-model @ 0 0 1 motion-events  broadcast moving ;
   \ the story's moves (fiona.moves)

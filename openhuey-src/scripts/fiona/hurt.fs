@@ -19,6 +19,11 @@ defer drop-door ( -- )   ' noop is drop-door   \ (a door she held let go: fiona.
 \ a door, grabbed, aside, the stalkers blind); thrown - at the panic's height or as it
 \ calms that is the calming one's, else out of reach too; the panic's stages 4 / 5; mode $B;
 \ panicking (fear over 90, or the panic attack) ----
+\ not to be gone for (Pursuer_MayGo: +0x2D - stepping back, at a door -, the stalkers blind, grabbed;
+\ aside by the story's 0x21): bit 1; thrown (her mode 4): bit 2
+: reach ( -- bits )
+    her-out-of-reach @ 0<>  her-sub @ grabbed-r = or  stalkers-blind state-flag? or  her-aside @ 0<> or  1 and
+    her-mode @ thrown-mode = 2 and  or ;
 \ (her mode 4 with moveSub $A / $B: thrown by a blow or a door, or any fall begun by Fiona_StartAction4 -
 \ which leaves $A - with no reaction's kind after it: her panic's fall, her stumble)
 : floored? ( -- flag )

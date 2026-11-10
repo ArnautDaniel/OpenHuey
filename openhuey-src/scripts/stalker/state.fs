@@ -88,6 +88,7 @@ state: stalker-state
   cell field combo  cell field combo-step  cell field swung  cell field sent  cell field took
   cell field cry  cell field hold-off  cell field freeze-t
   cell field her-plight  cell field her-stage
+  cell field her-reach           \ (fiona-plight's: bit 1 not to be gone for - Pursuer_MayGo; bit 2 thrown, her mode 4)
   cell field her-unseen          \ she can't be seen: item $89 worn, still (Fiona +0x1AD630; fiona-unseen)
   /vec field strike-pt  \ where a blow from no one came from (blow-from: striker -2)
   cell field noclipped           \ through blocked floor (the story's 0x20: +0x2B) - no reach test by distance
