@@ -241,7 +241,9 @@ kick's states Fiona_StateShoveStart / StateStrike / StateShove and the shove's F
 `+0x8AC`, `HumanModel_Vt74`) swings to 9 ahead and 9 up, the other planted, with no root step at
 all.* The kick ($E00, its pace slower the longer she's been shaken - recovery past $1C3:
 (3150 - recovery) / 1800 x 1.5 - and the more frightened - fear past 40: (160 - fear) / 120)
-reaches 2 round that foot in its key window - read a frame behind (Motion_EventFlags dt -1) -: a
+reaches 2 round that foot in its key window - read a frame behind (Motion_EventFlags dt -1), and
+told (`tell-point`) before her state runs, as the original's rooms and characters read her point
+before her own frame: a wall the kick ends against no longer takes its last frame's point -: a
 `blow` 1, damage 1, more by her boots; with a wall between her and her foot (the walk from her
 triangle to it, over flags $20018: Actor_TriTo) it ends: blended into standing over 10
 (Motion_PlayWith flags $101), and once that has faded in Hewie is told (`reaction` 10, unless she

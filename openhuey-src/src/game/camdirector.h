@@ -73,6 +73,9 @@ extern CamDirector gCamDir;
 
 /* no set, no path, no target (CamDirector_NewRoom: the start of play) */
 void camdir_new_room(CamDirector *d);
+/* the room's data is going (another room loading): its sets and paths let go - nothing of them
+ * is read until camdir_room_start takes the next room's */
+void camdir_room_gone(CamDirector *d);
 /* the room's camera sets (section 5) and paths (section 6, NULL: none) taken and the camera put
  * at the current set / path (CamDirector_RoomStart: each room) */
 void camdir_room_start(CamDirector *d, const float *sets, int nsets, const int32_t *paths);

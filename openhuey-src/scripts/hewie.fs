@@ -81,7 +81,8 @@ behaviour hewie-own
       >r cells>xyz  his-place  r> cell>f his-yaw!  rest-anim placed-at-rest  model actor-settle ;
   on leaving-room ( room exit -- )   \ (the old room still in; played, he goes with it)
       hewie-played? along? and if  2drop played-through exit  then
-      2dup room-exit-leads drop fiona-room !  nip  along? if  fiona-left  else  drop  then ;
+      2dup room-exit-leads drop fiona-room !  nip  along? if  fiona-left  else  drop  then
+      tell-doing ;   \ (the story hands it to the room she comes into: what he does now, left behind)
   on arrived ( room exit -- )
       hewie-played? along? and if  nip played-arrive exit  then
       drop fiona-room !

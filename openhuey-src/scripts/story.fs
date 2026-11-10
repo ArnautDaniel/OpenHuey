@@ -10,23 +10,30 @@ state: story-state
   cell field old           \ the room being left (-1: none)
   9 cells field last-stalker   \ his last report (stalker-doing) ...
   cell field stalker-age       \ ... and how many frames ago: a new place is told it as it comes in
+  13 cells field last-hewie    \ Hewie's last report (hewie-doing) ...
+  cell field hewie-told        \ ... once he gave one: a new place is told that too
 end-state
 : tell-stalker ( place -- )   \ (his report of the last frame, if he gave one)
     stalker-age @ 2 < 0= if  drop exit  then
     >r  9 0 do  i cells last-stalker + @  loop  r> send stalker-doing ;
+: tell-hewie ( place -- )   \ (what he does as she leaves - waiting on a floor plate - read in the place's first frame, before his own)
+    hewie-told @ 0= if  drop exit  then
+    >r  13 0 do  i cells last-hewie + @  loop  r> send hewie-doing ;
 
 behaviour telling
   on spawned ( -- )  -1 current !  -1 old !  100 stalker-age !
-      self subscribe leaving-room  self subscribe arrived  self subscribe stalker-doing  self subscribe tick ;
+      self subscribe leaving-room  self subscribe arrived  self subscribe stalker-doing  self subscribe hewie-doing  self subscribe tick ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       0 8 do  i cells last-stalker + !  -1 +loop  0 stalker-age ! ;
+  on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
+      0 12 do  i cells last-hewie + !  -1 +loop  -1 hewie-told ! ;
   on tick ( -- )  1 stalker-age +! ;
   on leaving-room ( room exit -- )  2drop  current @ dup 0< if  drop exit  then  dup old !  send room-leave  -1 current ! ;
   on arrived ( room exit -- )   \ (a room still current - two arrivals without a leaving, a jump - goes too)
       old @ dup 0< 0= if  send room-left  else  drop  then
       current @ dup 0< 0= if  send room-left  else  drop  then
       over place-of 0= if  2drop exit  then   \ (no place: nothing of the story's)
-      over place-spawn  dup tell-stalker  dup current !  send room-enter ;
+      over place-spawn  dup tell-stalker  dup tell-hewie  dup current !  send room-enter ;
   on room-done ( -- )  sender dup alive? if  kill  else  drop  then  sender old @ = if  -1 old !  then ;
   on story-stop ( -- )   \ (each place stops its doings and reports done)
       current @ dup 0< if  drop  else  send story-stop  then  old @ dup 0< if  drop  else  send story-stop  then

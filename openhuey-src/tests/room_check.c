@@ -20,6 +20,11 @@
 static int sRooms, sBad, sMeshes, sTexts;
 static long long sBefore, sAfter, sGltf;
 
+/* n bytes alike (none: alike, whatever the pointers - a mesh with no vertices of a kind has NULL) */
+static int same_bytes(const void *a, const void *b, size_t n) {
+    return n == 0 || memcmp(a, b, n) == 0;
+}
+
 /* the room's mesh built from its section, written as glTF and read back: the same RoomMesh */
 static void check_mesh(const char *name, const uint8_t *sec, size_t size) {
     RoomMesh a, b;
@@ -64,8 +69,8 @@ static void check_mesh(const char *name, const uint8_t *sec, size_t size) {
     }
     same = a.nv == b.nv && a.nd == b.nd && a.ndv == b.ndv && a.ndyn == b.ndyn &&
            memcmp(&a.lo, &b.lo, sizeof(a.lo)) == 0 && memcmp(&a.hi, &b.hi, sizeof(a.hi)) == 0 &&
-           memcmp(a.v, b.v, sizeof(MeshVertex) * (size_t)a.nv) == 0 && memcmp(a.d, b.d, sizeof(MeshDraw) * (size_t)a.nd) == 0 &&
-           memcmp(a.dv, b.dv, sizeof(MeshVertex) * (size_t)a.ndv) == 0;
+           same_bytes(a.v, b.v, sizeof(MeshVertex) * (size_t)a.nv) && same_bytes(a.d, b.d, sizeof(MeshDraw) * (size_t)a.nd) &&
+           same_bytes(a.dv, b.dv, sizeof(MeshVertex) * (size_t)a.ndv);
     for (i = 0; same && i < a.ndyn; i++) {
         const DynBatch *x = &a.dyn[i], *y = &b.dyn[i];
 

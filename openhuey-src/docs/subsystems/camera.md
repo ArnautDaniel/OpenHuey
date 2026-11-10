@@ -44,7 +44,8 @@ sub-state and the room change.
 2. Who may be followed (`Progress_CameraFollow`): Fiona always; another character only in the
    played room and with a setup. Otherwise the camera goes back to Fiona.
 3. From room to room the director goes on (its shake, its shot, whom it follows); only the
-   characters' setups go. The room starts it between its first scripts and its phase 3
+   characters' setups go. Its sets and paths lie in the room's data: as another room loads they
+   are let go (`camdir_room_gone`), nothing of them read until that room's start. The room starts it between its first scripts and its phase 3
    (`RoomStart`, then `CameraOn`): the view angle from 0.6 of the set's, out to it over 60
    frames, and the phase 3 scripts see the setup changed. A fresh start (a new game, a load:
    `RoomIn`) resets it and cuts on the first frame; Fiona's setup is the save's.

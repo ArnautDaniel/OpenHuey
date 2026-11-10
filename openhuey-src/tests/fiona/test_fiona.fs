@@ -121,4 +121,17 @@ T{ [: her-mode @ ;] her@  anim -> $A $B01 }T
 : up? ( n -- flag )  0 ?do  game-tick  [: her-mode @ 0= ;] her@ if  true unloop exit  then  loop  false ;
 T{ 600 up?  since 5e f<  [: her-tri @ 0< 0= ;] her@ -> -1 -1 -1 }T
 
+testing her kick's point of interest (Fiona_PointOfInterest: the rooms' zones test it before her state runs): it is told
+testing ... on both frames of its key - the second with her foot right out - and when the kick lands on a wall
+front-garden-5 room!  30 run-frames
+: kick-points ( -- n far? )   \ (the frames her point shows through a kick; whether it got 6 past where she stands)
+    {: | n far :}  keys:square press
+    60 0 do
+        fiona body-point if  fiona body-at vec-dist-xz 6e f> if  -1 to far  then  n 1+ to n  then  game-tick
+    loop  n far ;
+-259.5e -10e 199e 180e tp-facing  12 run-frames
+T{ kick-points -> 2 -1 }T
+-264.5e -10e 190e 90e tp-facing  12 run-frames   \ (her blow there is past the floor: the wall's end of the kick)
+T{ kick-points drop 0> -> -1 }T
+
 test-summary
