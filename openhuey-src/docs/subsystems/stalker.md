@@ -172,7 +172,7 @@ facing her within 20 degrees on her floor, and not held off, he attacks: his tab
 stands (`fiona-plight`: 0 calm, 1 fleeing, 2 panicking, 4 / 5 the panic's stages; 3 out of
 reach or thrown - his table for being by her: taunts, his second way round. Knocked down she is as she
 stands: Pursuer_FionaState counts only her being thrown, moveSub $A / $B). Rows: a combo ($13), a taunt ($17..$19: his gesture table), round her ($1A /
-$1B: 5 degrees a step at his distance, the way she isn't facing; 30 of it or 120 frames),
+$1B: 5 degrees a step at his distance, the way she isn't facing, to and fro each 30 of it for 120 frames),
 taking her ($14 by the hand, $15 walking), his lunge ($1002), his grab ($1003). Whatever he picks
 from a table runs to its end by its own rules (Pursuer_Behaviour288 / Pursuer_BehaviourAttack,
 `attack-run`): a combo or a take over - his wait out (held off 90 frames if it struck her, else

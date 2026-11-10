@@ -24,8 +24,8 @@ defer door-recovered ( -- )   ' stand is door-recovered   \ a door's blow over (
 \ ---- a door as he finds it at an exit of his room (travel's door-kind) ----
 : kind-at ( exit -- k )  my-room swap room-exit-door door-kind ;
 create spot-at /vec allot
-: aim-at ( tri -- ok? ) ( F: x y z -- )   \ (his way planned there)
-    spot-at vec!  dup 0< if  drop false exit  then  spot-at plan 0> ;
+: aim-at ( tri -- ok? ) ( F: x y z -- )   \ (his way planned there: his goal - planned again if the way is barred meanwhile)
+    spot-at vec!  dup 0< if  drop false exit  then  dup goal-tri !  goal-at spot-at vec-copy  spot-at plan 0> ;
 
 \ ---- the door he holds let go open (Npc_DoorRelease) - shut, his animation one that shuts it
 \ (Npc_DoorShutOther: the story's door use, 1 / 3); his way out over ----
@@ -47,11 +47,11 @@ defer script-door-over ( -- )   ' noop is script-door-over
 
 \ ---- on through an open door or a doorway (Pursuer_ExitGoTo: to its spot 12 beyond - its
 \ spots: 0 4 inside, 1 12 beyond, 2 12 inside -, or by it; then Debilitas_ExitDone: through) ----
-\ Debilitas's kinds on their way to a door and through it (Debilitas_HeadingStep, his own for
+\ Debilitas and his kind 6 on their way to a door and through it (Debilitas_HeadingStep, his own for
 \ Pursuer_BehaviourDoors): whom he touches is shouldered aside - Pursuer_RaiseThreat's light blow
 \ (stalker/ladder.fs sets it: his `bump`)
 defer shoulder-past ( -- )   ' noop is shoulder-past
-: going-through ( -- )  shoulder-past  walk-stride if  out  then ;
+: going-through ( -- )  shoulder-past  keep-way 0= if  out exit  then  walk-stride if  out  then ;   \ (no way on: through from here)
 : on-through ( -- )   \ (the door only opened to get at her: done - his chase again)
     for-her @ if  out-over  round-done exit  then
     making-for @ 1 exit-spot aim-at 0= if
@@ -86,7 +86,7 @@ defer shoulder-past ( -- )   ' noop is shoulder-past
     spot-yaw f@ turn-rate body-turn-toward f0= 0= if  exit  then
     making-for @ asked !  room-id making-for @ stalker-kind doors-actor send hold-door
     ['] asking step! ;
-: lining-up ( -- )  shoulder-past  walk-stride if  still-anim play  ['] facing-door step!  then ;
+: lining-up ( -- )  shoulder-past  keep-way 0= if  no-way-to-door exit  then  walk-stride if  still-anim play  ['] facing-door step!  then ;
 : line-up ( -- )
     my-at vec@ making-for @ door-side  dup 0< if  drop no-way-to-door exit  then
     if  in-front-use  else  from-behind-use  then  making-for @ kind-at open-way = 1 and +  door-use !
@@ -121,6 +121,7 @@ defer at-exit ( -- )
 : to-exit ( -- )   \ (Pursuer_NextPathExit / FollowPathExit; going round, seeing her: after her)
     my-mode @ after-her = sees-fiona @ and if  out-over  chase-begin exit  then
     shoulder-past
+    keep-way 0= if  no-way-to-door exit  then   \ (barred meanwhile, and no way round: not that way - Pursuer_OnToNextExit)
     walk-stride if  at-exit  then ;
 : out-by ( exit -- ok? )   \ out of the room being played by that exit, on foot
     dup making-for !  -1 out-going !  0 door-wait !  -1 asked !  -1 door-use !  no-search search-phase !  0 sent !
@@ -148,10 +149,14 @@ create re-list 8 cells allot
     dup 0< if  drop exit  then
     my-room swap room-exit-leads drop  route! 0> if  exit  then
     came-by @ dup 0< if  drop exit  then  my-room swap room-exit-leads drop  route! drop ;
+\ (no way out - Pursuer_PlanWhere finds none: his search of the room again, Pursuer_GoAfterFiona's
+\ Pursuer_ChaseFionaHere - not left standing)
 :noname ( -- )
     random-exit dup came-by @ = if  drop random-exit  then
-    dup 0< if  drop stand exit  then
-    out-by if  -1 wandering-out !  else  stand  then ; is leave-at-random
+    dup 0< if  drop search-again exit  then
+    out-by if  -1 wandering-out !  exit  then
+    came-by @ dup 0< if  drop search-again exit  then   \ (no way to it: by the door he came in by - Pursuer_PlanWhere's mode 3)
+    out-by if  -1 wandering-out !  else  search-again  then ; is leave-at-random
 :noname ( -- )  let-door-go  out-over ; is out-cancelled
 
 \ ---- the run (Hewie played): after her while she is in another room, out by the first door of
@@ -238,7 +243,7 @@ create dh-at /vec allot   create ds-at /vec allot
         then
     loop
     fallback dup 0< 0= if  dup loops? if  true exit  then  then  drop false ;
-: to-her-door ( -- )  walk-stride if  line-up  then ;   \ (Pursuer_DoorWalking: there, lined up for it)
+: to-her-door ( -- )  keep-way 0= if  give-up-door exit  then  walk-stride if  line-up  then ;   \ (Pursuer_DoorWalking: there, lined up for it)
 : door-for-her ( exit -- )   \ (Pursuer_DoorWalkTo: to its spot on his side first)
     dup making-for !  -1 out-going !  0 wandering-out !  0 door-wait !  -1 asked !  -1 door-use !  -1 for-her !
     no-search search-phase !

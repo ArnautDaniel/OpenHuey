@@ -59,7 +59,8 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
     {: n act :}  n gesture-anim  dup 1 = if  drop stand-watch exit  then
     play-now  ['] gesturing-at act act!  n taunt-gesture ! ;
 \ round her (Pursuer_StateSidestepRoom / StateSidestep): at his distance, 5 degrees a step the
-\ way she isn't facing; the other way when it's blocked; done after 30 of it or 120 frames
+\ way she isn't facing; the other way when it's blocked, and after each 30 of it - to and fro
+\ for 120 frames; blocked both ways, done
 create rd-at /vec allot
 : round-point ( -- )
     my-at fiona body-at vec-dist-xz
@@ -71,9 +72,12 @@ create rd-at /vec allot
 create rd-was /vec allot
 : rounding ( -- )
     1 step-t +!  step-t @ 120 > if  -1 step-done !  exit  then
-    round-point  round-ok? 0= if  round-dir @ negate round-dir !  round-point  round-ok? 0= if  -1 step-done !  exit  then  then
+    round-point  round-ok? 0= if
+        0e round-gone f!  round-dir @ negate round-dir !  round-point  round-ok? 0= if  -1 step-done !  exit  then
+    then
     rd-was my-at vec-copy  rd-at step-toward
-    rd-was my-at vec-dist-xz round-gone f@ f+ fdup round-gone f!  30e f> if  -1 step-done !  then ;
+    rd-was my-at vec-dist-xz round-gone f@ f+ fdup round-gone f!
+    30e f> if  0e round-gone f!  round-dir @ negate round-dir !  then ;   \ (30 of it: back the other way)
 : round-her ( -- )
     fiona body-at my-at vec-heading fiona body-yaw f- angle-wrap f0> if  1  else  -1  then  round-dir !
     0e round-gone f!  walk-fast play  ['] rounding round-act act! ;

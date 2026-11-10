@@ -177,6 +177,17 @@ create sp-at /vec allot
     my-path path-i!
     my-path path-left? 0= ;
 
+\ Npc_Senses' modes 2 / 3 (his walks to a goal - a search's stop, a door): each frame, is the way
+\ ahead still his to walk (Npc_PathClear: the point 30 on along it on floor his mask allows - a
+\ door shut on it meanwhile, a box pushed there, a floor the story barred)? If not, his way to his
+\ goal is planned again (vtable +0xD8); none: false - his walk there is given up
+: way-blocked? ( -- flag )
+    my-path path-left? 0= if  false exit  then
+    30e my-path my-at path-ahead drop  ahead self body-mask v-tri-in 0< ;
+: keep-way ( -- ok? )
+    way-blocked? 0= if  true exit  then
+    goal-tri @ dup 0< if  drop false exit  then  goal-at plan 0> ;
+
 \ Npc_StepToward: turned toward a point (past 45 degrees only turning, twice as fast); a stride
 \ at it - onto it when it is within the stride
 : step-toward ( v -- )

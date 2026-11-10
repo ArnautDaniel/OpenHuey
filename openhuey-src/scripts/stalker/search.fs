@@ -66,6 +66,7 @@ enum: search-phase#  no-search to-stop at-the-stop ;
 \ Pursuer_CloseInGoal: along his way; slowed to a stand within 10 of the goal; over once the
 \ stand has faded in (a stop picked at random: at most 150 frames' walk)
 : walking ( -- )
+    keep-way 0= if  my-path path-clear  -1 step-done !  exit  then   \ (no way on to it: this stop given up - Pursuer_StopSkipped)
     walk-stride drop
     way-left 10e f<  anim @ walk-slow = and if  still-anim play  then
     anim @ still-anim = settled? and  my-path path-left? 0= or if  -1 step-done !  then ;

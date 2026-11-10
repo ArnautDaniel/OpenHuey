@@ -107,7 +107,7 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
     my-mode @ held-off = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
-        own-tri dup tri-center goal-at vec!  goal-at plan 0> if  walk-slow play  ['] walking step!  else  stand  then  exit
+        own-tri dup goal-tri !  dup tri-center goal-at vec!  goal-at plan 0> if  walk-slow play  ['] walking step!  else  stand  then  exit
     then
     my-mode @ held-off = if  off-home exit  then
     my-mode @ after-her = if  chase-start exit  then
@@ -120,7 +120,7 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
 : walk-in ( -- )
     0 entering !
     in-tri @ 0< if  come-into-play exit  then
-    goal-at in-at vec-copy  in-tri @ goal-at plan 0> 0= if   \ (no way in yet - the door still
+    goal-at in-at vec-copy  in-tri @ dup goal-tri !  goal-at plan 0> 0= if   \ (no way in yet - the door still
         room-id in-tri @ in-at vec@ body-place  come-into-play exit   \ swinging open: inside at once)
     then
     mode-walk play  ['] walking-in step! ;
