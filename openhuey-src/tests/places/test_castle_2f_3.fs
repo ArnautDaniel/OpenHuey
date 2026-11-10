@@ -147,6 +147,7 @@ castle-2f-3 $81 rooms send go-to-room  5 run-frames
 T{ c2f-3-flag2 story-flag?  doing-busy? -> -1 -1 }T
 : tip? ( -- flag )  window-shown attack-tip-msg = ;
 ' tip? 900 soon drop  key: I true key-hold  game-tick  key: I false key-hold   \ (the stick up: attack - #78 locked here)
+T{ [: tip? 0= ;] 60 soon -> -1 }T   \ (her gesture read though the lesson has her: the tip gone at once, not when its 240 frames are up)
 1500 play-on
 T{ hewie-freed story-flag?  $207 filed?  doing-busy?  free? -> -1 -1 0 -1 }T
 testing ... once

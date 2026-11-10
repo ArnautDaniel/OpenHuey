@@ -251,7 +251,8 @@ Places, each with its test in `tests/places/`:
   the shelves, the massive book and the desktop, the Lavender, Hewie's bark at the desk and his
   looks up, the far view's depth.
 - castle-2f-7, the plate press room ($23): the plate pressing machine (the first time its scene and
-  the press; a word plate made - its scene, the plate shown her, the file; again while fewer than ten
+  the press; a word plate made - its scene, the plate shown her, the file (the scene's cue sound at
+  frame $69 no longer waited for once the scene is over: skipped, she was never let go); again while fewer than ten
   are made, else none left; a plate given back), once the golem is done someone trying the door from
   beyond (a fright), brought in by the forced way Daniella's scene (her face as it turns to her), the
   birdcage in turn, the ruin, the thing wandering, Hewie's looks, the replays.

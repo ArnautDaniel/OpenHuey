@@ -31,6 +31,8 @@ USING: tester engine game-state actors messages keys room-names game debug facts
     [: screen-up? ;] 900 soon drop  10 run-frames  [: triangle press  screen-up? 0= ;] 300 soon drop  30 run-frames ;
 : replays ( v -- )   \ (the extras' theatre: that movie, here)
     $2A var!  events-held state-flag-set  castle-2f-7 -1 rooms send go-to-room  5 run-frames ;
+: filed? ( doc -- flag )
+    128 0 do  progress pr.files i 2* + w@ over = if  drop true unloop exit  then  loop  drop false ;
 : cube-shown? ( -- flag )  s" cube" placed-shown? ;
 
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
@@ -51,6 +53,12 @@ T{ [: doing-busy? 0= ;] 300 soon  c2f-7-flag1 story-flag? -> -1 -1 }T
 testing ... again: its remark, the screen
 45 30e 0e 18e put  circle press  [: window-shown press-msg = ;] 300 soon drop  cross press  screen-left
 T{ [: doing-busy? 0= ;] 300 soon -> -1 }T
+
+testing ... a plate made, its scene skipped before its cue: the plate shown her, and she is let go
+45 30e 0e 18e put  circle press  [: screen-up? ;] 900 soon drop  plate-made story-flag-set  screen-left
+T{ [: movie-skipped state-flag-set  window-shown 0< 0= if  cross press  then  doing-busy? 0= ;] 1500 soon -> -1 }T
+T{ plate-file $7FFF and filed? -> -1 }T
+plate-made story-flag-clear
 
 testing the golem done, someone trying the door from beyond (Debilitas loaded, out of the game): a fright
 golem-done story-flag-set  c2f-7-flag2 story-flag-clear  2 story.base:partner-load  10 run-frames  room-afresh
