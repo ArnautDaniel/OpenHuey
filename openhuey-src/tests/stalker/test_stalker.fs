@@ -168,7 +168,7 @@ castle-1f-10 room!  5 run-frames  front-garden-2 debug:debilitas-hunt  3 run-fra
 [: searching mode!  route-clear  -1 route-done !  301 away-search ! ;] his  front-garden-2 room!  2 run-frames
 T{ [: my-mode @  route-end @ route-next @ - ;] his -> 2 2 }T
 castle-1f-10 room!  5 run-frames
-[: searching mode!  route-clear  -1 route-done !  0 away-search ! ;] his  front-garden-2 room!  2 run-frames
+[: searching mode!  route-clear  -1 route-done !  0 away-search ! ;] his  front-garden-2 room!  1 run-frames   \ (before he sees her)
 T{ [: my-mode @ ;] his -> 3 }T
 debug:debilitas-out  2 run-frames
 testing ... held off (given up), she follows him into his room: still held off, on out by his way home
@@ -243,7 +243,9 @@ testing after her (P2a): seeing her he chases her; his blows knock her down, a h
     s" fiona" actor-named body-tri  -500e her-y -500e tp  2 run-frames  debug:debilitas-tri  1 run-frames
     [: 340e deg>rad body-turn ;] his  1 run-frames
     game:debilitas body-pos dz f! dy f! dx f!
-    340e deg>rad fsin 10e f* dx f@ f+  dy f@  340e deg>rad fcos 10e f* dz f@ f+  160e tp-facing  3 run-frames  false blind  2 run-frames ;
+    340e deg>rad fsin 10e f* dx f@ f+  dy f@  340e deg>rad fcos 10e f* dz f@ f+  160e tp-facing  3 run-frames
+    [: 0 start-t !  7 lead-alarm !  after-her mode!  chase-now ;] his   \ (his start at the sight of her, his taunts by her blind: over - in his chase)
+    false blind  2 run-frames ;
 face-off
 T{ [: chasing? my-mode @ ;] his -> -1 0 }T
 : strike-combo ( combo -- )  [: combo-start ;] his ;
@@ -336,10 +338,10 @@ s" fiona" actor-named body-tri debug:debilitas-tri  2 run-frames
 T{ [: 3 0 30e f>cell stalker.senses:fiona send hit ;] his  3 run-frames  her-sub? -> $10 }T
 T{ ' over? 300 soon -> -1 }T
 unover  fiona-occupied state-flag-clear  debug:debilitas-out  10 run-frames  [: 0 her-mode ! ;] hers
-testing she isn't free: refused - his attack tables instead
-face-off  [: 4 her-mode ! ;] hers  [: chase-now 6 take-her ;] his  10 run-frames
+testing she may not be had (Pursuer_MayGoForTarget - here the stalkers blind): not asked - his table for her out of reach
+face-off  true blind  [: chase-now 6 take-her ;] his  10 run-frames
 T{ [: leading @  chase-act @ $14 = ;] his -> 0 0 }T
-[: 0 her-mode ! ;] hers  debug:debilitas-out  2 run-frames
+false blind  debug:debilitas-out  2 run-frames
 
 testing faded from sight (item $89 worn, still), he walks into her: he has her (a hold, reaction $20)
 : wear-89 ( id -- )  progress pr.equipped 4 + l! ;
@@ -356,7 +358,7 @@ testing struck (P3a): her kick makes him flinch, her shove takes 5; out of healt
     [: 340e deg>rad body-turn ;] his  1 run-frames
     game:debilitas body-pos dz f! dy f! dx f!
     340e deg>rad fsin 7e f* dx f@ f+  dy f@  340e deg>rad fcos 7e f* dz f@ f+  160e tp-facing  3 run-frames
-    [: dx f@ dy f@ dz f@ body-place-at  340e deg>rad body-turn ;] his  1 run-frames ;   \ (him back on his spot:
+    [: dx f@ dy f@ dz f@ body-place-at  340e deg>rad body-turn  0 start-t !  7 lead-alarm !  after-her mode!  chase-now ;] his  1 run-frames ;   \ (in his chase, no start at the sight of her; him back on his spot:
     \ whatever he was about before, he stands where the test says - clear of the doorway nearby)
 : flinching? ( -- flag )  [: anim @ $1000 $1006 within ;] his ;
 close-up  [: 70 hp !  0 hits !  0 unshaken !  0 reeling ! ;] his  square debug:press   \ (not mid-move: in an unshaken move a light blow only gets a grunt)

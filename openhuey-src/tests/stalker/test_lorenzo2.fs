@@ -30,6 +30,8 @@ room-id game:fiona body-tri ly send stalker-in  3 run-frames
 [: 340e deg>rad body-turn ;] his  1 run-frames
 testing $1001 stalking her from below: he sinks ($1304), out of sight under the floor, comes up by her in his sweep ($E02)
 40e 160 her-ahead  3 run-frames
+: past-start ( -- )  1000 0 do  [: start-t @ 0= ;] his if  leave  then  game-tick  loop ;   \ (his start at the sight of her over)
+past-start  [: 340e deg>rad body-turn ;] his  40e 160 her-ahead  3 run-frames   \ (as they stood: his start turned him to where he saw her)
 [: below-start ;] his
 T{ [: anim @ ;] his -> $1304 }T
 T{ [: shown? 0= ;] 120 soon  [: [: anim @ $E02 = ;] his ;] 60 soon  shown? -> -1 -1 -1 }T

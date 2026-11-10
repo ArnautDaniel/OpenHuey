@@ -198,7 +198,9 @@ create drawn-at /vec allot
     \ that goes on, stop by stop, while there is still none; the original's search turns back to the
     \ chase only between its steps - Pursuer_BehaviourSearch - never each frame)
     sees-fiona @  my-mode @ held-off <> and  no-way-search? 0= and if   \ (held off: going away, not after her)
-        my-mode @ after-her <> if  after-her mode!  route-clear  then
+        \ (after her already, the sight of her is no news: no start at it - the original's comes only out
+        \ of his search, Pursuer_BehaviourSearch's action $1C; his lead is 6 / 7 while he is after her)
+        my-mode @ after-her <> if  after-her mode!  route-clear  else  7 lead-alarm @ max lead-alarm !  then
         chasing? 0= if  chase-begin  then  after-t exit
     then
     chasing? if  lost-her  then   \ (lost sight of her: to where she is)
