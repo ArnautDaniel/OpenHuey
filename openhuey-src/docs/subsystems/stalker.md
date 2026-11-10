@@ -121,7 +121,8 @@ is, 60 in 100, the room's next search spot (the room class's table +0x38, genera
 at random he may stand on (not both $100000 and $200000). A stop he has no way to is skipped;
 past 8 the route is given up. A stop picked at random gets at most 150 frames' walk.
 
-**At a stop** (Debilitas_AttackTable "searched", $3AFA40): 50 walk on (standing a moment), 20
+**At a stop** (Debilitas_AttackTable "searched", $3AFA40): 50 his stand and look about him (action 9:
+Pursuer_WalkAside, Pursuer_LookAround - 90 frames), 20
 look about $1302, 20 $1303, 10 $1305 (his gesture table $3AF6F0), played to its end.
 
 **Walking** (`stalker/moving.fs`): by his animation's root motion; along his way a stride at a
@@ -641,3 +642,23 @@ Debilitas set up as Debilitas3 (the table above): the Pursuer's chase. Searching
 instead (Pursuer_Modes' mode 3: SetTarget(Hewie) - here, to the room played, Hewie's, to search
 it: `hunting-dog`). The summoner doesn't bring him in during the run (Summoner_RoomStart). The cutscenes' cast beyond slot 2 (`char-load-2`, `char-hand-over`,
 `char-loaded?`) is the event characters' (`docs/subsystems/cast.md`).
+
+## Read against the original, 2026-11 (PR #108)
+
+Found different and put right: his way in by a shut door (taken: opened by hand; refused: he stays
+beyond it); Debilitas's and kind 6's shoulder-past on their way to a door, unshaken on their way
+home; her plight (`Pursuer_FionaState`: thrown is out of reach, knocked down is not; table 3 picked);
+seen with no way to her his search goes on (`Pursuer_ChaseFionaHere`); his walks to a goal checked 30
+ahead (`Npc_PathClear`); his way round her to and fro (`Pursuer_StateSidestep`); his search over with
+no exit to leave by - searched again (`Pursuer_GoAfterFiona`); struck or bitten in his door animation
+the door is let go (`Npc_LeaveDoor`); his start at the sight of her (it was never run); his light blow
+on her as he goes for Hewie (`Pursuer_BehaviourHewie`).
+
+The behaviours' table (the PTMFs of `Pursuer_PickStep`: vtable slots): down - `BehaviourEnded`; mode 0
+seeing her `ChaseDecision` (+0x264), not `ChaseFiona` (+0x278); 1 `GoAfterFiona` (+0x280); 2 with a
+lead (4 / 1 / 5) `ChaseFiona` to it, else the search `Behaviour25C`; 3 his route used up
+`GoAfterFiona`, else the search; 4 `GoForFiona` (+0x2AC: Debilitas's and kind 6's - the others'
+is empty, as their `HeadingStep` and `CarryOn` are). `Pursuer_PickStepAlt` is the mini-game run's.
+
+*Not ported*: the sight's wobble of `Pursuer_LookAround` (0.12 a frame: his head eased back the same
+frame); `Pursuer_StateKnockedThrough`'s down-between-halves case (his health back, time 1).

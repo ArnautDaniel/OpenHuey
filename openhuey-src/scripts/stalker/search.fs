@@ -88,7 +88,9 @@ create to-at /vec allot
 \ the look about at a stop (Pursuer_StateWalkGesture: Debilitas_AttackTable's gestures) to its
 \ end; or standing a moment (Pursuer_WalkAside)
 : gesturing ( -- )   root-move  ended? if  -1 step-done !  then ;
-: standing ( -- )   1 step-t +!  settled? step-t @ 30 > and if  -1 step-done !  then ;
+\ (Pursuer_WalkAside, then Pursuer_LookAround: his stand, then his look about him - Debilitas_LookFrames
+\ 60, half as long again)
+: standing ( -- )   1 step-t +!  settled? step-t @ 90 > and if  -1 step-done !  then ;
 : searched ( -- )   \ (50 walk on, 20, 20 and 10 a look about)
     rnd 100e f*
     fdup 50e f< if  fdrop -1 gesture !  still-anim play  ['] standing step!  exit  then

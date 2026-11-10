@@ -310,6 +310,9 @@ create fs-a /vec allot  create fs-b /vec allot
 : gone-from-view ( -- )   \ (Pursuer_LeaveScreen: the room's doings forgotten - Pursuer_ResetForRoom)
     held-as-she-goes  door-passed  -1 combo !  0 combo-step !
     0 out-going !  -1 body-tri!  my-path path-clear  ['] noop step !  no-search search-phase !  -1 anim !
+    \ (a door he was in the middle of - Pursuer_FinishCrossing: the doors let it go as the room is left,
+    \ Doors_SaveAll - is his no more, nor is he coming in by one)
+    0 apart !  -1 held-door !  -1 asked !  -1 door-use !  0 entering !  0 barging !  0 wandering-out !  0 for-her !
     my-mode @ after-her = if  avoid-clear  her-room route! drop  then ;
 : back-on-floor ( -- )
     making-for @ 0< 0=  to-door f@ 80e f<= and if
