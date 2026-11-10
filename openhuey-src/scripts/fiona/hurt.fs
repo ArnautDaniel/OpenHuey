@@ -15,14 +15,21 @@ defer held-down ( -- )   \ (held by homunculi: fiona.seized)
 defer knocked-off ( -- )   \ (struck on a ladder: fiona.ladder)
 defer drop-door ( -- )   ' noop is drop-door   \ (a door she held let go: fiona.doors)
 
-\ ---- how she stands for a stalker's attack (Pursuer_FionaState): out of reach while struck
-\ (her reactions, mode 4), seized or stepping back; the panic's stages 4 / 5; mode $B; panicking
-\ (fear over 90, or the panic attack) ----
+\ ---- how she stands for a stalker's attack (Pursuer_FionaState): out of reach (stepping back, at
+\ a door, grabbed, aside, the stalkers blind); thrown - at the panic's height or as it
+\ calms that is the calming one's, else out of reach too; the panic's stages 4 / 5; mode $B;
+\ panicking (fear over 90, or the panic attack) ----
+\ (her mode 4 with moveSub $A / $B: thrown by a blow or a door, or any fall begun by Fiona_StartAction4 -
+\ which leaves $A - with no reaction's kind after it: her panic's fall, her stumble)
+: floored? ( -- flag )
+    her-mode @ thrown-mode <> if  false exit  then
+    her-sub @  dup thrown-r door-thrown-r 1+ within  swap off-ladder-r < or ;
 : plight ( -- n )
     her-out-of-reach @ if  unreachable-plight exit  then   \ (+0x2D: stepping back, at a door)
-    her-mode @ thrown-mode =  her-sub @ grabbed-r = or  stalkers-blind state-flag? or  her-aside @ or if  unreachable-plight exit  then
-    her-panic-stage @ panicking = if  panicking-plight exit  then
+    her-sub @ grabbed-r =  stalkers-blind state-flag? or  her-aside @ or if  unreachable-plight exit  then
+    her-panic-stage @ panicking = if  floored? if  calming-plight  else  panicking-plight  then  exit  then
     her-panic-stage @ calming-down = if  calming-plight exit  then
+    floored? if  unreachable-plight exit  then
     her-mode @ react-mode = if  fleeing-plight exit  then
     her-fear f@ 90e f>  her-doing @ attack-doing = or if  frightened-plight exit  then
     free-plight ;

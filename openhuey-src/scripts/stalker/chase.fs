@@ -207,7 +207,7 @@ defer look-about-her ( -- )   ' noop is look-about-her   \ (his look round: stal
     fdup ground-gained f<  10e f< or 0= if  false exit  then
     fiona body-at heading-to yaw f- angle-wrap fabs 20e deg>rad f<  same-floor? and ;
 : attack! ( -- )
-    her-plight @ dup unreachable-plight = if  drop exit  then   \ (out of reach: struck already, hidden)
+    her-plight @   \ (out of reach - thrown, down, aside - too: his table for being by her, taunts and a way round)
     dup free-plight calming-plight 1+ within 0= if  drop free-plight  then  choose ;
 \ round her, or his third taunt with its gesture's flag (Debilitas_Chase $1A / $19): her more than
 \ 100 off, stalking her (his chase table's eighth: seen near); else, over, standing

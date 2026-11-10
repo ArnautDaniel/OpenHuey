@@ -180,6 +180,7 @@ create drawn-at /vec allot
 \ down (+0xC4 2): waiting about, nothing else (Pursuer_ModesSearching - in the room or out of it)
 : down-waits? ( -- flag )
     cond @ down-cond = dup if  my-mode @ waiting-about <> if  waiting-about mode!  then  then ;
+: no-way-search? ( -- flag )  my-mode @ searching =  search-phase @ no-search <> and  d-fiona f@ f0< and ;
 : modes ( -- )
     here-played? 0= if  exit  then
     down-waits? if  exit  then
@@ -192,7 +193,10 @@ create drawn-at /vec allot
     then
     start-t @ 0> if  starting? if  exit  then  0 start-t !  then   \ (starting at something he heard or saw: that
     \ first - unless something else has him now)
-    sees-fiona @  my-mode @ held-off <> and if   \ (held off: going away, not after her)
+    \ (seen with no way to her on foot, his chase gave her up for a search of the room - Pursuer_ChaseFionaHere:
+    \ that goes on, stop by stop, while there is still none; the original's search turns back to the
+    \ chase only between its steps - Pursuer_BehaviourSearch - never each frame)
+    sees-fiona @  my-mode @ held-off <> and  no-way-search? 0= and if   \ (held off: going away, not after her)
         my-mode @ after-her <> if  after-her mode!  route-clear  then
         chasing? 0= if  chase-begin  then  after-t exit
     then
