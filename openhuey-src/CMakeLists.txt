@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.2.39 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.2.40 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -104,6 +104,10 @@ set_tests_properties(texbank_check PROPERTIES SKIP_RETURN_CODE 77)
 # the sample mod, turned on: tests/mods/*.fs (not test_*.fs - the rest run without mods)
 add_test(NAME mods_room_tally COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods/room-tally"
     --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/room-tally.fs")
+
+# a mod whose script never ends as it loads: stopped (the load's step limit), off, the game on
+add_test(NAME mods_endless COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/endless-mod"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/endless.fs")
 
 # mods' manifests and files: the order, what turns a mod off, the files layer, a mod's textures
 add_executable(mods-check tests/mods_check.c src/game/mods.c)

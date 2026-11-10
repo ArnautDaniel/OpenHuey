@@ -55,7 +55,7 @@ static void p_exit_status(Forth *f, Word *w) {   /* ( n -- ) a test's exit statu
 }
 static void p_error_count(Forth *f, Word *w) {   /* ( -- n ) errors raised (not in `catch`) so far */
     (void)w;
-    forth_push(f, f->errors);
+    forth_push(f, forth_errors(f));
 }
 
 typedef struct Options {
@@ -870,7 +870,7 @@ int main(int argc, char **argv) {
     }
 
     last = SDL_GetTicksNS();
-    while (!e->forth->bye) {
+    while (!forth_bye(e->forth)) {
         Uint64 now = SDL_GetTicksNS();
         int ticks = 0;
 

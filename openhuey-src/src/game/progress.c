@@ -41,7 +41,7 @@ static void p_progress_reset(Forth *f, Word *w) {
 }
 
 void bind_state(Forth *f) {
-    Vocab *saved = f->m.current, *v = forth_vocab(f, "game-state");
+    Vocab *saved = forth_current(f), *v = forth_vocab(f, "game-state");
 
     forth_set_current(f, v);   /* scripts say USING: game-state ; */
     v->state = VOCAB_LOADED;

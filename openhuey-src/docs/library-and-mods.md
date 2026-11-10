@@ -421,6 +421,8 @@ the list in `src/game/mods.c`; `--mods DIR` names another folder of mods - the t
 - `mods_room_tally` (ctest): the sample mod on - its actor there, counting rooms, answering
   `rooms-seen?` by message; `mods_room_tally_zipped` the same from a zip of it (cmake's own
   zip: deflated, the folder inside).
+- `mods_endless` (ctest): a mod whose script loops for ever as it loads (tests/mods/endless-mod) is
+  stopped and turned off, the game on.
 - `mods-check` (ctest): the order (order.txt, `after:`), every way a mod is turned off, the
   files layer (the later mod's file over the earlier's over the data, an off mod's unseen), a
   mod's PNG over a raw bank and over a converted one (its other palettes still the library's),

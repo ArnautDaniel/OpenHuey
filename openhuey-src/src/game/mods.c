@@ -407,12 +407,14 @@ static char *zip_reader(void *ctx, const char *path, size_t *len) {
     return NULL;
 }
 
+#define MOD_LOAD_STEPS 50000000L   /* (the steps a mod's scripts may take loading: far more than any does) */
+
 void mods_load_scripts(Forth *f, const char *game_scripts) {
     char path[1300], line[200], *text;
     size_t size;
-    int i, any = 0;
+    int i, any = 0, loaded;
 
-    f->reader = zip_reader;
+    forth_set_reader(f, zip_reader, NULL);
 
     for (i = 0; i < sN; i++) {
         Mod *m = &sMods[i];
@@ -427,8 +429,7 @@ void mods_load_scripts(Forth *f, const char *game_scripts) {
             continue;
         }
         mod_free(m, text);
-        for (v = f->vocabs; v != NULL && strcasecmp(v->name, m->name) != 0; v = v->next) {
-        }
+        v = forth_find_vocab(f, m->name);
         snprintf(line, sizeof(line), "%s/%s.fs", game_scripts, m->name);
         if (v != NULL || SDL_GetPathInfo(line, NULL)) {
             snprintf(m->why, sizeof(m->why), "its name is one of the game's vocabularies");
@@ -448,7 +449,10 @@ void mods_load_scripts(Forth *f, const char *game_scripts) {
         }
         forth_add_root(f, path);
         snprintf(line, sizeof(line), "USING: %s ;", m->name);   /* (as any vocabulary: from its file) */
-        if (forth_eval(f, line, strlen(line), m->name) != 0) {
+        forth_set_eval_budget(f, MOD_LOAD_STEPS);   /* (a mod's script that never ends as it loads: an error, the mod off) */
+        loaded = forth_eval(f, line, strlen(line), m->name);
+        forth_set_eval_budget(f, -1);
+        if (loaded != 0) {
             snprintf(m->why, sizeof(m->why), "its scripts failed to load (what it made before the error stays)");
             fprintf(stderr, "mods: %s is off: %s\n", m->name, m->why);
             m->on = 0;

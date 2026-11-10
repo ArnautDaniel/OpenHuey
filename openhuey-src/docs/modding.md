@@ -45,7 +45,8 @@ after: other-mod         \ load after that one, if it's on
   1.1 added `item-use-rule`, 1.2 `title-menu-hook`, 1.3 the mods' camera.
 - A mod is **turned off** (and the reason shown in the MODS menu and on stderr) when: a
   `requires:` isn't met; its name is one of the game's vocabularies (`fiona`, `items` ...); its
-  scripts fail to load. Nothing else stops the game.
+  scripts fail to load - an error in them, or code run as they load that never ends (stopped after
+  50 million steps: "ran too long"). Nothing else stops the game.
 - **Order**: `mods/order.txt` (`on: name` / `off: name` lines, written by the MODS menu). Mods it
   doesn't name are on, after those it names, by name. `after:` moves a mod below another. A later
   mod's files win over an earlier one's; hooks chain in load order.
