@@ -18,7 +18,7 @@ enum: seize-answer  no-answer she-came she-refused she-broke-free ;
 \ not with the stalkers blind)
 : may-take? ( -- flag )  her-reach @ 1 and 0= ;
 
-\ ---- taken by the hand: his taunting hold, a fright each time (10 the first, then 5); she
+\ ---- taken by the hand: his taunting hold, a fright each time (his own: the Pursuer's 10 the first, then 5); she
 \ breaks free - he lets go (held off his rests' first after: Pursuer_StateTauntHold); the sixth - he holds on while she's dragged off ----
 : holding-on ( -- )  root-move ;
 : let-go-end ( -- )   \ (his letting go to its end: held off her a while)
@@ -26,13 +26,13 @@ enum: seize-answer  no-answer she-came she-refused she-broke-free ;
 : taunting ( -- )
     root-move
     ended? 0= if  exit  then
-    5e fright  1 taunts +!
+    taunt-fright f@ fright  1 taunts +!
     answer @ she-broke-free = if  let-go-hand-anim play-now  ['] let-go-end act-xt ! exit  then
     taunts @ 6 >= if  hold-on-anim play-now  ['] holding-on act-xt ! exit  then
     taunt-hold-anim play-now ;
 : taunt-start ( -- )   \ (Pursuer_StateTaunt: a break free waits for the next taunt's end)
     root-move
-    ended? if  taunt-hold-anim play-now  10e fright  0 taunts !  ['] taunting act-xt !  then ;
+    ended? if  taunt-hold-anim play-now  hold-fright f@ fright  0 taunts !  ['] taunting act-xt !  then ;
 \ ---- taken walking: his grab, holding on ----
 : carrying ( -- )  root-move ;
 
@@ -48,7 +48,7 @@ enum: seize-answer  no-answer she-came she-refused she-broke-free ;
 \ ---- a look round (Pursuer_StateLookAround, action $16): his look round ($1A00) to its end, a
 \ fright to her (Pursuer_Threat: Pursuer_ThreatAmount 20) ----
 : looking-round ( -- )  ended? if  -1 step-done !  else  root-move  then ;
-: look-round ( -- )  20e threat  glance-round-anim play  ['] looking-round look-around-act act! ;
+: look-round ( -- )  look-threat f@ threat  glance-round-anim play  ['] looking-round look-around-act act! ;
 ' look-round is look-about-her
 \ ---- closing on her (Pursuer_StateFaceFiona / StateWalkOn, Pursuer_CloseOnFiona): on along his
 \ way while his motion fades in (Pursuer_WalkOn), turning to her - by the hand, his stand then fading in too; then

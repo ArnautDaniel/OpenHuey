@@ -217,8 +217,9 @@ $1300 constant gesture-anims
     tell-ties ;
 \ the family's setup (Pursuer_Setup): his sight 150 ahead, 60 degrees either side; Fiona and
 \ Hewie known; listening for noises above his threshold (not his own)
+: frights ( F: begun again look -- )  look-threat f!  taunt-fright f!  hold-fright f! ;   \ (vtable +0x300 / +0x304 / +0x308)
 : family-setup ( -- )
-    -1 her-came !  0 temper !
+    -1 her-came !  0 temper !  10e 5e 20e frights
     150e view-range f!  60e deg>rad view-half f!  -1e d-fiona f!  -1e d-hewie f!
     s" fiona" actor-named fiona-cached !  s" hewie" actor-named hewie-cached !
     hear-threshold @ stalker-noise s" acoustics" actor-named send listen
@@ -493,13 +494,24 @@ $2D constant hand-bone
 : her-cry-mark ( who -- )  drop her-mark ;
 : daniella-model ( addr len -- id )   \ (her model and its sounds' file; her textures by the hard setting)
     2dup file!  hard-mode? if  s" O_DNL/DNL_000H"  else  s" O_DNL/DNL_000"  then  actor-load-textured ;
-: daniella-marks ( -- )  ['] her-frame own-frame !  ['] her-cry-mark own-mark ! ;
+\ her strikes' points (Daniella_HitPoints, the four kinds': $E00, $E02 .. $E08): 3.5 out along her hand
+\ from the move's bone, and her hand - what she strikes with reaches past it
+: her-points ( -- )
+    mv-anim dup $E00 $E09 within swap $E01 <> and 0= if
+        my-model @ mv-bone bone-pos blow-at vec!
+        mv-bone2 0< if  blow-b blow-at vec-copy  else  my-model @ mv-bone2 bone-pos blow-b vec!  then  exit
+    then
+    0e 0e 3.5e my-model @ hand-bone bone-point  my-model @ hand-bone bone-pos  my-model @ mv-bone bone-pos
+    {: F: x y z hx hy hz bx by bz :}
+    x hx f- bx f+  y hy f- by f+  z hz f- bz f+  blow-at vec!  hx hy hz blow-b vec! ;
+: daniella-marks ( -- )  ['] her-frame own-frame !  ['] her-cry-mark own-mark !  ['] her-points own-points ! ;
 behaviour daniella
   extends stalking
   on spawned ( -- )
       4e 12e  daniella-kit true false ways  8e 1.5e 12e 1.5e feet-fit  daniella-marks
       s" O_DNL/DNL_000" daniella-model daniella-motions dressed
       120 100 by-hardness health!  daniella-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
+      5e 5e 15e frights   \ (Daniella_FrightSeen, the Pursuer's FrightAttack, Daniella_ThreatAmount)
       140 100 by-hardness cool-secs !  3600 6000 by-hardness away-base !  no-own-rooms   \ (Daniella_Setup's first)
       450 450 750 300 clocks
       10e 25e fby-hardness  200 80 by-hardness 6000 hewie-temper
@@ -518,6 +530,7 @@ behaviour kind34
       4e 12e  kind34-kit true false ways  8e 1.5e 12e 1.5e feet-fit  daniella-marks
       s" O_DNL/DNL_001" daniella-model daniella-motions dressed
       120 200 by-hardness health!  kind34-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
+      5e 5e 15e frights   \ (Daniella_FrightSeen, the Pursuer's FrightAttack, Daniella_ThreatAmount)
       180 160 by-hardness cool-secs !  4500 6000 by-hardness away-base !  no-own-rooms   \ (Kind34_Setup)
       300 360 900 1350 clocks
       25e 50e fby-hardness  200 65 by-hardness 6000 hewie-temper
@@ -532,6 +545,7 @@ behaviour kind35
       4e 12e  kind35-kit true false ways  8e 1.5e 12e 1.5e feet-fit  daniella-marks
       s" O_DNL/DNL_000" daniella-model daniella-motions dressed
       65 80 by-hardness health!  kind35-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
+      5e 5e 15e frights   \ (Daniella_FrightSeen, the Pursuer's FrightAttack, Daniella_ThreatAmount)
       140 100 by-hardness cool-secs !  3600 6000 by-hardness away-base !  no-own-rooms   \ (Kind35_Setup)
       600 600 450 360 clocks
       15e 10e fby-hardness  120 75 by-hardness 3000 600 by-hardness hewie-temper
@@ -546,6 +560,7 @@ behaviour kind36
       4e 12e  kind36-kit true false ways  8e 1.5e 12e 1.5e feet-fit  daniella-marks
       s" O_DNL/DNL_001" daniella-model daniella-motions dressed
       65 80 by-hardness health!  kind36-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
+      5e 5e 15e frights   \ (Daniella_FrightSeen, the Pursuer's FrightAttack, Daniella_ThreatAmount)
       180 160 by-hardness cool-secs !  4500 6000 by-hardness away-base !  no-own-rooms   \ (Kind36_Setup)
       300 600 900 360 clocks
       25e 10e fby-hardness  120 65 by-hardness 3000 600 by-hardness hewie-temper
@@ -557,12 +572,17 @@ end-behaviour
 \ ---- Riccardo (riccardo.c Riccardo_Setup, RiccardoModel; kind 4): 100 health (hard: 125), 3
 \ across, 17 tall; his model O_RCG/RCG_000, its motion table $41A2C0, his sounds (bank 7); the
 \ Pursuer's floor; his own chase, flurry and lunge (stalker/riccardo.fs), his reach 20 ----
+\ his heavy blow's points (Riccardo_BonePositions: $E05): at her herself - within its reach wherever his arm is
+: his-points ( -- )
+    mv-anim $E05 = if  blow-at fiona body-at vec-copy  blow-b fiona body-at vec-copy  exit  then
+    my-model @ mv-bone bone-pos blow-at vec!
+    mv-bone2 0< if  blow-b blow-at vec-copy  else  my-model @ mv-bone2 bone-pos blow-b vec!  then ;
 : riccardo-chase ( -- )  ['] ric-begin own-chase !  ['] ric-run own-run !  20e attack-range f! ;
 behaviour riccardo
   extends stalking
   on spawned ( -- )
       4e 12e  riccardo-kit false false ways  8e 1.5e 12e 1.5e feet-fit
-      ['] cry-hit own-mark !  riccardo-chase  riccardo-acts own-acts !  ['] riccardo-frame own-frame !
+      ['] cry-hit own-mark !  riccardo-chase  riccardo-acts own-acts !  ['] riccardo-frame own-frame !  ['] his-points own-points !
       s" O_RCG/RCG_000" load-model-file s" motions-riccardo" dressed
       100 125 by-hardness health!  riccardo-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
       90 cool-secs !  9000 away-base !  no-own-rooms   \ (Riccardo_Setup)
@@ -598,6 +618,7 @@ behaviour lorenzo2
       lorenzo2-acts own-acts !  ['] lorenzo2-frame own-frame !  70e attack-range f!
       s" O_LRY/LRY_000" load-model-file s" motions-lorenzo2" dressed
       250 400 by-hardness health!  lorenzo2-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
+      10e 30e fby-hardness  5e 8e fby-hardness  20e 45e fby-hardness  frights   \ (Lorenzo2_FrightSeen / FrightAttack / ThreatAmount)
       150 cool-secs !  9000 away-base !  no-own-rooms   \ (Lorenzo2_Setup)
       900 450 0 0 clocks
       50e 25e fby-hardness  100 600 hewie-temper  leaves-doors door-manner !
@@ -614,6 +635,7 @@ behaviour kind39
       lorenzo2-acts own-acts !  18e attack-range f!
       s" O_LRY/LRY_000" load-model-file s" motions-lorenzo2" dressed
       250 300 by-hardness health!  kind39-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
+      10e 30e fby-hardness  5e 8e fby-hardness  20e 45e fby-hardness  frights   \ (Lorenzo2_FrightSeen / FrightAttack / ThreatAmount)
       150 cool-secs !  9000 away-base !  no-own-rooms   \ (Kind39_Setup)
       900 900 0 0 clocks
       30e 65e fby-hardness  40 75 by-hardness 300 360 by-hardness hewie-temper
@@ -632,6 +654,7 @@ behaviour kind37
       riccardo-chase  24e attack-range f!  ['] kind37-frame own-frame !   \ (its reach the Pursuer's: Pursuer_AttackRange)
       s" O_RCT/RCT_000" load-model-file s" motions-tintstalker" dressed
       100 125 by-hardness health!  kind37-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
+      20e 7e 20e frights   \ (Kind37_FrightSeen / FrightAttack)
       45 cool-secs !  5400 away-base !  no-own-rooms   \ (Kind37_Setup)
       300 360 150 150 clocks
       10e  50 900 hewie-temper  leaves-doors door-manner !  riccardo-ladder ladder-offsets !
@@ -649,6 +672,7 @@ behaviour tintstalker
       ['] tint-frame own-frame !  -1 tint-was !  -1 unseen !
       s" O_RCT/RCT_000" load-model-file s" motions-tintstalker" dressed
       100 125 by-hardness health!  tintstalker-kind my-kind !  0 growls !  12 hear-threshold !  family-setup
+      30e 10e 20e frights   \ (TintStalker_FrightSeen / FrightAttack)
       45 cool-secs !  5400 away-base !  no-own-rooms   \ (TintStalker_Setup)
       300 300 1200 1200 clocks
       15e 10e fby-hardness  50 1800 hewie-temper  shuts-doors door-manner !  riccardo-ladder ladder-offsets !

@@ -104,6 +104,9 @@ state: stalker-state
   \ taking her (stalker/grab.fs): leading her (his mode 8 while she's his; 1 asked, -1 holding), how (6 by the hand,
   \ 8 walking), her answer (0 none yet, 1 taken, 2 refused, 3 broke free), his taunts so far
   cell field leading  cell field lead-type  cell field answer  cell field taunts
+  \ the frights of his hold on her - as it begins (vtable +0x300: the Pursuer's 10), each taunt after
+  \ (+0x304: 5) - and of his look round (+0x308, Pursuer_ThreatAmount: 20)
+  1 floats field hold-fright  1 floats field taunt-fright  1 floats field look-threat
   \ struck (stalker/struck.fs): his condition (+0x14CC: well-cond, hurt-cond - stumbled, down-cond), how
   \ long he's hurt (+0x1790) and down (+0x1664), the damage he's taken since he last gave up
   \ (+0x16C4), reeling from a blow (his reactions run; his mode waits), struck while down, her
@@ -171,6 +174,7 @@ state: stalker-state
   \ own actions ($1000.. in his tables: a table of xts; 0 Debilitas's), how near he attacks
   cell field own-chase  cell field own-run  cell field own-acts  1 floats field attack-range
   cell field own-frame          \ his own each frame (Riccardo's rage, snort, impact)
+  cell field own-points         \ his own points a move strikes at (vtable +0x138 BonePositions; 0 the Pursuer's: the move's two bones)
   cell field alt-tables         \ his tables' second set (kind 37 alerted; else his rage)
   cell field tint-t  cell field tint-was  cell field unseen   \ (the TintStalker: shown a while,
   1 floats field tint-alpha  cell field tint-fade  cell field tint-shown   \ how faded: its tint;
