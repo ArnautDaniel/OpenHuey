@@ -57,6 +57,7 @@ state: stalker-state
   cell field step-t             \ +0x1624: a count the step keeps
   cell field step-done          \ +0x16EE: the step is over
   cell field goal-tri  /vec field goal-at      \ +0x15A4 / +0x15B0: where he heads in the room
+  /vec field to-at              \ the point of his way he turns to as he sets off (kept across his turn's frames: his own)
   \ his mode's clock and his search (stalker/search.fs): the route's stops (+0x15E0: 8 of a
   \ triangle and whether it was picked at random), the next (+0x1620) and the end (+0x1621)
   cell field mode-t             \ +0x1660: frames left in his mode
