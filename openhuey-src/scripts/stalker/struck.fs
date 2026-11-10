@@ -51,9 +51,10 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 \ ---- flinching (Pursuer_StateFlinch: by the side and height - in front, behind, a low one; in
 \ a doorway the short ones); her blow: at its key he may strike back ----
 0 constant from-front   1 constant from-behind   2 constant low-blow   \ (a blow's direction: bits)
+: flinch-key? ( -- flag )  my-model @ 0 0 0 motion-events 2 and 0<> ;   \ (his flinch's key, this frame: Pursuer_FrameUpdate)
 : flinching ( -- )
     root-move
-    key?  by-her @ and  my-mode @ held-off <> and  her-reach @ 0= and if
+    flinch-key?  by-her @ and  my-mode @ held-off <> and  her-reach @ 0= and if
         0 by-her !  0 reeling !
         ['] chase-run step!  0 chase-t !  -1 combo !
         fiona body-at heading-to yaw f- angle-wrap fabs pi f2/ f< if  strike-back-front  else  strike-back-behind  then  choose  exit

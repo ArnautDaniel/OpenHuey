@@ -188,6 +188,17 @@ create sp-at /vec allot
     way-blocked? 0= if  true exit  then
     goal-tri @ dup 0< if  drop false exit  then  goal-at plan 0> ;
 
+\ Pursuer_KeepOnWalkable (each frame in the room played): his triangle barred to him meanwhile - a
+\ door shut on it, a floor the story barred - and he not through anything (+0x2B): onto the middle
+\ of the nearest triangle he may stand on; none, false (his owner puts him anywhere: Actor_TeleportRandom)
+create kw-at /vec allot
+: keep-on-floor ( -- ok? )
+    noclipped @ apart @ or if  true exit  then
+    self body-tri dup 0< if  drop true exit  then
+    nav-flags self body-mask and 0= if  true exit  then
+    self body-tri my-at kw-at self body-mask walkable  dup 0< if  drop false exit  then
+    room-id swap dup tri-center body-place  my-path path-clear  true ;
+
 \ Npc_StepToward: turned toward a point (past 45 degrees only turning, twice as fast); a stride
 \ at it - onto it when it is within the stride
 : step-toward ( v -- )

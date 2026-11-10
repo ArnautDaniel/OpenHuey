@@ -427,7 +427,7 @@ testing ... in his own room (castle-2f-2): held off there, on in the room - not 
     swap room!  20 run-frames  debug:debilitas-tri  5 run-frames
     [: 70 hp !  25 hits !  0 reeling !  0 unshaken ! ;] his  heavy-blow 5 0 game:debilitas send blow ;
 : tri-she-is-on ( -- tri )  s" fiona" actor-named body-tri ;
-true blind  castle-2f-2 room!  20 run-frames  castle-2f-2 tri-she-is-on struck-to-give-up  90 run-frames
+true blind  castle-2f-2 room!  20 run-frames  castle-2f-2 $30A struck-to-give-up  90 run-frames   \ (on floor of his own: hers there is barred to him - he would be put off it, Pursuer_KeepOnWalkable)
 T{ [: my-mode @  stalker.state:step @ ['] flinching =  making-for @ ;] his -> 4 0 -1 }T
 debug:debilitas-out  2 run-frames
 testing ... held off at a door of his way home he can't line up at (castle-1f-2's exit 1, from the

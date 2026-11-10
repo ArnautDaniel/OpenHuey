@@ -105,7 +105,9 @@ defer next-move ( -- )
         mv-kind  mv-stumble stumble-roll
         mv-threat f>cell  fiona send hit  -1 sent !  mv-cry cry !
     then ;
-: key? ( -- flag )  my-model @ 0 0 0 motion-events 2 and 0<> ;   \ (his move's key: the blow)
+\ (his move's key, the blow: read a frame back - Pursuer_StateAttackStep's and StateAttackActive's
+\ Motion_EventFlags(-1) - so his arm is a frame further on as it strikes)
+: key? ( -- flag )  my-model @ 0 -1 1 motion-events 2 and 0<> ;
 : striking ( -- )
     ended? if  held-off-after  combo-over exit  then
     mv-turns? if  quarry body-at turn-rate turn-to fdrop  then

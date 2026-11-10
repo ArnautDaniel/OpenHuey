@@ -180,6 +180,7 @@ $1300 constant gesture-anims
     script-held @ if  held-frame exit  then
     away? if  away  pose  tell-danger  exit  then
     thaw  hurt-down  senses  door-watch  modes  dog-temper  shut-behind  ladder-watch
+    played? if  keep-on-floor 0= if  placed-anywhere  then  then
     step @ ?dup if  execute  then   \ (his search waits while he reels - struck, down: the original's behaviour is
     reeling @ 0= if  search  then  played? looking   \ only picked at a step's end; then Pursuer_Think's head)
     played? growls @ and if  growl  then

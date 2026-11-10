@@ -660,5 +660,18 @@ lead (4 / 1 / 5) `ChaseFiona` to it, else the search `Behaviour25C`; 3 his route
 `GoAfterFiona`, else the search; 4 `GoForFiona` (+0x2AC: Debilitas's and kind 6's - the others'
 is empty, as their `HeadingStep` and `CarryOn` are). `Pursuer_PickStepAlt` is the mini-game run's.
 
-*Not ported*: the sight's wobble of `Pursuer_LookAround` (0.12 a frame: his head eased back the same
+Second pass (the kinds' own files, `Pursuer_ShowUp`, the run's `Pursuer_BehaviourFollow`): each kind's
+frights - his hold's first, each taunt's, his look round's (vtable +0x300 / +0x304 / +0x308: the
+Pursuer's 10 / 5 / 20; Daniella's kinds 5 / 5 / 15; Lorenzo's other class 10 / 5 / 20, hard 30 / 8 / 45;
+kind 37 20 / 7 / 20; the tint stalker 30 / 10 / 20); a move's points (+0x138: Daniella's strikes 3.5 out
+along her hand, Riccardo's heavy blow at her herself); Riccardo's table picks by
+`Pursuer_BehaviourAttack`'s rules; a door being used while he stands in its way - he steps back from it
+(`Pursuer_DoorNear`, action $10); his blow's key read a frame back (`Motion_EventFlags(-1)`); kept on
+floor he may stand on (`Pursuer_KeepOnWalkable`). `Pursuer_BehaviourFollow` is `BehaviourStalk` with
+the way after her through the doors - ours `pursue-run` with `after-her-elsewhere`: no difference found.
+
+*Not ported*: `Pursuer_ShowUp`'s pictures as she comes back in - Hewie still on him when she left
+(his letting go played from where the bite was: $1707 / $1704 / $1701), just fallen (his fall shown,
+not lying already); `Pursuer_DoorNear`'s cases for a door between the halves of one room and for him
+already down (action $11); the sight's wobble of `Pursuer_LookAround` (0.12 a frame: his head eased back the same
 frame); `Pursuer_StateKnockedThrough`'s down-between-halves case (his health back, time 1).
