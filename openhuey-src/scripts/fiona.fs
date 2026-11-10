@@ -149,8 +149,12 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
     companion-frame
     her-mode @ own-mode = if  panic-controls  else  false  then  0= hands-off? 0= and if  control-command  then
     -1 her-cmd !
+    \ (her point of interest before her state runs: the original's room scripts test it - phases 1 to 3 - ahead
+    \ of Progress_CharsThink, so a kick that lands on a wall still shows its point that frame; told after, the
+    \ wall's end had already changed her motion and the point was never seen - a wall's or a board's kick lost)
+    tell-point
     touching 1 =  feet-set  her-act @ execute  keep-apart
-    looks  tell-point
+    looks
     command-sounds  motion-sounds
     footsteps
     show-her  weapon-shown  fit-legs ;
@@ -167,8 +171,12 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
     read-controls
     her-mode @ own-mode = if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
     hands-off? if  -1 her-cmd !  else  read-command  try-backstep  try-defend  try-doors  try-ladders  try-let-go  then
+    \ (her point of interest before her state runs: the original's room scripts test it - phases 1 to 3 - ahead
+    \ of Progress_CharsThink, so a kick that lands on a wall still shows its point that frame; told after, the
+    \ wall's end had already changed her motion and the point was never seen - a wall's or a board's kick lost)
+    tell-point
     touching 1 =  feet-set  her-act @ execute  keep-apart
-    looks  tell-point
+    looks
     command-sounds  motion-sounds
     footsteps
     show-her  weapon-shown  fit-legs ;
