@@ -87,6 +87,7 @@ defer bitten-over ( -- )
 : bitten-at ( kind -- )   \ (bite-yaw: the grip's heading)
     bitten !  held-by-dog bite-how !
     let-her-go  combo-over  no-search search-phase !  -1 reeling !
+    leave-door   \ (taken in his door animation: the door let go - Pursuer_Hit's Npc_LeaveDoor, before its kind $A)
     bite-anims k# dup bite-anim !  play-now
     bite-cells k# temper# temper+
     bite-yaw f@ yaw f- angle-wrap fabs  bitten @ leg-attack = if  12e  else  8e  then  f/ bite-turn f!

@@ -149,10 +149,10 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     kind powder-blow = if  how loops-mask and powder-how !  then
     cond @ down-cond = if  kind door-blow <> if  -1 twitch !  then  exit  then   \ (down: a twitch)
     hp @ damage abs - 0 max hp !  hits @ damage + 999 min hits !     \ (his health, the damage he's had)
-    on-ladder? if  hp @ 1 max hp !  exit  then                     \ (on a ladder: hurt, but no fall)
     kind killing-blow = if  0 hp !  then
     kind blow-dir {: dir :}
     kind dir tackled
+    on-ladder? if  hp @ 1 max hp !  exit  then                     \ (on a ladder: hurt - Hewie's temper counted - but no fall)
     bitten @ if   \ (Hewie on him - Pursuer_Hit's move part 9: a cry, no more - he falls as Hewie lets go;
         kind bite-blow =  how stumbles and 0<> and if  hurt-cond cond !  900 hurt-t !  -1 growl-after !  then
         striker @ hewie = if  hurt-cry  else  grunt-sound  then  7 sound exit   \ a stumbling bite hurts him)
@@ -160,6 +160,7 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     unshaken @  kind light-blow = and  hp @ 0> and if  grunt-sound 7 sound exit  then
     striker @ fiona = if  -1 by-her !  then
     kind door-blow = if  let-her-go combo-over 0 hold-off !  how door-struck exit  then   \ (a door slammed on him: how is its exit)
+    leave-door   \ (struck in his door animation: the door let go - Npc_LeaveDoor)
     hp @ 0> 0= if  at-door? if  1 hp !  else  knock-down exit  then  then
     kind powder-blow = powdered? and if  how loops-mask and dup powder-loops !  powder-cloud exit  then   \ (powdered again)
     reeling @ if  exit  then                                       \ (already reeling: the damage only)

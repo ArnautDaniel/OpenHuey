@@ -77,10 +77,21 @@ defer shoulder-past ( -- )   ' noop is shoulder-past
 : got-door ( -- )   \ (Pursuer_DoorBarge: out of contact till the door is let go)
     -1 apart !  making-for @ held-door !  -1 asked !  door-anims door-use @ + play-now  ['] door-swinging step! ;
 
+0 constant from-behind-use   2 constant in-front-use
+\ ---- struck in the middle of his door animation (Pursuer_Hit's move mode 2: Npc_LeaveDoor): the
+\ door let go as he meant it, in contact again; left on floor barred to him - the doorway's - he
+\ is put back at his spot for the door on the side he stands. (Left held, nobody could use it.)
+: leave-door ( -- )
+    held-door @ 0< if  exit  then
+    making-for @ {: e :}
+    let-door-go  out-over  0 barging !  0 entering !
+    self body-tri dup 0< if  drop exit  then  nav-flags self body-mask and 0= if  exit  then
+    e  my-at vec@ e door-side 0> if  in-front-use  else  from-behind-use  then  door-user-spot  {: tri F: x y z a :}
+    tri 0< 0= if  room-id tri x y z body-place  a body-turn  then ;
+
 \ ---- lined up at his spot for its animation (Pursuer_DoorLineUp, DoorGoThrough: from behind
 \ it, in front; one more - the animation that shuts it - while it is open), turned to its heading
 \ (Pursuer_DoorFace / DoorOpen), its handle asked for ----
-0 constant from-behind-use   2 constant in-front-use
 : asking ( -- ) ;                                          \ (the doors' answer: `door-held` / `door-refused`)
 : facing-door ( -- )
     spot-yaw f@ turn-rate body-turn-toward f0= 0= if  exit  then
