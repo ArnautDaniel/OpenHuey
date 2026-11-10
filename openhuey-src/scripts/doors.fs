@@ -111,7 +111,10 @@ end-state
     loop ;
 
 behaviour keeping
-  on spawned ( -- )  self subscribe tick  self subscribe entered-room  self subscribe leaving-room  users 8 cells -1 fill ;
+  on spawned ( -- )  self subscribe tick  self subscribe entered-room  self subscribe leaving-room  self subscribe game-loaded  users 8 cells -1 fill ;
+  \ a save loaded (Rooms_SetState): the exits anew through the doors its progress hasn't closed off -
+  \ left as they were, an exit kept a door closed off for good (the mansion's front door, locked)
+  on game-loaded ( -- )  world-exits-rebuild ;
   on leaving-room ( room exit -- )  drop let-go-all ;
   on entered-room ( room exit -- )  2drop  room-in  users 8 cells -1 fill ;
   on redo-doors ( -- )  room-in ;   \ (Doors_RoomIn, for the story)

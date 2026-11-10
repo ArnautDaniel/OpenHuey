@@ -82,6 +82,17 @@ door5 l@ 1 or door5 l!
 ' saves:quick-load in-saves  deliver  20 run-frames
 T{ door5 l@ 1 and -> 0 }T
 
+testing the exits made anew on loading (Rooms_SetState): a door the save has closed off for good isn't an exit's - the mansion's front door
+: front-exit-door ( -- door )  front-garden-2 0 room-exit-door ;
+1 progress pr.closed-off bit-set  world-exits-rebuild
+T{ front-exit-door 1 = -> 0 }T
+' saves:quick-save in-saves  deliver  2 run-frames
+1 progress pr.closed-off bit-clear  world-exits-rebuild   \ (as a session begun afresh has them: none closed off)
+T{ front-exit-door -> 1 }T
+' saves:quick-load in-saves  deliver  20 run-frames
+T{ front-exit-door 1 =  1 progress pr.closed-off bit? -> 0 -1 }T
+1 progress pr.closed-off bit-clear  world-exits-rebuild
+
 testing the stage music the story has come to, made again on loading (SceneGame_LoadedStart)
 : stage ( -- s )  game:music enter  music:sm-stage @  leave-actor ;
 opening-done story-flag-set  over-music-b story-flag-set

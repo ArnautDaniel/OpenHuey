@@ -17,6 +17,7 @@ Declared in `scripts/messages.fs`. Kinds of character (for locks): `fiona-kind` 
 | `lock` / `unlock` | `( door -- )` | doors | For everyone (the story, keys). |
 | `lock-for` | `( door kind on -- )` | doors | Locked against a kind of character, or not (`Progress_LockDoorFor`). |
 | `close-off` | `( door -- )` | doors | Gone for good: no route goes through it. |
+| `game-loaded` | `( -- )` | doors (broadcast by saves) | The exits made anew from the loaded progress' closed-off doors (Rooms_SetState). Before 0.2.38 a load left them as the session had them: begun afresh, an exit kept a closed-off door - the mansion's front door, front-garden-2's exit 0, was the locked door 1 instead of door $3C. |
 | `hold-door` | `( room exit kind -- )` | doors | Take hold of a door before going through (any room). Answered `door-held` or `door-refused` `( room exit -- )`. |
 | `let-go-open` / `let-go-shut` | `( room exit source -- )` | doors | Let it go open or shut (off-screen: heard). |
 | `use-door` | `( exit anim source -- )` | doors | The played room's door swings along the user's animation; at rest it is let go. |
