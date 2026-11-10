@@ -98,7 +98,7 @@ create looks  -3.91e 90e 3.23e  80e 26e 15e look,
     room-sounds-in?  stalker-in? and if  presence-sound keep-playing or room-bank stalker sound-by  then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop  exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop  exit  then
     entries 2 ways-in  came-by @ 1 = if  3 map-page  then ;
 : went ( -- )
     force-followed state-off

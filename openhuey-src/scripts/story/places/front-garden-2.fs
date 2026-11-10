@@ -116,7 +116,7 @@ create entries  2 , 2 ,   1 , 1 ,   3 , -1 ,                    \ (by exit 0, 1,
     events-held state? if  window-light exit  then
     ways  grate-near  toward-the-cage  spots  window-light ;
 : person-in ( i -- )
-    fiona-p = if  events-held state? if  hewie send part-from-fiona  ['] replay-grate start drop exit  then
+    fiona-p = if  events-held state? if  hewie send part-from-fiona  ['] replay-grate fiona start-holding drop exit  then
         entries 3 ways-in  then ;
 : went ( -- ) ;
 

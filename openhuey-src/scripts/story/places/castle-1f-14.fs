@@ -108,7 +108,7 @@ create entries  2 , 2 ,   0 , 0 ,   0 , 0 ,             \ (by exit 0, 1, 2: the 
 : each-frame ( -- )  events-held state? if  wall-shade exit  then  ways  hewie-sniffs  spots  wall-shade ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 3 ways-in
     saturnus-hint-on fact?  c1f-14-flag2 fact? 0= and if  c1f-14-flag2 fact!  stalker let-go  then
     came-by @ 0= if  stairs-page map-page  then

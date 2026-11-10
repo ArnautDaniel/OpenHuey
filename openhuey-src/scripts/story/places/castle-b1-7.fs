@@ -68,7 +68,7 @@ the-vase 0 frees-floor  the-vase $1B0 noise-from
     0 key-step !  ['] key-handed start drop  fetches ;
 : through-hole ( -- )   \ (a moment on, as Hewie tells where he is: hidden in the hole beyond - here)
     2 frames
-    hewie body-room castle-1f-19 =  hewie-act-now @ hidden-act = and if
+    room-of-hewie castle-1f-19 =  hewie-act-now @ hidden-act = and if
         room-flag-2d state!  castle-b1-7 hole-side-tri 1 hewie-to
         got-study-key fact? 0= if  ['] waits-by-hole start drop  then
     else  back-to-hole  then ;

@@ -118,7 +118,7 @@ create cameras  7 , 0 , 0 ,  8 , 2 , 2 ,  9 , 1 , 1 ,  $A , 2 , 2 ,  $D , 2 , 2 
     shade  spots ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 5 ways-in
     came-by @ dup 0 3 within  swap 4 = or if  2 map-page  then ;
 : went ( -- )   \ (leaving after the blast: Lorenzo let go, her calm and the camera as they were)

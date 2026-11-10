@@ -119,7 +119,7 @@ create entries  1 , 1 ,   0 , 0 ,   \ (by exit 0, 1: the camera)
     2 exits-out  cameras 4 cameras-at  ahead 2 ways-out  hewie-sniffs  looks 2 hewie-looks-at  spots  walls-shade ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 2 ways-in
     $81 forced-way? if
         fiona $EB 50 -41.573e -3.787e place-at  1 1 player-camera

@@ -116,7 +116,7 @@ create pod-look  -1.06e 0e -0.54e  38e 17e 17e look,
     then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop  exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop  exit  then
     entries 2 ways-in
     came-by @ forced-exit =  over-music-c fact? 0= and if
         world-held state!  0e sounds-scaled  over-music-c fact!  ['] come-with-me start drop

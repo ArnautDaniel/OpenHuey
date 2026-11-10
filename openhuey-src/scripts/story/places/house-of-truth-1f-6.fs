@@ -172,7 +172,7 @@ create ahead  2 , 0 ,  3 , 1 ,   \ (area, exit loaded ahead)
     over-music-e fact? 0= if  ['] taunts start drop  then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     0 0 0 way-in
     over-music-e fact? 0= if  fiona $85 180 0e 10e place-at  ['] shut-in start drop  then ;
 : went ( -- ) ;

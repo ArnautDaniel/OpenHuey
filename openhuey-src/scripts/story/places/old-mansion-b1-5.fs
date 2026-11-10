@@ -72,7 +72,7 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
         else  hewie activate  old-mansion-b1-5 86 0 hewie-to  hewie $56 -2 1.98e 5.93e place-at  then
     then
     $4D $68 door-as  $68 closed-off  $4E $69 door-as  $69 closed-off  $50 $6A door-as  $6A closed-off  $53 $6B door-as  $6B closed-off
-    exits-redone  hewie body-room $4D = if  $68 -1 0 hewie-to  then
+    exits-redone  room-of-hewie $4D = if  $68 -1 0 hewie-to  then
     stalker-off-to-b1-2  omb1-5-flag1 fact!  something-moved  stalkers-stay state-off ;
 : chess ( -- )
     omb1-5-flag2 fact? if  fiona wait-move  searched-msg say exit  then

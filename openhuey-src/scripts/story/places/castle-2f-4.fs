@@ -35,8 +35,8 @@ own-reset
     $A shot-wait  lit-fx effect-off  0 usual-layer layer
     begin  cutscene-frame 0< 0= while  yield  repeat  wait-fade ;
 : dream-scene ( ahead? -- )   \ (the room beyond loaded ahead: brought in, not replayed)
-    dream-movie scenes:opaque-when-movie dream-cutscene load-scene  wait-fade  ['] dream-shots along-scene
-    if  beyond-room preload  then  movie-opaque state!  panic-eased  if  dream-msg run-scene  then
+    {: ahead? :}  dream-movie scenes:opaque-when-movie dream-cutscene load-scene {: movie? :}  wait-fade  ['] dream-shots along-scene
+    ahead? if  beyond-room preload  then  movie-opaque state!  panic-eased  movie? if  dream-msg run-scene  then
     0 false no-shadow  0 usual-layer layer ;   \ (skipped between its shots, its cues' looks would stay on her into the next room)
 : nightmare ( -- )
     fiona hold  c2f-3-tv-examined fact-off
@@ -51,7 +51,7 @@ create entries  1 , 1 ,   0 , 0 ,   \ (by exit 0, 1: the camera)
 : each-frame ( -- )  cameras 4 cameras-at ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 2 ways-in
     came-by @ forced-exit = if  2 2 player-camera  fiona $A8 45 place-on-tri  world-held state!  ['] nightmare start drop  then ;
 : went ( -- ) ;

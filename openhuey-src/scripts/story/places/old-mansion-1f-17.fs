@@ -104,7 +104,7 @@ create mummy-look  68.2e 0e 31.14e  20e 12e 12e look,
     else  the-vase breaks? if  magnesia-shows  then  then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop  exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop  exit  then
     0 2 2 way-in  1 0 0 way-in  3 1 1 way-in   \ (by exit 2 no camera of its own)
     came-by @ forced-exit = if  fiona $12C put-on-tri  1 -1 player-camera  ['] the-way-behind start drop  then
     lever-by-way  came-by @ 2 < if  2 map-page  then ;

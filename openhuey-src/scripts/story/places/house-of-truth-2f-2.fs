@@ -108,7 +108,7 @@ create cameras  1 , 0 , -1 ,  2 , 1 , 0 ,   \ (area, set, path)
     spots ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     0 0 -1 way-in
     came-by @ forced-exit = if
         fiona brought-tri 0 place-on-tri  house-of-truth-2f-1 -1 1 hewie-to  world-held state!

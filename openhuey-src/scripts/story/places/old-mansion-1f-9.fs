@@ -128,7 +128,7 @@ create looks  21.03e 0e -17.8e  20e 12e 12e look,   -41.22e 4.5e -4.36e  28e 12e
     then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop  exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop  exit  then
     0 0 -1 way-in
     om1f-13-flag1 fact? if  windows-open  then ;
 : went ( -- ) ;

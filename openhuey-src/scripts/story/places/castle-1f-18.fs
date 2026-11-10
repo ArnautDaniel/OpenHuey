@@ -140,7 +140,7 @@ create entries  1 , 0 ,   0 , -1 ,             \ (by exit 0, 1: the camera)
 : ways ( -- )  2 exits-out  cameras 3 cameras-at  ahead 2 ways-out ;
 : each-frame ( -- )  ways  hewie-moths  moths-heard  spots ;
 : person-in ( i -- )
-    fiona-p = if  events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then  entries 2 ways-in  then ;
+    fiona-p = if  events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then  entries 2 ways-in  then ;
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-18 place!

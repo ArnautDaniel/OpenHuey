@@ -92,7 +92,7 @@ create entries  0 , 0 ,   \ (by exit 0: the camera)
 : each-frame ( -- )  events-held state? if  exit  then  0 exit-out  cameras 2 cameras-at  spots ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop  exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop  exit  then
     entries 1 ways-in ;
 : went ( -- ) ;
 

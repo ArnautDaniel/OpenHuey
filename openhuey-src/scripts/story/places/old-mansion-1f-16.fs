@@ -85,7 +85,7 @@ create ahead  5 , 0 ,   6 , 1 ,   7 , 2 ,   8 , 3 ,   9 , 3 ,   $A , 4 ,   \ (ar
     om1f-16-refined-magnesia fact? 0=  fiona 65.56e 94.52e 19.77e 5e 5e touches? and if  ['] take-magnesia calm-only offer  then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop  exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop  exit  then
     entries 5 ways-in
     came-by @ dup 0 =  over 2 = or if  3 map-page  then  dup 1 =  swap 3 = or if  2 map-page  then ;
 : went ( -- ) ;

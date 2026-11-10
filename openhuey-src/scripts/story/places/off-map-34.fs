@@ -43,7 +43,7 @@ create looks   \ (the parts after each cue: 0 .. 5)
 : each-frame ( -- ) ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     cf-13-flag1 fact?  came-by @ forced-exit = and if
         fiona 0 0 place-on-tri  world-held state!  panic-eased  ['] meets-him fiona start-holding drop
     then ;

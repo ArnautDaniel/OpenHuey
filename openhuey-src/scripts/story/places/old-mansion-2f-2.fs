@@ -38,7 +38,7 @@ $31 constant call-sound
     again ;
 : through-to-furnace ( -- )   \ (a moment on, as Hewie tells where he is: hidden in old-mansion-2f-3's hole)
     2 frames
-    om2f-2-flag1 fact? 0=  hewie body-room old-mansion-2f-3 = and  hewie-act-now @ hidden-act = and if
+    om2f-2-flag1 fact? 0=  room-of-hewie old-mansion-2f-3 = and  hewie-act-now @ hidden-act = and if
         old-mansion-2f-2 65 0 hewie-to  -1 hewie-inside !  ['] barking start drop
     then ;
 
@@ -87,7 +87,7 @@ create ahead  9 , 0 ,   $A , 2 ,   \ (area, exit loaded ahead)
     om2f-2-medallion-found fact?  om2f-2-medallion fact? 0= and  fiona -49.36e 1e -47.3e 5e 5e touches? and if  ['] take-medallion calm-only offer  then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop  exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop  exit  then
     0 3 2 way-in  2 4 3 way-in  ['] through-to-furnace start drop ;
 : went ( -- )   \ (Hewie, inside still: back in the hole)
     om2f-2-flag1 fact? 0=  hewie-in? and  hewie-inside @ and if  old-mansion-2f-3 -1 0 hewie-to  18000 2 hewie send hewie-yelp  then ;

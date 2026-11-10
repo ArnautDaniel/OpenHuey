@@ -103,7 +103,7 @@ create ahead  4 , 0 ,   $C , 0 ,   6 , 1 ,   $B , 1 ,   5 , 2 ,   $A , 2 ,   7 ,
     doorways-shade ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replay-dinner start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replay-dinner fiona start-holding drop exit  then
     entries 4 ways-in ;
 : went ( -- )   \ (Daniella let be again; her fear and camera back once she's out by the corridors)
     force-followed state-off

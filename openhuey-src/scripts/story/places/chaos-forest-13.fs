@@ -63,7 +63,7 @@ $19 constant forest-track   0 constant ash-fx   1 constant heart-area   3 consta
     doorway-lit @ if  -60e 40e -30e  10e 46.5e -46e  -60e 0e -40e  10e -10e -59e  light-doorway  then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     0 0 0 way-in ;
 : went ( -- ) ;
 

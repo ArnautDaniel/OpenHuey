@@ -426,7 +426,7 @@ create entries  0 , 0 ,   5 , 4 ,   0 , 0 ,   3 , 3 ,   \ (by exit 0..3: the cam
 : person-in ( i -- )
     case
         fiona-p of
-            events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+            events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
             entries 4 ways-in
             $81 forced-way? if
                 -1 through-gate !  fiona $324 180 place-on-tri  fiona 0 at-exit  0 0 player-camera  camera-restart

@@ -37,7 +37,7 @@ $4B constant lorenzo-seen
 : each-frame ( -- )  0 exit-out  slam-shake ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     0 0 0 way-in
     came-by @ forced-exit = if
         fiona brought-tri 0 place-on-tri  world-held state!  0e sounds-scaled  panic-eased

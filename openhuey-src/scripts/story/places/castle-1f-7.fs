@@ -83,7 +83,7 @@ $30 constant not-landed   $34 constant speed   -25.3e fconstant shut-y
 \ ---- the gate: held while Hewie waits (or lies hurt) on the plate next door; let go, it falls -
 \ unless someone is under it (Hewie kept from leaving meanwhile) ----
 : hewie-on-plate? ( -- flag )
-    hewie body? 0= if  false exit  then  hewie body-room castle-1f-4 <> if  false exit  then
+    room-of-hewie castle-1f-4 <> if  false exit  then
     hewie-act-now @ dup wait-a-while-act = swap knocked-down-act = or ;
 : someone-under? ( -- flag )
     fiona gate-floor on-group?  hewie gate-floor on-group? or  stalker gate-floor on-group? or ;
@@ -188,7 +188,7 @@ create entries  0 , 0 ,   0 , 0 ,             \ (by exit 0, 1: the camera)
 : each-frame ( -- )  ways  gate-watch  wires  spots  walls-shade ;
 : person-in ( i -- )
     dup fiona-p = if  drop
-        events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+        events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
         entries 2 ways-in
         came-by @ forced-exit = if
             fiona thrown-tri -60 place-on-tri  1 30e 15e 0e 0e shot  ['] thrown-back start drop
