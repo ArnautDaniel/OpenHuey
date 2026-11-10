@@ -200,7 +200,7 @@ message thing-blow ( damage yaw -- )   \ to a homunculus: a magnesia going off w
 message throw-down ( who recover -- )        \ (Fiona) thrown down by who (an actor, -1 none); recover: her recovery reset (the story's 0xB2)
 message look-hold ( who frames -- )          \ (Fiona) her head on who for so many frames (the story's 0x96)
 message fiona-unseen ( on -- )               \ broadcast when it changes: she can't be seen (item $89 worn, still)
-message fiona-plight ( state ladder -- )     \ broadcast each frame: how she stands for a stalker's attack (plight); the ladder she is on (-1 none)
+message fiona-plight ( state ladder reach -- )   \ broadcast each frame: how she stands for a stalker's attack (plight); her reach (bit 1 not to be gone for - Pursuer_MayGo; bit 2 thrown, her mode 4); the ladder she is on (-1 none)
 \ how she stands for a stalker's attack (Pursuer_FionaState; his tables by it): free; fleeing; frightened
 \ (her fear past 90, her panic attack); out of reach (struck, seized, the stalkers blind); panicking; calming down
 enum: plight  free-plight fleeing-plight frightened-plight unreachable-plight panicking-plight calming-plight ;
@@ -496,4 +496,4 @@ message load-from-file ( addr len -- )   \ (saves) the game in that file back
 message item-var ( var value -- )          \ (items -> the room) its script variable var set to value (an item used: the word plate)
 message item-event-bit ( n on -- )         \ (items -> the room) its event bit n set or cleared (the word plate: the word was right)
 message meters? ( -- )                       \ (debug: to Fiona) her meters, please
-message her-meters ( fear breathless run -- )  \ (debug: Fiona's reply) her fear, out of breath, the running left
+message her-meters ( tired scared run -- )  \ (debug: Fiona's reply) how tired running has made her, scared by the panic, the running left

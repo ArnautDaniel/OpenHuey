@@ -40,9 +40,6 @@ static float wrap(float a) {
     return a;
 }
 
-static float cross2(Vec3 a, Vec3 b, Vec3 p) {   /* which side of a -> b p is (x / z) */
-    return (b.x - a.x) * (p.z - a.z) - (b.z - a.z) * (p.x - a.x);
-}
 
 /* the height of triangle t's plane at (x, z) */
 static float tri_height(const NavTri *t, float x, float z) {
@@ -57,37 +54,62 @@ static float tri_height(const NavTri *t, float x, float z) {
     return w0 * a.y + w1 * b.y + (1.0f - w0 - w1) * c.y;
 }
 
-/* walk the nav mesh from triangle *tri toward `to` across the edges the way crosses: whether
- * it gets there (the original's door_walk: off the mesh, it doesn't) */
-static int walk(const NavMesh *n, int *tri, Vec3 to) {
+/* which edge of triangle t (in x / z) the step from -> to leaves it by: 0..2; 3 with `to`
+ * inside (on an edge counts); 4 with it outside and no edge crossed (NavTri_ExitEdge) */
+static int leaves_by(const NavTri *t, Vec3 from, Vec3 to) {
+    int e, inside = 0;
+
+    for (e = 0; e < 3; e++) {
+        Vec3 a = t->v[e], b = t->v[(e + 1) % 3];
+        float ex = b.x - a.x, ez = b.z - a.z;
+        float dx = to.x - from.x, dz = to.z - from.z;
+        float p = (from.x - a.x) * ez, q = (from.z - a.z) * ex;
+        float den = dx * ez - dz * ex, s, u;
+
+        if (!((to.x - a.x) * ez - (to.z - a.z) * ex < 0.0f)) {
+            inside++;
+            continue;
+        }
+        if (p - q < 0.0f || den == 0.0f) {   /* (from outside this edge too; along it) */
+            continue;
+        }
+        s = (q - p) / den;
+        if (s < 0.0f || !(s <= 1.0f)) {
+            continue;
+        }
+        u = fabsf(ex) <= fabsf(ez) ? (from.z + s * dz - a.z) / ez : (from.x + s * dx - a.x) / ex;
+        if (u < 0.0f || !(u <= 1.0f)) {
+            continue;
+        }
+        return e;
+    }
+    return inside == 3 ? 3 : 4;
+}
+
+/* walk the nav mesh from `from` in triangle *tri (then from each triangle's centre) to `to`:
+ * whether it gets there, *tri the triangle holding it, or leaves the mesh (the original's
+ * door_walk) */
+static int walk(const NavMesh *n, int *tri, Vec3 from, Vec3 to) {
     int steps;
 
-    for (steps = 0; steps < 256; steps++) {
-        const NavTri *t;
-        Vec3 c;
-        int e, out = -1;
+    for (steps = 0; steps < 256; steps++) {   /* (the original has no bound) */
+        int e;
 
         if (*tri < 0 || *tri >= n->ntris) {
             return 0;
         }
-        t = &n->tris[*tri];
-        c = vec3((t->v[0].x + t->v[1].x + t->v[2].x) / 3.0f, 0.0f, (t->v[0].z + t->v[1].z + t->v[2].z) / 3.0f);
-        for (e = 0; e < 3; e++) {   /* the edge between the centre and `to` passes */
-            Vec3 a = t->v[e], b = t->v[(e + 1) % 3];
-
-            if ((cross2(a, b, c) < 0.0f) != (cross2(a, b, to) < 0.0f) &&
-                (cross2(c, to, a) < 0.0f) != (cross2(c, to, b) < 0.0f)) {
-                out = e;
-                break;
-            }
+        e = leaves_by(&n->tris[*tri], from, to);
+        if (e == 3) {
+            return 1;
         }
-        if (out < 0) {
-            return 1;   /* `to` is in this triangle */
+        if (e == 4) {
+            return 0;
         }
-        *tri = t->next[out];
+        *tri = n->tris[*tri].next[e];
         if (*tri < 0) {
             return 0;
         }
+        from = navmesh_center(n, *tri);
     }
     return 0;
 }
@@ -113,7 +135,7 @@ int exit_spot(const Room *r, const World *w, int exit, int which, Vec3 *out) {
         s = sinf(a);
         c = cosf(a);
         to = vec3(stand.x + s * back[which], stand.y, stand.z + c * back[which]);
-        if (walk(&r->nav, &tri, to)) {
+        if (walk(&r->nav, &tri, stand, to)) {
             to.y = tri_height(&r->nav.tris[tri], to.x, to.z);
             *out = to;
             return tri;

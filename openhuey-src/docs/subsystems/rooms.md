@@ -20,6 +20,12 @@ the next when the controlled character goes through an exit.
 **Facts:** `room-id` (the played room), the room graph (`room-exit-leads`, `route`...), whether
 a room exists, its exits' spots (`exit-spot`, `exit-stand`).
 
+An exit's spots are 4 inside the room from its door, 12 beyond it and 12 inside (`exit-spot` 0, 1,
+2: `Doors_NavSpot`): found by walking the nav mesh from the door's own spot, then from each
+triangle's centre, by the edge the step leaves through (`NavTri_ExitEdge` - a spot on a
+triangle's edge is in it). Arriving, she stands on the first; without one, on the third
+(`Fiona_Vt38`'s), else by the room's first camera.
+
 Names: rooms are named in `scripts/room-names.fs` (`front-garden-2`).
 
 ## State
@@ -84,10 +90,10 @@ character off the nav mesh takes light 0 alone, wherever it reaches (`Lights_For
 
 ## Status
 
-**Built** (`scripts/rooms.fs`). Checked by `tests/rooms/test_rooms.fs` (21 tests: a new game in
+**Built** (`scripts/rooms.fs`). Checked by `tests/rooms/test_rooms.fs` (26 tests: a new game in
 the cage room; out by an exit - leaving / arrived / entered in order, with both exits; back
 again; an exit to nowhere; a jump; the fog drawn early by its 26 bytes, past its section; no
-lights section; light 0 off the mesh). The placed objects' layers: `tests/graphics`. Listeners subscribe to `leaving-room`, `arrived` and
+lights section; light 0 off the mesh; an exit's spots on a triangle's edge, her arrival back from the kiln room). The placed objects' layers: `tests/graphics`. Listeners subscribe to `leaving-room`, `arrived` and
 `entered-room`.
 
 The rooms' own sounds come with their scripts (`room-sounds`). The sections where Hewie is the

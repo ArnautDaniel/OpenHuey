@@ -59,7 +59,8 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
     {: n act :}  n gesture-anim  dup 1 = if  drop stand-watch exit  then
     play-now  ['] gesturing-at act act!  n taunt-gesture ! ;
 \ round her (Pursuer_StateSidestepRoom / StateSidestep): at his distance, 5 degrees a step the
-\ way she isn't facing; the other way when it's blocked; done after 30 of it or 120 frames
+\ way she isn't facing; the other way when it's blocked, and after each 30 of it - to and fro
+\ for 120 frames; blocked both ways, done
 create rd-at /vec allot
 : round-point ( -- )
     my-at fiona body-at vec-dist-xz
@@ -71,9 +72,12 @@ create rd-at /vec allot
 create rd-was /vec allot
 : rounding ( -- )
     1 step-t +!  step-t @ 120 > if  -1 step-done !  exit  then
-    round-point  round-ok? 0= if  round-dir @ negate round-dir !  round-point  round-ok? 0= if  -1 step-done !  exit  then  then
+    round-point  round-ok? 0= if
+        0e round-gone f!  round-dir @ negate round-dir !  round-point  round-ok? 0= if  -1 step-done !  exit  then
+    then
     rd-was my-at vec-copy  rd-at step-toward
-    rd-was my-at vec-dist-xz round-gone f@ f+ fdup round-gone f!  30e f> if  -1 step-done !  then ;
+    rd-was my-at vec-dist-xz round-gone f@ f+ fdup round-gone f!
+    30e f> if  0e round-gone f!  round-dir @ negate round-dir !  then ;   \ (30 of it: back the other way)
 : round-her ( -- )
     fiona body-at my-at vec-heading fiona body-yaw f- angle-wrap f0> if  1  else  -1  then  round-dir !
     0e round-gone f!  walk-fast play  ['] rounding round-act act! ;
@@ -106,10 +110,12 @@ create wd-at /vec allot
             then
         then
     loop  -1 ;
-: bump ( -- )   \ (Pursuer_RaiseThreat)
-    touching-bits sent @ invert and
+: bump-whom ( mask -- )   \ (Pursuer_RaiseThreat: not with the stalkers blind)
+    stalkers-blind state-flag? if  drop exit  then
+    touching-bits and  dup sent @ invert and  swap sent @ or sent !
     dup touched-her and if  throw-request 0 10e f>cell fiona send hit  then
-    touched-him and if  hard-blow 5 0 hewie send blow  then  touching-bits sent @ or sent ! ;
+    touched-him and if  hard-blow 5 0 hewie send blow  then ;
+: bump ( -- )  touched-her touched-him or bump-whom ;
 : wandering ( -- )
     bump  -1 step-t +!
     walk-stride  step-t @ 0> 0= or if  -1 step-done !  then ;
@@ -207,7 +213,7 @@ defer look-about-her ( -- )   ' noop is look-about-her   \ (his look round: stal
     fdup ground-gained f<  10e f< or 0= if  false exit  then
     fiona body-at heading-to yaw f- angle-wrap fabs 20e deg>rad f<  same-floor? and ;
 : attack! ( -- )
-    her-plight @ dup unreachable-plight = if  drop exit  then   \ (out of reach: struck already, hidden)
+    her-plight @   \ (out of reach - thrown, down, aside - too: his table for being by her, taunts and a way round)
     dup free-plight calming-plight 1+ within 0= if  drop free-plight  then  choose ;
 \ round her, or his third taunt with its gesture's flag (Debilitas_Chase $1A / $19): her more than
 \ 100 off, stalking her (his chase table's eighth: seen near); else, over, standing
@@ -233,7 +239,8 @@ create side-pt /vec allot
         2e side-pt my-at vec-ahead
         side-pt self body-mask body-tri-to  dup 0< if  drop  else  nav-flags self body-mask and 0= if  true unloop exit  then  then
     loop  false ;
-: may-go? ( -- flag )  her-plight @ unreachable-plight <>  stalkers-blind state-flag? 0= and ;   \ (Pursuer_MayGo)
+: may-go? ( -- flag )  her-reach @ 1 and 0= ;   \ (Pursuer_MayGo)
+: her-up? ( -- flag )  her-reach @ 2 and 0= ;   \ (not thrown: her mode isn't 4)
 : turn-way ( -- way )  fiona body-at 60e deg>rad 150e deg>rad way-past ;   \ (Pursuer_TurnDir; no-turn: none)
 : attack-again ( -- )  took @ if  struck-her  else  missed-her  then  choose ;   \ (Pursuer_AttackAgain)
 : attack-over ( -- )
@@ -244,7 +251,7 @@ create side-pt /vec allot
     then
     sees-fiona @ if  chase-begin  else  chase-start  then ;
 : turn-or-stand ( -- )   \ (a turn or his way round over: Pursuer_BehaviourAttack 3 / $1A)
-    may-go? hold-off @ 0= and  d-her 40e f>  d-her f0< or  or if  attack-over exit  then
+    may-go? her-up? and hold-off @ 0= and  d-her 40e f>  d-her f0< or  or if  attack-over exit  then
     turn-way dup no-turn <> if  turn-to-her exit  then  drop
     d-her 20e f>  room-behind? 0= or if  30 hold-t !  stand-watch exit  then
     step-back ;
@@ -255,8 +262,9 @@ create side-pt /vec allot
         gesture-act of  step-done @ if  attack-over  then  endof
         taunt-act of  step-done @ if  attack-over exit  then
             taunt-gesture @ gesture-flag? if  sees-fiona @ 0=  d-her 60e f< 0=  or  d-her f0< or if  attack-over  then  then  endof
-        round-2-act of  step-done @ if  attack-over  then  endof
-        back-off-act of  may-go?  hold-off @ 0= and if  attack-over exit  then
+        round-2-act of  step-done @ if  attack-over exit  then   \ (his second way round: over sooner too - her out of his sight, or 60 off)
+            sees-fiona @ 0=  d-her 60e f< 0=  or  d-her f0< or if  attack-over  then  endof
+        back-off-act of  may-go? her-up? and  hold-off @ 0= and if  attack-over exit  then
             d-her 20e f>  room-behind? 0= or if  attack-again  then  endof
         taunt-2-act of
             taunt-gesture @ gesture-flag? if  turn-way dup no-turn <> if  0 hold-off !  turn-to-her exit  then  drop  then

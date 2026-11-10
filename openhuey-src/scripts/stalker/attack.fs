@@ -60,10 +60,17 @@ create blow-at /vec allot
 : reaches? ( v -- flag ) ( F: margin -- )  fiona reaches-whom? ;
 \ ... and Hewie's (Npc_WhoReachable takes him too: struck, he is sent the blow - its damage)
 : reaches-dog? ( v -- flag ) ( F: margin -- )  hewie reaches-whom? ;
-: strike-dog ( -- )   \ (the move's bones at him: kind, damage, a stumble by its chance)
+\ the two points a move strikes at (vtable +0x138, Pursuer_BonePositions: its two bones - the first
+\ twice when it has no second; a stalker's own: Daniella's reach out along her hand, Riccardo's
+\ heavy blow at her herself)
+create blow-b /vec allot
+: move-points ( -- )
+    own-points @ ?dup if  execute exit  then
+    my-model @ mv-bone bone-pos blow-at vec!
+    mv-bone2 0< if  blow-b blow-at vec-copy  else  my-model @ mv-bone2 bone-pos blow-b vec!  then ;
+: strike-dog ( -- )   \ (the move's points at him: kind, damage, a stumble by its chance)
     dog-sent @ if  exit  then
-    my-model @ mv-bone bone-pos blow-at vec!  blow-at mv-reach reaches-dog?
-    mv-bone2 0< 0= if  my-model @ mv-bone2 bone-pos blow-at vec!  blow-at mv-reach reaches-dog? or  then
+    blow-at mv-reach reaches-dog?  blow-b mv-reach reaches-dog? or
     0= if  exit  then
     mv-kind mv-damage  mv-stumble stumble-roll  hewie send blow  -1 dog-sent !  -1 struck-dog ! ;
 \ a wall between him and the blow (Npc_CanWalkStraight): it lands on nothing
@@ -86,20 +93,21 @@ defer next-move ( -- )
 \ Pursuer_StateAttackStep: the move to its end, turning to her with it; at its key the blow
 : strike ( -- )
     world-held state-flag?  stalkers-blind state-flag? or if  exit  then
-    my-model @ mv-bone bone-pos blow-at vec!
+    move-points
     anim @ 0<>  blow-at walled? and if   \ (into a wall: his stand, a thud)
         still-anim play-now  thud-sound 7 sound  combo-over exit
     then
     swung @ swinging <> if  swish-sound 7 sound  swinging swung !  then
     strike-dog
     sent @ if  exit  then
-    blow-at mv-reach reaches?
-    mv-bone2 0< 0= if  my-model @ mv-bone2 bone-pos blow-at vec!  blow-at mv-reach reaches? or  then
+    blow-at mv-reach reaches?  blow-b mv-reach reaches? or
     took @ 1 and 0= and if
         mv-kind  mv-stumble stumble-roll
         mv-threat f>cell  fiona send hit  -1 sent !  mv-cry cry !
     then ;
-: key? ( -- flag )  my-model @ 0 0 0 motion-events 2 and 0<> ;   \ (his move's key: the blow)
+\ (his move's key, the blow: read a frame back - Pursuer_StateAttackStep's and StateAttackActive's
+\ Motion_EventFlags(-1) - so his arm is a frame further on as it strikes)
+: key? ( -- flag )  my-model @ 0 -1 1 motion-events 2 and 0<> ;
 : striking ( -- )
     ended? if  held-off-after  combo-over exit  then
     mv-turns? if  quarry body-at turn-rate turn-to fdrop  then

@@ -20,8 +20,11 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
 : arrive-anywhere ( -- )   \ (no exit: by the room's first camera's target, else its middle)
     room-cameras if  camera-target  else  0e 0e 0e  then
     nav-tris if  nav-nearest  then  0e put ;
-: arrive-at ( exit -- )   \ (the room scripts' char-to-exit: its outside spot, her heading kept)
-    0 exit-spot  dup 0< if  drop fdrop fdrop fdrop  arrive-anywhere exit  then
+: arrive-at ( exit -- )   \ (the room scripts' char-to-exit: 4 inside its door, her heading kept;
+    \ no such spot, Fiona_Vt38's: 12 inside)
+    dup 0 exit-spot  dup 0< if
+        drop fdrop fdrop fdrop  2 exit-spot  dup 0< if  drop fdrop fdrop fdrop  arrive-anywhere exit  then
+    else  nip  then
     {: tri :}  her-yaw f@ put  tri her-tri !  tri her-was-tri ! ;   \ (on the exit's own triangle: over a storey, the search finds the one below)
 : stand-free ( -- )   \ (Fiona_ToIdle but for the turn mode: free, standing, her moves her own)
     free-doing her-doing !  own-mode her-mode !  her-yaw f@ her-heading f!  0 her-rest !  0 her-out-of-reach !
@@ -335,7 +338,7 @@ behaviour free
       her-doing @ push-doing =  anim@ strain-anim = and  broadcast fiona-straining
       shook-from-rest broadcast fiona-shaking
       her-shake-count @ 0< 0= if  shakes-now her-shake-count +!  her-shake-count @ broadcast fiona-shakes  then   \ (a story counting them)
-      plight  her-mode @ 3 = if  her-ladder @  else  -1  then  broadcast fiona-plight
+      plight  her-mode @ 3 = if  her-ladder @  else  -1  then  reach  broadcast fiona-plight
       tell-head
       her-move-done @  ended?  her-model @ 0 0 1 motion-events  broadcast moving ;
   \ the story's moves (fiona.moves)
