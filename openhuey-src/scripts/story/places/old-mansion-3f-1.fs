@@ -70,7 +70,7 @@ create box-ends  $20A , $4D8 ,  $153 , $415 ,  $15C , $41E ,  $213 , $4DE ,
     $19 till-shot  partner-kind 0 s" O_DNL\DNL_203.TEX" face-on ;
 : intro-scene ( -- )
     intro-movie scenes:unseen-movie intro-cutscene load-scene  wait-fade
-    scene-figure 3 figure-in  4 cutscene-keep-model  ['] intro-looks start drop  2 show-part
+    scene-figure 3 figure-in  4 cutscene-keep-model  ['] intro-looks along-scene  2 show-part
     panic-eased  if  0 run-scene  then  2 hide-part  3 figure-out ;
 : stepped-in-as ( daniella? -- )
     {: dan :}  stalker-unloaded  stalkers-stay state!  fiona hold  hewie-no-attack state!  stalkers-blind state!  force-calm state!
@@ -109,7 +109,7 @@ create box-ends  $20A , $4D8 ,  $153 , $415 ,  $15C , $41E ,  $213 , $4DE ,
     fiona false shown  hewie let-go  no-track 1e background  fiona 3 -1 camera-set  0 panic-to
     2 stage !  15 screen:from-black fade  begin  stage @ 3 < while  yield  repeat  wait-fade
     15 screen:to-black-2 fade  death-movie scenes:keyed-movie death-cutscene load-scene  wait-fade
-    0 hide-part  1 show-part  ['] death-looks start drop  $1E object-hide  om3f-1-flag3 fact? if  $A  else  9  then  show-part
+    0 hide-part  1 show-part  ['] death-looks along-scene  $1E object-hide  om3f-1-flag3 fact? if  $A  else  9  then  show-part
     $1E $C8 movie-key  panic-eased  if  -1 run-scene  then  wait-fade
     ['] her-fall stop-doing  hum-sound room-bank stop-sound  $1E object-hide
     after-death  15 fade-in
@@ -138,7 +138,7 @@ create box-ends  $20A , $4D8 ,  $153 , $415 ,  $15C , $41E ,  $213 , $4DE ,
     fiona hold  9 hide-part  $A hide-part  0 hide-part  1 show-part  box-ends boxes-at  4 0 do  i obstacle-fixed  loop
     7 hide-part  2 hide-part  all-hidden  4 set-boxes !  floor-light  shine
     35 stalker-ready  yield  fiona false shown  fiona 3 -1 camera-set
-    death-movie scenes:keyed-movie death-cutscene load-scene  0 hide-part  1 show-part  ['] death-looks start drop
+    death-movie scenes:keyed-movie death-cutscene load-scene  0 hide-part  1 show-part  ['] death-looks along-scene
     $1E object-hide  9 show-part  $1E $C8 movie-key  panic-eased  if  -1 run-scene  then
     stalker-unloaded  replay-over ;
 

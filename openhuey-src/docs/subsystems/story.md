@@ -60,7 +60,13 @@ has one.
 `scene-over` (played through or skipped: the world held, the camera back); `scene-run-through
 ( subtitles )` the game overs' (never skipped; at its end the movie's last frame left up, the
 director as it is, for the game over to hold: Scene_PlayThrough); `scene-stop` (the place gone).
-The kit's `load-scene`, `run-scene`, `run-through`, `at-shots`. (Headless runs go by the game
+The kit's `load-scene`, `run-scene`, `run-through`, `at-shots`, `along-scene`: an activity that
+follows the scene's shots and frames (the original's action on the cutscene's script slot, $F9)
+is started with `along-scene`, and `run-scene` ends it when the scene is over, played out or
+skipped - the original's scene-play does the same (`action-end` on that slot). Started with plain
+`start`, one waiting for a frame the skipped scene never reached went on for ever: holding up
+whatever waited for it (castle-2f-7's plate, 0.2.36), or laying its look - a frame blend, a dark
+screen, a depth range - over the play that followed. Every such activity is one since 0.2.39. (Headless runs go by the game
 clock, so a movie ends with its video there, not waiting for its sound to drain in real time.)
 
 **What most rooms have** (the kit's components, each room's data): a breakable (`breakable:`

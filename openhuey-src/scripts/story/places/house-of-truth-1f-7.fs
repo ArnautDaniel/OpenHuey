@@ -51,7 +51,7 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
     costume-var var@ case  3 of  0 0 s" O_FIO\FIO_201.TEX" face-on  endof  2 of  0 0 s" O_FIH\FIH_201.TEX" face-on  endof  endcase ;
 : face-cue ( -- )  begin  cutscene-frame cutscene-shot-at 2 <> while  yield  repeat  her-face ;
 : wall-scene ( -- )
-    wall-movie scenes:keyed-movie wall-cutscene load-scene drop  ['] face-cue start drop
+    wall-movie scenes:keyed-movie wall-cutscene load-scene drop  ['] face-cue along-scene
     $14 $64 movie-key  panic-eased  -1 run-scene  ['] face-cue stop-doing ;
 : wall-opens ( -- )
     stalkers-stay state!  fiona wait-move  fiona -89e 75e turn-to-xz  fiona look-close-anim start-anim  16 frames

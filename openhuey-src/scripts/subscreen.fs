@@ -82,8 +82,10 @@ USING: engine game-state actors messages keys facts flag-names items items.table
     mode @ on-costumes = if  costumes-view exit  then
     mode @ on-extras = if  window-black  extras-view exit  then
     mode @ on-results = if  window-black  results-view exit  then
+    mode @ on-box = if  art-layer page-words !  then   \ (the page under the box's shade)
     page @ case  pg-files of  files-view  endof  pg-map of  map-view  endof
                  pg-options of  options-view  endof  >r list-view r>  endcase
+    word-layer page-words !
     mode @ on-actions = if  actions-view  then
     mode @ on-box = if  box-view  then ;
 : draw-tab ( -- )   \ the tab and the item's picture, sliding in from the left (fading with it)

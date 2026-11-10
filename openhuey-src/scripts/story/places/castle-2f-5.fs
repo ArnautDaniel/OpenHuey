@@ -70,7 +70,7 @@ $E constant first-fragment   11 constant #fragments   \ (its objects a_fragment0
     $11 shot-wait  daniella-kind 0 s" O_DNL\DNL_202.TEX" face-on ;
 : the-mirror ( movie? -- )   \ (Daniella in for it, before the reflections; back as she was)
     castle-2f-5 212 stalker-to  stalker 1 -1 camera-set  partner-kind before-reflections-layer layer
-    ['] mirror-shots start drop  panic-eased
+    ['] mirror-shots along-scene  panic-eased
     if  incomplete-msg run-scene  then
     ['] mirror-shots stop-doing  false door-glass  partner-kind usual-layer layer ;
 

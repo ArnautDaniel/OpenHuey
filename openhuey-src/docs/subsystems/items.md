@@ -116,7 +116,13 @@ right of, the page's widest line), as the message window does.
    note (the note of one not yet used, for those whose note changes: message $13D); its actions
    are those its class allows - use, wear / take off, throw away - and back. Throwing away asks
    first; wearing where another is worn asks first, naming it; a document is read (its message)
-   before it is used.
+   before it is used. The menu's messages and questions are laid out as the original's task
+   does (Task_Layout, Task_DrawPage; `subscreen/box.fs`): a page's lines 25 apart, as a block
+   centred on its place - (256, 370), or the one its 0x0A code names - in a soft-edged shade fitted
+   to it (Task_BoxSize, Task_DrawBox: the dark fading out over 32 pixels); a document has the
+   large shade (416 x 352 about the middle, SubScreen_StateItemQuestion) behind it, and the page
+   beneath lies under the shade. (Before 0.2.39 the box was 160 high with the words from its top:
+   a document's nine lines ran out of it over the list.)
 4. **Using** (item_use): a key thing (kinds 0, 1) can't be used in a chase or with the stalker in
    her room ($54). What came of it: nothing ($52, the buzzer - or no buzzer for a hint); an event
    - marked used, the menu closes quietly onto it; used up (a remedy, or a mark set) - marked,

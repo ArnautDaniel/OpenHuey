@@ -377,11 +377,6 @@ void room_door_move(Room *r, int exit, int open, int slam) {
     d->closing = !open;
     d->sounded = 0;
     d->keys = NULL;
-    if (open && slam) {   /* burst open (Doors_SetOpened, how 0): its bang, loud, at the door */
-        d->sounded = 1;
-        d->next_sound = 0x91;
-        d->next_how = 3;
-    }
 }
 
 /* ---- the doors' animations for their users (FIN_D000.MTN) ---- */

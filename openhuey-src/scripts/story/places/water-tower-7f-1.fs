@@ -76,12 +76,12 @@ create runs  $D8 , 89 ,  4 , 89 ,  $6A , -44 ,  $3F , -151 ,  $1B , 111 ,  $FA ,
     stalkers-stay state!  fiona wait-move  no-track 1e background
     15 screen:to-black-2 with-music or fade  solved-scene  wait-fade
     things-clear  fiona -1 idle  water-tower-7f-2 preload  $10 $FF movie-key
-    ['] glows-out start drop  panic-eased  -1 run-scene
+    ['] glows-out along-scene  panic-eased  -1 run-scene
     50 trust+  world-held state!
     way-on-door reopened  behind-door closed-off  exits-redone
     water-tower-7f-2 -1 0 hewie-to  solved-seen resident-flag-set  forced-exit take-exit ;
 : replayed ( -- )
-    fiona hold  true all-glows  solved-scene  $10 $FF movie-key  ['] glows-out start drop  panic-eased  -1 run-scene
+    fiona hold  true all-glows  solved-scene  $10 $FF movie-key  ['] glows-out along-scene  panic-eased  -1 run-scene
     hewie let-go  replay-over ;
 
 \ ---- the next one lit while the one before is stood on; the last lit left: dark down to the

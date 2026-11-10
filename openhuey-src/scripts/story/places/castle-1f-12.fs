@@ -87,7 +87,7 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
     begin  cutscene-frame $64 < while  yield  repeat
     begin  cutscene-near? 0= while  lens-fx $60 0 cast-model  s" lens" 640e -560e 1000e object-mirror  yield  repeat ;
 : lens-scene ( -- )
-    lens-movie scenes:keyed-movie lens-cutscene load-scene  ['] lens-reflects start drop  $1E $C8 movie-key
+    lens-movie scenes:keyed-movie lens-cutscene load-scene  ['] lens-reflects along-scene  $1E $C8 movie-key
     panic-eased  if  -1 run-scene  then  lens-fx effect-off ;
 : refractor-set ( -- )
     fiona hold  stalkers-stay state!  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade

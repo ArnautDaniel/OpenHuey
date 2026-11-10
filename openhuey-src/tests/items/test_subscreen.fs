@@ -81,6 +81,17 @@ T{ [: opt-row @ volume @ opt-editing @ ;] menu@ -> 3 96 0 }T
 key: Z tap  key: X tap
 T{ [: volume @ ;] menu@ -> 128 }T
 key: E tap
+testing a document read (the File list): its page's lines 25 apart, centred on its place, the large shade behind them
+doc-action 1 give  [: pg-other page !  0 pg-other cells cursors + !  on-page mode ! ;] menu@  2 run-frames
+T{ under-cursor -> doc-action }T
+key: X tap  2 run-frames
+T{ mode@  [: shown @  big-box @ ;] menu@ -> 3  doc-action $4000 or  -1 }T
+: doc-lines ( -- n )  [: shown @ message-layout drop  0 message-lines ;] menu@ ;
+T{ doc-lines 6 > -> -1 }T   \ (a page of it: more than the old box's six lines)
+T{ [: subscreen.box:place-y  0 subscreen.box:words-y  1 subscreen.box:words-y ;] menu@ -> 224  228 doc-lines 25 * 2/ -  253 doc-lines 25 * 2/ - }T
+T{ [: 0 subscreen.box:words-y ;] menu@ 48 >  doc-lines 1- [: subscreen.box:words-y ;] menu@ 25 + 400 < -> -1 -1 }T   \ (within the large shade: 48 .. 400)
+[: -1 shown !  on-page mode !  pg-special page ! ;] menu@  2 run-frames
+
 testing triangle closes it: the world goes on
 key: V tap  10 run-frames
 T{ stage@ ducked -> 0 1000 }T

@@ -41,7 +41,7 @@ own: press-remarked  own: cage-looked
 \ ---- the press: the plate made (its scene - a sound at its cue - the plate shown her, the file) ----
 : plate-cue ( -- )  begin  cutscene-frame $69 < while  yield  repeat  cue-sound 35e 10e 25e room-sound ;
 : plate-scene ( -- )
-    plate-movie scenes:unseen-movie plate-cutscene load-scene  ['] plate-cue start drop
+    plate-movie scenes:unseen-movie plate-cutscene load-scene  ['] plate-cue along-scene
     panic-eased  if  -1 run-scene  then
     ['] plate-cue stop-doing ;   \ (the scene over - skipped before its cue, or not played: no frame $69 to wait for)
 : plate-shown ( -- )  word-plate-key item-named  word-plate-key show-item-tab  fanfare  obtained-2-msg say ;
@@ -91,7 +91,7 @@ own: press-remarked  own: cage-looked
     begin  cutscene-frame cutscene-shot-at 3 <> while  yield  repeat
     daniella-kind 0 s" O_DNL\DNL_201.TEX" face-on ;
 : old-man-scene ( -- )
-    old-man-movie scenes:unseen-movie old-man-cutscene load-scene  ['] her-face start drop
+    old-man-movie scenes:unseen-movie old-man-cutscene load-scene  ['] her-face along-scene
     panic-eased  if  old-man-msg run-scene  then  world-held state! ;
 : daniella-comes ( -- )
     fiona hold  fiona $7A 33 31.61e 18.93e place-at  fiona false shown

@@ -34,6 +34,20 @@ T{ [: 0 0 story.kit:fade ;] in-room  2 run-frames  screen-level -> 1000 }T
 [: 0 1 story.kit:fade ;] in-room
 T{ [: 10 6 story.kit:fade ;] in-room  15 run-frames  screen-level -> 500 }T
 T{ [: 10 7 story.kit:fade ;] in-room  15 run-frames  screen-level -> 0 }T
+testing a scene's own activity (along-scene): whatever frame it waits for, it ends with the scene; another started with it goes on
+: waits-for-cue ( -- )  begin  cutscene-frame $7FFF < while  yield  repeat ;   \ (a cue never reached: the scene skipped before it)
+: goes-on ( -- )  begin  yield  again ;
+[: ['] waits-for-cue story.kit:along-scene  ['] goes-on story.kit:start drop ;] in-room  3 run-frames
+T{ [: ['] waits-for-cue story.kit:running?  ['] goes-on story.kit:running?  story.kit:scene-acts @ 0<> ;] in-room -> -1 -1 -1 }T
+[: story.kit:scene-acts-end ;] in-room  2 run-frames   \ (run-scene's end)
+T{ [: ['] waits-for-cue story.kit:running?  ['] goes-on story.kit:running?  story.kit:scene-acts @ ;] in-room -> 0 -1 0 }T
+testing ... one that ends by itself is no longer the scene's: a later activity in its slot is left alone
+: done-at-once ( -- ) ;
+[: ['] goes-on story.kit:stop-doing  ['] done-at-once story.kit:along-scene ;] in-room  3 run-frames
+[: ['] goes-on story.kit:start drop ;] in-room  2 run-frames
+T{ [: story.kit:scene-acts @  story.kit:scene-acts-end  ['] goes-on story.kit:running? ;] in-room -> 0 -1 }T
+[: ['] goes-on story.kit:stop-doing ;] in-room
+
 full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing the scene (Hewie freed from the wire, at night): the movie, the cutscene, Fiona in it, its subtitles

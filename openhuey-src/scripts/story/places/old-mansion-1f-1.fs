@@ -53,13 +53,13 @@ $1B constant glass-fx   5 constant presence-sound   2 constant her-motions
         yield
     repeat ;
 : hall-scene ( -- )
-    hall-movie scenes:unseen-movie hall-cutscene load-scene  ['] hall-shots start drop  4 cutscene-keep-model
+    hall-movie scenes:unseen-movie hall-cutscene load-scene  ['] hall-shots along-scene  4 cutscene-keep-model
     panic-eased  if  -1 run-scene  then ;
 : her-scene ( -- )
     stalkers-stay state!  fiona hold  fiona wait-move
     15 screen:to-black-2 with-music or fade  hall-movie scenes:unseen-movie hall-cutscene load-scene  wait-fade
     hewie full-health  hewie well  old-mansion-1f-1 49 0 hewie-to  $86 0 hewie-do
-    ['] hall-shots start drop  4 cutscene-keep-model  panic-eased  if  -1 run-scene  then
+    ['] hall-shots along-scene  4 cutscene-keep-model  panic-eased  if  -1 run-scene  then
     wait-fade  world-held state!
     fiona 0 idle  fiona $DF -79 1.052e -47.906e place-at  0 0 player-camera  camera-restart
     0 busy-step !  daniella-in  ['] busy start drop

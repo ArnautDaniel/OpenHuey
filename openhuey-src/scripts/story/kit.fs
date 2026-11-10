@@ -73,6 +73,7 @@ state: place-state
   cell field hewie-trust-now       \ his trust level (1..7)
   \ the scene asked for (scenes.fs): how far it is, whether its movie is there, what to do at each new shot
   cell field scene-step  cell field scene-movie  cell field cue-xt
+  cell field scene-acts            \ the activities that are the scene's own (a bit each): ended with it
   #room-effects cells field effects   \ the effects the place made (actors; 0 none), gone with it (RoomEffects: 32)
   cell field tab-moving         \ the item's tab sliding (the sub screen tells when it's done)
   \ the stalker in the game, as he tells (stalker-doing): his room, condition, kind, alert (his mode)
@@ -146,8 +147,9 @@ variable acting   -1 acting !   \ the activity being run (-1: none)
     dup holder-of @ 0< if  drop exit  then  -1 over holder-of !  0 tell-held ;
 : let-go-all ( k -- )   \ (what activity k holds)
     #people 0 do  i holder-of @ over = if  i let-go-person  then  loop  drop ;
+: not-scene's ( k -- )  1 swap lshift invert scene-acts @ and scene-acts ! ;
 : stop-act ( k -- )
-    dup act-slot @ ?dup if  forth:kill  then  0 over act-slot !  let-go-all ;
+    dup act-slot @ ?dup if  forth:kill  then  0 over act-slot !  dup not-scene's  let-go-all ;
 : stop-all ( -- )  #activities 0 do  i stop-act  loop ;
 : start ( xt -- k | -1 )   \ an activity started (none free: not started)
     leaving @ if  drop -1 exit  then
@@ -157,12 +159,17 @@ variable acting   -1 acting !   \ the activity being run (-1: none)
     #activities 0 do  i act-slot @  over i cells act-xts + @ = and if  drop true unloop exit  then  loop  drop false ;
 : stop-doing ( xt -- )   \ (the activity running xt stopped, if one is)
     #activities 0 do  i act-slot @  over i cells act-xts + @ = and if  i stop-act  then  loop  drop ;
+\ an activity of a scene's own - what follows its shots and frames (the original's action on the
+\ cutscene's script slot, $F9): it ends with the scene, played out or skipped (scene-play's
+\ "action-end"), whatever frame it was waiting for
+: along-scene ( xt -- )  start dup 0< if  drop exit  then  1 swap lshift scene-acts @ or scene-acts ! ;
+: scene-acts-end ( -- )  #activities 0 do  scene-acts @ i rshift 1 and if  i stop-act  then  loop  0 scene-acts ! ;
 : start-only ( xt -- )  dup running? if  drop  else  start drop  then ;   \ (once, if it isn't already running)
 : run-acts ( -- )
     #activities 0 do
         i cells act-lost + @ if  0 i cells act-lost + !  i stop-act  then
         i act-slot @ ?dup if
-            i acting !  resume 0= if  0 i act-slot !  i let-go-all  then  -1 acting !
+            i acting !  resume 0= if  0 i act-slot !  i not-scene's  i let-go-all  then  -1 acting !
         then
     loop ;
 : lost ( -- )  -1 acting @ cells act-lost + !  begin  yield  again ;   \ (this activity ends: run-acts stops it)
@@ -370,11 +377,11 @@ $80000000 constant keep-playing   \ (a sound's id bit: one already playing kept 
 enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running scene-ended ;
 : scenes ( -- id )  s" scenes" actor-named ;
 : load-scene ( movie class cutscene -- movie? )   \ (the movie and cutscene: room strings; class: scenes.fs's movie-class)
-    {: movie cls cut :}  scene-loading scene-step !  this-room @ movie cls cut  scenes send scene-load
+    {: movie cls cut :}  scene-acts-end  scene-loading scene-step !  this-room @ movie cls cut  scenes send scene-load
     begin  scene-step @ scene-loading = while  yield  repeat  scene-movie @ ;
 : run-scene ( subtitles -- )   \ played through (or skipped); subtitles: a message, or -1
     dup 0< if  drop $FFFF  then  scene-running scene-step !  scenes send scene-run
-    begin  scene-step @ scene-running = while  yield  repeat  0 cue-xt ! ;
+    begin  scene-step @ scene-running = while  yield  repeat  0 cue-xt !  scene-acts-end ;
 : run-through ( subtitles -- )   \ played through, never skipped, its last frame left up (a game over's)
     dup 0< if  drop $FFFF  then  scene-running scene-step !  scenes send scene-run-through
     begin  scene-step @ scene-running = while  yield  repeat  0 cue-xt ! ;

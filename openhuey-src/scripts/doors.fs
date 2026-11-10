@@ -111,7 +111,10 @@ end-state
     loop ;
 
 behaviour keeping
-  on spawned ( -- )  self subscribe tick  self subscribe entered-room  self subscribe leaving-room  users 8 cells -1 fill ;
+  on spawned ( -- )  self subscribe tick  self subscribe entered-room  self subscribe leaving-room  self subscribe game-loaded  users 8 cells -1 fill ;
+  \ a save loaded (Rooms_SetState): the exits anew through the doors its progress hasn't closed off -
+  \ left as they were, an exit kept a door closed off for good (the mansion's front door, locked)
+  on game-loaded ( -- )  world-exits-rebuild ;
   on leaving-room ( room exit -- )  drop let-go-all ;
   on entered-room ( room exit -- )  2drop  room-in  users 8 cells -1 fill ;
   on redo-doors ( -- )  room-in ;   \ (Doors_RoomIn, for the story)
@@ -141,10 +144,12 @@ behaviour keeping
   on swing-door ( exit open source -- )  {: ex open source :}  source ex user !  ex open false door-move ;
   \ (a room's script: no one using it - the creak's noise is Fiona's, the original's opener 0)
   on set-door-opened ( exit open -- )  {: ex open :}  ex open door-set-opened if  fiona-noise ex user !  then ;
-  \ slammed shut or burst open (Fiona_SlamDoor: taken hold of first - DoorHold_Take - then let go
-  \ open or shut at rest by its user, as a swing along an animation is)
-  on slam ( exit source -- )  over user !  dup grab  false true door-move ;
-  on barge ( exit source -- )  over user !  dup grab  true true door-move ;
+  \ slammed shut or burst open (Fiona_SlamDoor: taken hold of first - DoorHold_Take - then set
+  \ opened or shut, Doors_SetOpened: swung fast, its passage changed sides at once - she runs on
+  \ through it - and burst open its bang; let go open or shut at rest by its user, as a swing
+  \ along an animation is)
+  on slam ( exit source -- )  over user !  dup grab  false door-set-opened drop ;
+  on barge ( exit source -- )  over user !  dup grab  true door-set-opened drop ;
   \ pulled shut behind a stalker come in by it (his DoorBreak): held, swung shut, let go shut at rest
   on pull-shut ( exit source -- )  over user !  dup grab  false false door-move ;
   on hold-door ( room exit kind -- )

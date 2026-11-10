@@ -92,7 +92,7 @@ $18 constant shelf-seen   $19 constant shelf-night-seen   $E constant shelf-door
     103 him-in  partner $67 180 place-on-tri  partner false shown  0 summon-take
     15 screen:to-black-2 with-music or fade
     night? shelf-scene  wait-fade
-    ['] his-fall start drop
+    ['] his-fall along-scene
     hewie-in? if  ['] hewie-aside start drop  c1f-3-flag2 fact!  then
     0 true no-shadow  partner-kind true no-shadow
     panic-eased  if  -1 run-scene  then
@@ -123,11 +123,11 @@ $18 constant shelf-seen   $19 constant shelf-night-seen   $E constant shelf-door
     begin  $64 frame-reached? 0= while  yield  repeat  music send bgm-resume
     begin  4 shot? 0= while  yield  repeat  table-part hide-part  thing-part show-part ;
 : awakening ( -- )
-    {: | cues :}  15 screen:to-black-2 with-music or fade
+    15 screen:to-black-2 with-music or fade
     awakened-movie scenes:unseen-4-movie awakened-cutscene load-scene  wait-fade
-    0 true no-shadow  ['] awakening-cues start to cues
+    0 true no-shadow  ['] awakening-cues along-scene
     panic-eased  if  awakened-msg run-scene  then
-    music send bgm-resume  wait-fade  0 false no-shadow  ['] awakening-cues running? if  cues stop-act  then
+    music send bgm-resume  wait-fade  0 false no-shadow
     table-part hide-part  thing-part show-part  shelf-object object-show
     fiona 0 idle  fiona $13C -73 23.771e -27.607e place-at  1 1 player-camera  camera-restart
     c1f-3-flag1 fact!  15 screen:from-black with-music or fade  wait-fade ;
@@ -202,7 +202,7 @@ create looks
 : replay-awakening ( -- )
     fiona hold  first-track 1e background  key-part show-part  table-part show-part  tinted
     awakened-movie scenes:unseen-4-movie awakened-cutscene load-scene
-    0 true no-shadow  ['] awakening-cues start drop
+    0 true no-shadow  ['] awakening-cues along-scene
     panic-eased  if  awakened-msg run-scene  then
     music send bgm-resume  0 false no-shadow  replay-over ;
 : replay-shelf ( night? -- )   \ (by day the room's tint too)

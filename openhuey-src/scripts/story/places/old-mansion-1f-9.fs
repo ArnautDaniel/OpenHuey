@@ -72,7 +72,7 @@ create holes  $78 , $41 , $79 , $42 ,
 : cage-scene ( -- )   \ (the figure loaded; her scene - its looks along it)
     cage-figure figure-slot figure-in  yield
     cage-movie scenes:unseen-movie cage-cutscene load-scene  wait-fade
-    ['] scene-looks start drop  0 haze-on !
+    ['] scene-looks along-scene  0 haze-on !
     4 cutscene-keep-model  figure-slot figure-on
     panic-eased  if  -1 run-scene  then ;
 : after-scene ( -- )   \ (back in the cage, its windows opened)

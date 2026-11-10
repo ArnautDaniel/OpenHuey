@@ -75,7 +75,7 @@ own: locked-remarked  own: box-seen  own: fire-noticed  own: sounds-on  own: pla
     begin  cutscene-frame dup 0< 0=  swap $44C < and while  yield  repeat
     cutscene-frame 0< if  exit  then  lever-sound room-bank 0e 30e -27e sound-there  1 shuts ;
 : high-scene ( -- )
-    high-movie scenes:keyed-movie high-cutscene load-scene  wait-fade  plate-right @ if  ['] high-shuts start drop  then
+    high-movie scenes:keyed-movie high-cutscene load-scene  wait-fade  plate-right @ if  ['] high-shuts along-scene  then
     $10 $C8 movie-key  panic-eased  if  -1 run-scene  then  ['] high-shuts stop-doing ;
 : ice-scene ( -- )  ice-movie scenes:keyed-movie ice-cutscene load-scene  wait-fade  $10 $C8 movie-key  panic-eased  if  -1 run-scene  then ;
 : frozen ( -- )   \ (the third right: the fire frozen - Hewie's scene)

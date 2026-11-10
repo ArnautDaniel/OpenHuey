@@ -35,8 +35,9 @@ own-reset
     $A shot-wait  lit-fx effect-off  0 usual-layer layer
     begin  cutscene-frame 0< 0= while  yield  repeat  wait-fade ;
 : dream-scene ( ahead? -- )   \ (the room beyond loaded ahead: brought in, not replayed)
-    dream-movie scenes:opaque-when-movie dream-cutscene load-scene  wait-fade  ['] dream-shots start drop
-    if  beyond-room preload  then  movie-opaque state!  panic-eased  if  dream-msg run-scene  then ;
+    dream-movie scenes:opaque-when-movie dream-cutscene load-scene  wait-fade  ['] dream-shots along-scene
+    if  beyond-room preload  then  movie-opaque state!  panic-eased  if  dream-msg run-scene  then
+    0 false no-shadow  0 usual-layer layer ;   \ (skipped between its shots, its cues' looks would stay on her into the next room)
 : nightmare ( -- )
     fiona hold  c2f-3-tv-examined fact-off
     true dream-scene  world-held state!  forced-exit take-exit  0 usual-layer layer ;

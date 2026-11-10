@@ -70,7 +70,7 @@ $12C constant hole-tri   $47 constant before-hole-tri   $2F constant after-ambus
     15 screen:to-black-2 with-music or fade  no-track 1e background  fiona wait-move
     ambush-movie scenes:keyed-movie ambush-cutscene load-scene  wait-fade
     fiona false shown  force-calm state!  yield  force-calm state-off
-    ['] silhouette start drop  $10 $28 movie-key  panic-eased  if  -1 run-scene  then
+    ['] silhouette along-scene  $10 $28 movie-key  panic-eased  if  -1 run-scene  then
     stalker let-go  3 summon-take  fiona 0 idle  fiona true shown  hewie $80808080 tint  room-light light-back
     0 0 hewie send hewie-yelp  0 0 hewie-do  hewie after-ambush-tri -90 place-on-tri  hewie-timid state-off
     hole-group keeps-fiona-off keeps-pursuers-off or floor-off  hole-group solid-floor floor-on  hewie let-go
@@ -143,7 +143,7 @@ create far-look  46.51e 0e -267.37e 28e 6e 6e look,
 : replayed ( -- )
     fiona hold  specks-about  debilitas-kind ambush-figure figure-in  yield
     ambush-movie scenes:keyed-movie ambush-cutscene load-scene  fiona false shown
-    ['] silhouette start drop  $10 $28 movie-key  panic-eased  if  -1 run-scene  then
+    ['] silhouette along-scene  $10 $28 movie-key  panic-eased  if  -1 run-scene  then
     ambush-figure figure-out  fiona true shown  hewie $80808080 tint  room-light light-back  replay-over ;
 
 \ ---- every frame ----

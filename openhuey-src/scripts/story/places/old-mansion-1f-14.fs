@@ -38,7 +38,7 @@ $75 constant her-door
     begin  cutscene-frame 0< 0= while  $2D frame-blend  yield  repeat ;
 : filmed-scene ( -- )
     filmed-movie scenes:unseen-movie filmed-cutscene load-scene  4 cutscene-keep-model   \ (its actor 4 left as it is: Mark83)
-    old-mansion-1f-14 43 stalker-to  stalker 0 0 camera-set  ['] blended start drop
+    old-mansion-1f-14 43 stalker-to  stalker 0 0 camera-set  ['] blended along-scene
     panic-eased  if  filmed-msg run-scene  then ;
 : the-film-plays ( -- )
     fiona hold  daniella-now? if  stalker let-go  then  fiona wait-move  16 frames

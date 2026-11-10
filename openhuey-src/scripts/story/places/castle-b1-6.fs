@@ -148,13 +148,13 @@ $28 constant chapel-door   $11 constant far-door   0 constant fallen-floor
     begin  cutscene-frame cutscene-shot-at  dup 5 = if  shard-part show-part  then  6 = if  shard-part hide-part  then
         cutscene-near? 0= while  yield  repeat ;
 : ropes-down ( -- )  chandelier object-hide  left-lever object-show  right-lever object-show  rope-1 object-show  rope-2 object-show ;
-: falls-scene ( -- )  falls-movie scenes:unseen-movie falls-cutscene load-scene  ['] falls-shots start drop  panic-eased  if  -1 run-scene  then ;
-: calm-scene ( -- )  calm-movie scenes:unseen-movie calm-cutscene load-scene  ['] calm-shots start drop  panic-eased  if  calm-down-msg run-scene  then ;
+: falls-scene ( -- )  falls-movie scenes:unseen-movie falls-cutscene load-scene  ['] falls-shots along-scene  panic-eased  if  -1 run-scene  then ;
+: calm-scene ( -- )  calm-movie scenes:unseen-movie calm-cutscene load-scene  ['] calm-shots along-scene  panic-eased  if  calm-down-msg run-scene  then ;
 : chandelier-falls ( -- )   \ (both stands broken: on him - two scenes)
     no-track 1e background  stalkers-stay state!  fiona hold  fiona wait-move
     hewie-no-attack state!  stalkers-blind state!
     15 screen:to-black-2 fade  falls-movie scenes:unseen-movie falls-cutscene load-scene  wait-fade
-    hewie let-go  ['] falls-shots start drop  panic-eased  if  -1 run-scene  then  wait-fade
+    hewie let-go  ['] falls-shots along-scene  panic-eased  if  -1 run-scene  then  wait-fade
     $26 resident-flag-set  world-held state!  ropes-down  hewie let-go  stalker let-go  16 frames
     calm-scene  shard-part hide-part
     scene-5-pending state-off  hewie-no-attack state-off  stalkers-blind state-off  50 trust+  stalker-unloaded

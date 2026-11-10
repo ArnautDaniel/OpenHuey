@@ -44,7 +44,7 @@ create holes  $51 , $21C , $2F , $54 , $23B , $43 , $22C , $44 , $22D , $45 , $2
 : blast-cues ( -- )   \ (at its shot 6 the wall blown)
     begin  cutscene-frame cutscene-shot-at 6 <> while  yield  repeat  true wall ;
 : blast-scene ( -- )
-    blast-movie scenes:keyed-movie blast-cutscene load-scene drop  ['] blast-cues start drop
+    blast-movie scenes:keyed-movie blast-cutscene load-scene drop  ['] blast-cues along-scene
     $10 $FF movie-key  panic-eased  -1 run-scene  ['] blast-cues stop-doing ;
 : lorenzo-lies ( -- )   \ (an activity: in the rubble, shown, for good)
     stalker hold  stalker false hush  stalker true shown  stalker his-lying room-motion + start-anim
