@@ -23,7 +23,6 @@ full-suite   \ (on: waits, scenes, walks - the full run's)
 : play-on ( n -- )  0 ?do  window-shown 0< 0= if  i 20 mod 0= if  cross press  then  then  movie-skipped state-flag-set  game-tick  loop ;
 : filed? ( doc -- flag )
     128 0 do  progress pr.files i 2* + w@ over = if  drop true unloop exit  then  loop  drop false ;
-: hewie-z ( F: -- z )  game:hewie body-pos ;
 : debilitas-at ( F: x y z -- )  on-floor {: F: x y z :}  x f>cell y f>cell z f>cell 0e f>cell  game:debilitas send place ;
 : hewie-brought ( -- )  castle-1f-19 $47 0 game:hewie send hewie-place  60 run-frames ;   \ (by the hole, with her)
 : command ( cmd -- )  broadcast fiona-started  1 run-frames ;   \ (her command to Hewie, as she gives it)

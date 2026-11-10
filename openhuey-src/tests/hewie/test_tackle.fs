@@ -67,7 +67,7 @@ deb-in  false blind
 create her-was /vec allot
 : on-her ( -- )   \ (him 2 off her: overlapping)
     her-was s" fiona" actor-named body-at vec-copy  [: room-id self body-tri  her-was vec@ {: F: x y z :}  x 2e f+ y z body-place ;] deb! ;
-: her-moved ( -- f )  s" fiona" actor-named body-at her-was vec-dist ;
+: her-moved ( -- ) ( F: -- d )  s" fiona" actor-named body-at her-was vec-dist ;
 : held-apart ( n -- )  0 ?do  [: -1 apart ! ;] deb!  game-tick  loop ;
 2 held-apart   \ (as he tells it: by her next frame)
 T{ on-her  3 held-apart  her-moved 0.01e f< -> -1 }T

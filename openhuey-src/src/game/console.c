@@ -40,9 +40,8 @@ static void submit(Console *c, Forth *f) {
         c->nhistory++;
     }
     c->browse = c->nhistory;
-    f->said[0] = 0;   /* (what's typed: its error always said, even the last one again) */
-    f->repeats = 0;
-    if (forth_eval(f, c->input, (size_t)c->len, "console") == 0 && !f->compiling) {
+    forth_forget_error(f);   /* (what's typed: its error always said, even the last one again) */
+    if (forth_eval(f, c->input, (size_t)c->len, "console") == 0 && !forth_compiling(f)) {
         if (c->col > 0) {
             console_output(c, " ", 1);
         }

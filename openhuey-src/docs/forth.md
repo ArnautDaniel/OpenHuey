@@ -12,8 +12,13 @@ This page is OpenHuey's side: its words, its scripts, its tests.
   every script: `seconds`, 30 frames a second), then `game.fs`.
 - **Its warnings** (the scripts load with none): a file's word hiding one of a vocabulary it uses (`x hides
   vocab:x`), a word defined twice in one vocabulary (`x is defined again in v` - a real bug: the later wins from
-  there on), and a word whose code doesn't do what its stack comment says (`its code is ( 2 -- 1 )`: ClankForth's
-  "Stack effects"). Errors print the words that were running; so does a crash.
+  there on), a word whose code doesn't do what its stack comment says (`its code is ( 2 -- 1 )`: ClankForth's
+  "Stack effects"), and a way out of a word that leaves a `>r` on the return stack or an `exit` in a `do` loop
+  without `unloop` (both would return into the cells left there). Errors print the words that were running; so
+  does a crash. An execution token that isn't a word's (`execute`, `catch`, `spawn`, a deferred word) is an error.
+- **The host's side**: a `Forth` is a handle (`external/clankforth/docs/hosts.md`): OpenHuey's C asks through
+  `forth.h`'s functions (`forth_compiling`, `forth_current`, `forth_errors`, `forth_find_vocab` ...), never the
+  system's own struct. A mod's scripts load under a step limit (`forth_set_eval_budget`: mods.c).
 - **The C words' stack effects**: each entry of bind_engine.c's table (and each `forth_prim` elsewhere) carries its
   effect, `{"room", p_room, "( id -- )"}` - the scripts' code is checked with it, so a new word gives its own (NULL:
   none fixed, as `floor-below`'s float only when there is a floor). `.checked` says how much of the scripts' code is

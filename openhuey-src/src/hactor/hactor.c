@@ -145,7 +145,7 @@ void bind_hactor(Forth *f) {
         {"body-mask!", p_body_mask_store, "( mask -- )"}, {"body-tri!", p_body_tri_store, "( tri -- )"},
         {"body-room!", p_body_room_store, "( room -- )"},
     };
-    Vocab *saved = f->m.current;
+    Vocab *saved = forth_current(f);
     size_t i;
 
     sForth = f;

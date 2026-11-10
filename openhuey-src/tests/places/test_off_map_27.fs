@@ -72,7 +72,6 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 : one-of ( item -- )  dup has 0= if  1 game:items send give-item  5 run-frames  else  drop  then ;
 : ev ( ev -- )  0 swap -1 0 broadcast item-event  5 run-frames ;
 : word-is ( item -- )  1 swap broadcast item-var ;   \ (the word plate's: what it gives - items.fs)
-variable before
 testing in by its way, the costumes unlocked: placed, the world let go; the document filed, once
 fg-3-flag3 story-flag-clear  x-37-flag2 story-flag-set  got-doc-action story-flag-clear  world-held state-flag-set
 antimony-powder none-of  magnesia one-of

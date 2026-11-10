@@ -3029,7 +3029,7 @@ PRIM(p_key_colon) {   /* key: name ( -- scancode ), immediate: `key: W`, `key: L
     if (k == SDL_SCANCODE_UNKNOWN) {
         forth_error(f, "key: no key called %s", name);
     }
-    if (f->compiling) {
+    if (forth_compiling(f)) {
         forth_compile_literal(f, k);
     } else {
         PUSH(k);
@@ -3237,8 +3237,7 @@ static void output_to(Forth *f, const char *mode, const char *what) {
     if (sOutFile == NULL) {
         forth_error(f, "%s: can't write %s", what, path);
     }
-    sSavedOut = f->out;
-    sSavedCtx = f->out_ctx;
+    forth_get_output(f, &sSavedOut, &sSavedCtx);
     forth_set_output(f, file_output, sOutFile);
 }
 PRIM(p_to_file) { output_to(f, "w", "to-file"); }   /* ( addr len -- ) what Forth prints goes into this file until end-file */
@@ -3925,7 +3924,7 @@ int bind_engine_reset_wanted(void) {
 }
 
 void bind_engine(Forth *f) {
-    Vocab *saved = f->m.current, *engine = forth_vocab(f, "engine");
+    Vocab *saved = forth_current(f), *engine = forth_vocab(f, "engine");
     static const struct {
         const char *name;
         Code code;
@@ -4087,5 +4086,5 @@ void bind_engine(Forth *f) {
     field(f, "gfx.room-bloom", offsetof(RenderSettings, room_bloom));
     field(f, "gfx.game-font", offsetof(RenderSettings, game_font));
     field(f, "gfx.fullscreen", offsetof(RenderSettings, fullscreen));
-    f->m.current = saved;
+    forth_set_current(f, saved);
 }
