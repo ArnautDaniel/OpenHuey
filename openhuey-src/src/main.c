@@ -620,8 +620,10 @@ static void draw_door_shades(Engine *e, const RoomView *v) {
     render_shade_end();
 }
 
-/* layer `layer`: the room's draws in it, then the characters' ($1C, drawn softened, apart) */
-static void draw_layer(Engine *e, const Mat4 *vp, int layer) {
+/* layer `layer`: the room's draws in it, then the characters' ($1C, drawn softened, apart), then
+ * the effects' (their drawers' layer: most $19 - so before the fog's pass at $21 and under what
+ * the later layers draw, as the original's packets go out layer by layer) */
+static void draw_layer(Engine *e, const Mat4 *vp, const Mat4 *view, int layer) {
     int i;
 
     render_fog_after(fog_after(layer));
@@ -631,6 +633,7 @@ static void draw_layer(Engine *e, const Mat4 *vp, int layer) {
             draw_actor(e, &e->actors[i], vp);
         }
     }
+    sprites_draw_layer(vp, view, layer, LAST_LAYER - 1);
 }
 
 static void draw(Engine *e) {
@@ -669,7 +672,7 @@ static void draw(Engine *e) {
         if (layer == 6) {
             draw_door_shades(e, &rv);
         }
-        draw_layer(e, &vp, layer);
+        draw_layer(e, &vp, &view, layer);
     }
     for (i = 0; i < MAX_ACTORS && !(e->actors[i].used && e->actors[i].layer == 0x1C); i++) {
     }
@@ -687,11 +690,10 @@ static void draw(Engine *e) {
     }
     draw_reflections(e, &proj, &view, &vp);
     for (layer = 0x1E; layer < LAST_LAYER; layer++) {   /* (the later layers: in front of a reflection over everything) */
-        draw_layer(e, &vp, layer);
+        draw_layer(e, &vp, &view, layer);
     }
     render_fog_after(0);
     things_draw(e->room.id, &vp);   /* the things lying about (their sprites written for the next) */
-    sprites_draw(&vp, &view);   /* the effects (after the opaque scene: they don't write depth) */
     if (sprites_glowing() && post_glow_begin()) {   /* the glow pass: the glowing ones again */
         sprites_draw_glow(&vp);
         post_glow_end();

@@ -921,6 +921,30 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
     glBindSampler(0, R.sampler);
     glBindTextureUnit(1, R.shadow_tex);
     glBindVertexArray(g->vao);
+    /* faded as a whole, as the original's fading layers ($0F / $1A / $23: what a layer drew goes
+     * back to the screen behind it by one alpha): its depth first, colour off, so that only its
+     * nearest surface blends over what is behind - not its far side and insides through itself */
+    for (i = 0; faded && i < nd; i++) {
+        const MeshDraw *x = &d[i];
+        GLuint tex = x->texture >= 0 && x->texture < ntextures ? textures[x->texture] : 0;
+
+        if ((x->group != 0 && !(groups[x->group >> 5] >> (x->group & 31) & 1)) || x->mask || x->blend || x->additive ||
+            x->no_zwrite) {
+            continue;
+        }
+        glColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+        glDepthMask(GL_TRUE);
+        glProgramUniform1f(R.mesh_prog, U_MASK, 0.0f);
+        glProgramUniform1i(R.mesh_prog, U_USE_TEX, tex != 0);
+        glProgramUniform1i(R.mesh_prog, U_SOLID_TEX, x->solid_tex);
+        glProgramUniform1i(R.mesh_prog, U_LIT, x->lit);
+        glProgramUniform1i(R.mesh_prog, U_COVERAGE, 0);
+        glProgramUniform1i(R.mesh_prog, U_RECEIVE, 0);
+        glBindTextureUnit(0, tex);
+        glDrawArrays(GL_TRIANGLES, x->first, x->count);
+    }
+    glColorMaski(0, GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     for (i = 0; i < nd; i++) {
         const MeshDraw *x = &d[i];
         GLuint tex = x->texture >= 0 && x->texture < ntextures ? textures[x->texture] : 0;
