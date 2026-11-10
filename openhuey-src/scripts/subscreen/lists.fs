@@ -69,7 +69,7 @@ create acts 4 cells allot   variable #acts
     under-cursor name  $38 $49 false text
     under-cursor stacks? if  page-list cursor @ held-at n@ count$  $D2 $49 false text  then
     $100 $16E $19C $66 shade
-    note dup message-layout 0> if  0 message-lines 0 ?do  dup 0 i line-of  $32  $142 i 22 * +  box-ink inked  loop  then  drop
+    note dup message-layout 0> if  0 message-lines 0 ?do  dup 0 i line-of  $32  $142 i 25 * +  box-ink inked  loop  then  drop
     $1A9  #acts @ 10 * $DD +  $46  #acts @ 20 *  shade
     #acts @ 0 ?do  i act@ act-word menu-line  $190  $D8 i $14 * +  box-ink inked  loop
     hand 1  $17C  action @ 20 * $D8 +  cursor-ink inked ;   \ (the hand before the action picked)
@@ -92,7 +92,7 @@ create acts 4 cells allot   variable #acts
 : read-doc ( answer -- )  drop  page-list cursor @ items-id send use-item  back-to-page ;
 : use-it ( -- )
     under-cursor item-kind remedy <  usable-now? 0= and if  se-buzzer  $4054 ['] back ask exit  then   \ (a key thing, the plate)
-    under-cursor item-kind document = if  under-cursor $4000 or ['] read-doc ask exit  then
+    under-cursor item-kind document = if  under-cursor $4000 or ['] read-doc ask-document exit  then
     awaiting-use mode !  page-list cursor @ items-id send use-item ;
 : thrown ( answer -- )
     if  back-to-page exit  then
@@ -116,7 +116,7 @@ create acts 4 cells allot   variable #acts
 \ ---- the keys ----
 : open-item ( -- )
     under-cursor 0< if  exit  then  se-decide
-    under-cursor item-kind document = if  under-cursor $4000 or ['] read-doc ask exit  then   \ (a document: read)
+    under-cursor item-kind document = if  under-cursor $4000 or ['] read-doc ask-document exit  then   \ (a document: read)
     on-actions mode !  0 action !  gather  load-picture ;
 : list-keys ( -- )   \ up / down along the column, left / right across the columns and pages
     confirm? if  open-item exit  then
@@ -147,7 +147,7 @@ create acts 4 cells allot   variable #acts
     2 0 do
         file-page @ 2* i +  dup files < if
             file@ $4000 or  dup message-layout 0> if   \ (its text in MSG_SUB, as the items' notes)
-                0 message-lines 0 ?do  dup 0 i line-of  $2D  j $A0 * $54 + i 22 * +  false text  loop
+                0 message-lines 0 ?do  dup 0 i line-of  $2D  j $A0 * $54 + i 25 * +  false text  loop
             then
         then  drop
     loop ;

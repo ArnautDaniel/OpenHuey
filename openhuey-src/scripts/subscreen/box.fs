@@ -4,25 +4,45 @@
 IN: subscreen.box
 USING: engine messages keys ps2-screen subscreen.state subscreen.art subscreen.input ;
 
-: ask ( msg then-xt -- )  after !  shown !  0 shown-page !  0 picked !  on-box mode ! ;
+: ask ( msg then-xt -- )  after !  shown !  0 shown-page !  0 picked !  0 box-place !  0 big-box !  on-box mode ! ;
+: ask-document ( msg then-xt -- )  ask  -1 big-box ! ;   \ (a document read: the large shade behind its page)
 : last-shown-page? ( -- flag )  shown-page @ 1+  shown @ message-layout  >= ;
 : choosing? ( -- flag )  shown @ message-layout drop  message-options 0>  last-shown-page? and ;
 
-\ a line's left: 0x12 centres it in the page's widest, 0x14 puts it to that's right (Task_DrawPage)
+\ ---- where its words go (Task_Layout, Task_DrawPage): the page's lines, 25 apart, as a block as
+\ wide as its widest, centred on its place - (256, 370) unless the message names another (its 0x0A
+\ code: D_0044B010; from $80 with no box of its own) ----
+25 constant line-pitch
+create place-ys  370 , 224 , 330 , 224 , 224 , 224 , 224 , 224 ,
+: place-now ( -- n )   \ (this page's, else the one before it; the layout is the shown message's)
+    shown-page @ message-place  dup 0< if  drop box-place @  else  dup box-place !  then ;
+: place-y ( -- y )  place-now $7F and 7 min cells place-ys + @ ;
+: boxed? ( -- flag )  place-now $80 and 0= ;
+: block-h ( -- h )  shown-page @ message-lines line-pitch * ;
+: words-y ( line -- y )  line-pitch *  place-y block-h 2/ - +  4 + ;   \ (the PS2's)
 : line-width ( line -- px )  shown @ shown-page @ rot line-of  scale text-width ;
 : widest ( -- px )  0  shown @ message-layout drop  shown-page @ message-lines 0 ?do  i line-width max  loop ;
+\ a line's left: 0x12 centres it in the page's widest, 0x14 puts it to that's right (Task_DrawPage)
 : line-x ( line -- x )
     {: ln | spare :}  widest ln line-width - to spare
     shown @ message-layout drop  shown-page @ ln message-align
-    case  1 of  spare 2/  endof  2 of  spare  endof  0 swap  endcase  $40 sx + ;
+    case  1 of  spare 2/  endof  2 of  spare  endof  0 swap  endcase  $100 sx widest 2/ - + ;
 : marker ( -- )   \ the hand before the option picked (an option takes no room: 20 of the PS2's pixels before it)
     shown @ message-layout drop  picked @ message-option-at  {: pg line col :}
     line line-x  pg line message-line drop col scale text-width +  {: x :}   \ (line-x lays it out again)
-    word-layer hand 1  x scale 10 * -  line 22 * $B0 + sy  cursor-ink scale glyphs ;
+    word-layer hand 1  x scale 10 * -  line words-y sy  cursor-ink scale glyphs ;
+\ its own shade (Task_BoxSize): the block's, less 24 across and 16 down, 6 lower - its soft edges
+\ take the words in; a document has the large one behind it too
+: own-shade ( -- )
+    widest 512 * fw @ /  dup $19 >= if  $18 -  then
+    block-h  dup $11 >= if  $10 -  then  {: w h :}
+    $100  place-y 6 +  w h shade ;
 : box-view ( -- )   \ the box's words: its own task's, colour 0 (added: light on the shade)
-    $100 $E0 $1A0 $A0 shade
     shown @ message-layout drop
-    shown-page @ message-lines 0 ?do  word-layer  shown @ shown-page @ i line-of  i line-x  $B0 i 22 * + sy  box-ink scale glyphs  loop
+    big-box @ if  $100 $E0 $1A0 $160 shade  then
+    boxed? if  own-shade  then
+    shown @ message-layout drop
+    shown-page @ message-lines 0 ?do  word-layer  shown @ shown-page @ i line-of  i line-x  i words-y sy  box-ink scale glyphs  loop
     choosing? if  marker  then ;
 : box-keys ( -- )
     choosing? if

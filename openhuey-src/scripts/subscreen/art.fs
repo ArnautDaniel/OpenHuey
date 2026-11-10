@@ -39,9 +39,16 @@ variable piece
     base-group 7 column 6 column  0 column 1 column 2 column 3 column  alpha  8 column  blended-from ;
 : page-art ( kind -- )   \ the background panels of a kind of page (kSubScreenFadePanels)
     4 * cells page-panels +  4 0 do  dup i cells + @ dup 0< if  drop leave  then  $80 panel  loop  drop ;
-: shade ( cx cy w h -- )   \ a dark box centred on cx, cy (Task_DrawBox)
+\ Task_DrawBox: the dark box w x h about cx, cy, its edges fading out over 32 of the PS2's pixels
+\ beyond it - seventeen boxes one in another, 2 apart, each a little of the dark (three quarters,
+\ as the original's alpha $60 of $80, where they all lie)
+: shade ( cx cy w h -- )
     {: cx cy w h :}
-    art-layer  cx w 2/ - sx  cy h 2/ - sy  w sw  h sy  $C0 openness @ * 128 / $10100C00 or  ui-rect ;
+    17 0 do
+        32 i 2* - {: m :}
+        art-layer  cx w 2/ - m - sx  cy h 2/ - m - sy  w m 2* + sw  h m 2* + sy
+        20 openness @ * 128 / $10100C00 or  ui-rect
+    loop ;
 
 \ ---- words ----
 \ A word's colour is the original's byte (Task_DrawGlyph): its low 6 bits the font's palette; $80
@@ -61,11 +68,14 @@ $BFBFBF constant glyph-grey   \ (the glyphs' vertex colour $60606060: three quar
     layer addr len x y  glyph-grey 8 lshift  $80 faded $FF and or  sc  colour $3F and  ui-text-in
     layer colour ink-blend $80 fix ui-blend ;
 : inked-on ( layer addr len x y colour -- )  {: l addr len x y c :}  l addr len  x sx  y sy  c scale glyphs ;
-: inked ( addr len x y colour -- )  {: a n x y c :}  word-layer a n x y c inked-on ;
+\ the page's words go on the words' layer - or, a box up over the page, on the art's: drawn before
+\ the box's shade they lie under it, as the original's page does under its Task_DrawBox
+variable page-words   word-layer page-words !
+: inked ( addr len x y colour -- )  {: a n x y c :}  page-words @ a n x y c inked-on ;
 : text ( addr len x y chosen? -- )  ink inked ;   \ a line of the menu's at x y
 : centred ( addr len x y -- )   \ a line centred on x by its width (Text_LineWidth)
     {: addr len x y :}
-    word-layer addr len  x sx  addr len scale text-width 2/ -  y sy  menu-ink scale glyphs ;
+    page-words @ addr len  x sx  addr len scale text-width 2/ -  y sy  menu-ink scale glyphs ;
 : line-of ( msg page line -- addr len )  rot message-layout drop  message-line ;
 : menu-line ( msg -- addr len )  $4000 or 0 0 line-of ;   \ the menu's own messages (the second table)
 : name ( id -- addr len )  $8100 + 0 0 line-of ;         \ an item's name

@@ -57,7 +57,7 @@ $1C constant door-track   $81 constant mystic-way
     begin  cutscene-frame 0< 0=  while  shrink @ 1- 0 max dup shrink !  1000 334 */ marker-to  yield  repeat ;
 : end-scene ( -- )
     end-movie scenes:unseen-movie end-cutscene load-scene drop  3 figure-on  4 figure-on
-    0 show-part  ['] marker-cues start drop  panic-eased  -1 run-scene  ['] marker-cues stop-doing  marker-done ;
+    0 show-part  ['] marker-cues along-scene  panic-eased  -1 run-scene  ['] marker-cues stop-doing  marker-done ;
 : lorenzo-ends ( -- )
     fiona hold  tremor-warned fact-off  no-track 1e background
     ['] slight-tremors stop-doing  ['] violent-tremors stop-doing

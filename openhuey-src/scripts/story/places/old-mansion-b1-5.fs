@@ -114,7 +114,7 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
 : trap-shut ( -- )
     capture-no-end state!  no-pause state!  stalkers-stay state!  fiona hold  fiona trap-door to-door
     15 screen:to-black-2 with-music or fade  7 scenes:keyed-movie 6 load-scene  wait-fade
-    hewie let-go  stalker let-go  ['] shadowless start drop
+    hewie let-go  stalker let-go  ['] shadowless along-scene
     $10 $28 movie-key  panic-eased  if  -1 run-through  then
     $2C resident-flag-set  0 false no-shadow  gameover:movie-death game-over ;
 
@@ -145,7 +145,7 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
 : replay-hourglass ( -- )
     fiona hold  candles-lit  5 scenes:keyed-movie 4 load-scene  $10 $78 movie-key  panic-eased  if  -1 run-scene  then  replay-over ;
 : replay-trap ( -- )
-    fiona hold  7 scenes:keyed-movie 6 load-scene  ['] shadowless start drop  $10 $28 movie-key  panic-eased  if  -1 run-scene  then  replay-over ;
+    fiona hold  7 scenes:keyed-movie 6 load-scene  ['] shadowless along-scene  $10 $28 movie-key  panic-eased  if  -1 run-scene  then  0 false no-shadow  replay-over ;
 
 \ ---- Hewie, its hum ----
 : wary ( -- )  17.96e 0e -27.69e hewie-stands-by ;

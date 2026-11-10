@@ -174,7 +174,8 @@ static void pad_poll(Input *in) {
  * I up, K down, L right, J left: a direction's arms once the stick is centred (under 0.4) and
  * fires, a key press, when it is then pushed right over (the original's 0.99 of a PS2 stick's
  * full throw; 0.9 here, as not every pad's stick reaches its corner values) within 0.6 radians
- * of it. Held over to the right, L stays held (the praise's repeats) */
+ * of it. Once fired it must be centred again (gesture_step): more praise is the stick pushed
+ * right again, as the original's, not held */
 static void pad_gestures(Input *in) {
     static const struct { SDL_Scancode key; float at; } kWays[4] = {
         {SDL_SCANCODE_K, 0.0f}, {SDL_SCANCODE_L, 1.5707964f}, {SDL_SCANCODE_I, 3.1415927f}, {SDL_SCANCODE_J, -1.5707964f},
@@ -198,9 +199,6 @@ static void pad_gestures(Input *in) {
         } else if (sArmed[i] && aimed) {
             sArmed[i] = 0;
             in->pressed[kWays[i].key] = true;
-        }
-        if (kWays[i].key == SDL_SCANCODE_L && aimed) {
-            sPadHeld[SDL_SCANCODE_L] = true;
         }
     }
 }

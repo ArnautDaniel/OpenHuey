@@ -144,10 +144,12 @@ behaviour keeping
   on swing-door ( exit open source -- )  {: ex open source :}  source ex user !  ex open false door-move ;
   \ (a room's script: no one using it - the creak's noise is Fiona's, the original's opener 0)
   on set-door-opened ( exit open -- )  {: ex open :}  ex open door-set-opened if  fiona-noise ex user !  then ;
-  \ slammed shut or burst open (Fiona_SlamDoor: taken hold of first - DoorHold_Take - then let go
-  \ open or shut at rest by its user, as a swing along an animation is)
-  on slam ( exit source -- )  over user !  dup grab  false true door-move ;
-  on barge ( exit source -- )  over user !  dup grab  true true door-move ;
+  \ slammed shut or burst open (Fiona_SlamDoor: taken hold of first - DoorHold_Take - then set
+  \ opened or shut, Doors_SetOpened: swung fast, its passage changed sides at once - she runs on
+  \ through it - and burst open its bang; let go open or shut at rest by its user, as a swing
+  \ along an animation is)
+  on slam ( exit source -- )  over user !  dup grab  false door-set-opened drop ;
+  on barge ( exit source -- )  over user !  dup grab  true door-set-opened drop ;
   \ pulled shut behind a stalker come in by it (his DoorBreak): held, swung shut, let go shut at rest
   on pull-shut ( exit source -- )  over user !  dup grab  false false door-move ;
   on hold-door ( room exit kind -- )

@@ -27,7 +27,7 @@ create looks   \ (the parts after each cue: 0 .. 5)
     9 0 do  begin  i cells cues + @ scene-at? 0= while  yield  repeat  i look  loop
     begin  scene-near-end? 0= while  yield  repeat ;
 : the-scene ( -- )
-    the-movie scenes:unseen-movie the-cutscene load-scene  ['] by-cues start drop
+    the-movie scenes:unseen-movie the-cutscene load-scene  ['] by-cues along-scene
     panic-eased  if  lorenzo-msg run-scene  then ;
 : meets-him ( -- )
     seen-flag resident-flag? 0= if  no-pause state!  then

@@ -29,7 +29,7 @@ $19 constant forest-track   0 constant ash-fx   1 constant heart-area   3 consta
 : heart-cues ( -- )  1 till-shot  true ash-rises  2 till-shot  false ash-rises  $18 till-shot  -1 doorway-lit ! ;
 : heart-scene ( -- )
     heart-movie scenes:opaque-when-movie heart-cutscene load-scene drop
-    heart-slot figure-on  5 cutscene-keep-model  ['] heart-cues start drop  0 ash-on !
+    heart-slot figure-on  5 cutscene-keep-model  ['] heart-cues along-scene  0 ash-on !
     panic-eased  heart-msg run-scene  ['] heart-cues stop-doing ;
 : the-heart ( -- )
     fiona hold  summoner-on state-off  stalker let-go  0 summon-take  hewie-in? if  hewie let-go  then

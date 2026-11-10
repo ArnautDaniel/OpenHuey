@@ -178,10 +178,10 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
     no-track 1e background  stalkers-stay state!
     1 scenes:unseen-movie 0 load-scene drop  15 screen:to-black-2 fade  wait-fade
     stalker let-go  0 summon-take  hewie let-go
-    ['] riccardo-fades start drop  -1 final-on !  panic-eased  -1 run-scene  0 final-on !
+    ['] riccardo-fades along-scene  -1 final-on !  panic-eased  -1 run-scene  0 final-on !
     $FF808080 him-shown  scene-5-pending state-off  no-stalker-camera state-off
     stalker let-go  0 summon-take  hewie let-go
-    3 scenes:unseen-movie 2 load-scene drop  ['] lights-flare start drop  panic-eased  fiona-msg run-scene
+    3 scenes:unseen-movie 2 load-scene drop  ['] lights-flare along-scene  panic-eased  fiona-msg run-scene
     $40 resident-flag-set  50 trust+  stalker let-go  0 summon-take  c7-second-event fact!
     fiona $33 0 -1.38e 70.2e place-at  hewie $33 0 5e 67.76e place-at
     fg-3-flag3 fact? 0= if  stalker-unloaded  then
@@ -238,7 +238,7 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
     15 screen:to-black-2 with-music or fade  no-track 1e background  wait-fade
     8 hide-part  light-off  shot-off  world-frozen state-off  stalkers-stay state!  hewie let-go
     begin  partner 0<  while  yield  repeat  summoner-on state-off
-    5 scenes:keyed-movie 4 load-scene drop  ['] lorenzo-fades start drop  $10 $50 movie-key  panic-eased  defy-msg run-scene
+    5 scenes:keyed-movie 4 load-scene drop  ['] lorenzo-fades along-scene  $10 $50 movie-key  panic-eased  defy-msg run-scene
     1 show-part  8 show-part  light-on
     stairs-door door-shut  stairs-door lock  doors-redone  camera-restart
     fiona $33 180 6.38e 70.12e place-at
@@ -320,17 +320,17 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
 : replay-lorenzo ( -- )
     0 show-part  2 show-part  4 show-part  6 show-part  8 show-part  20000e far-clip
     kind37-kind stalker-ready  begin  partner 0<  while  yield  repeat
-    5 scenes:keyed-movie 4 load-scene drop  ['] lorenzo-fades start drop  $10 $50 movie-key  panic-eased  defy-msg run-scene
+    5 scenes:keyed-movie 4 load-scene drop  ['] lorenzo-fades along-scene  $10 $50 movie-key  panic-eased  defy-msg run-scene
     stalker-unloaded  replay-over ;
 : replay-final ( -- )
     0 show-part  1 show-part  3 show-part  5 show-part  7 show-part  8 show-part  20000e far-clip
     kind37-kind stalker-ready  begin  partner 0<  while  yield  repeat
-    1 scenes:unseen-movie 0 load-scene drop  ['] riccardo-fades start drop  -1 final-on !  panic-eased  -1 run-scene  0 final-on !
+    1 scenes:unseen-movie 0 load-scene drop  ['] riccardo-fades along-scene  -1 final-on !  panic-eased  -1 run-scene  0 final-on !
     $FF808080 him-shown  stalker-unloaded  replay-over ;
 : replay-flare ( -- )
     0 show-part  1 show-part  3 show-part  5 show-part  7 show-part  8 show-part  20000e far-clip
     tintstalker-kind 3 figure-in  yield  3 figure-on
-    3 scenes:unseen-movie 2 load-scene drop  ['] lights-flare start drop  panic-eased  fiona-msg run-scene
+    3 scenes:unseen-movie 2 load-scene drop  ['] lights-flare along-scene  panic-eased  fiona-msg run-scene
     hewie let-go  3 figure-out  replay-over ;
 : replay-azoth ( -- )
     0 show-part  1 show-part  3 show-part  5 show-part  7 show-part  8 show-part  20000e far-clip

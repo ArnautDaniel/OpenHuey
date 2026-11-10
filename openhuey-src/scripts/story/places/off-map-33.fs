@@ -18,7 +18,7 @@ USING: engine game-state actors messages common flag-names facts room-names stor
     yield  begin  part-away-shot scene-shot? if  room-part hide-part  then  scene-near-end? 0= while  yield  repeat ;
 : the-scene ( -- )   \ (her double without its shadow; the movie)
     fiona false shown  tintstalker-kind true no-shadow
-    the-movie scenes:unseen-movie the-cutscene load-scene  ['] part-away start drop
+    the-movie scenes:unseen-movie the-cutscene load-scene  ['] part-away along-scene
     panic-eased  if  -1 run-scene  then ;
 : the-end ( -- )
     seen-flag resident-flag? 0= if  no-pause state!  then

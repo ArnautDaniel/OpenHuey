@@ -46,6 +46,8 @@ state: subscreen-state
   cell field shown        \ its message (-1 none)
   cell field shown-page   cell field picked
   cell field after        \ what to do once it closes (an xt, given the option picked)
+  cell field box-place    \ where its words are centred (a place, the message's 0x0A code: the last given)
+  cell field big-box      \ a document's: the large shade behind it (SubScreen_StateItemQuestion)
   \ the map
   cell field map-at       cell field map-pg       \ the map and page shown (-1 none)
   cell field her-map      cell field her-pg       \ where her room is on the maps (-1 nowhere)

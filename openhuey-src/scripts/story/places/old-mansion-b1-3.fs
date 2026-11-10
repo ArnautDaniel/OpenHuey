@@ -99,7 +99,7 @@ create plate-tris  $89 , $B1 ,  $90 , $B2 ,  $97 , $B3 ,  $83 , $B0 ,
     begin  cutscene-frame cutscene-shot-at 2 <> while  yield  repeat  corpse false no-shadow ;
 : all-out ( -- )
     0 dog-step !  stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade
-    7 scenes:keyed-movie 6 load-scene  wait-fade  ['] statue-scene start drop  fiona false shown
+    7 scenes:keyed-movie 6 load-scene  wait-fade  ['] statue-scene along-scene  fiona false shown
     hewie-in? if  ['] hewie-hidden-by start drop  begin  dog-step @ 1 < while  yield  repeat  then
     $10 $FF movie-key  panic-eased  if  -1 run-scene  then  wait-fade
     50 trust+  fiona 0 idle  camera-restart  fiona true shown  2 dog-step !
@@ -264,7 +264,7 @@ create corpse-look  11.81e 0e -0.03e  20e 6e 6e look,
     fiona hold  true spikes  $E object-hide  corpse-in  5 scenes:unseen-movie 4 load-scene
     panic-eased  if  -1 run-scene  then  3 figure-out  replay-over ;
 : replay-statue ( -- )
-    fiona hold  true spikes  $E object-hide  corpse-in  7 scenes:keyed-movie 6 load-scene  ['] statue-scene start drop
+    fiona hold  true spikes  $E object-hide  corpse-in  7 scenes:keyed-movie 6 load-scene  ['] statue-scene along-scene
     fiona false shown  $10 $FF movie-key  panic-eased  if  -1 run-scene  then  fiona true shown  3 figure-out  replay-over ;
 
 \ ---- its hum ----

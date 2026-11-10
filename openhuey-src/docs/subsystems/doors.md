@@ -17,14 +17,14 @@ Declared in `scripts/messages.fs`. Kinds of character (for locks): `fiona-kind` 
 | `lock` / `unlock` | `( door -- )` | doors | For everyone (the story, keys). |
 | `lock-for` | `( door kind on -- )` | doors | Locked against a kind of character, or not (`Progress_LockDoorFor`). |
 | `close-off` | `( door -- )` | doors | Gone for good: no route goes through it. |
-| `game-loaded` | `( -- )` | doors (broadcast by saves) | The exits made anew from the loaded progress' closed-off doors (Rooms_SetState). Before 0.2.38 a load left them as the session had them: begun afresh, an exit kept a closed-off door - the mansion's front door, front-garden-2's exit 0, was the locked door 1 instead of door $3C. |
+| `game-loaded` | `( -- )` | doors (broadcast by saves) | The exits made anew from the loaded progress' closed-off doors (Rooms_SetState). Before 0.2.38 a load left them as the session had them: begun afresh, an exit kept a closed-off door - the mansion's front door, front-garden-2's exit 0, was the locked door 1 instead of door $3C. A reset to the title rebuilds them too (`soft_reset`: Rooms_SetState with no save). |
 | `hold-door` | `( room exit kind -- )` | doors | Take hold of a door before going through (any room). Answered `door-held` or `door-refused` `( room exit -- )`. |
 | `let-go-open` / `let-go-shut` | `( room exit source -- )` | doors | Let it go open or shut (off-screen: heard). |
 | `use-door` | `( exit anim source -- )` | doors | The played room's door swings along the user's animation; at rest it is let go. |
 | `swing-door` | `( exit open source -- )` | doors | Swung open / shut by 5 degrees a frame. |
 | `set-door-opened` | `( exit open -- )` | doors | A room's script sets it swinging (`Doors_SetOpened`): open with a loud creak (0x91, heard 0x5F from Fiona's source) or shut, by 15 degrees a frame; its passage moves over at once; its state isn't changed (nobody holds it). |
-| `slam` | `( exit source -- )` | doors | Slammed shut (15 a frame, a loud latch); taken hold of first, let go at rest. |
-| `barge` | `( exit source -- )` | doors | Burst open (15 a frame) with its bang (sound 0x91, loud, at the door: Doors_SetOpened how 0 - silent before 0.2.37); taken hold of first, let go at rest (Fiona_SlamDoor). |
+| `slam` | `( exit source -- )` | doors | Slammed shut (15 a frame, a loud latch); taken hold of first, set shut (Doors_SetOpened how 1: its passage changed sides at once), let go at rest. |
+| `barge` | `( exit source -- )` | doors | Burst open (15 a frame) with its bang (sound 0x91, loud, at the door - silent before 0.2.37); taken hold of first, set opened (Doors_SetOpened how 0: its passage open at once, so she runs on through as it swings - since 0.2.39; before, only once it had come to rest), let go at rest (Fiona_SlamDoor). |
 | `pull-shut` | `( exit source -- )` | doors | Taken hold of and swung shut by 5 degrees a frame, let go shut at rest: a stalker's door behind him (his DoorBreak: DoorHold_Take, DoorHold_Shut). |
 | `door-changed` | `( door -- )` | broadcast | Its state changed. |
 | `noise` | | acoustics | The doors are heard. |

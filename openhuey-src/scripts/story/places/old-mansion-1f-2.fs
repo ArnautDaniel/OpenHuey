@@ -77,7 +77,7 @@ create flames  -19.7e f, 22.5e f,  -19.7e f, 25e f,  -17.2e f, 22.4e f,  -17.2e 
 : ore-shown ( -- )   \ (through its scene, to its cue: the ore on the pan)
     begin  cutscene-frame $1CC < while  stones-hidden  laid @ stone-object object-show  yield  repeat  stones-hidden ;
 : ore-scene ( -- )
-    ore-movie scenes:keyed-movie ore-cutscene load-scene  ['] ore-shown start drop  $10 $FF movie-key
+    ore-movie scenes:keyed-movie ore-cutscene load-scene  ['] ore-shown along-scene  $10 $FF movie-key
     panic-eased  if  -1 run-scene  then ;
 : lays-ore ( -- )
     stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade  wait-fade

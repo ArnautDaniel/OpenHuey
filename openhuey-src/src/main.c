@@ -770,6 +770,7 @@ static void soft_reset(Engine *e, int hidden) {
     sprites_free_all();
     bind_engine_reset();
     progress_clear();   /* (the unlocks kept) */
+    world_rebuild_exits(&e->world);   /* (Rooms_SetState with no save: no door closed off, the exits anew) */
     things_clear();
     e->nhooks = e->ndraw_hooks = 0;
     e->nstage = 0;

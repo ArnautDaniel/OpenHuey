@@ -187,7 +187,7 @@ create tint-b  $72 c, $96 c, $94 c, $6E c, $60 c, $56 c, $70 c, $3C c,
     $492 till-frame  2 haze-fx tell-effect
     8 till-shot  0 haze-fx tell-effect ;
 : lorenzo-scene ( -- )
-    lorenzo-movie scenes:keyed-movie lorenzo-cutscene load-scene drop  ['] lorenzo-cues start drop
+    lorenzo-movie scenes:keyed-movie lorenzo-cutscene load-scene drop  ['] lorenzo-cues along-scene
     $10 $C8 movie-key  panic-eased  naught-msg run-scene  ['] lorenzo-cues stop-doing ;
 : lorenzo-comes ( -- )
     summoner-on state-off  stalker let-go  stalkers-stay state!  fiona hold

@@ -137,7 +137,7 @@ defer the-trap
     this-room @ 443 stalker-to  stalker $1BB 0 place-on-tri  0 summon-take
     yield  other-figure figure-out
     6 scenes:opaque-when-movie 0 load-scene  ['] riccardo-shots at-shots  panic-eased
-    if  riccardo-msg run-scene  then
+    if  riccardo-msg run-scene  then  st-kind-now @ false no-shadow   \ (his shadow back, the scene skipped or not)
     scene-locked state-off  after-riccardo-room s" rooms" actor-named send room-preload
     fiona send calm-reset  world-held state!  0 summon-take  figure-slot figure-out
     forced-exit take-exit ;
@@ -312,7 +312,7 @@ create entries  1 , 1 ,   0 , 0 ,   0 , 0 ,   0 , 0 ,      \ (by exit 0 .. 3: th
     $84 $60 $3C $50 $24 $2A $2A $46 room-tint  flame-fx 0 22.8e 14.65e 68.75e flame-at
     riccardo-kind figure-slot figure-in  yield  2 stalker-ready  yield
     6 scenes:opaque-when-movie 0 load-scene  ['] riccardo-shots at-shots  panic-eased
-    if  riccardo-msg run-scene  then
+    if  riccardo-msg run-scene  then  st-kind-now @ false no-shadow
     stalker-unloaded  figure-slot figure-out  replay-over ;
 : replay-marionette ( -- )   \ (act1A)
     fiona hold  5 scenes:unseen-movie 1 load-scene

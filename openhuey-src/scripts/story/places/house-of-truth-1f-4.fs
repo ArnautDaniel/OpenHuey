@@ -75,7 +75,7 @@ create belt-cues  $F , $12 , $13 , $14 , $17 , $28 , $29 , $2A , $2B , $2C , $31
     21 0 do  belt-cues i cells + @  begin  cutscene-frame over < while  yield  repeat  drop
         i 1 and if  belt-part hide-part  else  belt-part show-part  then  loop ;
 : let-in-scene ( -- )
-    let-in-movie scenes:unseen-movie let-in-cutscene load-scene drop  ['] let-in-cues start drop
+    let-in-movie scenes:unseen-movie let-in-cutscene load-scene drop  ['] let-in-cues along-scene
     panic-eased  -1 run-scene  ['] let-in-cues stop-doing ;
 : lets-in ( -- )
     force-followed state-off  scene-locked state!  stalkers-stay state!  fiona hold  under-gone  yield
