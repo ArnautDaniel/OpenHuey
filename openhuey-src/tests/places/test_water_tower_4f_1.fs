@@ -47,7 +47,7 @@ fvariable ax  fvariable ay  fvariable az  fvariable bx  fvariable bz   \ (a gate
     {: a F: d :}  a gate!  0 d gate-side put  0 d fnegate gate-side put ;
 : lever-done ( -- flag )  [: turning @ 0= ;] in-place  doing-busy? 0= and ;
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-set
-wt2f-1-flag2 story-flag-clear  wt4f-1-flag2 story-flag-clear  wt4f-1-flag3 story-flag-clear  wt4f-1-flag4 story-flag-clear
+riccardo-come story-flag-clear  wt4f-1-flag2 story-flag-clear  wt4f-1-flag3 story-flag-clear  wt4f-1-flag4 story-flag-clear
 wt4f-1-breakable-broken story-flag-clear  wt4f-1-medallion story-flag-clear  wt4f-1-camomile story-flag-clear
 0 by-exit
 testing coming in by exit 0: the walkway home, its doors locked; the drum; the sparkle; the summoner off
@@ -81,7 +81,7 @@ hewie-freed story-flag-set  hewie-commandable state-flag-set  0 by-exit  game:he
 T{ [: ['] barks-at-end start drop ;] in-place  [: doing-busy? 0= ;] 600 soon -> -1 }T
 game:hewie send part-from-fiona  60 run-frames
 testing the drum falling as she first goes on: her fright; Riccardo come for her
-wt2f-1-flag2 story-flag-set  wt4f-1-flag1 story-flag-clear  c7-second-event story-flag-clear
+riccardo-come story-flag-set  wt4f-1-flag1 story-flag-clear  c7-second-event story-flag-clear
 4 story.base:partner-load  5 run-frames  0 by-exit
 T{ on-area 5e across  [: ['] drum-falls running? ;] in-place  wt4f-1-flag2 story-flag? -> -1 -1 }T
 T{ [: [: stalker-in? ;] in-place ;] 200 soon  wt4f-1-flag1 story-flag? -> -1 -1 }T
@@ -91,6 +91,6 @@ T{ [: return-due @  return-wait @ 1700 1800 within ;] in-place -> -1 -1 }T
 [: 1 return-wait ! ;] in-place
 T{ [: [: stalker-in? ;] in-place ;] 120 soon  [: stalker body-tri ;] in-place -> -1 944 }T
 testing coming in after: the drum gone
-[: stalker let-go  1 summon-take ;] in-place  30 run-frames  wt2f-1-flag2 story-flag-clear  0 by-exit
+[: stalker let-go  1 summon-take ;] in-place  30 run-frames  riccardo-come story-flag-clear  0 by-exit
 T{ [: drum placed-here? ;] in-place -> -1 }T
 test-summary

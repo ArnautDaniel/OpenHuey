@@ -110,7 +110,7 @@ create entries  1 , 1 ,   1 , 1 ,   2 , 2 ,   0 , 0 ,   \ (by exit 0..3: the cam
     entries 4 ways-in
     came-by @ forced-exit = if
         fiona 0 at-exit  1 1 player-camera  ['] forward start drop
-        hewie body-room old-mansion-2f-6 = if  old-mansion-2f-13 55 0 hewie-to  then
+        room-of-hewie old-mansion-2f-6 = if  old-mansion-2f-13 55 0 hewie-to  then
     then ;
 : went ( -- )  smashing @ if  om2f-13-flag1 fact!  om2f-13-breakable-broken fact!  her-kind? if  true stalker send rage  then  then ;
 

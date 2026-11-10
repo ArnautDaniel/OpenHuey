@@ -184,7 +184,7 @@ create calm-looks  38.13e 0e -9.78e  30e 30e 30e look,   -35.94e 0e -7.54e  16e 
 : person-in ( i -- )
     fiona-p <> if  exit  then
     events-held state? if
-        hewie send part-from-fiona  replay-act $F = if  ['] replay-high  else  ['] replay-ice  then  start drop  exit
+        hewie send part-from-fiona  replay-act $F = if  ['] replay-high  else  ['] replay-ice  then  fiona start-holding drop  exit
     then
     entries 3 ways-in  came-by @ 2 = if  2 map-page  then ;
 : went ( -- ) ;

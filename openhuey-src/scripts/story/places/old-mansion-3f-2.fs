@@ -153,7 +153,7 @@ create looks  0e 0e -68.2e  18e 19e 19e look,
 : person-in ( i -- )
     fiona-p <> if  exit  then
     events-held state? if
-        hewie send part-from-fiona  replay-act $A = if  ['] replay-intro  else  ['] replay-plates  then  start drop  exit
+        hewie send part-from-fiona  replay-act $A = if  ['] replay-intro  else  ['] replay-plates  then  fiona start-holding drop  exit
     then
     entries 2 ways-in
     om3f-2-flag1 fact? 0= if  panic-eased  ['] first-in start drop  then ;

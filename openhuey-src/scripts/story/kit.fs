@@ -483,6 +483,8 @@ $2100 constant coat-pose-1   $1F00 constant coat-pose-2   $2000 constant coat-po
 
 \ ---- Hewie ----
 : hewie-in? ( -- flag )  hewie here? ;
+: room-of-hewie ( -- room | -1 )   \ (the room he is in; -1 not in the game - not freed yet, or gone: the original's char-in-room? false)
+    hewie dup body? if  body-room  else  drop -1  then ;
 : hewie-doing? ( act -- flag )  hewie-in? if  hewie-act-now @ =  else  drop false  then ;
 : hewie-do ( a b -- )  hewie send do-action ;
 : hewie-to ( room tri side -- )  hewie send hewie-place ;   \ (put in that room on the triangle, at her side: Hewie_PlaceInRoom)

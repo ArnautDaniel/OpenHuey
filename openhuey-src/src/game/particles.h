@@ -50,6 +50,8 @@ int particles_drips(void);
 void particles_water_step(Vec3 at, int big);
 /* a drop now and then from a branch in the Chaos Forest, a ring and a droplet where it lands (OneDrip) */
 int particles_one_drip(void);
+/* the Water Tower B1's ceiling dripping: 14 drops from fixed spots, a spray and a sound where each lands (CeilingDrips) */
+int particles_ceiling_drips(void);
 /* motes rising in castle 1F's hall (RisingMotes) */
 int particles_rising_motes(void);
 /* embers drifting up castle 1F's fireplace (OrangeSparks); `ending` >= 0 as a first command

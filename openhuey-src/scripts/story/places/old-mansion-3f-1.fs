@@ -161,7 +161,7 @@ create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   \ (area,
 : person-in ( i -- )
     fiona-p <> if  exit  then
     events-held state? if
-        hewie send part-from-fiona  replay-act $A = if  ['] replay-intro  else  ['] replay-death  then  start drop  exit
+        hewie send part-from-fiona  replay-act $A = if  ['] replay-intro  else  ['] replay-death  then  fiona start-holding drop  exit
     then
     0 0 0 way-in ;
 : went ( -- ) ;

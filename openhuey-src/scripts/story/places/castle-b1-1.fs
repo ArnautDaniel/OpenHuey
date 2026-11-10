@@ -233,7 +233,7 @@ create looks  0.6e 0e -3.32e  15e 14e 14e look,   -46.47e -60e -29.37e  14e 19e 
     case
         fiona-p of
             events-held state? if
-                hewie send part-from-fiona  replay-act $14 = if  ['] replay-scene  else  ['] replay-cooking  then  start drop  exit
+                hewie send part-from-fiona  replay-act $14 = if  ['] replay-scene  else  ['] replay-cooking  then  fiona start-holding drop  exit
             then
             entries 2 ways-in  came-by @ 0 2 within if  2 map-page  then  endof
         stalker-p of  stalker-came  endof

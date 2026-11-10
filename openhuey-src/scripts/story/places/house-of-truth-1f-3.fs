@@ -74,7 +74,7 @@ create ahead  4 , 0 ,  5 , 1 ,  6 , 2 ,   \ (area, exit loaded ahead)
     spots ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 4 ways-in ;
 : went ( -- ) ;
 

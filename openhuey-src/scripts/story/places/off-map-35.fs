@@ -66,7 +66,7 @@ $E constant come-on-room   $36 constant hewie-room
             4 of  ['] hewie-replayed  endof
             5 of  ['] wait-up-replayed  endof
             >r ['] come-on-replayed r>
-        endcase  start drop exit
+        endcase  fiona start-holding drop exit
     then
     came-by @ forced-exit = if  ['] come-on fiona start-holding drop  then
     came-by @ second-way = if

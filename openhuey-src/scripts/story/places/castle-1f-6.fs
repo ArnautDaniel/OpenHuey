@@ -102,7 +102,7 @@ create entries  0 , 0 ,   1 , 1 ,             \ (by exit 0, 1: the camera)
 : each-frame ( -- )  events-held state? if  draughts exit  then  ways  hewie-sniffs  draughts  spots ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 2 ways-in
     came-by @ forced-exit = if  fiona brought-tri 0 place-on-tri  0 0 player-camera  ['] meets-daniella start drop  then ;
 : went ( -- ) ;

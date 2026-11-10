@@ -145,7 +145,7 @@ create entries  0 , -1 ,   1 , 0 ,             \ (by exit 0, 1: the camera)
 : person-in ( i -- )
     case
         fiona-p of
-            events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+            events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
             entries 2 ways-in  endof
         stalker-p of  stalker-came  endof
     endcase ;

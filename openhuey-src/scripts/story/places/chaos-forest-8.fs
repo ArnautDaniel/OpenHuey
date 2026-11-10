@@ -89,7 +89,7 @@ create entries  0 , 0 ,  1 , 1 ,   \ (by exit 0, 1: the camera)
 : each-frame ( -- )  ways  maze-frame  spots ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 2 ways-in
     found-file-247 fact? 0= if  ['] hewie-found start drop  then ;
 : went ( -- ) ;

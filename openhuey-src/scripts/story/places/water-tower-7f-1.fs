@@ -142,7 +142,7 @@ create cameras  4 , 0 , -1 ,  5 , 1 , -1 ,  6 , 1 , -1 ,   \ (area, set, path)
     spots ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     1 0 -1 way-in ;
 : went ( -- )  hunted state-off ;
 

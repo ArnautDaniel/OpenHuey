@@ -148,7 +148,7 @@ create looks  0.56e 0e 14.62e  35e 22e 22e look,
 : person-in ( i -- )
     fiona-p <> if  exit  then
     events-held state? if
-        hewie send part-from-fiona  replay-act 7 = if  ['] replay-godstone  else  ['] replay-ore  then  start drop  exit
+        hewie send part-from-fiona  replay-act 7 = if  ['] replay-godstone  else  ['] replay-ore  then  fiona start-holding drop  exit
     then
     0 1 1 way-in  1 1 1 way-in  2 0 0 way-in  4 3 3 way-in  5 2 2 way-in
     came-by @ dup 2 =  swap 4 = or if  2 map-page  then ;

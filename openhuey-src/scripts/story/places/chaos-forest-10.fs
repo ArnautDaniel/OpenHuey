@@ -84,7 +84,7 @@ create entries  2 , 2 ,  1 , 1 ,  1 , 1 ,  3 , 3 ,   \ (by exit 0 .. 3: the came
     spots ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 4 ways-in ;
 : went ( -- )  hurt? if  hewie let-go  face-back  then ;
 

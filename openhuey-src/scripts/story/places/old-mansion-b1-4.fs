@@ -119,7 +119,7 @@ create looks  19.24e 0e -32.32e  22e 18e 18e look,   -32.619e 0e -33.47e  22e 18
 : person-in ( i -- )
     case
         fiona-p of
-            events-held state? if  hewie send part-from-fiona  ['] replayed start drop  exit  then
+            events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop  exit  then
             0 0 0 way-in
         endof
         stalker-p of  stalker-came  endof

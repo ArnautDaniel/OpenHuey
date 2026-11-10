@@ -63,7 +63,7 @@ crate $80202020 0 0 shard-look   crate 0.812e 0.687e 0.187e 0.312e shard-uv   cr
     turning @  stalkers-stay state? or if  exit  then
     turned? if  888  else  473  then  sent-in  0 return-due ! ;
 : riccardo-hunts ( -- )
-    wt2f-1-flag2 fact?  c7-second-event fact? 0= and  riccardo? and  stalker-in? 0= and 0= if  exit  then
+    riccardo-come fact?  c7-second-event fact? 0= and  riccardo? and  stalker-in? 0= and 0= if  exit  then
     wt2f-1-flag1 fact? if  comes-back exit  then
     prowl-begun @ 0=  fiona landing-area left? and if  -1 prowl-begun !  ['] prowls start drop  then
     fiona top-area entered? if  ['] prowls stop-doing  then

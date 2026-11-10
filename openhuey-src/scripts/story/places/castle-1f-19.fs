@@ -158,7 +158,7 @@ create entries  1 , 1 ,   0 , 0 ,   0 , 0 ,   \ (by exit 0, 1, 2: the camera)
 : person-in ( i -- )
     dup hewie-p = if  drop hewie-came exit  then
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 3 ways-in ;
 : went ( -- )   \ (leaving: Hewie, held, let go by the shore)
     hewie held? if  hewie let-go  hewie shore-tri -80 39.008e -266.892e place-at  stalkers-stay state-off  then ;

@@ -56,7 +56,7 @@ create ahead  2 , 0 ,  3 , 1 ,   \ (area, exit loaded ahead)
     spots ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 2 ways-in
     found-file-252 fact? 0=  came-by @ forced-exit = and if
         world-held state!  panic-eased  ['] woken fiona start-holding drop

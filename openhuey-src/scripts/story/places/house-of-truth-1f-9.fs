@@ -330,7 +330,7 @@ create hewie-look  0.21e 0e 0.03e 33e 10e 0e look,
     events-held state? if
         hewie send part-from-fiona
         replay-act case  $10 of  ['] replay-lorenzo  endof  $11 of  ['] replay-fall  endof  >r ['] replay-arrival r>  endcase
-        start drop exit
+        fiona start-holding drop exit
     then
     0 0 0 way-in
     came-by @ forced-exit = if

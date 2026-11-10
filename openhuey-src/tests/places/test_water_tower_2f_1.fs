@@ -51,7 +51,7 @@ fvariable ax  fvariable ay  fvariable az  fvariable bx  fvariable bz   \ (a gate
 : hewie-across ( area F: d -- )  {: a F: d :}  a gate!  d hewie-to-side  d fnegate hewie-to-side ;
 : lever-done ( -- flag )  [: turning @ 0= ;] in-place  doing-busy? 0= and ;
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-set
-wt2f-1-flag2 story-flag-clear  wt2f-1-flag4 story-flag-clear  wt2f-1-breakable-broken story-flag-clear
+riccardo-come story-flag-clear  wt2f-1-flag4 story-flag-clear  wt2f-1-breakable-broken story-flag-clear
 wt2f-1-medallion-found story-flag-set  wt2f-1-medallion story-flag-clear  wt2f-1-refined-antimony story-flag-clear
 0 by-exit
 testing coming in by exit 0: the walkway home, its parts and floors so; the sparkles; the summoner off
@@ -99,7 +99,7 @@ lever-area -90 at  circle press  [: lever-done ;] 900 soon drop  [: hewie 200 0 
 T{ 0 0 at  [: room-id water-tower-2f-1 <> ;] 300 soon  [: self body-tri ;] his -> -1 874 }T
 game:hewie send part-from-fiona  60 run-frames
 testing Riccardo: heard prowling once she leaves the landing; stopped at the top; come for her by her way up
-wt2f-1-flag2 story-flag-set  wt2f-1-flag1 story-flag-clear  c7-second-event story-flag-clear
+riccardo-come story-flag-set  wt2f-1-flag1 story-flag-clear  c7-second-event story-flag-clear
 4 story.base:partner-load  5 run-frames  0 by-exit
 landing-area 5e across
 T{ [: ['] prowls running?  prowl-begun @ ;] in-place -> -1 -1 }T
@@ -111,7 +111,7 @@ T{ [: return-due @  return-wait @ 1700 1800 within ;] in-place -> -1 -1 }T
 [: 1 return-wait ! ;] in-place
 T{ [: [: stalker-in? ;] in-place ;] 120 soon  [: stalker body-tri ;] in-place -> -1 473 }T
 testing Hewie's side of the room: 1 in area , 0 out of it
-[: stalker let-go  1 summon-take ;] in-place  30 run-frames  wt2f-1-flag2 story-flag-clear  0 by-exit  game:hewie send join-fiona  60 run-frames
+[: stalker let-go  1 summon-take ;] in-place  30 run-frames  riccardo-come story-flag-clear  0 by-exit  game:hewie send join-fiona  60 run-frames
 T{ hewie-far-area 5e hewie-across  [: his-way @ ;] his -> 1 }T
 T{ hewie-far-area -5e hewie-across  [: his-way @ ;] his -> 0 }T
 test-summary

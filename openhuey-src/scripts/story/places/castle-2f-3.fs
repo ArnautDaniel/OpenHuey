@@ -319,7 +319,7 @@ own: stalker-gone             \ he has run out (the tutorial's end)
     replay-var var@ case
         0 of  ['] replay-maid  endof   1 of  ['] replay-dressing  endof
         $F of  ['] replay-trapped  endof   $10 of  ['] replay-saved  endof  >r 0 r>
-    endcase  ?dup if  start drop  then ;
+    endcase  ?dup if  fiona start-holding drop  then ;
 
 
 \ ---- she comes in: which way decides what happens ----

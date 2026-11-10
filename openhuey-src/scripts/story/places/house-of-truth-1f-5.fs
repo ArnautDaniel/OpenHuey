@@ -134,7 +134,7 @@ create ahead  5 , 0 ,  6 , 1 ,  7 , 2 ,   \ (area, exit loaded ahead)
 create entries  0 , 0 ,  0 , 0 ,  0 , 0 ,   \ (by exit 0 .. 2: the camera)
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 3 ways-in ;
 : went ( -- )  held-back @ if  stalkers-stay state-off  then ;
 

@@ -72,7 +72,7 @@ box $80202020 0 0 shard-look   box 0.812e 0.687e 0.187e 0.312e shard-uv   box $1
     turning @  stalkers-stay state? or if  exit  then
     this-room @  turned? if  944  else  249  then  stalker-to  0 partner send stalker-order  his-own-time  0 return-due ! ;
 : riccardo-hunts ( -- )
-    wt2f-1-flag2 fact?  c7-second-event fact? 0= and  riccardo? and  stalker-in? 0= and 0= if  exit  then
+    riccardo-come fact?  c7-second-event fact? 0= and  riccardo? and  stalker-in? 0= and 0= if  exit  then
     wt4f-1-flag2 fact? 0= if
         fiona first-step-area entered? if  fiona 5 4 camera-set  then
         fiona on-area entered?  fiona on-2-area entered? or if  wt4f-1-flag2 fact!  ['] drum-falls start drop  then

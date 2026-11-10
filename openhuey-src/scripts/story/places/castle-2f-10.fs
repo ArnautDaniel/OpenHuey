@@ -57,7 +57,7 @@ create entries  0 , 0 ,   1 , 1 ,   \ (by exit 0, 1: the camera)
     boxes-home #boxes =  fiona held? 0= and  ['] way-opens running? 0= and if  ['] way-opens start drop  then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 2 ways-in ;
 : went ( -- ) ;
 

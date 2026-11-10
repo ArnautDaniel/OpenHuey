@@ -35,7 +35,7 @@ USING: engine game-state actors messages common flag-names facts room-names stor
 : each-frame ( -- ) ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     cf-13-flag1 fact?  came-by @ forced-exit = and if
         fiona 0 0 place-on-tri  world-held state!  panic-eased  ['] the-end fiona start-holding drop
     then ;

@@ -125,7 +125,7 @@ create looks  -48.85e 0e -48.91e  33e 11e 11e look,   48.42e -6e 28e  26e 11e 11
     fiona $D in-area?  fiona -180 60 heading? and  fiona $E in-area?  fiona -180 60 heading? and or if  ['] the-flower-bed unhurried offer  then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop  exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop  exit  then
     entries 3 ways-in  came-by @ dup 1 =  swap 2 = or if  2 map-page  then ;
 : went ( -- ) ;
 

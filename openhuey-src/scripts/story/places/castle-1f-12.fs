@@ -150,7 +150,7 @@ create looks  52.29e -103e 49.3e 30e 12e 12e look,   30.64e -103e -51.68e 30e 12
 : person-in ( i -- )
     fiona-p <> if  exit  then
     events-held state? if
-        hewie send part-from-fiona  replay-act $B = if  ['] replay-moon  else  ['] replay-lens  then  start drop exit
+        hewie send part-from-fiona  replay-act $B = if  ['] replay-moon  else  ['] replay-lens  then  fiona start-holding drop exit
     then
     entries 3 ways-in
     came-by @ dup forced-exit =  swap forced-exit 1 or = or if   \ (by either forced way: $80, $81)

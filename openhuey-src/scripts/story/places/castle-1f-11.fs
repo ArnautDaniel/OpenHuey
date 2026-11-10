@@ -80,7 +80,7 @@ vase-1 0 $80505050 $111 vase   vase-2 2 $80404040 $122 vase   vase-3 1 $80404040
     if  -1 run-scene  then
     world-held state!  fiona 0 idle  fiona $8C -161 1.471e -112.581e place-at  0 0 player-camera  yield  camera-restart
     bridge-lies  c1f-11-flag1 fact!  far-door near-door door-as  far-door closed-off  exits-redone
-    hewie body?  hewie body-room hewie-far-room = and if  $30 0 -1 hewie-to  then
+    room-of-hewie hewie-far-room = if  $30 0 -1 hewie-to  then
     stalker activate  castle-1f-11 153 stalker-to  his-own-time
     stalker -1 -1 camera-set  stalker false shown  stalker true hush  ['] shoves start drop
     hall-track 1e background  15 fade-in  bridge-file give-file  stalkers-stay state-off
@@ -166,7 +166,7 @@ create cameras  7 , 2 , 2 ,   8 , 3 , 3 ,   9 , 0 , 0 ,   $A , 3 , 3 ,        \ 
     ways  clamp  medallion-way  medallion-look 1 hewie-looks-at  spots  walls-shade ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     0 2 2 way-in ;
 : went ( -- )
     hewie-back

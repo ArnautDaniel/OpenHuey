@@ -359,9 +359,9 @@ variable noticed   \ (notices?'s cell: one of hewie-noticed's bits)
 : replayed ( -- )
     hewie send part-from-fiona
     replay-act case
-        $20 of  ['] replay-ambush start drop  endof
-        $21 of  ['] replay-rest start drop  endof
-        $22 of  ['] replay-fed start drop  endof
+        $20 of  ['] replay-ambush fiona start-holding drop  endof
+        $21 of  ['] replay-rest fiona start-holding drop  endof
+        $22 of  ['] replay-fed fiona start-holding drop  endof
     endcase ;
 
 \ ---- every frame ----

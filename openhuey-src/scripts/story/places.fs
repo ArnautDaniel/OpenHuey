@@ -36,6 +36,7 @@ USING:
     story.places.water-tower-8f-1
     story.places.water-tower-7f-2
     story.places.water-tower-7f-1
+    story.places.water-tower-b1-1
     story.places.water-tower-4f-1
     story.places.walkway story.places.water-tower-2f-1
     story.places.water-tower-1f-1

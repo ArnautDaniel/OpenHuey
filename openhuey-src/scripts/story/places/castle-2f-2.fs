@@ -290,7 +290,7 @@ create entries  2 , 2 ,   1 , 1 ,   0 , 0 ,   2 , 2 ,   3 , 3 ,   \ (by exit 0..
     sounds  spots  walls-shade ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
-    events-held state? if  hewie send part-from-fiona  ['] replayed start drop exit  then
+    events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 5 ways-in
     came-by @ forced-exit = if  fiona $142 0 place-on-tri  ['] pulled-free start drop  then ;
 : went ( -- )

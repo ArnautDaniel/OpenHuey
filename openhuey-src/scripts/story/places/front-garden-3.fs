@@ -342,7 +342,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     events-held state? if  exit  then
     ways  cameras  back-to-cage  told-at-box  hewie-cues  stalkers-back  figures-near  whines  hewie-looks  spots ;
 : person-in ( i -- )
-    fiona-p = if  events-held state? if  ['] replay-freed start drop exit  then  player-came  then ;
+    fiona-p = if  events-held state? if  ['] replay-freed fiona start-holding drop exit  then  player-came  then ;
 : went ( -- )   \ (leaving: Hewie still in the wire out of the game, the first remarks made, the stalkers let go)
     in-wire? if  hewie send part-from-fiona  then
     fg-3-flag1 fact!  fg-3-flag2 fact!  stalkers-held @ if  stalkers-stay state-off  then

@@ -157,7 +157,7 @@ create entries  2 , -1 ,   0 , 0 ,   \ (by exit 0, 1: the camera)
     2 exits-out  ahead 2 ways-out  cameras 4 cameras-at  show-tv
     ['] tired weakness  hewie-sniffs  spots  hewie-looks ;
 : fiona-came ( -- )
-    events-held state? if  hewie send part-from-fiona  ['] replay-mirror start drop exit  then   \ (the extras)
+    events-held state? if  hewie send part-from-fiona  ['] replay-mirror fiona start-holding drop exit  then   \ (the extras)
     entries 2 ways-in ;
 : person-in ( i -- )
     case  fiona-p of  fiona-came  endof  stalker-p of  stalker-came  endof  endcase ;

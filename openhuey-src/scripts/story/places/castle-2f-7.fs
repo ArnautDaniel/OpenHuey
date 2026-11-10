@@ -133,7 +133,7 @@ create cameras  1 , 0 , -1 ,   2 , 1 , -1 ,   \ (area, set, path)
     fiona-p <> if  exit  then
     events-held state? if
         hewie send part-from-fiona
-        replay-act 8 = if  ['] replay-press  else  ['] replay-old-man  then  start drop exit
+        replay-act 8 = if  ['] replay-press  else  ['] replay-old-man  then  fiona start-holding drop exit
     then
     0 0 -1 way-in
     came-by @ forced-exit = if  after-part show-part  before-part hide-part  ['] daniella-comes start drop

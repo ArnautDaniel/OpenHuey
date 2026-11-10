@@ -12,7 +12,7 @@
 #define PI 3.14159265f
 #define MAX_PARTS 256   /* (most have 16; the blood spray 32, the rising smoke 64, the dust shaft 256) */
 
-enum { FLICKER, SPARKS, FLAME, SWARM, SPLASH, BURST, SHARDS, MOTE, BUTTERFLIES, SPIRIT, VANISH, WANDER, SPRAY, SPLAT, PUFFS, STONES, DEBRIS, SMOKE, DUST, SPIRAL, DRIPS, RING, DROPLETS, ONEDRIP, MOTES, EMBERS, FLECKS, CHIMNEY, WALLSHADOW, FIRE, STEAM, FLOORGLOW, TV, BIGFIRE, SHAFT, GLINT, HAZE, CAUSTIC, GLOWSPOT, WISPCOL, SPARKSPRAY, HEAT, EMBERS2, LEAVES, LOOPSPRITE, OBJGLOW, RAIN, ASH, MARKER, WINDOWFLASH, SMOKETRAIL, MAGBURST, DROPFLASH, BONESMOKE, STRIKEMARK, SPARK2, SINKRING, WELLING };
+enum { FLICKER, SPARKS, FLAME, SWARM, SPLASH, BURST, SHARDS, MOTE, BUTTERFLIES, SPIRIT, VANISH, WANDER, SPRAY, SPLAT, PUFFS, STONES, DEBRIS, SMOKE, DUST, SPIRAL, DRIPS, RING, DROPLETS, ONEDRIP, CEILDRIPS, MOTES, EMBERS, FLECKS, CHIMNEY, WALLSHADOW, FIRE, STEAM, FLOORGLOW, TV, BIGFIRE, SHAFT, GLINT, HAZE, CAUSTIC, GLOWSPOT, WISPCOL, SPARKSPRAY, HEAT, EMBERS2, LEAVES, LOOPSPRITE, OBJGLOW, RAIN, ASH, MARKER, WINDOWFLASH, SMOKETRAIL, MAGBURST, DROPFLASH, BONESMOKE, STRIKEMARK, SPARK2, SINKRING, WELLING };
 
 typedef struct Part {
     Vec3 at, v;
@@ -1930,6 +1930,78 @@ static void onedrip_step(int self, System *s) {   /* OneDrip_Update */
         ring_new(self, at, 0x40404030u, 0.15f);
         droplets_new(self, &sp);
         onedrip_drop(s);
+    }
+}
+
+/* ---- CeilingDrips: 14 drops falling from fixed spots of the Water Tower B1's ceiling (y 40, within
+ * 20 of each), 1.5..2.5 a frame after up to two seconds, to the floor under them; each lands as a
+ * spray of 16 and starts over - with a drip sound, the next of three by turns (bank 6). One with
+ * no floor under it starts over quietly below 0 ---- */
+
+static const float kCeilingSpots[14][2] = {
+    {85.0f, -146.0f}, {92.0f, -194.0f}, {83.0f, -237.0f}, {65.0f, -272.0f}, {39.0f, -284.0f},
+    {-7.0f, -291.0f}, {-47.0f, -284.0f}, {-78.0f, -256.0f}, {-96.0f, -221.0f}, {-101.0f, -187.0f},
+    {-82.0f, -166.0f}, {-39.0f, -172.0f}, {3.0f, -175.0f}, {39.0f, -166.0f},
+};
+
+static void ceiling_drop(Part *p, int i) {   /* CeilingDrips_Drop */
+    float h;
+
+    colour(p, 0x20, 0x20, 0x20, 0x70);
+    p->at = vec3(20.0f + kCeilingSpots[i][0] - 40.0f * rnd(), 40.0f, 20.0f + kCeilingSpots[i][1] - 40.0f * rnd());
+    square(p, 0.5f);
+    p->turn = 2.0f * PI * half();
+    p->frame = 0;
+    p->rise = 1.5f + rnd();                         /* (its fall a frame) */
+    p->bounce = (int)(60.0f * rnd());               /* (its wait) */
+    p->delay = navmesh_find(&gEngine.room.nav, p->at, 1000.0f, &h);   /* (its floor's triangle, -1 none) */
+}
+
+int particles_ceiling_drips(void) {
+    int h = new_system(CEILDRIPS, vec3(0, 40, -220)), i;
+    System *s;
+
+    if (h < 0) {
+        return -1;
+    }
+    s = &sSys[h];
+    look(s, 0x10, 1, -1, 0x6C, 0x4C, 8, 8, 1, SPRITE_ADD | SPRITE_GLOW);
+    s->n = 14;
+    for (i = 0; i < s->n; i++) {
+        ceiling_drop(&s->p[i], i);
+    }
+    s->mark = 0;   /* (the next of the three drip sounds) */
+    return h;
+}
+
+static void ceiling_drips_step(int self, System *s) {   /* CeilingDrips_Update */
+    int i;
+
+    for (i = 0; i < s->n; i++) {
+        Part *p = &s->p[i];
+        float floor;
+
+        if (p->bounce > 0) {
+            p->bounce--;
+            continue;
+        }
+        p->at.y -= p->rise;
+        if (p->delay < 0) {
+            if (p->at.y < 0.0f) {
+                ceiling_drop(p, i);
+            }
+            continue;
+        }
+        floor = navmesh_height(&gEngine.room.nav, p->delay, p->at.x, p->at.z);
+        if (p->at.y < floor) {
+            Vec3 at = vec3(p->at.x, floor, p->at.z);
+            Spray sp = {at, 0x20202010u, 16, 0.4f, 0.4f, 0.1f, 0.2f, 0.1f, 0.2f, 0.1f, 0.2f, 0.5f, 0.1f};
+
+            droplets_new(self, &sp);
+            ceiling_drop(p, i);
+            engine_sound_at((uint32_t)s->mark | 0x40000000u, 6, at);
+            s->mark = s->mark >= 2 ? 0 : s->mark + 1;
+        }
     }
 }
 
@@ -5306,6 +5378,7 @@ void particles_tick(Vec3 camera) {
             case RING: going = ring_step(s); break;
             case DROPLETS: going = droplets_step(s); break;
             case ONEDRIP: onedrip_step(i, s); break;
+            case CEILDRIPS: ceiling_drips_step(i, s); break;
             case MOTES: motes_step(s); break;
             case EMBERS: going = embers_step(s); break;
             case FLECKS: going = flecks_step(s); break;
