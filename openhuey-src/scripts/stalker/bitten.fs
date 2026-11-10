@@ -168,6 +168,7 @@ enum: dog-phase#  closing-in attacking taunting ;
     dog-t @ 0> if  -1 dog-t +!  then
     hewie here? 0= if  follow-dog exit  then
     hold-off @ if  -1 hold-off +!  then
+    touched-her bump-whom   \ (she in his way as he goes for Hewie: his light blow - Pursuer_BehaviourHewie)
     act-xt @ execute
     dog-phase @ closing-in <> if
         step-done @ 0= if  exit  then

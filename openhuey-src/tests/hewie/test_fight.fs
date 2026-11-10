@@ -37,7 +37,7 @@ debug:debilitas-out  5 run-frames
 
 testing the stalker's footsteps (Pursuer_Footsteps): walking ($200), a step as each foot comes down, heard
 0 deb-in
-: walk-him ( -- )  [: ['] noop step !  $200 play ;] deb! ;
+: walk-him ( -- )  [: ['] noop step !  held-off my-mode !  $200 play ;] deb! ;   \ (held off: his walk left alone - by her, blind, he would taunt)
 : steps ( -- n )  [: step-foot @ ;] deb@ ;
 : walked ( n -- steps )  steps swap  0 do  walk-him  game-tick  loop  steps swap - ;
 T{ 60 walked 2 > -> -1 }T

@@ -106,10 +106,12 @@ create wd-at /vec allot
             then
         then
     loop  -1 ;
-: bump ( -- )   \ (Pursuer_RaiseThreat)
-    touching-bits sent @ invert and
+: bump-whom ( mask -- )   \ (Pursuer_RaiseThreat: not with the stalkers blind)
+    stalkers-blind state-flag? if  drop exit  then
+    touching-bits and  dup sent @ invert and  swap sent @ or sent !
     dup touched-her and if  throw-request 0 10e f>cell fiona send hit  then
-    touched-him and if  hard-blow 5 0 hewie send blow  then  touching-bits sent @ or sent ! ;
+    touched-him and if  hard-blow 5 0 hewie send blow  then ;
+: bump ( -- )  touched-her touched-him or bump-whom ;
 : wandering ( -- )
     bump  -1 step-t +!
     walk-stride  step-t @ 0> 0= or if  -1 step-done !  then ;
