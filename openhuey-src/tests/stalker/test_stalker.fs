@@ -206,7 +206,8 @@ castle-1f-10 debug:debilitas-hunt  2 run-frames
 : beyond? ( -- flag )   \ (at its spot 12 beyond, in the doorway outside)
     door-32-exit 1 exit-spot drop  game:debilitas body-pos  {: F: x y z ax ay az :}  x ax f- fabs 1e f<  z az f- fabs 1e f< and ;
 T{ beyond?  [: entering @ ;] his -> -1 -1 }T
-T{ 3 run-frames  beyond?  [: entering @ barging @ ;] his -> -1 0 0 }T
+T{ 3 run-frames  [: entering @ barging @ ;] his -> 0 0 }T   \ (in the way of the door she holds, he steps back from it: Pursuer_DoorNear)
+T{ [: stalker.state:step @ ['] backing-from-door =  my-mode @ ;] his -> -1 0 }T
 : inside? ( -- flag )   \ (past the door: on its inner side)
     game:debilitas body-pos door-32-exit door-side  door-32-exit 2 exit-spot drop door-32-exit door-side = ;
 : watched ( n -- bad? )  false swap 0 ?do  32 state@ opened-bit and 0=  inside? and or  game-tick  loop ;

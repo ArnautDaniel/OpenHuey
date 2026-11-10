@@ -177,6 +177,31 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     let-her-go  combo-over  0 hold-off !
     kind powder-blow = if  powder-how @ powdered exit  then
     kind dup light-blow = over heavy-blow = or swap hard-blow = or if  dir flinch  then ;
+\ ---- a door of the room being used - held - while he stands in its way (each frame: Pursuer_DoorNear,
+\ Npc_DoorOnWay; his action $10: Pursuer_DoorBackAway / DoorBackOff): he steps back from it ($404),
+\ turned to it, away from the side she is on, till it is let go; after her from then (his lead 6 / 7) ----
+: door-in-my-way ( -- exit | -1 )   \ (a door someone else holds, he in its area)
+    8 0 do
+        i door-here? if
+            room-id i room-exit-door  dup 0< 0=  swap doors:door-held? and
+            held-door @ i <> and  i 0 my-at vec@ door-in-area? and if  i unloop exit  then
+        then
+    loop  -1 ;
+: backing-from-door ( -- )
+    push-way f@ pi f+ angle-wrap turn-rate body-turn-toward fdrop
+    ended? 0= if  root-move  then
+    room-id push-exit @ room-exit-door doors:door-held? if  exit  then
+    ended? settled? or 0= if  exit  then
+    -1 push-exit !  recovered ;
+: door-watch ( -- )
+    here-played? 0= if  exit  then
+    reeling @  bitten @ or  leading @ or  cond @ down-cond = or  entering @ or  apart @ or  held-door @ 0< 0= or if  exit  then
+    door-in-my-way dup 0< if  drop exit  then  {: e :}
+    let-her-go  combo-over  0 hold-off !  out-over
+    e push-exit !  e door-heading push-way f!
+    after-her mode!  7 lead-alarm !
+    step-back-anim play-now  -1 reeling !  ['] backing-from-door step! ;
+
 \ each frame: his hurt worn off
 : hurt-down ( -- )
     hurt-t @ 0= if  exit  then  -1 hurt-t +!  hurt-t @ 0= cond @ hurt-cond = and if  well-cond cond !  then ;

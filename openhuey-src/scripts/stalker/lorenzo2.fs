@@ -82,8 +82,10 @@ $1904 constant hold-blow-anim   $E00 constant blow-anim   $E04 constant blow-2-a
     12 key-at? if  rise-at quarry body-at vec-copy  then
     0 key-at? if
         3 move-of to m
-        rise-at m m.reach f@ reaches? if  m m.kind @  m stumble?  m m.threat f@ f>cell  fiona send hit  then
-        rise-at m m.reach f@ reaches-dog? if  m m.kind @  m m.damage @  m stumble?  hewie send blow  then
+        her-reach @ 1 and 0= if   \ (she may be gone for - Pursuer_MayGoForTarget: else it strikes nobody; his cry 12)
+            rise-at m m.reach f@ reaches? if  m m.kind @  m stumble?  m m.threat f@ f>cell  fiona send hit  12 cry !  then
+            rise-at m m.reach f@ reaches-dog? if  m m.kind @  m m.damage @  m stumble?  hewie send blow  12 cry !  then
+        then
         0  rise-at vec@ 0e 1e 0e mag-burst-new particles-engines   \ (its burst there: BurstA)
     then
     ended? if  -1 step-done !  then ;
