@@ -88,7 +88,8 @@ create fades
         lingering of  fade-frame  endof
     endcase ;
 
-: opacity ( -- 0..255 )  level @ 255 * full-fade / 0 max 255 min ;
+: opacity ( -- a )   \ (0 .. 255)
+     level @ 255 * full-fade / 0 max 255 min ;
 : draw ( -- )   \ black or white, that much opaque
     fade-layer ui-clear
     level @ 0> 0= if  exit  then

@@ -12,7 +12,10 @@ static void dofield(Forth *f, Word *w) {   /* a field word: ( addr -- addr+offse
 }
 
 static void field(Forth *f, const char *name, size_t offset) {
-    forth_constant(f, name, (Cell)offset)->code = dofield;
+    Word *w = forth_constant(f, name, (Cell)offset);
+
+    w->code = dofield;
+    forth_set_effect(f, w, "( addr -- addr' )");   /* (its callers' code checked through it) */
 }
 
 static void p_progress(Forth *f, Word *w) { (void)w; forth_push(f, (Cell)&gProgress); }

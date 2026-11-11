@@ -117,7 +117,7 @@ end-state
     dup id@ stacks?  over n@ 2 >= and if  dup n@ 1- swap n!  else  remove  then ;
 \ given n (Items_Give): onto its stack if it stacks (up to 99; a full one won't take them), else
 \ into its list's first free held-at - a stack of n, a counter at 0, else one
-: onto-stack ( id n -- addr | 0 | -1 )   \ more of a stacking item she has (-1: she has none)
+: onto-stack ( id n -- addr )   \ more of a stacking item she has (0: it won't take them; -1: she has none)
     {: id n :}
     id find-item ?dup 0= if  -1 exit  then
     dup n@ 99 < if  dup n@ n + 99 min over n!  else  drop 0  then ;

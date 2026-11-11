@@ -194,9 +194,9 @@ create clothes-necks     3 , 4 ,   5 , -1 ,   22 , -1 ,   6 , 7 ,   23 , 24 ,
 create fih-earrings      43 , 47 , 48 , 44 ,
 create fih-necks         1 , 2 ,   3 , -1 ,   40 , -1 ,   4 , 5 ,   41 , 42 ,
 : equipped-in ( slot -- id )  4 * progress pr.equipped + sl@ ;
-: earrings-worn ( -- 0..4 )   \ (0 none)
+: earrings-worn ( -- n )   \ (0 .. 4; 0 none)
     1 equipped-in  dup $86 $8A within if  $85 -  else  drop 0  then ;
-: choker-worn ( -- 0..4 )   \ (0 none: the bare neck)
+: choker-worn ( -- n )   \ (0 .. 4; 0 none: the bare neck)
     3 equipped-in  dup $8A $8E within if  $89 -  else  drop 0  then ;
 : costume-looks ( -- earrings necks | 0 0 )
     her-costume @ case  0 of  clothes-earrings clothes-necks  endof  2 of  fih-earrings fih-necks  endof  >r 0 0 r>  endcase ;

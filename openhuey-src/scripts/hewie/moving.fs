@@ -172,7 +172,7 @@ create hd-at /vec allot   fvariable hd-best
               else  d up f<= if  trot-pose keep-pose  else  2 his-t1 !  run-pose keep-pose  then  then  endof
         2 of  d down f< if  1 his-t1 !  trot-pose keep-pose  else  run-pose keep-pose  then  endof
     endcase  false ;
-: follow-step ( F: up down -- ) ( -- -1 | 0 | 1 )
+: follow-step ( F: up down -- ) ( -- step )   \ (-1, 0, 1)
     {: F: up down :}
     his-action @ command-place {: tri :}
     cp-pos -1 body-tri-to tri = {: there :}   \ (on its triangle, straight from him)
