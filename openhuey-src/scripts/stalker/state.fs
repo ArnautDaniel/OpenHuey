@@ -213,6 +213,7 @@ state: stalker-state
   \ the lead he started at (stalker/leads.fs); the spot 12 inside the door he comes in by and its
   \ triangle (stalker/travel.fs: walked to once the door stands open)
   cell field powder-loops  cell field powder-how  cell field go-pull
+  cell field exit-marked   \ came into her room onto an exit's door spot - till she next changes room (Character_MarkObjects: the groups' +1)
   cell field in-tri  /vec field in-at
   cell field dog-trust          \ Hewie's trust as he tells it (+0xF35CC: how long he keeps a stalker busy)
   cell field in-attack          \ in what he picked from his tables (Pursuer_BehaviourAttack: its own rules till it is over)

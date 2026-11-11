@@ -396,7 +396,7 @@ behaviour stalking
   on noclip ( on -- )  dup 0<> noclipped !  if  0  else  my-floor @  then  body-mask! ;   \ (the story's 0x20: through blocked floor - at doors)
   on drawn-to ( tri i away? -- )  in-game @ if  doll-check  else  drop 2drop  then ;
   on stalker-hunt ( -- )  in-game @ if  heading-for-her mode!  away? 0= if  search-again  then  then ;
-  on entered-room ( room exit -- )  0 still-held !  her-came !  room-changed  in-game @ if  pose  then ;
+  on entered-room ( room exit -- )  0 still-held !  0 exit-marked !  her-came !  room-changed  in-game @ if  pose  then ;
   on characters-still ( on -- )  still-held ! ;
   on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model;
       \ given back he is shown, as the cast was made active: Cutscene_ReleaseActors' +0x29)

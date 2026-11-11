@@ -31,6 +31,8 @@ T{ [: 1 her-reach !  stalker.lorenzo2:grab-start  anim @  0 stalker.chase:gestur
 
 room-id game:fiona body-tri ly send stalker-in  3 run-frames
 [: 340e deg>rad body-turn ;] his  1 run-frames
+testing ... and at an exit (PursuerGroup_Find 9: came in onto an exit's spot this visit - till she next changes room)
+T{ [: -1 exit-marked !  stalker.lorenzo2:at-an-exit?  stalker.lorenzo2:below-start  chase-act @ stalker.names:taunt-act =  0 exit-marked !  stalker.lorenzo2:at-an-exit? ;] his -> -1 -1 0 }T
 testing $1001 stalking her from below: he sinks ($1304), out of sight under the floor, comes up by her in his sweep ($E02)
 40e 160 her-ahead  3 run-frames
 : past-start ( -- )  1000 0 do  [: start-t @ 0= ;] his if  leave  then  game-tick  loop ;   \ (his start at the sight of her over)

@@ -704,8 +704,7 @@ for, his grab unshaken on the hard setting, his sweep's cry 12 (Lorenzo2_Start*,
 
 *Not ported (read 2026-11)*: a held-off Debilitas whose door step fails going back after her
 (Debilitas_HeadingStep's forced sight, Pursuer_GoForFionaStance0); a knock-down or getting up resumed as
-she comes back (Pursuer_ShowUp's action $23); 
-Lorenzo2_StartSink / StartStalkBelow's refusal at an exit (PursuerGroup_Find 9: which of ours is unread);.
+she comes back (Pursuer_ShowUp's action $23);
 
 ### Second sweep, 2026-11 (0.2.45)
 
@@ -722,4 +721,8 @@ Ported since: on coming in by an open door to search or wait about with no lead 
 in - heading for her isn't one), the others than Daniella's kinds go to their spot by it, turn to it, stand, and
 go on (Pursuer_GoToDoor, their table $E: door-script 2, doorway.fs). Daniella's check took his mode after it
 turned to searching - now as he came in, too.
+Ported since: Lorenzo2_StartSink / StartStalkBelow's refusal at an exit (PursuerGroup_Find 9): came into her room
+onto an exit's door spot - marked as he comes in (Character_MarkObjects), kept till she next changes room (the
+groups cleared at SceneGame_EnterRoom) - or in a door's area on one of its sides: no sinking, no stalking from
+below (his reach instead when near, else held back). So one who walked in by a door doesn't sink that visit.
 

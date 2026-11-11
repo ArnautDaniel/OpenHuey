@@ -133,8 +133,10 @@ defer to-door-on-entry ( exit -- )   ' drop is to-door-on-entry
     walking  step-done @ 0= if  exit  then  0 step-done !  by-open-door?  come-into-play
     0= if  exit  then  no-search search-phase !
     daniella-kind? if  came-by @ shut-on-entry  else  came-by @ to-door-on-entry  then ;
-: walk-in ( -- )
-    0 entering !
+: on-exit-spot? ( -- flag )   \ (standing on one of the room's exits' door spots - its area)
+    8 0 do  i exit-area dup 0 area-count within if  my-at vec@ area-in? if  true unloop exit  then  else  drop  then  loop  false ;
+: walk-in ( -- )   \ (come in: marked if onto an exit's spot - Pursuer_EnterRoom's Character_MarkObjects)
+    0 entering !  on-exit-spot? if  -1 exit-marked !  then
     in-tri @ 0< if  come-into-play exit  then
     goal-at in-at vec-copy  in-tri @ dup goal-tri !  goal-at plan 0> 0= if   \ (no way in yet - the door still
         room-id in-tri @ in-at vec@ body-place  come-into-play exit   \ swinging open: inside at once)
