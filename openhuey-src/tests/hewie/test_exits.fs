@@ -41,6 +41,16 @@ game:hewie send join-fiona  20 run-frames  calm
 testing in a door's gap, not on its exit's area (Hewie_FirstDoor, StateSqueeze): he squeezes out ($65) - off the gap, then himself again
 [: room-id 680 dup tri-center body-place  0 0 want ;] his!
 T{ [: [: his-action @ $65 = ;] his@ ;] 10 soon -> -1 }T
+testing arriving where he was: on his triangle as he was; his place off it - its middle (Hewie_Arrive's Hewie_PlaceAt with no point)
+create arrival-at 12 allot   arrival-at game:hewie body-at vec-copy
+: moved-from ( v -- ) ( F: -- d )  game:hewie body-at vec-dist ;
+T{ [: on-his-tri ;] his@  arrival-at moved-from 0.01e f< -> -1 -1 }T
+create centre-at 12 allot
+: off-and-back ( -- placed? )   \ (his place 200 along x - off his triangle - then put back on it)
+    [: room-id his-tri  his-at vec@ frot 200e f+ frot frot  body-place  on-his-tri ;] his@ ;
+game:hewie body-tri constant his-tri0   his-tri0 tri-center centre-at vec!
+T{ off-and-back  centre-at moved-from 0.01e f< -> -1 -1 }T
+[: room-id his-tri0 arrival-at vec@ body-place ;] his@
 full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ [: [: on-gap? 0=  his-action @ $65 <> and ;] his@ ;] 120 soon -> -1 }T
 test-summary

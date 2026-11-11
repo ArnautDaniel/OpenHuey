@@ -197,6 +197,11 @@ create ex-at /vec allot
 : on-way? ( -- flag )   \ (to her, back to her, to her cry - on his way to the door in the room)
     his-at-door @ 0= if  false exit  then
     his-action @ dup to-her-room-act back-to-her-act 1+ within  swap to-her-cry-act = or ;
+\ where he was, if his triangle is open floor - its middle if his place isn't on it (Hewie_PlaceAt with no point)
+: on-his-tri ( -- placed? )
+    his-tri dup 0< if  drop false exit  then
+    nav-flags self body-mask and if  false exit  then
+    his-tri his-at his-at 0 v-walk his-tri = if  his-at vec@  else  his-tri tri-center  then  his-place  true ;   \ (on it: walked to itself there)
 : arrive ( -- arrived? )
     {: | placed held own-anim :}
     his-action @ through-act = if  come-through  true exit  then
@@ -214,14 +219,13 @@ create ex-at /vec allot
         after-attack-act of  letting-go? dup to held  to own-anim  endof
     endcase
     on-way? if  true to own-anim  keep-on-way  his-tri 0< 0= to placed  then
-    \ where he was, if that is open floor; else by the door he came through, facing anywhere
-    placed 0= his-tri 0< 0= and if
-        his-tri nav-flags self body-mask and 0= if  his-at vec@ his-place  true to placed  then
-    then
+    \ where he was (on-his-tri); else by the door he came through, facing anywhere; else anywhere on his half
+    \ (Actor_TeleportRandom)
+    placed 0= if  on-his-tri to placed  then
     placed 0= if
         own-anim 0= if  arrive-anim  then
         his-door @ 0 max 2 exit-spot dup 0< if
-            drop fdrop fdrop fdrop  fiona-at vec@ his-place
+            drop fdrop fdrop fdrop  place-anywhere
         else  drop his-place  then
         rnd 2e f* 1e f- pi f* his-yaw!
     then
