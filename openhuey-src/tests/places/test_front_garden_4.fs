@@ -69,17 +69,18 @@ T{ [: rabbit-in? ;] in-place -> -1 }T
 T{ [: [: rabbit-in? 0= ;] in-place ;] 900 soon  [: rabbit-heard @ ;] in-place -> -1 -1 }T
 
 testing the stalker, finding her crouched by the open large door: he looks about, backs off and shuts it - once
-fg-4-flag1 story-flag-clear  room-afresh
+fg-4-flag1 story-flag-clear
+big-door true s" doors" actor-named send door-opened  deliver   \ (open as the room comes in: drawn open, its passage too - doors.fs room-in)
+room-afresh
 stalkers-blind state-flag-set  summoner-on state-flag-clear   \ (the summoner kept from bringing him elsewhere)
-big-door true s" doors" actor-named send door-opened  5 run-frames
 variable his-tri  s" fiona" actor-named body-tri his-tri !   \ (he comes in where she came in)
 by-the-door-area 0 at  fiona-half-hidden state-flag-set
 debug:debilitas-out  2 run-frames  his-tri @ debug:debilitas-tri  5 run-frames
 T{ [: his-scene @ 0<> ;] in-place -> -1 }T
 T{ [: fg-4-flag1 story-flag? ;] 1200 soon  0 exit-open? -> -1 0 }T
 testing ... she comes out of hiding mid-way: his scene over
-fg-4-flag1 story-flag-clear  debug:debilitas-out  room-afresh
-big-door true s" doors" actor-named send door-opened  5 run-frames
+fg-4-flag1 story-flag-clear  debug:debilitas-out
+big-door true s" doors" actor-named send door-opened  deliver  room-afresh
 by-the-door-area 0 at  fiona-half-hidden state-flag-set
 debug:debilitas-out  2 run-frames  his-tri @ debug:debilitas-tri  20 run-frames
 fiona-half-hidden state-flag-clear  5 run-frames
