@@ -48,4 +48,23 @@ testing leaving the room: its effects go with it
 front-garden-2 room!  10 run-frames
 T{ torch1 alive?  flick alive?  sparks#  the-wanderer alive? -> 0 0 0 0 }T
 
+testing a fire's lasting sparks go while the room's effect slot 0 is empty (Wisps_Update), whichever fire made them
+T{ 0 slot -> 0 }T
+[: 3 1 0e 10e 0e flame-at ;] in-room  2 run-frames
+T{ 3 slot system particles-children -> 0 }T
+[: 0 1 5e 10e 0e flame-at ;] in-room  2 run-frames
+T{ 0 slot system particles-children -> 1 }T
+
+testing a shot's debris (DropletFlash, Riccardo_Debris): its colour 0..127 doubled (clamp_colour)
+$80 $50 $40 game:fiona body-pos debris-cloud
+T{ particles-last 0 particles-part fdrop fdrop fdrop drop -> $FF $A0 $80 }T
+testing a shot's smoke (StrikeMark, BoneSmoke): each new wisp from the gun's point where it is then
+: her-model-id ( -- id )  game:fiona enter  fiona.state:her-model @  leave-actor ;
+create hand-at 16 allot  create wisp-at 16 allot
+: hand ( -- )  her-model-id $23 -3.5e 0e 1e bone-point hand-at vec! ;
+her-model-id $23 -3.5e 0e 1e  her-model-id $23 -1e 0e 1e bone-point  strike-mark
+3 run-frames  particles-last constant smoke
+game:fiona body-pos fswap 10e f+ fswap debug:tp  20 run-frames  hand
+T{ smoke 15 particles-part wisp-at vec! 2drop 2drop  wisp-at hand-at vec-dist 2e f< -> -1 }T
+
 test-summary

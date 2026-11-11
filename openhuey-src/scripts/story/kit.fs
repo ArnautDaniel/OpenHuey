@@ -603,15 +603,17 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
     {: a id F: x y z :}  a @ if  id x y z keep-sound exit  then
     room-sounds-in? 0= if  exit  then  id x y z room-sound  -1 a ! ;
 : effect ( k -- addr )  cells effects + ;
+: slot0-told ( -- )   \ (the engine's: a flame's lasting sparks go without one there - the room in only)
+    this-room @ room-id = if  0 effect @ 0<> room-effect0!  then ;
 : effect! ( id k -- )   \ the place's effect k (the one there before gone - unless it died and its id is the new one's)
-    2dup effect @ = if  effect !  exit  then
-    dup effect @ ?dup if  dup alive? if  kill  else  drop  then  then  effect ! ;
+    2dup effect @ = if  effect !  slot0-told exit  then
+    dup effect @ ?dup if  dup alive? if  kill  else  drop  then  then  effect !  slot0-told ;
 : effect-off ( k -- )  0 swap effect! ;
 : effects-gone ( -- )  #room-effects 0 do  i effect-off  loop ;
 : live-effect ( k -- id flag )  effect @ dup 0<>  over alive? and ;   \ (the place's effect k, and whether it's there - 0 none)
 : tell-effect ( v k -- )  live-effect if  send effect-command  else  2drop  then ;
 : dies-down ( k -- )   \ (effect k - a fire, steam - left to die down on its own: forgotten, so it's never
-    -1 over tell-effect  0 swap effect ! ;   \ killed later by an id another actor may have by then)
+    -1 over tell-effect  0 swap effect !  slot0-told ;   \ killed later by an id another actor may have by then)
 \ the room's tint (Tint_SetParams: the look's slot): the glow colour and the contrast colour, RGBA
 $1F constant tint-slot
 create tint-bytes 9 allot

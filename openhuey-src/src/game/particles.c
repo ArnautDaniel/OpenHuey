@@ -35,7 +35,7 @@ typedef struct System {
     int batch2, batch3;    /* (spirits: its colour and trail, its body; a vanishing: its sparks) -1 none */
     int batch4;            /* (the magnesias' bursts: their rings) -1 none */
     int owner;             /* -1: an actor's; else the system that made it (its own: ends with it) */
-    int ends_with_owner;
+    int ends_without_slot0;   /* (a flame's lasting sparks, kind bit 0x8000) gone once room effect 0 is */
     int engines;           /* the engine's (made by another): goes with the room */
     Vec3 at;
     int kind, command, timer, rest, slow, ended;
@@ -57,11 +57,16 @@ typedef struct System {
     int bob_n, period, burst, burst_n, saved_n;
     Vec3 trail[3];
     int trail_set, frames, shown, vanishing, seen, fade, red;
+    /* (a shot's mark, its smoke) where it comes from: an actor's bone point (-1 none: `at`) */
+    int src, src_bone;
+    Vec3 src_off;
 } System;
 
 static System sSys[PARTICLE_SYSTEMS];
+static int sLast = -1;   /* (tests) the system made last */
 static uint32_t sSeed = 0x2545F491u;
 static Vec3 sCamera;   /* (this tick's: the stones fade near it) */
+static int sSlot0;     /* the room's effect slot 0 holds one (RoomEffects_Get(0)) */
 static void write(System *s);   /* (each part a camera-facing sprite) */
 
 /* ---- small things ---- */
@@ -118,7 +123,9 @@ static int new_system(int what, Vec3 at) {
             s->what = what;
             s->owner = -1;
             s->batch2 = s->batch3 = s->batch4 = -1;
+            s->src = -1;
             s->at = at;
+            sLast = i;
             return i;
         }
     }
@@ -218,7 +225,7 @@ static int sparks_new(int owner, Vec3 at, int kind) {
     look(s, 0x10, 1, -1, 0x6C, 0x4C, 8, 8, 1, 0x40);
     s->owner = owner;
     s->engines = 1;
-    s->ends_with_owner = (kind & 0x8000) != 0;
+    s->ends_without_slot0 = (kind & 0x8000) != 0;
     s->kind = kind;
     s->n = 4;
     for (i = 0; i < 4; i++) {
@@ -1514,7 +1521,7 @@ int particles_drop_flash(Vec3 at, int r, int g, int b) {
         Part *p = &s->p[i];
         float speed, k;
 
-        colour(p, clampi(r, 0, 0x7F), clampi(g, 0, 0x7F), clampi(b, 0, 0x7F), irnd(0x20) + 0x60);
+        colour(p, clampi(r * 2, 0, 0xFF), clampi(g * 2, 0, 0xFF), clampi(b * 2, 0, 0xFF), irnd(0x20) + 0x60);   /* (clamp_colour: 0..127 doubled) */
         p->at = at;
         square(p, 0.2f + 0.4f * rnd());
         p->turn = 0.0f;
@@ -1585,7 +1592,14 @@ static void bone_smoke_wisp(Part *p, Vec3 at) {   /* BoneSmoke_Wisp */
     p->frame = 0;
     p->v = vec3(0.03f * half(), 0.0f, 0.03f * half());
 }
-int particles_bone_smoke(Vec3 at) {
+static Vec3 source(const System *s) {   /* (wisps_source / mark_points: the bone's point now) */
+    if (s->src >= 0 && s->src < MAX_ACTORS && gEngine.actors[s->src].used) {
+        return actor_bone_point(&gEngine.actors[s->src], s->src_bone, s->src_off);
+    }
+    return s->at;
+}
+
+int particles_bone_smoke(Vec3 at, int model, int bone, Vec3 off) {
     int h = new_system(BONESMOKE, at), i;
     System *s;
 
@@ -1594,7 +1608,12 @@ int particles_bone_smoke(Vec3 at) {
     }
     s = &sSys[h];
     look(s, 0x10, 1, -1, irnd(2) * 32, 0x40, 32, 32, 1, SPRITE_ADD);
+    sprites_offset(s->batch, 0.0f, -0.5f);   /* (half a unit down) */
     s->engines = 1;
+    s->src = model;
+    s->src_bone = bone;
+    s->src_off = off;
+    at = source(s);
     s->n = 16;
     for (i = 0; i < s->n; i++) {
         bone_smoke_wisp(&s->p[i], at);
@@ -1653,15 +1672,19 @@ static void strike_band_write(System *s) {
     quad(sprites_records(s->batch3, 1), 0x1B1B1B08u, q);   /* (grey $80 in the PS2's gamma: 0.21 linear, as we blend) */
 }
 
-int particles_strike_mark(Vec3 at, Vec3 back) {
-    int h = new_system(STRIKEMARK, at);
+int particles_strike_mark(int model, int bone, Vec3 off, Vec3 back) {
+    int h = new_system(STRIKEMARK, vec3(0, 0, 0));
     System *s;
-    Vec3 z, up;
+    Vec3 z, up, at;
 
     if (h < 0) {
         return -1;
     }
     s = &sSys[h];
+    s->src = model;
+    s->src_bone = bone;
+    s->src_off = off;
+    at = s->at = source(s);
     look(s, 0x10, 1, -1, 0x140, 0x80, 0x20, 0x20, 1, SPRITE_ADD | SPRITE_CORNERS);
     s->batch2 = sprites_new();
     if (s->batch2 >= 0) {
@@ -1691,7 +1714,7 @@ static int strike_mark_step(System *s) {   /* StrikeMark_Update */
     if (--s->timer > 0) {
         return 1;
     }
-    particles_bone_smoke(s->at);
+    particles_bone_smoke(s->at, s->src, s->src_bone, s->src_off);
     return 0;
 }
 
@@ -1721,7 +1744,7 @@ static int bone_smoke_step(System *s) {   /* BoneSmoke_Update */
     }
     if (s->timer < 16) {   /* (one more shown, at the point) */
         showing = 1;
-        bone_smoke_wisp(&s->p[s->timer], s->at);
+        bone_smoke_wisp(&s->p[s->timer], source(s));
         s->p[s->timer].rgba[3] = 1;
     }
     s->timer++;
@@ -5350,7 +5373,7 @@ void particles_tick(Vec3 camera) {
         if (!s->used || s->ended == 2) {
             continue;
         }
-        if (s->ends_with_owner && get(s->owner) == NULL) {
+        if (s->ends_without_slot0 && !sSlot0) {   /* (Wisps_Update: not its flame - whatever slot 0 holds) */
             going = 0;
         } else {
             switch (s->what) {
@@ -5519,6 +5542,19 @@ int particles_info(int p, int *kind, int *frame, int *rest) {
     return 1;
 }
 
+int particles_last(void) { return sLast; }
+
+int particles_part(int p, int i, Vec3 *at, int rgba[4]) {
+    System *s = get(p);
+
+    if (s == NULL || i < 0 || i >= s->n) {
+        return 0;
+    }
+    *at = s->p[i].at;
+    memcpy(rgba, s->p[i].rgba, sizeof(s->p[i].rgba));
+    return 1;
+}
+
 void particles_engines(int p) {
     System *s = get(p);
 
@@ -5535,9 +5571,14 @@ void particles_free(int p) {
     }
 }
 
+void particles_room_effect0(int held) {
+    sSlot0 = held != 0;
+}
+
 void particles_new_room(void) {
     int i;
 
+    sSlot0 = 0;   /* (RoomEffects_ReleaseAll) */
     for (i = 0; i < PARTICLE_SYSTEMS; i++) {
         if (sSys[i].used && sSys[i].engines) {
             end(&sSys[i]);

@@ -152,11 +152,13 @@ int particles_spray(Vec3 at, int tri, int heavy);
 /* DropletFlash (Riccardo_Debris): 32 droplets of colour r g b (0..127) flung from `at` and
  * slowing, a flash there first - the debris where his shot strikes. The engine's */
 int particles_drop_flash(Vec3 at, int r, int g, int b);
-/* StrikeMark: a shot's flash along the line from `back` to `at` - a glow at `at`, a streak 3.8 beyond it
- * - for 2 frames, then BoneSmoke at `at`. The engine's */
-int particles_strike_mark(Vec3 at, Vec3 back);
-/* BoneSmoke: sixteen wisps of smoke rising from `at` (Riccardo's gun as it fires). The engine's */
-int particles_bone_smoke(Vec3 at);
+/* StrikeMark: a shot's flash along the line from `back` to the point `off` in actor `model`'s bone
+ * `bone` axes - a glow there, a streak 3.8 beyond it - for 2 frames, then BoneSmoke from that point
+ * (followed as the bone moves). The engine's */
+int particles_strike_mark(int model, int bone, Vec3 off, Vec3 back);
+/* BoneSmoke: sixteen wisps of smoke rising from `at` (Riccardo's gun as it fires); with a model
+ * (>= 0), from its bone's point `off` wherever it is as each wisp starts. The engine's */
+int particles_bone_smoke(Vec3 at, int model, int bone, Vec3 off);
 /* LorenzoSpark: two white sparks at `at`, rising 0.1 x rise, growing (growth - 1) x size a frame,
  * fading over `life` frames. The engine's */
 int particles_spark2(Vec3 at, float rise, float size, float growth, int life);
@@ -179,9 +181,14 @@ int particles_alive(int p);
 int particles_children(int p);
 /* (tests, the console) its kind, its first sprite's frame, frames left of its rest; 0 if none */
 int particles_info(int p, int *kind, int *frame, int *rest);
+/* (tests) the system made last (-1 none yet); part i's place and colour (0: no such) */
+int particles_last(void);
+int particles_part(int p, int i, Vec3 *at, int rgba[4]);
 void particles_free(int p);
 /* a new room: the engine's own (sparks, motes) go */
 void particles_new_room(void);
+/* whether the room's effect slot 0 holds an effect (the story's; a flame's lasting sparks end without one) */
+void particles_room_effect0(int held);
 void particles_free_all(void);
 
 #endif
