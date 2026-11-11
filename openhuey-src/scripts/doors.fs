@@ -51,15 +51,25 @@ $1000000 constant hewie-barred   $4000000 constant stalker-barred   \ (the nav m
     dup locked-bit has? if  drop hewie-barred stalker-barred or exit  then
     0  over hewie-kind locked-against? if  hewie-barred or  then
     swap stalker-kind locked-against? if  stalker-barred or  then ;
-: refresh ( exit -- )   \ its passage: open or shut, and its locks
+: lock-flags ( exit door -- )   \ its locks' flags on its near side (Doors_Refresh: $5000000 off, then as locked)
+    {: ex door :}  ex 0 $5000000 false door-side-flags
+    door locks ?dup if  ex 0 rot true door-side-flags  then ;
+: passage ( exit open? -- )   \ open: $60000 off its near side and on its far one; shut, back (Doors_Passage)
+    {: ex open :}  ex  open 0= 1 and  $60000 false door-side-flags   ex  open 1 and  $60000 true door-side-flags ;
+\ a change of its state (the story's locks and marks, a door let go) puts its locks on the floor - not its
+\ open or shut passage: that follows the door itself, where it stands - as it comes in, as its user lets
+\ it go, as a room's script swings it (Doors_Refresh touches only the locks; before 0.2.42 the passage
+\ followed the state too - a door drawn open and marked shut barred her way, one drawn shut and marked
+\ open let a stalker through)
+: refresh ( exit -- )
     dup door-here? 0= if  drop exit  then
     room-id over door-of  {: ex door :}  door 0< if  exit  then
-    ex  door door-open?  door locks  door-passage ;
-: room-in ( -- )   \ each door stands open or shut as its state says
+    ex door lock-flags ;
+: room-in ( -- )   \ each door stands open or shut as its state says, its passage so (Doors_RoomIn)
     8 0 do
         i door-here?  room-id i door-of 0< 0= and if
-            room-id i door-of door-open? if  -90e  else  0e  then  i true door-swing
-            i refresh
+            room-id i door-of door-open?  dup if  -90e  else  0e  then  i true door-swing
+            i swap passage  i refresh
         then
     loop ;
 : refresh-door ( door -- )   \ its passage, if it is in the played room
@@ -86,8 +96,10 @@ $F constant quiet-door   $5F constant loud-door   \ (its noises' loudness)
     else  door opened-bit clear-bits  then
     door held-bit clear-bits
     door changed
-    \ let go off-screen, it is heard: at the door, from the user's source (door_heard)
-    room room-id <> if  quiet-door room -1 door source acoustics-id send noise  then ;
+    \ let go in the played room, its passage as its user leaves it (the user's let-go, fiona.c's Character door
+    \ release: Doors_Passage by where it stands); off-screen, it is heard: at the door, from the user's source (door_heard)
+    room room-id = if  ex door-here? if  ex open passage  then  exit  then
+    quiet-door room -1 door source acoustics-id send noise ;
 
 \ ---- the played room's door models: who is using each (its noise source) ----
 state: doors-state

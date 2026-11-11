@@ -46,7 +46,13 @@ kinds it is locked against). The played room's doors: who uses / holds each.
 From `doors.c` (`Doors_*`), `progress.c` (`Progress_*Door*`), `room_map.c` (closed off).
 
 1. A shut door blocks its passage: the nav triangles on its two sides are cut off from each
-   other (`Doors_Passage`). Open, they join. A doorway is always open.
+   other (`Doors_Passage`). Open, they join. A doorway is always open. The passage follows the door
+   where it stands - set as the room comes in (`Doors_RoomIn`), as its user lets it go, as a room's
+   script swings it - never the state alone: a change of the state (the story's locks and marks, a
+   door let go) puts only its locks on the floor (`Doors_Refresh`: $5000000, Hewie and the stalkers
+   barred; Fiona never). Before 0.2.42 the passage followed the state too: a door drawn open but
+   marked shut (castle-1f-5's, castle-1f-8's in their scenes) barred her, one drawn shut but marked
+   open let a stalker walk through it.
 2. A door is passable for a kind unless locked against it (`door_passable`: 0 Fiona, 1 Hewie,
    2-5 stalkers each a bit).
 3. Using a door: the door swings along the user's animation (the door records in

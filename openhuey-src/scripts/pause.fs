@@ -150,10 +150,14 @@ $D8D0C400 constant plain-colour   \ (the font's own, palette 0: its white tinted
     pause-layer  0 0 screen-size  dim  ui-rect
     in-movie? if  unpause-msg $140 $190 line-at  skip-msg $140 $1A4 line-at  else  play-lines  then ;
 
+: quit-asked? ( -- flag )   \ (cleared as taken)
+    world-held state-flag?  quit-wanted state-flag? and  dup if  quit-wanted state-flag-clear  soft-reset  then ;
 behaviour pausing
   on spawned ( -- )  closed stage !  self subscribe tick  self subscribe held-tick  self subscribe frame-end ;
-  on tick ( -- )  step ;
-  on held-tick ( -- )  stage @ closed <> if  step  draw  then ;   \ (the world held: its own frames)
+  \ the story asking to quit to the title (state flag $1C with the world held - the extras room's way out:
+  \ SceneGame's play frame, the next scene the title); before 0.2.42 nothing read it - a black screen for ever
+  on tick ( -- )  quit-asked? if  exit  then  step ;
+  on held-tick ( -- )  quit-asked? if  exit  then  stage @ closed <> if  step  draw  then ;   \ (the world held: its own frames)
   on frame-end ( -- )   \ (flag 6, back to play: the scene's script sets it to close the skip; cleared each frame)
       pause-wanted state-flag? stage @ skipping = and if  shut  then  pause-wanted state-flag-clear  draw ;
 end-behaviour

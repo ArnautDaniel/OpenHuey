@@ -273,8 +273,11 @@ $1C constant softened-layer
 \ was hiding (Fiona_FullStop: its flags 9 and $A cleared; only the crouch sets $A)
 : crouch-over ( -- )  fiona-half-hidden state-flag-clear ;
 \ ... and the camera back on her, the story's shot over (Fiona_FullStop: Progress_CameraOn 0,
-\ CamDirector_HoldEffect1C 0)
-: script-over ( -- )  crouch-over  hewie-played? 0= if  self cam-on  then  0 0 0 0 0 camera-id send event-shot ;   \ (in the run the camera his)
+\ CamDirector_HoldEffect1C 0), the world no longer frozen (its flag $17 cleared - a close look that
+\ didn't clear it itself leaves no one hidden)
+: script-over ( -- )
+    crouch-over  world-frozen state-flag-clear
+    hewie-played? 0= if  self cam-on  then  0 0 0 0 0 camera-id send event-shot ;   \ (in the run the camera his)
 
 behaviour free
   on spawned ( -- )  self cam-player!
