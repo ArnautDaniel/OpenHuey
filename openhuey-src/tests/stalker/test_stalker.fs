@@ -507,8 +507,8 @@ debug:debilitas-out  front-garden-2 room!  10 run-frames
 s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
 [: 0 hp !  leg-attack bitten !  -1 reeling ! ;] his  front-garden-3 room!  3 run-frames
 T{ [: cond @ down-cond = ;] his -> -1 }T
-[: my-room ;] his room!  10 run-frames
-T{ [: away?  anim @  stalker.state:step @ ['] downed = ;] his -> 0 $1802 -1 }T
+[: my-room ;] his room!  10 run-frames   \ (back within his time - Pursuer_ShowUp's +0x17B4: his fall shown)
+T{ [: away?  anim @ dup stalker.anims:fall-front-anim =  swap stalker.anims:fall-back-anim = or  stalker.state:step @ ['] downed = ;] his -> 0 -1 -1 }T
 debug:debilitas-out  front-garden-2 room!  10 run-frames
 testing ... away from it (not in its way): staggered back ($1005), still in the room, after her
 s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
@@ -534,4 +534,14 @@ T{ [: [: away? ;] his ;] 300 soon -> -1 }T
 T{ [: [: away? 0=  my-way her-way = and ;] his ;] 3000 soon -> -1 }T
 debug:debilitas-out  2 run-frames
 
+front-garden-2 room!  10 run-frames  s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+testing she leaves with Hewie on his arm: as she comes back, his letting go from it (Pursuer_ShowUp: $1700 -> $1701)
+T{ [: 1 bitten !  stalker.anims:bitten-arm-anim anim !  70 hp !  stalker.travel:held-as-she-goes  left-bite @
+      stalker.travel:come-into-play  anim @  left-bite @ ;] his -> $1700 $1701 0 }T
+testing ... out of health: down - its fall shown if she's back within his time (+0x17B4), else lying
+T{ [: 1 bitten !  stalker.anims:bitten-arm-anim anim !  0 hp !  stalker.travel:held-as-she-goes  cond @ down-cond =  stun-t @ 0>
+      stalker.travel:come-into-play  anim @ dup stalker.anims:fall-front-anim =  swap stalker.anims:fall-back-anim = or ;] his -> -1 -1 -1 }T
+T{ [: 50 stun-t !  stalker.travel:come-into-play  stun-t @  0 stun-t !  stalker.travel:come-into-play  anim @ lie-anim @ = ;] his -> 0 -1 }T
+[: 70 hp !  well-cond cond !  0 stun-t !  0 bitten !  0 reeling !  0 down-t !  0 left-bite ! ;] his
+debug:debilitas-out  2 run-frames
 test-summary

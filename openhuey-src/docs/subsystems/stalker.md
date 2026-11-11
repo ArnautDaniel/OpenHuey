@@ -681,9 +681,7 @@ along her hand, Riccardo's heavy blow at her herself); Riccardo's table picks by
 floor he may stand on (`Pursuer_KeepOnWalkable`). `Pursuer_BehaviourFollow` is `BehaviourStalk` with
 the way after her through the doors - ours `pursue-run` with `after-her-elsewhere`: no difference found.
 
-*Not ported*: `Pursuer_ShowUp`'s pictures as she comes back in - Hewie still on him when she left
-(his letting go played from where the bite was: $1707 / $1704 / $1701), just fallen (his fall shown,
-not lying already); `Pursuer_DoorNear`'s cases for a door between the halves of one room and for him
+*Not ported*: `Pursuer_DoorNear`'s cases for a door between the halves of one room and for him
 already down (action $11); the sight's wobble of `Pursuer_LookAround` (0.12 a frame: his head eased back the same
 frame); `Pursuer_StateKnockedThrough`'s down-between-halves case (his health back, time 1).
 
@@ -703,8 +701,7 @@ free (moveMode 0); Lorenzo's other class's own actions held back - his taunt - w
 for, his grab unshaken on the hard setting, his sweep's cry 12 (Lorenzo2_Start*, StateSweep).
 
 *Not ported (read 2026-11)*: a held-off Debilitas whose door step fails going back after her
-(Debilitas_HeadingStep's forced sight, Pursuer_GoForFionaStance0); a knock-down or getting up resumed as
-she comes back (Pursuer_ShowUp's action $23);
+(Debilitas_HeadingStep's forced sight, Pursuer_GoForFionaStance0); 
 
 ### Second sweep, 2026-11 (0.2.45)
 
@@ -725,4 +722,8 @@ Ported since: Lorenzo2_StartSink / StartStalkBelow's refusal at an exit (Pursuer
 onto an exit's door spot - marked as he comes in (Character_MarkObjects), kept till she next changes room (the
 groups cleared at SceneGame_EnterRoom) - or in a door's area on one of its sides: no sinking, no stalking from
 below (his reach instead when near, else held back). So one who walked in by a door doesn't sink that visit.
+Ported since: Pursuer_ShowUp's pictures as she comes back in - Hewie on him as she left: his letting go from where
+the bite was ($1701 / $1704 / $1707; the leg's: on his front, getting up); out of health under Hewie: down with
+his time away (+0x17B4, Hewie's delay at 60) - back within it his fall shown, else lying. A door knocking him out
+of the room out of health no longer gives him the 150 held (+0x1664 only with health left): lying as she comes.
 

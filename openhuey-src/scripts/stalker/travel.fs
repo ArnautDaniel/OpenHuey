@@ -98,11 +98,16 @@ create out-at /vec allot
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place  settle ;
 defer down-away ( -- )   ' noop is down-away   \ knocked out of health out of her sight (stalker/struck.fs)
 defer lying-on ( -- )   ' noop is lying-on   \ down, coming into view: lying, his time down running (stalker/struck.fs)
+defer fell-in-view ( -- )   ' noop is fell-in-view   \ down only just: his fall shown (stalker/struck.fs)
+defer bite-let-go ( anim -- )   ' drop is bite-let-go   \ Hewie on him as she left: his letting go (stalker/bitten.fs)
 defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home - stalker/struck.fs)
 : come-into-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first);
     \ down (knocked out of health out of her sight): lying there, his time down running
     \ held off, on home - she coming into his room doesn't turn him back (Pursuer_StanceByFiona's held off)
-    cond @ down-cond = if  -1 anim !  lying-on exit  then
+    \ (Pursuer_ShowUp: down only just - his time away not run out - his fall shown, else lying; Hewie on him
+    \ as she left, his letting go from where the bite was - the leg: down on his front, getting up)
+    cond @ down-cond = if  0 left-bite !  -1 anim !  stun-t @ if  0 stun-t !  fell-in-view  else  lying-on  then  exit  then
+    left-bite @ ?dup if  0 left-bite !  -1 anim !  bite-let-go exit  then
     away-search @ {: left :}
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
@@ -355,8 +360,10 @@ create fs-a /vec allot  create fs-b /vec allot
 \ at his head or leg; out of health, down there (Pursuer_HewieDelay). Powdered, its loops' while
 : held-as-she-goes ( -- )
     bitten @ if
+        anim @  dup bitten-arm-anim =  over bitten-flank-anim = or  over bitten-head-on-anim = or  over bitten-leg-anim = or
+        0= if  drop 0  then  left-bite !   \ (held by him: the holds alone - Pursuer_ShowUp's cases)
         hp @ 0> if  dog-trust @ 1+ 15 *  bitten @ head-on-attack < if  30  else  60  then  +  stun-t !
-        else  cond @ down-cond <> if  down-away  then  then
+        else  cond @ down-cond <> if  down-away  dog-trust @ 1+ 15 * 60 + stun-t !  then  then   \ (out of health: down - his fall a while yet: Pursuer_LeaveScreen's +0x17B4)
     else  anim @ powdered-anim = if  powder-how @ 30 * stun-t !  then  then
     0 bitten !  cond @ down-cond <> if  0 reeling !  then ;   \ (the bite and the powder over with the room)
 : gone-from-view ( -- )   \ (Pursuer_LeaveScreen: the room's doings forgotten - Pursuer_ResetForRoom)

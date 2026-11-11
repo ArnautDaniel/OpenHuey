@@ -153,6 +153,7 @@ state: stalker-state
   \ from +0x16D8 `dog-limit`), and closing in, attacking or taunting
   cell field temper  cell field tolerance  1 floats field throw-k
   cell field bitten  cell field bite-anim  cell field bite-how  1 floats field holds
+  cell field left-bite   \ the bite he was held by as she left (its animation: Pursuer_ShowUp's letting go as she comes back; 0 none)
   1 floats field bite-yaw  1 floats field bite-turn
   cell field dog-t  cell field dog-limit  cell field dog-phase
   cell field dog-sent            \ his blow this move has struck Hewie (stalker/attack.fs)

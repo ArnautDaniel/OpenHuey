@@ -125,6 +125,9 @@ create ahead-at /vec allot
 :noname ( -- )
     down-frames @ down-t !  down-cond cond !  1 knockouts +!  down-for-good  let-her-go
     lying-back-anim lie-anim !  0 sees-fiona !  0 sees-hewie !  lying-on ; is down-away
+:noname ( -- )   \ (down only just as she comes in: his fall - forward if the floor ahead is his - then lying)
+    floor-ahead? if  fall-front-anim lying-front-anim  else  fall-back-anim lying-back-anim  then
+    lie-anim !  play-now  falling down-stage !  0 sees-fiona !  0 sees-hewie !  -1 reeling !  ['] downed step! ; is fell-in-view
 : knock-down ( -- )  floor-ahead? if  fall-front-anim lying-front-anim  else  fall-back-anim lying-back-anim  then  fall ;
 \ (Pursuer_StateDownAndUp: brought down by the leg in a doorway with no health left, he is left at 1 -
 \ not down for good, no knock-out counted - and gets up)

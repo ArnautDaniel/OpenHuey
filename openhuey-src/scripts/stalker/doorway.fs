@@ -292,8 +292,8 @@ create dr-at /vec allot
     my-room push-exit @ room-exit-leads drop my-room = if   \ (between his room's halves)
         hp @ 0> 0= if  1 hp !  then  -1 push-exit !  door-recovered exit
     then
-    hp @ 0> 0= if  down-away  then    \ (out of health: down beyond it - Pursuer_StateBargedThrough's +0xC4 2)
-    150 stun-t !  push-exit @ making-for !  -1 push-exit !  out ;
+    hp @ 0> if  150 stun-t !  else  down-away  then   \ (health left, held there 150 - +0x1664; out of it, down beyond it -
+    push-exit @ making-for !  -1 push-exit !  out ;   \ Pursuer_StateBargedThrough's +0xC4 2, lying as she comes)
 : staggered-back ( -- )   \ (back from it to its end; then off any floor not his)
     root-move
     ended? 0= if  exit  then
