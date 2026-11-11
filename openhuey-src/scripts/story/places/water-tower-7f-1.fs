@@ -75,7 +75,7 @@ create runs  $D8 , 89 ,  4 , 89 ,  $6A , -44 ,  $3F , -151 ,  $1B , 111 ,  $FA ,
 : solved ( -- )
     stalkers-stay state!  fiona wait-move  no-track 1e background
     15 screen:to-black-2 with-music or fade  solved-scene  wait-fade
-    things-clear  fiona -1 idle  water-tower-7f-2 preload  $10 $FF movie-key
+    things-id send clear-things  fiona -1 idle  water-tower-7f-2 preload  $10 $FF movie-key
     ['] glows-out along-scene  panic-eased  -1 run-scene
     50 trust+  world-held state!
     way-on-door reopened  behind-door closed-off  exits-redone

@@ -238,22 +238,22 @@ static void fly(Thing *t) {   /* ball_fly / Thing01_Flying */
                 t->state = THING_ROLLING;
                 return;
             }
-            if (fabsf(dot3(n, t->v)) < 0.5f * len3(t->v)) {   /* a glancing hit: down to the floor */
+            if (fabsf(dot3(n, t->v)) < 0.5f) {   /* off the wall slowly (|n.v| under 0.5 after the bounce): down to the floor */
                 out.y = floor_at(r, out);
                 t->state = THING_ROLLING;
                 if (t->kind == 3) {
                     t->events |= THING_PUFF;
                 }
             }
-            bounced = 1;
-            if (t->state == THING_ROLLING) {
+            if (t->state == THING_ROLLING) {   /* (landed: the sound only for a bounce before this one) */
                 t->tri = r;
                 t->at = out;
-                if (bounce_sound(t->kind)) {
+                if (bounced && bounce_sound(t->kind)) {
                     t->events |= THING_BOUNCED;
                 }
                 return;
             }
+            bounced = 1;
             tri = r;
             from = out;
         }

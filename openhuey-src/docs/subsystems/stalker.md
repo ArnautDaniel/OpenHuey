@@ -262,8 +262,10 @@ seized outright). His grab ($E06): at its key, Hewie by his hand (bone $1E, with
 
 ## Status
 
-Also (2026-10-13): the doll draws him (`drawn-to`: searching the room being played, seeing it and
-with a way there - his search's one stop, `go-for-doll`); the story's 0x20 through blocked floor
+Also (2026-10-13): the doll draws him (`drawn-to`, since 0.2.42 `doll-check`: searching the room being
+played, seeing it, a way there - not following a noise its noise, following one and not after Hewie
+his search's one stop, `go-for-doll`, taken within 10 or his way's end within 10; away from her
+taken unless she is his lead - docs/subsystems/things.md); the story's 0x20 through blocked floor
 at doors (`noclip`: his floor mask, `my-floor`, to 0 and back); his blow under way told
 (`stalker-blow`, after `stalker-doing`); whether he has her in sight or reach (`stalker-sees`, +0x1544:
 the story's cond 0x23 from her to him asks it - her crouch, the hiding places' "found"); a door

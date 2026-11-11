@@ -14,14 +14,17 @@ T{ 0 0 0 0 0 s" camera" actor-named send event-shot -> }T
 2 run-frames
 T{ cam-event? -> 0 }T
 
-testing the doll away from Fiona: Debilitas coming upon it - after her he leaves it, searching he takes it
+testing the doll away from Fiona: Debilitas coming upon it - she his lead (+0x16C9 5) he leaves it, else he takes it
+testing ... (Thing03_StalkerCheck: the things ask him, `drawn-to`, he answers `thing-taken`)
 : doll-in ( room -- i )  3 swap 0  0e 0e 0e 0e 0e 0e  thing-new ;
-: he-is-in ( room his-mode -- )   \ (Debilitas, kind 2, telling the things where he is: stalker-doing)
-    {: room his-mode :}  room 0 0 0 100 100 2 his-mode -1  things-id send stalker-doing ;
+flag-names:stalkers-blind facts:state-flag-set  game:fiona body-tri debug:debilitas-tri  5 run-frames   \ (blind: no jolts from him)
+: lead! ( n -- )  game:debilitas enter  stalker.state:lead !  leave-actor ;
 castle-1f-2 doll-in constant doll-a
 castle-1f-3 doll-in constant doll-b
-T{ castle-1f-2 0 he-is-in  2 run-frames  doll-a thing-used? -> -1 }T
-T{ castle-1f-3 2 he-is-in  2 run-frames  doll-b thing-used? -> 0 }T
+T{ 5 lead!  0 doll-a true game:debilitas send drawn-to  deliver  1 run-frames  doll-a thing-used? -> -1 }T
+T{ 4 lead!  0 doll-b true game:debilitas send drawn-to  deliver  1 run-frames  doll-b thing-used? -> 0 }T
+0 lead!  debug:debilitas-out  5 run-frames  doll-a things-id send thing-taken  deliver
+flag-names:stalkers-blind facts:state-flag-clear  30 run-frames
 
 testing the pad's rumble: the strongest ask is felt, each for its frames; the story's (0x71); a sequence step by step
 T{ 1 $80 8 rumble-pad  1 run-frames  rumble-now -> 0 $80 }T

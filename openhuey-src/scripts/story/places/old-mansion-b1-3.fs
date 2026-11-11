@@ -201,7 +201,7 @@ create plate-tris  $89 , $B1 ,  $90 , $B2 ,  $97 , $B3 ,  $83 , $B0 ,
     $10 $50 movie-key  fiona false shown  panic-eased  if  -1 run-through  then
     $2E resident-flag-set  gameover:movie-death game-over ;
 : shuts-it ( -- )
-    stalker hold  things-clear  0 dog-step !  panic-eased  ['] impaled start drop
+    stalker hold  things-id send clear-things  0 dog-step !  panic-eased  ['] impaled start drop
     stalker wait-move  0 door-for-him  stalker $3C 90 32e 20.63e walk-to  1 dog-step !  begin  yield  again ;
 : sees-her ( -- )
     stalker hold  stalker wait-move  0 door-for-him  stalker 7 118 26.16e 27.36e walk-to  stalker stalker.anims:there-anim play

@@ -182,14 +182,11 @@ defer leads-forgotten ( -- )   ' noop is leads-forgotten
 : search-left ( frames -- )
     150 / dup 0> if  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  add-stops  capped  search-start exit  then
     drop  waiting-about mode!  route-clear  -1 route-done ! ;
-\ the doll (Thing03_StalkerCheck): searching the room being played, he sees it and has a way
-\ there - it is his one stop, his search going on from it
+\ the doll (Thing03_StalkerCheck, stalker.fs `doll-check`): he goes for it - his one stop, his
+\ search going on from it
 create drawn-at /vec allot
 : go-for-doll ( tri -- )
-    here-played? 0=  my-mode @ heading-for-her held-off within 0= or  over drawn-tri @ = or if  drop exit  then
-    dup tri-center drawn-at vec!
-    drawn-at in-view? 0= if  drop exit  then
-    dup drawn-at plan 0> 0= if  drop exit  then
+    dup drawn-tri @ = if  drop exit  then
     dup drawn-tri !  searching mode!  route-clear  0 route-add  search-start ;
 \ down (+0xC4 2): waiting about, nothing else (Pursuer_ModesSearching - in the room or out of it)
 : down-waits? ( -- flag )

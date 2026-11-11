@@ -33,7 +33,7 @@ own-reset
     stalkers-stay state!  fiona hold  fiona let-go-push-anim 0 play-blend  fiona -1 idle  7 frames
     fiona 0e 0e turn-to-xz  fiona rest-anim start-anim  60 frames
     15 screen:to-black-2 with-music or fade  way-scene
-    things-clear  fiona -1 idle  castle-2f-9 preload  $28 $B4 movie-key
+    things-id send clear-things  fiona -1 idle  castle-2f-9 preload  $28 $B4 movie-key
     panic-eased  if  -1 run-scene  then
     world-held state!
     $1C reopened  $1D reopened  $38 closed-off  $39 closed-off  exits-redone

@@ -251,6 +251,7 @@ message effect-sound ( id bank -- )         \ (butterflies, moths) a sound playe
 message reflect-in ( slot -- )            \ (a reflection, effects.fs) its engine slot
 message keri-drop ( k tri x y z -- )         \ (things) the story's debris: a kind-9 thing carrying room object "keri<k>", falling from there (f>cell)
 message trap-place ( tri x y z -- )          \ (things) the story's trap: a kind-10 thing set down there (f>cell)
+message clear-things ( -- )                 \ (things) the story's $D2: every thing gone, each as it ends (the ball back to her: Ball_dtor)
 message story-things-off ( -- )             \ (things) the story's kinds 9 and 10 all gone
 message keri-fell ( k -- )                   \ broadcast by the things: a kind-9 thing fell through, its "keri<k>" free again
 message thing-taken ( thing -- )               \ (things) Hewie picked it up: gone
@@ -367,8 +368,8 @@ message stalker-reach ( d -- )                 \ broadcast each frame by a stalk
                                              \ what (9 Hewie on him, $A down, $18 leading her), condition, health, his kind,
                                              \ his alert (his mode: Progress_StalkerAlert), the exit he came in by (-1 none)
 \ ---- the story's orders to Hewie, Fiona and the panic (the scripts' commands; H4 / F5) ----
-message drawn-to ( tri -- )                  \ (the things: the doll) a stalker searching the room being played drawn to
-                                             \ it, if he sees it and can get there - his search's one stop
+message drawn-to ( tri i away? -- )         \ (the things: the doll, thing i) the stalker by it - away from her (come upon, once a
+                                             \ visit) or in her room (each frame): he decides (Thing03_StalkerCheck) and takes it - thing-taken
 message stalker-ties ( scripted apart linked -- )   \ broadcast each frame by a stalker in the game, after stalker-doing:
                                              \ a script or a scene of the room has him (+0xE0); out of contact - through a door, on a
                                              \ ladder, off screen (+0x2A: Fiona_KeepApart leaves him be); a joint action with him under

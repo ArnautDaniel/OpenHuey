@@ -40,10 +40,8 @@ end-state
 : event? ( bit -- flag )  it @ thing-events and 0<> ;
 : at ( -- v )  it @ thing-at ;
 : here? ( -- flag )  its-room room-id = ;
-\ the ball gone (its time, a hole): hers again, if she has none and no other lies about (Ball_dtor)
-: balls ( -- n )  0  #things 0 do  i thing-used? if  i thing-kind ball-thing = if  1+  then  then  loop ;
-: ball-back ( -- )
-    balls 0=  ball items-of 0= and if  ball 1 s" items" actor-named send give-item  then ;
+\ the ball gone (its time, a hole, cleared away): hers again if she has none (Ball_dtor)
+: ball-back ( -- )  ball items-of 0= if  ball 1 s" items" actor-named send give-item  then ;
 : gone ( -- )  kind  it @ thing-free  ball-thing = if  ball-back  then ;
 : thing-sound ( id -- )  5 0 0 at vec@ sound-at ;
 : running? ( -- flag )   \ (Thing_Frame: the game going - no scene has the camera, the world not held)
@@ -72,9 +70,10 @@ end-state
 
 \ ---- whom it reaches ----
 : stalker ( -- id | -1 )  stalker-in-room ;   \ (in the room being played)
-: treads? ( body margin -- flag )   \ standing on it: within its radius (+ margin), 1 high
-    {: body margin :}  body 0<  body body? 0= or if  false exit  then
-    body  body body-dims fdrop margin s>f f+  it @  1e thing-reaches? ;
+: treads-within? ( body margin -- flag ) ( F: high -- )   \ standing on it: within its radius (+ margin), that high
+    {: body margin F: high :}  body 0<  body body? 0= or if  false exit  then
+    body  body body-dims fdrop margin s>f f+  it @  high thing-reaches? ;
+: treads? ( body margin -- flag )  1e treads-within? ;
 : in-reach? ( body -- flag )   \ (a magnesia's: across, 10 high)
     dup 0< if  drop false exit  then  it @  kind reach s>f  10e thing-reaches? ;
 : homunculus ( slot -- id )  first-homunculus - cells homunculi + @ ;
@@ -89,11 +88,12 @@ end-state
     kind magnesia-thing = if  at vec@ puffs exit  then
     kind prima-thing =  at vec@  its-tri tri-normal  effects:mag-burst ;
 $8D constant splash-sound   $8E constant go-off-sound   $7C constant bounce-sound
-: powder-splash ( -- )   \ (DropSplash: the powders' colour, and its sound)
-    8 2 kind powder-colour  at vec@  at vec@  splash  splash-sound thing-sound ;
+: powder-splash ( -- )   \ (DropSplash: the powders' colour, the tube's twice the size; its sound)
+    8  kind tube-thing = if  4  else  2  then  kind powder-colour  at vec@  at vec@  splash  splash-sound thing-sound ;
 : dust ( -- )  2 $50 $50 $50 16  at vec@  burst ;   \ (the doll glancing off a wall: a grey puff)
-: heard ( loud -- )   \ (a noise at it the stalker hears: Noise_Make)
-    its-room its-tri -1 world-noise  s" acoustics" actor-named send noise ;
+: heard-at ( loud tri -- )   \ (a noise in its room the stalker hears: Noise_Make)
+    its-room swap -1 world-noise  s" acoustics" actor-named send noise ;
+: heard ( loud -- )  its-tri heard-at ;
 $8000 constant startled   \ (a blow's flag: he flinches)
 : blow-him ( id kind damage startle% -- )   \ (Progress_Noise to him: his request 4 from where it lies - in whatever room)
     {: id k d pct :}  id 0< if  exit  then
@@ -138,7 +138,7 @@ $20 constant object-x   $24 constant object-y   $28 constant object-z   \ (a roo
     keri @ dup 0< if  drop exit  then  dup keri$ 0 1 placed-op  -1 keri !  broadcast keri-fell ;
 : trap-frame ( -- )
     kick
-    stalker 0 treads? if  4 6 0 0 at vec@ sound-at  2 $28 0 blow-stalker  gone  then ;
+    stalker 0 0.5e treads-within? if  4 6 0 0 at vec@ sound-at  2 $28 0 blow-stalker  gone  then ;   \ (Thing10_PursuerOn: 0.5 high)
 
 \ ---- each kind's frame ----
 : quiet? ( -- flag )  $20 state-flag? ;   \ (progress flag $20: nothing set off)
@@ -167,29 +167,33 @@ $20 constant object-x   $24 constant object-y   $28 constant object-z   \ (a roo
     homunculi? him? or 0= if  here? if  kick  then  exit  then
     him? if  heavy-blow kind damage kind startle blow-stalker  then
     go-off ;   \ (its sound and burst wherever it lies, as the original's: trodden on off screen too)
-: stone-frame ( -- )   \ (Thing08_Frame: armed, a noise the stalker hears - $4F at it - and gone)
-    age 450 < if  kick exit  then
-    here? if  0 thing-sound  3 $10 $10 $10 $80  at vec@  burst  then
-    $4F heard  gone ;
+: on-exit-spot? ( exit -- flag )   \ (lying on its door's event spot)
+    exit-area dup 0 area-count within if  at vec@ area-in?  else  drop false  then ;
+: stone-tri ( -- tri )   \ in her room: the door's triangle if it lies on a door's spot, else its own
+    8 0 do  room-id i room-exit-door 0< 0= if  i on-exit-spot? if
+        i 0 exit-spot fdrop fdrop fdrop unloop exit
+    then  then  loop  its-tri ;
+: heard-next-door ( -- )   \ (next to her room by an open door: its sound from that door)
+    8 0 do  room-id i room-exit-leads drop its-room = if
+        room-id i room-exit-door dup 0< 0= if  door-open? if  0 5 0 0  i 1 exit-spot drop sound-at  then  else  drop  then
+        unloop exit
+    then  loop ;
+: stone-frame ( -- )   \ (Thing08_Frame: armed, wherever it lies, a noise the stalker hears - $4F - and gone)
+    age 450 < if  here? if  kick  then  exit  then
+    here? if  0 thing-sound  3 $10 $10 $10 $80  at vec@  burst  $4F stone-tri heard-at
+    else  heard-next-door  $4F heard  then  gone ;
 \ the doll and Debilitas (Thing03_StalkerCheck): only him - kinds 2 6 7 $1B (his cast ids) - and in its room
 $1F constant doll-noise
 : debilitas-kind? ( -- flag )  st-kind @ dup debilitas-kind = over debilitas-6-kind = or over debilitas-7-kind = or swap debilitas-27-kind = or ;
 : he-is-with-it? ( -- flag )  st-told-t @ 2 <  debilitas-kind? and  st-room @ its-room = and ;
 : met ( -- addr )  it @ cells met-in + ;
-: after-her? ( -- flag )  st-mode @ after-her = ;
-: searching? ( -- flag )  st-mode @ heading-for-her held-off within ;   \ (heading for her room, searching it, waiting about)
 \ away from Fiona: he comes upon it once a visit - hears it, and takes it unless he is after her
 : doll-away ( -- )
     met @ st-room @ = if  exit  then  st-room @ met !
-    doll-noise heard  after-her? 0= if  gone  then ;
-\ in her room, while he searches: it draws him (its noise, once; he goes for it if he sees it and
-\ can get there); within 10 of him it is taken
-: doll-near ( -- )
-    searching? 0= if  -1 met !  exit  then
-    stalker {: him :}  him 0< if  exit  then
-    at him body-at vec-dist 10e f< if  gone exit  then
-    met @ its-room <> if  its-room met !  doll-noise heard  then
-    its-tri him send drawn-to ;
+    doll-noise heard  stalker-in-game dup 0< if  drop exit  then
+    >r  its-tri it @ true  r> send drawn-to ;   \ (he takes it unless she is his lead)
+\ in her room: he looks for it, each frame (seen, its noise; gone for, taken - his)
+: doll-near ( -- )  stalker dup 0< if  drop exit  then  >r  its-tri it @ false  r> send drawn-to ;
 : doll-frame ( -- )
     he-is-with-it? if
         here? if  doll-near  else  doll-away exit  then
@@ -203,26 +207,27 @@ $1F constant doll-noise
     bounced-event event? if  bounce-sound thing-sound  then
     glanced-event event? if  dust  then
     kind lasts ?dup if  age <= if  gone exit  then  then
-    kind doll-thing = if  doll-frame exit  then        \ (in any room: he may come upon it away from her)
+    kind doll-thing = if  doll-frame exit  then        \ (held or not: Thing03_Frame)
+    running? 0= if  kind ball-thing = here? and if  kick  then  exit  then   \ (the world held: only the ball's kick - Ball_Frame)        \ (in any room: he may come upon it away from her)
     kind magnesia? if  magnesia-frame exit  then       \ (in any room: armed, it goes off there)
+    kind stone-thing = if  stone-frame exit  then      \ (in any room too)
     here? 0= if  exit  then
     kind powder? if  powder-frame exit  then
     kind case
-        stone-thing of  stone-frame  endof
         keri-thing of  carry-keri kick  endof
         trap-thing of  trap-frame  endof
         >r kick r>
     endcase ;
 
 \ ---- each frame: their motion (in the room being played), then what each does ----
-: frame ( -- )
+: frame ( -- )   \ (held, they keep still and age not - but what came of their motion is seen to)
     room-id running? things-step
-    running? 0= if  exit  then
     #things 0 do  i thing-used? if  i it !  one-frame  then  loop ;
 
 \ ---- a new one (her let go): ten of a kind at most (the trap: five) - the oldest goes
 \ (PlacedThings_AnotherCame) ----
 : of-kind? ( k i -- flag )  dup thing-used? if  thing-kind =  else  2drop false  then ;
+1000000 constant spent-age   \ (the original's age -1, past every limit: it goes off, or goes, next frame)
 : make-room ( k -- )
     {: k | n oldest :}  -1 to oldest
     k kept? k trap-thing = or 0= if  exit  then
@@ -232,8 +237,11 @@ $1F constant doll-noise
             oldest 0<  i thing-age oldest thing-age >  or if  i to oldest  then
         then
     loop
-    k trap-thing = if  5  else  10  then  n <= if  oldest thing-free  then ;
+    k trap-thing = if  5  else  10  then  n <= if  spent-age oldest thing-age!  then ;   \ (set off: armed, its time out)
 
+: fresh-thing ( i -- )   \ (Thing_Setup's: not kicked; the doll's room met in - his as it is made, Thing03_Setup)
+    {: i :}  0 i cells kicked + !
+    st-told-t @ 2 < if  st-room @  else  -1  then  i cells met-in + ! ;
 \ ---- the save: those kept, a line each (`lying`) ----
 : .f ( F: r -- )  6 f>s$ type space ;
 : write-thing ( i -- )
@@ -256,6 +264,7 @@ behaviour keeping-things
       {: k tri x y z vx vy vz :}
       k make-room
       k room-id tri  x cell>f y cell>f z cell>f  vx cell>f vy cell>f vz cell>f  thing-new
+      dup 0< 0= if  dup fresh-thing  then
       dup 0< 0= k ball-thing = and  vx vz or 0<> and if  s" hewie" actor-named send fetch-this  else  drop  then ;   \ (thrown: his to fetch)
   on keri-drop ( k tri x y z -- )   \ (the story's: a kind-9 thing carrying "keri<k>", falling from there)
       {: k tri x y z :}
@@ -266,6 +275,10 @@ behaviour keeping-things
       trap-thing room-id tri  x cell>f y cell>f z cell>f  0e 0e 0e  thing-new  dup 0< if  drop  else  smoke-trail  then ;
   on story-things-off ( -- )   \ (the story's kinds 9 and 10 all gone - their objects left where they are)
       #things 0 do  i thing-used? if  i it !  kind keri-thing = kind trap-thing = or if  -1 keri !  i thing-free  then  then  loop ;
+  on clear-things ( -- )   \ (the story's $D2, PlacedThings_Clear: each gone as it ends - the ball back to her)
+      false  #things 0 do  i thing-used? if          \ (a ball among them: hers back once - her items told after)
+          i it !  kind ball-thing = or  kind keri-thing = if  -1 keri !  then  i thing-free
+      then  loop  if  ball-back  then ;
   on thing-taken ( i -- )  dup thing-used? if  it !  gone  else  drop  then ;   \ (Hewie picked it up)
   on write-save ( -- )  write-things ;
   on creature-doing ( slot room mode up -- )

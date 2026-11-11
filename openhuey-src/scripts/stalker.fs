@@ -230,6 +230,24 @@ $1300 constant gesture-anims
     self subscribe hewie-doing  self subscribe scene  0 script-held !  0 in-scene !  well-cond dog-cond !
     my-kind @ head-bones!  ahead-look look-mode ! ;
 
+\ the doll (Thing03_StalkerCheck - his part): come upon away from her, he takes it unless she is
+\ his lead (+0x16C9 under 5); in her room, searching (+0x16C8 1..3), he sees it and has a way
+\ there: not following a noise (4), it makes its noise ($1F, every frame - he may take it up);
+\ following one, not after Hewie, he goes for it and takes it within 10 of it, or of his way's end
+$1F constant doll-noise
+: doll-heard ( tri -- )  doll-noise room-id rot -1 world-noise  s" acoustics" actor-named send noise ;
+: take-doll ( i -- )  s" things" actor-named send thing-taken ;
+: doll-check ( tri i away? -- )
+    {: tri i away? :}
+    away? if  lead @ pull-fiona < if  i take-doll  then  exit  then
+    here-played? 0=  my-mode @ heading-for-her held-off within 0= or if  exit  then
+    drawn-at i thing-at vec-copy   \ (where it lies)
+    drawn-at in-view? 0= if  exit  then
+    probe-path self body-tri my-at tri drawn-at self body-mask path-plan 0> 0= if  exit  then
+    lead @ pull-noise <> if  tri doll-heard exit  then
+    hunting-dog @ if  exit  then
+    tri go-for-doll
+    drawn-at my-at vec-dist 10e f<  way-left 10e f< or if  i take-doll  then ;
 \ a door slammed off screen, the one he makes for: right behind it (Pursuer_HitOffscreen kind 5) -
 \ not while down or stunned already; its damage (and the damage he's had); health left, stunned
 \ 60, 90 or 120 frames, crying out, after her; none, down there (his cry)
@@ -376,7 +394,7 @@ behaviour stalking
       then ;
   on stalker-restore ( hp mode -- )  mode!  hp ! ;
   on noclip ( on -- )  dup 0<> noclipped !  if  0  else  my-floor @  then  body-mask! ;   \ (the story's 0x20: through blocked floor - at doors)
-  on drawn-to ( tri -- )  in-game @ if  go-for-doll  else  drop  then ;
+  on drawn-to ( tri i away? -- )  in-game @ if  doll-check  else  drop 2drop  then ;
   on stalker-hunt ( -- )  in-game @ if  heading-for-her mode!  away? 0= if  search-again  then  then ;
   on entered-room ( room exit -- )  0 still-held !  her-came !  room-changed  in-game @ if  pose  then ;
   on characters-still ( on -- )  still-held ! ;
