@@ -14,6 +14,15 @@ T{ 0 0 0 0 0 s" camera" actor-named send event-shot -> }T
 2 run-frames
 T{ cam-event? -> 0 }T
 
+testing a handler's error in the game: its actor lives on, the errors actor told (game.fs's `failures`, debug.fs)
+message hello-fail ( -- )
+behaviour failing  on hello-fail ( -- )  12345 send hello-fail ;  end-behaviour   \ (an error: no actor 12345)
+state: failing-state  cell field failing-unused  end-state
+: failures@ ( -- n )  game:failures enter  debug:failures @  leave-actor ;
+failures@ constant failed-before
+failing failing-state s" failing" spawn constant failer
+T{ failer send hello-fail  deliver  failer alive?  failures@ failed-before - -> -1 1 }T
+failer kill  deliver
 testing the doll away from Fiona: Debilitas coming upon it - she his lead (+0x16C9 5) he leaves it, else he takes it
 testing ... (Thing03_StalkerCheck: the things ask him, `drawn-to`, he answers `thing-taken`)
 : doll-in ( room -- i )  3 swap 0  0e 0e 0e 0e 0e 0e  thing-new ;

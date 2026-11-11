@@ -149,11 +149,11 @@ variable acting   -1 acting !   \ the activity being run (-1: none)
     #people 0 do  i holder-of @ over = if  i let-go-person  then  loop  drop ;
 : not-scene's ( k -- )  1 swap lshift invert scene-acts @ and scene-acts ! ;
 : stop-act ( k -- )
-    dup act-slot @ ?dup if  forth:kill  then  0 over act-slot !  dup not-scene's  let-go-all ;
+    dup act-slot @ ?dup if  stop-task  then  0 over act-slot !  dup not-scene's  let-go-all ;
 : stop-all ( -- )  #activities 0 do  i stop-act  loop ;
 : start ( xt -- k | -1 )   \ an activity started (none free: not started)
     leaving @ if  drop -1 exit  then
-    #activities 0 do  i act-slot @ 0= if  dup i cells act-xts + !  spawn-held i act-slot !  i unloop exit  then  loop
+    #activities 0 do  i act-slot @ 0= if  dup i cells act-xts + !  start-held-task i act-slot !  i unloop exit  then  loop
     drop -1 ;
 : running? ( xt -- flag )
     #activities 0 do  i act-slot @  over i cells act-xts + @ = and if  drop true unloop exit  then  loop  drop false ;

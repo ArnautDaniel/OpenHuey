@@ -3,6 +3,7 @@
 IN: game
 USING: actors messages room-names facts flag-names story-names subsystems ;
 
+debug:failures-spawn dup errors-to constant failures   \ (first: a handler's error leaves its actor alive - debug.fs)
 acoustics:acoustics-spawn constant acoustics
 rooms:rooms-spawn constant rooms
 doors:doors-spawn constant doors

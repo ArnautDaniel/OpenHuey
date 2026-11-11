@@ -423,7 +423,7 @@ void camdir_glow_cut(void) {
 void camdir_new_room(CamDirector *d) {
     float rate = d->move_rate;
     int player = d->player, shown = d->shown, followed = d->followed;
-    int setups[HACTOR_MAX][2];
+    int setups[HACTOR_MAX][3];
 
     memcpy(setups, d->setups, sizeof(setups));
     memset(d, 0, sizeof(*d));
@@ -494,9 +494,22 @@ void camdir_follow(CamDirector *d, int target, Vec3 offset) {
 }
 
 void camdir_char_setup(CamDirector *d, int who, int set, int path) {
-    if (who >= 0 && who < HACTOR_MAX) {
-        d->setups[who][0] = set;
-        d->setups[who][1] = path;
+    int slot = forth_actor_slot(who);
+
+    if (slot >= 0 && slot < HACTOR_MAX) {
+        d->setups[slot][0] = who;
+        d->setups[slot][1] = set;
+        d->setups[slot][2] = path;
+    }
+}
+
+void camdir_setup_of(const CamDirector *d, int who, int *set, int *path) {
+    int slot = forth_actor_slot(who);
+
+    *set = *path = -1;
+    if (slot >= 0 && slot < HACTOR_MAX && d->setups[slot][0] == who) {   /* (an id the slot's actor had before: none) */
+        *set = d->setups[slot][1];
+        *path = d->setups[slot][2];
     }
 }
 
@@ -504,19 +517,21 @@ void camdir_forget_setups(CamDirector *d) {
     int i;
 
     for (i = 0; i < HACTOR_MAX; i++) {
-        d->setups[i][0] = d->setups[i][1] = -1;
+        d->setups[i][0] = d->setups[i][1] = d->setups[i][2] = -1;
     }
 }
 
 int camdir_follow_check(CamDirector *d, int who) {
     const HBody *b;
+    int set, path;
 
     if (who < 0) {
         camdir_follow(d, -1, vec3(0.0f, 0.0f, 0.0f));
         return -1;
     }
-    b = who < HACTOR_MAX ? hactor_body(who) : NULL;
-    if (b != NULL && (who == d->player || (b->has && d->setups[who][0] != -1 && b->room == gEngine.room.id))) {
+    b = hactor_body(who);
+    camdir_setup_of(d, who, &set, &path);
+    if (b != NULL && (who == d->player || (b->has && set != -1 && b->room == gEngine.room.id))) {
         return who;
     }
     camdir_follow(d, d->player, vec3(0.0f, 10.0f, 0.0f));
@@ -524,18 +539,24 @@ int camdir_follow_check(CamDirector *d, int who) {
 }
 
 void camdir_camera_on(CamDirector *d, int who) {
+    int set, path;
+
     d->followed = camdir_follow_check(d, who);
     if (d->followed < 0) {
         return;
     }
     camdir_follow(d, d->followed, vec3(0.0f, 10.0f, 0.0f));
-    camdir_set_setup(d, d->setups[d->followed][0], d->setups[d->followed][1]);
+    camdir_setup_of(d, d->followed, &set, &path);
+    camdir_set_setup(d, set, path);
 }
 
 void camdir_take_followed(CamDirector *d) {
     d->followed = camdir_follow_check(d, d->followed);
     if (d->followed >= 0) {
-        camdir_set_setup(d, d->setups[d->followed][0], d->setups[d->followed][1]);
+        int set, path;
+
+        camdir_setup_of(d, d->followed, &set, &path);
+        camdir_set_setup(d, set, path);
     }
 }
 
