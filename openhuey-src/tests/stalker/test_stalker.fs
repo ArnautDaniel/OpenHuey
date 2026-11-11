@@ -137,6 +137,9 @@ testing his search of her room is given 30 seconds (+0x1794 1800; Stalker_ThinkT
 T{ [: search-again  search-cap @ ;] his -> 1800 }T
 T{ [: 1 route-next !  4 route-end !  1 search-cap !  stalker.search:cap-down  route-end @ search-cap @ ;] his -> 2 0 }T
 T{ [: route-clear  search-cap @ ;] his -> 0 }T
+testing the cut straight at her near the way's end: the Debilitas classes' (Debilitas_ChaseTarget) - not the others'; not while her floor is his
+T{ [: debilitas-class? ;] his  game:daniella enter debilitas-class? leave-actor -> -1 0 }T
+T{ [: cut-to-her? ;] his -> 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 
