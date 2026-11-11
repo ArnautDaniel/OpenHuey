@@ -54,7 +54,7 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 : flinch-key? ( -- flag )  my-model @ 0 0 0 motion-events 2 and 0<> ;   \ (his flinch's key, this frame: Pursuer_FrameUpdate)
 : flinching ( -- )
     root-move
-    flinch-key?  by-her @ and  my-mode @ held-off <> and  her-reach @ 0= and if
+    flinch-key?  by-her @ and  my-mode @ held-off <> and  her-reach @ 3 and 0= and if
         0 by-her !  0 reeling !
         ['] chase-run step!  0 chase-t !  -1 combo !
         fiona body-at heading-to yaw f- angle-wrap fabs pi f2/ f< if  strike-back-front  else  strike-back-behind  then  choose  exit

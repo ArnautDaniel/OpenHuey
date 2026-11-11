@@ -187,7 +187,7 @@ examining (`offer` / `take-offer`), messages on screen (`text-shown`: she stands
 |---|---|---|---|
 | `hit` | `( kind how fright -- )` | in (a stalker) | A blow or hold from the sender: kind 1 / 2 a blow, 4 a hard one, 6 a hold (how: the grip; 5 thrown off); `$8000` in how a stumble; fright a float cell. |
 | `hit-taken` | `( kind -- )` | out, to the sender | It struck home. |
-| `fiona-plight` | `( state ladder reach -- )` | broadcast each frame | The ladder she is on (-1 none: the stalker goes to beside it). How she stands for an attack (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking (fear over 90, the panic attack), 3 out of reach (thrown, seized, stepping back - at the panic's height thrown is 5), 4 / 5 the panic's stages. Its `reach`: bit 1 not to be gone for (Pursuer_MayGo), bit 2 thrown (her mode 4). |
+| `fiona-plight` | `( state ladder reach -- )` | broadcast each frame | The ladder she is on (-1 none: the stalker goes to beside it). How she stands for an attack (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking (fear over 90, the panic attack), 3 out of reach (thrown, seized, stepping back - at the panic's height thrown is 5), 4 / 5 the panic's stages. Its `reach`: bit 1 not to be gone for (Pursuer_MayGo), bit 2 thrown (her mode 4); for the creatures bit 4 her +0x2D itself, bit 8 a script has her (+0xE0), bit 16 held (Character_Held: led off, grabbed). |
 
 Fiona_Reaction / Fiona_React: none while a reaction is under way (mode 4, floored $A), on a
 ladder (her fall from it: with the ladders) or with the world held. A blow knocks her down -

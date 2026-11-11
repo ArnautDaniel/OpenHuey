@@ -239,3 +239,13 @@ Not yet:
   only the door's being open is checked. The door it last made for starts as none (the
   original's starts as whatever its block held).
 - Kind $19 (an event character); room $4F's commands.
+
+**Read again, 2026-11 (0.2.42).** Fiona as the creatures see her was our own guess - "doing
+anything" (`her-doing`) and a movie playing - where the original reads her +0x2D (stepping back,
+at a door, struck, set aside), her script (+0xE0), Character_Held and flag $18: now `fiona-plight`'s
+reach bits 4 / 8 / 16. A spirit is left be (CreatureA_Think's StateNone) only with +0x2D and a
+script both; it bursts on her unless +0x2D, held, or (flag $18) a script has her - so mid kick or at
+a push it takes her, as the original's, and hidden it may still touch her (only hanging about keeps
+it off). A homunculus bides (CreatureB_StateByProgress) on +0x2D or her script, not on whatever she
+is doing; with the stalkers kept (flag $18) out of play or with her scripted it hangs back.
+

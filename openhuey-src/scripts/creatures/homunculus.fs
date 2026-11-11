@@ -47,6 +47,7 @@ state: homunculus-state
   cell field grab-spot            \ which of the four spots round her next
   1 floats field her-dist  1 floats field hewie-dist
   cell field her-mode  cell field her-sub  cell field her-doing  cell field her-unseen
+  cell field her-reach            \ (fiona-plight's: 4 her +0x2D, 8 a script has her)
   cell field blow-n  cell field blow-damage  cell field blow-pending  cell field striker   \ (+0x14F0: who struck - her, Hewie; -1 a thing)
   1 floats field blow-yaw         \ (+0x14FC) a thing's blow: the heading it faces
   cell field fade
@@ -98,7 +99,8 @@ fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
 : coin ( a b -- n )  2 random if  nip  else  drop  then ;
 
 \ ---- seeing her ----
-: hidden-or-busy? ( -- flag )  fiona-hidden? her-doing @ 0<> or ;
+: scripted? ( -- flag )  her-reach @ 8 and 0<> ;   \ (a script has her: +0xE0)
+: kept-or-scripted? ( -- flag )  her-reach @ 12 and 0<> ;   \ (her +0x2D - stepping back, at a door, struck, aside - or a script's)
 : reaches? ( v tri mask -- flag )   \ straight from it onto that triangle, kept off the mask's floor (Actor_TriTo)
     {: v tri m :}  self body-tri my-at v m v-walk  tri = ;
 : straight-to-her? ( -- flag )  her-at her-tri path-mask reaches? ;   \ (its paths' mask)
@@ -192,14 +194,14 @@ fvariable try-turn
     walk-anim first
     fiona-hidden? if  hanging-back creature-about switch-move exit  then
     her-unseen @ if  circling creature-about switch-move exit  then
-    hidden-or-busy? half-hidden? 0= and if  biding switch-to exit  then
+    kept-or-scripted? half-hidden? 0= and if  biding switch-to exit  then
     stalker-at-my-door? if  stalker-at-door switch-to exit  then
     divided? if  across-divider switch-to exit  then
     her-at turn-to
     on-ladder-or-thrown? if  true held-off !  closing-in switch-to exit  then
     1 frames +!
     gave-up @ if  -1  else  straight-at-her  then  {: t :}
-    cutscene-active? in-play? 0= her-doing @ 0<> or and if  hanging-back creature-about switch-move exit  then
+    stalkers-stay state-flag?  in-play? 0= scripted? or and if  hanging-back creature-about switch-move exit  then   \ (flag $18: kept where they are)
     t 0< 0= her-dist f@ 10e f<= and may-grab? and if  t her-tri = if  grabbing switch-to  then  exit  then
     t 0< if
         my-path path-left? 0= if
@@ -231,7 +233,7 @@ fvariable try-turn
 : bide ( -- )   \ she's hidden or busy
     rest-anim first
     fiona-hidden? if  hanging-back creature-about switch-move exit  then
-    half-hidden? hidden-or-busy? 0= or if  chasing switch-to  then ;
+    half-hidden? kept-or-scripted? 0= or if  chasing switch-to  then ;
 : seek-her ( -- )
     walk-anim first
     sees-her? if  watching switch-to exit  then
@@ -514,7 +516,7 @@ behaviour homunculus
       -1 model !  trip trip-reset  body-off  0e fall f!  0e fall-v f!
       self subscribe tick  self subscribe arrived  self subscribe leaving-room
       self subscribe fiona-doing  self subscribe fiona-unseen  self subscribe fiona-blow
-      self subscribe stalker-doing  -1 stalker !  100 stalker-age ! ;
+      self subscribe stalker-doing  self subscribe fiona-plight  -1 stalker !  100 stalker-age ! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )
       2drop 2drop 2drop 2drop drop  sender stalker !  0 stalker-age ! ;
   on homunculus-setup ( slot room level tri kind sight yaw height -- )
@@ -537,6 +539,7 @@ behaviour homunculus
   on tick ( -- )  model @ 0< if  exit  then  world-frozen state-flag? cam-scene? or  panic-starting state-flag? or if  exit  then  frame ;
   on fiona-doing ( mode sub cond cmd doing -- )  her-doing !  drop drop  her-sub !  her-mode ! ;
   on fiona-unseen ( on -- )  her-unseen ! ;
+  on fiona-plight ( state ladder reach -- )  her-reach !  2drop ;
   on fiona-blow ( n damage x y z reach -- )   \ (Fiona_BlowCreatures) once a blow, if it reaches it
       {: n damage x y z reach :}
       n blow-n @ = untouchable @ or  in-play? 0= or if  exit  then

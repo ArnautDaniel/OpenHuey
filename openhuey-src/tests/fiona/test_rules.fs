@@ -60,6 +60,8 @@ testing seized (Fiona_JointAction kind 1): only moving freely - not mid kick
 T{ [: defend-mode her-mode !  0 6 fiona.seized:seized  own-mode her-mode ! ;] her@ -> 0 }T
 testing the panic calming (stage 5): no full panic again (Fiona_Panic: at 4 only)
 T{ [: her-panic-stage @  calming-down her-panic-stage !  1 her-fear-bits !  feel-the-panic  her-fear-bits @ 2 and  0 her-fear-bits !  swap her-panic-stage ! ;] her@ -> 0 }T
+testing her reach for the creatures: her +0x2D 4, a script's hold 8
+T{ [: -1 her-out-of-reach !  reach 4 and 0<>  0 her-out-of-reach !  -1 her-scripted !  reach 8 and 0<>  0 her-scripted !  reach 12 and ;] her@ -> -1 -1 0 }T
 testing out of reach (+0x2D) while falling, not once she's down
 T{ [: -1 her-out-of-reach !  fiona.fear:lie-down  her-out-of-reach @  reach 1 and ;] her@ -> 0 0 }T
 free!

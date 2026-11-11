@@ -201,7 +201,7 @@ message thing-blow ( damage yaw -- )   \ to a homunculus: a magnesia going off w
 message throw-down ( who recover -- )        \ (Fiona) thrown down by who (an actor, -1 none); recover: her recovery reset (the story's 0xB2)
 message look-hold ( who frames -- )          \ (Fiona) her head on who for so many frames (the story's 0x96)
 message fiona-unseen ( on -- )               \ broadcast when it changes: she can't be seen (item $89 worn, still)
-message fiona-plight ( state ladder reach -- )   \ broadcast each frame: how she stands for a stalker's attack (plight); her reach (bit 1 not to be gone for - Pursuer_MayGo; bit 2 thrown, her mode 4); the ladder she is on (-1 none)
+message fiona-plight ( state ladder reach -- )   \ broadcast each frame: how she stands for a stalker's attack (plight); her reach (bit 1 not to be gone for - Pursuer_MayGo; bit 2 thrown, her mode 4; 4 her +0x2D, 8 a script has her, 16 held - the creatures'); the ladder she is on (-1 none)
 \ how she stands for a stalker's attack (Pursuer_FionaState; his tables by it): free; fleeing; frightened
 \ (her fear past 90, her panic attack); out of reach (struck, seized, the stalkers blind); panicking; calming down
 enum: plight  free-plight fleeing-plight frightened-plight unreachable-plight panicking-plight calming-plight ;
