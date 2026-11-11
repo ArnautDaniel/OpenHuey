@@ -60,7 +60,25 @@ create in-at /vec allot  create out-at /vec allot
     endcase ;
 : lost-way ( -- )
     0 his-at-door !  -1 body-tri!  his-action @ out-random-away-act = if  out-random-away-act 0 want  else  when-idle  then ;
+\ with his way planned as she left (+0xF3590: Character_FollowWaypoints) he walks it off screen too - point
+\ to point as it was planned, its room's floor not at hand - so that coming back she finds him along it
+create step-at /vec allot
+: walk-off ( -- )
+    {: | p F: d seg :}  travel-speed to d
+    step-at his-at vec-copy
+    begin  his-path path-left?  d f0> and while
+        his-path dup path-i path-point to p
+        step-at p vec-dist to seg
+        seg d f<= if
+            step-at p vec-copy  d seg f- to d  his-path dup path-i 1+ swap path-i!
+        else
+            p vec@ step-at vec@ {: F: px F: py F: pz F: x F: y F: z :}  d seg f/ {: F: t :}
+            x px x f- t f* f+  y py y f- t f* f+  z pz z f- t f* f+  step-at vec!  0e to d
+        then
+    repeat
+    his-room -1 step-at vec@ body-place ;
 : st-to-door ( -- )
+    his-at-door @ if  walk-off  then
     his-left f@ travel-speed f- fdup his-left f!  f0< 0= if  exit  then  0e his-left f!
     his-route-door @ his-room door-exit-in dup his-door !
     0< if  lost-way exit  then
@@ -183,10 +201,10 @@ create ex-at /vec allot
 \ cry running) - on his triangle, else anywhere
 : on-way-anim ( -- anim )
     his-action @ to-her-cry-act = if  run-anim exit  then  his-cond @ hurt-cond = if  limp-anim  else  trot-anim  then ;
-: keep-on-way ( -- )   \ (his-at-door: his way to it in the room)
+: keep-on-way ( -- )   \ (his-at-door: his way to it in the room - where he walked it to, on its floor now at hand)
     on-way-anim play
-    his-tri dup 0< if  drop exit  then
-    dup nav-flags self body-mask and if  drop place-anywhere  else  tri-center his-place  then ;
+    his-tri dup 0< if  drop his-at v-tri  then  dup 0< if  drop exit  then
+    dup nav-flags self body-mask and if  drop place-anywhere  else  drop his-at vec@ his-place  then ;
 \ at the stalker when she left (at him, at a flank): letting go of him
 : let-go-anim-of ( grip -- anim | -1 )
     case  near-grip of  let-go-near-anim  endof  far-grip of  let-go-far-anim  endof

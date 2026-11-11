@@ -117,8 +117,9 @@ behaviours, `Hewie_WhatNext` / `WhenIdle` (the weighted lists, from the executab
   passable from any side (its `kind` is the one-way flag's, not the walker's slot), but at the
   door itself (Hewie_StateToDoor) one locked against him is no way, and one someone holds he waits
   at, trying again each frame (Progress_CurRoomFlag) - since 0.2.42; before, a held door let him
-  down and he went another way or none. Not modelled: his walk along the way to the first door
-  while she is gone (counted down instead). Hewie_Arrive's fallbacks since 0.2.45: his place off his
+  down and he went another way or none. His way to the first door planned as she left (+0xF3590)
+  he walks off screen too, point to point as planned (Character_FollowWaypoints; `walk-off`), and
+  coming back she finds him along it (since 0.2.45). Hewie_Arrive's fallbacks since 0.2.45: his place off his
   triangle - its middle (Hewie_PlaceAt with no point); no door spot - anywhere on his half
   (Actor_TeleportRandom), not her place. His door is in
   the save since 0.2.45 (Hewie_SaveState's +0x838: the exit he came in by - `hewie-cond`), with his

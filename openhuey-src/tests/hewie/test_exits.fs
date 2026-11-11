@@ -51,6 +51,15 @@ create centre-at 12 allot
 game:hewie body-tri constant his-tri0   his-tri0 tri-center centre-at vec!
 T{ off-and-back  centre-at moved-from 0.01e f< -> -1 -1 }T
 [: room-id his-tri0 arrival-at vec@ body-place ;] his@
+testing off screen with his way planned (+0xF3590): he walks it - Character_FollowWaypoints, 1.6 a frame (30 frames: 48 at most)
+create walk-from 12 allot   walk-from game:hewie body-at vec-copy   game:hewie body-tri constant start-tri
+: an-exit ( -- e )  8 0 do  i [: exit-reachable? ;] his@ if  i unloop exit  then  loop  -1 ;
+an-exit constant way-out
+: walked ( F: -- d )  game:hewie body-at walk-from vec-dist ;
+T{ way-out 0< 0= -> -1 }T
+[: way-out exit-reachable? drop  1 his-at-door !  30 0 do  walk-off  loop  0 his-at-door ! ;] his@
+T{ walked 5e f>  walked 48.1e f< -> -1 -1 }T
+[: room-id start-tri walk-from vec@ body-place ;] his@
 full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ [: [: on-gap? 0=  his-action @ $65 <> and ;] his@ ;] 120 soon -> -1 }T
 test-summary
