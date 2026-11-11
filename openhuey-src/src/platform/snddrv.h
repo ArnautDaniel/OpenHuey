@@ -48,6 +48,12 @@ void snddrv_placed_volume(int v);
 void snddrv_volume(float sound, float master);
 /* stereo (1) or mono (0) */
 void snddrv_stereo(int on);
+/* the surround tables the placement uses (gSoundOutput 2, as the game's SndDriver_Start sets it):
+ * left, right (360 floats each) and their index by degree (360 s32) */
+void snddrv_surround(const uint8_t *left, const uint8_t *right, const uint8_t *index);
+/* the options' sound out (SndDriver_SetOutputMode): 0 mono, 1 stereo, 2 Pro Logic II - how a
+ * placed sound's two sides combine (the block's +0x58), and the driver's stereo (mono at 0) */
+void snddrv_output(int mode);
 /* the placed sounds' loudness (0..1; the driver's +0x1D4) */
 void snddrv_placed_scale(float s);
 /* the scripts' scale (progress +0x1118) on the placed sounds whose id has bit 30 */

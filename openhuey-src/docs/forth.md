@@ -102,7 +102,9 @@ or go through a `defer`).
 Sound effects (the original's sound driver, src/platform/snddrv.c, on the SPU2-like voices of
 spu.c): `bank-sound ( id bank -- )` plays sound `id` of a bank plainly, `sound-at ( id bank vol
 pitch -- ) ( F: x y z -- )` at a point of the room (Actor_PlaySound: placed by the camera with
-the original's distance curves and pan; vol x / 128 louder or softer, pitch semitones up),
+the original's distance curves and pan - the game's own surround tables, its output 2 as
+SndDriver_Start sets it, since 0.2.42: the stereo ones before; vol x / 128 louder or softer, pitch
+semitones up),
 `bank-sound-at ( id bank -- ) ( F: x y z -- )` the same with no offsets, `common-sound ( id -- )`
 from the common bank. Banks: 4 the sound set (`sound-set! ( set -- )`), 5 the common sounds
 (C_0000: Fiona's, Hewie's, the house's), 6 the room's (`sound-load ( k -- )` loads 4 / 5 / 6 now,
@@ -112,8 +114,10 @@ priority, so a new sound takes over an older one on the same voice. `stop-sound 
 releases one, `sound-stop-voices ( core0 core1 -- )` the voices in the masks, `sound-stop-all`.
 `sound-volume! ( F: sound master -- )`, `sound-fade ( 0..255 -- )` (the pause screen's),
 `sound-scale! ( F: v -- )` (the scripts' scale for sounds with id bit 30), `sound-reverb! ( core v
--- )` (core 0 the music's, 1 the effects': 0..0x3FFF; the rooms set it). `.voices` lists the
-effect voices sounding.
+-- )` (core 0 the music's, 1 the effects': 0..0x3FFF; the rooms set it). `sound-out! ( mode -- )`
+the options' sound out (SndDriver_SetOutputMode: 0 mono - a placed sound's two sides alike -, 1
+stereo - both made positive -, 2 as placed). `.voices` lists the effect voices sounding, `voice-lr
+( v -- l r on? )` one's volumes (24..47).
 
 `game-state` (C, `src/game/progress.c`; in the `forth` tool too) holds what the event scripts
 share: `progress` (`pr.story pr.state pr.vars pr.resident pr.visited`: flag words, l@ / c@) and

@@ -37,7 +37,9 @@ create spot-at /vec allot
 \ the story's door use (stalker/scripted.fs): over - or given up, his step left trying it (the
 \ original's: never done)
 defer script-door-over ( -- )   ' noop is script-door-over
-: script-door-failed ( -- )  let-door-go  out-over  ['] noop step ! ;
+: entry-done ( -- )  route-done @ if  stand  else  search-start  then ;   \ (the door he came in by shut: his search)
+: script-door-failed ( -- )   \ (1: the door he came in by - his search all the same)
+    door-script @ 1 =  let-door-go  out-over  if  entry-done  else  ['] noop step !  then ;
 : give-up-door ( -- )
     door-script @ if  script-door-failed exit  then
     let-door-go  for-her @  out-over  if  round-failed  else  door-done  then ;
@@ -67,7 +69,7 @@ defer shoulder-past ( -- )   ' noop is shoulder-past
     root-move
     1 step-t +!  step-t @ 3 < if  exit  then               \ (the doors take it up next frame)
     making-for @ door-animating? if  exit  then
-    door-script @ if  let-door-go  out-over  script-door-over exit  then   \ (the story's: done with it)
+    door-script @ ?dup if  let-door-go  out-over  1 = if  entry-done  else  script-door-over  then  exit  then   \ (the story's: done with it)
     barging @ if  0 barging !  let-door-go  out-over  ['] in-doorway step!  exit  then   \ (barged into her room: in once it stands open)
     let-door-go  0 apart !  on-through ;   \ (Pursuer_Door1C4: in contact again)
 : door-swinging ( -- )
@@ -200,7 +202,7 @@ create re-list 8 cells allot
 \ he waits by it (Pursuer_DoorWait); shut, he opens it. Never in past it shut
 : refused-answer ( exit -- )   \ (`door-refused`: as he finds it now - shaken, it won't give)
     entering @ barging @ 0= and if  dup came-by @ = if  drop  0 entering !  come-into-play exit  then  then
-    asked @ <> if  exit  then  -1 asked !  $80 15 stalker-jolt
+    asked @ <> if  exit  then  -1 asked !   \ (dropped - Pursuer_DropDoor: no rumble; before 0.2.42 the pad shook)
     door-script @ if  script-door-failed exit  then  at-exit ;
 
 \ ---- the story's door use (its moves 3 / 4: Pursuer_Door1C8, his action $A) - the door at exit
@@ -208,6 +210,9 @@ create re-list 8 cells allot
 : script-door ( exit -- )
     out-over  making-for !  -1 door-script !  0 door-wait !  -1 asked !
     line-up ;
+\ the door she came in by shut behind him (stalker/travel.fs shut-on-entry: door-script 1): lined up at
+\ his spot for its use that shuts it, his animation, let go shut - then his search
+:noname ( exit -- )  out-over  making-for !  1 door-script !  0 door-wait !  -1 asked !  line-up ; is shut-on-entry
 
 \ ---- round to her across his own room ----
 : her-way ( -- way )  her-came @ dup 0< if  exit  then  room-id swap 1 exit-way ;

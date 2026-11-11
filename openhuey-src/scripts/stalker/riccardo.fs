@@ -282,21 +282,26 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
 
 \ ---- his frame's own (Riccardo_Update): his rage while her panic calms down (a roar), his
 \ snort at his door animation's key, his gun's shots ----
+: free-to-rage? ( -- flag )   \ (moveMode 0: not struck, nor in his attack, at a door or a ladder -
+    \ before 0.2.42 only not struck: his rage, and its roar, came mid-combo)
+    reeling @ 0=  in-attack @ 0= and  held-door @ 0< and  at-ladder @ 0< and ;
 : riccardo-frame ( -- )
     shot-fades
     raging @ if  calming? 0= if  0 raging !  then
-    else  calming? reeling @ 0= and  my-mode @ after-her = and if  -1 raging !  rage-roar 7 sound  then  then
+    else  calming? free-to-rage? and  my-mode @ after-her = and if  -1 raging !  rage-roar 7 sound  then  then
     anim @ door-anims =  my-model @ 0 0 1 motion-events 1 and and if  snort-sound 5 sound  then
     impact ;
 
 \ ---- his other class (kind 37; riccardo.c Kind37_Update): struck enough (100 damage) he is
 \ alerted - hurt, his alert tables and waits - and calms again below ----
 \ its tint (Kind37_Update; the renderer's layer $11, drawn over the room by 80 + 80 sin of its
-\ pulse, out of 128): whole for 150 frames after each turn of what it does (counted while it is
-\ free), then pulsing - its phase on by 4 cos of it and up to 10 more, degrees a frame
+\ pulse, out of 128): whole for 150 frames once struck or down (Kind37_BehaviourEnded: the step a
+\ blow, a fall, lying down set - vtable +0x29C), counted while it is free; else pulsing - its phase
+\ on by 4 cos of it and up to 10 more, degrees a frame. Before 0.2.42 every turn of what it did set it
 : struck-or-down? ( -- flag )  cond @ hurt-cond down-cond 1+ within ;
+: tint-struck ( -- )  reeling @  cond @ down-cond = or if  150 tint-t !  then ;   \ (the +0x29C step: struck, down)
 : kind37-tint ( -- )
-    my-mode @ tint-was @ <> if  150 tint-t !  my-mode @ tint-was !  then
+    tint-struck
     tint-phase f@ fsin 80e f* 80e f+  128e fmin 128e f/  my-model @ actor act.alpha sf!
     tint-t @ if
         pi f2/ tint-phase f!  struck-or-down? 0= if  -1 tint-t +!  then
@@ -309,8 +314,9 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
     cond @ hurt-cond = alt-tables !
     kind37-tint ;
 
-\ ---- the TintStalker (kind 23; tintstalker.c TintStalker_Tint / Fade / SetDelay): seen only a
-\ while (150 frames) after each turn of what it does - counting while it is free. Its tint (the
+\ ---- the TintStalker (kind 23; tintstalker.c TintStalker_Tint / Fade / SetDelay): unseen, seen
+\ only a while (150 frames) once struck or down (TintStalker_SetDelay, the +0x29C step a blow, a
+\ fall, lying down set) - counting while it is free; before 0.2.42 every turn of what it did showed it. Its tint (the
 \ renderer's layer $11, drawn over the room by its alpha out of 128): shown, fading in to 112 -
 \ held whole (130) while beaten -; its while over, fading out by 4 a frame, then gone ----
 0 constant tint-still   1 constant tint-in   2 constant tint-out   3 constant tint-whole
@@ -332,7 +338,7 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
         endof
     endcase ;
 : tint-frame ( -- )
-    my-mode @ tint-was @ <> if  150 tint-t !  my-mode @ tint-was !  then
+    tint-struck
     tint-t @ if
         tint-shown @ 0=  beaten-now? tint-fade @ tint-whole <> and  or
         beaten-now? 0= tint-fade @ tint-whole = and  or if  tint-show  then
@@ -354,11 +360,19 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
     then
     mark-id @ dup 0< 0= over alive? and if  -1 swap send effect-command  else  drop  then  -1 mark-id ! ;
 : her-costume ( -- n )  $26 progress pr.vars + c@ ;
+: kind12-may-take? ( -- flag )   \ (Pursuer_MayGoForTarget: she in play, not out of his reach, the stalkers not blind)
+    world-held state-flag?  stalkers-blind state-flag? or if  false exit  then
+    fiona here?  her-reach @ 1 and 0= and ;
+: kind12-take ( -- )  grab-request 0 100e f>cell fiona send hit ;
+\ he takes her touching her (Kind12_Update: Npc_WhoSeen - within 1 - and she may be gone for), or
+\ struck (Kind12_EventState: a blow's request on him - not in costumes 6 / 7). Before 0.2.42 he took
+\ her from anywhere in her room, every frame
+: kind12-struck ( -- )
+    kind12-may-take? 0= if  exit  then
+    her-costume dup illegal-outfit = swap cowgirl-outfit = or if  exit  then  kind12-take ;
 : kind12-frame ( -- )
     kind12-marker
     hp-max @ hp !
-    world-held state-flag?  stalkers-blind state-flag? or if  exit  then
-    her-costume dup illegal-outfit = swap cowgirl-outfit = or if  exit  then
-    fiona here? 0= if  exit  then
-    her-reach @ if  exit  then   \ (struck or held already)
-    grab-request 0 100e f>cell fiona send hit ;
+    kind12-may-take? 0= if  exit  then
+    self fiona 1e 0e bodies-touching? 0= if  exit  then
+    kind12-take ;

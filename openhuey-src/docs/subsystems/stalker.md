@@ -537,14 +537,15 @@ reach the Pursuer's 24: Pursuer_AttackRange, not his 20), near
 him at 30 (Riccardo 60), its model O_RCT/RCT_000 (motion table $42AED0), 100 health (hard 125);
 struck to 100 damage it is alerted - hurt, its alert tables and waits (the kit's waits by the hard
 setting and alerted) - and calms below. **The TintStalker** (kind 23; tintstalker.c): the
-Pursuer's chase with its tables, the same look, seen only a while (150 frames) after each turn of
-what it does (`unseen`), drawn by its tint (TintStalker_Tint / Fade: the renderer's layer $11 over
+Pursuer's chase with its tables, the same look, unseen - seen only a while (150 frames) once struck or
+down (TintStalker_SetDelay: the +0x29C step a blow, a fall, lying down set; `unseen`, `tint-struck`), drawn by its tint (TintStalker_Tint / Fade: the renderer's layer $11 over
 the room by its alpha out of 128 - `act.alpha`): shown, fading in to 112 (held whole, 130, while
 beaten); its while over, fading out by 4 a frame, then gone. Kind 37's tint (Kind37_Update) pulses:
-80 + 80 sin of its phase - whole for 150 frames after each turn of what it does, then its phase on
+80 + 80 sin of its phase - whole for 150 frames once struck or down (Kind37_BehaviourEnded), then its phase on
 by 4 cos of it and up to 10 more degrees a frame. **Kind 12** (lorenzo.c Kind12_*): the Pursuer's chase with
 its tables, its model O_LRF/LRF_000 (motion table $443FB0), 9999 health and never hurt; in her
-room, free to go for her (not in costumes 6 / 7), it seizes her (her fright 100). While it is in
+room it seizes her (her fright 100) touching her (Npc_WhoSeen: within 1) while she may be gone for, or as
+a blow reaches it (Kind12_EventState: not in costumes 6 / 7). While it is in
 her room the Marker glows on it (Kind12_ShowUp / EnterRoom: the first kind, size 1; `mark-id`),
 done once it has gone.
 
@@ -683,3 +684,25 @@ the way after her through the doors - ours `pursue-run` with `after-her-elsewher
 not lying already); `Pursuer_DoorNear`'s cases for a door between the halves of one room and for him
 already down (action $11); the sight's wobble of `Pursuer_LookAround` (0.12 a frame: his head eased back the same
 frame); `Pursuer_StateKnockedThrough`'s down-between-halves case (his health back, time 1).
+
+### Read again, 2026-11 (0.2.42)
+
+Found different and put right: a door he goes through out of sight left as his kind leaves it
+(Npc_ExitWhatToDo / vtable +0xF0); his search of her room given 30 seconds (+0x1794); with no way to her
+room he waits about and goes out at random (Pursuer_PickExit's +0x16F4) - he had headed for it for ever;
+his way to her room ends on her half of it (Pursuer_PlanWhere's +0x1598: Npc_CharSideBehind); Daniella
+and her kinds come in to search or wait by an open door and shut it behind them (Pursuer_EnterRoom's
+action $28, their table $E: Exit1F0 - `shut-on-entry`); the door he swings open into her room or pulls
+shut behind him heard as his (its source `stalker-noise` - it was his actor id); no rumble as a door he
+asked for is refused (Pursuer_DropDoor); the TintStalker and kind 37 seen once struck, not at each turn of
+what they do; kind 12 seizing her only touching her or struck; kind 39 in a rage from its start - its
+stance and walk, not its tables (Kind39_Activate); Riccardo's and Lorenzo's other class's rage only while
+free (moveMode 0); Lorenzo's other class's own actions held back - his taunt - while she may not be gone
+for, his grab unshaken on the hard setting, his sweep's cry 12 (Lorenzo2_Start*, StateSweep).
+
+*Not ported (read 2026-11)*: a held-off Debilitas whose door step fails going back after her
+(Debilitas_HeadingStep's forced sight, Pursuer_GoForFionaStance0); a knock-down or getting up resumed as
+she comes back (Pursuer_ShowUp's action $23); `Pursuer_StateDownAndUp`'s doorway check each frame (ours as
+he falls); ChaseTarget's straight cut when her triangle is blocked within 10 of the way's gap;
+Lorenzo2_StartSink / StartStalkBelow's refusal at an exit (PursuerGroup_Find 9: which of ours is unread);
+the others' walk to the door's spot on entering ($28 then their table $E's stand).

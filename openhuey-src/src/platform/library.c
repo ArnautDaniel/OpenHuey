@@ -1045,7 +1045,8 @@ int library_import_from(const char *disc, int headless) {
 }
 
 #define REIMPORT_WHY "This OpenHuey reads more of the game than your library has: the characters' faces (blinking, " \
-                     "their mouths in the scenes), their hands, and the parts of models that are shown and hidden."
+                     "their mouths in the scenes), their hands, the parts of models that are shown and hidden, and where " \
+                     "the sounds are heard from (the game's own surround placement)."
 
 /* a library made by an older OpenHuey: a re-import offered (the disc chosen again, imported over it
  * - the saves and settings are kept); "Later" plays on with the library as it is, asked again next

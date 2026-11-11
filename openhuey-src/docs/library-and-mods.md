@@ -183,8 +183,9 @@ how this was found to need a choice's two operand bytes (`include/text.h` said o
 
 ### The executable's tables
 
-The engine and the scripts read 22 tables out of SLUS_210.75: the doors and rooms (how the house
-connects), the obstacle kinds, the sounds' distance curves and stereo pan, the butterflies, the
+The engine and the scripts read 27 tables out of SLUS_210.75: the doors and rooms (how the house
+connects), the obstacle kinds, the sounds' distance curves, stereo pan and surround pan (format 3,
+0.2.42: the placement the game itself uses - an older library places by the stereo pan), the butterflies, the
 dealt maze rows, Fiona's meeting offsets and twelve models' motion tables (their fades and flags).
 `src/data/exetables.c` names each with its address and size; the import writes each to
 `library/exe/<name>.bin` and keeps no executable. The engine asks by name -

@@ -21,6 +21,16 @@ fvariable dx  fvariable dz  dan body-pos dz f! fdrop dx f!
 340e deg>rad fsin 30e f* dx f@ f+  dan body-pos fdrop fswap fdrop  340e deg>rad fcos 30e f* dz f@ f+  160e tp-facing  3 run-frames
 [: [: start-t @ 0= ;] hers ;] 300 soon drop   \ (her start at the sight of her - $1601 - over)
 T{ [: step @ ['] pursue-run =  chase-act @  anim @  hold-t @ 290 > ;] hers -> -1 5 $200 -1 }T
+testing come in to search by an open door, she shuts it behind her (Pursuer_EnterRoom's $28, her table $E:
+testing ... Exit1F0); a door no more open, or following a lead (4: a noise) - not
+: real-exit ( -- e )   \ (an exit of her room with a door, not a doorway)
+    8 0 do  room-id i room-exit-door dup 0< if  drop  else  doors:fixed? 0= if  i unloop exit  then  then  loop  -1 ;
+real-exit constant ex   room-id ex room-exit-door constant ex-door
+ex-door true s" doors" actor-named send door-opened  deliver
+T{ [: came-by @  ex came-by !  my-mode @  searching mode!  0 lead !  stalker.travel:shuts-coming-in?
+      4 lead !  stalker.travel:shuts-coming-in?  0 lead !  rot mode!  rot came-by ! ;] hers -> -1 0 }T
+ex-door false s" doors" actor-named send door-opened  deliver
+T{ [: came-by @  ex came-by !  my-mode @  searching mode!  stalker.travel:shuts-coming-in?  swap mode!  swap came-by ! ;] hers -> 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 testing ... within reach: a combo from her tables; Fiona struck
 T{ [: [: chase-act @ $13 = ;] hers ;] 120 soon  [: [: her-mode @ 4 = ;] fiona@ ;] 60 soon -> -1 -1 }T

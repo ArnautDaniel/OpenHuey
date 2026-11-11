@@ -25,6 +25,9 @@ static Table sTables[] = {
     {"sound-pan-right", 0x3DF580, 0x1004, NULL, 0, 0},      /* stereo pan by angle */
     {"sound-pan-left", 0x3E0580, 0x1004, NULL, 0, 0},
     {"sound-positioned", 0x3D8990, 16, NULL, 0, 0},         /* kPositionedSounds */
+    {"sound-surround-left", 0x3E4C00, 360 * 4, NULL, 0, 0},  /* the placement's output 2 (the game's own: SndDriver_Start) */
+    {"sound-surround-right", 0x3E4660, 360 * 4, NULL, 0, 0},
+    {"sound-surround-index", 0x3E3580, 360 * 4, NULL, 0, 0}, /* kSurroundIndex: by degree */
     {"fiona-meet-offsets", 0x3B2460, 16 * 12, NULL, 0, 0},  /* kFionaMeetOffsets: three floats a row */
     {"deal-rows", 0x3D6B20, 79 * 3, NULL, 0, 0},            /* D_003D6B20: three rooms a row */
     {"motions-fiona", 0x3D5CC0, 120 * 6, NULL, 0, 0},       /* the models' motion tables: fades, flags */

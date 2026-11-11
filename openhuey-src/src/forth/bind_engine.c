@@ -2196,7 +2196,13 @@ static void sound_ready(void) {   /* the executable's tables, once */
     l = exetable("sound-pan-left", NULL);
     pos = exetable("sound-positioned", NULL);
     if (c != NULL && r != NULL && l != NULL && pos != NULL) {
+        const uint8_t *sl = exetable("sound-surround-left", NULL), *sr = exetable("sound-surround-right", NULL),
+                      *si = exetable("sound-surround-index", NULL);
+
         snddrv_tables(c, r, l, pos);
+        if (sl != NULL && sr != NULL && si != NULL) {
+            snddrv_surround(sl, sr, si);
+        }
         done = 1;
     }
 }
@@ -2487,6 +2493,15 @@ PRIM(p_seq_midi) {   /* ( k status d1 d2 -- ) */
 }
 PRIM(p_seq_reset) { seq_reset(); }
 PRIM(p_pause) { gEngine.paused = POP() != 0; }   /* ( flag -- ) actors and the room stand still */
+PRIM(p_voice_lr) {   /* ( v -- l r on? ) an effects voice's volumes (24..47), and whether it sounds */
+    Cell v = POP();
+    int bank, entry, pri, l = 0, r = 0, on = snddrv_voice((int)v, &bank, &entry, &pri, &l, &r);
+
+    PUSH(on ? l : 0);
+    PUSH(on ? r : 0);
+    PUSH(on ? -1 : 0);
+}
+PRIM(p_sound_out) { snddrv_output((int)POP()); }   /* ( mode -- ) the options' sound out: 0 mono, 1 stereo, 2 Pro Logic II */
 PRIM(p_still) { gEngine.still = POP() != 0; }    /* ( flag -- ) the models and the room stand still (the actors run) */
 PRIM(p_cs_active) { PUSH(cutscene_active() ? -1 : 0); }
 PRIM(p_cs_total) { PUSH(cutscene_signal_total((int)POP())); }   /* ( bit -- n ) its count so far less one */
@@ -3948,7 +3963,7 @@ void bind_engine(Forth *f) {
         {"movie-frame", p_movie_frame, "( -- n )"}, {"cutscene-load", p_cs_start, "( addr len -- flag )"}, {"cutscene-run", p_cs_run, "( -- )"}, {"cutscene-go", p_cs_go, "( -- )"},
         {"cutscene-frame!", p_cs_frame_set, "( n -- )"}, {"cutscene-frame", p_cs_frame, "( -- frame )"}, {"cutscene-update", p_cs_update, "( -- )"}, {"cutscene-end", p_cs_end, "( -- )"}, {"cutscene-leave-alone", p_cutscene_leave_alone, "( actor -- )"}, {"cutscene-keep-model", p_cutscene_keep_model, "( actor -- )"}, {"soft-reset", p_soft_reset, "( -- )"},
         {"cutscene-status", p_cs_status, "( -- n )"}, {"cutscene-in-shot?", p_cs_in_shot, "( -- flag )"}, {"cutscene-near?", p_cs_near_end, "( -- flag )"}, {"cutscene-shot-at", p_cs_shot_at, "( frame -- shot )"},
-        {"cutscene-signals", p_cs_signals, "( bit -- n )"}, {"cutscene-active?", p_cs_active, "( -- flag )"}, {"pause!", p_pause, "( flag -- )"}, {"still!", p_still, "( flag -- )"}, {"seq-bank", p_seq_bank, "( addr len -- flag )"}, {"seq-load", p_seq_load, "( k addr len -- flag )"}, {"seq-play", p_seq_play, "( k on -- )"},
+        {"cutscene-signals", p_cs_signals, "( bit -- n )"}, {"cutscene-active?", p_cs_active, "( -- flag )"}, {"pause!", p_pause, "( flag -- )"}, {"still!", p_still, "( flag -- )"}, {"sound-out!", p_sound_out, "( mode -- )"}, {"voice-lr", p_voice_lr, "( v -- l r on? )"}, {"seq-bank", p_seq_bank, "( addr len -- flag )"}, {"seq-load", p_seq_load, "( k addr len -- flag )"}, {"seq-play", p_seq_play, "( k on -- )"},
         {"seq-playing?", p_seq_playing, "( k -- flag )"}, {"seq-volume", p_seq_volume, "( k v -- )"}, {"seq-port-volume", p_seq_port_volume, "( k v -- )"},
         {"seq-chan-volume", p_seq_chan_volume, "( k ch v -- )"}, {"seq-midi", p_seq_midi, "( k status d1 d2 -- )"}, {"seq-reset", p_seq_reset, "( -- )"}, {"music-play", p_music_play, "( addr len loop paused -- flag )"}, {"music-stop", p_music_stop, "( -- )"},
         {"music-pause", p_music_pause, "( on -- )"}, {"music-volume!", p_music_volume, "( F: v -- )"}, {"music-playing?", p_music_playing, "( -- flag )"}, {"cutscene-signal-total", p_cs_total, "( bit -- n )"}, {"cutscene-letterbox-off", p_cs_letterbox_off, "( flag -- )"}, {"black-frame", p_black_frame, "( -- )"}, {"cutscene-next", p_cs_next, "( -- )"}, {"movie-close", p_movie_close, "( -- )"}, {"movie-pause", p_movie_pause, "( on -- )"}, {"movie-paused?", p_movie_paused, "( -- flag )"}, {"movie-compose", p_movie_compose, "( compo lo hi -- )"},

@@ -55,8 +55,9 @@ testing his lunge ($1300), and his tables' own actions ($1000 the flurry, $1001 
 T{ [: anim @  chase-act @ ;] his -> $1300 $1001 }T
 T{ [: $1001 0 do-row  chase-act @ ;] his -> $1001 }T
 
-testing his rage at the panic's stage 5, and out of it below
-[: 5 her-stage !  0 reeling !  0 raging !  riccardo-frame ;] his
+testing his rage at the panic's stage 5 - free (moveMode 0: not struck, in an attack, at a door) -, and out of it below
+T{ [: 5 her-stage !  0 reeling !  0 raging !  -1 in-attack !  -1 held-door !  -1 at-ladder !  riccardo-frame  raging @ ;] his -> 0 }T
+[: 5 her-stage !  0 reeling !  0 raging !  0 in-attack !  riccardo-frame ;] his
 T{ [: raging @  4 her-stage !  riccardo-frame  raging @ ;] his -> -1 0 }T
 
 testing the story's kind 4 is him
@@ -71,17 +72,22 @@ testing ... struck to 100 alerted (hurt): its alert tables and waits; calmer bel
 T{ k37 enter  120 hits !  0 cond !  kind37-frame  cond @  alt-tables @  0 wait#  leave-actor -> 1 -1 150 }T
 T{ k37 enter  0 hits !  kind37-frame  cond @  alt-tables @  0 wait#  leave-actor -> 0 0 60 }T
 T{ 37 story.base:stalker-actor  k37 = -> -1 }T
-testing ... its tint (Kind37_Update): whole while its hold runs (150 frames), then pulsing in and out
+testing ... its tint (Kind37_Update): a turn of what it does no matter; struck, whole while its hold runs (150 frames),
+testing ... then pulsing in and out (Kind37_BehaviourEnded: the step a blow, a fall set)
 : k37-pulse ( -- flag )   \ (its hold over: within 400 frames below half)
     0 tint-t !  false  400 0 do  kind37-frame  my-model @ actor act.alpha sf@ 0.5e f< if  drop true leave  then  loop ;
-T{ k37 enter  3 my-mode !  -1 tint-was !  kind37-frame kind37-frame  tint-t @ 0>  my-model @ actor act.alpha sf@ 1e f=  k37-pulse  leave-actor -> -1 -1 -1 }T
+T{ k37 enter  0 tint-t !  3 my-mode !  kind37-frame  2 my-mode !  kind37-frame  tint-t @  leave-actor -> 0 }T
+T{ k37 enter  -1 reeling !  kind37-frame  0 reeling !  kind37-frame  tint-t @ 0>  my-model @ actor act.alpha sf@ 1e f=  k37-pulse  leave-actor -> -1 -1 -1 }T
 
-\ ---- the TintStalker (kind 23): the Pursuer's chase, seen only a while after each turn ----
+\ ---- the TintStalker (kind 23): the Pursuer's chase, seen only a while once struck ----
 : ts ( -- id )  s" tintstalker" actor-named ;
 testing the TintStalker: its kit, the Pursuer's chase, unseen till it does something
 T{ ts enter  kit @ tintstalker-kit =  base-chase @  hp @  unseen @  leave-actor -> -1 -1 100 -1 }T
 room-id game:fiona body-tri ts send stalker-in  3 run-frames
-testing ... in her room: seen a while (150 frames), then gone
+testing ... in her room: unseen - what it does no matter - till struck (TintStalker_SetDelay: the step a blow, a fall set);
+testing ... then seen a while (150 frames), then gone
+T{ ts enter  unseen @  tint-t @  leave-actor -> -1 0 }T
+ts enter  -1 reeling !  tint-frame  0 reeling !  leave-actor  2 run-frames
 T{ ts enter  unseen @  tint-t @ 0>  my-model @ actor act.visible l@  leave-actor -> 0 -1 1 }T
 testing ... its tint (TintStalker_Fade): shown at 112 of 128; its while over, fading out by 4 a frame, then gone
 T{ ts enter  tint-alpha f@ f>s  my-model @ actor act.alpha sf@ 0.875e f- fabs 0.01e f<  leave-actor -> 112 -1 }T

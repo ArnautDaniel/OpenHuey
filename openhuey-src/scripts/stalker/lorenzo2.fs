@@ -49,13 +49,19 @@ $1904 constant hold-blow-anim   $E00 constant blow-anim   $E04 constant blow-2-a
 : sweep-reaches? ( e id -- flag )
     my-kind @ kind39-kind = if  nip fiona = if  sees-fiona  else  sees-hewie  then  @ 0<> exit  then
     swap m.reach f@ reached? ;
+: may-go-her? ( -- flag )  her-reach @ 1 and 0= ;   \ (Pursuer_MayGoForTarget)
+\ (his: only while she may be gone for, his cry 12 with it - Lorenzo2_StateSweep; before 0.2.42 neither)
 : sweep-hits ( e -- )
+    my-kind @ kind39-kind <>  may-go-her? 0= and if  drop exit  then
     dup fiona sweep-reaches?  swept @ 1 and 0= and if
-        dup m.kind @  over stumble?  2 pick m.threat f@ f>cell  fiona send hit  1 swept @ or swept !
+        dup m.kind @  over stumble?  2 pick m.threat f@ f>cell  fiona send hit  1 swept @ or swept !  12 cry !
     then
     dup hewie sweep-reaches?  swept @ 2 and 0= and if
-        dup m.kind @  over m.damage @  2 pick stumble?  hewie send blow  2 swept @ or swept !
+        dup m.kind @  over m.damage @  2 pick stumble?  hewie send blow  2 swept @ or swept !  12 cry !
     then  drop ;
+\ none of his own for now (Lorenzo2_Start*: action $17, his gesture row 0 - his $1300 taunt; before
+\ 0.2.42 he stood)
+: holds-back ( -- )  0 taunt-act gesture-as ;
 : sweeping ( -- )  root-move  0 key-at? if  2 move-of sweep-hits  then  ended? if  -1 step-done !  then ;
 
 \ ---- his first: sinking to come up by her (Lorenzo2_StartSink / StateSink) ----
@@ -63,9 +69,9 @@ $1904 constant hold-blow-anim   $E00 constant blow-anim   $E04 constant blow-2-a
     root-move  ended? 0= if  exit  then
     way-to-her fdup 20e f< if  fdrop goal-here  else  10e f- goal-along  then
     come-up-anim ['] playing-out go-under  ['] under own-act-1 act! ;
-: sink-start ( -- )
+: sink-start ( -- )   \ (near, no way, or she not to be gone for: none of it)
     way-to-her fdup 30e f< if
-        f0< if  stand-watch  else  1 combo-start  then  exit
+        f0< may-go-her? 0= or if  holds-back  else  1 combo-start  then  exit
     then  fdrop
     sink-anim play-now  ['] sinking-behind own-act-1 act! ;
 \ ---- his second: stalking from below (Lorenzo2_StartStalkBelow / StateApproach / StateRise) ----
@@ -74,7 +80,8 @@ $1904 constant hold-blow-anim   $E00 constant blow-anim   $E04 constant blow-2-a
     way-to-her fdup f0< if  fdrop goal-here  else  5e f- 0e fmax goal-along  then
     sweep-anim ['] sweeping go-under  ['] under own-act-1 act! ;
 : below-start ( -- )
-    way-to-her f0< if  stand-watch exit  then
+    may-go-her? 0= if  holds-back exit  then
+    way-to-her f0< if  holds-back exit  then
     sink-to-her-anim play-now  ['] sinking-to-her own-act-1 act! ;
 \ ---- his third: his reach from afar (Lorenzo2_StartGrab / StateGrab) ----
 : grabbing ( -- )
@@ -89,7 +96,10 @@ $1904 constant hold-blow-anim   $E00 constant blow-anim   $E04 constant blow-2-a
         0  rise-at vec@ 0e 1e 0e mag-burst-new particles-engines   \ (its burst there: BurstA)
     then
     ended? if  -1 step-done !  then ;
-: grab-start ( -- )  rise-at quarry body-at vec-copy  reach-anim play-now  ['] grabbing own-act-1 act! ;
+: grab-start ( -- )   \ (she not to be gone for: none of it; on the hard setting unshaken through it)
+    may-go-her? 0= if  holds-back exit  then
+    hard-mode? if  -1 unshaken !  then
+    rise-at quarry body-at vec-copy  reach-anim play-now  ['] grabbing own-act-1 act! ;
 create lorenzo2-acts  ' sink-start , ' below-start , ' grab-start ,
 
 \ ---- his blows' effects (Lorenzo2_SlamDust, Lorenzo2_BlowSparks): his slam at its key, eight
@@ -123,5 +133,6 @@ create at-bone /vec allot
 : lorenzo2-frame ( -- )
     slam-dust  blow-sparks
     her-stage @ composed = if  0 raging !
-    else  raging @ 0=  reeling @ 0= and  my-mode @ after-her = and if  -1 raging !  then  then
+    else  raging @ 0=  my-mode @ after-her = and   \ (moveMode 0: not struck, in an attack, at a door or a ladder)
+        reeling @ 0= and  in-attack @ 0= and  held-door @ 0< and  at-ladder @ 0< and if  -1 raging !  then  then
     raging @ if  18e 12e  else  hard-mode? if  40e 30e  else  70e 60e  then  then  reach-k f!  attack-range f! ;

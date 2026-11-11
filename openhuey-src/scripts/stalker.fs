@@ -115,6 +115,7 @@ create figure-pck 32 allot   create figure-tex 32 allot
     -1 came-by !  -1 to-shut !  -1 at-ladder !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
     door-passed  -1 combo !  0 combo-step !  0 chase-t !  0 in-attack !   \ (Pursuer_Reset's)
     unheld  0 apart !  0 link-t !  out-over  -1 held-door !  0 entering !  0 barging !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
+    my-kind @ kind39-kind = if  -1 raging !  then   \ (Kind39_Activate: in a rage from its start - its stance and walk; before 0.2.42 never)
     away? 0= if  search-start  then ;
 : go-out ( -- )  let-her-go  let-door-go  out-over  forget-leads  0 in-game !  body-off  0 him act.visible l! ;
 
@@ -436,7 +437,8 @@ behaviour stalking
   on blow ( kind damage how -- )   \ (her kick or shove; a door she slammed: no answer)
       script-held @ if  2drop drop exit  then
       away? if  blow-away exit  then
-      sender striker !  2 pick door-blow = {: door? :}  struck  door? 0= if  sender send blow-taken  then ;
+      sender striker !  2 pick door-blow = {: door? :}  struck  door? 0= if  sender send blow-taken  then
+      my-kind @ kind12-kind = if  kind12-struck  then ;   \ (Kind12_EventState: struck, he takes her)
   on seize-taken ( -- )   \ (her answers to his taking her; one he isn't waiting for: let go)
       leading @ if  she-came answer !  else  fiona send unhand  then ;
   on seize-refused ( -- )  she-refused answer ! ;
