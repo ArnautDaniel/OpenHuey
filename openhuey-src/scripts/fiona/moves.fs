@@ -86,8 +86,8 @@ create there 12 allot
                   spot-tri her-move-at vec@ her-move-yaw f@ walk-spot  ['] to-spot her-act !
               else  path-start  then  endof
         walk-path-move of  walk-path-doing her-doing !  path-start  endof
-        run-move of  run-to-doing her-doing !  plan-move if  ['] path-to her-act !  else  to-idle  then  endof
-        run-path-move of  run-path-doing her-doing !  plan-move if  ['] path-to her-act !  else  to-idle  then  endof
+        run-move of  run-to-doing her-doing !  plan-move if  ['] path-to her-act !  else  to-idle done  then  endof
+        run-path-move of  run-path-doing her-doing !  plan-move if  ['] path-to her-act !  else  to-idle done  then  endof
         anim-move of  anim-doing her-doing !  her-move-a @ -1 play-table  done  ['] root-move her-act !  endof
         blend-move of  anim-doing her-doing !  her-move-a @ her-move-b @ -1 play-blend  done  ['] root-move her-act !  endof
         blend8-move of  anim-doing her-doing !  her-move-a @ her-move-b @ -1 play-blend  done  ['] root-move her-act !  endof   \ (no time of its own: as a blend here)

@@ -70,13 +70,13 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
     leader-gone? if  pulled-free exit  then  tugged
     her-shakes @ -1 <> if  shakes-now her-shakes +!  her-drags @ 1+ 10 *  her-shakes @ min her-shakes !  then
     ended? if
-        her-free @ if  shake-free-anim -1 play-table  ['] pulled-up her-act ! exit  then
+        her-free @ if  shake-free-anim play-cut  ['] pulled-up her-act ! exit  then
         1 her-drags +!
         her-drags @ 6 = if
             hewie-played? 0= if  fiona-occupied state-flag-set  then
-            dragged-off-anim -1 play-table  ['] dragged-off her-act ! exit
+            dragged-off-anim play-cut  ['] dragged-off her-act ! exit
         then
-        dragged-anim -1 play-table
+        dragged-anim play-cut
         hewie-played? if  0.25e rnd f> if  help-cry 0 her-sound  then  then   \ (the run: she cries for him, now and then)
     else her-shakes @ -1 <> if
         \ (out of her shakes - in the run, as many drags as her panic's stage)
@@ -87,7 +87,7 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
     root-move ;
 : at-his-hand ( -- )
     leader-gone? if  pulled-free exit  then  tugged
-    ended? if  dragged-anim -1 play-table  ['] dragged her-act !  then
+    ended? if  dragged-anim play-cut  ['] dragged her-act !  then
     root-move ;
 : led-by-hand ( -- )
     leader-gone? if  free! to-idle exit  then  tugged
@@ -108,7 +108,7 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
 \ ---- taken (the request kind 9 answered): her gasp, led away by the hand ($1400) or walking
 \ ($1500) - unless she isn't free, or there's no spot by him ----
 : seized ( who type -- taken? )
-    world-held state-flag?  her-mode @ dup ladder-mode = over thrown-mode = or swap down-mode = or  or if  2drop false exit  then   \ (Fiona_Reaction $A: not on a ladder, reacting or down)
+    world-held state-flag?  her-mode @ own-mode <>  or if  2drop false exit  then   \ (Fiona_JointAction kind 1: only moving freely - not kicking, calling, letting go, led ...)
     over 0< if  2drop false exit  then  over alive? 0= if  2drop false exit  then
     2dup spot-by dup 0< if  drop 2drop false exit  then
     her-led-tri !  her-led-at mt-at vec-copy                                    ( who type )
@@ -129,14 +129,14 @@ create gb-at /vec allot
     ended? if  caught-for-good  then   \ (the motion's flag $20: at its end)
     anim@ pulled-back-anim = if  pull-back along-wall  else  root-move  then ;   \ (pull_back: along any wall)
 :noname ( -- )
-    0 her-cried !  0 her-ended !  -1 her-fall-turn !  her-yaw f@ her-fall-yaw f!
+    0 her-cried !  0 her-ended !  -1 her-fall-turn !  -1 her-wall-side !  her-yaw f@ her-fall-yaw f!
     anim@ up-from-back-anim = events-now 2 and 0= and if  held-front-anim -1 play-table  ['] held her-act ! exit  then
     anim@ dup up-from-forward-anim = over get-up-anim = or swap lying-anim = or  events-now 2 and 0= and if
         held-down-anim -1 play-table  ['] held her-act ! exit
     then
     her-yaw f@ 17e gb-at her-at vec-ahead   \ (pulled back where she's free to be and 17 ahead is clear)
     room-to-throw? if  her-tri @ dup 0< if  drop -1  else  her-at gb-at doorway-or-step v-walk  then  else  -1  then
-    0< if  held-anim  else  0 her-fall-turn !  pulled-back-anim  then  -1 play-table
+    0< if  held-anim  else  pulled-back-anim  then  -1 play-table   \ (pulled back the plain way: her own yaw)
     ['] held her-act ! ; is grabbed
 
 \ ---- held by homunculi (Fiona_StateHold / StateStruggle: reaction $12): down under them ($1405,
@@ -148,12 +148,12 @@ create gb-at /vec allot
     anim@ case
         up-from-under-anim of  ended? if  to-idle  then  endof
         struggling-anim of
-            settled? if  her-hold @ 0> her-carried-t @ 0> and 0= if  own-mode her-mode !  up-from-under-anim -1 play-table  then  then
+            settled? if  her-hold @ 0> her-carried-t @ 0> and 0= if  own-mode her-mode !  -1 her-out-of-reach !  up-from-under-anim play-cut  then  then
         endof
-        held-under-anim of  ended? if  struggling-anim -1 play-table  then  endof
+        held-under-anim of  ended? if  struggling-anim play-cut  then  endof
     endcase ;
 : pinned ( -- )
     settled? 0= if  exit  then
     anim@ dup held-under-anim <> swap struggling-anim <> and if  held-under-anim -1 play-table  then
     ['] struggle her-act ! ;
-:noname ( -- )  180 her-hold !  60 her-hold-k !  ['] pinned her-act ! ; is held-down
+:noname ( -- )  180 her-hold !  60 her-hold-k !  -1 her-shake-rest !  0e her-shake-a f!  ['] pinned her-act ! ; is held-down

@@ -7,7 +7,7 @@
 \ She takes hold of it first (not one someone holds, nor one locked against her). Shut out by
 \ it: Hewie with her, and the stalker, at its front on its far side (slammed shut: or in its
 \ way, on its passage) - each struck by it (`blow` kind 5, 3 damage, how: the exit); she is held
-\ still 5 frames. Off screen, she being chased, the stalker making for that door decides for
+\ still 5 frames. Off screen (burst open), the stalker making for that door decides for
 \ himself (`blow` all the same: struck only when he is right behind it).
 IN: fiona.slam
 USING: engine vectors game-state actors messages common floor-flags doors rumble stalker-names fiona.state fiona.anims fiona.sounds fiona.model ;
@@ -39,10 +39,9 @@ $40 constant motion-frozen   \ (her motion's flag: held still)
     id ex at-front? 0= if  false exit  then
     id ex far-side?  burst? if  exit  then  id ex in-way? or ;
 : strike-with-door ( id exit -- )  {: id ex :}  door-blow 3 ex id send blow ;   \ (its how: the exit)
-: strike-out ( exit burst? -- hit? )   \ (the stalker burst in on: only chasing her, as the original)
+: strike-out ( exit burst? -- hit? )   \ (Fiona_SlamDoor: whoever is behind it, whatever he is doing)
     {: ex burst? :}  false
     dog-in-room ex burst? shut-out? if  dog-in-room ex strike-with-door  drop true  then
-    burst?  her-danger @ chased <> and if  exit  then
     stalker-in-room dup 0< 0= if  ex burst? shut-out? if  stalker-in-room ex strike-with-door  drop true  then  exit  then  drop
     burst? 0= if  exit  then
     stalker-in-game dup 0< if  drop exit  then  ex strike-with-door ;   \ (off screen: he decides)

@@ -27,8 +27,10 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
     else  nip  then
     {: tri :}  her-yaw f@ put  tri her-tri !  tri her-was-tri ! ;   \ (on the exit's own triangle: over a storey, the search finds the one below)
 : stand-free ( -- )   \ (Fiona_ToIdle but for the turn mode: free, standing, her moves her own)
-    free-doing her-doing !  own-mode her-mode !  her-yaw f@ her-heading f!  0 her-rest !  0 her-out-of-reach !
-    -1 idle-anim  ['] idle-move her-act ! ;
+    free-doing her-doing !  own-mode her-mode !  her-yaw f@ her-heading f!  0 her-rest !
+    fiona-occupied state-flag-clear   \ (flag $2B: free again)
+    her-scripted @ if  ['] idle-step her-act !  exit  then   \ (a script's: her idle step - standing, the move done)
+    0 her-out-of-reach !  -1 idle-anim  ['] idle-move her-act ! ;
 : idle ( -- )   \ Fiona_ToIdle: free, standing, the stick by the camera now (+0x1AD588 0)
     camera-relative her-turn-mode !  stand-free ;
 ' idle is to-idle
@@ -41,10 +43,10 @@ USING: engine vectors game-state facts actors messages common paths doors saves 
 \ steering in the next room while the stick stays (turn mode 3: controls.fs after-cut)
 : through-door ( -- )
     her-scripted @ if  exit  then
-    her-stick v.x sf@ her-stick v.z sf@  {: F: x z :}
+    camera-relative her-turn-mode !                                         \ (the old steering over)
+    her-last v.x sf@ her-last v.z sf@  {: F: x z :}                          \ (the stick's direction last frame)
     x fabs 0.5e f> z fabs 0.5e f> or 0= if  exit  then
-    x z vlen {: F: l :}  l f0= if  exit  then
-    cam-yaw  x l f/  z l f/  turned  fatan2                                  ( F: heading )
+    cam-yaw  x z  turned  fatan2                                             ( F: heading )
     fdup her-yaw f@ f- angle-wrap pi f2/ f< if
         fdup her-yaw f!  her-heading f!  door-steered her-turn-mode !
     else  fdrop  then ;
@@ -167,9 +169,11 @@ create feet-off-acts   \ (the states that clear +0x1AD5BC)
     her-offered @ offer-stood !  0 her-offered !
     her-at her-was-at /vec move  her-tri @ her-was-tri !  her-yaw f@ her-yaw-was f!
     look-cleared
-    feel-the-panic
-    read-controls
-    her-mode @ own-mode = if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
+    her-scripted @ 0= if   \ (a script's hold: Fiona_Think - no panic, no stick, no control command)
+        feel-the-panic
+        read-controls
+        her-mode @ own-mode = if  panic-controls  else  false  then  0=  hands-off? 0= and if  control-command  then
+    then
     hands-off? if  her-scripted @ if  read-command-scripted  else  -1 her-cmd !  then  else  read-command  try-backstep  try-defend  try-doors  try-ladders  try-let-go  then
     \ (her point of interest before her state runs: the original's room scripts test it - phases 1 to 3 - ahead
     \ of Progress_CharsThink, so a kick that lands on a wall still shows its point that frame; told after, the
@@ -296,7 +300,7 @@ behaviour free
       -1 her-offered !
       her-mode @ 0= her-doing @ 0= and  hands-off? 0= and  action-button? and
       sender alive? and  if  sender send take-offer  else  2drop  then ;   \ (its room gone meanwhile: nobody to answer)
-  on scripted ( on -- )  idle  dup 0= her-scripted @ 0<> and if  script-over  then  her-scripted ! ;
+  on scripted ( on -- )  dup 0= her-scripted @ 0<> and if  script-over  then  her-scripted !  idle ;   \ (idle as she now is: a script's idle step, or free)
   on noclip ( on -- )  her-noclip ! ;   \ (the story's 0x20)
   on aside ( on -- )  her-aside ! ;     \ (0x21: out of reach of attacks)
   on activate ( -- )  0 her-noclip !  0 her-aside !  idle ;   \ (the story's 0x15, Fiona_Activate: afresh, standing)
