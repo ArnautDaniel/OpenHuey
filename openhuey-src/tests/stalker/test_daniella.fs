@@ -65,6 +65,14 @@ T{ [: knockouts @ >r  stalker.struck:at-door?  stalker.anims:leg-fall-anim anim 
 testing ... another fall (not the leg's): as it was
 T{ [: stalker.anims:fall-back-anim anim !  0 hp !  stalker.struck:doorway-revive  hp @ ;] hers -> 0 }T
 [: 50 hp !  well-cond cond ! ;] hers  dan send stalker-out  3 run-frames
+testing come in by an open door to search, the others (Debilitas) go to their spot by it, stand and go on (Pursuer_GoToDoor)
+ex-door true s" doors" actor-named send door-opened  deliver
+: deb ( -- id )  game:debilitas ;
+room-id door-tri deb send stalker-in  3 run-frames
+T{ deb enter  ex came-by !  searching mode!  0 lead !  stalker.travel:by-open-door?  stalker.travel:daniella-kind?
+   ex stalker.travel:to-door-on-entry  door-script @  leave-actor -> -1 0 2 }T
+T{ [: deb enter  door-script @ 0=  leave-actor ;] 300 soon -> -1 }T   \ (there, turned to it: on)
+deb send stalker-out  3 run-frames
 testing her later kinds (34..36): each its own actor, kit and numbers; her look (34 and 36 the model DNL_001)
 : later ( kind -- id )  case  34 of  s" kind34"  endof  35 of  s" kind35"  endof  >r s" kind36" r>  endcase  actor-named ;
 : numbers ( -- kind hp tolerance limit )  my-kind @  hp-max @  tolerance @  dog-limit @ ;

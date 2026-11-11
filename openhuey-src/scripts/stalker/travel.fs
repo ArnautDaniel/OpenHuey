@@ -115,22 +115,24 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
     my-mode @ heading-for-her = if  searching mode!  then
     search-again ;
 
-\ come in by an open door to search or wait about, Daniella and her kinds shut it behind them first
-\ (Pursuer_EnterRoom's action $28 - Pursuer_GoToDoor, then their table $E: Exit1F0, the door animation
-\ that shuts it; the others' $E stands - a lead he follows (4, 1, 5) none of it). Before 0.2.42 they left
-\ it open
+\ come in by an open door to search or wait about, following no lead of his own (Pursuer_EnterRoom's action
+\ $28): Daniella and her kinds shut it behind them (their $28: Exit1F0, the door animation that shuts it); the
+\ others go to their spot by it, stand (their table $E) and go on (Pursuer_GoToDoor). Before 0.2.42 all left
+\ it open at once; before 0.2.45 the others didn't go to it
 defer shut-on-entry ( exit -- )   ' drop is shut-on-entry   \ (stalker/doorway.fs)
+defer to-door-on-entry ( exit -- )   ' drop is to-door-on-entry
 : daniella-kind? ( -- flag )  my-kind @ dup daniella-kind =  swap kind34-kind kind36-kind 1+ within or ;
-: shuts-coming-in? ( -- flag )
-    daniella-kind? 0= if  false exit  then
+: by-open-door? ( -- flag )   \ (Pursuer_EnterRoom's action $28: searching or waiting about, following no lead of his own, by an open door)
     my-mode @ searching waiting-about 1+ within 0= if  false exit  then
     lead @ dup 4 =  over 1 = or  swap 5 = or if  false exit  then
     came-by @ dup 0< if  drop false exit  then  room-id swap room-exit-door
     dup 0< if  drop false exit  then  dup fixed? if  drop false exit  then  door-open? ;
+: shuts-coming-in? ( -- flag )  daniella-kind?  by-open-door? and ;
 \ from the doorway on in to the spot 12 inside (Pursuer_SearchRouteIn), then as in-play has it
-: walking-in ( -- )
-    walking  step-done @ 0= if  exit  then  0 step-done !  come-into-play
-    shuts-coming-in? if  no-search search-phase !  came-by @ shut-on-entry  then ;
+: walking-in ( -- )   \ (his mode as he came in: heading for her he's searching once in - not one for action $28)
+    walking  step-done @ 0= if  exit  then  0 step-done !  by-open-door?  come-into-play
+    0= if  exit  then  no-search search-phase !
+    daniella-kind? if  came-by @ shut-on-entry  else  came-by @ to-door-on-entry  then ;
 : walk-in ( -- )
     0 entering !
     in-tri @ 0< if  come-into-play exit  then
