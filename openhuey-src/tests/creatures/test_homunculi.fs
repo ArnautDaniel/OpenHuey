@@ -69,6 +69,11 @@ testing sight 0: it wakes, turns to her and comes; close, it closes in to grab h
 5 run-frames
 T{ [: awake @ ;] of7 -> -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
+testing the world frozen (a room's close look, flag $17): it holds where it is - neither updated nor drawn
+testing ... (Creatures_Update, Creatures_Draw: its model a character's); hers a character's too, not drawn meanwhile
+world-frozen state-flag-set  d-her constant d-frozen
+T{ 60 run-frames  d-her d-frozen =  game:fiona enter  her-model @  leave-actor actor act.character l@ -> -1 1 }T
+world-frozen state-flag-clear
 d-her constant d0
 T{ [: [: running @ 3 = ;] of7 ;] 900 soon -> -1 }T
 T{ d-her d0 < -> -1 }T

@@ -113,8 +113,25 @@ behaviours, `Hewie_WhatNext` / `WhenIdle` (the weighted lists, from the executab
   tried again until he follows her afresh) and starts from the half of his room he is on,
   `his-way` (the original's +0xF3668: set by the exit he comes through or arrives by, 2 -
   either - when he comes into the game; -1 looks it up from the exit he came in by, and then
-  the doors' one-way flags count for his kind, `hewie-kind`). Not modelled: Progress_DoorPassable's side (the planner treats doors as
-  passable from any side) and Progress_CurRoomFlag (waiting at a door the story holds).
+  the doors' one-way flags count for his kind, `hewie-kind`). The planner still treats doors as
+  passable from any side (its `kind` is the one-way flag's, not the walker's slot), but at the
+  door itself (Hewie_StateToDoor) one locked against him is no way, and one someone holds he waits
+  at, trying again each frame (Progress_CurRoomFlag) - since 0.2.42; before, a held door let him
+  down and he went another way or none. Not modelled: his walk along the way to the first door
+  while she is gone (counted down instead), Hewie_Arrive's triangle-centre fallback, his door in
+  the save (Hewie_SaveState keeps the exit he came in by).
+- Fixed in 0.2.42 against the original: "go there" measured from where she stood (Actor_FreeDistance
+  from her start, by his floor - it was from him, so the spot often fell at her feet); "come back"
+  while the story hides him picks anew (+0xF3559); placed by the story in another room he takes his
+  default (Hewie_PlaceInRoom); she leaving while a script has him lets the script go first
+  (Hewie_Vt34: Hewie_FullStop) - he no longer stays behind; "come back" with the stalker about puts
+  him 15 from her toward the stalker (hurrying) or away (sulking), turned 15 degrees if blocked, and
+  in a divided room at the nearest door point on his half (Hewie_CommandPlace); "go for it" rushes a
+  creature (slots 7..9, 0x6D) instead of harrying it (go_for); across a room out of sight 1.6 a frame,
+  0.38 hurt (Hewie_State1920 - her cry's 10 was used there too); exits on his half only
+  (exit_reachable); a fetch next isn't cut short by the ball's sight; down where he may not lie by
+  Actor_TriFreeFor (floor, doors, ladders); the pad's gestures reset those after the one that fires
+  and R3 needs the stick centred, the keyboard's L is one praise a press (Gesture_Update).
 - The original's relations table (slot commands, request blocks 12 / 13, "hold" 7) is replaced
   by the meeting messages and `command`: what Hewie_JointAction checked each frame he checks
   when asked. A refusal answers at once (where the original cancelled and held her the next

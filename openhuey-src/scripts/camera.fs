@@ -71,7 +71,7 @@ behaviour filming
       held @ 0= if  cam-take-followed  then
       cam-track
       cam-target 0< if  shot-over  then   \ (following nobody: no shot)
-      cam-update
+      flag-names:panic-starting facts:state-flag? 0= if  cam-update  then   \ (her panic's start: CamDirector_Update skipped)
       shot @ shot-wanted = if  take-shot  then
       shot @ no-shot <> if  shoot  then
       cam-cut? if  broadcast camera-cut  then ;

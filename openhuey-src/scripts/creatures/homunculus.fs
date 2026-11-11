@@ -438,7 +438,7 @@ $80 constant grab-noise
     model @ 0< if  exit  then
     in-play? self body? and 0= if  0 actor@ act.visible l!  exit  then
     my-at v.x sf@ actor@ act.x sf!  my-at v.y sf@ fall f@ f+ actor@ act.y sf!  my-at v.z sf@ actor@ act.z sf!
-    self body-yaw actor@ act.yaw sf!  1 actor@ act.visible l!
+    self body-yaw actor@ act.yaw sf!  1 actor@ act.visible l!  1 actor@ act.character l!   \ (not drawn while the world is frozen: Creatures_Draw)
     running @ leaving = if  fade @ $80 min s>f 128e f/  else  1e  then  actor@ act.alpha sf!   \ (leaving: fading)
     slot @ my-room @ move-mode @ awake @ 0<> broadcast creature-doing ;
 : frame ( -- )
@@ -532,7 +532,9 @@ behaviour homunculus
       running @ reeling = if  watching switch-to  then
       awake @ 0= fall f@ f0> and if  dropped want !  dropped running !  then
       yaw body-turn  store-record ;
-  on tick ( -- )  model @ 0< if  exit  then  frame ;
+  \ (the world frozen - a room's close look - or a cutscene with the camera: not updated, Creatures_Update;
+  \ not drawn either - its model a character's, actor.character; before 0.2.42 it went on)
+  on tick ( -- )  model @ 0< if  exit  then  world-frozen state-flag? cam-scene? or  panic-starting state-flag? or if  exit  then  frame ;
   on fiona-doing ( mode sub cond cmd doing -- )  her-doing !  drop drop  her-sub !  her-mode ! ;
   on fiona-unseen ( on -- )  her-unseen ! ;
   on fiona-blow ( n damage x y z reach -- )   \ (Fiona_BlowCreatures) once a blow, if it reaches it

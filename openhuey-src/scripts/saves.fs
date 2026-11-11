@@ -73,6 +73,7 @@ variable sw-in  variable sw-room  variable sw-tri  variable sw-hp  variable sw-m
 create sw-more 8 cells allot   variable sw-more?   \ (a save without them: as he was)
 create sm-was 7 cells allot   variable sm-was?        \ the summoner's record (progress +0x764)
 variable was-map-page                                \ the map's page she was on (the save's +0x18F0; -1 none)
+variable was-spare                                   \ the room loaded ahead (-1 none: a save without it)
 create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7B0)
 
 : progress-clear ( -- )  progress progress-size 0 fill ;
@@ -83,7 +84,7 @@ create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7
 : in-room ( room -- )
     dup was-room !  hw-room !  -1 hw-tri !  2 hw-side !  hw-mood 7 cells 0 fill
     false was-hewie !  -1 was-stalker !  6 0 do  16 i cells was-skills + !  loop  was-met 4 cells 0 fill
-    false sm-was? !  -1 was-map-page !  false pn-was? ! ;
+    false sm-was? !  -1 was-map-page !  false pn-was? !  -1 was-spare ! ;
 : fiona-was ( costume -- ) ( F: x y z yaw -- )  was-yaw f!  was-z f!  was-y f!  was-x f!  was-costume ! ;
 : hewie-was ( trust points hp -- ) ( F: x y z yaw -- )
     hw-yaw f!  hw-z f!  hw-y f!  hw-x f!  was-hp !  was-points !  was-trust !  true was-hewie ! ;
@@ -98,6 +99,7 @@ create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7
 : stalker-more ( cond hp-max rage temper hits mode-t down-t yaw -- )  0 7 do  i cells sw-more + !  -1 +loop  true sw-more? ! ;
 : summoner-was ( away called cooldown room waited mode kind -- )  0 6 do  i cells sm-was + !  -1 +loop  true sm-was? ! ;
 : map-page-was ( page -- )  was-map-page ! ;
+: spare-was ( room -- )  was-spare ! ;
 : panic-was ( stage left hold beat level passing lasting -- )  0 6 do  i cells pn-was + !  -1 +loop  true pn-was? ! ;
 
 \ ---- writing ----
@@ -133,6 +135,7 @@ create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7
     was-stalker @ 0< sw-in @ 0= or  sw-room @ was-room @ = or if  false exit  then
     sw-mode @ held-off =  sw-more? @ sw-more @ down-cond = and  or ;
 : put-back ( -- )
+    was-spare @ dup 0< if  drop  else  s" rooms" actor-named send room-preload  then   \ (its forced ways lead back)
     was-map-page @ 0< 0= if  was-map-page @ s" subscreen" actor-named send map-turn-to  then   \ (SceneGame_RoomIn: Map_TurnTo)
     was-costume @ fiona-id send costume
     was-x f@ was-y f@ was-z f@ was-yaw f@ place-msg fiona-id send place

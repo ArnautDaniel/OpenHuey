@@ -119,7 +119,10 @@ than its clock; his clock only runs down there off screen.
 is, 60 in 100, the room's next search spot (the room class's table +0x38, generated into
 `stalker/spots.fs` by `tools/searchspots.py`: 146 rooms) while it has more, else a triangle
 at random he may stand on (not both $100000 and $200000). A stop he has no way to is skipped;
-past 8 the route is given up. A stop picked at random gets at most 150 frames' walk.
+past 8 the route is given up. A stop picked at random gets at most 150 frames' walk. A search of her
+room is given 30 seconds (+0x1794, 1800 frames as its stops are set: Pursuer_ModesSearching, SearchRouteIn,
+SearchOffscreen); out (Stalker_ThinkTimers), the stop he is making for is his last (`cap-down`) - before 0.2.42
+he walked every stop however long they took, a search that seemed never to end.
 
 **At a stop** (Debilitas_AttackTable "searched", $3AFA40): 50 his stand and look about him (action 9:
 Pursuer_WalkAside, Pursuer_LookAround - 90 frames), 20
@@ -143,7 +146,12 @@ room or held off 1, while she hides 2. A door as he finds it (Npc_ExitKind): hel
 waits; locked against him, locked or stuck - not that way again (a fresh route avoiding it);
 a doorway or open - through; shut - through, but into her room he first knocks (a sound by
 his kit's knocks, +0x16B0: Debilitas $28 or $23, Daniella $21 / $19 / $1A, ...; none of his
-own the Pursuer's $21; bank 7, at the door on her side) and waits 60..120 frames. Into her room he comes
+own the Pursuer's $21; bank 7, at the door on her side) and waits 60..120 frames. A door (not a doorway) he
+goes through into a room not hers is left as his kind leaves it (Npc_ExitWhatToDo, vtable +0xF0; `passed-afar`):
+most take hold of it and let it go open (NPC_ExitArg - Debilitas, Lorenzo, kinds 35..39 ...); Daniella shuts it
+unless in her rage (Daniella_ExitArg), her kind 34 too but leaves it open in the run or on the hard setting
+(Kind34_ExitArg); Riccardo leaves it be; the TintStalker opens it only in the run. Heard at the door
+(`open-from-afar` / `shut-from-afar`). Before 0.2.42 every door was left as it was. Into her room he comes
 in its doorway, facing in; a shut door he came by is taken (`hold-door`) and opened by hand - his door
 animation, the door along it, the pad rumbling (Pursuer_EnterRoom's action $C, Pursuer_DoorBarge) - and he
 walks in once it stands open. Refused (she holds it): no door action; he is about his business from the

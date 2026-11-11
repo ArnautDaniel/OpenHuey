@@ -21,7 +21,11 @@ end-state
     played @ 0< if  drop exit  then  played @ swap broadcast leaving-room ;
 
 behaviour rooming
-  on spawned ( -- )  -1 played !  -1 came-by !  -1 spare ! ;
+  on spawned ( -- )  -1 played !  -1 came-by !  -1 spare !  self subscribe write-save ;
+  \ (saves.fs) the room loaded ahead: a save made where only a forced way leads out - the hidden
+  \ room $27, in by a hole - goes back by it as loaded (a load plays the room afresh: the spare
+  \ was the room played before, or none, and its way led nowhere - before 0.2.42)
+  on write-save ( -- )  spare @ . ." spare-was" cr ;
   \ (the spare slot: SceneGame_LoadSpareRoom, the scripts' 0x3A; SceneGame_PrepareExit, the room
   \ behind an exit. The room left stays in it - the original's two slots swap (SceneGame_LeaveRoom)
   \ - so a forced exit with nothing else loaded ahead goes back there)

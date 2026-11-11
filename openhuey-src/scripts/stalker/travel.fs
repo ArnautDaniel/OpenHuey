@@ -6,7 +6,7 @@
 \ (Pursuer_ModesSearching off screen, Pursuer_SearchRouteIn) and coming into the room being
 \ played (Pursuer_EnterRoom; Pursuer_BackOnMesh when she comes into his).
 IN: stalker.travel
-USING: engine game-state actors messages common facts flag-names paths vectors doors stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.anims ;
+USING: engine game-state actors messages common facts flag-names paths vectors doors stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.anims ;
 
 : my-room ( -- room )  self body-room ;
 : away? ( -- flag )  in-game @ if  my-room room-id <>  else  false  then ;
@@ -196,7 +196,33 @@ begin-structure /knock  field: kn.sound  ffield: kn.upto  end-structure
     0 exit-spot drop  knock-sound 7 bank-sound-at
     rnd 60e f* 60e f+ f>s knock-t ! ;
 
+\ ---- a door he goes through out of sight, into a room not hers, as his kind leaves it
+\ (Npc_ExitWhatToDo: vtable +0xF0 for a door, open or shut - not a doorway): most take hold of it
+\ and let it go open (NPC_ExitArg); Daniella shuts it unless in her rage (Daniella_ExitArg), her
+\ kind 34 too - but leaves it open in the run or on the hard setting (Kind34_ExitArg); Riccardo
+\ leaves it be (Riccardo_ExitArg); the TintStalker opens it only in the run (TintStalker_EndingDoor).
+\ Heard where it is (DoorHold_Open / DoorHold_Shut) ----
+0 constant leaves-it   1 constant opens-it   2 constant shuts-it
+: afar-manner ( -- how )
+    my-kind @ case
+        riccardo-kind of  leaves-it  endof
+        tintstalker-kind of  hewie-played? if  opens-it  else  leaves-it  then  endof
+        daniella-kind of  raging @ if  opens-it  else  shuts-it  then  endof
+        kind34-kind of  raging @ hewie-played? or hard-mode? or if  opens-it  else  shuts-it  then  endof
+        >r opens-it r>
+    endcase ;
+: passed-afar ( exit -- )
+    {: e :}  my-room e room-exit-door  dup 0< if  drop exit  then  fixed? if  exit  then
+    my-room e stalker-kind stalker-noise
+    afar-manner case
+        opens-it of  doors-id send open-from-afar  endof
+        shuts-it of  doors-id send shut-from-afar  endof
+        >r 2drop 2drop r>
+    endcase ;
+
 \ ---- each frame out of sight on his route (Pursuer_TravelOffscreen) ----
+: onward ( exit -- )   \ (Pursuer_MayUseExit: into a room not hers, the door left as his kind leaves it)
+    dup my-room swap room-exit-leads drop room-id <> if  dup passed-afar  then  through ;
 : at-door ( -- )
     next-door dup door-exit {: door e :}
     e 0< if  goal-room @ route! drop  exit  then
@@ -207,8 +233,8 @@ begin-structure /knock  field: kn.sound  ffield: kn.upto  end-structure
             my-room e room-exit-leads drop room-id =  my-mode @ held-off <> and if
                 knock-t @ 0= if  e knock exit  then
                 -1 knock-t +!  knock-t @ 1 > if  exit  then
-            then  e through  endof
-        >r e through r>
+            then  e onward  endof
+        >r e onward r>
     endcase ;
 \ ---- his footsteps heard through the walls (Pursuer_FootstepsThroughWalls): making for a door of
 \ her room, within 80 of it, each 10 he closes in a step (his sounds 0 / 1 in turn, bank 7) out

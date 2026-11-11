@@ -355,7 +355,7 @@ create who-at /vec allot
     self body? 0= if  0 him act.visible l!  exit  then
     my-at v.x sf@ him act.x sf!  my-at v.y sf@ him act.y sf!  my-at v.z sf@ him act.z sf!
     yaw him act.yaw sf!
-    self body-room room-id =  shown @ and  0<> 1 and  him act.visible l! ;
+    self body-room room-id =  shown @ and  0<> 1 and  him act.visible l!  1 him act.character l! ;   \ (not drawn while the world is frozen)
 \ its feet on the floor (Pursuer_ModelUpdate: the model's +0x40 by its stance's points - its kinds
 \ set none, 0 0: at its own height - and +0x4C): in the room played, on its triangle, planted but
 \ while a script walks it through blocked floor; a scene's (its director's motion) not
@@ -379,6 +379,7 @@ behaviour figure
   on cast-dress ( model -- )  dress ;
   on cast-out ( -- )  body-off ;
   on tick ( -- )   \ (a scene having it - Character_Disable - its frame waits: the scene moves its model)
+      flag-names:panic-starting state-flag? if  exit  then   \ (her panic's start: held still)
       model @ 0< 0= self body? and  model @ scene-has? 0= and if  act @ execute  look  then  pose  fit-legs ;
   on frame-end ( -- )
       model @ 0< 0= self body? and if  mv-done @  ended?  model @ 0 0 1 motion-events  broadcast moving  then ;

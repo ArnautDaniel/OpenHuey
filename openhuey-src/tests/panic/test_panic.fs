@@ -27,11 +27,19 @@ testing a fright: half of it lasting, half passing (30 -> +30)
 0 game:panic send panic-level!  game-tick
 T{ 30e f>cell game:panic send fright  game-tick  level 30e about -> -1 }T
 
+testing her panic's start (the level at 100, on her feet): the world held still its 30 frames - then let go (SubPlay's flags & $F)
+0 game:panic send panic-level!  game-tick
+T{ 100 game:panic send panic-level!  3 run-frames  panic-starting state-flag?  stage -> -1 4 }T
+T{ 35 run-frames  panic-starting state-flag? -> 0 }T
+testing ... never left on: a scene taking the camera, or the panic reset, lets the world go at once
+0 game:panic send panic-level!  game-tick  100 game:panic send panic-level!  3 run-frames
+T{ game:panic send panic-reset  2 run-frames  panic-starting state-flag? -> 0 }T
+
 testing out of breath from stage 2: Fiona's bit 1
 T{ 80 game:panic send panic-level!  3 run-frames  stage  bits 1 and -> 2 1 }T
 
 testing panicking (stage 4): she screams, her fear bit 2, the panic run
-T{ 4 game:panic send panic-stage!  3 run-frames  stage  bits 2 and -> 4 2 }T
+T{ 4 game:panic send panic-stage!  33 run-frames  stage  bits 2 and -> 4 2 }T   \ (her panic's start first: 30 frames held still)
 T{ key: W hold  8 run-frames  anim -> $206 }T   \ (by frame 13 the run has taken her into a wall: a stumble)
 T{ key: W release  anim dup $206 = swap $1001 = or -> -1 }T      \ (she runs on blindly, or stumbles)
 testing running blindly into walls: stumbles (0x1001), then a fall (0xB00) that ends the panic

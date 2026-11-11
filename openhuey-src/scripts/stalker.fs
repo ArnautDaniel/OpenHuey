@@ -17,7 +17,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     figure? self body? and if  self body-room room-id =  else  false  then ;
 : pose ( -- )
     my-at v.x sf@ him act.x sf!  my-at v.y sf@ him act.y sf!  my-at v.z sf@ him act.z sf!
-    self body-yaw him act.yaw sf!
+    self body-yaw him act.yaw sf!  1 him act.character l!   \ (not drawn while the world is frozen: Progress_DrawChars)
     played-here? under-t @ 0= and unseen @ 0= and hidden @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class;
     \ hidden by the story: its 0x1F - the original's +0x29)
 
@@ -175,7 +175,7 @@ $1300 constant gesture-anims
     take-asked @ 0= if  exit  then  0 take-asked !
     played? script-held @ 0= and if  taken  then ;
 : frame ( -- )
-    take?
+    take?  cap-down
     posed @ if  posed-frame  tell-danger exit  then
     script-held @ if  held-frame exit  then
     away? if  away  pose  tell-danger  exit  then
@@ -383,7 +383,7 @@ behaviour stalking
       \ given back he is shown, as the cast was made active: Cutscene_ReleaseActors' +0x29)
       my-model @ scene-has?  dup 0=  in-cast @ and if  0 hidden !  then  in-cast !
       in-game @ in-cast @ and if  tell-doing  loaded @ if  status  then  exit  then
-      in-game @ still-held @ and if  tell-doing  loaded @ if  status  then  exit  then   \ (held still: OpenHuey's)
+      in-game @ still-held @ panic-starting state-flag? or and if  tell-doing  loaded @ if  status  then  exit  then   \ (held still: OpenHuey's; her panic's start)
       in-game @ if  frame  script-held @ 0= if  own-frame @ ?dup if  execute  then  then  tell-doing  then   \ (held: his Think, not his own frame)
       figure? self body? and  in-game @ 0= and if  posed @ if  posed-frame  else  pose  then  then   \ (a scene's figure: moved only posed)
       loaded @ if  status  then ;

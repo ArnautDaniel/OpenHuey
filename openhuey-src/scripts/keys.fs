@@ -35,12 +35,12 @@ enum: button  circle square l1 triangle r1 cross start-button select-button ;
     key: S key-held? if  1e to z  then  key: W key-held? if  z 1e f- to z  then
     pad-stick  fover f0= fdup f0= and if  fdrop fdrop x z exit  then ;
 \ the right stick's gesture this frame (Gesture_Update): I up, K down, L right, J left, F as R3
-\ (0 up, 1 down, 2 R3, 3 right, 4 left; -1 none - messages.fs stick-gesture); L held, right
-\ again (the stick held over: the praise's repeats)
+\ (0 up, 1 down, 2 R3, 3 right, 4 left; -1 none - messages.fs stick-gesture); one a press, as
+\ the stick's are one a push (gesture_step) - before 0.2.42 L held was right every frame, a praise
+\ repeated each time she was free again
 : gesture@ ( -- g )
     key: I pressed? if  0 exit  then  key: K pressed? if  1 exit  then
     key: F pressed? if  2 exit  then  key: L pressed? if  3 exit  then
-    key: J pressed? if  4 exit  then
-    key: L key-held? if  3 exit  then  -1 ;
+    key: J pressed? if  4 exit  then  -1 ;
 \ the face buttons and the shoulders pressed this frame (circle .. cross: the pad's bits 10..15)
 : buttons-pressed ( -- n )  0  start-button 0 do  i button-pressed? if  1+  then  loop ;

@@ -51,7 +51,7 @@ create reactions  300 , 1 ,  300 , 1 ,  300 , 1 ,  750 , 1 ,  150 , 1 ,  1500 , 
 : act-away ( code -- flag )
     case
         come-back-cmd of
-            his-yelp @ 0> if  -1 his-yelp !  false
+            his-yelp @ 0> if  -1 his-yelp !  1 his-pending !  false   \ (+0xF3559: he picks anew - out to her)
             else  his-action @ back-to-her-act <> if  back-to-her-act 0 want  true  else  false  then  then  endof
         help-cmd of  -1 his-yelp !  to-her-cry-act 0 want  true  endof
         tend-cmd of  10 hp!  false  endof

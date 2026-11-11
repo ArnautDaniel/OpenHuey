@@ -56,6 +56,8 @@ typedef struct Actor {
                              * frames s16, its pose u8, -, its flags u16), NULL none */
     int ntable;
     int32_t visible;
+    int32_t character;      /* a character's or a creature's model: not drawn while the world is frozen
+                             * (progress state flag $17 without $24: Progress_DrawChars, Creatures_Draw) */
     float shadow_size;      /* the contact shadow's radius (room units; 0: none) */
     int32_t shadow_off;     /* casts no shadow and has no contact shadow (the scripts' 0x8F) */
     float alpha;            /* drawn faded (1 as it is; 0 unseen) */
@@ -128,6 +130,9 @@ void actor_free(Actor *a);
 void actor_advance(Actor *a);
 void actor_tick(Actor *a);
 /* pose and skin it for this frame (before shadows and drawing) */
+/* drawn this frame: in use and shown - and, a character or a creature, not while the world is
+ * frozen (actor.character) */
+int actor_shown(const Actor *a);
 void actor_prepare(Actor *a);
 /* its middle and size in the room */
 Vec3 actor_center(const Actor *a);

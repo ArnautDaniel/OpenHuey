@@ -337,6 +337,7 @@ behaviour free
   on tick ( -- )   \ (a scene having her - Character_Disable - her frame waits: where the scene moves her
       \ her place - Fiona_FollowAnim; her heading kept)
       self body? 0= if  exit  then
+      panic-starting state-flag? if  exit  then   \ (her panic's start: the world held still - Progress_CharsThink skipped)
       her-model @ scene-has? if  followed  else  frame  then ;
   on frame-end ( -- )   \ what she is doing, as the frame left her; her move
       self body? 0= if  exit  then

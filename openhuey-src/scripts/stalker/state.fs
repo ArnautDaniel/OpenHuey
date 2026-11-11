@@ -65,6 +65,7 @@ state: stalker-state
   cell field spot-next          \ +0x1738: the room's next search spot
   cell field stop-wait          \ +0x1798: frames to look about at a stop picked at random
   cell field route-done         \ +0x16F4: the route is over (his mode moves on)
+  cell field search-cap         \ +0x1794: frames his search of her room has left (1800 as it starts); out, his route ends at the stop he is making for
   cell field search-phase       \ 0 none, 1 walking to a stop, 2 searching it
   \ his travel out of sight (stalker/travel.fs): the room he heads for (+0x1594), his route's
   \ doors (+0x138C, the next +0x1388, their number +0x1384), the way left to the next

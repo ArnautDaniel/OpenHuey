@@ -1841,7 +1841,7 @@ PRIM(p_game_tick) {   /* ( -- ) one whole frame of the game (tests: the actors, 
 
     engine_tick(&gEngine);
     for (i = 0; i < MAX_ACTORS; i++) {
-        if (gEngine.actors[i].used && gEngine.actors[i].visible) {
+        if (actor_shown(&gEngine.actors[i])) {
             actor_prepare(&gEngine.actors[i]);
         }
     }
@@ -4015,6 +4015,7 @@ void bind_engine(Forth *f) {
     field(f, "act.vweight", offsetof(Actor, vweight));  /* sf@: the motion against its variant (1: alone) */
     field(f, "act.variant", offsetof(Actor, variant));  /* 32-bit: the variant's index, -1 none */
     field(f, "act.visible", offsetof(Actor, visible));  /* 32-bit: l@ l! */
+    field(f, "act.character", offsetof(Actor, character));  /* 32-bit: l@ l! */
     field(f, "act.shadow", offsetof(Actor, shadow_size));
     field(f, "act.shadow-off", offsetof(Actor, shadow_off));   /* 32-bit: l@ l! */
     field(f, "act.layer", offsetof(Actor, layer));      /* 32-bit: its draw layer (0: $A) */

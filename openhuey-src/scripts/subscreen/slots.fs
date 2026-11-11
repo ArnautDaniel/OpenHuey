@@ -6,7 +6,7 @@
 \ a cell matches when its two rows show the same symbol (5 is wild). The symbols' counts give a
 \ result, and the result an item - forged, in an amount by how many cells matched.
 IN: subscreen.slots
-USING: engine actors common messages keys items items.names subscreen.state subscreen.art subscreen.input subscreen.tables ;
+USING: engine actors common messages keys items items.names ps2-screen subscreen.state subscreen.art subscreen.input subscreen.tables ;
 
 5 constant wild   4 constant blank
 magist-medallion constant fallback   \ (when nothing is left to forge)
@@ -85,6 +85,7 @@ create candidates 8 cells allot   variable #candidates
     0 #candidates !
     8 0 do  i result-item dup forgeable? if  #candidates @ cells candidates + !  1 #candidates +!  else  drop  then  loop ;
 : forge ( -- )
+    1 6 stop-sound   \ (the roll's sound over: sy_finish)
     score  verdict result !  0 amount !
     result @ 0< 0= if  haul amount !  amount @ 0= if  -1 result !  then  then
     result @ 0< 0= if
@@ -105,9 +106,16 @@ create candidates 8 cells allot   variable #candidates
 \ ---- drawing (SlotMachine_DrawRow, DrawCell, MaterialList, ItemFound_Step) ----
 create symbol-palettes  6 , 3 , 4 , 5 , 0 , 7 ,
 : palette-of ( sym -- pal )  dup 0 6 within if  cells symbol-palettes + @  else  drop 1  then ;
-: draw-row ( i sym -- )   \ its symbol, 32 x 32 at its place
-    {: i sym :}  i 2* cells row-places + @ 16 +  i 2* 1+ cells row-places + @ 16 +  32 32 picture
-    back-group 4 sym palette-of  $60 0 32 32  $80 from ;
+: draw-sliding ( i sym a -- )   \ its symbol, 32 x 32 at its place; `a` the frame of it sliding in
+    {: i sym a :}  i 2* cells row-places + @ 16 +  i 2* 1+ cells row-places + @ 16 +  32 32 picture
+    back-group 4 sym palette-of  a 64 * $60 + 0 32 32  $80 from ;   \ (the texture's column $60 + 64 a)
+: draw-row ( i sym -- )  0 draw-sliding ;
+\ the reel's next symbol sliding in over the turning row, while it steps on (its frames 1..4) - if
+\ it is another (SlotMachine_StateRoll's second DrawRow); before 0.2.42 the reel only jumped
+: sliding-in ( i -- )
+    reel-tick @ 0= if  drop exit  then
+    reel-pos @ 1+ 35 mod reel-symbol  reel-pos @ reel-symbol  over = if  2drop exit  then
+    reel-tick @ draw-sliding ;
 : draw-cell ( c -- )   \ its symbol's piece of the machine, flipped as its place needs
     {: c | u v w h :}  c 8 * cells cell-draws + piece !
     0 column to u  1 column to v  2 column to w  3 column to h
@@ -148,22 +156,31 @@ create symbol-palettes  6 , 3 , 4 , 5 , 0 , 7 ,
     result @ 0< if  up up exit  then
     found-t @ item-shown {: alpha2 done :}
     $180 $B0 $38 $90 picture  back-group 4 9 $D0 $20 $38 $90 alpha2 from  up done ;
+\ what came out, its line centred on the screen by its words' widths (ItemFound_StateShow: message 4,
+\ the item's name in palette 7, then "xN" when more than one - 27 wide), over a box 256 x 5 (and
+\ its soft edges); before 0.2.42 at set places, a long name over its count
+: ps2-wide ( addr len -- n )  scale text-width 512 * fw @ 1 max / ;   \ (Task_MessageWidth)
+: found-line ( -- )
+    4 0 0 line-of ps2-wide  forged @ name ps2-wide  amount @ 1 = if  0  else  $1B  then  {: w2 w1 cw :}
+    $100  w1 cw + w2 + 2/ -  {: x :}
+    $100 $172 $100 5 shade
+    4 0 0 line-of  x $164 box-ink inked
+    forged @ name  x w2 + $164 forged-ink inked
+    cw if  spell-reset  s"  x" +spell  amount @ n>s +spell  spelled  x w2 + w1 + $164 box-ink inked  then ;   \ (" x%1d")
 : found-view ( -- )
     10 0 do  i i row@ draw-row  loop
     22 0 do  i cells cell-order + @  dup cells matches + @ dup 0< swap blank = or if  drop  else  draw-cell  then  loop
     found-panels drop if
         result @ 0< if  5 say  else
             found-heard @ 0= if  3 6 bank-sound  -1 found-heard !  then
-            $100 $172 $100 $28 shade  4 0 0 line-of  $60 $164 box-ink inked
-            forged @ name  $A8 $164 forged-ink inked
-            amount @ 1 <> if  amount @ count$  $140 $164 box-ink inked  then
+            found-line
         then
     then
     found-t @ 50 < if  1 found-t +!  then ;
 : rolling-view ( -- )
     10 0 do
         i row@ dup 0< 0= if  i swap draw-row
-        else  drop  i row-at @ 1+ = if  i reel-pos @ reel-symbol draw-row  then  then
+        else  drop  i row-at @ 1+ = if  i reel-pos @ reel-symbol draw-row  i sliding-in  then  then
     loop  $10 say ;
 : slots-view ( -- )
     6 page-art  blinker

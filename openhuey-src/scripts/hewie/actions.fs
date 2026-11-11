@@ -17,12 +17,14 @@ create idle-tricks  sit-trick-act , sit-trick-2-act , lie-down-trick-act , stand
 \ Hewie_RandomIdle: lying by her (half the time), lying low a while or settling
 : random-idle ( -- )
     100 roll dup 50 < if  drop lie-by-her-act  else  65 < if  hold-low-act  else  settle-act  then  then  start ;
-\ go_for (after a call or coming out): whom - none (0), the stalker (2, left to the caller); she
-\ held, by chance at whoever holds her (1)
+\ go_for (after a call or coming out): whom - none (0), the stalker (2, left to the caller); else
+\ (1) a creature (slots 7..9) his target, rushed - run at and bitten; anyone else harried (before
+\ 0.2.42 a creature was harried too)
 : go-for ( -- n )
     pick-target dup his-target2 !  dup with? 0= if  drop 0 exit  then
-    his-held @ 0= swap pursuer = and if  2 exit  then
-    harry-stalker-act 0 want  1 ;
+    his-held @ 0=  over pursuer = and if  drop 2 exit  then
+    dup creature-slot first-homunculus #creatures within if  his-target !  rush-act 0 want  1 exit  then
+    drop  harry-stalker-act 0 want  1 ;
 : after-call ( -- )   \ (answer-call-act / -2: at the stalker - after the first at a flank)
     go-for case
         0 of  sniff-act 0 want  endof
@@ -273,7 +275,7 @@ create idle-tricks  sit-trick-act , sit-trick-2-act , lie-down-trick-act , stand
     hewie-played? if  exit  then   \ (the run: as asked)
     his-busy @ 0=  over choose-act = and  his-hp @ 0= and  his-cond @ down-cond = and if  drop knocked-down-act  then
     dup knocked-down-act = if
-        here?  his-tri nav-flags self body-mask and 0<> and if   \ (down where he can't lie: up again)
+        here?  floor-free? 0= and if   \ (down where he can't lie - Actor_TriFreeFor: a floor not to stand on, at a door, by a ladder: up again)
             drop choose-act  1 hp!  hurt-cond cond!
         else
             his-action @ dup knocked-down-act <> swap go-limp-act <> and  anim-group in-down <> and if  10 mistreated+  then

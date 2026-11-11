@@ -119,8 +119,9 @@ behaviour hewie-own
   on scent-now ( x y z -- )   \ (a room's command: his point to look to, whatever he had - Room26_Cmd02)
       along? 0= if  2drop drop exit  then
       cells>xyz  his-scent vec!  1 his-smells ! ;
-  on hewie-place ( room tri side -- )   \ (his +0x64, Hewie_PlaceInRoom)
-      his-way !  over room-id = >r  place-on  r> if  to-default  then ;
+  on hewie-place ( room tri side -- )   \ (his +0x64, Hewie_PlaceInRoom: his default action in this room or another -
+      \ before 0.2.42 only in this one: placed elsewhere he kept what he was about, a way after her that dragged him back)
+      his-way !  place-on  to-default ;
   on to-exit ( exit -- )  his-door ! ;   \ (the story's char-to-exit, Character_ChooseExit: the exit he came in by)
   on hewie-restart ( -- )  along? if  start-afresh  then ;   \ (the run's clock: Hewie_Restart)
   on camera-cut ( -- )  -1 his-cam-cut ! ;
@@ -131,7 +132,7 @@ behaviour hewie-own
   on activate ( -- )  0 his-2b !  0 his-2d !  0 his-stay !  100 hp!  hewie-played? if  start-afresh  then ;   \ (+0xF3588 cleared too)   \ (the story's 0x15, Hewie_Activate: afresh, at full health - in the run, played: Hewie_StartScene)
   on characters-still ( on -- )  his-held-still ! ;   \ (OpenHuey's: a reading on the dimmed screen)
   on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model)
-      along? his-held-still @ 0= and if  model scene-has? dup his-in-cast !  if  tell-doing  else  frame  then  else  tell-doing  then
+      along? his-held-still @ 0= and  flag-names:panic-starting facts:state-flag? 0= and if  model scene-has? dup his-in-cast !  if  tell-doing  else  frame  then  else  tell-doing  then
       -1 his-heard !  0 his-signals ! ;
   \ what he hears (the acoustics, each frame's end), the danger's signals, who has hold of her
   on heard ( loud room tri door source -- )  his-heard-src !  2drop  his-heard-room !  drop ;

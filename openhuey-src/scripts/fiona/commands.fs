@@ -58,7 +58,7 @@ USING: engine vectors game-state actors messages hewie-names common facts keys f
 create ch-at /vec allot
 : go-spot ( -- )
     dog-ok? 0= if  exit  then
-    hewie-id body-tri dog-at hewie-floor her-act-yaw f@ 15e v-free     ( F: d )
+    her-act-tri @ her-act-at hewie-floor her-act-yaw f@ 15e v-free     ( F: d )   \ (from where she was, by his floor: Actor_FreeDistance)
     fdup 5e f> if
         5e f-  her-act-yaw f@ fswap ch-at her-act-at vec-ahead
         her-tri @ her-at ch-at hewie-floor v-walk dup 0< if  drop  else  her-act-tri !  her-act-at ch-at vec-copy  then

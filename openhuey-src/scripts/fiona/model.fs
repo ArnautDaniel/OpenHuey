@@ -11,7 +11,7 @@ USING: engine actors vectors messages fiona.state fiona.anims ;
 \ the model and the body where she is
 : show-her ( -- )
     her-at v.x sf@ her act.x sf!  her-at v.y sf@ her act.y sf!  her-at v.z sf@ her act.z sf!
-    her-yaw f@ her act.yaw sf!
+    her-yaw f@ her act.yaw sf!  1 her act.character l!   \ (not drawn while the world is frozen: Progress_DrawChars)
     room-id her-tri @ her-pos body-place  her-yaw f@ body-turn ;
 
 \ ---- her animations ----

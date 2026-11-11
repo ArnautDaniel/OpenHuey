@@ -29,6 +29,8 @@ $27 constant keep-room-sounds     \ entering a room doesn't reload its sounds
 $28 constant in-play              \ play has started (set at the game's entry; the glow, the dice)
 $29 constant movie-opaque         \ the playing movie is drawn opaque (its button toggles it)
 $2A constant movie-flag-2a        \ ? the movie's per-frame update (func_0021C840) is held
+$3E constant panic-starting       \ (OpenHuey's) her panic's first 30 frames: the world held still - the characters, the
+                                   \ creatures, the things, the camera (the original's play flags bit 3: SubPlay's (flags & $F))
 $2D constant room-flag-2d         \ ? cleared as each room is entered; nothing tests it here
 \ ---- the danger (SceneGame_Danger) ----
 $7  constant force-followed       \ the danger is "followed" (1)

@@ -47,7 +47,7 @@ end-state
 : gone ( -- )  kind  it @ thing-free  ball-thing = if  ball-back  then ;
 : thing-sound ( id -- )  5 0 0 at vec@ sound-at ;
 : running? ( -- flag )   \ (Thing_Frame: the game going - no scene has the camera, the world not held)
-    cam-scene? 0=  world-held state-flag? 0= and ;
+    cam-scene? 0=  world-held state-flag? 0= and  panic-starting state-flag? 0= and ;   \ (her panic's start too: held still)
 
 \ ---- by kind ----
 : kept? ( k -- flag )   \ (kept in the save)

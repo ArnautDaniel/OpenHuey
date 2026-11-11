@@ -6,6 +6,7 @@
 #include "../data/exetables.h"
 #include "../data/texbank.h"
 #include "../data/modelgltf.h"
+#include "progress.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -945,8 +946,17 @@ static void draw_shadow(Actor *a, const Mat4 *view_proj) {
     render_mesh(&a->shadow, view_proj, &d, 1, &blob, 1, kAllGroups);
 }
 
+int actor_shown(const Actor *a) {
+    const uint32_t *s = gProgress.state;
+
+    if (!a->used || !a->visible) {
+        return 0;
+    }
+    return !(a->character && (s[0x17 >> 5] & (1u << (0x17 & 31))) && !(s[0x24 >> 5] & (1u << (0x24 & 31))));
+}
+
 void actor_prepare(Actor *a) {
-    if (!a->used || !a->visible || a->model.nv == 0) {
+    if (!actor_shown(a) || a->model.nv == 0) {
         return;
     }
     skin(a);
@@ -965,7 +975,7 @@ float actor_radius(const Actor *a) {
 
 void actor_draw(Actor *a, const Mat4 *view_proj) {
 
-    if (!a->used || !a->visible || a->model.nv == 0) {
+    if (!actor_shown(a) || a->model.nv == 0) {
         return;
     }
     {

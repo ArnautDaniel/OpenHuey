@@ -427,7 +427,7 @@ static void reflect_into(Engine *e, const Mat4 *proj, const Mat4 *view, const Ma
         float alpha = a->alpha;
         int off = a->shadow_off;
 
-        if (!a->used || !a->visible || (vec3_dot(n, a->pos) - d) * side <= 0.0f || (only >= 0 && i != only)) {
+        if (!actor_shown(a) || (vec3_dot(n, a->pos) - d) * side <= 0.0f || (only >= 0 && i != only)) {
             continue;
         }
         a->alpha = alpha * fminf(k, 1.0f);
@@ -647,7 +647,7 @@ static void draw(Engine *e) {
         Actor *a = &e->actors[i];
 
         a->lights[0] = a->lights[1] = a->lights[2] = -1;
-        if (a->used && a->visible) {
+        if (actor_shown(a)) {
             actor_prepare(a);
             light_actor(e, a);
         }

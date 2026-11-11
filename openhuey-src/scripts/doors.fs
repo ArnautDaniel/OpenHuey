@@ -157,6 +157,7 @@ behaviour keeping
   on let-go-open ( room exit source -- )  true let-go ;
   on open-from-afar ( room exit kind source -- )  {: room ex kind source :}  room ex kind take if  room ex source true let-go  then ;
   on let-go-shut ( room exit source -- )  false let-go ;
+  on shut-from-afar ( room exit kind source -- )  {: room ex kind source :}  room ex kind take if  room ex source false let-go  then ;
   on tick ( -- )  8 0 do  i door-here? if  i swing-events  then  loop ;
 end-behaviour
 

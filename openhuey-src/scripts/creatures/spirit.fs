@@ -188,7 +188,11 @@ behaviour spirit
   on spirit-sent ( slot room company -- )   \ (CreatureA_Setup, _ComeAfterFiona) any kind, on level 2, out and resting
       0<> company !  my-room !  slot !  -1 my-tri !  16 random kind !  0 reach !  2 level !
       true out !  false come !  4 random 1+ minutes rest !  start ;
-  on tick ( -- )  glow @ 0< if  exit  then  frame ;
+  \ (the world frozen - a room's close look - or a cutscene with the camera: not updated nor drawn,
+  \ Creatures_Update / Creatures_Draw; before 0.2.42 it went on)
+  on tick ( -- )  glow @ 0< if  exit  then
+      panic-starting state-flag? if  exit  then   \ (her panic's start: held still, as it is)
+      world-frozen state-flag? cam-scene? or if  glow @ false 0e 0e 0e spirit-at  exit  then  frame ;
   on fiona-doing ( mode sub cond cmd doing -- )  her-doing !  2drop drop  her-mode ! ;
   on fiona-plight ( state ladder reach -- )  her-reach !  2drop ;
   on leaving-room ( room exit -- )   \ she leaves: in her room and after her, it follows
