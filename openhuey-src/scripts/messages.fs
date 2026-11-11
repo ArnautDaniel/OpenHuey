@@ -53,6 +53,7 @@ message entered-room ( room exit -- )        \ the room is in play
 message camera-cut ( -- )                    \ it cut to a new set
 message hewie-told ( what arg -- )            \ (Hewie to Fiona, barking low: Hewie_StateLookLow) 0 a shut door at his exit `arg` - to open; 1 where he is
 message open-from-afar ( room exit kind source -- )   \ (to the doors) taken hold of and let go open, out of sight (DoorHold_Take / DoorHold_Open)
+message shut-from-afar ( room exit kind source -- )   \ (to the doors) taken hold of and let go shut, out of sight (DoorHold_Take / DoorHold_Shut)
 message stalker-as ( kind -- )               \ (to a stalker, as the story loads him: partner-load) the kind he is
 message hewie-gesture ( g -- )               \ (Hewie, played: each frame) his gesture this frame (stick-gesture; the scripts' 0x21)
 message hewie-restart ( -- )                 \ (the run's clock starting: Hewie_Restart) him afresh - played, in the run
@@ -200,7 +201,7 @@ message thing-blow ( damage yaw -- )   \ to a homunculus: a magnesia going off w
 message throw-down ( who recover -- )        \ (Fiona) thrown down by who (an actor, -1 none); recover: her recovery reset (the story's 0xB2)
 message look-hold ( who frames -- )          \ (Fiona) her head on who for so many frames (the story's 0x96)
 message fiona-unseen ( on -- )               \ broadcast when it changes: she can't be seen (item $89 worn, still)
-message fiona-plight ( state ladder reach -- )   \ broadcast each frame: how she stands for a stalker's attack (plight); her reach (bit 1 not to be gone for - Pursuer_MayGo; bit 2 thrown, her mode 4); the ladder she is on (-1 none)
+message fiona-plight ( state ladder reach -- )   \ broadcast each frame: how she stands for a stalker's attack (plight); her reach (bit 1 not to be gone for - Pursuer_MayGo; bit 2 thrown, her mode 4; 4 her +0x2D, 8 a script has her, 16 held - the creatures'); the ladder she is on (-1 none)
 \ how she stands for a stalker's attack (Pursuer_FionaState; his tables by it): free; fleeing; frightened
 \ (her fear past 90, her panic attack); out of reach (struck, seized, the stalkers blind); panicking; calming down
 enum: plight  free-plight fleeing-plight frightened-plight unreachable-plight panicking-plight calming-plight ;
@@ -250,6 +251,7 @@ message effect-sound ( id bank -- )         \ (butterflies, moths) a sound playe
 message reflect-in ( slot -- )            \ (a reflection, effects.fs) its engine slot
 message keri-drop ( k tri x y z -- )         \ (things) the story's debris: a kind-9 thing carrying room object "keri<k>", falling from there (f>cell)
 message trap-place ( tri x y z -- )          \ (things) the story's trap: a kind-10 thing set down there (f>cell)
+message clear-things ( -- )                 \ (things) the story's $D2: every thing gone, each as it ends (the ball back to her: Ball_dtor)
 message story-things-off ( -- )             \ (things) the story's kinds 9 and 10 all gone
 message keri-fell ( k -- )                   \ broadcast by the things: a kind-9 thing fell through, its "keri<k>" free again
 message thing-taken ( thing -- )               \ (things) Hewie picked it up: gone
@@ -366,8 +368,8 @@ message stalker-reach ( d -- )                 \ broadcast each frame by a stalk
                                              \ what (9 Hewie on him, $A down, $18 leading her), condition, health, his kind,
                                              \ his alert (his mode: Progress_StalkerAlert), the exit he came in by (-1 none)
 \ ---- the story's orders to Hewie, Fiona and the panic (the scripts' commands; H4 / F5) ----
-message drawn-to ( tri -- )                  \ (the things: the doll) a stalker searching the room being played drawn to
-                                             \ it, if he sees it and can get there - his search's one stop
+message drawn-to ( tri i away? -- )         \ (the things: the doll, thing i) the stalker by it - away from her (come upon, once a
+                                             \ visit) or in her room (each frame): he decides (Thing03_StalkerCheck) and takes it - thing-taken
 message stalker-ties ( scripted apart linked -- )   \ broadcast each frame by a stalker in the game, after stalker-doing:
                                              \ a script or a scene of the room has him (+0xE0); out of contact - through a door, on a
                                              \ ladder, off screen (+0x2A: Fiona_KeepApart leaves him be); a joint action with him under

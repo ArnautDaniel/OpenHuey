@@ -50,6 +50,22 @@ testing a cut (Motion_Play: no blend) against the table's blend (Motion_PlayTabl
 T{ [: up-from-back-anim play-cut  settled? ;] her@ -> -1 }T
 free!
 
+testing after a cut, the stick held: she faces the way the old camera steers, as she would walk (Fiona_MoveInput: atan2 x z)
+T{ [: own-mode her-mode !  1e way-x f!  0.6e way-z f!  after-cut  her-heading f@  cam-yaw dir-by stick-heading  f- angle-wrap fabs 0.001e f<
+      0e way-x f!  0e way-z f!  camera-relative her-turn-mode ! ;] her@ -> -1 }T
+testing Fiona_ToIdle: flag $2B cleared; under a script her idle step (its end the move's done), free her idle move
+T{ [: fiona-occupied state-flag-set  idle  fiona-occupied state-flag? ;] her@ -> 0 }T
+T{ [: -1 her-scripted !  idle  her-act @ ['] fiona.moves:idle-step =  0 her-scripted !  idle  her-act @ ['] idle-move = ;] her@ -> -1 -1 }T
+testing seized (Fiona_JointAction kind 1): only moving freely - not mid kick
+T{ [: defend-mode her-mode !  0 6 fiona.seized:seized  own-mode her-mode ! ;] her@ -> 0 }T
+testing the panic calming (stage 5): no full panic again (Fiona_Panic: at 4 only)
+T{ [: her-panic-stage @  calming-down her-panic-stage !  1 her-fear-bits !  feel-the-panic  her-fear-bits @ 2 and  0 her-fear-bits !  swap her-panic-stage ! ;] her@ -> 0 }T
+testing her reach for the creatures: her +0x2D 4, a script's hold 8
+T{ [: -1 her-out-of-reach !  reach 4 and 0<>  0 her-out-of-reach !  -1 her-scripted !  reach 8 and 0<>  0 her-scripted !  reach 12 and ;] her@ -> -1 -1 0 }T
+testing out of reach (+0x2D) while falling, not once she's down
+T{ [: -1 her-out-of-reach !  fiona.fear:lie-down  her-out-of-reach @  reach 1 and ;] her@ -> 0 0 }T
+free!
+
 testing struck by somebody gone: the fall as from behind (Fiona_StateKnockedDown, have 0)
 T{ [: 9999 her-hit-who !  1e side f!  blow-side  side f@ f0= ;] her@ -> -1 }T
 [: -1 her-hit-who ! ;] her@

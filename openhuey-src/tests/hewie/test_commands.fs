@@ -37,6 +37,27 @@ T{ key: K press-key  [: her-mode @ her-sub @ ;] her@ -> $D $2C }T
 T{ 200 $1D takes? -> -1 }T
 T{ [: his-cmd-was @ ;] his@ -> $2C }T
 T{ 200 $D takes? -> -1 }T
+
+testing "come back" while the story hides him away: its time cut short and he picks anew (Hewie_ActOnCommand: +0xF3559)
+T{ [: 5 his-yelp !  0 his-pending !  $2C act-away  his-yelp @  his-pending @ ;] his@ -> 0 -1 1 }T
+[: -1 his-yelp !  0 his-pending ! ;] his!  ready
+testing she leaves while a script has him: it lets go first (Hewie_Vt34: Hewie_FullStop), so he follows her
+T{ [: -1 his-busy !  -1 hewie.offscreen:fiona-left  his-busy @ ;] his@ -> 0 }T
+ready
+testing placed by the story in another room: his default action there, not what he was about (Hewie_PlaceInRoom)
+[: hewie-names:through-act his-action ! ;] his!
+T{ off-map-0d -1 2 hewie send hewie-place  deliver  action hewie-names:through-act = -> 0 }T
+room-id fiona body-tri 2 hewie send hewie-place  deliver  ready
+testing out of sight he crosses a room at 1.6 a frame - her cry's 10 only to his first door; 0.38 hurt (Hewie_State1920)
+T{ [: hewie-names:to-her-cry-act his-action !  hewie.offscreen:between-speed 100e f* f>s ;] his@ -> 160 }T
+ready
+testing a door out of sight: open - his way; locked against him - not (Progress_ExitPassable, slot 1)
+T{ 15 true doors-id send door-opened  deliver  [: 15 hewie.offscreen:door-usable? ;] his@ -> -1 }T
+T{ 15 hewie-kind true doors-id send lock-for  deliver  [: 15 hewie.offscreen:door-usable? ;] his@ -> 0 }T
+15 hewie-kind false doors-id send lock-for  15 false doors-id send door-opened  deliver
+testing the keyboard's praise (L) is one a press, as the stick's one a push - not one a frame while held
+T{ key: L true key-hold  game-tick  keys:gesture@  game-tick  keys:gesture@  key: L false key-hold  game-tick -> 3 -1 }T
+60 run-frames  ready
 full-suite   \ (on: waits, scenes, walks - the full run's)
 120 run-frames
 

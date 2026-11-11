@@ -573,7 +573,9 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : summoner-due? ( -- flag )  summoner-secs-now @ 0= ;   \ (its countdown run out: progress +0x764)
 
 \ ---- the room's own: its sounds, effects, look, objects, motions ----
-: room-sounds ( -- )  0 $1B0C00 sound-stop-voices  room-bank sound-load ;   \ (the last room's voices stopped, this one's loaded)
+: room-sounds ( -- )   \ (the last room's voices stopped, this one's loaded - not under $27, keep-room-sounds:
+    \ the room before's bank and its sounds go on, SceneGame_EnterRoom; before 0.2.42 always)
+    keep-room-sounds state? if  exit  then  0 $1B0C00 sound-stop-voices  room-bank sound-load ;
 : room-sounds-in? ( -- flag )  room-bank sound-loaded? ;
 : steady ( started id F: x y z -- )   \ (a room's steady sound: started once its sounds are in - started a cell - then kept up)
     {: a id F: x y z :}  a @ if  id x y z keep-sound exit  then

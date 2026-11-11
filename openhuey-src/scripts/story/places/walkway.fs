@@ -93,7 +93,7 @@ end-structure
     aboard kept-off hole-floor or floor-on
     hewie-in?  hewie aboard on-group? and if  ['] hewie-to-spot start drop
     else  aboard keeps-hewie-off floor-on  -1 hewie-clear !  then
-    fiona wait-move  things-clear
+    fiona wait-move  things-id send clear-things
     fiona wk wk.file @ motions-for  fiona wk wk.lever @ wk wk.lever-face @ wk wk.lever-x f@ wk wk.lever-z f@ walk-to  fiona use-motions
     turning-back @ if  back-motion back-object  else  across-motion across-object  then  lever-pulled
     25 frames  open-sound room-bank fiona sound-by  55 frames  shut-sound room-bank fiona sound-by  fiona wait-anim

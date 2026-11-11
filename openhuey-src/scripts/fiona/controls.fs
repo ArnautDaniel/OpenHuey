@@ -28,7 +28,7 @@ enum: turn-mode  camera-relative steered turning-round door-steered ;
     her-heading f@ her-yaw f!  0 her-still !
     nx nz small? if  exit  then
     3 her-lock !  steered her-turn-mode !  cam-yaw her-steer-yaw f!
-    cam-yaw nx nz turned fswap fatan2 her-heading f! ;
+    cam-yaw nx nz turned fatan2 her-heading f! ;
 defer settled-for-stand ( -- how )   \ (2 once her animation has faded in, else 1: fiona.moving)
 \ how the direction is taken: the camera now, her facing, none, the steering camera
 enum: direction-from  by-camera by-facing by-none by-steering ;
@@ -45,7 +45,7 @@ enum: direction-from  by-camera by-facing by-none by-steering ;
                           turning-round her-turn-mode !  0.5e deg>rad her-turn-rate f!  cam-yaw her-steer-yaw f!
                       then
                   then
-                  her-steer-yaw f@ nx nz turned fswap fatan2 her-turn-to f!
+                  her-steer-yaw f@ nx nz turned fatan2 her-turn-to f!
               then  endof
         turning-round of  dup if
                   by-camera  nx nz fatan2  her-last v.x sf@ her-last v.z sf@ fatan2 f- angle-wrap fabs
@@ -83,7 +83,7 @@ enum: direction-from  by-camera by-facing by-none by-steering ;
         her-shake-rest @ if  1+  0 her-shake-rest !  her-shake-a f!
         else  fdup her-shake-a f@ f- angle-wrap fabs 2.0943952e f> if  1+  her-shake-a f!  else  fdrop  then  then
     then
-    buttons-pressed + ;
+    buttons-pressed 0<> 1 and + ;   \ (any of the buttons: one)
 \ the story's test of her shaking (Progress_FionaFlag: Fiona_Shakes as from rest) - the stick out
 \ past 0.8, or a button; her own count left as it is
-: shook-from-rest ( -- n )  hewie-played? if  0 exit  then  her-stick v.x sf@ her-stick v.z sf@ vlen 0.8e f> 1 and  buttons-pressed + ;
+: shook-from-rest ( -- n )  hewie-played? if  0 exit  then  her-stick v.x sf@ her-stick v.z sf@ vlen 0.8e f> 1 and  buttons-pressed 0<> 1 and + ;

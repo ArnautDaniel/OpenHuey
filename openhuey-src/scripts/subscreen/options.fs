@@ -3,8 +3,8 @@
 \ here), vibration, the sound out, the volume, the screen's position. The cross edits a row and
 \ the arrows change it; the square asks to put them all back. Kept in the system data
 \ (saves.fs, as the original's +0x30: told each change, given them back as the game starts); the
-\ vibration and the volume take effect at once (SubScreen_ApplyOptions) - the sound out and the
-\ screen's position have nothing here to change.
+\ vibration, the sound out and the volume take effect at once (SubScreen_ApplyOptions) - the screen's
+\ position has nothing here to change.
 IN: subscreen.options
 USING: engine actors messages keys facts subscreen.state subscreen.art subscreen.input subscreen.box ;
 
@@ -21,8 +21,9 @@ create run-layouts
     $61 , $4B , $4C , $4D , $71 , $4E , $4F ,   $62 , $4D , $4C , $4B , $71 , $4E , $4F ,
     $63 , $4B , $4E , $4D , $4C , $71 , $4F ,   $64 , $4C , $4F , $4B , $4D , $71 , $4E ,
 : action-name ( i -- msg )  layout @ 7 * + cells  hewie-played? if  run-layouts  else  layouts  then  + @ ;
-: apply ( -- )   \ (SubScreen_ApplyOptions: the vibration on or off, everything heard at the volume)
-    vibration @ 0<> rumble-allowed!  volume @ s>f 128e f/ game-volume! ;
+: apply ( -- )   \ (SubScreen_ApplyOptions: the vibration on or off, the sound out - SndDriver_SetOutputMode:
+    \ how a placed sound's sides combine, mono at 0 - everything heard at the volume)
+    vibration @ 0<> rumble-allowed!  sound-out @ sound-out!  volume @ s>f 128e f/ game-volume! ;
 : defaults ( -- )  1 vibration !  1 sound-out !  128 volume !  0 pos-x !  0 pos-y !  0 layout !  apply ;
 : kept ( -- )   \ (to the system data)
     vibration @ sound-out @ volume @ pos-x @ pos-y @ layout @  s" saves" actor-named send options-changed ;

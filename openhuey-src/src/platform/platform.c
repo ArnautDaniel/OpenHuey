@@ -175,21 +175,35 @@ static void pad_poll(Input *in) {
  * fires, a key press, when it is then pushed right over (the original's 0.99 of a PS2 stick's
  * full throw; 0.9 here, as not every pad's stick reaches its corner values) within 0.6 radians
  * of it. Once fired it must be centred again (gesture_step): more praise is the stick pushed
- * right again, as the original's, not held */
+ * right again, as the original's, not held. In the original's order - back (up), forward (down),
+ * R3, right, left - the first to fire resets those after it, and R3 counts only with the stick
+ * centred (Gesture_R3); before 0.2.42 a swing from one direction to another fired both, and R3
+ * counted wherever the stick was */
 static void pad_gestures(Input *in) {
     static const struct { SDL_Scancode key; float at; } kWays[4] = {
-        {SDL_SCANCODE_K, 0.0f}, {SDL_SCANCODE_L, 1.5707964f}, {SDL_SCANCODE_I, 3.1415927f}, {SDL_SCANCODE_J, -1.5707964f},
+        {SDL_SCANCODE_I, 3.1415927f}, {SDL_SCANCODE_K, 0.0f}, {SDL_SCANCODE_L, 1.5707964f}, {SDL_SCANCODE_J, -1.5707964f},
     };
     static int sArmed[4];
     float x = (float)SDL_GetGamepadAxis(sPad, SDL_GAMEPAD_AXIS_RIGHTX) / 32767.0f;
     float y = (float)SDL_GetGamepadAxis(sPad, SDL_GAMEPAD_AXIS_RIGHTY) / 32767.0f;
     float len = sqrtf(x * x + y * y), ang = atan2f(x, y);   /* (0 the stick down - forward - as the original's) */
-    int i;
+    int i, fired = 0;
 
     for (i = 0; i < 4; i++) {
         float off = fabsf(ang - kWays[i].at);
         int aimed;
 
+        if (i == 2 && in->pressed[SDL_SCANCODE_F] && SDL_GetGamepadButton(sPad, SDL_GAMEPAD_BUTTON_RIGHT_STICK)) {
+            if (len < 0.4f) {
+                fired = 1;   /* (R3, between forward and right) */
+            } else {
+                in->pressed[SDL_SCANCODE_F] = false;
+            }
+        }
+        if (fired) {
+            sArmed[i] = 0;
+            continue;
+        }
         if (off > 3.1415927f) {
             off = 6.2831855f - off;
         }
@@ -199,6 +213,7 @@ static void pad_gestures(Input *in) {
         } else if (sArmed[i] && aimed) {
             sArmed[i] = 0;
             in->pressed[kWays[i].key] = true;
+            fired = 1;
         }
     }
 }

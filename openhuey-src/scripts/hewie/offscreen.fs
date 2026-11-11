@@ -23,7 +23,8 @@ defer when-idle ( -- )   ' noop is when-idle     \ Hewie_WhenIdle (hewie.mind)
     {: room :}  door-sides {: r0 e0 t0 r1 e1 t1 :}
     r1 room = if  t1  else  r0 room = if  t0  else  -1  then then ;
 : door-from-path ( -- )  0 route-door dup his-route-door !  his-room door-tri s>f his-left f! ;
-: door-usable? ( door -- flag )  door-open? ;   \ (open or a doorway, not locked)
+: door-usable? ( door -- flag )   \ (open or a doorway, not locked - nor against him: Progress_ExitPassable, slot 1)
+    dup door-open?  swap hewie-kind doors:locked-against? 0= and ;
 
 \ Hewie_ThroughExit: into the room beyond exit `exit` of his (out of play there); -1 none
 : through-exit ( exit -- 0 | -1 )
@@ -48,8 +49,9 @@ create in-at /vec allot  create out-at /vec allot
     trot-anim play
     his-action @ to-her-cry-act = panic5-chance by-chance and if  answer-call-act  else  dash-act  then  0 want
     arrived ;
+: between-speed ( F: -- s )  his-cond @ hurt-cond = if  0.38e  else  1.6e  then ;   \ (her cry's 10 only to his first door)
 : st-between ( -- )   \ Hewie_State1920: across the room he came into, toward the next door
-    his-left f@ travel-speed f- fdup his-left f!  f0< 0= if  exit  then
+    his-left f@ between-speed f- fdup his-left f!  f0< 0= if  exit  then
     his-action @ case
         to-noise-act of  his-room his-noise-room @ = if  when-idle  else  to-noise-act start  then  endof
         to-her-room-act of  to-her-room-act start  endof  back-to-her-act of  back-to-her-act start  endof
@@ -62,6 +64,8 @@ create in-at /vec allot  create out-at /vec allot
     his-left f@ travel-speed f- fdup his-left f!  f0< 0= if  exit  then  0e his-left f!
     his-route-door @ his-room door-exit-in dup his-door !
     0< if  lost-way exit  then
+    his-route-door @ doors:door-held? if  exit  then   \ (someone holds it: he waits, trying again each frame -
+    \ before 0.2.42 it let him down, and he went another way or none)
     his-route-door @ door-usable? 0= if  his-route-door @ avoid-door  lost-way exit  then   \ it let him down
     0 his-at-door !
     his-door @ through-exit drop
@@ -102,7 +106,8 @@ create in-at /vec allot  create out-at /vec allot
 \ stays; at the stalker then, he waits off to the side; by her or lying by her he first waits a
 \ while. Down, he is up again (hurt) in a hard game, or where he may not lie ----
 create ex-at /vec allot
-: exit-reachable? ( exit -- flag )   \ a way to its far point
+: exit-reachable? ( exit -- flag )   \ on his half of the room (or he is on both), and a way to its far point
+    his-way @ 2 <> if  dup his-room swap 0 exit-way his-way @ <> if  drop false exit  then  then   \ (exit_reachable)
     2 exit-spot dup 0< if  drop fdrop fdrop fdrop false exit  then  ex-at vec!  ex-at plan-to ;
 : floor-free? ( -- flag )   \ (Actor_TriFreeFor: a floor he may stand on, not at a door - within 20 of
     \ where it stands - nor by a ladder: Progress_WhoIsWhere's door and link bits)
@@ -115,6 +120,9 @@ create ex-at /vec allot
     his-on-him @ 0= if  false exit  then
     his-action @ dup at-flank-act at-leg-2-act 1+ within  swap tackle-act = or ;
 : fiona-left ( exit -- )
+    \ (a script that has him lets go first - Hewie_FullStop, vtable +0x90 - so he decides to follow her;
+    \ before 0.2.42 he stayed held, and as the script let go his default wiped the decision: left behind)
+    his-busy @ if  0 his-busy !  0 his-was-busy !  full-stop  then
     his-room room-id <> if  drop exit  then
     his-hp @ 0=  hard-mode? floor-free? 0= or and if  1 hp!  hurt-cond cond!  then
     0 his-2b !  hewie-floor body-mask!

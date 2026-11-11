@@ -19,7 +19,7 @@ state: spirit-state
   cell field centred              \ put on its triangle's centre the first time it waits
   \ about her (fiona-doing)
   cell field her-mode  cell field her-doing
-  cell field her-reach    \ (fiona-plight's: not 0 - thrown, seized, stepping back, or set aside by the story's 0x21)
+  cell field her-reach    \ (fiona-plight's: bit 1 not to be gone for, 2 thrown, 4 her +0x2D, 8 a script has her, 16 held)
   1 floats field her-dist
   \ hanging about her: the spot, and whether to look for another
   cell field hang-tri  /vec field hang-at  cell field hang-again

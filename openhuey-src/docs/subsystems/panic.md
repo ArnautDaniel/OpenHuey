@@ -91,8 +91,12 @@ fade, so after a fade out it stays 0 until a fade in or the next room. Under ful
 $80 - and the camera still while she panics or calms down or the pulse was cut short; the grey
 scaled by it. Checked by `tests/story/test_story_fades.fs`.
 
-*Not yet*: her panic's start (bit 3) also stops the characters' thinking and the camera director
-for its 30 frames in the original (SubPlay: `(*flags & 0xF) == 0`) - only the story holds for it.
+Her panic's start (bit 3) holds the world still for its 30 frames, as SubPlay's `(*flags & 0xF)
+== 0` does: state flag $3E `panic-starting` (OpenHuey's) and the engine's `still!` (the models,
+the room, the effects) - Fiona's, Hewie's, the stalker's, the cast's frames wait, the creatures,
+the things and the items' counters, and the camera's update (its track goes on). Never left on:
+the panic lets it go as soon as its start isn't running (a scene taking the camera, held, reset,
+loaded). Before 0.2.42 only the story held, and a stalker's blows went on through her scream.
 
 Also built: the story's commands (`panic-level` and the rooms' frights), the charms (the earrings
 and chokers: `earrings`, `fiona/moving.fs`), the camera's shake (`jolting`), and with each breath

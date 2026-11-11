@@ -484,6 +484,22 @@ From `event.c`, `scene_game.c` (the order), `progress.c`.
    and the summoner hold still while a tip, a plaque or a note is read (the original runs on
    through its messages and the half-dark fade). castle-2f-3's evasion tip holds them from its
    start, as she shuts the door.
+8. **The world frozen** (state flag $17, `world-frozen` - a room's close look at something, 31
+   places): the characters and the creatures aren't drawn - unless $24 `draw-when-frozen` - nor
+   the creatures updated, nor the items' counters (SceneGame_SubPlay: Progress_DrawChars,
+   Creatures_Draw, Creatures_Update, Items_Update). The characters and the cast's figures, the
+   homunculi mark their models (`act.character`); the engine's `actor_shown` leaves them out; the
+   spirits, sprites, are hidden by their own frame. Before 0.2.42 nothing read it but the summoner:
+   in a close look Fiona stood in the shot (castle-1f-12's dials: her back filled the screen) and
+   the creatures came on. Also not updated - nor drawn - with a cutscene's camera
+   (Creatures_Update's camdir_busy).
+9. **The room's sounds kept** (state flag $27, `keep-room-sounds` - the House of Truth's colour rooms):
+   entering a room stops the last one's voices and loads its sounds (SceneGame_EnterRoom, the kit's
+   `room-sounds`) - not while it is set: the room before's bank and what plays from it go on (the engine's
+   bank 6 not reloaded either). Before 0.2.42 it was set but never read.
+10. **Quitting to the title** (state flag $1C, `quit-wanted`, with the world held - the extras room's way
+   out): the title (SceneGame's play frame; ours: the pause actor's `soft-reset`). Before 0.2.42 nothing
+   read it and the screen stayed black.
 
 ## Design notes
 

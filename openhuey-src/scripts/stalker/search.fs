@@ -13,7 +13,7 @@ enum: search-phase#  no-search to-stop at-the-stop ;
 \ ---- his route (8 stops: a triangle, and whether it was picked at random) ----
 : stop ( k -- addr )  2* cells stops + ;
 : route-clear ( -- )   \ Pursuer_ClearRoute
-    8 0 do  -1 i stop !  0 i stop cell+ !  loop  0 route-next !  0 route-end ! ;
+    8 0 do  -1 i stop !  0 i stop cell+ !  loop  0 route-next !  0 route-end !  0 search-cap ! ;
 : stops-left ( -- n )  route-end @ route-next @ - ;
 : route-add ( tri random? -- )   \ Npc_RouteAdd (full, or no triangle: not added)
     over 0<  route-end @ 8 < 0= or if  2drop exit  then
@@ -128,6 +128,13 @@ enum: search-phase#  no-search to-stop at-the-stop ;
         endof
     endcase ;
 : search-start ( -- )  0 route-done !  to-next-stop ;
+\ his search of her room given 30 seconds (Pursuer_ModesSearching, Pursuer_SearchRouteIn, Pursuer_SearchOffscreen:
+\ +0x1794 1800 with stops to make); out (Stalker_ThinkTimers), the stop he is making for is his last
+1800 constant search-frames
+: capped ( -- )  search-frames search-cap ! ;
+: cap-down ( -- )
+    search-cap @ 0= if  exit  then  -1 search-cap +!
+    search-cap @ 0=  route-next @ route-end @ < and if  route-next @ 1+ route-end !  then ;
 
 \ ---- to where she is (Pursuer_ChaseFiona: after her but not seeing her): toward her on foot,
 \ his way re-planned every 30 frames; standing facing her within 15. Seeing her, his chase
@@ -169,20 +176,17 @@ defer after-her-elsewhere ( -- went? )   ' false is after-her-elsewhere   \ (the
 defer lead-taken? ( -- flag )   ' false is lead-taken?   \ (a lead he heard: stalker/leads.fs)
 defer starting? ( -- flag )   ' false is starting?      \ (starting at one)
 defer leads-forgotten ( -- )   ' noop is leads-forgotten
-: search-again ( -- )  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  search-stops add-stops  search-start ;
+: search-again ( -- )  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  search-stops add-stops  capped  search-start ;
 \ met in a room he was searching out of her sight (Pursuer_SearchOffscreen): on with the stops his
 \ time left there would take (150 frames each); none, he is waiting about
 : search-left ( frames -- )
-    150 / dup 0> if  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  add-stops  search-start exit  then
+    150 / dup 0> if  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  add-stops  capped  search-start exit  then
     drop  waiting-about mode!  route-clear  -1 route-done ! ;
-\ the doll (Thing03_StalkerCheck): searching the room being played, he sees it and has a way
-\ there - it is his one stop, his search going on from it
+\ the doll (Thing03_StalkerCheck, stalker.fs `doll-check`): he goes for it - his one stop, his
+\ search going on from it
 create drawn-at /vec allot
 : go-for-doll ( tri -- )
-    here-played? 0=  my-mode @ heading-for-her held-off within 0= or  over drawn-tri @ = or if  drop exit  then
-    dup tri-center drawn-at vec!
-    drawn-at in-view? 0= if  drop exit  then
-    dup drawn-at plan 0> 0= if  drop exit  then
+    dup drawn-tri @ = if  drop exit  then
     dup drawn-tri !  searching mode!  route-clear  0 route-add  search-start ;
 \ down (+0xC4 2): waiting about, nothing else (Pursuer_ModesSearching - in the room or out of it)
 : down-waits? ( -- flag )
@@ -194,6 +198,7 @@ create drawn-at /vec allot
     at-a-ladder? if  exit  then   \ (to a ladder or on it: over first)
     reeling @ at-dog @ or if  exit  then   \ (struck: his reaction first; after Hewie)
     entering @ if  exit  then   \ (coming in by a shut door: in first - opened, or barged open: action $C)
+    door-script @ if  exit  then   \ (a door he is about - the story's, or the one he came in by: that first)
     out-going @ if   \ (on his way out by a door: that first - unless he's only wandering off, when the
         wandering-out @ 0=  sees-fiona @ did-hear @ or 0=  or if  exit  then   \ sight of her or a noise
         out-cancelled  0 wandering-out !                                     \ turns him back: Pursuer_PickTarget)

@@ -6,7 +6,7 @@
 \ (Pursuer_ModesSearching off screen, Pursuer_SearchRouteIn) and coming into the room being
 \ played (Pursuer_EnterRoom; Pursuer_BackOnMesh when she comes into his).
 IN: stalker.travel
-USING: engine game-state actors messages common facts flag-names paths vectors doors stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.anims ;
+USING: engine game-state actors messages common facts flag-names paths vectors doors stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.anims ;
 
 : my-room ( -- room )  self body-room ;
 : away? ( -- flag )  in-game @ if  my-room room-id <>  else  false  then ;
@@ -115,8 +115,22 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
     my-mode @ heading-for-her = if  searching mode!  then
     search-again ;
 
+\ come in by an open door to search or wait about, Daniella and her kinds shut it behind them first
+\ (Pursuer_EnterRoom's action $28 - Pursuer_GoToDoor, then their table $E: Exit1F0, the door animation
+\ that shuts it; the others' $E stands - a lead he follows (4, 1, 5) none of it). Before 0.2.42 they left
+\ it open
+defer shut-on-entry ( exit -- )   ' drop is shut-on-entry   \ (stalker/doorway.fs)
+: daniella-kind? ( -- flag )  my-kind @ dup daniella-kind =  swap kind34-kind kind36-kind 1+ within or ;
+: shuts-coming-in? ( -- flag )
+    daniella-kind? 0= if  false exit  then
+    my-mode @ searching waiting-about 1+ within 0= if  false exit  then
+    lead @ dup 4 =  over 1 = or  swap 5 = or if  false exit  then
+    came-by @ dup 0< if  drop false exit  then  room-id swap room-exit-door
+    dup 0< if  drop false exit  then  dup fixed? if  drop false exit  then  door-open? ;
 \ from the doorway on in to the spot 12 inside (Pursuer_SearchRouteIn), then as in-play has it
-: walking-in ( -- )  walking  step-done @ if  0 step-done !  come-into-play  then ;
+: walking-in ( -- )
+    walking  step-done @ 0= if  exit  then  0 step-done !  come-into-play
+    shuts-coming-in? if  no-search search-phase !  came-by @ shut-on-entry  then ;
 : walk-in ( -- )
     0 entering !
     in-tri @ 0< if  come-into-play exit  then
@@ -129,7 +143,7 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
 \ in; elsewhere on to the next door, or - the route over - his search there out of sight ----
 : open-for-me ( exit -- )   \ (the shut door into her room taken - DoorHold_Take - and swung open: `door-held`)
     room-id swap stalker-kind doors-id send hold-door ;
-: swing-open ( exit -- )  true self doors-id send swing-door ;
+: swing-open ( exit -- )  true stalker-noise doors-id send swing-door ;   \ (heard as his: its source his kind's - before 0.2.42 his actor id)
 \ by a shut door into her room he waits in its doorway, beyond it, for the doors' answer: his to
 \ open, it swings open and he walks in once it stands open; refused, he barges it open
 \ (stalker/doorway.fs's barge-in) - never in past it shut (Pursuer_EnterRoom)
@@ -155,7 +169,7 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
     my-room room-id <> if  drop -1 to-shut !  exit  then
     dup clear-of? 0= if  drop exit  then
     room-id over room-exit-door door-open? 0= if  drop exit  then
-    self doors-id send pull-shut  -1 to-shut ! ;
+    stalker-noise doors-id send pull-shut  -1 to-shut ! ;   \ (heard as his)
 
 : enter-her-room ( -- )   \ (into her room by the exit came-by: Pursuer_EnterRoom)
     came-by @ came-in-by
@@ -196,7 +210,33 @@ begin-structure /knock  field: kn.sound  ffield: kn.upto  end-structure
     0 exit-spot drop  knock-sound 7 bank-sound-at
     rnd 60e f* 60e f+ f>s knock-t ! ;
 
+\ ---- a door he goes through out of sight, into a room not hers, as his kind leaves it
+\ (Npc_ExitWhatToDo: vtable +0xF0 for a door, open or shut - not a doorway): most take hold of it
+\ and let it go open (NPC_ExitArg); Daniella shuts it unless in her rage (Daniella_ExitArg), her
+\ kind 34 too - but leaves it open in the run or on the hard setting (Kind34_ExitArg); Riccardo
+\ leaves it be (Riccardo_ExitArg); the TintStalker opens it only in the run (TintStalker_EndingDoor).
+\ Heard where it is (DoorHold_Open / DoorHold_Shut) ----
+0 constant leaves-it   1 constant opens-it   2 constant shuts-it
+: afar-manner ( -- how )
+    my-kind @ case
+        riccardo-kind of  leaves-it  endof
+        tintstalker-kind of  hewie-played? if  opens-it  else  leaves-it  then  endof
+        daniella-kind of  raging @ if  opens-it  else  shuts-it  then  endof
+        kind34-kind of  raging @ hewie-played? or hard-mode? or if  opens-it  else  shuts-it  then  endof
+        >r opens-it r>
+    endcase ;
+: passed-afar ( exit -- )
+    {: e :}  my-room e room-exit-door  dup 0< if  drop exit  then  fixed? if  exit  then
+    my-room e stalker-kind stalker-noise
+    afar-manner case
+        opens-it of  doors-id send open-from-afar  endof
+        shuts-it of  doors-id send shut-from-afar  endof
+        >r 2drop 2drop r>
+    endcase ;
+
 \ ---- each frame out of sight on his route (Pursuer_TravelOffscreen) ----
+: onward ( exit -- )   \ (Pursuer_MayUseExit: into a room not hers, the door left as his kind leaves it)
+    dup my-room swap room-exit-leads drop room-id <> if  dup passed-afar  then  through ;
 : at-door ( -- )
     next-door dup door-exit {: door e :}
     e 0< if  goal-room @ route! drop  exit  then
@@ -207,8 +247,8 @@ begin-structure /knock  field: kn.sound  ffield: kn.upto  end-structure
             my-room e room-exit-leads drop room-id =  my-mode @ held-off <> and if
                 knock-t @ 0= if  e knock exit  then
                 -1 knock-t +!  knock-t @ 1 > if  exit  then
-            then  e through  endof
-        >r e through r>
+            then  e onward  endof
+        >r e onward r>
     endcase ;
 \ ---- his footsteps heard through the walls (Pursuer_FootstepsThroughWalls): making for a door of
 \ her room, within 80 of it, each 10 he closes in a step (his sounds 0 / 1 in turn, bank 7) out
@@ -247,10 +287,13 @@ create fs-a /vec allot  create fs-b /vec allot
     her-room dup 0< if  drop false exit  then
     dup my-room = if  drop true exit  then
     8 0 do  my-room i room-exit-leads drop over = if  drop true unloop exit  then  loop  drop false ;
+: her-half ( -- way )   \ (Npc_CharSideBehind: the half of her room the exit she came in by opens onto -
+    \ Pursuer_PlanWhere's +0x1598; -1 either. Before 0.2.42 either: in a split room he came in on the far one)
+    her-came @ dup 0< if  exit  then  her-room swap 1 exit-way ;
 : head-for-her ( -- )   \ (in the run, after Hewie: his room)
     hunting-dog @ if  room-id  else  her-room  then  dup 0< if  drop exit  then
     dup goal-room @ = route-over? 0= and if  drop exit  then
-    avoid-clear  route! drop ;
+    avoid-clear  hunting-dog @ if  -1  else  her-half  then  route-way! drop ;
 : wander ( -- )   \ (Pursuer_Plan170: an exit at random he can go by)
     8 0 do
         8 s>f rnd f* f>s 7 min  my-room over room-exit-door              ( e door )
@@ -269,6 +312,11 @@ create fs-a /vec allot  create fs-b /vec allot
             my-room swap room-exit-leads drop  route! drop  unloop exit
         then  drop
     loop ;
+: no-way-to-her? ( -- flag )  route-over?  goal-room @ my-room <> and ;   \ (routed, none there: -1)
+\ heading for her room - with no way there (Pursuer_PickExit: +0x16F4, Pursuer_ModesSearching then
+\ waits about, its clock 900) out by a way at random meanwhile; before 0.2.42 he sat routing every
+\ frame, heading for her for ever (her room's doors locked against stalkers, say)
+: heading ( -- )  head-for-her  no-way-to-her? if  waiting-about mode!  wander  then ;
 : head-home ( -- )
     own-a @ 0< if  wander-off exit  then
     own-a @ route! {: na :}
@@ -278,13 +326,13 @@ create fs-a /vec allot  create fs-b /vec allot
 : modes-away ( -- )
     down-waits? if  exit  then
     my-mode @ case
-        after-her of  head-for-her  tick-down if  heading-for-her mode!  then  endof
-        heading-for-her of  head-for-her  endof
+        after-her of  heading  my-mode @ after-her = if  tick-down if  heading-for-her mode!  then  then  endof
+        heading-for-her of  heading  endof
         searching of  route-over? if  away-search @ if  -1 away-search +!
-                  else  hewie-played? if  next-to-hers? 0= if  -1 hunting-dog !  heading-for-her mode!  head-for-her  then   \ (the run: nothing
+                  else  hewie-played? if  next-to-hers? 0= if  -1 hunting-dog !  heading-for-her mode!  heading  then   \ (the run: nothing
                   else  waiting-about mode!  then  then  then  endof   \ near her - after Hewie instead)
         waiting-about of  route-over? if
-                  tick-down if  next-to-hers? if  wander  else  heading-for-her mode!  head-for-her  then  900 mode-t !  then
+                  tick-down if  next-to-hers? if  wander  else  heading-for-her mode!  heading  then  900 mode-t !  then
               then  endof
         held-off of  own-room? 0= route-over? and if  head-home  then  endof   \ (held off he stays away: the summoner
     endcase ;                                                                    \ takes him out, and brings him in afresh)

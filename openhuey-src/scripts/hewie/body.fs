@@ -90,6 +90,9 @@ defer adjust-action ( act -- act' ) ' noop is adjust-action    \ Hewie_AdjustAct
 \ hewie_want: the action his situation makes of `act` (with `arg` only if it stays itself)
 : want ( act arg -- )  {: act arg :}  act adjust-action  dup act = if  arg  else  0  then  set-action ;
 : to-default ( -- )  choose-act 0 want ;       \ Hewie_ToDefault
+: full-stop ( -- )   \ Hewie_FullStop: what a script's letting go clears
+    0 his-broke !  0 his-hits !  -1 his-look-char !  0 his-scene-req !  0 his-look-pt? !
+    hewie-hidden state-flag-clear ;
 : start ( act -- )  adjust-action 0 set-action ;   \ Hewie_Start
 : behave ( xt -- )  his-act ! ;
 \ nothing to do (give_up): sniffing about - in the run (hewie-played?) himself again; and the

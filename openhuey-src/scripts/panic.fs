@@ -74,7 +74,11 @@ create breaths   \ (shaken .. calming down)
 \ ---- Panic_Stage ----
 \ her panic's start, from her scream for 30 frames (SceneGame +0xF6CD24 bit 3: the story's action
 \ scripts held, SceneGame_Busy busy)
-: onset ( on -- )  broadcast panic-onset ;
+: onset ( on -- )   \ (the world held still meanwhile - the characters, creatures, things, the camera; before 0.2.42
+    \ only the story held, and the stalker's blows went on through her scream)
+    dup if  panic-starting state-flag-set  1 still!
+    else  panic-starting state-flag-clear  panic-held state-flag? world-held state-flag? or 0= if  0 still!  then  then
+    broadcast panic-onset ;
 : on-her-feet? ( -- flag )  her-mode @ dup 0= swap 3 = or ;
 : by-level ( -- )
     level f@ 100e f< 0= if   \ she panics (on her feet: her scream)
@@ -265,6 +269,8 @@ behaviour measuring
   \ so the camera is still unless her panic - or the story, after it - shakes it)
   on tick ( -- )  updating? if  jolting @ if  0.2e  else  0e  then  cam-shake!  then ;
   on frame-end ( -- )
+      \ (the world's hold over once her panic's start isn't running - a scene, held, reset, loaded: never left on)
+      panic-starting state-flag? if  updating? 0=  stage @ panicking <> or  panic-left @ 0< 0= or if  0 onset  then  then
       \ (in play the level back to full - not in a frame of the screen's fade; a scene's: as it is)
       updating? if  update  fade-held @ 0= if  1e fade f!  then  screens  else  $80 pulse !  then
       0 fade-held !

@@ -187,7 +187,7 @@ examining (`offer` / `take-offer`), messages on screen (`text-shown`: she stands
 |---|---|---|---|
 | `hit` | `( kind how fright -- )` | in (a stalker) | A blow or hold from the sender: kind 1 / 2 a blow, 4 a hard one, 6 a hold (how: the grip; 5 thrown off); `$8000` in how a stumble; fright a float cell. |
 | `hit-taken` | `( kind -- )` | out, to the sender | It struck home. |
-| `fiona-plight` | `( state ladder reach -- )` | broadcast each frame | The ladder she is on (-1 none: the stalker goes to beside it). How she stands for an attack (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking (fear over 90, the panic attack), 3 out of reach (thrown, seized, stepping back - at the panic's height thrown is 5), 4 / 5 the panic's stages. Its `reach`: bit 1 not to be gone for (Pursuer_MayGo), bit 2 thrown (her mode 4). |
+| `fiona-plight` | `( state ladder reach -- )` | broadcast each frame | The ladder she is on (-1 none: the stalker goes to beside it). How she stands for an attack (Pursuer_FionaState): 0 calm, 1 fleeing, 2 panicking (fear over 90, the panic attack), 3 out of reach (thrown, seized, stepping back - at the panic's height thrown is 5), 4 / 5 the panic's stages. Its `reach`: bit 1 not to be gone for (Pursuer_MayGo), bit 2 thrown (her mode 4); for the creatures bit 4 her +0x2D itself, bit 8 a script has her (+0xE0), bit 16 held (Character_Held: led off, grabbed). |
 
 Fiona_Reaction / Fiona_React: none while a reaction is under way (mode 4, floored $A), on a
 ladder (her fall from it: with the ladders) or with the world held. A blow knocks her down -
@@ -224,7 +224,7 @@ its heading - reachable straight from him and from her, her floor free ($80001),
 (in her own triangle: straight). Led there (her gasp $43): by the hand $1400, walking $1500 - a
 fifth of the way and of the turn each step while it fades in; then on the spot. By the hand:
 at his hand, then dragged - $1401 again and again; she shakes (Fiona_Shakes: the stick swung
-past 120 degrees or out from rest, and each button but Start), each drag letting ten more
+past 120 degrees or out from rest, and any button but Start - one a frame however many), each drag letting ten more
 count; past her panic's stage's count (8 12 23 35 70, calming 0) she breaks away ($1403, he's
 told), else the sixth drag she's dragged off ($1404) - at its end the game's over. Walking:
 carried off ($1500's end). Seized outright (kind 3, Fiona_StateGrabbed): rising from a fall she
@@ -276,8 +276,10 @@ A faint grey band goes with it over the screen's bottom 64 of 448 lines, at the 
 
 **Out of reach (`her-out-of-reach`, +0x2D).** `plight` says unreachable: from R1 to the
 backstep's mark 2, and in a door's step (Fiona_StateDoorStepOut, each frame after her step) when
-she's past the door from where she came or on a floor flagged $20000. Cleared as she goes idle or
-arrives. The door's animation also lets her over the doorway's floor (`her-noclip`, +0x2B:
+she's past the door from where she came or on a floor flagged $20000; struck (Fiona_React: every
+reaction but the homunculi's hold, a grab and a flinch in his grip) and in her panic's fall, till
+she is down (`lie-down`) or up again; getting up from under the homunculi. Cleared as she goes
+idle (not under a script: Fiona_ToIdle) or arrives. The door's animation also lets her over the doorway's floor (`her-noclip`, +0x2B:
 Fiona_StateDoorWalk), off at its end or struck (Fiona_StartInDoor).
 ## F5: what the story knows of her and asks of her (the kit's: `scripts/story/kit.fs`)
 
@@ -554,3 +556,16 @@ or flees, easing while she waits; into the room played by its door - in its door
 or opening it. The pad isn't hers: her calls to him (now and then: go, come back, stay) come from
 her mind and don't command him, she doesn't struggle (Fiona_Shakes 0); dragged off she breaks free
 after as many drags as her panic's stage, and cries for him now and then.
+
+**Read again, 2026-11 (0.2.42).** Against fiona.c: steering after a camera cut faced the mirrored
+heading (atan2 z x; Hewie's too) - now atan2 x z as she walks; struck or in her panic's fall she is
+out of reach (+0x2D) till down or up, so the stalker can't take her mid-fall; seized only moving
+freely (Fiona_JointAction: mode 0 - not mid kick, calling, letting go); under a script her frame
+is Fiona_Think (no panic, no stick, no control command) and her idle is the idle step, whose end
+is the move's done (a run with no way there reports done too); flag $2B cleared at her idle;
+thrown, hit by a door or grabbed she picks her wall side afresh, and the grab's pull-back goes
+along her own yaw; the panic calming (stage 5) no full panic; a door barged open strikes whoever
+is behind it (not only when she's chased); the drags and the homunculi's struggle cut in
+(Motion_Play); a door's held stick taken from her last direction, the old steering ended first
+(Fiona_Vt34). Left as they are: her panic stumble's plight (the original's moveSub there is
+whatever it was before).

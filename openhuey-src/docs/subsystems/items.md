@@ -161,6 +161,11 @@ message box), `lists.fs` (the item lists, an item's actions, the files), `map.fs
    reel, which stops itself at full speed); the 22 cells score where two rows match (5 wild); the
    symbols' counts give a result, the result an item (the boots, earrings and chokers only once;
    nothing left: the Magist Medallion) in an amount by how many matched.
+   Drawn as SlotMachine_DrawRow / DrawCell / ItemFound_StateShow: the symbols one shape in six palettes
+   (6 3 4 5 0 7); a turning reel's next symbol slides in over its frames 1..4 (the texture's column
+   $60 + 64 a); its sound (1, bank 6) stopped as the rows are scored; what came out centred on the
+   screen by its words' widths - "Forged", the name (palette 7), " xN" - over a 256 x 5 box. Before
+   0.2.42 the reel only jumped, the sound ran on and the line sat at set places (a long name over its count).
 
 ## Status
 

@@ -116,4 +116,12 @@ T{ no-medallion-ev ev  [: window-shown nothing-happened-msg = ;] 600 soon -> -1 
 testing out by its way ($FE): faded, the world held - back to the room she came from (kept loaded ahead)
 front-garden-3 0 room-by!  60 run-frames  in
 T{ way-out-area 90 at  circle press  [: room-id off-map-27 <> ;] 400 soon  room-id  world-held state-flag? -> -1 front-garden-3 -1 }T
+testing ... in by a hole, saved in here, loaded elsewhere: out by its way to the hole's room still (the save keeps
+testing ... the room loaded ahead - before 0.2.42 a load left its way leading nowhere, no way out)
+: quick ( xt -- )  game:saves enter  execute  leave-actor  deliver  2 run-frames ;
+old-mansion-2f-8 0 room-by!  60 run-frames  in
+' saves:quick-save quick  front-garden-3 0 room-by!  60 run-frames
+' saves:quick-load quick  300 read-on
+T{ room-id spare@ -> off-map-27 old-mansion-2f-8 }T
+T{ way-out-area 90 at  circle press  [: room-id off-map-27 <> ;] 400 soon  room-id -> -1 old-mansion-2f-8 }T
 test-summary

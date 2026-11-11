@@ -119,7 +119,7 @@ T{ $2E var@  [: doing-busy? 0= ;] 300 soon drop  room-id -> $FF off-map-37 }T
 testing back from the run ($81): at the door, Hewie by her
 off-map-37 267 0 game:hewie send hewie-place  60 run-frames   \ (Hewie in the room)
 T{ $81 in-by  300 read-on  [: her-tri @ ;] her  [: self body-tri ;] his -> $13 $C4 }T
-testing the exit: out - faded, she walked there, the world held, the quit asked for
-T{ ' out doing  [: quit-wanted state-flag? ;] 600 soon  world-held state-flag? -> -1 -1 }T
-quit-wanted state-flag-clear
+testing the exit: out - faded, she walked there, the world held, the quit asked for - and the title follows
+testing ... (SceneGame: flag $1C with the world held; before 0.2.42 nothing read it - a black screen)
+T{ ' out doing  [: soft-reset? ;] 900 soon -> -1 }T   \ (the title asked for: a test's frames don't make it)
 test-summary

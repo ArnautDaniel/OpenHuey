@@ -1495,13 +1495,17 @@ begin-structure /kit
 end-structure
 : my-kit ( -- kit )  kit @ ;
 : hard-set? ( -- flag )  hard-mode? ;
+\ his rage choosing his tables: not kind 39's - in a rage from its start, its +0x31C only sets the
+\ field (Pursuer_SetRage) and Kind39_AttackTable ignores it: its stance and walk alone show it
+39 constant kind39#
+: rage-tables? ( -- flag )  raging @  my-kind @ kind39# <> and ;
 \ his table for a situation (raging or alerted: his rage's; in the mini-game's run, his own for some)
 : run-table ( situation -- addr | 0 )
     hewie-played? 0= if  drop 0 exit  then  my-kit k.run @
     begin  dup @ dup -1 <> while  2 pick = if  nip cell+ @ exit  then  2 cells +  repeat  2drop drop 0 ;
 : table ( situation hard? -- addr )
     over run-table ?dup if  nip nip exit  then
-    if  34  else  0  then  raging @ alt-tables @ or if  17 +  then  +  cells my-kit k.tables @ + @ ;
+    if  34  else  0  then  rage-tables? alt-tables @ or if  17 +  then  +  cells my-kit k.tables @ + @ ;
 : moves ( -- addr )  my-kit k.moves @ ;
 : combos ( -- addr )  my-kit k.combos @ ;
 : gestures ( -- addr )  my-kit k.gestures @ ;
@@ -1511,7 +1515,7 @@ end-structure
 : temper-table ( -- addr )  my-kit hard-set? if  k.temper-hard  else  k.temper  then  @ ;
 \ the base chase's row for the panic's stage: the chance to walk at her, frames walking, stalking
 : pursue-row ( stage -- addr )
-    my-kit hard-set? if  k.pursue-hard  else  k.pursue  then  raging @ if  cell+  then  @  swap 0 5 clamp 3 cells * + ;
+    my-kit hard-set? if  k.pursue-hard  else  k.pursue  then  rage-tables? if  cell+  then  @  swap 0 5 clamp 3 cells * + ;
 : throw-moves ( -- a b )  my-kit k.throw-a @  my-kit k.throw-b @ ;
 : grip-offsets ( -- addr )  my-kit k.grips @ ;
 \ his own chase's waits (Riccardo: +0x1824) and his flurry's chances, by the hard setting (0: none)
@@ -1527,7 +1531,7 @@ end-structure
 \ his chance roll's table (+0x1740: {chance, rise} - Hewie down, his blow struck Hewie, else, struck
 \ by someone) and his rests (+0x1748: frames after a blow that struck, at least after one that
 \ missed, after a hold that caught), by the hard setting and his rage (or kind 37 alerted)
-: by-stance ( addr -- addr' )  hard-set? if  2 cells +  then  raging @ alt-tables @ or if  cell+  then  @ ;
+: by-stance ( addr -- addr' )  hard-set? if  2 cells +  then  rage-tables? alt-tables @ or if  cell+  then  @ ;
 : rolls ( -- addr )  my-kit k.rolls @ by-stance ;
 : rests ( -- addr )  my-kit k.rests @ by-stance ;
 : rest-struck ( -- n )  rests @ ;   : rest-missed ( -- n )  rests cell+ @ ;   : rest-held ( -- n )  rests 2 cells + @ ;

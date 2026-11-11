@@ -102,8 +102,50 @@ create cp-pos /vec allot  create cp-try /vec allot
 : before-spot ( -- )   \ cp-try = 15 in front of the spot she showed, along her heading then
     his-to vec@ {: F: tx ty tz :}
     tx  his-to-yaw f@ fsin 15e f* f+  ty  tz  his-to-yaw f@ fcos 15e f* f+  cp-try vec! ;
+\ a divided room, he and she on its two halves: the door point on his half nearest her - each of the
+\ mesh's doors, its first side on his half, 5 out from it (D_003B1D60) - else none
+create hd-at /vec allot   fvariable hd-best
+: half-door ( -- tri | -1 )   \ (cp-pos its point)
+    his-tri side-of {: mine | found :}  -1 to found
+    nav-links 0 ?do
+        2 0 do
+            0e  i if  5e  else  -5e  then  j i nav-link-front  hd-at vec!
+            dup 0< 0= if  dup side-of mine =  else  false  then  if
+                hd-at fiona-at vec-dist  found 0<  fdup hd-best f@ f< or
+                if  hd-best f!  to found  cp-pos hd-at vec-copy  else  fdrop drop  then
+                leave
+            then  drop
+        loop
+    loop  found ;
+\ the stalker about (seen ahead, or heard in his room): 15 from her toward him - hurrying, between
+\ them - or away from him - sulking; that turned 15 degrees either way (the original's loop turns by
+\ the same 15 each time)
+: turned-try ( -- tri | -1 ) ( F: vx vy vz deg -- )
+    {: F: vx vy vz deg :}  vx vz deg deg>rad rotate-by {: F: rx rz :}
+    fiona-at vec@ {: F: fx fy fz :}  fx rx f+  fy vy f+  fz rz f+  cp-try vec!
+    cp-try free-at? dup 0< 0= if  cp-pos cp-try vec-copy  then ;
+: stalker-way ( act -- tri | -1 )
+    sulk-to-her-act = if  -1e  else  1e  then  {: F: s :}
+    st-id @ body-at vec@  fiona-at vec@  {: F: px py pz fx fy fz :}
+    px fx f- s f*  py fy f- s f*  pz fz f- s f*  {: F: dx dy dz :}
+    dx dx f* dy dy f* f+ dz dz f* f+ fsqrt {: F: len :}
+    len f0= if  -1 exit  then
+    dx len f/ 15e f*  dy len f/ 15e f*  dz len f/ 15e f*  {: F: vx vy vz :}
+    vx vy vz 0e turned-try  dup 0< 0= if  exit  then  drop
+    vx vy vz 15e turned-try  dup 0< 0= if  exit  then  drop
+    vx vy vz -15e turned-try ;
+: stalker-about? ( -- flag )   \ (+0xF366D 1 or 3, the stalker in his room)
+    his-alert @ dup sight-alert = swap chase-alert = or 0= if  false exit  then
+    st-id @ dup 0< if  drop false exit  then  with? ;
 : command-place ( act -- tri )
     her-with? 0= if  drop  cp-pos his-at vec-copy  his-tri exit  then
+    dup scramble-there-act <> if   \ (before 0.2.42 none of these: across a divided room his way failed, and
+        her body-tri dup 0< if  drop false  else  across?  then   \ called back from the stalker he came to her side)
+        if  half-door dup 0< 0= if  nip exit  then  drop  then
+    then
+    dup hurry-to-her-act =  over sulk-to-her-act = or  stalker-about? and if
+        dup stalker-way dup 0< 0= if  nip exit  then  drop
+    then
     scramble-there-act = if   \ 15 in front of the spot she showed, facing her way
         before-spot  cp-try free-at? dup 0< if  drop her-spot exit  then
         cp-pos cp-try vec-copy exit

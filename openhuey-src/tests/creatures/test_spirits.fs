@@ -44,6 +44,8 @@ far-tri 4 0 place-spirit
 d-her constant d0
 20 run-frames
 T{ [: come @ ;] of0  d-her d0 < -> -1 -1 }T
+testing left be by her +0x2D, a script's hold, held (CreatureA_Think / _Seen: her reach's bits 4, 8, 16)
+T{ [: 4 her-reach !  kept-away?  8 her-reach !  scripted?  16 her-reach !  held?  1 her-reach !  kept-away? held? or scripted? or ;] of0 -> -1 -1 -1 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 : gone-in? ( n -- flag )  0 ?do  game-tick  spirit0 alive? 0= if  true unloop exit  then  loop  false ;
 : touched? ( n -- flag )  0 ?do  game-tick  [: vanishing @ ;] of0 if  true unloop exit  then  loop  false ;

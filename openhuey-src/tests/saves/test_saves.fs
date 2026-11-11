@@ -21,6 +21,12 @@ game:hewie enter  2 his-mood !  400 his-mood-time !  -4 his-feel !  6 3 cells hi
 game:hewie enter  12 his-met !  77 3 cells his-met + !  leave-actor   \ (how often he leapt at Debilitas, Riccardo)
 ' saves:quick-save in-saves  deliver  2 run-frames
 T{ saves:save-path file-exists? -> -1 }T
+testing a save point's save clears flag $18, the stalkers kept where they are (SceneGame_Save); a quick save leaves it
+stalkers-stay state-flag-set  ' saves:quick-save in-saves  deliver  2 run-frames
+T{ stalkers-stay state-flag? -> -1 }T
+[: 2 0 saves:save-slot ;] in-saves  deliver  2 run-frames
+T{ stalkers-stay state-flag? -> 0 }T
+' saves:quick-save in-saves  deliver  2 run-frames
 
 testing things changed, then loaded back
 plate-made story-flag-clear

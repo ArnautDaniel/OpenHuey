@@ -117,6 +117,26 @@ testing ... and as she leaves his room (Pursuer_LeaveScreen's Pursuer_ResetForRo
 T{ [: unshaken @ freeze-t @ combo @ ;] his -> 0 0 -1 }T
 [: -1 unshaken !  -1 by-her ! ;] his  s" fiona" actor-named body-tri debug:debilitas-tri  2 run-frames
 T{ [: unshaken @ by-her @ ;] his -> 0 0 }T
+testing out of sight, the door he goes through into a room not hers is left as his kind leaves it (Npc_ExitWhatToDo:
+testing ... vtable +0xF0): Debilitas's let go open; Daniella's shut while calm, open in her rage; Riccardo's left be
+: opened ( on -- )  15 swap doors-id send door-opened  2 run-frames ;   \ (castle-1f-1's exit 0: door 15, to $37)
+: afar ( kind rage -- open? )   \ (him in castle-1f-1 as that kind, through its exit 0)
+    [: raging @ swap raging !  my-kind @ rot my-kind !  my-room  room-names:castle-1f-1 body-room!
+       0 stalker.travel:passed-afar  body-room!  my-kind !  raging ! ;] his
+    2 run-frames  15 door-open? ;
+T{ false opened  debilitas-kind 0 afar -> -1 }T
+T{ true opened  daniella-kind 0 afar -> 0 }T
+T{ false opened  daniella-kind -1 afar -> -1 }T
+T{ true opened  riccardo-kind 0 afar  false opened  riccardo-kind 0 afar -> -1 0 }T
+s" fiona" actor-named body-tri debug:debilitas-tri  2 run-frames
+testing heading for her room out of sight with no way there: waiting about instead, out by a way at random
+testing ... (Pursuer_PickExit's +0x16F4, Pursuer_ModesSearching mode 3) - not heading for her for ever
+T{ [: my-room  room-names:off-map-27 body-room!  0 hunting-dog !  heading-for-her mode!  stalker.travel:modes-away  my-mode @  swap body-room! ;] his -> 3 }T
+s" fiona" actor-named body-tri debug:debilitas-tri  2 run-frames
+testing his search of her room is given 30 seconds (+0x1794 1800; Stalker_ThinkTimers): out, the stop he makes for is his last
+T{ [: search-again  search-cap @ ;] his -> 1800 }T
+T{ [: 1 route-next !  4 route-end !  1 search-cap !  stalker.search:cap-down  route-end @ search-cap @ ;] his -> 2 0 }T
+T{ [: route-clear  search-cap @ ;] his -> 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 

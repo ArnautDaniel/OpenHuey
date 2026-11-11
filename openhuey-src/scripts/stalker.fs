@@ -17,7 +17,7 @@ USING: engine game-state actors messages common facts flag-names room-names path
     figure? self body? and if  self body-room room-id =  else  false  then ;
 : pose ( -- )
     my-at v.x sf@ him act.x sf!  my-at v.y sf@ him act.y sf!  my-at v.z sf@ him act.z sf!
-    self body-yaw him act.yaw sf!
+    self body-yaw him act.yaw sf!  1 him act.character l!   \ (not drawn while the world is frozen: Progress_DrawChars)
     played-here? under-t @ 0= and unseen @ 0= and hidden @ 0= and 0<> 1 and him act.visible l! ;   \ (under the floor: Lorenzo's other class;
     \ hidden by the story: its 0x1F - the original's +0x29)
 
@@ -115,6 +115,7 @@ create figure-pck 32 allot   create figure-tex 32 allot
     -1 came-by !  -1 to-shut !  -1 at-ladder !  -1 making-for !  0 doors-n !  0 door-i !  0 away-search !  0 knock-t !  avoid-clear
     door-passed  -1 combo !  0 combo-step !  0 chase-t !  0 in-attack !   \ (Pursuer_Reset's)
     unheld  0 apart !  0 link-t !  out-over  -1 held-door !  0 entering !  0 barging !  -1 push-exit !  0 hunting-dog !  0 stun-t !  0 raging !  0 bitten !  held-by-dog bite-how !  0 dog-t !  0 at-dog !
+    my-kind @ kind39-kind = if  -1 raging !  then   \ (Kind39_Activate: in a rage from its start - its stance and walk; before 0.2.42 never)
     away? 0= if  search-start  then ;
 : go-out ( -- )  let-her-go  let-door-go  out-over  forget-leads  0 in-game !  body-off  0 him act.visible l! ;
 
@@ -175,7 +176,7 @@ $1300 constant gesture-anims
     take-asked @ 0= if  exit  then  0 take-asked !
     played? script-held @ 0= and if  taken  then ;
 : frame ( -- )
-    take?
+    take?  cap-down
     posed @ if  posed-frame  tell-danger exit  then
     script-held @ if  held-frame exit  then
     away? if  away  pose  tell-danger  exit  then
@@ -229,6 +230,24 @@ $1300 constant gesture-anims
     self subscribe hewie-doing  self subscribe scene  0 script-held !  0 in-scene !  well-cond dog-cond !
     my-kind @ head-bones!  ahead-look look-mode ! ;
 
+\ the doll (Thing03_StalkerCheck - his part): come upon away from her, he takes it unless she is
+\ his lead (+0x16C9 under 5); in her room, searching (+0x16C8 1..3), he sees it and has a way
+\ there: not following a noise (4), it makes its noise ($1F, every frame - he may take it up);
+\ following one, not after Hewie, he goes for it and takes it within 10 of it, or of his way's end
+$1F constant doll-noise
+: doll-heard ( tri -- )  doll-noise room-id rot -1 world-noise  s" acoustics" actor-named send noise ;
+: take-doll ( i -- )  s" things" actor-named send thing-taken ;
+: doll-check ( tri i away? -- )
+    {: tri i away? :}
+    away? if  lead @ pull-fiona < if  i take-doll  then  exit  then
+    here-played? 0=  my-mode @ heading-for-her held-off within 0= or if  exit  then
+    drawn-at i thing-at vec-copy   \ (where it lies)
+    drawn-at in-view? 0= if  exit  then
+    probe-path self body-tri my-at tri drawn-at self body-mask path-plan 0> 0= if  exit  then
+    lead @ pull-noise <> if  tri doll-heard exit  then
+    hunting-dog @ if  exit  then
+    tri go-for-doll
+    drawn-at my-at vec-dist 10e f<  way-left 10e f< or if  i take-doll  then ;
 \ a door slammed off screen, the one he makes for: right behind it (Pursuer_HitOffscreen kind 5) -
 \ not while down or stunned already; its damage (and the damage he's had); health left, stunned
 \ 60, 90 or 120 frames, crying out, after her; none, down there (his cry)
@@ -375,7 +394,7 @@ behaviour stalking
       then ;
   on stalker-restore ( hp mode -- )  mode!  hp ! ;
   on noclip ( on -- )  dup 0<> noclipped !  if  0  else  my-floor @  then  body-mask! ;   \ (the story's 0x20: through blocked floor - at doors)
-  on drawn-to ( tri -- )  in-game @ if  go-for-doll  else  drop  then ;
+  on drawn-to ( tri i away? -- )  in-game @ if  doll-check  else  drop 2drop  then ;
   on stalker-hunt ( -- )  in-game @ if  heading-for-her mode!  away? 0= if  search-again  then  then ;
   on entered-room ( room exit -- )  0 still-held !  her-came !  room-changed  in-game @ if  pose  then ;
   on characters-still ( on -- )  still-held ! ;
@@ -383,7 +402,7 @@ behaviour stalking
       \ given back he is shown, as the cast was made active: Cutscene_ReleaseActors' +0x29)
       my-model @ scene-has?  dup 0=  in-cast @ and if  0 hidden !  then  in-cast !
       in-game @ in-cast @ and if  tell-doing  loaded @ if  status  then  exit  then
-      in-game @ still-held @ and if  tell-doing  loaded @ if  status  then  exit  then   \ (held still: OpenHuey's)
+      in-game @ still-held @ panic-starting state-flag? or and if  tell-doing  loaded @ if  status  then  exit  then   \ (held still: OpenHuey's; her panic's start)
       in-game @ if  frame  script-held @ 0= if  own-frame @ ?dup if  execute  then  then  tell-doing  then   \ (held: his Think, not his own frame)
       figure? self body? and  in-game @ 0= and if  posed @ if  posed-frame  else  pose  then  then   \ (a scene's figure: moved only posed)
       loaded @ if  status  then ;
@@ -436,7 +455,8 @@ behaviour stalking
   on blow ( kind damage how -- )   \ (her kick or shove; a door she slammed: no answer)
       script-held @ if  2drop drop exit  then
       away? if  blow-away exit  then
-      sender striker !  2 pick door-blow = {: door? :}  struck  door? 0= if  sender send blow-taken  then ;
+      sender striker !  2 pick door-blow = {: door? :}  struck  door? 0= if  sender send blow-taken  then
+      my-kind @ kind12-kind = if  kind12-struck  then ;   \ (Kind12_EventState: struck, he takes her)
   on seize-taken ( -- )   \ (her answers to his taking her; one he isn't waiting for: let go)
       leading @ if  she-came answer !  else  fiona send unhand  then ;
   on seize-refused ( -- )  she-refused answer ! ;

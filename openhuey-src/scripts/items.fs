@@ -429,7 +429,8 @@ behaviour keeping-items
       4 0 do  -1 i equip-slot l!  loop
       progress pr.boosts 8 /boost * 0 fill
       self subscribe tick  self subscribe hewie-doing  self subscribe fiona-doing  self subscribe leaving-room ;
-  on tick ( -- )  count-up  cam-scene? 0= if  timed-effects run-down  then ;
+  on tick ( -- )   \ (the counters not while the world is frozen: Items_Update under flag $17)
+      world-frozen state-flag? panic-starting state-flag? or 0= if  count-up  then  cam-scene? 0= if  timed-effects run-down  then ;
   \ (SceneGame's room change: everything heard full again - Weltigo's fade, if silent, only back
   \ as it fades in; and at the game's end)
   on leaving-room ( room exit -- )  2drop  1e world-volume! ;

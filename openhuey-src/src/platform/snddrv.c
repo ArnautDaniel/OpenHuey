@@ -37,6 +37,10 @@ static struct {
     int master;         /* 0..255 (D_0000DF84): sound x master */
     float sound_vol, master_vol;
     int stereo;         /* D_0000DF80; the EE's output mode */
+    int out;            /* the options' sound out (the 3-D block's +0x58): 0 mono, 1 stereo, 2 as placed */
+    float sur_l[360], sur_r[360];   /* the surround tables (D_003E4C00 / D_003E4660) */
+    int32_t sur_idx[360];           /* kSurroundIndex */
+    int have_surround;
     float placed_scale; /* the driver's +0x1D4 */
     float progress_scale;   /* progress +0x1118 */
     int inited;
@@ -59,6 +63,7 @@ static void init(void) {
     D.sound_vol = D.master_vol = 1.0f;
     D.master = 0xFF;
     D.stereo = 1;
+    D.out = 1;
     D.placed_scale = 1.0f;
     D.progress_scale = 1.0f;
     for (v = 0; v < NV; v++) {
@@ -523,7 +528,12 @@ static uint32_t place(const Place *p) {
         }
     }
     v = (int16_t)((v << 13) / 100);
-    if (rel > 0x400) {
+    if (D.have_surround) {   /* (the game's output 2: SndDriver_Start's 0x360002 - the stereo tables never used) */
+        int k = D.sur_idx[(rel * 360 / 2048) % 360];
+
+        l = (int16_t)(int)(p->vol * ((float)v * D.sur_l[k]));
+        r = (int16_t)(int)(p->vol * ((float)v * D.sur_r[k]));
+    } else if (rel > 0x400) {
         l = (int16_t)(int)(p->vol * ((float)v * -D.pan_l[0x800 - rel]));
         r = (int16_t)(int)(p->vol * ((float)v * D.pan_r[0x800 - rel]));
     } else {
@@ -650,7 +660,7 @@ void snddrv_play_placed(uint32_t id, int k, int vol, int pitch, const float at[3
     memcpy(p.at, at, sizeof(p.at));
     memcpy(p.ahead, ahead, sizeof(p.ahead));
     p.curve = (int)(id & 0xFFFF) < D.bank[k].nsounds ? D.bank[k].curve[id & 0xFFFF] : 0;
-    p.combine = D.stereo;
+    p.combine = D.out;
     w = (id & 0xFFFFFF) | 0x2C500000 | (id & 0x80000000 ? 0 : 0x80000000);
     arg = ((uint32_t)vol << 8 & 0xFF00) | ((uint32_t)pitch << 16 & 0xFF0000);
     spu_lock();
@@ -729,6 +739,30 @@ void snddrv_volume(float sound, float master) {
             spu_voice_volume(v, L, R);
         }
     }
+    spu_unlock();
+}
+
+void snddrv_surround(const uint8_t *left, const uint8_t *right, const uint8_t *index) {
+    int i;
+
+    spu_lock();
+    for (i = 0; i < 360; i++) {
+        uint32_t l = rd32(left + i * 4), r = rd32(right + i * 4);
+        int32_t k = (int32_t)rd32(index + i * 4);
+
+        memcpy(&D.sur_l[i], &l, 4);
+        memcpy(&D.sur_r[i], &r, 4);
+        D.sur_idx[i] = k >= 0 && k < 360 ? k : 0;
+    }
+    D.have_surround = 1;
+    spu_unlock();
+}
+
+void snddrv_output(int mode) {
+    spu_lock();
+    init();
+    D.out = mode < 0 ? 0 : mode > 2 ? 2 : mode;
+    D.stereo = mode != 0;
     spu_unlock();
 }
 

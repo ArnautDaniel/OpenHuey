@@ -20,6 +20,7 @@ Declared in `scripts/messages.fs`. Kinds of character (for locks): `fiona-kind` 
 | `game-loaded` | `( -- )` | doors (broadcast by saves) | The exits made anew from the loaded progress' closed-off doors (Rooms_SetState). Before 0.2.38 a load left them as the session had them: begun afresh, an exit kept a closed-off door - the mansion's front door, front-garden-2's exit 0, was the locked door 1 instead of door $3C. A reset to the title rebuilds them too (`soft_reset`: Rooms_SetState with no save). |
 | `hold-door` | `( room exit kind -- )` | doors | Take hold of a door before going through (any room). Answered `door-held` or `door-refused` `( room exit -- )`. |
 | `let-go-open` / `let-go-shut` | `( room exit source -- )` | doors | Let it go open or shut (off-screen: heard). |
+| `open-from-afar` / `shut-from-afar` | `( room exit kind source -- )` | doors | Taken hold of and let go open / shut at once, out of sight (DoorHold_Take then DoorHold_Open / DoorHold_Shut): a stalker going through it off-screen as his kind leaves doors (NPC_ExitArg and its kin), Fiona following Hewie in the run. |
 | `use-door` | `( exit anim source -- )` | doors | The played room's door swings along the user's animation; at rest it is let go. |
 | `swing-door` | `( exit open source -- )` | doors | Swung open / shut by 5 degrees a frame. |
 | `set-door-opened` | `( exit open -- )` | doors | A room's script sets it swinging (`Doors_SetOpened`): open with a loud creak (0x91, heard 0x5F from Fiona's source) or shut, by 15 degrees a frame; its passage moves over at once; its state isn't changed (nobody holds it). |
@@ -45,7 +46,13 @@ kinds it is locked against). The played room's doors: who uses / holds each.
 From `doors.c` (`Doors_*`), `progress.c` (`Progress_*Door*`), `room_map.c` (closed off).
 
 1. A shut door blocks its passage: the nav triangles on its two sides are cut off from each
-   other (`Doors_Passage`). Open, they join. A doorway is always open.
+   other (`Doors_Passage`). Open, they join. A doorway is always open. The passage follows the door
+   where it stands - set as the room comes in (`Doors_RoomIn`), as its user lets it go, as a room's
+   script swings it - never the state alone: a change of the state (the story's locks and marks, a
+   door let go) puts only its locks on the floor (`Doors_Refresh`: $5000000, Hewie and the stalkers
+   barred; Fiona never). Before 0.2.42 the passage followed the state too: a door drawn open but
+   marked shut (castle-1f-5's, castle-1f-8's in their scenes) barred her, one drawn shut but marked
+   open let a stalker walk through it.
 2. A door is passable for a kind unless locked against it (`door_passable`: 0 Fiona, 1 Hewie,
    2-5 stalkers each a bit).
 3. Using a door: the door swings along the user's animation (the door records in

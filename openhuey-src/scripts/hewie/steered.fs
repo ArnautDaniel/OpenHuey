@@ -38,7 +38,7 @@ enum: way-from  from-camera from-facing from-none from-steering ;
                         turning-round his-steer !  0.5e deg>rad his-spin-rate f!  cam-yaw his-rot-yaw f!
                     then
                 then
-                his-rot-yaw f@ nx nz stick-turned fswap fatan2 his-spin-to f!  from-steering
+                his-rot-yaw f@ nx nz stick-turned fatan2 his-spin-to f!  from-steering
             then  endof
         turning-round of
             moving if

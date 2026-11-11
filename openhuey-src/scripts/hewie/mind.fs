@@ -193,7 +193,7 @@ USING: engine actors common facts paths vectors messages hewie-names hewie.state
 \ the ball he follows: lost once it lies still; going (not hidden) ahead of him (within 120
 \ degrees of his head's way) where he can get straight to: after it
 : ball-ahead? ( -- flag )
-    ball-there? 0= his-action @ dup fetch-act = swap yelp-anim-act = or or if  false exit  then
+    ball-there? 0= his-action @ dup fetch-act = swap yelp-anim-act = or or  his-next @ fetch-act = or if  false exit  then   \ (a fetch next: not cut short)
     ball-speed 0.5e f< if  forget-ball false exit  then
     ball-at heading-to  his-yaw his-head-yaw f@ f+ angle-wrap f- angle-wrap fabs  120e deg>rad f< 0= if  false exit  then
     self body-mask on-ball-line? 0= if  false exit  then
@@ -462,7 +462,7 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
 : show-him ( -- )   \ the model where his body is
     his-at v.x sf@ him-model act.x sf!  his-at v.y sf@ him-model act.y sf!  his-at v.z sf@ him-model act.z sf!
     his-yaw him-model act.yaw sf!
-    his-away @ 0= 1 and him-model act.visible l!
+    his-away @ 0= 1 and him-model act.visible l!  1 him-model act.character l!   \ (not drawn while the world is frozen)
     model his-away @ 0= dog-legs ;
 : free-for-command? ( -- flag )   \ (Hewie_FreeForCommand: idle, a command queued, nothing linked)
     his-busy @ 0=  his-mode @ free-mode = and  his-cmd @ 0<> and  his-cmd @ nothing-breaks-in and 0= and  his-meet @ 0< and ;
@@ -490,9 +490,6 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     broadcast hewie-doing
     his-hp @ broadcast hewie-health
     hewie-played? if  his-gesture @ broadcast hewie-gesture  then ;
-: full-stop ( -- )   \ Hewie_FullStop: what a script's letting go clears
-    0 his-broke !  0 his-hits !  -1 his-look-char !  0 his-scene-req !  0 his-look-pt? !
-    hewie-hidden state-flag-clear ;
 : think ( -- )   \ Hewie_Think: a frame of his while a script has him
     his-2b @ if  0  else  hewie-floor  then  body-mask!
     1 his-snd-t +!  his-snd-t @ 3000 > if  3000 his-snd-t !  then

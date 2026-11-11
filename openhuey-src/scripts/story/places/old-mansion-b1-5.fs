@@ -65,7 +65,7 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
     omb1-5-flag1 fact? if  fiona wait-move  searched-msg say exit  then
     $5F 0 18e 25.5e spot-at  wax-msg 15e 10e 0e 0e asks 0= if  unasked  stalkers-stay state-off exit  then
     1 scenes:unseen-movie 0 way-scene  world-frozen state-off  hewie-for-scene
-    panic-eased  if  -1 run-scene  then  wait-fade  things-clear
+    panic-eased  if  -1 run-scene  then  wait-fade  things-id send clear-things
     fiona 0 idle  fiona $27 -2 15.929e 21.234e place-at  camera-restart
     hewie-away @ 0= if
         hewie-cond-now @ down-cond = if  hewie-back
@@ -86,7 +86,7 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
 : hourglass ( -- )
     omb1-5-flag3 fact? if  fiona wait-move  searched-msg say exit  then
     6 -90 -30e 33.5e spot-at  hourglass-msg 10e 5e 0e 2e asks 0= if  unasked  stalkers-stay state-off exit  then
-    5 scenes:keyed-movie 4 way-scene  hewie-down-hidden  world-frozen state-off  things-clear
+    5 scenes:keyed-movie 4 way-scene  hewie-down-hidden  world-frozen state-off  things-id send clear-things
     $10 $78 movie-key  panic-eased  if  -1 run-scene  then  wait-fade
     fiona 0 idle  fiona 6 -92 -24.369e 32.751e place-at  camera-restart  hewie-back
     $78 unlock  $5C $88 door-as  $5C reopened  $88 closed-off  exits-redone

@@ -20,10 +20,14 @@ defer drop-door ( -- )   ' noop is drop-door   \ (a door she held let go: fiona.
 \ calms that is the calming one's, else out of reach too; the panic's stages 4 / 5; mode $B;
 \ panicking (fear over 90, or the panic attack) ----
 \ not to be gone for (Pursuer_MayGo: +0x2D - stepping back, at a door -, the stalkers blind, grabbed;
-\ aside by the story's 0x21): bit 1; thrown (her mode 4): bit 2
+\ aside by the story's 0x21): bit 1; thrown (her mode 4): bit 2; for the creatures: +0x2D (stepping
+\ back, at a door, struck, aside) bit 4, a script has her bit 8, held (led off, grabbed) bit 16
 : reach ( -- bits )
     her-out-of-reach @ 0<>  her-sub @ grabbed-r = or  stalkers-blind state-flag? or  her-aside @ 0<> or  1 and
-    her-mode @ thrown-mode = 2 and  or ;
+    her-mode @ thrown-mode = 2 and  or
+    her-out-of-reach @ 0<>  her-aside @ 0<> or  4 and  or                       \ (+0x2D itself: the creatures')
+    her-scripted @ 0<>  8 and  or                                               \ (a script has her: +0xE0)
+    her-led @ 0<>  her-mode @ thrown-mode =  her-sub @ grabbed-r = and or  16 and  or ;   \ (held: Character_Held - led, grabbed)
 \ (her mode 4 with moveSub $A / $B: thrown by a blow or a door, or any fall begun by Fiona_StartAction4 -
 \ which leaves $A - with no reaction's kind after it: her panic's fall, her stumble)
 : floored? ( -- flag )
@@ -152,7 +156,7 @@ $8000018 constant door-hit-floor
         then
         her-fear-bits @ 2 and if  panic-scream-sound 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fear-set
         else  fall-sound 0 her-sound  $5F noise-here  then
-        ['] after-throw her-act !
+        -1 her-wall-side !  ['] after-throw her-act !   \ (along a wall by whichever side it comes)
     then
     blocked-floor 1 or root-move-within ;
 
@@ -208,7 +212,7 @@ create door-pt /vec allot
     her-hit-how @ 1 exit-spot drop  door-pt vec!  door-pt her-at vec-heading      ( F: turn away )
     fover f- angle-wrap fabs pi f2/ f> if  pi f+ angle-wrap  then ;
 : door-thrown ( -- )
-    door-way  0 her-fall-turn !  fdup her-fall-yaw f!   \ (turned to the swing as she slides)
+    door-way  0 her-fall-turn !  -1 her-wall-side !  fdup her-fall-yaw f!   \ (turned to the swing as she slides; along a wall by whichever side)
     her-yaw f@ f- angle-wrap fabs pi f2/ f< if
         0 her-throw-back !  thrown-forward-anim play-cut
     else
@@ -247,6 +251,7 @@ create door-pt /vec allot
     dup caught-r = charmed? and if  drop false exit  then   \ (wearing the charm: she can't be caught)
     her-doing @ door-doing = if  drop-door  then
     -1 her-fall-turn !  0 her-busy-t !  fiona.slam:recoil-off   \ (her own blow's hold on her let go)
+    -1 her-out-of-reach !   \ (+0x2D: not to be gone for till she's up or down - held, grabbed, a flinch excepted)
     thrown-mode her-mode !  thrown-doing her-doing !  dup her-sub !
     dup knocked-or-thrown? if   \ (a blow: the danger told only of one by somebody other than Hewie;
         by-somebody? if  fiona-struck danger-id send danger-signal  then   \ a stumble resets her recovery)
@@ -254,15 +259,15 @@ create door-pt /vec allot
     then
     dup door-thrown-r = over off-ladder-r = or if  fiona-struck danger-id send danger-signal  then   \ (Progress_SetCondBit 1: she's been struck)
     dup reaction-jolt
-    dup grabbed-r = if  drop  fiona-occupied state-flag-set  grabbed  true exit  then
-    dup held-down-r = if  drop  held-down  true exit  then
+    dup grabbed-r = if  drop  0 her-out-of-reach !  fiona-occupied state-flag-set  grabbed  true exit  then
+    dup held-down-r = if  drop  0 her-out-of-reach !  held-down  true exit  then
     case
         spirit-fall-r of  ['] spirit-fall her-act !  endof
         caught-r of
             her-hit-how @ by-door = if   \ (the door's hold: thrown where there's room, else knocked down by him)
                 room-to-throw? if  -1 her-hit-who !  $D0 12 fiona-jolt  ['] thrown her-act !
                 else  fiona.slam:stalker-in-room her-hit-who !  $80 8 fiona-jolt  step-knock-r her-sub !  ['] knocked her-act !  then
-            else  react-mode her-mode !  flinch-doing her-doing !  her-hit-how @ grip her-hit-how !  ['] flinching her-act !  then   \ (its rumble as she flinches)
+            else  0 her-out-of-reach !  react-mode her-mode !  flinch-doing her-doing !  her-hit-how @ grip her-hit-how !  ['] flinching her-act !  then   \ (its rumble as she flinches)
         endof
         thrown-r of  ['] thrown her-act !  endof
         door-thrown-r of  her-hit-how @ her-door-hit !  ['] door-thrown her-act !  endof

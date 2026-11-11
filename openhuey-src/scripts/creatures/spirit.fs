@@ -9,7 +9,9 @@ USING: engine game-state actors messages common facts flag-names paths vectors c
 $8B constant burst-sound   $8C constant fade-sound   \ (its sounds: bank 5)
 $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)
 
-: held? ( -- flag )  her-doing @ 0<> ;                          \ (a script has her)
+: held? ( -- flag )  her-reach @ 16 and 0<> ;                    \ (Character_Held: led off, grabbed)
+: kept-away? ( -- flag )  her-reach @ 4 and 0<> ;                 \ (her +0x2D: stepping back, at a door, struck, aside)
+: scripted? ( -- flag )  her-reach @ 8 and 0<> ;                  \ (a script has her)
 : out-of-reach? ( -- flag )  fiona-hidden? her-mode @ ladder-mode = or ;
 
 \ ---- where it is ----
@@ -147,7 +149,7 @@ create spot /vec allot   fvariable turn   fvariable off
         move-mode @ creature-about <> if  creature-about move-mode !  -1 hang-again !  then  hang-about exit
     then
     creature-free move-mode !
-    fiona-hidden? held? and if  exit  then
+    kept-away? scripted? and if  exit  then   \ (left be: CreatureA_Think's StateNone)
     trip my-at door-watch if   \ (by a swinging door: waiting; left shut, through it)
         trip gone-through? if  my-path path-clear  body-off  then  exit
     then
@@ -168,7 +170,8 @@ create spot /vec allot   fvariable turn   fvariable off
     come @ 0= if  comes? if  -1 come !  then  then
     in-play? if  in-her-room  else  elsewhere  then
     vanishing @ if  exit  then
-    come @ touching-her? and fiona-hidden? 0= and held? 0= and her-reach @ 0= and if  touched  show exit  then   \ (left be while out of reach)
+    stalkers-stay state-flag? scripted? and  kept-away? or  held? or 0=   \ (CreatureA_Frame / _Seen: left be)
+    come @ touching-her? and and if  touched  show exit  then
     in-play? come @ and time @ lifetime >= and if  fade-away  then
     show store-record ;
 
@@ -188,7 +191,11 @@ behaviour spirit
   on spirit-sent ( slot room company -- )   \ (CreatureA_Setup, _ComeAfterFiona) any kind, on level 2, out and resting
       0<> company !  my-room !  slot !  -1 my-tri !  16 random kind !  0 reach !  2 level !
       true out !  false come !  4 random 1+ minutes rest !  start ;
-  on tick ( -- )  glow @ 0< if  exit  then  frame ;
+  \ (the world frozen - a room's close look - or a cutscene with the camera: not updated nor drawn,
+  \ Creatures_Update / Creatures_Draw; before 0.2.42 it went on)
+  on tick ( -- )  glow @ 0< if  exit  then
+      panic-starting state-flag? if  exit  then   \ (her panic's start: held still, as it is)
+      world-frozen state-flag? cam-scene? or if  glow @ false 0e 0e 0e spirit-at  exit  then  frame ;
   on fiona-doing ( mode sub cond cmd doing -- )  her-doing !  2drop drop  her-mode ! ;
   on fiona-plight ( state ladder reach -- )  her-reach !  2drop ;
   on leaving-room ( room exit -- )   \ she leaves: in her room and after her, it follows

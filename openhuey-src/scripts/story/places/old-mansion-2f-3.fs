@@ -54,7 +54,7 @@ $A8 constant before-crawl-tri   $96 constant crawl-tri   1 constant crawl-group
 \ ---- the stalker on the weak floor: it gives way under him ----
 : his-fall ( -- )
     stalkers-stay state!  stalker hold  fiona hold  creak-sound room-bank stalker sound-by
-    15 screen:to-black-2 with-music or fade  wait-fade  things-clear  text-gone
+    15 screen:to-black-2 with-music or fade  wait-fade  things-id send clear-things  text-gone
     0 homunculi-off  fall-sound room-bank stalker sound-by  stalker let-go  3 summon-take
     60 frames  fiona 0 on-group? if  fiona $68 160 place-on-tri  then
     floor-gone  fiona -1 idle  7 frames  camera-restart  15 fade-in  stalkers-stay state-off ;

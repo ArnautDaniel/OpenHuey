@@ -38,7 +38,7 @@ USING: engine vectors keys game-state actors messages common facts items.names f
     else dup panicking < if
         dup scared < if  1e her-tired-w f!  her-fear-bits @ 3 invert and her-fear-bits !
         else  her-fear-bits @ 2 invert and her-fear-bits !  then
-    else  her-fear-bits @ 2 and 0= if  full-panic  then  then then
+    else  dup panicking =  her-fear-bits @ 2 and 0= and if  full-panic  then  then then   \ (at 4 only: not as it calms)
     drop
     her-mode @ own-mode =  her-fear-bits @ 2 and 0= and  her-recovery @ 0> and if  -1 her-recovery +!  then
     her-fear f@ 100e f< if
@@ -93,7 +93,7 @@ create probe /vec allot  create up-was /vec allot  variable up-tri
 \ down after a hard fall (Fiona_StateFallen, Fiona_StateAfterThrow's floored): on the ground
 \ ($B01), down; her struggle (+0x1AD6C0) and shakes (+0x1AD710 / 714) start over
 : lie-down ( -- )
-    0 her-attack-t !  lying-anim -1 play-table  down-mode her-mode !  down-doing her-doing !
+    0 her-attack-t !  0 her-out-of-reach !  lying-anim -1 play-table  down-mode her-mode !  down-doing her-doing !
     -1 her-shake-rest !  0e her-shake-a f!  ['] getting-up her-act ! ;
 \ in an exit's area (PursuerGroup_Fields' bit 1): no turning along walls there
 : in-exit-area? ( -- flag )
@@ -133,13 +133,13 @@ create next-at /vec allot
             30 her-stumble-t !
             rnd 0.2e f< if
                 1000e f>cell panic-id send fear-set   \ (the original sets the panic's fear to 1000)
-                thrown-mode her-mode !  thrown-doing her-doing !  ['] panic-fall her-act !  true exit
+                -1 her-out-of-reach !  thrown-mode her-mode !  thrown-doing her-doing !  ['] panic-fall her-act !  true exit
             then
         then
         thrown-mode her-mode !  thrown-doing her-doing !  stumble-anim -1 play-table  ['] stumbling her-act !  true exit
     then
     her-fear f@ 100e f< 0= if
-        150 her-attack-t !  75e her-fear f!  attack-doing her-doing !  ['] in-attack her-act !  true exit
+        150 her-attack-t !  75e her-fear f!  0 her-out-of-reach !  attack-doing her-doing !  ['] in-attack her-act !  true exit
     then
     false ;
 
