@@ -152,6 +152,13 @@ int particles_spray(Vec3 at, int tri, int heavy);
 /* DropletFlash (Riccardo_Debris): 32 droplets of colour r g b (0..127) flung from `at` and
  * slowing, a flash there first - the debris where his shot strikes. The engine's */
 int particles_drop_flash(Vec3 at, int r, int g, int b);
+/* StrandSplash (DropSplash: a powder's burst, a powder strand's drop): 32 droplets of colour r g b
+ * (0..127) and `size` flung from `at`, a white flash there first. The engine's */
+int particles_drop_splash(Vec3 at, int r, int g, int b, float size);
+/* Effect726E0: a strand of powder dripping from a stalker's bones (actor `model`, of character
+ * `kind` - the original's +0x153C), `strand` 0 purple / 1 orange / 2 white; -1 none (no chains for
+ * that kind). The engine's */
+int particles_strand(int model, int kind, int strand);
 /* StrikeMark: a shot's flash along the line from `back` to the point `off` in actor `model`'s bone
  * `bone` axes - a glow there, a streak 3.8 beyond it - for 2 frames, then BoneSmoke from that point
  * (followed as the bone moves). The engine's */
@@ -183,6 +190,7 @@ int particles_children(int p);
 int particles_info(int p, int *kind, int *frame, int *rest);
 /* (tests) the system made last (-1 none yet); part i's place and colour (0: no such) */
 int particles_last(void);
+int particles_strands(void);   /* (tests) how many powder strands there are */
 int particles_part(int p, int i, Vec3 *at, int rgba[4]);
 void particles_free(int p);
 /* a new room: the engine's own (sparks, motes) go */

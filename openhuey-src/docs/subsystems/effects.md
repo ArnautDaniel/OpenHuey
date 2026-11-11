@@ -109,6 +109,16 @@ Butterflies_SetParams) and play a sound where they wander about now (`effect-sou
   **Fire** (64 flames at one of the old mansion B1's spots), **Room66Effect** (`steam-new`: white
   puffs and a glow), **FloorGlow** (a pool and a cone of light, white fading to nothing:
   `Sprite.shaded`, its corners' own colours).
+- **Effect726E0** (`strand-new`: a powdered stalker's strands - his clouds, Effect79FF0, start
+  them, stalker.md): up to 4 segments grown one from another down a chain of four of his bones (8
+  chains by his kind, D_00429850 ..), turned -45 +- 5 degrees about z and moved on their length,
+  every 4 frames aimed down the next pair; two crossed quads each of a random cell; fading 8..15 a
+  frame; an orange or white one's drop (**StrandSplash**, `drop-splash`) from the newest after
+  1..4 frames. StrandSplash is DropletFlash's code with its own sizes (0.1 x size + 0.3, slower
+  the bigger, pulled back 10..30%) and a white flash; both double their colour (0..127).
+- A fire's lasting sparks (Wisps, kind bit $8000) end once the room's effect slot 0 is empty -
+  whichever slot their fire is in (`room-effect0!`, told by the kit). A shot's smoke (BoneSmoke)
+  starts each wisp at the gun bone's point where it is then, drawn half a unit down.
 - **TvScreenA / B** (`tv-new`, castle 2F): last frame's picture, grey, at half size
   (`post_tv_want` / `post_tv_texture` in render/post.c) on the TV's screen while it is on - the
   room's scripts switch it each frame by story flag $300 (`effect-string` on its slot).

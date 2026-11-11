@@ -57,8 +57,12 @@ stalkers-blind state-flag-set  game:fiona body-tri debug:debilitas-tri  10 run-f
 : at-him ( -- tri ) ( F: -- x y z )  game:debilitas body-tri  game:debilitas body-pos  fswap 5e f+ fswap ;   \ (5 above his feet)
 1 room-id  at-him  0e 0e 0e  thing-new drop  5 run-frames
 T{ [: stalker.state:anim @ ;] his  things-count -> $1006 0 }T
+testing ... his cloud (Effect79FF0) of the antimony's purple strands, lasting while he is powdered
+T{ [: stalker.state:cloud-left @  stalker.state:cloud-kind @  stalker.state:cloud-left cell+ @ ;] his -> -1 0 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
+T{ [: particles-strands 0> ;] 30 soon -> -1 }T   \ (its timers 0..15: a strand drips from him)
 T{ [: [: stalker.state:anim @ ;] his $1006 <> ;] 600 soon -> -1 }T   \ (four loops, then on)
+T{ [: particles-strands 0= ;] 120 soon -> -1 }T   \ (no longer powdered: no more, the last faded)
 debug:debilitas-out  stalkers-blind state-flag-clear  5 run-frames
 testing a magnesia (set down): there till armed (30 s), then it goes off
 -1 equip  $92 1 have  $92 equip  20 run-frames

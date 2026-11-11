@@ -25,7 +25,8 @@ enum {
     SPRITE_ADD = 0x40,     /* added to the picture */
     SPRITE_GLOW = 0x80,    /* also glows (the original's glow pass: drawn again into its buffer) */
     SPRITE_OPAQUE = 0x100, /* not blended, writes depth (the shards' boxes) */
-    SPRITE_MASK = 0x200    /* only marks the bloom mask (the original's layer 0x26), draws no colour */
+    SPRITE_MASK = 0x200,   /* only marks the bloom mask (the original's layer 0x26), draws no colour */
+    SPRITE_WHOLE = 0x400   /* the batch drawn only when all of it is in view (the original's clip check before drawing) */
 };
 
 typedef struct Sprite {

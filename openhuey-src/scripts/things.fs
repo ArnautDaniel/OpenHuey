@@ -59,7 +59,9 @@ end-state
 \ the powders: the stalker's damage, how long he's held (the stun's loops - thing_stomped's b), the colour
 : powder-damage ( k -- n )  case  antimony-thing of 5 endof  refined-antimony-thing of 10 endof  >r 20 r>  endcase ;
 : powder-stun ( k -- n )  case  antimony-thing of 4 endof  refined-antimony-thing of 6 endof  >r 8 r>  endcase ;
-: powder-colour ( k -- rgba )  case  antimony-thing of $402080FF endof  refined-antimony-thing of $806400FF endof  >r $808080FF r>  endcase ;
+\ (drop_splash's colour, 0..127)
+: powder-rgb ( k -- r g b )
+    case  antimony-thing of  $40 $20 $80  endof  refined-antimony-thing of  $80 $64 0  endof  >r $80 $80 $80 r>  endcase ;
 \ the magnesias' settings (thing_setup): startle %, damage, armed at, reach across (the tube's and
 \ prima's last)
 : startle ( k -- % )  case  magnesia-thing of 20 endof  refined-magnesia-thing of 50 endof  >r 100 r>  endcase ;
@@ -88,8 +90,8 @@ end-state
     kind magnesia-thing = if  at vec@ puffs exit  then
     kind prima-thing =  at vec@  its-tri tri-normal  effects:mag-burst ;
 $8D constant splash-sound   $8E constant go-off-sound   $7C constant bounce-sound
-: powder-splash ( -- )   \ (DropSplash: the powders' colour, the tube's twice the size; its sound)
-    8  kind tube-thing = if  4  else  2  then  kind powder-colour  at vec@  at vec@  splash  splash-sound thing-sound ;
+: powder-splash ( -- )   \ (Thing01 / 04 / 06_Burst: a drop splash in the powder's colour, the tube's size 2; its sound)
+    kind powder-rgb  at vec@  kind tube-thing = if  2e  else  1e  then  drop-splash  splash-sound thing-sound ;
 : dust ( -- )  2 $50 $50 $50 16  at vec@  burst ;   \ (the doll glancing off a wall: a grey puff)
 : heard-at ( loud tri -- )   \ (a noise in its room the stalker hears: Noise_Make)
     its-room swap -1 world-noise  s" acoustics" actor-named send noise ;

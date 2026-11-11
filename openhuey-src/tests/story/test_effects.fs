@@ -58,6 +58,10 @@ T{ 0 slot system particles-children -> 1 }T
 testing a shot's debris (DropletFlash, Riccardo_Debris): its colour 0..127 doubled (clamp_colour)
 $80 $50 $40 game:fiona body-pos debris-cloud
 T{ particles-last 0 particles-part fdrop fdrop fdrop drop -> $FF $A0 $80 }T
+testing a powder's burst (DropSplash, StrandSplash): its colour doubled, 32 droplets 0.1 x its size .. 0.3 more across, flung out
+$40 $20 $80 game:fiona body-pos 2e drop-splash
+T{ particles-last 0 particles-part fdrop fdrop fdrop drop -> $80 $40 $FF }T
+T{ particles-last 31 particles-part fdrop fdrop fdrop 0> nip nip nip  particles-last 32 particles-part fdrop fdrop fdrop -> -1 0 0 0 0 }T
 testing a shot's smoke (StrikeMark, BoneSmoke): each new wisp from the gun's point where it is then
 : her-model-id ( -- id )  game:fiona enter  fiona.state:her-model @  leave-actor ;
 create hand-at 16 allot  create wisp-at 16 allot

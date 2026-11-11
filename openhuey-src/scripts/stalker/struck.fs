@@ -70,20 +70,51 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
         endcase  then
     play-now  -1 reeling !  ['] flinching step! ;
 
+\ ---- the powder's clouds (Pursuer_StateSpecialAnim's Effect79FF0): while he is powdered, of each
+\ cloud's ten timers at most one a frame runs out - a strand of the powder (Effect726E0: purple,
+\ orange, white by its loops 4 / 6 / 8) drips from his bones, and it waits 10..41 frames again. (A
+\ powdered motion that doesn't loop would make a cloud of 30 frames: his loops) ----
+4 constant #clouds   10 constant #cloud-timers
+: below ( n -- r )  s>f rnd f* f>s ;   \ (0 .. n-1)
+: cloud-timer ( cloud i -- addr )  swap #cloud-timers * + cells cloud-timers + ;
+: clouds-gone ( -- )  #clouds 0 do  0 i cells cloud-left + !  loop ;
+: cloud ( loops -- )   \ another one (its first timers 0..15)
+    #clouds 0 do
+        i cells cloud-left + @ 0= if
+            -1 i cells cloud-left + !
+            dup 4 - 2/ i cells cloud-kind + !
+            #cloud-timers 0 do  16 below  j i cloud-timer !  loop
+            drop unloop exit
+        then
+    loop  drop ;
+: cloud-frame ( c -- )   \ (Effect79FF0_Update)
+    {: c | spawned :}
+    c cells cloud-left + @ 0= if  exit  then
+    c cells cloud-left + @ 0> if  -1 c cells cloud-left + +!  c cells cloud-left + @ 0= if  exit  then  then
+    #cloud-timers 0 do
+        c i cloud-timer @ ?dup if  1-  c i cloud-timer !
+        else  spawned 0= if
+            true to spawned  32 below 10 +  c i cloud-timer !
+            my-model @ my-kind @ c cells cloud-kind + @ strand-new
+        then  then
+    loop ;
+: cloud-drips ( -- )  #clouds 0 do  i cloud-frame  loop ;
+
 \ ---- powdered (a powder trodden on - Pursuer_StateSpecialAnim): his hands to his face for the
 \ powder's loops (4 / 6 / 8, a loop a key $400), its cloud dripping from him; struck by one
-\ again meanwhile, its loops and a new cloud; done, on as after a blow ----
-defer powder-cloud ( loops -- )   ' drop is powder-cloud   \ (the cloud: stalker/powder.fs)
+\ again meanwhile, its loops and another cloud; done, on as after a blow ----
 $400 constant loop-key   \ (the motion's key flag: at its last frame)
 $7FFF constant loops-mask
 : powdering ( -- )
+    cloud-drips
     root-move
     model act.mflags l@ loop-key and 0= if  exit  then
     -1 powder-loops +!  powder-loops @ 0> if  exit  then
     recovered ;
 : powdered? ( -- flag )  step @ ['] powdering = ;
 : powdered ( loops -- )
-    dup powder-loops !  powder-cloud
+    powdered? 0= if  clouds-gone  then
+    dup powder-loops !  cloud
     powdered-anim play-now  -1 reeling !  ['] powdering step! ;
 
 \ ---- knocked down (Pursuer_StateKnockedDown, StateHurt; out of health, down his setup's frames:
@@ -172,7 +203,7 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
     kind door-blow = if  let-her-go combo-over 0 hold-off !  how door-struck exit  then   \ (a door slammed on him: how is its exit)
     leave-door   \ (struck in his door animation: the door let go - Npc_LeaveDoor)
     hp @ 0> 0= if  at-door? if  1 hp !  else  knock-down exit  then  then
-    kind powder-blow = powdered? and if  how loops-mask and dup powder-loops !  powder-cloud exit  then   \ (powdered again)
+    kind powder-blow = powdered? and if  how loops-mask and dup powder-loops !  cloud exit  then   \ (powdered again: another cloud)
     reeling @ if  exit  then                                       \ (already reeling: the damage only)
     at-dog @ if   \ (after Hewie, struck by her or powdered: the chance roll - Pursuer_Hit)
         striker @ fiona = if  0 struck-dog !  true chance-roll drop

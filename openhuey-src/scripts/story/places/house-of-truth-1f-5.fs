@@ -43,9 +43,9 @@ $1C constant door-track   $81 constant mystic-way
 \ ---- the scene: Lorenzo's end - the marker shining between its cues ----
 : marker-to ( v -- )  marker-fx tell-effect ;   \ (-2 a pause, else its size x 1000)
 : marker-done ( -- )  marker-fx dies-down ;   \ (-1: left to go out on its own)
-: marker-in ( -- )   \ (made: the figure and she shining in its colour, it lit on the figure)
-    end-figure $14 layer  0 $14 layer
-    end-figure cast-model  0 cast-model  1 1e effects:marker  marker-fx effect! ;
+: marker-in ( -- )   \ (made: both figures shining in its colour - slots 3 and 4, Room8D_Cmd01 - it lit on the first, now and then a spark on the second)
+    end-figure $14 layer  end-figure-2 $14 layer
+    end-figure cast-model  end-figure-2 cast-model  1 1e effects:marker  marker-fx effect! ;
 : till-shot ( n -- )  begin  cutscene-frame cutscene-shot-at over <> while  yield  repeat  drop ;
 : till-cue ( frame -- )  begin  cutscene-frame over < while  yield  repeat  drop ;
 : marker-cues ( -- )   \ (an activity, along the scene)
