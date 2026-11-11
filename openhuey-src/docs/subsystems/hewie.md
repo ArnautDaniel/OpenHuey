@@ -118,8 +118,9 @@ behaviours, `Hewie_WhatNext` / `WhenIdle` (the weighted lists, from the executab
   door itself (Hewie_StateToDoor) one locked against him is no way, and one someone holds he waits
   at, trying again each frame (Progress_CurRoomFlag) - since 0.2.42; before, a held door let him
   down and he went another way or none. Not modelled: his walk along the way to the first door
-  while she is gone (counted down instead), Hewie_Arrive's triangle-centre fallback, his door in
-  the save (Hewie_SaveState keeps the exit he came in by).
+  while she is gone (counted down instead), Hewie_Arrive's triangle-centre fallback. His door is in
+  the save since 0.2.45 (Hewie_SaveState's +0x838: the exit he came in by - `hewie-cond`), with his
+  condition (+0xC4; ours follows his health each frame, so a hurt one comes back hurt either way).
 - Fixed in 0.2.42 against the original: "go there" measured from where she stood (Actor_FreeDistance
   from her start, by his floor - it was from him, so the spot often fell at her feet); "come back"
   while the story hides him picks anew (+0xF3559); placed by the story in another room he takes his

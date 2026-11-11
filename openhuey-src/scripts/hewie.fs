@@ -64,11 +64,13 @@ behaviour hewie-own
       \ his feelings about each stalker)
       self body-room .  self body-tri .  his-way @ .  his-mood @ .  his-mood-time @ .  his-hide @ .
       4 0 do  i cells his-feel + @ .  loop  ." hewie-state" cr
-      4 0 do  i cells his-met + @ .  loop  ." hewie-met" cr ;   \ (how often he leapt at each)
+      4 0 do  i cells his-met + @ .  loop  ." hewie-met" cr   \ (how often he leapt at each)
+      his-cond @ .  his-door @ .  ." hewie-cond" cr ;   \ (his condition - hurt, he limps on -, the exit he came in by)
   on hewie-mood-restore ( mood time hide f0 f1 f2 f3 -- )
       3 cells his-feel + !  2 cells his-feel + !  1 cells his-feel + !  his-feel !
       his-hide !  his-mood-time !  his-mood ! ;
   on hewie-restore ( trust points hp -- )  his-hp !  his-trust-points !  his-trust ! ;
+  on hewie-came-by ( exit -- )  his-door ! ;
   on full-health ( -- )  100 hp! ;                       \ (the story's 0x48)
   on set-cond ( v -- )  cond! ;                           \ (the story's 0x47: well, hurt, down)
   on heal ( n -- )  abs his-hp @ + 100 min hp! ;          \ (0xB8)

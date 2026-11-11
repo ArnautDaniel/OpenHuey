@@ -240,6 +240,7 @@ message write-save ( -- )                    \ broadcast: print your line of the
 message hewie-health ( hp -- )              \ broadcast each frame with hewie-doing: his health, 0..100
 message set-hp ( n -- )                    \ (Hewie) his health set (a room's command)
 message hewie-restore ( trust points hp -- )   \ (Hewie) as a save had him
+message hewie-came-by ( exit -- )            \ (Hewie) the exit he came in by, as a save had it (Hewie_LoadState's +0x838)
 message hewie-mood-restore ( mood time hide f0 f1 f2 f3 -- )   \ (Hewie) his mood and its time, staying put, his feelings about the stalkers, as a save had them
 message hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  \ (Hewie) his skills at fetching, as a save had them
 message hewie-met ( m0 m1 m2 m3 -- )           \ (Hewie) how often he leapt at each stalker (Debilitas, Daniella, Lorenzo, Riccardo: 0..100), as a save had it
