@@ -140,6 +140,8 @@ T{ [: route-clear  search-cap @ ;] his -> 0 }T
 testing the cut straight at her near the way's end: the Debilitas classes' (Debilitas_ChaseTarget) - not the others'; not while her floor is his
 T{ [: debilitas-class? ;] his  game:daniella enter debilitas-class? leave-actor -> -1 0 }T
 T{ [: cut-to-her? ;] his -> 0 }T
+testing on his way through the doors in her room, no way to his door: Debilitas goes after her (his HeadingStep: Pursuer_GoForFionaStance0)
+T{ [: searching mode!  0 making-for !  0 for-her !  0 door-script !  stalker.doorway:no-way-to-door  my-mode @ ;] his -> 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 
@@ -454,11 +456,11 @@ true blind  castle-2f-2 room!  20 run-frames  castle-2f-2 $30A struck-to-give-up
 T{ [: my-mode @  stalker.state:step @ ['] flinching =  making-for @ ;] his -> 4 0 -1 }T
 debug:debilitas-out  2 run-frames
 testing ... held off at a door of his way home he can't line up at (castle-1f-2's exit 1, from the
-testing ... hall's far side): that door avoided, his way home another
+testing ... hall's far side): Debilitas after her again (his HeadingStep's failure: Pursuer_GoForFionaStance0)
 castle-1f-2 room!  20 run-frames  tri-she-is-on debug:debilitas-tri  [: room-id 694 dup tri-center body-place ;] his  5 run-frames
 [: held-off mode!  avoid-clear  1 making-for !  line-up ;] his  2 run-frames
 : avoided? ( door -- flag )  [: dup 5 rshift cells avoid + @  swap 31 and rshift 1 and 0<> ;] his ;
-T{ castle-1f-2 1 room-exit-door avoided?  [: my-mode @  making-for @ 1 <> ;] his -> -1 4 -1 }T
+T{ castle-1f-2 1 room-exit-door avoided?  [: my-mode @ ;] his -> 0 0 }T
 debug:debilitas-out  2 run-frames  false blind
 
 testing a door slammed on him (P3b): Fiona beside the open door, him in its way - shut, 3 damage, knocked through and out (stunned 150)

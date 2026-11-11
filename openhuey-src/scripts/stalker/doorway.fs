@@ -47,6 +47,11 @@ defer script-door-over ( -- )   ' noop is script-door-over
     door-script @ if  script-door-failed exit  then
     let-door-go  for-her @  out-over  if  round-failed  else  door-done  then ;
 : no-way-to-door ( -- )   \ (no way to his spot by it: not that way again - Pursuer_OnToNextExit)
+    \ (Debilitas on his way through the doors in her room - his own HeadingStep, its walk to the door failing -
+    \ held off or not: after her, his route forgotten, the door not avoided - Pursuer_GoForFionaStance0)
+    debilitas-class?  door-script @ 0= and  for-her @ 0= and  here-played? and if
+        let-door-go  out-over  route-clear  after-her mode!  chase-start exit
+    then
     my-room making-for @ room-exit-door avoid-door  give-up-door ;
 : out ( -- )  let-door-go  out-over  making-for @ through ;   \ (Pursuer_ThroughDoor)
 

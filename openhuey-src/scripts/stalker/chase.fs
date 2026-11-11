@@ -35,8 +35,6 @@ USING: stalker-names engine game-state actors messages common facts flag-names p
 : replan ( -- )  15 step-t !  fiona body-tri dup 0< if  drop  else  fiona body-at plan 0> 0= no-way !  then ;
 \ Debilitas: her triangle one he can't stand on (Debilitas_ChaseTarget, Npc_TriBlocked): straight at her once the way's end
 \ lies straight ahead and he is no more than 10 further from her than it is
-: debilitas-class? ( -- flag )   \ (the Debilitas classes have it - the others the Pursuer's ChaseTarget)
-    my-kind @  dup debilitas-kind =  over debilitas-6-kind = or  over debilitas-7-kind = or  swap debilitas-27-kind = or ;
 : cut-to-her? ( -- flag )
     debilitas-class? 0= if  false exit  then
     fiona body-tri nav-flags self body-mask and 0= if  false exit  then

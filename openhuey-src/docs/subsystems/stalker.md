@@ -700,9 +700,6 @@ stance and walk, not its tables (Kind39_Activate); Riccardo's and Lorenzo's othe
 free (moveMode 0); Lorenzo's other class's own actions held back - his taunt - while she may not be gone
 for, his grab unshaken on the hard setting, his sweep's cry 12 (Lorenzo2_Start*, StateSweep).
 
-*Not ported (read 2026-11)*: a held-off Debilitas whose door step fails going back after her
-(Debilitas_HeadingStep's forced sight, Pursuer_GoForFionaStance0); 
-
 ### Second sweep, 2026-11 (0.2.45)
 
 The story's walk arriving on another triangle than its goal (stalker/scripted.fs and cast.fs `at-goal`,
@@ -726,4 +723,7 @@ Ported since: Pursuer_ShowUp's pictures as she comes back in - Hewie on him as s
 the bite was ($1701 / $1704 / $1707; the leg's: on his front, getting up); out of health under Hewie: down with
 his time away (+0x17B4, Hewie's delay at 60) - back within it his fall shown, else lying. A door knocking him out
 of the room out of health no longer gives him the 150 held (+0x1664 only with health left): lying as she comes.
+Ported since: Debilitas on his way through the doors in her room - his own HeadingStep - finding no way to his door:
+held off or not, after her, his route forgotten, the door not avoided (Pursuer_GoForFionaStance0; doorway.fs
+`no-way-to-door`). The others avoid that door and go another way (Pursuer_OnToNextExit).
 
