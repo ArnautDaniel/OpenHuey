@@ -682,8 +682,7 @@ floor he may stand on (`Pursuer_KeepOnWalkable`). `Pursuer_BehaviourFollow` is `
 the way after her through the doors - ours `pursue-run` with `after-her-elsewhere`: no difference found.
 
 *Not ported*: `Pursuer_DoorNear`'s cases for a door between the halves of one room and for him
-already down (action $11); the sight's wobble of `Pursuer_LookAround` (0.12 a frame: his head eased back the same
-frame); `Pursuer_StateKnockedThrough`'s down-between-halves case (his health back, time 1).
+already down (action $11);.
 
 ### Read again, 2026-11 (0.2.42)
 
@@ -726,4 +725,8 @@ of the room out of health no longer gives him the 150 held (+0x1664 only with he
 Ported since: Debilitas on his way through the doors in her room - his own HeadingStep - finding no way to his door:
 held off or not, after her, his route forgotten, the door not avoided (Pursuer_GoForFionaStance0; doorway.fs
 `no-way-to-door`). The others avoid that door and go another way (Pursuer_OnToNextExit).
+Ported since: `Pursuer_LookAround`'s sweep at a search stop - his head (and his sight with it) by a cosine over his
+look's frames and half again (60: LookFrames), a full 0.12 swing in its middle half and half one at its ends, then
+eased back straight by 0.12 a frame; done once straight (search.fs `standing`; before, he stood 90 frames looking
+ahead). `Pursuer_StateKnockedThrough`'s down-between-halves case was ours already (his health 1, his step done).
 

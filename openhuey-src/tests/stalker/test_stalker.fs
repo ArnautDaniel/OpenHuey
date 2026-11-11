@@ -142,6 +142,12 @@ T{ [: debilitas-class? ;] his  game:daniella enter debilitas-class? leave-actor 
 T{ [: cut-to-her? ;] his -> 0 }T
 testing on his way through the doors in her room, no way to his door: Debilitas goes after her (his HeadingStep: Pursuer_GoForFionaStance0)
 T{ [: searching mode!  0 making-for !  0 for-her !  0 door-script !  stalker.doorway:no-way-to-door  my-mode @ ;] his -> 0 }T
+testing his look about at a stop (Pursuer_LookAround): his head - and his sight - swept well round, then straight again, done
+fvariable widest
+: swept ( -- turns done? )   \ (frames until done, at most 300)
+    0e widest f!  0 step-t !  0e head-yaw f!  0 step-done !
+    0  300 0 do  stalker.search:standing  head-yaw f@ fabs widest f@ fmax widest f!  1+  step-done @ if  leave  then  loop  step-done @ ;
+T{ [: swept nip  widest f@ 0.5e f>  head-yaw f@ f0= ;] his -> -1 -1 -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 
