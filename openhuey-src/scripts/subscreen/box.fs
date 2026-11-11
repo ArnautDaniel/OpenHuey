@@ -4,7 +4,12 @@
 IN: subscreen.box
 USING: engine messages keys ps2-screen subscreen.state subscreen.art subscreen.input ;
 
-: ask ( msg then-xt -- )  after !  shown !  0 shown-page !  0 picked !  0 box-place !  0 big-box !  on-box mode ! ;
+\ (a choice's flags - its 0x0E code, as window.fs reads them: Task_StateType): the cursor starts on the last
+\ option ("no") with bit 1; the triangle may go to the last unless bit 0
+2 constant starts-on-last   1 constant no-cancel
+: last-option ( -- i )  message-options 1- 0 max ;
+: first-pick ( -- i )  shown @ message-layout drop  message-choice-flags starts-on-last and if  last-option  else  0  then ;
+: ask ( msg then-xt -- )  after !  shown !  0 shown-page !  first-pick picked !  0 box-place !  0 big-box !  on-box mode ! ;
 : ask-document ( msg then-xt -- )  ask  -1 big-box ! ;   \ (a document read: the large shade behind its page)
 : last-shown-page? ( -- flag )  shown-page @ 1+  shown @ message-layout  >= ;
 : choosing? ( -- flag )  shown @ message-layout drop  message-options 0>  last-shown-page? and ;
@@ -44,12 +49,32 @@ create place-ys  370 , 224 , 330 , 224 , 224 , 224 , 224 , 224 ,
     shown @ message-layout drop
     shown-page @ message-lines 0 ?do  word-layer  shown @ shown-page @ i line-of  i line-x  i words-y sy  box-ink scale glyphs  loop
     choosing? if  marker  then ;
-: box-keys ( -- )
-    choosing? if
-        left? up? or if  0 picked !  se-cursor  then
-        right? down? or if  message-options 1- picked !  se-cursor  then
+\ ---- its keys (Task_StateChoice, Task_StateNextPage): choosing, the cross answers (its sound), the
+\ triangle goes to the last option where the choice allows (its sound), up / down round the options,
+\ left / right round those on the picked one's line (one alone there: as down / up) - a sound only for
+\ a change; else a page turned or the box closed by Select, L1, R1 or a face button (the pad's 0xFC01) ----
+: option-line ( i -- line )  message-option-at drop nip ;
+: round ( i -- i' )  message-options + message-options mod ;
+: row-count ( line -- n )  0  message-options 0 ?do  over i option-line = if  1+  then  loop  nip ;
+: along-row ( d -- )
+    {: d | ln :}  picked @ option-line to ln
+    ln row-count 2 < if  picked @ d + round picked !  exit  then
+    picked @  begin  d + round  dup option-line ln =  until  picked ! ;
+: answered ( -- )  -1 shown !  back-to-page  picked @ after @ execute ;
+: choice-keys ( -- )
+    confirm? if  se-decide  answered exit  then
+    message-choice-flags no-cancel and 0=  back? and if
+        picked @ last-option <> if  last-option picked !  se-cancel  then  exit
     then
-    confirm? if
+    picked @  {: was :}
+    right? if  1 along-row  else left? if  -1 along-row
+    else up? if  picked @ 1- round picked !  else down? if  picked @ 1+ round picked !  then then then then
+    picked @ was <> if  se-cursor  then ;
+: box-button? ( -- flag )  false  select-button 1+ 0 do  i start-button <> if  i button-pressed? or  then  loop ;
+: box-keys ( -- )
+    shown @ message-layout drop
+    choosing? if  choice-keys exit  then
+    box-button? if
         last-shown-page? 0= if  1 shown-page +!  exit  then
-        -1 shown !  back-to-page  picked @ after @ execute
+        answered
     then ;

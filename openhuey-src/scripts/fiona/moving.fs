@@ -147,7 +147,7 @@ create lf-at /vec allot
 : over-foot-floor? ( v -- flag )   \ (out from its foot as she gets off there: Actor_DoorFront)
     {: v :}  her-ladder @ 0  0e -7.1132e nav-link-front  dup 0< if  drop fdrop fdrop fdrop false exit  then
     {: tri :}  lf-at vec!  tri lf-at v 0 v-walk 0< 0= ;
-: ladder-floor ( v -- flags | -1 | rungs )
+: ladder-floor ( v -- flags )   \ (-1: the floor under the foot; rungs)
     anim@ case
         on-ladder-top-anim of  drop settled? if  rungs  else  -1  then  endof
         rung-down-anim of  drop rungs  endof   rung-down-end-anim of  drop rungs  endof   rung-up-anim of  drop rungs  endof

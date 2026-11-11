@@ -37,13 +37,21 @@ create spot-at /vec allot
 \ the story's door use (stalker/scripted.fs): over - or given up, his step left trying it (the
 \ original's: never done)
 defer script-door-over ( -- )   ' noop is script-door-over
-: entry-done ( -- )  route-done @ if  stand  else  search-start  then ;   \ (the door he came in by shut: his search)
-: script-door-failed ( -- )   \ (1: the door he came in by - his search all the same)
-    door-script @ 1 =  let-door-go  out-over  if  entry-done  else  ['] noop step !  then ;
+: entry-done ( -- )  route-done @ if  stand  else  search-start  then ;   \ (the door he came in by: his search)
+\ (the door scripts: -1 the story's; coming in, 1 Daniella's shutting it behind her, 2 the others' to its spot)
+1 constant shutting-script   2 constant door-spot-script
+: entering-script? ( -- flag )  door-script @ dup shutting-script =  swap door-spot-script = or ;
+: script-door-failed ( -- )   \ (coming in: his search all the same)
+    entering-script?  let-door-go  out-over  if  entry-done  else  ['] noop step !  then ;
 : give-up-door ( -- )
     door-script @ if  script-door-failed exit  then
     let-door-go  for-her @  out-over  if  round-failed  else  door-done  then ;
 : no-way-to-door ( -- )   \ (no way to his spot by it: not that way again - Pursuer_OnToNextExit)
+    \ (Debilitas on his way through the doors in her room - his own HeadingStep, its walk to the door failing -
+    \ held off or not: after her, his route forgotten, the door not avoided - Pursuer_GoForFionaStance0)
+    debilitas-class?  door-script @ 0= and  for-her @ 0= and  here-played? and if
+        let-door-go  out-over  route-clear  after-her mode!  chase-start exit
+    then
     my-room making-for @ room-exit-door avoid-door  give-up-door ;
 : out ( -- )  let-door-go  out-over  making-for @ through ;   \ (Pursuer_ThroughDoor)
 
@@ -69,7 +77,7 @@ defer shoulder-past ( -- )   ' noop is shoulder-past
     root-move
     1 step-t +!  step-t @ 3 < if  exit  then               \ (the doors take it up next frame)
     making-for @ door-animating? if  exit  then
-    door-script @ ?dup if  let-door-go  out-over  1 = if  entry-done  else  script-door-over  then  exit  then   \ (the story's: done with it)
+    door-script @ if  entering-script? let-door-go  out-over  if  entry-done  else  script-door-over  then  exit  then   \ (the story's: done with it)
     barging @ if  0 barging !  let-door-go  out-over  ['] in-doorway step!  exit  then   \ (barged into her room: in once it stands open)
     let-door-go  0 apart !  on-through ;   \ (Pursuer_Door1C4: in contact again)
 : door-swinging ( -- )
@@ -99,7 +107,11 @@ defer shoulder-past ( -- )   ' noop is shoulder-past
     spot-yaw f@ turn-rate body-turn-toward f0= 0= if  exit  then
     making-for @ asked !  room-id making-for @ stalker-kind doors-actor send hold-door
     ['] asking step! ;
-: lining-up ( -- )  shoulder-past  keep-way 0= if  no-way-to-door exit  then  walk-stride if  still-anim play  ['] facing-door step!  then ;
+: at-door-spot ( -- )   \ (the others coming in: turned to the door, standing - their table $E's - then on: Pursuer_GoToDoor done)
+    spot-yaw f@ turn-rate body-turn-toward f0= 0= if  exit  then  out-over  entry-done ;
+: lining-up ( -- )
+    shoulder-past  keep-way 0= if  no-way-to-door exit  then
+    walk-stride if  still-anim play  door-script @ door-spot-script = if  ['] at-door-spot  else  ['] facing-door  then  step!  then ;
 : line-up ( -- )
     my-at vec@ making-for @ door-side  dup 0< if  drop no-way-to-door exit  then
     if  in-front-use  else  from-behind-use  then  making-for @ kind-at open-way = 1 and +  door-use !
@@ -212,7 +224,9 @@ create re-list 8 cells allot
     line-up ;
 \ the door she came in by shut behind him (stalker/travel.fs shut-on-entry: door-script 1): lined up at
 \ his spot for its use that shuts it, his animation, let go shut - then his search
-:noname ( exit -- )  out-over  making-for !  1 door-script !  0 door-wait !  -1 asked !  line-up ; is shut-on-entry
+:noname ( exit -- )  out-over  making-for !  shutting-script door-script !  0 door-wait !  -1 asked !  line-up ; is shut-on-entry
+\ the others: to their spot by it - its use's as it stands open - then standing, on (Pursuer_GoToDoor, their $E)
+:noname ( exit -- )  out-over  making-for !  door-spot-script door-script !  0 door-wait !  -1 asked !  line-up ; is to-door-on-entry
 
 \ ---- round to her across his own room ----
 : her-way ( -- way )  her-came @ dup 0< if  exit  then  room-id swap 1 exit-way ;
@@ -283,8 +297,8 @@ create dr-at /vec allot
     my-room push-exit @ room-exit-leads drop my-room = if   \ (between his room's halves)
         hp @ 0> 0= if  1 hp !  then  -1 push-exit !  door-recovered exit
     then
-    hp @ 0> 0= if  down-away  then    \ (out of health: down beyond it - Pursuer_StateBargedThrough's +0xC4 2)
-    150 stun-t !  push-exit @ making-for !  -1 push-exit !  out ;
+    hp @ 0> if  150 stun-t !  else  down-away  then   \ (health left, held there 150 - +0x1664; out of it, down beyond it -
+    push-exit @ making-for !  -1 push-exit !  out ;   \ Pursuer_StateBargedThrough's +0xC4 2, lying as she comes)
 : staggered-back ( -- )   \ (back from it to its end; then off any floor not his)
     root-move
     ended? 0= if  exit  then

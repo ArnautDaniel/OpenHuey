@@ -81,6 +81,9 @@ defer bitten-over ( -- )
     then
     bite-how @ throwing-dog = if  hp @ 0> 0= if  1 hp !  then  then
     root-move ;
+:noname ( anim -- )   \ (Hewie on him as she left: from that bite, his letting go - the leg's: down on his front, up)
+    dup bitten-leg-anim = if  drop  lying-front-anim dup lie-anim ! play-now  lying down-stage !  0 down-t !  -1 reeling !  ['] downed step!  exit  then
+    bite-anim !  dog-let-go bite-how !  back-up-anim play-now  -1 reeling !  ['] holding-on step! ; is bite-let-go
 : bite-turning ( -- )   \ (Pursuer_StateTurnAnim)
     settled? if  bite-yaw f@ yaw!  1e holds f!  ['] holding-on step!  exit  then
     bite-yaw f@ bite-turn f@ body-turn-toward fdrop ;

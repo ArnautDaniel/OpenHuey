@@ -28,6 +28,7 @@ state: subscreen-state
   cell field openness     \ 0..128 how far faded in (the PS2's 128: opaque)
   cell field quiet        \ closing without its sound
   cell field opened-as    \ the mode the scripts asked for (0 the menu)
+  cell field the-menu     \ the menu itself is up (mode 0): Select closes it - not the other screens (SubScreen_StateRun)
   cell field options-only \ (the title's options, mode 5) the options page alone: no turning to the others
   cell field mode         \ what the keys work on
   cell field page
@@ -35,7 +36,9 @@ state: subscreen-state
   4 cells field held-for  \ each arrow held: frames (their repeat)
   \ facts told by the others
   cell field her-doing    cell field her-mode   cell field the-danger  cell field the-panic
+  cell field her-reach    \ (fiona-plight's: 8 a script has her, 16 held)
   cell field stalker-room
+  cell field stalker-told  cell field stalker-held  cell field opened-at   \ (the frame he last told, whether a script had him; the frame it opened)
   \ the item lists and an item's actions
   3 cells field cursors   \ each list's cursor (16 a page, columns of 8)
   cell field action       \ the cursor among the item's actions

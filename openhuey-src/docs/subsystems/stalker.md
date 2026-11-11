@@ -681,11 +681,8 @@ along her hand, Riccardo's heavy blow at her herself); Riccardo's table picks by
 floor he may stand on (`Pursuer_KeepOnWalkable`). `Pursuer_BehaviourFollow` is `BehaviourStalk` with
 the way after her through the doors - ours `pursue-run` with `after-her-elsewhere`: no difference found.
 
-*Not ported*: `Pursuer_ShowUp`'s pictures as she comes back in - Hewie still on him when she left
-(his letting go played from where the bite was: $1707 / $1704 / $1701), just fallen (his fall shown,
-not lying already); `Pursuer_DoorNear`'s cases for a door between the halves of one room and for him
-already down (action $11); the sight's wobble of `Pursuer_LookAround` (0.12 a frame: his head eased back the same
-frame); `Pursuer_StateKnockedThrough`'s down-between-halves case (his health back, time 1).
+*Not ported*: `Pursuer_DoorNear`'s cases for a door between the halves of one room and for him
+already down (action $11);.
 
 ### Read again, 2026-11 (0.2.42)
 
@@ -702,9 +699,34 @@ stance and walk, not its tables (Kind39_Activate); Riccardo's and Lorenzo's othe
 free (moveMode 0); Lorenzo's other class's own actions held back - his taunt - while she may not be gone
 for, his grab unshaken on the hard setting, his sweep's cry 12 (Lorenzo2_Start*, StateSweep).
 
-*Not ported (read 2026-11)*: a held-off Debilitas whose door step fails going back after her
-(Debilitas_HeadingStep's forced sight, Pursuer_GoForFionaStance0); a knock-down or getting up resumed as
-she comes back (Pursuer_ShowUp's action $23); `Pursuer_StateDownAndUp`'s doorway check each frame (ours as
-he falls); ChaseTarget's straight cut when her triangle is blocked within 10 of the way's gap;
-Lorenzo2_StartSink / StartStalkBelow's refusal at an exit (PursuerGroup_Find 9: which of ours is unread);
-the others' walk to the door's spot on entering ($28 then their table $E's stand).
+### Second sweep, 2026-11 (0.2.45)
+
+The story's walk arriving on another triangle than its goal (stalker/scripted.fs and cast.fs `at-goal`,
+Pursuer_StateArrive): its "a way under 0.1 long - put on the goal" test swapped in a float that wasn't its
+own (`fswap` over one float) - a float-stack underflow in a handler, the figure never put on its goal.
+ClankForth's checker didn't see it: a word calling a deferred one (`walk-start`) isn't followed.
+Ported since: Debilitas_ChaseTarget's straight cut (the Debilitas classes only - the others' is the Pursuer's):
+her triangle one he can't stand on, the way's end straight ahead of him, and he no more than 10 further from her
+than it is - straight at her (chase.fs `cut-to-her?`).
+Ported since: `Pursuer_StateDownAndUp`'s doorway check each frame of his fall from the leg ($1709): carried into a
+doorway with no health left, 1 back, not down, the knock-out taken off (struck.fs `doorway-revive`).
+Ported since: on coming in by an open door to search or wait about with no lead of his own (his mode as he came
+in - heading for her isn't one), the others than Daniella's kinds go to their spot by it, turn to it, stand, and
+go on (Pursuer_GoToDoor, their table $E: door-script 2, doorway.fs). Daniella's check took his mode after it
+turned to searching - now as he came in, too.
+Ported since: Lorenzo2_StartSink / StartStalkBelow's refusal at an exit (PursuerGroup_Find 9): came into her room
+onto an exit's door spot - marked as he comes in (Character_MarkObjects), kept till she next changes room (the
+groups cleared at SceneGame_EnterRoom) - or in a door's area on one of its sides: no sinking, no stalking from
+below (his reach instead when near, else held back). So one who walked in by a door doesn't sink that visit.
+Ported since: Pursuer_ShowUp's pictures as she comes back in - Hewie on him as she left: his letting go from where
+the bite was ($1701 / $1704 / $1707; the leg's: on his front, getting up); out of health under Hewie: down with
+his time away (+0x17B4, Hewie's delay at 60) - back within it his fall shown, else lying. A door knocking him out
+of the room out of health no longer gives him the 150 held (+0x1664 only with health left): lying as she comes.
+Ported since: Debilitas on his way through the doors in her room - his own HeadingStep - finding no way to his door:
+held off or not, after her, his route forgotten, the door not avoided (Pursuer_GoForFionaStance0; doorway.fs
+`no-way-to-door`). The others avoid that door and go another way (Pursuer_OnToNextExit).
+Ported since: `Pursuer_LookAround`'s sweep at a search stop - his head (and his sight with it) by a cosine over his
+look's frames and half again (60: LookFrames), a full 0.12 swing in its middle half and half one at its ends, then
+eased back straight by 0.12 a frame; done once straight (search.fs `standing`; before, he stood 90 frames looking
+ahead). `Pursuer_StateKnockedThrough`'s down-between-halves case was ours already (his health 1, his step done).
+

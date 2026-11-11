@@ -137,6 +137,17 @@ testing his search of her room is given 30 seconds (+0x1794 1800; Stalker_ThinkT
 T{ [: search-again  search-cap @ ;] his -> 1800 }T
 T{ [: 1 route-next !  4 route-end !  1 search-cap !  stalker.search:cap-down  route-end @ search-cap @ ;] his -> 2 0 }T
 T{ [: route-clear  search-cap @ ;] his -> 0 }T
+testing the cut straight at her near the way's end: the Debilitas classes' (Debilitas_ChaseTarget) - not the others'; not while her floor is his
+T{ [: debilitas-class? ;] his  game:daniella enter debilitas-class? leave-actor -> -1 0 }T
+T{ [: cut-to-her? ;] his -> 0 }T
+testing on his way through the doors in her room, no way to his door: Debilitas goes after her (his HeadingStep: Pursuer_GoForFionaStance0)
+T{ [: searching mode!  0 making-for !  0 for-her !  0 door-script !  stalker.doorway:no-way-to-door  my-mode @ ;] his -> 0 }T
+testing his look about at a stop (Pursuer_LookAround): his head - and his sight - swept well round, then straight again, done
+fvariable widest
+: swept ( -- turns done? )   \ (frames until done, at most 300)
+    0e widest f!  0 step-t !  0e head-yaw f!  0 step-done !
+    0  300 0 do  stalker.search:standing  head-yaw f@ fabs widest f@ fmax widest f!  1+  step-done @ if  leave  then  loop  step-done @ ;
+T{ [: swept nip  widest f@ 0.5e f>  head-yaw f@ f0= ;] his -> -1 -1 -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 
@@ -451,11 +462,11 @@ true blind  castle-2f-2 room!  20 run-frames  castle-2f-2 $30A struck-to-give-up
 T{ [: my-mode @  stalker.state:step @ ['] flinching =  making-for @ ;] his -> 4 0 -1 }T
 debug:debilitas-out  2 run-frames
 testing ... held off at a door of his way home he can't line up at (castle-1f-2's exit 1, from the
-testing ... hall's far side): that door avoided, his way home another
+testing ... hall's far side): Debilitas after her again (his HeadingStep's failure: Pursuer_GoForFionaStance0)
 castle-1f-2 room!  20 run-frames  tri-she-is-on debug:debilitas-tri  [: room-id 694 dup tri-center body-place ;] his  5 run-frames
 [: held-off mode!  avoid-clear  1 making-for !  line-up ;] his  2 run-frames
 : avoided? ( door -- flag )  [: dup 5 rshift cells avoid + @  swap 31 and rshift 1 and 0<> ;] his ;
-T{ castle-1f-2 1 room-exit-door avoided?  [: my-mode @  making-for @ 1 <> ;] his -> -1 4 -1 }T
+T{ castle-1f-2 1 room-exit-door avoided?  [: my-mode @ ;] his -> 0 0 }T
 debug:debilitas-out  2 run-frames  false blind
 
 testing a door slammed on him (P3b): Fiona beside the open door, him in its way - shut, 3 damage, knocked through and out (stunned 150)
@@ -504,8 +515,8 @@ debug:debilitas-out  front-garden-2 room!  10 run-frames
 s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
 [: 0 hp !  leg-attack bitten !  -1 reeling ! ;] his  front-garden-3 room!  3 run-frames
 T{ [: cond @ down-cond = ;] his -> -1 }T
-[: my-room ;] his room!  10 run-frames
-T{ [: away?  anim @  stalker.state:step @ ['] downed = ;] his -> 0 $1802 -1 }T
+[: my-room ;] his room!  10 run-frames   \ (back within his time - Pursuer_ShowUp's +0x17B4: his fall shown)
+T{ [: away?  anim @ dup stalker.anims:fall-front-anim =  swap stalker.anims:fall-back-anim = or  stalker.state:step @ ['] downed = ;] his -> 0 -1 -1 }T
 debug:debilitas-out  front-garden-2 room!  10 run-frames
 testing ... away from it (not in its way): staggered back ($1005), still in the room, after her
 s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
@@ -531,4 +542,14 @@ T{ [: [: away? ;] his ;] 300 soon -> -1 }T
 T{ [: [: away? 0=  my-way her-way = and ;] his ;] 3000 soon -> -1 }T
 debug:debilitas-out  2 run-frames
 
+front-garden-2 room!  10 run-frames  s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+testing she leaves with Hewie on his arm: as she comes back, his letting go from it (Pursuer_ShowUp: $1700 -> $1701)
+T{ [: 1 bitten !  stalker.anims:bitten-arm-anim anim !  70 hp !  stalker.travel:held-as-she-goes  left-bite @
+      stalker.travel:come-into-play  anim @  left-bite @ ;] his -> $1700 $1701 0 }T
+testing ... out of health: down - its fall shown if she's back within his time (+0x17B4), else lying
+T{ [: 1 bitten !  stalker.anims:bitten-arm-anim anim !  0 hp !  stalker.travel:held-as-she-goes  cond @ down-cond =  stun-t @ 0>
+      stalker.travel:come-into-play  anim @ dup stalker.anims:fall-front-anim =  swap stalker.anims:fall-back-anim = or ;] his -> -1 -1 -1 }T
+T{ [: 50 stun-t !  stalker.travel:come-into-play  stun-t @  0 stun-t !  stalker.travel:come-into-play  anim @ lie-anim @ = ;] his -> 0 -1 }T
+[: 70 hp !  well-cond cond !  0 stun-t !  0 bitten !  0 reeling !  0 down-t !  0 left-bite ! ;] his
+debug:debilitas-out  2 run-frames
 test-summary

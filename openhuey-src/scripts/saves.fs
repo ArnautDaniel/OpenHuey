@@ -66,6 +66,7 @@ variable was-costume   fvariable was-x  fvariable was-y  fvariable was-z  fvaria
 variable was-hewie     fvariable hw-x   fvariable hw-y   fvariable hw-z   fvariable hw-yaw
 variable was-trust  variable was-points  variable was-hp
 variable hw-room  variable hw-tri  variable hw-side  create hw-mood 7 cells allot   \ (a save without them: her room, calm)
+variable hw-cond  variable hw-door   \ (his condition, the exit he came in by - Hewie_SaveState's +0xC4, +0x838; a save without them: well, none)
 create was-skills  6 cells allot   \ (a save without them: 16 each, as he starts)
 create was-met  4 cells allot      \ (a save without them: none)
 variable was-stalker   \ his kind (-1: none loaded)
@@ -82,7 +83,7 @@ create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7
     parse-name 2dup fact-named dup 0< if  drop ." save: no fact named " type cr exit  then  nip nip story-flag-set ;
 : fact-number ( n -- )  story-flag-set ;   \ (one not named yet)
 : in-room ( room -- )
-    dup was-room !  hw-room !  -1 hw-tri !  2 hw-side !  hw-mood 7 cells 0 fill
+    dup was-room !  hw-room !  -1 hw-tri !  2 hw-side !  hw-mood 7 cells 0 fill  0 hw-cond !  -1 hw-door !
     false was-hewie !  -1 was-stalker !  6 0 do  16 i cells was-skills + !  loop  was-met 4 cells 0 fill
     false sm-was? !  -1 was-map-page !  false pn-was? !  -1 was-spare ! ;
 : fiona-was ( costume -- ) ( F: x y z yaw -- )  was-yaw f!  was-z f!  was-y f!  was-x f!  was-costume ! ;
@@ -91,6 +92,7 @@ create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7
 
 : hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  0 5 do  i cells was-skills + !  -1 +loop ;
 : hewie-met ( m0 m1 m2 m3 -- )  0 3 do  i cells was-met + !  -1 +loop ;
+: hewie-cond ( cond door -- )  hw-door !  hw-cond ! ;
 : fiona-camera ( set path -- )  s" fiona" actor-named -rot cam-char-setup ;   \ (her camera setup: the save's +0x1A0)
 : hewie-state ( room tri side mood time hide f0 f1 f2 f3 -- )
     0 6 do  i cells hw-mood + !  -1 +loop  hw-side !  hw-tri !  hw-room ! ;
@@ -148,6 +150,7 @@ create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7
         was-trust @ was-points @ was-hp @ hewie-id send hewie-restore
         6 0 do  i cells was-skills + @  loop  hewie-id send hewie-skills
         4 0 do  i cells was-met + @  loop  hewie-id send hewie-met
+        hw-cond @ hewie-id send set-cond  hw-door @ hewie-id send hewie-came-by
     else  hewie-id send part-from-fiona  then
     was-stalker @ 0< if  slot-unload summoner-back exit  then   \ (the stalker's slot: as it was)
     was-stalker @ partner-load   \ (the summoner afresh, then as it was)

@@ -5,6 +5,8 @@
 IN: stalker.moving
 USING: engine game-state actors messages common facts flag-names paths vectors stalker-names stalker.state stalker.senses stalker.tables stalker.anims floor-flags ;
 
+: debilitas-class? ( -- flag )   \ (the Debilitas classes - Debilitas, Debilitas2 / 3: their own ChaseTarget, HeadingStep)
+    my-kind @  dup debilitas-kind =  over debilitas-6-kind = or  over debilitas-7-kind = or  swap debilitas-27-kind = or ;
 : model ( -- a )  my-model @ actor ;
 $40 constant motion-frozen   \ (his motion's flag: held still - a blow of his struck home)
 : unfrozen ( -- )  model act.mflags dup l@ motion-frozen invert and swap l! ;
@@ -107,7 +109,7 @@ create lf-at /vec allot
     {: v :}
     at-ladder @ 0  3 ladder-offset nav-link-front  dup 0< if  drop fdrop fdrop fdrop false exit  then
     lf-at vec!  lf-at v 0 v-walk 0< 0= ;
-: ladder-floor ( v -- flags | -1 | rungs )
+: ladder-floor ( v -- flags )   \ (-1: the floor under the foot; rungs)
     anim @ case
         on-top-anim of  drop settled? if  rungs  else  -1  then  endof
         rung-down-anim of  drop rungs  endof   rung-down-2-anim of  drop rungs  endof

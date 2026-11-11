@@ -6,7 +6,7 @@
 \ floor, he attacks - his table for how she stands (`fiona-plight`): a combo (stalker/attack.fs),
 \ a taunt, a step round her. Losing sight of her he goes to where she is.
 IN: stalker.chase
-USING: engine game-state actors messages common facts flag-names paths vectors stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.head stalker.names stalker.anims floor-flags ;
+USING: stalker-names engine game-state actors messages common facts flag-names paths vectors stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.head stalker.names stalker.anims floor-flags ;
 
 : close-reach ( F: -- d )  hard-mode? if  40e  else  50e  then ;   \ (+0x17E4)
 \ his chase table: frames walking at her and stalking her by how he finds her - not facing him
@@ -33,11 +33,22 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
 \ walking or stalking at her (Pursuer_CloseIn + Debilitas_ChaseTarget): his way to her re-planned
 \ every 15 frames; straight at her once nothing is in the way
 : replan ( -- )  15 step-t !  fiona body-tri dup 0< if  drop  else  fiona body-at plan 0> 0= no-way !  then ;
+\ Debilitas: her triangle one he can't stand on (Debilitas_ChaseTarget, Npc_TriBlocked): straight at her once the way's end
+\ lies straight ahead and he is no more than 10 further from her than it is
+: cut-to-her? ( -- flag )
+    debilitas-class? 0= if  false exit  then
+    fiona body-tri nav-flags self body-mask and 0= if  false exit  then
+    my-path path-left? 0= if  false exit  then
+    my-path dup path-n 1- path-point {: end :}
+    end v-tri {: et :}  et 0< if  false exit  then
+    self body-tri my-at end self body-mask v-walk et <> if  false exit  then
+    my-at fiona body-at vec-dist  fiona body-at end vec-dist f-  10e f<= ;
 : at-her ( -- )
     -1 step-t +!  step-t @ 0< {: set-off :}  step-t @ 0> 0= if  replan  then
     no-way @  set-off base-chase @ or  and if  out-of-reach if  exit  then  then   \ (no way to her: round by a ladder -
     \ Pursuer_CloseIn as he sets off, the Pursuer's ChaseTarget all the way)
     fiona self body-mask straight? if  fiona body-at step-toward exit  then
+    cut-to-her? if  fiona body-at step-toward exit  then
     walk-stride drop ;
 : walk-at ( act -- )   \ walking at her (fast) or stalking her (slow)
     0 no-way !  dup walk-at-act = if  walk-fast  else  walk-slow  then  play  ['] at-her swap act! ;

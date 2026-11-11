@@ -117,9 +117,13 @@ behaviours, `Hewie_WhatNext` / `WhenIdle` (the weighted lists, from the executab
   passable from any side (its `kind` is the one-way flag's, not the walker's slot), but at the
   door itself (Hewie_StateToDoor) one locked against him is no way, and one someone holds he waits
   at, trying again each frame (Progress_CurRoomFlag) - since 0.2.42; before, a held door let him
-  down and he went another way or none. Not modelled: his walk along the way to the first door
-  while she is gone (counted down instead), Hewie_Arrive's triangle-centre fallback, his door in
-  the save (Hewie_SaveState keeps the exit he came in by).
+  down and he went another way or none. His way to the first door planned as she left (+0xF3590)
+  he walks off screen too, point to point as planned (Character_FollowWaypoints; `walk-off`), and
+  coming back she finds him along it (since 0.2.45). Hewie_Arrive's fallbacks since 0.2.45: his place off his
+  triangle - its middle (Hewie_PlaceAt with no point); no door spot - anywhere on his half
+  (Actor_TeleportRandom), not her place. His door is in
+  the save since 0.2.45 (Hewie_SaveState's +0x838: the exit he came in by - `hewie-cond`), with his
+  condition (+0xC4; ours follows his health each frame, so a hurt one comes back hurt either way).
 - Fixed in 0.2.42 against the original: "go there" measured from where she stood (Actor_FreeDistance
   from her start, by his floor - it was from him, so the spot often fell at her feet); "come back"
   while the story hides him picks anew (+0xF3559); placed by the story in another room he takes his
@@ -363,3 +367,6 @@ over kind 3) - unless a scene has them or the story keeps the game from ending (
 then he is left at 1 health). Each time he is knocked down (Hewie_AfterYelp) it is counted for
 the dog's level at the end (`pr.hewie-downs`, progress +0xFBA, to 9999) - not in a hard game.
 Checked in `tests/hewie/test_fight.fs` (27).
+
+**Second sweep, 2026-11 (0.2.45).** His mood's behaviour (`mode-behaviour`, hewie/mind.fs) with a danger
+none of calm / followed / chased - before the first is told - dropped a cell of its caller's.

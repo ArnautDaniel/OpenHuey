@@ -98,11 +98,16 @@ create out-at /vec allot
     dup 0< if  drop exit  then  room-id swap dup tri-center body-place  settle ;
 defer down-away ( -- )   ' noop is down-away   \ knocked out of health out of her sight (stalker/struck.fs)
 defer lying-on ( -- )   ' noop is lying-on   \ down, coming into view: lying, his time down running (stalker/struck.fs)
+defer fell-in-view ( -- )   ' noop is fell-in-view   \ down only just: his fall shown (stalker/struck.fs)
+defer bite-let-go ( anim -- )   ' drop is bite-let-go   \ Hewie on him as she left: his letting go (stalker/bitten.fs)
 defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home - stalker/struck.fs)
 : come-into-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first);
     \ down (knocked out of health out of her sight): lying there, his time down running
     \ held off, on home - she coming into his room doesn't turn him back (Pursuer_StanceByFiona's held off)
-    cond @ down-cond = if  -1 anim !  lying-on exit  then
+    \ (Pursuer_ShowUp: down only just - his time away not run out - his fall shown, else lying; Hewie on him
+    \ as she left, his letting go from where the bite was - the leg: down on his front, getting up)
+    cond @ down-cond = if  0 left-bite !  -1 anim !  stun-t @ if  0 stun-t !  fell-in-view  else  lying-on  then  exit  then
+    left-bite @ ?dup if  0 left-bite !  -1 anim !  bite-let-go exit  then
     away-search @ {: left :}
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
@@ -115,24 +120,28 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
     my-mode @ heading-for-her = if  searching mode!  then
     search-again ;
 
-\ come in by an open door to search or wait about, Daniella and her kinds shut it behind them first
-\ (Pursuer_EnterRoom's action $28 - Pursuer_GoToDoor, then their table $E: Exit1F0, the door animation
-\ that shuts it; the others' $E stands - a lead he follows (4, 1, 5) none of it). Before 0.2.42 they left
-\ it open
+\ come in by an open door to search or wait about, following no lead of his own (Pursuer_EnterRoom's action
+\ $28): Daniella and her kinds shut it behind them (their $28: Exit1F0, the door animation that shuts it); the
+\ others go to their spot by it, stand (their table $E) and go on (Pursuer_GoToDoor). Before 0.2.42 all left
+\ it open at once; before 0.2.45 the others didn't go to it
 defer shut-on-entry ( exit -- )   ' drop is shut-on-entry   \ (stalker/doorway.fs)
+defer to-door-on-entry ( exit -- )   ' drop is to-door-on-entry
 : daniella-kind? ( -- flag )  my-kind @ dup daniella-kind =  swap kind34-kind kind36-kind 1+ within or ;
-: shuts-coming-in? ( -- flag )
-    daniella-kind? 0= if  false exit  then
+: by-open-door? ( -- flag )   \ (Pursuer_EnterRoom's action $28: searching or waiting about, following no lead of his own, by an open door)
     my-mode @ searching waiting-about 1+ within 0= if  false exit  then
     lead @ dup 4 =  over 1 = or  swap 5 = or if  false exit  then
     came-by @ dup 0< if  drop false exit  then  room-id swap room-exit-door
     dup 0< if  drop false exit  then  dup fixed? if  drop false exit  then  door-open? ;
+: shuts-coming-in? ( -- flag )  daniella-kind?  by-open-door? and ;
 \ from the doorway on in to the spot 12 inside (Pursuer_SearchRouteIn), then as in-play has it
-: walking-in ( -- )
-    walking  step-done @ 0= if  exit  then  0 step-done !  come-into-play
-    shuts-coming-in? if  no-search search-phase !  came-by @ shut-on-entry  then ;
-: walk-in ( -- )
-    0 entering !
+: walking-in ( -- )   \ (his mode as he came in: heading for her he's searching once in - not one for action $28)
+    walking  step-done @ 0= if  exit  then  0 step-done !  by-open-door?  come-into-play
+    0= if  exit  then  no-search search-phase !
+    daniella-kind? if  came-by @ shut-on-entry  else  came-by @ to-door-on-entry  then ;
+: on-exit-spot? ( -- flag )   \ (standing on one of the room's exits' door spots - its area)
+    8 0 do  i exit-area dup 0 area-count within if  my-at vec@ area-in? if  true unloop exit  then  else  drop  then  loop  false ;
+: walk-in ( -- )   \ (come in: marked if onto an exit's spot - Pursuer_EnterRoom's Character_MarkObjects)
+    0 entering !  on-exit-spot? if  -1 exit-marked !  then
     in-tri @ 0< if  come-into-play exit  then
     goal-at in-at vec-copy  in-tri @ dup goal-tri !  goal-at plan 0> 0= if   \ (no way in yet - the door still
         room-id in-tri @ in-at vec@ body-place  come-into-play exit   \ swinging open: inside at once)
@@ -351,8 +360,10 @@ create fs-a /vec allot  create fs-b /vec allot
 \ at his head or leg; out of health, down there (Pursuer_HewieDelay). Powdered, its loops' while
 : held-as-she-goes ( -- )
     bitten @ if
+        anim @  dup bitten-arm-anim =  over bitten-flank-anim = or  over bitten-head-on-anim = or  over bitten-leg-anim = or
+        0= if  drop 0  then  left-bite !   \ (held by him: the holds alone - Pursuer_ShowUp's cases)
         hp @ 0> if  dog-trust @ 1+ 15 *  bitten @ head-on-attack < if  30  else  60  then  +  stun-t !
-        else  cond @ down-cond <> if  down-away  then  then
+        else  cond @ down-cond <> if  down-away  dog-trust @ 1+ 15 * 60 + stun-t !  then  then   \ (out of health: down - his fall a while yet: Pursuer_LeaveScreen's +0x17B4)
     else  anim @ powdered-anim = if  powder-how @ 30 * stun-t !  then  then
     0 bitten !  cond @ down-cond <> if  0 reeling !  then ;   \ (the bite and the powder over with the room)
 : gone-from-view ( -- )   \ (Pursuer_LeaveScreen: the room's doings forgotten - Pursuer_ResetForRoom)

@@ -87,9 +87,20 @@ enum: search-phase#  no-search to-stop at-the-stop ;
 \ the look about at a stop (Pursuer_StateWalkGesture: Debilitas_AttackTable's gestures) to its
 \ end; or standing a moment (Pursuer_WalkAside)
 : gesturing ( -- )   root-move  ended? if  -1 step-done !  then ;
-\ (Pursuer_WalkAside, then Pursuer_LookAround: his stand, then his look about him - Debilitas_LookFrames
-\ 60, half as long again)
-: standing ( -- )   1 step-t +!  settled? step-t @ 90 > and if  -1 step-done !  then ;
+\ (Pursuer_WalkAside, then Pursuer_LookAround: his look about him - his head swept by a cosine for his look's
+\ frames and half again (60: Debilitas_LookFrames), a full swing (0.12: LookSwing) in its middle half, half one
+\ at its ends - his sight with it -, then eased back straight by a swing a frame; done once it is)
+60 constant look-frames   0.12e fconstant look-swing
+: swing-now ( t -- ) ( F: -- a )   \ (this frame's turn)
+    {: t :}  t look-frames 2/ look-frames within if  look-swing  else  look-swing f2/  then
+    t look-frames 4 / + s>f  2e pi f* look-frames s>f f/ f*  angle-wrap fcos f* ;
+: standing ( -- )
+    as-was-look look-mode !   \ (his head his look's: not eased back by his head look)
+    ended? 0= if  root-move  then   \ (his stance's motion till it runs out)
+    step-t @ look-frames 3 * 2/ < if
+        step-t @ swing-now  head-yaw f@ f+ angle-wrap head-yaw f!  1 step-t +!  exit
+    then
+    head-yaw 0e look-swing ease  head-yaw f@ f0= if  0 step-t !  -1 step-done !  then ;
 : searched ( -- )   \ (50 walk on, 20, 20 and 10 a look about)
     rnd 100e f*
     fdup 50e f< if  fdrop -1 gesture !  still-anim play  ['] standing step!  exit  then

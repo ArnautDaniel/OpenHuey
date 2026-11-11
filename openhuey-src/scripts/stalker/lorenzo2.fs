@@ -69,8 +69,13 @@ $1904 constant hold-blow-anim   $E00 constant blow-anim   $E04 constant blow-2-a
     root-move  ended? 0= if  exit  then
     way-to-her fdup 20e f< if  fdrop goal-here  else  10e f- goal-along  then
     come-up-anim ['] playing-out go-under  ['] under own-act-1 act! ;
-: sink-start ( -- )   \ (near, no way, or she not to be gone for: none of it)
-    way-to-her fdup 30e f< if
+: at-an-exit? ( -- flag )   \ (PursuerGroup_Find 9: came in onto an exit's spot this visit, or in a door's area on its sides)
+    exit-marked @ if  true exit  then
+    8 0 do  i door-here? if  i 0 my-at vec@ door-in-area? if
+        i 0 self body-tri door-on-side?  i 1 self body-tri door-on-side? or if  true unloop exit  then
+    then  then  loop  false ;
+: sink-start ( -- )   \ (near, no way, at an exit, or she not to be gone for: none of it)
+    way-to-her fdup 30e f<  at-an-exit? or if
         f0< may-go-her? 0= or if  holds-back  else  1 combo-start  then  exit
     then  fdrop
     sink-anim play-now  ['] sinking-behind own-act-1 act! ;
@@ -81,7 +86,7 @@ $1904 constant hold-blow-anim   $E00 constant blow-anim   $E04 constant blow-2-a
     sweep-anim ['] sweeping go-under  ['] under own-act-1 act! ;
 : below-start ( -- )
     may-go-her? 0= if  holds-back exit  then
-    way-to-her f0< if  holds-back exit  then
+    way-to-her f0<  at-an-exit? or if  holds-back exit  then
     sink-to-her-anim play-now  ['] sinking-to-her own-act-1 act! ;
 \ ---- his third: his reach from afar (Lorenzo2_StartGrab / StateGrab) ----
 : grabbing ( -- )

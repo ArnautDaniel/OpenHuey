@@ -52,3 +52,4 @@ create fact-def 96 allot   variable fact-def-len
 : tally ( addr -- )  dup l@ 1+ 9999 min swap l! ;   \ (one more, as the original: to 9999)
 : panicked ( -- )  progress pr.panics tally ;         \ (the panic: she panics)
 : down-for-good ( -- )  progress pr.knockouts tally ;   \ (a stalker: knocked out for good)
+: up-after-all ( -- )  progress pr.knockouts  dup l@ 1- 0 max  swap l! ;   \ (... and not after all: one off, not below 0)

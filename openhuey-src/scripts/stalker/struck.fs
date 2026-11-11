@@ -95,10 +95,16 @@ create ahead-at /vec allot
 : floor-ahead? ( -- flag )
     yaw self body-dims fswap fdrop ahead-at my-at vec-ahead
     self body-tri my-at ahead-at self body-mask v-walk 0< 0= ;
+\ (Pursuer_StateDownAndUp: each frame of his fall from the leg, $1709 - carried into a doorway with no health
+\ left: 1 back, not down, the knock-out taken off)
+: doorway-revive ( -- )
+    anim @ leg-fall-anim <>  hp @ 0> or if  exit  then
+    at-door? 0= if  exit  then
+    1 hp !  cond @ down-cond = if  well-cond cond !  0 down-t !  -1 knockouts +!  up-after-all  then ;
 : downed ( -- )
     root-move
     down-stage @ case
-        falling of  ended? if  lie-anim @ play-now  lying down-stage !  then  endof
+        falling of  doorway-revive  ended? if  lie-anim @ play-now  lying down-stage !  then  endof
         lying of
             twitch @ if  0 twitch !  lie-anim @ 1- play-now  twitching down-stage !  exit  then
             down-t @ if  -1 down-t +!  else  lie-anim @ 1+ play-now  getting-up down-stage !  then
@@ -119,6 +125,9 @@ create ahead-at /vec allot
 :noname ( -- )
     down-frames @ down-t !  down-cond cond !  1 knockouts +!  down-for-good  let-her-go
     lying-back-anim lie-anim !  0 sees-fiona !  0 sees-hewie !  lying-on ; is down-away
+:noname ( -- )   \ (down only just as she comes in: his fall - forward if the floor ahead is his - then lying)
+    floor-ahead? if  fall-front-anim lying-front-anim  else  fall-back-anim lying-back-anim  then
+    lie-anim !  play-now  falling down-stage !  0 sees-fiona !  0 sees-hewie !  -1 reeling !  ['] downed step! ; is fell-in-view
 : knock-down ( -- )  floor-ahead? if  fall-front-anim lying-front-anim  else  fall-back-anim lying-back-anim  then  fall ;
 \ (Pursuer_StateDownAndUp: brought down by the leg in a doorway with no health left, he is left at 1 -
 \ not down for good, no knock-out counted - and gets up)

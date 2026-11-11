@@ -641,12 +641,12 @@ create look-bytes 16 allot
 \ a reflecting quad (Reflection): reflection k (0..3: the effect k's, k and 3) on the quad's corners -
 \ over the whole picture or on the quad - at strength (0..$80), its top bits side panels: a window's or a door's
 $10000000 constant window-panels   $20000000 constant door-panels
-: glass-in ( k over-all? strength F: x0 y0 z0 .. x3 y3 z3 -- )
+: glass-in ( k over-all? strength F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 -- )
     {: k all str :}  k effect @ 0= if  k 3 and effects:reflection k effect!  then  k 3 and all str reflect! ;
-: window-in ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )  false swap window-panels or glass-in ;   \ (a window: on its quad)
-: door-glass-in ( k over-all? strength F: x0 y0 z0 .. x3 y3 z3 -- )  door-panels or glass-in ;   \ (a door's)
-: lit-over-all ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )  true swap glass-in ;   \ (a scene's lit quad: no panels, over the whole picture)
-: window-over-all ( k strength F: x0 y0 z0 .. x3 y3 z3 -- )  true swap window-panels or glass-in ;   \ (a scene's: over the whole picture)
+: window-in ( k strength F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 -- )  false swap window-panels or glass-in ;   \ (a window: on its quad)
+: door-glass-in ( k over-all? strength F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 -- )  door-panels or glass-in ;   \ (a door's)
+: lit-over-all ( k strength F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 -- )  true swap glass-in ;   \ (a scene's lit quad: no panels, over the whole picture)
+: window-over-all ( k strength F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 -- )  true swap window-panels or glass-in ;   \ (a scene's: over the whole picture)
 \ the room's placed objects, by name
 $14 constant turn-y
 : object-turn ( addr len F: by -- )   \ turned about its upright, wrapping
@@ -686,7 +686,7 @@ $8000 constant room-motion
     ex exit-open? 0= if  exit  then
     ex exit-held? if  exit  then
     ex exit-checked ;
-: light-doorway ( F: x0 y0 z0 .. x3 y3 z3 -- )  light-blocker ;   \ (this frame: the characters' shadows kept off where the wall shades)
+: light-doorway ( F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 -- )  light-blocker ;   \ (this frame: the characters' shadows kept off where the wall shades)
 
 \ ---- characters, wholesale ----
 : activate ( id -- )  dup 0< if  drop exit  then  send activate ;   \ (afresh: standing, its own)

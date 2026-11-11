@@ -4,7 +4,7 @@ USING: engine room-names ;
 
 variable seed  12345 seed !
 
-: random ( n -- 0..n-1 )   \ (a plain linear generator; the original's gRandom: later, if the odds must match)
+: random ( n -- r )   \ (0 .. n-1) (a plain linear generator; the original's gRandom: later, if the odds must match)
     seed @ 1103515245 * 12345 + $7FFFFFFF and dup seed !  16 rshift swap mod ;
 : rnd ( F: -- r )  32768 random s>f 32768e f/ ;   \ 0 <= r < 1
 : vlen ( F: x z -- l )  fsq fswap fsq f+ fsqrt ;

@@ -23,10 +23,15 @@ variable arrows
     dup 1 = if  drop true exit  then
     dup 13 < if  drop false exit  then
     13 - 2 mod 0= ;
+\ the left stick pushed past half way counts as the arrow its way (Pads_BuildInput: analog under $40, from $C1)
+fvariable stick-x   fvariable stick-y
+: stick-held? ( i -- flag )   \ (x right, y down)
+    case  0 of  stick-y f@ -0.5e f<  endof  1 of  stick-x f@ 0.5e f>  endof  2 of  stick-y f@ 0.5e f>  endof
+          >r stick-x f@ -0.5e f< r>  endcase ;
 : read-arrows ( -- )   \ (once a frame)
-    0 arrows !
+    0 arrows !  pad-stick stick-y f!  stick-x f!
     4 0 do
-        i cells held-for +  i arrow-keys key-down? swap key-down? or if
+        i cells held-for +  i arrow-keys key-down? swap key-down? or  i stick-held? or if
             dup 1 swap +!  @ repeats? if  1 i lshift arrows @ or arrows !  then
         else  0 swap !  then
     loop ;
@@ -40,7 +45,10 @@ variable arrows
 \ the pages round, as L1 / R1 turn them (the three lists, the map, the files, the options)
 create page-order  pg-special , pg-items , pg-other , pg-map , pg-files , pg-options ,
 : place-in-order ( pg -- i )  6 0 do  i cells page-order + @ over = if  drop i unloop exit  then  loop  drop 0 ;
-: turn-page ( d -- )  page @ place-in-order +  6 wrap  cells page-order + @ page !  se-page ;
+defer map-to-her ( -- )   \ (map.fs: its page hers again)
+: turn-page ( d -- )   \ (turned onto the map: her page again - Map_BackToPlayer)
+    page @ place-in-order +  6 wrap  cells page-order + @ page !  se-page
+    page @ pg-map = if  map-to-her  then ;
 : page-keys ( -- )   \ (every page: L1 / R1 turn it - not the title's options alone - the triangle closes the menu)
     options-only @ 0= if
         next-page? if  1 turn-page  then

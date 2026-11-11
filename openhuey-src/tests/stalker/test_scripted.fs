@@ -50,6 +50,9 @@ T{ [: mode-t @ ;] his -> 30 }T
 0 25 0 deb send blow  deliver  3 run-frames
 T{ [: hp @ reeling @ ;] his -> 70 0 }T
 
+testing there, not on its triangle (Pursuer_StateArrive): the way left weighed - the float stack as it was (before 0.2.45 an fswap took another's)
+T{ [: fdepth  0 goal-tri !  0 tri-center goal-at vec!  stalker.scripted:at-goal  fdepth ;] his -> 0 0 }T
+anim-move look-about-anim -1  no-place move   \ (his walk let go)
 testing an animation (7): done at once; blended over b frames (8); his stance over b (16)
 anim-move look-about-anim -1  no-place move
 T{ done?  anim? -> -1 look-about-anim }T

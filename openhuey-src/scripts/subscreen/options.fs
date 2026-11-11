@@ -59,28 +59,40 @@ variable line-y
     $20 opt-row @ row-y $1C $80 part   \ the cursor
     $82 menu-line $46 $186 false text ;
 
+: put-back ( answer -- )  0= if  defaults kept  then  back-to-page ;
+\ ---- a row edited (Options_StateVibration / Sound / Volume / Position): each change heard or seen at
+\ once; the cross keeps it, the triangle - or Select - puts back what it was (opt_cancelled) ----
+create was 5 cells allot   \ (the settings as the edit began: vibration, sound out, volume, x, y)
+: snapshot ( -- )  vibration @ was !  sound-out @ was cell+ !  volume @ was 2 cells + !  pos-x @ was 3 cells + !  pos-y @ was 4 cells + ! ;
+: undo ( -- )  was @ vibration !  was cell+ @ sound-out !  was 2 cells + @ volume !  was 3 cells + @ pos-x !  was 4 cells + @ pos-y !  apply ;
+: toggled ( -- )   \ (turned on: the pad buzzes)
+    vibration @ 0= 1 and vibration !  apply  vibration @ if  0 true 4 rumble-buzz  0 $80 4 rumble  then  se-cursor ;
+: sound-round ( d -- )  sound-out @ + 3 + 3 mod sound-out !  apply  se-cursor ;   \ (0 mono, 1 stereo, 2 surround, round)
+2 constant volume-step   \ (1/64 of full: 128 here)
+: volume-by ( d -- )   \ (down from 0 its sound still; up at full none)
+    dup 0< volume @ 128 < or if  se-cursor  then
+    volume-step * volume @ + 0 max 128 min volume !  apply ;
+: nudge ( d addr -- )   \ (the screen's position, -32..32: a sound each step it takes)
+    {: d a :}  a @ d + dup -32 32 1+ within if  a !  se-cursor  else  drop  then ;
 : change ( d -- )   \ the row's setting changed (left / right)
     opt-row @ case
-        1 of  drop  vibration @ 0= 1 and vibration !  apply
-              vibration @ if  0 true 4 rumble-buzz  0 $80 4 rumble  then  endof   \ (turned on: the pad buzzes)
-        2 of  sound-out @ + 0 max 2 min sound-out !  endof
-        3 of  16 * volume @ + 0 max 128 min volume !  apply  endof
-        4 of  pos-x @ + -32 max 32 min pos-x !  endof
+        1 of  drop toggled  endof
+        2 of  sound-round  endof
+        3 of  volume-by  endof
+        4 of  pos-x nudge  endof
         >r drop r>
-    endcase  kept ;
-: put-back ( answer -- )  0= if  defaults kept  then  back-to-page ;
+    endcase ;
+: cancelled? ( -- flag )  back?  select-button button-pressed? or ;
 : editing-keys ( -- )
-    left? if  -1 change  se-cursor  then
-    right? if  1 change  se-cursor  then
+    left? if  -1 change  else  right? if  1 change  then  then
     opt-row @ 4 = if   \ (the position: up / down too)
-        up? if  pos-y @ 1- -32 max pos-y !  kept  then
-        down? if  pos-y @ 1+ 32 min pos-y !  kept  then
+        up? if  -1 pos-y nudge  else  down? if  1 pos-y nudge  then  then
     then
-    confirm? if  0 opt-editing !  se-decide  then
-    back? if  0 opt-editing !  se-cancel  then ;
+    confirm? if  kept  0 opt-editing !  se-decide exit  then
+    cancelled? if  undo  0 opt-editing !  se-cancel  then ;
 : options-keys ( -- )
     opt-editing @ if  editing-keys exit  then
-    confirm? if  -1 opt-editing !  se-decide exit  then
+    confirm? if  snapshot  -1 opt-editing !  se-decide exit  then
     up? if  opt-row @ 1- 5 wrap opt-row !  se-cursor  then
     down? if  opt-row @ 1+ 5 wrap opt-row !  se-cursor  then
     square button-pressed? if  se-decide  $4084 ['] put-back ask exit  then

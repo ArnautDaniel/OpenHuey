@@ -40,8 +40,8 @@ T{ mode@ -> 0 }T
 
 testing thrown away: asked first, then one gone
 key: X tap  key: Down tap  key: X tap
-T{ mode@  [: shown @ ;] menu@ -> 3 $4056 }T
-key: X tap  2 run-frames
+T{ mode@  [: shown @ ;] menu@  [: picked @ ;] menu@ -> 3 $4056 1 }T   \ (on "no" first: the question's 0x0E 2)
+key: Left tap  key: X tap  2 run-frames
 T{ camomile items-of  [: shown @ ;] menu@ -> 1 $4057 }T
 key: X tap
 
@@ -77,8 +77,11 @@ testing the options: the cross edits a row, the arrows change it; the square put
 key: E tap  key: E tap
 T{ [: page @ ;] menu@ -> 5 }T
 key: Down tap  key: Down tap  key: Down tap  key: X tap  key: Left tap  key: Left tap  key: X tap
-T{ [: opt-row @ volume @ opt-editing @ ;] menu@ -> 3 96 0 }T
-key: Z tap  key: X tap
+T{ [: opt-row @ volume @ opt-editing @ ;] menu@ -> 3 124 0 }T   \ (1/64 a press)
+testing ... a change undone by the triangle: as it was (opt_cancelled)
+key: X tap  key: Left tap  key: V tap
+T{ [: volume @ opt-editing @ ;] menu@ -> 124 0 }T
+key: Z tap  key: Left tap  key: X tap
 T{ [: volume @ ;] menu@ -> 128 }T
 key: E tap
 testing a document read (the File list): its page's lines 25 apart, centred on its place, the large shade behind them
@@ -98,6 +101,13 @@ T{ stage@ ducked -> 0 1000 }T
 key: W true key-hold  20 run-frames  key: W false key-hold
 T{ moved 0.5e f> -> -1 }T
 
+testing a stalker told before the game held is here; one not heard of since it opened isn't (item_usable: active)
+T{ [: room-id stalker-room !  frames @ stalker-told !  frames @ opened-at !  0 stalker-held !  subscreen.lists:stalker-here?
+      -100 stalker-told !  subscreen.lists:stalker-here?  -1 stalker-room ! ;] menu@ -> -1 0 }T
+testing a script has her: Select does nothing (Fiona +0xE0: her plight's reach bit 8)
+[: 8 her-reach ! ;] menu@  key: Tab tap  2 run-frames
+T{ stage@ -> 0 }T
+[: 0 her-reach ! ;] menu@  2 run-frames
 testing locked, Select does nothing
 subscreen-locked state-flag-set  key: Tab tap  5 run-frames
 T{ stage@ -> 0 }T
@@ -167,7 +177,7 @@ testing a save point (the scripts' 0x6D, mode 1): the slots listed; the cross sa
 saving-open
 T{ stage@  mode@  [: save-at @ ;] menu@ -> 2 on-saving 0 }T
 key: Down tap  key: X tap  5 run-frames
-T{ step@  1 slot-used?  1 slot-path file-exists?  1 slot-frames@ progress pr.play-frames l@ = -> 3 -1 -1 -1 }T
+T{ step@  1 slot-used?  1 slot-path file-exists?  progress pr.play-frames l@ 1 slot-frames@ - 0 30 within -> 3 -1 -1 -1 }T   \ (the time goes on with the menu up)
 key: X tap  20 run-frames
 T{ stage@  subscreen-wanted state-flag? -> 0 0 }T
 testing a used slot: asked first (no picked first) - no leaves it be, yes writes over it; the triangle leaves
@@ -178,7 +188,10 @@ T{ step@ -> 0 }T
 key: X tap  key: Right tap  key: X tap  5 run-frames
 T{ step@ -> 3 }T
 key: X tap  20 run-frames
-saving-open  key: V tap  20 run-frames
+testing Select leaves the save point's screen be - only the menu's (SubScreen_StateRun: mode 0)
+saving-open  key: Tab tap  5 run-frames
+T{ stage@ -> 2 }T
+key: V tap  20 run-frames
 T{ stage@ -> 0 }T
 testing loaded back from the slot: the room it was saved in
 room-id constant saved-room
