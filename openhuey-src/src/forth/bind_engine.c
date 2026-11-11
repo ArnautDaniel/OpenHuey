@@ -893,6 +893,17 @@ PRIM(p_tri_center) {   /* ( tri -- ) ( F: -- x y z ) */
     c = navmesh_center(&gEngine.room.nav, (int)i);
     FPUSH(c.x); FPUSH(c.y); FPUSH(c.z);
 }
+PRIM(p_tri_floor) {   /* ( tri -- ) ( F: x z -- y ) (x, z)'s height on its plane (NavMesh_OntoPlane) */
+    float z = (float)FPOP(), x = (float)FPOP();
+    Cell i = POP();
+
+    if (i < 0 || i >= gEngine.room.nav.ntris) {
+        forth_error(f, "tri-floor: no nav triangle %ld", (long)i);
+        FPUSH(0.0f);
+        return;
+    }
+    FPUSH(navmesh_height_on(&gEngine.room.nav, (int)i, x, z));
+}
 
 /* ---- the house: exits and where they lead ---- */
 
@@ -3957,7 +3968,7 @@ void bind_engine(Forth *f) {
     } prims[] = {
         {"room", p_room, "( id -- )"}, {"route", p_route, "( from to kind max -- n )"}, {"route-avoiding", p_route_avoiding, "( from to kind max avoid -- n )"}, {"route-sides", p_route_sides, "( from from-way to want kind max avoid -- n )"}, {"exit-way", p_exit_way, "( room exit checked -- way )"}, {"route-door", p_route_door, "( i -- door )"}, {"door-open?", p_door_open, "( door -- flag )"}, {"world-exits-rebuild", p_exits_rebuild, "( -- )"}, {"door-exit-in", p_door_exit_in, "( door room -- exit | -1 )"}, {"door-leads", p_door_leads, "( door room -- room' | -1 )"}, {"exit-stand", p_exit_stand, "( exit -- flag ) ( F: -- F: x y z )"}, {"room-id", p_room_id, "( -- room )"}, {"room-exists?", p_room_exists, "( room -- flag )"},
         {"room-bounds", p_room_bounds, "( F: -- lx ly lz hx hy hz )"}, {"room-cameras", p_room_cameras, "( -- n )"}, {"room-camera", p_room_camera, "( i -- ) ( F: -- F: ex ey ez fov-radians tx ty tz )"}, {"light-own", p_light_own, "( i -- )"}, {"light-scale", p_light_scale, "( i which -- ) ( F: k -- )"}, {"door-group?", p_door_group_q, "( exit group -- flag )"}, {"room-group?", p_room_group_q, "( group -- flag )"}, {"light@", p_light_fetch, "( i -- ) ( F: -- F: intensity shadow )"}, {"room-ambient", p_room_ambient, "( -- ) ( F: -- F: r g b )"}, {"lights-at", p_lights_at, "( -- l0 l1 l2 ) ( F: x y z -- )"}, {"look-on?", p_look_on, "( slot -- flag )"}, {"sprites", p_sprites_new, "( -- b )"}, {"sprites-free", p_sprites_free, "( b -- )"}, {"sprites-free-all", p_sprites_free_all, "( -- )"}, {"sprites-texture", p_sprites_texture, "( b group id palette -- )"}, {"sprites-cells", p_sprites_cells, "( b x y cw ch tw th frames -- )"}, {"sprites-flags", p_sprites_flags, "( b flags layer -- )"}, {"sprites-offset", p_sprites_offset, "( b -- ) ( F: cx cy -- )"}, {"sprites-corner", p_sprites_corner, "( b k -- ) ( F: x y z -- )"}, {"sprites-count", p_sprites_count, "( b n -- )"}, {"sprite!", p_sprite_store, "( b i rgba frame -- ) ( F: x y z w h rot -- )"}, {"sprites-uv", p_sprites_uv, "( b -- ) ( F: u0 v0 u1 v1 -- )"}, {"sprite-quad!", p_sprite_quad, "( b i rgba -- ) ( F: x0 y0 z0 x1 y1 z1 x2 y2 z2 x3 y3 z3 -- )"}, {"door-group!", p_door_group, "( group flag -- )"}, {"room-group!", p_room_group, "( group flag -- )"}, {"floor-below", p_floor_below, NULL},
-        {"nav-tris", p_nav_tris, "( -- n )"}, {"nav-tri", p_nav_tri, "( -- ) ( -- tri | -1 ) ( F: x y z -- )"}, {"tri-center", p_tri_center, "( tri -- ) ( F: -- F: x y z )"}, {"tri-normal", p_tri_normal, "( tri -- ) ( F: -- F: x y z )"},
+        {"nav-tris", p_nav_tris, "( -- n )"}, {"nav-tri", p_nav_tri, "( -- ) ( -- tri | -1 ) ( F: x y z -- )"}, {"tri-center", p_tri_center, "( tri -- ) ( F: -- F: x y z )"}, {"tri-floor", p_tri_floor, "( tri -- ) ( F: x z -- F: y )"}, {"tri-normal", p_tri_normal, "( tri -- ) ( F: -- F: x y z )"},
         {"exit-tri", p_exit_tri, "( exit which -- tri | -1 )"}, {"exit-leads", p_exit_leads, "( exit -- room exit' | -1 -1 )"}, {"room-exit-door", p_room_exit_door, "( room exit -- door | -1 )"}, {"room-exit-leads", p_room_exit_leads, "( room exit -- room' exit' | -1 -1 )"}, {"door-sides", p_door_sides, "( door -- room0 exit0 tri0 room1 exit1 tri1 )"}, {"room-exit-tri", p_room_exit_tri, "( room exit which -- tri )"}, {"hud", p_hud, "( addr len -- )"}, {"ui-clear", p_ui_clear, "( layer -- )"}, {"ui-image", p_ui_image, "( layer x y w h group id csa u v uw vh rgba -- )"}, {"tex-bank", p_tex_bank, "( addr len group -- flag )"}, {"tex-info", p_tex_info, "( group id -- w h tex )"}, {"ui-rect", p_ui_rect, "( layer x y w h rgba -- )"}, {"ui-text", p_ui_text, "( layer addr len x y rgba scale -- )"}, {"text-width", p_text_width, "( addr len scale -- px )"}, {"ui-movie", p_ui_movie, "( layer x y w h -- )"}, {"ui-held", p_ui_held, "( layer x y w h -- )"}, {"movie-hold", p_movie_hold, "( -- flag )"}, {"movie-unhold", p_movie_unhold, "( -- )"}, {"cast-as", p_cast_as, "( id model -- )"}, {"chars-hide", p_chars_hide, "( -- )"}, {"cast-model", p_cast_model, "( id -- model | -1 )"}, {"scene-has?", p_scene_has, "( model -- flag )"}, {"model-file", p_model_file, "( model -- addr len )"}, {"nav-move", p_nav_move, "( F: x y z dx dz climb radius -- F: x' y' z' )"}, {"nav-nearest", p_nav_nearest, "( F: x y z -- F: x' y' z' )"}, {"nav-at", p_nav_at, NULL}, {".room", p_room_info, "( -- )"},
         {"camera", p_camera, "( -- addr )"},
         {"cam-new-room", p_cam_new_room, "( -- )"}, {"cam-room-start", p_cam_room_start, "( -- )"}, {"cam-setup", p_cam_setup, "( set path -- )"},

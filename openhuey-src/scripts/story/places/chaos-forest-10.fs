@@ -65,7 +65,7 @@ the-crate shard-grey 0 9 shard-look  the-crate 0.812e 0.687e 0.187e 0.312e shard
     cowed-whine common-bank hewie sound-by  fiona crouch-up-anim play ;
 : pick-medallion ( -- )  medallion cf-10-medallion medallion-fx 76.5e 134.5e picks-up ;
 : spots ( -- )
-    hurt?  cf-10-flag1 fact? and  fiona hewie 10 45 touches-facing? and if  ['] stay-still unhurried offer  then
+    hurt?  cf-10-flag1 fact? and  fiona hewie 10 10 45 touches-facing-up? and if  ['] stay-still unhurried offer  then
     the-crate broken? if
         cf-10-medallion fact? 0=  fiona 76.5e -25.5e 134.5e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then
     else  the-crate breaks? if  medallion-shows  then  then ;

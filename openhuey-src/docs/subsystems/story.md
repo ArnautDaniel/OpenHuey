@@ -526,6 +526,20 @@ From `event.c`, `scene_game.c` (the order), `progress.c`.
 
 ## Status
 
+**The kit read again against event.c (2026-11, 0.2.47; `tests/story/test_kit_rules.fs`).** Put right:
+the scripts' items pass Events_ScriptRoom (event +0xD0) - in a hard game ($AF) Camomile and
+Lavender ($40 / $41) are given, named, counted and tabbed as the Medallion ($70: `as-scripts`; used
+up as they are, 0x59 $0C); the crouch's gate is cond 0x3D (Fiona_IsIdle, not panicking) and not
+backing off (0x3F $D), not scripted (`may-crouch?`); touching is Actor_Touching by both margins
+(`bodies-touching?`: conds 0x47 / 0x58 by the other's radius and height - the homunculi touching her
+while she crouches; 0x1F's margin up, `touches-facing-up?`, chaos-forest-10); a doing offered keeps
+it, a later doing replaces a message to read, 0xA5 replaces either; `busy?` as SceneGame_Busy
+(figures here, her panic's onset); half hidden with no stalker in the game the camera stays; the
+fury bait ($91) doesn't wait for her (its counter quirk, as $90); `stalker-free?` struck / engaged
+only by their subs; `place-at` on the triangle's plane (`tri-floor`: NavMesh_OntoPlane); an area
+gate's crossing, `exit-camera` and Hewie's exit test on the triangles' planes. Left: figures held
+by a script don't count in `busy?` (the kit doesn't hold them).
+
 The history below runs from the converted rooms' machinery (S1 .. S5: the rooms' bytecode
 scripts as Forth, their opcode words - gone in 0.2.20, every room a place since) to the places.
 Tests named there that went with the machinery are gone too.

@@ -58,6 +58,8 @@ int navmesh_link_front(const NavMesh *n, int i, int side, float ox, float oz, Ve
 /* the triangle under (x, z) whose surface is nearest height y (and not more than `climb`
  * above it), not one of the `block` flags; -1 if none. *height: its surface there */
 int navmesh_find(const NavMesh *n, Vec3 p, float climb, float *height);
+/* (x, z)'s height on triangle tri's plane (NavMesh_OntoPlane) */
+float navmesh_height_on(const NavMesh *n, int tri, float x, float z);
 /* move from p by (dx, dz), staying on the mesh with `radius` to spare ahead: sliding along
  * walls, following the floor */
 /* NavMesh_Walk (Actor_Move's slide): from `from` on triangle `tri` toward `to` over floor the mask lets

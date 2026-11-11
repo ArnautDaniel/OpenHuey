@@ -48,6 +48,7 @@ state: place-state
   #people cells field marks          \ each one's animation marks reached (its event keys), as last told
   #people cells field in-here        \ each one in this room, as last seen
   #people /vec * field was-at        \ where each was at the last frame's end (areas crossed)
+  #people cells field was-tri        \ ... and the triangle there
   #people cells field seen
   \ the offer this frame (the action prompt): its doing (an xt, 0 none), whether a message;
   \ the doing's offer-when
@@ -219,7 +220,7 @@ create mv-at /vec allot
 : wait-mark ( id bits -- )   \ its animation come to a mark (an event key of it)
     {: id bits | i :}  id person-of to i  i 0< if  exit  then
     begin  yield  i cells marks + @ bits and  id here? 0= or  until ;
-: floor-at ( tri F: x z -- x y z )  {: tri F: x z :}  x  tri tri-center fdrop fswap fdrop  z ;
+: floor-at ( tri F: x z -- x y z )  {: tri F: x z :}  x  tri x z tri-floor  z ;   \ (on its plane: NavMesh_OntoPlane)
 : deg>yaw ( deg -- ) ( F: -- yaw )  s>f deg>rad angle-wrap ;
 : walk-to ( id tri face F: x z -- )   \ to (x, z) on tri, then facing face (degrees)
     {: id tri face F: x z :}  id walk-move tri -1  tri x z floor-at  face deg>yaw  move  id wait-move ;
@@ -284,10 +285,19 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 \ ---- areas (the room's, C's facts): in one, or crossing into one since the last frame ----
 : in-area? ( id area -- flag )
     over here? 0= if  2drop false exit  then  swap body-at vec@ area-in? ;
+\ (where the scripts name a triangle - Events_InArea's, an area_cross gate's - the height is the
+\ floor's: on the triangle's plane)
+: plane-y ( tri -- ) ( F: x y z -- x y' z )  {: tri F: x y z :}  x  tri x z tri-floor  z ;
+: on-plane ( v tri -- ) ( F: -- x y z )  swap vec@  dup 0< if  drop exit  then  plane-y ;   \ (no triangle: as it is)
+: in-area-on? ( id area -- flag )   \ (in it, standing on her triangle's plane)
+    over here? 0= if  2drop false exit  then  swap dup body-at swap body-tri on-plane area-in? ;
 : crossed ( id area -- n )   \ 1 into it, -1 out of it, 0 neither
     {: id area | i :}  id person-of to i  i 0< if  0 exit  then
     i cells seen + @ 0= if  0 exit  then
-    i /vec * was-at + vec@  id body-at vec@  area area-cross ;
+    area area-kind 0= if   \ (a gate: both on their triangles' planes)
+        i /vec * was-at +  i cells was-tri + @ on-plane  id body-at id body-tri on-plane
+    else  i /vec * was-at + vec@  id body-at vec@  then
+    area area-cross ;
 : entered? ( id area -- flag )  crossed 1 = ;
 : heading? ( id deg within -- flag )   \ facing deg (degrees), within so many
     {: id deg within :}  id body-yaw angle-wrap rad>deg  deg s>f f-  fabs
@@ -317,7 +327,9 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
     {: id ex :}  id here? 0= if  false exit  then  id body-pos ex 0 door-in-area? ;
 : remember-people ( -- )
     #people 0 do
-        i person-id dup here? over body? and if  body-at  i /vec * was-at +  swap vec-copy  -1 i cells seen + !   \ (vec-copy is dst src: the body only read)
+        i person-id dup here? over body? and if
+            dup body-tri i cells was-tri + !
+            body-at  i /vec * was-at +  swap vec-copy  -1 i cells seen + !   \ (vec-copy is dst src: the body only read)
         else  drop  0 i cells seen + !  then
     loop ;
 
@@ -333,7 +345,7 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 : player-camera ( set path -- )  player -rot camera-set  player follow ;
 : played-gesture ( -- g )  hewie-played? if  gesture-now @  else  fiona-cmd-now @  then ;   \ the one played's command this frame (-1 none: the rooms' control-action?)
 : exit-camera ( exit set path -- )   \ whoever is inside the exit's area takes that camera (as they come in)
-    {: ex set path :}  #people 0 do  i person-id dup ex exit-area in-area? if  set path camera-set  else  drop  then  loop ;
+    {: ex set path :}  #people 0 do  i person-id dup ex exit-area in-area-on? if  set path camera-set  else  drop  then  loop ;
 : her-camera ( set path -- )  fiona -rot camera-set  fiona follow ;   \ (her setup, and the camera on her)                                \ the camera follows who
 : near-clip ( F: v -- )  engine:camera cam.near sf! ;   \ (the camera's near clip: 1 the usual)
 : far-clip ( F: v -- )  engine:camera cam.far sf! ;   \ (its far clip)
@@ -421,20 +433,23 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
     items-40-as-70 fact? if
         dup other-game-file if  $8000 invert and  -1 items send add-file  else  drop  then
     else  dup other-game-file if  drop  else  -1 items send add-file  then  then ;
+\ (the scripts' items pass Events_ScriptRoom: with the story's items-40-as-70, $40 / $41 are $70 -
+\ given, named, counted and shown so; used up as they are)
+: as-scripts ( item -- item' )  story.base:script-item ;
 : give-item ( item n -- )   \ counted (the play record) and given
-    progress pr.items-counted dup l@ 1+ swap l!  items send give-item ;
-: item-full? ( item -- flag )  items:items-of 99 < 0= ;
+    progress pr.items-counted dup l@ 1+ swap l!  swap as-scripts swap  items send give-item ;
+: item-full? ( item -- flag )  as-scripts items:items-of 99 < 0= ;
 $8010 constant cant-carry-msg   \ "It's a . Unfortunately you can't carry anymore items." (the item named)
 $8011 constant obtained-msg     \ "You've obtained ."
 $8012 constant obtained-2-msg   \ (the same, for a thing that isn't one of many)
 $8019 constant used-msg         \ "Used ." (the item named)
 : plate-pressable? ( -- flag )  items:plates 10 < ;   \ (fewer than ten word plates made: another may be pressed)
-: item-named ( item -- )  0 swap message-param! ;   \ (the next system message names it)
+: item-named ( item -- )  as-scripts  0 swap message-param! ;   \ (the next system message names it)
 : subscreen ( -- id )  s" subscreen" actor-named ;
 $83 constant jingle-sound
 : jingle ( -- )  jingle-sound common-bank bank-sound ;
 : tab-op-done ( op item -- )  -1 tab-moving !  subscreen send tab-op  begin  tab-moving @ while  yield  repeat ;
-: show-item-tab ( item -- )  0 swap tab-op-done ;   \ (its picture made ready)
+: show-item-tab ( item -- )  as-scripts  0 swap tab-op-done ;   \ (its picture made ready)
 \ the item's tab beside what is said of it (the shared act $8C, on track 0): slid in, there till
 \ the message is closed, slid out
 : tab-shows ( -- )  2 0 tab-op-done  wait-closed  4 0 tab-op-done ;
@@ -541,10 +556,12 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : debilitas? ( -- flag )   \ (the stalker in the game Debilitas, in one of his kinds)
     stalker-told? 0= if  false exit  then
     st-kind-now @  dup debilitas-kind = over debilitas-6-kind = or swap debilitas-7-kind = or ;
-: stalker-free? ( -- flag )   \ (here, not struck, held or linked, not leading her, not in a doorway: the original's cond 0x65)
+: stalker-free? ( -- flag )   \ (the original's cond 0x65: here, not held or linked; struck - not bitten or down,
+    \ engaged - not leading her off, else on a free floor out of the doorways)
     stalker-in? 0= if  false exit  then
-    st-mode-now @ struck-mode =  stalker held? or  st-linked-now @ 0<> or if  false exit  then
-    st-mode-now @ engaged-mode =  st-sub-now @ leading-sub dup 2 + within and if  false exit  then
+    stalker held?  st-linked-now @ 0<> or if  false exit  then
+    st-mode-now @ struck-mode = if  st-sub-now @ bitten-sub down-sub 1+ within 0= exit  then
+    st-mode-now @ engaged-mode = if  st-sub-now @ leading-sub dup 2 + within 0= exit  then
     stalker body-tri dup 0< if  drop false exit  then  nav-flags $80001 and if  false exit  then
     8 0 do  i door-here? if  i 0 stalker body-pos door-in-area?  i 1 stalker body-pos door-in-area? or if  false unloop exit  then  then  loop
     true ;
@@ -687,7 +704,7 @@ $8000 constant room-motion
     ex passable? 0= if  exit  then  own-pace? 0= if  exit  then  ex take-exit ;
 : exit-out ( exit -- )   \ (each frame: the one played goes when they can - free, in its area, its door open, not held)
     {: ex :}  player-free? 0= if  exit  then
-    player ex exit-area in-area? 0= if  exit  then
+    player ex exit-area  hewie-played? if  in-area-on?  else  in-area?  then  0= if  exit  then   \ (cond 0x07: Hewie's on his triangle)
     ex exit-open? 0= if  exit  then
     ex exit-held? if  exit  then
     ex exit-checked ;
@@ -730,26 +747,32 @@ enum: offer-when  any-time unhurried calm-only calm-hewie-up hiding-spot quiet-a
 $80000005 constant read-scene   \ (Fiona's offers: a message to read)
 5 constant act-scene            \ (and a doing of the place's)
 $8016 constant no-time-message  \ "I have to get away! I don't have time for this!"
-: offer-closed? ( -- flag )   \ (one taken this frame already, the scenes locked, or she is held)
-    offer-xt @ 0<>  offer-msg @ 0<> or  scene-locked state? or  fiona-p holder-of @ 0< 0= or ;
-: busy? ( -- flag )   \ (chased, the stalker here, or another than Hewie held)
-    chased?  stalker here? or  fiona-p holder-of @ 0< 0= or  stalker-p holder-of @ 0< 0= or ;
-: offer ( xt when -- )   \ her doing xt (an activity, Fiona held for it), the first offered wins
-    {: xt when :}  offer-closed? if  exit  then
+: offer-closed? ( -- flag )   \ (the scenes locked, or she is held)
+    scene-locked state?  fiona-p holder-of @ 0< 0= or ;
+\ (cmd_scene_change: a doing offered this frame keeps it - a later doing replaces a message to read,
+\ "no time" too; the scripts' 0xA5, a message whatever goes on, replaces either)
+: read-it ( msg -- )  offer-msg !  0 offer-xt ! ;
+: figures-here? ( -- flag )   \ (the scene's figures, slots 3..5, in this room)
+    false  3 0 do  i 3 + story.base:slot-actor @ dup 0< if  drop  else  here? or  then  loop ;
+: busy? ( -- flag )   \ (SceneGame_Busy: chased, the stalker or a figure here, another than Hewie held, her panic's onset)
+    chased?  stalker here? or  figures-here? or  fiona-p holder-of @ 0< 0= or  stalker-p holder-of @ 0< 0= or
+    onset @ 0<> or ;
+: offer ( xt when -- )   \ her doing xt (an activity, Fiona held for it)
+    {: xt when :}  offer-closed?  offer-xt @ 0<> or if  exit  then
     in-panic? when any-time? 0= and if  exit  then
-    when unhurried = chased? and if  no-time-message offer-msg !  exit  then
+    when unhurried = chased? and if  no-time-message read-it  exit  then
     when calm-hewie-up = if
         hard-mode? hewie-cond-now @ down-cond = and if  exit  then
-        busy? if  no-time-message offer-msg !  exit  then
+        busy? if  no-time-message read-it  exit  then
     then
-    xt offer-xt !  when offer-when ! ;
+    xt offer-xt !  when offer-when !  0 offer-msg ! ;
 : offer-remark-now ( msg -- )   \ a message to read, whatever goes on
-    offer-closed? if  drop exit  then  offer-msg ! ;
+    offer-closed? if  drop exit  then  read-it ;
 : offer-remark ( msg when -- )   \ a message to read
-    {: msg when :}  offer-closed? if  exit  then
+    {: msg when :}  offer-closed?  offer-xt @ 0<> or if  exit  then   \ (as a doing offered: 0x0A's rules)
     in-panic? when any-time? 0= and if  exit  then
     when unhurried = chased? and if  no-time-message to msg  then
-    msg offer-msg ! ;
+    msg read-it ;
 : offer-out ( -- )   \ (each frame, with no message up: told to her)
     shown-msg @ 0< 0= if  exit  then
     offer-xt @ if  act-scene offer-xt @  else  offer-msg @ if  read-scene offer-msg @  else  exit  then  then
@@ -1026,16 +1049,13 @@ $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3
     id body-pos fswap fdrop {: F: mx mz :}  x mx f-  z mz f-  fatan2
     id body-yaw f- angle-wrap fabs rad>deg  within s>f f<= ;
 : close-to? ( a b margin -- flag )   \ their bodies within margin of each other across, overlapping in height
-    {: a b margin | F: ay F: ah F: ar F: by F: bh F: br :}  a here?  b here? and 0= if  false exit  then
-    a body-pos fdrop fswap fdrop to ay  a body-dims to ah to ar
-    b body-pos fdrop fswap fdrop to by  b body-dims to bh to br
-    ay by f< if  by ay f-  ah  else  ay by f-  bh  then  f> if  false exit  then
-    a body-at b body-at vec-dist-xz  ar br f+ margin s>f f+  f<= ;
+    {: a b margin :}  a here?  b here? and 0= if  false exit  then  a b margin s>f 0e bodies-touching? ;   \ (Actor_Touching)
+: faces-within? ( a b within -- flag )  swap body-pos fswap fdrop faces-point? ;   \ a facing b within so many degrees
 : touches-facing? ( a b margin within -- flag )   \ a close to b, and facing it within so many degrees
-    {: a b margin within | F: bx F: bz F: ax F: az :}  a here? b here? and 0= if  false exit  then
-    a b margin close-to? 0= if  false exit  then
-    b body-pos fswap fdrop  to bz  to bx  a body-pos fswap fdrop  to az  to ax
-    bx ax f-  bz az f-  fatan2  a body-yaw f- angle-wrap fabs rad>deg  within s>f f<= ;
+    {: a b margin within :}  a b margin close-to? 0= if  false exit  then  a b within faces-within? ;
+: touches-facing-up? ( a b margin up within -- flag )   \ (the same with a margin up as well: cond 0x1F's pc[4])
+    {: a b margin up within :}  a here? b here? and 0= if  false exit  then
+    a b margin s>f up s>f bodies-touching? 0= if  false exit  then  a b within faces-within? ;
 : point-in? ( v F: x y z r h -- flag )   \ the point inside the upright cylinder standing on (x y z)
     {: v F: x y zz r h :}  v vec@ {: F: px py pz :}
     py  y h 2e f/ f+  f- fabs  h fabs 2e f/ f<=   pz zz f- fdup f*  px x f- fdup f* f+  r fdup f* f<=  and ;
@@ -1489,7 +1509,7 @@ end-structure
     movie-close  begin  scenes:movie-state 0< 0= while  yield  repeat  yield  world-held state-off ;
 
 \ ---- items counted ----
-: has-items? ( item n -- flag )  swap items:items-of swap < 0= ;
+: has-items? ( item n -- flag )  swap as-scripts items:items-of swap < 0= ;
 
 \ ---- Hewie's own moves ----
 : hewie-bark ( -- )  hewie bark-move 0 0  0e 0e 0e 0e  move ;

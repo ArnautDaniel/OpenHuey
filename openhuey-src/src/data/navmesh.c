@@ -159,6 +159,13 @@ static void onto_plane(const NavTri *t, Vec3 *p) {
     p->y = t->v[0].y - ((p->z - t->v[0].z) * nz + (p->x - t->v[0].x) * nx) / ny;
 }
 
+float navmesh_height_on(const NavMesh *n, int tri, float x, float z) {
+    Vec3 p = vec3(x, 0.0f, z);
+
+    onto_plane(&n->tris[tri], &p);
+    return p.y;
+}
+
 /* NavTri_Slide: `to` pulled back over the edge it left by, along its inward normal (1.1 x the overshoot,
  * 0.05 more each try, up to 8, until it is inside) */
 static Vec3 slide_back(const NavTri *t, int k, Vec3 to) {
