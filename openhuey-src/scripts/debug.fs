@@ -210,3 +210,12 @@ behaviour labelling
       label? @ if  room-label  then ;
 end-behaviour
 : label-spawn ( -- id )  labelling label-state s" room-label" spawn ;
+
+\ ---- the errors actor (ClankForth's `errors-to`): a handler's failure is said on the console as it
+\ happens and told here; the actor that failed lives on, as it always has in OpenHuey - with no
+\ errors actor named, ClankForth (since 698c24e) has the actor die of it. Counted, for a test ----
+state: failures-state  cell field failures  end-state
+behaviour noting-failures
+  on actor-failed ( record -- )  drop  1 failures +! ;
+end-behaviour
+: failures-spawn ( -- id )  noting-failures failures-state s" failures" spawn ;

@@ -56,7 +56,7 @@ PRIM(p_body_size) {   /* ( F: radius height -- ) */
 PRIM(p_body_off) { me(f, "body-off (no actor is being run)")->has = 0; }   /* out of the house */
 /* actor id's body: it must be there, and in the house */
 static HBody *bodied(Forth *f, Cell id, const char *what) {
-    HBody *b = id >= 0 && id < HACTOR_MAX ? hactor_body((int)id) : NULL;
+    HBody *b = hactor_body((int)id);   /* (NULL for an id whose actor is gone) */
 
     if (b == NULL) {
         forth_error(f, "%s: no actor %ld", what, (long)id);
@@ -68,7 +68,7 @@ static HBody *bodied(Forth *f, Cell id, const char *what) {
 }
 PRIM(p_has_body) {   /* ( id -- flag ) */
     Cell id = POP();
-    HBody *b = id >= 0 && id < HACTOR_MAX ? hactor_body((int)id) : NULL;
+    HBody *b = hactor_body((int)id);   /* (NULL for an id whose actor is gone) */
 
     PUSH(b != NULL && b->has ? -1 : 0);
 }

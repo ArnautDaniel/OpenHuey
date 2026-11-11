@@ -44,7 +44,16 @@ itself. The first kinds are the kernel's: `tick`, `frame-end`, `spawned`, `kille
 `start-over`, `died`. The subsystems' own are declared in `scripts/messages.fs` (`entered-room`, ...), each name
 also its kind's constant.
 
-Tests: `tests/test_actors.fs`, and ClankForth's own (`ctest`).
+**Ids and failures** (ClankForth 698c24e, its docs/hosts.md). An id is its actor's alone: the actor's slot (0 ..
+255) plus 256 for each that had the slot before, so a kept id never names a newcomer. A table kept for each actor is
+indexed by its slot - in C `forth_actor_slot(id)` (the camera's setups, camdirector.c, each with the id it was given
+for: an old one's is none), in Forth `actor-slot` - and an id is checked with `hactor_body(id) != NULL` / `alive?`,
+never against 256. A handler's error is said on the console and told to the errors actor, `failures` (debug.fs,
+named first in game.fs with `errors-to`): the actor that failed lives on, as it always has here - with none named
+the kernel has it die of it. The tasks' words are `start-task`, `start-held-task`, `stop-task` (the story's
+activities, story/kit.fs); `spawn` and `kill` are the actors'.
+
+Tests: `tests/test_actors.fs`, `tests/story/test_finishing.fs` (a failing handler in the game), and ClankForth's own (`ctest`).
 
 ## Rules
 

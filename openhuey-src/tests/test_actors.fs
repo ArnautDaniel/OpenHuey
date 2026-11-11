@@ -68,8 +68,12 @@ T{ actors-frame  log @ length -> 3 }T
 testing floats travel as cells
 T{ 2.5e f>cell cell>f 2.5e f= -> -1 }T
 
-testing safety: a field with no actor, a handler's errors don't spoil the stacks
+testing safety: a field with no actor, a handler's errors don't spoil the stacks - its actor lives, an errors
+testing ... actor named (as OpenHuey's game.fs names one: with none it would die of it)
 actors-reset
+behaviour supervising  on actor-failed ( record -- )  drop ;  end-behaviour
+: supervised ( -- )  supervising counter-state s" errors" spawn errors-to ;   \ (actors-reset forgets it)
+supervised
 T{ ' count catch -> -1 }T   \ (an error: no actor being run)
 behaviour sloppy
   on ping ( n -- )  drop 1 2 3 ;            \ leaves three cells
@@ -96,18 +100,18 @@ mortal counter-state s" m" spawn constant m3
 0 m3 send ping   m3 kill
 mortal counter-state s" m" spawn constant m4
 T{ m4 m3 = -> 0 }T
-testing what was on its way to a killed actor isn't the next one's (its id used again, once round)
+testing what was on its way to a killed actor isn't the next one's - its slot used again, once round, with another id
 behaviour quiet  on ping ( n -- )  drop  9 note ;  end-behaviour   \ (no last words; a ping noted)
-: round-to ( id -- id' )   \ (quiet ones spawned and killed till the next spawn gets id)
-    256 0 do  quiet counter-state s" r" spawn  2dup = if  nip unloop exit  then  kill  loop ;
+: round-to ( id -- id' )   \ (quiet ones spawned and killed till the next spawn has id's slot)
+    actor-slot  256 0 do  quiet counter-state s" r" spawn  2dup actor-slot = if  nip unloop exit  then  kill  loop  drop -1 ;
 m4 kill  deliver  list log !   \ (its and m3's last words, cleared)
 mortal counter-state s" m" spawn constant m5
 0 m5 send ping   m5 kill
 m5 round-to constant m6
-T{ m6 m5 =  deliver  log @ length -> -1 1 }T   \ (only m5's last words: its ping not m6's)
+T{ m6 m5 =  m6 actor-slot m5 actor-slot =  m5 alive?  deliver  log @ length -> 0 -1 0 1 }T   \ (only m5's last words: its ping not m6's)
 
 testing a handler sees only its arguments: taking more is an error, the deliverer's stack untouched
-actors-reset
+actors-reset  supervised
 behaviour greedy
   on ping ( n -- )  2drop ;   \ (one too many)
 end-behaviour
