@@ -192,7 +192,7 @@ is walk-start
 : at-goal ( -- )
     self body-tri goal-tri @ = if  ['] turned-there act !  turned-there exit  then
     goal-tri @ goal-at plan 0> if  way-left  else  -1e  then
-    fdup f0< 0=  fswap 0.1e f< and if  room-id goal-tri @ goal-at vec@ body-place exit  then
+    fdup f0< 0=  0.1e f< and if  room-id goal-tri @ goal-at vec@ body-place exit  then   \ (a way, under 0.1 long)
     walk-start ;
 : goal! ( tri -- )   \ (NPC_GoTo: the move's point on it, else its middle)
     dup goal-tri !  dup mv-at mv-at 0 v-walk over = if  drop goal-at mv-at vec-copy  else  tri-center goal-at vec!  then ;

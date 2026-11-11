@@ -708,3 +708,10 @@ she comes back (Pursuer_ShowUp's action $23); `Pursuer_StateDownAndUp`'s doorway
 he falls); ChaseTarget's straight cut when her triangle is blocked within 10 of the way's gap;
 Lorenzo2_StartSink / StartStalkBelow's refusal at an exit (PursuerGroup_Find 9: which of ours is unread);
 the others' walk to the door's spot on entering ($28 then their table $E's stand).
+
+### Second sweep, 2026-11 (0.2.45)
+
+The story's walk arriving on another triangle than its goal (stalker/scripted.fs and cast.fs `at-goal`,
+Pursuer_StateArrive): its "a way under 0.1 long - put on the goal" test swapped in a float that wasn't its
+own (`fswap` over one float) - a float-stack underflow in a handler, the figure never put on its goal.
+ClankForth's checker didn't see it: a word calling a deferred one (`walk-start`) isn't followed.

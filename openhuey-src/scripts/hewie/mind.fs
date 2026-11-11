@@ -286,7 +286,7 @@ create mood-acts  3 cells allot
                   pursuer dup with? if  his-alert-what !  chase-alert his-alert !  else  drop  then
                   his-alert @ dup chase-alert = swap sight-alert = or if  feel-pursuer  then
               then  endof
-        >r 2drop r> drop exit
+        2drop exit   \ (none of the three: own and the danger dropped - before 0.2.45 one of its caller's too)
     endcase
     his-danger @ calm max chased min cells mood-acts + @ his-mood-act !
     on-danger breaks-in? if  1 his-pending !  then ;

@@ -363,3 +363,6 @@ over kind 3) - unless a scene has them or the story keeps the game from ending (
 then he is left at 1 health). Each time he is knocked down (Hewie_AfterYelp) it is counted for
 the dog's level at the end (`pr.hewie-downs`, progress +0xFBA, to 9999) - not in a hard game.
 Checked in `tests/hewie/test_fight.fs` (27).
+
+**Second sweep, 2026-11 (0.2.45).** His mood's behaviour (`mode-behaviour`, hewie/mind.fs) with a danger
+none of calm / followed / chased - before the first is told - dropped a cell of its caller's.

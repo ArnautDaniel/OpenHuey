@@ -25,6 +25,8 @@ testing placed: his default animation by his state, not the walk he was in (Hewi
 T{ [: walk-anim play ;] his!  placed-here  [: anim@ ;] his@ -> stand-anim }T
 T{ [: 1 cond!  walk-anim play ;] his!  placed-here  [: anim@ ;] his@  [: 0 cond! ;] his! -> stand-hurt-anim }T
 
+testing his mood's behaviour with no danger told yet (his-danger -1): nothing done, his caller's stack left be
+T{ [: his-danger @ >r  -1 his-danger !  11 hewie.mind:st-calm  r> his-danger ! ;] his@ -> 11 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 
 testing left to himself he does one thing after another, on the floor
