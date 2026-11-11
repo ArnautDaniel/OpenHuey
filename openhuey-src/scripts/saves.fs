@@ -174,6 +174,7 @@ end-state
 : saved ( -- )  end-file  ." saved " save-path type cr  not-saving step !  sender-asked @ dup 0< if  drop  else  send game-saved  then ;
 : quick-save ( -- )  -1 save-path-n !  -1 sender-asked !  write-save-file ;
 : save-slot ( n place -- )   \ (a save point's: into slot n, made at that place)
+    stalkers-stay state-flag-clear   \ (SceneGame_Save: flag $18 cleared as the game is saved - in play too)
     over save-path-n !  progress pr.play-frames l@  slot-was  write-index  write-save-file ;
 \ the resident flags are the system data's (the unlocks), not the save's: a load leaves them be
 create unlocks resident-flags 8 / allot

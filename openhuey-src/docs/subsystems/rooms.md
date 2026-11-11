@@ -62,6 +62,9 @@ From `SceneGame_LeaveRoom`, the play sub-state (`scene_game.c` ~1033-1095), `Sce
    the hidden room $27 (`off-map-27`), in by a hole from any of six rooms, has only its forced way
    out. The original can't save there; OpenHuey's quick and bug saves can, and before 0.2.42 a load
    there left the spare as the room played before - its way out led elsewhere or nowhere.
+   A save point's save (`save-slot`, SceneGame_Save) clears flag $18 (the stalkers kept where they
+   are) in the game as it saves - so it is neither saved nor kept on; a quick save leaves it.
+   The rooms' saved words (Rooms_SavedState, 13) are the closed-off doors: the progress's.
 
 ## Drawing
 
