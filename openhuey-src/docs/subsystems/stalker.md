@@ -704,8 +704,7 @@ for, his grab unshaken on the hard setting, his sweep's cry 12 (Lorenzo2_Start*,
 
 *Not ported (read 2026-11)*: a held-off Debilitas whose door step fails going back after her
 (Debilitas_HeadingStep's forced sight, Pursuer_GoForFionaStance0); a knock-down or getting up resumed as
-she comes back (Pursuer_ShowUp's action $23); `Pursuer_StateDownAndUp`'s doorway check each frame (ours as
-he falls);
+she comes back (Pursuer_ShowUp's action $23); 
 Lorenzo2_StartSink / StartStalkBelow's refusal at an exit (PursuerGroup_Find 9: which of ours is unread);
 the others' walk to the door's spot on entering ($28 then their table $E's stand).
 
@@ -718,4 +717,6 @@ ClankForth's checker didn't see it: a word calling a deferred one (`walk-start`)
 Ported since: Debilitas_ChaseTarget's straight cut (the Debilitas classes only - the others' is the Pursuer's):
 her triangle one he can't stand on, the way's end straight ahead of him, and he no more than 10 further from her
 than it is - straight at her (chase.fs `cut-to-her?`).
+Ported since: `Pursuer_StateDownAndUp`'s doorway check each frame of his fall from the leg ($1709): carried into a
+doorway with no health left, 1 back, not down, the knock-out taken off (struck.fs `doorway-revive`).
 

@@ -55,6 +55,16 @@ front-garden-3 0 dan send stalker-in  3 run-frames
 T{ [: 4 mode!  front-garden-3 goal-room ! ;] hers  [: [: goal-room @ dup front-garden-2 <>  swap front-garden-3 <> and ;] hers ;] 120 soon -> -1 }T
 dan send stalker-out  3 run-frames
 
+testing falling from the leg into a doorway with no health left: 1 back, not down, the knock-out off (Pursuer_StateDownAndUp, each frame)
+: door-exit ( -- e )  8 0 do  i door-here? if  i unloop exit  then  loop  -1 ;
+: door-tri ( -- tri )  door-exit 0 exit-spot >r fdrop fdrop fdrop r> ;
+dan send stalker-out  3 run-frames  room-id door-tri dan send stalker-in  3 run-frames
+progress pr.knockouts l@ constant kos
+T{ [: knockouts @ >r  stalker.struck:at-door?  stalker.anims:leg-fall-anim anim !  0 hp !  down-cond cond !  1 knockouts +!  facts:down-for-good
+      stalker.struck:doorway-revive  hp @  cond @ well-cond =  knockouts @ r> - ;] hers  progress pr.knockouts l@ kos - -> -1 1 -1 0 0 }T
+testing ... another fall (not the leg's): as it was
+T{ [: stalker.anims:fall-back-anim anim !  0 hp !  stalker.struck:doorway-revive  hp @ ;] hers -> 0 }T
+[: 50 hp !  well-cond cond ! ;] hers  dan send stalker-out  3 run-frames
 testing her later kinds (34..36): each its own actor, kit and numbers; her look (34 and 36 the model DNL_001)
 : later ( kind -- id )  case  34 of  s" kind34"  endof  35 of  s" kind35"  endof  >r s" kind36" r>  endcase  actor-named ;
 : numbers ( -- kind hp tolerance limit )  my-kind @  hp-max @  tolerance @  dog-limit @ ;

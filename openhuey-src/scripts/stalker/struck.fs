@@ -95,10 +95,16 @@ create ahead-at /vec allot
 : floor-ahead? ( -- flag )
     yaw self body-dims fswap fdrop ahead-at my-at vec-ahead
     self body-tri my-at ahead-at self body-mask v-walk 0< 0= ;
+\ (Pursuer_StateDownAndUp: each frame of his fall from the leg, $1709 - carried into a doorway with no health
+\ left: 1 back, not down, the knock-out taken off)
+: doorway-revive ( -- )
+    anim @ leg-fall-anim <>  hp @ 0> or if  exit  then
+    at-door? 0= if  exit  then
+    1 hp !  cond @ down-cond = if  well-cond cond !  0 down-t !  -1 knockouts +!  up-after-all  then ;
 : downed ( -- )
     root-move
     down-stage @ case
-        falling of  ended? if  lie-anim @ play-now  lying down-stage !  then  endof
+        falling of  doorway-revive  ended? if  lie-anim @ play-now  lying down-stage !  then  endof
         lying of
             twitch @ if  0 twitch !  lie-anim @ 1- play-now  twitching down-stage !  exit  then
             down-t @ if  -1 down-t +!  else  lie-anim @ 1+ play-now  getting-up down-stage !  then
