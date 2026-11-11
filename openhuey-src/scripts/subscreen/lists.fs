@@ -18,10 +18,12 @@ USING: engine actors messages keys facts items items.names items.tables subscree
 : arrows-at ( y -- )   \ the blinking page arrows (more than one page)
     {: y :}  $168 y $1A blink part  $1B3 y $1B blink part ;
 : place-of ( i -- x y )  dup 8 / $DA *  swap 8 mod 35 * ;   \ (two columns of 8)
+: plate-word! ( list k -- )   \ (a word plate: its word in the messages' parameter 3)
+    2dup item-at word-plate-key = if  held-at letters 8  3 -rot message-param$  else  2drop  then ;
 : draw-item ( list k x y -- )   \ its icon, its name (light if she wears it), how many
     {: page-list k x y | id :}  page-list k item-at to id
     x $20 +  y $5E +  id item-kind  $80 part
-    id word-plate-key = if  3  page-list k held-at letters 8  message-param$  then   \ (a plate: its word)
+    page-list k plate-word!   \ (a plate: its word)
     page-list k equip-state worn = ink {: c :}   \ (its count in its colour too)
     id name  x $46 +  y $64 +  c inked
     id stacks? if  page-list k held-at n@ count$  x $DE +  y $64 +  c inked  then ;
@@ -64,6 +66,7 @@ create acts 4 cells allot   variable #acts
     under-cursor {: id :}
     id item-actions note-changes and 0<>  id item-bit? 0= and if  $413D  else  id $100 + $4000 or  then ;
 : actions-view ( -- )
+    page-list cursor @ plate-word!   \ (the one picked: the grid's last drawn was another's)
     $10 $30 $A $80 part                                        \ the picture's frame
     slide @ $40 < if  8 slide +!  then  $50 $70 $B slide @ part
     under-cursor name  $38 $49 false text
@@ -76,8 +79,10 @@ create acts 4 cells allot   variable #acts
 
 \ ---- using (item_use) ----
 : back ( answer -- )  drop  back-to-page ;
-: usable-now? ( -- flag )   \ (a key thing can't be used in a chase, nor with the stalker in her room)
-    the-danger @ chased <>  stalker-room @ room-id <> and ;
+: stalker-here? ( -- flag )   \ (in the game - told as the world last ran, before it opened -, no script's, in her room)
+    stalker-told @ opened-at @ 2 - >=  stalker-held @ 0= and  stalker-room @ room-id = and ;
+: usable-now? ( -- flag )   \ (a key thing can't be used in a chase, nor with the stalker here: item_usable)
+    the-danger @ chased <>  stalker-here? 0= and ;
 : mark-used ( id -- )  items-id send item-bit ;
 \ what came of it (the items actor's answer): nothing (a hint: no buzzer); an event - the menu
 \ closes onto it quietly; used up (a remedy, a mark) - said so; else back to the list
@@ -104,20 +109,19 @@ create acts 4 cells allot   variable #acts
         worn of  page-list cursor @ items-id send unequip-item  back-to-page  endof
         slot-free of  page-list cursor @ items-id send equip-item  back-to-page  endof
     endcase ;
-: take-action ( -- )
-    se-decide
+: take-action ( -- )   \ (each its decide - but Use: its sound is what came of it, item_use)
     action @ act@ case
         can-use of  use-it  endof
-        can-equip of  wear  endof
-        can-discard of  1 under-cursor message-param!  $4056 ['] thrown ask  endof
-        >r back-to-page r>
+        can-equip of  se-decide  wear  endof
+        can-discard of  se-decide  1 under-cursor message-param!  page-list cursor @ plate-word!  $4056 ['] thrown ask  endof
+        >r se-decide  back-to-page r>
     endcase ;
 
 \ ---- the keys ----
 : open-item ( -- )
     under-cursor 0< if  exit  then  se-decide
     under-cursor item-kind document = if  under-cursor $4000 or ['] read-doc ask-document exit  then   \ (a document: read)
-    on-actions mode !  0 action !  gather  load-picture ;
+    on-actions mode !  0 action !  gather  load-picture  0 slide ! ;   \ (its picture slides in each time: SubScreen +0x15C)
 : list-keys ( -- )   \ up / down along the column, left / right across the columns and pages
     confirm? if  open-item exit  then
     cursor @ {: at :}   \ (round the column; across the columns and pages, round)
@@ -128,8 +132,9 @@ create acts 4 cells allot   variable #acts
     at cursor @ <> if  se-cursor  then
     page-list pg-items = square button-pressed? and if  page-list items-id send sort-items  se-decide  then
     page-keys ;
-: step-item ( d -- )   \ (among the actions: the list's next or last item)
-    cursor @ + in-list wrap cursor !  0 action !  gather  load-picture  se-cursor ;
+: step-item ( d -- )   \ (among the actions: the list's next or last item - a sound only for another)
+    cursor @ {: was :}  cursor @ + in-list wrap cursor !  0 action !  gather  load-picture
+    cursor @ was <> if  0 slide !  se-cursor  then ;
 : action-keys ( -- )
     confirm? if  take-action exit  then
     up? if  action @ 1- #acts @ wrap action !  se-cursor  then

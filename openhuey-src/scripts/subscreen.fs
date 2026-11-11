@@ -18,19 +18,24 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 : may-open? ( -- flag )   \ Select, she free, the panic below 4, no scene, nothing held
     select-button button-pressed?
     subscreen-locked state-flag? 0= and  world-held state-flag? 0= and
-    her-mode @ 0= and  the-panic @ 4 < and  cutscene-active? 0= and ;   \ (her mode only: out of breath, pushing - it opens)
-: open-menu ( -- )
-    menu-art  opening stage !  0 openness !  back-to-page  0 quiet !  0 opt-editing !  back-to-her
-    se-open  1 pause! ;
-: open-plate ( -- )  open-menu  1 s" SUBSCR/PLATE" background  on-plate mode !  start-plate ;
-: open-slots ( -- )  open-menu  2 s" SUBSCR/SYN_SLOT" background  on-slots mode !  start-slots ;
-: open-saving ( -- )  open-menu  on-saving mode !  start-saving ;
-: open-costumes ( -- )  open-menu  on-costumes mode !  start-costumes ;
-: open-options ( -- )  open-menu  pg-options page !  -1 options-only ! ;   \ (the title's: SceneTitle_SeqOptions)
-: open-extras ( -- )  open-menu  3 s" SUBSCR/SUBMG" background  on-extras mode !  start-extras ;   \ (the mini-game's menu: mode $A)
-: open-results ( -- )  open-menu  on-results mode !  start-results ;   \ (its results: mode $C)
+    her-mode @ 0= and  the-panic @ 4 < and  cutscene-active? 0= and   \ (her mode only: out of breath, pushing - it opens)
+    her-reach @ 24 and 0= and ;   \ (not a script's, not held: Fiona +0xE0, +0x14E8 5 - her plight's reach bits 8 / 16)
+: opened ( -- )
+    menu-art  opening stage !  0 openness !  back-to-page  0 quiet !  0 opt-editing !  back-to-her  frames @ opened-at !  0 tab !  1 pause! ;   \ (the item's tab gone: SubScreen_TakeOver)
+: open-menu ( -- )  opened  -1 the-menu !  se-open ;
+\ one of the other screens: Select isn't theirs; its sound as it opens only the word plate's, the slot
+\ machine's and the options' (SubScreen_Open: modes 0, 2..5 - the save point, the wardrobe, the
+\ mini-game's and the galleries' none)
+: open-screen ( sound? -- )  opened  0 the-menu !  if  se-open  then ;
+: open-plate ( -- )  true open-screen  1 s" SUBSCR/PLATE" background  on-plate mode !  start-plate ;
+: open-slots ( -- )  true open-screen  2 s" SUBSCR/SYN_SLOT" background  on-slots mode !  start-slots ;
+: open-saving ( -- )  false open-screen  on-saving mode !  start-saving ;
+: open-costumes ( -- )  false open-screen  on-costumes mode !  start-costumes ;
+: open-options ( -- )  true open-screen  pg-options page !  -1 options-only ! ;   \ (the title's: SceneTitle_SeqOptions)
+: open-extras ( -- )  false open-screen  3 s" SUBSCR/SUBMG" background  on-extras mode !  start-extras ;   \ (the mini-game's menu: mode $A)
+: open-results ( -- )  false open-screen  on-results mode !  start-results ;   \ (its results: mode $C)
 : open-gallery ( kind -- )   \ (the extras room's galleries: modes 8, $B, $D, $E, $F)
-    open-menu  4 over gallery-file background  start-gallery ;
+    false open-screen  4 over gallery-file background  start-gallery ;
 : open-played ( -- )  hewie-played? if  open-options  else  open-menu  then ;   \ (in the run, the options alone)
 : asked-open ( -- )   \ (the scripts' 0x6D: its mode; the rest - not built - shut at once)
     opened-as @ case
@@ -108,10 +113,10 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 
 \ ---- a frame with the world held ----
 : held-frame ( -- )
-    1 frames +!
+    1 frames +!  stage @ shut <> if  broadcast menu-frame  then
     stage @ case
         opening of  16 openness +!  openness @ 128 >= if  128 openness !  up stage !  then  sub-volume  endof
-        up of  menu-keys  select-button button-pressed? gal-kind @ 0= and if  close-menu  then  endof   \ (in a gallery select is its own)
+        up of  menu-keys  select-button button-pressed? the-menu @ and if  close-menu  then  endof   \ (the menu's alone: SubScreen_StateRun)
         closing of
             openness @ 128 = quiet @ 0= and if  se-close  then
             -32 openness +!  openness @ 0 max openness !  sub-volume  openness @ 0> 0= if  shut-menu exit  then  endof
@@ -132,7 +137,7 @@ behaviour menu
       shut stage !  pg-special page !  -1 shown !  -1 shown-picture !  0 tab !  -1 stalker-room !  defaults
       1 back-bank !  -1 her-map !  -1 her-pg !  -1 her-room !  -1 map-loaded !
       self subscribe tick  self subscribe held-tick  self subscribe frame-end  self subscribe arrived
-      self subscribe fiona-doing  self subscribe danger  self subscribe panic  self subscribe stalker-doing  self subscribe write-save ;
+      self subscribe fiona-doing  self subscribe fiona-plight  self subscribe danger  self subscribe panic  self subscribe stalker-doing  self subscribe stalker-ties  self subscribe write-save ;
   on tick ( -- )
       1 frames +!  tab-frame
       stage @ shut = if
@@ -149,9 +154,11 @@ behaviour menu
   on options-restore ( vib out vol x y layout -- )  subscreen.options:restore ;   \ (saves.fs: the system data's)
   on item-used ( id result -- )  mode @ awaiting-use = if  used  else  2drop  then ;
   on fiona-doing ( mode sub cond cmd doing -- )  her-doing !  2drop drop  her-mode ! ;
+  on fiona-plight ( state ladder reach -- )  her-reach !  2drop ;
   on danger ( level -- )  the-danger ! ;
   on panic ( stage level -- )  drop the-panic ! ;
-  on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop 2drop 2drop 2drop  stalker-room ! ;
+  on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop 2drop 2drop 2drop  stalker-room !  frames @ stalker-told ! ;
+  on stalker-ties ( scripted apart linked -- )  2drop stalker-held ! ;
   on tab-op ( op item -- )   \ (the scripts' 0xBE: 0 the item's, 1 its picture in, 2 slide in, 3 shown, 4 slide out)
       sender tab-asker !
       swap case

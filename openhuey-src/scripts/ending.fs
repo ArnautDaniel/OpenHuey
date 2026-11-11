@@ -281,17 +281,19 @@ create pct-buf 8 allot
         word-plate of  plate-frame  endof
         done of  done-frame  endof
     endcase ;
-: time-played ( -- )   \ (in play: the world not held)
+: time-played ( -- )   \ (in play, and with the menu up: PlayTime_Tick)
     progress pr.play-frames dup l@ 1+ most-frames min swap l! ;
 
 behaviour ending-the-story
   on spawned ( -- )  playing stage !  -1 shown !
-      self subscribe tick  self subscribe held-tick  self subscribe frame-end  self subscribe hewie-doing  self subscribe the-ending ;
+      self subscribe tick  self subscribe held-tick  self subscribe frame-end  self subscribe hewie-doing  self subscribe the-ending
+      self subscribe menu-frame ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       trust !  2drop 2drop 2drop 2drop 2drop 2drop ;
   on the-ending ( -- )  stage @ playing = if  start  then ;
   on tick ( -- )  stage @ playing = if  time-played  else  frame  then ;
   on held-tick ( -- )  stage @ playing <> if  frame  then ;   \ (the world held: its own frames)
+  on menu-frame ( -- )  stage @ playing = if  time-played  then ;   \ (the menu up: the time goes on - not the pause's)
   on frame-end ( -- )  draw ;
 end-behaviour
 

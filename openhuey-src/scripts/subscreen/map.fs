@@ -43,6 +43,7 @@ begin-structure /map-room  field: room-of-e  field: page-of-e
     {: page :}  her-map @ 0< if  exit  then
     her-map @ her-room @ page entry-for if  page her-pg !  then ;
 : back-to-her ( -- )  her-map @ map-at !  her-pg @ map-pg ! ;
+' back-to-her is map-to-her
 
 \ ---- turning (Map_LeftRight: past the ends to the next / last map she holds, round) ----
 : last-page ( -- )  map-at @ map-pages 1- map-pg ! ;

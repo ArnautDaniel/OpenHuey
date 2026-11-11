@@ -481,6 +481,7 @@ message fed ( how -- )                        \ (items -> Hewie) given a bait (b
 enum: bait  small-treat big-treat onion-bait fury-bait rouse-bait ;
 message tab-op ( op item -- )                \ (the sub screen) the tab: 0 an item handed her (its picture), 1 loaded, 2 in, 3 shown, 4 out
 message tab-done ( -- )                       \ (from the sub screen) the tab's step is done (it waits on 2 / 4)
+message menu-frame ( -- )                   \ broadcast by the sub screen each frame it is up (the world held): play time counts on (SceneGame_SubSubScreen's PlayTime_Tick)
 message menu-mode ( mode -- )                 \ (the sub screen) the mode the scripts open it in (0x6D: 0 the menu, 1 saving ...)
 message map-turn-to ( page -- )              \ (the sub screen) her room shown on that page of her map (the scripts' 0xD1)
 message options-changed ( vib out vol x y layout -- )   \ (the sub screen -> saves) the options as now set: kept in the system data

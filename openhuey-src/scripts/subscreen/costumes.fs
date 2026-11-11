@@ -34,12 +34,12 @@ $42 constant msg-rows   $45 constant msg-names   $4E constant msg-notes
 : start-costumes ( -- )   \ (Costumes_Setup)
     $26 var@ $28 var!  $27 var@ $29 var!
     $26 var@ place-of-hers dup cost-her-worn !  cost-her-at !
-    hewie-here? if  $27 var@ #his min  else  -1  then  dup cost-his-worn !  cost-his-at !
+    hewie-here? if  $27 var@  dup #his < 0= if  drop -1  then  else  -1  then  dup cost-his-worn !  cost-his-at !   \ (his coat not one of the three: no row of his)
     row-her cost-row !  0 cost-open ! ;
 : wear-chosen ( -- )   \ (costume_done) worn, the menu closes
     cost-her-worn @ her-costume $26 var!
     cost-his-worn @ 0< 0= if  cost-his-worn @ $27 var!  then
-    se-decide  close-menu ;
+    close-menu ;   \ (no sound: costume_done)
 
 : next-unlocked-costume ( i d n locked-xt -- i' )   \ round, past the locked
     {: i d n locked :}  i  begin  d + n wrap  dup locked execute 0= until ;
@@ -47,23 +47,29 @@ $42 constant msg-rows   $45 constant msg-names   $4E constant msg-notes
     cost-row @ +  0 max  row-exit min                     ( row )
     dup row-his = cost-his-worn @ 0< and if  drop  cost-row @ row-her = if  row-exit  else  row-her  then  then
     dup cost-row @ <> if  cost-row !  se-cursor  else  drop  then ;
-: wardrobe-list-step ( d -- )
-    cost-row @ row-her = if  cost-her-at @ swap #hers ['] her-locked? next-unlocked-costume cost-her-at !
-    else  cost-his-at @ swap #his ['] his-locked? next-unlocked-costume cost-his-at !  then  se-cursor ;
+: wardrobe-list-step ( d -- )   \ (a sound only for another)
+    {: d | was :}
+    cost-row @ row-her = if  cost-her-at @ to was  was d #hers ['] her-locked? next-unlocked-costume dup cost-her-at !
+    else  cost-his-at @ to was  was d #his ['] his-locked? next-unlocked-costume dup cost-his-at !  then
+    was <> if  se-cursor  then ;
 : choose-costume ( -- )
     cost-row @ row-her = if  cost-her-at @ cost-her-worn !  else  cost-his-at @ cost-his-worn !  then  se-decide  0 cost-open ! ;
 : costumes-keys ( -- )
     cost-her-worn @ 0< if  close-menu exit  then   \ (no costume of hers known: it just ends)
+    \ (Costumes_State: the list closed by the triangle its cancel, by left / L1 the cursor's; opened by
+    \ the cross its decide, by right / R1 the cursor's; done - the cross, or the triangle there - quietly)
     cost-open @ if
         up? if  -1 wardrobe-list-step exit  then   down? if  1 wardrobe-list-step exit  then
         confirm? if  choose-costume exit  then
-        back? left? or prev-page? or if  0 cost-open !  se-cancel  then  exit
+        back? if  0 cost-open !  se-cancel exit  then
+        left? prev-page? or if  0 cost-open !  se-cursor  then  exit
     then
     up? if  -1 wardrobe-row-step exit  then   down? if  1 wardrobe-row-step exit  then
     cost-row @ row-exit = if
         confirm? back? or if  wear-chosen  then  exit
     then
-    confirm? right? or next-page? or if  1 cost-open !  se-decide  exit  then
+    confirm? if  1 cost-open !  se-decide exit  then
+    right? next-page? or if  1 cost-open !  se-cursor exit  then
     back? if  row-exit cost-row !  se-cancel  then ;
 
 \ ---- drawing: the rows on the left, the row's costumes, the note of the one under the cursor;
