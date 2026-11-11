@@ -86,7 +86,7 @@ enum: dog-costume  own-coat shepherd-coat third-coat ;
 
 \ ---- what to do next (the actions are hewie.actions') ----
 defer set-action ( act arg -- )     ' 2drop is set-action      \ Hewie_SetAction
-defer adjust-action ( act -- act' ) ' noop is adjust-action    \ Hewie_AdjustAction
+defer adjust-action ( act -- act' ) :noname ( act -- act' ) ; is adjust-action    \ Hewie_AdjustAction
 \ hewie_want: the action his situation makes of `act` (with `arg` only if it stays itself)
 : want ( act arg -- )  {: act arg :}  act adjust-action  dup act = if  arg  else  0  then  set-action ;
 : to-default ( -- )  choose-act 0 want ;       \ Hewie_ToDefault

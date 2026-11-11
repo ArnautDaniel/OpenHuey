@@ -55,7 +55,7 @@ state: cast-state
   cell field shown             \ the story's show / hide
   cell field in-scene          \ a cutscene has it (its director moves the model)
   cell field anim
-  cell field act               \ what it does each frame (an xt)
+  cell field act  holds: ( -- )   \ what it does each frame (an xt)
   cell field mv-done  cell field mv-kind  cell field mv-a  cell field mv-b
   /vec field mv-at  1 floats field mv-yaw
   \ an animal's ways (the rabbits: Kind26_Behaviour) - what it is doing and whether that just

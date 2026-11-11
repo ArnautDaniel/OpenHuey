@@ -151,3 +151,12 @@ the totals and sets the exit status.
   runs everything (`full-tests?` says which, for an `--eval` test). A new test that only checks state
   goes above the marker.
 - Mods' tests: `docs/modding.md`.
+
+**Words kept in slots** (ClankForth 1824b2c): a field or variable that holds a word to run says what it holds -
+`cell field her-act  holds: ( -- )` (Fiona's her-act, the stalker's step / act-xt / start-then / own-*, Hewie's
+his-act / his-mood-act, the cast's act, the menu box's after `( answer -- )`, the story's cue-xt `( shot -- )`,
+the walkway's wk.*) - so `slot @ execute` is followed and a word stored there of another effect is a warning,
+through `step!`-like words too. A deferred word's effect: one stack comment right after its name - floats in, a
+flag out: `defer close-by ( F: rest S: -- done? )`. `.checked` after: 7,567 of 7,839 followed through their code
+(6,819 before 0.2.45).
+

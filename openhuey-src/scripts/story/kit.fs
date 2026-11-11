@@ -72,7 +72,7 @@ state: place-state
   cell field hewie-hp-now          \ his health, 0..100
   cell field hewie-trust-now       \ his trust level (1..7)
   \ the scene asked for (scenes.fs): how far it is, whether its movie is there, what to do at each new shot
-  cell field scene-step  cell field scene-movie  cell field cue-xt
+  cell field scene-step  cell field scene-movie  cell field cue-xt  holds: ( shot -- )
   cell field scene-acts            \ the activities that are the scene's own (a bit each): ended with it
   #room-effects cells field effects   \ the effects the place made (actors; 0 none), gone with it (RoomEffects: 32)
   cell field tab-moving         \ the item's tab sliding (the sub screen tells when it's done)

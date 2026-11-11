@@ -382,7 +382,7 @@ defer after-yelp ( -- )   \ (yelped, below)
 
 \ ---- harrying (harry-act / harry-stalker-act; near-target-act then close-on-act:
 \ Hewie_StateCloseOnTarget): near him a while, then at him and off again his-wanted times ----
-defer close-by ( F: rest -- done? )   :noname fdrop false ; is close-by   \ (hewie/pounce.fs: the pounce, or closing in)
+defer close-by ( F: rest S: -- done? )   :noname ( -- done? ) ( F: rest -- )  fdrop false ; is close-by   \ (hewie/pounce.fs: the pounce, or closing in)
 : harried ( -- )  his-target @ her = if  harry-her-act  else  harry-act  then  0 want ;
 : st-close-on ( -- )
     his-target @ with? 0= if  to-default exit  then

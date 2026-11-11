@@ -11,8 +11,8 @@ state: hewie-state
   \ behaviour that carries it out, run each frame (an xt: the original's PTMF +0xF35D0)
   cell field his-action   cell field his-last-action
   cell field his-next           \ the argument / the action after (+0xF3570)
-  cell field his-act            \ the behaviour (an xt)
-  cell field his-mood-act       \ his mode's behaviour: calm / wary / tense (an xt)
+  cell field his-act  holds: ( -- )   \ the behaviour (an xt)
+  cell field his-mood-act  holds: ( -- )   \ his mode's behaviour: calm / wary / tense (an xt)
   cell field his-wait           \ frames before he moves on (+0xF355C)
   cell field his-target   cell field his-target2   \ whom: an actor id (-1 none)
   cell field his-cmd            \ what may break in on his action (the on-.. bits below) (+0xF356C)
