@@ -60,3 +60,8 @@ glyphs subtracted) never reaches the window - Task_OpenDefault's base colour is 
 message's 0x03 n has it (the sub screen's own words do: items.md); furigana (0x16 base 0x18
 reading 0x17) is in none of the USA tables (the reading would be dropped); nor is 0x19 (the child
 task: nothing in the game gives a Task a child), skipped with its two bytes.
+
+**Read again, 2026-11 (0.2.47).** The typing (Text_GlyphFrames by speed; cancel pressed types to the next pause)
+and the choices (Task_StateChoice) match. Not ported: the action prompt's markers - SceneGame_ActionPrompt starts
+the system events $800A..$800D by the action's kind (examine 1..3 $800B, 4 $800C, a door 5 / 6 $800A, or $800D in
+the run), shown when the action changes; ours draws the circle's glyph and "look" while something is offered.

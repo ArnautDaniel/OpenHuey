@@ -29,6 +29,9 @@ T{ 15 run-frames  screen-level [: story.kit:fading @ ;] in-room -> 1000 -1 }T
 T{ 15 run-frames  [: story.kit:fading @ ;] in-room -> 0 }T
 [: 0 1 story.kit:fade ;] in-room  2 run-frames
 T{ screen-level -> 0 }T
+testing drawn as the original's colour: its whole-number rate x the steps - 30 frames out end at 120 of 128 (ScreenFade_Step)
+T{ [: 30 0 story.kit:fade ;] in-room  40 run-frames  screen-level -> 937 }T
+[: 0 1 story.kit:fade ;] in-room  2 run-frames
 testing the other kinds: 0 out (to black), 6 to half dark and 7 back (the instructions' pages)
 T{ [: 0 0 story.kit:fade ;] in-room  2 run-frames  screen-level -> 1000 }T
 [: 0 1 story.kit:fade ;] in-room
