@@ -60,7 +60,7 @@ create entries  1 , 1 ,   0 , 0 ,   \ (by exit 0, 1: the camera)
     else  room-sounds-in? if  room-loop-sound 0e 9e -125e room-sound  -1 sounds-on !  then  then
     fiona hole-area in-area?  fiona 180 50 heading? and if  ['] the-hole unhurried offer  then
     fiona hide-area in-area?  fiona 180 60 heading? and if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then ;
 : person-in ( i -- )
     case

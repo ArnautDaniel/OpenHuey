@@ -9,7 +9,7 @@
 IN: pause
 USING: engine game-state actors messages keys facts flag-names ps2-screen ;
 
-5 constant pause-layer   \ (the UI layers: 0 the movie, 1 the fade, 2 the window, 3 the prompt, 4 subtitles, 5 this)
+5 constant pause-layer   \ (the UI layers: 0 the movie, 1 the fade, 2 the window, 3 unused, 4 subtitles, 5 this)
 
 \ its stages: closed; the movie pause's; the play pause's
 enum: pause-stage  closed

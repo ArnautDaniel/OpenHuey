@@ -317,7 +317,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
 : pick-onion ( -- )  onion got-onion onion-fx 290.5e -99.5e picks-up ;
 : spots ( -- )
     fiona hiding-area in-area?  fiona 0 60 heading? and if
-        stalker-in? 0=  stalker unseen? or if  ['] hides calm-only offer  else  no-time-message offer-remark-now  then
+        stalker-in? 0=  stalker unseen? or if  ['] hides hiding-spot offer  else  no-time-message offer-remark-now  then
     then
     fiona lever-area in-area?  fiona 0 50 heading? and if  ['] lever unhurried offer  then
     fiona hole-area in-area?  fiona 0 50 heading? and if  ['] the-hole unhurried offer  then

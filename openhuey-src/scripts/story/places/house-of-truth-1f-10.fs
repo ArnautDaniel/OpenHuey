@@ -57,7 +57,7 @@ $24 constant searches-var   $803 constant crouch-step   $207 constant hauled-ste
     fiona reach-out-anim play  4 frames  camomile ht1f-10-camomile camomile-fx takes-up  fiona reach-back-anim play ;
 : spots ( -- )
     fiona hiding-area in-area?  fiona 0 60 heading? and if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
     fiona clock-area in-area?  fiona 180 50 heading? and if  ['] save-clock calm-hewie-up offer  then
     fiona hole-area in-area?  fiona 0 50 heading? and if  hole-msg 60e 55e hole-offer  then

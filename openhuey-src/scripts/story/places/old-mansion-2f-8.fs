@@ -161,7 +161,7 @@ create looks  141.32e 0e -60.6e  20e 21e 21e look,   59.37e 0e 0.93e  20e 12e 12
     fiona $16 50 faces-area? if  ['] the-lamp unhurried offer  then
     fiona $17 in-area?  fiona 180 50 heading? and if  ['] the-hole unhurried offer  then
     fiona $18 in-area?  fiona 180 60 heading? and if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
     fiona $19 in-area?  fiona -30 50 heading? and if  ['] save-clock calm-hewie-up offer  then
     fiona $1A in-area?  fiona 90 60 heading? and if  ['] the-painting unhurried offer  then

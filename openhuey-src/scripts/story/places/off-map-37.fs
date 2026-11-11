@@ -181,7 +181,7 @@ create challenges   \ (each challenge's first room, loaded ahead; its stalker ki
     label @ m = if  label-down  then ;
 : facing? ( area deg within -- flag )  {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 : corner? ( flag msg xt -- )   \ (labelled; while she faces it, offered)
-    {: on m xt :}  on m labelled  on if  xt any-time offer  then ;
+    {: on m xt :}  on m labelled  on if  xt quiet-any-time offer  then ;
 : corners ( -- )
     $C 90 60 facing?  play-type-label ['] play-types corner?
     6 -90 60 facing?  art-label ['] art-gallery corner?

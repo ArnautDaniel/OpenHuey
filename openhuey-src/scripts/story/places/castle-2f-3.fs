@@ -162,7 +162,7 @@ $A5 constant evasion-doc
 : by-the-bed ( -- )
     bed-area 180 60 facing? 0= if  exit  then
     c2f-2-flag1 fact? 0= if  ['] bed unhurried offer exit  then
-    stalker-in? if  no-time-msg offer-remark-now  else  ['] hides calm-only offer  then ;
+    stalker-in? if  no-time-msg offer-remark-now  else  ['] hides hiding-spot offer  then ;
 : spots ( -- )
     tv-area 180 90 facing? if  ['] tv or-sheets unhurried offer  then
     clothed? 0= if

@@ -43,8 +43,19 @@ has one.
   it ends or is stopped (the room left, `room-left`); a move is sent only for a character the
   running activity holds, and `wait-move` waits only on a move it asked for.
 - **Offers**: what she may do where she stands - `offer` (an activity, Fiona held for it),
-  `offer-remark` - the first offered in a frame wins; `unhurried`, `calm-only`,
-  `calm-hewie-up`, `any-time` as the original's kinds.
+  `offer-remark` - the first offered in a frame wins; `unhurried` (the scripts' 0x0A kind 0),
+  `any-time` (1), `calm-hewie-up` (3), `calm-only` (4: an examining), `hiding-spot` (5 / 6),
+  `quiet-any-time` (7: the extras room's corners) as the original's kinds.
+- **The action prompt** (`SceneGame_ActionPrompt`, `prompt-out` each frame): as what she could do
+  here changes - the room's doing, else her own request (`fiona-could`: an exit's door area, a
+  ladder, straining) - its marker opens in the window: an examining's "Huh? What's this?" ($800C),
+  a hiding place's "Wait a second! What's that?!" while chased ($800D; again as a chase starts or
+  ends), at an exit or a ladder the empty $800B, any other the empty $800A (nothing drawn - the
+  messages are `{at 128}` - but it takes the window: a message up goes, any button closes it);
+  none for kind 7. Ours closed while she is held, not her own (moveMode), backing off, straining
+  or offered a message to read; the last shown is kept then, so the same doing isn't shown
+  again; forgotten when nothing is offered, with flag $12, and as a room comes in. Not while
+  Hewie is the one played.
 - **Who is in**: the place keeps where each person was at the last frame's end (areas crossed)
   and what they last told (`fiona-doing`, `hewie-doing`, `stalker-doing`, `creature-doing`).
   `story` keeps the stalker's last report and gives it to a new place before `room-enter` (the
@@ -547,7 +558,7 @@ command. The new game stays the default start.
 **S2 built** (2026-10-08): examining and messages, items, zones.
 - **Examining** (`cmd_scene_change`, `Progress_PlayerButtons`): the scripts prepare an action
   each frame (`scene-change`; cleared after phase 1, as `Progress_CharRequests` does). After
-  phase 2 the room offers a "scene 5" one to Fiona (`offer`) and shows the prompt; with the
+  phase 2 the room offers a "scene 5" one to Fiona (`offer`) and the prompt's marker; with the
   action button pressed that frame, free, she takes it (`take-offer`): her action script starts
   and she is scripted (`scripted` on) until it ends (`scripted` off) - every script that takes a
   character tells it so, and a room releases its characters as it stops or is left. Other

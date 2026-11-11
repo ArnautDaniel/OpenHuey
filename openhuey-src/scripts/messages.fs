@@ -193,6 +193,10 @@ message fiona-shaking ( n -- )              \ broadcast each frame: her shakes t
 message fiona-struck-by ( who -- )           \ broadcast each frame after fiona-doing: who struck or caught her (+0x100; -1 nobody)
 message fiona-doing ( mode sub cond cmd doing -- ) \ broadcast each frame: her move mode, what she does, her
 message fiona-straining ( on -- )            \ broadcast each frame: she strains at something that won't move (Fiona +0x1AD5D2: the rooms' request $80000004)
+message fiona-could ( what -- )               \ broadcast each frame: her own request here (Progress_CharRequests, hers - the
+                                             \ story's action prompt): an exit (0..7) whose door area she is in, a ladder
+                                             \ (ladder-could + its link) she faces - not panicking - straining (strain-could), or -1
+$100 constant ladder-could   $200 constant strain-could
 message fiona-started ( code -- )           \ broadcast as she starts an action for Hewie (Fiona_MarkActionStart's +0x1AD6BC: the rooms' cond 0x26 - that frame only)
                                              \ condition, her command this frame (-1 none; 3 the praise held), her
                                              \ action (+0x1AD580: her-doing)
@@ -304,7 +308,6 @@ message text-shown ( on -- )                 \ broadcast: the window opened / cl
 message characters-still ( on -- )           \ broadcast: the stalkers, Hewie and the summoner held still or let go (OpenHuey's: a reading on the dimmed screen)
 message thing-made ( kind tri x y z vx vy vz -- )   \ (Fiona's let go) a thing at her hand, on its way (floats f>cell; things.fs)
 message fiona-message ( msg -- )             \ broadcast (Fiona: a locked door's built-in script) the room shows system message msg
-message prompt ( kind -- )                   \ (the window) an action is offered here this frame (the action prompt)
 
 \ ---- examining (the scripts' prepared action, Progress_PlayerButtons) ----
 message offer ( scene arg -- )               \ (room -> Fiona) an action here this frame, taken with the action button

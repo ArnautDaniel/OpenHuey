@@ -179,7 +179,7 @@ create looks
 : pick-ball ( -- )  ball got-ball ball-fx -180e 176e picks-up ;
 : spots ( -- )
     found-file-202 fact?  fiona hiding-area in-area? and if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
     fg-5-flag1 fact?  fg-5-viola-medallion fact? 0= and  fiona -265e -9e 160e 5e 5e touches? and if  ['] pick-viola calm-only offer  then
     fg-5-medallion-found fact?  fg-5-medallion fact? 0= and  fiona -228.4e -9e 103.2e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then

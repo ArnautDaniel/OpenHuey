@@ -92,7 +92,7 @@ variable bush-floor   \ (its floor's flag while she's in: no one stands there - 
     in-bush? if
         leaves-pushed
         in-panic? 0= if
-            stalker-in?  from-his-way? and if  no-time-message offer-remark-now  else  ['] in-the-bush calm-only offer  then
+            stalker-in?  from-his-way? and if  no-time-message offer-remark-now  else  ['] in-the-bush hiding-spot offer  then
         then
     then
     leaves-swing ;

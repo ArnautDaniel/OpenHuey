@@ -102,7 +102,7 @@ own: painting-remarked     \ the painting's first remark made (in turn with the 
     fiona clock-area 50 faces-area? if  ['] save-clock calm-hewie-up offer  then
     fiona tv-area in-area?  fiona 120 90 heading? and if  ['] tv unhurried offer  then
     fiona hiding-area in-area?  fiona 90 60 heading? and if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
     fiona mirror-area in-area?  fiona -144 50 heading? and if  ['] mirror unhurried offer  then
     fiona painting-area in-area?  fiona 0 50 heading? and if  ['] painting unhurried offer  then

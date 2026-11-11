@@ -5,7 +5,9 @@
 IN: fiona.controls
 USING: engine keys common vectors messages facts fiona.state fiona.anims ;
 
-: hands-off? ( -- flag )  her-scripted @ her-reading @ or her-in-scene @ or ;   \ (a script or a cutscene has her, or a message is up)
+: hands-off? ( -- flag )  her-scripted @ her-in-scene @ or ;   \ (a script or a cutscene has her)
+\ (a message up doesn't: nothing of hers reads the window - a script reading one to her holds her;
+\ a remark offered she reads looking about, free - Progress_PlayerButtons' $80000005)
 : sx ( F: -- x )  stick-x f@ ;   : sz ( F: -- z )  stick-z f@ ;
 : nx ( F: -- x )  way-x f@ ;     : nz ( F: -- z )  way-z f@ ;
 : read-stick ( -- )

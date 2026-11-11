@@ -49,8 +49,13 @@ state: place-state
   #people cells field in-here        \ each one in this room, as last seen
   #people /vec * field was-at        \ where each was at the last frame's end (areas crossed)
   #people cells field seen
-  \ the offer this frame (the action prompt): its doing (an xt, 0 none), whether a message
-  cell field offer-xt  cell field offer-msg
+  \ the offer this frame (the action prompt): its doing (an xt, 0 none), whether a message;
+  \ the doing's offer-when
+  cell field offer-xt  cell field offer-msg  cell field offer-when
+  \ the prompt's marker: what she could do as it was last shown and its kind (-1: nothing), ours
+  \ up (0 none); her own request (fiona-could); the danger last frame
+  cell field marker-what  cell field marker-kind  cell field marker-up  cell field could-now
+  cell field danger-was
   \ what the others tell
   cell field danger-now  cell field panic-stage  cell field panic-level-now   \ (her panic's level, 0..100)
   cell field onset              \ her panic's first frames (the room's doings wait: SubPlay's frame flag bit 3)
@@ -716,8 +721,12 @@ $28 constant try-door-sound
     ex exit-stand 0= if  fdrop fdrop fdrop exit  then  knock-sound common-bank bank-sound-at ;
 
 \ ---- the action prompt: what she may do here this frame, taken with the action button ----
-\ when it is offered: at any time; not while she is chased ("I have to get away!"); only calm
-enum: offer-when  any-time unhurried calm-only calm-hewie-up ;   \ (the last: the save clocks - not with Hewie down in a hard game; "no time" while busy)
+\ when it is offered (the scripts' 0x0A kinds): not while she is chased ("I have to get away!" - 0);
+\ at any time (1); not panicking (an examining: 4); the save clocks - not with Hewie down in a hard
+\ game, "no time" while busy (3); a hiding place - not panicking (5 / 6); at any time without a
+\ marker (the extras room's corners: 7)
+enum: offer-when  any-time unhurried calm-only calm-hewie-up hiding-spot quiet-any-time ;
+: any-time? ( when -- flag )  dup any-time =  swap quiet-any-time = or ;
 $80000005 constant read-scene   \ (Fiona's offers: a message to read)
 5 constant act-scene            \ (and a doing of the place's)
 $8016 constant no-time-message  \ "I have to get away! I don't have time for this!"
@@ -727,24 +736,66 @@ $8016 constant no-time-message  \ "I have to get away! I don't have time for thi
     chased?  stalker here? or  fiona-p holder-of @ 0< 0= or  stalker-p holder-of @ 0< 0= or ;
 : offer ( xt when -- )   \ her doing xt (an activity, Fiona held for it), the first offered wins
     {: xt when :}  offer-closed? if  exit  then
-    in-panic? when any-time <> and if  exit  then
+    in-panic? when any-time? 0= and if  exit  then
     when unhurried = chased? and if  no-time-message offer-msg !  exit  then
     when calm-hewie-up = if
         hard-mode? hewie-cond-now @ down-cond = and if  exit  then
         busy? if  no-time-message offer-msg !  exit  then
     then
-    xt offer-xt ! ;
+    xt offer-xt !  when offer-when ! ;
 : offer-remark-now ( msg -- )   \ a message to read, whatever goes on
     offer-closed? if  drop exit  then  offer-msg ! ;
 : offer-remark ( msg when -- )   \ a message to read
     {: msg when :}  offer-closed? if  exit  then
-    in-panic? when any-time <> and if  exit  then
+    in-panic? when any-time? 0= and if  exit  then
     when unhurried = chased? and if  no-time-message to msg  then
     msg offer-msg ! ;
-: offer-out ( -- )   \ (each frame, with no message up: told to her and the prompt shown)
+: offer-out ( -- )   \ (each frame, with no message up: told to her)
     shown-msg @ 0< 0= if  exit  then
     offer-xt @ if  act-scene offer-xt @  else  offer-msg @ if  read-scene offer-msg @  else  exit  then  then
-    fiona send offer  1 window send prompt ;
+    fiona send offer ;
+
+\ ---- the action prompt's marker (SceneGame_ActionPrompt): as what she could do here changes, a
+\ system message opened in the window - an examining's "Huh? What's this?", a hiding place's
+\ "Wait a second! What's that?!" while chased (again as a chase starts or ends), else an empty one
+\ (nothing to read, but it takes the window: a message up goes; any button closes it). None for
+\ the extras room's corners. All of ours closed while she is held, not her own, backing off,
+\ straining at something or offered a message; her doing done, the same one isn't shown again ----
+$800A constant plain-marker   $800B constant way-marker   $800C constant look-marker   $800D constant hide-marker
+-1 constant way-kind   -2 constant no-marker-kind   \ (her own way: an exit, a ladder; nothing offered to show)
+: marker? ( msg -- flag )  plain-marker hide-marker 1+ within ;
+: markers-off ( -- )   \ (prompt_hide_all: ours closed, if still up)
+    marker-up @ ?dup if  window send close-text  0 marker-up !  then ;
+: forget-marker ( -- )  -1 marker-what !  no-marker-kind marker-kind ! ;
+: marker-msg ( kind -- msg | 0 )
+    case
+        calm-only of  look-marker  endof
+        hiding-spot of  chased? if  hide-marker  else  plain-marker  then  endof
+        quiet-any-time of  0  endof
+        way-kind of  way-marker  endof
+        plain-marker swap
+    endcase ;
+: chase-turned? ( -- flag )   \ (the danger to or from chased since last frame)
+    danger-now @ danger-was @ <>  danger-now @ chased =  danger-was @ chased = or  and ;
+: offered ( -- what kind true | false )   \ (this frame's: the room's doing, else her own way)
+    offer-xt @ if  offer-xt @ offer-when @ true exit  then
+    could-now @  offer-msg @ 0=  over 0< 0= and  over strain-could <> and if  way-kind true  else  drop false  then ;
+: show-marker ( what kind -- )
+    {: what kind :}
+    what marker-what @ <>  kind marker-kind @ <> or
+    kind hiding-spot = chase-turned? and  or if
+        kind marker-msg ?dup if  dup marker-up !  window send show-text  then
+    then
+    what marker-what !  kind marker-kind ! ;
+: prompt-frame ( -- )
+    hewie-played? if  exit  then
+    scene-locked state? if  forget-marker  markers-off exit  then
+    fiona-p holder-of @ 0< 0=  fiona-mode-now @ own-mode <> or if  markers-off exit  then
+    offer-xt @ 0=  offer-msg @ 0= and  could-now @ 0< and if  forget-marker  markers-off exit  then   \ (nothing: the next one shown)
+    offered 0= if  markers-off exit  then   \ (a message to read, or straining)
+    fiona-doing-now @ backstep-doing = if  2drop markers-off exit  then
+    show-marker ;
+: prompt-out ( -- )  prompt-frame  danger-now @ danger-was ! ;
 \ her doing, run: she is held for it
 create spot-xts #activities cells allot
 : spot-doing ( -- )  fiona hold  acting @ cells spot-xts + @ execute ;
@@ -1510,14 +1561,15 @@ behaviour placing
       self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe hewie-gesture  -1 gesture-now !  self subscribe stalker-blow  -1 st-blow-now !  self subscribe stalker-sees  0 st-sees-now !
       self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
-      self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
+      self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining  self subscribe fiona-could  -1 could-now !
+      forget-marker  0 marker-up !  danger-now @ danger-was !   \ (SceneGame_RoomIn: the prompt's records cleared)
       self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe item-var  self subscribe fiona-shakes  0 shakes-now !  self subscribe noise-was  0 loud-now !  self subscribe keri-fell  0 fell-now !  self subscribe summoner-cooldown-is  -1 summoner-secs-now !
       room-starts  frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people
       camera-starts  camera-placed ;
   on tick ( -- )
       entered @ 0= if  exit  then
       people-in  frame-start  ['] d.frame run-desc  every-room  0 request-now !  -1 started-now !   \ (read: gone)
-      offer-out  onset @ 0= if  run-acts  then ;
+      offer-out  prompt-out  onset @ 0= if  run-acts  then ;
   on frame-end ( -- )
       entered @ 0= if  exit  then  remember-people  loud-now @ if  -1 loud-now +!  then  story.base:fill-frame
       st-age @ 100 < if  1 st-age +!  then  #creatures 0 do  i cells cr-age + dup @ 100 < if  1 swap +!  else  drop  then  loop
@@ -1529,7 +1581,9 @@ behaviour placing
           read-scene of  show  endof
           nip
       endcase ;
-  on text-closed ( msg answer -- )  answer !  shown-msg @ = if  -1 shown-msg !  then ;
+  on text-closed ( msg answer -- )   \ (a marker of ours closed or taken over: none of this)
+      over marker? if  drop  marker-up @ = if  0 marker-up !  then  exit  then
+      answer !  shown-msg @ = if  -1 shown-msg !  then ;
   on fade-done ( -- )  0 fading ! ;
   on moving ( done ended events -- )
       sender person-of dup 0< if  drop  3 0 do  i 3 + story.base:slot-actor @ sender = if  over i cells figure-ended + !  2 pick i cells figure-done + !  then  loop  drop 2drop exit  then
@@ -1563,6 +1617,7 @@ behaviour placing
   on hewie-health ( hp -- )  hewie-hp-now ! ;
   on fiona-started ( code -- )  started-now ! ;
   on fiona-straining ( on -- )  straining-now ! ;
+  on fiona-could ( what -- )  could-now ! ;
   on fiona-shaking ( n -- )  shook-now ! ;
   on fiona-shakes ( n -- )  shakes-now ! ;
   on keri-fell ( k -- )  drop  1 fell-now +! ;

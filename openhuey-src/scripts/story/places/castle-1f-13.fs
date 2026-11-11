@@ -160,7 +160,7 @@ $803 constant creeping-anim   $207 constant fleeing-anim   \ (her creep behind t
 : spots ( -- )
     c1f-13-chicken-jerky fact? 0=  fiona -283.73e 1e 2.22e 5e 5e touches? and if  ['] pick-jerky calm-only offer  then
     fiona hiding-area in-area? if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] crouches calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] crouches hiding-spot offer  then
     then
     fiona balcony-area 50 faces-area? if  ['] fallen-balcony unhurried offer  then
     fiona false-door-area in-area?  fiona 90 50 heading? and if  ['] false-door-1 unhurried offer  then

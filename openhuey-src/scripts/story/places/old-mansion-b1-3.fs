@@ -288,7 +288,7 @@ create cameras  1 , 0 , -1 ,   2 , 1 , -1 ,   \ (area, set, path)
     then
     maiden-area 90 facing? if
         omb1-3-flag3 fact? 0= if  ['] the-maiden unhurried offer
-        else  stalker-in? if  no-time-message offer-remark-now  else  ['] the-maiden calm-only offer  then  then
+        else  stalker-in? if  no-time-message offer-remark-now  else  ['] the-maiden hiding-spot offer  then  then
     then
     6 0 facing? if  ['] the-lever unhurried offer  then
     7 110 facing? if  ['] the-oven unhurried offer  then

@@ -61,7 +61,7 @@ create ahead  3 , 0 ,   5 , 0 ,   4 , 1 ,   6 , 2 ,   \ (area, exit loaded ahead
     room-sounds-in? if  first-ambient 79.45e 0e -93.49e ambient-sounds  then
     fiona $B in-area?  fiona 0 50 heading? and if  ['] save-clock calm-hewie-up offer  then
     fiona hide-area in-area?  fiona -90 60 heading? and if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
     got-mansion-sketch fact? 0=  fiona $D in-area? and  fiona 90 50 heading? and if  ['] take-sketch calm-only offer  then
     om1f-23-viride-medallion-found fact?  om1f-23-viride-medallion fact? 0= and  fiona 0.03e 0e -85.54e 5e 5e touches? and if

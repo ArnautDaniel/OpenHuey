@@ -5,6 +5,16 @@ IN: fiona
 USING: engine vectors game-state facts actors messages common paths doors saves fiona.companion fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend fiona.voice fiona.letgo flag-names ;
 
 
+\ ---- her own request here, for the story's prompt (Progress_CharRequests): an exit's door area she
+\ stands in, else - not panicking - a ladder she faces, else straining at what won't move ----
+: straining? ( -- flag )  her-doing @ push-doing =  anim@ strain-anim = and ;
+: could ( -- what )
+    usable dup 0< 0= if  exit  then  drop
+    her-panic-stage @ panicking < if
+        ladder-here dup 0< 0= if  drop ladder-could +  exit  then  drop   \ (the side: one door region)
+    then
+    straining? if  strain-could  else  -1  then ;
+
 \ ---- arriving (by an exit: on its outside spot - Rooms_ExitPointOut - her heading kept from
 \ going through, as the original's: Fiona_Vt34 saves it, the scripts' 0x04 places without
 \ turning) ----
@@ -351,7 +361,8 @@ behaviour free
       unseen-frame
       her-mode @ her-sub @ her-cond @ her-cmd @ her-doing @ broadcast fiona-doing
       her-hit-who @ broadcast fiona-struck-by
-      her-doing @ push-doing =  anim@ strain-anim = and  broadcast fiona-straining
+      straining? broadcast fiona-straining
+      could broadcast fiona-could
       shook-from-rest broadcast fiona-shaking
       her-shake-count @ 0< 0= if  shakes-now her-shake-count +!  her-shake-count @ broadcast fiona-shakes  then   \ (a story counting them)
       plight  her-mode @ 3 = if  her-ladder @  else  -1  then  reach  broadcast fiona-plight

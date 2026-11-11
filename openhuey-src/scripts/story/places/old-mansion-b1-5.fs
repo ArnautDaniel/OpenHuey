@@ -176,7 +176,7 @@ create cameras  1 , 0 , 0 ,   2 , 2 , 2 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   \ (area,
     8 locked-request? if  ['] trap-shut any-time offer  then
     fiona cabinet-area in-area?  fiona 180 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now
-        else  waiting @  trap-door doors:door-locked? 0= and if  ['] she-was-inside  else  ['] hides  then  calm-only offer  then
+        else  waiting @  trap-door doors:door-locked? 0= and if  ['] she-was-inside  else  ['] hides  then  hiding-spot offer  then
     then ;
 : person-in ( i -- )
     case

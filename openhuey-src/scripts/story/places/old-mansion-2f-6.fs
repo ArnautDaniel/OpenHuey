@@ -132,7 +132,7 @@ create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   5 , 1 , 
 : a-locker ( fact area deg hide-xt remark-xt -- )   \ (open still: hide in it when one of them's after her - else its shelf)
     {: f area deg hide remark :}
     f fact?  fiona area in-area? 0= or  fiona deg 50 heading? 0= or if  exit  then
-    may-hide? if  stalker-in? if  no-time-message offer-remark-now  else  hide calm-only offer  then
+    may-hide? if  stalker-in? if  no-time-message offer-remark-now  else  hide hiding-spot offer  then
     else  remark unhurried offer  then ;
 : each-frame ( -- )
     0 exit-out  cameras 6 cameras-at

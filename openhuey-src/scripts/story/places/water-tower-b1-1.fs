@@ -372,7 +372,7 @@ create ahead  $18 , 1 ,   \ (area, exit loaded ahead)
     then  8 -112e 16.5e -114e keep-sound ;
 : spots ( -- )
     fiona $19 in-area? if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
     wtb1-pipe-2-burst fact?  wtb1-miniature fact? 0= and  fiona -48e 0e -296e 5e 5e touches? and if  ['] the-miniature calm-only offer  then
     wtb1-map fact? 0=  fiona $12 50 faces-area? and if  ['] the-map unhurried offer  then

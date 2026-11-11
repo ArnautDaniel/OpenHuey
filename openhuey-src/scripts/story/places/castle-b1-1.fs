@@ -171,7 +171,7 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
 : facing? ( area deg within -- flag )  {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 : cupboard ( far? -- )   \ (before the sketch, the sketch; else hide there - no time while he can see her)
     got-castle-sketch fact? 0= if  drop  fiona sketch-area 45 faces-area? if  ['] the-sketch calm-only offer  then  exit  then
-    stalker-in? 0=  stalker unseen? or if  other-side !  ['] hides calm-only offer  else  drop  no-time-message offer-remark-now  then ;
+    stalker-in? 0=  stalker unseen? or if  other-side !  ['] hides hiding-spot offer  else  drop  no-time-message offer-remark-now  then ;
 : spots ( -- )
     the-vase broken? if
         cb1-1-chicken-jerky fact? 0=  fiona -52.5e -59.05e -1.5e 5e 5e touches? and if  ['] vase-jerky calm-only offer  then

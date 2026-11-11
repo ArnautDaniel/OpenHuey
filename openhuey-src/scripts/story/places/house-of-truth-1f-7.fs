@@ -125,7 +125,7 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
     fiona reach-out-anim play  4 frames  antimony-tube ht1f-7-antimony-tube tube-fx takes-up  fiona reach-back-anim play ;
 : spots ( -- )
     ht1f-7-flag3 fact?  fiona hiding-area in-area? and  fiona 180 60 heading? and if
-        stalker-in?  his-in-view? and if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in?  his-in-view? and if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
     8 locked-request?  fiona 0 before-door? and if  ['] unlocks-door any-time offer  then
     fiona wall-area in-area?  fiona -90 50 heading? and if

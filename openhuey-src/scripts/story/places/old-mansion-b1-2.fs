@@ -150,9 +150,9 @@ create far-looks  -101.62e 0e 100.21e  20e 6e 6e look,   -132.75e 0e 71.15e  20e
     smashing @ if  smash-given-up  exit  then
     fiona mirror-area in-area?  fiona 0 60 heading? and 0= if  exit  then
     omb1-2-breakable3-broken fact? if  ['] the-shards unhurried offer  exit  then
-    stalker-in? 0= if  ['] the-curtain calm-only offer  exit  then
+    stalker-in? 0= if  ['] the-curtain hiding-spot offer  exit  then
     stalker mirror-area in-area?  fiona body-at stalker body-at vec-dist 40e f<= or if  no-time-message offer-remark-now  exit  then
-    ['] the-curtain calm-only offer ;
+    ['] the-curtain hiding-spot offer ;
 : locked-doors ( -- )
     6 locked-request? 0= if  exit  then
     fiona 0 before-door? if  ['] unlocks-it any-time offer  then

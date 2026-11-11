@@ -98,9 +98,9 @@ create entries  1 , 1 ,   1 , 1 ,   2 , 2 ,   0 , 0 ,   \ (by exit 0..3: the cam
     0 exit-open? 0=  came-forward @ and  fiona 0 before-door? and if  back-msg offer-remark-now  then
     smashing @ 0=  fiona mirror-area in-area? and  fiona 90 60 heading? and if
         om2f-13-breakable-broken fact? if  ['] the-shards unhurried offer
-        else  stalker-in? 0= if  ['] the-curtain calm-only offer
+        else  stalker-in? 0= if  ['] the-curtain hiding-spot offer
         else  stalker mirror-area in-area?  fiona body-at stalker body-at vec-dist 40e f<= or if  no-time-message offer-remark-now
-        else  ['] the-curtain calm-only offer  then  then  then
+        else  ['] the-curtain hiding-spot offer  then  then  then
     then
     om2f-13-rubrum-medallion-found fact?  om2f-13-rubrum-medallion fact? 0= and  fiona 88.5e 1e 71.56e 5e 5e touches? and if
         ['] take-medallion calm-only offer

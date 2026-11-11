@@ -112,7 +112,7 @@ create looks  19.24e 0e -32.32e  22e 18e 18e look,   -32.619e 0e -33.47e  22e 18
     $B 180 facing? if  ['] still unhurried offer  then
     fiona cabinet-area in-area?  fiona 0 60 heading? and if
         waiting @ if  ['] right-there unhurried offer
-        else  stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then  then
+        else  stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then  then
     then
     waiting @ 0=  stalker-in? 0= or if  exit  then
     fiona stalker 20 close-to?  fiona 45 stalker body-pos fswap fdrop faces-point? and if  ['] she-turns unhurried offer  then ;

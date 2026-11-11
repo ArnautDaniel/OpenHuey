@@ -6,7 +6,7 @@
 IN: screen
 USING: engine actors messages ;
 
-1 constant fade-layer   \ (the UI layers: 0 the movie, 1 the fade, 2 the message window, 3 the prompt)
+1 constant fade-layer   \ (the UI layers: 0 the movie, 1 the fade, 2 the message window)
 
 \ a fade over `frames` frames, by kind (ScreenFade_Step; the kind's bits $C0 / $30 fade the music
 \ and the volume with it: with the music). The even kinds go out, the odd come in.
