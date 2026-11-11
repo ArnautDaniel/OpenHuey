@@ -21,9 +21,9 @@ owns @ constant walkway-owns
 \ (going across, coming back: where he walks to, where he is put as it stops), his side then (-1 none),
 \ what the room adds as it's across, and once it has stopped ----
 begin-structure /walkway
-  field: wk.fact  field: wk.sign  field: wk.edge  field: wk.file  field: wk.lever  field: wk.lever-face
+  field: wk.fact  field: wk.sign  field: wk.edge  holds: ( F: rad -- F: x z )  field: wk.file  field: wk.lever  field: wk.lever-face
   field: wk.out  field: wk.out-face  field: wk.home  field: wk.home-face  field: wk.out-end  field: wk.home-end
-  field: wk.side  field: wk.across-xt  field: wk.stopped-xt
+  field: wk.side  field: wk.across-xt  holds: ( -- )  field: wk.stopped-xt  holds: ( -- )
   ffield: wk.y  ffield: wk.lever-x  ffield: wk.lever-z  ffield: wk.out-x  ffield: wk.out-z  ffield: wk.home-x  ffield: wk.home-z
 end-structure
 : walkway: ( fact sign edge-xt file F: y "name" -- )   \ (edge-xt: ( F: rad -- x z ) its edge at that angle)

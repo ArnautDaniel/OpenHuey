@@ -13,7 +13,7 @@
 IN: fiona.companion
 USING: engine vectors game-state actors messages common facts doors paths floor-flags hewie-names stalker-names fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.looks fiona.slam fiona.fear fiona.doors fiona.defend ;
 
-defer put-her ( F: x y z yaw -- )   ' noop is put-her   \ (fiona.fs: put)
+defer put-her ( F: x y z yaw -- )   :noname ( F: x y z yaw -- )  fdrop fdrop fdrop fdrop ; is put-her   \ (fiona.fs: put)
 defer fresh-her ( -- )   ' noop is fresh-her             \ (fiona.fs: fresh)
 
 \ her mood (+0x1AD71C), in the room being played: by him; waiting; following him; fleeing - to

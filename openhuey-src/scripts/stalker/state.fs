@@ -40,7 +40,7 @@ state: stalker-state
   \ +0x16CA how alarming it was - 7 seeing her, 6 hearing her, 5 a noise, 2 seeing Hewie, 1 hearing
   \ him); his start at a more alarming one (Pursuer_ReactToEvent): its frames, where, then what
   cell field lead  cell field lead-alarm
-  cell field start-t  /vec field start-at  cell field start-then
+  cell field start-t  /vec field start-at  cell field start-then  holds: ( -- )
   cell field sense-turn
   1 floats field view-range  1 floats field view-half  1 floats field view-heading
   cell field hear-threshold     \ (+0x14B8: noises louder than this)
@@ -53,7 +53,7 @@ state: stalker-state
   \ what it is doing (the original's state function and its counters)
   /path field my-path
   cell field anim               \ +0x1788: the animation he plays (-1 none)
-  cell field step               \ his step (an xt, run each frame: the original's Actor_SetState)
+  cell field step  holds: ( -- )   \ his step (an xt, run each frame: the original's Actor_SetState)
   cell field step-t             \ +0x1624: a count the step keeps
   cell field step-done          \ +0x16EE: the step is over
   cell field goal-tri  /vec field goal-at      \ +0x15A4 / +0x15B0: where he heads in the room
@@ -85,7 +85,7 @@ state: stalker-state
   \ whom it struck (+0x1760: 1 Fiona), his cry for it (+0x1764), how long before he attacks
   \ again (+0x178C), frames held still by a blow landing (+0x14D0); her plight and panic as told;
   \ the way round her (+0x104, +0x1634)
-  cell field chase-act  cell field act-xt
+  cell field chase-act  cell field act-xt  holds: ( -- )
   cell field hold-t  cell field watch-t  cell field chase-t
   cell field combo  cell field combo-step  cell field swung  cell field sent  cell field took
   cell field cry  cell field hold-off  cell field freeze-t
@@ -175,9 +175,9 @@ state: stalker-state
   cell field hushed              \ +0x2C: his own sounds don't play (the story's 0x3D)
   \ (P4c) a stalker's own: his chase (its start and its step: Riccardo's; 0 the family's), his
   \ own actions ($1000.. in his tables: a table of xts; 0 Debilitas's), how near he attacks
-  cell field own-chase  cell field own-run  cell field own-acts  1 floats field attack-range
-  cell field own-frame          \ his own each frame (Riccardo's rage, snort, impact)
-  cell field own-points         \ his own points a move strikes at (vtable +0x138 BonePositions; 0 the Pursuer's: the move's two bones)
+  cell field own-chase  holds: ( -- )  cell field own-run  cell field own-acts  1 floats field attack-range
+  cell field own-frame  holds: ( -- )   \ his own each frame (Riccardo's rage, snort, impact)
+  cell field own-points  holds: ( -- )   \ his own points a move strikes at (vtable +0x138 BonePositions; 0 the Pursuer's: the move's two bones)
   cell field alt-tables         \ his tables' second set (kind 37 alerted; else his rage)
   cell field tint-t  cell field tint-was  cell field unseen   \ (the TintStalker: shown a while,
   1 floats field tint-alpha  cell field tint-fade  cell field tint-shown   \ how faded: its tint;

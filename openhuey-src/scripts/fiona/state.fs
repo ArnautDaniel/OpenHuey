@@ -71,7 +71,7 @@ state: fiona-state
   \ her footsteps
   cell field her-step-l   cell field her-step-r   cell field her-steps
   \ what she is doing, run each frame (an xt: the original's state), and its part
-  cell field her-act
+  cell field her-act  holds: ( -- )
   \ walking to a spot (Fiona_DoorFrame): the way, the spot and how she comes round to it
   /path field her-path
   /vec field her-spot   cell field her-spot-tri
