@@ -1032,7 +1032,6 @@ PRIM(p_cam_char_setup) {   /* ( who set path -- ) a character's camera setup */
 }
 PRIM(p_cam_setup_of) {   /* ( who -- set path ) a character's camera setup (-1 -1: none) */
     Cell who = POP();
-
     int set, path;
 
     camdir_setup_of(&gCamDir, (int)who, &set, &path);
