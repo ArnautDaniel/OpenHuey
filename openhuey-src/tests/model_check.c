@@ -1,9 +1,13 @@
 /* The models' conversion checked (docs/library-and-mods.md): every .PCK of the game data built as
  * the engine builds it, written as the import writes it (model.gltf + model.bin, the motion bank as
  * it is), read back as the engine reads the library: the same Model - its bones, the bone table,
- * every vertex and draw, the motion bank's bytes. And valid glTF (cgltf's checks).
+ * every vertex and draw, the motion bank's bytes. And valid glTF (cgltf's checks). And a mod's
+ * model with a bone of its own (Fiona's, as Blender might write it back: the joints in another
+ * order, the new bone without OpenHuey's extras): the game's bones at their places, the new one
+ * after them (docs/modding.md "A model's bones").
  *
  *   model-check <data folder> */
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,8 +19,135 @@
 #include "../src/data/modelgltf.h"
 #include "../src/third_party/cgltf.h"
 
-static int sModels, sBad, sUnbuilt, sMorphs;
+static int sModels, sBad, sUnbuilt, sMorphs, sModded;
 static long long sPck, sGltf;
+
+/* Fiona with a bone a mod added ("finger", under her bone `under`, a vertex on it), written,
+ * then made as Blender might: the skin's joints reversed (their inverse binds and the vertices'
+ * joints with them), the new bone's extras gone - read back, the game's bones as they were */
+static void check_mod(const char *name, const Model *a) {
+    Model c = *a, b;
+    SkinVertex *v = malloc(sizeof(SkinVertex) * (size_t)a->nv);
+    int n = a->nbones, under = n - 1, i, ok;
+    const float rot[3] = {0.1f, -0.2f, 0.3f}, pos[3] = {1.0f, 2.0f, 3.0f};
+    uint8_t *bin;
+    size_t len, bs;
+    char *json, *at, *end, *joints;
+    cgltf_options opts;
+    cgltf_data *g = NULL;
+
+    memcpy(v, a->v, sizeof(SkinVertex) * (size_t)a->nv);
+    c.v = v;
+    c.nbones = n + 1;
+    memset(&c.bones[n], 0, sizeof(ModelBone));
+    snprintf(c.bones[n].name, sizeof(c.bones[n].name), "finger");
+    c.bones[n].parent = under;
+    memcpy(c.bones[n].rest_rot, rot, sizeof(rot));
+    memcpy(c.bones[n].rest_pos, pos, sizeof(pos));
+    c.bones[n].inv_bind = mat4_identity();
+    v[0].bones[0] = (uint8_t)n;
+    json = modelgltf_write(&c, "model.bin", "../X.texbank/", &bin, &bs, &len);
+    /* the new bone's extras gone */
+    at = strstr(json, "{\"name\":\"finger\"");
+    at = at != NULL ? strstr(at, ",\"extras\":") : NULL;
+    end = at != NULL ? strstr(at, "\"}") : NULL;
+    if (end == NULL) {
+        fprintf(stderr, "FAIL %s (a mod's bone): no extras to take off\n", name);
+        sBad++;
+        goto out;
+    }
+    memmove(at, end + 2, strlen(end + 2) + 1);
+    len = strlen(json);
+    /* the joints reversed: the list, the inverse binds, each vertex's joints */
+    memset(&opts, 0, sizeof(opts));
+    if (cgltf_parse(&opts, json, len, &g) != cgltf_result_success) {
+        fprintf(stderr, "FAIL %s (a mod's bone): not glTF\n", name);
+        sBad++;
+        goto out;
+    }
+    {
+        const cgltf_accessor *ib = g->skins[0].inverse_bind_matrices;
+        uint8_t *m = bin + ib->offset + ib->buffer_view->offset, tmp[64];
+        const cgltf_accessor *done[256];
+        int ndone = 0, k;
+        size_t p, q;
+
+        for (i = 0; i < (n + 1) / 2; i++) {
+            memcpy(tmp, m + i * 64, 64);
+            memcpy(m + i * 64, m + (n - i) * 64, 64);
+            memcpy(m + (n - i) * 64, tmp, 64);
+        }
+        for (p = 0; p < g->meshes_count; p++) {
+            for (q = 0; q < g->meshes[p].primitives_count; q++) {
+                const cgltf_primitive *pr = &g->meshes[p].primitives[q];
+                size_t t, e;
+
+                for (t = 0; t < pr->attributes_count; t++) {
+                    const cgltf_accessor *aj = pr->attributes[t].data;
+                    uint8_t *j;
+
+                    if (strcmp(pr->attributes[t].name, "JOINTS_0") != 0) {
+                        continue;
+                    }
+                    for (k = 0; k < ndone && done[k] != aj; k++) {
+                    }
+                    if (k < ndone || ndone == 256) {
+                        continue;
+                    }
+                    done[ndone++] = aj;
+                    j = bin + aj->offset + aj->buffer_view->offset;
+                    for (e = 0; e < aj->count * 4; e++) {
+                        j[e] = (uint8_t)(n - j[e]);
+                    }
+                }
+            }
+        }
+    }
+    cgltf_free(g);
+    joints = strstr(json, "\"joints\":[");
+    end = joints != NULL ? strchr(joints, ']') : NULL;
+    if (end != NULL) {
+        char *list = malloc((size_t)(n + 1) * 5 + 2), *rest = strdup(end), *out;
+        size_t ln = 0;
+
+        for (i = n; i >= 0; i--) {
+            ln += (size_t)sprintf(list + ln, "%s%d", i < n ? "," : "", i);
+        }
+        out = malloc(strlen(json) + ln + 16);
+        memcpy(out, json, (size_t)(joints - json) + 10);
+        sprintf(out + (joints - json) + 10, "%s%s", list, rest);
+        free(json);
+        free(list);
+        free(rest);
+        json = out;
+        len = strlen(json);
+    }
+    if (!modelgltf_read(&b, json, len, bin, bs, NULL, 0)) {
+        fprintf(stderr, "FAIL %s (a mod's bone): not read\n", name);
+        sBad++;
+        goto out;
+    }
+    ok = b.nbones == n + 1 && b.ngame == n && memcmp(b.v, v, sizeof(SkinVertex) * (size_t)a->nv) == 0 &&
+         model_bone_named(&b, "finger") == n && model_bone_named(&b, "bone 3") == 3 && b.bones[n].parent == under;
+    for (i = 0; ok && i < n; i++) {
+        ok = memcmp(&b.bones[i], &a->bones[i], sizeof(ModelBone)) == 0;
+    }
+    for (i = 0; ok && i < 3; i++) {   /* (its rest from its node: a quaternion's round trip) */
+        ok = fabsf(b.bones[n].rest_rot[i] - rot[i]) < 1e-5f && fabsf(b.bones[n].rest_pos[i] - pos[i]) < 1e-5f;
+    }
+    if (!ok) {
+        fprintf(stderr, "FAIL %s (a mod's bone): read back differs (%d bones, %d the game's, parent %d)\n", name,
+                b.nbones, b.ngame, b.bones[n < b.nbones ? n : 0].parent);
+        sBad++;
+    } else {
+        sModded++;
+    }
+    model_free(&b);
+out:
+    free(json);
+    free(bin);
+    free(v);
+}
 
 static void check(const char *name, uint8_t *pck, size_t size) {
     Model a, b;
@@ -42,6 +173,9 @@ static void check(const char *name, uint8_t *pck, size_t size) {
             fprintf(stderr, "FAIL %s: no draw is its part 31 (group 32)\n", name);
             sBad++;
         }
+    }
+    if (strcasecmp(name, "FIN_000.PCK") == 0) {
+        check_mod(name, &a);
     }
     json = modelgltf_write(&a, "model.bin", "../X.texbank/", &bin, &bs, &len);
     sGltf += (long long)(len + bs + a.motions_size);
@@ -153,6 +287,7 @@ int main(int argc, char **argv) {
     snprintf(data, sizeof(data), "%s/", argv[1]);
     SDL_EnumerateDirectory(data, one, NULL);
     printf("model-check: %d models (%lld MB of PCK; %d not models the engine builds; %d faces and hands) as %lld MB of glTF "
-           "and motions, %d failures\n", sModels, sPck >> 20, sUnbuilt, sMorphs, sGltf >> 20, sBad);
-    return sBad != 0 || sModels == 0;
+           "and motions, %d failures; %d mod's model with a bone of its own read\n", sModels, sPck >> 20, sUnbuilt, sMorphs,
+           sGltf >> 20, sBad, sModded);
+    return sBad != 0 || sModels == 0 || sModded == 0;
 }

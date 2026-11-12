@@ -794,6 +794,7 @@ static void skin(Actor *a) {
     float c = cosf(a->yaw), s = sinf(a->yaw);
     int i, j;
 
+    model_pose_sets(a->sets, a->nsets);
     if (a->drive != NULL) {   /* a cutscene's motion: placed in the room by its root bone */
         const uint8_t *own = m->motions, *second = m->motions2;
         size_t own_size = m->motions_size;
@@ -873,6 +874,7 @@ static void skin(Actor *a) {
             face_channels(a, m, a->motion, a->frame);
         }
     }
+    model_pose_sets(NULL, 0);
     if (a->shaped != NULL) {
         model_morph(m, &a->face, a->shaped);
     }

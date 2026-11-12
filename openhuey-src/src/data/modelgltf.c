@@ -273,11 +273,23 @@ char *modelgltf_write(const Model *m, const char *bin_name, const char *textures
     for (i = 0; i < m->nbones; i++) {
         const ModelBone *bn = &m->bones[i];
         float q[4];
-        int first = 1;
+        int first = 1, c, e = 0;
+        char name[2 * sizeof(bn->name)];
 
         rest_quat(bn->rest_rot, q);
-        gltf_add(&nodes, "%s{\"name\":\"bone %d\",\"translation\":[%.9g,%.9g,%.9g],\"rotation\":[%.9g,%.9g,%.9g,%.9g]",
-                 i ? "," : "", i, bn->rest_pos[0], bn->rest_pos[1], bn->rest_pos[2], q[0], q[1], q[2], q[3]);
+        if (bn->name[0] == '\0') {
+            snprintf(name, sizeof(name), "bone %d", i);
+        } else {
+            for (c = 0; bn->name[c] != '\0'; c++) {   /* (a mod's own name, quoted for JSON) */
+                if (bn->name[c] == '"' || bn->name[c] == '\\') {
+                    name[e++] = '\\';
+                }
+                name[e++] = (unsigned char)bn->name[c] < 0x20 ? ' ' : bn->name[c];
+            }
+            name[e] = '\0';
+        }
+        gltf_add(&nodes, "%s{\"name\":\"%s\",\"translation\":[%.9g,%.9g,%.9g],\"rotation\":[%.9g,%.9g,%.9g,%.9g]",
+                 i ? "," : "", name, bn->rest_pos[0], bn->rest_pos[1], bn->rest_pos[2], q[0], q[1], q[2], q[3]);
         for (k = 0; k < m->nbones; k++) {
             if (m->bones[k].parent == i) {
                 gltf_add(&nodes, "%s%d", first ? ",\"children\":[" : ",", k);
@@ -303,7 +315,7 @@ char *modelgltf_write(const Model *m, const char *bin_name, const char *textures
     for (i = 0; i < m->nmorphs; i++) {
         gltf_add(&o, ",%d", m->nbones + 1 + i);
     }
-    gltf_add(&o, "],\"extras\":{\"hga\":\"model %d %d %d ", MODELGLTF_FORMAT, m->nbones, m->nv);
+    gltf_add(&o, "],\"extras\":{\"hga\":\"model %d %d %d ", MODELGLTF_FORMAT, m->ngame > 0 ? m->ngame : m->nbones, m->nv);
     for (i = 0; i < 256; i++) {
         gltf_add(&o, "%02x", m->bone_table != NULL ? m->bone_table[i] : 0);
     }
@@ -380,20 +392,23 @@ static int draw_from(const char *w, MeshDraw *d) {
     return 1;
 }
 
-/* a primitive's draw and its vertices into the model's (its words say where they go) */
-static int read_draw(Model *m, const cgltf_primitive *pr, MeshDraw *out) {
+/* a primitive's draw and its vertices into the model's (its words say where they go); `jmap` the
+ * skin's joints' bones */
+static int read_draw(Model *m, const cgltf_primitive *pr, const int *jmap, int njoints, MeshDraw *out) {
     const cgltf_accessor *ap = gltf_attribute(pr, "POSITION"), *an = gltf_attribute(pr, "NORMAL"),
                          *at = gltf_attribute(pr, "TEXCOORD_0"), *aj = gltf_attribute(pr, "JOINTS_0"),
                          *aw = gltf_attribute(pr, "WEIGHTS_0");
-    const uint8_t *bp, *bn, *bt, *bj, *bw;
+    const uint8_t *bp, *bn, *bt, *bw;
     MeshDraw d;
     size_t k;
+    cgltf_uint joints[4];
+    int j;
 
     memset(&d, 0, sizeof(d));
     if (!draw_from(gltf_hga(&pr->extras, "draw"), &d) || ap == NULL || an == NULL || at == NULL || aj == NULL ||
-        aw == NULL || pr->indices == NULL || aj->component_type != cgltf_component_type_r_8u ||
+        aw == NULL || pr->indices == NULL || aj->type != cgltf_type_vec4 ||
         (bp = gltf_bytes(ap, 12)) == NULL || (bn = gltf_bytes(an, 12)) == NULL || (bt = gltf_bytes(at, 8)) == NULL ||
-        (bj = gltf_bytes(aj, 4)) == NULL || (bw = gltf_bytes(aw, 16)) == NULL) {
+        (bw = gltf_bytes(aw, 16)) == NULL) {
         return 0;
     }
     d.count = (int)pr->indices->count;
@@ -412,22 +427,30 @@ static int read_draw(Model *m, const cgltf_primitive *pr, MeshDraw *out) {
         memcpy(&v->normal, bn + e * 12, 12);
         memcpy(&v->s, bt + e * 8, 4);
         memcpy(&v->t, bt + e * 8 + 4, 4);
-        memcpy(v->bones, bj + e * 4, 4);
         memcpy(v->weights, bw + e * 16, 16);
+        if (!cgltf_accessor_read_uint(aj, e, joints, 4)) {   /* (bytes or shorts: Blender writes either) */
+            return 0;
+        }
+        for (j = 0; j < 4; j++) {   /* the skin's joints, as the model's bones */
+            if (joints[j] >= (cgltf_uint)njoints) {
+                return 0;
+            }
+            v->bones[j] = (uint8_t)jmap[joints[j]];
+        }
     }
     *out = d;
     return 1;
 }
 
 /* a face's or a hand's mesh: its draw where its words say (among `total`), its shapes */
-static int read_morph(Model *m, const cgltf_primitive *pr, int total) {
+static int read_morph(Model *m, const cgltf_primitive *pr, const int *jmap, int njoints, int total) {
     const char *w = gltf_hga(&pr->extras, "draw"), *mw = w != NULL ? strstr(w, " morph ") : NULL;
     int face, hand, nshapes, at, s;
     ModelMorph *mo;
 
     if (mw == NULL || sscanf(mw, " morph %d %d %d %d", &face, &hand, &nshapes, &at) != 4 || at < 0 || at >= total ||
         m->d[at].count > 0 || nshapes < 1 || nshapes > 64 || (int)pr->targets_count != nshapes - 1 ||
-        !read_draw(m, pr, &m->d[at])) {
+        !read_draw(m, pr, jmap, njoints, &m->d[at])) {
         return 0;
     }
     m->morphs = realloc(m->morphs, (size_t)(m->nmorphs + 1) * sizeof(ModelMorph));
@@ -468,12 +491,105 @@ static int read_morph(Model *m, const cgltf_primitive *pr, int total) {
     return 1;
 }
 
+/* a node's own turn and place (Euler angles as the bones' rest: R = Rz Ry Rx; its scale left out) */
+static void node_rest(const cgltf_node *n, float *rot, float *pos) {
+    float t[16], c[3];
+    int k;
+
+    cgltf_node_transform_local(n, t);
+    for (k = 0; k < 3; k++) {   /* (each axis unscaled) */
+        c[k] = sqrtf(t[k * 4] * t[k * 4] + t[k * 4 + 1] * t[k * 4 + 1] + t[k * 4 + 2] * t[k * 4 + 2]);
+        c[k] = c[k] > 0.0f ? c[k] : 1.0f;
+    }
+    /* (column-major: row r of column k is t[k * 4 + r]) */
+    rot[1] = asinf(fmaxf(-1.0f, fminf(1.0f, -t[2] / c[0])));
+    rot[0] = atan2f(t[4 + 2] / c[1], t[8 + 2] / c[2]);
+    rot[2] = atan2f(t[1] / c[0], t[0] / c[0]);
+    pos[0] = t[12];
+    pos[1] = t[13];
+    pos[2] = t[14];
+}
+
+/* the skin's joints as the model's bones (jmap: each joint's bone). The game's - a node OpenHuey
+ * wrote, named "bone <i>" with its exact rest in extras "bone" - keep their places (the motions'
+ * bone table names them by place: bones 0..nbones-1 must all be there); any others (a mod's:
+ * docs/modding.md) take the places after them, in the skin's order, their rest and parent from
+ * their nodes (the parent the joint above them; none: a root) */
+static int read_bones(Model *m, const cgltf_skin *sk, int nbones, int *jmap) {
+    const cgltf_accessor *ib = sk->inverse_bind_matrices;
+    int taken[MODEL_MAX_BONES] = {0};
+    int njoints = (int)sk->joints_count, j, k, next = 0;
+    const uint8_t *b;
+
+    if (njoints < nbones || njoints > MODEL_MAX_BONES) {
+        fprintf(stderr, "model: %d bones in its skin (the game's %d at least, %d at most)\n", njoints, nbones,
+                MODEL_MAX_BONES);
+        return 0;
+    }
+    if (ib == NULL || ib->count != (size_t)njoints || ib->type != cgltf_type_mat4 || (b = gltf_bytes(ib, 64)) == NULL) {
+        return 0;
+    }
+    for (j = 0; j < njoints; j++) {   /* the game's at their places */
+        const cgltf_node *n = sk->joints[j];
+        int i, used = 0;
+
+        jmap[j] = -1;
+        if (gltf_hga(&n->extras, "bone") != NULL && n->name != NULL && sscanf(n->name, "bone %d%n", &i, &used) == 1 &&
+            n->name[used] == '\0' && i >= 0 && i < njoints && !taken[i]) {
+            jmap[j] = i;
+            taken[i] = 1;
+        }
+    }
+    for (k = 0; k < nbones; k++) {
+        if (!taken[k]) {
+            fprintf(stderr, "model: no \"bone %d\" (the game's bones keep their names and extras)\n", k);
+            return 0;
+        }
+    }
+    for (j = 0; j < njoints; j++) {   /* the others after them */
+        if (jmap[j] < 0) {
+            while (taken[next]) {
+                next++;
+            }
+            jmap[j] = next;
+            taken[next] = 1;
+        }
+    }
+    m->nbones = njoints;
+    m->ngame = nbones;
+    for (j = 0; j < njoints; j++) {
+        const cgltf_node *n = sk->joints[j];
+        ModelBone *bn = &m->bones[jmap[j]];
+        const char *w = gltf_hga(&n->extras, "bone");
+
+        snprintf(bn->name, sizeof(bn->name), "%s", n->name != NULL ? n->name : "");
+        memcpy(bn->inv_bind.m, b + (size_t)j * 64, 64);
+        if (w != NULL) {   /* (its exact rest, as OpenHuey wrote it) */
+            if (sscanf(w, " %d %f %f %f %f %f %f", &bn->parent, &bn->rest_rot[0], &bn->rest_rot[1], &bn->rest_rot[2],
+                       &bn->rest_pos[0], &bn->rest_pos[1], &bn->rest_pos[2]) != 7 ||
+                bn->parent >= njoints) {
+                return 0;
+            }
+            continue;
+        }
+        node_rest(n, bn->rest_rot, bn->rest_pos);
+        bn->parent = -1;
+        for (k = 0; k < njoints; k++) {
+            if (sk->joints[k] == n->parent) {
+                bn->parent = jmap[k];
+            }
+        }
+    }
+    return 1;
+}
+
 int modelgltf_read(Model *m, const char *json, size_t len, const uint8_t *bin, size_t bin_size, uint8_t *motions,
                    size_t motions_size) {
     cgltf_options opts;
     cgltf_data *g = NULL;
     const char *w;
-    int format = 0, nbones = 0, nv = 0, ok = 0, i, used = 0;
+    int format = 0, nbones = 0, nv = 0, ok = 0, i, used = 0, njoints = 0;
+    int jmap[MODEL_MAX_BONES];
     size_t k, p;
     uint8_t *own;
 
@@ -497,7 +613,7 @@ int modelgltf_read(Model *m, const char *json, size_t len, const uint8_t *bin, s
     m->pck = own;
     m->size = 256 + motions_size;
     if ((w = gltf_hga(&g->scenes[0].extras, "model")) == NULL || sscanf(w, " %d %d %d %n", &format, &nbones, &nv, &used) != 3 ||
-        format < 1 || format > MODELGLTF_FORMAT || nv < 0 || nbones <= 0 || nbones > MODEL_MAX_BONES || (size_t)nbones > g->nodes_count) {
+        format < 1 || format > MODELGLTF_FORMAT || nv < 0 || nbones <= 0 || nbones > MODEL_MAX_BONES) {
         goto done;
     }
     w += used;
@@ -512,27 +628,10 @@ int modelgltf_read(Model *m, const char *json, size_t len, const uint8_t *bin, s
         }
         m->bone_table = own;
     }
-    m->nbones = nbones;
-    for (i = 0; i < nbones; i++) {
-        ModelBone *bn = &m->bones[i];
-
-        if ((w = gltf_hga(&g->nodes[i].extras, "bone")) == NULL ||
-            sscanf(w, " %d %f %f %f %f %f %f", &bn->parent, &bn->rest_rot[0], &bn->rest_rot[1], &bn->rest_rot[2],
-                   &bn->rest_pos[0], &bn->rest_pos[1], &bn->rest_pos[2]) != 7) {
-            goto done;
-        }
+    if (!read_bones(m, &g->skins[0], nbones, jmap)) {
+        goto done;
     }
-    {
-        const cgltf_accessor *ib = g->skins[0].inverse_bind_matrices;
-        const uint8_t *b;
-
-        if (ib == NULL || ib->count != (size_t)nbones || ib->type != cgltf_type_mat4 || (b = gltf_bytes(ib, 64)) == NULL) {
-            goto done;
-        }
-        for (i = 0; i < nbones; i++) {
-            memcpy(m->bones[i].inv_bind.m, b + i * 64, 64);
-        }
-    }
+    njoints = m->nbones;
     m->v = calloc((size_t)nv + 1, sizeof(SkinVertex));
     m->nv = nv;
     {   /* the body's draws in turn (mesh 0); the faces' and hands' (meshes 1.., format 2) where
@@ -545,7 +644,7 @@ int modelgltf_read(Model *m, const char *json, size_t len, const uint8_t *bin, s
         m->d = calloc((size_t)total + 1, sizeof(MeshDraw));
         m->nd = total;
         for (k = 1; k < g->meshes_count; k++) {
-            if (g->meshes[k].primitives_count != 1 || !read_morph(m, &g->meshes[k].primitives[0], total)) {
+            if (g->meshes[k].primitives_count != 1 || !read_morph(m, &g->meshes[k].primitives[0], jmap, njoints, total)) {
                 goto done;
             }
         }
@@ -553,7 +652,7 @@ int modelgltf_read(Model *m, const char *json, size_t len, const uint8_t *bin, s
             while (body < total && m->d[body].count > 0) {   /* (the places the morphs took) */
                 body++;
             }
-            if (body >= total || !read_draw(m, &g->meshes[0].primitives[p], &m->d[body])) {
+            if (body >= total || !read_draw(m, &g->meshes[0].primitives[p], jmap, njoints, &m->d[body])) {
                 goto done;
             }
         }

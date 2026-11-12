@@ -41,8 +41,8 @@ after: other-mod         \ load after that one, if it's on
 ```
 
 - **The mod API** (`requires: openhuey M m`): the game's messages, broadcasts and hooks a mod uses.
-  OpenHuey has 1.3 (`mod-api` at the console: 103). A mod needs the same major and a minor no newer.
-  1.1 added `item-use-rule`, 1.2 `title-menu-hook`, 1.3 the mods' camera.
+  OpenHuey has 1.4 (`mod-api` at the console: 104). A mod needs the same major and a minor no newer.
+  1.1 added `item-use-rule`, 1.2 `title-menu-hook`, 1.3 the mods' camera, 1.4 a model's bones.
 - A mod is **turned off** (and the reason shown in the MODS menu and on stderr) when: a
   `requires:` isn't met; its name is one of the game's vocabularies (`fiona`, `items` ...); its
   scripts fail to load - an error in them, or code run as they load that never ends (stopped after
@@ -73,7 +73,7 @@ The library holds the game's files converted to common formats (an import of the
 | a movie | `X.mpg` + `X.flac` (for `X.SFD`) | an MPEG-1 / 2 program stream (video only) and its sound (none: silent) (`src/data/sfd.h`) |
 | a room's mesh | `ST_xxx/ST_yyy.room/mesh.gltf` + `mesh.bin` | glTF 2.0 as OpenHuey writes it: the engine's draw words in `extras` "hga" (`src/data/roomgltf.h`) |
 | a room's lights, cameras | `ST_xxx/ST_yyy.room/lights.txt`, `cameras.txt` | text, a record a line (`src/data/roomtext.h`) |
-| a character model | `O_XXX/XXX_000.model/model.gltf` + `model.bin` | glTF 2.0, skinned, as OpenHuey writes it (`src/data/modelgltf.h`); the motions (`motions.bin`) stay the game's |
+| a character model | `O_XXX/XXX_000.model/model.gltf` + `model.bin` | glTF 2.0, skinned, as OpenHuey writes it (`src/data/modelgltf.h`); the motions (`motions.bin`) stay the game's. Bones of its own may be added ("A model's bones" below) |
 | one of the executable's tables | `library/exe/<name>.bin` (not under data/) | the table's bytes (`src/data/exetables.c` names them) |
 
 **An HD texture pack made for PCSX2** (a `replacements/` folder of `.dds` / `.png` named by
@@ -208,6 +208,41 @@ game's camera and the mod's has it again after. Fiona walks by the camera, so sh
 mod's camera looks. `mouse-capture ( on -- )` holds the mouse in the window, its motion all look
 (`mouse-dx`, `mouse-dy`: pixels this tick). The sample: `examples/mods/first-person` (through her
 eyes - `body-head` her head, `body-yaw` her facing - the mouse or the arrows looking; F4 off).
+
+### A model's bones (API 1.4)
+
+**Adding bones** (finger bones on Fiona's hands, say): open the library's `model.gltf` in Blender,
+add the bones under the game's, weight the mesh to them, export glTF with **Custom Properties** on
+(the `extras` carry the game's bones' exact rest and the model's bone table). The rules:
+
+- The game's bones stay as they are: named `bone 0`, `bone 1` ... with their extras. Their order in
+  the file may change (Blender reorders them) - OpenHuey finds them by name, as the motions name
+  them. Renaming, removing or moving one breaks the motions: the model isn't read (stderr says so).
+- New bones may have any other names. They go after the game's (`bone-count` counts both), each
+  hanging from the joint above it, at rest as the file has it. 256 bones at most.
+- No motion moves a new bone: it keeps its rest under its parent (a finger bone goes with the hand),
+  so the game's motions and scenes look as they did. A mod's script moves it (below).
+- The mesh may be weighted anew (JOINTS_0 as bytes or shorts); its vertices stay the same in
+  number and order (the draws' words in their extras say where each goes).
+
+**Moving bones** from a script, any model's - the game's bones or added ones. `id` is the model:
+a character's is `cast-model ( char -- model | -1 )` - `0 cast-model` Fiona's, `1` Hewie's (the
+characters' numbers as the story's scripts have them):
+
+| Word | Stack | What |
+|---|---|---|
+| `bone-count` | `( id -- n )` | its bones |
+| `bone-named` | `( id addr len -- bone )` | the bone of that name (`s" bone 12"`, a mod's own), -1 none |
+| `bone-parent` | `( id bone -- parent )` | the bone it hangs from, -1 a root (or no such bone) |
+| `bone-rest` | `( id bone -- ) ( F: -- rx ry rz )` | its own turn at rest: radians about x, then y, then z, as the motions turn it |
+| `bone-set` | `( id bone -- ) ( F: rx ry rz -- )` | its own turn from now on, in place of the motions' (its children with it) - in scenes too - till it is freed; up to 64 bones a body |
+| `bone-free` | `( id bone -- )` | back to the motions' turn |
+| `bones-free` | `( id -- )` | all of them back |
+| `bone-pos` | `( id bone -- ) ( F: -- x y z )` | where it is in the room, as last drawn |
+| `bone-point` | `( id bone -- ) ( F: ox oy oz -- x y z )` | a point in its own axes, in the room |
+
+A setting holds until freed or the model is loaded again (a costume change: `cast-model` gives
+the new one - find its bones again by name). Set them each tick for a hand that follows something (a VR controller).
 
 ## Hooks: when the game must ask
 

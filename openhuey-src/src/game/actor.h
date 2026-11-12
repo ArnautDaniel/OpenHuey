@@ -93,6 +93,9 @@ typedef struct Actor {
     /* bones turned where it looks (Hewie's neck: DogModel_AdjustBone) */
     ModelTurn turns[8];
     int nturns;
+    /* bones' turns a mod set (bone-set), over the motions' - its scenes' too */
+    ModelSet sets[MODEL_MAX_SETS];
+    int nsets;
     DogLegs legs;           /* a dog's feet planted and its legs fitted to them (Hewie) */
     Chair chair;            /* Lorenzo in his chair: tilted by the floor, his head turned (chair.c) */
     HumanHead head;         /* a human model's head where it looks (humanlegs.c humanhead_adjust) */
