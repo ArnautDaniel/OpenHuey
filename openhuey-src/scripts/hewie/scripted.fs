@@ -63,7 +63,7 @@ USING: engine actors common paths vectors messages hewie-names hewie.state hewie
     1.01e f* his-heading f!  ['] st-turning behave ;
 \ Hewie_StateHeadForSpot / Wander (story-spot-act): to the spot his-to (walking, head on it);
 \ there, milling about it
-defer st-wander
+defer st-wander ( -- )
 : st-head-for-spot ( -- )
     his-at his-to vec-dist-xz 10e f< if
         0 his-t1 !  0 his-t2 !  his-yaw his-heading f!  ['] st-wander behave exit

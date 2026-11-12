@@ -63,9 +63,10 @@ $BFBFBF constant glyph-grey   \ (the glyphs' vertex colour $60606060: three quar
     dup $80 and if  $3F and  dup 4 >= swap 7 < and if  by-alpha  else  subtracted  then  exit  then
     $40 and if  by-alpha  else  added  then ;
 : ink ( chosen? -- colour )  if  chosen-ink  else  menu-ink  then ;
+variable word-alpha   $80 word-alpha !   \ (the words' own alpha, 128 opaque: the galleries' bars fade theirs)
 : glyphs ( layer addr len x y colour scale -- )   \ at x y (window pixels), the alpha the menu's own
     {: layer addr len x y colour sc :}
-    layer addr len x y  glyph-grey 8 lshift  $80 faded $FF and or  sc  colour $3F and  ui-text-in
+    layer addr len x y  glyph-grey 8 lshift  word-alpha @ faded $FF and or  sc  colour $3F and  ui-text-in
     layer colour ink-blend $80 fix ui-blend ;
 : inked-on ( layer addr len x y colour -- )  {: l addr len x y c :}  l addr len  x sx  y sy  c scale glyphs ;
 \ the page's words go on the words' layer - or, a box up over the page, on the art's: drawn before

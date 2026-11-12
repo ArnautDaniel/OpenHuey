@@ -49,7 +49,7 @@ USING: engine game-state actors messages common vectors facts items.names fiona.
         running-group of  her-still @ 6 < if  run-look  else  0 her-rest !  0 her-run-t !  -1 idle-anim  then  endof
         >r  0 her-rest !  0 her-run-t !  -1 idle-anim  r>
     endcase ;
-defer exhausted   ' noop is exhausted   \ (Fiona_Exhausted: fiona.fear)
+defer exhausted ( -- )   ' noop is exhausted   \ (Fiona_Exhausted: fiona.fear)
 : stick-held ( -- )   \ the stick held: walk, or run with the run button (not under story flag 0x1E)
     stick-heading her-heading f!
     no-running state-flag? 0=  her-run? @ and if

@@ -77,8 +77,8 @@ pushed down it by the slope's sine (NavTri_Slope).
 Read again 2026-11 (0.2.42): the stone went off only in her room; the story's clear and the cap
 lost a lying ball; the cap freed the oldest silently; held frames lost a ball through a hole; the
 doll was taken by any searching Debilitas within 10, seen or not; a thing came down off a wall by
-the angle of its hit, not the original's |n.v| < 0.5, and sounded a bounce as it landed. The tube's
-splash is the generic splash's twice the spread - DropSplash itself isn't ported. The story's debris (9)
+the angle of its hit, not the original's |n.v| < 0.5, and sounded a bounce as it landed. The powders'
+splash is DropSplash (`drop-splash`, the engine's: since 0.2.47), the tube's at twice the size. The story's debris (9)
 falls 31 frames through a hole and is told fallen (`keri-fell`, its object hidden); the original's
 falls on for ever under the floor, out of sight (Thing09_StateFalling) - the trap (10) is gone below -30.
 

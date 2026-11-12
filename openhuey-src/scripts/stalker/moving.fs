@@ -93,7 +93,7 @@ create left-at /vec allot  create right-at /vec allot
     dup grass-floor and if  wood-floor and if  $14 6  else  8 7  then
     else  metal-floor and case  metal-floor of  6  endof  stone-floor of  4  endof  wood-floor of  2  endof  >r 0 r>  endcase  7  then
     swap step-foot @ 1 and +  swap  1 step-foot +! ;
-: step-pace ( F: -- 0..1 )  stride 0.6e f- 0.8e f/  0e fmax 1e fmin ;
+: step-pace ( F: -- pace )  stride 0.6e f- 0.8e f/  0e fmax 1e fmin ;   \ (0 to 1)
 : floor-under ( v -- flags )  v-tri dup 0< if  drop self body-tri  then  nav-flags ;
 \ on a ladder the rungs' sound (10) - but getting on or off at its foot with the foot over the
 \ floor out from it, the floor's (off there: under the foot from the foot's spot); off at its

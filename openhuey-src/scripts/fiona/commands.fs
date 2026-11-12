@@ -9,7 +9,6 @@
 IN: fiona.commands
 USING: engine vectors game-state actors messages hewie-names common facts keys fiona.state fiona.anims fiona.model fiona.moving fiona.spots fiona.looks flag-names floor-flags ;
 
-: dog-in? ( -- flag )  dog-here @ dog-absent <> ;            \ in the game (+0x1AD5D4)
 : dog-at ( -- v )  hewie-id body-at ;
 : dog-dist ( F: -- d )  dog-ok? if  her-at dog-at vec-dist  else  1000e  then ;
 : react ( n -- )  hewie-id send reaction ;          \ Fiona_HewieReact (his to weigh)

@@ -94,12 +94,12 @@ USING: engine game-state actors messages keys facts flag-names items items.table
     mode @ on-actions = if  actions-view  then
     mode @ on-box = if  box-view  then ;
 : draw-tab ( -- )   \ the tab and the item's picture, sliding in from the left (fading with it)
-    tab-slide @ >r
+    tab-slide @ {: s :}
     tab @ case
-        2 of  $AC $40 - r@ +  $60 $C r@ 2* part   $C0 $40 - r@ +  $8C $B r@ part  endof
+        2 of  $AC $40 - s +  $60 $C s 2* part   $C0 $40 - s +  $8C $B s part  endof
         3 of  $AC $60 $C $80 part   $C0 $8C $B $40 part  endof
-        4 of  $EC r@ -  $60 $C r@ 2* part   $100 r@ -  $8C $B r@ part  endof
-    endcase  r> drop ;
+        4 of  $EC s -  $60 $C s 2* part   $100 s -  $8C $B s part  endof
+    endcase ;
 : draw ( -- )
     frame!  art-layer ui-clear  word-layer ui-clear
     stage @ shut <> if  draw-page exit  then

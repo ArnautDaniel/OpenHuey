@@ -70,7 +70,7 @@ variable actors?  -1 actors? !
 : actors-on ( -- )  -1 actors? ! ;
 : actors-off ( -- )  0 actors? ! ;
 $E8E0C8FF constant text-colour   $A09880FF constant dim-colour
-: say-at ( addr len x y colour -- )  >r >r >r  label-layer -rot r> r> r> 2 ui-text ;
+: say-at ( addr len x y colour -- )  {: a n x y c :}  label-layer a n x y c 2 ui-text ;
 360 constant most-run   \ (the longest out-of-breath run: stage 2's 240, and up to 4 x 30)
 200 constant bar-width
 \ a labelled bar at y: `filled` of bar-width in `colour`; after it the value (-1: none) and a note
@@ -80,7 +80,7 @@ $E8E0C8FF constant text-colour   $A09880FF constant dim-colour
     label-layer 110 y bar-width 4 + 20 $000000A0 ui-rect
     label-layer 112 y 2 + filled 0 max bar-width min 16 colour ui-rect
     value 0< 0= if  value n>s 124 bar-width + y text-colour say-at  then ;
-: note ( addr len y -- )  >r  190 bar-width + r> dim-colour say-at ;
+: note ( addr len y -- )  {: a n y :}  a n 190 bar-width + y dim-colour say-at ;
 : of-bar ( n most -- n filled )  over bar-width * swap / ;
 : stage$ ( stage -- addr len )
     case  composed of s" calm" endof  panicking of s" PANIC" endof  calming-down of s" PANIC (calming)" endof

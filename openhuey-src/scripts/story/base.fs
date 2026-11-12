@@ -11,7 +11,6 @@ USING: engine game-state facts actors messages common keys vectors doors room-na
 \ ---- the story's character slots: 0 Fiona, 1 Hewie, 2 the stalker, 3..5 the scenes' figures ----
 enum: char-slot#  fiona-cs hewie-cs stalker-cs first-figure-cs ;
 6 constant #chars
-: figure-cs? ( cs -- flag )  first-figure-cs #chars within ;
 \ the stalker's slot: the stalker actor partner-load brought in (the original's progress
 \ character table), -1 none; the kind it was loaded as (its +0x153C)
 variable slot2   -1 slot2 !

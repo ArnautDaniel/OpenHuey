@@ -94,7 +94,8 @@ create camera-areas  $D , 3 , 1 ,   $11 , 5 , 3 ,   $13 , 6 , 4 ,   $F , 4 , 2 ,
     f fact!  k barred-floor floor-off  -1 race-done ! ;
 
 \ ---- the legs of its way (each its next, 0 the end) ----
-defer leg-01  defer leg-02  defer leg-03  defer leg-04  defer leg-05  defer leg-06  defer leg-07
+defer leg-01 ( -- next )  defer leg-02 ( -- next )  defer leg-03 ( -- next )  defer leg-04 ( -- next )
+defer leg-05 ( -- next )  defer leg-06 ( -- next )  defer leg-07 ( -- next )
 : leg-00 ( -- next )
     0 read-at !  1 80e until>=  true letter? if  ['] leg-01 exit  then
     passes  1 100e until>=  0 blaze-up  1 110e until>=  blaze-out  0 ;

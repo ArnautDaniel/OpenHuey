@@ -209,7 +209,7 @@ Hewie), dropped from a height, watching, after her, approaching spots by her for
 (the four spots round her; `fiona-request` $C on the way), struck by her blows (`fiona-blow`,
 once a blow; `blow-taken` back), leaving with no strength left or at their time; the story's
 0x58. Both off screen by `creatures/trip.fs`. Fiona's side: `fiona-unseen` (item $89, still 60
-frames), her blows numbered. Hewie's side (Hewie_PickTarget, Hewie_Bite): each creature
+frames - free and standing, or held crouched in a hiding place: `fiona.fs` still-for-it?), her blows numbered. Hewie's side (Hewie_PickTarget, Hewie_Bite): each creature
 tells `creature-doing ( slot room mode up )` - up: a spirit after her, a homunculus awake; he
 goes for a homunculus holding her down, else the stalker, else the nearest creature up and not
 struck; his rush and his pounce bite the homunculi his mouth comes within 10 of (once each,

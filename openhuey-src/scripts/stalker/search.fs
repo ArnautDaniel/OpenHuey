@@ -14,7 +14,6 @@ enum: search-phase#  no-search to-stop at-the-stop ;
 : stop ( k -- addr )  2* cells stops + ;
 : route-clear ( -- )   \ Pursuer_ClearRoute
     8 0 do  -1 i stop !  0 i stop cell+ !  loop  0 route-next !  0 route-end !  0 search-cap ! ;
-: stops-left ( -- n )  route-end @ route-next @ - ;
 : route-add ( tri random? -- )   \ Npc_RouteAdd (full, or no triangle: not added)
     over 0<  route-end @ 8 < 0= or if  2drop exit  then
     route-end @ stop  tuck cell+ !  !  1 route-end +! ;

@@ -117,9 +117,9 @@ for a room whose scripts don't place her.
 
 The debug walker is gone.
 
-Left for F1: the slow locked-door try (with the panic, F2); the camera-cut steering is built
-but untested (a cut needs the story's camera setups); her motion sounds (key-frame sounds) and
-voice.
+Left for F1: the camera-cut steering is built but untested (a cut needs the story's camera
+setups). (The slow locked-door try, her motion sounds and voice came later: `fiona/doors.fs`,
+`fiona/voice.fs`.)
 
 **Keeping apart** (Fiona_KeepApart, fiona.fs `keep-apart`): free and overlapping the stalker,
 she is pushed out to their radii apart - along his step this frame (`stalker-stride`, his root
@@ -144,8 +144,9 @@ These, and the buttons' refusals below, are checked by `tests/fiona/test_rules.f
 - her looks follow the danger and the panic (the chased walk 0x208, the shaken and frightened
   blends).
 
-Left for F2: the slow locked-door try; shaking the panic off faster while down (with the
-shake-free of F4); the flee's door slam and Hewie's reaction; charms (with items).
+(F2's leftovers came later: the slow locked-door try `fiona/doors.fs`; her shakes in a panic attack
+`fiona/fear.fs`; the flee's door slam and Hewie's reaction `fiona/fear.fs` backstep; the charms
+`panic.fs`.)
 
 **F3 built** (`scripts/fiona/commands.fs`, with Hewie's H2). The right stick's gestures (keys 1
 up, 2 down, 3 R3, 4 right - held for more praise, 5 left), read under `hewie-commandable` and not
@@ -162,8 +163,8 @@ afar or close up). Her gesture (mode 0xD: 0xC00..0xC0F), her lines on its key fr
 waits for him to sit, the second part and her gesture (0xC06 stay, 0xC07..0xC09 praise with
 its repeats, 0xC0D scold). Refused when asked: from afar instead (praise 0x29, scold 0x2F).
 
-Left for F3: her head turned to Hewie after a command (her looks aren't built); a creature
-ahead for "go for it" while followed (with the creatures).
+(F3's leftovers came later: her looks after a command `fiona/commands.fs` face-after; a creature
+ahead for "go for it" while followed, `any-creature-ahead?`.)
 
 **Fixed (2026-10-07):** her model had no motion table (`$3D5CC0`, CharModel_SecondaryMotion): no
 animation looped or blended - the run stopped on its last frame and she slid in that pose.

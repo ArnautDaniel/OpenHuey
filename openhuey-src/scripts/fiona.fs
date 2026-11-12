@@ -254,9 +254,11 @@ create model-name 32 allot  create tex-name 32 allot  create marker-name 32 allo
     show-equipment
     self body? 0<> 1 and her act.visible l!  0 -1 play-table ;   \ (shown once she is in a room)
 
-\ out of sight (Fiona_Frame's area fade, +0x1AD630): wearing item $89 in the equipment's slot 1 and
-\ standing still, after 60 frames she can't be seen - the homunculi only circle her; any move, and
-\ she can be seen again (told when it changes: fiona-unseen). On screen (Fiona_LightChange) she
+\ out of sight (+0x1AD630): wearing item $89 in the equipment's slot 1 and still, after 60 frames she
+\ can't be seen - the homunculi only circle her; any move, and she can be seen again (told when it
+\ changes: fiona-unseen). Still: free and standing (Fiona_Panic's, from Fiona_Update), or held by a
+\ script while crouched in a hiding place (Fiona_AreaFade, from Fiona_Think - a character held runs
+\ its Think, not its Update: held otherwise, she is seen). On screen (Fiona_LightChange) she
 \ fades out as she goes unseen, and once gone she shows softened (layer $1C: drawn at half size) -
 \ only while she wears it; else her layer is the story's.
 : unseen! ( flag -- )  dup her-unseen @ = if  drop exit  then  dup her-unseen !  broadcast fiona-unseen ;
@@ -276,10 +278,12 @@ $1C constant softened-layer
     stalker-in-room dup 0< if  drop exit  then
     self over 1e 0e bodies-touching? 0= if  drop exit  then
     0 her-still-t !  false unseen!  6 3 rot 0e struck drop ;
+: still-for-it? ( -- flag )   \ (held: crouched - fiona-half-hidden, the hiding script's; free: standing)
+    her-scripted @ if  fiona-half-hidden state-flag? exit  then  her-mode @ 0=  her-sub @ 0= and ;
 : unseen-frame ( -- )
     fade-frame
     her-carried-t @ 0> if  -1 her-carried-t +!  then
-    progress pr.equipped 4 + l@ $89 =  her-mode @ 0= and  her-sub @ 0= and 0= if  0 her-still-t !  false unseen! exit  then
+    camouflaged?  still-for-it? and 0= if  0 her-still-t !  false unseen! exit  then
     her-unseen @ if  bumped exit  then
     1 her-still-t +!  her-still-t @ 60 >= if  true unseen!  then ;
 
@@ -317,8 +321,8 @@ behaviour free
   on activate ( -- )  0 her-noclip !  0 her-aside !  idle ;   \ (the story's 0x15, Fiona_Activate: afresh, standing)
   on costume ( n -- )  wear  show-her  weapon-shown ;
   on fiona-request ( kind x y z threat -- )   \ (a creature's, Progress_Noise: $D a spirit - she falls; 3 a red one
-      >r cells>xyz from-pt vec!   \ going - grabbed; $C homunculi - held down)
-      dup broadcast fiona-requested  0 -1 r> cell>f struck drop ;   \ (its threat her fright: Fiona_React)
+      {: kind x y z threat :}  x y z cells>xyz from-pt vec!   \ going - grabbed; $C homunculi - held down)
+      kind broadcast fiona-requested  kind 0 -1 threat cell>f struck drop ;   \ (its threat her fright: Fiona_React)
   on throw-down ( who recover -- )  thrown-down ;   \ (the story's 0xB2)
   on look-hold ( who frames -- )  her-look-hold !  her-look-who !  1 her-look-on ! ;   \ (the story's 0x96: Fiona_SetTarget)
   on creature-doing ( slot room mode up -- )   \ (a homunculus in her room holding her; each creature remembered)
@@ -337,12 +341,12 @@ behaviour free
   on scene ( on -- )  her-in-scene ! ;   \ (a cutscene has her)
   on go-to ( x y z -- )  cells>xyz  go-to-point ;
   on on-triangle ( tri -- )  dup her-tri !  her-was-tri ! ;
-  on place ( x y z yaw -- )  cells>xyzw  put  her-scripted @ >r  fresh  r> her-scripted ! ;   \ (the story puts her - its hold on her kept; the room's scripts: Rooms_ExitPointOut, facing in)
+  on place ( x y z yaw -- )  cells>xyzw  put  her-scripted @ {: kept :}  fresh  kept her-scripted ! ;   \ (the story puts her - its hold on her kept; the room's scripts: Rooms_ExitPointOut, facing in)
   on camera-cut ( -- )  -1 her-cut ! ;
   on meters? ( -- )  her-fear f@ f>s  her-fear-bits @ 1 and  her-panic-t @  sender send her-meters ;   \ (the debug overlay)
   \ struck or caught (F4: fiona.hurt)
   on hit ( kind how fright -- )
-      cell>f  over >r  sender struck if  r> sender send hit-taken  else  r> drop  then ;
+      {: kind how fright :}  fright cell>f  kind how sender struck if  kind sender send hit-taken  then ;
   on seize ( type -- )  sender swap seized if  sender send seize-taken  else  sender send seize-refused  then ;
   on unhand ( -- )  0 her-led ! ;
   on flinch ( -- )  flinch ;   \ (a room's command)
@@ -389,8 +393,8 @@ behaviour free
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       drop dog-way !  2drop 2drop  dog-group !  dog-mood !  dog-cond !  dog-sub !  dog-mode !  dog-action !  dog-here ! ;
   on meet-at ( tri x y z face -- )
-      asked? 0= if  2drop 2drop drop  hewie-id send meet-off exit  then
-      >r >r >r cell>f  r> cell>f  r> cell>f  r> cell>f  meet-placed ;
+      {: tri x y z face :}  asked? 0= if  hewie-id send meet-off exit  then
+      tri  x cell>f y cell>f z cell>f face cell>f  meet-placed ;
   on meet-on ( -- )  her-act @ ['] meet-waiting = if  meet-started  else  hewie-id send meet-off  then ;
   on meet-refused ( -- )  her-act @ ['] meet-waiting = if  meet-failed  then ;
 end-behaviour

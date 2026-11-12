@@ -85,7 +85,7 @@ $15 constant castle-1f-7-room   $31 constant after-riccardo-room
 : mechanism-starts ( -- )  plate-act @ ?dup if  1- stop-act  then  ['] mechanism start 1+ plate-act ! ;
 : plate-down ( who -- )   \ (someone onto the plate)
     floor-plate-pressed fact!  -1 someone-on-plate !  came-in-sound room-bank rot sound-by ;
-defer the-trap
+defer the-trap ( -- )
 : on-the-plate ( -- )   \ (the original's area $D logic: the first onto it, the last off)
     someone-on-plate @ 0= if
         hewie plate-area in-area? if  hewie plate-down  mechanism-starts exit  then

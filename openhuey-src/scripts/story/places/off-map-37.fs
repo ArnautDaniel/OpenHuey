@@ -38,7 +38,7 @@ $FF constant none-chosen   $81 constant run-way   $10 constant secret-room-seen
     1 resident-flag? 2 resident-flag? and 3 resident-flag? and 4 resident-flag? and if  $15 resident-flag-set  then
     1 resident-flag? 2 resident-flag? or if  $55 resident-flag-set  then
     $57 resident-flag? $58 resident-flag? or if  $59 resident-flag-set  then ;
-defer the-mini-game
+defer the-mini-game ( -- )
 : came-in ( exit -- )
     drop  -1 label !  room-sounds  hewie-commandable state!  hewie-no-attack state!  unlocks-follow
     mini-game-door lock  out-door lock  1e sounds-scaled  ['] fan-turning start drop  fan-part show-part

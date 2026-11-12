@@ -103,7 +103,7 @@ $8000 constant startled   \ (a blow's flag: he flinches)
 : blow-stalker ( kind damage startle% -- )  {: k d pct :}  stalker k d pct blow-him ;   \ (the one in her room)
 \ the homunculi struck (their action 4 - taken once they are in play): within its reach (ThingShared_
 \ ReachStalkers - facing it), or standing on it (ThingShared_StompStalkers - facing heading 0)
-: blow-homunculus ( id F: yaw -- )  >r  kind damage  f>cell  r> send thing-blow ;
+: blow-homunculus ( id F: yaw -- )  {: id :}  kind damage  f>cell  id send thing-blow ;
 : reach-homunculi ( -- )
     [: dup it @  kind reach s>f 10e thing-reaches? if  dup body-at at vec-heading blow-homunculus  else  drop  then ;]
     each-homunculus ;
@@ -192,10 +192,10 @@ $1F constant doll-noise
 \ away from Fiona: he comes upon it once a visit - hears it, and takes it unless he is after her
 : doll-away ( -- )
     met @ st-room @ = if  exit  then  st-room @ met !
-    doll-noise heard  stalker-in-game dup 0< if  drop exit  then
-    >r  its-tri it @ true  r> send drawn-to ;   \ (he takes it unless she is his lead)
+    doll-noise heard  stalker-in-game dup 0< if  drop exit  then  {: who :}
+    its-tri it @ true  who send drawn-to ;   \ (he takes it unless she is his lead)
 \ in her room: he looks for it, each frame (seen, its noise; gone for, taken - his)
-: doll-near ( -- )  stalker dup 0< if  drop exit  then  >r  its-tri it @ false  r> send drawn-to ;
+: doll-near ( -- )  stalker dup 0< if  drop exit  then  {: who :}  its-tri it @ false  who send drawn-to ;
 : doll-frame ( -- )
     he-is-with-it? if
         here? if  doll-near  else  doll-away exit  then
