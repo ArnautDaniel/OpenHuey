@@ -32,6 +32,8 @@ testing the curtain: drawn back, the glass lit; across again
 om2f-13-breakable-broken story-flag-clear  om2f-13-flag1 story-flag-clear  room-afresh
 90 111e 0e 47e put  circle press  [: doing-busy? 0= ;] 600 soon drop   \ (a way off her spot by it)
 T{ om2f-13-flag1 story-flag?  [: glass-fx effect @ 0<> ;] in-place -> -1 -1 }T
+testing a smash she's no longer at (not held): given up, the mirror offered again
+T{ [: -1 smashing !  smash-given-up  smashing @ ;] in-place -> 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 90 111e 0e 47e put  circle press  [: doing-busy? 0= ;] 600 soon drop   \ (a way off her spot by it)
 T{ om2f-13-flag1 story-flag?  [: glass-fx effect @ 0<> ;] in-place -> 0 0 }T
