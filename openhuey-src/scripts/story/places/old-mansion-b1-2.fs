@@ -170,10 +170,10 @@ create far-looks  -101.62e 0e 100.21e  20e 6e 6e look,   -132.75e 0e 71.15e  20e
     fiona -133.09e 0e 71.35e 7e 10e touches?  fiona 60 -133e 71e faces-point? and if  ['] far-doll unhurried offer  then
     fiona $1D in-area?  fiona -90 50 heading? and if  ['] the-book unhurried offer  then
     viola-vase broken? if
-        omb1-2-viola-medallion fact? 0=  fiona 13.5e -10e -75e 5e 5e touches? and if  ['] take-viola calm-only offer  then
+        omb1-2-viola-medallion fact? 0=  fiona 13.5e -9e -75e 5e 5e touches? and if  ['] take-viola calm-only offer  then
     else  viola-vase breaks? if  viola-shows  then  then
     rubrum-vase broken? if
-        omb1-2-rubrum-medallion fact? 0=  fiona 13.5e -10e -59.5e 5e 5e touches? and if  ['] take-rubrum calm-only offer  then
+        omb1-2-rubrum-medallion fact? 0=  fiona 13.5e -9e -59.5e 5e 5e touches? and if  ['] take-rubrum calm-only offer  then
     else  rubrum-vase breaks? if  rubrum-shows  then  then
     58e 5e 19.5e  58e 5e 15e  58e -24e 19.5e  58e -24e 15e  light-doorway
     58e 5e -15e  58e 5e -19.5e  58e -24e -15e  58e -24e -19.5e  light-doorway ;

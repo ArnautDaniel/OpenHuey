@@ -77,8 +77,8 @@ crate $80202020 0 0 shard-look   crate 0.812e 0.687e 0.187e 0.312e shard-uv   cr
 : barks-at-end ( -- )  1.97e 152e 46.65e hewie-barks-at ;
 : spots ( -- )
     lever-area -90 lever-offer
-    wt2f-1-medallion-found fact?  wt2f-1-medallion fact? 0= and  fiona 4.12e 104e -18.51e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then
-    wt2f-1-refined-antimony fact? 0=  fiona -19.9e 152e 74.61e 5e 5e touches? and if  ['] pick-antimony calm-only offer  then ;
+    wt2f-1-medallion-found fact?  wt2f-1-medallion fact? 0= and  fiona 4.12e 105e -18.51e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then
+    wt2f-1-refined-antimony fact? 0=  fiona -19.9e 153e 74.61e 5e 5e touches? and if  ['] pick-antimony calm-only offer  then ;
 : hewie-bits ( -- )
     wt2f-1-medallion-found fact? 0=  scrambling? and  hewie 4.12e 104e -18.51e 10e 5e touches? and if  ['] medallion-sniffed start-only  then
     wt2f-1-flag4 fact? 0=  hewie-noticed @ 0= and  hewie-in? and  hewie-cond-now @ well-cond = and  chased? 0= and  hewie-cmdable-now @ and

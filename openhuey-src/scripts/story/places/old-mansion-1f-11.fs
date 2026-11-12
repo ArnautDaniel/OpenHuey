@@ -117,7 +117,7 @@ create ahead  4 , 0 ,   5 , 1 ,   \ (area, exit loaded ahead)
         fiona $12 in-area?  fiona -90 50 heading? and if  ['] the-water unhurried offer  then
     then
     by-the-mirror
-    om1f-11-album-medallion-found fact?  om1f-11-album-medallion fact? 0= and  fiona 13.96e 50e -5.34e 5e 5e touches? and if
+    om1f-11-album-medallion-found fact?  om1f-11-album-medallion fact? 0= and  fiona 13.96e 51e -5.34e 5e 5e touches? and if
         ['] take-medallion calm-only offer
     then ;
 : person-in ( i -- )

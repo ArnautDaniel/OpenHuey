@@ -286,10 +286,10 @@ create calm-looks  144.66e 0e -5.88e  18e 12e 12e look,   73.86e 0e -40.16e  25e
     fiona $1F in-area? if  [: -19e -6e meth ;] unhurried offer  then
     fiona $21 in-area? if  [: -60e -110e meth ;] unhurried offer  then
     omb1-6-medallion fact? 0=  fiona 2.06e 6.5e -99.68e 5e 5e touches? and if  ['] take-medallion calm-only offer  then
-    omb1-6-viola-medallion-found fact?  omb1-6-viola-medallion fact? 0= and  fiona -138.94e 0e -114.31e 5e 5e touches? and if
+    omb1-6-viola-medallion-found fact?  omb1-6-viola-medallion fact? 0= and  fiona -138.94e 1e -114.31e 5e 5e touches? and if
         ['] take-viola calm-only offer
     then
-    omb1-6-magist-medallion fact? 0=  fiona 39.98e 0e -40.67e 5e 5e touches? and if  ['] take-magist calm-only offer  then ;
+    omb1-6-magist-medallion fact? 0=  fiona 39.98e 1e -40.67e 5e 5e touches? and if  ['] take-magist calm-only offer  then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then
     events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop  exit  then

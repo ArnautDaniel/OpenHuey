@@ -243,11 +243,11 @@ create ahead  4 , 1 ,   5 , 0 ,   6 , 2 ,   7 , 3 ,   \ (area, exit loaded ahead
     lectern-2-book-2 fact? 0=  $14 180 facing? and if  2 ['] lectern-2 lectern-offer  then
     shelves-by-author
     8 44 facing?  fiona $23 50 faces-area? or if  ['] save-clock calm-hewie-up offer  then
-    om1f-15-refined-antimony fact? 0=  fiona 36.86e 50e -27.91e 5e 5e touches? and if  ['] take-antimony calm-only offer  then
-    om1f-15-antimony-tube-found fact?  om1f-15-antimony-tube fact? 0= and  fiona 39.16e 0e -38.76e 5e 5e touches? and if
+    om1f-15-refined-antimony fact? 0=  fiona 36.86e 51e -27.91e 5e 5e touches? and if  ['] take-antimony calm-only offer  then
+    om1f-15-antimony-tube-found fact?  om1f-15-antimony-tube fact? 0= and  fiona 39.16e 1e -38.76e 5e 5e touches? and if
         ['] take-tube calm-only offer
     then
-    om1f-15-rubrum-medallion-found fact?  om1f-15-rubrum-medallion fact? 0= and  fiona -23.61e 50e -61.37e 5e 5e touches? and if
+    om1f-15-rubrum-medallion-found fact?  om1f-15-rubrum-medallion fact? 0= and  fiona -23.61e 51e -61.37e 5e 5e touches? and if
         ['] take-medallion calm-only offer
     then ;
 : person-in ( i -- )

@@ -122,12 +122,12 @@ create looks  19.29e 0e -1.64e  20e 22e 22e look,
     looks 1 hewie-looks-at
     room-sounds-in? if  first-ambient 37.86e 0e -38.87e ambient-sounds  then
     1 locked-request?  fiona 0 before-door? and if  ['] unlocks-it any-time offer  then
-    om2f-11-flag1 fact?  got-jupiter-key fact? 0= and  fiona 7.3e 0.7e -28.3e 5e 5e touches? and if  ['] take-key calm-only offer  then
+    om2f-11-flag1 fact?  got-jupiter-key fact? 0= and  fiona key-at v.x sf@ key-at v.z sf@ 5e reaches-across? and if  ['] take-key calm-only offer  then
     fiona 8 in-area?  fiona 180 50 heading? and if  ['] save-clock calm-hewie-up offer  then
     fiona 9 in-area?  fiona 120 50 heading? and if  ['] the-ladder unhurried offer  then
     fiona $A in-area?  fiona -20 50 heading? and if  ['] the-journals unhurried offer  then
     shelves? if  ['] the-books unhurried offer  then
-    om2f-11-magnesia fact? 0=  fiona -6.82e 0e -10.25e 5e 5e touches? and if  ['] take-magnesia calm-only offer  then
+    om2f-11-magnesia fact? 0=  fiona -6.82e 1e -10.25e 5e 5e touches? and if  ['] take-magnesia calm-only offer  then
     fiona $11 in-area?  fiona -90 50 heading? and if  ['] for-animals unhurried offer  then
     fiona $12 in-area?  fiona -90 50 heading? and if  ['] precarious unhurried offer  then
     -7e 30e 42e  -10.8e 30e 29.2e  -7e 0e 42e  -10.8e 0e 29.2e  light-doorway ;

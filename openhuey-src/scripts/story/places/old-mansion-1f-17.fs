@@ -96,11 +96,11 @@ create mummy-look  68.2e 0e 31.14e  20e 12e 12e look,
     om2f-8-flag1 fact? 0=  fiona $E in-area? and  fiona -90 50 heading? and if  ['] the-picture unhurried offer  then
     fiona $10 in-area?  fiona 90 60 heading? and if  ['] the-mummy unhurried offer  then
     om1f-17-chicken-jerky fact? 0=  fiona -137.37e -41e -14.57e 5e 5e touches? and if  ['] take-jerky calm-only offer  then
-    om1f-17-medallion-found fact?  om1f-17-medallion fact? 0= and  fiona 68.99e 0e 19.99e 5e 5e touches? and if
+    om1f-17-medallion-found fact?  om1f-17-medallion fact? 0= and  fiona 68.99e 1e 19.99e 5e 5e touches? and if
         ['] take-medallion calm-only offer
     then
     the-vase broken? if
-        om1f-17-magnesia fact? 0=  fiona 43e 0e -40e 5e 5e touches? and if  ['] take-magnesia calm-only offer  then
+        om1f-17-magnesia fact? 0=  fiona 43e 1e -40e 5e 5e touches? and if  ['] take-magnesia calm-only offer  then
     else  the-vase breaks? if  magnesia-shows  then  then ;
 : person-in ( i -- )
     fiona-p <> if  exit  then

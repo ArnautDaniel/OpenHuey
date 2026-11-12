@@ -178,7 +178,7 @@ create calm-looks  38.13e 0e -9.78e  30e 30e 30e look,   -35.94e 0e -7.54e  16e 
     else  fiona 8 in-area?  fiona 180 50 heading? and if  ['] the-dragon unhurried offer  then  then
     fiona 9 in-area?  fiona 180 50 heading? and if  ['] the-dragon unhurried offer  then
     fiona $F in-area?  fiona -90 60 heading? and if  ['] the-ivy unhurried offer  then
-    om1f-12-rubrum-medallion-found fact?  om1f-12-rubrum-medallion fact? 0= and  fiona 52.04e 0e 5.68e 5e 5e touches? and if
+    om1f-12-rubrum-medallion-found fact?  om1f-12-rubrum-medallion fact? 0= and  fiona 52.04e 1e 5.68e 5e 5e touches? and if
         ['] take-medallion calm-only offer
     then ;
 : person-in ( i -- )

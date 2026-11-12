@@ -34,7 +34,7 @@ $81 constant back-way   \ (the second forced way in)
 : spots ( -- )
     fiona clock-area 50 faces-area? if  ['] save-clock calm-hewie-up offer  then
     fiona inscription-area 50 faces-area? if  ['] the-inscription unhurried offer  then
-    wt7f-2-rubrum-medallion-found fact?  wt7f-2-rubrum-medallion fact? 0= and  fiona -9e 139.97e -10.23e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then ;
+    wt7f-2-rubrum-medallion-found fact?  wt7f-2-rubrum-medallion fact? 0= and  fiona -9e 140.97e -10.23e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then ;
 
 \ ---- every frame ----
 create entries  3 , 1 ,  0 , -1 ,   \ (by exit 0, 1: the camera)

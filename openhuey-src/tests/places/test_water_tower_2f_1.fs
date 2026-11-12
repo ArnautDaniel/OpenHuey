@@ -65,6 +65,10 @@ testing her exit set by its side (room $C2's command 1): across exit 1, home 0 -
 T{ [: -1 turning-back !  story.places.walkway:exit-follows  0 turning-back ! ;] in-place  deliver  her-exit-held -> 0 }T
 T{ [: 0 turning-back !  story.places.walkway:exit-follows ;] in-place  deliver  her-exit-held -> 1 }T
 T{ [: 0 turning-back !  story.places.walkway:exit-follows  -1 turning-back !  story.places.walkway:exit-follows  0 turning-back ! ;] in-place  deliver  her-exit-held -> 0 }T
+testing the Medallion's offer: zone 0 on its sparkle (105, height 5 - zone-at-effect), her feet 4.5 above it still in it
+: hers-at ( F: x y z -- )  game:fiona enter  body-place-at  leave-actor ;
+T{ 4.12e 109.5e -18.51e hers-at  [: 0 offer-xt !  spots  offer-xt @ ;] in-place -> ' pick-medallion }T
+T{ 4.12e 110.5e -18.51e hers-at  [: 0 offer-xt !  spots  offer-xt @ ;] in-place -> 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the lever pulled: the walkway across (its parts, the flags)
 T{ lever-area -90 at  circle press  [: lever-done ;] 900 soon -> -1 }T

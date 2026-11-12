@@ -374,7 +374,7 @@ create ahead  $18 , 1 ,   \ (area, exit loaded ahead)
     fiona $19 in-area? if
         stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
-    wtb1-pipe-2-burst fact?  wtb1-miniature fact? 0= and  fiona -48e 0e -296e 5e 5e touches? and if  ['] the-miniature calm-only offer  then
+    wtb1-pipe-2-burst fact?  wtb1-miniature fact? 0= and  fiona -48e 1e -296e 5e 5e touches? and if  ['] the-miniature calm-only offer  then
     wtb1-map fact? 0=  fiona $12 50 faces-area? and if  ['] the-map unhurried offer  then
     out-of-cell fact? 0=  $11 90 50 facing? and if  ['] the-key unhurried offer  then
     wtb1-figurine fact? 0=  $13 -104 50 facing? and if  ['] the-figurine calm-only offer  then
@@ -385,9 +385,9 @@ create ahead  $18 , 1 ,   \ (area, exit loaded ahead)
     wtb1-pipe-3-burst fact? 0=  $1C 106 60 facing? and if  ['] the-pipe unhurried offer  then
     wtb1-pipe-2-burst fact? 0=  $1D -158 60 facing? and if  ['] the-pipe unhurried offer  then
     wtb1-pipe-1-burst fact? 0=  $1E 12 60 facing? and if  ['] the-pipe unhurried offer  then
-    wtb1-viride-found fact?  wtb1-viride fact? 0= and  fiona -42.27e 0e -5.28e 5e 5e touches? and if  ['] the-viride calm-only offer  then
-    wtb1-pipe-3-burst fact?  wtb1-album-medallion fact? 0= and  fiona 84e 0e -220e 5e 5e touches? and if  ['] the-album calm-only offer  then
-    wtb1-beef-jerky fact? 0=  fiona 15.77e 0e -102.69e 5e 5e touches? and if  ['] the-jerky calm-only offer  then ;
+    wtb1-viride-found fact?  wtb1-viride fact? 0= and  fiona -42.27e 1e -5.28e 5e 5e touches? and if  ['] the-viride calm-only offer  then
+    wtb1-pipe-3-burst fact?  wtb1-album-medallion fact? 0= and  fiona 84e 1e -220e 5e 5e touches? and if  ['] the-album calm-only offer  then
+    wtb1-beef-jerky fact? 0=  fiona 15.77e 1e -102.69e 5e 5e touches? and if  ['] the-jerky calm-only offer  then ;
 : each-frame ( -- )
     events-held state? if  flames-stir exit  then
     1 1 leaves-by  cameras 15 cameras-at  ahead 1 ways-out

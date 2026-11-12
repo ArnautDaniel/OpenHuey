@@ -114,7 +114,7 @@ create looks  45.1e 0e 31.88e  28e 18e 18e look,   54.4e 0e -20.46e  25e 16e 16e
     figure-noticed 80 54.4e 0e -20.46e 25e 16e notices? if  ['] wary-of-it start drop  then
     looks 2 danger-now @ followed = hewie-looks-if
     fiona 5 in-area?  fiona 40 50 heading? and if  ['] the-transmuter unhurried offer  then
-    om1f-4-chicken-jerky fact? 0=  fiona -51.07e 0e 19.59e 5e 5e touches? and if  ['] take-jerky calm-only offer  then
+    om1f-4-chicken-jerky fact? 0=  fiona -51.07e 1e 19.59e 5e 5e touches? and if  ['] take-jerky calm-only offer  then
     incubators ;
 : person-in ( i -- )  fiona-p = if  0 0 0 way-in  then ;
 : went ( -- )  hopper-gone ;
