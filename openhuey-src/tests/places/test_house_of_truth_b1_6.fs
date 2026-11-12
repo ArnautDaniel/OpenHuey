@@ -38,8 +38,9 @@ full-suite   \ (on: waits, scenes, walks - the full run's)
 testing its inscription by the wall
 T{ inscription-area -45 at  said -> inscription-msg }T
 testing in by the forced way: at its spot, Hewie by her, the dark lifting
+game:fiona 1 1 cam-char-setup
 house-of-truth-b1-6 forced-exit rooms send go-to-room  [: doing-busy? 0= room-id house-of-truth-b1-6 = and ;] 600 soon drop  30 run-frames
-T{ [: fiona body-tri arrival-tri = ;] in-place  free? -> -1 -1 }T
+T{ [: fiona body-tri arrival-tri = ;] in-place  free?  game:fiona cam-setup-of -> -1 -1 0 0 }T
 testing out through a door into the dark
 room-afresh
 T{ 0 0 at  [: room-id house-of-truth-b1-6 <> world-held state-flag? or ;] 600 soon -> -1 }T

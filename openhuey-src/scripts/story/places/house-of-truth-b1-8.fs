@@ -10,7 +10,7 @@ own-reset  truth-owns owns !
 
 4 constant inscription-msg   \ "All colors must, in the end, form black. This is mankind's inevitable fate."
 : came-in ( exit -- )  drop  htb1-8-flag1 2 colour-in ;
-: each-frame ( -- )  inscription-msg colour-frame  2 way-on  3 htb1-5-flag1 house-of-truth-b1-5 not-yet ;
+: each-frame ( -- )  inscription-msg colour-frame  2 0 way-on  3 htb1-5-flag1 house-of-truth-b1-5 not-yet ;
 : person-in ( i -- )  fiona-p = if  came-by @ forced-exit = if  arrived  then  then ;
 : went ( -- )  colour-went ;
 

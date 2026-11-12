@@ -5,7 +5,7 @@
 \ sniffs out; the replay. Headless:
 \   build/openhuey --test tests/places/test_house_of_truth_1f_1.fs
 IN: test-house-of-truth-1f-1
-USING: tester engine game-state actors messages keys room-names game debug facts flag-names story-names
+USING: floor-flags tester engine game-state actors messages keys room-names game debug facts flag-names story-names
     stalker-names fiona.state story.kit items.names doors story.places.house-of-truth story.places.house-of-truth-1f-1 ;
 : window-shown ( -- msg )  game:window enter  window:shown @  leave-actor ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
@@ -50,6 +50,7 @@ lorenzo2-kind story.base:partner-load  5 run-frames  summoner-on state-flag-set 
 T{ [: movie-skipped state-flag-set  blast-seen resident-flag? ;] 2000 soon -> -1 }T
 T{ 1 [: part? ;] in-place  golden-candlestick items:items-of  blasted-door doors:door-locked?  summoner-on state-flag? -> -1 before @ 1- 0 0 }T
 T{ [: ['] lorenzo-lies running?  flame-lit @ ;] in-place  force-calm state-flag? -> -1 -1 -1 }T
+T{ $1C9 nav-flags  dup solid-floor and  swap keeps-hewie-off and 0<> -> 0 -1 }T   \ (where he lies: not solid this visit, kept off by Hewie - Action1's $1000010)
 300 play-on
 testing then the wreckage; its second steady sound
 ht1f-1-flag1 story-flag-set

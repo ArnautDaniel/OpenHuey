@@ -18,6 +18,7 @@ own-reset  truth-owns owns !
 own: hewie-at-wall         \ Hewie barking at the wall (his doing)
 own: pushed                \ she has shaken free of the trap
 own: searched              \ the stalker has searched her hiding place (as he found her hidden)
+own: search-started        \ ... begun with him already in the room (not as he came in)
 own: trapped               \ the trap scene's struggle under way
 own: drone-on   own: cool-down   own: pushing   own: last-shakes
 0 constant cane-part   5 constant tube-fx   $12 constant wall-area   $14 constant hiding-area   $11 constant trap-area
@@ -44,8 +45,8 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
     1 $2300 reverb ;
 
 \ ---- Hewie at the wall; his scene (her face for the scene in two of her costumes) ----
-: barks-at-wall ( -- )   \ (his doing: turned to it, barking, till she is chased)
-    hewie hold  -1 hewie-at-wall !  hewie wait-move  hewie -89e 75e turn-to-xz
+: barks-at-wall ( -- )   \ (his doing - still his own, at her commands: turned to it, barking, till she is chased)
+    hewie hold-free  -1 hewie-at-wall !  hewie wait-move  hewie -89e 75e turn-to-xz
     begin  hewie-bark  hewie wait-move  chased? until  0 hewie-at-wall ! ;
 : her-face ( -- )   \ (costume 3's, 2's)
     costume-var var@ case  3 of  0 0 s" O_FIO\FIO_201.TEX" face-on  endof  2 of  0 0 s" O_FIH\FIH_201.TEX" face-on  endof  endcase ;
@@ -106,12 +107,14 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
     4 1 2 object  27 frames  trap-close-sound -37e 0e 63e room-sound  begin  yield  again ;
 
 \ ---- the hiding place (the kit's); his search as he finds her hidden ----
+: door-if-by ( exit -- )   \ (his search begun here: a shut door only if he stands in its area)
+    search-started @ if  stalker over exit-area in-area? 0= if  drop exit  then  then  door-for-him ;
 : found-there ( -- )
-    stalker hold  0 door-for-him  1 door-for-him  $FE 180 45.21e 54.9e finds-her-at ;
+    stalker hold  stalker wait-move  0 door-if-by  1 door-if-by  0 search-started !  $FE 180 45.21e 54.9e finds-her-at ;
 : searched-hidden ( -- )   \ (by the odds - his searches counted - or seen, or a creature giving her away)
     -1 searched !  -1 came-while-hidden !
     searches-var mansion-odds chance?  stalker unseen? 0= or  2 creature-moving? or if  ['] found-there start drop
-    else  120 summoner-sooner  then
+    else  120 summoner-sooner  0 search-started !  then
     0 stalker-alert? if  2 stalker-order  then
     searches-var var@ 1+ searches-var var! ;
 : hides ( -- )  0 searched !  -1 hide-unseen !  hide-motions $FE 180 6 50.28e 39.2e hides-in ;
@@ -146,7 +149,11 @@ create ahead  2 , 0 ,  3 , 1 ,
 : shade ( -- )
     -72.3e 18e 56e  -85e 18e 56.4e  -72.3e -2e 51.4e  -85e -2e 51.4e  light-doorway
     72e 16e -0.1e  91.2e 16e -0.1e  72e 0e -2e  91.2e 0e -2e  light-doorway ;
-: hewie-at-it ( -- )   \ (file 255 found, the wall not yet opened: Hewie by it barks - down, he is helped up)
+: hewie-at-it ( -- )   \ (file 255 found, the wall not yet opened: Hewie by it barks - down, he is helped up;
+    \ gone from it - or down - he's done, again once he's back)
+    hewie-at-wall @  hewie wall-hewie-area in-area? 0=  hewie-cond-now @ down-cond = or  and if
+        ['] barks-at-wall stop-doing  hewie let-go  0 hewie-at-wall !
+    then
     found-file-255 fact?  ht1f-7-flag1 fact? 0= and  hewie wall-hewie-area in-area? and  hewie-at-wall @ 0= and  chased? 0= and if
         hewie-cond-now @ down-cond = if  1 hewie send heal  else  ['] barks-at-wall start drop  then
     then ;
@@ -160,7 +167,7 @@ create ahead  2 , 0 ,  3 , 1 ,
     ht1f-9-flag2 fact? 0=  ht1f-7-flag3 fact? 0= and  fiona creature-area entered? and if
         ht1f-7-flag3 fact!  this-room @ 0 235 $88 0 creature-in
     then
-    st-cond-now @ down-cond <>  fiona-hidden state? and  searched @ 0= and  stalker-in? and  stalker held? 0= and if  searched-hidden  then
+    st-cond-now @ down-cond <>  fiona-hidden state? and  searched @ 0= and  stalker-in? and  stalker held? 0= and if  -1 search-started !  searched-hidden  then
     trapped @  stalker near-trap-area in-area? and  ['] reaches-her running? 0= and if  ['] reaches-her start drop  then
     slam-shake  shade
     ht1f-9-flag2 fact?  drone-on @ 0= and if  drone  then

@@ -45,7 +45,7 @@ $24 constant searches-var   $803 constant crouch-step   $207 constant hauled-ste
         then
         hidden-calm  yield
     again ;
-: found-there ( -- )  stalker hold  $11F -5 40.89e -25.76e finds-her-at ;
+: found-there ( -- )  stalker hold  stalker wait-move  $11F -5 40.89e -25.76e finds-her-at ;
 : searched ( -- )   \ (he comes in on her hidden: the camera on him; found by the odds - his searches counted)
     stalker follow
     searches-var mansion-odds chance?  2 creature-moving? or if  ['] found-there start drop  else  120 summoner-sooner  then

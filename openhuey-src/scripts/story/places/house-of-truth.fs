@@ -12,7 +12,9 @@ own-reset
 
 \ ---- its own state (a visit) ----
 own: through-reacted       \ out through a door already (once a visit)
-own: all-four              \ the four colours done as she neared the way on: the music let go with her
+own: all-four              \ the four colours done as she neared the way on: the music let go with her ...
+own: way-on-door           \ ... out by that one's door only (B1-5's 1, B1-8's 0)
+own: out-door              \ the door she goes out by (0, 1)
 owns @ constant truth-owns
 
 \ ---- Lorenzo's slam (his other form, kind $A - in 1F-9 also kind $27): its impact this frame shakes the camera ----
@@ -53,24 +55,24 @@ $129 constant arrival-tri   $EB constant his-arrival-tri
     this-room @ stalker-slot 1 doors-into  this-room @ hewie-slot 1 doors-into ;
 : comes-to ( -- )  fiona hold  fiona wait-move  15 screen:from-black fade  wait-fade ;   \ (an activity)
 : arrived ( -- )   \ (by the forced way: at the room's spot, Hewie by her; the dark lifting)
-    fiona arrival-tri -90 129e 0e place-at
+    fiona arrival-tri -90 129e 0e place-at  0 0 player-camera
     this-room @ 235 0 hewie-to  hewie his-arrival-tri -90 place-on-tri
     ['] comes-to start drop ;
 : through ( -- )   \ (out through a door: into the dark, the room ahead by the forced way)
     fiona hold
-    all-four @ if  no-track 1e background  keep-room-sounds state-off  then
+    all-four @  out-door @ way-on-door @ = and if  no-track 1e background  keep-room-sounds state-off  then
     15 screen:to-black fade  fiona wait-move  wait-fade  world-held state!  forced-exit take-exit ;
 : doors-through ( -- )   \ (into either door's area: out, once a visit)
     through-reacted @ if  exit  then
     fiona 0 in-area?  fiona 1 in-area? or 0= if  exit  then
-    -1 through-reacted !  ['] through fiona start-holding drop ;
+    fiona 0 in-area? if  0  else  1  then  out-door !  -1 through-reacted !  ['] through fiona start-holding drop ;
 : loads-ahead ( area room -- )  swap fiona swap entered? if  preload  else  drop  then ;   \ (into the area: that room loaded ahead)
 : colours-done? ( -- flag )  htb1-5-flag1 fact?  htb1-6-flag1 fact? and  htb1-7-flag1 fact? and  htb1-8-flag1 fact? and ;
 : not-yet ( area fact room -- )   \ (that colour's room ahead while it isn't done; else back to the white)
     rot fiona swap entered? 0= if  2drop exit  then
     swap fact? if  drop house-of-truth-b1-4  then  preload ;
-: way-on ( area -- )   \ (all four done: on to the 1F's room; else back to the white)
-    fiona swap entered? 0= if  exit  then
+: way-on ( area door -- )   \ (all four done: on to the 1F's room - the music let go out by that door; else back to the white)
+    way-on-door !  fiona swap entered? 0= if  exit  then
     colours-done? dup all-four !  if  house-of-truth-1f-2  else  house-of-truth-b1-4  then  preload ;
 variable said-msg
 : inscription ( -- )   \ (an activity: turned to the wall, the screen dimmed, read)
