@@ -108,7 +108,7 @@ create runs  $D8 , 89 ,  4 , 89 ,  $6A , -44 ,  $3F , -151 ,  $1B , 111 ,  $FA ,
     \ the middle; not while he's held: act01 started with mode 0)
     started-now @ go-there-cmd = 0= if  exit  then
     her-plate @ gear @ =  gear @ 1 <> and if  exit  then
-    gear @ aims pair@ s>f s>f fswap  fiona 50 faces-point?  hewie-breakable-now @ and  hewie held? 0= and if  ['] runs-to start drop  then ;
+    gear @ aims pair@ s>f s>f fswap  fiona 50 faces-point?  hewie-breakable-now @ and  hewie held? 0= and  ['] runs-to running? 0= and if  ['] runs-to start drop  then ;
 : sits ( -- )   \ (on a plate - not chased, at her command - he sits; past its wider zone he has left it)
     hewie-in?  hewie-cond-now @ well-cond = and 0= if  exit  then
     9 1 do

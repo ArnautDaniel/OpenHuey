@@ -198,7 +198,7 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
     fiona-cmd-now @ go-for-it-gesture <> if  exit  then
     3 0 do
         fiona i hole-areas swap cells + @ in-area? if
-            i hole-point fiona 60 faces-point?  hewie-breakable-now @ and if  i hole !  ['] hides start drop  then
+            i hole-point fiona 60 faces-point?  hewie-breakable-now @ and  hewie held? 0= and  ['] hides running? 0= and if  i hole !  ['] hides start drop  then   \ (act00, mode 0: not while he's held)
             unloop exit
         then
     loop ;

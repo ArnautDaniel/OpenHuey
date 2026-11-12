@@ -78,6 +78,8 @@ testing Hewie hides in the hole she signs at (lying in wait); out at her "come b
 scene-5-pending state-flag-clear  hewie-freed story-flag-set  hewie-commandable state-flag-set  room-afresh  game:hewie send join-fiona  60 run-frames
 5 -6e -12e aim
 T{ [: 0 fiona-cmd-now !  sign-to-hole  ['] hides running?  hole @ ;] in-place -> -1 0 }T
+: hides-count ( -- n )  0  story.kit:#activities 0 do  i story.kit:act-slot @ 0<>  i cells story.kit:act-xts + @ ['] hides = and  1 and +  loop ;
+T{ [: 0 fiona-cmd-now !  sign-to-hole  hides-count ;] in-place -> 1 }T   \ (signed again on his way: no second one - mode 0)
 T{ [: [: lying-down @ ;] in-place ;] 900 soon -> -1 }T
 T{ [: come-back-cmd started-now !  lying-in-wait  called-out @ ;] in-place -> -1 }T
 T{ [: [: ['] hides running? 0= ;] in-place ;] 900 soon  [: lying-down @ ;] in-place -> -1 0 }T
