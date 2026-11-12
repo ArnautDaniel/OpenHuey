@@ -47,6 +47,13 @@ room-afresh  cb1-6-flag1 story-flag-set
 T{ 7 his-blow!  [: strength-1 true weaker  strength-1 @  strength-1 true weaker  strength-1 @ ;] in-place -> 18 11 }T
 T{ -1 his-blow!  [: strength-1 true weaker  strength-1 @ ;] in-place -> 11 }T
 T{ [: strength-2 false weaker  strength-2 @ ;] in-place -> 20 }T   \ (her blow: 5)
+testing ... a blow lasting frames counts once (act 9 on its track, 20 frames)
+create blow-pt 3 floats allot
+: blow-held ( n F: x y z -- )   \ (her blow's point there for n frames, then gone)
+    blow-pt 2 floats + f!  blow-pt float+ f!  blow-pt f!
+    0 ?do  [: blow-pt f@  blow-pt float+ f@  blow-pt 2 floats + f@  body-point! ;] her  ['] stands-struck in-place  game-tick  loop
+    [: body-point-off ;] her ;   \ (the place's word run with it, as each frame does)
+T{ 4 10e 1e 37e blow-held  30 run-frames  [: strength-2 @ ;] in-place -> 15 }T
 cb1-6-flag1 story-flag-clear  room-afresh
 T{ 7 his-blow!  [: strength-1 true weaker  strength-1 @ ;] in-place -> 25 }T
 testing ... broken at 0: the stand gone, its fact
