@@ -40,10 +40,6 @@ $40080 constant sight-stops   \ (the floors her eye can't pass over)
     id in-sight? ;
 
 : clamp-pitch ( F: p -- p' )  -18e deg>rad fmax 45e deg>rad fmin ;
-: ease ( addr -- ) ( F: target step -- )   \ (Motion_EaseTilt: toward the target by at most step)
-    fabs {: a F: goal step :}
-    a f@ goal f- fabs step f<= if  goal a f! exit  then
-    a f@ goal f> if  a f@ step f-  else  a f@ step f+  then  a f! ;
 
 \ the head's bones turned by the angles (each frame, as she is posed)
 : turn-head ( -- )

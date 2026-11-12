@@ -305,13 +305,12 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     hewie -1 look-at  yield  hewie 10 idle  10 frames  hewie send hewie-stay ;
 : grate-stops ( -- )  -23.45e -10e 138e hewie-barks-at ;
 : dig-stops ( -- )  252.44e 0e -156.9e hewie-barks-at ;
-: calm-free? ( -- flag )  hewie-in?  hewie-cond-now @ well-cond = and  chased? 0= and  hewie-cmdable-now @ and ;
 : in-wire-zone? ( -- flag )  hewie 244.4e 11e 82.19e 44e 13e centred-in? ;
 : in-dig-zone? ( -- flag )  hewie 252.44e 0e -156.9e 48e 20e centred-in? ;
 : hewie-looks ( -- )   \ (once a visit each, well and calm: he stops at it; and each frame in its zone - not
     \ chased, or calm for the dig, and his to command, however he is - his eyes on it)
     hewie-in? 0= if  exit  then
-    calm-free? if
+    hewie-at-hand? if
         wire-noticed @ 0=  in-wire-zone? and if
             -1 wire-noticed !  50 chance? if  ['] wire-stops start drop  then
         then

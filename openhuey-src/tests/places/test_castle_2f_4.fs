@@ -8,7 +8,7 @@ USING: tester engine game-state actors messages keys room-names game debug facts
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
 : as-her ( xt -- x )  game:fiona enter  execute  leave-actor ;
 : in-place ( xt -- x )  room-id room-name actor-named enter  execute  leave-actor ;
-: doing-busy? ( -- flag )  [: false  #activities 0 do  i act-slot @ 0<>  i cells act-xts + @ ['] fan <> and  or  loop ;] in-place ;   \ (the fan: always)
+: doing-busy? ( -- flag )  [: false  #activities 0 do  i act-slot @ 0<>  i cells act-xts + @ ['] fan-turning <> and  or  loop ;] in-place ;   \ (the fan: always)
 : on-floor ( F: x y z -- x y' z )  {: F: x y z :}  x  x y z nav-floor drop  z ;
 : put ( deg F: x y z -- )  on-floor s>f tp-facing  [: her-at $28020018 v-tri-in her-tri ! ;] as-her  10 run-frames ;
 : at ( area deg -- )  >r area-middle drop r> put ;

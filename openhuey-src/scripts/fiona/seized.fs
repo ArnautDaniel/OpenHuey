@@ -115,7 +115,7 @@ create shakes-to-break  8 , 12 , 23 , 35 , 70 , 0 ,
     her-path her-at path-rest 0.2e f* her-led-step f!
     her-led-face f@ her-yaw f@ f- angle-wrap fabs 0.2e f* her-led-turn f!
     swap her-hit-who !  -1 her-led !  0 her-ended !
-    thrown-mode her-mode !  thrown-doing her-doing !  led-away-r her-sub !  fiona-struck s" danger" actor-named send danger-signal
+    thrown-mode her-mode !  thrown-doing her-doing !  led-away-r her-sub !  fiona-struck danger-id send danger-signal
     seized-sound 0 her-sound
     by-the-hand = if  led-by-hand-anim play-own  ['] led-by-hand  else  led-walking-anim play-own  ['] led-walking  then  her-act !
     true ;

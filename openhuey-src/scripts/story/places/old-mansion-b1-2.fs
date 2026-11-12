@@ -60,7 +60,6 @@ rubrum-vase $80101010 0 4 shard-look  rubrum-vase 0.5e 0.5e 0.25e 0.5e shard-uv 
 : the-shards ( -- )  fiona wait-move  fiona 0 turn  shattered-msg say ;
 
 \ ---- Daniella at the bare mirror: she smashes it in a rage ----
-: her-kind? ( -- flag )  partner-kind dup daniella-kind = swap kind34-kind = or ;
 : shards-from ( F: x y z floor -- )  {: F: x y z fl :}  $18181818 4 $B  x y z  0.4e 0e 0.2e 0.5e  fl shards ;
 : smashes ( -- )
     stalker hold  -1 smashing !  stalker daniella-motions motions-for  stalker wait-move
@@ -73,9 +72,9 @@ rubrum-vase $80101010 0 4 shard-look  rubrum-vase 0.5e 0.5e 0.25e 0.5e shard-uv 
     -57e 4e 104.5e -3.5e shards-from    -61e 4e 104.5e -3.5e shards-from
     stalker wait-anim  0 smashing ! ;
 : smash-due ( -- )
-    drawing @  omb1-2-breakable3-broken fact? or  omb1-2-flag1 fact? 0= or  her-kind? 0= or if  exit  then
+    drawing @  omb1-2-breakable3-broken fact? or  omb1-2-flag1 fact? 0= or  daniella-loaded? 0= or if  exit  then
     stalker mirror-area entered?  st-mode-now @ 0= and  stalker held? 0= and if  ['] smashes start drop  then ;   \ (act07, mode 0)
-: smash-given-up ( -- )  her-kind?  stalker held? and 0= if  0 smashing !  then ;
+: smash-given-up ( -- )  daniella-loaded?  stalker held? and 0= if  0 smashing !  then ;
 
 \ ---- as she comes in ----
 : viola-shows ( -- )  omb1-2-viola-medallion fact? 0= if  viola-fx 13.5e -9e -75e flicker-at  then ;
@@ -180,7 +179,7 @@ create far-looks  -101.62e 0e 100.21e  20e 6e 6e look,   -132.75e 0e 71.15e  20e
 : person-in ( i -- )
     fiona-p <> if  exit  then
     entries 6 ways-in  came-by @ dup 0 =  over 1 = or  over 4 = or  swap 5 = or if  1 map-page  then ;
-: went ( -- )  smashing @ if  omb1-2-flag1 fact!  omb1-2-breakable3-broken fact!  her-kind? if  true stalker send rage  then  then ;
+: went ( -- )  smashing @ if  omb1-2-flag1 fact!  omb1-2-breakable3-broken fact!  daniella-loaded? if  true stalker send rage  then  then ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-b1-2 place!
 ' items-used old-mansion-b1-2 items-here

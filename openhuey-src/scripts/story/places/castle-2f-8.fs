@@ -50,7 +50,6 @@ $16 constant emeth-seen   $17 constant meth-seen   \ (the system data's flags: t
 6 constant debilitas-6    \ (the stalker after it: Debilitas)
 2 constant kiln-light
 
-: daylight ( -- )  $84 $60 $3C $50 $24 $2A $2A $46 room-tint ;
 
 \ ---- it comes in ----
 : golem-before-kiln ( on -- )   \ (its floor: barred, its ring pushable, the stalkers kept off)
@@ -71,7 +70,7 @@ $16 constant emeth-seen   $17 constant meth-seen   \ (the system data's flags: t
     effects:rising-smoke
     the-vase as-it-stands
     golem-crumbled fact?  got-obsidian-choker fact? 0= and if  choker-fx 10e 1e -25e flicker-at  then
-    c2f-3-flag1 fact? 0= if  daylight  then
+    c2f-3-flag1 fact? 0= if  daylight-tint  then
     kiln-light 1.5e shadows-longer ;
 
 \ ---- the kiln: its glow pulsing, its light flickering ----
@@ -122,7 +121,7 @@ fvariable kiln-phase
         pulse-step @ $50 $24 $2A $2A $46 pulse-tint  pulse-step @ 1+ dup $60 > if  drop 0  then  pulse-step !  yield
     repeat
     15 screen:to-black fade wait-fade
-    daylight  golem-part show-part  golem-figure figure-out  fiona true shown  shot-off
+    daylight-tint  golem-part show-part  golem-figure figure-out  fiona true shown  shot-off
     panic-held state-off  no-pause state-off  15 fade-in
     calmed @ if  staring-msg say
     else
@@ -144,11 +143,11 @@ fvariable kiln-phase
 \ ---- the movies replayed (the extras: the golem's two scenes) ----
 : replay-done ( -- )  world-held state!  replay-over ;
 : replay-alive ( -- )
-    fiona hold  daylight  golem-kind golem-figure figure-in  yield  golem-kind true no-shadow
+    fiona hold  daylight-tint  golem-kind golem-figure figure-in  yield  golem-kind true no-shadow
     1 scenes:keyed-movie 0 load-scene  $F $3C movie-key  golem-part hide-part  fiona false shown  panic-eased
     if  -1 run-scene  then  golem-figure figure-out  fiona true shown  replay-done ;
 : replay-crumbles ( -- )
-    fiona hold  daylight
+    fiona hold  daylight-tint
     3 scenes:keyed-movie 2 load-scene  $F $96 movie-key  golem-part hide-part  fiona false shown  golem-dust-part show-part  panic-eased
     if  -1 run-scene  then  fiona true shown  replay-done ;
 : replaying ( -- )   \ (the extras' list: its rows for this room's two scenes)
@@ -198,9 +197,8 @@ fvariable kiln-phase
 \ ---- Hewie: what he sits by and looks at ----
 : by-the-golem ( -- )  43.743e 0e -29.309e hewie-sits-by ;
 : by-the-dust ( -- )  10e 0e -25e hewie-sits-by ;
-: calm-free? ( -- flag )  hewie-in?  hewie-cond-now @ well-cond = and  chased? 0= and  hewie-cmdable-now @ and ;
 : hewie-looks ( -- )
-    calm-free? hewie-noticed @ 0= and if
+    hewie-at-hand? hewie-noticed @ 0= and if
         golem-done fact? if
             golem-moved fact? if
                 hewie 43.743e 0e -29.309e 15e 20e centred-in? if  -1 hewie-noticed !  30 chance? if  ['] by-the-golem start drop  then  then

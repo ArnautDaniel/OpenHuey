@@ -51,8 +51,8 @@ it fades from and to.
    broadcasts `the-ending`, and the ending (the original's scene 5, `ending.md`) takes over.)
 
 The kind 0 sequence (the movie's: as these without the freeze, its music track 6 at once, the
-playing movie's last frame kept over the screen) and the special scene's (music by progress
-variable $2E) are left for when the story's scenes call for them.
+playing movie's last frame kept over the screen: `run-movie`) and the special scene's - the
+mini-game's run, its music by progress variable $2E (`challenge-track`) - are built.
 
 ## Status
 

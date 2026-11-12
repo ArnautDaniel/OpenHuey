@@ -96,7 +96,6 @@ defer ric-begin ( -- )
 
 \ ---- his blows ----
 : blow-entry ( -- addr )  blow-move @ move-of ;
-: blow-key? ( -- flag )  my-model @ 0 -1 1 motion-events 2 and 0<> ;
 : line-dist ( a b p -- ) ( F: -- d )   \ (Vec_LineDistance: p off the line a - b, across the floor)
     {: a b p :}
     b v.x sf@ a v.x sf@ f-  b v.z sf@ a v.z sf@ f-  {: F: lx lz :}
@@ -321,9 +320,8 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
 \ held whole (130) while beaten -; its while over, fading out by 4 a frame, then gone ----
 0 constant tint-still   1 constant tint-in   2 constant tint-out   3 constant tint-whole
 : beaten-now? ( -- flag )  cond @ down-cond = ;
-: in-her-room? ( -- flag )  in-game @ if  self body-room room-id =  else  false  then ;   \ (Npc_InPlayedRoom)
 : tint-show ( -- )
-    in-her-room? 0= if  exit  then
+    here-played? 0= if  exit  then
     -1 tint-shown !  beaten-now? if  tint-whole  else  tint-in  then  tint-fade ! ;
 : tint-fading ( -- )   \ (TintStalker_Fade)
     tint-fade @ case
@@ -344,7 +342,7 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
         beaten-now? 0= tint-fade @ tint-whole = and  or if  tint-show  then
         struck-or-down? 0= if  -1 tint-t +!  then
     then
-    tint-t @ 0=  in-her-room? and  tint-shown @ and  tint-fade @ tint-out <> and if  tint-out tint-fade !  then
+    tint-t @ 0=  here-played? and  tint-shown @ and  tint-fade @ tint-out <> and if  tint-out tint-fade !  then
     tint-fading
     tint-shown @ 0= unseen !
     tint-alpha f@ 128e fmin 128e f/  my-model @ actor act.alpha sf! ;
@@ -354,7 +352,7 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
 \ its marker (Kind12_ShowUp / EnterRoom: the Marker on it - the first kind, size 1 - as it comes
 \ into her room; done once it has gone from there: Marker_Draw)
 : kind12-marker ( -- )
-    in-her-room? if
+    here-played? if
         mark-id @ dup 0< 0= swap alive? and if  exit  then
         my-model @ -1 0 1e marker mark-id !  exit
     then

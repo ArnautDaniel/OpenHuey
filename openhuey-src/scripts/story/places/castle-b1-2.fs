@@ -30,7 +30,7 @@ own: crawl         \ her crawl's frames: the curtain goes by them
 1 constant locked-exit   $A constant smudged-door   $608 constant key-turn-anim
 $A constant toilets-area   $B constant water-area   $C constant shower-area
 $F constant search-var
-: daylight ( -- )  c2f-3-flag1 fact? 0= if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then ;   \ (the day's light)
+: daylight ( -- )  c2f-3-flag1 fact? 0= if  daylight-tint  then ;   \ (the day's light)
 
 \ ---- the curtain: drawn by her crawl's frames as she goes in or out ----
 : curtain ( a b F: t -- )  s" Cartain" morph ;

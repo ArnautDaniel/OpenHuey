@@ -40,7 +40,7 @@ $1002 constant down-anim
 $1003 constant get-up-anim
 \ ---- turning, a scene's pose ----
 $1300 constant turn-on-spot-anim
-$1301 constant scene-pose-anim
+$1301 constant dodge-anim
 \ ---- barking (Hewie_Bark: by his pose when calm, else by his mood) ----
 $1B00 constant bark-anim
 $1B01 constant bark-sitting-anim

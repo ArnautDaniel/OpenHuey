@@ -80,9 +80,8 @@ variable bridge-remarked  variable statue-remarked  variable medallion-noticed
 \ ---- Hewie's bark at the Medallion across the gap (once a visit), his look up there ----
 create medallion-look  -149.92e 60e -50.71e  54e 36e 36e look,
 : barks-across ( -- )  -149.92e 60e -50.71e hewie-barks-at ;
-: at-his-command? ( -- flag )  hewie-in?  hewie-cond-now @ well-cond = and  chased? 0= and  hewie-cmdable-now @ and ;
 : medallion-notice ( -- )
-    c2f-13-medallion fact?  hewie hewie-gap-area in-area? 0= or  medallion-noticed @ or  at-his-command? 0= or if  exit  then
+    c2f-13-medallion fact?  hewie hewie-gap-area in-area? 0= or  medallion-noticed @ or  hewie-at-hand? 0= or if  exit  then
     hewie -149.92e 60e -50.71e 54e 36e centred-in? 0= if  exit  then
     -1 medallion-noticed !  ['] barks-across start drop ;
 

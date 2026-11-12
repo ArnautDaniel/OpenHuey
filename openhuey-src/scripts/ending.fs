@@ -6,8 +6,8 @@
 \ her panics, the items found, Hewie's critical injuries, the enemies defeated - with the TYPE
 \ it earns, the values it came from highlighted. A button, then what it unlocked (the resident
 \ flags: the system data's, kept across games) and, for some types, a word for the word plate;
-\ the picture fades out and the game goes back to the title. (The original offers to save the
-\ clear data here, for a next game with it: not built.)
+\ the picture fades out, the clear data is offered to save (the sub screen's mode 9: the system
+\ data alone, the unlocks - not written meanwhile: saves.fs's hold) and the game goes back to the title.
 \
 \ The record is kept as the game goes: the time played here, the rest by their owners (facts.fs:
 \ panics, knock-outs; Hewie's counters, hewie/states.fs).
@@ -132,7 +132,7 @@ enum: ending-type  unjudged dog-beater fugitive top-breeder treasure-hunter warm
 \ ==== the stages ====
 : hold-world ( -- )  world-held state-flag-set  panic-held state-flag-set  1 still! ;
 : start ( -- )   \ the game is over: the record kept, the world let be, the staff roll
-    trust @ progress pr.hewie-trust l!
+    trust @ progress pr.hewie-trust l!  saves-id send hold-system   \ (its unlocks kept only if the clear data is saved)
     hold-world  movie-close  5 0 0 music-id send music-op  $FF bgm
     1e volume f!  0 step !
     s" STAFF_ROLL.SFD" movie-open if  staff-roll  else  staff-fade  then  stage ! ;
@@ -201,8 +201,12 @@ $1E end-msg + constant costumes-msg
         0 of  pic-in if  plate-msg show  next  then  endof
         1 of  closed? if  finish  then  endof
     endcase ;
-: done-frame ( -- )   \ (the picture out, the music stopped; back to the title)
-    pic-out if  $FF bgm  0 0 message-file drop  playing stage !  soft-reset  then ;
+: done-frame ( -- )   \ (the picture out, the music stopped; the clear-data save - the sub screen's mode 9 -
+    \ then back to the title: SceneEnding_SeqSave)
+    step @ case
+        0 of  pic-out if  $FF bgm  subscreen-id send save-clear  next  then  endof
+        2 of  0 0 message-file drop  playing stage !  soft-reset  endof
+    endcase ;
 
 \ ==== drawing (the PS2's 512 x 448: labels at x 32, values right-aligned at 480, a line
 \ every 32 from 96; the font 16 wide) ====
@@ -293,6 +297,7 @@ behaviour ending-the-story
   on the-ending ( -- )  stage @ playing = if  start  then ;
   on tick ( -- )  stage @ playing = if  time-played  else  frame  then ;
   on held-tick ( -- )  stage @ playing <> if  frame  then ;   \ (the world held: its own frames)
+  on clear-saved ( -- )  stage @ done = if  2 step !  then ;   \ (the sub screen shut)
   on menu-frame ( -- )  stage @ playing = if  time-played  then ;   \ (the menu up: the time goes on - not the pause's)
   on frame-end ( -- )  draw ;
 end-behaviour

@@ -47,7 +47,7 @@ $18 constant shelf-seen   $19 constant shelf-night-seen   $E constant shelf-door
 : awakened? ( -- flag )  c1f-3-flag1 fact? ;
 : he-hunts-elsewhere? ( -- flag )   \ (Debilitas in the game, not down, not here)
     debilitas?  st-cond-now @ down-cond <> and  st-room-now @ castle-1f-3 <> and ;
-: tinted ( -- )  night? 0= if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then ;
+: tinted ( -- )  night? 0= if  daylight-tint  then ;
 : frame-reached? ( frame -- flag )  cutscene-frame swap < 0= ;   \ (the scene's, the original's cue)
 : shot? ( shot -- flag )  cutscene-frame cutscene-shot-at = ;
 

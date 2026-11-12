@@ -55,7 +55,7 @@ own: was-idle              \ she stood idle as it gave
 create corner-look  -228.31e 60e 25.69e  35e 10e 0e look,
 : wary-on-balcony ( -- )  -231.29e 60e 30.58e hewie-stands-by ;
 : hewie-wary ( -- )
-    at-his-command? 0=  wary-noticed @ or if  exit  then
+    hewie-at-hand? 0=  wary-noticed @ or if  exit  then
     hewie -231.29e 60e 30.58e 50e 20e centred-in? if  -1 wary-noticed !  ['] wary-on-balcony start drop  then ;
 
 \ ---- every frame ----

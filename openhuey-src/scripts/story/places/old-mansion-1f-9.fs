@@ -57,15 +57,13 @@ create holes  $78 , $41 , $79 , $42 ,
 \ ---- the cage's window: the first time, Daniella's scene ----
 : hazy ( on -- )   \ (the scene's haze between its cues)
     dup haze-on !  if  effects:haze haze-fx effect!  else  haze-fx effect-off  then ;
-: till-shot ( n -- )  begin  cutscene-frame cutscene-shot-at over <> while  yield  repeat  drop ;
-: till-cue ( frame -- )  begin  cutscene-frame over < while  yield  repeat  drop ;
 : opening ( -- )   \ (its depth range opening from frame 1156: the far two on by 1 a frame up to 80 / 140)
     cutscene-frame 1156 - s>f {: F: d :}  1e 1e  d 40e f+ 80e fmin  d 100e f+ 140e fmin  depth-range ;
 : scene-looks ( -- )   \ (along the scene's shots and cues: her layer, the haze, the fog, the depth)
-    depth-range-off  1 till-shot  0 before-reflections-layer layer  3 till-shot  0 usual-layer layer
-    true hazy  5 till-shot  false hazy  6 till-shot
+    depth-range-off  1 wait-shot  0 before-reflections-layer layer  3 wait-shot  0 usual-layer layer
+    true hazy  5 wait-shot  false hazy  6 wait-shot
     begin  cutscene-frame $446 < while  $80808000 $404A6038 14e 420.732e fog  yield  repeat
-    $44E till-cue
+    $44E wait-scene-frame
     begin  cutscene-frame $484 < while  1e 1e 40e 100e depth-range  yield  repeat
     begin  cutscene-frame $4B0 < while  opening  yield  repeat
     depth-range-off  begin  cutscene-frame 0< 0= while  yield  repeat  wait-fade ;

@@ -33,6 +33,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 : open-costumes ( -- )  false open-screen  on-costumes mode !  start-costumes ;
 : open-options ( -- )  true open-screen  pg-options page !  -1 options-only ! ;   \ (the title's: SceneTitle_SeqOptions)
 : open-extras ( -- )  false open-screen  3 s" SUBSCR/SUBMG" background  on-extras mode !  start-extras ;   \ (the mini-game's menu: mode $A)
+: open-clear-save ( -- )  false open-screen  on-clear-save mode !  start-clear-save ;   \ (the ending's: mode 9)
 : open-results ( -- )  false open-screen  on-results mode !  start-results ;   \ (its results: mode $C)
 : open-gallery ( kind -- )   \ (the extras room's galleries: modes 8, $B, $D, $E, $F)
     false open-screen  4 over gallery-file background  start-gallery ;
@@ -48,6 +49,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
         2 of  open-plate  endof
         3 of  open-slots  endof
         8 of  gal-movies open-gallery  endof
+        9 of  -1 clear-asker !  open-clear-save  endof
         $B of  gal-models open-gallery  endof
         $D of  gal-music open-gallery  endof
         $E of  gal-art open-gallery  endof
@@ -57,6 +59,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 : shut-menu ( -- )   \ back to play: the world's frames again, the scripts' wait over
     options-only @ if  0 options-only !  pg-special page !  then
     gal-kind @ if  gallery-shut  then
+    mode @ on-clear-save = if  on-page mode !  clear-asker @ dup alive? if  send clear-saved  else  drop  then  then
     shut stage !  0 openness !  0 pause!  subscreen-wanted state-flag-clear  art-layer ui-clear  word-layer ui-clear ;
 
 \ ---- what is showing: its keys and its drawing ----
@@ -71,22 +74,23 @@ USING: engine game-state actors messages keys facts flag-names items items.table
         on-costumes of  costumes-keys  endof
         on-extras of  extras-keys  endof
         on-results of  results-keys  endof
+        on-clear-save of  clear-keys  endof
         on-gallery of  gallery-keys  endof
         on-page of
             page @ case  pg-files of  files-keys  endof  pg-map of  map-keys  endof
                          pg-options of  options-keys  endof  >r list-keys r>  endcase  endof
     endcase ;
 \ the machines' pages are the whole screen (nothing of the world behind): beyond the 4:3 frame
-\ on a wider window, black - faded in with the page
-: window-black ( -- )  art-layer 0 0 screen-size  openness @ 2* 255 min  ui-rect ;
+\ on a wider window, black - faded in with the page (subscreen/galleries.fs `page-black`)
 : draw-page ( -- )
     gal-kind @ if  gallery-view  mode @ on-box = if  box-view  then  exit  then
-    mode @ on-plate = if  window-black  plate-view exit  then
-    mode @ on-slots = if  window-black  slots-view exit  then
+    mode @ on-plate = if  page-black  plate-view exit  then
+    mode @ on-slots = if  page-black  slots-view exit  then
     mode @ on-saving = if  saving-view exit  then
     mode @ on-costumes = if  costumes-view exit  then
-    mode @ on-extras = if  window-black  extras-view exit  then
-    mode @ on-results = if  window-black  results-view exit  then
+    mode @ on-extras = if  page-black  extras-view exit  then
+    mode @ on-results = if  page-black  results-view exit  then
+    mode @ on-clear-save = if  clear-view exit  then
     mode @ on-box = if  art-layer page-words !  then   \ (the page under the box's shade)
     page @ case  pg-files of  files-view  endof  pg-map of  map-view  endof
                  pg-options of  options-view  endof  >r list-view r>  endcase
@@ -94,12 +98,12 @@ USING: engine game-state actors messages keys facts flag-names items items.table
     mode @ on-actions = if  actions-view  then
     mode @ on-box = if  box-view  then ;
 : draw-tab ( -- )   \ the tab and the item's picture, sliding in from the left (fading with it)
-    tab-slide @ >r
+    tab-slide @ {: s :}
     tab @ case
-        2 of  $AC $40 - r@ +  $60 $C r@ 2* part   $C0 $40 - r@ +  $8C $B r@ part  endof
+        2 of  $AC $40 - s +  $60 $C s 2* part   $C0 $40 - s +  $8C $B s part  endof
         3 of  $AC $60 $C $80 part   $C0 $8C $B $40 part  endof
-        4 of  $EC r@ -  $60 $C r@ 2* part   $100 r@ -  $8C $B r@ part  endof
-    endcase  r> drop ;
+        4 of  $EC s -  $60 $C s 2* part   $100 s -  $8C $B s part  endof
+    endcase ;
 : draw ( -- )
     frame!  art-layer ui-clear  word-layer ui-clear
     stage @ shut <> if  draw-page exit  then
@@ -109,7 +113,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 \ 1 - fade / 255 - the effects' master, the stream, the stage music) ----
 : sub-volume ( -- )
     255 openness @ - s>f 255e f/  {: F: v :}
-    1e v sound-volume!  v f>cell s" music" actor-named send music-duck  v stage-music-volume! ;
+    1e v sound-volume!  v f>cell music-id send music-duck  v stage-music-volume! ;
 
 \ ---- a frame with the world held ----
 : held-frame ( -- )
@@ -148,6 +152,7 @@ behaviour menu
   on frame-end ( -- )  draw ;
   on menu-mode ( mode -- )  opened-as ! ;
   on game-saved ( -- )  saved-now ;
+  on save-clear ( -- )  sender clear-asker !  open-clear-save ;
   on arrived ( room exit -- )  drop find-room ;        \ (Map_FindRoom as each room comes in)
   on map-turn-to ( page -- )  show-on-page ;            \ (the scripts' 0xD1; a save loaded: SceneGame_RoomIn)
   on write-save ( -- )  her-pg @ .  ." map-page-was" cr ;   \ (saves.fs) the map's page she is on (the save's +0x18F0)

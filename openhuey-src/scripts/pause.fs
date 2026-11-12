@@ -48,7 +48,7 @@ end-state
 
 \ ---- the sound turned down as far as it is open (duck: the effects' master, the stream, the
 \ stage music and the movie) ----
-: music-duck! ( F: v -- )  f>cell s" music" actor-named send music-duck ;
+: music-duck! ( F: v -- )  f>cell music-id send music-duck ;
 : duck-by ( F: down -- )   \ (pause.c duck)
     1e fswap f- 0e fmax 1e fmin  {: F: v :}
     1e v sound-volume!  v music-duck!  v stage-music-volume!  v movie-volume! ;

@@ -7,7 +7,7 @@ USING: engine keys subscreen.state ;
 : se ( id -- )  5 bank-sound ;
 : se-cursor ( -- )  $2A se ;   : se-decide ( -- )  $2B se ;   : se-cancel ( -- )  $2C se ;
 : se-buzzer ( -- )  $85 se ;   : se-page ( -- )  $87 se ;     : se-used ( -- )  $84 se ;
-: se-open ( -- )  $94 se ;     : se-close ( -- )  $95 se ;
+: se-saved ( -- )  $D se ;   : se-open ( -- )  $94 se ;     : se-close ( -- )  $95 se ;
 
 : confirm? ( -- flag )  cross button-pressed? ;
 : back? ( -- flag )  triangle button-pressed? ;
@@ -16,9 +16,6 @@ USING: engine keys subscreen.state ;
 
 \ the arrows: pressed, or held (the pad's repeat)
 variable arrows
-: arrow-keys ( i -- k1 k2 )   \ 0 up, 1 right, 2 down, 3 left
-    case  0 of  key: Up key: W  endof  1 of  key: Right key: D  endof  2 of  key: Down key: S  endof
-          >r key: Left key: A r>  endcase ;
 : repeats? ( frames -- flag )   \ held that long: pressed on its first frame, then the 13th, 15th, 17th...
     dup 1 = if  drop true exit  then
     dup 13 < if  drop false exit  then

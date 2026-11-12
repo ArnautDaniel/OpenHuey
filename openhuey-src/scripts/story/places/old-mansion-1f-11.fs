@@ -61,7 +61,6 @@ $13 constant mirror-area   $26 constant scene-figure   3 constant figure-slot
 : the-shards ( -- )  fiona wait-move  fiona 0 turn  shattered-msg say ;
 
 \ ---- Daniella at the bare mirror: she smashes it in a rage ----
-: her-kind? ( -- flag )  partner-kind dup daniella-kind = swap kind34-kind = or ;
 : shards-from ( F: x y z floor -- )  {: F: x y z fl :}  $20202020 4 7  x y z  0.4e 0e 0.2e 0.5e  fl shards ;
 : smashes ( -- )
     stalker hold  -1 smashing !  stalker daniella-motions motions-for  stalker wait-move
@@ -74,10 +73,10 @@ $13 constant mirror-area   $26 constant scene-figure   3 constant figure-slot
     -37e 54e 60e -3.5e shards-from   -41e 54e 60e -3.5e shards-from
     stalker wait-anim  0 smashing ! ;
 : smash-due ( -- )
-    drawing @  om1f-11-breakable-broken fact? or  om1f-11-flag1 fact? 0= or  her-kind? 0= or if  exit  then
+    drawing @  om1f-11-breakable-broken fact? or  om1f-11-flag1 fact? 0= or  daniella-loaded? 0= or if  exit  then
     stalker mirror-area entered?  st-mode-now @ 0= and if  ['] smashes start drop  then ;
 : smash-given-up ( -- )   \ (her smash cut short: the mirror hers again)
-    her-kind?  stalker held? and 0= if  0 smashing !  then ;
+    daniella-loaded?  stalker held? and 0= if  0 smashing !  then ;
 
 \ ---- what she may do here ----
 : collapsed ( deg -- )  fiona wait-move  fiona swap turn  collapsed-msg say ;
@@ -124,7 +123,7 @@ create ahead  4 , 0 ,   5 , 1 ,   \ (area, exit loaded ahead)
     fiona-p <> if  exit  then
     entries 4 ways-in  came-by @ 2 < if  2 map-page  then ;
 : went ( -- )
-    smashing @ if  om1f-11-flag1 fact!  om1f-11-breakable-broken fact!  her-kind? if  true stalker send rage  then  then
+    smashing @ if  om1f-11-flag1 fact!  om1f-11-breakable-broken fact!  daniella-loaded? if  true stalker send rage  then  then
     hewie-in?  hewie-cond-now @ down-cond = and  hewie 1 on-group? and if  1 hewie send heal  well-cond hewie send set-cond  then ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-11 place!

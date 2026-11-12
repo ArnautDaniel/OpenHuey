@@ -40,9 +40,7 @@ enum: mate-mood  by-him waiting following fleeing fleeing-through off-out off-th
 : anew ( mood -- )  mood!  -1 mate-exit ! ;                 \ (a mood about an exit not chosen yet)
 : mood? ( mood -- flag )  mate-mood @ = ;
 
-\ ---- the house's doors and halves (Rooms_*) ----
-: door-tri ( door room -- tri )   \ (Rooms_DoorTri: its triangle on that room's side - the original's measure of a link)
-    {: room :}  door-sides {: r0 e0 t0 r1 e1 t1 :}  r1 room = if  t1  else  r0 room = if  t0  else  -1  then then ;
+\ ---- the house's doors and tri-halves (Rooms_*) ----
 : door-beyond ( door room -- room' )   \ (Rooms_DoorLeadsTo)
     {: room :}  door-sides {: r0 e0 t0 r1 e1 t1 :}  r0 room = if  r1  else  r0  then ;
 : half-of ( room exit -- way )  dup 0< if  nip exit  then  0 exit-way ;   \ (Rooms_Side: the half an exit opens onto)
@@ -71,9 +69,8 @@ create ex-in /vec allot   create ex-out /vec allot   create ex-best /vec allot
     {: a b :}  b v.x sf@ a v.x sf@ f-  b v.z sf@ a v.z sf@ f-  vlen  b v.y sf@ a v.y sf@ f- fabs 3e f* f+ ;
 
 \ ---- her way (Fiona_HeadFor): planned to (tri, v) - not across the room's divider - 0 on it, -1 none ----
-: halves ( tri -- bits )  dup 0< if  drop 0 exit  then  nav-flags both-halves and ;
 : across-from-her? ( tri -- flag )
-    halves her-tri @ halves {: a b :}  a other-half = b one-half = and  a one-half = b other-half = and or ;
+    tri-halves her-tri @ tri-halves {: a b :}  a other-half = b one-half = and  a one-half = b other-half = and or ;
 : head-for ( tri v -- 0 | -1 )
     {: tri v :}  tri across-from-her? if  -1 exit  then
     her-path her-tri @ her-at tri v blocked-floor path-plan-curved 0> if  0  else  -1  then ;

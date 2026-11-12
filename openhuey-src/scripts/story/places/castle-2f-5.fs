@@ -51,23 +51,21 @@ $E constant first-fragment   11 constant #fragments   \ (its objects a_fragment0
 
 \ ---- the mirror's scene: as it goes, the mirror cracks and shatters, its fragments flash, the
 \ door's glass over the whole picture a while, Daniella in a fragment; her face at the end ----
-: shot-wait ( shot -- )  begin  cutscene-frame cutscene-shot-at over <> while  yield  repeat  drop ;
-: cue-wait ( frame -- )  begin  cutscene-frame over < while  yield  repeat  drop ;
 : mirror-shots ( -- )
     whole-mirror mirror-as  false fragments
-    $A shot-wait  true door-glass
-    $A03 cue-wait  cracking-1 mirror-as
-    $B shot-wait  false door-glass
-    $A67 cue-wait  false fragments
-    $A70 cue-wait  cracking-2 mirror-as
-    $A89 cue-wait  cracking-3 mirror-as
-    $AB7 cue-wait  broken-mirror mirror-as  true fragments
-    $AE7 cue-wait  false fragments  true door-glass
-    $BF3 cue-wait  broken-mirror-2 mirror-as  false door-glass
-    $CD2 cue-wait  broken-mirror mirror-as
+    $A wait-shot  true door-glass
+    $A03 wait-scene-frame  cracking-1 mirror-as
+    $B wait-shot  false door-glass
+    $A67 wait-scene-frame  false fragments
+    $A70 wait-scene-frame  cracking-2 mirror-as
+    $A89 wait-scene-frame  cracking-3 mirror-as
+    $AB7 wait-scene-frame  broken-mirror mirror-as  true fragments
+    $AE7 wait-scene-frame  false fragments  true door-glass
+    $BF3 wait-scene-frame  broken-mirror-2 mirror-as  false door-glass
+    $CD2 wait-scene-frame  broken-mirror mirror-as
     begin  cutscene-frame cutscene-shot-at $10 <> while  fragment-glint  yield  repeat
     false door-glass
-    $11 shot-wait  daniella-kind 0 s" O_DNL\DNL_202.TEX" face-on ;
+    $11 wait-shot  daniella-kind 0 s" O_DNL\DNL_202.TEX" face-on ;
 : the-mirror ( movie? -- )   \ (Daniella in for it, before the reflections; back as she was)
     castle-2f-5 212 stalker-to  stalker 1 -1 camera-set  partner-kind before-reflections-layer layer
     ['] mirror-shots along-scene  panic-eased
@@ -86,7 +84,7 @@ $E constant first-fragment   11 constant #fragments   \ (its objects a_fragment0
     rest-msg yes? 0= if  exit  then
     15 screen:to-black-2 with-music or fade
     mirror-movie scenes:unseen-movie mirror-cutscene load-scene  wait-fade
-    c2f-3-tv-examined fact-off  tv-static-sound room-bank stop-sound  0 s" acoustics" actor-named send noise-setting
+    c2f-3-tv-examined fact-off  tv-static-sound room-bank stop-sound  0 acoustics-id send noise-setting
     hewie let-go
     the-mirror  wait-fade  world-held state!  0 rest-step !
     hewie activate  castle-2f-5 39 0 hewie-to  ['] hewie-comes-out start drop
@@ -107,17 +105,16 @@ $E constant first-fragment   11 constant #fragments   \ (its objects a_fragment0
 
 \ ---- hiding under the bed (the bedroom's); Daniella coming in while she hides: she searches ----
 : hides ( -- )  ['] noop ['] noop hide-under-bed ;
-: her-looker? ( -- flag )  st-kind-now @ dup daniella-kind = swap kind34-kind = or ;   \ (Daniella, as she comes)
 : looks-under ( -- )   \ (Daniella bends down to look under it - her hair over her back - the others see her)
     stalker-to-bed
-    her-looker? if  stalker use-motions  1 her-back  stalker room-motion play  0 her-back
+    daniella-here? if  stalker use-motions  1 her-back  stalker room-motion play  0 her-back
     else  stalker stalker.anims:there-anim play  then
     -1 found-her !  stalker 10 idle  begin  fiona held? while  yield  repeat  0 stalker-order ;
 : search-odds ( -- pct )   \ (by the story's variable 2: how often she has come)
     2 var@ case  2 of 25 endof  3 of 50 endof  >r 0 r>  endcase ;
 : stalker-came ( -- )
     came-on-her? 0= if  exit  then
-    her-looker? if  stalker looker-motions motions-for  then
+    daniella-here? if  stalker looker-motions motions-for  then
     search-odds chance?  2 creature-moving? or if  ['] looks-under start drop  else  120 summoner-sooner  then
     2 var@ 1+ 2 var! ;
 
@@ -126,23 +123,23 @@ $E constant first-fragment   11 constant #fragments   \ (its objects a_fragment0
     fiona wait-move  fiona 45 turn  saturnus-hint-on fact? if  sharp-glass-msg  else  pitch-black-msg  then  say ;
 : jerky ( -- )  chicken-jerky c2f-3-medallion sparkle-fx -9e -11e picks-up ;
 : by-the-bed ( -- )
-    bed-area 180 60 facing? 0= if  exit  then
+    bed-area 180 60 fiona-faces? 0= if  exit  then
     weak? if  ['] rests unhurried offer exit  then
     stalker-in? if  no-time-msg offer-remark-now  else  ['] hides hiding-spot offer  then ;
 : spots ( -- )
-    tv-area 180 90 facing? if  ['] tv unhurried offer  then
+    tv-area 180 90 fiona-faces? if  ['] tv unhurried offer  then
     by-the-bed
-    fire-area -134 60 facing? if  ['] remark-fire unhurried offer  then
-    portrait-1-area 90 60 facing? if  ['] portrait-1 unhurried offer  then
-    portrait-2-area 0 60 facing? if  ['] portrait-2 unhurried offer  then
-    portrait-3-area -90 60 facing? if  ['] portrait-3 unhurried offer  then
-    doll-area 0 50 facing? if  ['] doll unhurried offer  then
+    fire-area -134 60 fiona-faces? if  ['] remark-fire unhurried offer  then
+    portrait-1-area 90 60 fiona-faces? if  ['] portrait-1 unhurried offer  then
+    portrait-2-area 0 60 fiona-faces? if  ['] portrait-2 unhurried offer  then
+    portrait-3-area -90 60 fiona-faces? if  ['] portrait-3 unhurried offer  then
+    doll-area 0 50 fiona-faces? if  ['] doll unhurried offer  then
     fiona birdcage-area 50 faces-area? if  ['] birdcage unhurried offer  then
-    scales-area -90 50 facing? if  ['] scales unhurried offer  then
-    chest-area 180 50 facing? if  fg-3-flag3 fact? if  ['] chest-costumes  else  ['] chest  then  unhurried offer  then
-    window-area 44 60 facing? if  ['] window-night unhurried offer  then
-    window-2-area 44 60 facing? if  ['] window-2 unhurried offer  then
-    clock-area -90 50 facing? if  ['] save-clock calm-hewie-up offer  then
+    scales-area -90 50 fiona-faces? if  ['] scales unhurried offer  then
+    chest-area 180 50 fiona-faces? if  fg-3-flag3 fact? if  ['] chest-costumes  else  ['] chest  then  unhurried offer  then
+    window-area 44 60 fiona-faces? if  ['] window-night unhurried offer  then
+    window-2-area 44 60 fiona-faces? if  ['] window-2 unhurried offer  then
+    clock-area -90 50 fiona-faces? if  ['] save-clock calm-hewie-up offer  then
     weak?  2 locked-request? and if  ['] tired any-time offer  then
     c2f-3-medallion-found fact?  c2f-3-medallion fact? 0= and  fiona -9e 1e -11e 5e 5e touches? and if
         weak? if  ['] tired  else  ['] jerky  then  calm-only offer

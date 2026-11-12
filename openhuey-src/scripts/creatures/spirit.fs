@@ -89,7 +89,6 @@ $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)
 \ ---- hanging about her while she can't be reached (_StateHangAbout): a spot 10..25 before or
 \ behind her, turned at random, on a triangle not its own nor blocked; there, another ----
 create spot /vec allot   fvariable turn   fvariable off
-: turn-of ( k -- ) ( F: -- a )  dup 8 > if  8 - negate  then  s>f 0.3925e f* ;   \ (D_004167A0)
 : spot-at ( F: dx dz -- )   \ her place moved by (dx, dz)
     her-at v.z sf@ f+  spot v.z sf!   her-at v.x sf@ f+  spot v.x sf!   her-at v.y sf@ spot v.y sf! ;
 : spot-try ( i -- found? )
@@ -107,11 +106,31 @@ create spot /vec allot   fvariable turn   fvariable off
     my-path path-left? 0= if  -1 hang-again !  exit  then
     follow-path ;
 
-\ ---- off screen (creatures/trip.fs): to her exit at half its speed, its legs at its speed
+\ ---- she leaves by `exit` (CreatureA_FionaLeft): on its side of the room (its level; 2 both) with a
+\ path to the exit's far spot, it walks that off screen and goes through the door at the end - or,
+\ nearer her exit than she is, the door it last made for. No way to hers: its trip from here, door by
+\ door (the original's carries on with what it was counting down). Before 0.2.50 it went to her exit
+\ by the straight distance ----
+: on-my-side? ( exit -- flag )  level @ 2 = if  drop true exit  then  my-room @ swap 0 exit-way  level @ = ;
+: way-to-far? ( exit -- ok? )   \ (creature_exit_reachable: CreatureA_Path)
+    dup on-my-side? 0= if  drop false exit  then
+    far-spot dup 0< if  drop false exit  then
+    dup self body-tri across-divider? if  drop false exit  then
+    >r  my-path self body-tri my-at r> far path-mask path-plan 0> ;
+: head-out ( exit -- )
+    {: ex :}
+    trip trip-out  my-path trip t.path !  my-path path-clear
+    ex 0< if  exit  then
+    ex way-to-far? 0= if  exit  then
+    true trip t.walking !
+    ex her-at nearer-than? if  exit  then
+    trip ex path-mask straight-out ;
+
+\ ---- off screen (creatures/trip.fs): its path walked at half its speed, its legs at its speed
 \ (2/3 with company: the first leg only); not while the story keeps the stalkers where they are ----
 : pace ( F: -- s )  speed company @ if  1.5e f/  then ;
 : leg-ends? ( -- flag )   \ (a leg counted down this frame)
-    trip t.exit @ 0<  trip route-over? 0= and  trip t.leg sf@ pace f<= and ;
+    trip t.walking @ 0=  trip route-over? 0= and  trip t.leg sf@ pace f<= and ;
 : travel ( -- )
     stalkers-stay state-flag? if  exit  then
     speed f2/  pace  leg-ends? if  false company !  then
@@ -128,14 +147,14 @@ create spot /vec allot   fvariable turn   fvariable off
 : gone ( -- )   \ (_StateVanish's end) a red one shakes her; a blue one is heard in its room
     seen @ if
         red? if  grab-request my-at vec@ xyz>cells 0  her send fiona-request
-        else  vanish-noise my-room @ my-tri @ -1 world-noise  s" acoustics" actor-named send noise  then
+        else  vanish-noise my-room @ my-tri @ -1 world-noise  acoustics-id send noise  then
     then
-    unkeep  slot @ s" creatures" actor-named send creature-gone  self kill ;
+    unkeep  slot @ creatures-id send creature-gone  self kill ;
 : put-away ( -- )   \ (a room's: put away at its spot - Room4F / Room5C: the vanishing above it, blue
     \ or red, its burst's sound; out of play, unseen)
     red? if  $80 $30 $30  else  $30 $30 $80  then  $60
     my-at vec@ fswap  odd-one? if  -9e  else  0e  then  f+ 12e f+  fswap  vanish-new drop
-    burst-sound sound  unkeep  slot @ s" creatures" actor-named send creature-gone  self kill ;
+    burst-sound sound  unkeep  slot @ creatures-id send creature-gone  self kill ;
 : touching-her? ( -- flag )  in-play? 0= if  false exit  then  self her 0e 0e bodies-touching? ;
 
 \ ---- a frame (CreatureA_Frame, _Think) ----
@@ -199,9 +218,10 @@ behaviour spirit
   on fiona-doing ( mode sub cond cmd doing -- )  her-doing !  2drop drop  her-mode ! ;
   on fiona-plight ( state ladder reach -- )  her-reach !  2drop ;
   on leaving-room ( room exit -- )   \ she leaves: in her room and after her, it follows
-      over my-room @ = come @ and vanishing @ 0= and if  trip swap follow-out drop exit  then  2drop ;
-  on arrived ( room exit -- )   \ a room in: back on its floor if it's there, else out of play
-      2drop  in-play? if  on-the-floor  else  body-off  then  0 centred ! ;
+      over my-room @ = come @ and vanishing @ 0= and if  nip head-out exit  then  2drop ;
+  on arrived ( room exit -- )   \ a room in: back on its floor if it's there, else out of play (its body
+      \ kept while it walks its way out there)
+      2drop  in-play? if  on-the-floor  else  trip t.walking @ 0= if  body-off  then  then  0 centred ! ;
   on killed ( -- )  glow @ particles-free ;
   on put-away ( -- )  in-play? if  put-away  then ;
   on set-level ( level -- )  level ! ;   \ (its floor of a split room: a room's command - Room48)

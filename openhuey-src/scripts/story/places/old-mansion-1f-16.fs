@@ -40,7 +40,7 @@ own: locked-remarked  own: stood-in
     stalkers-stay state!  fiona hold  fiona waterway-exit to-door
     15 screen:to-black-2 with-music or fade  no-track 1e background
     waterway-movie scenes:keyed-movie waterway-cutscene load-scene  wait-fade
-    hewie let-go  0 s" creatures" actor-named send creatures-clear  $5A $FF movie-key  0 hide-part
+    hewie let-go  0 creatures-id send creatures-clear  $5A $FF movie-key  0 hide-part
     panic-eased  if  -1 run-scene  then
     world-held state!  waterway-door unlock  waterway-exit take-exit ;
 

@@ -70,11 +70,10 @@ create place-ys  370 , 224 , 330 , 224 , 224 , 224 , 224 , 224 ,
     right? if  1 along-row  else left? if  -1 along-row
     else up? if  picked @ 1- round picked !  else down? if  picked @ 1+ round picked !  then then then then
     picked @ was <> if  se-cursor  then ;
-: box-button? ( -- flag )  false  select-button 1+ 0 do  i start-button <> if  i button-pressed? or  then  loop ;
 : box-keys ( -- )
     shown @ message-layout drop
     choosing? if  choice-keys exit  then
-    box-button? if
+    any-button? if
         last-shown-page? 0= if  1 shown-page +!  exit  then
         answered
     then ;

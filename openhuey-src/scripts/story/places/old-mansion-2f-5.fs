@@ -39,12 +39,11 @@ $9004 $9005 lash-sound hop-sound  -3e 0e 43e -45e  hopper: the-figure
 
 \ ---- the hiding place (the kit's); the stalker's search ----
 : hides ( -- )  her-motions $106 180 2 -4.6e -231.1e hides-in ;
-: her-looker? ( -- flag )  st-kind-now @ dup daniella-kind = swap kind34-kind = or ;
 : looks-in ( -- )
     stalker hold  stalker wait-move  0 door-for-him  far-exit door-for-him
-    her-looker? if  stalker daniella-motions motions-for  then
+    daniella-here? if  stalker daniella-motions motions-for  then
     stalker $106 180 -4.6e -222e walk-to
-    her-looker? if  stalker use-motions  1 her-back  stalker room-motion play  0 her-back
+    daniella-here? if  stalker use-motions  1 her-back  stalker room-motion play  0 her-back
     else  stalker stalker.anims:there-anim play  then
     -1 found-her !  stalker 10 idle  begin  fiona held? while  yield  repeat  0 stalker-order ;
 : stalker-came ( -- )

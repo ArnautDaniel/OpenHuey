@@ -229,7 +229,10 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   exit-check: not locked, passable from their side, at their own pace; `exit-out` and `leaves-by`
   now go by it), Hewie's gesture while played (`gesture-now`, `played-gesture`; `wants-out?` - a
   hiding place left at his next command), `fiona-idle?` (Fiona_IsIdle), `stands-on?`,
-  `scene-shot?` / `scene-at?` / `scene-near-end?` (a scene's shot, cue, end), `clothes-changed`
+  `scene-shot?` / `scene-at?` / `scene-near-end?` (a scene's shot, cue, end; `wait-shot`,
+  `wait-scene-frame` in an activity), `fiona-faces?` (in an area, facing a way), `hewie-at-hand?`,
+  `hewie-kept-hidden`, `daniella-loaded?`, `daylight-tint`, `fan-turning` (each once copied room by
+  room - 0.2.50), `clothes-changed`
   (the costumes' menu closed: what she chose put on, his coat posed - `hewie-recoated`, from the
   bedroom).
 

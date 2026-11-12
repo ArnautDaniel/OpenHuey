@@ -42,12 +42,11 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
     candles-lit  $650 fact? if  $238 give-file  then ;
 
 \ ---- Hewie through a scene: down, hidden away; else let go, back by her after ----
-: hewie-held ( -- )  hewie hold  hewie false shown  begin  yield  again ;
 : hewie-for-scene ( -- )
     hewie-in? 0= dup hewie-away !  if  exit  then
-    hewie-cond-now @ down-cond = if  ['] hewie-held start drop  else  hewie let-go  then ;
-: hewie-down-hidden ( -- )  hewie-in?  hewie-cond-now @ down-cond = and if  ['] hewie-held start drop  then ;
-: hewie-back ( -- )  ['] hewie-held running? if  ['] hewie-held stop-doing  then  hewie true shown  hewie let-go ;
+    hewie-cond-now @ down-cond = if  ['] hewie-kept-hidden start drop  else  hewie let-go  then ;
+: hewie-down-hidden ( -- )  hewie-in?  hewie-cond-now @ down-cond = and if  ['] hewie-kept-hidden start drop  then ;
+: hewie-back ( -- )  ['] hewie-kept-hidden running? if  ['] hewie-kept-hidden stop-doing  then  hewie true shown  hewie let-go ;
 
 \ ---- the things to search: a spot of its own, its shot; the question ----
 : spot-at ( tri deg F: x z -- )
@@ -109,8 +108,7 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
 : still ( -- )  $19 0 still-msg -2e 24e 20e 20e 0e 1e a-trick ;
 
 \ ---- the locked door tried: the trap's end ----
-: till-shot ( n -- )  begin  cutscene-frame cutscene-shot-at over <> while  yield  repeat  drop ;
-: shadowless ( -- )  3 till-shot  0 true no-shadow  4 till-shot  0 false no-shadow ;   \ (her shadow off through two shots)
+: shadowless ( -- )  3 wait-shot  0 true no-shadow  4 wait-shot  0 false no-shadow ;   \ (her shadow off through two shots)
 : trap-shut ( -- )
     capture-no-end state!  no-pause state!  stalkers-stay state!  fiona hold  fiona trap-door to-door
     15 screen:to-black-2 with-music or fade  7 scenes:keyed-movie 6 load-scene  wait-fade
@@ -157,7 +155,6 @@ create looks  17.16e 0e 30.67e  22e 18e 18e look,   -33.99e 0e 32.91e  22e 18e 1
     else  room-sounds-in? if  hum-sound -32e 0e 21e room-sound  -1 hum-on !  then  then ;
 
 create cameras  1 , 0 , 0 ,   2 , 2 , 2 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   \ (area, set, path)
-: facing? ( area deg -- flag )  {: a d :}  fiona a in-area?  fiona d 50 heading? and ;
 : each-frame ( -- )
     hums  0 exit-out  cameras 4 cameras-at
     omb1-5-flag5 fact? 0=  omb1-5-flag4 fact? 0= and if
@@ -166,13 +163,13 @@ create cameras  1 , 0 , 0 ,   2 , 2 , 2 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   \ (area,
     then
     noticed-1 100 1.58e 0e -9.28e 16e 8e notices? if  ['] tense start drop  then
     looks 3 hewie-looks-at
-    5 0 facing? if  ['] wax unhurried offer  then
-    6 90 facing? if  ['] chess unhurried offer  then
-    7 -90 facing? if  ['] hourglass unhurried offer  then
-    8 -90 facing? if  ['] models unhurried offer  then
-    9 -90 facing? if  ['] flask unhurried offer  then
-    $A -90 facing? if  ['] kiln unhurried offer  then
-    $B 0 facing? if  ['] still unhurried offer  then
+    5 0 50 fiona-faces? if  ['] wax unhurried offer  then
+    6 90 50 fiona-faces? if  ['] chess unhurried offer  then
+    7 -90 50 fiona-faces? if  ['] hourglass unhurried offer  then
+    8 -90 50 fiona-faces? if  ['] models unhurried offer  then
+    9 -90 50 fiona-faces? if  ['] flask unhurried offer  then
+    $A -90 50 fiona-faces? if  ['] kiln unhurried offer  then
+    $B 0 50 fiona-faces? if  ['] still unhurried offer  then
     8 locked-request? if  ['] trap-shut any-time offer  then
     fiona cabinet-area in-area?  fiona 180 60 heading? and if
         stalker-in? if  no-time-message offer-remark-now

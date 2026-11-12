@@ -193,4 +193,5 @@ $280A0019 constant her-walk-stops   \ (the floors her walk there may not cross)
     his-mode @ meeting-mode = settled? and anim-group in-sitting = and  his-to-yaw f@ his-yaw f- angle-wrap fabs 1e-5 f< and   \ (facing it: his heading is a single float)
     her body-room his-room = and  his-meet @ 0< 0= and
     over 1- his-meet @ = and                                              ( type ok? )
-    dup if  over his-meet !  1 his-meet-part !  swap her-call  else  nip  then ;
+    dup if  over his-meet !  1 his-meet-part !  swap her-call  -1 his-meet !  else  nip  then ;   \ (the joint action begun: the link
+    \ taken up - Progress_RelationChanges resets it as the actions start; till then, Progress_IsLinked)

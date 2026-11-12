@@ -49,7 +49,7 @@ USING: engine game-state actors messages common vectors facts items.names fiona.
         running-group of  her-still @ 6 < if  run-look  else  0 her-rest !  0 her-run-t !  -1 idle-anim  then  endof
         >r  0 her-rest !  0 her-run-t !  -1 idle-anim  r>
     endcase ;
-defer exhausted   ' noop is exhausted   \ (Fiona_Exhausted: fiona.fear)
+defer exhausted ( -- )   ' noop is exhausted   \ (Fiona_Exhausted: fiona.fear)
 : stick-held ( -- )   \ the stick held: walk, or run with the run button (not under story flag 0x1E)
     stick-heading her-heading f!
     no-running state-flag? 0=  her-run? @ and if
@@ -170,7 +170,6 @@ $2018000 constant material-bits
         >r 0 4 r>
     endcase ;
 $14 constant rungs-sound
-: step-noise ( loud -- )  room-id her-tri @ -1 fiona-noise acoustics-id send noise ;
 : running-own? ( -- flag )  her-mode @ own-mode = her-sub @ run-sub = and ;
 : footsteps ( -- )
     her-tri @ 0<  world-held state-flag? or if  exit  then
@@ -183,10 +182,10 @@ $14 constant rungs-sound
     step 1 = foot-place
     wading? if  running-own?  foot-spot water-step  then   \ (running: the bigger ripple)
     her-mode @ ladder-mode = if  foot-spot ladder-floor  else  -1  then
-    dup rungs = if  drop  rungs-sound 4 0 0 her-pos sound-at  4 step-noise  exit  then
+    dup rungs = if  drop  rungs-sound 4 0 0 her-pos sound-at  4 noise-here  exit  then
     dup 0< if  drop  foot-spot blocked-floor v-tri-in dup 0< if  drop her-tri @  then  nav-flags  then
     step-sound {: base bank :}
     base her-steps @ 3 and +  bank  1 her-steps +!                          ( id bank )
     root-step fnip 0.4e f- 0.7e f/ 0e fmax 1e fmin 2e f* f>s $7F and         ( id bank pitch )
     her-boots soft-boots = if  -48  else  0  then  swap her-pos sound-at   \ (soft boots: softer, heard less)
-    running-own?  her-boots soft-boots = if  5 1  else  $14 4  then  ?  step-noise ;
+    running-own?  her-boots soft-boots = if  5 1  else  $14 4  then  ?  noise-here ;

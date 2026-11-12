@@ -6,7 +6,7 @@
 \ quicker (the director's rate 14). Its start hands the player Hewie (facts.fs hewie-played:
 \ progress +$1FBEC1) and restarts him, played; its stop gives Fiona back.
 IN: story.clock
-USING: engine game-state actors messages facts ps2-screen ;   \ (ps2-screen last: its sx / sy, not the story's)
+USING: engine game-state actors messages facts common ps2-screen ;   \ (ps2-screen last: its sx / sy, not the story's)
 
 17 constant clock-layer   \ (the UI layers: ... 16 the cursor's fill; 17 this)
 30 constant per-second
@@ -16,7 +16,6 @@ $FF6020FF constant clock-colour   \ (the original's 0x80 0x30 0x10: PS2 colours,
 : past-an-hour? ( frames -- flag )  per-second 3600 * < 0= ;
 
 create clock-text 5 allot
-: two-digits ( n at -- )  >r  10 /mod [char] 0 + r@ c!  [char] 0 + r> 1+ c! ;
 : mm:ss ( minutes seconds -- addr len )
     clock-text 3 + two-digits  clock-text two-digits  [char] : clock-text 2 + c!  clock-text 5 ;
 : time$ ( frames -- addr len )
@@ -30,7 +29,7 @@ create clock-text 5 allot
 : clock-off ( -- )  clock-layer ui-clear ;   \ (each frame before the rooms' hooks draw it again)
 
 : clock-start ( -- )   \ clock_start: Hewie played, afresh; the camera quicker along its paths; the time from 0
-    -1 hewie-played !  s" hewie" actor-named send hewie-restart  14e cam-rate!  0 progress pr.play-frames l! ;
+    -1 hewie-played !  hewie-id send hewie-restart  14e cam-rate!  0 progress pr.play-frames l! ;
 : clock-draw ( -- )  time-played time$ show ;                  \ clock_draw
 variable kept-over   variable kept-minutes   variable kept-seconds   \ (the time kept: an hour gone; else minutes, seconds)
 : clock-save ( -- )                                            \ clock_save (and for the results: subscreen/extras.fs)

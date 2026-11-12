@@ -154,7 +154,7 @@ $8000018 constant door-hit-floor
             her-fear-bits @ 2 and if  -1 her-fall-turn !  her-fall-yaw f@ her-yaw f!  flung-down-anim  else  thrown-back-anim  then
             -1 play-table
         then
-        her-fear-bits @ 2 and if  panic-scream-sound 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fear-set
+        her-fear-bits @ 2 and if  panic-scream-sound 0 her-sound  $6F noise-here  1000e f>cell panic-id send fear-set
         else  fall-sound 0 her-sound  $5F noise-here  then
         -1 her-wall-side !  ['] after-throw her-act !   \ (along a wall by whichever side it comes)
     then
@@ -192,7 +192,7 @@ $8000018 constant door-hit-floor
 : at-end? ( -- flag )  her-model @ actor act.mflags l@ $400 and 0<> ;   \ (its last frame: the motion's flag $400)
 : risen ( -- )  ended? if  30 her-stumble-t !  to-idle exit  then  root-move ;
 : after-fall ( -- )
-    at-end? if  75e f>cell s" panic" actor-named send threat  ['] risen her-act !  then
+    at-end? if  75e f>cell panic-id send threat  ['] risen her-act !  then
     root-move ;
 : spirit-fall ( -- )
     settled? if
@@ -221,7 +221,7 @@ create door-pt /vec allot
     then
     blocked-floor 1 or root-move-within
     her-fear-bits @ 2 and if
-        panic-scream-sound 0 her-sound  $6F noise-here  1000e f>cell s" panic" actor-named send fear-set
+        panic-scream-sound 0 her-sound  $6F noise-here  1000e f>cell panic-id send fear-set
     else  fall-sound 0 her-sound  $5F noise-here  then
     ['] after-throw her-act ! ;
 
@@ -237,7 +237,7 @@ create door-pt /vec allot
     endcase  ?dup if  fiona-jolt  else  drop  then ;
 
 : knocked-or-thrown? ( r -- flag )  dup thrown-r = swap step-knock-r grabbed-r within or ;
-: by-somebody? ( -- flag )  her-hit-who @ dup 0< if  drop false exit  then  s" hewie" actor-named <> ;
+: by-somebody? ( -- flag )  her-hit-who @ dup 0< if  drop false exit  then  hewie-id <> ;
 : room-to-throw? ( -- flag )   \ (Actor_TriFreeFor: not on a floor nothing stands on, nor at a door or a ladder)
     her-tri @ dup 0< 0= if  nav-flags doorway-or-step and if  false exit  then  else  drop  then
     at-a-door? by-a-ladder? or 0= ;
@@ -247,7 +247,7 @@ create door-pt /vec allot
 : struck ( kind how who -- taken? ) ( F: fright -- )
     her-hit-who !  her-hit-how !
     reaction dup 0< if  drop fdrop false exit  then
-    f>cell s" panic" actor-named send fright
+    f>cell panic-id send fright
     dup caught-r = charmed? and if  drop false exit  then   \ (wearing the charm: she can't be caught)
     her-doing @ door-doing = if  drop-door  then
     -1 her-fall-turn !  0 her-busy-t !  fiona.slam:recoil-off   \ (her own blow's hold on her let go)

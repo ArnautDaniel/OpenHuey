@@ -364,9 +364,8 @@ create looks  274.93e -1e -145.73e  20e 11e 11e look,
 : wary-by-wall ( -- )  -142.16e 0e 179e hewie-stands-by ;
 : barks-at-pond ( -- )  5.346e -9.5e 80.917e hewie-barks-at ;
 : barks-at-gate ( -- )  50e -10e 164.549e hewie-barks-at ;
-: at-his-command? ( -- flag )  hewie-in?  hewie-cond-now @ well-cond = and  chased? 0= and  hewie-cmdable-now @ and ;
 : hewie-notices ( -- )
-    at-his-command? 0= if  exit  then
+    hewie-at-hand? 0= if  exit  then
     voices-due?  wary-noticed @ 0= and  hewie -142.16e 0e 179e 75e 20e centred-in? and if
         -1 wary-noticed !  ['] wary-by-wall start drop
     then

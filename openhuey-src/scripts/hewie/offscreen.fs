@@ -19,9 +19,6 @@ defer when-idle ( -- )   ' noop is when-idle     \ Hewie_WhenIdle (hewie.mind)
     his-way @ dup -1 <> if  0 exit  then  drop
     his-door @ dup 0< if  drop -1  else  his-room swap 1 exit-way  then  hewie-kind ;
 : route-to ( to -- n )  {: dest :}  his-start {: way kind :}  his-room way dest -1 kind -1 his-avoid route-sides ;
-: door-tri ( door room -- tri )   \ (Rooms_DoorTri: its triangle on that room's side, -1 none)
-    {: room :}  door-sides {: r0 e0 t0 r1 e1 t1 :}
-    r1 room = if  t1  else  r0 room = if  t0  else  -1  then then ;
 : door-from-path ( -- )  0 route-door dup his-route-door !  his-room door-tri s>f his-left f! ;
 : door-usable? ( door -- flag )   \ (open or a doorway, not locked - nor against him: Progress_ExitPassable, slot 1)
     dup door-open?  swap hewie-kind doors:locked-against? 0= and ;

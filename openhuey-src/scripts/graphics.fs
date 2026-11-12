@@ -167,7 +167,7 @@ create controls-kept 64 cells allot
 : watch-controls ( -- )
     control-waiting 0< controls-changed? and if  keep-controls  testing? 0= if  save-controls  then  then ;
 
-defer save-graphics
+defer save-graphics ( -- )
 : (save-graphics)
     settings-file to-file
     ." \ graphics settings, saved from the menu (F1)" cr

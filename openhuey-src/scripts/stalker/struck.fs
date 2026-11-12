@@ -30,14 +30,15 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
     avoid-clear  way-home ;   \ (afresh: the doors that let him down on his way home kept till then)
 : give-up ( -- )   \ (out by the first door of his way home; in one of his rooms, to its spot)
     0 hits !  give-up-cry 7 sound  held-off mode!  no-search search-phase !
-    making-for @ 0< if  come-into-play  else  making-for @ leave-by  then  heading-home ;
+    making-for @ 0< if  to-own-spot  else  making-for @ leave-by  then  heading-home ;
 :noname ( -- flag )  give-up? dup if  give-up  then ; is gave-up?
 \ on as before by his stance (Pursuer_StanceByFiona, PickStep): held off, on home; seeing her,
 \ his chase; else after her, or searching
 :noname ( -- )   \ (held off: on home - no way there even with the doors that let him down forgotten, after
-    \ her again: Debilitas_CarryOn's retry, his clock emptied - Pursuer_ModesSearching's mode 4 ends)
+    \ her again: Debilitas_CarryOn's retry, his clock emptied - Pursuer_ModesSearching's mode 4 ends; in one
+    \ of his own rooms to its spot - Pursuer_PickStep's mode 4, Debilitas_GoForFiona: action 4, then $25)
     way-home 0= if  avoid-clear  way-home 0= if  after-her mode!  chase-start exit  then  then
-    making-for @ 0< if  come-into-play  else  making-for @ leave-by  then  heading-home ; is off-home
+    making-for @ 0< if  to-own-spot  else  making-for @ leave-by  then  heading-home ; is off-home
 : on-as-before ( -- )
     my-mode @ held-off = if  off-home exit  then   \ (held off already: on home)
     sees-fiona @ if  chase-begin  else  my-mode @ after-her = if  chase-start  else  search-again  then  then ;
@@ -122,6 +123,30 @@ $7FFF constant loops-mask
 \ Hewie letting go of his leg, on his front; lying while he's down for good, a blow then a
 \ twitch (the lying's one before); up (the one after) ----
 enum: down-stage#  falling lying twitching getting-up ;
+\ a door of the room being used - held - while he is in its area (Pursuer_DoorNear, Npc_DoorOnWay)
+: door-in-my-way ( -- exit | -1 )   \ (a door someone else holds, he in its area)
+    8 0 do
+        i door-here? if
+            room-id i room-exit-door  dup 0< 0=  swap doors:door-held? and
+            held-door @ i <> and  i 0 my-at vec@ door-in-area? and if  i unloop exit  then
+        then
+    loop  -1 ;
+\ down, such a door (Pursuer_DoorNear's move part $A: action $11 - Pursuer_DoorWalk, DoorPushThrough,
+\ Door214): where it leads out of the room it pushes him as it swings (3 a frame, away from her side),
+\ and let go, he is through it lying as he was; between his room's halves he lies on
+: door-leads-out? ( exit -- flag )  my-room swap room-exit-leads drop  my-room <> ;
+: door-on-him? ( -- flag )   \ (each frame he is down: true while a door has him)
+    push-exit @ 0< if
+        here-played? 0= if  false exit  then
+        door-in-my-way  dup 0< if  drop false exit  then
+        dup door-leads-out? 0= if  drop false exit  then
+        dup push-exit !  door-heading push-way f!
+    then
+    room-id push-exit @ room-exit-door doors:door-held? if
+        push-exit @ door-animating? if  pushed  then  true exit
+    then
+    cond @ down-cond <> if  0 reeling !  then
+    push-exit @ making-for !  -1 push-exit !  out  true ;
 create ahead-at /vec allot
 : floor-ahead? ( -- flag )
     yaw self body-dims fswap fdrop ahead-at my-at vec-ahead
@@ -133,6 +158,7 @@ create ahead-at /vec allot
     at-door? 0= if  exit  then
     1 hp !  cond @ down-cond = if  well-cond cond !  0 down-t !  -1 knockouts +!  up-after-all  then ;
 : downed ( -- )
+    down-stage @ getting-up <> if  door-on-him? if  exit  then  then
     root-move
     down-stage @ case
         falling of  doorway-revive  ended? if  lie-anim @ play-now  lying down-stage !  then  endof
@@ -221,13 +247,6 @@ create tackle-cells  0 , 2 , 1 , 3 ,     \ (by dir)
 \ ---- a door of the room being used - held - while he stands in its way (each frame: Pursuer_DoorNear,
 \ Npc_DoorOnWay; his action $10: Pursuer_DoorBackAway / DoorBackOff): he steps back from it ($404),
 \ turned to it, away from the side she is on, till it is let go; after her from then (his lead 6 / 7) ----
-: door-in-my-way ( -- exit | -1 )   \ (a door someone else holds, he in its area)
-    8 0 do
-        i door-here? if
-            room-id i room-exit-door  dup 0< 0=  swap doors:door-held? and
-            held-door @ i <> and  i 0 my-at vec@ door-in-area? and if  i unloop exit  then
-        then
-    loop  -1 ;
 : backing-from-door ( -- )
     push-way f@ pi f+ angle-wrap turn-rate body-turn-toward fdrop
     ended? 0= if  root-move  then

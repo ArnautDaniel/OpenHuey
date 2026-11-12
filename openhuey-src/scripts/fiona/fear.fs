@@ -152,7 +152,7 @@ create next-at /vec allot
 : costume ( -- n )  $26 progress pr.vars + c@ ;
 create behind-pt /vec allot   \ (her radius behind her: a door slammed as she turns from it)
 : backstep ( -- )   \ (Fiona_StateFleeTurn, anim $403: she steps back along her root step, turning to the heading)
-    ended? if  backstep-reaction s" hewie" actor-named send reaction  to-idle exit  then   \ (Hewie told)
+    ended? if  backstep-reaction hewie-id send reaction  to-idle exit  then   \ (Hewie told)
     events-now 2 and if  own-mode her-mode !  0 her-out-of-reach !  costume frog-outfit <> if  10e add-fear  then  then
     events-now $20 and if
         her-yaw f@ pi f+ angle-wrap self body-dims fdrop behind-pt her-at vec-ahead  behind-pt false slam-door drop

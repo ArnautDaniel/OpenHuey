@@ -47,11 +47,10 @@ create flames  -19.7e f, 22.5e f,  -19.7e f, 25e f,  -17.2e f, 22.4e f,  -17.2e 
     candles-lit  1 $2300 reverb  scene-figure 3 figure-in ;
 
 \ ---- Hewie through a scene: down, hidden away till it's over; else let go ----
-: hewie-held ( -- )  hewie hold  hewie false shown  begin  yield  again ;
 : hewie-for-scene ( -- )   \ (here: down, held hidden; else let go - not here, away)
     hewie-in? 0= dup hewie-away !  if  exit  then
-    hewie-cond-now @ down-cond = if  ['] hewie-held start drop  else  hewie let-go  then ;
-: hewie-back ( -- )  ['] hewie-held stop-doing  hewie true shown  hewie let-go ;
+    hewie-cond-now @ down-cond = if  ['] hewie-kept-hidden start drop  else  hewie let-go  then ;
+: hewie-back ( -- )  ['] hewie-kept-hidden stop-doing  hewie true shown  hewie let-go ;
 
 \ ---- a Godstone laid on the scales: level, the great door unlocked ----
 : godstone-shown ( -- )   \ (through its scene: the stone on the pan)
@@ -81,7 +80,7 @@ create flames  -19.7e f, 22.5e f,  -19.7e f, 25e f,  -17.2e f, 22.4e f,  -17.2e 
     panic-eased  if  -1 run-scene  then ;
 : lays-ore ( -- )
     stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade  wait-fade
-    hewie-in?  hewie-cond-now @ down-cond = and if  ['] hewie-held start drop  then
+    hewie-in?  hewie-cond-now @ down-cond = and if  ['] hewie-kept-hidden start drop  then
     ore-scene  wait-fade  ['] ore-shown stop-doing
     laid @ spend  stones-hidden  chains-shown  true scales
     fiona 0 idle  fiona $158 180 5.733e 23.039e place-at  camera-restart  hewie-back

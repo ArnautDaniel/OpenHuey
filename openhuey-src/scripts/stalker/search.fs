@@ -14,7 +14,6 @@ enum: search-phase#  no-search to-stop at-the-stop ;
 : stop ( k -- addr )  2* cells stops + ;
 : route-clear ( -- )   \ Pursuer_ClearRoute
     8 0 do  -1 i stop !  0 i stop cell+ !  loop  0 route-next !  0 route-end !  0 search-cap ! ;
-: stops-left ( -- n )  route-end @ route-next @ - ;
 : route-add ( tri random? -- )   \ Npc_RouteAdd (full, or no triangle: not added)
     over 0<  route-end @ 8 < 0= or if  2drop exit  then
     route-end @ stop  tuck cell+ !  !  1 route-end +! ;
@@ -188,6 +187,12 @@ defer lead-taken? ( -- flag )   ' false is lead-taken?   \ (a lead he heard: sta
 defer starting? ( -- flag )   ' false is starting?      \ (starting at one)
 defer leads-forgotten ( -- )   ' noop is leads-forgotten
 : search-again ( -- )  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  search-stops add-stops  capped  search-start ;
+\ his lead as he loses her (Pursuer_StanceStep / ModesSearching's mode 0): searching her room 3, alarm 4;
+\ out of her sight - his clock out there, no way to her, she gone by a door - 2, alarm 3 (Hewie's
+\ pull, 1, no longer draws him; the original forgets it only at what it led to: Pursuer_PlanToGoal)
+: lead-searching ( -- )  3 lead !  4 lead-alarm ! ;
+: lead-trailing ( -- )  2 lead !  3 lead-alarm ! ;
+: gave-her-up ( -- )  search-again  lead-searching ;   \ (his clock out in her room)
 \ met in a room he was searching out of her sight (Pursuer_SearchOffscreen): on with the stops his
 \ time left there would take (150 frames each); none, he is waiting about
 : search-left ( frames -- )
@@ -199,9 +204,9 @@ create drawn-at /vec allot
 : go-for-doll ( tri -- )
     dup drawn-tri @ = if  drop exit  then
     dup drawn-tri !  searching mode!  route-clear  0 route-add  search-start ;
-\ down (+0xC4 2): waiting about, nothing else (Pursuer_ModesSearching - in the room or out of it)
+\ down (+0xC4 2): waiting about, his leads forgotten, nothing else (Pursuer_ModesSearching - in the room or out of it)
 : down-waits? ( -- flag )
-    cond @ down-cond = dup if  my-mode @ waiting-about <> if  waiting-about mode!  then  then ;
+    cond @ down-cond = dup if  my-mode @ waiting-about <> if  waiting-about mode!  leads-forgotten  then  then ;
 : no-way-search? ( -- flag )  my-mode @ searching =  search-phase @ no-search <> and  d-fiona f@ f0< and ;
 : modes ( -- )
     here-played? 0= if  exit  then
@@ -232,7 +237,7 @@ create drawn-at /vec allot
     then
     my-mode @ held-off <> if  lead-taken? if  exit  then  then   \ (held off a lead moves him no more than the sight of her: no mode of Pursuer_ModesSearching's follows it)
     my-mode @ case
-        after-her of  tick-down if  search-again  then  endof
+        after-her of  tick-down if  gave-her-up  then  endof
         heading-for-her of  search-again  endof
         searching of  route-done @ if  0 route-done !  waiting-about mode!  leave-at-random  then  endof   \ (his route over:
         \ Pursuer_GoAfterFiona - Pursuer_PlanWhere's mode 3 - out of the room by an exit at random)

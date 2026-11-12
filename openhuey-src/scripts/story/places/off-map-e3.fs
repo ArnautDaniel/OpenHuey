@@ -21,7 +21,7 @@ own: her-held         \ Fiona in a cupboard this frame (held by it: kept for the
 $2E constant run-kind-var   0 constant her-motions   $31 constant search-var   2 constant plywood-floor
 : came-in ( exit -- )
     drop  0 0 -35.8e -50.5e -27.25e flame-at
-    run-kind-var var@ 1 = if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then
+    run-kind-var var@ 1 = if  daylight-tint  then
     1 -19.5e -26e -31e  4e 4e 100e 0e 10e wanderer-at  2 -53e -22e -11e  4e 5e 80e 0e 30e wanderer-at
     3 hide-part  4 hide-part  plywood-floor barred-floor floor-off  1 $2300 reverb ;
 

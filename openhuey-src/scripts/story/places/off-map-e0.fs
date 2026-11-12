@@ -20,13 +20,12 @@ own: her-held    \ Fiona in the wardrobe this frame (held by it: kept for the ro
 
 $2E constant run-kind-var   1 constant her-motions   $30 constant search-var
 9 constant room-loop-sound   5 constant first-ambient   $1A constant door-fx   $1B constant window-fx   $40 constant glass-strength
-: fan-turning ( -- )  begin  s" fan" 0.0200713e object-turn  yield  again ;   \ (1.15 degrees a frame)
 : glass ( -- )
     door-fx false glass-strength  40.491e 30e -10.498e  49.502e 30e -19.509e  40.491e 1.5e -10.498e  49.502e 1.5e -19.509e  door-glass-in
     window-fx glass-strength  0.491e 22e 69.502e  9.502e 22e 60.491e  0.491e 0e 69.502e  9.502e 0e 60.491e  window-in ;
 : came-in ( exit -- )
     drop  room-sounds  0 show-part  ['] fan-turning start drop  1 hide-part
-    run-kind-var var@ 1 = if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then
+    run-kind-var var@ 1 = if  daylight-tint  then
     glass ;
 
 \ ---- the run set out ----

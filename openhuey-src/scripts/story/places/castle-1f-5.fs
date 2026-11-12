@@ -135,7 +135,7 @@ create locked-doors   2 , $34 , $62 , $44 , $47 , $4F , $56 , $67 , $7D , $51 , 
     drop  room-sounds  0 his-scene !
     the-vase as-it-stands
     the-vase broken?  c1f-5-antimony-powder fact? 0= and if  antimony-fx 41e 1e -19e flicker-at  then
-    night? 0= if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then
+    night? 0= if  daylight-tint  then
     flames-lit
     c1f-6-flag1 fact?  over-music-b fact? 0= and if  hewie let-go  then
     1 $2300 sound-reverb! ;

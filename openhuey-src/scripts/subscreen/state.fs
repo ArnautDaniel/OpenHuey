@@ -17,6 +17,7 @@ USING: engine actors ;
 8 constant on-extras      \ the mini-game's menu (the scripts' mode $A)
 9 constant on-results     \ its results (mode $C)
 10 constant on-gallery    \ one of the extras room's galleries (gal-kind: which - galleries.fs)
+11 constant on-clear-save \ the clear-data save (the ending's last: the scripts' mode 9)
 \ the galleries: the movies (mode 8), the models ($B), the music ($D), the art ($E), the TYPE ranks ($F)
 1 constant gal-movies   2 constant gal-models   3 constant gal-music   4 constant gal-art   5 constant gal-types
 \ the pages, in the order L1 / R1 turn them: the three item lists, the map, the files, the options
@@ -77,7 +78,7 @@ state: subscreen-state
   cell field blink-t
   \ the save slots
   cell field save-at      \ the slot chosen
-  cell field save-step    \ 0 choosing, 1 asked to write over it, 2 writing, 3 saved
+  cell field save-step    \ 0 choosing, 1 asked to write over it, 2 writing, 3 saved; the clear data's 10 / 11 asked (saving.fs)
   cell field save-yes     \ (asked) yes picked
   cell field save-t       \ (saved) frames shown
   \ the wardrobe
@@ -88,6 +89,7 @@ state: subscreen-state
   \ the tab (an item the story hands her)
   cell field tab          \ 0 none, 2 sliding in, 3 shown, 4 sliding out
   cell field tab-slide    cell field tab-asker
+  cell field clear-asker  \ who asked for the clear-data save (told `clear-saved` once it is shut)
   \ the mini-game's menu: its entries (0 the introduction, 1..4 the challenges, 5 exit), how many,
   \ the cursor; its results: the step (30 frames each), the frames to the next, the time's rank
   \ (-1 none), a challenge newly unlocked, the banner's pulse and its way

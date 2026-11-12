@@ -146,8 +146,6 @@ $2A constant cursor-sound   $2B constant decide-sound   $2C constant cancel-soun
 
 \ ---- a page turned or the message closed (Task_StateNextPage / WaitButton: Select, L1, R1 and
 \ the face buttons - the pad's 0xFC01) ----
-: page-button? ( -- flag )
-    false  select-button 1+ 0 do  i start-button <> if  i button-pressed? or  then  loop ;
 : next-page ( -- )  1 page +!  0 typed ! ;
 : closes-itself ( -- )   \ (0x10 n: n frames after it is typed; 0: left up, no button closes it)
     message-close-after ?dup if  typed @  page @ message-typed -  <= if  close  then  then ;
@@ -157,7 +155,7 @@ $2A constant cursor-sound   $2B constant decide-sound   $2C constant cancel-soun
     then
     last-page? message-close-after 0< 0= and if  closes-itself exit  then
     choosing? if  choice-keys exit  then
-    page-button? if  last-page? if  close  else  next-page  then  then ;
+    any-button? if  last-page? if  close  else  next-page  then  then ;
 
 behaviour showing
   on spawned ( -- )  none shown !  self subscribe tick  self subscribe frame-end ;

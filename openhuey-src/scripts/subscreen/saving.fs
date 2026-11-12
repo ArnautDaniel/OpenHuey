@@ -5,7 +5,7 @@
 \ says so a moment and the menu closes. (The original's memory card screens are its own; this is
 \ hga's: its saves are files - saves.fs.)
 IN: subscreen.saving
-USING: engine actors messages keys saves subscreen.state subscreen.art subscreen.input ;
+USING: engine actors messages keys common saves subscreen.state subscreen.art subscreen.input ;
 
 \ where a save is made (D_00412800: room, map -> its place's name, the menu's messages $300..;
 \ none known: "No Data")
@@ -26,10 +26,9 @@ $85 constant no-data
 
 \ the time played as hh:mm:ss
 create clock 8 allot
-: two ( n at -- )  >r  10 /mod [char] 0 + r@ c!  [char] 0 + r> 1+ c! ;
 : clock$ ( frames -- addr len )
-    30 /  dup 3600 / 99 min clock two  [char] : clock 2 + c!
-    dup 60 / 60 mod clock 3 + two  [char] : clock 5 + c!  60 mod clock 6 + two  clock 8 ;
+    30 /  dup 3600 / 99 min clock two-digits  [char] : clock 2 + c!
+    dup 60 / 60 mod clock 3 + two-digits  [char] : clock 5 + c!  60 mod clock 6 + two-digits  clock 8 ;
 
 : start-saving ( -- )  0 save-at !  0 save-step !  0 save-t ! ;
 : write-here ( -- )   \ (her room and map: where it is made)
@@ -47,7 +46,7 @@ create clock 8 allot
             back? if  se-cancel  0 save-step !  then  endof
         3 of  1 save-t +!  save-t @ 60 >=  confirm? or if  close-menu  then  endof
     endcase ;
-: saved-now ( -- )  3 save-step !  0 save-t !  se-used ;   \ (saves.fs answers: it is written)
+: saved-now ( -- )  3 save-step !  0 save-t !  se-saved ;   \ (saves.fs answers: it is written - BootCard_StateSave's 18: menu sound $D)
 
 : slot-line ( i -- )
     {: i | y :}  i 22 * $78 + to y
@@ -66,4 +65,34 @@ create clock 8 allot
               s" Yes" $D0 $1B8 save-yes @ text  s" No" $118 $1B8 save-yes @ 0= text  endof
         2 of  s" Saving..." $100 $1A0 centred  endof
         3 of  s" Saved." $100 $1A0 centred  endof
+    endcase ;
+
+\ ---- the clear-data save (the ending's last, the scripts' mode 9: SubScreen_StateSave with the card
+\ hidden - memcard.c's BootCard_StateSave writes the system data alone, no save slot): keep the clear
+\ data? Yes, the system data written (saves.fs), "Saved."; no, quit without saving? Yes, shut - the
+\ clear's unlocks not written now; no, asked again. (The original asks which memory card, or none:
+\ ours are files - one place.) ----
+10 constant clear-asked   11 constant quit-asked
+: start-clear-save ( -- )  clear-asked save-step !  -1 save-yes !  0 save-t ! ;
+: kept ( keep? -- )  saves-id send keep-system ;
+: yes-no ( -- )  left? right? or up? or down? or if  save-yes @ 0= save-yes !  se-cursor  then ;
+: ask-again ( -- )  se-cancel  clear-asked save-step !  -1 save-yes ! ;
+: clear-keys ( -- )
+    save-step @ case
+        clear-asked of  yes-no
+            confirm? if  se-decide  save-yes @ if  2 save-step !  true kept  else  quit-asked save-step !  0 save-yes !  then  then
+            back? if  se-cancel  quit-asked save-step !  0 save-yes !  then  endof
+        quit-asked of  yes-no
+            confirm? if  save-yes @ if  se-decide  false kept  close-menu  else  ask-again  then  then
+            back? if  ask-again  then  endof
+        3 of  1 save-t +!  save-t @ 60 >=  confirm? or if  close-menu  then  endof
+    endcase ;
+: yes-no-view ( -- )  s" Yes" $D0 $F8 save-yes @ text  s" No" $118 $F8 save-yes @ 0= text ;
+: clear-view ( -- )
+    $100 $E0 $1C0 $60 shade
+    save-step @ case
+        clear-asked of  s" Save the clear data?" $100 $D0 centred  yes-no-view  endof
+        quit-asked of  s" Quit without saving?" $100 $D0 centred  yes-no-view  endof
+        2 of  s" Saving..." $100 $E0 centred  endof
+        3 of  s" Saved." $100 $E0 centred  endof
     endcase ;

@@ -26,6 +26,12 @@ enum: button  circle square l1 triangle r1 cross start-button select-button ;
 : either ( k1 k2 xt -- flag )  {: k1 k2 xt :}  k1 xt key-so?  k2 xt key-so?  or ;   \ (either key so)
 : button-down? ( b -- flag )  button-keys ['] key-down? either ;
 : button-pressed? ( b -- flag )  button-keys ['] key-pressed? either ;
+: any-button? ( -- flag )   \ (any but Start and Select pressed this tick)
+    false  select-button 1+ 0 do  i start-button <> if  i button-pressed? or  then  loop ;
+\ the arrows as two keys each: 0 up, 1 right, 2 down, 3 left (the arrow keys, or W A S D)
+: arrow-keys ( i -- k1 k2 )
+    case  0 of  key: Up key: W  endof  1 of  key: Right key: D  endof  2 of  key: Down key: S  endof
+          >r key: Left key: A r>  endcase ;
 
 \ ---- the sticks ----
 \ the left stick: W A S D (and a gamepad's left stick as far as it is pushed), x right, z down

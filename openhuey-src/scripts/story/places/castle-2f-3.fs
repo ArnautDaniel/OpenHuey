@@ -37,7 +37,6 @@ $3C constant hall-door   $3D constant west-door   \ (its doors)
 1 constant clothes-part   \ (its part: the clothes laid out)
 15 constant whine-sound
 
-: daylight-tint ( -- )  $84 $60 $3C $50  $24 $2A $2A $46  room-tint ;   \ (the afternoon's light: until she has the castle sketch)
 
 \ ---- entering ----
 : came-in ( exit -- )
@@ -126,7 +125,7 @@ $602 constant tv-switch-anim   \ (his reach to the TV's switch)
     stalker $6A 135 -4e 13e walk-to
     stalker tv-switch-anim start-anim  18 frames
     tv-off-sound room-bank stalker sound-by  tv-static-sound room-bank stop-sound
-    0 s" acoustics" actor-named send noise-setting  c2f-3-tv-examined fact-off  5 var@ 1+ 5 var!
+    0 acoustics-id send noise-setting  c2f-3-tv-examined fact-off  5 var@ 1+ 5 var!
     3 stalker-order  stalker stalker.anims:stand-anim play  16 frames ;
 : search-or-not ( -- )   \ (as he comes in while she hides: whether he'll find her)
     {: | finds :}
@@ -160,31 +159,31 @@ $A5 constant evasion-doc
 : or-sheets ( xt -- xt' )  clothed? 0= if  drop ['] remark-sheets  then ;   \ (in the sheet: that, not this)
 : night? ( -- flag )  c2f-3-flag1 fact?  hewie-found-in-wire fact? 0= and ;   \ (the dog heard, not yet found)
 : by-the-bed ( -- )
-    bed-area 180 60 facing? 0= if  exit  then
+    bed-area 180 60 fiona-faces? 0= if  exit  then
     c2f-2-flag1 fact? 0= if  ['] bed unhurried offer exit  then
     stalker-in? if  no-time-msg offer-remark-now  else  ['] hides hiding-spot offer  then ;
 : spots ( -- )
-    tv-area 180 90 facing? if  ['] tv or-sheets unhurried offer  then
+    tv-area 180 90 fiona-faces? if  ['] tv or-sheets unhurried offer  then
     clothed? 0= if
-        found-file-201 fact?  clothes-area 180 50 facing? and if  ['] change-clothes unhurried offer  then
+        found-file-201 fact?  clothes-area 180 50 fiona-faces? and if  ['] change-clothes unhurried offer  then
         8 locked-request? if  ['] remark-sheets any-time offer  then
     else night? if
         8 locked-request? if  ['] remark-dog any-time offer  then
-        bed-area 180 60 facing? if  ['] remark-sleep unhurried offer  then
-        window-area 44 60 facing? if  ['] window-dog unhurried offer  then
+        bed-area 180 60 fiona-faces? if  ['] remark-sleep unhurried offer  then
+        window-area 44 60 fiona-faces? if  ['] window-dog unhurried offer  then
     else  by-the-bed  then then
-    fire-area -134 60 facing? if  ['] remark-fire unhurried offer  then
-    portrait-1-area 90 60 facing? if  ['] portrait-1 or-sheets unhurried offer  then
-    portrait-2-area 0 60 facing? if  ['] portrait-2 or-sheets unhurried offer  then
-    portrait-3-area -90 60 facing? if  ['] portrait-3 or-sheets unhurried offer  then
-    doll-area 0 50 facing? if  ['] doll or-sheets unhurried offer  then
+    fire-area -134 60 fiona-faces? if  ['] remark-fire unhurried offer  then
+    portrait-1-area 90 60 fiona-faces? if  ['] portrait-1 or-sheets unhurried offer  then
+    portrait-2-area 0 60 fiona-faces? if  ['] portrait-2 or-sheets unhurried offer  then
+    portrait-3-area -90 60 fiona-faces? if  ['] portrait-3 or-sheets unhurried offer  then
+    doll-area 0 50 fiona-faces? if  ['] doll or-sheets unhurried offer  then
     fiona birdcage-area 50 faces-area? if  ['] birdcage or-sheets unhurried offer  then
-    scales-area -90 50 facing? if  ['] scales or-sheets unhurried offer  then
-    chest-area 180 50 facing? if  fg-3-flag3 fact? if  ['] chest-costumes  else  ['] chest  then  or-sheets unhurried offer  then
-    window-area 44 60 facing?  window-2-area 44 60 facing? or if
+    scales-area -90 50 fiona-faces? if  ['] scales or-sheets unhurried offer  then
+    chest-area 180 50 fiona-faces? if  fg-3-flag3 fact? if  ['] chest-costumes  else  ['] chest  then  or-sheets unhurried offer  then
+    window-area 44 60 fiona-faces?  window-2-area 44 60 fiona-faces? or if
         c2f-3-flag1 fact? if  ['] window-night  else  ['] window-day  then  or-sheets unhurried offer
     then
-    found-file-201 fact?  clock-area -90 50 facing? and if  ['] save-clock or-sheets calm-hewie-up offer  then
+    found-file-201 fact?  clock-area -90 50 fiona-faces? and if  ['] save-clock or-sheets calm-hewie-up offer  then
     hiding-offered @  8 locked-request? and if  ['] remark-hide any-time offer  then
     c2f-3-medallion-found fact?  c2f-3-medallion fact? 0= and  fiona -9e 1e -11e 5e 5e touches? and if
         ['] medallion calm-only offer

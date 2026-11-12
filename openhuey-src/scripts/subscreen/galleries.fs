@@ -39,12 +39,13 @@ create number-buf 8 allot
 : list-colour ( k -- c )  gal-at @ = if  2  else  0  then ;
 \ the fade over it all (sub_fade_back: the overlay darkening as gal-fade goes to $80)
 : overlay ( -- )  gal-fade @ {: a :}  a if  gallery-layer 0 0 screen-size  a 2* 255 min  ui-rect  then ;
-: bars ( title-msg -- )   \ the name and the help, in bars at the top and the foot (the words over them)
+: bars ( title-msg -- )   \ the name and the help, in bars at the top and the foot (the words over them,
+    \ fading in as the overlay goes: $80 less the fade - Gallery_StateModel, Gallery_StateArt)
     gallery-layer 0 0 screen-size drop  $38 sy  $80 ui-rect
     gallery-layer 0 $188 sy  screen-size drop  $38 sy  $80 ui-rect
-    gallery-layer gal-text-layer !
+    gallery-layer gal-text-layer !  $80 gal-fade @ - 0 max word-alpha !
     gal-line $20 $10 1 text-in  $9E gal-line $20 $198 0 text-in
-    word-layer gal-text-layer ! ;
+    $80 word-alpha !  word-layer gal-text-layer ! ;
 
 \ ---- the cursor through groups of 8 of n (SubScreen_StateExtras, Gallery_StateMusic ...): up and
 \ down round its group, left / L1 and right / R1 to the group before / after's first ----
@@ -92,7 +93,7 @@ $2A constant movie-var   $2B constant cursor-var
 \ stream is free the track started; the triangle stops the one playing, or (none) leaves ----
 : track ( k -- a )  3 * cells tracks + ;
 : track-open? ( k -- flag )  track @ resident-flag? ;
-: want ( track -- )  0 1e f>cell  s" music" actor-named send bgm-want ;
+: want ( track -- )  0 1e f>cell  music-id send bgm-want ;
 : track-title ( k -- addr len )  dup track-open? if  track cell+ @  else  drop unknown-msg  then  gal-line ;
 : track-colour ( k -- c )  dup gal-at @ = if  drop 2  else  gal-playing @ = if  1  else  0  then  then ;
 : track-row ( k -- )  dup #tracks < if  dup >r  dup track-title  r> track-colour  2 row  else  drop  then ;
@@ -334,12 +335,17 @@ create second-ones  15 , 17 , 19 , 21 , 23 ,                               \ (bi
         9 of  -32 gal-fade +!  gal-fade @ 0> 0= if  0 gal-fade !  0 gal-step !  then  endof   \ (back: the list fading in)
         >r model-keys r>
     endcase ;
+: motion-count ( -- )   \ (SubScreen_DrawPageCount: "<motion>/<motions>" at the top right, its caption
+    \ - message $1C6 - before it; faded as the bars' words)
+    $80 gal-fade @ - 0 max word-alpha !
+    $1C6 gal-line $160 $10 0 text-in  gal-motion @ 1+ motions @ of$ $1B8 $10 0 text-in
+    $80 word-alpha ! ;
 : models-shown? ( -- flag )  gal-model @ 0< 0= ;
 : model-view ( -- )
     models-shown? 0= if  models-view overlay exit  then
     overlay
     gal-step @ 6 = if  $1C4 gal-line $20 $20 0 text-in  then
-    gal-bars @ if  gal-at @ $70 + bars  gal-motion @ 1+ motions @ of$ $186 $198 0 text-in  then ;
+    gal-bars @ if  gal-at @ $70 + bars  motion-count  then ;
 
 \ ---- the galleries' modes: opened, their keys, drawn, closed ----
 : gallery-file ( g -- addr len )

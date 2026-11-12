@@ -64,10 +64,9 @@ create box-ends  $20A , $4D8 ,  $153 , $415 ,  $15C , $41E ,  $213 , $4DE ,
 
 \ ---- the first time in: the scene - Daniella after her, the door shut behind ----
 : blends ( from to -- )  {: a b :}  begin  cutscene-frame a < while  yield  repeat  begin  cutscene-frame b < while  $2D frame-blend  yield  repeat ;
-: till-shot ( n -- )  begin  cutscene-frame cutscene-shot-at over <> while  yield  repeat  drop ;
 : intro-looks ( -- )   \ (along the scene: the picture blended at its cues, her face at the end)
     $468 $477 blends  $484 $499 blends  $49D $4B3 blends  $4B4 $4D2 blends  $4D7 $4F2 blends
-    $19 till-shot  partner-kind 0 s" O_DNL\DNL_203.TEX" face-on ;
+    $19 wait-shot  partner-kind 0 s" O_DNL\DNL_203.TEX" face-on ;
 : intro-scene ( -- )
     intro-movie scenes:unseen-movie intro-cutscene load-scene  wait-fade
     scene-figure 3 figure-in  4 cutscene-keep-model  ['] intro-looks along-scene  2 show-part
@@ -92,10 +91,10 @@ create box-ends  $20A , $4D8 ,  $153 , $415 ,  $15C , $41E ,  $213 , $4DE ,
     stalker $1AB -90 0.25e 0.25e place-at  stalker room-motion start-anim  150 frames  his-sound room-bank stalker sound-by
     247 frames  stalker wait-anim  3 stage !  begin  yield  again ;
 : death-looks ( -- )   \ (along the scene: shards gone, the floor's light out, the hum stopped)
-    2 till-shot  $1E object-hide  4 till-shot  $1E object-hide
-    5 till-shot  glow-off  0 set-boxes !  floor-light
+    2 wait-shot  $1E object-hide  4 wait-shot  $1E object-hide
+    5 wait-shot  glow-off  0 set-boxes !  floor-light
     begin  cutscene-frame $369 < while  yield  repeat  hum-sound room-bank stop-sound  0 hum-on !
-    $A till-shot  $1E object-hide ;
+    $A wait-shot  $1E object-hide ;
 : after-death ( -- )   \ (back in the hall, her body pinned; Hewie well again)
     fiona true shown  scene-5-pending state-off  hewie-no-attack state-off  stalkers-blind state-off  force-calm state-off
     stalker-unloaded  7 show-part  0 set-boxes !  floor-light  all-hidden  0 panic-to

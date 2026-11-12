@@ -128,7 +128,7 @@ enum: hewie-action
     yelp-anim-act         \ $76 his yelp's animation
     hidden-act            \ $77 hidden away (the story's time)
     fetch-act             \ $78
-    scene-pose-act        \ $79
+    dodge-act        \ $79
     ready-act             \ $7A waiting low, readying
     draw-off-act          \ $7B drawing the stalker off while she hides
     near-target-2-act     \ $7C

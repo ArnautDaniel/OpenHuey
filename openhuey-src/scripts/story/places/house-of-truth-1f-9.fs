@@ -98,10 +98,7 @@ $30 constant fan-speed   $34 constant fan-base   $38 constant fan-top   $10 cons
     debris-hidden ;
 
 \ ---- the house coming down: debris falling now and then; once it has fallen through, the traps ----
-: keri$ ( k -- addr len )   \ (the debris' objects: "keri0".."keri5")
-    case  0 of  s" keri0"  endof  1 of  s" keri1"  endof  2 of  s" keri2"  endof
-          3 of  s" keri3"  endof  4 of  s" keri4"  endof  >r s" keri5" r>  endcase ;
-: free-debris ( -- k | -1 )  6 0 do  i keri$ placed-shown? 0= if  i unloop exit  then  loop  -1 ;
+: free-debris ( -- k | -1 )  6 0 do  i things:keri$ placed-shown? 0= if  i unloop exit  then  loop  -1 ;
 fvariable dx  fvariable dy  fvariable dz
 : drop-spot ( -- tri ) ( F: -- x y z )   \ (40..50 up, 25..40 out in any direction, over the floor)
     begin
@@ -172,20 +169,18 @@ create tint-a  $7B c, $32 c, $2A c, $64 c, $24 c, $2C c, $36 c, $4E c,
 create tint-b  $72 c, $96 c, $94 c, $6E c, $60 c, $56 c, $70 c, $3C c,
 : tinted ( tint -- )  8 0 do  dup i + c@ swap  loop  drop  room-tint ;
 : dark-look ( -- )  tint-a tinted  $8080805E 0 screen-blend ;
-: till-frame ( n -- )  begin  cutscene-frame over < while  yield  repeat  drop ;
-: till-shot ( shot -- )  begin  cutscene-frame cutscene-shot-at over <> while  yield  repeat  drop ;
 : near-view ( -- )   \ (from the scene's frame 825: 1, 1..21, 80..120, 160)
     cutscene-frame 825 - s>f  1e  fover 0.3e f* 1e f+ 21e fmin  frot 0.7e f* 80e f+ 120e fmin  160e  depth-range ;
 : lorenzo-cues ( -- )   \ (an activity: the scene's far view, the door, the light, the haze)
-    depth-range-off  $21C till-frame
+    depth-range-off  $21C wait-scene-frame
     begin  cutscene-frame $2ED < while  1e 1e 80e 160e depth-range  yield  repeat
     begin  cutscene-frame $348 < while  near-view  yield  repeat
-    depth-range-off  4 till-shot  depth-range-off
+    depth-range-off  4 wait-shot  depth-range-off
     locked-door false open-mark  doors-redone  tint-b tinted  $9EEAEAFF 0 screen-blend
-    5 till-shot  dark-look
-    $47E till-frame  haze-on  -1 hazed !  6 256 + haze-fx tell-effect
-    $492 till-frame  2 haze-fx tell-effect
-    8 till-shot  0 haze-fx tell-effect ;
+    5 wait-shot  dark-look
+    $47E wait-scene-frame  haze-on  -1 hazed !  6 256 + haze-fx tell-effect
+    $492 wait-scene-frame  2 haze-fx tell-effect
+    8 wait-shot  0 haze-fx tell-effect ;
 : lorenzo-scene ( -- )
     lorenzo-movie scenes:keyed-movie lorenzo-cutscene load-scene drop  ['] lorenzo-cues along-scene
     $10 $C8 movie-key  panic-eased  naught-msg run-scene  ['] lorenzo-cues stop-doing ;
@@ -194,7 +189,7 @@ create tint-b  $72 c, $96 c, $94 c, $6E c, $60 c, $56 c, $70 c, $3C c,
     fiona wait-move  fiona 0e 65e turn-to-xz
     15 screen:to-black-2 with-music or fade  wait-fade
     hewie-in? if  hewie let-go  then
-    cane-part show-part  cane-of-caduceus spend  0 s" creatures" actor-named send creatures-clear  0 hazed !
+    cane-part show-part  cane-of-caduceus spend  0 creatures-id send creatures-clear  0 hazed !
     no-track 1e background  lorenzo-scene  dark-look
     fiona $7E 174 0.023e 24.438e place-at
     stalker let-go  stalker-unloaded  kind39-kind stalker-ready  partner activate

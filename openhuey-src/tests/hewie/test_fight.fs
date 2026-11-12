@@ -19,6 +19,10 @@ variable arg
 : deb-in ( temper -- )
     true blind  s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
     arg !  [: 3 mode!  arg @ temper !  70 hp ! ;] deb!  3 run-frames ;
+\ his heading a quarter turn off the one striking (Hewie_CanInteract's signed test: no dodge - the
+\ striker on that side), or straight at him (a dodge his to dare)
+: turned-from ( id -- )  arg !  [: self arg @ body-at body-heading-to pi 2e f/ f- angle-wrap his-yaw! ;] his! ;
+: facing ( id -- )  arg !  [: self arg @ body-at body-heading-to his-yaw! ;] his! ;
 : go ( act -- )  arg !  [: 1000 add-trust  obeys  0 -1 set-mood  100 hp!  0 cond!  arg @ 0 set-action ;] his! ;
 
 testing he knows the stalker in his room: who, where (`stalker-doing`)
@@ -54,14 +58,21 @@ debug:debilitas-out  front-garden-2 room!  20 run-frames
 
 testing struck by the stalker (his blow): its damage, his yelp ($69, $1000), then on
 0 deb-in  [: 0 -1 set-mood  100 hp!  0 0 set-action ;] his!  2 run-frames
-2 30 0 game:hewie [: send blow ;] deb!  3 run-frames
+game:debilitas turned-from  2 30 0 game:hewie [: send blow ;] deb!  3 run-frames
 T{ [: his-hp @  his-action @  anim@ ;] his@ -> 70 $69 $1000 }T
 T{ [: [: his-action @ $69 <> ;] his@ ;] 120 soon -> -1 }T
 testing ... struck out of health: down ($52), counted for the dog's level (progress +0xFBA - not in a hard game); not a game over
 progress pr.hewie-downs l@ constant downs0
-2 90 0 game:hewie [: send blow ;] deb!  3 run-frames
+game:debilitas turned-from  2 90 0 game:hewie [: send blow ;] deb!  3 run-frames
 T{ [: [: his-action @ $52 = ;] his@ ;] 120 soon  [: his-hp @ ;] his@ -> -1 0 }T
 T{ progress pr.hewie-downs l@ downs0 -  caught state-flag?  30 run-frames caught state-flag? -> 1 0 0 }T
+testing ... down, the bait that gets him up (Bennenam Esca): given him though no command waits (Hewie_CanTakeCommand) - health 1
+: place-of ( id -- list i )  dup items:list-of {: id l :}  items:#places 0 do  l i items:item-at id = if  l i unloop exit  then  loop  l -1 ;
+game:hewie body-at vec@  frot 4e f+ frot frot  0e tp-facing  5 run-frames   \ (her within 20 of him: at hand, ItemClass6B00_PartnerCheck)
+items.names:bennenam-esca 1 game:items send give-item  deliver
+items.names:bennenam-esca place-of game:items send use-item  deliver  3 run-frames
+T{ [: his-hp @ ;] his@ -> 1 }T
+140.64e 124e -217.33e 0e tp-facing  5 run-frames   \ (her back where she was)
 [: 100 hp!  0 cond!  0 0 set-action ;] his!  10 run-frames
 
 testing barked at, his temper up (Pursuer_Hit kind 6: 1 each, searching or waiting about)
@@ -91,9 +102,18 @@ T{ [: [: out-going @ ;] deb@ ;] 10 soon  [: making-for @  temper @  at-dog @  my
 true blind  debug:debilitas-out  5 run-frames
 [: room-id s" fiona" actor-named body-tri dup tri-center body-place ;] his!  game:hewie send join-fiona  20 run-frames
 
+testing a blow at him idle, facing it, trusting her: now and then he dares - a dodge ($79, $1301), missed (Hewie_CanInteract)
+: dodged? ( -- flag )   \ (a blow from her straight at him - each try afresh - until one is dodged; 30 at most)
+    30 0 do
+        [: 100 hp!  0 cond!  0 0 set-action ;] his!  5 run-frames  game:fiona facing
+        2 5 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 run-frames
+        [: his-action @ $79 =  his-hp @ 100 = and ;] his@ if  true unloop exit  then
+    loop  false ;
+T{ [: 7000 add-trust ;] his!  dodged?  [: anim@ ;] his@ -> -1 $1301 }T
+[: 100 hp!  0 cond!  0 0 set-action ;] his!  40 run-frames
 testing her kick on him: struck home (her answer), he yelps; hit by her often - angry by chance
 [: 100 hp!  0 cond!  0 0 set-action  0 his-hits ! ;] his!  5 run-frames
-2 5 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 run-frames
+game:fiona turned-from  2 5 0 game:hewie [: send blow ;] game:fiona enter execute leave-actor  3 run-frames
 T{ [: his-hp @  his-action @  his-hits @ ;] his@ -> 90 $69 1 }T
 
 testing a door into him (kind 5): only while it swings - its damage, back from it or aside ($6B), or out by it ($6C)

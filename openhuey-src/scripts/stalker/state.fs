@@ -154,6 +154,7 @@ state: stalker-state
   cell field temper  cell field tolerance  1 floats field throw-k
   cell field bitten  cell field bite-anim  cell field bite-how  1 floats field holds
   cell field left-bite   \ the bite he was held by as she left (its animation: Pursuer_ShowUp's letting go as she comes back; 0 none)
+  cell field left-bitten   \ Hewie on him as she left, till she comes back (his behaviour $23 kept out of her sight)
   1 floats field bite-yaw  1 floats field bite-turn
   cell field dog-t  cell field dog-limit  cell field dog-phase
   cell field dog-sent            \ his blow this move has struck Hewie (stalker/attack.fs)
@@ -222,3 +223,6 @@ state: stalker-state
   \ each lasts (-1 while he is powdered; 0 none), its strands' kind, its ten timers
   4 cells field cloud-left  4 cells field cloud-kind  40 cells field cloud-timers
 end-state
+
+\ a lead's pull (`lead`): Fiona's noise 5, any other 4, Hewie's 1
+5 constant pull-fiona   4 constant pull-noise   1 constant pull-hewie

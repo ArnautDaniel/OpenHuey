@@ -83,7 +83,7 @@ create try-at /vec allot
     out-door 0< if  to-default exit  then
     his-exit @ through-exit drop  flee-wait trust-of his-wanted !  wait-after-flight-act 0 want ;
 \ Hewie_StateGuard: barking at the stalker while it is 60..100 away by foot
-defer plan-cut
+defer plan-cut ( -- )
 : st-guard ( -- )
     still-on? 0= if  exit  then
     stand-pose step-to-pose 0= if

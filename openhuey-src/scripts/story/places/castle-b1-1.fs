@@ -56,7 +56,6 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
     daniella-slot figure-on  false her-hands  daniella-slot $9000 1 0 figure-play
     daniella-slot $2A 14.85e 17.65e floor-at 0e figure-at ;
 : smoke-on ( -- )  effects:smoke-puffs smoke-fx effect! ;
-: daylight ( -- )  $84 $60 $3C $50 $24 $2A $2A $46 room-tint ;
 
 \ ---- as she comes in ----
 : came-in ( exit -- )
@@ -70,7 +69,7 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
         force-followed state!  stove-floor keeps-fiona-off keeps-hewie-off or floor-on
         at-the-stove  ladle 2 0 object  smoke-on
     then
-    c2f-3-flag1 fact? 0= if  daylight  then
+    c2f-3-flag1 fact? 0= if  daylight-tint  then
     1 -19.5e -26e -31e  4e 4e 100e 0e 10e wanderer-at  2 -53e -22e -11e  4e 5e 80e 0e 30e wanderer-at
     cb1-1-breakable2-broken fact? if
         plywood-part hide-part  broken-plywood-part show-part  plywood-floor barred-floor floor-off
@@ -170,7 +169,6 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
 : shelf-jerky ( -- )   \ (reached for, not in a panic)
     fiona wait-move  fiona -13e 10e turn-to-xz  in-panic? if  exit  then
     fiona reach-out-anim play  4 frames  chicken-jerky cb1-1-chicken-jerky-2 jerky-2-fx takes-up  fiona reach-back-anim play ;
-: facing? ( area deg within -- flag )  {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 : cupboard ( far? -- )   \ (before the sketch, the sketch; else hide there - no time while he can see her)
     got-castle-sketch fact? 0= if  drop  fiona sketch-area 45 faces-area? if  ['] the-sketch calm-only offer  then  exit  then
     stalker-in? 0=  stalker unseen? or if  other-side !  ['] hides hiding-spot offer  else  drop  no-time-message offer-remark-now  then ;
@@ -184,11 +182,11 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
         fiona -90 60 heading? if  false cupboard  then
         fiona 90 60 heading? if  true cupboard  then
     then
-    9 90 50 facing? if  ['] the-china unhurried offer  then
-    $B 90 50 facing? if  ['] the-box unhurried offer  then
-    $C 180 50 facing? if  ['] the-wine unhurried offer  then
-    $D 0 50 facing? if  ['] the-sink unhurried offer  then
-    $E 0 50 facing? if
+    9 90 50 fiona-faces? if  ['] the-china unhurried offer  then
+    $B 90 50 fiona-faces? if  ['] the-box unhurried offer  then
+    $C 180 50 fiona-faces? if  ['] the-wine unhurried offer  then
+    $D 0 50 fiona-faces? if  ['] the-sink unhurried offer  then
+    $E 0 50 fiona-faces? if
         hewie-found-in-wire fact? 0= if  ['] empty-pot unhurried offer
         else  found-file-208 fact? if  ['] the-pot unhurried offer  then  then
     then
@@ -203,7 +201,7 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
 
 \ ---- the movies replayed (the extras) ----
 : replay-scene ( -- )
-    fiona hold  daylight  2 daniella-slot figure-in  yield
+    fiona hold  daylight-tint  2 daniella-slot figure-in  yield
     riccardo-movie scenes:unseen-movie riccardo-cutscene load-scene  panic-eased  if  -1 run-scene  then
     daniella-slot figure-out  replay-over ;
 : replay-cooking ( -- )

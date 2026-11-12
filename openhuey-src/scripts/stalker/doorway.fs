@@ -15,7 +15,6 @@
 IN: stalker.doorway
 USING: engine game-state actors messages common facts flag-names paths vectors doors stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.anims rumble floor-flags ;
 
-: doors-actor ( -- id )  s" doors" actor-named ;
 defer door-done ( -- )   ' stand is door-done          \ given up on the way out (struck.fs: on again)
 defer round-done ( -- )   ' stand is round-done        \ a door opened to get at her: his chase again (stalker/ladder.fs)
 defer round-failed ( -- )   ' stand is round-failed    \ ... given up (stalker/ladder.fs)
@@ -32,7 +31,7 @@ create spot-at /vec allot
 : shutting? ( -- flag )  door-use @ 0< 0=  door-use @ 1 and 0<> and ;
 : let-door-go ( -- )
     held-door @ dup 0< if  drop exit  then  room-id swap stalker-noise
-    shutting? if  doors-actor send let-go-shut  else  doors-actor send let-go-open  then  -1 held-door ! ;
+    shutting? if  doors-id send let-go-shut  else  doors-id send let-go-open  then  -1 held-door ! ;
 : out-over ( -- )  0 apart !  0 out-going !  0 wandering-out !  -1 door-use !  -1 asked !  0 for-her !  0 door-script ! ;
 \ the story's door use (stalker/scripted.fs): over - or given up, his step left trying it (the
 \ original's: never done)
@@ -82,7 +81,7 @@ defer shoulder-past ( -- )   ' noop is shoulder-past
     let-door-go  0 apart !  on-through ;   \ (Pursuer_Door1C4: in contact again)
 : door-swinging ( -- )
     root-move  settled? 0= if  exit  then
-    making-for @ door-use @ stalker-noise doors-actor send use-door
+    making-for @ door-use @ stalker-noise doors-id send use-door
     ['] door-pushing step! ;
 : got-door ( -- )   \ (Pursuer_DoorBarge: out of contact till the door is let go)
     -1 apart !  making-for @ held-door !  -1 asked !  door-anims door-use @ + play-now  ['] door-swinging step! ;
@@ -105,7 +104,7 @@ defer shoulder-past ( -- )   ' noop is shoulder-past
 : asking ( -- ) ;                                          \ (the doors' answer: `door-held` / `door-refused`)
 : facing-door ( -- )
     spot-yaw f@ turn-rate body-turn-toward f0= 0= if  exit  then
-    making-for @ asked !  room-id making-for @ stalker-kind doors-actor send hold-door
+    making-for @ asked !  room-id making-for @ stalker-kind doors-id send hold-door
     ['] asking step! ;
 : at-door-spot ( -- )   \ (the others coming in: turned to the door, standing - their table $E's - then on: Pursuer_GoToDoor done)
     spot-yaw f@ turn-rate body-turn-toward f0= 0= if  exit  then  out-over  entry-done ;
@@ -159,14 +158,15 @@ defer at-exit ( -- )
 \ came in by drawn first, drawn once more ----
 create re-list 8 cells allot
 : my-side ( exit -- way )  my-room swap 1 exit-way ;
-: random-exit ( -- exit | -1 )
-    0 {: n :}
+: random-exit-but ( skip -- exit | -1 )   \ (not `skip`: -1 skips none)
+    0 {: skip n :}
     8 0 do
         came-by @ 0< if  true  else  i my-side came-by @ my-side =  then
-        i usable? and if  i n cells re-list + !  n 1+ to n  then
+        i usable? and  i skip <> and if  i n cells re-list + !  n 1+ to n  then
     loop
     n 0= if  -1 exit  then
     n s>f rnd f* f>s n 1- min cells re-list + @ ;
+: random-exit ( -- exit | -1 )  -1 random-exit-but ;
 \ off stage, waiting about (Pursuer_IntoRoomByEvent, not after her nor planned: Pursuer_PlanWhere's
 \ mode 3): his route to the room past such an exit; none, to the room past the one he came by
 : route-at-random ( -- )
@@ -183,6 +183,20 @@ create re-list 8 cells allot
     came-by @ dup 0< if  drop search-again exit  then   \ (no way to it: by the door he came in by - Pursuer_PlanWhere's mode 3)
     out-by if  -1 wandering-out !  else  search-again  then ; is leave-at-random
 :noname ( -- )  let-door-go  out-over ; is out-cancelled
+
+\ ---- held off into one of his own rooms by a door (Pursuer_EnterRoom's mode 4: Debilitas_GoForFiona,
+\ action $26 - Pursuer_OnToNextExit): on to the first exit of his route there (set by the room's
+\ Table3C - Npc_PlanToRoomObject), else one at random on his side but the one he came by
+\ (Npc_RandomExit: none, that one); there, not out by it in his own room but to its spot
+\ (Debilitas_HeadingStep: action $25 - Pursuer_FollowPathExit, Debilitas_PickDestination) ----
+: past-the-exit ( -- )  keep-way 0= if  to-own-spot exit  then  walk-stride if  to-own-spot  then ;
+:noname ( -- )
+    making-for @  -1 making-for !
+    dup 0< if  drop  came-by @ random-exit-but  dup 0< if  drop came-by @  then  then
+    dup 0< if  drop to-own-spot exit  then
+    dup 2 exit-spot aim-at if  drop
+    else  0 exit-spot aim-at 0= if  to-own-spot exit  then  then
+    mode-walk play  ['] past-the-exit step! ; is on-to-next-exit
 
 \ ---- the run (Hewie played): after her while she is in another room, out by the first door of
 \ his way to it (Pursuer_BehaviourFollow's 0x27 / 0xE: to the exit, through it) ----

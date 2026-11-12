@@ -41,16 +41,16 @@ variable hard   \ the new game chosen is a hard one (the title's HARD MODE; new-
     1 sound-set!   \ (Progress_LoadSoundSet by new-game-sounds: her bare feet's set)
     hard @ if  hard-mode-flag story-flag-set  then   \ (entry $4000002A: progress +0x30 bit 15)
     1 0 costume-vars!
-    1 s" fiona" actor-named send costume
-    front-garden-3 -1 s" rooms" actor-named send go-to-room ;
+    1 fiona-id send costume
+    front-garden-3 -1 rooms-id send go-to-room ;
 
 : extras ( -- )   \ (SceneGame_StateEntry, entry $37: the extras room - Fiona in her clothes)
     0 hewie-played !
     world-held flag-on  in-play flag-on
     0 sound-set!   \ (new-game-sounds off: the boots' set)
     0 0 costume-vars!
-    0 s" fiona" actor-named send costume
-    off-map-37 -1 s" rooms" actor-named send go-to-room ;
+    0 fiona-id send costume
+    off-map-37 -1 rooms-id send go-to-room ;
 
 \ ---- the title: Hewie lying on the stone circle in the front garden ($2D - only its scenery: no
 \ story, nobody else) in its own light; the camera back far enough for all of him, the scarecrows
@@ -166,7 +166,7 @@ defer title-menu-hook ( -- )
             e-new of  0 hard !  m-get-up 0 play  getting-up stage !  endof
             e-hard of  -1 hard !  m-get-up 0 play  getting-up stage !  endof
             e-load of  0 slot-at !  on-slots stage !  endof
-            e-options of  5 s" subscreen" actor-named send menu-mode  subscreen-wanted flag-on  on-options stage !  endof
+            e-options of  5 subscreen-id send menu-mode  subscreen-wanted flag-on  on-options stage !  endof
             e-extras of  title-end  started stage !  extras  self kill  endof
             e-mini of  title-end  started stage !  -1 mini-game-wanted !  extras  self kill  endof
             e-mods of  mods.menu:open  on-mods stage !  endof
@@ -176,7 +176,7 @@ defer title-menu-hook ( -- )
         endcase
     then ;
 : load-it ( -- )   \ (the slot's game: the title away, the saves actor puts it back)
-    title-end  started stage !  slot-at @ s" saves" actor-named send load-from-slot  self kill ;
+    title-end  started stage !  slot-at @ saves-id send load-from-slot  self kill ;
 : slots-keys ( -- )
     key: Up key-pressed? if  slot-at @ 1- #slots + #slots mod slot-at !  then
     key: Down key-pressed? if  slot-at @ 1+ #slots mod slot-at !  then

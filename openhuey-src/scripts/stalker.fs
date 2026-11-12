@@ -124,7 +124,7 @@ create figure-pck 32 allot   create figure-tex 32 allot
 \ heading for her, without one off by an exit at random ----
 : status ( -- )
     in-game @ if  my-room  else  -1  then  my-mode @  in-game @ 0<>  in-game @ if  own-room?  else  false  then
-    away-base @  cool-secs @  cond @ down-cond =  s" summoner" actor-named send stalker-status ;   \ (down now: +0xC4 2)
+    away-base @  cool-secs @  cond @ down-cond =  summoner-id send stalker-status ;   \ (down now: +0xC4 2)
 : summoned ( room exit found plan -- )
     {: room e found plan :}
     room -1 come-in  e came-by !  hp-max @ hp !   \ (a stalk afresh: his health full - beaten or worn, he was out a while)
@@ -223,8 +223,8 @@ $1300 constant gesture-anims
 : family-setup ( -- )
     -1 her-came !  0 temper !  10e 5e 20e frights
     150e view-range f!  60e deg>rad view-half f!  -1e d-fiona f!  -1e d-hewie f!
-    s" fiona" actor-named fiona-cached !  s" hewie" actor-named hewie-cached !
-    hear-threshold @ stalker-noise s" acoustics" actor-named send listen
+    fiona-id fiona-cached !  hewie-id hewie-cached !
+    hear-threshold @ stalker-noise acoustics-id send listen
     pursuer-ladder ladder-offsets !  -1 her-ladder-on !  -1 at-ladder !
     self subscribe zone-target  self subscribe zone-targets-off  self subscribe fiona-unseen
     self subscribe hewie-doing  self subscribe scene  0 script-held !  0 in-scene !  well-cond dog-cond !
@@ -235,8 +235,8 @@ $1300 constant gesture-anims
 \ there: not following a noise (4), it makes its noise ($1F, every frame - he may take it up);
 \ following one, not after Hewie, he goes for it and takes it within 10 of it, or of his way's end
 $1F constant doll-noise
-: doll-heard ( tri -- )  doll-noise room-id rot -1 world-noise  s" acoustics" actor-named send noise ;
-: take-doll ( i -- )  s" things" actor-named send thing-taken ;
+: doll-heard ( tri -- )  doll-noise room-id rot -1 world-noise  acoustics-id send noise ;
+: take-doll ( i -- )  things-id send thing-taken ;
 : doll-check ( tri i away? -- )
     {: tri i away? :}
     away? if  lead @ pull-fiona < if  i take-doll  then  exit  then
@@ -424,6 +424,7 @@ behaviour stalking
   on show ( on -- )  0= hidden ! ;
   on hold-anim ( anim flags blend -- )  loaded @ if  pose-in  else  drop 2drop  then ;
   on scene ( on -- )   \ (a cutscene has the characters; given back - Pursuer_Enable: his way forgotten)
+      dup if  left-behind  then
       dup 0<> in-scene !  0= in-cast @ and if  0 in-cast !  my-path path-clear  then ;
   on shaken-off ( -- )  bitten @ bite-how @ held-by-dog = and if  dog-let-go bite-how !  then ;
   on bite ( damage hard -- )  bitten @ if  bitten-by  else  2drop  then ;

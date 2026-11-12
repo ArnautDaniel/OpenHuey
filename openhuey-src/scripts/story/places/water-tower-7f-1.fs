@@ -50,7 +50,7 @@ create runs  $D8 , 89 ,  4 , 89 ,  $6A , -44 ,  $3F , -151 ,  $1B , 111 ,  $FA ,
     drop  room-sounds  hunted state!  hall-track 1e background
     8 gear !  8 glow-on
     stalker let-go  1 summon-take
-    wt7f-1-flag1 fact? 0= if  wt7f-1-flag1 fact!  1 s" creatures" actor-named send creatures-clear  then
+    wt7f-1-flag1 fact? 0= if  wt7f-1-flag1 fact!  1 creatures-id send creatures-clear  then
     1 $2300 reverb ;
 
 \ ---- the plates: who stands where; each one stepped onto rings ----

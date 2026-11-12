@@ -55,7 +55,7 @@ create ahead  to-exit-0-area , 0 ,   to-exit-1-area , 1 ,   \ (area, exit loaded
 : show-tv ( -- )   \ its screen lit and its part away while it's on
     tv-on? if  tv-off-part hide-part  1 tv-fx tell-effect  else  tv-off-part show-part  0 tv-fx tell-effect  then ;
 : tv-in ( -- )   \ (as she comes in: the screen, the static's noise while it's on)
-    0e 0e 0e 0 effects:tv-screen tv-fx effect!  show-tv  tv-on? if  1 s" acoustics" actor-named send noise-setting  then ;
+    0e 0e 0e 0 effects:tv-screen tv-fx effect!  show-tv  tv-on? if  1 acoustics-id send noise-setting  then ;
 \ the glass of the window and of the door to the hall, reflecting the room
 $40 constant glass-strength
 : window-glass ( -- )
@@ -84,7 +84,6 @@ $40 constant glass-strength
 : at-spot ( tri face F: x z -- )  {: tri face F: x z :}  fiona wait-move  fiona tri face x z walk-to ;
 : looking ( F: dist pitch yaw rise -- )  1 shot ;   \ (the story's shot of her, close)
 : look-done ( -- )  shot-off ;
-: facing? ( area deg within -- flag )  {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 
 : remark-fire ( -- )  fiona wait-move  fiona -40e -60e turn-to-xz  fire-msg say ;
 : portrait ( msg tri face F: x z pitch -- )   \ (looked at closely - the camera that far down - a remark said, back)
@@ -126,11 +125,11 @@ $40 constant glass-strength
     tv-works? if
         tv-on? if
             c2f-3-tv-examined fact-off  tv-off-sound room-bank fiona sound-by  tv-static-sound room-bank stop-sound
-            0 s" acoustics" actor-named send noise-setting
+            0 acoustics-id send noise-setting
         else
             c2f-3-tv-examined fact!  tv-on-sound room-bank fiona sound-by  tv-static-sound 0e 3e 7e room-sound
-            $40 this-room @ $6A -1 world-noise s" acoustics" actor-named send noise
-            1 s" acoustics" actor-named send noise-setting
+            $40 this-room @ $6A -1 world-noise acoustics-id send noise
+            1 acoustics-id send noise-setting
         then
         fiona reach-back-anim play
     else

@@ -63,7 +63,7 @@ USING: engine actors common paths vectors messages hewie-names hewie.state hewie
     1.01e f* his-heading f!  ['] st-turning behave ;
 \ Hewie_StateHeadForSpot / Wander (story-spot-act): to the spot his-to (walking, head on it);
 \ there, milling about it
-defer st-wander
+defer st-wander ( -- )
 : st-head-for-spot ( -- )
     his-at his-to vec-dist-xz 10e f< if
         0 his-t1 !  0 his-t2 !  his-yaw his-heading f!  ['] st-wander behave exit
@@ -108,7 +108,8 @@ is st-wander
     anim-done? anim@ leap-fall-anim <> and if  leap-fall-anim play-cut  1.2889e his-jump-fall f!  then
     anim@ leap-up-anim = if   \ (rising by the animation)
         stride-len along-leap
-        his-jump-y f@ root-up his-jump-rise f@ f* f+                       ( F: y )
+        his-jump-y f@ root-up  model 0 0 1 motion-events 2 and if  his-jump-rise f@ f*  then  f+   ( F: y )
+        \ (its rise scaled only on its key 2: Hewie_StateLeap)
     else   \ (falling: 3 a frame on, faster down)
         3e along-leap
         his-jump-fall f@ 0.5e f+ 3e fmin his-jump-fall f!

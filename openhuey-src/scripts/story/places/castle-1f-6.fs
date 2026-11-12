@@ -40,7 +40,7 @@ create candles
     drop  candles-lit
     got-cracked-plate-key-2 fact? if  plate-key-part hide-part  else  plate-key-part show-part  then
     c1f-6-medallion-found fact?  c1f-6-medallion fact? 0= and if  medallion-fx 34.2e 1e 60.5e flicker-at  then
-    night? 0= if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then ;
+    night? 0= if  daylight-tint  then ;
 
 \ ---- brought in by the forced way: Daniella's scene, then out to the room loaded ahead ----
 : daniella-scene ( -- )   \ (her figure in, the movie keyed; her figure out)
@@ -49,7 +49,7 @@ create candles
     panic-eased  if  daniella-msg run-scene  then
     figure-slot figure-out ;
 : meets-daniella ( -- )
-    fiona hold  text-gone  locked-exit exit-door false doors-actor send door-opened  doors-redone  world-held state!
+    fiona hold  text-gone  locked-exit exit-door false doors-id send door-opened  doors-redone  world-held state!
     0 prepare-exit  daniella-scene  wait-fade  world-held state!
     fiona brought-tri 0 place-on-tri  0 0 player-camera  camera-restart  c1f-6-flag1 fact!
     daniella-part hide-part  forced-exit take-exit ;

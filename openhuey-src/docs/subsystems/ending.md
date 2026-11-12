@@ -76,16 +76,29 @@ new); 2 ending B, 4 ending D; 5 + the TYPE. A game in hard mode (story flag $AF)
 and 87 / 88 with ending A / B; with nothing else new, a hard game's top breeder or dog lover
 is news.
 
+### The clear-data save (the sub screen's mode 9, SceneEnding_SeqSave)
+
+The picture out and the music stopped, the clear data is offered to save, then the game goes back
+to the title. In the original this is BootCard_StateSave with the card "hidden": no save slot, only
+the system data (the unlocks) written, merged with the card's. Ours keeps that intent without the
+memory cards: "Save the clear data?" - yes, the system data written, "Saved." (menu sound $D); no
+(or the triangle), "Quit without saving?" - yes, shut; no, asked again. From the ending's start the
+saves actor holds the system data (`hold-system`: not written as it changes); `keep-system` ends the
+hold - kept, written; not kept, not written now: the unlocks stay the game's till the system data is
+next written, as the original's stayed in memory till its next save. The sub screen answers the
+ending `clear-saved` once shut (`save-clear` asks it directly: the world is held).
+
 ## Not built
 
-- The clear-data save (the sub screen's mode 9): the next game with the clear's extras.
 - (The font: the game's own - SUBSCR/MSG_BASE.TEX, each glyph its width and drop, 16 x 21 - for all
   the UI's text (`gfx.game-font`, on); its colour codes' palettes: the first one, tinted.)
 - (The resident flags - the unlocks - are kept in `hga-system.fs` in the user folder, written
-  whenever they change and read as the game starts; not under `--test`.)
+  whenever they change - but for the ending's hold, above - and read as the game starts; not under `--test`.)
 
 ## Status
 
-`tests/ending/test_ending.fs` (27): the time played (not while paused), the dog level, each
+`tests/ending/test_ending.fs` (32): the time played (not while paused), the dog level, each
 TYPE rule, the items' flags, the first clear's unlocks (once only), and the story's end through
-the staff roll (Start), its fade and the results to their end.
+the staff roll (Start), its fade and the results to their end; the clear-data save (the system data
+held meanwhile; no, quit asked, no, asked again; yes, saved, the hold over; then the title).
+`tests/saves/test_saves.fs`: held, then let go unkept.

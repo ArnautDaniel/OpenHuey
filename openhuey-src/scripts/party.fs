@@ -84,7 +84,7 @@ $26 constant costume-var#   \ (the progress variable her costume is kept in)
 behaviour partying
   on spawned ( -- )
       #golems 0 do  -1 i golem !  loop  0 her-at !  0 his-at !  -1 her-model !  -1 his-model !
-      s" story" actor-named send story-stop
+      story-id send story-stop
       costume-var c@ was-wearing !  0 dress   \ (her regular clothes)
       hewie-id send join-fiona
       line-up  golems-in

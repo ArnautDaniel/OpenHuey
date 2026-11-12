@@ -25,8 +25,7 @@ $19 constant forest-track   0 constant ash-fx   1 constant heart-area   3 consta
 
 \ ---- the scene ----
 : ash-rises ( on -- )  dup ash-on !  if  effects:ash ash-fx effect!  else  ash-fx effect-off  then ;
-: till-shot ( n -- )  begin  cutscene-frame cutscene-shot-at over <>  while  yield  repeat  drop ;
-: heart-cues ( -- )  1 till-shot  true ash-rises  2 till-shot  false ash-rises  $18 till-shot  -1 doorway-lit ! ;
+: heart-cues ( -- )  1 wait-shot  true ash-rises  2 wait-shot  false ash-rises  $18 wait-shot  -1 doorway-lit ! ;
 : heart-scene ( -- )
     heart-movie scenes:opaque-when-movie heart-cutscene load-scene drop
     heart-slot figure-on  5 cutscene-keep-model  ['] heart-cues along-scene  0 ash-on !
@@ -35,7 +34,7 @@ $19 constant forest-track   0 constant ash-fx   1 constant heart-area   3 consta
     fiona hold  summoner-on state-off  stalker let-go  0 summon-take  hewie-in? if  hewie let-go  then
     fiona wait-move  15 screen:to-black-2 with-music or fade  no-track 1e background  wait-fade
     items-40-as-70 fact? if  creatures-on state-off  spirits-gone  then
-    0 s" creatures" actor-named send creatures-clear
+    0 creatures-id send creatures-clear
     cf-13-flag1 fact!  heart-figure heart-slot figure-in  yield
     heart-scene
     stalker let-go  0 summon-take  0 doorway-lit !  ash-on @ if  false ash-rises  then

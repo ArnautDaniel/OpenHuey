@@ -18,7 +18,7 @@ USING: engine vectors game-state actors messages common floor-flags doors rumble
 : stalker-touching? ( -- flag )   \ (Actor_Touching her and him: Fiona_StateBlock refuses a door or a ladder)
     stalker-in-room dup 0< if  drop false exit  then  self swap 0e 0e bodies-touching? ;
 : dog-in-room ( -- id | -1 )
-    s" hewie" actor-named dup 0< 0= if  dup body? if  dup body-room room-id = if  exit  then  then  then  drop -1 ;
+    hewie-id dup 0< 0= if  dup body? if  dup body-room room-id = if  exit  then  then  then  drop -1 ;
 
 $40 constant motion-frozen   \ (her motion's flag: held still)
 \ ---- held still a moment by a blow struck home or a door slammed (Motion_Freeze, 5 frames) ----

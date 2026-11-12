@@ -32,7 +32,6 @@ $75 constant her-door
     om1f-14-chicken-jerky fact? 0= if  jerky-fx 15.82e 1e 20.96e flicker-at  then ;
 
 \ ---- the film: played; Daniella the stalker - the screen slashed, her scene, her after her ----
-: daniella-now? ( -- flag )  partner-kind dup daniella-kind = swap kind34-kind = or ;
 : blended ( -- )   \ (her scene's last part: each frame over the last)
     begin  cutscene-frame $8E8 < while  yield  repeat
     begin  cutscene-frame 0< 0= while  $2D frame-blend  yield  repeat ;
@@ -41,10 +40,10 @@ $75 constant her-door
     old-mansion-1f-14 43 stalker-to  stalker 0 0 camera-set  ['] blended along-scene
     panic-eased  if  filmed-msg run-scene  then ;
 : the-film-plays ( -- )
-    fiona hold  daniella-now? if  stalker let-go  0 summon-take  then  fiona wait-move  16 frames
+    fiona hold  daniella-loaded? if  stalker let-go  0 summon-take  then  fiona wait-move  16 frames
     15 screen:to-black-2 with-music or fade  wait-fade  the-film film-class film
     film-reel-used-om1f-14-2 fact!  world-held state!  film-reel spend
-    daniella-now? if
+    daniella-loaded? if
         whole-screen hide-part  slashed-screen show-part  film-reel-used-om1f-14 fact!  yield  yield
         filmed-scene  world-held state!
         old-mansion-1f-14 stalker-slot 0 doors-into  her-door stalker-slot false door-for
@@ -72,13 +71,12 @@ $75 constant her-door
 : books-right ( -- )  90 books ;
 : parts ( -- )  fiona wait-move  fiona 19e 33e turn-to-xz  fiona look-low-anim start-anim  40 frames  parts-msg say  fiona wait-anim ;
 : take-jerky ( -- )  chicken-jerky om1f-14-chicken-jerky jerky-fx 15.82e 20.96e picks-up ;
-: facing? ( area deg within -- flag )  {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 : spots ( -- )
     fiona 3 50 faces-area? if  ['] the-projector unhurried offer  then
-    4 180 50 facing? if  ['] the-screen unhurried offer  then
-    5 -90 60 facing?  6 -90 60 facing? or  7 90 60 facing? or if  ['] mannequin unhurried offer  then
-    8 -90 60 facing?  9 -90 60 facing? or if  ['] books-left unhurried offer  then
-    $A 90 60 facing? if  ['] books-right unhurried offer  then
+    4 180 50 fiona-faces? if  ['] the-screen unhurried offer  then
+    5 -90 60 fiona-faces?  6 -90 60 fiona-faces? or  7 90 60 fiona-faces? or if  ['] mannequin unhurried offer  then
+    8 -90 60 fiona-faces?  9 -90 60 fiona-faces? or if  ['] books-left unhurried offer  then
+    $A 90 60 fiona-faces? if  ['] books-right unhurried offer  then
     fiona $B 60 faces-area? if  ['] parts unhurried offer  then
     om1f-14-chicken-jerky fact? 0=  fiona 15.82e 1e 20.96e 5e -8e touches? and if  ['] take-jerky calm-only offer  then ;
 

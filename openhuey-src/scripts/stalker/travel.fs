@@ -6,13 +6,14 @@
 \ (Pursuer_ModesSearching off screen, Pursuer_SearchRouteIn) and coming into the room being
 \ played (Pursuer_EnterRoom; Pursuer_BackOnMesh when she comes into his).
 IN: stalker.travel
-USING: engine game-state actors messages common facts flag-names paths vectors doors stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.anims ;
+USING: engine game-state actors messages common facts flag-names paths vectors doors stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.anims stalker.spots ;
 
 : my-room ( -- room )  self body-room ;
 : away? ( -- flag )  in-game @ if  my-room room-id <>  else  false  then ;
 \ his own rooms (vtable +0x314: Debilitas $20 and $02 - his lair; Daniella none)
 : own-room? ( -- flag )  my-room dup own-a @ =  swap own-b @ =  or  own-a @ 0< 0= and ;
 : own-tri ( -- tri )  my-room own-a @ = if  own-a-tri  else  own-b-tri  then  @ ;
+: held-home? ( -- flag )  my-mode @ held-off =  own-room? and ;   \ held off, in one of his own rooms
 : her-room ( -- room )  fiona dup 0< if  drop -1 exit  then  dup body? if  body-room  else  drop -1  then ;
 
 \ ---- the doors that let him down: not that way again until a fresh route ----
@@ -24,12 +25,6 @@ USING: engine game-state actors messages common facts flag-names paths vectors d
 \ ---- his route to a room (> 0 doors, 0 there, -1 none); the next door, its exit here ----
 : next-door ( -- door )  door-i @ doors-n @ < if  door-i @ cells doors + @  else  -1  then ;
 : door-exit ( door -- exit )  dup 0< if  exit  then  my-room door-exit-in ;
-\ Rooms_DoorTri: the door's triangle on a room's side - the original's own measure of the way
-\ to it (its number); -1 none
-: door-tri ( door room -- tri )
-    {: door room :}  door 0< if  -1 exit  then
-    door door-sides {: r0 e0 t0 r1 e1 t1 :}
-    r1 room = if  t1  else  r0 room = if  t0  else  -1  then then ;
 \ Npc_NodeDistance: from the door he came in by to the next one (each its triangle's number)
 : came-door ( -- door )  came-by @ dup 0< if  exit  then  my-room swap room-exit-door ;
 : stretch ( -- ) ( F: -- d )
@@ -101,20 +96,24 @@ defer lying-on ( -- )   ' noop is lying-on   \ down, coming into view: lying, hi
 defer fell-in-view ( -- )   ' noop is fell-in-view   \ down only just: his fall shown (stalker/struck.fs)
 defer bite-let-go ( anim -- )   ' drop is bite-let-go   \ Hewie on him as she left: his letting go (stalker/bitten.fs)
 defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home - stalker/struck.fs)
+defer on-to-next-exit ( -- )   ' noop is on-to-next-exit   \ (held off into his own room by a door - stalker/doorway.fs)
+\ in one of his own rooms, on screen: to its spot (Debilitas_PickDestination there - his giving up
+\ in it, on home there, she coming in: Debilitas_GoTo; Pursuer_ShowUp's action 4 on to it)
+: to-own-spot ( -- )
+    my-path path-clear
+    own-tri dup goal-tri !  dup tri-center goal-at vec!  goal-at plan 0> if  walk-slow play  ['] walking step!  else  stand  then ;
 : come-into-play ( -- )   \ in the room being played now: his search there, or after her (in the run he waits 150 first);
     \ down (knocked out of health out of her sight): lying there, his time down running
     \ held off, on home - she coming into his room doesn't turn him back (Pursuer_StanceByFiona's held off)
     \ (Pursuer_ShowUp: down only just - his time away not run out - his fall shown, else lying; Hewie on him
     \ as she left, his letting go from where the bite was - the leg: down on his front, getting up)
+    0 left-bitten !
     cond @ down-cond = if  0 left-bite !  -1 anim !  stun-t @ if  0 stun-t !  fell-in-view  else  lying-on  then  exit  then
     left-bite @ ?dup if  0 left-bite !  -1 anim !  bite-let-go exit  then
     away-search @ {: left :}
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
-    my-mode @ held-off = own-room? and if   \ (held off in his own room: to its spot - Debilitas_PickDestination)
-        own-tri dup goal-tri !  dup tri-center goal-at vec!  goal-at plan 0> if  walk-slow play  ['] walking step!  else  stand  then  exit
-    then
-    my-mode @ held-off = if  off-home exit  then
+    my-mode @ held-off = if  off-home exit  then   \ (in his own room: to its spot)
     my-mode @ after-her = if  chase-start exit  then
     my-mode @ searching waiting-about 1+ within if  left search-left exit  then
     my-mode @ heading-for-her = if  searching mode!  then
@@ -142,6 +141,9 @@ defer to-door-on-entry ( exit -- )   ' drop is to-door-on-entry
     8 0 do  i exit-area dup 0 area-count within if  my-at vec@ area-in? if  true unloop exit  then  else  drop  then  loop  false ;
 : walk-in ( -- )   \ (come in: marked if onto an exit's spot - Pursuer_EnterRoom's Character_MarkObjects)
     0 entering !  on-exit-spot? if  -1 exit-marked !  then
+    held-home? if   \ (held off into his own room: no walk in - on to the next exit, his route past it the room's
+        come-into-play  came-by @ my-room exit-goal  dup 0< if  drop  else  route! drop  then  on-to-next-exit exit   \ Table3C)
+    then
     in-tri @ 0< if  come-into-play exit  then
     goal-at in-at vec-copy  in-tri @ dup goal-tri !  goal-at plan 0> 0= if   \ (no way in yet - the door still
         room-id in-tri @ in-at vec@ body-place  come-into-play exit   \ swinging open: inside at once)
@@ -325,7 +327,8 @@ create fs-a /vec allot  create fs-b /vec allot
 \ heading for her room - with no way there (Pursuer_PickExit: +0x16F4, Pursuer_ModesSearching then
 \ waits about, its clock 900) out by a way at random meanwhile; before 0.2.42 he sat routing every
 \ frame, heading for her for ever (her room's doors locked against stalkers, say)
-: heading ( -- )  head-for-her  no-way-to-her? if  waiting-about mode!  wander  then ;
+: heading ( -- )   \ (after her so: his lead trailing - ModesSearching's mode 0)
+    head-for-her  no-way-to-her? if  my-mode @ after-her = if  lead-trailing  then  waiting-about mode!  wander  then ;
 : head-home ( -- )
     own-a @ 0< if  wander-off exit  then
     own-a @ route! {: na :}
@@ -335,7 +338,7 @@ create fs-a /vec allot  create fs-b /vec allot
 : modes-away ( -- )
     down-waits? if  exit  then
     my-mode @ case
-        after-her of  heading  my-mode @ after-her = if  tick-down if  heading-for-her mode!  then  then  endof
+        after-her of  heading  my-mode @ after-her = if  tick-down if  heading-for-her mode!  lead-trailing  then  then  endof
         heading-for-her of  heading  endof
         searching of  route-over? if  away-search @ if  -1 away-search +!
                   else  hewie-played? if  next-to-hers? 0= if  -1 hunting-dog !  heading-for-her mode!  heading  then   \ (the run: nothing
@@ -349,6 +352,7 @@ create fs-a /vec allot  create fs-b /vec allot
     \ off in his own room he stays there - Pursuer_TravelOffscreen)
     stun-t @ if  -1 stun-t +!  exit  then
     cond @ down-cond = if  exit  then   \ (down: where he fell, till she comes or the summoner takes him)
+    my-mode @ searching <  away-search @ 0<> and if  -1 away-search +!  exit  then   \ (his wait to follow her: idle)
     modes-away
     my-mode @ held-off = own-room? and if  exit  then  travel ;
 
@@ -365,14 +369,35 @@ create fs-a /vec allot  create fs-b /vec allot
         hp @ 0> if  dog-trust @ 1+ 15 *  bitten @ head-on-attack < if  30  else  60  then  +  stun-t !
         else  cond @ down-cond <> if  down-away  dog-trust @ 1+ 15 * 60 + stun-t !  then  then   \ (out of health: down - his fall a while yet: Pursuer_LeaveScreen's +0x17B4)
     else  anim @ powdered-anim = if  powder-how @ 30 * stun-t !  then  then
-    0 bitten !  cond @ down-cond <> if  0 reeling !  then ;   \ (the bite and the powder over with the room)
+    bitten @ left-bitten !  0 bitten !  cond @ down-cond <> if  0 reeling !  then ;   \ (the bite and the powder over with the room)
+\ a cutscene starting while so (Pursuer_LeftBehind, from the scripts' 0x61): let go - standing, his health
+\ back if gone, not down (Pursuer_GiveUp; the knock-out still counted)
+: left-behind ( -- )
+    in-game @ 0=  away? 0= or  left-bitten @ 0= or if  exit  then
+    0 left-bitten !  0 stun-t !  0 left-bite !  0 reeling !  -1 anim !
+    cond @ down-cond = if  well-cond cond !  0 down-t !  then
+    hp @ 0> 0= if  hp-max @ hp !  then ;
+\ she gone, after her he follows on a while later (Pursuer_RandomWait over the Pursuer's table: at
+\ once 60 in 100, 90 frames 20, 150 10, 240 10); searching on her lead he heads for her room so too
+\ (Pursuer_LeaveScreen's mode 0 and lead 5 - its mode 1), a lead of hers, a noise's or Hewie's
+\ dropped to 2 / 3 (2 / 3 too from 3). Before 0.2.50 he set off at once
+: follow-wait ( -- frames )
+    rnd 100e f* {: F: r :}
+    r 60e f<= if  0 exit  then  r 80e f<= if  90 exit  then  r 90e f<= if  150 exit  then  240 ;
+: lead-dropped ( -- )
+    lead @  dup pull-hewie =  over 3 = or  over pull-noise = or  swap pull-fiona = or if  lead-trailing  then ;
+: after-her-gone ( -- )   \ (in the run Hewie gone: no wait - Pursuer_LeaveScreenEnding)
+    my-mode @ after-her = if  avoid-clear  her-room route! drop  hewie-played? 0= if  follow-wait away-search !  then  exit  then
+    my-mode @ held-off =  hewie-played? or if  exit  then
+    lead @ pull-fiona = if  heading-for-her mode!  follow-wait away-search !  then
+    lead-dropped ;
 : gone-from-view ( -- )   \ (Pursuer_LeaveScreen: the room's doings forgotten - Pursuer_ResetForRoom)
     held-as-she-goes  door-passed  -1 combo !  0 combo-step !
     0 out-going !  -1 body-tri!  my-path path-clear  ['] noop step !  no-search search-phase !  -1 anim !
     \ (a door he was in the middle of - Pursuer_FinishCrossing: the doors let it go as the room is left,
     \ Doors_SaveAll - is his no more, nor is he coming in by one)
     0 apart !  -1 held-door !  -1 asked !  -1 door-use !  0 entering !  0 barging !  0 wandering-out !  0 for-her !
-    my-mode @ after-her = if  avoid-clear  her-room route! drop  then ;
+    after-her-gone ;
 : back-on-floor ( -- )
     making-for @ 0< 0=  to-door f@ 80e f<= and if
         making-for @ false place-at-exit if  come-into-play exit  then

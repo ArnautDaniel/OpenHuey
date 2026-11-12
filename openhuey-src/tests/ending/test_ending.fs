@@ -65,5 +65,19 @@ testing the record waits for circle or Start held, not the cross (SceneEnding_Se
 T{ 0 [: drop ending:step @ ;] in-ending -> 5 }T
 : on-and-on ( -- flag )  circle press  stage? ending:done = ;
 T{ ' on-and-on 1200 soon -> -1 }T
+testing the clear-data save (the sub screen's mode 9): the unlocks not written meanwhile; the picture out,
+testing ... asked - no (the triangle): quit without saving? no: asked again; yes: the system data written, "Saved."
+: held? ( -- flag )  s" saves" actor-named enter  saves:system-held @  leave-actor ;
+: sub@ ( xt -- x )  s" subscreen" actor-named enter  execute  leave-actor ;
+: step? ( -- n )  [: subscreen.state:save-step @ ;] sub@ ;
+: asked? ( -- flag )   \ (up: the keys its)
+    [: subscreen.state:mode @ subscreen.state:on-clear-save =  subscreen.state:stage @ subscreen.state:up = and ;] sub@  step? 10 = and ;
+T{ held?  ' asked? 600 soon -> -1 -1 }T
+: tap ( button -- )  button-keys drop  dup true key-hold  2 run-frames  false key-hold  2 run-frames ;   \ (held 2: its frames while the world is held)
+T{ triangle tap  step?  cross tap  step? -> 11 10 }T   \ (the triangle a no; the second's no picked first)
+T{ cross tap  step?  held? -> 3 0 }T
+testing ... then shut, back to the title
+: titled? ( -- flag )  stage? ending:playing = ;
+T{ cross tap  ' titled? 300 soon -> -1 }T
 
 test-summary

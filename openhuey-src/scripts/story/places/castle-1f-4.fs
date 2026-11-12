@@ -85,7 +85,7 @@ $15 constant castle-1f-7-room   $31 constant after-riccardo-room
 : mechanism-starts ( -- )  plate-act @ ?dup if  1- stop-act  then  ['] mechanism start 1+ plate-act ! ;
 : plate-down ( who -- )   \ (someone onto the plate)
     floor-plate-pressed fact!  -1 someone-on-plate !  came-in-sound room-bank rot sound-by ;
-defer the-trap
+defer the-trap ( -- )
 : on-the-plate ( -- )   \ (the original's area $D logic: the first onto it, the last off)
     someone-on-plate @ 0= if
         hewie plate-area in-area? if  hewie plate-down  mechanism-starts exit  then
@@ -100,7 +100,7 @@ defer the-trap
         floor-plate-pressed fact-off  0 someone-on-plate !  mechanism-starts
     then ;
 :noname ( -- )   \ (act0A: she stands on it alone, the marionette used - down to castle-1f-7, the gate on her)
-    fiona hold  stalkers-stay state!  castle-1f-7-room s" rooms" actor-named send room-preload  fiona wait-move
+    fiona hold  stalkers-stay state!  castle-1f-7-room rooms-id send room-preload  fiona wait-move
     15 screen:to-black fade wait-fade
     world-held state!  scene-locked state!  world-frozen state!  subscreen-locked state!  panic-eased  panic-held state!
     forced-exit take-exit ; is the-trap
@@ -119,7 +119,7 @@ defer the-trap
         else  0 someone-on-plate !  0 plate-frames !  then  then
     then  drop
     true plate-height
-    c2f-3-flag1 fact? 0= if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then
+    c2f-3-flag1 fact? 0= if  daylight-tint  then
     flame-fx 0 22.8e 14.65e 68.75e flame-at
     weak-wall-broken fact? if
         broken-wall-part show-part  -1 sparkle-shown !
@@ -138,7 +138,7 @@ defer the-trap
     yield  other-figure figure-out
     6 scenes:opaque-when-movie 0 load-scene  ['] riccardo-shots at-shots  panic-eased
     if  riccardo-msg run-scene  then  st-kind-now @ false no-shadow   \ (his shadow back, the scene skipped or not)
-    scene-locked state-off  after-riccardo-room s" rooms" actor-named send room-preload
+    scene-locked state-off  after-riccardo-room rooms-id send room-preload
     fiona send calm-reset  world-held state!  0 summon-take  figure-slot figure-out
     forced-exit take-exit ;
 : back-by-the-trap ( -- )   \ (act0B: back from it - "What's that noise?")
@@ -308,7 +308,7 @@ create entries  1 , 1 ,   0 , 0 ,   0 , 0 ,   0 , 0 ,      \ (by exit 0 .. 3: th
     saturnus-hint-on fact?  c1f-14-flag2 fact? 0= and if  c1f-14-flag2 fact!  0 summon-take  then ;
 : replay-riccardo ( -- )   \ (act19)
     fiona hold  puppet-door-part show-part  2 object-show  3 object-show  4 object-show  wall-part show-part
-    $84 $60 $3C $50 $24 $2A $2A $46 room-tint  flame-fx 0 22.8e 14.65e 68.75e flame-at
+    daylight-tint  flame-fx 0 22.8e 14.65e 68.75e flame-at
     riccardo-kind figure-slot figure-in  yield  2 stalker-ready  yield
     6 scenes:opaque-when-movie 0 load-scene  ['] riccardo-shots at-shots  panic-eased
     if  riccardo-msg run-scene  then  st-kind-now @ false no-shadow

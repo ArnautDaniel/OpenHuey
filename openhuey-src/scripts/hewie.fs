@@ -6,7 +6,7 @@
 \ He is spawned with the game but comes in only when told (`join-fiona`: the story, or the
 \ console); `part-from-fiona` sends him off.
 IN: hewie
-USING: engine facts actors messages common paths vectors saves hewie-names hewie.state hewie.body hewie.anims hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted hewie.fetch hewie.steered floor-flags ;
+USING: engine facts actors messages common paths vectors saves story-names hewie-names hewie.state hewie.body hewie.anims hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted hewie.fetch hewie.steered floor-flags ;
 
 \ at heel: behind her and a little to her side (where she is when that isn't floor), her way
 create heel-at /vec allot
@@ -23,36 +23,56 @@ create heel-at /vec allot
 : part ( -- )
     body-off  0 him-model act.visible l!  model 0 dog-legs ;
 
-\ his coat (the story's 0xB7: DogModel / DogModelA / DogModelB) - kinds 0..2 are HEW_000..002, all
-\ with HEW_000's textures; his place, his showing and who he is to the scenes kept
-: coat-file ( kind -- addr len )
-    case  1 of  s" O_HEW/HEW_001"  endof  2 of  s" O_HEW/HEW_002"  endof  >r s" O_HEW/HEW_000" r>  endcase ;
+\ his coat (Hewie_LoadFiles): the model's set by the story's 0xB7 - DogModel / DogModelA / DogModelB,
+\ O_HEW / O_HEG / O_HED, each with its _000 textures - and in it the n-th by how far the story has
+\ come (the progress' flags the game over's music goes by too: the latest set wins); his event keys
+\ HEW_00n's. Chosen as his files load: a game started or loaded (afresh: DogModel), and the 0xB7.
+\ His place, his showing and who he is to the scenes kept
+: stage-coat ( -- n )
+    over-music-e story-flag? if  4 exit  then  over-music-d story-flag? if  3 exit  then
+    over-music-c story-flag? if  2 exit  then  over-music-b story-flag? if  1 exit  then  0 ;
+: coat-set ( kind -- addr len )   \ ("O_HEW/HEW_00": the number to come)
+    case  1 of  s" O_HEG/HEG_00"  endof  2 of  s" O_HED/HED_00"  endof  >r s" O_HEW/HEW_00" r>  endcase ;
+create coat-name 16 allot   create coat-keys 16 allot
+: numbered ( addr len n buf -- addr' len' )   \ (the set's name and its number)
+    {: a n k buf :}  a buf n move  [char] 0 k + buf n + c!  buf n 1+ ;
 : dress ( kind -- )
-    him-model act.visible l@ >r
+    {: kind :}  him-model act.visible l@ {: shown :}
     model actor-free
-    coat-file s" O_HEW/HEW_000" actor-load-textured  dup his-model !  s" motions-hewie" motion-table
-    r> him-model act.visible l!
+    kind coat-set stage-coat coat-name numbered   kind coat-set 0 coat-keys numbered  actor-load-textured
+    dup his-model !  s" motions-hewie" motion-table
+    model  0 coat-set stage-coat coat-keys numbered  actor-markers   \ (his keys: HEW's)
+    shown him-model act.visible l!
     along? if  1 model cast-as  then ;
 
 : place-on ( room tri -- )   \ (Hewie_PlaceInRoom: triangle -1 is that room, on none; in another room
     over room-id <>  over 0< or if  0e 0e 0e  else  dup tri-center  then   \ only his triangle - its mesh isn't this one)
     body-place  stand-anim placed-at-rest  model actor-settle ;
+\ a script takes him (the story's action: request 5 - Hewie_Interrupted, then action 0): his way dropped,
+\ standing under the script; the stalker he was fighting let go (Character_ToIdle: his hold on him
+\ shaken off) - she, in a gesture with him, gives it up as he leaves it (fiona/commands.fs dog-off?)
+: fighting? ( act -- flag )  dup at-flank-act at-leg-2-act 1+ within  over after-attack-act = or  swap tackle-act = or ;
+: interrupted ( -- )
+    his-action @ fighting?  pursuer 0< 0= and if  pursuer send shaken-off  then
+    path-stop  -1 his-busy !  choose-act 0 want ;
 behaviour hewie-own
   on spawned ( -- )
       6 0 do  16 i cells his-skill + !  loop   \ (Hewie_LoadState: his skills at fetching, middling)
       s" O_HEW/HEW_000" actor-load dup his-model !  s" motions-hewie" motion-table   \ (his motion table: fades and flags)
       0 him-model act.visible l!
       2.5e 5e body-size  hewie-floor body-mask!  body-off
-      s" fiona" actor-named his-fiona !
+      fiona-id his-fiona !
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe write-save
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end
       self subscribe stalker-doing  self subscribe stalker-ties  self subscribe creature-doing  self subscribe scene  self subscribe camera-cut  -1 st-id !  100 st-age !  -1 his-grip !
-      self subscribe danger-signals  self subscribe fiona-struck-by  -1 her-struck-by !  self subscribe characters-still
-      -1 his-heard-src !  0 hewie-noise s" acoustics" actor-named send listen   \ (Character_Hearing: any noise but his own)
-      #creatures 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop ;
-  on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
+      self subscribe danger-signals  self subscribe game-loaded  self subscribe fiona-struck-by  -1 her-struck-by !  self subscribe characters-still
+      -1 his-heard-src !  0 hewie-noise acoustics-id send listen   \ (Character_Hearing: any noise but his own)
+      #creatures 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop  -1 his-meet ! ;   \ (no meeting asked)
+  on game-loaded ( -- )  0 dress ;   \ (a game loaded: his files loaded afresh, DogModel's)
+  on join-fiona ( -- )  fiona-id his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
   on part-from-fiona ( -- )  part  1 -1 cast-as ;
   on hewie-costume ( kind -- )  dress ;
+  on partner-interrupted ( -- )  along? his-busy @ 0= and if  to-default  then ;   \ (Hewie_BackToIdle)
   on hewie-yelp ( time anim -- )  his-yelp-anim !  dup 0< if  drop  else  his-yelp !  then ;   \ (the story's 0x77: Hewie_SetAnim)
   on hewie-play ( anim -- )  model swap 0 0 motion-play ;                                      \ (the story's 0xD7: Motion_Play)
   on hewie-hold ( on -- )  5 his-wait !  0<> his-stay ! ;                                      \ (the story's 0xBB)
@@ -88,7 +108,7 @@ behaviour hewie-own
   on arrived ( room exit -- )
       hewie-played? along? and if  nip played-arrive exit  then
       drop fiona-room !
-      his-joining @ if  s" fiona" actor-named his-fiona !  join  then ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
+      his-joining @ if  fiona-id his-fiona !  join  then ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
   \ a scene starting (the scripts' 0x61: Hewie_LeftBehind) - out of the room after an attack
   \ (0x38): his default; his mood back to normal
   on scene ( on -- )   \ (given back - Hewie_Halt: his feet afresh, his default action)
@@ -158,7 +178,7 @@ behaviour hewie-own
       if  sender send meet-on  tell-doing  else  sender send meet-refused  then ;
   on meet-off ( -- )  -1 his-meet ! ;
   \ the story's moves (H4: Hewie_Requests)
-  on scripted ( on -- )  along? if  his-busy !  else  drop  then ;
+  on scripted ( on -- )  along? if  dup if  interrupted  then  his-busy !  else  drop  then ;
   on scripted-move ( kind a b x y z yaw -- )
       along? 0= if  2drop 2drop 2drop drop exit  then
       cell>f his-to-yaw f!  cells>xyz his-to vec!
