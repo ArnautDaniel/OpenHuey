@@ -5,7 +5,10 @@
  * say exactly).
  *
  *   nodes 0..n-1  the bones, at rest (translation, rotation: viewers see the model standing), each
- *                 its own rest angles exact in extras "hga": "bone <parent> <rx ry rz> <px py pz>"
+ *                 its own rest angles exact in extras "hga": "bone <parent> <rx ry rz> <px py pz>",
+ *                 named "bone <i>". Read back from the skin's joints: the game's by those names (in
+ *                 any order: Blender's), any a mod added after them - rest and parent from their
+ *                 nodes, if they have no extras (docs/modding.md "A model's bones")
  *   node n        the model: mesh 0 skinned by skin 0 (the bones, their inverse bind matrices)
  *   mesh 0        a primitive a draw (indexed), JOINTS_0 / WEIGHTS_0 the bones and their weights;
  *                 its extras "hga": "draw ..." (data/roomgltf.h's words, then where its vertices go)
@@ -14,7 +17,7 @@
  *                 less the rest: exact - the game's keys are 1/4096 steps); its words go on
  *                 "morph <face 1 / hand 0> <hand pose 0 / 1> <shapes> <its draw's place>"
  *   materials     the model's textures (its .texbank beside, as `textures` names it)
- *   scene extras  "hga": "model <format> <bones> <vertices> <the bone table, 256 bytes in hex>"
+ *   scene extras  "hga": "model <format> <the game's bones> <vertices> <the bone table, 256 bytes in hex>"
  *                 (format 2; 1 had no faces' and hands' meshes - still read: their rest alone)
  *                 (a draw's words end with where its vertices start: the draws go in their passes'
  *                 order, not their vertices')

@@ -277,14 +277,17 @@ the faces and hands (resource 1's morphing parts) each a mesh of its own, skinne
 shapes glTF morph targets (shape keys in Blender: each shape less the rest, exact - the game's keys
 are 1/4096 steps) - format 2 (format 1, before them, is still read: faces and hands that don't
 move);
-each bone's exact rest angles, the bone table and the draws' engine words in `extras`. The
+each bone's exact rest angles, the bone table and the draws' engine words in `extras`. The bones
+are read from the skin's joints: the game's by their names (`bone <i>`, in any order), any others
+a mod added after them, rest and parent from their nodes (`docs/modding.md` "A model's bones"). The
 materials point at the model's textures (`../FIN_000.texbank/`). The motions stay the game's:
 the engine plays its keys - Euler angles between keys, special tracks, parts - as the original
 does, which glTF's animations (quaternions, slerp) can't reproduce exactly; a readable form of
 them is for later. The two .PCKs the engine doesn't build as models (`DNT_200`, `WIR_200`) are
 copied as they are.
 
-`model-check` (a ctest) writes every model as glTF and reads it back: the same `Model` - bones,
+`model-check` (a ctest) writes every model as glTF and reads it back (and Fiona with a bone a mod
+added, her joints reordered as Blender may: her bones where they were): the same `Model` - bones,
 bone table, every vertex and draw (the draws in their passes' order: a draw's words say where its
 vertices go), the faces' and hands' every shape, the motion bank's bytes; valid glTF. 113 models
 (280 faces and hands): 107 MB of PCK, 115 MB of glTF and motions.

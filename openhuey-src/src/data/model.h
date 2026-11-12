@@ -13,9 +13,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define MODEL_MAX_BONES 128
+#define MODEL_MAX_BONES 256   /* (a vertex names its bones in bytes) */
 
 typedef struct ModelBone {
+    char name[32];           /* "bone <i>" (a mod's model may add bones of its own names) */
     int parent;              /* -1: the root */
     float rest_rot[3];       /* Euler angles: about X, then Y, then Z */
     float rest_pos[3];
@@ -46,6 +47,8 @@ typedef struct Model {
     size_t size;
     ModelBone bones[MODEL_MAX_BONES];
     int nbones;
+    int ngame;               /* how many of them are the game's own (0: all): any after them a mod's
+                              * model added, which no motion moves */
     const uint8_t *bone_table;   /* motion track code + 1 -> bone */
     SkinVertex *v;           /* triangle lists, per draw */
     int nv;
@@ -138,6 +141,16 @@ typedef struct ModelTurn {
     float pitch, yaw;
 } ModelTurn;
 void model_pose_turns(const ModelTurn *t, int n);
+/* bones' own turns set from outside (a mod's: bone-set), in place of what the motions give them,
+ * as the next pose is made - the game's bones or ones a mod's model added (docs/modding.md) */
+typedef struct ModelSet {
+    int bone;
+    float rot[3];            /* Euler angles as a motion's: about X, then Y, then Z */
+} ModelSet;
+#define MODEL_MAX_SETS 64
+void model_pose_sets(const ModelSet *s, int n);
+/* the bone of that name, -1 if none */
+int model_bone_named(const Model *m, const char *name);
 /* a hook on the next poses: the bones' world matrices (model space) once built, before skinning */
 typedef void (*ModelPoseHook)(Mat4 *world, int nbones, void *user);
 void model_pose_hook(ModelPoseHook hook, void *user);

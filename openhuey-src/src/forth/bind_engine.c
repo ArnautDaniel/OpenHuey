@@ -2792,6 +2792,66 @@ PRIM(p_turn_add) {   /* ( id bone -- ) ( F: pitch yaw -- ) a bone turned as it i
         a->nturns++;
     }
 }
+/* a mod's hold on bones (docs/modding.md "A model's bones"): their own turns set over the
+ * motions' (ModelSet), the bones found by name - the game's "bone <i>", or ones its model added */
+PRIM(p_bone_count) {   /* ( id -- n ) its model's bones (the game's and any its model added) */
+    PUSH(actor_arg(f, POP())->model.nbones);
+}
+PRIM(p_bone_named) {   /* ( id addr len -- bone | -1 ) the bone of that name ("bone 12", or a mod's own) */
+    Cell n = POP(), a = POP();
+    Actor *ac = actor_arg(f, POP());
+    char name[sizeof(((ModelBone *)0)->name)];
+
+    snprintf(name, sizeof(name), "%.*s", (int)n, (const char *)a);
+    PUSH(model_bone_named(&ac->model, name));
+}
+PRIM(p_bone_parent) {   /* ( id bone -- parent | -1 ) the bone it hangs from (-1: a root, or no such bone) */
+    Cell b = POP();
+    Actor *a = actor_arg(f, POP());
+
+    PUSH(b >= 0 && b < a->model.nbones ? a->model.bones[b].parent : -1);
+}
+PRIM(p_bone_rest) {   /* ( id bone -- ) ( F: -- rx ry rz ) its own turn at rest (radians: about x, y, z
+                       * in turn, as the motions turn it; 0 0 0 no such bone) */
+    Cell b = POP();
+    Actor *a = actor_arg(f, POP());
+    const float *r = b >= 0 && b < a->model.nbones ? a->model.bones[b].rest_rot : NULL;
+
+    FPUSH(r != NULL ? r[0] : 0.0f); FPUSH(r != NULL ? r[1] : 0.0f); FPUSH(r != NULL ? r[2] : 0.0f);
+}
+PRIM(p_bone_set) {   /* ( id bone -- ) ( F: rx ry rz -- ) its own turn from now on, in place of the motions'
+                      * (as bone-rest's; its children with it) - till bone-free; up to 64 bones */
+    float rz = (float)FPOP(), ry = (float)FPOP(), rx = (float)FPOP();
+    Cell b = POP();
+    Actor *a = actor_arg(f, POP());
+    int k;
+
+    if (b < 0 || b >= a->model.nbones) {
+        return;
+    }
+    for (k = 0; k < a->nsets && a->sets[k].bone != (int)b; k++) {
+    }
+    if (k == MODEL_MAX_SETS) {
+        return;
+    }
+    a->sets[k] = (ModelSet){(int)b, {rx, ry, rz}};
+    if (k == a->nsets) {
+        a->nsets++;
+    }
+}
+PRIM(p_bone_free) {   /* ( id bone -- ) back to the motions' turn */
+    Cell b = POP();
+    Actor *a = actor_arg(f, POP());
+    int k;
+
+    for (k = 0; k < a->nsets; k++) {
+        if (a->sets[k].bone == (int)b) {
+            a->sets[k] = a->sets[--a->nsets];
+            return;
+        }
+    }
+}
+PRIM(p_bones_free) { actor_arg(f, POP())->nsets = 0; }   /* ( id -- ) every bone back to the motions' */
 PRIM(p_foot_down) {   /* ( id foot -- flag ) foot 0..3 (front right, front left, hind right, hind left)
                        * on the ground now (DogModel_FootDown: the contact tracks -5 / -6; while a
                        * motion fades in, down in both, or in the new one if only it says) */
@@ -4033,7 +4093,7 @@ void bind_engine(Forth *f) {
         {"message-close-after", p_message_close_after, "( -- n )"}, {"message-run", p_message_run, "( page line col frame -- addr len colour )"}, {"message-place", p_message_place, "( page -- n )"}, {"message-align", p_message_align, "( page line -- n )"}, {"ui-text-in", p_ui_text_in, "( layer addr len x y rgba scale palette -- )"}, {"ui-blend", p_ui_blend, "( layer mode fix -- )"}, {"ui-image4", p_ui_image4, "( layer x0 y0 x1 y1 x2 y2 x3 y3 group id csa u v uw vh rgba -- )"}, {"message-param!", p_message_param, "( slot id -- )"}, {"message-param$", p_message_param_text, "( slot addr len -- )"}, {"exit-spot", p_exit_spot, "( exit which -- tri ) ( F: -- F: x y z )"},
         {"actor-load", p_actor_load, "( addr len -- id )"}, {"actor-free", p_actor_free, "( id -- )"}, {"cloth-force!", p_cloth_force, "( model set -- ) ( F: x y z -- )"}, {"cloth-back!", p_cloth_back, "( model pose -- )"}, {"actor-texture-swap", p_actor_texture_swap, "( model sel addr len -- flag )"}, {"actor-texture-restore", p_actor_texture_restore, "( model -- )"}, {"actor-markers", p_actor_markers, "( id addr len -- )"}, {"actor", p_actor, "( id -- addr )"},
         {"motion!", p_motion_store, "( id motion-id -- )"}, {"has-motion?", p_has_motion, "( id motion-id -- flag )"}, {"motion-play", p_motion_play, "( id motion-id blend flags -- )"}, {"motion-entry", p_motion_entry, "( id motion-id -- blend pose flags )"}, {"motion-index", p_motion_index, "( id motion-id -- i | -1 )"}, {"motion-variant", p_motion_variant, "( id motion-id -- )"}, {"motion-events", p_motion_events, "( id layer dt loop -- bits )"},
-        {"motion-table", p_motion_table, "( id addr len -- )"}, {"exe-table", p_exe_table, "( addr len -- addr n | 0 0 )"}, {"root-delta", p_root_delta, "( id -- ) ( F: -- F: turn dx dy dz )"}, {"bone-pos", p_bone_pos, "( id bone -- ) ( F: -- F: x y z )"}, {"bone-point", p_bone_point, "( id bone -- ) ( F: ox oy oz -- F: x y z )"}, {"foot-down?", p_foot_down, "( id foot -- flag )"}, {"dog-legs", p_dog_legs, "( id on -- )"}, {"human-legs", p_human_legs, "( id right left -- )"}, {"legs-fit", p_legs_fit, "( id tri mask plant -- ) ( F: back front -- )"}, {"lorenzo-chair", p_lorenzo_chair, "( id on -- )"}, {"chair-fit", p_chair_fit, "( id tri mask -- ) ( F: front back pitch yaw -- )"}, {"chair-rises", p_chair_rises, "( id -- ) ( F: body front -- )"}, {"head-bones", p_head_bones, "( id head neck -- )"}, {"head-turn", p_head_turn, "( id -- ) ( F: pitch yaw -- )"}, {"legs-height", p_legs_height, "( id -- ) ( F: -- F: y )"}, {"motion-track", p_motion_track, "( id code prev? -- flag ) ( F: -- F: a b c )"}, {"motion-track-by", p_motion_track_by, "( id code prev? -- flag ) ( F: dt -- F: a b c )"}, {"foot-at", p_foot_at, "( id left? -- down? ) ( F: dt -- F: x y z )"}, {"motion-overlay", p_motion_overlay, "( id motion-id -- )"}, {"turns-clear", p_turns_clear, "( id -- )"}, {"turn+", p_turn_add, "( id bone -- ) ( F: pitch yaw -- )"}, {"motion@", p_motion_fetch, "( id -- motion-id | -1 )"}, {"motion-done?", p_motion_done, "( id -- flag )"},
+        {"motion-table", p_motion_table, "( id addr len -- )"}, {"exe-table", p_exe_table, "( addr len -- addr n | 0 0 )"}, {"root-delta", p_root_delta, "( id -- ) ( F: -- F: turn dx dy dz )"}, {"bone-pos", p_bone_pos, "( id bone -- ) ( F: -- F: x y z )"}, {"bone-point", p_bone_point, "( id bone -- ) ( F: ox oy oz -- F: x y z )"}, {"foot-down?", p_foot_down, "( id foot -- flag )"}, {"dog-legs", p_dog_legs, "( id on -- )"}, {"human-legs", p_human_legs, "( id right left -- )"}, {"legs-fit", p_legs_fit, "( id tri mask plant -- ) ( F: back front -- )"}, {"lorenzo-chair", p_lorenzo_chair, "( id on -- )"}, {"chair-fit", p_chair_fit, "( id tri mask -- ) ( F: front back pitch yaw -- )"}, {"chair-rises", p_chair_rises, "( id -- ) ( F: body front -- )"}, {"head-bones", p_head_bones, "( id head neck -- )"}, {"head-turn", p_head_turn, "( id -- ) ( F: pitch yaw -- )"}, {"legs-height", p_legs_height, "( id -- ) ( F: -- F: y )"}, {"motion-track", p_motion_track, "( id code prev? -- flag ) ( F: -- F: a b c )"}, {"motion-track-by", p_motion_track_by, "( id code prev? -- flag ) ( F: dt -- F: a b c )"}, {"foot-at", p_foot_at, "( id left? -- down? ) ( F: dt -- F: x y z )"}, {"motion-overlay", p_motion_overlay, "( id motion-id -- )"}, {"turns-clear", p_turns_clear, "( id -- )"}, {"turn+", p_turn_add, "( id bone -- ) ( F: pitch yaw -- )"}, {"bone-count", p_bone_count, "( id -- n )"}, {"bone-named", p_bone_named, "( id addr len -- bone )"}, {"bone-parent", p_bone_parent, "( id bone -- parent )"}, {"bone-rest", p_bone_rest, "( id bone -- ) ( F: -- rx ry rz )"}, {"bone-set", p_bone_set, "( id bone -- ) ( F: rx ry rz -- )"}, {"bone-free", p_bone_free, "( id bone -- )"}, {"bones-free", p_bones_free, "( id -- )"}, {"motion@", p_motion_fetch, "( id -- motion-id | -1 )"}, {"motion-done?", p_motion_done, "( id -- flag )"},
         {"motion-frames", p_motion_frames, "( id -- frames )"}, {".motions", p_motions, "( id -- )"},
         {"rumble", p_rumble, "( channel strength frames -- )"}, {"rumble-buzz", p_rumble_buzz, "( channel on frames -- )"}, {"rumble-swell", p_rumble_swell, "( channel from to frames -- )"}, {"rumble-sequence-clear", p_rumble_seq_clear, "( -- )"}, {"rumble-step", p_rumble_seq_add, "( small? from to frames -- )"}, {"rumble-now", p_rumble_now, "( -- small? large )"}, {"rumble-allowed!", p_rumble_allow, "( flag -- )"}, {"game-volume!", p_game_volume, "( F: v -- )"}, {"world-volume!", p_world_volume, "( F: v -- )"}, {"world-volume", p_world_volume_q, "( F: -- v )"}, {"pad-stick", p_pad_stick, "( F: -- x y )"}, {"key-down?", p_key_down, "( key -- flag )"}, {"key-hold", p_key_hold, "( scancode flag -- )"}, {"controls", p_controls, "( -- n )"}, {"control-key", p_control_key, "( i -- scancode )"}, {"control-binding", p_control_binding, "( i which -- scancode )"}, {"control-bind", p_control_bind, "( scancode i which -- )"}, {"controls-reset", p_controls_reset, "( -- )"}, {"control-bind-next", p_control_bind_next, "( i -- )"}, {"control-waiting", p_control_waiting, "( -- i )"}, {"key-name", p_key_name, "( scancode -- addr len )"}, {"mod-camera", p_mod_camera, "( -- addr )"}, {"mod-camera!", p_mod_camera_set, "( on -- )"}, {"mod-camera?", p_mod_camera_has, "( -- flag )"}, {"mouse-capture", p_mouse_capture, "( on -- )"}, {"art-picture", p_art_picture, "( picture group -- h flag )"}, {"thumbnail", p_thumbnail, "( movie group -- flag )"}, {"alone", p_alone, "( id -- )"}, {"cam-keep", p_cam_keep, "( -- )"}, {"cam-kept", p_cam_kept, "( -- )"}, {"key-push", p_key_push, "( scancode -- )"}, {"key-pressed?", p_key_pressed, "( key -- flag )"}, {"mouse-dx", p_mouse_dx, "( F: -- F: dx )"},
         {"mouse-dy", p_mouse_dy, "( F: -- F: dy )"}, {"freecam?", p_freecam, "( -- flag )"}, {"freecam!", p_freecam_set, "( on -- )"}, {"mouse-down?", p_mouse_down, "( button -- flag )"},

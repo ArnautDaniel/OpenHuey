@@ -1,5 +1,6 @@
 #include "model.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -376,11 +377,13 @@ int model_build(Model *m, uint8_t *pck, size_t size) {
     if (m->nbones <= 0 || m->nbones > MODEL_MAX_BONES) {
         return 0;
     }
+    m->ngame = m->nbones;
     for (i = 0; i < (uint32_t)m->nbones; i++) {
         size_t rec = res0 + 0x10 + i * 0x70;
         ModelBone *bone = &m->bones[i];
         int j;
 
+        snprintf(bone->name, sizeof(bone->name), "bone %u", i);
         bone->parent = (int32_t)u32(&r, rec);
         for (j = 0; j < 3; j++) {
             bone->rest_rot[j] = f32(&r, rec + 0x10 + j * 4);
@@ -1062,6 +1065,8 @@ const Vec3 (*model_pose_axes(void))[3] { return (const Vec3 (*)[3])sAxes; }
 
 static ModelTurn sTurns[8];
 static int sNTurns;
+static ModelSet sSets[MODEL_MAX_SETS];
+static int sNSets;
 static ModelPoseHook sHook;
 static void *sHookUser;
 static ModelBoneAdjust sAdjust;
@@ -1082,6 +1087,24 @@ void model_pose_turns(const ModelTurn *t, int n) {
     if (sNTurns > 0) {   /* (none: t may be NULL) */
         memcpy(sTurns, t, (size_t)sNTurns * sizeof(*t));
     }
+}
+
+void model_pose_sets(const ModelSet *s, int n) {
+    sNSets = n < MODEL_MAX_SETS ? n : MODEL_MAX_SETS;
+    if (sNSets > 0) {
+        memcpy(sSets, s, (size_t)sNSets * sizeof(*s));
+    }
+}
+
+int model_bone_named(const Model *m, const char *name) {
+    int i;
+
+    for (i = 0; i < m->nbones; i++) {
+        if (strcmp(m->bones[i].name, name) == 0) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 /* bone i's world matrix turned about its own place: by `pitch` about model x, then `yaw` about
@@ -1168,6 +1191,11 @@ void model_pose_layers(const Model *m, const ModelLayer *layers, int nlayers, Ma
         }
         memcpy(rot, rot1, sizeof(float) * 3 * (size_t)m->nbones);
         memcpy(pos, pos1, sizeof(float) * 3 * (size_t)m->nbones);
+    }
+    for (k = 0; k < sNSets; k++) {   /* (set from outside: over the motions) */
+        if (sSets[k].bone >= 0 && sSets[k].bone < m->nbones) {
+            memcpy(rot[sSets[k].bone], sSets[k].rot, sizeof(rot[0]));
+        }
     }
     /* world matrices, parents first (a few passes in case a parent comes later in the list) */
     memset(done, 0, sizeof(done));
