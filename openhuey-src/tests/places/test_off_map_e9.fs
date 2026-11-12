@@ -69,6 +69,9 @@ T{ 0 by  room-id  his-camera@  glows  [: 3 part? ;] in-place -> off-map-e9 0 -1 
 testing ... another kind: the night's look - the lamps lit, their four glows
 0 $2E var!
 T{ 0 by  glows  [: 3 part?  8 part?  0 part? ;] in-place -> 4 -1 -1 0 }T
+testing a lamp flickering isn't started over (its track, mode 0)
+: flickers-of ( xt -- n )  0  story.kit:#activities 0 do  i story.kit:act-slot @ 0<>  i cells story.kit:act-xts + @ 3 pick = and  1 and +  loop  nip ;
+T{ [: 0 flicker-lamp  0 flicker-lamp  ['] flicker-0 flickers-of  ['] flicker-0 stop-doing ;] in-place -> 1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 testing its cameras: area 6 set 1, 7 / 9 set 0 (no path), 8 set 2 (path 0)
 T{ 6 hinto  his-camera@  7 hinto  his-camera@  8 hinto  his-camera@  9 hinto  his-camera@ -> 1 1 0 -1 2 0 0 -1 }T
