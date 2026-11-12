@@ -20,7 +20,7 @@ $2F constant search-var   1 constant bush-way
     bush-way search-var $E7 -90 70.5e -5.5e 90.5e -4.5e bush  floor-flag-40000 bush-floor ! ;
 
 \ ---- the bush: in at Hewie's command ----
-: hides ( -- )  stalkers-stay state!  fiona hold  fiona $19A 90 70.5e -5.5e walk-to  in-the-bush ;
+: hides ( -- )  stalkers-stay state!  fiona hold  fiona $19A 90 -1 walk-path-move 70.5e -5.5e go-to  in-the-bush ;
 : cue? ( -- flag )   \ (he stands by it, gives a command; she came by its side, free, nobody after her)
     hewie 70.5e -5.5e 20e centre-across?  fiona here? and  came-by @ bush-way = and
     fiona held? 0= and  in-panic? 0= and  fiona-idle? and  played-gesture -1 <> and

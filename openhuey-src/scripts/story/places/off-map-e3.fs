@@ -28,7 +28,7 @@ $2E constant run-kind-var   0 constant her-motions   $31 constant search-var   2
 \ ---- the cupboards ----
 : hides ( -- )
     stalkers-stay state!
-    far-side @ if  fiona $1FA 90 -48.07e -31.71e walk-to  else  fiona $14A -90 -24.3e -32.94e walk-to  then
+    far-side @ if  fiona $1FA 90 -1 walk-path-move -48.07e -31.71e go-to  else  fiona $14A -90 -1 walk-path-move -24.3e -32.94e go-to  then
     0 searched !
     far-side @ if  her-motions $1FA 90 -1 -49.507e -33.083e hides-in
     else  her-motions $14A -90 -1 -22.548e -33.225e hides-in  then ;

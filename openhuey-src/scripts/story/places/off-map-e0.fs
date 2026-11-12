@@ -44,7 +44,7 @@ $2E constant run-kind-var   1 constant her-motions   $30 constant search-var
     ['] run-begins hewie start-holding drop ;
 
 \ ---- the wardrobe ----
-: hides ( -- )  stalkers-stay state!  fiona $27 180 14.32e -41.52e walk-to  her-motions $27 180 -1 14.5e -37.5e hides-in ;
+: hides ( -- )  stalkers-stay state!  fiona $27 180 -1 walk-path-move 14.32e -41.52e go-to  her-motions $27 180 -1 14.5e -37.5e hides-in ;
 : odds ( -- pct )  search-var var@ case  2 of 25 endof  3 of 50 endof  >r 0 r>  endcase ;
 : finds-her ( -- )  stalker hold  stalker wait-move  0 door-for-him  1 door-for-him  $1C 180 -0.663e -24.791e run-finds-her ;
 : stalker-came ( -- )  came-on-her? if  odds search-var ['] finds-her run-searches  then ;
