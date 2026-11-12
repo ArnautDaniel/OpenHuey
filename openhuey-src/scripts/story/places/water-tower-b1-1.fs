@@ -181,10 +181,10 @@ create flames   74.12e f, 19.12e f, -207.3e f,   28.1e f, 18.9e f, -256.9e f,   
     1 rattles +!  10 trust+  rattle-file give-file ;
 : in-the-cell ( -- )   \ (phase 1 while in it: her commands to Hewie; the door she kicks)
     out-of-cell fact? if  exit  then
-    started-now @ go-there-cmd =  hewie held? 0= and  hewie-breakable-now @ and if   \ (cond $31: Hewie_MayBreakOff - he may be taken off what he does)
+    started-now @ go-there-cmd =  hewie held? 0= and  hewie-breakable-now @ and  fiona held? 0= and if   \ (cond $31: Hewie_MayBreakOff - he may be taken off what he does; act 2 on her, mode 0)
         ['] sends-for-key fiona start-holding drop
     then
-    started-now @ come-back-cmd =  rattles @ 3 <> and  hewie-breakable-now @ and if
+    started-now @ come-back-cmd =  rattles @ 3 <> and  hewie-breakable-now @ and  hewie held? 0= and if   \ (act 4 on him, mode 0)
         ['] runs-at-door hewie start-holding drop
     then
     fiona -17e 0e 8e 10e 15e blow-in?  fiona held? 0= and  ['] tries-the-door running? 0= and if   \ (her kick at it: the rooms' zones test a character's point)
@@ -217,7 +217,7 @@ create flames   74.12e f, 19.12e f, -207.3e f,   28.1e f, 18.9e f, -256.9e f,   
 : pipes ( -- )
     wtb1-pipe-1-burst fact? 0= if
         -33e 0e -167e 5e 8e struck-in? if  wtb1-pipe-1-burst fact!  2 $40 $19A -33e -167e bursts  then
-        fiona -33e 0e -167e 5e 8e blow-in? if  ['] knocked-over fiona start-holding drop  then
+        fiona -33e 0e -167e 5e 8e blow-in?  fiona held? 0= and if  ['] knocked-over fiona start-holding drop  then   \ (act $1D, mode 0: once a blow)
     then
     wtb1-pipe-2-burst fact? 0= if
         -48e 0e -296e 5e 8e struck-in? if
