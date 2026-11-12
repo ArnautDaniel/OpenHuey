@@ -198,7 +198,8 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   hole into the hidden room; `story/places/walkway.fs` what 2F and 4F share - the walkway
   turned by its lever, a `walkway:` each: which way, its height, the lever, Hewie's spots on it, what
   the room adds as it's across and once it has stopped): its 1F (the water, the clock), 2F (Riccardo
-  heard prowling above, then come for her; back 1800 frames after he left), 4F (the drum falling, the
+  heard prowling above, then come for her; back 1800 frames after he left; her exit set by the
+  walkway's side - `exit-chosen`, the half of the room the stalker and the summoner make for), 4F (the drum falling, the
   doors open only while the walkway is across), the hall of the planets (the plates lit in turn while
   the one before is stood on, Hewie sitting on the ones he reaches and sent to the next), 7F-2, the
   top (the models worn by her blows, Hewie lying in wait in a hole - his grab of Riccardo, the final

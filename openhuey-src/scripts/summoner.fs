@@ -199,10 +199,11 @@ create waits  0 , 10 , 30 , 30 ,                                   \ D_00419DC0:
 behaviour summoning
   on spawned ( -- )
       reset  100 s-age !  -1 her-room !  -1 her-exit !  calm the-danger !
-      self subscribe frame-end  self subscribe entered-room  self subscribe danger  self subscribe noise-made  self subscribe write-save  self subscribe characters-still ;
+      self subscribe frame-end  self subscribe entered-room  self subscribe exit-chosen  self subscribe danger  self subscribe noise-made  self subscribe write-save  self subscribe characters-still ;
   on stalker-status ( room mode in-game own away cool beaten -- )
       s-beaten !  s-cool !  s-away !  s-own !  s-in !  s-mode !  s-room !  sender s-id !  0 s-age ! ;
   on entered-room ( room exit -- )  her-exit !  her-room !  0 held-still ! ;
+  on exit-chosen ( exit -- )  her-exit ! ;
   on characters-still ( on -- )  held-still ! ;
   on danger ( level -- )  the-danger ! ;
   on noise-made ( loud room door -- )  noise ;

@@ -402,6 +402,7 @@ message calm-in ( v -- )                     \ 0x93: calming (bit $80: 128 at on
 message panic-reach ( level -- )             \ 0xC9: the level set to it if not above it (Panic_SetLevel)
 \ ---- the story's orders to a character (the scripts' commands; P4) ----
 message stalker-order ( mode -- )            \ 0x2F: 0 after her, 2 to her room / searching here, 3 searching
+message exit-chosen ( exit -- )              \ her exit set by a room (Character_ChooseExit, room $C2's command 1): the half of a split room she's in
 message stalker-clock ( frames -- )          \ 0x2A: his mode's clock (+0x1660)
 message stalker-knock-out ( -- )             \ 0x30: knocked down, out of health
 message stalker-down-over ( -- )             \ 0xB6 searched him, no gift due: his time down over (+0x1664 0) - he gets up
