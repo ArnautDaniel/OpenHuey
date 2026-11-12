@@ -82,3 +82,4 @@ create looks  7.31e 0e -110.05e  30e 6e 6e look,
 : went ( -- )  fiona 2 in-area? if  hopper-gone  then ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-3 place!
+here  medallion , ' take-medallion , medallion-fx ,  refined-antimony , ' take-antimony , antimony-fx ,  -1 ,  old-mansion-1f-3 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

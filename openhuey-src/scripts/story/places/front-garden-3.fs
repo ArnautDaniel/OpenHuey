@@ -356,3 +356,4 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     then ;
 
 ' came-in ' person-in ' each-frame ' went front-garden-3 place!
+here  magnesia , ' pick-magnesia , magnesia-fx ,  -1 ,  front-garden-3 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

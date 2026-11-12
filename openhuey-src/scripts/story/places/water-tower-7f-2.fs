@@ -65,3 +65,4 @@ create ahead  2 , 0 ,  3 , 1 ,   \ (area, exit loaded ahead)
 : went ( -- )  hunted state-off ;
 
 ' came-in ' person-in ' each-frame ' went water-tower-7f-2 place!
+here  rubrum-medallion , ' pick-medallion , medallion-fx ,  -1 ,  water-tower-7f-2 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

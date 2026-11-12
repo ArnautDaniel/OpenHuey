@@ -202,3 +202,4 @@ create ahead  4 , 0 ,   5 , 2 ,   7 , 2 ,   6 , 3 ,   8 , 3 ,   9 , 4 ,   \ (are
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-15 place!
+here  camomile , ' pick-camomile , camomile-fx ,  medallion , ' pick-medallion , medallion-fx ,  -1 ,  castle-1f-15 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

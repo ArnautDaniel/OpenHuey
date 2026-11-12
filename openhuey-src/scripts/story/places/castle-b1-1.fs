@@ -243,3 +243,4 @@ create looks  0.6e 0e -3.32e  15e 14e 14e look,   -46.47e -60e -29.37e  14e 19e 
     force-followed state-off  true her-hands  daniella-slot figure dup 0< if  drop  else  let-go  then ;
 
 ' came-in ' person-in ' each-frame ' went castle-b1-1 place!
+here  chicken-jerky , ' vase-jerky , jerky-fx ,  lavender , ' the-lavender , lavender-fx ,  chicken-jerky , ' shelf-jerky , jerky-2-fx ,  -1 ,  castle-b1-1 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

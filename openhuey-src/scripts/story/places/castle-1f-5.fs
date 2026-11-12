@@ -178,3 +178,4 @@ create entries  3 , -1 ,   0 , 0 ,   4 , 3 ,     \ (by exit 0, 1, 2: the camera)
     stalker held?  his-scene @ and if  stalker $196 0 place-on-tri  st-kind-now @ false no-shadow  0 his-scene !  then ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-5 place!
+here  antimony-powder , ' pick-antimony , antimony-fx ,  -1 ,  castle-1f-5 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

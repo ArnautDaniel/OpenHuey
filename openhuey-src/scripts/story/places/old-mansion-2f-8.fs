@@ -186,3 +186,4 @@ create looks  141.32e 0e -60.6e  20e 21e 21e look,   59.37e 0e 0.93e  20e 12e 12
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-2f-8 place!
+here  camomile , ' take-camomile , camomile-fx ,  lavender , ' take-lavender , lavender-fx ,  -1 ,  old-mansion-2f-8 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

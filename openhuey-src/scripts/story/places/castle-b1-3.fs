@@ -45,3 +45,4 @@ create entries  0 , 0 ,   \ (by exit 0: the camera)
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went castle-b1-3 place!
+here  metal-boots , ' the-boots , boots-fx ,  castle-gate-key , ' the-key , key-fx ,  -1 ,  castle-b1-3 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

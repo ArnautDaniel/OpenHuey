@@ -136,3 +136,4 @@ create looks  7.42e 0e 22.15e 15e 9e 9e look,
 : went ( -- ) ;   \ (Debilitas's figure: taken out by castle-1f-2 as she goes on)
 
 ' came-in ' person-in ' each-frame ' went castle-1f-10 place!
+here  beef-jerky , ' reach-jerky , jerky-fx ,  -1 ,  castle-1f-10 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

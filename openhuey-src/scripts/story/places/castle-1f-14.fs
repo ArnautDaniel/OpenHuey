@@ -116,3 +116,4 @@ create entries  2 , 2 ,   0 , 0 ,   0 , 0 ,             \ (by exit 0, 1, 2: the 
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-14 place!
+here  chicken-jerky , ' pick-jerky , jerky-fx ,  viride-medallion , ' pick-medallion , medallion-fx ,  antimony-powder , ' pick-antimony , antimony-fx ,  -1 ,  castle-1f-14 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

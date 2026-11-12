@@ -96,3 +96,4 @@ create entries  0 , 0 ,   \ (by exit 0: the camera)
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-14 place!
 ' items-used old-mansion-1f-14 items-here
+here  chicken-jerky , ' take-jerky , jerky-fx ,  -1 ,  old-mansion-1f-14 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

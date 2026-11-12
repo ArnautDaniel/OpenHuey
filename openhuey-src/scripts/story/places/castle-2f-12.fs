@@ -304,3 +304,4 @@ create entries  1 , -1 ,   1 , -1 ,   \ (by exit 0, 1: the camera)
 
 ' came-in ' person-in ' each-frame ' went castle-2f-12 place!
 ' items-used castle-2f-12 items-here
+here  refined-antimony , ' pick-antimony , antimony-fx ,  medallion , ' pick-medallion , medallion-fx ,  -1 ,  castle-2f-12 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

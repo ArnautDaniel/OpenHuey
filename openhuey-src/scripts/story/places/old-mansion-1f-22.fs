@@ -48,3 +48,4 @@ create entries  0 , 0 ,   1 , 1 ,   \ (by exit 0, 1: the camera)
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-22 place!
+here  refined-antimony , ' take-antimony , antimony-fx ,  -1 ,  old-mansion-1f-22 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

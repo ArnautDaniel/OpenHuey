@@ -53,3 +53,4 @@ create entries  0 , 0 ,   1 , 1 ,   \ (by exit 0, 1: the camera)
 : went ( -- )  hewie-as-she-goes ;
 
 ' came-in ' person-in ' each-frame ' went castle-2f-15 place!
+here  medallion , 0 , medallion-fx ,  prima-magnesia , ' pick-magnesia , magnesia-fx ,  -1 ,  castle-2f-15 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

@@ -231,3 +231,4 @@ create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   3 , 0 , 0 ,   4 , 1 , 1 ,   \ (area,
 : went ( -- )  chase-scene @ if  stalkers-stay state-off  force-chased state-off  then ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-3 place!
+here  camomile , ' reach-camomile , camomile-fx ,  -1 ,  castle-1f-3 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

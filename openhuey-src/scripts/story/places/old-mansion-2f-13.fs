@@ -115,3 +115,4 @@ create entries  1 , 1 ,   1 , 1 ,   2 , 2 ,   0 , 0 ,   \ (by exit 0..3: the cam
 : went ( -- )  smashing @ if  om2f-13-flag1 fact!  om2f-13-breakable-broken fact!  daniella-loaded? if  true stalker send rage  then  then ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-2f-13 place!
+here  rubrum-medallion , ' take-medallion , medallion-fx ,  -1 ,  old-mansion-2f-13 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

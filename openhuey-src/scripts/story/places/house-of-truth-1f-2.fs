@@ -98,3 +98,4 @@ create cameras  4 , 0 , 0 ,  5 , 2 , 2 ,  6 , 2 , 2 ,  7 , 3 , 3 ,  8 , 2 , 2 , 
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went house-of-truth-1f-2 place!
+here  refined-magnesia , ' pick-magnesia , magnesia-fx ,  refined-antimony , ' pick-antimony , antimony-fx ,  prima-magnesia , ' pick-prima , prima-fx ,  -1 ,  house-of-truth-1f-2 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

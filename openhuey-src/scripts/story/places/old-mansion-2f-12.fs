@@ -151,3 +151,4 @@ create looks  -103.36e 30e -72.17e  25e 18e 18e look,   288.99e 0e -98.66e  25e 
 
 ' came-in ' person-in ' each-frame ' went old-mansion-2f-12 place!
 ' items-used old-mansion-2f-12 items-here
+here  antimony-powder , ' take-powder , powder-fx ,  -1 ,  old-mansion-2f-12 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

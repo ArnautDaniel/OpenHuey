@@ -297,3 +297,4 @@ create entries  2 , 2 ,   1 , 1 ,   0 , 0 ,   2 , 2 ,   3 , 3 ,   \ (by exit 0..
     found-file-209 fact?  door-beyond doors:door-locked? and if  door-beyond unlock  then ;
 
 ' came-in ' person-in ' each-frame ' went castle-2f-2 place!
+here  album-medallion , ' pick-album , album-fx ,  -1 ,  castle-2f-2 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

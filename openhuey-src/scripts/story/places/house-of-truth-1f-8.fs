@@ -120,3 +120,4 @@ create ahead  3 , 0 ,  4 , 1 ,  5 , 2 ,   \ (area, exit loaded ahead)
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went house-of-truth-1f-8 place!
+here  magist-medallion , ' pick-magist , magist-fx ,  -1 ,  house-of-truth-1f-8 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

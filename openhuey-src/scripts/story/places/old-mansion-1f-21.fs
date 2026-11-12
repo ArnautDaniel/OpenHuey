@@ -58,3 +58,4 @@ create entries  2 , 1 ,   3 , -1 ,   0 , -1 ,   1 , 0 ,   \ (by exit 0..3: the c
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-21 place!
+here  album-medallion , ' take-medallion , medallion-fx ,  -1 ,  old-mansion-1f-21 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

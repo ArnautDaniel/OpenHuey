@@ -49,6 +49,7 @@ This page is OpenHuey's side: its words, its scripts, its tests.
 | `hud` | `addr len --` | a line of text at the bottom of the screen (`0 0 hud` clears) |
 | `camera` | `-- addr` | with `cam.x cam.y cam.z cam.yaw cam.pitch cam.fov cam.near cam.far cam.up` (sf@ / sf!) |
 | `actor-load` | `addr len -- id` | `s" O_FIN/FIN_000" actor-load` |
+| `prop-load` ... `prop-free`, `data-file?` | (docs/modding.md "Props") | a mod's own glTF models: placed, turned, scaled, shown |
 | `actor` | `id -- addr` | with `act.x act.y act.z act.yaw act.scale act.frame act.rate` (sf@) and `act.loop act.visible` (l@) |
 | `motion!`, `motion@` | `id motion --`, `id -- motion` | play a motion by the game's number (`fiona @ $200 motion!`) |
 | `motion-done?`, `motion-frames`, `.motions` | | |

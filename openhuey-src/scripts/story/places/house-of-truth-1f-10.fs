@@ -99,3 +99,4 @@ create cameras  1 , 0 , 0 ,  2 , 1 , 1 ,  4 , 0 , 0 ,  5 , 2 , 2 ,   \ (area, se
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went house-of-truth-1f-10 place!
+here  camomile , ' pick-camomile , camomile-fx ,  -1 ,  house-of-truth-1f-10 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

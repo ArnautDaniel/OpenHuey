@@ -191,3 +191,4 @@ create calm-looks  38.13e 0e -9.78e  30e 30e 30e look,   -35.94e 0e -7.54e  16e 
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-12 place!
 ' items-used old-mansion-1f-12 items-here
+here  torn-letter , ' the-letter , letter-fx ,  rubrum-medallion , ' take-medallion , medallion-fx ,  -1 ,  old-mansion-1f-12 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

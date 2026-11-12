@@ -201,3 +201,4 @@ create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   $A , 0 , 0 ,   $B , 0 , 0 ,   $C , 1
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went front-garden-5 place!
+here  viola-medallion , ' pick-viola , viola-fx ,  medallion , ' pick-medallion , medallion-fx ,  beef-jerky , ' pick-jerky , jerky-fx ,  ball , ' pick-ball , ball-fx ,  -1 ,  front-garden-5 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

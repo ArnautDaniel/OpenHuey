@@ -107,3 +107,4 @@ create ahead  5 , 0 ,  6 , 1 ,  7 , 4 ,   \ (area, exit loaded ahead)
 
 ' came-in ' person-in ' each-frame ' went house-of-truth-2f-1 place!
 ' items-used house-of-truth-2f-1 items-here
+here  medallion , ' pick-medallion , medallion-fx ,  viola-medallion , ' pick-viola , viola-fx ,  -1 ,  house-of-truth-2f-1 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

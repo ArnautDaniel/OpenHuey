@@ -84,3 +84,4 @@ create looks  -2.18e 0e 42.94e  32e 11e 11e look,
 : went ( -- )  hopper-gone ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-2f-5 place!
+here  medallion , ' take-medallion , medallion-fx ,  viride-medallion , ' take-viride , viride-fx ,  -1 ,  old-mansion-2f-5 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

@@ -121,3 +121,4 @@ create entries  2 , 2 ,   1 , 1 ,   3 , -1 ,                    \ (by exit 0, 1,
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went front-garden-2 place!
+here  medallion , ' pick-medallion , medallion-fx ,  -1 ,  front-garden-2 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

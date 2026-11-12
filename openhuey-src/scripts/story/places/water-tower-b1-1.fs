@@ -430,3 +430,4 @@ create ahead  $18 , 1 ,   \ (area, exit loaded ahead)
 
 ' came-in ' person-in ' each-frame ' went water-tower-b1-1 place!
 ' items-used water-tower-b1-1 items-here
+here  wooden-miniature , ' the-miniature , miniature-fx ,  viride-medallion , ' the-viride , viride-fx ,  album-medallion , ' the-album , album-fx ,  beef-jerky , ' the-jerky , jerky-fx ,  -1 ,  water-tower-b1-1 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

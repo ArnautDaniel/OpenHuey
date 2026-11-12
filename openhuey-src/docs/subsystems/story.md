@@ -232,7 +232,10 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   `scene-shot?` / `scene-at?` / `scene-near-end?` (a scene's shot, cue, end; `wait-shot`,
   `wait-scene-frame` in an activity), `fiona-faces?` (in an area, facing a way), `hewie-at-hand?`,
   `hewie-kept-hidden`, `daniella-loaded?`, `daylight-tint`, `fan-turning` (each once copied room by
-  room - 0.2.50), `clothes-changed`
+  room - 0.2.50), `clothes-changed`; the items lying about (API 1.5: each room's table after its `place!` -
+  `here  item , ' its-taking , its-effect ,  ...  -1 ,  room item-spots`, 0 for one Hewie fetches -
+  `flicker-at` telling mods `item-placed` as it sparkles, `effect!` `item-cleared` as it goes,
+  `take-item-at` her taking started as her action button would: `take-spot`)
   (the costumes' menu closed: what she chose put on, his coat posed - `hewie-recoated`, from the
   bedroom).
 

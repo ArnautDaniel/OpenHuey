@@ -173,3 +173,4 @@ create cameras  7 , 2 , 2 ,   8 , 3 , 3 ,   9 , 0 , 0 ,   $A , 3 , 3 ,        \ 
     stalker held?  his-scene @ and if  stalker $8F 90 2.4e -76.445e place-at  0 his-scene !  then ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-11 place!
+here  medallion , 0 , medallion-fx ,  beef-jerky , ' pick-jerky , jerky-fx ,  magnesia , ' pick-magnesia , magnesia-fx ,  -1 ,  castle-1f-11 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

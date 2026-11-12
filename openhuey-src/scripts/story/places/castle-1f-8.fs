@@ -152,3 +152,4 @@ create entries  0 , -1 ,   1 , 0 ,             \ (by exit 0, 1: the camera)
 : went ( -- )  his-entrance @ if  0 stalker-order  then ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-8 place!
+here  album-medallion , ' pick-album , album-fx ,  magnesia , ' reach-magnesia , magnesia-fx ,  -1 ,  castle-1f-8 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

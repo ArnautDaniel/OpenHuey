@@ -225,3 +225,4 @@ create entries  4 , -1 ,   1 , 1 ,   2 , 2 ,   3 , 3 ,   \ (by exit 0..3: the ca
     then ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-13 place!
+here  chicken-jerky , ' pick-jerky , jerky-fx ,  antimony-powder , ' pick-antimony , antimony-fx ,  -1 ,  castle-1f-13 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

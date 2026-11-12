@@ -117,3 +117,4 @@ create ahead  2 , 0 ,  3 , 1 ,   \ (area, exit loaded ahead)
     summoner-was-on @ if  summoner-on state!  then ;
 
 ' came-in ' person-in ' each-frame ' went water-tower-4f-1 place!
+here  medallion , ' pick-medallion , medallion-fx ,  camomile , ' pick-camomile , camomile-fx ,  -1 ,  water-tower-4f-1 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

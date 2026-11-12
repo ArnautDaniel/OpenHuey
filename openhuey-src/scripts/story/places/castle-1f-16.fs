@@ -121,3 +121,4 @@ create cameras   \ (area, set, path)
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-16 place!
+here  magnesia , ' reach-magnesia , magnesia-fx ,  -1 ,  castle-1f-16 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

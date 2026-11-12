@@ -25,6 +25,7 @@
 #include "game/particles.h"
 #include "game/progress.h"
 #include "game/things.h"
+#include "game/props.h"
 #include "game/sprites.h"
 #include "game/mods.h"
 #include "data/exetables.h"
@@ -348,14 +349,16 @@ static Vec3 light_root(const Actor *a) {
     return b < a->model.nbones ? actor_bone(a, b) : actor_center(a);
 }
 
-static void use_lights(Engine *e, const Actor *a) {
+/* the lights for the next lit draws: the room's (or a stage's) three of `idx`, the camera's
+ * scripted ones, its ambient; `root` where the PS2's lighting takes their directions from */
+static void lights_for(Engine *e, const int idx[3], Vec3 root) {
     DrawLight lights[3];
     Vec3 ambient = e->nstage > 0 ? e->stage_ambient : e->room.ambient;
     int n = 0, k;
 
     for (k = 0; k < 3; k++) {
-        if (a->lights[k] >= 0) {
-            const RoomLight *l = e->nstage > 0 ? &e->stage[a->lights[k]] : &e->room.lights[a->lights[k]];
+        if (idx[k] >= 0) {
+            const RoomLight *l = e->nstage > 0 ? &e->stage[idx[k]] : &e->room.lights[idx[k]];
 
             lights[n].pos = l->pos;
             lights[n].color = vec3_scale(l->color, l->intensity);
@@ -395,10 +398,14 @@ static void use_lights(Engine *e, const Actor *a) {
         }
     }
     if (e->nstage > 0) {
-        render_draw_lights(ambient, lights, n, light_root(a));
+        render_draw_lights(ambient, lights, n, root);
     } else {
-        render_draw_lights(ambient, lights, e->room.nlights > 0 || e->extra.on ? n : -1, light_root(a));
+        render_draw_lights(ambient, lights, e->room.nlights > 0 || e->extra.on ? n : -1, root);
     }
+}
+
+static void use_lights(Engine *e, const Actor *a) {
+    lights_for(e, a->lights, light_root(a));
 }
 
 /* the characters again, mirrored in each reflecting quad's plane (Reflection_Draw: those on the
@@ -551,6 +558,35 @@ float doorway_faded(const Engine *e, const Actor *a) {
     return 0.0f;
 }
 
+/* a mod's props in the room being played (or held in none): each lit by the room's lights about
+ * its middle, as a character is */
+static void draw_props(Engine *e, const Mat4 *vp) {
+    static const uint32_t kAll[8] = {~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u, ~0u};
+    int i;
+
+    for (i = 0; i < MAX_PROPS; i++) {
+        Prop *p = props_get(i);
+        int idx[3] = {-1, -1, -1};
+        Vec3 c;
+        Mat4 mvp;
+
+        if (p == NULL || !p->shown || (p->room >= 0 && p->room != e->room.id)) {
+            continue;
+        }
+        c = props_center(p);
+        if (e->nstage > 0) {
+            idx[0] = 0;
+            idx[1] = e->nstage > 1 ? 1 : -1;
+            idx[2] = e->nstage > 2 ? 2 : -1;
+        } else {
+            room_lights_at(&e->room, c, idx);
+        }
+        lights_for(e, idx, c);
+        mvp = mat4_mul(*vp, props_matrix(p));
+        render_mesh(&p->gpu, &mvp, p->d, p->nd, p->tex, p->ntex, kAll);
+    }
+}
+
 static void draw_actor(Engine *e, Actor *a, const Mat4 *vp) {
     float alpha = a->alpha, faded = doorway_faded(e, a);
 
@@ -694,6 +730,7 @@ static void draw(Engine *e) {
     }
     render_fog_after(0);
     things_draw(e->room.id, &vp);   /* the things lying about (their sprites written for the next) */
+    draw_props(e, &vp);   /* a mod's own models (props.h) */
     if (sprites_glowing() && post_glow_begin()) {   /* the glow pass: the glowing ones again */
         sprites_draw_glow(&vp);
         post_glow_end();
@@ -772,6 +809,7 @@ static void soft_reset(Engine *e, int hidden) {
     progress_clear();   /* (the unlocks kept) */
     world_rebuild_exits(&e->world);   /* (Rooms_SetState with no save: no door closed off, the exits anew) */
     things_clear();
+    props_clear();   /* (a mod's props: its scripts load them again) */
     e->nhooks = e->ndraw_hooks = 0;
     e->nstage = 0;
     memset(&e->extra, 0, sizeof(e->extra));

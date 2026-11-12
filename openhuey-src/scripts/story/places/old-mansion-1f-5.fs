@@ -58,3 +58,4 @@ own: sounds-on
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-5 place!
+here  lavender , ' take-lavender , lavender-fx ,  refined-magnesia , ' take-magnesia , magnesia-fx ,  -1 ,  old-mansion-1f-5 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

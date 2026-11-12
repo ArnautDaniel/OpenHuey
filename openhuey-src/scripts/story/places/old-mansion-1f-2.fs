@@ -155,3 +155,4 @@ create looks  0.56e 0e 14.62e  35e 22e 22e look,
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-2 place!
 ' items-used old-mansion-1f-2 items-here
+here  camomile , ' take-camomile , camomile-fx ,  -1 ,  old-mansion-1f-2 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

@@ -158,3 +158,4 @@ create entries  0 , -1 ,   \ (by exit 0: the camera)
 : went ( -- )  back-to-hole ;
 
 ' came-in ' person-in ' each-frame ' went castle-b1-7 place!
+here  medallion , ' vase-medallion , medallion-fx ,  medallion , ' found-medallion , found-fx ,  -1 ,  castle-b1-7 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

@@ -64,3 +64,4 @@ create ahead  2 , 0 ,  3 , 1 ,   \ (area, exit loaded ahead)
 : went ( -- )  scene-locked state-off ;
 
 ' came-in ' person-in ' each-frame ' went house-of-truth-b1-2 place!
+here  lavender , ' pick-lavender , lavender-fx ,  -1 ,  house-of-truth-b1-2 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)
