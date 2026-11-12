@@ -18,6 +18,7 @@
 #include "../game/swimpath.h"
 #include "../game/obstacles.h"
 #include "../game/things.h"
+#include "../game/props.h"
 #include "../render/post.h"
 #include "../platform/snddrv.h"
 #include "../platform/sound.h"
@@ -2757,6 +2758,64 @@ PRIM(p_root_delta) {   /* ( id -- ) ( F: -- turn dx dy dz ) its motion's root mo
     FPUSH(step.y * a->scale);
     FPUSH(step.z * a->scale);
 }
+/* ---- props (mod API 1.5, game/props.h): a mod's own glTF models ---- */
+static Prop *prop_arg(Forth *f, Cell i) {
+    Prop *p = props_get((int)i);
+
+    if (p == NULL) {
+        forth_error(f, "not a prop: %ld", (long)i);
+    }
+    return p;
+}
+PRIM(p_prop_load) {   /* ( addr len -- id | -1 ) the glTF / .glb at that path (a mod's library/data/...) */
+    Cell n = POP(), a = POP();
+    char path[128];
+
+    snprintf(path, sizeof(path), "%.*s", (int)n, (const char *)a);
+    PUSH(props_load(path));
+}
+PRIM(p_data_file) {   /* ( addr len -- flag ) a file of the game's data as the files layer has it (a mod's over the library) */
+    Cell n = POP(), a = POP();
+    char path[256];
+
+    snprintf(path, sizeof(path), "%.*s", (int)n, (const char *)a);
+    PUSH(files_exist(path) ? -1 : 0);
+}
+PRIM(p_prop_free) { props_free((int)POP()); }   /* ( id -- ) */
+PRIM(p_prop_place) {   /* ( id room -- ) ( F: x y z -- ) there, in that room (-1: any played), shown */
+    Vec3 at = fpop3(f);
+    Cell room = POP();
+    Prop *p = prop_arg(f, POP());
+
+    p->room = (int)room;
+    p->pos = at;
+    p->shown = 1;
+}
+PRIM(p_prop_turn) {   /* ( id -- ) ( F: rx ry rz -- ) turned about X, then Y, then Z (radians: as the room's objects) */
+    Vec3 r = fpop3(f);
+
+    prop_arg(f, POP())->rot = r;
+}
+PRIM(p_prop_scale) {   /* ( id -- ) ( F: s -- ) */
+    float s = (float)FPOP();
+
+    prop_arg(f, POP())->scale = s;
+}
+PRIM(p_prop_show) {   /* ( id on -- ) */
+    Cell on = POP();
+
+    prop_arg(f, POP())->shown = on != 0;
+}
+PRIM(p_prop_at) {   /* ( id -- ) ( F: -- x y z ) where it is placed */
+    Prop *p = prop_arg(f, POP());
+
+    FPUSH(p->pos.x); FPUSH(p->pos.y); FPUSH(p->pos.z);
+}
+PRIM(p_prop_bounds) {   /* ( id -- ) ( F: -- x0 y0 z0 x1 y1 z1 ) its bounds as authored (not turned or scaled) */
+    Prop *p = prop_arg(f, POP());
+
+    FPUSH(p->lo.x); FPUSH(p->lo.y); FPUSH(p->lo.z); FPUSH(p->hi.x); FPUSH(p->hi.y); FPUSH(p->hi.z);
+}
 PRIM(p_bone_pos) {   /* ( id bone -- ) ( F: -- x y z ) where the bone is in the room (as last drawn) */
     Cell b = POP();
     Vec3 p = actor_bone(actor_arg(f, POP()), (int)b);
@@ -4092,7 +4151,7 @@ void bind_engine(Forth *f) {
         {"message-options", p_message_options, "( -- n )"}, {"message-option-at", p_message_option_at, "( i -- page line col )"}, {"message-option-leads", p_message_option_leads, "( i -- msg )"},
         {"message-choice-flags", p_message_choice_flags, "( -- flags )"}, {"message-typed", p_message_typed, "( page -- frame )"}, {"message-skip", p_message_skip, "( page frame -- frame' )"},
         {"message-close-after", p_message_close_after, "( -- n )"}, {"message-run", p_message_run, "( page line col frame -- addr len colour )"}, {"message-place", p_message_place, "( page -- n )"}, {"message-align", p_message_align, "( page line -- n )"}, {"ui-text-in", p_ui_text_in, "( layer addr len x y rgba scale palette -- )"}, {"ui-blend", p_ui_blend, "( layer mode fix -- )"}, {"ui-image4", p_ui_image4, "( layer x0 y0 x1 y1 x2 y2 x3 y3 group id csa u v uw vh rgba -- )"}, {"message-param!", p_message_param, "( slot id -- )"}, {"message-param$", p_message_param_text, "( slot addr len -- )"}, {"exit-spot", p_exit_spot, "( exit which -- tri ) ( F: -- F: x y z )"},
-        {"actor-load", p_actor_load, "( addr len -- id )"}, {"actor-free", p_actor_free, "( id -- )"}, {"cloth-force!", p_cloth_force, "( model set -- ) ( F: x y z -- )"}, {"cloth-back!", p_cloth_back, "( model pose -- )"}, {"actor-texture-swap", p_actor_texture_swap, "( model sel addr len -- flag )"}, {"actor-texture-restore", p_actor_texture_restore, "( model -- )"}, {"actor-markers", p_actor_markers, "( id addr len -- )"}, {"actor", p_actor, "( id -- addr )"},
+        {"actor-load", p_actor_load, "( addr len -- id )"}, {"prop-load", p_prop_load, "( addr len -- id )"}, {"prop-free", p_prop_free, "( id -- )"}, {"data-file?", p_data_file, "( addr len -- flag )"}, {"prop-place", p_prop_place, "( id room -- ) ( F: x y z -- )"}, {"prop-turn", p_prop_turn, "( id -- ) ( F: rx ry rz -- )"}, {"prop-scale", p_prop_scale, "( id -- ) ( F: s -- )"}, {"prop-show", p_prop_show, "( id on -- )"}, {"prop-at", p_prop_at, "( id -- ) ( F: -- x y z )"}, {"prop-bounds", p_prop_bounds, "( id -- ) ( F: -- x0 y0 z0 x1 y1 z1 )"}, {"actor-free", p_actor_free, "( id -- )"}, {"cloth-force!", p_cloth_force, "( model set -- ) ( F: x y z -- )"}, {"cloth-back!", p_cloth_back, "( model pose -- )"}, {"actor-texture-swap", p_actor_texture_swap, "( model sel addr len -- flag )"}, {"actor-texture-restore", p_actor_texture_restore, "( model -- )"}, {"actor-markers", p_actor_markers, "( id addr len -- )"}, {"actor", p_actor, "( id -- addr )"},
         {"motion!", p_motion_store, "( id motion-id -- )"}, {"has-motion?", p_has_motion, "( id motion-id -- flag )"}, {"motion-play", p_motion_play, "( id motion-id blend flags -- )"}, {"motion-entry", p_motion_entry, "( id motion-id -- blend pose flags )"}, {"motion-index", p_motion_index, "( id motion-id -- i | -1 )"}, {"motion-variant", p_motion_variant, "( id motion-id -- )"}, {"motion-events", p_motion_events, "( id layer dt loop -- bits )"},
         {"motion-table", p_motion_table, "( id addr len -- )"}, {"exe-table", p_exe_table, "( addr len -- addr n | 0 0 )"}, {"root-delta", p_root_delta, "( id -- ) ( F: -- F: turn dx dy dz )"}, {"bone-pos", p_bone_pos, "( id bone -- ) ( F: -- F: x y z )"}, {"bone-point", p_bone_point, "( id bone -- ) ( F: ox oy oz -- F: x y z )"}, {"foot-down?", p_foot_down, "( id foot -- flag )"}, {"dog-legs", p_dog_legs, "( id on -- )"}, {"human-legs", p_human_legs, "( id right left -- )"}, {"legs-fit", p_legs_fit, "( id tri mask plant -- ) ( F: back front -- )"}, {"lorenzo-chair", p_lorenzo_chair, "( id on -- )"}, {"chair-fit", p_chair_fit, "( id tri mask -- ) ( F: front back pitch yaw -- )"}, {"chair-rises", p_chair_rises, "( id -- ) ( F: body front -- )"}, {"head-bones", p_head_bones, "( id head neck -- )"}, {"head-turn", p_head_turn, "( id -- ) ( F: pitch yaw -- )"}, {"legs-height", p_legs_height, "( id -- ) ( F: -- F: y )"}, {"motion-track", p_motion_track, "( id code prev? -- flag ) ( F: -- F: a b c )"}, {"motion-track-by", p_motion_track_by, "( id code prev? -- flag ) ( F: dt -- F: a b c )"}, {"foot-at", p_foot_at, "( id left? -- down? ) ( F: dt -- F: x y z )"}, {"motion-overlay", p_motion_overlay, "( id motion-id -- )"}, {"turns-clear", p_turns_clear, "( id -- )"}, {"turn+", p_turn_add, "( id bone -- ) ( F: pitch yaw -- )"}, {"bone-count", p_bone_count, "( id -- n )"}, {"bone-named", p_bone_named, "( id addr len -- bone )"}, {"bone-parent", p_bone_parent, "( id bone -- parent )"}, {"bone-rest", p_bone_rest, "( id bone -- ) ( F: -- rx ry rz )"}, {"bone-set", p_bone_set, "( id bone -- ) ( F: rx ry rz -- )"}, {"bone-free", p_bone_free, "( id bone -- )"}, {"bones-free", p_bones_free, "( id -- )"}, {"motion@", p_motion_fetch, "( id -- motion-id | -1 )"}, {"motion-done?", p_motion_done, "( id -- flag )"},
         {"motion-frames", p_motion_frames, "( id -- frames )"}, {".motions", p_motions, "( id -- )"},

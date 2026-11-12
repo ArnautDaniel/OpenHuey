@@ -5,7 +5,7 @@
 \ The places themselves: story/places/*.fs. A room without one still runs its converted
 \ scripts (story/room.fs).
 IN: story.kit
-USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names effects hewie-names hewie.anims floor-flags keys ;
+USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names effects hewie-names hewie.anims floor-flags keys mods ;
 
 \ ---- the characters a place directs: Fiona, Hewie, the stalker in the game ----
 3 constant #people
@@ -82,6 +82,7 @@ state: place-state
   cell field scene-step  cell field scene-movie  cell field cue-xt  holds: ( shot -- )
   cell field scene-acts            \ the activities that are the scene's own (a bit each): ended with it
   #room-effects cells field effects   \ the effects the place made (actors; 0 none), gone with it (RoomEffects: 32)
+  #room-effects cells field item-ups  \ ... those an item's sparkle now, as mods were told (item-placed)
   cell field tab-moving         \ the item's tab sliding (the sub screen tells when it's done)
   \ the stalker in the game, as he tells (stalker-doing): his room, condition, kind, alert (his mode)
   cell field st-mode-now        \ his move mode (hewie-mode's names: free, off screen, struck, ...)
@@ -121,6 +122,7 @@ begin-structure /desc
   field: d.frame       \ ( -- ) each frame: spots, exits, cameras, what runs on its own
   field: d.went        \ ( -- ) the room left
   field: d.item        \ ( who ev var value -- handled? ) an item used here starting one of its doings (items-here)
+  field: d.items       \ its items lying about: {item, its taking (her doing - 0 not hers), effect}, -1 ending (item-spots)
 end-structure
 512 constant #place-rooms   \ (room ids: up to $10B, the Chaos Forest's)
 create places  #place-rooms cells allot   places #place-rooms cells 0 fill
@@ -129,9 +131,10 @@ create places  #place-rooms cells allot   places #place-rooms cells 0 fill
 : place-of ( room -- desc | 0 )  dup 0 #place-rooms within if  cells places + @  else  drop 0  then ;
 : place! ( came-in person-in frame went room -- )   \ a room is a place from now on
     {: c p fr w room | d :}  here to d  /desc allot
-    c d d.came-in !  p d d.person-in !  fr d d.frame !  w d d.went !  0 d d.item !  d room place-room ! ;
+    c d d.came-in !  p d d.person-in !  fr d d.frame !  w d d.went !  0 d d.item !  0 d d.items !  d room place-room ! ;
 : hook ( field-xt -- xt | 0 )  desc @ dup if  swap execute @  else  nip  then ;   \ (one of the place's words)
 : items-here ( xt room -- )  place-room @ d.item ! ;   \ (its own item uses: the plates' words, ...)
+: item-spots ( table room -- )  place-room @ d.items ! ;   \ (its items lying about, each at one of its effects: mods told)
 : run-desc ( field-xt -- )  hook ?dup if  execute  then ;
 : run-desc-with ( x field-xt -- )  hook ?dup if  execute  else  drop  then ;
 
@@ -609,10 +612,29 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : effect ( k -- addr )  cells effects + ;
 : slot0-told ( -- )   \ (the engine's: a flame's lasting sparks go without one there - the room in only)
     this-room @ room-id = if  0 effect @ 0<> room-effect0!  then ;
+: spot-of ( k -- item xt true | false )   \ (the item lying at effect k, by its table; xt its taking)
+    ['] d.items hook ?dup 0= if  drop false exit  then  {: k t :}
+    begin  t @ -1 <> while
+        t 2 cells + @ k = if  t @  t cell+ @  true exit  then
+        t 3 cells + to t
+    repeat  false ;
+: item-up ( k -- addr )  cells item-ups + ;
+: item-gone? ( id k -- )   \ (effect k an item's sparkle, now off or another: mods told it's gone)
+    dup item-up @ 0= if  2drop exit  then
+    {: id k :}  id 0<>  id k effect @ = and if  exit  then   \ (the same one again: nothing)
+    0 k item-up !  this-room @ k broadcast item-cleared ;
 : effect! ( id k -- )   \ the place's effect k (the one there before gone - unless it died and its id is the new one's)
+    2dup item-gone?
     2dup effect @ = if  effect !  slot0-told exit  then
     dup effect @ ?dup if  dup alive? if  kill  else  drop  then  then  effect !  slot0-told ;
 : effect-off ( k -- )  0 swap effect! ;
+\ effect k: a sparkle - an item's (its table's) told to mods with where it lies (item-placed), and
+\ not drawn while a mod shows the items itself (mods:item-sparkles!)
+: flicker-at ( k F: x y z -- )
+    {: k F: x y z :}
+    k spot-of 0= if  x y z 0 effects:flicker k effect!  exit  then  drop {: item :}
+    item-sparkles? if  x y z 0 effects:flicker k effect!  else  k effect-off  then
+    -1 k item-up !  this-room @ k item  x f>cell y f>cell z f>cell  broadcast item-placed ;
 : effects-gone ( -- )  #room-effects 0 do  i effect-off  loop ;
 : live-effect ( k -- id flag )  effect @ dup 0<>  over alive? and ;   \ (the place's effect k, and whether it's there - 0 none)
 : tell-effect ( v k -- )  live-effect if  send effect-command  else  2drop  then ;
@@ -832,6 +854,15 @@ create spot-xts #activities cells allot
 : spot-doing ( -- )  fiona hold  acting @ cells spot-xts + @ execute ;
 : start-spot ( xt -- )
     ['] spot-doing start dup 0< if  2drop exit  then  cells spot-xts + ! ;
+\ the item at effect k taken by a mod (take-item-at, API 1.5): its sparkle up and the taking hers, as
+\ her action button on its offer would - not while she can't (held, a message up, the room being
+\ left, her panic). Started or not; item-cleared tells it went
+: may-take? ( -- flag )  leaving @ 0=  shown-msg @ 0< and  offer-closed? 0= and  in-panic? 0= and ;
+: take-spot ( k -- started? )
+    dup item-up @ 0= if  drop false exit  then
+    spot-of 0= if  false exit  then  nip  {: xt :}
+    xt 0=  may-take? 0= or if  false exit  then
+    xt ['] spot-doing start dup 0< if  2drop false exit  then  cells spot-xts + !  true ;
 
 \ Hewie finds something (the rooms' shared find, act $8B): he turns to it, barks, sits and looks to
 \ her - it sparkles - until she takes it, commands him or is chased, or 300 frames pass
@@ -844,7 +875,7 @@ create spot-xts #activities cells allot
     hewie wait-anim  hewie false hush
     hewie sit-down-anim play  hewie sit-anim start-anim  yield
     hewie fiona look-at  yield
-    found fact!  5 trust+  x y z 0 flicker fx effect!
+    found fact!  5 trust+  fx x y z flicker-at
     find-wait 0 do
         yield  taken fact?  chased? or  fiona-cmd-now @ -1 <> or if  leave  then
     loop
@@ -906,7 +937,6 @@ $FF constant no-track
 : background ( track F: vol -- )  0 f>cell music send bgm-want ;   \ the room's own track (no-track: none)
 : music-part ( stage -- )  music send music-stage ;
 : rgba ( r g b a -- rgba )  {: r g b a :}  r 24 lshift  g 16 lshift or  b 8 lshift or  a or ;
-: flicker-at ( k F: x y z -- )  0 effects:flicker swap effect! ;   \ effect k: a sparkle
 : moths-at ( k n F: x y z -- )  effects:butterflies swap effect! ;   \ effect k: n moths (0: 8) making for the point (0x35)
 : moths-to ( k n F: x y z -- )   \ effect k's moths off for another point; n of them (0: as many as they are) - 0x33
     {: k n F: x y z :}  k live-effect 0= if  drop exit  then  >r  n x f>cell y f>cell z f>cell  r> send effect-to ;
@@ -1667,6 +1697,7 @@ behaviour placing
   on room-leave ( -- )  -1 leaving ! ;
   on room-left ( -- )  scene-step @ scene-running = if  scenes send scene-stop  then  text-gone  tab-gone  stop-all  effects-gone  ['] d.went run-desc  story-id send room-done ;
   on story-stop ( -- )  text-gone  tab-gone  stop-all  effects-gone  story-id send room-done ;
+  on take-item-at ( k -- )  dup take-spot  sender send take-answer ;
 end-behaviour
 
 \ a place's actor for its room, ready to be entered (story.fs)

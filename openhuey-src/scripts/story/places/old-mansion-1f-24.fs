@@ -92,3 +92,4 @@ create looks  -76.01e 0e -50.35e  70e 17e 17e look,
     force-followed state-off ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-24 place!
+here  beef-jerky , ' take-jerky , jerky-fx ,  rubrum-medallion , ' take-medallion , medallion-fx ,  -1 ,  old-mansion-1f-24 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

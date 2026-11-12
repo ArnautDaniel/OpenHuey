@@ -311,3 +311,4 @@ create cameras  1 , 0 , -1 ,   2 , 1 , -1 ,   \ (area, set, path)
 : went ( -- )  false fiona send count-shakes ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-b1-3 place!
+here  camomile , ' take-camomile , camomile-fx ,  -1 ,  old-mansion-b1-3 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

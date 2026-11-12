@@ -129,3 +129,4 @@ create cameras  7 , 0 , 0 ,  8 , 2 , 2 ,  9 , 1 , 1 ,  $A , 2 , 2 ,  $D , 2 , 2 
     no-stalker-camera state-off  stalker-no-fear state-off ;
 
 ' came-in ' person-in ' each-frame ' went house-of-truth-1f-1 place!
+here  album-medallion , ' pick-album , album-fx ,  -1 ,  house-of-truth-1f-1 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

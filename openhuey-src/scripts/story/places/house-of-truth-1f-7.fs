@@ -180,3 +180,4 @@ create ahead  2 , 0 ,  3 , 1 ,
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went house-of-truth-1f-7 place!
+here  antimony-tube , ' pick-tube , tube-fx ,  -1 ,  house-of-truth-1f-7 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

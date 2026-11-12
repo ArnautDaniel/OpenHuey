@@ -449,3 +449,4 @@ create entries  0 , 0 ,   5 , 4 ,   0 , 0 ,   3 , 3 ,   \ (by exit 0..3: the cam
     then ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-2 place!
+here  rubrum-medallion , ' pick-rubrum , rubrum-fx ,  viola-medallion , ' pick-viola , viola-fx ,  onion , ' pick-onion , onion-fx ,  -1 ,  castle-1f-2 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

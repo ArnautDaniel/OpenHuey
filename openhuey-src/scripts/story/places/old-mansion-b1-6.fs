@@ -298,3 +298,4 @@ create calm-looks  144.66e 0e -5.88e  18e 12e 12e look,   73.86e 0e -40.16e  25e
 
 ' came-in ' person-in ' each-frame ' went old-mansion-b1-6 place!
 ' items-used old-mansion-b1-6 items-here
+here  medallion , ' take-medallion , medallion-fx ,  viola-medallion , ' take-viola , viola-fx ,  magist-medallion , ' take-magist , magist-fx ,  -1 ,  old-mansion-b1-6 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

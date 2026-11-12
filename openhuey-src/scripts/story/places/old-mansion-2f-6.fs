@@ -160,3 +160,4 @@ create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   5 , 1 , 
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-2f-6 place!
+here  lavender , ' take-lavender , lavender-fx ,  -1 ,  old-mansion-2f-6 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

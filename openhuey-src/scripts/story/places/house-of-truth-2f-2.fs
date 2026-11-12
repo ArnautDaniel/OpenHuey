@@ -117,3 +117,4 @@ create cameras  1 , 0 , -1 ,  2 , 1 , 0 ,   \ (area, set, path)
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went house-of-truth-2f-2 place!
+here  viride-medallion , ' pick-viride , viride-fx ,  -1 ,  house-of-truth-2f-2 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

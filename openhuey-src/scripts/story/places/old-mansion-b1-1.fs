@@ -104,3 +104,4 @@ create ledge-look  -9.31e 39.5e -32.27e  50e 13e 0e look,
     fetching @ if  hewie let-go  hewie $76 -90 -40.52e -28e place-at  stalkers-stay state-off  then ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-b1-1 place!
+here  album-medallion , 0 , medallion-fx ,  chicken-jerky , ' take-jerky , jerky-fx ,  -1 ,  old-mansion-b1-1 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

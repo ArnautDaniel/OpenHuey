@@ -77,3 +77,4 @@ create ahead  3 , 0 ,   5 , 0 ,   4 , 1 ,   6 , 2 ,   \ (area, exit loaded ahead
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-23 place!
+here  viride-medallion , ' take-viride , viride-fx ,  medallion , ' take-medallion , medallion-fx ,  -1 ,  old-mansion-1f-23 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

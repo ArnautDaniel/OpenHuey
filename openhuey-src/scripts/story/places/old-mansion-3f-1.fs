@@ -166,3 +166,4 @@ create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   \ (area,
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-3f-1 place!
+here  mars-key , ' take-key , key-fx ,  -1 ,  old-mansion-3f-1 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

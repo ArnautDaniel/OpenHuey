@@ -133,3 +133,4 @@ create looks  21.03e 0e -17.8e  20e 12e 12e look,   -41.22e 4.5e -4.36e  28e 12e
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-9 place!
 ' items-used old-mansion-1f-9 items-here
+here  refined-antimony , ' take-antimony , antimony-fx ,  refined-magnesia , ' take-magnesia , magnesia-fx ,  -1 ,  old-mansion-1f-9 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

@@ -120,3 +120,4 @@ create looks  45.1e 0e 31.88e  28e 18e 18e look,   54.4e 0e -20.46e  25e 16e 16e
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-4 place!
 ' items-used old-mansion-1f-4 items-here
+here  chicken-jerky , ' take-jerky , jerky-fx ,  -1 ,  old-mansion-1f-4 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

@@ -469,6 +469,11 @@ message figure-shown ( on -- )                \ broadcast by a figure as the sto
 \ ---- the items (docs/subsystems/items.md): the inventory, kept in the progress ----
 message give-item ( id n -- )                 \ (the items) n of item id into the inventory (Items_Give)
 message take-item ( id -- )                   \ (the items) one of item id spent, wherever it is (Items_UseId; the scripts' 0x0C)
+\ ---- items lying in the room (mod API 1.5): each shown by a sparkle, the place's effect k ----
+message item-placed ( room k item x y z -- )   \ broadcast by the place: its effect k sparkles where item lies (x y z floats, f>cell)
+message item-cleared ( room k -- )             \ broadcast by the place: ... no more (taken, put away, the room left)
+message take-item-at ( k -- )                  \ (to the place) the item at effect k taken by her as her action button would; answered take-answer
+message take-answer ( k started? -- )          \ (the place) whether her taking it started - item-cleared tells it went (a panic may still stop it)
 message add-file ( id sound? -- )             \ (the items) a file found (a key thing, a document: message ids); its sound if new
 message use-item ( list place -- )            \ (the items) the item there used (the menu); answered with item-used
 message item-used ( id result -- )            \ (from the items) 0 nothing happened, 1 used up, 2 a mark set, 4 an event

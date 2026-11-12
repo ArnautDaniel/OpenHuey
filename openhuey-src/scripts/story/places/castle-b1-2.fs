@@ -149,3 +149,4 @@ create entries  0 , 0 ,   2 , -1 ,   \ (by exit 0, 1: the camera)
 
 ' came-in ' person-in ' each-frame ' went castle-b1-2 place!
 ' items-used castle-b1-2 items-here
+here  camomile , ' take-camomile , camomile-fx ,  medallion , ' found-medallion , found-fx ,  -1 ,  castle-b1-2 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

@@ -183,3 +183,4 @@ create far-looks  -101.62e 0e 100.21e  20e 6e 6e look,   -132.75e 0e 71.15e  20e
 
 ' came-in ' person-in ' each-frame ' went old-mansion-b1-2 place!
 ' items-used old-mansion-b1-2 items-here
+here  refined-magnesia , ' take-magnesia , magnesia-fx ,  viola-medallion , ' take-viola , viola-fx ,  rubrum-medallion , ' take-rubrum , rubrum-fx ,  -1 ,  old-mansion-b1-2 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

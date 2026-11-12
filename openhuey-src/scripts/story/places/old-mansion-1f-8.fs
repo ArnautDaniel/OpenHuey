@@ -396,3 +396,4 @@ create ahead  $C , 0 ,   $D , 2 ,   $E , 5 ,   \ (area, exit loaded ahead)
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-8 place!
 ' items-used old-mansion-1f-8 items-here
+here  beef-jerky , ' pick-jerky , jerky-fx ,  album-medallion , ' pick-medallion , medallion-fx ,  -1 ,  old-mansion-1f-8 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

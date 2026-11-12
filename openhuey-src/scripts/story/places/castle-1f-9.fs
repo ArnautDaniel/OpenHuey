@@ -181,3 +181,4 @@ create entries  1 , -1 ,   1 , -1 ,   3 , 1 ,     \ (by exit 0, 1, 2: the camera
 
 ' came-in ' person-in ' each-frame ' went castle-1f-9 place!
 ' items-used castle-1f-9 items-here
+here  album-medallion , 0 , album-fx ,  rubrum-medallion , ' pick-rubrum , rubrum-fx ,  magnesia , ' pick-magnesia , magnesia-fx ,  -1 ,  castle-1f-9 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

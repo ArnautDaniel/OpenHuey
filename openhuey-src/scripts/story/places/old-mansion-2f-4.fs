@@ -84,3 +84,4 @@ create entries  2 , -1 ,   0 , 0 ,   \ (by exit 0, 1: the camera)
 
 ' came-in ' person-in ' each-frame ' went old-mansion-2f-4 place!
 ' items-used old-mansion-2f-4 items-here
+here  viride-medallion , ' take-medallion , medallion-fx ,  -1 ,  old-mansion-2f-4 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

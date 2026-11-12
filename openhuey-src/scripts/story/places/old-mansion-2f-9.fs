@@ -36,3 +36,4 @@ create ahead  3 , 0 ,   4 , 1 ,   \ (area, exit loaded ahead)
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-2f-9 place!
+here  sylvesta-esca , ' take-esca , esca-fx ,  -1 ,  old-mansion-2f-9 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

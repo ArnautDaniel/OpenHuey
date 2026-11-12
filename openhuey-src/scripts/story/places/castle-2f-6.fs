@@ -113,3 +113,4 @@ create cameras  1 , 0 , 0 ,   2 , 1 , -1 ,   3 , 1 , -1 ,   4 , 2 , -1 ,   \ (ar
 
 ' came-in ' person-in ' each-frame ' went castle-2f-6 place!
 ' items-used castle-2f-6 items-here
+here  lavender , ' reach-lavender , lavender-fx ,  -1 ,  castle-2f-6 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

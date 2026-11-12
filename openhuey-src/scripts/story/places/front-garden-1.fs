@@ -204,3 +204,4 @@ create entries  0 , -1 ,   1 , 1 ,                                 \ (by exit 0,
 
 ' came-in ' person-in ' each-frame ' went front-garden-1 place!
 ' key-used front-garden-1 items-here
+here  medallion , ' pick-medallion , medallion-fx ,  medallion , ' reach-medallion , medallion-2-fx ,  -1 ,  front-garden-1 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

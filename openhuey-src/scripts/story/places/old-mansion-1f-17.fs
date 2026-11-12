@@ -111,3 +111,4 @@ create mummy-look  68.2e 0e 31.14e  20e 12e 12e look,
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-17 place!
+here  chicken-jerky , ' take-jerky , jerky-fx ,  magnesia , ' take-magnesia , magnesia-fx ,  medallion , ' take-medallion , medallion-fx ,  -1 ,  old-mansion-1f-17 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

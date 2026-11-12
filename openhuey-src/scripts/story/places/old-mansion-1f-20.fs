@@ -123,3 +123,4 @@ create looks  11.58e 0e -0.41e  23e 16e 16e look,
 : went ( -- )  hopper-gone ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-20 place!
+here  weeping-stone , ' take-stone , stone-fx ,  medallion , ' take-medallion , medallion-fx ,  medallion , ' take-medallion-2 , medallion-2-fx ,  medallion , ' take-medallion-3 , medallion-3-fx ,  prima-magnesia , ' take-magnesia , magnesia-fx ,  -1 ,  old-mansion-1f-20 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

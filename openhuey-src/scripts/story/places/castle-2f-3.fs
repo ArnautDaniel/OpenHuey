@@ -352,3 +352,4 @@ forced-exit 1 or constant from-the-wire   \ (sent from the front garden, Hewie f
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went castle-2f-3 place!
+here  medallion-item , ' medallion , sparkle-fx ,  -1 ,  castle-2f-3 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

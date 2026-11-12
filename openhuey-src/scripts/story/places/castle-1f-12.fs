@@ -160,3 +160,4 @@ create looks  52.29e -103e 49.3e 30e 12e 12e look,   30.64e -103e -51.68e 30e 12
 
 ' came-in ' person-in ' each-frame ' went castle-1f-12 place!
 ' items-used castle-1f-12 items-here
+here  medallion , ' pick-medallion , medallion-fx ,  -1 ,  castle-1f-12 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

@@ -89,3 +89,4 @@ create entries  2 , 2 ,  1 , 1 ,  1 , 1 ,  3 , 3 ,   \ (by exit 0 .. 3: the came
 : went ( -- )  hurt? if  hewie let-go  face-back  then ;
 
 ' came-in ' person-in ' each-frame ' went chaos-forest-10 place!
+here  medallion , ' pick-medallion , medallion-fx ,  -1 ,  chaos-forest-10 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

@@ -108,3 +108,4 @@ create entries  0 , 0 ,   1 , 1 ,             \ (by exit 0, 1: the camera)
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went castle-1f-6 place!
+here  medallion , ' pick-medallion , medallion-fx ,  -1 ,  castle-1f-6 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

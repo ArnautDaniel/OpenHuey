@@ -109,3 +109,4 @@ the-crate breakable-group frees-floor  the-crate $124 noise-from
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went front-garden-4 place!
+here  camomile , ' pick-camomile , camomile-fx ,  album-medallion , ' pick-medallion , medallion-fx ,  -1 ,  front-garden-4 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

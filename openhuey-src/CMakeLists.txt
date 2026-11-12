@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.2.50 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.2.51 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -58,7 +58,7 @@ find_package(SDL3 REQUIRED CONFIG)
 # library's conversions - the engine's and the checks' (tests/*_check.c)
 add_library(hgadata STATIC
     src/core/files.c src/core/zip.c src/platform/disc.c src/platform/library.c
-    src/data/pac.c src/data/roommesh.c src/data/gltfio.c src/data/roomgltf.c src/data/modelgltf.c src/data/roomtext.c src/data/tex.c src/data/texbank.c src/data/musicsrc.c
+    src/data/pac.c src/data/roommesh.c src/data/gltfio.c src/data/roomgltf.c src/data/modelgltf.c src/data/propgltf.c src/data/roomtext.c src/data/tex.c src/data/texbank.c src/data/musicsrc.c
     src/data/flacenc.c src/data/msgtext.c src/data/model.c src/data/navmesh.c src/data/exe.c src/data/exetables.c
     src/data/soundbank.c src/data/vag.c src/data/samples.c src/data/sfd.c src/data/artpic.c
     src/third_party/stb.c src/third_party/dr_flac.c src/third_party/cgltf.c)
@@ -69,7 +69,7 @@ add_executable(hga
     src/platform/gl.c src/platform/platform.c src/platform/update.c src/platform/sound.c src/platform/movie.c src/platform/music.c src/platform/seq.c src/platform/spu.c src/platform/snddrv.c
     src/render/render.c src/render/post.c
     src/game/room.c src/game/console.c src/game/actor.c src/game/doglegs.c src/game/humanlegs.c src/game/chair.c src/game/cloth.c src/game/world.c
-    src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c src/game/cutscene.c src/game/placed.c src/game/sprites.c src/game/mods.c src/game/particles.c src/game/things.c src/game/obstacles.c src/game/swimpath.c src/game/rumble.c
+    src/game/camdirector.c src/game/areas.c src/game/exits.c src/game/messages.c src/game/cutscene.c src/game/placed.c src/game/sprites.c src/game/mods.c src/game/particles.c src/game/things.c src/game/obstacles.c src/game/swimpath.c src/game/rumble.c src/game/props.c
     src/forth/bind_engine.c)
 target_link_libraries(hga PRIVATE hgadata forth gamestate hactor SDL3::SDL3)
 set_target_properties(hga PROPERTIES OUTPUT_NAME openhuey)   # (the target keeps its old name: the tests' COMMAND hga)   # (GL through SDL_GL_GetProcAddress: platform/gl.c)
@@ -105,6 +105,10 @@ set_tests_properties(texbank_check PROPERTIES SKIP_RETURN_CODE 77)
 add_test(NAME mods_room_tally COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods/room-tally"
     --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/room-tally.fs")
 
+# the items lying about shown as props (mod API 1.5)
+add_test(NAME mods_item_props COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/examples/mods/item-props"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/item-props.fs")
+
 # a mod whose script never ends as it loads: stopped (the load's step limit), off, the game on
 add_test(NAME mods_endless COMMAND hga --mod "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/endless-mod"
     --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/endless.fs")
@@ -121,6 +125,11 @@ set_tests_properties(mods_zip_sample PROPERTIES FIXTURES_SETUP room_tally_zip)
 add_test(NAME mods_room_tally_zipped COMMAND hga --mod "${CMAKE_CURRENT_BINARY_DIR}/room-tally.zip"
     --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/mods/room-tally.fs")
 set_tests_properties(mods_room_tally_zipped PROPERTIES FIXTURES_REQUIRED room_tally_zip)
+
+# props (mod API 1.5): any glTF - a .gltf with its files, data: URIs, a .glb - read as authored
+add_executable(prop-check tests/prop_check.c)
+target_link_libraries(prop-check PRIVATE hgadata)
+add_test(NAME prop_check COMMAND prop-check)
 
 # the music's conversion: every ADX made a FLAC and both played, looped too - the same samples
 add_executable(music-check tests/music_check.c)

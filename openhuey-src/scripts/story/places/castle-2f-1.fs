@@ -127,3 +127,4 @@ create entries  1 , 1 ,   0 , 0 ,   \ (by exit 0, 1: the camera)
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went castle-2f-1 place!
+here  refined-magnesia , ' pick-magnesia , magnesia-fx ,  lavender , ' pick-lavender , lavender-fx ,  -1 ,  castle-2f-1 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

@@ -255,3 +255,4 @@ create ahead  4 , 1 ,   5 , 0 ,   6 , 2 ,   7 , 3 ,   \ (area, exit loaded ahead
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-15 place!
 ' items-used old-mansion-1f-15 items-here
+here  refined-antimony , ' take-antimony , antimony-fx ,  antimony-tube , ' take-tube , tube-fx ,  rubrum-medallion , ' take-medallion , medallion-fx ,  -1 ,  old-mansion-1f-15 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

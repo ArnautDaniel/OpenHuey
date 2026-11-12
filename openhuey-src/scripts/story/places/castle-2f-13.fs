@@ -73,3 +73,5 @@ create cameras  2 , 2 , 2 ,   3 , 1 , 1 ,   $B , 0 , 0 ,   $C , 2 , 2 ,   \ (are
 : went ( -- )  hewie-as-she-goes ;
 
 ' came-in ' person-in ' each-frame ' went castle-2f-13 place!
+here  medallion , 0 , medallion-fx ,  -1 ,  castle-2f-13 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)
+   \ (the Medallion across the gap: Hewie's to fetch - bridge.fs)

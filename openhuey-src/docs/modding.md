@@ -17,13 +17,15 @@ mods/my-mod/
   scripts/my-mod.fs      its Forth: an actor of its own, a hook, words
 ```
 
-Three samples to copy, in `examples/mods/` (in a release: `mod-examples/`):
+Samples to copy, in `examples/mods/` (in a release: `mod-examples/`):
 
 | Sample | Shows |
 |---|---|
 | `room-tally` | an actor of its own: hears the game's broadcasts, keeps its own state, draws a line on screen, answers a message |
 | `flower-scent` | a hook: changes what using an item does, keeping the game's rule for everything else |
 | `free-play-entry` | a hook: adds an entry to the title menu |
+| `first-person` | the mods' camera: the game through her eyes |
+| `item-props` | props and the items lying about: each item a model where it lies, not a sparkle |
 
 Try one without installing it: `openhuey --mod examples/mods/room-tally`. Install one by copying its
 folder into `mods/`; the title's MODS menu then turns it on or off and orders it.
@@ -41,8 +43,9 @@ after: other-mod         \ load after that one, if it's on
 ```
 
 - **The mod API** (`requires: openhuey M m`): the game's messages, broadcasts and hooks a mod uses.
-  OpenHuey has 1.4 (`mod-api` at the console: 104). A mod needs the same major and a minor no newer.
-  1.1 added `item-use-rule`, 1.2 `title-menu-hook`, 1.3 the mods' camera, 1.4 a model's bones.
+  OpenHuey has 1.5 (`mod-api` at the console: 105). A mod needs the same major and a minor no newer.
+  1.1 added `item-use-rule`, 1.2 `title-menu-hook`, 1.3 the mods' camera, 1.4 a model's bones,
+  1.5 props and the items lying about.
 - A mod is **turned off** (and the reason shown in the MODS menu and on stderr) when: a
   `requires:` isn't met; its name is one of the game's vocabularies (`fiona`, `items` ...); its
   scripts fail to load - an error in them, or code run as they load that never ends (stopped after
@@ -245,6 +248,59 @@ characters' numbers as the story's scripts have them):
 
 A setting holds until freed or the model is loaded again (a costume change: `cast-model` gives
 the new one - find its bones again by name). Set them each tick for a hand that follows something (a VR controller).
+
+### Props (API 1.5)
+
+A **prop** is a mod's own model: any glTF 2.0 (`.gltf` with its `.bin` and images beside it or as
+`data:` URIs - Blender's "glTF Separate" or "glTF Embedded" - or a `.glb`), read as authored. It
+goes in the mod's `library/data/` (say `library/data/PROPS/tube.gltf`), loaded by that path; its
+files beside it are read through the files layer too (a zipped mod's as well, nothing outside the
+mod's folders). The model:
+
+- **Y up, one unit a game unit** (Fiona stands 15 tall; the floor's height differs room to room -
+  `body-pos` says where she stands, `item-placed` where an item lies). Its nodes' transforms are applied; skins and animations aren't read
+  (move the whole prop from a script).
+- **Its look**: each triangle primitive a draw - its material's base colour texture (a PNG) and
+  factor, its vertex colours; `OPAQUE`, `MASK` (the texture's alpha cuts it) or `BLEND` as the
+  material says. Lit by the room's lights as the characters are (their nearest three about its
+  middle), normals as the file has them (made from the triangles if it has none).
+- 64 props at most at once; they go with a new game (the mod's scripts load them again).
+
+| Word | Stack | What |
+|---|---|---|
+| `prop-load` | `( addr len -- id )` | the prop at that path (`s" PROPS/tube.gltf"`), -1 if it can't be read (stderr says why) - not shown yet |
+| `prop-place` | `( id room -- ) ( F: x y z -- )` | where it is, in that room (-1: whichever is played - one in her hand), and shown |
+| `prop-turn` | `( id -- ) ( F: rx ry rz -- )` | turned about x, then y, then z (radians), as the room's own objects |
+| `prop-scale` | `( id -- ) ( F: s -- )` | its size (1 as authored) |
+| `prop-show` | `( id on -- )` | shown or not |
+| `prop-at` | `( id -- ) ( F: -- x y z )` | where it is placed |
+| `prop-bounds` | `( id -- ) ( F: -- x0 y0 z0 x1 y1 z1 )` | its bounds as authored (not turned or scaled) |
+| `prop-free` | `( id -- )` | gone |
+| `data-file?` | `( addr len -- flag )` | a file of the data as the files layer has it (a mod's over the library) |
+
+### Items lying about (API 1.5)
+
+Every item lying in a room - shown by a sparkle until she picks it up (a Medallion, an Antimony
+Tube, one Hewie sniffed out, one from a broken vase) - is told to mods by the room as it shows
+and as it goes, so a mod can show it its own way (a prop of it where it lies) and take it for her
+(a VR hand picking it up). The rooms' own rules are kept: what she may take, and when, is theirs.
+
+| Message | From / to | Stack | When |
+|---|---|---|---|
+| `item-placed` | broadcast by the room | `room k item x y z --` | item `item` lies at x y z (floats as cells: `cell>f`), the room's sparkle k |
+| `item-cleared` | broadcast by the room | `room k --` | ... no more: taken (by her or for her), put away, or the room left |
+| `take-item-at` | to the room (the sender of `item-placed`) | `k --` | taken for her: the room's own doing, as her action button by it would (she turns to it and picks it up, the item given, its fact, "You've obtained ...") |
+| `take-answer` | back to the sender | `k started? --` | whether her taking it started: not where there's none (or one only Hewie fetches), not while she can't (held, a message up, the room being left, panicking); `item-cleared` tells it went |
+
+`item-sparkles! ( on -- )` (`mods`): the game's sparkles drawn or not (told either way); `item-sparkles?`.
+A room's item ids are `items.names`' (`medallion`, `antimony-tube` ...). The sample,
+`examples/mods/item-props`, shows each one as a turning model - `PROPS/item-<id>.gltf` if the mod
+has one, else its gold cube - instead of its sparkle (`openhuey --mod examples/mods/item-props`).
+
+A typical VR pickup: on `item-placed` load and place the item's prop (remember k and the room's
+id: the sender); as the hand grabs it, carry the prop (`-1` room: it follows her through doors);
+when it's "put away", send `take-item-at` - on `item-cleared` free the prop; on a refused
+`take-answer`, put it back where it lay.
 
 ## Hooks: when the game must ask
 

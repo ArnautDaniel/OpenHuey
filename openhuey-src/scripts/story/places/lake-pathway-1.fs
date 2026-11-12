@@ -81,3 +81,4 @@ create ahead  near-exit-0-area , 0 ,   near-exit-1-area , 1 ,   \ (area, exit lo
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went lake-pathway-1 place!
+here  lavender , ' pick-lavender , lavender-fx ,  -1 ,  lake-pathway-1 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

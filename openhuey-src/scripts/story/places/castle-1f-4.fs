@@ -326,3 +326,4 @@ create entries  1 , 1 ,   0 , 0 ,   0 , 0 ,   0 , 0 ,      \ (by exit 0 .. 3: th
 
 ' came-in ' person-in ' each-frame ' went castle-1f-4 place!
 ' items-used castle-1f-4 items-here
+here  refined-antimony , ' antimony , antimony-fx ,  -1 ,  castle-1f-4 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

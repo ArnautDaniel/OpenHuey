@@ -92,3 +92,4 @@ create ahead  5 , 0 ,   6 , 1 ,   7 , 2 ,   8 , 3 ,   9 , 3 ,   $A , 4 ,   \ (ar
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-16 place!
 ' items-used old-mansion-1f-16 items-here
+here  refined-magnesia , ' take-magnesia , magnesia-fx ,  -1 ,  old-mansion-1f-16 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

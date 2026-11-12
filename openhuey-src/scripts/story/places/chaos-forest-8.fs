@@ -95,3 +95,4 @@ create entries  0 , 0 ,  1 , 1 ,   \ (by exit 0, 1: the camera)
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went chaos-forest-8 place!
+here  medallion , ' pick-medallion , medallion-fx ,  chicken-jerky , ' pick-jerky , jerky-fx ,  -1 ,  chaos-forest-8 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

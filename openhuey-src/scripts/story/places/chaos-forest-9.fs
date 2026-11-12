@@ -45,3 +45,4 @@ the-crate shard-grey 0 $B shard-look  the-crate 0.812e 0.687e 0.187e 0.312e shar
 : went ( -- )  wisp-slot figure-out ;
 
 ' came-in ' person-in ' each-frame ' went chaos-forest-9 place!
+here  refined-antimony , ' pick-antimony , antimony-fx ,  -1 ,  chaos-forest-9 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

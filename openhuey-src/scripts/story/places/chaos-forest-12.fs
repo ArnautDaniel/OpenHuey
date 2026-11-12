@@ -37,3 +37,4 @@ create cameras  $C , 0 , 0 ,  $D , 1 , 1 ,   \ (area, set, path)
 : went ( -- )  wisp-slot figure-out ;
 
 ' came-in ' person-in ' each-frame ' went chaos-forest-12 place!
+here  camomile , ' pick-camomile , camomile-fx ,  -1 ,  chaos-forest-12 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

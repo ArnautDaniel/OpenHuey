@@ -93,3 +93,4 @@ create ahead  9 , 0 ,   $A , 2 ,   \ (area, exit loaded ahead)
     om2f-2-flag1 fact? 0=  hewie-in? and  hewie-inside @ and if  old-mansion-2f-3 -1 0 hewie-to  18000 2 hewie send hewie-yelp  then ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-2f-2 place!
+here  medallion , ' take-medallion , medallion-fx ,  -1 ,  old-mansion-2f-2 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

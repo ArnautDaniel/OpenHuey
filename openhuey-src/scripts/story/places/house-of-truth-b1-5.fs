@@ -20,3 +20,4 @@ own-reset  truth-owns owns !
 : went ( -- )  colour-went ;
 
 ' came-in ' person-in ' each-frame ' went house-of-truth-b1-5 place!
+here  camomile , ' pick-up , pickup-fx ,  -1 ,  house-of-truth-b1-5 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

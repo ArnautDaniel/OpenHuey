@@ -135,3 +135,4 @@ create looks  19.29e 0e -1.64e  20e 22e 22e look,
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-2f-11 place!
+here  jupiter-key , ' take-key , key-fx ,  magnesia , ' take-magnesia , magnesia-fx ,  -1 ,  old-mansion-2f-11 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

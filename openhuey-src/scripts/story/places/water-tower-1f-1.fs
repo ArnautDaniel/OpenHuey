@@ -48,3 +48,4 @@ create ahead  3 , 0 ,  4 , 1 ,  5 , 0 ,  6 , 2 ,   \ (area, exit loaded ahead)
 : went ( -- ) ;
 
 ' came-in ' person-in ' each-frame ' went water-tower-1f-1 place!
+here  medallion , ' pick-medallion , medallion-fx ,  -1 ,  water-tower-1f-1 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)

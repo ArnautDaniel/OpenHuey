@@ -127,3 +127,4 @@ create ahead  4 , 0 ,   5 , 1 ,   \ (area, exit loaded ahead)
     hewie-in?  hewie-cond-now @ down-cond = and  hewie 1 on-group? and if  1 hewie send heal  well-cond hewie send set-cond  then ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-11 place!
+here  album-medallion , ' take-medallion , medallion-fx ,  -1 ,  old-mansion-1f-11 item-spots   \ (its items lying about, at their sparkles: mods told - item-placed)
