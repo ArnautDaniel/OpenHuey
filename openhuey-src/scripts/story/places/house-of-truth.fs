@@ -11,7 +11,6 @@ USING: engine game-state actors messages common facts flag-names story-names roo
 own-reset
 
 \ ---- its own state (a visit) ----
-own: frames-here           \ frames in the room so far (the voices go by them)
 own: through-reacted       \ out through a door already (once a visit)
 own: all-four              \ the four colours done as she neared the way on: the music let go with her
 owns @ constant truth-owns
@@ -25,23 +24,23 @@ $2301 constant slam-anim   $20 constant impact-key
     0 0 1 motion-events impact-key and if  0.5e cam-shake!  then ;
 : slam-shake ( -- )  lorenzo2-kind slam-shake-of ;
 
-\ ---- the voices (the B1's colour rooms, shared $98): after 1800, 4500, 7200 frames in a room
-\ (the room's sounds in), one each - a sound of the room's and its line (the rooms' 5, 6, 7); after
-\ 7500 the last fact: Lorenzo waits in each colour room from then on ----
+\ ---- the voices (the B1's colour rooms, shared $98): once the game has run 1800, 4500, 7200 frames
+\ (frames-in-play: the events' +0x704, counted in every room since the game began here - B1-9 sets it
+\ back to 0), one each in a colour room - a sound of the room's and its line (the rooms' 5, 6, 7);
+\ past 7500 the last fact: Lorenzo waits in each colour room from then on ----
 : voice ( k -- )   \ (an activity)
     {: k :}  scene-locked state!  k room-bank bank-sound  k 5 + say  scene-locked state-off ;
 : voice-0 ( -- )  0 voice ;   : voice-1 ( -- )  1 voice ;   : voice-2 ( -- )  2 voice ;
 : voice-on? ( -- flag )  ['] voice-0 running?  ['] voice-1 running? or  ['] voice-2 running? or ;
 : voices ( -- )   \ (each frame)
-    1 frames-here +!
     fading @  world-held state? or  voice-on? or if  exit  then
     fiona held? 0=  fiona-half-hidden state? or 0= if  exit  then
     shared-flag1 fact? 0= if
-        frames-here @ 1800 >=  room-sounds-in? and if  shared-flag1 fact!  ['] voice-0 start drop  then  exit
+        frames-in-play @ 1800 >=  room-sounds-in? and if  shared-flag1 fact!  ['] voice-0 start drop  then  exit
     then
-    shared-flag2 fact? 0= if  frames-here @ 4500 >= if  shared-flag2 fact!  ['] voice-1 start drop  then  exit  then
-    shared-flag3 fact? 0= if  frames-here @ 7200 >= if  shared-flag3 fact!  ['] voice-2 start drop  then  exit  then
-    shared-flag4 fact? 0= if  frames-here @ 7500 >= if  shared-flag4 fact!  then  then ;
+    shared-flag2 fact? 0= if  frames-in-play @ 4500 >= if  shared-flag2 fact!  ['] voice-1 start drop  then  exit  then
+    shared-flag3 fact? 0= if  frames-in-play @ 7200 >= if  shared-flag3 fact!  ['] voice-2 start drop  then  exit  then
+    shared-flag4 fact? 0= if  frames-in-play @ 7500 >= if  shared-flag4 fact!  then  then ;
 
 \ ---- the colour rooms ----
 $31 constant colour-track   0 constant colour-group   6 constant inscription-area

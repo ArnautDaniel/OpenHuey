@@ -299,6 +299,8 @@ message room-leave ( -- )                    \ its exit is taken: phase 4
 message room-left ( -- )                     \ the next room is in: phase 5, then it reports
 message room-done ( -- )                     \ (to the story) finished: it may go
 message story-stop ( -- )                    \ (to the story) no more room scripts (tests of the others, the console)
+message event-frames ( n -- )                \ (from the story, to a place as it comes in) the frames since the game began here (+0x704), counted on by the place
+message event-frames! ( n -- )               \ (to the story) that count set (the scripts' 0xD4)
 
 \ ---- messages on screen (docs/subsystems/window.md) ----
 message show-text ( msg -- )                 \ (the window) show message msg; its closing answered to the sender

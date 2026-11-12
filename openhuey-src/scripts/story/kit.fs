@@ -65,6 +65,7 @@ state: place-state
   cell field shook-now          \ she shook this frame (the stick swung or a button)
   cell field shakes-now         \ her shakes counted so far (count-shakes on: old-mansion-b1-3)
   cell field loud-now           \ frames left of a loud noise made here (noise-was: $20 or more)
+  cell field frames-in-play     \ frames since the game began here (the events' +0x704: the story's, counted on each frame)
   cell field fell-now           \ the story's debris fallen through since the room last counted (keri-fell)
   cell field hewie-mode-now     \ his move mode (hewie-doing's mode: 0 his own)
   cell field started-now        \ the action she started for Hewie this frame (-1 none: fiona-started)
@@ -362,7 +363,8 @@ $80 constant forced-exit   \ (an exit's bit: not by a door - to the room loaded 
 : take-exit ( exit -- )  going ! ;   \ (after this frame)
 : at-exit ( id exit -- )  over 0< if  2drop exit  then  swap send to-exit ;   \ (on its outside spot, facing in)
 : prepare-exit ( exit -- )  rooms-actor send exit-prepare ;   \ (the room behind it loaded ahead)
-: her-exit-is ( exit -- )  broadcast exit-chosen ;   \ (Character_ChooseExit: her exit, as a room sets it - she isn't moved)
+: her-exit-is ( exit -- )  broadcast exit-chosen ;
+: frames-in-play! ( n -- )  dup frames-in-play !  story-id send event-frames! ;   \ (the frames since the game began set: the scripts' 0xD4)   \ (Character_ChooseExit: her exit, as a room sets it - she isn't moved)
 
 \ ---- doors (the doors actor's) ----
 : doors-actor ( -- id )  s" doors" actor-named ;
@@ -1598,7 +1600,7 @@ behaviour placing
       camera-starts  camera-placed ;
   on tick ( -- )
       entered @ 0= if  exit  then
-      people-in  frame-start  ['] d.frame run-desc  every-room  0 request-now !  -1 started-now !   \ (read: gone)
+      1 frames-in-play +!  people-in  frame-start  ['] d.frame run-desc  every-room  0 request-now !  -1 started-now !   \ (read: gone)
       offer-out  prompt-out  kind-told  onset @ 0= if  run-acts  then ;
   on frame-end ( -- )
       entered @ 0= if  exit  then  remember-people  loud-now @ if  -1 loud-now +!  then  story.base:fill-frame
@@ -1652,6 +1654,7 @@ behaviour placing
   on fiona-shakes ( n -- )  shakes-now ! ;
   on keri-fell ( k -- )  drop  1 fell-now +! ;
   on summoner-cooldown-is ( secs -- )  summoner-secs-now ! ;
+  on event-frames ( n -- )  frames-in-play ! ;
   on noise-was ( loud room -- )  this-room @ =  swap $20 >= and if  2 loud-now !  then ;
   on fiona-message ( msg -- )   \ (her locked door's: not while Hewie is the one played)
       leaving @  shown-msg @ 0< 0= or  hewie-played? or if  drop exit  then  show ;

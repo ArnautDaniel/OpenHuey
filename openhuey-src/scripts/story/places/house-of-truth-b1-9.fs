@@ -17,7 +17,7 @@ create cameras  8 , 0 , 0 ,  9 , 2 , 2 ,   \ (area, set, path)
     dark-door stalker-slot true door-for  dark-door hewie-slot true door-for ;
 : into-the-dark ( -- )   \ (to the white room by the forced way)
     fiona hold  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
-    world-held state!  stalker let-go  1 summon-take  colour-track 1e background  forced-exit take-exit ;
+    world-held state!  stalker let-go  1 summon-take  0 frames-in-play!  colour-track 1e background  forced-exit take-exit ;   \ (0xD4: the voices' count afresh)
 : each-frame ( -- )
     taken @ 0=  fiona 0 in-area? and if  -1 taken !  ['] into-the-dark fiona start-holding drop  then
     1 1 leaves-by  cameras 2 cameras-at

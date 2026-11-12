@@ -42,17 +42,20 @@ testing brought here by the forced way: the first tremor - she crouches; its fac
 lorenzo2-kind story.base:partner-load  5 run-frames
 house-of-truth-1f-8 forced-exit rooms send go-to-room  5 run-frames
 T{ [: [: ['] first-tremor running? ;] in-place ;] 120 soon  [: window-shown 0< 0= if  cross press  then  tremor-warned-2 story-flag? ;] 900 soon -> -1 -1 }T
-T{ over-music-f story-flag?  tremor-warned story-flag?  [: snag-var var@ ;] in-place -> -1 -1 5 }T
+$77 0 progress pr.vars + c!   \ (story variable 0: none of the room's)
+T{ over-music-f story-flag?  tremor-warned story-flag?  [: snag-left @ ;] in-place  0 progress pr.vars + c@ -> -1 -1 5 $77 }T
+testing ... the room's own count: 0 again on a later visit (the next blow through)
+T{ room-afresh  [: snag-left @ ;] in-place -> 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 300 read-on  1e sound-scale!  game:lorenzo2 send stalker-out  10 run-frames
 testing the snagged door: her try at it, its remark
 snagged-door [: lock ;] in-place  room-afresh  0 by-door
 T{ [: 0 offer-xt !  0 offer-msg !  2 request-now !  spots  offer-xt @ ;] in-place  ' tries-snagged = -> -1 }T
 testing her blows at it: worn down (5 a full blow), through at 0
-T{ [: 6 snag-var var!  ;] in-place  -37e 5e 177e blow-at  [: -37e 0e 177e 7e 20e her-blow-in? ;] in-place -> -1 }T
+T{ [: 6 snag-left !  ;] in-place  -37e 5e 177e blow-at  [: -37e 0e 177e 7e 20e her-blow-in? ;] in-place -> -1 }T
 [: body-point-off ;] her
-T{ [: ['] struck start drop ;] in-place  20 run-frames  [: snag-var var@ ;] in-place  snagged-door doors:door-locked? -> 1 -1 }T
-T{ [: ['] struck start drop ;] in-place  20 run-frames  [: snag-var var@ ;] in-place  snagged-door doors:door-locked? -> 0 0 }T
+T{ [: ['] struck start drop ;] in-place  20 run-frames  [: snag-left @ ;] in-place  snagged-door doors:door-locked? -> 1 -1 }T
+T{ [: ['] struck start drop ;] in-place  20 run-frames  [: snag-left @ ;] in-place  snagged-door doors:door-locked? -> 0 0 }T
 testing Hewie leaping in at it: through
 snagged-door [: lock  snagged-door false open-mark ;] in-place
 hewie-freed story-flag-set  hewie-commandable state-flag-set  room-afresh  game:hewie send join-fiona  60 run-frames

@@ -44,6 +44,8 @@ testing the remarks: the gate shut, the doll in turn
 T{ gate-area -90 at  said -> gate-msg }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ $A -90 at  said  $B 180 at  said  $E 0 at  said -> doll-msg doll-2-msg doll-3-msg }T
+testing ... the doll's turn the room's own (variable 7): afresh each visit
+T{ [: 1 doll-looks ! ;] in-place  room-afresh  [: doll-looks @ ;] in-place -> 0 }T
 
 testing the door (exit 0, 9) locked: tried, it won't open
 breaker-door s" doors" actor-named send lock  room-afresh

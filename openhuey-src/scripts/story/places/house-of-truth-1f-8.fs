@@ -16,11 +16,12 @@ own-reset  truth-owns owns !
 0 constant snagged-msg     \ "Something seems to be snagged on the other side of the door, keeping it from opening. D..."
 2 constant tremor-msg      \ "Whoa! What was that? It felt like a tremor... I should crouch down during large tremors..."
 own: snag-tried            \ she has tried the snagged door (her rattle, once a visit)
+own: snag-left             \ the snag's strength left (the room's variable 0: 5 from the first tremor, 0 again each visit)
 own: going-on              \ her first step in, the house coming down: on (once a visit)
 own: drone-on              \ the drone going
 3 constant magist-fx   $A constant clock-area   $B constant creatures-area   6 constant going-area
 $EB constant snagged-door   $91 constant snag-sound   5 constant first-ambient   5 constant tremor-track
-$30 constant drone-sound   $1FC constant brought-tri   0 constant snag-var
+$30 constant drone-sound   $1FC constant brought-tri
 create flames  72.4e f, 17.2e f, 117.2e f,   101.9e f, 66e f, 87.1e f,   97.6e f, 29.5e f, 144.8e f,   101.9e f, 66e f, 87.4e f,
 create flame-kinds  1 , 4 , 1 , 4 ,
 create flame-slots  0 , 1 , 2 , 4 ,
@@ -50,7 +51,7 @@ create flame-slots  0 , 1 , 2 , 4 ,
     15 screen:from-black fade  wait-fade  ['] shakes start drop  8 frames
     seized-sound common-bank fiona sound-by  fiona crouch-down-anim play  fiona crouching-anim start-anim  30 frames
     fiona crouch-up-anim start-anim  tremor-msg say  tremor-warned fact!  tremor-track 1e background  tremor-warned-2 fact!
-    ['] shakes stop-doing  tremors  5 snag-var var!  stalkers-stay state-off ;
+    ['] shakes stop-doing  tremors  5 snag-left !  stalkers-stay state-off ;
 
 \ ---- the house coming down: her first step in takes her on ----
 : goes-on ( -- )
@@ -62,9 +63,9 @@ create flame-slots  0 , 1 , 2 , 4 ,
 : snag-shut? ( -- flag )  0 exit-open? 0= ;
 : struck ( -- )   \ (her blow at it: worn by it - 1 the weak blow, else 5 - through at 0)
     snag-shut? if
-        snag-var var@  fiona-sub-now @ story.base:weak-blow-sub = if  1  else  5  then  -  0 max  snag-var var!
+        snag-left @  fiona-sub-now @ story.base:weak-blow-sub = if  1  else  5  then  -  0 max  snag-left !
         snag-sound common-bank -37e 10e 177e sound-there
-        snag-var var@ 0= if  opened  then
+        snag-left @ 0= if  opened  then
     then  16 frames ;
 : leaps-in ( -- )   \ (Hewie, at her "go for it": a bark, round to it, a leap - through)
     hewie hold  hewie-bark  hewie wait-move
