@@ -9,7 +9,6 @@
 IN: stalker.leads
 USING: engine game-state actors messages common facts flag-names paths vectors rumble stalker.anims stalker.sounds stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.pursue ;
 
-5 constant pull-fiona   4 constant pull-noise   1 constant pull-hewie
 7 constant saw-her   6 constant heard-her   5 constant heard-noise   2 constant saw-hewie   1 constant heard-hewie
 90 constant start-frames
 

@@ -160,7 +160,10 @@ His modes out there: after her he heads for her room (a new route as she moves o
 clock out - heading for it (1); come to the room he heads for he searches it (its stops x 150
 frames), then waits about (900); his wait over he heads for her room unless she is in his or
 one next to it - then out by a door at random. When she leaves his room he is out of sight at
-once (after her: routed to her room); when she comes into his (Pursuer_BackOnMesh) he is put
+once (after her: routed to her room, setting off after a wait - Pursuer_LeaveScreen's
+Pursuer_RandomWait: at once 60 in 100, 90 frames 20, 150 10, 240 10; none in the run; searching on
+her lead he heads for her room so; his lead, a noise's or Hewie's, drops to 2 / alarm 3 - seeing her
+again he starts. Since 0.2.50); when she comes into his (Pursuer_BackOnMesh) he is put
 on its floor - by the door he made for if within 80 of it, facing it; else by the door he came
 in by, facing in; else anywhere he may stand. Console: `castle-1f-10 debilitas-hunt`.
 

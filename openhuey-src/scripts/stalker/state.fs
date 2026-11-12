@@ -222,3 +222,6 @@ state: stalker-state
   \ each lasts (-1 while he is powdered; 0 none), its strands' kind, its ten timers
   4 cells field cloud-left  4 cells field cloud-kind  40 cells field cloud-timers
 end-state
+
+\ a lead's pull (`lead`): Fiona's noise 5, any other 4, Hewie's 1
+5 constant pull-fiona   4 constant pull-noise   1 constant pull-hewie

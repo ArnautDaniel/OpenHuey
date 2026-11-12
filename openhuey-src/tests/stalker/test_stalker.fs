@@ -169,6 +169,7 @@ T{ [: route-next @ 1 >= ;] 900 wait-for -> -1 }T
 testing seeing her he's after her (mode 0): closer on foot
 140.64e her-y -217.33e 0e tp-facing  2 run-frames   \ (the open spot again: him there, her away)
 s" fiona" actor-named body-tri  -500e her-y -500e tp  2 run-frames  debug:debilitas-tri  1 run-frames
+[: 7 lead-alarm ! ;] his   \ (no start at the sight of her: his alarm as it was - she gone by a door drops it)
 face  40e there
 T{ on-floor?  [: my-mode @  sees-fiona @ ;] his -> -1 0 -1 }T
 : dist-to-her ( F: -- d )  s" fiona" actor-named body-at  game:debilitas body-at vec-dist ;
@@ -196,6 +197,7 @@ debug:debilitas-out  2 run-frames
 testing ... searching out of her sight, she comes in: on with the stops his time left there would take (Pursuer_SearchOffscreen:
 testing ... 150 frames each); none left, waiting about
 castle-1f-10 room!  5 run-frames  front-garden-2 debug:debilitas-hunt  3 run-frames
+2 common:seed !   \ (his stops by chance)
 [: searching mode!  route-clear  -1 route-done !  301 away-search ! ;] his  front-garden-2 room!  2 run-frames
 T{ [: my-mode @  route-end @ route-next @ - ;] his -> 2 2 }T
 castle-1f-10 room!  5 run-frames
@@ -521,6 +523,16 @@ T{ [: 70 hp !  0 hits !  0 stun-t !  3 struck-away  hp @ hits @  stun-t @ 60 121
 T{ [: 3 struck-away  hp @ ;] his -> 67 }T   \ (stunned: not again)
 T{ [: 0 stun-t !  2 hp !  3 struck-away  hp @  cond @ down-cond =  lie-anim @ ;] his -> 0 -1 $1802 }T
 T{ [: 0 stun-t !  3 struck-away  hits @ ;] his -> 6 }T   \ (down: not again)
+debug:debilitas-out  2 run-frames
+testing she leaves his room: after her, he follows a while later - at once, 90, 150 or 240 frames (Pursuer_RandomWait)
+s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+: waits? ( n -- flag )  dup 0=  over 90 = or  over 150 = or  swap 240 = or ;
+T{ [: true  200 0 do  follow-wait waits? and  loop ;] his -> -1 }T
+T{ [: after-her mode!  after-her-gone  away-search @ waits?  my-mode @ ;] his -> -1 0 }T
+testing ... searching on her lead: heading for her room so, the lead dropped to 2 / 3 (Pursuer_LeaveScreen's lead 5)
+T{ [: searching mode!  pull-fiona lead !  7 lead-alarm !  after-her-gone  my-mode @  lead @  lead-alarm @ ;] his -> 1 2 3 }T
+T{ [: searching mode!  pull-noise lead !  5 lead-alarm !  after-her-gone  my-mode @  lead @  lead-alarm @ ;] his -> 2 2 3 }T
+T{ [: 0 stun-t !  1000 away-search !  heading-for-her mode!  my-room  stalker.travel:away  my-room =  away-search @ ;] his -> -1 999 }T
 debug:debilitas-out  2 run-frames
 testing she leaves the room with Hewie still on him (Pursuer_LeaveScreen): held there (Hewie's trust + 1) x 15
 testing ... and 30 (60 at his head or leg); out of health, down there; powdered, its loops x 30
