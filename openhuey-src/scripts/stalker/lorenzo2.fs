@@ -59,8 +59,8 @@ $1904 constant hold-blow-anim   $E00 constant blow-anim   $E04 constant blow-2-a
     dup hewie sweep-reaches?  swept @ 2 and 0= and if
         dup m.kind @  over m.damage @  2 pick stumble?  hewie send blow  2 swept @ or swept !  12 cry !
     then  drop ;
-\ none of his own for now (Lorenzo2_Start*: action $17, his gesture row 0 - his $1300 taunt; before
-\ 0.2.42 he stood)
+\ held back, no move of his own this time: his taunt (Lorenzo2_Start*: action $17, his gesture row 0 -
+\ his $1300; before 0.2.42 he stood)
 : holds-back ( -- )  0 taunt-act gesture-as ;
 : sweeping ( -- )  root-move  0 key-at? if  2 move-of sweep-hits  then  ended? if  -1 step-done !  then ;
 
