@@ -65,7 +65,7 @@ T{ 0 whole?  4 whole?  2 whole?  1 whole?  [: medallion-fx effect @  jerky-fx ef
 testing the sundial: its remark; then the save
 T{ sundial-area 0 at  [: fiona sundial-area 50 faces-area? ;] in-place -> -1 }T
 T{ said  sundial-examined story-flag? -> sundial-msg -1 }T
-T{ circle press  shown-soon -> clock-msg }T
+T{ circle press  shown-soon -> another-clock-msg }T
 : tap ( key -- )  dup true key-hold  game-tick  false key-hold  10 run-frames ;
 : picked ( -- n )  game:window enter  window:picked @  leave-actor ;
 [: key: Right tap  picked 1 = dup 0= if  cross press  20 run-frames  then ;] 30 soon drop  cross press  300 read-on   \ (no save)

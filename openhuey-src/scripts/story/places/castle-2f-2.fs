@@ -221,7 +221,7 @@ create doll-pt /vec allot
     stalker hold  -1 his-shove !  stalker wait-move  stalker his-shove-motions motions-for
     stalker $1A2 0 -1 walk-path-move 77.27e -192.48e go-to
     stalker use-motions  stalker true noclip  stalker room-motion 5 start-blend8
-    begin  stalker fiona 0 close-to? if  stalker throws-her  then  stalker went-round? 0= while  yield  repeat
+    begin  stalker fiona self-touching? if  stalker throws-her  then  stalker went-round? 0= while  yield  repeat
     stalker false noclip  0 his-shove !  stalker let-go  0 summon-take ;
 : shove-due ( -- )
     stalker far-area in-area?  4 stalker-alert? and  st-cond-now @ down-cond <> and  debilitas? and  stalker held? 0= and if

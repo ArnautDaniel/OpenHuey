@@ -62,7 +62,7 @@ create crates  ' crate-1 , ' crate-2 , ' crate-3 , ' crate-4 , ' crate-5 , ' cra
 : pick-jerky ( -- )  chicken-jerky cf-8-chicken-jerky jerky-fx -275.5e -96e picks-up ;
 : spots ( -- )
     fiona sundial-area 50 faces-area? if
-        sundial-examined fact? if  ['] save-clock calm-hewie-up offer  else  ['] the-sundial unhurried offer  then
+        sundial-examined fact? if  ['] another-clock calm-hewie-up offer  else  ['] the-sundial unhurried offer  then
     then
     crate-1 broken? if
         cf-8-medallion fact? 0=  fiona -367e 1e -118.7e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then

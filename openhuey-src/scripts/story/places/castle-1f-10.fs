@@ -56,7 +56,7 @@ $22 constant chase-seen   $29 constant doll-seen   $20 constant chase-door   3 c
     stalker-in? if  stalker body-at vec@ point-unseen?  else  true  then ;
 : his-scene ( -- )
     $29 hewie-slot 1 doors-into  fiona hold
-    $29 116 stalker-to  stalker $74 180 place-on-tri  stalker 0 -1 camera-set  stalker false shown  stalker let-go
+    $29 116 stalker-to  stalker $74 180 place-on-tri  stalker 0 -1 camera-set  stalker false shown  stalker let-go  0 summon-take
     15 screen:to-black-2 with-music or fade
     chase-movie scenes:unseen-movie chase-cutscene load-scene  wait-fade
     hewie-in? if  hewie let-go  -1 hewie-sent-off !  then

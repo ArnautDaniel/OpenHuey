@@ -106,7 +106,7 @@ $30 constant not-landed   $34 constant speed   -25.3e fconstant shut-y
 
 \ ---- in among the wires, the breaker not lowered: she is killed (a game over) ----
 : electrocuted ( -- )
-    capture-no-end state!  no-pause state!  fiona hold  stalker let-go  16 frames  yield
+    capture-no-end state!  no-pause state!  fiona hold  stalker let-go  0 summon-take  16 frames  yield
     15 screen:to-black-2 with-music or fade
     death-movie scenes:keyed-movie death-cutscene load-scene  wait-fade  $12 $1E movie-key
     hewie let-go  panic-eased  if  -1 run-through  then

@@ -48,7 +48,7 @@ vase-1 0 $80303030 $55 vase   vase-2 1 $80303030 $2BF vase   vase-3 2 $80202020 
 : caught-here ( -- )
     ending-seen resident-flag? 0= if  no-pause state!  then
     world-held state!  fiona hold  fiona wait-move  fiona false shown
-    stalker let-go  hewie let-go
+    stalker let-go  0 summon-take  hewie let-go
     caught-scene  azoth-ending ending-var var!  caught-over game-over ;
 
 \ ---- what she may do here ----
@@ -110,7 +110,7 @@ create entries  2 , 2 ,   0 , 0 ,   0 , 0 ,             \ (by exit 0, 1, 2: the 
     fiona-p <> if  exit  then
     events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 3 ways-in
-    saturnus-hint-on fact?  c1f-14-flag2 fact? 0= and if  c1f-14-flag2 fact!  stalker let-go  then
+    saturnus-hint-on fact?  c1f-14-flag2 fact? 0= and if  c1f-14-flag2 fact!  stalker let-go  0 summon-take  then
     came-by @ 0= if  stairs-page map-page  then
     came-by @ forced-exit = if  panic-eased  ['] caught-here start drop  then ;
 : went ( -- ) ;

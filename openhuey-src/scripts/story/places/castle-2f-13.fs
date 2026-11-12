@@ -28,9 +28,8 @@ own: was-idle              \ she stood idle as it gave
     c2f-13-flag1 fact? 0= if  sparkle-fx -231e 61e 24e flicker-at  then  medallion-sparkle ;
 
 \ ---- the balcony gives: to black, the doors set anew, down to the great hall by the forced way ----
-: stalker-kept ( -- )  stalker hold  begin  yield  again ;
 : it-gives ( -- )
-    30 frames  music send bgm-resume  15 screen:to-black-2 with-music or fade  wait-fade  world-held state!
+    30 frames  no-track 1e background  15 screen:to-black-2 with-music or fade  wait-fade  world-held state!
     stalker-in? if  ['] stalker-kept start drop  then
     $35 $36 door-as  $36 closed-off  exits-redone ;
 : down-with-it ( way hewie-room rest? -- )   \ (her on it - idle, she rests a moment - or the stalker)

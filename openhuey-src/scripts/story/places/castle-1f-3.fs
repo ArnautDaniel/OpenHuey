@@ -120,14 +120,14 @@ $18 constant shelf-seen   $19 constant shelf-night-seen   $E constant shelf-door
 
 \ ---- the awakening (the first time at the key): the voice, the thing set on the table; else the key ----
 : awakening-cues ( -- )   \ (the scene's own: the music back at frame $64, the table's thing from its fourth shot)
-    begin  $64 frame-reached? 0= while  yield  repeat  music send bgm-resume
+    begin  $64 frame-reached? 0= while  yield  repeat  no-track 1e background
     begin  4 shot? 0= while  yield  repeat  table-part hide-part  thing-part show-part ;
 : awakening ( -- )
     15 screen:to-black-2 with-music or fade
     awakened-movie scenes:unseen-4-movie awakened-cutscene load-scene  wait-fade
     0 true no-shadow  ['] awakening-cues along-scene
     panic-eased  if  awakened-msg run-scene  then
-    music send bgm-resume  wait-fade  0 false no-shadow
+    no-track 1e background  wait-fade  0 false no-shadow
     table-part hide-part  thing-part show-part  shelf-object object-show
     fiona 0 idle  fiona $13C -73 23.771e -27.607e place-at  1 1 player-camera  camera-restart
     c1f-3-flag1 fact!  15 screen:from-black with-music or fade  wait-fade ;
@@ -204,11 +204,11 @@ create looks
     awakened-movie scenes:unseen-4-movie awakened-cutscene load-scene
     0 true no-shadow  ['] awakening-cues along-scene
     panic-eased  if  awakened-msg run-scene  then
-    music send bgm-resume  0 false no-shadow  replay-over ;
+    no-track 1e background  0 false no-shadow  replay-over ;
 : replay-shelf ( night? -- )   \ (by day the room's tint too)
     {: at-night :}  fiona hold  thing-part show-part  at-night 0= if  tinted  then
     debilitas-kind figure-slot figure-in  yield
-    at-night shelf-scene  0 true no-shadow  debilitas-kind true no-shadow
+    at-night shelf-scene  ['] his-fall along-scene  0 true no-shadow  debilitas-kind true no-shadow   \ (its cues as played: act03)
     panic-eased  if  -1 run-scene  then
     figure-slot figure-out  replay-over ;
 

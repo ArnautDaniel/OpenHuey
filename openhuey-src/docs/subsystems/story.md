@@ -541,6 +541,18 @@ only by their subs; `place-at` on the triangle's plane (`tri-floor`: NavMesh_Ont
 gate's crossing, `exit-camera` and Hewie's exit test on the triangles' planes. Left: figures held
 by a script don't count in `busy?` (the kit doesn't hold them).
 
+**The rooms read again (2026-11, 0.2.47).** Cond 0x47 in the rooms (the stalkers' shoves that
+throw her, `unlocks`' "not with him on her") is `self-touching?` - the other's own radius and
+height as margins, not `close-to? 0`. Pickup offers from 0x7D (`zone-at-effect`) sit on the
+sparkle's own height (36 had been 1 low). 0x7E's track $FF is no track (`no-track 1e background`);
+only a pause byte of $FF resumes the stream (`bgm-resume`), pause 1 starts a track held
+(`bgm-want` with 1). An action started with mode 0 on a character does nothing while it is
+script-held (+0xE0), on a script track while the track runs (`start-only`). `stalker-kept` holds the
+stalker for the rest of a visit. The shared script $85 is the second clock (`another-clock`:
+"It's another clock...", castle-1f-18 and chaos-forest-8). Water Tower 2F's walkway sets her exit
+by its side (room $C2's command 1, Character_ChooseExit: `exit-chosen`, taken by the stalker and
+the summoner). Left: a Hewie taken off by `char-done` (Character_Deactivate) is only let go here.
+
 The history below runs from the converted rooms' machinery (S1 .. S5: the rooms' bytecode
 scripts as Forth, their opcode words - gone in 0.2.20, every room a place since) to the places.
 Tests named there that went with the machinery are gone too.

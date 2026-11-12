@@ -521,19 +521,22 @@ $2100 constant coat-pose-1   $1F00 constant coat-pose-2   $2000 constant coat-po
 : open-subscreen ( mode -- )   \ (a mode of the menu: 1 saving, 7 the costumes; waited while it is up)
     subscreen send menu-mode  subscreen-wanted state!  begin  yield  subscreen-wanted state? 0= until ;
 
-\ ---- a save clock (the shared script $84): "Save current game?" - not with Hewie out of reach;
-\ he holds still while she saves ----
+\ ---- a save clock (the shared scripts $84, $85 - the second clock's words): "Save current game?" -
+\ not with Hewie out of reach; he holds still while she saves ----
 $8014 constant clock-msg          \ "The clock etches out moments in time... Save current game? YES NO"
+$8017 constant another-clock-msg  \ "It's another clock..." (then the same question)
 $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system message)
 1 constant saving-menu
 : hewie-reachable? ( -- flag )  hewie-in? 0=  hewie-reach-now @ or ;
-: save-clock ( -- )
+: clock-asks ( msg -- )
     stalkers-stay state!  fiona wait-move
     hewie-reachable? if
         hewie-in? if  hewie hold  then
-        clock-msg yes? if  saving-menu open-subscreen  then
-    else  clock-alone-msg show  then
+        yes? if  saving-menu open-subscreen  then
+    else  drop  clock-alone-msg show  then
     stalkers-stay state-off ;
+: save-clock ( -- )  clock-msg clock-asks ;
+: another-clock ( -- )  another-clock-msg clock-asks ;
 
 \ ---- doors her (or his) way: opened or shut as a move ----
 : open-door ( id exit -- )  {: id ex :}  id open-door-move ex -1  0e 0e 0e 0e  move  id wait-move ;
@@ -1053,6 +1056,9 @@ $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3
     id body-yaw f- angle-wrap fabs rad>deg  within s>f f<= ;
 : close-to? ( a b margin -- flag )   \ their bodies within margin of each other across, overlapping in height
     {: a b margin :}  a here?  b here? and 0= if  false exit  then  a b margin s>f 0e bodies-touching? ;   \ (Actor_Touching)
+: stalker-kept ( -- )  stalker hold  begin  yield  again ;   \ (an activity: the stalker held for the rest of the visit)
+: self-touching? ( self other -- flag )   \ (cond 0x47: Actor_Touching with the other's own radius across and height up as margins)
+    {: a b :}  a here?  b here? and 0= if  false exit  then  b body-dims {: F: r h :}  a b r h bodies-touching? ;
 : faces-within? ( a b within -- flag )  swap body-pos fswap fdrop faces-point? ;   \ a facing b within so many degrees
 : touches-facing? ( a b margin within -- flag )   \ a close to b, and facing it within so many degrees
     {: a b margin within :}  a b margin close-to? 0= if  false exit  then  a b within faces-within? ;
@@ -1549,8 +1555,8 @@ $72 constant unlock-sound   $8008 constant unlocked-msg   \ (the common bank's; 
 : locked-request? ( n -- flag )   \ (her request at a locked door - before one of the first n exits' - or a creature's request 2 of her)
     false swap 0 ?do  i before-locked? or  loop  request-now @ 2 = or ;
 : unlocks ( exit -- )   \ (to her spot by it - not with the stalker on her - a try, and it gives: unlocked)
-    {: ex :}  stalker-in?  fiona stalker 0 close-to? and if  exit  then
-    fiona ex to-door  stalker-in?  fiona stalker 0 close-to? and  in-panic? or if  exit  then
+    {: ex :}  stalker-in?  fiona stalker self-touching? and if  exit  then
+    fiona ex to-door  stalker-in?  fiona stalker self-touching? and  in-panic? or if  exit  then
     fiona body-pos ex 0 door-in-area? if  fiona fiona.anims:rattle-front-anim  else  fiona fiona.anims:rattle-behind-anim  then  start-anim
     20 frames  in-panic? if  exit  then
     unlock-sound common-bank fiona sound-by  ex exit-door unlock  unlocked-msg show

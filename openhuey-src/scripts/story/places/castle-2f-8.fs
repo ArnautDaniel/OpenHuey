@@ -110,7 +110,7 @@ fvariable kiln-phase
     after-golem  fiona true shown  15 fade-in  meth-seen resident-flag-set  stalkers-stay state-off ;
 : dances ( -- )   \ (SALTATIO: the golem dances to its music - it calms her, the first time - act0E)
     fiona hold  stalkers-stay state!  golem-kind golem-figure figure-in  fiona wait-move
-    15 screen:to-black-2 with-music or fade  yield  $37 1e background  wait-fade
+    15 screen:to-black-2 with-music or fade  yield  $37 1 1e f>cell music send bgm-want  wait-fade   \ (made ready, held)
     no-pause state!  panic-eased  panic-held state!
     fiona $EE 180 10e -20e place-at  1 23e -12e 0e 5e shot  fiona false shown  golem-part hide-part
     golem-figure figure-on

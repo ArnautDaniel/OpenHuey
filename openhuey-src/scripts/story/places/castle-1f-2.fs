@@ -148,7 +148,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
 : crawls-back ( -- )
     hewie hold  hewie $353 90 -1 walk-path-move 37e 69e go-to  gap-floor solid-floor floor-off
     hewie $267 90 crawl-anim walk-move 52e 69e go-to  gate-floor solid-floor floor-on
-    hewie -1 idle  hewie let-go  room-flag-2d state-off  0 bark-scene ! ;
+    hewie -1 idle  hewie let-go  room-flag-2d state-off  stalkers-stay state-off  0 bark-scene ! ;
 : her-flowers ( -- )   \ (once she is free: he gives them over)
     begin  fiona-free? 0= while  yield  repeat
     1 fetch-step !  panic-eased
@@ -240,8 +240,8 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
     again ;
 
 \ ---- the stalker while she hides: his search (seeing her, he finds her) ----
-: his-camera? ( -- flag )   \ (him about, on the move his way - the camera on someone: hers, else his)
-    stalker-told?  st-mode-now @ dup 0= over 1 = or swap 5 = or 0= and  cam-followed 0< 0= and ;
+: his-camera? ( -- flag )   \ (him about, on the move his way: Room02_Cond01 - its camera test, +0x1130 $FE, is never so)
+    stalker-told?  st-mode-now @ dup 0= over 1 = or swap 5 = or 0= and ;
 : door-on-his-way ( exit -- )   \ (come by it, its door shut: opened - in his search, only from its area)
     {: ex :}  ex stalker-came-by?  ex exit-open? 0= and  search-on @ 0=  stalker ex exit-area in-area? or and if
         stalker ex open-door
@@ -267,7 +267,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
 : shoves ( motion frame F: x0 y0 z0 x1 y1 z1 -- )   \ (the dust thrown up at its frame at the two points)
     {: m at F: x0 y0 z0 x1 y1 z1 :}  stalker use-motions  stalker true noclip  stalker room-motion m + 5 start-blend8
     0  begin
-        stalker fiona 0 close-to? if  stalker throws-her  then
+        stalker fiona self-touching? if  stalker throws-her  then
         dup at = if  x0 y0 z0 dust  x1 y1 z1 dust  thud-sound room-bank stalker sound-by  then
         1+  stalker went-round? 0= while  yield
     repeat  drop ;

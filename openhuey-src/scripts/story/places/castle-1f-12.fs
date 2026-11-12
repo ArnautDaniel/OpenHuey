@@ -104,8 +104,8 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
 \ dial unset there - the moon door unlocked and these doors open ----
 : moon-scene ( -- movie? )  moon-movie scenes:keyed-movie moon-cutscene load-scene  $10 $FF movie-key ;
 : moon-comes ( -- )
-    fiona hold  stalker-in? if  stalker hold  yield  then  world-frozen state!
-    moon-scene  came-by @ forced-exit = if  castle-2f-1 preload  else  castle-1f-7 preload  then  wait-fade
+    fiona hold  stalker-in? if  ['] stalker-kept start drop  yield  then  world-frozen state!   \ (held the rest of the visit: act07)
+    moon-scene  came-by @ forced-exit = if  castle-2f-1 preload  else  castle-b1-4 preload  then  wait-fade   \ (room 7, as the original has it)
     panic-eased  if  -1 run-scene  then
     came-by @ forced-exit = if  world-held state!  world-frozen state-off  forced-exit 1 or take-exit exit  then
     moon-door unlock  c1f-12-flag1 fact!  dial-2 dial-base dial-set  dial-1 dial-base dial-set  doors-open

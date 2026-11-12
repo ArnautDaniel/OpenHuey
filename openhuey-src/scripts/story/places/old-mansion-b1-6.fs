@@ -151,11 +151,11 @@ defer leg-01  defer leg-02  defer leg-03  defer leg-04  defer leg-05  defer leg-
 \ ---- SALTATIO: it dances ----
 : dance ( -- )
     stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade  golem golem-slot figure-in
-    $37 1e background  wait-fade  no-pause state!  panic-eased  panic-held state!
+    $37 1 1e f>cell music send bgm-want  wait-fade   \ (made ready, held)  no-pause state!  panic-eased  panic-held state!
     fiona $5D 180 75e -30e place-at  1 30e -10e 0e 4e shot  fiona false shown  0 hide-part
     golem-slot figure-on  4 barred-floor floor-off  golem-slot 75e 0e -40e 0e figure-at  4 barred-floor floor-on
     15 screen:from-black fade  golem-slot $1300 0 0 figure-play  0 pulse !
-    pulse @ $5A $44 $46 $52 $4B pulse-tint  1 pulse +!  10 frames  no-track 1e background
+    pulse @ $5A $44 $46 $52 $4B pulse-tint  1 pulse +!  10 frames  music send bgm-resume
     begin  golem-slot figure-came-round? 0= while
         pulse @ $5A $44 $46 $52 $4B pulse-tint  pulse @ 1+ dup $60 > if  drop 0  then  pulse !  yield
     repeat

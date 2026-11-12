@@ -58,6 +58,14 @@ create spot 16 allot
 game:hewie send join-fiona  30 run-frames
 T{ 2 hewie-before  [: story.kit:fiona story.kit:hewie 10 45 story.kit:touches-facing?  story.kit:fiona story.kit:hewie 10 10 45 story.kit:touches-facing-up? ;] in-place -> 0 -1 }T
 T{ 0 hewie-before  [: story.kit:fiona story.kit:hewie 10 45 story.kit:touches-facing? ;] in-place -> -1 }T
+testing touching as the rooms' 0x47 has it (Actor_Touching with the other's radius and height as margins)
+: hewie-ahead ( F: d -- )   \ Hewie d ahead of her, on her height
+    spot game:fiona body-at  game:fiona body-yaw fswap vec-ahead  spot vec@  game:hewie enter  body-place-at  leave-actor ;
+: radii ( F: -- rf rh )  game:fiona body-dims fdrop  game:hewie body-dims fdrop ;
+T{ radii fover fover f+ fswap 0.5e f* f+ hewie-ahead  [: story.kit:fiona story.kit:hewie 0 story.kit:close-to?  story.kit:fiona story.kit:hewie story.kit:self-touching? ;] in-place -> 0 -1 }T
+T{ radii fover fover f+ fswap 2e f* f+ 0.5e f+ hewie-ahead  [: story.kit:fiona story.kit:hewie story.kit:self-touching? ;] in-place -> 0 }T
+testing the second clock (shared script $85): its own words, "It's another clock..."
+T{ story.kit:another-clock-msg story.kit:clock-msg -> $8017 $8014 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary
