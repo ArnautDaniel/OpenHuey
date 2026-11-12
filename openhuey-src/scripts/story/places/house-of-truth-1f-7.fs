@@ -45,8 +45,8 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
     1 $2300 reverb ;
 
 \ ---- Hewie at the wall; his scene (her face for the scene in two of her costumes) ----
-: barks-at-wall ( -- )   \ (his doing - still his own, at her commands: turned to it, barking, till she is chased)
-    hewie hold-free  -1 hewie-at-wall !  hewie wait-move  hewie -89e 75e turn-to-xz
+: barks-at-wall ( -- )   \ (his doing: turned to it, barking, till she is chased)
+    hewie hold  -1 hewie-at-wall !  hewie wait-move  hewie -89e 75e turn-to-xz
     begin  hewie-bark  hewie wait-move  chased? until  0 hewie-at-wall ! ;
 : her-face ( -- )   \ (costume 3's, 2's)
     costume-var var@ case  3 of  0 0 s" O_FIO\FIO_201.TEX" face-on  endof  2 of  0 0 s" O_FIH\FIH_201.TEX" face-on  endof  endcase ;

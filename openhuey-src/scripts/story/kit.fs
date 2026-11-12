@@ -186,7 +186,6 @@ variable acting   -1 acting !   \ the activity being run (-1: none)
     person-of dup 0< if  drop exit  then  acting @ 0< abort" hold: not in an activity"
     dup holder-of @ acting @ = if  drop exit  then
     acting @ over holder-of !  0 over cells asked + !  -1 tell-held ;   \ (nothing asked of it yet)
-: hold-free ( id -- )  dup hold  person-of dup 0< if  drop exit  then  0 tell-held ;   \ (its moves ours, but its own still - commanded as ever: the scripts' self-scripted 0)
 : hold-for ( id k -- )  acting @ >r  acting !  hold  r> acting ! ;   \ (held for activity k)
 : start-holding ( xt id -- k | -1 )   \ (an activity started holding id this frame: nothing else takes it first)
     swap start dup 0< if  nip exit  then  tuck hold-for ;

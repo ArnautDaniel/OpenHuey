@@ -557,9 +557,8 @@ crossing in (`area-camera`), -1 out (`camera-out`). The scripts' own variables (
 +0x810) are the room's, zeroed as it comes in (`own:` cells) - not the saved story variables
 (`var@` / `var!`, 0xD5 `pvar-set`). The events' frame count (+0x704, cond 0x5B) runs since the game
 began here - new game, extras, load: the story counts it and hands it to each place as it comes in
-(`event-frames`; `frames-in-play`, set by `frames-in-play!` - 0xD4). An action that leaves its
-character its own (`self-scripted 0`) holds it with `hold-free`: its moves the activity's, its
-commands still its own. Left: a Hewie taken off by `char-done` (Character_Deactivate) is only let go here.
+(`event-frames`; `frames-in-play`, set by `frames-in-play!` - 0xD4). A character in a room's action is busy
+(+0xE0: no commands taken, our `hold`); 0x21 `self-scripted` is only whether she can reach him (+0x2D). Left: a Hewie taken off by `char-done` (Character_Deactivate) is only let go here.
 
 The history below runs from the converted rooms' machinery (S1 .. S5: the rooms' bytecode
 scripts as Forth, their opcode words - gone in 0.2.20, every room a place since) to the places.
