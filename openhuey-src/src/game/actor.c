@@ -217,6 +217,7 @@ static int step_time(float *t, float speed, int frames, int loop) {
 
     *t += speed;
     if (loop) {
+        *t = time_near(*t, (float)frames);
         while (*t < 0.0f) {
             *t += (float)frames;
         }
@@ -647,12 +648,12 @@ int actor_event_flags(const Actor *a, int layer, int dt, int loop) {
     t = (int)((float)dt + (layer == 0 ? a->frame : a->vframe));
     len = model_motion_frames(&a->model, index);
     n = rd32le(a->events);
-    if ((size_t)(1 + n + (uint32_t)idx + 1) * 4 > a->events_size) {
+    if (((size_t)n + (size_t)idx + 2) * 4 > a->events_size) {
         return 0;
     }
-    off = rd32le(a->events + 4 + n * 4 + (uint32_t)idx * 4);
+    off = rd32le(a->events + 4 + (size_t)n * 4 + (size_t)idx * 4);
     if (((a->mflags | (a->loop ? 1 : 0)) & (loop & 1)) && len > 0) {
-        float ft = (float)t;
+        float ft = time_near((float)t, (float)len);
 
         while (ft < 0.0f) {
             ft += (float)len;

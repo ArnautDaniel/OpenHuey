@@ -13,6 +13,8 @@
 
 unsigned char *stbi_zlib_compress(unsigned char *data, int data_len, int *out_len, int quality);   /* (stb.c) */
 
+#define ZIP_MOST 0x7FFFFFFFu   /* a file's sizes, packed and not: under 2 GB */
+
 typedef struct ZipEntry {
     char *name;
     uint32_t at;      /* its local header */
@@ -164,9 +166,14 @@ uint8_t *zip_read(const Zip *z, int i, size_t *size) {
         return NULL;
     }
     e = &z->e[i];
+    if (e->packed >= ZIP_MOST || e->size >= ZIP_MOST) {   /* (stb's inflate counts in ints) */
+        fprintf(stderr, "zip: %s: %s is too big to read\n", z->path, e->name);
+        fclose(f);
+        return NULL;
+    }
     if (fseek(f, (long)e->at, SEEK_SET) != 0 || fread(head, 1, 30, f) != 30 || le32(head) != 0x04034b50 ||
         fseek(f, (long)e->at + 30 + le16(head + 26) + le16(head + 28), SEEK_SET) != 0 ||
-        (packed = malloc(e->packed + 1u)) == NULL || fread(packed, 1, e->packed, f) != e->packed) {
+        (packed = malloc((size_t)e->packed + 1)) == NULL || fread(packed, 1, e->packed, f) != e->packed) {
         fprintf(stderr, "zip: %s: %s can't be read\n", z->path, e->name);
         free(packed);
         fclose(f);
@@ -176,7 +183,7 @@ uint8_t *zip_read(const Zip *z, int i, size_t *size) {
     if (e->method == 0 && e->packed == e->size) {
         out = packed;
         packed = NULL;
-    } else if (e->method == 8 && (out = malloc(e->size + 1u)) != NULL &&
+    } else if (e->method == 8 && (out = malloc((size_t)e->size + 1)) != NULL &&
                stbi_zlib_decode_noheader_buffer((char *)out, (int)e->size, (const char *)packed, (int)e->packed) !=
                    (int)e->size) {
         free(out);

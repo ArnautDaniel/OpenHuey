@@ -74,7 +74,7 @@ The library holds the game's files converted to common formats (an import of the
 | a room's mesh | `ST_xxx/ST_yyy.room/mesh.gltf` + `mesh.bin` | glTF 2.0 as OpenHuey writes it: the engine's draw words in `extras` "hga" (`src/data/roomgltf.h`) |
 | a room's lights, cameras | `ST_xxx/ST_yyy.room/lights.txt`, `cameras.txt` | text, a record a line (`src/data/roomtext.h`) |
 | a character model | `O_XXX/XXX_000.model/model.gltf` + `model.bin` | glTF 2.0, skinned, as OpenHuey writes it (`src/data/modelgltf.h`); the motions (`motions.bin`) stay the game's. Bones of its own may be added ("A model's bones" below) |
-| one of the executable's tables | `library/exe/<name>.bin` (not under data/) | the table's bytes (`src/data/exetables.c` names them) |
+| one of the executable's tables | `library/exe/<name>.bin` (not under data/) | the table's bytes (`src/data/exetables.c` names them); one shorter than the game's table isn't used (stderr says so: the executable's is) |
 
 **An HD texture pack made for PCSX2** (a `replacements/` folder of `.dds` / `.png` named by
 PCSX2's hashes) becomes a mod with `tools/hdpack.py`: it matches the pack's pictures to the
@@ -91,8 +91,9 @@ venv/bin/python -I tools/hdpack.py <library> <pack>/SLUS-21075/replacements mods
 
 The best start for any of these: import a disc (`openhuey --import disc.iso`), open the file in the
 library, copy it into the mod at the same path, change it. For glTF, keep what Blender or another
-tool round-trips: the `extras` and the accessor layout OpenHuey wrote; a mesh must still be one OpenHuey
-reads (it says so on stderr if not).
+tool round-trips: the `extras` and the accessor layout OpenHuey wrote (each accessor's data packed,
+not interleaved); a mesh must be valid glTF (cgltf's checks: every accessor within its buffer) and
+still one OpenHuey reads (it says so on stderr if not).
 
 What can't be replaced yet: the rooms' other data (navigation, events, doors, placed objects,
 effects, obstacles: still inside each room's `.PAC`), the motion banks, the sound banks'
@@ -222,7 +223,8 @@ add the bones under the game's, weight the mesh to them, export glTF with **Cust
   hanging from the joint above it, at rest as the file has it. 256 bones at most.
 - No motion moves a new bone: it keeps its rest under its parent (a finger bone goes with the hand),
   so the game's motions and scenes look as they did. A mod's script moves it (below).
-- The mesh may be weighted anew (JOINTS_0 as bytes or shorts); its vertices stay the same in
+- The mesh may be weighted anew (JOINTS_0 as bytes or shorts, WEIGHTS_0 as floats or normalised
+  bytes / shorts; positions, normals and UVs floats - Blender's defaults); its vertices stay the same in
   number and order (the draws' words in their extras say where each goes).
 
 **Moving bones** from a script, any model's - the game's bones or added ones. `id` is the model:

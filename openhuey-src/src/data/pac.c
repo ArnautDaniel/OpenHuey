@@ -96,10 +96,10 @@ uint8_t *pac_strip(const Pac *p, unsigned drop, size_t *size) {
 
 int pac_attach(Pac *p, int section, const uint8_t *bytes, size_t n) {
     size_t at = (p->size + 15) & ~(size_t)15;
-    uint8_t *d = realloc(p->data, at + n);
     uint32_t o = (uint32_t)at;
+    uint8_t *d;
 
-    if (d == NULL || section < 0 || section >= PAC_SECTIONS || at < PAC_SECTIONS * 4) {
+    if (section < 0 || section >= PAC_SECTIONS || at < PAC_SECTIONS * 4 || (d = realloc(p->data, at + n)) == NULL) {
         return 0;
     }
     memset(d + p->size, 0, at - p->size);

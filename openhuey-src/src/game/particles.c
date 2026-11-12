@@ -84,6 +84,7 @@ static float half(void) { return rnd() - 0.5f; }
 static float rnd_turn(void) { return 2.0f * PI * half(); }   /* -pi .. pi */
 static int clampi(int v, int lo, int hi) { return v < lo ? lo : v > hi ? hi : v; }
 static float wrap(float a) {
+    a = angle_near(a);
     while (a > PI) {
         a -= 2.0f * PI;
     }

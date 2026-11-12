@@ -208,20 +208,20 @@ static void load_look(Room *r) {
     if (sec == NULL || size < 0x18) {
         return;
     }
-    if (word(sec + 0x8) != 0 && word(sec + 0x8) + 9 <= size) {
+    if (word(sec + 0x8) != 0 && (size_t)word(sec + 0x8) + 9 <= size) {
         room_look_set(0x1F, sec + word(sec + 0x8), 9);
     }
-    if (word(sec + 0xC) != 0 && word(sec + 0xC) + 5 <= size) {
+    if (word(sec + 0xC) != 0 && (size_t)word(sec + 0xC) + 5 <= size) {
         room_look_set(0x1E, sec + word(sec + 0xC), 5);
     }
-    if (word(sec + 0x10) != 0 && word(sec + 0x10) + 16 <= size) {
+    if (word(sec + 0x10) != 0 && (size_t)word(sec + 0x10) + 16 <= size) {
         /* (all 26 bytes, as Fog_SetParams reads them - past the section into what follows it in the
          * file, when the fog's are its last 16: the next section's first bytes) */
         size_t left = (size_t)(r->pac.data + r->pac_read - (sec + word(sec + 0x10)));
 
         room_look_set(0x1D, sec + word(sec + 0x10), left < LOOK_RAW ? left : LOOK_RAW);
     }
-    if (word(sec + 0x14) != 0 && word(sec + 0x14) + 16 <= size) {   /* (DepthRange_SetParams) */
+    if (word(sec + 0x14) != 0 && (size_t)word(sec + 0x14) + 16 <= size) {   /* (DepthRange_SetParams) */
         room_look_set(0x1C, sec + word(sec + 0x14), 16);
     }
 }
@@ -333,7 +333,7 @@ static void load_doors(Room *r) {
         uint32_t o, m;
 
         memcpy(&o, s7 + i * 4, 4);
-        if (o == 0 || o + 0x28 > s7size) {
+        if (o == 0 || (size_t)o + 0x28 > s7size) {
             continue;
         }
         d->pos = vec3(rdf(s7 + o + 4), rdf(s7 + o + 8), rdf(s7 + o + 12));
@@ -344,7 +344,7 @@ static void load_doors(Room *r) {
         d->rot = vec3(rdf(s7 + o + 0x1C), rdf(s7 + o + 0x20), rdf(s7 + o + 0x24));
         if (s8 != NULL && (size_t)(n + 1) * 4 <= s8size) {
             memcpy(&m, s8 + n * 4, 4);
-            if (m != 0xFFFFFFFFu && m + (uint32_t)n * 0x10 < s8size &&
+            if (m != 0xFFFFFFFFu && (size_t)m + (size_t)n * 0x10 < s8size &&
                 roommesh_build_list(&d->mesh, s8 + m + n * 0x10, s8 + s8size, MESH_SOLID) && d->mesh.nv > 0) {
                 render_mesh_upload(&d->gpu, d->mesh.v, d->mesh.nv);
                 d->present = 1;

@@ -1,7 +1,8 @@
 /* Mods' files and manifests checked (docs/library-and-mods.md): the load order (order.txt,
  * after:), what turns a mod off (off:, requires:), the files layer (the later mod's file over
  * the earlier's over the data) and a mod's PNG over a texture - of a bank as it is and of one
- * converted.
+ * converted. And what a broken mod can't do: a zipped file that says it is 4 GB isn't read, a
+ * table shorter than the executable's isn't used.
  *
  *   mods-check <data folder> <scratch folder (made, emptied after)> */
 #include <stdio.h>
@@ -11,6 +12,8 @@
 #include <SDL3/SDL.h>
 
 #include "../src/core/files.h"
+#include "../src/core/zip.h"
+#include "../src/data/exetables.h"
 #include "../src/data/tex.h"
 #include "../src/data/texbank.h"
 #include "../src/game/mods.h"
@@ -292,6 +295,46 @@ int main(int argc, char **argv) {
         SDL_RemovePath(strcat(strcpy((char *)lib, mods), "kappa.zip"));
         SDL_RemovePath(strcat(strcpy((char *)lib, mods), "zipped-lambda.zip"));
         SDL_RemovePath(strcat(strcpy((char *)lib, mods), "damaged.zip"));
+    }
+
+    /* ---- a zipped file that says it is 4 GB: not read (its sizes would wrap) ---- */
+    {
+        static const char *const kNames[] = {"mod.fs", "library/data/SYSTEM/BIG.TXT"};
+        static const char *const kTexts[] = {"mod: mu\n", "small"};
+        uint8_t *zipped;
+        size_t zsize, k;
+        int records = 0;
+        Zip *z;
+
+        put_zip("mods/mu.zip", kNames, kTexts, 2, 0);
+        zipped = SDL_LoadFile(strcat(strcpy((char *)lib, mods), "mu.zip"), &zsize);
+        for (k = 0; zipped != NULL && k + 28 <= zsize; k++) {   /* (the second central record's sizes) */
+            if (memcmp(zipped + k, "PK\1\2", 4) == 0 && ++records == 2) {
+                le(zipped + k + 20, 0xFFFFFFFFu, 4);
+                le(zipped + k + 24, 0xFFFFFFFFu, 4);
+            }
+        }
+        CHECK(records == 2 && SDL_SaveFile((char *)lib, zipped, zsize), "the zip's sizes made 4 GB");
+        SDL_free(zipped);
+        z = zip_open((char *)lib);
+        CHECK(z != NULL && zip_find(z, "library/data/SYSTEM/BIG.TXT") >= 0 &&
+                  zip_read(z, zip_find(z, "library/data/SYSTEM/BIG.TXT"), &size) == NULL,
+              "a 4 GB file in a zip not read");
+        zip_close(z);
+        SDL_RemovePath((char *)lib);
+    }
+
+    /* ---- a mod's table shorter than the executable's: not used ---- */
+    put("mods/nu/mod.fs", "mod: nu\n");
+    put("mods/nu/library/exe/blink-curve.bin", "abc");
+    mods_find(mods, NULL, 0);
+    text = files_read("../exe/blink-curve.bin", &size);
+    CHECK(text != NULL && size == 3, "the mod's table there (%zu bytes)", text != NULL ? size : 0);
+    free(text);
+    {
+        const uint8_t *t = exetable("blink-curve", &size);
+
+        CHECK(t == NULL || size >= 14 * 4, "a 3-byte blink-curve.bin not used (%zu bytes)", t != NULL ? size : 0);
     }
 
     /* ---- a texture: a bank as it is ---- */

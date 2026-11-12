@@ -52,15 +52,22 @@ static void strip_to_mesh(RoomMesh *m, const MeshVertex *v, const uint8_t *no_tr
  * +0x70, 8 bytes a frame - +0x4 its s16 positions / 4096, +0x0 its RGBA colours; the lit kind
  * (1) always 0x80); 0 if they fall outside the section */
 static int morph_fill(Placed *p, const uint8_t *def, const uint8_t *end, MeshVertex *v, int n, int a, int b, float t) {
-    const uint8_t *pa = def + rd32(def + 0x74 + a * 8), *pb = def + rd32(def + 0x74 + b * 8);
-    const uint8_t *ca = def + rd32(def + 0x70 + a * 8), *cb = def + rd32(def + 0x70 + b * 8);
-    const uint8_t *uv = def + rd32(def + 0x4C);
+    const uint8_t *pa, *pb, *ca, *cb, *uv;
     float w = 1.0f - t;
     int i, c;
 
-    if (a < 0 || b < 0 || a > 255 || b > 255 || def + 0x78 + (a > b ? a : b) * 8 > end) {
+    if (a < 0 || b < 0 || a > 255 || b > 255 || def + 0x78 + (a > b ? a : b) * 8 > end) {   /* (the frames a script set) */
         return 0;
     }
+    if (rd32(def + 0x74 + a * 8) < 0 || rd32(def + 0x74 + b * 8) < 0 || rd32(def + 0x70 + a * 8) < 0 ||
+        rd32(def + 0x70 + b * 8) < 0 || rd32(def + 0x4C) < 0) {
+        return 0;
+    }
+    pa = def + rd32(def + 0x74 + a * 8);
+    pb = def + rd32(def + 0x74 + b * 8);
+    ca = def + rd32(def + 0x70 + a * 8);
+    cb = def + rd32(def + 0x70 + b * 8);
+    uv = def + rd32(def + 0x4C);
     if (pa + n * 6 > end || pb + n * 6 > end || uv + n * 4 > end ||
         (p->kind == 3 && (ca + n * 4 > end || cb + n * 4 > end))) {
         return 0;

@@ -36,6 +36,9 @@ room-afresh
 testing the toilets
 T{ toilets-area 180 at  said -> toilets-msg }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
+testing the curtain at frames out of its range (a script's slip): kept as it was, nothing read past it
+T{ [: 100000 -5 0.5e curtain ;] in-place  2 run-frames  [: s" Cartain" placed-here?  s" Cartain" placed-shown? ;] in-place -> -1 -1 }T
+[: 0 0 0e curtain ;] in-place  2 run-frames
 testing the water: calming, the recovery document the first time; again, refreshed
 got-doc-recovery story-flag-clear
 water-area 180 at  circle press  900 play-on

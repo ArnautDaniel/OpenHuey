@@ -608,7 +608,7 @@ int model_motion_frames(const Model *m, int index) {
 }
 
 static float lerp_angle(float a, float b, float t) {
-    float d = b - a;
+    float d = angle_near(b - a);
 
     while (d > 3.14159265f) {
         d -= 6.28318531f;

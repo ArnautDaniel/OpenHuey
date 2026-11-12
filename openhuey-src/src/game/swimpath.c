@@ -21,6 +21,7 @@ static float rnd(void) {   /* 0 <= r < 1 */
 }
 static float sixteenths(float v) { return (float)(int16_t)(int)(16.0f * v) * 0.0625f; }
 static float wrap(float a) {
+    a = angle_near(a);
     while (a > PI_F) {
         a -= 2.0f * PI_F;
     }

@@ -351,8 +351,11 @@ uint8_t *msgtext_read(const char *text, size_t len, const char *name, size_t *si
     for (i = 0; i < (long)body.n; i++) {
         byte(&out, body.b[i]);
     }
+    *size = out.n;
+    for (i = 0; i < 4; i++) {   /* (past its end, not counted: a code's operands read there end its text) */
+        byte(&out, 0);
+    }
     free(at);
     free(body.b);
-    *size = out.n;
     return out.b;
 }

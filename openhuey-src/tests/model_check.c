@@ -122,6 +122,20 @@ static void check_mod(const char *name, const Model *a) {
         json = out;
         len = strlen(json);
     }
+    {   /* (a broken file: an index list longer than its buffer - not read, not read past) */
+        const char *at2 = strstr(json, "\"componentType\":5125,\"count\":");
+        char *broken = malloc(strlen(json) + 8);
+        Model x;
+
+        if (at2 != NULL && broken != NULL) {   /* (its count with 999 before it: far more than there are, still JSON) */
+            sprintf(broken, "%.*s999%s", (int)(at2 + 29 - json), json, at2 + 29);
+        }
+        if (at2 == NULL || broken == NULL || modelgltf_read(&x, broken, strlen(broken), bin, bs, NULL, 0)) {
+            fprintf(stderr, "FAIL %s: a model with an index list past its buffer read\n", name);
+            sBad++;
+        }
+        free(broken);
+    }
     if (!modelgltf_read(&b, json, len, bin, bs, NULL, 0)) {
         fprintf(stderr, "FAIL %s (a mod's bone): not read\n", name);
         sBad++;

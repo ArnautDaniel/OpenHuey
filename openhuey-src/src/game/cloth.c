@@ -8,6 +8,7 @@
  * The bones are worked on in the room, as the original's skeleton is: Mat4.m[4k..4k+2] is axis
  * k, m[12..14] the place (the original's rows). */
 #include "cloth.h"
+#include "../data/model.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -17,8 +18,8 @@
 #define PI 3.14159265f
 
 /* ---- the bones in the room, this pose ---- */
-static Mat4 sRoom[128];
-static int sChanged[128];
+static Mat4 sRoom[MODEL_MAX_BONES];
+static int sChanged[MODEL_MAX_BONES];
 static int sBones;
 
 static Vec3 axis(const Mat4 *m, int k) { return vec3(m->m[4 * k], m->m[4 * k + 1], m->m[4 * k + 2]); }
@@ -444,7 +445,7 @@ void cloth_tick(Cloth *c) {
 void cloth_pose(Cloth *c, Mat4 *world, int nbones, const Mat4 *place, const Mat4 *unplace) {
     int steps, k, i, j;
 
-    sBones = nbones < 128 ? nbones : 128;
+    sBones = nbones < MODEL_MAX_BONES ? nbones : MODEL_MAX_BONES;
     for (i = 0; i < sBones; i++) {
         sRoom[i] = mat4_mul(*place, world[i]);
         sChanged[i] = 0;
