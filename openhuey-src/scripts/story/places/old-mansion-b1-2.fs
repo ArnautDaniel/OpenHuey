@@ -74,7 +74,7 @@ rubrum-vase $80101010 0 4 shard-look  rubrum-vase 0.5e 0.5e 0.25e 0.5e shard-uv 
     stalker wait-anim  0 smashing ! ;
 : smash-due ( -- )
     drawing @  omb1-2-breakable3-broken fact? or  omb1-2-flag1 fact? 0= or  her-kind? 0= or if  exit  then
-    stalker mirror-area entered?  st-mode-now @ 0= and if  ['] smashes start drop  then ;
+    stalker mirror-area entered?  st-mode-now @ 0= and  stalker held? 0= and if  ['] smashes start drop  then ;   \ (act07, mode 0)
 : smash-given-up ( -- )  her-kind?  stalker held? and 0= if  0 smashing !  then ;
 
 \ ---- as she comes in ----
