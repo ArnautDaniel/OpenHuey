@@ -123,6 +123,15 @@ T{ saves:options 2 cells + @  saves:options? @ -> 64 -1 }T
 [: 128 subscreen.state:volume !  1 subscreen.state:vibration ! ;] sub
 saves:options-out  deliver
 T{ [: subscreen.state:volume @  subscreen.state:vibration @ ;] sub -> 64 0 }T
+testing the system data held (the ending's, `hold-system`): an unlock not written meanwhile; let go
+testing ... unkept (`keep-system` false): not written now - its next writing takes it - and held no more
+: saves@ ( xt -- x )  game:saves enter  execute  leave-actor ;
+: changed? ( -- flag )  [: saves:unlocks-changed? ;] saves@ ;
+saves-id send hold-system  deliver  30 resident-flag-set  2 run-frames
+T{ changed?  [: saves:system-held @ ;] saves@ -> -1 -1 }T
+false saves-id send keep-system  deliver  1 run-frames
+T{ changed?  [: saves:system-held @ ;] saves@ -> 0 0 }T
+30 progress pr.resident bit-clear  2 run-frames
 full-suite   \ (on: waits, scenes, walks - the full run's)
 [: subscreen.options:defaults ;] sub
 test-summary

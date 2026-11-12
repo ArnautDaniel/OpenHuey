@@ -78,7 +78,7 @@ i -- addr )` and `id@ n@`, `item-at`, `listed`, `items-of ( id -- n )`, `find-it
 
 | Message | Stack | Direction | Meaning |
 |---|---|---|---|
-| `menu-mode` | `( mode -- )` | in (the story's 0x6D) | The mode the scripts open it in (with `subscreen-wanted`): 0 the menu, 1 a save point's save slots, 5 the options alone (the title's), 2 the word plate, 3 the slot machine, 7 the wardrobe; 9 the clear-data save shuts at once (hg writes only the system data then - OpenHuey keeps it written as it changes); the extras' (8 the movies, $B..$F the galleries, $C a challenge's results) not yet; 4 (the pot) no script asks for. |
+| `menu-mode` | `( mode -- )` | in (the story's 0x6D) | The mode the scripts open it in (with `subscreen-wanted`): 0 the menu, 1 a save point's save slots, 5 the options alone (the title's), 2 the word plate, 3 the slot machine, 7 the wardrobe; 9 the clear-data save (the system data alone, kept or not: ending.md - the ending asks it directly, `save-clear`); the extras' (8 the movies, $B..$F the galleries, $C a challenge's results) not yet; 4 (the pot) no script asks for. |
 | `game-saved` | `( -- )` | in, from saves | The save point's save is written (`save-to-slot ( n place )` asked it). |
 | `tab-op` | `( op item -- )` | in (the story's 0xBE) | The tab: 0 the item handed her (its picture loaded), 1 loaded, 2 slide in, 3 shown, 4 slide out. |
 | `tab-done` | `( -- )` | out, to who asked | That step is done (2 / 4 once the tab is in / out; the others at once). |
@@ -213,7 +213,7 @@ made with is cleared). **The save points** (mode 1, `subscreen/saving.fs`; the
 story's shared actions $84 / $85 ask first): eight slots, each a save file of its own
 (`hga-save-<n>.fs`, as the quick save's) and an index of their places and times
 (`hga-saves.fs`); the place is the original's (D_00412800: her room and map, a menu message
-$300..); a used slot asked before it is written over; "Saved", then the menu closes. The title
+$300..); a used slot asked before it is written over; "Saved" (menu sound $D, BootCard_StateSave's 18 - $84 before 0.2.50), then the menu closes. The title
 has LOAD GAME: the same slots, one in use loaded (`load-from-slot`). The timed effects: Torva's (her fear doubled, Panic_Update), Fortis's (her strikes and her kick
 on Hewie and the stalker x3 - the creatures' kick stays 5, as the original's), Sylvesta Esca's
 (Hewie's bites half again), Lavender's (calming), Fortis's hold on her fear and Weltigo's

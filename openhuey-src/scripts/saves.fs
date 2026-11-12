@@ -165,6 +165,7 @@ state: saves-state
   cell field step
   cell field wait-t     \ frames left
   cell field sender-asked   \ who asked for the save (told `game-saved` once it is written; -1 none)
+  cell field system-held    \ the system data not written as it changes (the ending's: `hold-system`)
 end-state
 
 : write-save-file ( -- )
@@ -205,6 +206,12 @@ create records-written 36 allot          \ (and the mini-game's best times)
     progress pr.resident resident-flags 8 / written over compare 0<>
     run-records 36 records-written 36 compare 0<> or
     options #options cells options-written over compare 0<> or ;
+\ as it changes, unless held (the ending: its unlocks kept only if the clear data is saved - memcard.c's
+\ BootCard_StateSave with the card hidden writes the system data alone; not saved, they are the game's
+\ till the system data is next written, as the original's till its next save)
+: system-frame ( -- )  system-held @ 0=  unlocks-changed? and if  write-system  then ;
+: system-kept ( keep? -- )
+    0 system-held !  if  write-system  sender send game-saved  else  system-written  then ;
 : options-out ( -- )   \ (to the sub screen's options page)
     options? @ 0= if  exit  then  options>stack  s" subscreen" actor-named send options-restore ;
 : read-system ( -- )
@@ -227,15 +234,17 @@ create records-written 36 allot          \ (and the mini-game's best times)
 behaviour saving
   on spawned ( -- )  not-saving step !  -1 sender-asked !  self subscribe tick  self subscribe held-tick  self subscribe entered-room  read-system  read-index ;
   on held-tick ( -- )   \ (the world held - the ending's results, a menu: the unlocks kept all the same; a save point's save written)
-      unlocks-changed? if  write-system  then
+      system-frame
       step @ writing = if  saved  then ;
   on save-to-slot ( n place -- )  sender sender-asked !  save-slot ;
   on load-from-slot ( n -- )  load-slot ;
   on save-to-file ( addr len -- )  path-named  sender sender-asked !  write-save-file ;
   on load-from-file ( addr len -- )  path-named  load-file ;
   on options-changed ( vib out vol x y layout -- )  options-were ;   \ (written with the unlocks, below)
+  on hold-system ( -- )  -1 system-held ! ;
+  on keep-system ( keep? -- )  system-kept ;
   on tick ( -- )
-      unlocks-changed? if  write-system  then
+      system-frame
       step @ case
           not-saving of
               key: F5 key-pressed? if  quick-save exit  then

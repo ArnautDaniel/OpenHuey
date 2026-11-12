@@ -7,7 +7,7 @@ USING: engine keys subscreen.state ;
 : se ( id -- )  5 bank-sound ;
 : se-cursor ( -- )  $2A se ;   : se-decide ( -- )  $2B se ;   : se-cancel ( -- )  $2C se ;
 : se-buzzer ( -- )  $85 se ;   : se-page ( -- )  $87 se ;     : se-used ( -- )  $84 se ;
-: se-open ( -- )  $94 se ;     : se-close ( -- )  $95 se ;
+: se-saved ( -- )  $D se ;   : se-open ( -- )  $94 se ;     : se-close ( -- )  $95 se ;
 
 : confirm? ( -- flag )  cross button-pressed? ;
 : back? ( -- flag )  triangle button-pressed? ;

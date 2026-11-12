@@ -33,6 +33,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 : open-costumes ( -- )  false open-screen  on-costumes mode !  start-costumes ;
 : open-options ( -- )  true open-screen  pg-options page !  -1 options-only ! ;   \ (the title's: SceneTitle_SeqOptions)
 : open-extras ( -- )  false open-screen  3 s" SUBSCR/SUBMG" background  on-extras mode !  start-extras ;   \ (the mini-game's menu: mode $A)
+: open-clear-save ( -- )  false open-screen  on-clear-save mode !  start-clear-save ;   \ (the ending's: mode 9)
 : open-results ( -- )  false open-screen  on-results mode !  start-results ;   \ (its results: mode $C)
 : open-gallery ( kind -- )   \ (the extras room's galleries: modes 8, $B, $D, $E, $F)
     false open-screen  4 over gallery-file background  start-gallery ;
@@ -48,6 +49,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
         2 of  open-plate  endof
         3 of  open-slots  endof
         8 of  gal-movies open-gallery  endof
+        9 of  -1 clear-asker !  open-clear-save  endof
         $B of  gal-models open-gallery  endof
         $D of  gal-music open-gallery  endof
         $E of  gal-art open-gallery  endof
@@ -57,6 +59,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 : shut-menu ( -- )   \ back to play: the world's frames again, the scripts' wait over
     options-only @ if  0 options-only !  pg-special page !  then
     gal-kind @ if  gallery-shut  then
+    mode @ on-clear-save = if  on-page mode !  clear-asker @ dup alive? if  send clear-saved  else  drop  then  then
     shut stage !  0 openness !  0 pause!  subscreen-wanted state-flag-clear  art-layer ui-clear  word-layer ui-clear ;
 
 \ ---- what is showing: its keys and its drawing ----
@@ -71,6 +74,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
         on-costumes of  costumes-keys  endof
         on-extras of  extras-keys  endof
         on-results of  results-keys  endof
+        on-clear-save of  clear-keys  endof
         on-gallery of  gallery-keys  endof
         on-page of
             page @ case  pg-files of  files-keys  endof  pg-map of  map-keys  endof
@@ -87,6 +91,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
     mode @ on-costumes = if  costumes-view exit  then
     mode @ on-extras = if  window-black  extras-view exit  then
     mode @ on-results = if  window-black  results-view exit  then
+    mode @ on-clear-save = if  clear-view exit  then
     mode @ on-box = if  art-layer page-words !  then   \ (the page under the box's shade)
     page @ case  pg-files of  files-view  endof  pg-map of  map-view  endof
                  pg-options of  options-view  endof  >r list-view r>  endcase
@@ -148,6 +153,7 @@ behaviour menu
   on frame-end ( -- )  draw ;
   on menu-mode ( mode -- )  opened-as ! ;
   on game-saved ( -- )  saved-now ;
+  on save-clear ( -- )  sender clear-asker !  open-clear-save ;
   on arrived ( room exit -- )  drop find-room ;        \ (Map_FindRoom as each room comes in)
   on map-turn-to ( page -- )  show-on-page ;            \ (the scripts' 0xD1; a save loaded: SceneGame_RoomIn)
   on write-save ( -- )  her-pg @ .  ." map-page-was" cr ;   \ (saves.fs) the map's page she is on (the save's +0x18F0)
