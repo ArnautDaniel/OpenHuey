@@ -6,7 +6,7 @@
 IN: test-house-of-truth-1f-6
 USING: tester engine game-state actors messages keys room-names game debug facts flag-names story-names
     stalker-names fiona.state story.kit items.names doors story.places.house-of-truth story.places.house-of-truth-1f-6 ;
-: window-shown ( -- msg )  game:window enter  window:shown @  leave-actor ;
+: window-shown ( -- msg )  game:window enter  window:shown @  leave-actor  dup marker? if  drop -1  then ;   \ (the action prompts not counted)
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
 : her ( xt -- x )  game:fiona enter  execute  leave-actor ;
 : free? ( -- flag )  [: her-scripted @ ;] her 0=  world-held state-flag? 0= and ;
