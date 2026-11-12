@@ -477,11 +477,7 @@ $80 constant grab-noise
 \ ---- she leaves by `exit` (CreatureB_FionaLeft): it makes for the exit's far spot along a path
 \ it walks off screen (`walk-on`, at 0.35), through its door at the end. No way there (not across
 \ the divider): if another open exit has one, a way there anyhow; none - its trip from here.
-\ Nearer her exit than she is, it walks there but keeps the door it last made for (through that
-\ one at the end, if it is on this side). Already as near the door as the far spot, and straight
-\ to it: through at once ----
-create far /vec allot   create door-at /vec allot
-: far-spot ( exit -- tri )  2 exit-spot far vec! ;
+\ Nearer her exit than she is, it walks there but keeps the door it last made for (creatures/trip.fs) ----
 : way-to-far? ( exit -- ok? )   \ (CreatureB_Path)
     far-spot dup 0< if  drop false exit  then
     dup self body-tri across-divider? if  drop false exit  then  far plan ;
@@ -491,29 +487,21 @@ create far /vec allot   create door-at /vec allot
     room ex room-exit-door dup 0< if  drop false exit  then
     dup door-flags $20 and if  drop false exit  then  door-open? ;
 : another-way? ( -- flag )  8 0 do  i leads-open? if  i way-to-far? if  true unloop exit  then  then  loop  false ;
-: door-spot ( exit -- )  1 exit-spot drop door-at vec! ;   \ (the exit's near spot: Rooms_ExitPointIn)
-: nearer-than-her? ( exit -- flag )   \ (Actor_NearerRoom)
-    door-spot  my-at door-at vec-dist  her-at door-at vec-dist f< ;
 : head-out ( exit -- )
     {: ex :}
-    trip t.closed 13 cells 0 fill  0 trip t.n !  0 trip t.i !  -1 trip t.exit !
-    my-path trip t.path !  0 trip t.walking !  my-path path-clear
+    trip trip-out  my-path trip t.path !  my-path path-clear
     ex 0< 0= if  ex way-to-far? trip t.walking !  then
     trip t.walking @ 0= if  another-way? 0= if  exit  then  then
     ex 0< if  exit  then
-    ex nearer-than-her? if  exit  then
+    ex her-at nearer-than? if  exit  then
     trip t.walking @ 0= if   \ (a way to hers anyhow)
         ex far-spot dup 0< if  drop exit  then  far plan 0= if  exit  then  true trip t.walking !
     then
-    my-room @ ex room-exit-door trip t.last !
-    ex far-spot drop  ex door-spot
-    my-at door-at vec-dist  far door-at vec-dist f<= if
-        self body-tri my-at door-at path-mask v-walk 0< 0= if  my-path path-end  then
-    then ;
+    trip ex path-mask straight-out ;
 
 behaviour homunculus
   on spawned ( -- )
-      -1 model !  trip trip-reset  body-off  0e fall f!  0e fall-v f!
+      -1 model !  trip trip-reset  -1 trip t.locks !  body-off  0e fall f!  0e fall-v f!
       self subscribe tick  self subscribe arrived  self subscribe leaving-room
       self subscribe fiona-doing  self subscribe fiona-unseen  self subscribe fiona-blow
       self subscribe stalker-doing  self subscribe fiona-plight  -1 stalker !  100 stalker-age ! ;

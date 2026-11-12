@@ -98,12 +98,17 @@ it), a burst of light 12 above it (red / blue) with a sound ($8B) unless in an e
 (0.1 faster each frame) to 12 below and fades 8 a frame; red ones then make a noise (3) at their
 place, blue ones a level $80 noise in their room; gone.
 
-**Following her out** (_FionaLeft): in her room, it heads for the exit she took (or another that
-leads on); unless she is just beyond it, it goes off screen: its route to her room, each leg's
+**Following her out** (_FionaLeft, _Travel): awake in the room she leaves, on its side of the room
+(its level; 2 either) with a path to her exit's far spot, it walks that off screen at half its
+speed - its body moving in the room it was left in - and goes through her exit's door at the end;
+nearer her exit than she is, through the door it last made for instead; already as near the door
+as the far spot and straight to it, through at once (creatures/trip.fs, shared with the homunculi).
+No way to her exit: its trip from that room, door by door - its route to her room, each leg's
 length counted down at its speed (2/3 with company); at each door, through it if the way is
 open, else that door marked closed and the trip ends. Into the room being played: at the exit's
 spot, facing in. Only the first leg is at 2/3 (CreatureA_Travel clears its company as a leg
-ends); while state flag $18 (`stalkers-stay`) is set it doesn't travel at all.
+ends); while state flag $18 (`stalkers-stay`) is set it doesn't travel at all. (Before 0.2.50 it
+counted the straight distance to her exit down, out of play.)
 
 **Put at random** (CreatureA_PlaceRandom; in by a door with no spot, or placed with none): a
 triangle not flagged 8, on its floor of a split room, its middle outside every exit's area
@@ -171,6 +176,10 @@ sound 5 - then up, $1800, a sound at frame 34) and wakes once it notices her.
   end gone, leaving a bubbling (64 bubbles and 32 drops welling up; at frame 100 a splat on the
   floor). Its time out off screen: gone the same way.
 
+**At a door on its trip** (_Travel, at a leg's end or its walk's): held by someone, it waits there;
+shut - or locked against creatures (Progress_ExitPassable kind 2) - marked so and the trip over. It
+waits first, then looks (a spirit looks first and isn't kept by that lock). Since 0.2.50.
+
 **Following her out** (_FionaLeft, _Travel): awake in the room she leaves, it plans a path to her
 exit's far spot (Rooms_ExitPointThrough; not across the divider) and walks it off screen at 0.35 a
 frame - its body moving in the room it was left in - then goes through the door it made for (on
@@ -228,19 +237,19 @@ play (and after a loaded game, 5), each free slot of the first `n` gets a spirit
 room next to hers (within two open doors), sent after her - out, resting 1..4 minutes, then on
 its way; with company (the stalker or a figure of the story up in her room) at 2/3 the pace for
 its first leg. One gone, the next frame another takes its slot. Checked by
-`tests/creatures/test_spirits.fs` (35) and `test_homunculi.fs` (34), Hewie's in
+`tests/creatures/test_spirits.fs` (40) and `test_homunculi.fs` (38), Hewie's in
 `tests/hewie/test_pounce.fs`; seen on screen.
 
 Not yet:
 - The special spots of rooms $8F / $91 checked only by the numbers.
-- Spirits: following her out by a path walked off screen (CreatureA_FionaLeft / _Travel: to her
-  exit only when on its level and reachable, at half its speed) - they still count the first leg
-  down by the straight distance, out of play. The story's count of homunculi (0x99 with bit 7: no
-  room asks for it).
-- Doors on a homunculus's trip: Progress_CurRoomFlag (wait) and Progress_ExitPassable kind 2 -
-  only the door's being open is checked. The door it last made for starts as none (the
+- Spirits: with no way to her exit, the original carries on counting down whatever leg it had (ours
+  starts its trip from that room). The story's count of homunculi (0x99 with bit 7: no room asks
+  for it).
+- A homunculus finding the door at a trip's end locked against creatures (Progress_ExitPassable
+  kind 2) also sets its +0x8 to 2 - not kept. The door it last made for starts as none (the
   original's starts as whatever its block held).
-- Room $4F's commands. (Kind $19's own walking: no room uses it - above.)
+- Kind $19's own walking: no room uses it (above). (Room $4F's command 4 - a spirit put away at its
+  spot - is the kit's `spirit-put-away-near?`.)
 
 **Read again, 2026-11 (0.2.42).** Fiona as the creatures see her was our own guess - "doing
 anything" (`her-doing`) and a movie playing - where the original reads her +0x2D (stepping back,
