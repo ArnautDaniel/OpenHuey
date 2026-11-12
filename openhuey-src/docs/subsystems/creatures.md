@@ -16,7 +16,9 @@ kept across rooms, coming after her. Two classes, as in the original (`src/game/
   follow, grab her and can be struck (`scripts/creatures/homunculus.fs`).
 
 The kind-$19 creature (an event character, `Kind25_*`) and room $4F's commands (the spirits that
-vanish at a spot there) are separate; not built.
+vanish at a spot there) are separate. Kind $19's one use is the voice's figure in the telephone
+call's movie (castle-1f-8, `voice-kind`): the movie moves it, and the cast loads it as an event
+figure. Its class's own walking (creature.c's `cr19_*`) is reached by no room, so it isn't built.
 
 The original's objects: the manager gCreatures (10 slots: `Creatures_*`), SceneGame +0x706480
 (its resources, the story's +0x74 / +0x78: `SceneGame_PlaceCreature`,
@@ -238,7 +240,7 @@ Not yet:
 - Doors on a homunculus's trip: Progress_CurRoomFlag (wait) and Progress_ExitPassable kind 2 -
   only the door's being open is checked. The door it last made for starts as none (the
   original's starts as whatever its block held).
-- Kind $19 (an event character); room $4F's commands.
+- Room $4F's commands. (Kind $19's own walking: no room uses it - above.)
 
 **Read again, 2026-11 (0.2.42).** Fiona as the creatures see her was our own guess - "doing
 anything" (`her-doing`) and a movie playing - where the original reads her +0x2D (stepping back,

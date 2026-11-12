@@ -30,14 +30,15 @@ USING: engine game-state actors messages common facts flag-names paths vectors s
     avoid-clear  way-home ;   \ (afresh: the doors that let him down on his way home kept till then)
 : give-up ( -- )   \ (out by the first door of his way home; in one of his rooms, to its spot)
     0 hits !  give-up-cry 7 sound  held-off mode!  no-search search-phase !
-    making-for @ 0< if  come-into-play  else  making-for @ leave-by  then  heading-home ;
+    making-for @ 0< if  to-own-spot  else  making-for @ leave-by  then  heading-home ;
 :noname ( -- flag )  give-up? dup if  give-up  then ; is gave-up?
 \ on as before by his stance (Pursuer_StanceByFiona, PickStep): held off, on home; seeing her,
 \ his chase; else after her, or searching
 :noname ( -- )   \ (held off: on home - no way there even with the doors that let him down forgotten, after
-    \ her again: Debilitas_CarryOn's retry, his clock emptied - Pursuer_ModesSearching's mode 4 ends)
+    \ her again: Debilitas_CarryOn's retry, his clock emptied - Pursuer_ModesSearching's mode 4 ends; in one
+    \ of his own rooms CarryOn picks nowhere: he stands)
     way-home 0= if  avoid-clear  way-home 0= if  after-her mode!  chase-start exit  then  then
-    making-for @ 0< if  come-into-play  else  making-for @ leave-by  then  heading-home ; is off-home
+    making-for @ 0< if  stand  else  making-for @ leave-by  then  heading-home ; is off-home
 : on-as-before ( -- )
     my-mode @ held-off = if  off-home exit  then   \ (held off already: on home)
     sees-fiona @ if  chase-begin  else  my-mode @ after-her = if  chase-start  else  search-again  then  then ;

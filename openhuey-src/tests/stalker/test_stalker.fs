@@ -144,10 +144,10 @@ testing on his way through the doors in her room, no way to his door: Debilitas 
 T{ [: searching mode!  0 making-for !  0 for-her !  0 door-script !  stalker.doorway:no-way-to-door  my-mode @ ;] his -> 0 }T
 testing his look about at a stop (Pursuer_LookAround): his head - and his sight - swept well round, then straight again, done
 fvariable widest
-: swept ( -- turns done? )   \ (frames until done, at most 300)
+: look-about ( -- turns done? )   \ (frames until done, at most 300)
     0e widest f!  0 step-t !  0e head-yaw f!  0 step-done !
     0  300 0 do  stalker.search:standing  head-yaw f@ fabs widest f@ fmax widest f!  1+  step-done @ if  leave  then  loop  step-done @ ;
-T{ [: swept nip  widest f@ 0.5e f>  head-yaw f@ f0= ;] his -> -1 -1 -1 }T
+T{ [: look-about nip  widest f@ 0.5e f>  head-yaw f@ f0= ;] his -> -1 -1 -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 
@@ -460,6 +460,11 @@ testing ... in his own room (castle-2f-2): held off there, on in the room - not 
 : tri-she-is-on ( -- tri )  s" fiona" actor-named body-tri ;
 true blind  castle-2f-2 room!  20 run-frames  castle-2f-2 $30A struck-to-give-up  90 run-frames   \ (on floor of his own: hers there is barred to him - he would be put off it, Pursuer_KeepOnWalkable)
 T{ [: my-mode @  stalker.state:step @ ['] flinching =  making-for @ ;] his -> 4 0 -1 }T
+debug:debilitas-out  2 run-frames
+testing ... held off, in by a door of his own room (castle-2f-2's exit 3): he stands where he came in, his
+testing ... route on past it to the room's Table3C room ($22: Pursuer_EnterRoom's action $26, Npc_PlanToRoomObject)
+castle-2f-2 room!  20 run-frames  tri-she-is-on debug:debilitas-tri  5 run-frames
+T{ [: held-off mode!  3 came-by !  stalker.travel:walk-in  goal-room @  stalker.state:step @ ['] noop = ;] his -> $22 -1 }T
 debug:debilitas-out  2 run-frames
 testing ... held off at a door of his way home he can't line up at (castle-1f-2's exit 1, from the
 testing ... hall's far side): Debilitas after her again (his HeadingStep's failure: Pursuer_GoForFionaStance0)
