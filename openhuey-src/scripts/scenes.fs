@@ -33,9 +33,7 @@ end-state
 
 \ ---- the movie ----
 : movie-state ( -- n )  movie-status movie-running <> if  -1  else  movie-paused? if  2  else  1  then  then ;   \ (-1 none, 1 running, 2 paused)
-: screen-actor ( -- id )  s" screen" actor-named ;
-: window-actor ( -- id )  s" window" actor-named ;
-: fade-to ( kind -- )  -1 fading !  scene-fade swap screen-actor send fade ;
+: fade-to ( kind -- )  -1 fading !  scene-fade swap screen-id send fade ;
 
 \ ---- the steps ----
 : asker ( -- id | -1 )  asked-by @ dup alive? 0= if  drop -1  then ;   \ (the place that asked, still there: else none - gone with its room)
@@ -55,13 +53,13 @@ end-state
     tell
     movie-state 0<  cutscene-status dup director-over = swap director-ending = or  or ;
 : scene-ends ( -- )   \ (the end: black, the movie stopped, the world held, the camera back)
-    $FFFF window-actor send close-text  -1 subtitles !
+    $FFFF window-id send close-text  -1 subtitles !
     black-frame  movie-close  0 movie-up !  world-held state-flag-set
     pause-wanted state-flag-set
     false cam-scene!  cutscene-end  movie-opaque state-flag-clear  0 broadcast scene
     no-scene step !  asker dup 0< if  drop  else  send scene-over  then ;
 : through-ends ( -- )   \ (played through: its subtitles gone, the movie and the director left as they are)
-    $FFFF window-actor send close-text  -1 subtitles !  0 through !
+    $FFFF window-id send close-text  -1 subtitles !  0 through !
     no-scene step !  asker dup 0< if  drop  else  send scene-over  then ;
 : stop-now ( -- )   \ (the place gone: nothing told)
     movie-up @ if  movie-close  0 movie-up !  then

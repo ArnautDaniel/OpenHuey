@@ -126,7 +126,7 @@ $602 constant tv-switch-anim   \ (his reach to the TV's switch)
     stalker $6A 135 -4e 13e walk-to
     stalker tv-switch-anim start-anim  18 frames
     tv-off-sound room-bank stalker sound-by  tv-static-sound room-bank stop-sound
-    0 s" acoustics" actor-named send noise-setting  c2f-3-tv-examined fact-off  5 var@ 1+ 5 var!
+    0 acoustics-id send noise-setting  c2f-3-tv-examined fact-off  5 var@ 1+ 5 var!
     3 stalker-order  stalker stalker.anims:stand-anim play  16 frames ;
 : search-or-not ( -- )   \ (as he comes in while she hides: whether he'll find her)
     {: | finds :}

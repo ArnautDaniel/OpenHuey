@@ -70,8 +70,8 @@ $18 constant first-mandragora   5 constant #mandragoras
 : mandragora-spell ( -- )   \ (the old mansion's: one carried, her panic up - hiding, terrified; else he is kept out of two rooms)
     om1f-13-flag2 fact?  white-mandragora-used fact? 0= and 0= if  exit  then
     mandragora-carried? if
-        $3C s" panic" actor-named send panic-reach
-        in-panic? 0=  fiona-hidden state? and if  4 s" panic" actor-named send panic-stage!  then
+        $3C panic-id send panic-reach
+        in-panic? 0=  fiona-hidden state? and if  4 panic-id send panic-stage!  then
     else
         $48 stalker-slot 0 doors-into  $66 stalker-slot 1 doors-into
     then ;

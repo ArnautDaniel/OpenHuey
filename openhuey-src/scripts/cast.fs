@@ -210,7 +210,7 @@ is walk-start
     head-yaw f@ goal f> if  head-yaw f@ rate f-  else  head-yaw f@ rate f+  then  head-yaw f! ;
 -2 constant at-point
 : look-char ( -- id | at-point )
-    look-who @ case  0 of  s" fiona" actor-named  endof   1 of  s" hewie" actor-named  endof
+    look-who @ case  0 of  fiona-id  endof   1 of  hewie-id  endof
                      >r at-point r>  endcase ;
 : look-target ( -- v | 0 )   \ (one gone: none)
     look-char dup at-point = if  drop look-pt exit  then
@@ -242,8 +242,8 @@ create who-at /vec allot
 : nearer ( F: best d2 -- best' )   \ (the nearer kept, and its place in who-at)
     fover fover f> if  fnip  who-at an-near vec-copy  else  fdrop  then ;
 : nearest-sq ( -- ) ( F: -- d2 )   \ (Kind26_NearestDistSq: Fiona, Hewie, the stalker; its place in who-at)
-    s" fiona" actor-named near-sq  who-at an-near vec-copy
-    s" hewie" actor-named near-sq nearer
+    fiona-id near-sq  who-at an-near vec-copy
+    hewie-id near-sq nearer
     st-actor @ near-sq nearer ;
 : an-go ( doing -- )  an-doing !  1 an-new ! ;
 : an-face ( F: x z -- )   \ (turned 0.3 of the way to it)

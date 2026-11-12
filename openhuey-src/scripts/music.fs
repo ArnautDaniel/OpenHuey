@@ -189,7 +189,7 @@ create lost-lists  lost-1 , lost-2 , lost-3 , lost-4 ,
     stalker-in? 0= if  -1e exit  then  sm-st @
     sm-st-room @ room-id <> if  drop -1e exit  then
     sm-st-reach f@ f0< 0= if  drop sm-st-reach f@ exit  then
-    body-at  s" fiona" actor-named body-at vec-dist ;
+    body-at  fiona-id body-at vec-dist ;
 : chase-step ( -- step | 0 )   \ (MusicDir_ChaseStep: 0 with no stalker in the game; not in her room: the last)
     stalker-in? 0= if  0 exit  then
     st-dist  fdup f0< if  fdrop 1e9  then  {: F: d :}

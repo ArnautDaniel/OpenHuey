@@ -109,7 +109,7 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
     panic-eased  if  -1 run-scene  then
     came-by @ forced-exit = if  world-held state!  world-frozen state-off  forced-exit 1 or take-exit exit  then
     moon-door unlock  c1f-12-flag1 fact!  dial-2 dial-base dial-set  dial-1 dial-base dial-set  doors-open
-    doors-floor barred-floor floor-off  creatures-on state!  5 0 s" creatures" actor-named send creature-count
+    doors-floor barred-floor floor-off  creatures-on state!  5 0 creatures-id send creature-count
     camera-restart  force-calm state-off  stalkers-stay state-off  world-frozen state-off  15 fade-in ;
 
 \ ---- what she may do or say here ----

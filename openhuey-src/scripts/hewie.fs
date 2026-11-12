@@ -61,15 +61,15 @@ behaviour hewie-own
       s" O_HEW/HEW_000" actor-load dup his-model !  s" motions-hewie" motion-table   \ (his motion table: fades and flags)
       0 him-model act.visible l!
       2.5e 5e body-size  hewie-floor body-mask!  body-off
-      s" fiona" actor-named his-fiona !
+      fiona-id his-fiona !
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe write-save
       self subscribe danger  self subscribe panic  self subscribe fiona-doing  self subscribe frame-end
       self subscribe stalker-doing  self subscribe stalker-ties  self subscribe creature-doing  self subscribe scene  self subscribe camera-cut  -1 st-id !  100 st-age !  -1 his-grip !
       self subscribe danger-signals  self subscribe game-loaded  self subscribe fiona-struck-by  -1 her-struck-by !  self subscribe characters-still
-      -1 his-heard-src !  0 hewie-noise s" acoustics" actor-named send listen   \ (Character_Hearing: any noise but his own)
+      -1 his-heard-src !  0 hewie-noise acoustics-id send listen   \ (Character_Hearing: any noise but his own)
       #creatures 0 do  -1 i cells cr-ids + !  100 i cells cr-ages + !  loop  -1 his-meet ! ;   \ (no meeting asked)
   on game-loaded ( -- )  0 dress ;   \ (a game loaded: his files loaded afresh, DogModel's)
-  on join-fiona ( -- )  s" fiona" actor-named his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
+  on join-fiona ( -- )  fiona-id his-fiona !  room-id fiona-room !  join  1 his-model @ cast-as ;
   on part-from-fiona ( -- )  part  1 -1 cast-as ;
   on hewie-costume ( kind -- )  dress ;
   on partner-interrupted ( -- )  along? his-busy @ 0= and if  to-default  then ;   \ (Hewie_BackToIdle)
@@ -108,7 +108,7 @@ behaviour hewie-own
   on arrived ( room exit -- )
       hewie-played? along? and if  nip played-arrive exit  then
       drop fiona-room !
-      his-joining @ if  s" fiona" actor-named his-fiona !  join  then ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
+      his-joining @ if  fiona-id his-fiona !  join  then ;   \ (he comes in by himself: Hewie_Arrive, the doors off screen)
   \ a scene starting (the scripts' 0x61: Hewie_LeftBehind) - out of the room after an attack
   \ (0x38): his default; his mood back to normal
   on scene ( on -- )   \ (given back - Hewie_Halt: his feet afresh, his default action)

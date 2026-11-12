@@ -53,7 +53,7 @@ own: solved-here           \ the dials set right here, this visit: down to castl
     -1 solved-here !  force-calm state!  15 screen:to-black-2 with-music or fade
     fiona hold  moon-scene  forced-exit take-exit ;
 : moon-door-open ( -- )   \ (back up from castle-1f-12, set right: the moon door unlocked, the creatures loose)
-    fiona hold  moon-door unlock  c1f-12-flag1 fact!  5 0 s" creatures" actor-named send creature-count
+    fiona hold  moon-door unlock  c1f-12-flag1 fact!  5 0 creatures-id send creature-count
     force-calm state-off  stalkers-stay state-off  fiona let-go  camera-restart  0 prepare-exit
     15 screen:from-black with-music or fade ;
 

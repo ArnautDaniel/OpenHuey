@@ -191,7 +191,7 @@ $1AD constant kept-kinds   300000 constant past-keeping
     #things 0 do
         i thing-used? if
             i thing-room room-id =  i thing-tri 0< 0= and if
-                i thing-tri over nav-in-group? if  i s" things" actor-named send thing-taken  then
+                i thing-tri over nav-in-group? if  i things-id send thing-taken  then
             then
         then
     loop  drop ;

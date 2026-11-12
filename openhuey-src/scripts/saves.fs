@@ -93,7 +93,7 @@ create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7
 : hewie-skills ( s0 s1 s2 s3 s4 s5 -- )  0 5 do  i cells was-skills + !  -1 +loop ;
 : hewie-met ( m0 m1 m2 m3 -- )  0 3 do  i cells was-met + !  -1 +loop ;
 : hewie-cond ( cond door -- )  hw-door !  hw-cond ! ;
-: fiona-camera ( set path -- )  s" fiona" actor-named -rot cam-char-setup ;   \ (her camera setup: the save's +0x1A0)
+: fiona-camera ( set path -- )  fiona-id -rot cam-char-setup ;   \ (her camera setup: the save's +0x1A0)
 : hewie-state ( room tri side mood time hide f0 f1 f2 f3 -- )
     0 6 do  i cells hw-mood + !  -1 +loop  hw-side !  hw-tri !  hw-room ! ;
 
@@ -127,18 +127,18 @@ create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7
 \ ---- loading: the progress back, the room played, then everyone put where they were ----
 : place-msg ( F: x y z yaw -- ) ( -- x y z yaw )  {: F: x y z yaw :}  x f>cell y f>cell z f>cell yaw f>cell ;
 : panic-back ( -- )   \ (her panic as the save had it; a save without it: calm, as a new game)
-    pn-was? @ 0= if  s" panic" actor-named send panic-reset exit  then
-    7 0 do  i cells pn-was + @  loop  s" panic" actor-named send panic-restore ;
+    pn-was? @ 0= if  panic-id send panic-reset exit  then
+    7 0 do  i cells pn-was + @  loop  panic-id send panic-restore ;
 : summoner-back ( -- )   \ (its record, as the save's progress keeps it; a save without it: its time away rolled anew)
     sm-was? @ 0= if  summoner-timing state-flag-clear exit  then
-    7 0 do  i cells sm-was + @  loop  s" summoner" actor-named send summoner-restore ;
+    7 0 do  i cells sm-was + @  loop  summoner-id send summoner-restore ;
 \ he is in the game, out of her room, and down or held off: the summoner takes him (SceneGame_EnterRoom)
 : takes-him? ( -- flag )
     was-stalker @ 0< sw-in @ 0= or  sw-room @ was-room @ = or if  false exit  then
     sw-mode @ held-off =  sw-more? @ sw-more @ down-cond = and  or ;
 : put-back ( -- )
-    was-spare @ dup 0< if  drop  else  s" rooms" actor-named send room-preload  then   \ (its forced ways lead back)
-    was-map-page @ 0< 0= if  was-map-page @ s" subscreen" actor-named send map-turn-to  then   \ (SceneGame_RoomIn: Map_TurnTo)
+    was-spare @ dup 0< if  drop  else  rooms-id send room-preload  then   \ (its forced ways lead back)
+    was-map-page @ 0< 0= if  was-map-page @ subscreen-id send map-turn-to  then   \ (SceneGame_RoomIn: Map_TurnTo)
     was-costume @ fiona-id send costume
     was-x f@ was-y f@ was-z f@ was-yaw f@ place-msg fiona-id send place
     was-hewie @ if
@@ -213,7 +213,7 @@ create records-written 36 allot          \ (and the mini-game's best times)
 : system-kept ( keep? -- )
     0 system-held !  if  write-system  sender send game-saved  else  system-written  then ;
 : options-out ( -- )   \ (to the sub screen's options page)
-    options? @ 0= if  exit  then  options>stack  s" subscreen" actor-named send options-restore ;
+    options? @ 0= if  exit  then  options>stack  subscreen-id send options-restore ;
 : read-system ( -- )
     system-path file-exists?  testing? 0= and if  system-path included  then
     system-written  options-out ;
@@ -227,7 +227,7 @@ create records-written 36 allot          \ (and the mini-game's best times)
     subscreen-wanted state-flag-clear   \ (a save point's save was made with the save screen up: not again)
     new-game-sounds state-flag? 1 and sound-set!   \ (SceneGame_StateEntry: bank 4's set by the flag - bare feet or boots)
     broadcast game-loaded
-    was-room @ -1 s" rooms" actor-named send go-to-room  entering step ! ;
+    was-room @ -1 rooms-id send go-to-room  entering step ! ;
 : quick-load ( -- )  -1 save-path-n !  load-file ;
 : load-slot ( n -- )  save-path-n !  load-file ;
 
@@ -254,7 +254,7 @@ behaviour saving
                   put-back  ." loaded " save-path type cr  not-saving step !
                   takes-him? if  2 wait-t !  taking step !  then   \ (once he has told the summoner he is in)
               then  endof
-          taking of  -1 wait-t +!  wait-t @ 0> 0= if  0 s" summoner" actor-named send summoner-take  not-saving step !  then  endof
+          taking of  -1 wait-t +!  wait-t @ 0> 0= if  0 summoner-id send summoner-take  not-saving step !  then  endof
       endcase ;
   on entered-room ( room exit -- )   \ (a couple of frames for the room's own entry, then ours)
       2drop  step @ entering = if  2 wait-t !  settling step !  then ;

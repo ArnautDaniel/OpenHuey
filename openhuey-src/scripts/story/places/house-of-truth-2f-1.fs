@@ -40,7 +40,7 @@ ht2f-1-breakable3-broken 4 5  -3e 70e -41e 5e 8e  breakable: crate-3         cra
 \ ---- her first steps in: on, by the forced way ----
 : taken ( -- )
     stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
-    0 s" creatures" actor-named send creatures-clear  scene-locked state!  0 prepare-exit  forced-exit take-exit ;
+    0 creatures-id send creatures-clear  scene-locked state!  0 prepare-exit  forced-exit take-exit ;
 \ ---- back from the study: as she was; the doors shut on her, Lorenzo let loose ----
 : back-again ( -- )
     fiona hold  fiona wait-move  camera-restart

@@ -60,7 +60,7 @@ $22 constant chase-seen   $29 constant doll-seen   $20 constant chase-door   3 c
     15 screen:to-black-2 with-music or fade
     chase-movie scenes:unseen-movie chase-cutscene load-scene  wait-fade
     hewie-in? if  hewie let-go  -1 hewie-sent-off !  then
-    chase-door true doors-actor send door-opened  doors-redone  panic-eased
+    chase-door true doors-id send door-opened  doors-redone  panic-eased
     if  -1 run-scene  then
     stalker let-go  0 summon-take  world-held state!  0 prepare-exit
     chase-door door-shut  forced-exit hewie-sent-off @ if  0  else  1  then  or take-exit

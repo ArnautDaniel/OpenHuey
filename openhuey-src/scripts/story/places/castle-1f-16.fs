@@ -33,7 +33,7 @@ own: painting-remarked     \ the painting's first remark made (in turn with the 
 
 \ ---- the TV: its dark screen away while it's on, its noise heard about ----
 : show-tv ( -- )  tv-on? if  tv-off-part hide-part  1 tv-fx tell-effect  else  tv-off-part show-part  0 tv-fx tell-effect  then ;
-: heard-about ( v -- )  s" acoustics" actor-named send noise-setting ;   \ (the room's noise level: the TV on, louder)
+: heard-about ( v -- )  acoustics-id send noise-setting ;   \ (the room's noise level: the TV on, louder)
 
 \ ---- as she comes in ----
 : came-in ( exit -- )

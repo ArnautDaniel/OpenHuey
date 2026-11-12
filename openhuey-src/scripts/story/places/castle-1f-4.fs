@@ -100,7 +100,7 @@ defer the-trap ( -- )
         floor-plate-pressed fact-off  0 someone-on-plate !  mechanism-starts
     then ;
 :noname ( -- )   \ (act0A: she stands on it alone, the marionette used - down to castle-1f-7, the gate on her)
-    fiona hold  stalkers-stay state!  castle-1f-7-room s" rooms" actor-named send room-preload  fiona wait-move
+    fiona hold  stalkers-stay state!  castle-1f-7-room rooms-id send room-preload  fiona wait-move
     15 screen:to-black fade wait-fade
     world-held state!  scene-locked state!  world-frozen state!  subscreen-locked state!  panic-eased  panic-held state!
     forced-exit take-exit ; is the-trap
@@ -138,7 +138,7 @@ defer the-trap ( -- )
     yield  other-figure figure-out
     6 scenes:opaque-when-movie 0 load-scene  ['] riccardo-shots at-shots  panic-eased
     if  riccardo-msg run-scene  then  st-kind-now @ false no-shadow   \ (his shadow back, the scene skipped or not)
-    scene-locked state-off  after-riccardo-room s" rooms" actor-named send room-preload
+    scene-locked state-off  after-riccardo-room rooms-id send room-preload
     fiona send calm-reset  world-held state!  0 summon-take  figure-slot figure-out
     forced-exit take-exit ;
 : back-by-the-trap ( -- )   \ (act0B: back from it - "What's that noise?")

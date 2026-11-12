@@ -53,9 +53,9 @@ $20020008 constant hand-stops   \ (the floors her hand can't pass over)
     hand-reached dup 0< if  drop exit  then  {: tri :}
     hand vec@ {: F: x y z :}  way {: F: vx vy vz :}
     held let-go-as nip  tri  x f>cell y f>cell z f>cell  vx f>cell vy f>cell vz f>cell
-    s" things" actor-named send thing-made
-    held s" items" actor-named send take-item
-    her-sub @ thrown-sub = if  throw-reaction s" hewie" actor-named send reaction  then ;
+    things-id send thing-made
+    held items-id send take-item
+    her-sub @ thrown-sub = if  throw-reaction hewie-id send reaction  then ;
 
 \ ---- her states ----
 : letting-go ( -- )   \ (Fiona_StateLetGo)

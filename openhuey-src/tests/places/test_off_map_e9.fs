@@ -52,7 +52,7 @@ USING: tester engine game-state actors messages keys room-names game debug facts
     dup area-kind 0= if  dup 1 across  -1 across  else  0 at  then ;
 : leads ( room exit -- room' )  room-exit-leads drop ;
 variable ex
-: opened ( exit -- )  ex !  [: ex @ exit-door 1 doors-actor send door-opened ;] in-place  5 run-frames ;
+: opened ( exit -- )  ex !  [: ex @ exit-door 1 doors-id send door-opened ;] in-place  5 run-frames ;
 : both-ways ( area -- )  dup 1 hacross  -1 hacross ;
 : tap ( key -- )  dup true key-hold  game-tick  false key-hold  game-tick ;
 : command ( -- )  key: I tap ;   \ (his gesture: up)

@@ -52,7 +52,7 @@ full-suite   \ (on: waits, scenes, walks - the full run's)
 : leads ( room exit -- room' )  room-exit-leads drop ;
 : filed? ( id -- flag )  false  128 0 do  over progress pr.files i 2* + w@ = or  loop  nip ;
 variable ex
-: opened ( exit -- )  ex !  [: ex @ exit-door 1 doors-actor send door-opened ;] in-place  5 run-frames ;
+: opened ( exit -- )  ex !  [: ex @ exit-door 1 doors-id send door-opened ;] in-place  5 run-frames ;
 : both-ways ( area -- )  dup 1 hacross  -1 hacross ;
 : tap ( key -- )  dup true key-hold  game-tick  false key-hold  game-tick ;
 : command ( -- )  key: I tap ;   \ (his gesture: up)

@@ -93,7 +93,7 @@ $2A constant movie-var   $2B constant cursor-var
 \ stream is free the track started; the triangle stops the one playing, or (none) leaves ----
 : track ( k -- a )  3 * cells tracks + ;
 : track-open? ( k -- flag )  track @ resident-flag? ;
-: want ( track -- )  0 1e f>cell  s" music" actor-named send bgm-want ;
+: want ( track -- )  0 1e f>cell  music-id send bgm-want ;
 : track-title ( k -- addr len )  dup track-open? if  track cell+ @  else  drop unknown-msg  then  gal-line ;
 : track-colour ( k -- c )  dup gal-at @ = if  drop 2  else  gal-playing @ = if  1  else  0  then  then ;
 : track-row ( k -- )  dup #tracks < if  dup >r  dup track-title  r> track-colour  2 row  else  drop  then ;

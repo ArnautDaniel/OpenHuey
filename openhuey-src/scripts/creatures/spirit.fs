@@ -148,14 +148,14 @@ create spot /vec allot   fvariable turn   fvariable off
 : gone ( -- )   \ (_StateVanish's end) a red one shakes her; a blue one is heard in its room
     seen @ if
         red? if  grab-request my-at vec@ xyz>cells 0  her send fiona-request
-        else  vanish-noise my-room @ my-tri @ -1 world-noise  s" acoustics" actor-named send noise  then
+        else  vanish-noise my-room @ my-tri @ -1 world-noise  acoustics-id send noise  then
     then
-    unkeep  slot @ s" creatures" actor-named send creature-gone  self kill ;
+    unkeep  slot @ creatures-id send creature-gone  self kill ;
 : put-away ( -- )   \ (a room's: put away at its spot - Room4F / Room5C: the vanishing above it, blue
     \ or red, its burst's sound; out of play, unseen)
     red? if  $80 $30 $30  else  $30 $30 $80  then  $60
     my-at vec@ fswap  odd-one? if  -9e  else  0e  then  f+ 12e f+  fswap  vanish-new drop
-    burst-sound sound  unkeep  slot @ s" creatures" actor-named send creature-gone  self kill ;
+    burst-sound sound  unkeep  slot @ creatures-id send creature-gone  self kill ;
 : touching-her? ( -- flag )  in-play? 0= if  false exit  then  self her 0e 0e bodies-touching? ;
 
 \ ---- a frame (CreatureA_Frame, _Think) ----

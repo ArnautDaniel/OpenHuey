@@ -26,7 +26,7 @@ create figures-hidden 3 cells allot   figures-hidden 3 cells 0 fill   \ (cast3..
         id body-tri  others n cells + !  n 1+ exit
     then  then  then  n ;
 : can-push? ( i -- flag ) ( F: dx dz -- )
-    0  s" hewie" actor-named other-tri  stalker-in-game other-tri
+    0  hewie-id other-tri  stalker-in-game other-tri
     3 0 do  i figure-name actor-named other-tri  loop
     others swap obstacle-can-push? ;
 : figure-hidden! ( id hidden -- )   \ (the obstacles' own: kept as each figure tells)
@@ -59,7 +59,7 @@ end-state
 create was-at /vec allot
 : scrape ( a -- )   \ (Obstacle_MoveFrame's sixth frame: its sound, its noise - where it was, before the frame's step)
     {: a :}  0 6 was-at vec@ bank-sound-at
-    scrape-noise room-id a -1 fiona-noise  s" acoustics" actor-named send noise ;
+    scrape-noise room-id a -1 fiona-noise  acoustics-id send noise ;
 : move-frame ( i -- )
     {: i :}  i obstacle-middle was-at vec!  i obstacle-square drop  {: a :}
     i obstacle-step if  a scrape  then  i follow ;

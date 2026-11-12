@@ -49,7 +49,7 @@ create candles
     panic-eased  if  daniella-msg run-scene  then
     figure-slot figure-out ;
 : meets-daniella ( -- )
-    fiona hold  text-gone  locked-exit exit-door false doors-actor send door-opened  doors-redone  world-held state!
+    fiona hold  text-gone  locked-exit exit-door false doors-id send door-opened  doors-redone  world-held state!
     0 prepare-exit  daniella-scene  wait-fade  world-held state!
     fiona brought-tri 0 place-on-tri  0 0 player-camera  camera-restart  c1f-6-flag1 fact!
     daniella-part hide-part  forced-exit take-exit ;

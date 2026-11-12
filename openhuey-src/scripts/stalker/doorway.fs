@@ -15,7 +15,6 @@
 IN: stalker.doorway
 USING: engine game-state actors messages common facts flag-names paths vectors doors stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.anims rumble floor-flags ;
 
-: doors-actor ( -- id )  s" doors" actor-named ;
 defer door-done ( -- )   ' stand is door-done          \ given up on the way out (struck.fs: on again)
 defer round-done ( -- )   ' stand is round-done        \ a door opened to get at her: his chase again (stalker/ladder.fs)
 defer round-failed ( -- )   ' stand is round-failed    \ ... given up (stalker/ladder.fs)
@@ -32,7 +31,7 @@ create spot-at /vec allot
 : shutting? ( -- flag )  door-use @ 0< 0=  door-use @ 1 and 0<> and ;
 : let-door-go ( -- )
     held-door @ dup 0< if  drop exit  then  room-id swap stalker-noise
-    shutting? if  doors-actor send let-go-shut  else  doors-actor send let-go-open  then  -1 held-door ! ;
+    shutting? if  doors-id send let-go-shut  else  doors-id send let-go-open  then  -1 held-door ! ;
 : out-over ( -- )  0 apart !  0 out-going !  0 wandering-out !  -1 door-use !  -1 asked !  0 for-her !  0 door-script ! ;
 \ the story's door use (stalker/scripted.fs): over - or given up, his step left trying it (the
 \ original's: never done)
@@ -82,7 +81,7 @@ defer shoulder-past ( -- )   ' noop is shoulder-past
     let-door-go  0 apart !  on-through ;   \ (Pursuer_Door1C4: in contact again)
 : door-swinging ( -- )
     root-move  settled? 0= if  exit  then
-    making-for @ door-use @ stalker-noise doors-actor send use-door
+    making-for @ door-use @ stalker-noise doors-id send use-door
     ['] door-pushing step! ;
 : got-door ( -- )   \ (Pursuer_DoorBarge: out of contact till the door is let go)
     -1 apart !  making-for @ held-door !  -1 asked !  door-anims door-use @ + play-now  ['] door-swinging step! ;
@@ -105,7 +104,7 @@ defer shoulder-past ( -- )   ' noop is shoulder-past
 : asking ( -- ) ;                                          \ (the doors' answer: `door-held` / `door-refused`)
 : facing-door ( -- )
     spot-yaw f@ turn-rate body-turn-toward f0= 0= if  exit  then
-    making-for @ asked !  room-id making-for @ stalker-kind doors-actor send hold-door
+    making-for @ asked !  room-id making-for @ stalker-kind doors-id send hold-door
     ['] asking step! ;
 : at-door-spot ( -- )   \ (the others coming in: turned to the door, standing - their table $E's - then on: Pursuer_GoToDoor done)
     spot-yaw f@ turn-rate body-turn-toward f0= 0= if  exit  then  out-over  entry-done ;

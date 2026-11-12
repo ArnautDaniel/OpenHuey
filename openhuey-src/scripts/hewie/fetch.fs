@@ -62,7 +62,7 @@ enum: skill  going-skill watching-skill eager-skill picking-up-skill telling-ski
 \ ---- after it (Hewie_StateFetch) ----
 : at-it ( -- )   \ (it lies still by him, him nearly stopped: pick it up, tell her, or leave it)
     1 his-t2 !
-    picking-up-skill try-skill if  ball s" things" actor-named send thing-taken  true back-to-her exit  then
+    picking-up-skill try-skill if  ball things-id send thing-taken  true back-to-her exit  then
     telling-skill try-skill if  target-look look!  her his-target !  ['] st-telling behave exit  then
     sit-by ;
 : fetch-gait ( F: rest -- )

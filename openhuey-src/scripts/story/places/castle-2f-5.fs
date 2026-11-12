@@ -86,7 +86,7 @@ $E constant first-fragment   11 constant #fragments   \ (its objects a_fragment0
     rest-msg yes? 0= if  exit  then
     15 screen:to-black-2 with-music or fade
     mirror-movie scenes:unseen-movie mirror-cutscene load-scene  wait-fade
-    c2f-3-tv-examined fact-off  tv-static-sound room-bank stop-sound  0 s" acoustics" actor-named send noise-setting
+    c2f-3-tv-examined fact-off  tv-static-sound room-bank stop-sound  0 acoustics-id send noise-setting
     hewie let-go
     the-mirror  wait-fade  world-held state!  0 rest-step !
     hewie activate  castle-2f-5 39 0 hewie-to  ['] hewie-comes-out start drop

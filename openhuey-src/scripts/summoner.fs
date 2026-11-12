@@ -179,7 +179,7 @@ create waits  0 , 10 , 30 , 30 ,                                   \ D_00419DC0:
 : roll? ( percent -- flag )
     dup 0= if  drop false exit  then  dup 100 = if  drop true exit  then
     s>f 100e rnd f* f>= ;   \ (100 x the random <= the chance)
-: hunt ( -- )  being-hunted s" danger" actor-named send danger-signal ;
+: hunt ( -- )  being-hunted danger-id send danger-signal ;
 : wait-over? ( -- flag )   \ 3 s waited, and his last taking's wait
     waited @ 30 /  dup 3 >=  swap took-kind @ cells waits + @ >= and ;
 : noise ( loud room door -- )

@@ -134,7 +134,7 @@ create lf-at /vec allot
     flooded? if  1 over water-step  then
     step-sound
     world-held state-flag? hushed @ or if  2drop  else  0  step-pace 2e f* f>s $7F and  my-at vec@ sound-at  then
-    step-pace 0.5e f< if  step-noise  else  stride-noise  then  room-id self body-tri -1 stalker-noise s" acoustics" actor-named send noise ;
+    step-pace 0.5e f< if  step-noise  else  stride-noise  then  room-id self body-tri -1 stalker-noise acoustics-id send noise ;
 
 \ ---- turning (Npc_TurnTowardPos: toward a point by at most `step`; how far is left) ----
 : heading-to ( v -- ) ( F: -- a )  self swap body-heading-to ;

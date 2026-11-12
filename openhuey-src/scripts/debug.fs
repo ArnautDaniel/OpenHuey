@@ -179,7 +179,7 @@ create bug-text 256 allot   variable bug-text-len   \ (a note waiting for its re
     0 bug-step !
     ." bug report in " bug-dir bug-dir-len @ type cr
     room-id 0< fiona-id 0< or if  zip-report  exit  then
-    s" save.fs" in-bug-dir  s" saves" actor-named send save-to-file ;   \ (zipped once it is written: game-saved)
+    s" save.fs" in-bug-dir  saves-id send save-to-file ;   \ (zipped once it is written: game-saved)
 : bug-steps ( -- )   \ (each frame, held or not)
     bug-step @ 1 = if  bug-capture exit  then
     bug-step @ 2 = screenshot-pending? 0= testing? or and if  bug-save  then ;   \ (a test draws nothing)
@@ -190,7 +190,7 @@ create bug-text 256 allot   variable bug-text-len   \ (a note waiting for its re
     key: F12 key-pressed? 0= if  exit  then
     0 bug-text-len !  1 bug-step !  -1 console!  s" bug-note " console-type ;
 \ a report's save back (the progress, the room, everyone where they were)
-: bug-load ( addr len -- )  s" saves" actor-named send load-from-file ;
+: bug-load ( addr len -- )  saves-id send load-from-file ;
 
 state: label-state  cell field label-unused  end-state
 behaviour labelling

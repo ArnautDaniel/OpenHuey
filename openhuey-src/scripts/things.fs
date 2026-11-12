@@ -41,7 +41,7 @@ end-state
 : at ( -- v )  it @ thing-at ;
 : here? ( -- flag )  its-room room-id = ;
 \ the ball gone (its time, a hole, cleared away): hers again if she has none (Ball_dtor)
-: ball-back ( -- )  ball items-of 0= if  ball 1 s" items" actor-named send give-item  then ;
+: ball-back ( -- )  ball items-of 0= if  ball 1 items-id send give-item  then ;
 : gone ( -- )  kind  it @ thing-free  ball-thing = if  ball-back  then ;
 : thing-sound ( id -- )  5 0 0 at vec@ sound-at ;
 : running? ( -- flag )   \ (Thing_Frame: the game going - no scene has the camera, the world not held)
@@ -94,7 +94,7 @@ $8D constant splash-sound   $8E constant go-off-sound   $7C constant bounce-soun
     kind powder-rgb  at vec@  kind tube-thing = if  2e  else  1e  then  drop-splash  splash-sound thing-sound ;
 : dust ( -- )  2 $50 $50 $50 16  at vec@  burst ;   \ (the doll glancing off a wall: a grey puff)
 : heard-at ( loud tri -- )   \ (a noise in its room the stalker hears: Noise_Make)
-    its-room swap -1 world-noise  s" acoustics" actor-named send noise ;
+    its-room swap -1 world-noise  acoustics-id send noise ;
 : heard ( loud -- )  its-tri heard-at ;
 $8000 constant startled   \ (a blow's flag: he flinches)
 : blow-him ( id kind damage startle% -- )   \ (Progress_Noise to him: his request 4 from where it lies - in whatever room)
@@ -117,7 +117,7 @@ variable trodden
 : up ( -- ) ( F: -- up )  kind case  keri-thing of 0.6e endof  trap-thing of 0.4e endof  >r 2e r>  endcase ;
 : kicked? ( -- addr )  it @ cells kicked + ;
 : kick ( -- )
-    s" fiona" actor-named {: her :}  her 0< if  exit  then
+    fiona-id {: her :}  her 0< if  exit  then
     her body-point 0= if  0 kicked? ! exit  then          ( v )
     kicked? @ if  drop exit  then
     at vec-dist 5e f> if  exit  then
@@ -267,7 +267,7 @@ behaviour keeping-things
       k make-room
       k room-id tri  x cell>f y cell>f z cell>f  vx cell>f vy cell>f vz cell>f  thing-new
       dup 0< 0= if  dup fresh-thing  then
-      dup 0< 0= k ball-thing = and  vx vz or 0<> and if  s" hewie" actor-named send fetch-this  else  drop  then ;   \ (thrown: his to fetch)
+      dup 0< 0= k ball-thing = and  vx vz or 0<> and if  hewie-id send fetch-this  else  drop  then ;   \ (thrown: his to fetch)
   on keri-drop ( k tri x y z -- )   \ (the story's: a kind-9 thing carrying "keri<k>", falling from there)
       {: k tri x y z :}
       keri-thing room-id tri  x cell>f y cell>f z cell>f  0e 0e 0e  thing-new  dup 0< if  drop exit  then

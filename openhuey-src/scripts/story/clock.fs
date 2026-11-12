@@ -30,7 +30,7 @@ create clock-text 5 allot
 : clock-off ( -- )  clock-layer ui-clear ;   \ (each frame before the rooms' hooks draw it again)
 
 : clock-start ( -- )   \ clock_start: Hewie played, afresh; the camera quicker along its paths; the time from 0
-    -1 hewie-played !  s" hewie" actor-named send hewie-restart  14e cam-rate!  0 progress pr.play-frames l! ;
+    -1 hewie-played !  hewie-id send hewie-restart  14e cam-rate!  0 progress pr.play-frames l! ;
 : clock-draw ( -- )  time-played time$ show ;                  \ clock_draw
 variable kept-over   variable kept-minutes   variable kept-seconds   \ (the time kept: an hour gone; else minutes, seconds)
 : clock-save ( -- )                                            \ clock_save (and for the results: subscreen/extras.fs)

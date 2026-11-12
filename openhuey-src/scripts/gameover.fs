@@ -53,7 +53,7 @@ $FF constant no-track
 : bgm ( track -- )  0 1e f>cell music-id send bgm-want ;
 
 \ ---- the panic's screen overlay (ScreenFade_Level of the progress' +0x7B8), thousandths ----
-: overlay! ( thousandths -- )  s" panic" actor-named send panic-overlay ;
+: overlay! ( thousandths -- )  panic-id send panic-overlay ;
 
 \ ---- the room's tint and fog, a step on: `t` of `n` back toward where they were ----
 : mix ( from to t n -- c )   \ each byte: to + t * (from - to) / n
@@ -97,7 +97,7 @@ $FF constant no-track
 \ ---- the sequence (GameOver_StateOthers / StateMode3: game_over) ----
 : freeze ( -- )   \ (the panic held - the camera still - the actors and the room still; the room still
     panic-held state-flag-set  1 still!  0e cam-shake!  chars-hide   \ drawn, without the characters, from the room's next camera set)
-    s" camera" actor-named send camera-hold ;
+    camera-id send camera-hold ;
 \ the mini-game's run over (SceneGame_SubTransition, Hewie played): it starts again in place -
 \ Fiona played again, the camera at its pace, the panic at rest, door $10C shut, this room's doors
 \ open to Hewie, him put in the extras room, the stalker gone; the extras room entered by $81
@@ -107,12 +107,12 @@ $10C constant run-door   $81 constant run-again-exit
 : run-again ( -- )
     unfreeze  world-held state-flag-set
     0 hewie-played !  -1e cam-rate!
-    0 s" panic" actor-named send panic-stage!
-    run-door 0 s" doors" actor-named send door-opened
-    room-id 1 0 s" doors" actor-named send lock-room-for
-    off-map-37 -1 0 s" hewie" actor-named send hewie-place
+    0 panic-id send panic-stage!
+    run-door 0 doors-id send door-opened
+    room-id 1 0 doors-id send lock-room-for
+    off-map-37 -1 0 hewie-id send hewie-place
     story.base:slot-unload
-    off-map-37 run-again-exit s" rooms" actor-named send go-to-room ;
+    off-map-37 run-again-exit rooms-id send go-to-room ;
 : run ( -- )
     step @ case
         music-out of  0 0 30 music-id send music-op  no-track bgm  movie-close  freeze-world step !  endof   \ (the stage music and the room's track out)

@@ -204,7 +204,7 @@ $1E end-msg + constant costumes-msg
 : done-frame ( -- )   \ (the picture out, the music stopped; the clear-data save - the sub screen's mode 9 -
     \ then back to the title: SceneEnding_SeqSave)
     step @ case
-        0 of  pic-out if  $FF bgm  s" subscreen" actor-named send save-clear  next  then  endof
+        0 of  pic-out if  $FF bgm  subscreen-id send save-clear  next  then  endof
         2 of  0 0 message-file drop  playing stage !  soft-reset  endof
     endcase ;
 

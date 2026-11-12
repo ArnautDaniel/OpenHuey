@@ -114,7 +114,7 @@ USING: engine game-state actors messages keys facts flag-names items items.table
 \ 1 - fade / 255 - the effects' master, the stream, the stage music) ----
 : sub-volume ( -- )
     255 openness @ - s>f 255e f/  {: F: v :}
-    1e v sound-volume!  v f>cell s" music" actor-named send music-duck  v stage-music-volume! ;
+    1e v sound-volume!  v f>cell music-id send music-duck  v stage-music-volume! ;
 
 \ ---- a frame with the world held ----
 : held-frame ( -- )

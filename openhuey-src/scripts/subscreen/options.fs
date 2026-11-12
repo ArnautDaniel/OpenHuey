@@ -26,7 +26,7 @@ create run-layouts
     vibration @ 0<> rumble-allowed!  sound-out @ sound-out!  volume @ s>f 128e f/ game-volume! ;
 : defaults ( -- )  1 vibration !  1 sound-out !  128 volume !  0 pos-x !  0 pos-y !  0 layout !  apply ;
 : kept ( -- )   \ (to the system data)
-    vibration @ sound-out @ volume @ pos-x @ pos-y @ layout @  s" saves" actor-named send options-changed ;
+    vibration @ sound-out @ volume @ pos-x @ pos-y @ layout @  saves-id send options-changed ;
 : restore ( vib out vol x y layout -- )  layout !  pos-y !  pos-x !  volume !  sound-out !  vibration !  apply ;
 
 : say ( msg x y -- )  {: msg x y :}  msg menu-line x y false text ;

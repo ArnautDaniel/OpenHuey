@@ -324,8 +324,8 @@ $80 constant grab-noise
             1 frames +!  frames @ 35 mod 0= if  hold-chatter sound  then  frames @ 70 mod 0= if  giggle sound  then
             her-held? if  exit  then
             creature-struck move-mode !  let-go-anim play-now
-            grab-threat s>f f>cell s" panic" actor-named send threat
-            grab-noise my-room @ self body-tri -1 world-noise  s" acoustics" actor-named send noise
+            grab-threat s>f f>cell panic-id send threat
+            grab-noise my-room @ self body-tri -1 world-noise  acoustics-id send noise
             letting-go step !
         endof
         letting-go of  root-move  ended? if  true untouchable !  go-away  then  endof
@@ -333,7 +333,7 @@ $80 constant grab-noise
 
 : gone ( -- )   \ its model let go, its slot free (the bubbles: `going`'s welling)
     model @ actor-free  -1 model !
-    slot @ s" creatures" actor-named send creature-gone  self kill ;
+    slot @ creatures-id send creature-gone  self kill ;
 
 : going ( -- )   \ leaving - sinking, fading, bubbles welling up where it sinks; at its end gone
     step @ 0= if
@@ -389,7 +389,7 @@ $80 constant grab-noise
 
 \ ---- waking (CreatureB_Distances, _Notices): her on a triangle it reaches within its sight,
 \ Hewie in its room on his within 30, a blow, or no sight at all ----
-: hewie ( -- id )  s" hewie" actor-named ;
+: hewie ( -- id )  hewie-id ;
 : measure ( -- )
     in-play? 0= if  exit  then
     my-at her-at vec-dist-xz her-dist f!

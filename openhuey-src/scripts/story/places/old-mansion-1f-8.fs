@@ -227,7 +227,7 @@ $31 constant ambush-seen   $32 constant fed-seen
     prima-materia item-named  prima-materia 1 give-item  prima-materia show-item-tab  fanfare  obtained-2-msg say
     -1 fetched !  hewie 0 turn
     hewie $130 60 -1 walk-path-move -83e -83e go-to
-    items-40-as-70 fact? if  creatures-on state!  5 0 s" creatures" actor-named send creature-count  then
+    items-40-as-70 fact? if  creatures-on state!  5 0 creatures-id send creature-count  then
     hewie false noclip  stalkers-stay state-off  0 errand ! ;
 : gesture ( -- )   \ (her "go for it" at him)
     fiona go-for-it-gesture-anim start-anim  fiona 1 wait-mark  go-for-it-call common-bank fiona sound-by

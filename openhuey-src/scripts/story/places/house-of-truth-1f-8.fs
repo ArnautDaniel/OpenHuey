@@ -59,7 +59,7 @@ create flame-slots  0 , 1 , 2 , 4 ,
     world-held state!  forced-exit take-exit ;
 
 \ ---- the snagged door: her blows wear it through, or Hewie leaps in at it ----
-: opened ( -- )  snagged-door unlock  0 true doors-actor send set-door-opened  snagged-door true open-mark ;
+: opened ( -- )  snagged-door unlock  0 true doors-id send set-door-opened  snagged-door true open-mark ;
 : snag-shut? ( -- flag )  0 exit-open? 0= ;
 : struck ( -- )   \ (her blow at it: worn by it - 1 the weak blow, else 5 - through at 0)
     snag-shut? if

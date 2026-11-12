@@ -194,7 +194,7 @@ create tint-b  $72 c, $96 c, $94 c, $6E c, $60 c, $56 c, $70 c, $3C c,
     fiona wait-move  fiona 0e 65e turn-to-xz
     15 screen:to-black-2 with-music or fade  wait-fade
     hewie-in? if  hewie let-go  then
-    cane-part show-part  cane-of-caduceus spend  0 s" creatures" actor-named send creatures-clear  0 hazed !
+    cane-part show-part  cane-of-caduceus spend  0 creatures-id send creatures-clear  0 hazed !
     no-track 1e background  lorenzo-scene  dark-look
     fiona $7E 174 0.023e 24.438e place-at
     stalker let-go  stalker-unloaded  kind39-kind stalker-ready  partner activate
