@@ -541,10 +541,20 @@ s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
 : held-for? ( -- flag )   \ ((trust + 1) x 15 + 30, a frame or two counted off already)
     [: stun-t @  dog-trust @ 1+ 15 * 30 + ;] his {: s e :}  s  e 2 -  e 1+  within ;
 T{ held-for?  [: bitten @  reeling @ ;] his -> -1 0 0 }T
+testing ... a cutscene starting meanwhile lets him go (Pursuer_LeftBehind: Pursuer_GiveUp - not held, standing)
+T{ true game:debilitas send scene  1 run-frames  [: stun-t @  left-bitten @ ;] his -> 0 0 }T
+false game:debilitas send scene  1 run-frames
 debug:debilitas-out  front-garden-2 room!  10 run-frames
 s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
 [: 0 hp !  leg-attack bitten !  -1 reeling ! ;] his  front-garden-3 room!  3 run-frames
 T{ [: cond @ down-cond = ;] his -> -1 }T
+testing ... down so, a cutscene starting: up again, his health back (Pursuer_GiveUp)
+true game:debilitas send scene  1 run-frames
+T{ [: cond @ down-cond =  hp @ hp-max @ = ;] his -> 0 -1 }T
+false game:debilitas send scene  1 run-frames
+debug:debilitas-out  front-garden-2 room!  10 run-frames
+s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+[: 0 hp !  leg-attack bitten !  -1 reeling ! ;] his  front-garden-3 room!  3 run-frames
 [: my-room ;] his room!  10 run-frames   \ (back within his time - Pursuer_ShowUp's +0x17B4: his fall shown)
 T{ [: away?  anim @ dup stalker.anims:fall-front-anim =  swap stalker.anims:fall-back-anim = or  stalker.state:step @ ['] downed = ;] his -> 0 -1 -1 }T
 debug:debilitas-out  front-garden-2 room!  10 run-frames

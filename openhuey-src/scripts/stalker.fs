@@ -424,6 +424,7 @@ behaviour stalking
   on show ( on -- )  0= hidden ! ;
   on hold-anim ( anim flags blend -- )  loaded @ if  pose-in  else  drop 2drop  then ;
   on scene ( on -- )   \ (a cutscene has the characters; given back - Pursuer_Enable: his way forgotten)
+      dup if  left-behind  then
       dup 0<> in-scene !  0= in-cast @ and if  0 in-cast !  my-path path-clear  then ;
   on shaken-off ( -- )  bitten @ bite-how @ held-by-dog = and if  dog-let-go bite-how !  then ;
   on bite ( damage hard -- )  bitten @ if  bitten-by  else  2drop  then ;

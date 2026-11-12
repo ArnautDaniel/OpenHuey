@@ -742,6 +742,8 @@ Ported since: Pursuer_ShowUp's pictures as she comes back in - Hewie on him as s
 the bite was ($1701 / $1704 / $1707; the leg's: on his front, getting up); out of health under Hewie: down with
 his time away (+0x17B4, Hewie's delay at 60) - back within it his fall shown, else lying. A door knocking him out
 of the room out of health no longer gives him the 150 held (+0x1664 only with health left): lying as she comes.
+A cutscene starting while he is so out of her sight (the scripts' 0x61: Pursuer_LeftBehind, his behaviour $23
+still) lets him go: standing, not down, his health back if gone (Pursuer_GiveUp; `left-behind`, since 0.2.50).
 Ported since: Debilitas on his way through the doors in her room - his own HeadingStep - finding no way to his door:
 held off or not, after her, his route forgotten, the door not avoided (Pursuer_GoForFionaStance0; doorway.fs
 `no-way-to-door`). The others avoid that door and go another way (Pursuer_OnToNextExit).

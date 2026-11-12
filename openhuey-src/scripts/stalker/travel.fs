@@ -113,6 +113,7 @@ defer on-to-next-exit ( -- )   ' noop is on-to-next-exit   \ (held off into his 
     \ held off, on home - she coming into his room doesn't turn him back (Pursuer_StanceByFiona's held off)
     \ (Pursuer_ShowUp: down only just - his time away not run out - his fall shown, else lying; Hewie on him
     \ as she left, his letting go from where the bite was - the leg: down on his front, getting up)
+    0 left-bitten !
     cond @ down-cond = if  0 left-bite !  -1 anim !  stun-t @ if  0 stun-t !  fell-in-view  else  lying-on  then  exit  then
     left-bite @ ?dup if  0 left-bite !  -1 anim !  bite-let-go exit  then
     away-search @ {: left :}
@@ -373,7 +374,14 @@ create fs-a /vec allot  create fs-b /vec allot
         hp @ 0> if  dog-trust @ 1+ 15 *  bitten @ head-on-attack < if  30  else  60  then  +  stun-t !
         else  cond @ down-cond <> if  down-away  dog-trust @ 1+ 15 * 60 + stun-t !  then  then   \ (out of health: down - his fall a while yet: Pursuer_LeaveScreen's +0x17B4)
     else  anim @ powdered-anim = if  powder-how @ 30 * stun-t !  then  then
-    0 bitten !  cond @ down-cond <> if  0 reeling !  then ;   \ (the bite and the powder over with the room)
+    bitten @ left-bitten !  0 bitten !  cond @ down-cond <> if  0 reeling !  then ;   \ (the bite and the powder over with the room)
+\ a cutscene starting while so (Pursuer_LeftBehind, from the scripts' 0x61): let go - standing, his health
+\ back if gone, not down (Pursuer_GiveUp; the knock-out still counted)
+: left-behind ( -- )
+    in-game @ 0=  away? 0= or  left-bitten @ 0= or if  exit  then
+    0 left-bitten !  0 stun-t !  0 left-bite !  0 reeling !  -1 anim !
+    cond @ down-cond = if  well-cond cond !  0 down-t !  then
+    hp @ 0> 0= if  hp-max @ hp !  then ;
 \ she gone, after her he follows on a while later (Pursuer_RandomWait over the Pursuer's table: at
 \ once 60 in 100, 90 frames 20, 150 10, 240 10); searching on her lead he heads for her room so too
 \ (Pursuer_LeaveScreen's mode 0 and lead 5 - its mode 1), a lead of hers, a noise's or Hewie's
