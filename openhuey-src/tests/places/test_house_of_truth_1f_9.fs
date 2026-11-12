@@ -43,7 +43,7 @@ ht1f-9-flag1 story-flag-clear  ht1f-9-flag2 story-flag-clear  found-file-255 sto
 tremor-warned story-flag-clear
 room-afresh
 testing coming in: the flames lit, the debris hidden, the cane not yet set in
-T{ [: flame-0-fx effect @ 0<>  flame-1-fx effect @ 0<>  cane-part part? ;] in-place  [: 0 keri$ placed-shown? ;] in-place -> -1 -1 0 0 }T
+T{ [: flame-0-fx effect @ 0<>  flame-1-fx effect @ 0<>  cane-part part? ;] in-place  [: 0 things:keri$ placed-shown? ;] in-place -> -1 -1 0 0 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 testing the hole, Hewie not by: the branch, then the smell
 T{ hole-area 0 at  said  said -> branch-msg smell-msg }T
@@ -77,7 +77,7 @@ testing "Oh no! It's locked!" (her try at the door)
 T{ [: 0 offer-xt !  0 offer-msg !  2 request-now !  spots  offer-xt @ ;] in-place  ' locked-now = -> -1 }T
 testing the debris falling (six at most), each carrying a "keri"; two fallen through - counted back, the traps
 T{ [: 0 debris-out !  debris-falls  debris-out @ ;] in-place  3 run-frames  9 of-kind = -> -1 }T
-T{ [: 0 keri$ placed-shown? ;] in-place -> -1 }T
+T{ [: 0 things:keri$ placed-shown? ;] in-place -> -1 }T
 [: debris-out @ ;] in-place before !
 T{ [: 2 fell-now ! ;] in-place  2 run-frames  [: debris-out @  trap-set @  ['] traps running? ;] in-place -> before @ 2 - -1 -1 }T
 T{ [: 10 of-kind 0> ;] 400 soon  [: [: trap-set @ 0= ;] in-place ;] 400 soon -> -1 -1 }T

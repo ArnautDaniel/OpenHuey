@@ -3,6 +3,7 @@
 \ character's mask, below, is the flags it keeps off - others what the floor is (its footsteps),
 \ a room's halves, where a thing may be pushed, a hole things fall through.
 IN: floor-flags
+USING: engine ;
 
 1 constant slope-floor
 2 constant step-floor
@@ -26,6 +27,7 @@ $8000000 constant keeps-people-off     \ Fiona, Hewie and the stalkers (not the 
 $10000000 constant hole-floor          \ things lying about fall through (TRI_HOLE: placed.c)
 $20000000 constant keeps-people-off-2  \ (as keeps-people-off)
 one-half other-half or constant both-halves
+: tri-halves ( tri -- bits )  dup 0< if  drop 0 exit  then  nav-flags both-halves and ;   \ (which halves a triangle is on: none, one, both)
 doorway-floor slope-floor or constant doorway-or-step   \ (where nothing may stand or be set down)
 
 \ ---- who keeps off what: the characters' masks (FIONA_NAV_MASK, HEWIE_NAV_MASK, NPC_BlockFlags,

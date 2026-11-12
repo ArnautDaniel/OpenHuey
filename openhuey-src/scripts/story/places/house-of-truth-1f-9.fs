@@ -98,10 +98,7 @@ $30 constant fan-speed   $34 constant fan-base   $38 constant fan-top   $10 cons
     debris-hidden ;
 
 \ ---- the house coming down: debris falling now and then; once it has fallen through, the traps ----
-: keri$ ( k -- addr len )   \ (the debris' objects: "keri0".."keri5")
-    case  0 of  s" keri0"  endof  1 of  s" keri1"  endof  2 of  s" keri2"  endof
-          3 of  s" keri3"  endof  4 of  s" keri4"  endof  >r s" keri5" r>  endcase ;
-: free-debris ( -- k | -1 )  6 0 do  i keri$ placed-shown? 0= if  i unloop exit  then  loop  -1 ;
+: free-debris ( -- k | -1 )  6 0 do  i things:keri$ placed-shown? 0= if  i unloop exit  then  loop  -1 ;
 fvariable dx  fvariable dy  fvariable dz
 : drop-spot ( -- tri ) ( F: -- x y z )   \ (40..50 up, 25..40 out in any direction, over the floor)
     begin

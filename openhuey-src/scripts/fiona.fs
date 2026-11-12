@@ -93,9 +93,8 @@ create goal /vec allot
 \ (and not the stalker) as the frame began (Fiona_Update) ----
 create ap-at /vec allot
 variable stalker-apart   \ (the stalker out of contact, as he tells it - his +0x2A: through a door, on a ladder)
-: overlaps? ( id -- flag )  dup 0< if  drop false exit  then  self swap 0e 0e bodies-touching? ;
 : touching ( -- n )   \ (Fiona_Touching: 2 the stalker, 1 Hewie, 0 neither)
-    stalker-in-room overlaps? if  2 exit  then  dog-in-room overlaps? 1 and ;
+    stalker-in-room touching? if  2 exit  then  dog-in-room touching? 1 and ;
 : push-from ( id -- )
     {: him :}
     her-at v.x sf@ him body-at v.x sf@ f-  her-at v.z sf@ him body-at v.z sf@ f-  {: F: dx dz :}   \ (from him to her)
@@ -116,9 +115,9 @@ variable stalker-apart   \ (the stalker out of contact, as he tells it - his +0x
 : keep-apart ( touched-hewie? -- )   \ (in the run, not out of Hewie)
     her-mode @ own-mode <>  her-scripted @ or if  drop exit  then
     her-apart @ or if  touching 0= if  0 her-apart !  then  exit  then   \ (clear of both: in contact again)
-    stalker-in-room dup overlaps?  stalker-apart @ 0= and if  push-from exit  then  drop
+    stalker-in-room dup touching?  stalker-apart @ 0= and if  push-from exit  then  drop
     hewie-played? if  exit  then
-    dog-in-room overlaps? if  out-of-hewie  then ;
+    dog-in-room touching? if  out-of-hewie  then ;
 
 \ ---- her feet on the floor (Fiona_AnimUpdate: her model's +0x40 and +0x4C, the engine's legs-fit
 \ - humanlegs.c): each frame she is on her feet (+0x1AD5BC) but in the states that clear it -

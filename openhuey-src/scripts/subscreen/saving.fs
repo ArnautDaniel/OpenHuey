@@ -5,7 +5,7 @@
 \ says so a moment and the menu closes. (The original's memory card screens are its own; this is
 \ hga's: its saves are files - saves.fs.)
 IN: subscreen.saving
-USING: engine actors messages keys saves subscreen.state subscreen.art subscreen.input ;
+USING: engine actors messages keys common saves subscreen.state subscreen.art subscreen.input ;
 
 \ where a save is made (D_00412800: room, map -> its place's name, the menu's messages $300..;
 \ none known: "No Data")
@@ -26,10 +26,9 @@ $85 constant no-data
 
 \ the time played as hh:mm:ss
 create clock 8 allot
-: two ( n at -- )  >r  10 /mod [char] 0 + r@ c!  [char] 0 + r> 1+ c! ;
 : clock$ ( frames -- addr len )
-    30 /  dup 3600 / 99 min clock two  [char] : clock 2 + c!
-    dup 60 / 60 mod clock 3 + two  [char] : clock 5 + c!  60 mod clock 6 + two  clock 8 ;
+    30 /  dup 3600 / 99 min clock two-digits  [char] : clock 2 + c!
+    dup 60 / 60 mod clock 3 + two-digits  [char] : clock 5 + c!  60 mod clock 6 + two-digits  clock 8 ;
 
 : start-saving ( -- )  0 save-at !  0 save-step !  0 save-t ! ;
 : write-here ( -- )   \ (her room and map: where it is made)

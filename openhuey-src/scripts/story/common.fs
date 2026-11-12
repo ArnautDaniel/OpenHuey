@@ -10,8 +10,6 @@ USING: engine game-state actors messages common vectors facts flag-names story-n
 \ ---- where they are to each other ----
 : touching? ( a b -- flag )   \ close by b's own margins (its radius across, its height up: conds 0x47 / 0x58)
     {: a b :}  a here? b here? and 0= if  false exit  then  b body-dims  a b bodies-touching? ;
-: on-flags? ( id flags -- flag )   \ standing on a triangle with any of these flags
-    over here? 0= if  2drop false exit  then  swap body-tri dup 0< if  2drop false exit  then  nav-flags and 0<> ;
 : face-toward ( id who -- )  dup here? 0= if  2drop exit  then  body-pos fswap fdrop  turn-to-xz ;
 : head-on ( who frames -- )   \ her head on who for so many frames
     over 0< if  2drop exit  then  fiona send look-hold ;
@@ -58,7 +56,7 @@ $23 constant drink-sound   $2D constant crouch-recovery
 : crouching ( -- )
     may-crouch? 0= if  exit  then
     chased?  tremor-warned-2 fact? 0= and  70e noticed-near? and if  stalker 30 head-on exit  then   \ (found and near him: she only looks)
-    fiona low-floor on-flags? if  ['] ducks  else  ['] crouches  then  start drop ;
+    fiona low-floor on-floor-of? if  ['] ducks  else  ['] crouches  then  start drop ;
 
 \ ---- the rest of what every room does each frame ----
 : stalker-watched ( -- )   \ (half hidden: the camera on him)

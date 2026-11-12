@@ -107,12 +107,12 @@ defer next-move ( -- )
     then ;
 \ (his move's key, the blow: read a frame back - Pursuer_StateAttackStep's and StateAttackActive's
 \ Motion_EventFlags(-1) - so his arm is a frame further on as it strikes)
-: key? ( -- flag )  my-model @ 0 -1 1 motion-events 2 and 0<> ;
+: blow-key? ( -- flag )  my-model @ 0 -1 1 motion-events 2 and 0<> ;
 : striking ( -- )
     ended? if  held-off-after  combo-over exit  then
     mv-turns? if  quarry body-at turn-rate turn-to fdrop  then
     freeze-t @ 0= if  root-move  then
-    key? if  strike exit  then
+    blow-key? if  strike exit  then
     swung @ swinging <> if  exit  then
     took @ 1 and 0=  at-dog @ 0= and if  mv-threat 2e f/ threat  then   \ (missed her: half its fright)
     combo-step @ 1+ move-at -1 <>  d-quarry 50e f< and  d-quarry f0< 0= and if
@@ -123,7 +123,7 @@ defer next-move ( -- )
 \ (the grip: the move's bone number); at its end held off by his rests' third (Debilitas 30) if it
 \ held her, and the next move
 : holding ( -- )
-    key?  sent @ 0= and  world-held state-flag? 0= and if
+    blow-key?  sent @ 0= and  world-held state-flag? 0= and if
         fiona here? if  d-fiona f@ mv-reach f<  d-fiona f@ f0< 0= and if
             hold-request  mv-bone  mv-threat f>cell  fiona send hit  -1 sent !
         then  then

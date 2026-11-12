@@ -46,8 +46,7 @@ create flames  -0.5e f, 18.5e f, -35.5e f,   9.5e f, 18.5e f, -35e f,   4.8e f, 
 
 \ ---- the plates: who stands on them; pressed in, or up ----
 create plate-tris  $89 , $B1 ,  $90 , $B2 ,  $97 , $B3 ,  $83 , $B0 ,
-: on-tri? ( id tri -- flag )  over here? 0= if  2drop false exit  then  swap body-tri = ;
-: on-plate? ( id p -- flag )  {: id p | a :}  p 2* cells plate-tris + to a  id a @ on-tri?  id a cell+ @ on-tri? or ;
+: on-plate? ( id p -- flag )  {: id p | a :}  p 2* cells plate-tris + to a  id a @ stands-on?  id a cell+ @ stands-on? or ;
 : plate-held? ( p -- flag )  {: p :}  fiona p on-plate?  hewie p on-plate? or  stalker p on-plate? or ;
 : plate ( p -- addr len )  this-room @ story.strings:room-string ;
 : plate-moves ( p -- )   \ (down 0.2 a frame to -0.7 while held - a sound as it starts - else up to 0)

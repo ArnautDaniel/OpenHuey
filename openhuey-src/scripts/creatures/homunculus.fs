@@ -136,7 +136,6 @@ fvariable rm-turn  fvariable rm-x  fvariable rm-y  fvariable rm-z
 \ there, turned to it, walking there, then turned to her ----
 enum: approach#  setting-off seeking-spot turning-to-spot walking-to-spot turning-to-her ;
 fvariable try-turn
-: turn-of ( k -- ) ( F: -- a )  dup 8 > if  8 - negate  then  s>f 0.3925e f* ;   \ (D_0042C650)
 : spot-try ( i -- found? )   \ before or behind her, turned by the last try's turn, reachable
     2 mod if  -1e  else  1e  then  target-d f@ 16 random s>f f+ f*  0e fswap try-turn f@ rotate-by   ( F: dx dz )
     her-at v.z sf@ f+  target v.z sf!  her-at v.x sf@ f+  target v.x sf!  her-at v.y sf@ target v.y sf!

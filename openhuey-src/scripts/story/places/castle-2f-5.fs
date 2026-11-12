@@ -107,17 +107,16 @@ $E constant first-fragment   11 constant #fragments   \ (its objects a_fragment0
 
 \ ---- hiding under the bed (the bedroom's); Daniella coming in while she hides: she searches ----
 : hides ( -- )  ['] noop ['] noop hide-under-bed ;
-: her-looker? ( -- flag )  st-kind-now @ dup daniella-kind = swap kind34-kind = or ;   \ (Daniella, as she comes)
 : looks-under ( -- )   \ (Daniella bends down to look under it - her hair over her back - the others see her)
     stalker-to-bed
-    her-looker? if  stalker use-motions  1 her-back  stalker room-motion play  0 her-back
+    daniella-here? if  stalker use-motions  1 her-back  stalker room-motion play  0 her-back
     else  stalker stalker.anims:there-anim play  then
     -1 found-her !  stalker 10 idle  begin  fiona held? while  yield  repeat  0 stalker-order ;
 : search-odds ( -- pct )   \ (by the story's variable 2: how often she has come)
     2 var@ case  2 of 25 endof  3 of 50 endof  >r 0 r>  endcase ;
 : stalker-came ( -- )
     came-on-her? 0= if  exit  then
-    her-looker? if  stalker looker-motions motions-for  then
+    daniella-here? if  stalker looker-motions motions-for  then
     search-odds chance?  2 creature-moving? or if  ['] looks-under start drop  else  120 summoner-sooner  then
     2 var@ 1+ 2 var! ;
 

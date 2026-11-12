@@ -951,9 +951,6 @@ $10 constant turn-x   $18 constant turn-z   $20 constant place-x
 \ ---- dials: an object turned by the stick to a number (0..6, 30 degrees each from its base) kept in
 \ a progress variable; turned a degree a frame to it (room_dial: the castle's moon dials) ----
 create arrows-held 4 cells allot   \ (frames each arrow has been held: the pad's repeat)
-: arrow-keys ( i -- k1 k2 )   \ 0 up, 1 right, 2 down, 3 left (the arrows, or WASD)
-    case  0 of  key: Up key: W  endof  1 of  key: Right key: D  endof  2 of  key: Down key: S  endof
-          >r key: Left key: A r>  endcase ;
 : count-arrows ( -- )   \ (a frame's: how long each arrow has been held)
     4 0 do  i cells arrows-held +  i arrow-keys key-down? swap key-down? or if  1 swap +!  else  0 swap !  then  loop ;
 : arrow-repeat? ( i -- flag )   \ (pressed, then again after 12 frames held, every 2: gMenuRepeat)

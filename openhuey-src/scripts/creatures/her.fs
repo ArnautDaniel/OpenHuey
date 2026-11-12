@@ -13,6 +13,9 @@ USING: engine game-state actors facts flag-names floor-flags ;
 : charmed? ( -- flag )  $8D 3 wearing? ;   \ (keeps the spirits away)
 
 \ ---- a split room: a and b on either side of the divider ----
-: half ( tri -- h )  dup 0< if  drop 0 exit  then  nav-flags both-halves and ;
 : across-divider? ( a b -- flag )
-    half swap half  2dup <>  rot 0<> and  swap 0<> and ;
+    tri-halves swap tri-halves  2dup <>  rot 0<> and  swap 0<> and ;
+
+\ ---- a spot by her turned by its try's k (D_004167A0; CreatureB's D_0042C650 the same): k x pi/8
+\ one way up to 8, then (k - 8) the other ----
+: turn-of ( k -- ) ( F: -- a )  dup 8 > if  8 - negate  then  s>f 0.3925e f* ;

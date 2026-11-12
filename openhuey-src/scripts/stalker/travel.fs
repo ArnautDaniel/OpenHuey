@@ -25,12 +25,6 @@ USING: engine game-state actors messages common facts flag-names paths vectors d
 \ ---- his route to a room (> 0 doors, 0 there, -1 none); the next door, its exit here ----
 : next-door ( -- door )  door-i @ doors-n @ < if  door-i @ cells doors + @  else  -1  then ;
 : door-exit ( door -- exit )  dup 0< if  exit  then  my-room door-exit-in ;
-\ Rooms_DoorTri: the door's triangle on a room's side - the original's own measure of the way
-\ to it (its number); -1 none
-: door-tri ( door room -- tri )
-    {: door room :}  door 0< if  -1 exit  then
-    door door-sides {: r0 e0 t0 r1 e1 t1 :}
-    r1 room = if  t1  else  r0 room = if  t0  else  -1  then then ;
 \ Npc_NodeDistance: from the door he came in by to the next one (each its triangle's number)
 : came-door ( -- door )  came-by @ dup 0< if  exit  then  my-room swap room-exit-door ;
 : stretch ( -- ) ( F: -- d )

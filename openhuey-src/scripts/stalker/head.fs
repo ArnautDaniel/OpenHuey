@@ -45,10 +45,6 @@ create eye /vec allot
     v v.y sf@ eye v.y sf@ f-  v eye vec-dist-xz fatan2
     eye v vec-heading yaw f- angle-wrap ;
 : rate ( F: -- r )  8e deg>rad ;   \ (vtable +0xA4: the family's and Debilitas's)
-: ease ( addr -- ) ( F: target step -- )
-    fabs {: a F: goal step :}
-    a f@ goal f- fabs step f<= if  goal a f! exit  then
-    a f@ goal f> if  a f@ step f-  else  a f@ step f+  then  a f! ;
 : look-ahead ( -- )  head-pitch 0e rate ease  head-yaw 0e rate ease ;      \ (Model_EaseTilt)
 : turn-only ( v -- )   \ (Pursuer_LookAt: the turn alone, small ones none; the tilt left)
     look-at  fswap fdrop  fdup fabs 0.05e f< if  fdrop 0e  then  head-yaw rate ease ;

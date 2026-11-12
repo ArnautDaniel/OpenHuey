@@ -89,7 +89,6 @@ $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)
 \ ---- hanging about her while she can't be reached (_StateHangAbout): a spot 10..25 before or
 \ behind her, turned at random, on a triangle not its own nor blocked; there, another ----
 create spot /vec allot   fvariable turn   fvariable off
-: turn-of ( k -- ) ( F: -- a )  dup 8 > if  8 - negate  then  s>f 0.3925e f* ;   \ (D_004167A0)
 : spot-at ( F: dx dz -- )   \ her place moved by (dx, dz)
     her-at v.z sf@ f+  spot v.z sf!   her-at v.x sf@ f+  spot v.x sf!   her-at v.y sf@ spot v.y sf! ;
 : spot-try ( i -- found? )
