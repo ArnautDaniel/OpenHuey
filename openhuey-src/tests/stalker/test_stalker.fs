@@ -173,7 +173,7 @@ s" fiona" actor-named body-tri  -500e her-y -500e tp  2 run-frames  debug:debili
 face  40e there
 T{ on-floor?  [: my-mode @  sees-fiona @ ;] his -> -1 0 -1 }T
 : dist-to-her ( F: -- d )  s" fiona" actor-named body-at  game:debilitas body-at vec-dist ;
-fvariable d0  dist-to-her d0 f!  90 run-frames
+fvariable d0  dist-to-her d0 f!  30 run-frames   \ (not long enough to reach her: no game over)
 T{ dist-to-her d0 f@ 5e f- f< -> -1 }T
 debug:debilitas-out  2 run-frames
 

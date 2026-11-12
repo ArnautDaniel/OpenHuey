@@ -333,7 +333,8 @@ create fs-a /vec allot  create fs-b /vec allot
 \ heading for her room - with no way there (Pursuer_PickExit: +0x16F4, Pursuer_ModesSearching then
 \ waits about, its clock 900) out by a way at random meanwhile; before 0.2.42 he sat routing every
 \ frame, heading for her for ever (her room's doors locked against stalkers, say)
-: heading ( -- )  head-for-her  no-way-to-her? if  waiting-about mode!  wander  then ;
+: heading ( -- )   \ (after her so: his lead trailing - ModesSearching's mode 0)
+    head-for-her  no-way-to-her? if  my-mode @ after-her = if  lead-trailing  then  waiting-about mode!  wander  then ;
 : head-home ( -- )
     own-a @ 0< if  wander-off exit  then
     own-a @ route! {: na :}
@@ -343,7 +344,7 @@ create fs-a /vec allot  create fs-b /vec allot
 : modes-away ( -- )
     down-waits? if  exit  then
     my-mode @ case
-        after-her of  heading  my-mode @ after-her = if  tick-down if  heading-for-her mode!  then  then  endof
+        after-her of  heading  my-mode @ after-her = if  tick-down if  heading-for-her mode!  lead-trailing  then  then  endof
         heading-for-her of  heading  endof
         searching of  route-over? if  away-search @ if  -1 away-search +!
                   else  hewie-played? if  next-to-hers? 0= if  -1 hunting-dog !  heading-for-her mode!  heading  then   \ (the run: nothing
@@ -390,7 +391,7 @@ create fs-a /vec allot  create fs-b /vec allot
     rnd 100e f* {: F: r :}
     r 60e f<= if  0 exit  then  r 80e f<= if  90 exit  then  r 90e f<= if  150 exit  then  240 ;
 : lead-dropped ( -- )
-    lead @  dup pull-hewie =  over 3 = or  over pull-noise = or  swap pull-fiona = or if  2 lead !  3 lead-alarm !  then ;
+    lead @  dup pull-hewie =  over 3 = or  over pull-noise = or  swap pull-fiona = or if  lead-trailing  then ;
 : after-her-gone ( -- )   \ (in the run Hewie gone: no wait - Pursuer_LeaveScreenEnding)
     my-mode @ after-her = if  avoid-clear  her-room route! drop  hewie-played? 0= if  follow-wait away-search !  then  exit  then
     my-mode @ held-off =  hewie-played? or if  exit  then

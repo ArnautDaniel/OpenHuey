@@ -278,7 +278,11 @@ played pulls him to it when it pulls at least as hard as the lead he follows (`p
 `pull-noise` 4, `pull-hewie` 1); a noise already in view is ignored; his alarm is kept at its
 highest (`saw-her` 7 .. `heard-hewie` 1). A new lead starts him: a jolt and his start animation
 played out (or 90 frames standing, crying $21), then on to it; seeing her, the $1601 gesture
-before the chase. Forgotten as he comes in, goes out or is set going. Beaten (+0xC4 2: knocked
+before the chase. Forgotten as he comes in, goes out or is set going, at what a lead led to (a new
+search: Pursuer_PlanToGoal / PlanWayOn), and down (Pursuer_ModesSearching). Losing her they are kept
+low, not forgotten (Pursuer_StanceStep / ModesSearching's mode 0): his clock out in her room 3, alarm 4
+(`lead-searching`); out of her sight - his clock out, no way to her, she gone by a door - 2, alarm 3
+(`lead-trailing`): Hewie's pull no longer draws him. (Before 0.2.50 losing her forgot them.) Beaten (+0xC4 2: knocked
 out of health) is told to the summoner in `stalker-status`; away from her 5 s, it takes him as
 beaten (kind 2).
 

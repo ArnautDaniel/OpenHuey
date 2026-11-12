@@ -5,7 +5,7 @@
 \ followed: to where she is, to the noise's spot (his search's one stop), to Hewie. One more
 \ alarming than his last makes him start: turned to it, his cry, a moment (90 frames), then on;
 \ seeing her anew, his "there". (A noise he can see is nothing: let be.) His
-\ leads are forgotten as a new search begins.
+\ leads are forgotten as a new search begins - losing her, kept low (stalker/search.fs `lead-searching`, `lead-trailing`).
 IN: stalker.leads
 USING: engine game-state actors messages common facts flag-names paths vectors rumble stalker.anims stalker.sounds stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.pursue ;
 

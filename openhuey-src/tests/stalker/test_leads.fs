@@ -3,7 +3,7 @@
 \ his search's one stop; her noise draws him to her; a weaker lead than his is let be. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_leads.fs
 IN: test-leads
-USING: tester engine game-state actors messages room-names game debug stalker stalker.state stalker.senses stalker.search stalker.leads ;
+USING: tester engine game-state actors messages room-names game debug stalker stalker.state stalker.senses stalker.search stalker.travel stalker.leads stalker.struck ;
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : her-tri ( -- tri )  s" fiona" actor-named body-tri ;
@@ -14,6 +14,12 @@ free-play  front-garden-2 room!  10 run-frames
 her-tri  -500e her-y -500e tp  2 run-frames      \ (her well out of his sight)
 debug:debilitas-tri  2 run-frames                 \ (him on the spot she was on)
 variable spot
+testing losing her (Pursuer_StanceStep / ModesSearching's mode 0): his clock out in her room - searching, his lead 3, alarm 4;
+testing ... out of her sight - heading for her room, 2 / 3; down - waiting about, his leads forgotten
+T{ [: gave-her-up  my-mode @  lead @  lead-alarm @ ;] his -> 2 3 4 }T
+T{ [: after-her mode!  1 mode-t !  modes-away  my-mode @  lead @  lead-alarm @ ;] his -> 1 2 3 }T
+T{ [: down-cond cond !  searching mode!  down-waits? drop  my-mode @  lead @  lead-alarm @  well-cond cond ! ;] his -> 3 0 0 }T
+[: self body-tri ;] his  debug:debilitas-out  2 run-frames  debug:debilitas-tri  2 run-frames   \ (afresh on his spot)
 testing a noise in his room (one of the world's): he starts - turned to it, a moment - and it is his search's one stop
 : noise-at ( tri source -- )  >r >r $40 room-id r> -1 r> game:acoustics send noise ;
 [: self body-tri ;] his spot !
