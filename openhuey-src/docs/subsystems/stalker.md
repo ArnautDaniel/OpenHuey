@@ -307,12 +307,15 @@ loudness was meant to grow; it is always full.)
 Pursuer_Pace): held off (mode 4), he heads for the nearer of his own rooms by route (Debilitas
 castle-2f-2 $20 - its spot triangle 796: kDebilitasRoomSpots; kind 6 that and castle-1f-2 $02 -
 794: D_0041BE40; the rest none) and, out
-of sight there, travels no further while it lasts. Coming into play there held off - in by a door
-(Pursuer_EnterRoom's action $26) or she coming in (Pursuer_ShowUp's 4) - he stands, no state of
-those actions' own; in by a door, his route is set on past it to the room's Table3C room
-(Npc_PlanToRoomObject: `exit-goal`, stalker/spots.fs). Giving up there he walks to its spot
-(Debilitas_GivesUp's PickDestination: Debilitas_GoTo); on home there after a blow he stands
-(Debilitas_CarryOn picks nowhere in his own rooms). Before 0.2.50 he walked to the spot each time.
+of sight there, travels no further while it lasts. Coming into play there held off by a door
+(Pursuer_EnterRoom's mode 4: Debilitas_GoForFiona with action $26, Pursuer_OnToNextExit) he walks on
+to the next exit - the first of his route to the room's Table3C room (Npc_PlanToRoomObject:
+`exit-goal`, stalker/spots.fs), else one at random on his side but the one he came by - and there,
+not out by it in his own room, to its spot (Debilitas_HeadingStep: action $25, Pursuer_FollowPathExit).
+She coming in (Pursuer_ShowUp's action 4), giving up there (Debilitas_GivesUp's PickDestination:
+Debilitas_GoTo) or on as before after a blow (Pursuer_PickStep's mode 4): to its spot. (The action
+table's states are the actor's own methods - $26 its vtable +$250 -, not none: the first 0.2.50
+reading had him stand.)
 (The summoner takes him: 5 s held off away from her.)
 
 **P4b - Daniella** (src/game/daniella.c; her vtable differs from Debilitas's in about 45
@@ -690,8 +693,13 @@ along her hand, Riccardo's heavy blow at her herself); Riccardo's table picks by
 floor he may stand on (`Pursuer_KeepOnWalkable`). `Pursuer_BehaviourFollow` is `BehaviourStalk` with
 the way after her through the doors - ours `pursue-run` with `after-her-elsewhere`: no difference found.
 
-*Not ported*: `Pursuer_DoorNear`'s cases for a door between the halves of one room and for him
-already down (action $11);.
+Down in the way of a held door (`Pursuer_DoorNear`'s move part $A: action $11 - Pursuer_DoorWalk,
+DoorPushThrough, Door214): where it leads out of the room it pushes him as it swings (3 a frame, away
+from her side) and, let go, he is through it lying as he was; between the room's halves he lies on
+(`door-on-him?`, since 0.2.50).
+
+*Not ported*: `Pursuer_DoorNear`'s case for a door between the halves of one room while he stands
+(out of contact, +0x2B).
 
 ### Read again, 2026-11 (0.2.42)
 

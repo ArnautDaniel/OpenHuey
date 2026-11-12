@@ -159,14 +159,15 @@ defer at-exit ( -- )
 \ came in by drawn first, drawn once more ----
 create re-list 8 cells allot
 : my-side ( exit -- way )  my-room swap 1 exit-way ;
-: random-exit ( -- exit | -1 )
-    0 {: n :}
+: random-exit-but ( skip -- exit | -1 )   \ (not `skip`: -1 skips none)
+    0 {: skip n :}
     8 0 do
         came-by @ 0< if  true  else  i my-side came-by @ my-side =  then
-        i usable? and if  i n cells re-list + !  n 1+ to n  then
+        i usable? and  i skip <> and if  i n cells re-list + !  n 1+ to n  then
     loop
     n 0= if  -1 exit  then
     n s>f rnd f* f>s n 1- min cells re-list + @ ;
+: random-exit ( -- exit | -1 )  -1 random-exit-but ;
 \ off stage, waiting about (Pursuer_IntoRoomByEvent, not after her nor planned: Pursuer_PlanWhere's
 \ mode 3): his route to the room past such an exit; none, to the room past the one he came by
 : route-at-random ( -- )
@@ -183,6 +184,20 @@ create re-list 8 cells allot
     came-by @ dup 0< if  drop search-again exit  then   \ (no way to it: by the door he came in by - Pursuer_PlanWhere's mode 3)
     out-by if  -1 wandering-out !  else  search-again  then ; is leave-at-random
 :noname ( -- )  let-door-go  out-over ; is out-cancelled
+
+\ ---- held off into one of his own rooms by a door (Pursuer_EnterRoom's mode 4: Debilitas_GoForFiona,
+\ action $26 - Pursuer_OnToNextExit): on to the first exit of his route there (set by the room's
+\ Table3C - Npc_PlanToRoomObject), else one at random on his side but the one he came by
+\ (Npc_RandomExit: none, that one); there, not out by it in his own room but to its spot
+\ (Debilitas_HeadingStep: action $25 - Pursuer_FollowPathExit, Debilitas_PickDestination) ----
+: past-the-exit ( -- )  keep-way 0= if  to-own-spot exit  then  walk-stride if  to-own-spot  then ;
+:noname ( -- )
+    making-for @  -1 making-for !
+    dup 0< if  drop  came-by @ random-exit-but  dup 0< if  drop came-by @  then  then
+    dup 0< if  drop to-own-spot exit  then
+    dup 2 exit-spot aim-at if  drop
+    else  0 exit-spot aim-at 0= if  to-own-spot exit  then  then
+    mode-walk play  ['] past-the-exit step! ; is on-to-next-exit
 
 \ ---- the run (Hewie played): after her while she is in another room, out by the first door of
 \ his way to it (Pursuer_BehaviourFollow's 0x27 / 0xE: to the exit, through it) ----

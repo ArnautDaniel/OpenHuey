@@ -102,8 +102,9 @@ defer lying-on ( -- )   ' noop is lying-on   \ down, coming into view: lying, hi
 defer fell-in-view ( -- )   ' noop is fell-in-view   \ down only just: his fall shown (stalker/struck.fs)
 defer bite-let-go ( anim -- )   ' drop is bite-let-go   \ Hewie on him as she left: his letting go (stalker/bitten.fs)
 defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home - stalker/struck.fs)
+defer on-to-next-exit ( -- )   ' noop is on-to-next-exit   \ (held off into his own room by a door - stalker/doorway.fs)
 \ in one of his own rooms, on screen: to its spot (Debilitas_PickDestination there - his giving up
-\ in it, on home there: Debilitas_GoTo)
+\ in it, on home there, she coming in: Debilitas_GoTo; Pursuer_ShowUp's action 4 on to it)
 : to-own-spot ( -- )
     my-path path-clear
     own-tri dup goal-tri !  dup tri-center goal-at vec!  goal-at plan 0> if  walk-slow play  ['] walking step!  else  stand  then ;
@@ -117,8 +118,7 @@ defer off-home ( -- )   ' noop is off-home   \ (held off: on out by his way home
     away-search @ {: left :}
     0 hunting-dog !  0 away-search !  0 out-going !  -1 anim !  still-anim play-now  my-path path-clear
     hewie-played? my-mode @ dup after-her = swap heading-for-her = or and if  150 run-pause !  then
-    held-home? if  stand exit  then   \ (held off in his own room he stands: Pursuer_EnterRoom's action $26, ShowUp's 4 - no state of theirs)
-    my-mode @ held-off = if  off-home exit  then
+    my-mode @ held-off = if  off-home exit  then   \ (in his own room: to its spot)
     my-mode @ after-her = if  chase-start exit  then
     my-mode @ searching waiting-about 1+ within if  left search-left exit  then
     my-mode @ heading-for-her = if  searching mode!  then
@@ -146,8 +146,8 @@ defer to-door-on-entry ( exit -- )   ' drop is to-door-on-entry
     8 0 do  i exit-area dup 0 area-count within if  my-at vec@ area-in? if  true unloop exit  then  else  drop  then  loop  false ;
 : walk-in ( -- )   \ (come in: marked if onto an exit's spot - Pursuer_EnterRoom's Character_MarkObjects)
     0 entering !  on-exit-spot? if  -1 exit-marked !  then
-    held-home? if   \ (held off into his own room: no walk in - there, his route on past it set, the room's
-        came-by @ my-room exit-goal  dup 0< if  drop  else  route! drop  then  come-into-play exit   \ Table3C: Npc_PlanToRoomObject)
+    held-home? if   \ (held off into his own room: no walk in - on to the next exit, his route past it the room's
+        come-into-play  came-by @ my-room exit-goal  dup 0< if  drop  else  route! drop  then  on-to-next-exit exit   \ Table3C)
     then
     in-tri @ 0< if  come-into-play exit  then
     goal-at in-at vec-copy  in-tri @ dup goal-tri !  goal-at plan 0> 0= if   \ (no way in yet - the door still

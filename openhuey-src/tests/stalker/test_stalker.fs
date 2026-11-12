@@ -460,11 +460,15 @@ testing ... in his own room (castle-2f-2): held off there, on in the room - not 
 : tri-she-is-on ( -- tri )  s" fiona" actor-named body-tri ;
 true blind  castle-2f-2 room!  20 run-frames  castle-2f-2 $30A struck-to-give-up  90 run-frames   \ (on floor of his own: hers there is barred to him - he would be put off it, Pursuer_KeepOnWalkable)
 T{ [: my-mode @  stalker.state:step @ ['] flinching =  making-for @ ;] his -> 4 0 -1 }T
+testing ... and on as before after another blow there: to its spot (Pursuer_PickStep's mode 4: action 4, then $25)
+T{ [: 0 reeling !  on-as-before  goal-tri @ own-tri = ;] his -> -1 }T
 debug:debilitas-out  2 run-frames
-testing ... held off, in by a door of his own room (castle-2f-2's exit 3): he stands where he came in, his
-testing ... route on past it to the room's Table3C room ($22: Pursuer_EnterRoom's action $26, Npc_PlanToRoomObject)
+testing ... held off, in by a door of his own room (castle-2f-2's exit 3): on to the next exit, his route past
+testing ... it to the room's Table3C room ($22: Pursuer_EnterRoom's action $26 - Pursuer_OnToNextExit,
+testing ... Npc_PlanToRoomObject), then not out by it but to the room's spot (action $25)
 castle-2f-2 room!  20 run-frames  tri-she-is-on debug:debilitas-tri  5 run-frames
-T{ [: held-off mode!  3 came-by !  stalker.travel:walk-in  goal-room @  stalker.state:step @ ['] noop = ;] his -> $22 -1 }T
+T{ [: held-off mode!  3 came-by !  stalker.travel:walk-in  goal-room @  stalker.state:step @ ['] past-the-exit = ;] his -> $22 -1 }T
+T{ [: [: goal-tri @ own-tri = ;] his ;] 600 soon  [: my-room ;] his -> -1 castle-2f-2 }T
 debug:debilitas-out  2 run-frames
 testing ... held off at a door of his way home he can't line up at (castle-1f-2's exit 1, from the
 testing ... hall's far side): Debilitas after her again (his HeadingStep's failure: Pursuer_GoForFionaStance0)
@@ -500,6 +504,15 @@ T{ [: my-room ;] his  30 run-frames  [: my-room ;] his = -> -1 }T   \ (not trave
 [: 100 down-t ! ;] his  [: my-room ;] his room!  10 run-frames
 T{ [: away?  anim @  stalker.state:step @ ['] downed = ;] his -> 0 $1802 -1 }T
 T{ [: [: cond @ well-cond = ;] his ;] 400 soon -> -1 }T
+debug:debilitas-out  front-garden-2 room!  10 run-frames
+testing ... down in the way of a door that leads out, held: it has him (Pursuer_DoorNear's move part $A, action
+testing ... $11); let go, he is through it, down as he was (Pursuer_Door214)
+s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
+[: 0 hp !  room-id d-at v-tri d-at vec@ body-place  0e body-turn  knock-down ;] his  2 run-frames
+door0 held-bit set-bits  2 run-frames
+T{ [: push-exit @  away? ;] his -> 0 0 }T
+door0 held-bit clear-bits  2 run-frames
+T{ [: away?  cond @ down-cond =  push-exit @ ;] his -> -1 -1 -1 }T
 debug:debilitas-out  front-garden-2 room!  10 run-frames
 testing ... off screen behind the door he makes for (Pursuer_HitOffscreen kind 5): its damage counted toward his
 testing ... giving up; health left, stunned 60..120 frames; out of health, down there; not again while stunned or down
