@@ -28,6 +28,7 @@ $10 constant killed-msg       \ "I-I could have been killed... I guess fate was 
 $11 constant not-moving-msg   \ "He's not moving... I-I think he's dead..."
 
 \ ---- its own state (a visit) ----
+own: hit-1-his  own: hit-2-his   \ (the stand's blow being taken: his, else hers)
 own: pulley-remarked   own: chandelier-remarked
 own: met               \ his coming made, this visit
 own: strength-1  own: strength-2   \ the stands' strength (25: broken at 0)
@@ -100,14 +101,16 @@ $28 constant chapel-door   $11 constant far-door   0 constant fallen-floor
         stand-2 object-hide  stand-2-part show-part  cb1-6-flag5 fact!  break-sound 10e 10e 40e room-sound
     else  hit-sound 10e 10e 40e room-sound  then
     ['] swinging-2 stop-doing  ['] swinging-2 start drop ;
-: stands-struck ( -- )   \ (a blow in its place - his, else hers)
-    cb1-6-flag4 fact? 0= if
-        stalker 10e 0e -37e 7e 20e blow-in? if  true stand-1-struck
-        else  fiona 10e 0e -37e 7e 20e blow-in? if  false stand-1-struck  then  then
+: hit-1 ( -- )  hit-1-his @ stand-1-struck  20 frames ;   \ (acts 8, 9 on their tracks: 20 frames - a blow counts once)
+: hit-2 ( -- )  hit-2-his @ stand-2-struck  20 frames ;
+: stands-struck ( -- )   \ (a blow in its place - his, else hers - not while the last one's hit runs)
+    cb1-6-flag4 fact? 0=  ['] hit-1 running? 0= and if
+        stalker 10e 0e -37e 7e 20e blow-in? if  -1 hit-1-his !  ['] hit-1 start drop
+        else  fiona 10e 0e -37e 7e 20e blow-in? if  0 hit-1-his !  ['] hit-1 start drop  then  then
     then
-    cb1-6-flag5 fact? 0= if
-        stalker 10e 0e 37e 7e 20e blow-in? if  true stand-2-struck
-        else  fiona 10e 0e 37e 7e 20e blow-in? if  false stand-2-struck  then  then
+    cb1-6-flag5 fact? 0=  ['] hit-2 running? 0= and if
+        stalker 10e 0e 37e 7e 20e blow-in? if  -1 hit-2-his !  ['] hit-2 start drop
+        else  fiona 10e 0e 37e 7e 20e blow-in? if  0 hit-2-his !  ['] hit-2 start drop  then  then
     then ;
 
 \ ---- the scenes ----

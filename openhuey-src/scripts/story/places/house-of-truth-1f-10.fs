@@ -45,7 +45,7 @@ $24 constant searches-var   $803 constant crouch-step   $207 constant hauled-ste
         then
         hidden-calm  yield
     again ;
-: found-there ( -- )  stalker hold  $11F -5 40.89e -25.76e finds-her-at ;
+: found-there ( -- )  stalker hold  stalker wait-move  $11F -5 40.89e -25.76e finds-her-at ;
 : searched ( -- )   \ (he comes in on her hidden: the camera on him; found by the odds - his searches counted)
     stalker follow
     searches-var mansion-odds chance?  2 creature-moving? or if  ['] found-there start drop  else  120 summoner-sooner  then
@@ -57,7 +57,7 @@ $24 constant searches-var   $803 constant crouch-step   $207 constant hauled-ste
     fiona reach-out-anim play  4 frames  camomile ht1f-10-camomile camomile-fx takes-up  fiona reach-back-anim play ;
 : spots ( -- )
     fiona hiding-area in-area?  fiona 0 60 heading? and if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
     fiona clock-area in-area?  fiona 180 50 heading? and if  ['] save-clock calm-hewie-up offer  then
     fiona hole-area in-area?  fiona 0 50 heading? and if  hole-msg 60e 55e hole-offer  then

@@ -109,6 +109,16 @@ Butterflies_SetParams) and play a sound where they wander about now (`effect-sou
   **Fire** (64 flames at one of the old mansion B1's spots), **Room66Effect** (`steam-new`: white
   puffs and a glow), **FloorGlow** (a pool and a cone of light, white fading to nothing:
   `Sprite.shaded`, its corners' own colours).
+- **Effect726E0** (`strand-new`: a powdered stalker's strands - his clouds, Effect79FF0, start
+  them, stalker.md): up to 4 segments grown one from another down a chain of four of his bones (8
+  chains by his kind, D_00429850 ..), turned -45 +- 5 degrees about z and moved on their length,
+  every 4 frames aimed down the next pair; two crossed quads each of a random cell; fading 8..15 a
+  frame; an orange or white one's drop (**StrandSplash**, `drop-splash`) from the newest after
+  1..4 frames. StrandSplash is DropletFlash's code with its own sizes (0.1 x size + 0.3, slower
+  the bigger, pulled back 10..30%) and a white flash; both double their colour (0..127).
+- A fire's lasting sparks (Wisps, kind bit $8000) end once the room's effect slot 0 is empty -
+  whichever slot their fire is in (`room-effect0!`, told by the kit). A shot's smoke (BoneSmoke)
+  starts each wisp at the gun bone's point where it is then, drawn half a unit down.
 - **TvScreenA / B** (`tv-new`, castle 2F): last frame's picture, grey, at half size
   (`post_tv_want` / `post_tv_texture` in render/post.c) on the TV's screen while it is on - the
   room's scripts switch it each frame by story flag $300 (`effect-string` on its slot).
@@ -189,9 +199,24 @@ Untextured batches: group -1 (white). A batch can take a GPU texture of its own
 
 ## Status
 
-**Built** (S5b): the classes above. Not yet: the shards' and
-butterflies' PS2-only behaviour (a shard with a corner off screen not drawn; the butterflies' size
-factor, which scales a homogeneous point - no visible change - is left out). The butterflies shed
+**Built** (S5b): the classes above. Not yet: the butterflies' size factor, which scales a
+homogeneous point - no visible change - is left out. The butterflies shed
 no dust while an event's shot has the camera (the director's +0x38). The rooms' own (S5c) are built, with the glow pass, the effects'
 blooms, the shine and the reflections' side panels. Checked by `tests/story/test_effects.fs`; seen on screen: the
 torches of castle-1f-8, shards in castle-1f-14.
+
+**Read again, 2026-11 (0.2.47)**, both halves of `particles.c` against effects.c - put right: the
+lasting sparks' slot 0 rule; DropletFlash's colour doubled; the shot's smoke following the gun;
+the powdered stalker's strands (Effect79FF0 / Effect726E0, never ported) and the powders' drop
+splash; BloodSpray's texture (its count passed as the group); the marker's small flares (cell
+(192, 64), palette 3, blended), one flicker a spark, a pause wiping its sparks, Lorenzo's end
+scene on the second figure; drawn only wholly in view as the original checks
+(`SPRITE_WHOLE`: SplashRing, WallShadow, FloorGlow, the shaft's beam, ObjectGlow's disc and
+strips - a planet but the first wholly unless its disc is in view; the dial's flash and its bloom
+by `camera_out_of_view`; a shard, stone or piece of debris with a corner out of view); the glint
+in layer $26 marking the mask only; WispColumn (unless the stalker is kind $C, `pursuer-kind!`)
+and SparkSpray gone while a scene's shot has the camera; ObjectGlow's fade-out sound at the
+object and not in a shot; the bloom mask by its alpha (the GS writes the frame's alpha); the
+bursts' puffs gone under the floor beneath them, their rings turned by the camera then laid on
+the floor; the welling's fade-in mark. Matched: every other class number for number (the RNG is
+ours, so the draws differ).

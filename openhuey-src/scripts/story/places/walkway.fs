@@ -23,19 +23,20 @@ owns @ constant walkway-owns
 begin-structure /walkway
   field: wk.fact  field: wk.sign  field: wk.edge  holds: ( F: rad -- F: x z )  field: wk.file  field: wk.lever  field: wk.lever-face
   field: wk.out  field: wk.out-face  field: wk.home  field: wk.home-face  field: wk.out-end  field: wk.home-end
-  field: wk.side  field: wk.across-xt  holds: ( -- )  field: wk.stopped-xt  holds: ( -- )
+  field: wk.side  field: wk.her-exits  field: wk.across-xt  holds: ( -- )  field: wk.stopped-xt  holds: ( -- )
   ffield: wk.y  ffield: wk.lever-x  ffield: wk.lever-z  ffield: wk.out-x  ffield: wk.out-z  ffield: wk.home-x  ffield: wk.home-z
 end-structure
 : walkway: ( fact sign edge-xt file F: y "name" -- )   \ (edge-xt: ( F: rad -- x z ) its edge at that angle)
     create  here /walkway allot  {: f s e fl a F: y :}
     f a wk.fact !  s a wk.sign !  e a wk.edge !  fl a wk.file !  y a wk.y f!
-    -1 a wk.side !  ['] noop a wk.across-xt !  ['] noop a wk.stopped-xt ! ;
+    -1 a wk.side !  0 a wk.her-exits !  ['] noop a wk.across-xt !  ['] noop a wk.stopped-xt ! ;
 : lever-at ( wk tri face F: x z -- )  {: a t fc F: x z :}  t a wk.lever !  fc a wk.lever-face !  x a wk.lever-x f!  z a wk.lever-z f! ;
 : hewie-out ( wk tri face F: x z -- )  {: a t fc F: x z :}  t a wk.out !  fc a wk.out-face !  x a wk.out-x f!  z a wk.out-z f! ;
 : hewie-home ( wk tri face F: x z -- )  {: a t fc F: x z :}  t a wk.home !  fc a wk.home-face !  x a wk.home-x f!  z a wk.home-z f! ;
 : hewie-ends ( wk out-tri home-tri side -- )  {: a o h s :}  o a wk.out-end !  h a wk.home-end !  s a wk.side ! ;
 : when-across ( wk xt -- )  swap wk.across-xt ! ;     \ (the room's, as it's across the first time each turn)
 : when-stopped ( wk xt -- )  swap wk.stopped-xt ! ;   \ (the room's, once it has stopped)
+: her-exit-follows ( wk -- )  true swap wk.her-exits ! ;   \ (her exit set by its side: across exit 1, home 0 - room $C2's command 1)
 
 \ ---- its parts, floors, objects, sounds (the same in both rooms) ----
 0 constant across-floor   1 constant home-floor   2 constant walkway-floor   \ (nav groups: the floor turned across, at home; all of it)
@@ -63,6 +64,8 @@ end-structure
 : creak ( F: rad -- )  creak-sound keep-playing or  wk wk.edge @ execute  creak-at ;   \ (kept going, moved along)
 : eased ( F: -- deg )  turn-step @ s>f turn-frames s>f f/  180e f* 90e f-  deg>rad fsin 1e f+ 45e f* ;
 : angle ( F: -- deg )  turning-back @ if  90e eased f-  else  eased  then  wk wk.sign @ s>f f* ;
+: exit-follows ( -- )   \ (her exit the side it goes to - Character_ChooseExit: the pursuers make for that half)
+    wk wk.her-exits @ 0= if  exit  then  turning-back @ if  0  else  1  then  her-exit-is ;
 : walkway-moves ( -- )  angle deg>rad fdup walkway turn-y object!  creak ;
 : hewie-to-spot ( -- )   \ (an activity: Hewie walks to his spot on it, then waits there for the turn)
     hewie hold  hewie wait-move
@@ -83,7 +86,7 @@ end-structure
     then
     turning-back @ 0= dup walkway-floors  other-floor keeps-hewie-off floor-off
     across-floor kept-off floor-off  home-floor kept-off floor-off
-    walkway-at  wk wk.stopped-xt @ execute  0 turning ! ;
+    walkway-at  exit-follows  wk wk.stopped-xt @ execute  0 turning ! ;
 : lever-pulled ( motion obj -- )   \ (her pull, the lever's object shown moving with it)
     {: m obj :}  fiona room-motion m + 5 start-blend8  5 frames
     home-part hide-part  across-part hide-part  back-object object-hide  across-object object-hide
@@ -94,7 +97,7 @@ end-structure
     hewie-in?  hewie aboard on-group? and if  ['] hewie-to-spot start drop
     else  aboard keeps-hewie-off floor-on  -1 hewie-clear !  then
     fiona wait-move  things-id send clear-things
-    fiona wk wk.file @ motions-for  fiona wk wk.lever @ wk wk.lever-face @ wk wk.lever-x f@ wk wk.lever-z f@ walk-to  fiona use-motions
+    fiona wk wk.file @ motions-for  fiona wk wk.lever @ wk wk.lever-face @ wk wk.lever-x f@ wk wk.lever-z f@ walk-to  fiona use-motions  exit-follows
     turning-back @ if  back-motion back-object  else  across-motion across-object  then  lever-pulled
     25 frames  open-sound room-bank fiona sound-by  55 frames  shut-sound room-bank fiona sound-by  fiona wait-anim
     ['] turns start drop

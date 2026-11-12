@@ -12,7 +12,7 @@
 #define PI 3.14159265f
 #define MAX_PARTS 256   /* (most have 16; the blood spray 32, the rising smoke 64, the dust shaft 256) */
 
-enum { FLICKER, SPARKS, FLAME, SWARM, SPLASH, BURST, SHARDS, MOTE, BUTTERFLIES, SPIRIT, VANISH, WANDER, SPRAY, SPLAT, PUFFS, STONES, DEBRIS, SMOKE, DUST, SPIRAL, DRIPS, RING, DROPLETS, ONEDRIP, CEILDRIPS, MOTES, EMBERS, FLECKS, CHIMNEY, WALLSHADOW, FIRE, STEAM, FLOORGLOW, TV, BIGFIRE, SHAFT, GLINT, HAZE, CAUSTIC, GLOWSPOT, WISPCOL, SPARKSPRAY, HEAT, EMBERS2, LEAVES, LOOPSPRITE, OBJGLOW, RAIN, ASH, MARKER, WINDOWFLASH, SMOKETRAIL, MAGBURST, DROPFLASH, BONESMOKE, STRIKEMARK, SPARK2, SINKRING, WELLING };
+enum { FLICKER, SPARKS, FLAME, SWARM, SPLASH, BURST, SHARDS, MOTE, BUTTERFLIES, SPIRIT, VANISH, WANDER, SPRAY, SPLAT, PUFFS, STONES, DEBRIS, SMOKE, DUST, SPIRAL, DRIPS, RING, DROPLETS, ONEDRIP, CEILDRIPS, MOTES, EMBERS, FLECKS, CHIMNEY, WALLSHADOW, FIRE, STEAM, FLOORGLOW, TV, BIGFIRE, SHAFT, GLINT, HAZE, CAUSTIC, GLOWSPOT, WISPCOL, SPARKSPRAY, HEAT, EMBERS2, LEAVES, LOOPSPRITE, OBJGLOW, RAIN, ASH, MARKER, WINDOWFLASH, SMOKETRAIL, MAGBURST, DROPFLASH, BONESMOKE, STRIKEMARK, SPARK2, SINKRING, WELLING, STRAND };
 
 typedef struct Part {
     Vec3 at, v;
@@ -35,7 +35,7 @@ typedef struct System {
     int batch2, batch3;    /* (spirits: its colour and trail, its body; a vanishing: its sparks) -1 none */
     int batch4;            /* (the magnesias' bursts: their rings) -1 none */
     int owner;             /* -1: an actor's; else the system that made it (its own: ends with it) */
-    int ends_with_owner;
+    int ends_without_slot0;   /* (a flame's lasting sparks, kind bit 0x8000) gone once room effect 0 is */
     int engines;           /* the engine's (made by another): goes with the room */
     Vec3 at;
     int kind, command, timer, rest, slow, ended;
@@ -57,11 +57,17 @@ typedef struct System {
     int bob_n, period, burst, burst_n, saved_n;
     Vec3 trail[3];
     int trail_set, frames, shown, vanishing, seen, fade, red;
+    /* (a shot's mark, its smoke) where it comes from: an actor's bone point (-1 none: `at`) */
+    int src, src_bone;
+    Vec3 src_off;
 } System;
 
 static System sSys[PARTICLE_SYSTEMS];
+static int sLast = -1;   /* (tests) the system made last */
 static uint32_t sSeed = 0x2545F491u;
 static Vec3 sCamera;   /* (this tick's: the stones fade near it) */
+static int sSlot0;     /* the room's effect slot 0 holds one (RoomEffects_Get(0)) */
+static int sPursuerKind = -1;   /* the stalker in the game's kind (his +0x153C; -1 none), as the story tells */
 static void write(System *s);   /* (each part a camera-facing sprite) */
 
 /* ---- small things ---- */
@@ -118,7 +124,9 @@ static int new_system(int what, Vec3 at) {
             s->what = what;
             s->owner = -1;
             s->batch2 = s->batch3 = s->batch4 = -1;
+            s->src = -1;
             s->at = at;
+            sLast = i;
             return i;
         }
     }
@@ -218,7 +226,7 @@ static int sparks_new(int owner, Vec3 at, int kind) {
     look(s, 0x10, 1, -1, 0x6C, 0x4C, 8, 8, 1, 0x40);
     s->owner = owner;
     s->engines = 1;
-    s->ends_with_owner = (kind & 0x8000) != 0;
+    s->ends_without_slot0 = (kind & 0x8000) != 0;
     s->kind = kind;
     s->n = 4;
     for (i = 0; i < 4; i++) {
@@ -818,6 +826,17 @@ static void quad(Sprite *r, uint32_t rgba, const Vec3 c[4]) {
     }
 }
 
+static int box_off_screen(const Vec3 world[8]) {   /* (shards_draw: a box with a corner out of view not drawn) */
+    int c;
+
+    for (c = 0; c < 8; c++) {
+        if (camera_out_of_view(&gEngine.camera, world[c])) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static void shards_write(System *s) {   /* each box's six faces */
     static const uint8_t faces[6][4] = {{0, 1, 2, 3}, {1, 5, 3, 7}, {5, 4, 7, 6}, {4, 0, 6, 2}, {0, 1, 4, 5}, {6, 7, 2, 3}};
     Sprite *r = sprites_records(s->batch, -1);
@@ -834,6 +853,9 @@ static void shards_write(System *s) {   /* each box's six faces */
             Vec3 w = vec3(p->corner[c][0] * p->scale[0], p->corner[c][1] * p->scale[1], p->corner[c][2] * p->scale[2]);
 
             world[c] = vec3_add(turn_xyz(w, p->tturn[0], p->tturn[1], p->tturn[2]), p->at);
+        }
+        if (box_off_screen(world)) {
+            continue;
         }
         for (f = 0; f < 6; f++) {
             for (k = 0; k < 4; k++) {
@@ -953,6 +975,9 @@ static void stones_write(System *s) {
             Vec3 w = vec3(p->corner[c][0] * p->scale[0], p->corner[c][1] * p->scale[1], p->corner[c][2] * p->scale[2]);
 
             world[c] = vec3_add(turn_xyz(w, p->tturn[0], p->tturn[1], p->tturn[2]), p->at);
+        }
+        if (box_off_screen(world)) {
+            continue;
         }
         for (f = 0; f < 6; f++) {
             for (k = 0; k < 4; k++) {
@@ -1387,7 +1412,7 @@ static int ring_new(int owner, Vec3 at, uint32_t rgba, float grow) {
     }
     s = &sSys[h];
     sprites_texture(s->batch, -1, 0, -1);   /* (untextured) */
-    sprites_flags(s->batch, SPRITE_ADD | SPRITE_CORNERS, 0x19);
+    sprites_flags(s->batch, SPRITE_ADD | SPRITE_CORNERS | SPRITE_WHOLE, 0x19);   /* (SplashRing_Draw: only all of it in view) */
     s->owner = owner;
     s->engines = 1;
     s->n = 0;
@@ -1489,11 +1514,12 @@ static int droplets_step(System *s) {   /* DropletSpray_Update */
     return going;
 }
 
-/* ---- DropletFlash (Riccardo_Debris: the debris where his shot strikes): 32 droplets
+/* ---- DropletFlash (Riccardo_Debris: the debris where his shot strikes) and StrandSplash (a
+ * powder's burst, the powder strands' drops - its own sizes, a white flash): 32 droplets
  * in a colour flung out from a point - the bigger the slower, three times as fast up or down -
  * each slowed by its own pull and out once it has stopped rising or falling; they flicker; a
  * flash at the point on the first frame ---- */
-int particles_drop_flash(Vec3 at, int r, int g, int b) {
+static int drops_new(Vec3 at, int r, int g, int b, int strand, float size) {
     int h = new_system(DROPFLASH, at), i;
     System *s;
 
@@ -1510,21 +1536,40 @@ int particles_drop_flash(Vec3 at, int r, int g, int b) {
         sprites_flags(s->batch2, 0, 0x19);
     }
     s->n = 32;
+    s->colour = strand ? 0xC0C0C080u : 0x80504080u;   /* (the flash: white / reddish) */
     for (i = 0; i < s->n; i++) {
         Part *p = &s->p[i];
         float speed, k;
 
-        colour(p, clampi(r, 0, 0x7F), clampi(g, 0, 0x7F), clampi(b, 0, 0x7F), irnd(0x20) + 0x60);
+        colour(p, clampi(r * 2, 0, 0xFF), clampi(g * 2, 0, 0xFF), clampi(b * 2, 0, 0xFF), irnd(0x20) + 0x60);   /* (clamp_colour: 0..127 doubled) */
         p->at = at;
-        square(p, 0.2f + 0.4f * rnd());
-        p->turn = 0.0f;
-        p->frame = 0;
-        speed = 8.0f - 10.0f * p->w;
-        p->v = vec3(speed * half(), 3.0f * speed * half(), speed * half());
-        k = 0.2f + 0.3f * rnd();
+        if (strand) {   /* (StrandSplash: 0.1 x size .. +0.3, slower the bigger, pulled back 10..30%) */
+            square(p, 0.1f * size + 0.3f * rnd());
+            speed = 4.0f * size - 10.0f * p->w;
+            p->v = vec3(speed * half(), speed * half(), speed * half());
+            k = 0.1f + 0.2f * rnd();
+        } else {        /* (DropletFlash: 0.2 .. 0.6, three times as fast up or down, pulled back 20..50%) */
+            square(p, 0.2f + 0.4f * rnd());
+            speed = 8.0f - 10.0f * p->w;
+            p->v = vec3(speed * half(), 3.0f * speed * half(), speed * half());
+            k = 0.2f + 0.3f * rnd();
+        }
         p->pull = vec3_scale(p->v, -k);
     }
     s->timer = 0;
+    return h;
+}
+
+int particles_drop_flash(Vec3 at, int r, int g, int b) {
+    return drops_new(at, r, g, b, 0, 0.0f);
+}
+
+int particles_drop_splash(Vec3 at, int r, int g, int b, float size) {
+    int h = drops_new(at, r, g, b, 1, size);
+
+    if (h >= 0) {
+        sSys[h].engines = 1;
+    }
     return h;
 }
 
@@ -1566,10 +1611,10 @@ static void drop_flash_write(System *s) {
     r->y = s->at.y;
     r->z = s->at.z;
     r->w = r->h = 2.0f;
-    r->rgba[0] = 0x80;
-    r->rgba[1] = 0x50;
-    r->rgba[2] = 0x40;
-    r->rgba[3] = 0x80;
+    r->rgba[0] = (uint8_t)(s->colour >> 24);
+    r->rgba[1] = (uint8_t)(s->colour >> 16);
+    r->rgba[2] = (uint8_t)(s->colour >> 8);
+    r->rgba[3] = (uint8_t)s->colour;
 }
 
 /* ---- BoneSmoke (StrikeMark kind 2 -> BoneSmoke: the smoke off Riccardo's gun as it fires):
@@ -1585,7 +1630,14 @@ static void bone_smoke_wisp(Part *p, Vec3 at) {   /* BoneSmoke_Wisp */
     p->frame = 0;
     p->v = vec3(0.03f * half(), 0.0f, 0.03f * half());
 }
-int particles_bone_smoke(Vec3 at) {
+static Vec3 source(const System *s) {   /* (wisps_source / mark_points: the bone's point now) */
+    if (s->src >= 0 && s->src < MAX_ACTORS && gEngine.actors[s->src].used) {
+        return actor_bone_point(&gEngine.actors[s->src], s->src_bone, s->src_off);
+    }
+    return s->at;
+}
+
+int particles_bone_smoke(Vec3 at, int model, int bone, Vec3 off) {
     int h = new_system(BONESMOKE, at), i;
     System *s;
 
@@ -1594,7 +1646,12 @@ int particles_bone_smoke(Vec3 at) {
     }
     s = &sSys[h];
     look(s, 0x10, 1, -1, irnd(2) * 32, 0x40, 32, 32, 1, SPRITE_ADD);
+    sprites_offset(s->batch, 0.0f, -0.5f);   /* (half a unit down) */
     s->engines = 1;
+    s->src = model;
+    s->src_bone = bone;
+    s->src_off = off;
+    at = source(s);
     s->n = 16;
     for (i = 0; i < s->n; i++) {
         bone_smoke_wisp(&s->p[i], at);
@@ -1653,15 +1710,19 @@ static void strike_band_write(System *s) {
     quad(sprites_records(s->batch3, 1), 0x1B1B1B08u, q);   /* (grey $80 in the PS2's gamma: 0.21 linear, as we blend) */
 }
 
-int particles_strike_mark(Vec3 at, Vec3 back) {
-    int h = new_system(STRIKEMARK, at);
+int particles_strike_mark(int model, int bone, Vec3 off, Vec3 back) {
+    int h = new_system(STRIKEMARK, vec3(0, 0, 0));
     System *s;
-    Vec3 z, up;
+    Vec3 z, up, at;
 
     if (h < 0) {
         return -1;
     }
     s = &sSys[h];
+    s->src = model;
+    s->src_bone = bone;
+    s->src_off = off;
+    at = s->at = source(s);
     look(s, 0x10, 1, -1, 0x140, 0x80, 0x20, 0x20, 1, SPRITE_ADD | SPRITE_CORNERS);
     s->batch2 = sprites_new();
     if (s->batch2 >= 0) {
@@ -1691,7 +1752,7 @@ static int strike_mark_step(System *s) {   /* StrikeMark_Update */
     if (--s->timer > 0) {
         return 1;
     }
-    particles_bone_smoke(s->at);
+    particles_bone_smoke(s->at, s->src, s->src_bone, s->src_off);
     return 0;
 }
 
@@ -1721,7 +1782,7 @@ static int bone_smoke_step(System *s) {   /* BoneSmoke_Update */
     }
     if (s->timer < 16) {   /* (one more shown, at the point) */
         showing = 1;
-        bone_smoke_wisp(&s->p[s->timer], s->at);
+        bone_smoke_wisp(&s->p[s->timer], source(s));
         s->p[s->timer].rgba[3] = 1;
     }
     s->timer++;
@@ -2334,7 +2395,7 @@ int particles_wall_shadow(void) {
         return -1;
     }
     sprites_texture(sSys[h].batch, -1, 0, -1);   /* (untextured) */
-    sprites_flags(sSys[h].batch, SPRITE_CORNERS, 0x1E);
+    sprites_flags(sSys[h].batch, SPRITE_CORNERS | SPRITE_WHOLE, 0x1E);   /* (WallShadow_Draw: only all of it in view) */
     return h;
 }
 
@@ -2552,7 +2613,7 @@ int particles_floor_glow(void) {
         return -1;
     }
     sprites_texture(sSys[h].batch, -1, 0, -1);   /* (untextured) */
-    sprites_flags(sSys[h].batch, SPRITE_ADD | SPRITE_CORNERS, 0x19);
+    sprites_flags(sSys[h].batch, SPRITE_ADD | SPRITE_CORNERS | SPRITE_WHOLE, 0x19);   /* (FloorGlow_Draw: only all of it in view) */
     sSys[h].command = 0xFF;   /* (no level yet) */
     return h;
 }
@@ -2859,7 +2920,7 @@ int particles_light_shaft(void) {
     s->batch2 = sprites_new();   /* (the beam) */
     if (s->batch2 >= 0) {
         sprites_texture(s->batch2, 0, 8, -1);
-        sprites_flags(s->batch2, SPRITE_CORNERS, 0x19);
+        sprites_flags(s->batch2, SPRITE_CORNERS | SPRITE_WHOLE, 0x19);   /* (LightShaft_Draw: the beam only all of it in view) */
     }
     s->timer = (int)(4096.0f * rnd());   /* (the scroll, 1/16 texels) */
     s->tilt = 2.0f * PI * half();   /* (the haze's phases) */
@@ -3098,8 +3159,8 @@ int particles_glow(Vec3 at, uint32_t rgba, float size) {
 
 /* ---- WispColumn: a column of 64 wisps 20 across rising 5 a frame up the House of Truth's
  * middle from -20 to 60 and over again, turning; turned off (`particles_command` 0) their alpha
- * runs down from $10 and it ends. (The original also drops it at once in a cutscene unless the
- * stalker is kind $C: not here) ---- */
+ * runs down from $10 and it ends; gone at once while a scene's shot has the camera, unless the
+ * stalker is kind $C ---- */
 
 static void column_wisp(System *s, Part *p, int i, int stagger) {   /* WispColumn_Wisp */
     colour(p, 0x80, 0x80, 0x80, s->top);
@@ -3129,6 +3190,9 @@ int particles_wisp_column(void) {
 static int wisp_column_step(System *s) {   /* WispColumn_Update */
     int i;
 
+    if (sPursuerKind != 0xC && gCamDir.event) {
+        return 0;
+    }
     if (s->ended && --s->top <= 0) {
         return 0;
     }
@@ -3147,8 +3211,8 @@ static int wisp_column_step(System *s) {   /* WispColumn_Update */
 
 /* ---- SparkSpray: 64 sparks sprayed across the House of Truth from one side (0 the left, x -75;
  * else the right, x 75; 14 up) and down, each started in turn, growing, turning, fading and
- * sprayed again while on; turned off (`particles_command` 0) it ends once all have faded. (The
- * original drops it at once in a cutscene: not here) ---- */
+ * sprayed again while on; turned off (`particles_command` 0) it ends once all have faded; gone at
+ * once while a scene's shot has the camera ---- */
 
 static void spray_spark(System *s, Part *p, int i, int delayed) {   /* SparkSpray_Spark */
     float d = 2.0f + 6.0f * rnd(), a = -PI + 2.0f * PI * rnd(), sign = s->kind == 0 ? 1.0f : -1.0f;
@@ -3186,6 +3250,9 @@ int particles_spark_spray(int side) {
 static int spark_spray_step(System *s) {   /* SparkSpray_Update */
     int i, done = 1;
 
+    if (gCamDir.event) {
+        return 0;
+    }
     for (i = 0; i < s->n; i++) {
         Part *p = &s->p[i];
 
@@ -3643,12 +3710,13 @@ int particles_object_glow(Vec3 at, int idx) {
     }
     s = &sSys[h];
     sprites_texture(s->batch, -1, 0, -1);
-    sprites_flags(s->batch, SPRITE_ADD | SPRITE_CORNERS, 0x19);
+    sprites_flags(s->batch, SPRITE_ADD | SPRITE_CORNERS | SPRITE_WHOLE, 0x19);   /* (ObjectGlow_Draw: only all of each in view) */
     s->batch2 = sprites_new();   /* (the disc: into the bloom's mask) */
     if (s->batch2 >= 0) {
         sprites_texture(s->batch2, -1, 0, -1);
-        sprites_flags(s->batch2, SPRITE_MASK | SPRITE_CORNERS, 0x26);
+        sprites_flags(s->batch2, SPRITE_MASK | SPRITE_CORNERS | SPRITE_WHOLE, 0x26);
     }
+    s->c = at;   /* (the object: its sound there) */
     s->kind = idx;
     s->command = 1;
     s->top = 0;        /* (its alpha) */
@@ -3663,7 +3731,9 @@ static int object_glow_step(System *s) {   /* ObjectGlow_Update */
     if (s->command) {
         s->top = s->top < 0x40 ? s->top + 2 : 0x40;
     } else if ((s->top -= 2) <= 0) {
-        engine_sound_at(2, 6, vec3(s->at.x, s->at.y + 1.0f, s->at.z));
+        if (!gCamDir.event) {   /* (not while a scene's shot has the camera) */
+            engine_sound_at(2, 6, s->c);
+        }
         return 0;
     }
     s->floor += 2.0f;
@@ -3707,11 +3777,23 @@ static void object_glow_write(System *s) {   /* ObjectGlow_Draw */
             x->crgba[k][3] = (uint8_t)kStrip[k];
         }
     }
+    if (s->kind != 0) {   /* (the others: none of it unless the disc is all in view - its points, unseen, with the strips) */
+        for (i = 0; i < 4; i++) {
+            Vec3 q[4];
+
+            for (k = 0; k < 4; k++) {
+                float a = deg(22.5f * (float)(i * 4 + k));
+
+                q[k] = vec3(c.x + rad * sinf(a), c.y, c.z - rad * cosf(a));
+            }
+            quad(&r[n++], 0, q);
+        }
+    }
     sprites_records(s->batch, n);
 }
 
-/* ---- Glint: a glint on a character - a white sprite 1 across at its bone 6 (the old mansion
- * pool's fish $14) ---- */
+/* ---- Glint: a glint on a character - a sprite 1 across at its bone 6 (the old mansion pool's
+ * fish $14), in layer $26: it marks the bloom's mask, no colour of its own ---- */
 
 int particles_glint(int actor) {
     int h = new_system(GLINT, vec3(0, 0, 0));
@@ -3720,7 +3802,7 @@ int particles_glint(int actor) {
         return -1;
     }
     look(&sSys[h], 0x10, 1, -1, 0x20, 0x40, 0x20, 0x20, 1, 0);
-    sprites_flags(sSys[h].batch, 0, 0x26);
+    sprites_flags(sSys[h].batch, SPRITE_MASK, 0x26);
     sSys[h].kind = actor;
     return h;
 }
@@ -3747,7 +3829,7 @@ static void glint_write(System *s) {
  * two or three sparks start at the model's bones and drift off: each a glow and a flare quad,
  * growing, turning, fading 2 + up to 7 / size and darkening 1 / size a frame. The first kind:
  * a spark at any of 27 bones; the second: a few chosen bones, now and then one on a second
- * model (Fiona). `particles_command`: -1 done, -2 no sparks this frame, else its size in
+ * model (the scene's in slot 4). `particles_command`: -1 done, -2 no sparks this frame, else its size in
  * thousandths ---- */
 
 static const Actor *marker_model(int id) {
@@ -3768,10 +3850,11 @@ static Part *marker_free_part(System *s) {
 }
 
 /* one quad of a spark: white at `alpha`, `w` across, growing up to `grow` a frame, drifting `v`,
- * faded by `fade`, turning the way `way` points */
-static void marker_quad(System *s, Vec3 at, int alpha, float w, float grow, Vec3 v, float fade, float way, int flicker) {
+ * faded by `fade`, turning the way `way` points; `small` a small spark's flare (its own cell);
+ * flickering by k (the spark's: both its quads by one) */
+static void marker_quad(System *s, Vec3 at, int alpha, float w, float grow, Vec3 v, float fade, float way, int flicker, float k,
+                        int small) {
     Part *p = marker_free_part(s);
-    float k = rnd();
 
     if (p == NULL) {
         return;
@@ -3785,6 +3868,7 @@ static void marker_quad(System *s, Vec3 at, int alpha, float w, float grow, Vec3
     p->radius = grow;
     p->rise = fade;
     p->angle = way;
+    p->landed = small;
     if (flicker) {   /* (Spark_ToBone: dimmed, thrown and grown by a random amount) */
         colour(p, (int)(p->rgba[0] * k), (int)(p->rgba[1] * k), (int)(p->rgba[2] * k), (int)(p->rgba[3] * k));
         p->at = vec3_add(p->at, vec3_scale(v, 20.0f * k));
@@ -3796,7 +3880,7 @@ static void marker_quad(System *s, Vec3 at, int alpha, float w, float grow, Vec3
  * faint glow and a tiny rising flare */
 static void marker_spark(System *s, int id, int bone, float scale, int flicker) {
     const Actor *a = marker_model(id);
-    float size = s->c.x, fade = scale * size;
+    float size = s->c.x, fade = scale * size, k = flicker ? rnd() : 0.0f;
     Vec3 at, gv, fv;
 
     if (a == NULL) {
@@ -3809,14 +3893,14 @@ static void marker_spark(System *s, int id, int bone, float scale, int flicker) 
     if (size <= 0.49f) {
         gv = vec3(0.1f * half(), 0.1f, 0.1f * half());
         fv = vec3(0.1f * half(), 0.4f * (0.5f - fade), 0.1f * half());
-        marker_quad(s, at, 0x40, 1.0f + rnd(), 0.1f, gv, 1.0f, gv.x, flicker);
-        marker_quad(s, at, 0x80, 0.2f + 0.2f * rnd(), 0.2f, fv, 1.0f, gv.x, flicker);
+        marker_quad(s, at, 0x40, 1.0f + rnd(), 0.1f, gv, 1.0f, gv.x, flicker, k, 0);
+        marker_quad(s, at, 0x80, 0.2f + 0.2f * rnd(), 0.2f, fv, 1.0f, gv.x, flicker, k, 1);
         return;
     }
     gv = vec3(0.2f * half(), 0.25f, 0.2f * half());
     fv = vec3(0.1f * half(), 0.1f, 0.1f * half());
-    marker_quad(s, at, size < 1.0f ? (int)(0x80 * size) : 0x80, 0.5f + 0.5f * rnd(), 0.1f, gv, fade, gv.x, flicker);
-    marker_quad(s, at, size < 1.0f ? (int)(0x80 * size) : 0x80, 1.0f + rnd(), 0.2f, fv, fade, gv.x, flicker);
+    marker_quad(s, at, size < 1.0f ? (int)(0x80 * size) : 0x80, 0.5f + 0.5f * rnd(), 0.1f, gv, fade, gv.x, flicker, k, 0);
+    marker_quad(s, at, size < 1.0f ? (int)(0x80 * size) : 0x80, 1.0f + rnd(), 0.2f, fv, fade, gv.x, flicker, k, 0);
 }
 
 /* a frame's sparks (Marker_Sparks) */
@@ -3868,6 +3952,12 @@ int particles_marker(int model, int other, float size, int second) {
         sprites_cells(s->batch2, 0xA0, 0x40, 32, 32, 512, 256, 1);
         sprites_flags(s->batch2, SPRITE_ADD, 0x19);
     }
+    s->batch3 = sprites_new();   /* (small sparks' flares: (192, 64), palette 3, blended) */
+    if (s->batch3 >= 0) {
+        sprites_texture(s->batch3, 0x10, 1, 3);
+        sprites_cells(s->batch3, 0xC0, 0x40, 32, 32, 512, 256, 1);
+        sprites_flags(s->batch3, 0, 0x19);
+    }
     s->kind = model;
     s->top = other;
     s->slow = second;
@@ -3905,6 +3995,11 @@ static int marker_step(System *s) {   /* Marker_Update */
     if (s->ended) {   /* (done: its sparks go with it) */
         return 0;
     }
+    if (s->command == -2) {   /* (state 3: every spark sees it and goes - spark_live) */
+        for (i = 0; i < s->n; i++) {
+            s->p[i].rgba[3] = 0;
+        }
+    }
     s->tilt = wrap(s->tilt + deg(10.0f * rnd()));
     if (s->command != -2 && s->c.x > 0.0f) {
         marker_sparks(s, 0);
@@ -3914,13 +4009,21 @@ static int marker_step(System *s) {   /* Marker_Update */
 }
 
 static void marker_write(System *s) {
-    Sprite *r = sprites_records(s->batch, s->n);
+    Sprite *r = sprites_records(s->batch, -1), *f = s->batch3 >= 0 ? sprites_records(s->batch3, -1) : NULL;
     const Actor *a = marker_model(s->kind);
     float v = 0.4f * (1.0f + sinf(s->tilt));
-    int i, c;
+    int i, c, n = 0, nf = 0;
 
     for (i = 0; i < s->n; i++) {
-        sprite_rec(&r[i], &s->p[i]);
+        if (s->p[i].landed && f != NULL) {
+            sprite_rec(&f[nf++], &s->p[i]);
+        } else if (!s->p[i].landed) {
+            sprite_rec(&r[n++], &s->p[i]);
+        }
+    }
+    sprites_records(s->batch, n);
+    if (f != NULL) {
+        sprites_records(s->batch3, nf);
     }
     if (s->batch2 < 0) {
         return;
@@ -3997,9 +4100,16 @@ static Vec3 window_point(const System *s, int id) {
 
 static void window_flash_write(System *s) {   /* WindowFlash_Draw: the fan */
     const int8_t *fan = kWindowFans[clampi(s->timer, 0, 4)];
-    Sprite *r = sprites_records(s->batch, fan[0] - 2);
+    Sprite *r;
     int k;
 
+    for (k = 0; k < fan[0]; k++) {   /* (only all of it in view: else neither it nor the bloom) */
+        if (camera_out_of_view(&gEngine.camera, window_point(s, fan[k + 1]))) {
+            sprites_records(s->batch, 0);
+            return;
+        }
+    }
+    r = sprites_records(s->batch, fan[0] - 2);
     post_bloom(0x80808080u, 0);   /* (the screen brightened through it) */
     for (k = 1; k + 1 < fan[0]; k++) {
         glow_tri(&r[k - 1], window_point(s, fan[1]), window_point(s, fan[k + 1]), window_point(s, fan[k + 2]), 0xFFFFFF80u, 0xFFFFFF80u);
@@ -4134,7 +4244,6 @@ int particles_mag_burst(Vec3 at, int prima, Vec3 floor_up) {
     sprites_texture(s->batch4, 0x10, 1, -1);
     sprites_cells(s->batch4, 0xC0, 0x60, 0x20, 0x20, 512, 256, 1);
     sprites_flags(s->batch4, SPRITE_ADD | SPRITE_CORNERS, 0x19);
-    s->floor = at.y;
     s->c = vec3_norm(floor_up);
     s->n = l.pieces + l.puffs + 2 * l.points;
     for (i = 0; i < l.points; i++) {
@@ -4175,6 +4284,14 @@ int particles_mag_burst(Vec3 at, int prima, Vec3 floor_up) {
         p->radius = 0.02f + 0.1f * p->v.y;
     }
     return h;
+}
+
+static int under_floor(Vec3 at) {   /* (Actor_TriOf + NavMesh_OntoPlane: below the floor of the triangle under it - not a hole's) */
+    const NavMesh *n = &gEngine.room.nav;
+    float h;
+    int t = navmesh_find(n, at, 8.0f, &h);
+
+    return t >= 0 && !(n->tris[t].flags & 0x10000000u) && at.y < navmesh_height_on(n, t, at.x, at.z);
 }
 
 static int mag_burst_step(System *s) {   /* burst_update */
@@ -4230,7 +4347,7 @@ static int mag_burst_step(System *s) {   /* burst_update */
 
         p->at = vec3_add(p->at, p->v);
         p->v.y -= p->radius;
-        if (p->at.y < s->floor) {
+        if (under_floor(p->at)) {
             p->rgba[3] = 0;
             continue;
         }
@@ -4247,9 +4364,10 @@ static void mag_burst_write(System *s) {
     Sprite *r;
     int i, k;
 
-    /* (the floor's own axes: level, the camera's) */
-    across = fabsf(up.y) >= 0.999f ? right : vec3_norm(vec3_cross(up, vec3(0.0f, -1.0f, 0.0f)));
-    along = fabsf(up.y) >= 0.999f ? ahead : vec3_norm(vec3_cross(up, across));
+    /* (the floor's frame: level, none; else x across the slope, z down it - ring_corner turns a
+     * corner by the camera's yaw, then the frame lays it on the floor) */
+    across = fabsf(up.y) >= 0.999f ? vec3(1.0f, 0.0f, 0.0f) : vec3_norm(vec3_cross(up, vec3(0.0f, -1.0f, 0.0f)));
+    along = fabsf(up.y) >= 0.999f ? vec3(0.0f, 0.0f, 1.0f) : vec3_norm(vec3_cross(up, across));
     r = sprites_records(s->batch, l.pieces);
     for (i = 0; i < l.pieces; i++) {
         sprite_rec(&r[i], burst_piece(s, i));
@@ -4269,8 +4387,9 @@ static void mag_burst_write(System *s) {
 
         for (k = 0; k < 4; k++) {
             float x = (k & 1 ? 1.5f : -1.5f) * p->radius, z = (k & 2 ? 1.0f : -1.0f) * p->radius;
+            Vec3 t = vec3_add(vec3_scale(right, x), vec3_scale(ahead, z));   /* (turned by the camera's yaw) */
 
-            q[k] = vec3_add(p->at, vec3_add(vec3_scale(across, x), vec3_scale(along, z)));
+            q[k] = vec3_add(p->at, vec3_add(vec3_scale(across, t.x), vec3_scale(along, t.z)));
         }
         quad(&r[i], (uint32_t)clampi(p->rgba[0], 0, 255) << 24 | (uint32_t)clampi(p->rgba[1], 0, 255) << 16 |
                         (uint32_t)clampi(p->rgba[2], 0, 255) << 8 | (uint32_t)clampi(p->rgba[3], 0, 255), q);
@@ -5033,6 +5152,7 @@ static int well_fade(Part *p, int most) {   /* in past 0x20, then out by 1..most
         p->rgba[3] += irnd(most) + 1;
         if (p->rgba[3] > 0x20) {
             p->landed = 1;
+            p->rgba[0]--;   /* (the original's mark: its red one less) */
         }
     } else {
         p->rgba[3] -= irnd(most) + 1;
@@ -5149,7 +5269,7 @@ int particles_spray(Vec3 at, int tri, int heavy) {   /* BloodSpray_SetParams */
     s->engines = 1;
     s->kind = tri;
     s->n = 32;
-    look(s, 0x20, 1, -1, 0x60, 0x40, 32, 32, 16, 0);
+    look(s, 0x10, 1, -1, 0x60, 0x40, 32, 32, 1, 0);   /* (BloodSpray_Start: GAME_FIX, one frame) */
     for (i = 0; i < 32; i++) {
         Part *p = &s->p[i];
         float sz;
@@ -5312,6 +5432,299 @@ static void puffs_write(System *s) {
     }
 }
 
+/* ---- Effect726E0: a strand of powder dripping from the stalker (Effect79FF0, while he is
+ * powdered, starts them): up to 4 segments, each grown from the one before (turned by -45 +- 5
+ * degrees about its z, moved on by its length) down a chain of four of his bones - 8 chains by his
+ * kind, one picked at random; every 4 frames on to the next bone pair, aimed down it (the chain's
+ * end: no more). Each segment two crossed quads `len` long, of a random cell; fading 8..15 a
+ * frame; for an orange or white strand, after 1..4 frames a drop (DropSplash) from the newest ---- */
+
+typedef float M4[4][4];
+typedef struct Strand {
+    M4 seg[4], turn;
+    int alpha[4], cells[4][4];
+    const int *chain;
+    int pair, cur, step, drip, kind, rgb[3], model, stopped;
+    float len;
+} Strand;
+
+static Strand sStrand[PARTICLE_SYSTEMS];
+
+static const int kStrandChains[6][40] = {   /* (D_00429850 .. D_00429B70: 8 chains of 4 bones, -1 ending each) */
+    {17, 18, 19, 20, -1, 27, 28, 29, 30, -1, 2, 3, 4, 5, -1, 6, 7, 8, 9, -1, 23, 22, 15, 0, -1, 18, 17, 16, 22, -1, 28, 27, 26, 22, -1, 12, 10, 0, 22, -1},
+    {25, 26, 27, 28, -1, 41, 42, 43, 44, -1, 2, 3, 4, 5, -1, 6, 7, 8, 9, -1, 31, 30, 22, 0, -1, 26, 25, 24, 30, -1, 42, 41, 40, 30, -1, 15, 18, 11, 0, -1},
+    {29, 30, 31, 32, -1, 43, 44, 45, 46, -1, 2, 3, 4, 5, -1, 6, 7, 8, 9, -1, 35, 34, 27, 0, -1, 30, 29, 28, 34, -1, 44, 43, 42, 34, -1, 11, 14, 17, 18, -1},
+    {29, 30, 31, 32, -1, 39, 40, 41, 42, -1, 2, 3, 4, 5, -1, 6, 7, 8, 9, -1, 35, 34, 27, 0, -1, 30, 29, 28, 34, -1, 40, 39, 38, 34, -1, 11, 14, 17, 18, -1},
+    {13, 14, 15, 16, -1, 30, 31, 32, 33, -1, 2, 3, 4, 5, -1, 6, 7, 8, 9, -1, 19, 18, 11, 0, -1, 14, 13, 12, 18, -1, 31, 30, 29, 18, -1, 7, 13, 30, 3, -1},
+    {37, 38, 39, 40, -1, 47, 48, 49, 50, -1, 2, 3, 4, 5, -1, 18, 19, 20, 21, -1, 43, 42, 35, 0, -1, 38, 37, 36, 42, -1, 48, 47, 46, 42, -1, 18, 2, 21, 5, -1},
+};
+
+static const int *strand_chain(int kind) {   /* (by the stalker's +0x153C) */
+    switch (kind) {
+    case 2: case 6: case 7: case 0x1B: return kStrandChains[0];
+    case 3: case 0x22: case 0x23: case 0x24: return kStrandChains[1];
+    case 4: return kStrandChains[2];
+    case 0x17: case 0x25: return kStrandChains[3];
+    case 0xB: return kStrandChains[4];
+    case 0xA: case 0x27: return kStrandChains[5];
+    }
+    return NULL;
+}
+
+/* the libvu0 matrices, as the original has them: columns m[0..3] (x, y, z axes, the translation) */
+static void m_apply(float d[4], M4 m, const float v[4]) {   /* d = M v */
+    float r[4];
+    int k;
+
+    for (k = 0; k < 4; k++) {
+        r[k] = m[0][k] * v[0] + m[1][k] * v[1] + m[2][k] * v[2] + m[3][k] * v[3];
+    }
+    memcpy(d, r, sizeof(r));
+}
+static void m_mul(M4 d, M4 a, M4 b) {   /* (sceVu0MulMatrix: b's columns through a) */
+    M4 r;
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        m_apply(r[i], a, b[i]);
+    }
+    memcpy(d, r, sizeof(r));
+}
+static void m_unit(M4 m) {
+    int i, k;
+
+    for (i = 0; i < 4; i++) {
+        for (k = 0; k < 4; k++) {
+            m[i][k] = i == k ? 1.0f : 0.0f;
+        }
+    }
+}
+static void v_norm(float v[4]) {   /* (x y z; a zero one stays zero; w kept) */
+    float n = sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]), k = n != 0.0f ? 1.0f / n : 0.0f;
+
+    v[0] *= k;
+    v[1] *= k;
+    v[2] *= k;
+}
+static void v_cross(float d[4], const float a[4], const float b[4]) {   /* (sceVu0OuterProduct: w 0) */
+    float r[4] = {a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0], 0.0f};
+
+    memcpy(d, r, sizeof(r));
+}
+
+static int strand_bone(const Strand *t, int b, float out[4]) {   /* (its model's bone b, as last drawn) */
+    if (t->model < 0 || t->model >= MAX_ACTORS || !gEngine.actors[t->model].used) {
+        return 0;
+    }
+    {
+        Vec3 p = actor_bone(&gEngine.actors[t->model], b);
+
+        out[0] = p.x;
+        out[1] = p.y;
+        out[2] = p.z;
+        out[3] = 1.0f;
+    }
+    return 1;
+}
+
+static void strand_cells(int c[4]) {   /* (each quad's: x $120 + 32 x 0..3, y $40 or $50) */
+    c[0] = (irnd(4) << 5) + 0x120;
+    c[1] = irnd(2) * 0x10 + 0x40;
+    c[2] = (irnd(4) << 5) + 0x120;
+    c[3] = irnd(2) * 0x10 + 0x40;
+}
+
+int particles_strand(int model, int kind, int strand) {   /* Effect726E0_SetParams */
+    const int *chain = strand_chain(kind);
+    float d[4], a[4], b[4], at[4];
+    Strand *t;
+    System *s;
+    int h;
+
+    if (chain == NULL) {
+        return -1;
+    }
+    h = new_system(STRAND, vec3(0, 0, 0));
+    if (h < 0) {
+        return -1;
+    }
+    s = &sSys[h];
+    s->engines = 1;
+    sprites_texture(s->batch, 0x10, 1, -1);
+    sprites_flags(s->batch, SPRITE_ADD | SPRITE_CORNERS, 0x19);
+    t = &sStrand[h];
+    memset(t, 0, sizeof(*t));
+    t->chain = chain;
+    t->model = model;
+    t->kind = strand;
+    if (strand == 2) {          /* (white, the tube's: 1..4 long) */
+        t->rgb[0] = t->rgb[1] = t->rgb[2] = 0x80;
+        t->len = 1.0f + 3.0f * rnd();
+    } else if (strand == 1) {   /* (orange, the refined powder's) */
+        t->rgb[0] = 0x80;
+        t->rgb[1] = 0x64;
+        t->len = 1.0f + rnd();
+    } else {                    /* (purple, the antimony's) */
+        t->rgb[0] = 0x40;
+        t->rgb[1] = 0x20;
+        t->rgb[2] = 0x80;
+        t->len = 1.0f + rnd();
+    }
+    t->pair = irnd(8) * 5;
+    d[0] = 2.0f * half();
+    d[1] = 2.0f * half();
+    d[2] = 2.0f * half();
+    d[3] = 0.0f;
+    if (!strand_bone(t, chain[t->pair], a) || !strand_bone(t, chain[t->pair + 1], b)) {
+        end(s);
+        return -1;
+    }
+    at[0] = a[0] + d[0];
+    at[1] = a[1] + d[1];
+    at[2] = a[2] + d[2];
+    at[3] = 1.0f;
+    v_norm(d);
+    t->drip = irnd(4) + 1;
+    m_unit(t->turn);
+    {   /* (sceVu0RotMatrixZ: the unit turned by -45 +- 5 degrees) */
+        float an = deg(-45.0f + 10.0f * half()), c = cosf(an), sn = sinf(an);
+        M4 r;
+
+        m_unit(r);
+        r[0][0] = c;
+        r[0][1] = sn;
+        r[1][0] = -sn;
+        r[1][1] = c;
+        m_mul(t->turn, r, t->turn);
+    }
+    m_unit(t->seg[0]);   /* (x along the random offset; z across the bones, then y) */
+    memcpy(t->seg[0][0], d, sizeof(d));
+    t->seg[0][2][0] = b[0] - a[0];
+    t->seg[0][2][1] = b[1] - a[1];
+    t->seg[0][2][2] = b[2] - a[2];
+    t->seg[0][2][3] = 0.0f;
+    v_norm(t->seg[0][2]);
+    v_cross(t->seg[0][2], t->seg[0][2], t->seg[0][0]);
+    v_norm(t->seg[0][2]);
+    v_cross(t->seg[0][1], t->seg[0][2], t->seg[0][0]);
+    t->seg[0][3][0] += at[0];
+    t->seg[0][3][1] += at[1];
+    t->seg[0][3][2] += at[2];
+    t->alpha[0] = irnd(16) + 0x50;
+    strand_cells(t->cells[0]);
+    return h;
+}
+
+static int strand_step(int self, System *s) {   /* Effect726E0_Update: 0 once it stopped */
+    Strand *t = &sStrand[self];
+    int k;
+
+    if (t->stopped) {
+        return 0;
+    }
+    t->stopped = 1;
+    if (t->alpha[t->cur] > 0) {
+        if (t->step == 0) {
+            t->step = 1;
+        } else {
+            int prev = t->cur, n = (t->cur + 1) % 4;
+
+            t->cur = n;
+            m_mul(t->seg[n], t->seg[prev], t->turn);   /* (the next from it, turned, moved on its length) */
+            t->seg[n][3][0] += t->seg[prev][0][0] * t->len;
+            t->seg[n][3][1] += t->seg[prev][0][1] * t->len;
+            t->seg[n][3][2] += t->seg[prev][0][2] * t->len;
+            t->alpha[n] = irnd(16) + 0x70;
+            if (++t->step >= 4) {   /* (on to the next pair of bones) */
+                t->step = 0;
+                t->pair++;
+                if (t->chain[t->pair + 1] == -1) {
+                    t->alpha[n] = 0;
+                } else {
+                    float a[4], b[4];
+                    M4 *m = &t->seg[n];
+
+                    if (strand_bone(t, t->chain[t->pair], a) && strand_bone(t, t->chain[t->pair + 1], b)) {
+                        (*m)[0][0] = b[0] - (*m)[3][0];
+                        (*m)[0][1] = b[1] - (*m)[3][1];
+                        (*m)[0][2] = b[2] - (*m)[3][2];
+                        (*m)[0][3] = b[3] - (*m)[3][3];
+                        v_norm((*m)[0]);
+                        (*m)[2][0] = b[0] - a[0];
+                        (*m)[2][1] = b[1] - a[1];
+                        (*m)[2][2] = b[2] - a[2];
+                        (*m)[2][3] = b[3] - a[3];
+                        v_norm((*m)[2]);
+                        v_cross((*m)[2], (*m)[2], (*m)[0]);
+                        v_cross((*m)[1], (*m)[2], (*m)[0]);
+                        v_norm((*m)[1]);
+                    }
+                }
+            }
+        }
+    }
+    for (k = 0; k < 4; k++) {
+        if (t->alpha[k] <= 0) {
+            continue;
+        }
+        t->stopped = 0;
+        t->alpha[k] -= irnd(8) + 8;
+        if (t->alpha[k] < 0x11) {
+            t->alpha[k] = 0;
+        }
+        strand_cells(t->cells[k]);
+    }
+    if (t->kind != 0 && --t->drip == 0) {   /* (the drop: from the newest, by the one before's fade) */
+        int alpha = t->cur > 0 ? t->alpha[t->cur - 1] : 0;   /* (before the first: the original reads its cursor, 0) */
+
+        if (alpha >= 0x21) {
+            float f = (float)alpha / 128.0f;
+
+            particles_drop_splash(vec3(t->seg[t->cur][3][0], t->seg[t->cur][3][1], t->seg[t->cur][3][2]), (int)((float)t->rgb[0] * f),
+                                  (int)((float)t->rgb[1] * f), (int)((float)t->rgb[2] * f), t->kind == 1 ? 1.0f : 2.0f);
+        }
+    }
+    return 1;
+}
+
+static void strand_write(int self, System *s) {   /* Effect726E0_Draw: each live segment, two crossed quads */
+    static const float kA[4][3] = {{0, 0, 1}, {1, 0, 1}, {0, 0, -1}, {1, 0, -1}}, kB[4][3] = {{0, 1, 0}, {1, 1, 0}, {0, -1, 0}, {1, -1, 0}};
+    Strand *t = &sStrand[self];
+    Sprite *r = sprites_records(s->batch, -1);
+    float hh = 0.5f * t->len;
+    int k, q, c, n = 0;
+
+    if (t->stopped) {
+        sprites_records(s->batch, 0);
+        return;
+    }
+    for (k = 0; k < 4; k++) {
+        if (t->alpha[k] == 0) {
+            continue;
+        }
+        for (q = 0; q < 2; q++) {
+            const float (*sh)[3] = q == 0 ? kA : kB;
+            int u = t->cells[k][q * 2], v = t->cells[k][q * 2 + 1];
+            Vec3 corner[4];
+
+            for (c = 0; c < 4; c++) {
+                float in[4] = {sh[c][0] * t->len, sh[c][1] * hh, sh[c][2] * hh, 1.0f}, out[4];
+
+                m_apply(out, t->seg[k], in);
+                corner[c] = vec3(out[0], out[1], out[2]);
+            }
+            quad(&r[n], (uint32_t)t->rgb[0] << 24 | (uint32_t)t->rgb[1] << 16 | (uint32_t)t->rgb[2] << 8 | (uint32_t)t->alpha[k], corner);
+            r[n].mapped = 1;
+            for (c = 0; c < 4; c++) {
+                r[n].cst[c][0] = (float)(u + (c & 1 ? 0x20 : 0)) / 512.0f;
+                r[n].cst[c][1] = (float)(v + (c & 2 ? 0x10 : 0)) / 256.0f;
+            }
+            n++;
+        }
+    }
+    sprites_records(s->batch, n);
+}
+
 /* ---- the sprites written, a tick ---- */
 
 static void write(System *s) {
@@ -5350,7 +5763,7 @@ void particles_tick(Vec3 camera) {
         if (!s->used || s->ended == 2) {
             continue;
         }
-        if (s->ends_with_owner && get(s->owner) == NULL) {
+        if (s->ends_without_slot0 && !sSlot0) {   /* (Wisps_Update: not its flame - whatever slot 0 holds) */
             going = 0;
         } else {
             switch (s->what) {
@@ -5409,6 +5822,7 @@ void particles_tick(Vec3 camera) {
             case WELLING: going = welling_step(s); break;
             case EMBERS2: going = embers2_step(s); break;
             case FLOORGLOW: going = floor_glow_step(s); break;
+            case STRAND: going = strand_step(i, s); break;
             }
         }
         if (!going) {
@@ -5462,6 +5876,7 @@ void particles_tick(Vec3 camera) {
         case WANDER: wander_write(s); break;
         case SPLAT: splat_write(s); break;
         case PUFFS: puffs_write(s); break;
+        case STRAND: strand_write(i, s); break;
         default: write(s); break;
         }
     }
@@ -5519,6 +5934,28 @@ int particles_info(int p, int *kind, int *frame, int *rest) {
     return 1;
 }
 
+int particles_last(void) { return sLast; }
+
+int particles_strands(void) {
+    int i, n = 0;
+
+    for (i = 0; i < PARTICLE_SYSTEMS; i++) {
+        n += sSys[i].used && sSys[i].what == STRAND;
+    }
+    return n;
+}
+
+int particles_part(int p, int i, Vec3 *at, int rgba[4]) {
+    System *s = get(p);
+
+    if (s == NULL || i < 0 || i >= s->n) {
+        return 0;
+    }
+    *at = s->p[i].at;
+    memcpy(rgba, s->p[i].rgba, sizeof(s->p[i].rgba));
+    return 1;
+}
+
 void particles_engines(int p) {
     System *s = get(p);
 
@@ -5535,9 +5972,18 @@ void particles_free(int p) {
     }
 }
 
+void particles_pursuer_kind(int kind) {
+    sPursuerKind = kind;
+}
+
+void particles_room_effect0(int held) {
+    sSlot0 = held != 0;
+}
+
 void particles_new_room(void) {
     int i;
 
+    sSlot0 = 0;   /* (RoomEffects_ReleaseAll) */
     for (i = 0; i < PARTICLE_SYSTEMS; i++) {
         if (sSys[i].used && sSys[i].engines) {
             end(&sSys[i]);

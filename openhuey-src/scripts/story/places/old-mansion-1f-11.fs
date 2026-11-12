@@ -100,9 +100,9 @@ create ahead  4 , 0 ,   5 , 1 ,   \ (area, exit loaded ahead)
     smashing @ if  smash-given-up  exit  then
     fiona mirror-area in-area?  fiona 0 60 heading? and 0= if  exit  then
     om1f-11-breakable-broken fact? if  ['] the-shards unhurried offer  exit  then
-    stalker-in? 0= if  ['] the-curtain calm-only offer  exit  then
+    stalker-in? 0= if  ['] the-curtain hiding-spot offer  exit  then
     stalker mirror-area in-area?  fiona body-at stalker body-at vec-dist 40e f<= or if  no-time-message offer-remark-now  exit  then
-    ['] the-curtain calm-only offer ;
+    ['] the-curtain hiding-spot offer ;
 : each-frame ( -- )
     4 exits-out  cameras 4 cameras-at  ahead 2 ways-out  the-figure
     om1f-11-breakable-broken fact? 0=  om1f-11-flag1 fact? and if
@@ -117,7 +117,7 @@ create ahead  4 , 0 ,   5 , 1 ,   \ (area, exit loaded ahead)
         fiona $12 in-area?  fiona -90 50 heading? and if  ['] the-water unhurried offer  then
     then
     by-the-mirror
-    om1f-11-album-medallion-found fact?  om1f-11-album-medallion fact? 0= and  fiona 13.96e 50e -5.34e 5e 5e touches? and if
+    om1f-11-album-medallion-found fact?  om1f-11-album-medallion fact? 0= and  fiona 13.96e 51e -5.34e 5e 5e touches? and if
         ['] take-medallion calm-only offer
     then ;
 : person-in ( i -- )

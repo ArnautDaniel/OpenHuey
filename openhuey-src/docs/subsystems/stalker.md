@@ -641,6 +641,10 @@ plus what built up; won, his temper with Hewie gone; lost, what built up rises. 
 attack at Hewie ends (Pursuer_BehaviourAttack: still past what he stands, at Hewie again, else on
 as before - his taunt only when his time for it runs out, his temper still up), struck by her or
 powdered while after Hewie (Pursuer_Hit), back on his feet with Hewie down (Pursuer_StateBackOnFeet).
+Powdered (Pursuer_StateSpecialAnim, `powdered`): each time, a cloud (Effect79FF0) - while he stays
+powdered, of its ten timers at most one a frame runs out and a strand of the powder (purple /
+orange / white by its 4 / 6 / 8 loops: Effect726E0, effects.md) drips from his bones, that timer
+waiting 10..41 frames again; struck by a powder again meanwhile, another cloud with the first.
 Hewie's attack and tackle are taken only on floor he may stand on (Actor_TriFreeFor). Also built:
 **the mini-game's run** (Hewie played): she isn't always in the room played - after her
 while she is elsewhere he goes out by the first door of his way to her room (Pursuer_Modes /

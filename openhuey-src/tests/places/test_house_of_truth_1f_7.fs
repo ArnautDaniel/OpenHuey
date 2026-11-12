@@ -46,6 +46,11 @@ testing Hewie by the wall: he barks at it; her look there - the scene, the wall 
 hewie-freed story-flag-set  hewie-commandable state-flag-set  game:hewie send join-fiona  60 run-frames
 house-of-truth-1f-7 -68e 0e 75e nav-tri 0 game:hewie send hewie-place  30 run-frames
 T{ [: [: hewie-at-wall @ ;] in-place ;] 300 soon -> -1 }T
+testing ... gone from the wall's area: done (again as he's back)
+house-of-truth-1f-7 -20e 0e 20e nav-tri 0 game:hewie send hewie-place  10 run-frames
+T{ [: hewie-at-wall @  ['] barks-at-wall running? ;] in-place -> 0 0 }T
+house-of-truth-1f-7 -68e 0e 75e nav-tri 0 game:hewie send hewie-place  30 run-frames
+T{ [: [: hewie-at-wall @ ;] in-place ;] 300 soon -> -1 }T
 T{ wall-area -90 at  circle press  [: window-shown 0< 0= if  cross press  then  movie-skipped state-flag-set  ht1f-7-flag1 story-flag? ;] 2000 soon -> -1 }T
 T{ [: $4C resident-flag? ;] 600 soon -> -1 }T
 300 play-on

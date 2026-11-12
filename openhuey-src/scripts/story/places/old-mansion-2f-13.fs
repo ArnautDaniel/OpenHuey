@@ -69,7 +69,8 @@ $1C constant scene-figure   $21 constant other-figure
 : her-kind? ( -- flag )  partner-kind dup daniella-kind = swap kind34-kind = or ;
 : smash-due ( -- )
     drawing @ smashing @ or  om2f-13-breakable-broken fact? or  om2f-13-flag1 fact? 0= or  her-kind? 0= or if  exit  then
-    stalker mirror-area entered?  st-mode-now @ 0= and if  ['] smashes start drop  then ;
+    stalker mirror-area entered?  st-mode-now @ 0= and  stalker held? 0= and if  ['] smashes start drop  then ;   \ (act02, mode 0)
+: smash-given-up ( -- )  her-kind?  stalker held? and 0= if  0 smashing !  then ;   \ (her not at it - or not her: the offers again)
 
 \ ---- brought in by the forced way ----
 : forward ( -- )
@@ -92,15 +93,15 @@ create entries  1 , 1 ,   1 , 1 ,   2 , 2 ,   0 , 0 ,   \ (by exit 0..3: the cam
     then
     fiona 9 entered? if  3 prepare-exit  then ;
 : each-frame ( -- )
-    2 exits-out  2 2 leaves-by  3 3 leaves-by  cameras 4 cameras-at  the-figures  smash-due
+    2 exits-out  2 2 leaves-by  3 3 leaves-by  cameras 4 cameras-at  the-figures  smash-due  smashing @ if  smash-given-up  then
     om2f-13-rubrum-medallion-found fact? 0=  scrambling? and  hewie 88.5e 0e 71.56e 10e 5e touches? and if  ['] medallion-sniffed start-only  then
     came-forward @  stalker-in? and if  0 came-forward !  then
     0 exit-open? 0=  came-forward @ and  fiona 0 before-door? and if  back-msg offer-remark-now  then
     smashing @ 0=  fiona mirror-area in-area? and  fiona 90 60 heading? and if
         om2f-13-breakable-broken fact? if  ['] the-shards unhurried offer
-        else  stalker-in? 0= if  ['] the-curtain calm-only offer
+        else  stalker-in? 0= if  ['] the-curtain hiding-spot offer
         else  stalker mirror-area in-area?  fiona body-at stalker body-at vec-dist 40e f<= or if  no-time-message offer-remark-now
-        else  ['] the-curtain calm-only offer  then  then  then
+        else  ['] the-curtain hiding-spot offer  then  then  then
     then
     om2f-13-rubrum-medallion-found fact?  om2f-13-rubrum-medallion fact? 0= and  fiona 88.5e 1e 71.56e 5e 5e touches? and if
         ['] take-medallion calm-only offer

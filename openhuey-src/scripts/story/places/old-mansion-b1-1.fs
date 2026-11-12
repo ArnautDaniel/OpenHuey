@@ -86,7 +86,7 @@ create ledge-look  -9.31e 39.5e -32.27e  50e 13e 0e look,
     3 exits-out  3 3 leaves-by  cameras 6 cameras-at  ahead 4 ways-out  map-pages
     calls  hewie-about
     the-vase broken? if
-        omb1-1-chicken-jerky fact? 0=  fiona 60.5e -0.1e -33.4e 5e 5e touches? and if  ['] take-jerky calm-only offer  then
+        omb1-1-chicken-jerky fact? 0=  fiona 60.5e 0.9e -33.4e 5e 5e touches? and if  ['] take-jerky calm-only offer  then
     else  the-vase breaks? if  jerky-shows  then  then
     37e -50e 50e  82.5e -50e 50e  37e -90e 50e  82.5e -90e 50e  light-doorway
     52e -32e 45e  68e -32e 45e  52e -90e 45e  68e -90e 45e  light-doorway

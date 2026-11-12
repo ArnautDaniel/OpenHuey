@@ -128,7 +128,7 @@ $E constant first-fragment   11 constant #fragments   \ (its objects a_fragment0
 : by-the-bed ( -- )
     bed-area 180 60 facing? 0= if  exit  then
     weak? if  ['] rests unhurried offer exit  then
-    stalker-in? if  no-time-msg offer-remark-now  else  ['] hides calm-only offer  then ;
+    stalker-in? if  no-time-msg offer-remark-now  else  ['] hides hiding-spot offer  then ;
 : spots ( -- )
     tv-area 180 90 facing? if  ['] tv unhurried offer  then
     by-the-bed

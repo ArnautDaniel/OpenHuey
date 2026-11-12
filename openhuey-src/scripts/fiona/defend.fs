@@ -87,7 +87,7 @@ variable fired
 : fire ( -- )
     form cowgirl-outfit <>  fired @ or if  exit  then
     -1 fired !
-    her-model @ hand-bone -3.5e 0e 1e bone-point  her-model @ hand-bone -1e 0e 1e bone-point  strike-mark ;
+    her-model @ hand-bone -3.5e 0e 1e  her-model @ hand-bone -1e 0e 1e bone-point  strike-mark ;
 : kicking ( -- )   \ (Fiona_StateStrike: its root step, at its end she stands; its key a frame behind)
     moving
     ended? if  kick-done exit  then

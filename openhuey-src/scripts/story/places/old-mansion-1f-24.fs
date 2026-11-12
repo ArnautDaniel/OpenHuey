@@ -88,7 +88,7 @@ create looks  -76.01e 0e -50.35e  70e 17e 17e look,
     else  the-vase breaks? if  jerky-shows  then  then ;
 : person-in ( i -- )  fiona-p = if  entries 4 ways-in  then ;
 : went ( -- )
-    scrubbing @ if  stalker-no-fear state-off  no-stalker-camera state-off  hands-back  partner false hush  stalker let-go  then
+    scrubbing @ if  stalker-no-fear state-off  no-stalker-camera state-off  hands-back  partner false hush  stalker let-go  0 summon-take  then
     force-followed state-off ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-24 place!

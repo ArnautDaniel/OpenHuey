@@ -69,12 +69,12 @@ create looks  -2.18e 0e 42.94e  32e 11e 11e look,
     looks 1 danger-now @ followed = hewie-looks-if
     om2f-5-viride-medallion-found fact? 0=  scrambling? and  hewie 7.38e 0e 20.58e 10e 5e touches? and if  ['] viride-sniffed start-only  then
     fiona hide-area in-area?  fiona 180 60 heading? and if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
     near-vase broken? if
-        om2f-5-medallion fact? 0=  fiona 10.5e 0e -28e 5e 5e touches? and if  ['] take-medallion calm-only offer  then
+        om2f-5-medallion fact? 0=  fiona 10.5e 1e -28e 5e 5e touches? and if  ['] take-medallion calm-only offer  then
     else  near-vase breaks? if  medallion-shows  then  then
-    om2f-5-viride-medallion-found fact?  om2f-5-viride-medallion fact? 0= and  fiona 7.38e 0e 20.58e 5e 5e touches? and if
+    om2f-5-viride-medallion-found fact?  om2f-5-viride-medallion fact? 0= and  fiona 7.38e 1e 20.58e 5e 5e touches? and if
         ['] take-viride calm-only offer
     then ;
 : person-in ( i -- )

@@ -113,7 +113,7 @@ create lectern-spots   $36 , -90 , 35e f, -52e f, 25e f, 20e f, -50e f, 2e f,
 : its-own ( p -- )   \ (the lectern's own author: its shelves slide back - the way through)
     {: p :}  hewie-for-scene
     fiona reach-up-anim play  book-sound room-bank fiona sound-by
-    p case  0 of  8  endof  1 of  4  endof  >r 0 r>  endcase  object-hide
+    p case  0 of  8  endof  1 of  4  endof  >r 0 r>  endcase  object-show
     p p 3 * + books-placed + fact!  p book-item spend  fiona reach-down-anim play ;
 : lays-0 ( b -- )
     {: b :}  0 at-lectern
@@ -243,11 +243,11 @@ create ahead  4 , 1 ,   5 , 0 ,   6 , 2 ,   7 , 3 ,   \ (area, exit loaded ahead
     lectern-2-book-2 fact? 0=  $14 180 facing? and if  2 ['] lectern-2 lectern-offer  then
     shelves-by-author
     8 44 facing?  fiona $23 50 faces-area? or if  ['] save-clock calm-hewie-up offer  then
-    om1f-15-refined-antimony fact? 0=  fiona 36.86e 50e -27.91e 5e 5e touches? and if  ['] take-antimony calm-only offer  then
-    om1f-15-antimony-tube-found fact?  om1f-15-antimony-tube fact? 0= and  fiona 39.16e 0e -38.76e 5e 5e touches? and if
+    om1f-15-refined-antimony fact? 0=  fiona 36.86e 51e -27.91e 5e 5e touches? and if  ['] take-antimony calm-only offer  then
+    om1f-15-antimony-tube-found fact?  om1f-15-antimony-tube fact? 0= and  fiona 39.16e 1e -38.76e 5e 5e touches? and if
         ['] take-tube calm-only offer
     then
-    om1f-15-rubrum-medallion-found fact?  om1f-15-rubrum-medallion fact? 0= and  fiona -23.61e 50e -61.37e 5e 5e touches? and if
+    om1f-15-rubrum-medallion-found fact?  om1f-15-rubrum-medallion fact? 0= and  fiona -23.61e 51e -61.37e 5e 5e touches? and if
         ['] take-medallion calm-only offer
     then ;
 : person-in ( i -- )

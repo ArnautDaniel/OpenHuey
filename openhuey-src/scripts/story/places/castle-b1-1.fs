@@ -120,7 +120,8 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
     world-held state!  stalker let-go  scene-locked state!  camera-restart   \ (her sounds hushed too: Fiona has no `silent` yet)
     castle-b1-1 stalker-slot 0 doors-into  stalkers-stay state-off  0 take-exit ;
 
-\ ---- the cupboards: she hides (the near one or the far); the stalker always finds her - but on his alert 4 ----
+\ ---- the cupboards: she hides (the near one or the far); the stalker finds her the first four times he
+\ comes on her, after that only if he is on the screen (or a creature's call: 2) - never on his alert 4 ----
 : hides ( -- )
     0 searched !
     other-side @ if  her-motions $1FA 90 -1 -49.507e -33.083e hides-in
@@ -131,7 +132,8 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
     $1FE -180 -35.74e -5.079e finds-her-at ;
 : searches-here ( -- )
     -1 searched !  debilitas? if  stalker his-motions motions-for  then  stalker follow
-    4 stalker-alert? 0= if  ['] finds-her start drop  else  120 summoner-sooner  then
+    search-var var@ 4 < if  100  else  0  then  chance?  stalker unseen? 0= or   \ (act10)
+    2 creature-moving? or  4 stalker-alert? 0= and if  ['] finds-her start drop  else  120 summoner-sooner  then
     search-var var@ 1+ search-var var! ;
 : stalker-came ( -- )  came-on-her? if  searches-here  then ;
 : search-on ( -- )   \ (each frame: hidden, he here and up, not yet searched)
@@ -171,7 +173,7 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
 : facing? ( area deg within -- flag )  {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 : cupboard ( far? -- )   \ (before the sketch, the sketch; else hide there - no time while he can see her)
     got-castle-sketch fact? 0= if  drop  fiona sketch-area 45 faces-area? if  ['] the-sketch calm-only offer  then  exit  then
-    stalker-in? 0=  stalker unseen? or if  other-side !  ['] hides calm-only offer  else  drop  no-time-message offer-remark-now  then ;
+    stalker-in? 0=  stalker unseen? or if  other-side !  ['] hides hiding-spot offer  else  drop  no-time-message offer-remark-now  then ;
 : spots ( -- )
     the-vase broken? if
         cb1-1-chicken-jerky fact? 0=  fiona -52.5e -59.05e -1.5e 5e 5e touches? and if  ['] vase-jerky calm-only offer  then

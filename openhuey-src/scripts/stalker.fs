@@ -397,6 +397,7 @@ behaviour stalking
   on drawn-to ( tri i away? -- )  in-game @ if  doll-check  else  drop 2drop  then ;
   on stalker-hunt ( -- )  in-game @ if  heading-for-her mode!  away? 0= if  search-again  then  then ;
   on entered-room ( room exit -- )  0 still-held !  0 exit-marked !  her-came !  room-changed  in-game @ if  pose  then ;
+  on exit-chosen ( exit -- )  her-came ! ;   \ (the walkway turned under her: she is on its other side)
   on characters-still ( on -- )  still-held ! ;
   on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model;
       \ given back he is shown, as the cast was made active: Cutscene_ReleaseActors' +0x29)
@@ -475,7 +476,7 @@ end-behaviour
 \ ---- each one's own: his model, his body ----
 : bodied ( floor -- ) ( F: width height -- )
     body-size  dup my-floor !  body-mask!  body-off  0 in-game !
-    self subscribe tick  self subscribe entered-room  self subscribe write-save  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end
+    self subscribe tick  self subscribe entered-room  self subscribe exit-chosen  self subscribe write-save  self subscribe fiona-plight  self subscribe panic  self subscribe frame-end
     self subscribe characters-still ;
 
 \ ---- Debilitas (debilitas.c Debilitas_Setup, DebilitasModel): 70 health (hard: 110), 5 across,

@@ -41,7 +41,7 @@ $75 constant her-door
     old-mansion-1f-14 43 stalker-to  stalker 0 0 camera-set  ['] blended along-scene
     panic-eased  if  filmed-msg run-scene  then ;
 : the-film-plays ( -- )
-    fiona hold  daniella-now? if  stalker let-go  then  fiona wait-move  16 frames
+    fiona hold  daniella-now? if  stalker let-go  0 summon-take  then  fiona wait-move  16 frames
     15 screen:to-black-2 with-music or fade  wait-fade  the-film film-class film
     film-reel-used-om1f-14-2 fact!  world-held state!  film-reel spend
     daniella-now? if

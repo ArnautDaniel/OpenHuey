@@ -56,7 +56,7 @@ $22 constant chase-seen   $29 constant doll-seen   $20 constant chase-door   3 c
     stalker-in? if  stalker body-at vec@ point-unseen?  else  true  then ;
 : his-scene ( -- )
     $29 hewie-slot 1 doors-into  fiona hold
-    $29 116 stalker-to  stalker $74 180 place-on-tri  stalker 0 -1 camera-set  stalker false shown  stalker let-go
+    $29 116 stalker-to  stalker $74 180 place-on-tri  stalker 0 -1 camera-set  stalker false shown  stalker let-go  0 summon-take
     15 screen:to-black-2 with-music or fade
     chase-movie scenes:unseen-movie chase-cutscene load-scene  wait-fade
     hewie-in? if  hewie let-go  -1 hewie-sent-off !  then
@@ -100,7 +100,7 @@ $22 constant chase-seen   $29 constant doll-seen   $20 constant chase-door   3 c
 : spots ( -- )
     he-sits? 0=  c1f-10-flag3 fact? 0= and  fiona shelf-area in-area? and  fiona 0 45 heading? and if
         chased?  in-panic? 0= and if
-            hunted-unseen? if  ['] his-scene calm-only offer  else  no-time-message offer-remark-now  then
+            hunted-unseen? if  ['] his-scene hiding-spot offer  else  no-time-message offer-remark-now  then
         else  ['] doll-on-show unhurried offer  then
     then
     c1f-10-beef-jerky fact? 0=  fiona 11e 12e -58.5e 7e 4e touches? and if  ['] reach-jerky calm-only offer  then

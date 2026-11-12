@@ -79,7 +79,7 @@ variable bush-floor   \ (its floor's flag while she's in: no one stands there - 
         then
         hidden-calm  yield
     again ;
-: bush-found ( -- )  stalker hold  find-tri @ find-deg @ find-x f@ find-z f@ finds-her-at ;
+: bush-found ( -- )  stalker hold  stalker wait-move  find-tri @ find-deg @ find-x f@ find-z f@ finds-her-at ;
 : bush-search ( -- )   \ (the camera on him; whether he finds her - by the odds, a creature moving about - counted)
     stalker follow
     bush-var @ mansion-odds chance?  2 creature-moving? or if  ['] bush-found start drop  else  120 summoner-sooner  then
@@ -92,7 +92,7 @@ variable bush-floor   \ (its floor's flag while she's in: no one stands there - 
     in-bush? if
         leaves-pushed
         in-panic? 0= if
-            stalker-in?  from-his-way? and if  no-time-message offer-remark-now  else  ['] in-the-bush calm-only offer  then
+            stalker-in?  from-his-way? and if  no-time-message offer-remark-now  else  ['] in-the-bush hiding-spot offer  then
         then
     then
     leaves-swing ;

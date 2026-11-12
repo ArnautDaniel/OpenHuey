@@ -2,7 +2,7 @@
 \ coming in - the colours undone, their doors' opened marks cleared; the inscription; crossing toward
 \ a door - the colour room ahead loaded - and out through it into the dark (in there by the forced
 \ way, the dark lifting); in by the forced way here - the first time the fact, then the file; the
-\ voices in turn, by the frames spent here; Lorenzo waiting once they are over. Headless:
+\ voices in turn, by the frames since the game began (+0x704, carried from room to room); Lorenzo waiting once they are over. Headless:
 \   build/openhuey --test tests/places/test_house_of_truth_b1_4.fs
 IN: test-house-of-truth-b1-4
 USING: tester engine game-state actors messages keys room-names game debug facts flag-names story-names
@@ -50,15 +50,18 @@ house-of-truth-b1-4 forced-exit rooms send go-to-room  [: doing-busy? 0= room-id
 T{ found-file-254 story-flag?  white-file filed? -> -1 0 }T
 house-of-truth-b1-4 forced-exit rooms send go-to-room  [: doing-busy? 0= room-id house-of-truth-b1-4 = and ;] 600 soon drop  60 run-frames
 T{ white-file filed? -> -1 }T
-testing the voices: after 1800 frames here the first - its line; the second at 4500; the third at 7200; then the last fact
+testing the voices: once the game has run 1800 frames the first - its line; the second at 4500; the third at 7200; then the last fact
 room-afresh
-T{ [: 1799 frames-here ! ;] in-place  shown-soon  shared-flag1 story-flag? -> 5 -1 }T
+T{ [: 1799 frames-in-play! ;] in-place  shown-soon  shared-flag1 story-flag? -> 5 -1 }T
 300 read-on
-T{ [: 4499 frames-here ! ;] in-place  shown-soon  shared-flag2 story-flag? -> 6 -1 }T
+T{ [: 4499 frames-in-play! ;] in-place  shown-soon  shared-flag2 story-flag? -> 6 -1 }T
 300 read-on
-T{ [: 7199 frames-here ! ;] in-place  shown-soon  shared-flag3 story-flag? -> 7 -1 }T
+T{ [: 7199 frames-in-play! ;] in-place  shown-soon  shared-flag3 story-flag? -> 7 -1 }T
 300 read-on
-T{ [: 7499 frames-here ! ;] in-place  5 run-frames  shared-flag4 story-flag? -> -1 }T
+T{ [: 7499 frames-in-play! ;] in-place  5 run-frames  shared-flag4 story-flag? -> -1 }T
+testing the count carried into the next room by its way (the story's); a jump - the game begun there - from 0
+T{ [: 1000 frames-in-play! ;] in-place  house-of-truth-b1-4 0 rooms send go-to-room  60 run-frames  [: frames-in-play @ ;] in-place 1000 1200 within -> -1 }T
+T{ room-afresh  [: frames-in-play @ ;] in-place 100 < -> -1 }T
 testing then Lorenzo waiting here as she comes in
 lorenzo2-kind story.base:partner-load  5 run-frames  room-afresh
 T{ [: [: stalker-in? ;] in-place ;] 120 soon -> -1 }T

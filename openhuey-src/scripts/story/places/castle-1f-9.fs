@@ -172,7 +172,7 @@ create entries  1 , -1 ,   1 , -1 ,   3 , 1 ,     \ (by exit 0, 1, 2: the camera
     fiona-p <> if  exit  then
     events-held state? if  hewie send part-from-fiona  ['] replayed fiona start-holding drop exit  then
     entries 3 ways-in
-    saturnus-hint-on fact?  c1f-14-flag2 fact? 0= and if  c1f-14-flag2 fact!  stalker let-go  then
+    saturnus-hint-on fact?  c1f-14-flag2 fact? 0= and if  c1f-14-flag2 fact!  stalker let-go  0 summon-take  then
     came-by @ 2 = if  3 map-page  then ;
 : went ( -- )   \ (through either door once the garden door is done: her fright here no more)
     garden-door-done fact?  c1f-9-flag1 fact? 0= and if

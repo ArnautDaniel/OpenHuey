@@ -218,4 +218,7 @@ state: stalker-state
   cell field in-tri  /vec field in-at
   cell field dog-trust          \ Hewie's trust as he tells it (+0xF35CC: how long he keeps a stalker busy)
   cell field in-attack          \ in what he picked from his tables (Pursuer_BehaviourAttack: its own rules till it is over)
+  \ the powder's clouds (Effect79FF0: one each time he is powdered, gone once he is not): frames
+  \ each lasts (-1 while he is powdered; 0 none), its strands' kind, its ten timers
+  4 cells field cloud-left  4 cells field cloud-kind  40 cells field cloud-timers
 end-state

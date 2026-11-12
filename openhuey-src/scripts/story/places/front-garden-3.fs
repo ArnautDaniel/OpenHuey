@@ -306,18 +306,24 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
 : grate-stops ( -- )  -23.45e -10e 138e hewie-barks-at ;
 : dig-stops ( -- )  252.44e 0e -156.9e hewie-barks-at ;
 : calm-free? ( -- flag )  hewie-in?  hewie-cond-now @ well-cond = and  chased? 0= and  hewie-cmdable-now @ and ;
-: hewie-looks ( -- )
-    calm-free? 0= if  exit  then
-    wire-noticed @ 0=  hewie 244.4e 11e 82.19e 44e 13e centred-in? and if
-        -1 wire-noticed !  50 chance? if  ['] wire-stops start drop  then
+: in-wire-zone? ( -- flag )  hewie 244.4e 11e 82.19e 44e 13e centred-in? ;
+: in-dig-zone? ( -- flag )  hewie 252.44e 0e -156.9e 48e 20e centred-in? ;
+: hewie-looks ( -- )   \ (once a visit each, well and calm: he stops at it; and each frame in its zone - not
+    \ chased, or calm for the dig, and his to command, however he is - his eyes on it)
+    hewie-in? 0= if  exit  then
+    calm-free? if
+        wire-noticed @ 0=  in-wire-zone? and if
+            -1 wire-noticed !  50 chance? if  ['] wire-stops start drop  then
+        then
+        grate-open fact? 0=  hewie hewie-box-area in-area? and  grate-noticed @ 0= and
+        hewie -23.45e -10e 138e 40e 20e centred-in? and if  -1 grate-noticed !  ['] grate-stops start drop  then
+        fg-3-refined-magnesia fact? 0=  dig-noticed @ 0= and  in-dig-zone? and if
+            -1 dig-noticed !  ['] dig-stops start drop
+        then
     then
-    hewie 244.4e 11e 82.19e 44e 13e centred-in? if  244.4e 11e 82.19e 16e zone-look  then
-    grate-open fact? 0=  hewie hewie-box-area in-area? and  grate-noticed @ 0= and
-    hewie -23.45e -10e 138e 40e 20e centred-in? and if  -1 grate-noticed !  ['] grate-stops start drop  then
-    fg-3-refined-magnesia fact? 0= if
-        dig-noticed @ 0=  hewie 252.44e 0e -156.9e 48e 20e centred-in? and if  -1 dig-noticed !  ['] dig-stops start drop  then
-        danger-now @ 0=  hewie 252.44e 0e -156.9e 48e 20e centred-in? and if  252.44e 0e -156.9e 0e zone-look  then
-    then ;
+    hewie-cmdable-now @ 0= if  exit  then
+    chased? 0=  in-wire-zone? and if  244.4e 11e 82.19e 16e zone-look  then
+    fg-3-refined-magnesia fact? 0=  danger-now @ 0= and  in-dig-zone? and if  252.44e 0e -156.9e 0e zone-look  then ;
 
 \ ---- its ways out, its cameras ----
 : ways ( -- )

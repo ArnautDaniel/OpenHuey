@@ -274,7 +274,7 @@ static const char *kMeshFs =
     "    }\n"
     "    c *= u_tint;\n"
     "    o_color = c;\n"
-    "    o_mask = vec2(u_mask, u_unfogged);\n"
+    "    o_mask = vec2(u_mask * clamp(c.a, 0.0, 1.0), u_unfogged);\n"   /* (the mask: its alpha - the GS writes the frame's alpha, the bloom's strength, 0x80 = 1) */
     "}\n";
 
 /* the shadow pass: depth only, from the light */

@@ -31,8 +31,8 @@ create looks   \ (the parts after each cue: 0 .. 5)
     panic-eased  if  lorenzo-msg run-scene  then ;
 : meets-him ( -- )
     seen-flag resident-flag? 0= if  no-pause state!  then
-    stalker let-go  hewie let-go  fiona hold  fiona wait-move
-    the-scene  world-held state!  stalker let-go
+    stalker let-go  0 summon-take  hewie let-go  fiona hold  fiona wait-move
+    the-scene  world-held state!  stalker let-go  0 summon-take   \ ($17's char-done: slot 2, taken off)
     next-figure next-slot figure-in  off-map-33 preload  forced-exit take-exit ;
 : replayed ( -- )
     fiona hold  fiona wait-move  tintstalker-kind her-double figure-in  yield

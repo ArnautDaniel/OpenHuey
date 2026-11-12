@@ -84,9 +84,8 @@ create entries  0 , -1 ,   3 , -1 ,   \ (by exit 0, 1: the camera)
 create ahead  2 , 0 ,   3 , 1 ,   \ (area, exit loaded ahead)
 create looks  20.8e 0e -104.26e  30e 15e 15e look,
 : the-walker ( -- )
-    walker-due? 0= if  exit  then
-    fiona $B entered? if  -1 in-further !  then
-    fiona $A entered? if
+    walker-due? if  fiona $B entered? if  -1 in-further !  then  then
+    fiona $A entered?  om1f-6-flag1 fact? 0= and if   \ (dropped once, whether or not it walked)
         walker-slot figure-out  old-mansion-1f-6 0 82 $80 8 $B4 0e creature-dropped  om1f-6-flag1 fact!
     then ;
 : each-frame ( -- )
@@ -99,7 +98,7 @@ create looks  20.8e 0e -104.26e  30e 15e 15e look,
     flame-fx -122.2e 13.1e 139e 8e -4e flame-stirred  flame-2-fx -120.5e 12.8e 140.35e 8e -4e flame-stirred
     om1f-6-medallion fact? 0=  fiona -119.67e 9e 151.64e 5e 5e touches? and if  ['] take-medallion calm-only offer  then
     fiona hide-area in-area?  fiona -90 60 heading? and if
-        stalker-busy? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-busy? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
     fiona $C 60 faces-area? if  ['] the-sheet unhurried offer  then
     fiona $D in-area?  fiona 90 60 heading? and if  ['] the-cage unhurried offer  then

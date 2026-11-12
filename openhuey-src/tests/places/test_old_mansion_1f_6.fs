@@ -56,4 +56,8 @@ $21 4 story.kit:figure-in  20 run-frames  old-mansion-1f-6 1 rooms send go-to-ro
 T{ [: walker-slot figure 0< 0= ;] in-place -> -1 }T
 [: -1 in-further ! ;] in-place  120 run-frames   \ (as she steps further in: area $B a gate)
 T{ [: walker-slot figure body-yaw angle-wrap 1.6e f< ;] in-place -> -1 }T
+testing by the cage after the 3F's turn (no walker due): the homunculus dropped all the same, once
+om1f-6-flag1 story-flag-clear  om3f-1-flag2 story-flag-set  room-afresh
+0 -100e 0e 15e put  0 -100e 0e 40e put   \ (across the gate $A)
+T{ om1f-6-flag1 story-flag? -> -1 }T
 test-summary

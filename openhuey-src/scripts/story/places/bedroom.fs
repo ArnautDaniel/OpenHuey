@@ -87,24 +87,24 @@ $40 constant glass-strength
 : facing? ( area deg within -- flag )  {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 
 : remark-fire ( -- )  fiona wait-move  fiona -40e -60e turn-to-xz  fire-msg say ;
-: portrait ( msg tri face F: x z -- )   \ (looked at closely, a remark said, back)
-    {: msg tri face F: x z :}  tri face x z at-spot
-    20e -10e 0e 10e looking  fiona look-at-anim start-anim  40 frames
+: portrait ( msg tri face F: x z pitch -- )   \ (looked at closely - the camera that far down - a remark said, back)
+    {: msg tri face F: x z pitch :}  tri face x z at-spot
+    20e pitch 0e 10e looking  fiona look-at-anim start-anim  40 frames
     msg say  fiona wait-anim  16 frames  look-done ;
 : portrait-1 ( -- )
     c2f-3-portrait-1-examined fact!
     portrait-1-remarked @ if  portrait-1-again  else  -1 portrait-1-remarked !  portrait-1-msg  then
-    $B5 90 43.571e -39.929e portrait ;
+    $B5 90 43.571e -39.929e -10e portrait ;
 : portrait-2 ( -- )
     c2f-3-portrait-2-examined fact!
     portrait-2-remarked @ 0= if  -1 portrait-2-remarked !  portrait-2-msg
     else  c2f-3-portrait-1-examined fact? c2f-3-portrait-3-examined fact? or if  portrait-2-again  else  portrait-2-msg  then  then
-    $9F 0 -37e 63e portrait ;
+    $9F 0 -37e 63e -5e portrait ;
 : portrait-3 ( -- )
     c2f-3-portrait-3-examined fact!
     portrait-3-remarked @ 0= if  -1 portrait-3-remarked !  portrait-3-msg
     else  c2f-3-portrait-1-examined fact? c2f-3-portrait-2-examined fact? and if  portrait-3-again  else  portrait-3-msg  then  then
-    9 -90 -40.418e -39.428e portrait ;
+    9 -90 -40.418e -39.428e -5e portrait ;
 : close-look ( tri face F: x z dist pitch yaw rise -- )   \ (she is set there, the story's shot on her)
     {: tri face F: x z d p y r :}  fiona wait-move  4 frames
     fiona tri face x z place-at  d p y r looking  4 frames ;
@@ -155,7 +155,7 @@ $40 constant glass-strength
 3 constant under-bed-camera
 : hewie-hides ( -- )   \ (Hewie under the other bed while she hides)
     hewie hold  hewie hewie-hiding-motions motions-for  hewie wait-move
-    hewie run-move $88 -1  $88 18.5e -37.5e floor-at  180 deg>yaw  move  hewie wait-move
+    hewie walk-path-move $88 -1  $88 18.5e -37.5e floor-at  180 deg>yaw  move  hewie wait-move
     hewie use-motions  -1 hewie-in-place !
     begin  hiding-step @ 1 < while  yield  repeat
     hewie true noclip  hewie 0 hid-motion 5 play-blend  hewie 1 hid-motion 10 start-blend  hewie false noclip  hewie-hidden state!
@@ -167,11 +167,11 @@ $40 constant glass-strength
         fiona $27 180 14.5e -37.5e walk-to  fiona use-motions  fiona hewie look-at
         begin  hewie-in-place @ 0= while  yield  repeat
         1 hiding-step !  fiona true noclip  fiona -1 look-at
-        fiona 0 hid-motion 5 start-blend8  28 frames  slide-sound room-bank fiona sound-by  fiona wait-anim
+        fiona 0 hid-motion 5 start-blend8  28 frames  slide-sound common-bank fiona sound-by  fiona wait-anim
     else
         fiona use-motions
         fiona walk-anim-move 4 hid-motion 5  $27 14.5e -37.5e floor-at  180 deg>yaw  move  fiona wait-move
-        1 hiding-step !  fiona true noclip  slide-sound room-bank fiona sound-by
+        1 hiding-step !  fiona true noclip  slide-sound common-bank fiona sound-by
         fiona 5 hid-motion 10 start-blend8  fiona wait-anim
     then
     fiona 1 hid-motion 10 start-blend  fiona false noclip
@@ -181,7 +181,7 @@ $40 constant glass-strength
     {: out-xt :}
     begin
         circle button-pressed? if  out-xt execute  2 hiding-step !  stalker-in? if  out-caught  else  slips-out  then  exit  then
-        in-panic? found-her @ or if  in-panic? 0= if  seized-sound room-bank fiona sound-by  then  out-caught exit  then
+        in-panic? found-her @ or if  in-panic? 0= if  seized-sound common-bank fiona sound-by  then  2 hiding-step !  hauled-out exit  then   \ (Hewie out at once: the count at 2)
         hidden-calm  yield
     again ;
 : hide-under-bed ( under-xt out-xt -- )   \ (under-xt run once she's under it)

@@ -3,8 +3,8 @@
 ## Purpose
 
 The message window: the rooms' texts (what Fiona sees and says as she examines things), page by
-page, and the choices some of them ask; and the action prompt, shown while something here can be
-examined. The original's text Task (`src/game/text.c`) and `SceneGame_ActionPrompt`.
+page, and the choices some of them ask; the story's action prompt opens its markers here (system
+messages $800A..$800D: story.md). The original's text Task (`src/game/text.c`).
 
 ## API
 
@@ -12,17 +12,17 @@ examined. The original's text Task (`src/game/text.c`) and `SceneGame_ActionProm
 |---|---|---|---|
 | `show-text` | `( msg -- )` | in (a room's scripts) | Show message `msg` (bit 15 a system message, 14 the second table). |
 | `close-text` | `( msg -- )` | in | Close it if it shows `msg` (`$FFFF`: whatever it shows). |
-| `text-closed` | `( msg answer -- )` | out, to who showed it | Closed; the option chosen (-1: no choice). |
-| `text-shown` | `( on -- )` | broadcast | Open / closed: Fiona stands while it is up. |
-| `prompt` | `( kind -- )` | in (the room, each frame) | Something can be examined here: the prompt (gone when not offered for 2 frames). |
+| `text-closed` | `( msg answer -- )` | out, to who showed it | Closed, or another message took its place (Task_Open); the option chosen (-1: no choice). |
+| `text-shown` | `( on -- )` | broadcast | Open / closed (Fiona notes it; it doesn't hold her - nothing of the original's Fiona reads the window). |
 
 **Facts:** the messages laid out by C (`game/messages.c`: pages of lines, the options, each
 character's colour and the frame it is typed on - `message-run`, `message-typed`, `message-skip`,
 `message-close-after`, `message-place`, `message-align`; the parameters `message-param!`), the pad's buttons (`keys.fs`), the arrows.
 **Sounds:** the menu's (bank 5): $2B an answer, $2C cancelled to the last option, $2A the cursor.
 **Draws** on the retained UI layer (`ui-clear`, `ui-rect`, `ui-text`: C keeps what an actor put
-there and draws it each frame), layers 2 (the window) and 3 (the prompt). The layers, in drawing
-order: 0 a scene's movie, 1 the fade, 2 the window, 3 the prompt, 4 the subtitles, 5 the pause.
+there and draws it each frame), layer 2. The layers, in drawing order: 0 a scene's movie, 1 the
+fade, 2 the window, 3 unused (OpenHuey's own prompt was drawn there until 0.2.47), 4 the
+subtitles, 5 the pause.
 
 ## Rules
 
@@ -51,8 +51,8 @@ order: 0 a scene's movie, 1 the fade, 2 the window, 3 the prompt, 4 the subtitle
 
 ## Status
 
-**Built** (`scripts/window.fs`), with the story's S2. The prompt is the circle button's glyph and
-"look", in the game's own font (`draw-prompt`). Checked by `tests/window/test_window.fs`.
+**Built** (`scripts/window.fs`), with the story's S2. Checked by `tests/window/test_window.fs`; the
+prompt's markers by `tests/story/test_examine.fs`.
 
 OpenHuey's own: the panel's look and width (the original's box is a soft-edged shade hugging the
 text, Task_DrawBox), the page mark. Not needed on this disc: the colour's blend bit (0x80: the
@@ -60,3 +60,9 @@ glyphs subtracted) never reaches the window - Task_OpenDefault's base colour is 
 message's 0x03 n has it (the sub screen's own words do: items.md); furigana (0x16 base 0x18
 reading 0x17) is in none of the USA tables (the reading would be dropped); nor is 0x19 (the child
 task: nothing in the game gives a Task a child), skipped with its two bytes.
+
+**Read again, 2026-11 (0.2.47).** The typing (Text_GlyphFrames by speed; cancel pressed types to the next pause)
+and the choices (Task_StateChoice) match. The action prompt's markers are ported (0.2.47): the original
+draws no button prompt - SceneGame_ActionPrompt opens system messages in this window (scene_game.c draws it each
+frame, +0xF6B6B8), two of them empty; the "(circle) look" drawn until then was OpenHuey's own. A message shown while
+another is up takes its place, its asker told.

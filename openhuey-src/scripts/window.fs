@@ -1,17 +1,16 @@
 \ window.fs - messages on screen (docs/subsystems/window.md): the message window (the original's
-\ text Task, src/game/text.c) and the action prompt (SceneGame_ActionPrompt). A message is laid
+\ text Task, src/game/text.c - the story's action prompt opens its markers here too). A message is laid
 \ out by C (game/messages.c: pages of lines, its options, each character's colour and the frame
 \ it is typed on); the window types a page out (Task_StateType: holding cancel - the triangle -
 \ types up to the next pause), then any face button, a shoulder or Select turns it; on the last
 \ page of a choice the arrows pick an option and the cross answers it - the window then shows the
 \ message the option leads to, or closes; a message may close itself some frames after it is
-\ typed (0x10). Closing, it tells whoever showed it, with the option chosen. Drawn on the
-\ retained UI layer.
+\ typed (0x10). Closing, it tells whoever showed it, with the option chosen - and so as another
+\ message takes its place (Task_Open). Drawn on the retained UI layer.
 IN: window
 USING: engine actors messages keys ;
 
-2 constant text-layer      \ (the UI layers: 0 the movie, 1 the fade, 2 the window, 3 the prompt)
-3 constant prompt-layer
+2 constant text-layer      \ (the UI layers: 0 the movie, 1 the fade, 2 the window)
 
 $FFFF constant no-message   \ (an option leading nowhere; to close-text: whatever is shown)
 $C000 constant message-table-bits   \ (bit 15 a system message, bit 14 the second table)
@@ -25,8 +24,6 @@ state: window-state
   cell field picked         \ the option under the cursor
   cell field chosen         \ the option answered (none: no choice made)
   cell field place         \ the box's place when the message gives none (0x0A n)
-  cell field prompt-kind    \ the action prompt (0: none)
-  cell field prompt-age     \ frames since it was last offered
   cell field blink          \ frames drawn (the page mark blinks)
   cell field typed          \ frames the page has been typing (game/messages.c: each glyph's frame)
   \ the panel, measured each frame for the page shown (window pixels)
@@ -112,20 +109,10 @@ create cursor-text  cursor-glyph c,
     choosing? if  cursor  then
     last-page? 0= if  more-mark  then ;
 
-$C0 constant circle-glyph   \ (the font's pad buttons from $C0: circle, triangle, square, cross, L1 ...)
-create look-text 8 allot
-: look-words ( -- addr len )   \ "(circle) look"
-    circle-glyph look-text c!  s"  look" look-text 1+ swap move  look-text 6 ;
-: draw-prompt ( -- )
-    prompt-layer ui-clear
-    prompt-kind @ 0= open? or if  exit  then
-    look-words  screen-size  {: a n w h | pen :}  h 224 / 1 max to pen
-    prompt-layer a n  w a n pen text-width - 2/  h 9 * 10 /  $FFFFFFFF pen ui-text ;
-
 \ ---- answering ----
-: close ( -- )
-    shown @  chosen @  asked-by @ dup alive? if  send text-closed  else  drop 2drop  then   \ (the asker gone: no one told)
-    none shown !  0 broadcast text-shown ;
+: tell-closed ( -- )   \ (the asker gone: no one told)
+    shown @  chosen @  asked-by @ dup alive? if  send text-closed  else  drop 2drop  then ;
+: close ( -- )  tell-closed  none shown !  0 broadcast text-shown ;
 \ (Task_StateChoice: the message an option leads to opens where this one was, boxed)
 : answer ( -- )   \ the option's message follows (from the same table), or the window closes
     picked @ chosen !  place-now no-box invert and place !
@@ -175,16 +162,14 @@ $2A constant cursor-sound   $2B constant decide-sound   $2C constant cancel-soun
 behaviour showing
   on spawned ( -- )  none shown !  self subscribe tick  self subscribe frame-end ;
   on show-text ( msg -- )
-      open? 0= if  -1 broadcast text-shown  then
+      open? if  none chosen !  tell-closed  else  -1 broadcast text-shown  then   \ (the one up taken over)
       sender asked-by !  none chosen !  0 place !  lay-out ;
   on close-text ( msg -- )
       open? 0= if  drop exit  then
       dup no-message = swap shown @ = or if  close  then ;
-  on prompt ( kind -- )  prompt-kind !  0 prompt-age ! ;
   on tick ( -- )
-      open? if  shown @ message-layout drop  keys  1 typed +!  then
-      1 prompt-age +!  prompt-age @ 2 > if  0 prompt-kind !  then ;
-  on frame-end ( -- )  1 blink +!  draw  draw-prompt ;
+      open? if  shown @ message-layout drop  keys  1 typed +!  then ;
+  on frame-end ( -- )  1 blink +!  draw ;
 end-behaviour
 
 : window-spawn ( -- id )  showing window-state s" window" spawn ;

@@ -86,8 +86,8 @@ box $80202020 0 0 shard-look   box 0.812e 0.687e 0.187e 0.312e shard-uv   box $1
 : barks-at-end ( -- )  -47.23e 142e 1.87e hewie-barks-at ;
 : spots ( -- )
     lever-area 180 lever-offer
-    wt4f-1-medallion fact? 0=  fiona -71.41e 142e -7.67e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then
-    box broken?  wt4f-1-camomile fact? 0= and  fiona -86.45e 46e -8e 5e 5e touches? and if  ['] pick-camomile calm-only offer  then ;
+    wt4f-1-medallion fact? 0=  fiona -71.41e 143e -7.67e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then
+    box broken?  wt4f-1-camomile fact? 0= and  fiona -86.45e 47e -8e 5e 5e touches? and if  ['] pick-camomile calm-only offer  then ;
 : hewie-at-end ( -- )
     wt4f-1-flag4 fact? 0=  hewie-noticed @ 0= and  hewie-in? and  hewie-cond-now @ well-cond = and  chased? 0= and  hewie-cmdable-now @ and
     hewie -47.23e 142e 1.87e 38e 10e centred-in? and if  -1 hewie-noticed !  ['] barks-at-end start drop  then ;

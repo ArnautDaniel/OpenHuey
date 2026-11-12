@@ -60,7 +60,7 @@ T{ -90 -25e 0e -44e put  shown-soon  50 play-on -> moths-gone-msg }T   \ (steppi
 
 testing the clock: saving (or Hewie not by her)
 room-afresh
-T{ 180 0e 4e -40e put  circle press  shown-soon  dup $8014 =  swap $8024 = or -> -1 }T
+T{ 180 0e 4e -40e put  circle press  shown-soon  dup $8017 =  swap $8024 = or -> -1 }T   \ (the second clock: "It's another clock...")
 60 run-frames  cross press  30 run-frames  key: Down tap  10 run-frames  cross press  100 run-frames   \ (the text out; no)
 T{ doing-busy?  window-shown 0< -> 0 -1 }T
 

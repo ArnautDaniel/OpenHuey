@@ -185,8 +185,8 @@ defer the-trap
     ['] creaks start drop  with-fiona-free  ['] startled start drop ;
 : blows ( -- )
     weak-wall-broken fact?  shaking @ or if  exit  then
-    140e -10e 94e 6e 5e struck-in? 0= if  exit  then
-    shakes @ 2 = if  ['] wall-gives  else  ['] shakes-it  then  start drop ;
+    140e -10e 94e 6e 5e her-blow-in? 0= if  exit  then
+    shakes @ 2 = if  ['] wall-gives  else  ['] shakes-it  then  start-only ;
 
 \ ---- what she does and says ----
 : no-knob ( -- )
@@ -262,7 +262,7 @@ defer the-trap
     room-sounds-in? 0= if  exit  then
     mechanism-sound-now -72e 10e 15e keep-sound
     first-ambient -17e 22e -9e ambient-sounds ;
-: flame-stirs ( -- )  flame-fx 22.8e 10.65e 68.75e 8e -4e flame-stirred ;   \ (someone stepping into its draught)
+: flame-stirs ( -- )  flame-fx 22.8e 14.65e 68.75e 8e -4e flame-stirred ;   \ (someone stepping into its draught)
 : barks-at-wall ( -- )  140e -10e 94e hewie-barks-at ;
 : hewie-looks ( -- )
     hewie-in?  hewie-cond-now @ well-cond = and 0= if  exit  then
@@ -289,8 +289,7 @@ create entries  1 , 1 ,   0 , 0 ,   0 , 0 ,   0 , 0 ,      \ (by exit 0 .. 3: th
     fiona to-exit-2-area left? if  2 prepare-exit  then ;
 : puppet-door-hit ( -- )   \ (a blow on the puppet door, before the marionette)
     broken-marionette-used fact? if  exit  then
-    fiona held? if  exit  then
-    -28e 0e 15e 10e 15e struck-in? if  ['] hit-the-door start drop  then ;
+    -28e 0e 15e 10e 15e her-blow-in? if  ['] hit-the-door start-only  then ;   \ (her blow; not again while it runs - track 5)
 : each-frame ( -- )
     events-held state? if  exit  then
     ambience  ways  on-the-plate  false plate-height  puppet-door-hit  blows  flame-stirs  hewie-looks  spots ;

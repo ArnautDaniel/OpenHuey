@@ -28,9 +28,8 @@ own: was-idle              \ she stood idle as it gave
     c2f-13-flag1 fact? 0= if  sparkle-fx -231e 61e 24e flicker-at  then  medallion-sparkle ;
 
 \ ---- the balcony gives: to black, the doors set anew, down to the great hall by the forced way ----
-: stalker-kept ( -- )  stalker hold  begin  yield  again ;
 : it-gives ( -- )
-    30 frames  music send bgm-resume  15 screen:to-black-2 with-music or fade  wait-fade  world-held state!
+    30 frames  no-track 1e background  15 screen:to-black-2 with-music or fade  wait-fade  world-held state!
     stalker-in? if  ['] stalker-kept start drop  then
     $35 $36 door-as  $36 closed-off  exits-redone ;
 : down-with-it ( way hewie-room rest? -- )   \ (her on it - idle, she rests a moment - or the stalker)
@@ -65,7 +64,7 @@ create cameras  2 , 2 , 2 ,   3 , 1 , 1 ,   $B , 0 , 0 ,   $C , 2 , 2 ,   \ (are
     0 exit-out  cameras 4 cameras-at
     fiona 2 entered? if  3 map-page  then   fiona 3 entered? if  4 map-page  then
     on-the-balcony  hewie-by-the-gap  hewie-wary  medallion-notice
-    medallion-look 1 hewie-looks-at  corner-look 1 hewie-looks-at  bridge-spots ;
+    medallion-look 1 hewie-looks-at  corner-look 1 hewie-looks-at  50 bridge-spots ;
 : person-in ( i -- )
     case
         fiona-p of  0 0 0 way-in  endof

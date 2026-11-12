@@ -123,7 +123,7 @@ create looks  21.03e 0e -17.8e  20e 12e 12e look,   -41.22e 4.5e -4.36e  28e 12e
     fiona 4 in-area?  fiona 50 -6e -22e faces-point? and if  ['] the-tub unhurried offer  then
     fiona 5 in-area?  fiona 0 50 heading? and if  ['] the-title unhurried offer  then
     om1f-9-refined-antimony fact? 0=  fiona -7.97e 12.42e 21.3e 5e 5e touches? and if  ['] take-antimony calm-only offer  then
-    om1f-9-refined-magnesia-found fact?  om1f-9-refined-magnesia fact? 0= and  fiona 7.72e 0e 15.08e 5e 5e touches? and if
+    om1f-9-refined-magnesia-found fact?  om1f-9-refined-magnesia fact? 0= and  fiona 7.72e 1e 15.08e 5e 5e touches? and if
         ['] take-magnesia calm-only offer
     then ;
 : person-in ( i -- )

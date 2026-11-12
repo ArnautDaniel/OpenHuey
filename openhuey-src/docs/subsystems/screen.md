@@ -40,3 +40,8 @@ original reads: left out. Checked by `tests/story/test_finishing.fs`, `test_scen
 `test_story_fades.fs`. *Note:* the drawn level goes linearly to its end; the original's alpha
 (128 / frames whole) stops short of full for some frames (15: 120 of 128) - not drawn so.
 *Not yet*: during her panic's start the original's step script (a character script) is held too.
+
+**Read again, 2026-11 (0.2.47).** Drawn as ScreenFade_Step colours it: this step's alpha - the whole-number rate
+(128 / frames) times the steps so far - not a straight line over the frames. So a fade out of 30 frames ends at 120
+of 128, a hair short of black (to-black-2's 15 more steps go all the way), and a fade in, its script over, isn't
+drawn any more. A fade of 0 frames is there at once (the original divides by 0).

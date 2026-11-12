@@ -34,6 +34,7 @@ Declared in `scripts/messages.fs`.
 | `hold-door`, `use-door`, `let-go-open`, `let-go-shut` | | to doors | At a door. |
 | `noise` | | to acoustics | Her steps (and later her screams, falls). Her source: `fiona-noise`. |
 | `fiona-doing` | `( mode sub cond cmd -- )` | broadcast at each frame's end | What she is doing as the frame left her, and her command (the panic and Hewie listen). |
+| `fiona-could` | `( what -- )` | broadcast at each frame's end | Her own request here (Progress_CharRequests, hers - the story's action prompt): the exit whose door area she stands in, else - not panicking - `ladder-could` + the ladder she faces, else `strain-could` straining at what won't move, else -1. |
 | `hewie-doing` | | in (Hewie's broadcast) | What he does: she chooses her commands by it (F3). |
 | `command`, `reaction`, `meet-me`, `meet-now`, `meet-off` | | to Hewie | Her commands, their effect on him, the meeting by his side (F3; docs/subsystems/hewie.md). |
 | `meet-at`, `meet-on`, `meet-refused` | | in (Hewie) | His answers. |
@@ -179,7 +180,10 @@ scripted moves.
 
 **F5 begun** (with the story's S3): the story's moves (`scripted-move`: `scripts/fiona/moves.fs`),
 `scripted` on / off (her hands off the controls), `hold-anim`, `show`, `moving` each frame;
-examining (`offer` / `take-offer`), messages on screen (`text-shown`: she stands).
+examining (`offer` / `take-offer`), messages on screen (`text-shown`: noted - her locked door's try
+waits for it - but she isn't held by it: nothing of the original's Fiona reads the window; a
+script reading her a message holds her, a remark she reads free, as the action prompt's empty
+markers are).
 
 ## F4a: struck and caught (`scripts/fiona/hurt.fs`)
 

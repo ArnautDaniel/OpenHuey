@@ -15,7 +15,7 @@ names (its +0x8BC: $2E in her clothes, $42 in the slip, $3D / $39 / $21 / $23 / 
 | Kind | Item | Let go | Drawn | What it does |
 |---|---|---|---|---|
 | 0 | Ball ($90) | thrown | a yellow sprite | bounces, rolls; 3 minutes; then hers again if she has none (and none lies about) |
-| 1 | Antimony Powder ($91) | aimed | a purple sprite | bursts on what it hits (a splash, $8D); a stalker treading on it: hurt 5 |
+| 1 | Antimony Powder ($91) | aimed | a purple sprite | bursts on what it hits (a drop splash - DropSplash, `drop-splash`: 32 droplets in its colour, a white flash - and $8D; the tube's twice the size); a stalker treading on it: hurt 5, and while he is powdered its strands drip from him (stalker.md) |
 | 2 | Magnesia ($92) | set down | GFM model 1 | armed after 30 s: goes off ($8E, a burst) - a hard blow of 15 (20%: startled) to the stalker within 10; the homunculi within reach struck; the stalker or a homunculus treading on it sets it off at once (see below) |
 | 3 | Bisque Doll ($93) | thrown | GFM model 2, lying | 5 minutes; Debilitas comes upon it (see below) |
 | 4 | Refined Antimony ($94) | aimed | orange | as 1, hurt 10 |

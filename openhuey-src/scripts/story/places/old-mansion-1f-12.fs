@@ -56,14 +56,14 @@ own: locked-remarked  own: box-seen  own: fire-noticed  own: sounds-on  own: pla
     om1f-12-rubrum-medallion-found fact?  om1f-12-rubrum-medallion fact? 0= and if  medallion-fx 52.04e 1e 5.68e flicker-at  then ;
 
 \ ---- a plate in a low head's mouth ----
-: in-the-mouth ( F: x z -- )   \ (turned to it, the plate pushed in)
+: in-the-mouth ( F: x z -- )   \ (turned to it, the plate pushed in; its sounds 1 further in)
     {: F: x z :}  stalkers-stay state!  fiona hold  fiona wait-move  fiona x z turn-to-xz
-    fiona reach-out-anim play  plate-sound room-bank x 10e z sound-there  16 frames  fiona reach-back-anim play ;
+    fiona reach-out-anim play  plate-sound room-bank x 10e z 1e f- sound-there  16 frames  fiona reach-back-anim play ;
 : low-head ( k fact F: x z -- )
     {: k f F: x z :}  word-right-now @ plate-right !  x z in-the-mouth
     plate-right @ if
         k 2 = if  letter-fx effect-off  then
-        lever-sound room-bank x 10e z sound-there  k shuts  f fact!
+        lever-sound room-bank x 10e z 1e f- sound-there  k shuts  f fact!
     else  30 frames  nothing-msg say  then
     stalkers-stay state-off ;
 : right-head ( -- )  2 om1f-12-flag2 12e -24e low-head ;
@@ -178,7 +178,7 @@ create calm-looks  38.13e 0e -9.78e  30e 30e 30e look,   -35.94e 0e -7.54e  16e 
     else  fiona 8 in-area?  fiona 180 50 heading? and if  ['] the-dragon unhurried offer  then  then
     fiona 9 in-area?  fiona 180 50 heading? and if  ['] the-dragon unhurried offer  then
     fiona $F in-area?  fiona -90 60 heading? and if  ['] the-ivy unhurried offer  then
-    om1f-12-rubrum-medallion-found fact?  om1f-12-rubrum-medallion fact? 0= and  fiona 52.04e 0e 5.68e 5e 5e touches? and if
+    om1f-12-rubrum-medallion-found fact?  om1f-12-rubrum-medallion fact? 0= and  fiona 52.04e 1e 5.68e 5e 5e touches? and if
         ['] take-medallion calm-only offer
     then ;
 : person-in ( i -- )

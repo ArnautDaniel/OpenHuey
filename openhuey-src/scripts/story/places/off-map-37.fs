@@ -118,7 +118,7 @@ create challenges   \ (each challenge's first room, loaded ahead; its stalker ki
     r 1 slot@ over-music-b flag-as  r 2 slot@ x-37-flag1 flag-as  r 3 slot@ over-music-c flag-as
     r 4 slot@ cf-13-flag1 flag-as  r 5 slot@ x-37-flag2 flag-as  r 6 slot@ over-music-d flag-as
     r 7 slot@ over-music-e flag-as ;
-: to-the-door ( -- )  hewie hold  hewie full-health  0 hewie send set-cond  hewie wait-move  hewie $76 180 -16e -82e walk-to  begin  yield  again ;   \ (Hewie's: by it, held)
+: to-the-door ( -- )  hewie hold  hewie full-health  0 hewie send set-cond  hewie wait-move  hewie $76 180 -1 walk-path-move -16e -82e go-to  begin  yield  again ;   \ (Hewie's: by it, held)
 : mini-game ( -- )
     none-chosen challenge-var var!  fiona wait-move  no-track!  mini-game-menu open-subscreen
     challenge-var var@ dup 4 < if  challenge  else  drop  then
@@ -181,7 +181,7 @@ create challenges   \ (each challenge's first room, loaded ahead; its stalker ki
     label @ m = if  label-down  then ;
 : facing? ( area deg within -- flag )  {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 : corner? ( flag msg xt -- )   \ (labelled; while she faces it, offered)
-    {: on m xt :}  on m labelled  on if  xt any-time offer  then ;
+    {: on m xt :}  on m labelled  on if  xt quiet-any-time offer  then ;
 : corners ( -- )
     $C 90 60 facing?  play-type-label ['] play-types corner?
     6 -90 60 facing?  art-label ['] art-gallery corner?

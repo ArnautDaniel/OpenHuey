@@ -26,7 +26,7 @@ create ahead  2 , 0 ,  3 , 1 ,   \ (area, exit loaded ahead)
 : belli-scene ( -- )
     belli-movie scenes:unseen-movie belli-cutscene load-scene drop  panic-eased  belli-msg run-scene ;
 : woken ( -- )
-    stalkers-stay state!  fiona hold  belli-scene
+    fiona hold  belli-scene   \ (stalkers-stay only cleared at its end, as Action1)
     fiona $27 -79 -0.18e 14.47e place-at  1 1 player-camera  camera-restart
     b1-1-door false open-mark  hall-door lock  b1-1-door lock  doors-redone  found-file-252 fact!
     15 fade-in  belli-seen resident-flag-set  belli-file give-file

@@ -13,13 +13,13 @@ $34 constant speed   \ (the lattice's fall: its object's +$34)
 : came-in ( exit -- )  drop  0 barred-floor floor-on  lattice-down  1 object-hide  0 show-part  1 hide-part ;
 
 \ ---- every frame ----
-create cameras  4 , 0 , 0 ,  7 , 0 , 0 ,   \ (area, set, path)
+create cameras  4 , 0 , 0 ,  5 , 1 , -1 ,  6 , 1 , -1 ,  7 , 0 , 0 ,   \ (area, set, path: all four entered - 0x27's relation 1)
 : walls-shade ( -- )
     33e 23e -5.9e  45e 23e -5.9e  33e 11e -5.9e  45e 11e -5.9e  light-doorway
     33e 11e -5.9e  45e 11e -5.9e  33e 0e -5.9e  45e 0e -5.9e  light-doorway
     45e 23e -5.1e  33e 23e -5.1e  45e 0e -5.1e  33e 0e -5.1e  light-doorway ;
 : each-frame ( -- )
-    0 exit-out  1 1 leaves-by  cameras 2 cameras-at  5 1 -1 camera-out  6 1 -1 camera-out
+    0 exit-out  1 1 leaves-by  cameras 4 cameras-at
     2 0 his-way-back  3 1 his-way  walls-shade  clock-shown ;
 : person-in ( i -- )  player person-of = if  0 0 0 way-in  1 0 0 way-in  then ;
 : went ( -- )  clock-gone ;

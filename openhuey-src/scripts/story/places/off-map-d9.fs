@@ -20,7 +20,7 @@ $19 constant forest-track   $2F constant search-var   $2E constant run-kind-var
     hewie activate  off-map-d9 119 0 hewie-to  hewie $77 120 -14.67e -14.87e place-at  0 0 player-camera
     stalker activate  off-map-d8 123 stalker-to  his-own-time
     run-kind-var var@ 0= if  0  else  3  then  run-stage  music-taken
-    fiona 0 at-exit  ['] run-begins hewie start-holding drop ;
+    0 her-exit-is  ['] run-begins hewie start-holding drop ;
 
 \ ---- every frame ----
 : each-frame ( -- )  0 0 leaves-by  clock-shown ;

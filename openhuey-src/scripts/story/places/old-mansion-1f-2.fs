@@ -60,7 +60,7 @@ create flames  -19.7e f, 22.5e f,  -19.7e f, 25e f,  -17.2e f, 22.4e f,  -17.2e 
     godstone-movie scenes:unseen-movie godstone-cutscene load-scene  ['] godstone-shown start drop
     panic-eased  if  -1 run-scene  then ;
 : lays-godstone ( -- )
-    stalkers-stay state!  fiona hold  stalker let-go  summoner-on state-off
+    stalkers-stay state!  fiona hold  stalker let-go  0 summon-take  summoner-on state-off
     15 screen:to-black-2 with-music or fade  wait-fade  hewie-for-scene
     godstone-scene  wait-fade
     fiona 0 idle  fiona $158 83 3e 24e place-at  camera-restart

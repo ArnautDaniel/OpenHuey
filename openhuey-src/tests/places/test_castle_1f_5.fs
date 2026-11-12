@@ -53,10 +53,10 @@ golem-done story-flag-set  c1f-5-flag1 story-flag-clear  2 story.base:partner-lo
 castle-1f-5 1 rooms send go-to-room  60 run-frames
 T{ c1f-5-flag1 story-flag?  game:debilitas body?  game:debilitas body-room -> -1 -1 castle-1f-5 }T
 600 run-frames
-T{ [: his-entrance @ ;] in-place -> 0 }T
+T{ [: his-entrance @  stalker-in? ;] in-place -> 0 0 }T   \ (over: taken off - act03's char-done)
 
 testing his shove: the rubble down, his scene over
-[: ['] shoves start drop ;] in-place
+[: this-room @ $3C stalker-to ;] in-place  30 run-frames  [: ['] shoves start drop ;] in-place
 T{ [: [: his-scene @ ;] in-place ;] 120 soon  [: [: his-scene @ 0= ;] in-place ;] 900 soon -> -1 -1 }T
 game:debilitas send stalker-out  60 run-frames
 

@@ -60,7 +60,7 @@ $803 constant creeping-anim   $207 constant fleeing-anim   \ (her creep behind t
         cb1-7-flag2 fact-off
     then
     c1f-13-antimony-powder-found fact?  c1f-13-antimony-powder fact? 0= and if  antimony-fx -254.5e 1e -95e flicker-at  then
-    specks-about  hanger 1 chimes-rest
+    specks-about  hanger 1 chimes-rest  0.9e hanger hanging swing-pushed object!   \ (Room08_Cmd01's rest: 0.9 of her travel already)
     c1f-13-chicken-jerky fact? 0= if  jerky-fx -283.73e 1e 2.22e flicker-at  then ;
 
 \ ---- Debilitas on the balcony after it fell: along it, his steps above, then his shove - the
@@ -73,7 +73,7 @@ $803 constant creeping-anim   $207 constant fleeing-anim   \ (her creep behind t
     steps-above
     stalker room-motion 5 start-blend8
     0  begin
-        stalker fiona 0 close-to? if  stalker throws-her  then
+        stalker fiona self-touching? if  stalker throws-her  then
         dup 60 = if  -283e 1e 37e dust  -280e 1e 42e dust  thud-sound room-bank stalker sound-by  then
         1+  stalker went-round? 0= while  yield
     repeat  drop
@@ -160,7 +160,7 @@ $803 constant creeping-anim   $207 constant fleeing-anim   \ (her creep behind t
 : spots ( -- )
     c1f-13-chicken-jerky fact? 0=  fiona -283.73e 1e 2.22e 5e 5e touches? and if  ['] pick-jerky calm-only offer  then
     fiona hiding-area in-area? if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] crouches calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] crouches hiding-spot offer  then
     then
     fiona balcony-area 50 faces-area? if  ['] fallen-balcony unhurried offer  then
     fiona false-door-area in-area?  fiona 90 50 heading? and if  ['] false-door-1 unhurried offer  then

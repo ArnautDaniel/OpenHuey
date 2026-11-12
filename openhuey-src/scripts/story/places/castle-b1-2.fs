@@ -123,7 +123,7 @@ $F constant search-var
     fiona water-area in-area?  fiona 180 45 heading? and if  ['] the-water unhurried offer  then
     2 locked-request? if  ['] tries-door any-time offer  then
     fiona shower-area in-area?  fiona 180 60 heading? and if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] behind-curtain calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] behind-curtain hiding-spot offer  then
     then
     cb1-2-camomile fact? 0=  fiona 78e 6.5e 20e 5e 5e touches? and if  ['] take-camomile calm-only offer  then
     cb1-2-medallion-found fact?  cb1-2-medallion fact? 0= and  fiona -44.9e -7e -12.9e 5e 5e touches? and if

@@ -125,7 +125,7 @@ $31 constant ambush-seen   $32 constant fed-seen
 : hewie-out ( -- )  hewie-in? dup hewie-gone !  if  hewie let-go  hewie false shown  then ;   \ (out of the scene)
 : hewie-back ( -- )
     hewie-gone @ 0= if  exit  then  0 hewie-gone !
-    hewie true shown  hewie activate  old-mansion-1f-8 after-scene-tri 140 hewie-to ;
+    hewie true shown  hewie activate  hewie after-scene-tri 140 place-on-tri ;   \ (0x3B: onto the triangle, facing)
 : seized ( -- )   \ (the first time: grabbed at - her fright)
     fiona use-motions  hand-slot figure-on  hand-slot 127.567e 0e -123.393e -90e figure-at  hand false doorway-fades
     fiona look-close-anim play  ['] hand-lunges start drop  15 frames

@@ -149,4 +149,7 @@ testing the movies replayed (the extras): each played, then back by the forced w
 T{ 60 replays -> -1 }T
 T{ 62 replays -> -1 }T
 T{ 63 replays -> -1 }T
+testing Hewie back after the hand's scene: on its triangle, facing 140 (0x3B) - not at her side
+room-afresh  hewie-brought  [: -1 hewie-gone !  hewie-back ;] in-place  5 run-frames
+T{ [: hewie after-scene-tri stands-on?  hewie body-yaw 140e deg>rad f- fabs 0.05e f< ;] in-place -> -1 -1 }T
 test-summary

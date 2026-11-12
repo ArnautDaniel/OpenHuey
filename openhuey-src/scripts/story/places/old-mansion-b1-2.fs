@@ -74,7 +74,7 @@ rubrum-vase $80101010 0 4 shard-look  rubrum-vase 0.5e 0.5e 0.25e 0.5e shard-uv 
     stalker wait-anim  0 smashing ! ;
 : smash-due ( -- )
     drawing @  omb1-2-breakable3-broken fact? or  omb1-2-flag1 fact? 0= or  her-kind? 0= or if  exit  then
-    stalker mirror-area entered?  st-mode-now @ 0= and if  ['] smashes start drop  then ;
+    stalker mirror-area entered?  st-mode-now @ 0= and  stalker held? 0= and if  ['] smashes start drop  then ;   \ (act07, mode 0)
 : smash-given-up ( -- )  her-kind?  stalker held? and 0= if  0 smashing !  then ;
 
 \ ---- as she comes in ----
@@ -150,9 +150,9 @@ create far-looks  -101.62e 0e 100.21e  20e 6e 6e look,   -132.75e 0e 71.15e  20e
     smashing @ if  smash-given-up  exit  then
     fiona mirror-area in-area?  fiona 0 60 heading? and 0= if  exit  then
     omb1-2-breakable3-broken fact? if  ['] the-shards unhurried offer  exit  then
-    stalker-in? 0= if  ['] the-curtain calm-only offer  exit  then
+    stalker-in? 0= if  ['] the-curtain hiding-spot offer  exit  then
     stalker mirror-area in-area?  fiona body-at stalker body-at vec-dist 40e f<= or if  no-time-message offer-remark-now  exit  then
-    ['] the-curtain calm-only offer ;
+    ['] the-curtain hiding-spot offer ;
 : locked-doors ( -- )
     6 locked-request? 0= if  exit  then
     fiona 0 before-door? if  ['] unlocks-it any-time offer  then
@@ -170,10 +170,10 @@ create far-looks  -101.62e 0e 100.21e  20e 6e 6e look,   -132.75e 0e 71.15e  20e
     fiona -133.09e 0e 71.35e 7e 10e touches?  fiona 60 -133e 71e faces-point? and if  ['] far-doll unhurried offer  then
     fiona $1D in-area?  fiona -90 50 heading? and if  ['] the-book unhurried offer  then
     viola-vase broken? if
-        omb1-2-viola-medallion fact? 0=  fiona 13.5e -10e -75e 5e 5e touches? and if  ['] take-viola calm-only offer  then
+        omb1-2-viola-medallion fact? 0=  fiona 13.5e -9e -75e 5e 5e touches? and if  ['] take-viola calm-only offer  then
     else  viola-vase breaks? if  viola-shows  then  then
     rubrum-vase broken? if
-        omb1-2-rubrum-medallion fact? 0=  fiona 13.5e -10e -59.5e 5e 5e touches? and if  ['] take-rubrum calm-only offer  then
+        omb1-2-rubrum-medallion fact? 0=  fiona 13.5e -9e -59.5e 5e 5e touches? and if  ['] take-rubrum calm-only offer  then
     else  rubrum-vase breaks? if  rubrum-shows  then  then
     58e 5e 19.5e  58e 5e 15e  58e -24e 19.5e  58e -24e 15e  light-doorway
     58e 5e -15e  58e 5e -19.5e  58e -24e -15e  58e -24e -19.5e  light-doorway ;

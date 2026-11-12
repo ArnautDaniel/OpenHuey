@@ -155,7 +155,7 @@ create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   \ (area,
     then
     scene-5-pending state?  1 locked-request? and if  ['] the-door any-time offer  then
     om3f-1-flag2 fact?  fiona 5 45 faces-area? and if  ['] the-body unhurried offer  then
-    got-mars-key fact? 0=  om3f-1-flag2 fact? and  fiona 1.29e 0e -17.02e 5e 5e touches? and if  ['] take-key calm-only offer  then
+    got-mars-key fact? 0=  om3f-1-flag2 fact? and  fiona 1.29e 1e -17.02e 5e 5e touches? and if  ['] take-key calm-only offer  then
     50e -29e -143e  -8.8e 9.3e -143e  50e -50e -143e  -8.8e -10e -143e  light-doorway
     66e -39e -143e  50e -29e -143e  69e -55e -143e  50e -50e -143e  light-doorway ;
 : person-in ( i -- )

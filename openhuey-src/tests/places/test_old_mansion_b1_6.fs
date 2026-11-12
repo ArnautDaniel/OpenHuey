@@ -52,7 +52,9 @@ omb1-6-medallion story-flag-clear  room-afresh  medallion items:items-of before 
 0 2.06e 0e -103.68e put  circle press  300 read-on
 T{ omb1-6-medallion story-flag?  medallion items:items-of -> -1 before @ 1+ }T
 testing SALTATIO: the dance, then her calmer
-room-afresh  0 golem-dance -1 0 broadcast item-event  [: doing-busy? 0= ;] 2000 soon drop
+room-afresh  0 golem-dance -1 0 broadcast item-event
+T{ [: panic-held state-flag? ;] 300 soon  no-pause state-flag? -> -1 -1 }T   \ (while it dances: her panic held, no pause)
+[: doing-busy? 0= ;] 2000 soon drop
 T{ shown-soon -> calmer-msg }T
 300 read-on
 testing the race begun: the golem set going, the button to run

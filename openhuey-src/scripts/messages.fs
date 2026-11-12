@@ -193,6 +193,10 @@ message fiona-shaking ( n -- )              \ broadcast each frame: her shakes t
 message fiona-struck-by ( who -- )           \ broadcast each frame after fiona-doing: who struck or caught her (+0x100; -1 nobody)
 message fiona-doing ( mode sub cond cmd doing -- ) \ broadcast each frame: her move mode, what she does, her
 message fiona-straining ( on -- )            \ broadcast each frame: she strains at something that won't move (Fiona +0x1AD5D2: the rooms' request $80000004)
+message fiona-could ( what -- )               \ broadcast each frame: her own request here (Progress_CharRequests, hers - the
+                                             \ story's action prompt): an exit (0..7) whose door area she is in, a ladder
+                                             \ (ladder-could + its link) she faces - not panicking - straining (strain-could), or -1
+$100 constant ladder-could   $200 constant strain-could
 message fiona-started ( code -- )           \ broadcast as she starts an action for Hewie (Fiona_MarkActionStart's +0x1AD6BC: the rooms' cond 0x26 - that frame only)
                                              \ condition, her command this frame (-1 none; 3 the praise held), her
                                              \ action (+0x1AD580: her-doing)
@@ -295,6 +299,8 @@ message room-leave ( -- )                    \ its exit is taken: phase 4
 message room-left ( -- )                     \ the next room is in: phase 5, then it reports
 message room-done ( -- )                     \ (to the story) finished: it may go
 message story-stop ( -- )                    \ (to the story) no more room scripts (tests of the others, the console)
+message event-frames ( n -- )                \ (from the story, to a place as it comes in) the frames since the game began here (+0x704), counted on by the place
+message event-frames! ( n -- )               \ (to the story) that count set (the scripts' 0xD4)
 
 \ ---- messages on screen (docs/subsystems/window.md) ----
 message show-text ( msg -- )                 \ (the window) show message msg; its closing answered to the sender
@@ -304,7 +310,6 @@ message text-shown ( on -- )                 \ broadcast: the window opened / cl
 message characters-still ( on -- )           \ broadcast: the stalkers, Hewie and the summoner held still or let go (OpenHuey's: a reading on the dimmed screen)
 message thing-made ( kind tri x y z vx vy vz -- )   \ (Fiona's let go) a thing at her hand, on its way (floats f>cell; things.fs)
 message fiona-message ( msg -- )             \ broadcast (Fiona: a locked door's built-in script) the room shows system message msg
-message prompt ( kind -- )                   \ (the window) an action is offered here this frame (the action prompt)
 
 \ ---- examining (the scripts' prepared action, Progress_PlayerButtons) ----
 message offer ( scene arg -- )               \ (room -> Fiona) an action here this frame, taken with the action button
@@ -399,6 +404,7 @@ message calm-in ( v -- )                     \ 0x93: calming (bit $80: 128 at on
 message panic-reach ( level -- )             \ 0xC9: the level set to it if not above it (Panic_SetLevel)
 \ ---- the story's orders to a character (the scripts' commands; P4) ----
 message stalker-order ( mode -- )            \ 0x2F: 0 after her, 2 to her room / searching here, 3 searching
+message exit-chosen ( exit -- )              \ her exit set by a room (Character_ChooseExit: room $C2's command 1, $D9 / $E0 in the run): the half of a split room she's in
 message stalker-clock ( frames -- )          \ 0x2A: his mode's clock (+0x1660)
 message stalker-knock-out ( -- )             \ 0x30: knocked down, out of health
 message stalker-down-over ( -- )             \ 0xB6 searched him, no gift due: his time down over (+0x1664 0) - he gets up

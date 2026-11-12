@@ -20,7 +20,7 @@ create flames  34.2e 18.3e 14.2e f, f, f,   34.2e 18.3e -14.2e f, f, f,   -34.2e
 : came-in ( exit -- )  drop  flames-lit  0 show-part  1 $2300 reverb ;
 
 \ ---- the hiding place ----
-: hides ( -- )  stalkers-stay state!  fiona $141 180 -0.12e -19.4e walk-to  her-motions $141 180 -1 -0.803e -15.664e hides-in ;
+: hides ( -- )  stalkers-stay state!  fiona $141 180 -1 walk-path-move -0.12e -19.4e go-to  her-motions $141 180 -1 -0.803e -15.664e hides-in ;
 : finds-her ( -- )  stalker hold  stalker wait-move  0 door-for-him  1 door-for-him  $B2 180 0.866e 0.417e run-finds-her ;
 : stalker-came ( -- )  came-on-her? if  search-var finding-odds search-var ['] finds-her run-searches  then ;
 

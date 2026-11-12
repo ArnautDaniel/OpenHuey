@@ -46,7 +46,6 @@ own: solved-here           \ the dials set right here, this visit: down to castl
     moon-movie scenes:keyed-movie moon-cutscene load-scene  castle-1f-12 preload  wait-fade
     world-frozen state!  $10 $FF movie-key  panic-eased  if  -1 run-scene  then
     world-held state!  world-frozen state-off ;
-: stalker-kept ( -- )  stalker hold  begin  yield  again ;
 : moon-comes ( -- )   \ (up from castle-1f-12)
     fiona hold  stalker-in? if  ['] stalker-kept start drop  yield  then  world-frozen state!
     moon-scene  solved-here @ if  forced-exit  else  forced-exit 1 or  then  take-exit ;

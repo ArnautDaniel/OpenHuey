@@ -22,7 +22,7 @@ USING: engine game-state actors messages common flag-names facts room-names stor
     panic-eased  if  -1 run-scene  then ;
 : the-end ( -- )
     seen-flag resident-flag? 0= if  no-pause state!  then
-    stalker let-go  hewie let-go  fiona hold  fiona wait-move
+    stalker let-go  0 summon-take  hewie let-go  fiona hold  fiona wait-move
     the-scene  her-double figure-out  other-slot figure-out
     ending-d ending-var var!  world-held state!  story-over game-over
     tintstalker-kind false no-shadow ;

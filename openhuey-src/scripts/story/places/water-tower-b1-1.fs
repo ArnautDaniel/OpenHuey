@@ -181,10 +181,10 @@ create flames   74.12e f, 19.12e f, -207.3e f,   28.1e f, 18.9e f, -256.9e f,   
     1 rattles +!  10 trust+  rattle-file give-file ;
 : in-the-cell ( -- )   \ (phase 1 while in it: her commands to Hewie; the door she kicks)
     out-of-cell fact? if  exit  then
-    started-now @ go-there-cmd =  hewie held? 0= and  hewie-breakable-now @ and if   \ (cond $31: Hewie_MayBreakOff - he may be taken off what he does)
+    started-now @ go-there-cmd =  hewie held? 0= and  hewie-breakable-now @ and  fiona held? 0= and if   \ (cond $31: Hewie_MayBreakOff - he may be taken off what he does; act 2 on her, mode 0)
         ['] sends-for-key fiona start-holding drop
     then
-    started-now @ come-back-cmd =  rattles @ 3 <> and  hewie-breakable-now @ and if
+    started-now @ come-back-cmd =  rattles @ 3 <> and  hewie-breakable-now @ and  hewie held? 0= and if   \ (act 4 on him, mode 0)
         ['] runs-at-door hewie start-holding drop
     then
     fiona -17e 0e 8e 10e 15e blow-in?  fiona held? 0= and  ['] tries-the-door running? 0= and if   \ (her kick at it: the rooms' zones test a character's point)
@@ -217,7 +217,7 @@ create flames   74.12e f, 19.12e f, -207.3e f,   28.1e f, 18.9e f, -256.9e f,   
 : pipes ( -- )
     wtb1-pipe-1-burst fact? 0= if
         -33e 0e -167e 5e 8e struck-in? if  wtb1-pipe-1-burst fact!  2 $40 $19A -33e -167e bursts  then
-        fiona -33e 0e -167e 5e 8e blow-in? if  ['] knocked-over fiona start-holding drop  then
+        fiona -33e 0e -167e 5e 8e blow-in?  fiona held? 0= and if  ['] knocked-over fiona start-holding drop  then   \ (act $1D, mode 0: once a blow)
     then
     wtb1-pipe-2-burst fact? 0= if
         -48e 0e -296e 5e 8e struck-in? if
@@ -372,9 +372,9 @@ create ahead  $18 , 1 ,   \ (area, exit loaded ahead)
     then  8 -112e 16.5e -114e keep-sound ;
 : spots ( -- )
     fiona $19 in-area? if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
-    wtb1-pipe-2-burst fact?  wtb1-miniature fact? 0= and  fiona -48e 0e -296e 5e 5e touches? and if  ['] the-miniature calm-only offer  then
+    wtb1-pipe-2-burst fact?  wtb1-miniature fact? 0= and  fiona -48e 1e -296e 5e 5e touches? and if  ['] the-miniature calm-only offer  then
     wtb1-map fact? 0=  fiona $12 50 faces-area? and if  ['] the-map unhurried offer  then
     out-of-cell fact? 0=  $11 90 50 facing? and if  ['] the-key unhurried offer  then
     wtb1-figurine fact? 0=  $13 -104 50 facing? and if  ['] the-figurine calm-only offer  then
@@ -385,9 +385,9 @@ create ahead  $18 , 1 ,   \ (area, exit loaded ahead)
     wtb1-pipe-3-burst fact? 0=  $1C 106 60 facing? and if  ['] the-pipe unhurried offer  then
     wtb1-pipe-2-burst fact? 0=  $1D -158 60 facing? and if  ['] the-pipe unhurried offer  then
     wtb1-pipe-1-burst fact? 0=  $1E 12 60 facing? and if  ['] the-pipe unhurried offer  then
-    wtb1-viride-found fact?  wtb1-viride fact? 0= and  fiona -42.27e 0e -5.28e 5e 5e touches? and if  ['] the-viride calm-only offer  then
-    wtb1-pipe-3-burst fact?  wtb1-album-medallion fact? 0= and  fiona 84e 0e -220e 5e 5e touches? and if  ['] the-album calm-only offer  then
-    wtb1-beef-jerky fact? 0=  fiona 15.77e 0e -102.69e 5e 5e touches? and if  ['] the-jerky calm-only offer  then ;
+    wtb1-viride-found fact?  wtb1-viride fact? 0= and  fiona -42.27e 1e -5.28e 5e 5e touches? and if  ['] the-viride calm-only offer  then
+    wtb1-pipe-3-burst fact?  wtb1-album-medallion fact? 0= and  fiona 84e 1e -220e 5e 5e touches? and if  ['] the-album calm-only offer  then
+    wtb1-beef-jerky fact? 0=  fiona 15.77e 1e -102.69e 5e 5e touches? and if  ['] the-jerky calm-only offer  then ;
 : each-frame ( -- )
     events-held state? if  flames-stir exit  then
     1 1 leaves-by  cameras 15 cameras-at  ahead 1 ways-out

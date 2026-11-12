@@ -23,6 +23,7 @@ own-reset
 
 \ ---- its own state (a visit) ----
 own: hum-started           \ the breaker's hum begun (then kept going)
+own: doll-looks            \ her looks at the doll this visit (her remarks in turn: the room's variable 7)
 own: wires-touched         \ she went in among the wires (once a visit)
 own: gate-held             \ the gate held up as she came in (Hewie on the plate next door)
 
@@ -32,7 +33,7 @@ own: gate-held             \ the gate held up as she came in (Hewie on the plate
 2 constant leaving-0-area   3 constant near-exit-1-area   8 constant breaker-area   9 constant gate-area
 $11 constant wires-area   1 constant gate-exit   1 constant player-exit-area   0 constant locked-exit
 0 constant breaker-sound   1 constant gate-sound   2 constant thud-sound   3 constant hum-sound
-1 constant death-movie   0 constant death-cutscene   $1C constant death-seen   7 constant doll-looks-var
+1 constant death-movie   0 constant death-cutscene   $1C constant death-seen
 $F0 constant clear-tri   $C7 constant thrown-tri   $8277 constant breaker-file
 : lowered? ( -- flag )  breaker-lowered fact? ;
 : hum-at ( F: -- x y z )  -10e 15e 0e ;   : gate-at ( F: -- x y z )  0e 30e 30e ;
@@ -106,7 +107,7 @@ $30 constant not-landed   $34 constant speed   -25.3e fconstant shut-y
 
 \ ---- in among the wires, the breaker not lowered: she is killed (a game over) ----
 : electrocuted ( -- )
-    capture-no-end state!  no-pause state!  fiona hold  stalker let-go  16 frames  yield
+    capture-no-end state!  no-pause state!  fiona hold  stalker let-go  0 summon-take  16 frames  yield
     15 screen:to-black-2 with-music or fade
     death-movie scenes:keyed-movie death-cutscene load-scene  wait-fade  $12 $1E movie-key
     hewie let-go  panic-eased  if  -1 run-through  then
@@ -141,9 +142,9 @@ $30 constant not-landed   $34 constant speed   -25.3e fconstant shut-y
 : gate-shut-msg ( -- )  fiona wait-move  gate-msg say ;
 : doll ( -- )   \ (her remarks in turn)
     fiona wait-move
-    doll-looks-var var@ case
+    doll-looks @ case
         0 of  doll-msg say  1  endof   1 of  doll-2-msg say  2  endof   >r doll-3-msg say  0 r>
-    endcase  doll-looks-var var! ;
+    endcase  doll-looks ! ;
 : rattles-locked ( -- )
     fiona locked-exit to-door
     in-panic?  chased? or if  fiona rattle-front-slow-anim play  fiona -1 idle  7 frames  exit  then

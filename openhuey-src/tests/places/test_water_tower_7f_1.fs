@@ -64,6 +64,10 @@ T{ [: [: ['] runs-to running? 0= ;] in-place ;] 600 soon  [: his-plate @ ;] in-p
 testing ... not when she's facing away
 off-plates  hewie-off  free-him  60 run-frames  8 her-on  4 57.25e 0e 57.25e put
 T{ [: go-there-cmd started-now !  sends-him  ['] runs-to running? ;] in-place -> 0 }T
+testing ... the middle the last: sent even as she stands on it (the original asks only of the other plates)
+: facing-middle ( -- )  36 0 do  i 10 * 4e 0e 0e put  [: fiona 50 0e 0e faces-point? ;] in-place if  leave  then  loop ;
+off-plates  hewie-off  free-him  60 run-frames  facing-middle
+T{ [: 1 gear !  1 her-plate !  go-there-cmd started-now !  sends-him  ['] runs-to running? ;] in-place -> -1 }T
 testing all lit: the scene - the way on opened, the door behind closed off; on to 7F-2
 1 her-on  free-him
 T{ [: 1 gear !  2 his-plate !  1 her-plate !  lights  lined-up @ ;] in-place -> -1 }T

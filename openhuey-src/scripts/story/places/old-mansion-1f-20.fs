@@ -100,10 +100,10 @@ create looks  11.58e 0e -0.41e  23e 16e 16e look,
     om1f-20-prima-magnesia-found fact? 0=  hewie -42.23e 50e 236.98e 10e 5e touches? and if  ['] magnesia-sniffed start-only  then ;
 : pick-ups ( -- )
     om1f-20-weeping-stone fact? 0=  fiona 12.3e 8.5e 177.61e 5e 5e touches? and if  ['] take-stone calm-only offer  then
-    om1f-20-medallion-found fact?  om1f-20-medallion fact? 0= and  fiona 0.34e 0e 62e 5e 5e touches? and if  ['] take-medallion calm-only offer  then
-    om1f-20-medallion-sniffed-2 fact?  om1f-20-medallion-2 fact? 0= and  fiona 13.99e 0e 94.5e 5e 5e touches? and if  ['] take-medallion-2 calm-only offer  then
-    om1f-20-medallion-sniffed-3 fact?  om1f-20-medallion-3 fact? 0= and  fiona -13.99e 0e 126.99e 5e 5e touches? and if  ['] take-medallion-3 calm-only offer  then
-    om1f-20-prima-magnesia-found fact?  om1f-20-prima-magnesia fact? 0= and  fiona -42.23e 50e 236.98e 5e 5e touches? and if  ['] take-magnesia calm-only offer  then ;
+    om1f-20-medallion-found fact?  om1f-20-medallion fact? 0= and  fiona 0.34e 1e 62e 5e 5e touches? and if  ['] take-medallion calm-only offer  then
+    om1f-20-medallion-sniffed-2 fact?  om1f-20-medallion-2 fact? 0= and  fiona 13.99e 1e 94.5e 5e 5e touches? and if  ['] take-medallion-2 calm-only offer  then
+    om1f-20-medallion-sniffed-3 fact?  om1f-20-medallion-3 fact? 0= and  fiona -13.99e 1e 126.99e 5e 5e touches? and if  ['] take-medallion-3 calm-only offer  then
+    om1f-20-prima-magnesia-found fact?  om1f-20-prima-magnesia fact? 0= and  fiona -42.23e 51e 236.98e 5e 5e touches? and if  ['] take-magnesia calm-only offer  then ;
 : each-frame ( -- )
     over-music-c fact? if  0 exit-out  then  1 exit-out  2 2 leaves-by  3 3 leaves-by
     cameras 6 cameras-at  ahead 6 ways-out

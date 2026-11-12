@@ -30,7 +30,7 @@ create holes  $1F , $2F , $89 ,
 : spots ( -- )
     fiona clock-area 50 faces-area? if  ['] save-clock calm-hewie-up offer  then
     fiona water-area in-area?  fiona -44 50 heading? and if  ['] the-water unhurried offer  then
-    wt1f-1-medallion-found fact?  wt1f-1-medallion fact? 0= and  fiona -39.66e 0e 0.99e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then ;
+    wt1f-1-medallion-found fact?  wt1f-1-medallion fact? 0= and  fiona -39.66e 1e 0.99e 5e 5e touches? and if  ['] pick-medallion calm-only offer  then ;
 
 \ ---- every frame ----
 create entries  2 , -1 ,  0 , -1 ,  1 , 1 ,   \ (by exit 0 .. 2: the camera)

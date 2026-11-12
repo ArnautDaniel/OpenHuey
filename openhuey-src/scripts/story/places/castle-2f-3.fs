@@ -162,7 +162,7 @@ $A5 constant evasion-doc
 : by-the-bed ( -- )
     bed-area 180 60 facing? 0= if  exit  then
     c2f-2-flag1 fact? 0= if  ['] bed unhurried offer exit  then
-    stalker-in? if  no-time-msg offer-remark-now  else  ['] hides calm-only offer  then ;
+    stalker-in? if  no-time-msg offer-remark-now  else  ['] hides hiding-spot offer  then ;
 : spots ( -- )
     tv-area 180 90 facing? if  ['] tv or-sheets unhurried offer  then
     clothed? 0= if
@@ -254,12 +254,12 @@ own: stalker-gone             \ he has run out (the tutorial's end)
 : hewie-saved ( -- )
     15 screen:to-black-2 with-music or fade
     saved-movie scenes:opaque-when-movie saved-cutscene load-scene  wait-fade
-    hewie let-go  stalker let-go
-    fiona 0 idle  fiona wait-anim  west-door door-shut  doors-redone  1 knock  0 true no-shadow  panic-eased
+    hewie let-go  stalker let-go  0 summon-take
+    fiona 0 idle  fiona wait-anim  west-door door-shut  doors-redone  1 door-tried  0 true no-shadow  panic-eased
     if  saved-msg run-scene  then
     world-held state!  0 false no-shadow
     hewie activate  hewie well  hewie full-health  this-room @ 33 0 hewie-to  hewie $21 145 place-on-tri
-    hewie-commandable state!  $29 0 hewie-do  hewie-hold-still  hewie-freed fact!
+    hewie-commandable state!  $29 0 hewie-do  true hewie-stays-low  hewie-freed fact!
     fiona $13 -8 -16.325e -66.999e place-at  fiona 0 idle  fiona wait-anim
     0 prepare-exit  stalkers-blind state-off  stalker let-go  1 summon-take
     camera-restart  world-held state-off  traps-off state-off
@@ -267,7 +267,7 @@ own: stalker-gone             \ he has run out (the tutorial's end)
     15 screen:to-dim fade wait-fade  dog-commands-msg say  15 screen:from-dim fade wait-fade
     dog-commands-doc filed
     items-40-as-70 fact? if  15 screen:to-dim fade wait-fade  hard-warning-msg say  15 screen:from-dim fade wait-fade  then
-    hewie-file-2 give-file ;
+    false hewie-stays-low  hewie-file-2 give-file ;
 : told-to-attack ( frames -- )   \ (the tip shown until she gestures the attack, or the time is up)
     0 ?do  attack-tip-msg show  fiona-cmd-now @ attack-gesture = if  unloop exit  then  yield  loop ;
 : attack-tutorial ( -- )
@@ -285,7 +285,7 @@ own: stalker-gone             \ he has run out (the tutorial's end)
     fiona lying-low play  force-calm state-off  5 0 0 stage-music
     15 screen:from-black music-cut or fade  wait-fade
     240 told-to-attack
-    fiona rising start-anim  16 frames  attack-call room-bank fiona sound-by
+    fiona rising start-anim  16 frames  attack-call common-bank fiona sound-by
     hewie-no-attack state-off  $20 0 hewie-do  attack-tip-msg window send close-text  -1 shown-msg !
     fiona wait-anim  fiona stalker look-at
     fiona lying-low play

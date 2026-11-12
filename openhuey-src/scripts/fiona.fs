@@ -5,6 +5,16 @@ IN: fiona
 USING: engine vectors game-state facts actors messages common paths doors saves fiona.companion fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend fiona.voice fiona.letgo flag-names ;
 
 
+\ ---- her own request here, for the story's prompt (Progress_CharRequests): an exit's door area she
+\ stands in, else - not panicking - a ladder she faces, else straining at what won't move ----
+: straining? ( -- flag )  her-doing @ push-doing =  anim@ strain-anim = and ;
+: could ( -- what )
+    usable dup 0< 0= if  exit  then  drop
+    her-panic-stage @ panicking < if
+        ladder-here dup 0< 0= if  drop ladder-could +  exit  then  drop   \ (the side: one door region)
+    then
+    straining? if  strain-could  else  -1  then ;
+
 \ ---- arriving (by an exit: on its outside spot - Rooms_ExitPointOut - her heading kept from
 \ going through, as the original's: Fiona_Vt34 saves it, the scripts' 0x04 places without
 \ turning) ----
@@ -288,11 +298,12 @@ behaviour free
       -1 her-model !  -1 her-hit-who !  -1 her-shake-count !  her-creatures #creatures cells -1 fill  progress pr.vars $26 + c@ wear  2e 15e body-size
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe camera-cut  self subscribe write-save  self subscribe creature-doing
       self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene  self subscribe stalker-doing  self subscribe stalker-stride  self subscribe stalker-ties
-      self subscribe equipment ;
+      self subscribe equipment  self subscribe exit-chosen ;
   on leaving-room ( room exit -- )  hewie-played? if  nip fiona.companion:he-left exit  then  2drop  through-door ;
   on arrived ( room exit -- )   \ (the story's scripts place her too; in the run, she comes with him or not)
       hewie-played? if  fiona.companion:room-came exit  then  nip arrive  1 her act.visible l! ;
-  on to-exit ( exit -- )  hewie-played? if  mate-door ! exit  then  arrive ;   \ (in the run: Character_ChooseExit - the exit she came in by)
+  on to-exit ( exit -- )  hewie-played? if  mate-door ! exit  then  arrive ;
+  on exit-chosen ( exit -- )  mate-door ! ;   \ (her exit set by a room - Character_ChooseExit: the one she makes for with him)   \ (in the run: Character_ChooseExit - the exit she came in by)
   on hewie-told ( what arg -- )  fiona.companion:told ;
   \ examining (Progress_PlayerButtons): an action offered here, taken with the action button
   \ while she is free; a script of the room has her, or lets go; a message on screen
@@ -351,7 +362,8 @@ behaviour free
       unseen-frame
       her-mode @ her-sub @ her-cond @ her-cmd @ her-doing @ broadcast fiona-doing
       her-hit-who @ broadcast fiona-struck-by
-      her-doing @ push-doing =  anim@ strain-anim = and  broadcast fiona-straining
+      straining? broadcast fiona-straining
+      could broadcast fiona-could
       shook-from-rest broadcast fiona-shaking
       her-shake-count @ 0< 0= if  shakes-now her-shake-count +!  her-shake-count @ broadcast fiona-shakes  then   \ (a story counting them)
       plight  her-mode @ 3 = if  her-ladder @  else  -1  then  reach  broadcast fiona-plight

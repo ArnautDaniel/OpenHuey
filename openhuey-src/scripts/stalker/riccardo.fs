@@ -130,7 +130,7 @@ defer cry-hit ( who -- )
 $40 constant shot-noise
 : impact ( -- )
     effect-key? 0= if  exit  then
-    my-model @ gun-bone bone-pos  my-model @ gun-back-bone bone-pos  strike-mark
+    my-model @ gun-bone 0e 0e 0e  my-model @ gun-back-bone bone-pos  strike-mark
     shot-noise room-id self body-tri -1 stalker-noise acoustics-id send noise
     anim @ dup shot-down-anim = over shot-down-2-anim = or swap taunt-anim = or if  floor-debris  then
     anim @ carry-anim = if  fiona cry-hit  then ;

@@ -102,6 +102,6 @@ create looks  -3.91e 90e 3.23e  80e 26e 15e look,
     entries 2 ways-in  came-by @ 1 = if  3 map-page  then ;
 : went ( -- )
     force-followed state-off
-    met? if  stalker-no-fear state-off  no-stalker-camera state-off  partner false hush  stalker let-go  then ;
+    met? if  stalker-no-fear state-off  no-stalker-camera state-off  partner false hush  stalker let-go  0 summon-take  then ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-1f-1 place!

@@ -88,19 +88,19 @@ create pond-look  -33.33e -16.93e 69.69e 40e 6e 6e look,
     pond-look 1 hewie-looks-at ;
 
 \ ---- the pond: a splash as someone steps in (each spot once a visit) ----
-: splash-by ( flag-addr F: x z -- )
+: splash-by ( flag-addr F: x z -- )   \ (all three asked that frame)
     {: made F: x z :}  made @ if  exit  then
-    fiona x -16e z 12e 4e steps-into? if  fiona 5 x -16e z splash-from  -1 made !  exit  then
-    hewie x -16e z 12e 4e steps-into? if  hewie $A x -16e z splash-from  -1 made !  exit  then
+    fiona x -16e z 12e 4e steps-into? if  fiona 5 x -16e z splash-from  -1 made !  then
+    hewie x -16e z 12e 4e steps-into? if  hewie $A x -16e z splash-from  -1 made !  then
     stalker x -16e z 12e 4e steps-into? if  stalker 5 x -16e z splash-from  -1 made !  then ;
 : splashes ( -- )  splashed-1 -46e 70e splash-by  splashed-2 -23e 67e splash-by ;
 
 \ ---- the crouch evasion tip (once: in the hall's crossing, free - not with the stalker near) ----
-: crouch-tip ( -- )
-    world-frozen state!  draw-when-frozen state!
+: crouch-tip ( -- )   \ (act05, hers: held, her move done first)
+    fiona hold  fiona wait-move  world-frozen state!  draw-when-frozen state!
     15 screen:to-dim fade wait-fade  crouch-doc-msg say  15 screen:from-dim fade wait-fade
     got-doc-crouch-evasion fact!  crouch-doc filed
-    draw-when-frozen state-off  world-frozen state-off ;
+    draw-when-frozen state-off  world-frozen state-off  fiona let-go ;
 : tip ( -- )
     got-doc-crouch-evasion fact?  fiona tip-area in-area? 0= or  fiona-free? 0= or if  exit  then
     chased?  70e noticed-near? and if  exit  then

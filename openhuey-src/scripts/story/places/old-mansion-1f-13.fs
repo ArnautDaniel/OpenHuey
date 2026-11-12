@@ -43,7 +43,7 @@ own: frames-in  own: hewie-away  own: perfume-step
     0 true no-shadow  panic-eased  if  -1 run-scene  then  0 false no-shadow ;
 : hewie-held ( -- )  hewie hold  hewie false shown  begin  yield  again ;   \ (down: hidden away till it's over)
 : the-garden ( -- )
-    om1f-13-flag2 fact!  stalker let-go  summoner-on state-off  stalkers-stay state!  fiona hold
+    om1f-13-flag2 fact!  stalker let-go  0 summon-take  summoner-on state-off  stalkers-stay state!  fiona hold
     15 screen:to-black-2 with-music or fade  no-track 1e background  wait-fade
     hewie-in?  hewie-way-now @ 0= and dup 0= hewie-away !  if
         hewie-cond-now @ down-cond = if  ['] hewie-held start drop  else  hewie let-go  then

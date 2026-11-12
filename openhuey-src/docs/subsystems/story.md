@@ -43,8 +43,19 @@ has one.
   it ends or is stopped (the room left, `room-left`); a move is sent only for a character the
   running activity holds, and `wait-move` waits only on a move it asked for.
 - **Offers**: what she may do where she stands - `offer` (an activity, Fiona held for it),
-  `offer-remark` - the first offered in a frame wins; `unhurried`, `calm-only`,
-  `calm-hewie-up`, `any-time` as the original's kinds.
+  `offer-remark` - the first offered in a frame wins; `unhurried` (the scripts' 0x0A kind 0),
+  `any-time` (1), `calm-hewie-up` (3), `calm-only` (4: an examining), `hiding-spot` (5 / 6),
+  `quiet-any-time` (7: the extras room's corners) as the original's kinds.
+- **The action prompt** (`SceneGame_ActionPrompt`, `prompt-out` each frame): as what she could do
+  here changes - the room's doing, else her own request (`fiona-could`: an exit's door area, a
+  ladder, straining) - its marker opens in the window: an examining's "Huh? What's this?" ($800C),
+  a hiding place's "Wait a second! What's that?!" while chased ($800D; again as a chase starts or
+  ends), at an exit or a ladder the empty $800B, any other the empty $800A (nothing drawn - the
+  messages are `{at 128}` - but it takes the window: a message up goes, any button closes it);
+  none for kind 7. Ours closed while she is held, not her own (moveMode), backing off, straining
+  or offered a message to read; the last shown is kept then, so the same doing isn't shown
+  again; forgotten when nothing is offered, with flag $12, and as a room comes in. Not while
+  Hewie is the one played.
 - **Who is in**: the place keeps where each person was at the last frame's end (areas crossed)
   and what they last told (`fiona-doing`, `hewie-doing`, `stalker-doing`, `creature-doing`).
   `story` keeps the stalker's last report and gives it to a new place before `room-enter` (the
@@ -187,7 +198,8 @@ clear-up never kills an actor that took its id). A point on the screen: `point-s
   hole into the hidden room; `story/places/walkway.fs` what 2F and 4F share - the walkway
   turned by its lever, a `walkway:` each: which way, its height, the lever, Hewie's spots on it, what
   the room adds as it's across and once it has stopped): its 1F (the water, the clock), 2F (Riccardo
-  heard prowling above, then come for her; back 1800 frames after he left), 4F (the drum falling, the
+  heard prowling above, then come for her; back 1800 frames after he left; her exit set by the
+  walkway's side - `exit-chosen`, the half of the room the stalker and the summoner make for), 4F (the drum falling, the
   doors open only while the walkway is across), the hall of the planets (the plates lit in turn while
   the one before is stood on, Hewie sitting on the ones he reaches and sent to the next), 7F-2, the
   top (the models worn by her blows, Hewie lying in wait in a hole - his grab of Riccardo, the final
@@ -515,6 +527,39 @@ From `event.c`, `scene_game.c` (the order), `progress.c`.
 
 ## Status
 
+**The kit read again against event.c (2026-11, 0.2.47; `tests/story/test_kit_rules.fs`).** Put right:
+the scripts' items pass Events_ScriptRoom (event +0xD0) - in a hard game ($AF) Camomile and
+Lavender ($40 / $41) are given, named, counted and tabbed as the Medallion ($70: `as-scripts`; used
+up as they are, 0x59 $0C); the crouch's gate is cond 0x3D (Fiona_IsIdle, not panicking) and not
+backing off (0x3F $D), not scripted (`may-crouch?`); touching is Actor_Touching by both margins
+(`bodies-touching?`: conds 0x47 / 0x58 by the other's radius and height - the homunculi touching her
+while she crouches; 0x1F's margin up, `touches-facing-up?`, chaos-forest-10); a doing offered keeps
+it, a later doing replaces a message to read, 0xA5 replaces either; `busy?` as SceneGame_Busy
+(figures here, her panic's onset); half hidden with no stalker in the game the camera stays; the
+fury bait ($91) doesn't wait for her (its counter quirk, as $90); `stalker-free?` struck / engaged
+only by their subs; `place-at` on the triangle's plane (`tri-floor`: NavMesh_OntoPlane); an area
+gate's crossing, `exit-camera` and Hewie's exit test on the triangles' planes. Left: figures held
+by a script don't count in `busy?` (the kit doesn't hold them).
+
+**The rooms read again (2026-11, 0.2.47).** Cond 0x47 in the rooms (the stalkers' shoves that
+throw her, `unlocks`' "not with him on her") is `self-touching?` - the other's own radius and
+height as margins, not `close-to? 0`. Pickup offers from 0x7D (`zone-at-effect`) sit on the
+sparkle's own height (36 had been 1 low). 0x7E's track $FF is no track (`no-track 1e background`);
+only a pause byte of $FF resumes the stream (`bgm-resume`), pause 1 starts a track held
+(`bgm-want` with 1). An action started with mode 0 on a character does nothing while it is
+script-held (+0xE0), on a script track while the track runs (`start-only`). `stalker-kept` holds the
+stalker for the rest of a visit. The shared script $85 is the second clock (`another-clock`:
+"It's another clock...", castle-1f-18 and chaos-forest-8). Water Tower 2F's walkway sets her exit
+by its side (room $C2's command 1, Character_ChooseExit: `her-exit-is` - the `exit-chosen`
+broadcast, taken by the stalker, the summoner and Fiona's own door with him; the clock run's
+set-out, $D9 / $E0, sets it the same way, she not moved). Areas' cameras by 0x27's relation: 1 the
+crossing in (`area-camera`), -1 out (`camera-out`). The scripts' own variables (0x26 `var-set`, event
++0x810) are the room's, zeroed as it comes in (`own:` cells) - not the saved story variables
+(`var@` / `var!`, 0xD5 `pvar-set`). The events' frame count (+0x704, cond 0x5B) runs since the game
+began here - new game, extras, load: the story counts it and hands it to each place as it comes in
+(`event-frames`; `frames-in-play`, set by `frames-in-play!` - 0xD4). A character in a room's action is busy
+(+0xE0: no commands taken, our `hold`); 0x21 `self-scripted` is only whether she can reach him (+0x2D). Left: a Hewie taken off by `char-done` (Character_Deactivate) is only let go here.
+
 The history below runs from the converted rooms' machinery (S1 .. S5: the rooms' bytecode
 scripts as Forth, their opcode words - gone in 0.2.20, every room a place since) to the places.
 Tests named there that went with the machinery are gone too.
@@ -547,7 +592,7 @@ command. The new game stays the default start.
 **S2 built** (2026-10-08): examining and messages, items, zones.
 - **Examining** (`cmd_scene_change`, `Progress_PlayerButtons`): the scripts prepare an action
   each frame (`scene-change`; cleared after phase 1, as `Progress_CharRequests` does). After
-  phase 2 the room offers a "scene 5" one to Fiona (`offer`) and shows the prompt; with the
+  phase 2 the room offers a "scene 5" one to Fiona (`offer`) and the prompt's marker; with the
   action button pressed that frame, free, she takes it (`take-offer`): her action script starts
   and she is scripted (`scripted` on) until it ends (`scripted` off) - every script that takes a
   character tells it so, and a room releases its characters as it stops or is left. Other

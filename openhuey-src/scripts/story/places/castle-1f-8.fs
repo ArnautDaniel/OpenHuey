@@ -103,7 +103,7 @@ create flames  34.2e 18.3e 14.2e f, f, f,   34.2e 18.3e -14.2e f, f, f,
 : spots ( -- )
     c1f-8-magnesia fact? 0=  fiona 0e 8.5e 25e 5e 5e touches? and if  ['] reach-magnesia calm-only offer  then
     fiona hiding-area in-area?  fiona 180 60 heading? and if
-        stalker-in? if  no-time-message offer-remark-now  else  ['] hides calm-only offer  then
+        stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then
     then
     called?  fiona phone-area in-area? and  fiona 150 45 heading? and if  ['] telephone unhurried offer  then
     fiona chair-area in-area?  fiona 90 45 heading? and if  ['] chair unhurried offer  then

@@ -51,6 +51,7 @@ T{ $D -90 at  circle press  300 play-on  lectern-0-book-1 story-flag?  occult-ph
 testing each lectern's own: its shelves back at their stop
 0 0 -1 0 broadcast item-event  1200 play-on
 T{ books-placed story-flag?  [: s" movebook_red" place-x object@ 0e ~= ;] in-place -> -1 -1 }T
+T{ [: 8 this-room @ story.strings:room-string placed-shown? ;] in-place -> -1 }T   \ (0x50 with 0: drawn)
 testing the shelves by author; the door atop
 T{ $1C 180 at  said -> author-4-msg }T
 T{ $1D 0 at  said -> author-4-msg }T

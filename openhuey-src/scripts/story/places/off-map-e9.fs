@@ -12,7 +12,6 @@ USING: engine game-state actors messages common flag-names facts room-names effe
 
 own-reset
 own: reached   \ Fiona has reached the goal (her and Hewie's reaction made): the time shown as kept
-own: lamp-0  own: lamp-1  own: lamp-2  own: lamp-3   \ each lamp's flicker (its activity; 0 none)
 
 $2E constant run-kind-var   3 constant first-lamp-part   3 constant first-glow   $10 constant goal-area
 : lamp-spot ( g -- ) ( F: -- x z )   \ (the four glows' spots, 100.8 up)
@@ -30,11 +29,9 @@ $2E constant run-kind-var   3 constant first-lamp-part   3 constant first-glow  
     g true lamp  yield  g false lamp  yield  g true lamp ;
 : flicker-0 ( -- )  0 flickers ;   : flicker-1 ( -- )  1 flickers ;
 : flicker-2 ( -- )  2 flickers ;   : flicker-3 ( -- )  3 flickers ;
-: lamp-act ( g -- addr )  cells lamp-0 + ;   \ (own cells in a row)
-: flicker-lamp ( g -- )   \ (afresh: one already flickering starts over)
-    dup lamp-act @ ?dup if  stop-act  then
-    dup case  0 of  ['] flicker-0  endof  1 of  ['] flicker-1  endof  2 of  ['] flicker-2  endof  >r ['] flicker-3 r>  endcase
-    start swap lamp-act ! ;
+: lamp-xt ( g -- xt )  case  0 of  ['] flicker-0  endof  1 of  ['] flicker-1  endof  2 of  ['] flicker-2  endof  >r ['] flicker-3 r>  endcase ;
+: flicker-lamp ( g -- )   \ (on its track with mode 0: not while it's still flickering)
+    lamp-xt dup running? if  drop exit  then  start drop ;
 : by-chance ( g -- )  30 chance? if  flicker-lamp  else  drop  then ;
 : lamps-flicker ( -- )   \ (in the run's fourth kind: as she passes under them; and, rarely, by itself)
     run-kind-var var@ 3 <> if  exit  then

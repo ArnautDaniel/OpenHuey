@@ -6,7 +6,7 @@
 IN: screen
 USING: engine actors messages ;
 
-1 constant fade-layer   \ (the UI layers: 0 the movie, 1 the fade, 2 the message window, 3 the prompt)
+1 constant fade-layer   \ (the UI layers: 0 the movie, 1 the fade, 2 the message window)
 
 \ a fade over `frames` frames, by kind (ScreenFade_Step; the kind's bits $C0 / $30 fade the music
 \ and the volume with it: with the music). The even kinds go out, the odd come in.
@@ -25,7 +25,7 @@ state: screen-state
   cell field kind         \ (+0x11F1)
   cell field running      \ the fade on (+0x11F2: what the room's fading? asks)
   cell field steps        \ its steps so far (+0x20)
-  cell field rate         \ its alpha a step (+0x18: 128 / frames, a whole number)
+  cell field rate         \ its alpha a step (+0x18: 128 / frames, a whole number - drawn by it)
   cell field script       \ its step script's part (fade-script)
   cell field left         \ steps of that part left
 end-state
@@ -66,17 +66,18 @@ create fades
 
 \ ---- a step (0x5D, ScreenFade_Step): while the fade is on it goes a frame on; a fade's frame
 \ either way ----
-: drawn-step ( -- )   \ (drawn: in a straight line over its frames)
-    t @ frames @ < 0= if  exit  then
-    1 t +!  to-level @ from-level @ - t @ * frames @ / from-level @ + level ! ;
+: drawn-step ( -- )   \ (drawn as the original's colour: this step's alpha - its whole-number rate x the steps - so
+    \ a fade out of 30 frames ends at 120 of 128, a hair short of black; before 0.2.47 in a straight line)
+    frames @ 0= if  exit  then   \ (none: there at once - the original divides by 0)
+    alpha full-fade * opaque / level ! ;
 : step ( -- )
     running @ if  tell-overlay  drawn-step  1 steps +!  then  fade-frame ;
 : fade-over ( -- )   \ (0x5E) the fade counts as over: who asked told
     running @ 0= if  exit  then  0 running !
     asked-by @ dup 0< if  drop exit  then  -1 asked-by !
     dup alive? if  send fade-done  else  drop  then ;   \ (who asked may be gone - the story stopped)
-: script-done ( -- )   \ its fade over; the out kinds' scripts go on
-    fade-over  coming-in? if  no-script script !  else  lingering script !  fade-frame  then ;
+: script-done ( -- )   \ its fade over; the out kinds' scripts go on; the in kinds' end - not drawn any more
+    fade-over  coming-in? if  no-script script !  to-level @ level !  else  lingering script !  fade-frame  then ;
 : part ( script left -- )  left !  script ! ;
 : steps-done ( -- )   \ the steps past its frames: to-black-2 has 15 more
     kind @ to-black-2 = if  trailing held-out part  step  -1 left +!  else  script-done  then ;

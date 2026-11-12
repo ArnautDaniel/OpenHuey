@@ -72,10 +72,11 @@ testing the clamp struck: twice loosening it; the third time the bridge falls - 
 room-afresh  0 -13e 113e -86e put
 ' clamp -11e 118e -87e struck  60 run-frames  ' clamp -11e 118e -87e struck  60 run-frames
 T{ [: hits @ ;] in-place -> 2 }T
+[: far-door lock  near-door unlock ;] in-place  deliver   \ (the near door takes the far one's states: locked)
 ' clamp -11e 118e -87e struck
 T{ [: movie-skipped state-flag-set  c1f-11-flag1 story-flag? ;] 1500 soon -> -1 }T
 300 play-on
-T{ far-door doors:door-locked?  s" hanebasi1" turn-x object@ rad>deg -60e ~=  bridge-file filed? -> -1 -1 -1 }T
+T{ far-door doors:door-locked?  near-door doors:door-locked?  s" hanebasi1" turn-x object@ rad>deg -60e ~=  bridge-file filed? -> -1 -1 -1 -1 }T
 T{ clamp-area 180 at  said -> clamp-off-msg }T
 free-play  10 run-frames  0 game:fiona send costume
 

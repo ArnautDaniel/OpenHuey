@@ -48,9 +48,15 @@ state: place-state
   #people cells field marks          \ each one's animation marks reached (its event keys), as last told
   #people cells field in-here        \ each one in this room, as last seen
   #people /vec * field was-at        \ where each was at the last frame's end (areas crossed)
+  #people cells field was-tri        \ ... and the triangle there
   #people cells field seen
-  \ the offer this frame (the action prompt): its doing (an xt, 0 none), whether a message
-  cell field offer-xt  cell field offer-msg
+  \ the offer this frame (the action prompt): its doing (an xt, 0 none), whether a message;
+  \ the doing's offer-when
+  cell field offer-xt  cell field offer-msg  cell field offer-when
+  \ the prompt's marker: what she could do as it was last shown and its kind (-1: nothing), ours
+  \ up (0 none); her own request (fiona-could); the danger last frame
+  cell field marker-what  cell field marker-kind  cell field marker-up  cell field could-now
+  cell field danger-was
   \ what the others tell
   cell field danger-now  cell field panic-stage  cell field panic-level-now   \ (her panic's level, 0..100)
   cell field onset              \ her panic's first frames (the room's doings wait: SubPlay's frame flag bit 3)
@@ -59,6 +65,7 @@ state: place-state
   cell field shook-now          \ she shook this frame (the stick swung or a button)
   cell field shakes-now         \ her shakes counted so far (count-shakes on: old-mansion-b1-3)
   cell field loud-now           \ frames left of a loud noise made here (noise-was: $20 or more)
+  cell field frames-in-play     \ frames since the game began here (the events' +0x704: the story's, counted on each frame)
   cell field fell-now           \ the story's debris fallen through since the room last counted (keri-fell)
   cell field hewie-mode-now     \ his move mode (hewie-doing's mode: 0 his own)
   cell field started-now        \ the action she started for Hewie this frame (-1 none: fiona-started)
@@ -214,7 +221,7 @@ create mv-at /vec allot
 : wait-mark ( id bits -- )   \ its animation come to a mark (an event key of it)
     {: id bits | i :}  id person-of to i  i 0< if  exit  then
     begin  yield  i cells marks + @ bits and  id here? 0= or  until ;
-: floor-at ( tri F: x z -- x y z )  {: tri F: x z :}  x  tri tri-center fdrop fswap fdrop  z ;
+: floor-at ( tri F: x z -- x y z )  {: tri F: x z :}  x  tri x z tri-floor  z ;   \ (on its plane: NavMesh_OntoPlane)
 : deg>yaw ( deg -- ) ( F: -- yaw )  s>f deg>rad angle-wrap ;
 : walk-to ( id tri face F: x z -- )   \ to (x, z) on tri, then facing face (degrees)
     {: id tri face F: x z :}  id walk-move tri -1  tri x z floor-at  face deg>yaw  move  id wait-move ;
@@ -279,10 +286,19 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 \ ---- areas (the room's, C's facts): in one, or crossing into one since the last frame ----
 : in-area? ( id area -- flag )
     over here? 0= if  2drop false exit  then  swap body-at vec@ area-in? ;
+\ (where the scripts name a triangle - Events_InArea's, an area_cross gate's - the height is the
+\ floor's: on the triangle's plane)
+: plane-y ( tri -- ) ( F: x y z -- x y' z )  {: tri F: x y z :}  x  tri x z tri-floor  z ;
+: on-plane ( v tri -- ) ( F: -- x y z )  swap vec@  dup 0< if  drop exit  then  plane-y ;   \ (no triangle: as it is)
+: in-area-on? ( id area -- flag )   \ (in it, standing on her triangle's plane)
+    over here? 0= if  2drop false exit  then  swap dup body-at swap body-tri on-plane area-in? ;
 : crossed ( id area -- n )   \ 1 into it, -1 out of it, 0 neither
     {: id area | i :}  id person-of to i  i 0< if  0 exit  then
     i cells seen + @ 0= if  0 exit  then
-    i /vec * was-at + vec@  id body-at vec@  area area-cross ;
+    area area-kind 0= if   \ (a gate: both on their triangles' planes)
+        i /vec * was-at +  i cells was-tri + @ on-plane  id body-at id body-tri on-plane
+    else  i /vec * was-at + vec@  id body-at vec@  then
+    area area-cross ;
 : entered? ( id area -- flag )  crossed 1 = ;
 : heading? ( id deg within -- flag )   \ facing deg (degrees), within so many
     {: id deg within :}  id body-yaw angle-wrap rad>deg  deg s>f f-  fabs
@@ -312,7 +328,9 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
     {: id ex :}  id here? 0= if  false exit  then  id body-pos ex 0 door-in-area? ;
 : remember-people ( -- )
     #people 0 do
-        i person-id dup here? over body? and if  body-at  i /vec * was-at +  swap vec-copy  -1 i cells seen + !   \ (vec-copy is dst src: the body only read)
+        i person-id dup here? over body? and if
+            dup body-tri i cells was-tri + !
+            body-at  i /vec * was-at +  swap vec-copy  -1 i cells seen + !   \ (vec-copy is dst src: the body only read)
         else  drop  0 i cells seen + !  then
     loop ;
 
@@ -328,7 +346,7 @@ $80 constant music-cut    \ (the stage music cut with it, at once)
 : player-camera ( set path -- )  player -rot camera-set  player follow ;
 : played-gesture ( -- g )  hewie-played? if  gesture-now @  else  fiona-cmd-now @  then ;   \ the one played's command this frame (-1 none: the rooms' control-action?)
 : exit-camera ( exit set path -- )   \ whoever is inside the exit's area takes that camera (as they come in)
-    {: ex set path :}  #people 0 do  i person-id dup ex exit-area in-area? if  set path camera-set  else  drop  then  loop ;
+    {: ex set path :}  #people 0 do  i person-id dup ex exit-area in-area-on? if  set path camera-set  else  drop  then  loop ;
 : her-camera ( set path -- )  fiona -rot camera-set  fiona follow ;   \ (her setup, and the camera on her)                                \ the camera follows who
 : near-clip ( F: v -- )  engine:camera cam.near sf! ;   \ (the camera's near clip: 1 the usual)
 : far-clip ( F: v -- )  engine:camera cam.far sf! ;   \ (its far clip)
@@ -345,6 +363,8 @@ $80 constant forced-exit   \ (an exit's bit: not by a door - to the room loaded 
 : take-exit ( exit -- )  going ! ;   \ (after this frame)
 : at-exit ( id exit -- )  over 0< if  2drop exit  then  swap send to-exit ;   \ (on its outside spot, facing in)
 : prepare-exit ( exit -- )  rooms-actor send exit-prepare ;   \ (the room behind it loaded ahead)
+: her-exit-is ( exit -- )  broadcast exit-chosen ;
+: frames-in-play! ( n -- )  dup frames-in-play !  story-id send event-frames! ;   \ (the frames since the game began set: the scripts' 0xD4)   \ (Character_ChooseExit: her exit, as a room sets it - she isn't moved)
 
 \ ---- doors (the doors actor's) ----
 : doors-actor ( -- id )  s" doors" actor-named ;
@@ -416,20 +436,23 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
     items-40-as-70 fact? if
         dup other-game-file if  $8000 invert and  -1 items send add-file  else  drop  then
     else  dup other-game-file if  drop  else  -1 items send add-file  then  then ;
+\ (the scripts' items pass Events_ScriptRoom: with the story's items-40-as-70, $40 / $41 are $70 -
+\ given, named, counted and shown so; used up as they are)
+: as-scripts ( item -- item' )  story.base:script-item ;
 : give-item ( item n -- )   \ counted (the play record) and given
-    progress pr.items-counted dup l@ 1+ swap l!  items send give-item ;
-: item-full? ( item -- flag )  items:items-of 99 < 0= ;
+    progress pr.items-counted dup l@ 1+ swap l!  swap as-scripts swap  items send give-item ;
+: item-full? ( item -- flag )  as-scripts items:items-of 99 < 0= ;
 $8010 constant cant-carry-msg   \ "It's a . Unfortunately you can't carry anymore items." (the item named)
 $8011 constant obtained-msg     \ "You've obtained ."
 $8012 constant obtained-2-msg   \ (the same, for a thing that isn't one of many)
 $8019 constant used-msg         \ "Used ." (the item named)
 : plate-pressable? ( -- flag )  items:plates 10 < ;   \ (fewer than ten word plates made: another may be pressed)
-: item-named ( item -- )  0 swap message-param! ;   \ (the next system message names it)
+: item-named ( item -- )  as-scripts  0 swap message-param! ;   \ (the next system message names it)
 : subscreen ( -- id )  s" subscreen" actor-named ;
 $83 constant jingle-sound
 : jingle ( -- )  jingle-sound common-bank bank-sound ;
 : tab-op-done ( op item -- )  -1 tab-moving !  subscreen send tab-op  begin  tab-moving @ while  yield  repeat ;
-: show-item-tab ( item -- )  0 swap tab-op-done ;   \ (its picture made ready)
+: show-item-tab ( item -- )  as-scripts  0 swap tab-op-done ;   \ (its picture made ready)
 \ the item's tab beside what is said of it (the shared act $8C, on track 0): slid in, there till
 \ the message is closed, slid out
 : tab-shows ( -- )  2 0 tab-op-done  wait-closed  4 0 tab-op-done ;
@@ -501,19 +524,22 @@ $2100 constant coat-pose-1   $1F00 constant coat-pose-2   $2000 constant coat-po
 : open-subscreen ( mode -- )   \ (a mode of the menu: 1 saving, 7 the costumes; waited while it is up)
     subscreen send menu-mode  subscreen-wanted state!  begin  yield  subscreen-wanted state? 0= until ;
 
-\ ---- a save clock (the shared script $84): "Save current game?" - not with Hewie out of reach;
-\ he holds still while she saves ----
+\ ---- a save clock (the shared scripts $84, $85 - the second clock's words): "Save current game?" -
+\ not with Hewie out of reach; he holds still while she saves ----
 $8014 constant clock-msg          \ "The clock etches out moments in time... Save current game? YES NO"
+$8017 constant another-clock-msg  \ "It's another clock..." (then the same question)
 $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system message)
 1 constant saving-menu
 : hewie-reachable? ( -- flag )  hewie-in? 0=  hewie-reach-now @ or ;
-: save-clock ( -- )
+: clock-asks ( msg -- )
     stalkers-stay state!  fiona wait-move
     hewie-reachable? if
         hewie-in? if  hewie hold  then
-        clock-msg yes? if  saving-menu open-subscreen  then
-    else  clock-alone-msg show  then
+        yes? if  saving-menu open-subscreen  then
+    else  drop  clock-alone-msg show  then
     stalkers-stay state-off ;
+: save-clock ( -- )  clock-msg clock-asks ;
+: another-clock ( -- )  another-clock-msg clock-asks ;
 
 \ ---- doors her (or his) way: opened or shut as a move ----
 : open-door ( id exit -- )  {: id ex :}  id open-door-move ex -1  0e 0e 0e 0e  move  id wait-move ;
@@ -536,10 +562,12 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : debilitas? ( -- flag )   \ (the stalker in the game Debilitas, in one of his kinds)
     stalker-told? 0= if  false exit  then
     st-kind-now @  dup debilitas-kind = over debilitas-6-kind = or swap debilitas-7-kind = or ;
-: stalker-free? ( -- flag )   \ (here, not struck, held or linked, not leading her, not in a doorway: the original's cond 0x65)
+: stalker-free? ( -- flag )   \ (the original's cond 0x65: here, not held or linked; struck - not bitten or down,
+    \ engaged - not leading her off, else on a free floor out of the doorways)
     stalker-in? 0= if  false exit  then
-    st-mode-now @ struck-mode =  stalker held? or  st-linked-now @ 0<> or if  false exit  then
-    st-mode-now @ engaged-mode =  st-sub-now @ leading-sub dup 2 + within and if  false exit  then
+    stalker held?  st-linked-now @ 0<> or if  false exit  then
+    st-mode-now @ struck-mode = if  st-sub-now @ bitten-sub down-sub 1+ within 0= exit  then
+    st-mode-now @ engaged-mode = if  st-sub-now @ leading-sub dup 2 + within 0= exit  then
     stalker body-tri dup 0< if  drop false exit  then  nav-flags $80001 and if  false exit  then
     8 0 do  i door-here? if  i 0 stalker body-pos door-in-area?  i 1 stalker body-pos door-in-area? or if  false unloop exit  then  then  loop
     true ;
@@ -581,15 +609,17 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
     {: a id F: x y z :}  a @ if  id x y z keep-sound exit  then
     room-sounds-in? 0= if  exit  then  id x y z room-sound  -1 a ! ;
 : effect ( k -- addr )  cells effects + ;
+: slot0-told ( -- )   \ (the engine's: a flame's lasting sparks go without one there - the room in only)
+    this-room @ room-id = if  0 effect @ 0<> room-effect0!  then ;
 : effect! ( id k -- )   \ the place's effect k (the one there before gone - unless it died and its id is the new one's)
-    2dup effect @ = if  effect !  exit  then
-    dup effect @ ?dup if  dup alive? if  kill  else  drop  then  then  effect ! ;
+    2dup effect @ = if  effect !  slot0-told exit  then
+    dup effect @ ?dup if  dup alive? if  kill  else  drop  then  then  effect !  slot0-told ;
 : effect-off ( k -- )  0 swap effect! ;
 : effects-gone ( -- )  #room-effects 0 do  i effect-off  loop ;
 : live-effect ( k -- id flag )  effect @ dup 0<>  over alive? and ;   \ (the place's effect k, and whether it's there - 0 none)
 : tell-effect ( v k -- )  live-effect if  send effect-command  else  2drop  then ;
 : dies-down ( k -- )   \ (effect k - a fire, steam - left to die down on its own: forgotten, so it's never
-    -1 over tell-effect  0 swap effect ! ;   \ killed later by an id another actor may have by then)
+    -1 over tell-effect  0 swap effect !  slot0-told ;   \ killed later by an id another actor may have by then)
 \ the room's tint (Tint_SetParams: the look's slot): the glow colour and the contrast colour, RGBA
 $1F constant tint-slot
 create tint-bytes 9 allot
@@ -682,7 +712,7 @@ $8000 constant room-motion
     ex passable? 0= if  exit  then  own-pace? 0= if  exit  then  ex take-exit ;
 : exit-out ( exit -- )   \ (each frame: the one played goes when they can - free, in its area, its door open, not held)
     {: ex :}  player-free? 0= if  exit  then
-    player ex exit-area in-area? 0= if  exit  then
+    player ex exit-area  hewie-played? if  in-area-on?  else  in-area?  then  0= if  exit  then   \ (cond 0x07: Hewie's on his triangle)
     ex exit-open? 0= if  exit  then
     ex exit-held? if  exit  then
     ex exit-checked ;
@@ -695,8 +725,8 @@ $8000 constant room-motion
 $A constant usual-layer   $1E constant before-reflections-layer   \ (a model's draw layer)
 : layer ( kind layer -- )  swap cast-model dup 0< if  2drop exit  then  actor act.layer l! ;   \ (by its kind: Fiona 0)
 : hair-force ( F: x y z -- )  0 cast-model dup 0< if  drop fdrop fdrop fdrop exit  then  2 cloth-force! ;   \ (her hair blown)
-: hewie-hold-still ( -- )   \ (in here: a short wait, and he sits next)
-    hewie dup body? if  dup body-room this-room @ = if  true swap send hewie-hold exit  then  then  drop ;
+: hewie-stays-low ( on -- )   \ (in here: his actions held low till let up - the story's 0xBB)
+    hewie dup body? if  dup body-room this-room @ = if  send hewie-hold exit  then  then  2drop ;
 : summon-take ( kind -- )  s" summoner" actor-named send summoner-take ;
 : stalker-clock ( frames -- )  stalker dup 0< if  2drop exit  then  send stalker-clock ;
 
@@ -716,35 +746,88 @@ $28 constant try-door-sound
     ex exit-stand 0= if  fdrop fdrop fdrop exit  then  knock-sound common-bank bank-sound-at ;
 
 \ ---- the action prompt: what she may do here this frame, taken with the action button ----
-\ when it is offered: at any time; not while she is chased ("I have to get away!"); only calm
-enum: offer-when  any-time unhurried calm-only calm-hewie-up ;   \ (the last: the save clocks - not with Hewie down in a hard game; "no time" while busy)
+\ when it is offered (the scripts' 0x0A kinds): not while she is chased ("I have to get away!" - 0);
+\ at any time (1); not panicking (an examining: 4); the save clocks - not with Hewie down in a hard
+\ game, "no time" while busy (3); a hiding place - not panicking (5 / 6); at any time without a
+\ marker (the extras room's corners: 7)
+enum: offer-when  any-time unhurried calm-only calm-hewie-up hiding-spot quiet-any-time ;
+: any-time? ( when -- flag )  dup any-time =  swap quiet-any-time = or ;
 $80000005 constant read-scene   \ (Fiona's offers: a message to read)
 5 constant act-scene            \ (and a doing of the place's)
 $8016 constant no-time-message  \ "I have to get away! I don't have time for this!"
-: offer-closed? ( -- flag )   \ (one taken this frame already, the scenes locked, or she is held)
-    offer-xt @ 0<>  offer-msg @ 0<> or  scene-locked state? or  fiona-p holder-of @ 0< 0= or ;
-: busy? ( -- flag )   \ (chased, the stalker here, or another than Hewie held)
-    chased?  stalker here? or  fiona-p holder-of @ 0< 0= or  stalker-p holder-of @ 0< 0= or ;
-: offer ( xt when -- )   \ her doing xt (an activity, Fiona held for it), the first offered wins
-    {: xt when :}  offer-closed? if  exit  then
-    in-panic? when any-time <> and if  exit  then
-    when unhurried = chased? and if  no-time-message offer-msg !  exit  then
+: offer-closed? ( -- flag )   \ (the scenes locked, or she is held)
+    scene-locked state?  fiona-p holder-of @ 0< 0= or ;
+\ (cmd_scene_change: a doing offered this frame keeps it - a later doing replaces a message to read,
+\ "no time" too; the scripts' 0xA5, a message whatever goes on, replaces either)
+: read-it ( msg -- )  offer-msg !  0 offer-xt ! ;
+: figures-here? ( -- flag )   \ (the scene's figures, slots 3..5, in this room)
+    false  3 0 do  i 3 + story.base:slot-actor @ dup 0< if  drop  else  here? or  then  loop ;
+: busy? ( -- flag )   \ (SceneGame_Busy: chased, the stalker or a figure here, another than Hewie held, her panic's onset)
+    chased?  stalker here? or  figures-here? or  fiona-p holder-of @ 0< 0= or  stalker-p holder-of @ 0< 0= or
+    onset @ 0<> or ;
+: offer ( xt when -- )   \ her doing xt (an activity, Fiona held for it)
+    {: xt when :}  offer-closed?  offer-xt @ 0<> or if  exit  then
+    in-panic? when any-time? 0= and if  exit  then
+    when unhurried = chased? and if  no-time-message read-it  exit  then
     when calm-hewie-up = if
         hard-mode? hewie-cond-now @ down-cond = and if  exit  then
-        busy? if  no-time-message offer-msg !  exit  then
+        busy? if  no-time-message read-it  exit  then
     then
-    xt offer-xt ! ;
+    xt offer-xt !  when offer-when !  0 offer-msg ! ;
 : offer-remark-now ( msg -- )   \ a message to read, whatever goes on
-    offer-closed? if  drop exit  then  offer-msg ! ;
+    offer-closed? if  drop exit  then  read-it ;
 : offer-remark ( msg when -- )   \ a message to read
-    {: msg when :}  offer-closed? if  exit  then
-    in-panic? when any-time <> and if  exit  then
+    {: msg when :}  offer-closed?  offer-xt @ 0<> or if  exit  then   \ (as a doing offered: 0x0A's rules)
+    in-panic? when any-time? 0= and if  exit  then
     when unhurried = chased? and if  no-time-message to msg  then
-    msg offer-msg ! ;
-: offer-out ( -- )   \ (each frame, with no message up: told to her and the prompt shown)
+    msg read-it ;
+: offer-out ( -- )   \ (each frame, with no message up: told to her)
     shown-msg @ 0< 0= if  exit  then
     offer-xt @ if  act-scene offer-xt @  else  offer-msg @ if  read-scene offer-msg @  else  exit  then  then
-    fiona send offer  1 window send prompt ;
+    fiona send offer ;
+
+\ ---- the action prompt's marker (SceneGame_ActionPrompt): as what she could do here changes, a
+\ system message opened in the window - an examining's "Huh? What's this?", a hiding place's
+\ "Wait a second! What's that?!" while chased (again as a chase starts or ends), else an empty one
+\ (nothing to read, but it takes the window: a message up goes; any button closes it). None for
+\ the extras room's corners. All of ours closed while she is held, not her own, backing off,
+\ straining at something or offered a message; her doing done, the same one isn't shown again ----
+$800A constant plain-marker   $800B constant way-marker   $800C constant look-marker   $800D constant hide-marker
+-1 constant way-kind   -2 constant no-marker-kind   \ (her own way: an exit, a ladder; nothing offered to show)
+: marker? ( msg -- flag )  plain-marker hide-marker 1+ within ;
+: markers-off ( -- )   \ (prompt_hide_all: ours closed, if still up)
+    marker-up @ ?dup if  window send close-text  0 marker-up !  then ;
+: forget-marker ( -- )  -1 marker-what !  no-marker-kind marker-kind ! ;
+: marker-msg ( kind -- msg | 0 )
+    case
+        calm-only of  look-marker  endof
+        hiding-spot of  chased? if  hide-marker  else  plain-marker  then  endof
+        quiet-any-time of  0  endof
+        way-kind of  way-marker  endof
+        plain-marker swap
+    endcase ;
+: chase-turned? ( -- flag )   \ (the danger to or from chased since last frame)
+    danger-now @ danger-was @ <>  danger-now @ chased =  danger-was @ chased = or  and ;
+: offered ( -- what kind true | false )   \ (this frame's: the room's doing, else her own way)
+    offer-xt @ if  offer-xt @ offer-when @ true exit  then
+    could-now @  offer-msg @ 0=  over 0< 0= and  over strain-could <> and if  way-kind true  else  drop false  then ;
+: show-marker ( what kind -- )
+    {: what kind :}
+    what marker-what @ <>  kind marker-kind @ <> or
+    kind hiding-spot = chase-turned? and  or if
+        kind marker-msg ?dup if  dup marker-up !  window send show-text  then
+    then
+    what marker-what !  kind marker-kind ! ;
+: prompt-frame ( -- )
+    hewie-played? if  exit  then
+    scene-locked state? if  forget-marker  markers-off exit  then
+    fiona-p holder-of @ 0< 0=  fiona-mode-now @ own-mode <> or if  markers-off exit  then
+    offer-xt @ 0=  offer-msg @ 0= and  could-now @ 0< and if  forget-marker  markers-off exit  then   \ (nothing: the next one shown)
+    offered 0= if  markers-off exit  then   \ (a message to read, or straining)
+    fiona-doing-now @ backstep-doing = if  2drop markers-off exit  then
+    show-marker ;
+: prompt-out ( -- )  prompt-frame  danger-now @ danger-was ! ;
+: kind-told ( -- )  stalker 0< if  -1  else  st-kind-now @  then  pursuer-kind! ;   \ (the engine's: WispColumn_Update reads his kind)
 \ her doing, run: she is held for it
 create spot-xts #activities cells allot
 : spot-doing ( -- )  fiona hold  acting @ cells spot-xts + @ execute ;
@@ -975,16 +1058,16 @@ $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3
     id body-pos fswap fdrop {: F: mx mz :}  x mx f-  z mz f-  fatan2
     id body-yaw f- angle-wrap fabs rad>deg  within s>f f<= ;
 : close-to? ( a b margin -- flag )   \ their bodies within margin of each other across, overlapping in height
-    {: a b margin | F: ay F: ah F: ar F: by F: bh F: br :}  a here?  b here? and 0= if  false exit  then
-    a body-pos fdrop fswap fdrop to ay  a body-dims to ah to ar
-    b body-pos fdrop fswap fdrop to by  b body-dims to bh to br
-    ay by f< if  by ay f-  ah  else  ay by f-  bh  then  f> if  false exit  then
-    a body-at b body-at vec-dist-xz  ar br f+ margin s>f f+  f<= ;
+    {: a b margin :}  a here?  b here? and 0= if  false exit  then  a b margin s>f 0e bodies-touching? ;   \ (Actor_Touching)
+: stalker-kept ( -- )  stalker hold  begin  yield  again ;   \ (an activity: the stalker held for the rest of the visit)
+: self-touching? ( self other -- flag )   \ (cond 0x47: Actor_Touching with the other's own radius across and height up as margins)
+    {: a b :}  a here?  b here? and 0= if  false exit  then  b body-dims {: F: r h :}  a b r h bodies-touching? ;
+: faces-within? ( a b within -- flag )  swap body-pos fswap fdrop faces-point? ;   \ a facing b within so many degrees
 : touches-facing? ( a b margin within -- flag )   \ a close to b, and facing it within so many degrees
-    {: a b margin within | F: bx F: bz F: ax F: az :}  a here? b here? and 0= if  false exit  then
-    a b margin close-to? 0= if  false exit  then
-    b body-pos fswap fdrop  to bz  to bx  a body-pos fswap fdrop  to az  to ax
-    bx ax f-  bz az f-  fatan2  a body-yaw f- angle-wrap fabs rad>deg  within s>f f<= ;
+    {: a b margin within :}  a b margin close-to? 0= if  false exit  then  a b within faces-within? ;
+: touches-facing-up? ( a b margin up within -- flag )   \ (the same with a margin up as well: cond 0x1F's pc[4])
+    {: a b margin up within :}  a here? b here? and 0= if  false exit  then
+    a b margin s>f up s>f bodies-touching? 0= if  false exit  then  a b within faces-within? ;
 : point-in? ( v F: x y z r h -- flag )   \ the point inside the upright cylinder standing on (x y z)
     {: v F: x y zz r h :}  v vec@ {: F: px py pz :}
     py  y h 2e f/ f+  f- fabs  h fabs 2e f/ f<=   pz zz f- fdup f*  px x f- fdup f* f+  r fdup f* f<=  and ;
@@ -1438,7 +1521,7 @@ end-structure
     movie-close  begin  scenes:movie-state 0< 0= while  yield  repeat  yield  world-held state-off ;
 
 \ ---- items counted ----
-: has-items? ( item n -- flag )  swap items:items-of swap < 0= ;
+: has-items? ( item n -- flag )  swap as-scripts items:items-of swap < 0= ;
 
 \ ---- Hewie's own moves ----
 : hewie-bark ( -- )  hewie bark-move 0 0  0e 0e 0e 0e  move ;
@@ -1475,8 +1558,8 @@ $72 constant unlock-sound   $8008 constant unlocked-msg   \ (the common bank's; 
 : locked-request? ( n -- flag )   \ (her request at a locked door - before one of the first n exits' - or a creature's request 2 of her)
     false swap 0 ?do  i before-locked? or  loop  request-now @ 2 = or ;
 : unlocks ( exit -- )   \ (to her spot by it - not with the stalker on her - a try, and it gives: unlocked)
-    {: ex :}  stalker-in?  fiona stalker 0 close-to? and if  exit  then
-    fiona ex to-door  stalker-in?  fiona stalker 0 close-to? and  in-panic? or if  exit  then
+    {: ex :}  stalker-in?  fiona stalker self-touching? and if  exit  then
+    fiona ex to-door  stalker-in?  fiona stalker self-touching? and  in-panic? or if  exit  then
     fiona body-pos ex 0 door-in-area? if  fiona fiona.anims:rattle-front-anim  else  fiona fiona.anims:rattle-behind-anim  then  start-anim
     20 frames  in-panic? if  exit  then
     unlock-sound common-bank fiona sound-by  ex exit-door unlock  unlocked-msg show
@@ -1510,14 +1593,15 @@ behaviour placing
       self subscribe panic  self subscribe fiona-doing  self subscribe hewie-doing
       self subscribe stalker-doing  self subscribe creature-doing  self subscribe panic-onset  self subscribe hewie-came  -1 hewie-came-now !  self subscribe hewie-gesture  -1 gesture-now !  self subscribe stalker-blow  -1 st-blow-now !  self subscribe stalker-sees  0 st-sees-now !
       self subscribe fiona-requested  self subscribe fiona-unseen  self subscribe fiona-shaking  self subscribe fiona-message  self subscribe fiona-struck-by  -1 struck-by-now !
-      self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining
+      self subscribe hewie-health  self subscribe fiona-started  -1 started-now !  self subscribe fiona-straining  self subscribe fiona-could  -1 could-now !
+      forget-marker  0 marker-up !  danger-now @ danger-was !   \ (SceneGame_RoomIn: the prompt's records cleared)
       self subscribe item-event  self subscribe stalker-ties  self subscribe item-event-bit  0 word-right-now !  self subscribe item-var  self subscribe fiona-shakes  0 shakes-now !  self subscribe noise-was  0 loud-now !  self subscribe keri-fell  0 fell-now !  self subscribe summoner-cooldown-is  -1 summoner-secs-now !
       room-starts  frame-start  came-by @ ['] d.came-in run-desc-with  people-in  remember-people
       camera-starts  camera-placed ;
   on tick ( -- )
       entered @ 0= if  exit  then
-      people-in  frame-start  ['] d.frame run-desc  every-room  0 request-now !  -1 started-now !   \ (read: gone)
-      offer-out  onset @ 0= if  run-acts  then ;
+      1 frames-in-play +!  people-in  frame-start  ['] d.frame run-desc  every-room  0 request-now !  -1 started-now !   \ (read: gone)
+      offer-out  prompt-out  kind-told  onset @ 0= if  run-acts  then ;
   on frame-end ( -- )
       entered @ 0= if  exit  then  remember-people  loud-now @ if  -1 loud-now +!  then  story.base:fill-frame
       st-age @ 100 < if  1 st-age +!  then  #creatures 0 do  i cells cr-age + dup @ 100 < if  1 swap +!  else  drop  then  loop
@@ -1529,7 +1613,9 @@ behaviour placing
           read-scene of  show  endof
           nip
       endcase ;
-  on text-closed ( msg answer -- )  answer !  shown-msg @ = if  -1 shown-msg !  then ;
+  on text-closed ( msg answer -- )   \ (a marker of ours closed or taken over: none of this)
+      over marker? if  drop  marker-up @ = if  0 marker-up !  then  exit  then
+      answer !  shown-msg @ = if  -1 shown-msg !  then ;
   on fade-done ( -- )  0 fading ! ;
   on moving ( done ended events -- )
       sender person-of dup 0< if  drop  3 0 do  i 3 + story.base:slot-actor @ sender = if  over i cells figure-ended + !  2 pick i cells figure-done + !  then  loop  drop 2drop exit  then
@@ -1563,10 +1649,12 @@ behaviour placing
   on hewie-health ( hp -- )  hewie-hp-now ! ;
   on fiona-started ( code -- )  started-now ! ;
   on fiona-straining ( on -- )  straining-now ! ;
+  on fiona-could ( what -- )  could-now ! ;
   on fiona-shaking ( n -- )  shook-now ! ;
   on fiona-shakes ( n -- )  shakes-now ! ;
   on keri-fell ( k -- )  drop  1 fell-now +! ;
   on summoner-cooldown-is ( secs -- )  summoner-secs-now ! ;
+  on event-frames ( n -- )  frames-in-play ! ;
   on noise-was ( loud room -- )  this-room @ =  swap $20 >= and if  2 loud-now !  then ;
   on fiona-message ( msg -- )   \ (her locked door's: not while Hewie is the one played)
       leaving @  shown-msg @ 0< 0= or  hewie-played? or if  drop exit  then  show ;

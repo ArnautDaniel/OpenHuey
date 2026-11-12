@@ -1,6 +1,6 @@
 \ house-of-truth-b1-5's place (a colour room, story/places/house-of-truth.fs): its colour done as
 \ she comes in; its inscription; the pickup; in by the forced way - at its spot, the dark
-\ lifting; all four colours done: out through its door with the music let go - the way on; out through a door. Headless:
+\ lifting; all four colours done: out through door 1 with the music let go (by door 0 kept) - the way on; out through a door. Headless:
 \   build/openhuey --test tests/places/test_house_of_truth_b1_5.fs
 IN: test-house-of-truth-b1-5
 USING: tester engine game-state actors messages keys room-names game debug facts flag-names story-names
@@ -47,6 +47,9 @@ testing all four colours done: the way on - out through a door with the music le
 htb1-5-flag1 story-flag-set  htb1-6-flag1 story-flag-set  htb1-7-flag1 story-flag-set  htb1-8-flag1 story-flag-set
 keep-room-sounds state-flag-set  room-afresh
 T{ [: colours-done? ;] in-place -> -1 }T
-T{ [: -1 all-four ! ;] in-place  0 0 at  [: room-id house-of-truth-b1-5 <> world-held state-flag? or ;] 600 soon  keep-room-sounds state-flag? -> -1 0 }T
+T{ [: -1 all-four ! ;] in-place  1 0 at  [: room-id house-of-truth-b1-5 <> world-held state-flag? or ;] 600 soon  keep-room-sounds state-flag? -> -1 0 }T
+testing ... out by the other door: the music kept (only door 1's act lets it go)
+keep-room-sounds state-flag-set  room-afresh
+T{ [: -1 all-four !  1 way-on-door ! ;] in-place  0 0 at  [: room-id house-of-truth-b1-5 <> world-held state-flag? or ;] 600 soon  keep-room-sounds state-flag? -> -1 -1 }T
 300 play-on
 test-summary
