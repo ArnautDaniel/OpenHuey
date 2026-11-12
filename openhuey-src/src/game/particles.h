@@ -197,6 +197,8 @@ void particles_free(int p);
 void particles_new_room(void);
 /* whether the room's effect slot 0 holds an effect (the story's; a flame's lasting sparks end without one) */
 void particles_room_effect0(int held);
+/* the stalker in the game's kind (his +0x153C; -1 none): the House of Truth's wisps stay in a scene with kind $C */
+void particles_pursuer_kind(int kind);
 void particles_free_all(void);
 
 #endif

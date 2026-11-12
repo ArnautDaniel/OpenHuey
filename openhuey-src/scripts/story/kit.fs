@@ -821,6 +821,7 @@ $800A constant plain-marker   $800B constant way-marker   $800C constant look-ma
     fiona-doing-now @ backstep-doing = if  2drop markers-off exit  then
     show-marker ;
 : prompt-out ( -- )  prompt-frame  danger-now @ danger-was ! ;
+: kind-told ( -- )  stalker 0< if  -1  else  st-kind-now @  then  pursuer-kind! ;   \ (the engine's: WispColumn_Update reads his kind)
 \ her doing, run: she is held for it
 create spot-xts #activities cells allot
 : spot-doing ( -- )  fiona hold  acting @ cells spot-xts + @ execute ;
@@ -1591,7 +1592,7 @@ behaviour placing
   on tick ( -- )
       entered @ 0= if  exit  then
       people-in  frame-start  ['] d.frame run-desc  every-room  0 request-now !  -1 started-now !   \ (read: gone)
-      offer-out  prompt-out  onset @ 0= if  run-acts  then ;
+      offer-out  prompt-out  kind-told  onset @ 0= if  run-acts  then ;
   on frame-end ( -- )
       entered @ 0= if  exit  then  remember-people  loud-now @ if  -1 loud-now +!  then  story.base:fill-frame
       st-age @ 100 < if  1 st-age +!  then  #creatures 0 do  i cells cr-age + dup @ 100 < if  1 swap +!  else  drop  then  loop

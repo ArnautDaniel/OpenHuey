@@ -67,6 +67,7 @@ static int sLast = -1;   /* (tests) the system made last */
 static uint32_t sSeed = 0x2545F491u;
 static Vec3 sCamera;   /* (this tick's: the stones fade near it) */
 static int sSlot0;     /* the room's effect slot 0 holds one (RoomEffects_Get(0)) */
+static int sPursuerKind = -1;   /* the stalker in the game's kind (his +0x153C; -1 none), as the story tells */
 static void write(System *s);   /* (each part a camera-facing sprite) */
 
 /* ---- small things ---- */
@@ -825,6 +826,17 @@ static void quad(Sprite *r, uint32_t rgba, const Vec3 c[4]) {
     }
 }
 
+static int box_off_screen(const Vec3 world[8]) {   /* (shards_draw: a box with a corner out of view not drawn) */
+    int c;
+
+    for (c = 0; c < 8; c++) {
+        if (camera_out_of_view(&gEngine.camera, world[c])) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static void shards_write(System *s) {   /* each box's six faces */
     static const uint8_t faces[6][4] = {{0, 1, 2, 3}, {1, 5, 3, 7}, {5, 4, 7, 6}, {4, 0, 6, 2}, {0, 1, 4, 5}, {6, 7, 2, 3}};
     Sprite *r = sprites_records(s->batch, -1);
@@ -841,6 +853,9 @@ static void shards_write(System *s) {   /* each box's six faces */
             Vec3 w = vec3(p->corner[c][0] * p->scale[0], p->corner[c][1] * p->scale[1], p->corner[c][2] * p->scale[2]);
 
             world[c] = vec3_add(turn_xyz(w, p->tturn[0], p->tturn[1], p->tturn[2]), p->at);
+        }
+        if (box_off_screen(world)) {
+            continue;
         }
         for (f = 0; f < 6; f++) {
             for (k = 0; k < 4; k++) {
@@ -960,6 +975,9 @@ static void stones_write(System *s) {
             Vec3 w = vec3(p->corner[c][0] * p->scale[0], p->corner[c][1] * p->scale[1], p->corner[c][2] * p->scale[2]);
 
             world[c] = vec3_add(turn_xyz(w, p->tturn[0], p->tturn[1], p->tturn[2]), p->at);
+        }
+        if (box_off_screen(world)) {
+            continue;
         }
         for (f = 0; f < 6; f++) {
             for (k = 0; k < 4; k++) {
@@ -3141,8 +3159,8 @@ int particles_glow(Vec3 at, uint32_t rgba, float size) {
 
 /* ---- WispColumn: a column of 64 wisps 20 across rising 5 a frame up the House of Truth's
  * middle from -20 to 60 and over again, turning; turned off (`particles_command` 0) their alpha
- * runs down from $10 and it ends. (The original also drops it at once in a cutscene unless the
- * stalker is kind $C: not here) ---- */
+ * runs down from $10 and it ends; gone at once while a scene's shot has the camera, unless the
+ * stalker is kind $C ---- */
 
 static void column_wisp(System *s, Part *p, int i, int stagger) {   /* WispColumn_Wisp */
     colour(p, 0x80, 0x80, 0x80, s->top);
@@ -3172,6 +3190,9 @@ int particles_wisp_column(void) {
 static int wisp_column_step(System *s) {   /* WispColumn_Update */
     int i;
 
+    if (sPursuerKind != 0xC && gCamDir.event) {
+        return 0;
+    }
     if (s->ended && --s->top <= 0) {
         return 0;
     }
@@ -3190,8 +3211,8 @@ static int wisp_column_step(System *s) {   /* WispColumn_Update */
 
 /* ---- SparkSpray: 64 sparks sprayed across the House of Truth from one side (0 the left, x -75;
  * else the right, x 75; 14 up) and down, each started in turn, growing, turning, fading and
- * sprayed again while on; turned off (`particles_command` 0) it ends once all have faded. (The
- * original drops it at once in a cutscene: not here) ---- */
+ * sprayed again while on; turned off (`particles_command` 0) it ends once all have faded; gone at
+ * once while a scene's shot has the camera ---- */
 
 static void spray_spark(System *s, Part *p, int i, int delayed) {   /* SparkSpray_Spark */
     float d = 2.0f + 6.0f * rnd(), a = -PI + 2.0f * PI * rnd(), sign = s->kind == 0 ? 1.0f : -1.0f;
@@ -3229,6 +3250,9 @@ int particles_spark_spray(int side) {
 static int spark_spray_step(System *s) {   /* SparkSpray_Update */
     int i, done = 1;
 
+    if (gCamDir.event) {
+        return 0;
+    }
     for (i = 0; i < s->n; i++) {
         Part *p = &s->p[i];
 
@@ -3768,8 +3792,8 @@ static void object_glow_write(System *s) {   /* ObjectGlow_Draw */
     sprites_records(s->batch, n);
 }
 
-/* ---- Glint: a glint on a character - a white sprite 1 across at its bone 6 (the old mansion
- * pool's fish $14) ---- */
+/* ---- Glint: a glint on a character - a sprite 1 across at its bone 6 (the old mansion pool's
+ * fish $14), in layer $26: it marks the bloom's mask, no colour of its own ---- */
 
 int particles_glint(int actor) {
     int h = new_system(GLINT, vec3(0, 0, 0));
@@ -3778,7 +3802,7 @@ int particles_glint(int actor) {
         return -1;
     }
     look(&sSys[h], 0x10, 1, -1, 0x20, 0x40, 0x20, 0x20, 1, 0);
-    sprites_flags(sSys[h].batch, 0, 0x26);
+    sprites_flags(sSys[h].batch, SPRITE_MASK, 0x26);
     sSys[h].kind = actor;
     return h;
 }
@@ -4076,9 +4100,16 @@ static Vec3 window_point(const System *s, int id) {
 
 static void window_flash_write(System *s) {   /* WindowFlash_Draw: the fan */
     const int8_t *fan = kWindowFans[clampi(s->timer, 0, 4)];
-    Sprite *r = sprites_records(s->batch, fan[0] - 2);
+    Sprite *r;
     int k;
 
+    for (k = 0; k < fan[0]; k++) {   /* (only all of it in view: else neither it nor the bloom) */
+        if (camera_out_of_view(&gEngine.camera, window_point(s, fan[k + 1]))) {
+            sprites_records(s->batch, 0);
+            return;
+        }
+    }
+    r = sprites_records(s->batch, fan[0] - 2);
     post_bloom(0x80808080u, 0);   /* (the screen brightened through it) */
     for (k = 1; k + 1 < fan[0]; k++) {
         glow_tri(&r[k - 1], window_point(s, fan[1]), window_point(s, fan[k + 1]), window_point(s, fan[k + 2]), 0xFFFFFF80u, 0xFFFFFF80u);
@@ -4213,7 +4244,6 @@ int particles_mag_burst(Vec3 at, int prima, Vec3 floor_up) {
     sprites_texture(s->batch4, 0x10, 1, -1);
     sprites_cells(s->batch4, 0xC0, 0x60, 0x20, 0x20, 512, 256, 1);
     sprites_flags(s->batch4, SPRITE_ADD | SPRITE_CORNERS, 0x19);
-    s->floor = at.y;
     s->c = vec3_norm(floor_up);
     s->n = l.pieces + l.puffs + 2 * l.points;
     for (i = 0; i < l.points; i++) {
@@ -4254,6 +4284,14 @@ int particles_mag_burst(Vec3 at, int prima, Vec3 floor_up) {
         p->radius = 0.02f + 0.1f * p->v.y;
     }
     return h;
+}
+
+static int under_floor(Vec3 at) {   /* (Actor_TriOf + NavMesh_OntoPlane: below the floor of the triangle under it - not a hole's) */
+    const NavMesh *n = &gEngine.room.nav;
+    float h;
+    int t = navmesh_find(n, at, 8.0f, &h);
+
+    return t >= 0 && !(n->tris[t].flags & 0x10000000u) && at.y < navmesh_height_on(n, t, at.x, at.z);
 }
 
 static int mag_burst_step(System *s) {   /* burst_update */
@@ -4309,7 +4347,7 @@ static int mag_burst_step(System *s) {   /* burst_update */
 
         p->at = vec3_add(p->at, p->v);
         p->v.y -= p->radius;
-        if (p->at.y < s->floor) {
+        if (under_floor(p->at)) {
             p->rgba[3] = 0;
             continue;
         }
@@ -4326,9 +4364,10 @@ static void mag_burst_write(System *s) {
     Sprite *r;
     int i, k;
 
-    /* (the floor's own axes: level, the camera's) */
-    across = fabsf(up.y) >= 0.999f ? right : vec3_norm(vec3_cross(up, vec3(0.0f, -1.0f, 0.0f)));
-    along = fabsf(up.y) >= 0.999f ? ahead : vec3_norm(vec3_cross(up, across));
+    /* (the floor's frame: level, none; else x across the slope, z down it - ring_corner turns a
+     * corner by the camera's yaw, then the frame lays it on the floor) */
+    across = fabsf(up.y) >= 0.999f ? vec3(1.0f, 0.0f, 0.0f) : vec3_norm(vec3_cross(up, vec3(0.0f, -1.0f, 0.0f)));
+    along = fabsf(up.y) >= 0.999f ? vec3(0.0f, 0.0f, 1.0f) : vec3_norm(vec3_cross(up, across));
     r = sprites_records(s->batch, l.pieces);
     for (i = 0; i < l.pieces; i++) {
         sprite_rec(&r[i], burst_piece(s, i));
@@ -4348,8 +4387,9 @@ static void mag_burst_write(System *s) {
 
         for (k = 0; k < 4; k++) {
             float x = (k & 1 ? 1.5f : -1.5f) * p->radius, z = (k & 2 ? 1.0f : -1.0f) * p->radius;
+            Vec3 t = vec3_add(vec3_scale(right, x), vec3_scale(ahead, z));   /* (turned by the camera's yaw) */
 
-            q[k] = vec3_add(p->at, vec3_add(vec3_scale(across, x), vec3_scale(along, z)));
+            q[k] = vec3_add(p->at, vec3_add(vec3_scale(across, t.x), vec3_scale(along, t.z)));
         }
         quad(&r[i], (uint32_t)clampi(p->rgba[0], 0, 255) << 24 | (uint32_t)clampi(p->rgba[1], 0, 255) << 16 |
                         (uint32_t)clampi(p->rgba[2], 0, 255) << 8 | (uint32_t)clampi(p->rgba[3], 0, 255), q);
@@ -5112,6 +5152,7 @@ static int well_fade(Part *p, int most) {   /* in past 0x20, then out by 1..most
         p->rgba[3] += irnd(most) + 1;
         if (p->rgba[3] > 0x20) {
             p->landed = 1;
+            p->rgba[0]--;   /* (the original's mark: its red one less) */
         }
     } else {
         p->rgba[3] -= irnd(most) + 1;
@@ -5929,6 +5970,10 @@ void particles_free(int p) {
     if (s != NULL) {
         end(s);
     }
+}
+
+void particles_pursuer_kind(int kind) {
+    sPursuerKind = kind;
 }
 
 void particles_room_effect0(int held) {
