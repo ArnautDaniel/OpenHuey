@@ -26,7 +26,7 @@ create cameras  2 , 2 , 2 ,   3 , 1 , 1 ,   $B , 0 , 0 ,   $C , 2 , 2 ,   \ (are
 : each-frame ( -- )
     0 exit-out  cameras 4 cameras-at
     fiona 2 entered? if  3 map-page  then   fiona 3 entered? if  4 map-page  then
-    hewie-by-the-gap  medallion-notice  medallion-look 1 hewie-looks-at  climb-spot  bridge-spots ;
+    hewie-by-the-gap  medallion-notice  medallion-look 1 hewie-looks-at  climb-spot  45 bridge-spots ;
 : person-in ( i -- )
     case
         fiona-p of

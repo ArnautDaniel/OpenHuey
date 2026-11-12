@@ -64,7 +64,7 @@ create cameras  2 , 2 , 2 ,   3 , 1 , 1 ,   $B , 0 , 0 ,   $C , 2 , 2 ,   \ (are
     0 exit-out  cameras 4 cameras-at
     fiona 2 entered? if  3 map-page  then   fiona 3 entered? if  4 map-page  then
     on-the-balcony  hewie-by-the-gap  hewie-wary  medallion-notice
-    medallion-look 1 hewie-looks-at  corner-look 1 hewie-looks-at  bridge-spots ;
+    medallion-look 1 hewie-looks-at  corner-look 1 hewie-looks-at  50 bridge-spots ;
 : person-in ( i -- )
     case
         fiona-p of  0 0 0 way-in  endof

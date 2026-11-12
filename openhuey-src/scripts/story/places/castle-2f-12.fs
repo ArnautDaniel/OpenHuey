@@ -221,12 +221,12 @@ $30 constant rock-phase   $34 constant rock-size   $38 constant rock-fade   $3C 
     has-room if  sparkle-fx 0e 3e -39e flicker-at  then
     glint-sound room-bank fiona sound-by  30 0 do  0.075e lid-by  yield  loop  16 frames
     has-room if
-        inquisitor-earrings items:items-of 0= if
+        inquisitor-earrings items:items-of 0= dup if   \ (the earrings first: a moment before the choker)
             inquisitor-earrings item-named  inquisitor-earrings 1 give-item  inquisitor-earrings show-item-tab  fanfare  obtained-2-msg say
         then
         jade-choker items:items-of 0= if
-            16 frames  jade-choker item-named  jade-choker 1 give-item  jade-choker show-item-tab  fanfare  obtained-2-msg say
-        then
+            if  16 frames  then  jade-choker item-named  jade-choker 1 give-item  jade-choker show-item-tab  fanfare  obtained-2-msg say
+        else  drop  then
         sparkle-fx effect-off
     else  empty-msg say  then
     got-jade-choker fact!  4 frames  world-frozen state-off  stalkers-stay state-off  shot-off ;

@@ -722,8 +722,8 @@ $8000 constant room-motion
 $A constant usual-layer   $1E constant before-reflections-layer   \ (a model's draw layer)
 : layer ( kind layer -- )  swap cast-model dup 0< if  2drop exit  then  actor act.layer l! ;   \ (by its kind: Fiona 0)
 : hair-force ( F: x y z -- )  0 cast-model dup 0< if  drop fdrop fdrop fdrop exit  then  2 cloth-force! ;   \ (her hair blown)
-: hewie-hold-still ( -- )   \ (in here: a short wait, and he sits next)
-    hewie dup body? if  dup body-room this-room @ = if  true swap send hewie-hold exit  then  then  drop ;
+: hewie-stays-low ( on -- )   \ (in here: his actions held low till let up - the story's 0xBB)
+    hewie dup body? if  dup body-room this-room @ = if  send hewie-hold exit  then  then  2drop ;
 : summon-take ( kind -- )  s" summoner" actor-named send summoner-take ;
 : stalker-clock ( frames -- )  stalker dup 0< if  2drop exit  then  send stalker-clock ;
 

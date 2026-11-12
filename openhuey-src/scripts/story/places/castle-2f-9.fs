@@ -57,7 +57,7 @@ own: stood-up              \ she has stood to speak (back to her scrubbing after
 
 \ ---- what she may do or say here ----
 : spots ( -- )
-    cleaning?  fiona stalker 3 45 touches-facing? and if
+    cleaning?  fiona stalker 10 45 touches-facing? and if
         c2f-9-flag2 fact? if  ['] her-strangeness unhurried offer  else  ['] speaks-to-her unhurried offer  then
     then ;
 
