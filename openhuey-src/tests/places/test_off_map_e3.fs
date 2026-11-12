@@ -91,6 +91,8 @@ her-here  near-one  command  [: hidden? ;] 800 soon drop
 0 $31 var!  off-map-e3 $1FE stalker-here
 T{ [: searched @ came-while-hidden @ ;] in-place  $31 var@  [: [: found-her @ ;] in-place ;] 600 soon -> -1 -1 1 -1 }T
 [: stalker-unloaded ;] in-place  60 run-frames
+testing ... his count at 4, he out of her sight: not found (the odds 0 then)
+T{ 4 $31 var!  [: ['] finds-her stop-doing  searches-here  ['] finds-her running?  search-started @ ;] in-place  $31 var@ -> 0 0 5 }T
 testing left behind in one: he leaves by exit 0 - she's out
 her-here  near-one  command  [: hidden? ;] 800 soon drop
 T{ 0 opened  0 exit-area 0 hat  [: room-id off-map-e3 <> ;] 300 soon  hidden?  stalkers-stay state-flag? -> -1 0 0 }T

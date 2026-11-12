@@ -37,8 +37,11 @@ $2E constant run-kind-var   0 constant her-motions   $31 constant search-var   2
 : finds-her ( -- )
     stalker hold  stalker wait-move  0 door-if-by  1 door-if-by  0 search-started !
     $1FE -180 -35.74e -5.079e run-finds-her ;
-: searches-here ( -- )   \ (always found: the odds 100 in 100 whatever the count)
-    -1 searched !  -1 came-while-hidden !  100 search-var ['] finds-her run-searches ;
+: searches-here ( -- )   \ (found while his count is under 4 - else only if he sees her, or a creature moves about)
+    -1 searched !  -1 came-while-hidden !
+    search-var var@ 4 < if  100  else  0  then  chance?  stalker unseen? 0= or  2 creature-moving? or
+    if  ['] finds-her start drop  else  120 summoner-sooner  0 search-started !  then
+    search-var var@ 1+ search-var var! ;
 : stalker-came ( -- )  came-on-her? if  searches-here  then ;
 : search-on ( -- )   \ (each frame: hidden, he here and up, not yet searched)
     st-cond-now @ down-cond =  stalker-told? and  searched @ or if  exit  then
