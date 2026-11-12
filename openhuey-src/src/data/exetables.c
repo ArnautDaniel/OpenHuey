@@ -135,6 +135,12 @@ const uint8_t *exetable(const char *name, size_t *size) {
         t->tried = 1;
         snprintf(path, sizeof(path), "../exe/%s.bin", name);
         b = files_read(path, &t->got);
+        if (b != NULL && t->got < t->size) {   /* (shorter than the table: its readers would go past it) */
+            fprintf(stderr, "exe: library/exe/%s.bin is %zu bytes, the table %u - the executable's used\n", name, t->got,
+                    (unsigned)t->size);
+            free(b);
+            b = NULL;
+        }
         if (b == NULL && sExe.data != NULL) {
             b = exetables_extract(&sExe, name, &t->got);
         }

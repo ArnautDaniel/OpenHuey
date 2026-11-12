@@ -13,6 +13,12 @@ typedef struct Mat4 {
     float m[16];
 } Mat4;
 
+/* an angle the wrapping loops (a turn taken off at a time, as the original's) can't bring in - not
+ * finite, or many turns out - first brought within a turn; the others as they are */
+static inline float angle_near(float a) { return !isfinite(a) ? 0.0f : fabsf(a) > 64.0f ? remainderf(a, 6.28318531f) : a; }
+/* the same for a time in a cycle `len` long (len > 0) */
+static inline float time_near(float t, float len) { return !isfinite(t) ? 0.0f : fabsf(t) > 64.0f * len ? fmodf(t, len) : t; }
+
 static inline Vec3 vec3(float x, float y, float z) { return (Vec3){x, y, z}; }
 static inline Vec3 vec3_add(Vec3 a, Vec3 b) { return vec3(a.x + b.x, a.y + b.y, a.z + b.z); }
 static inline Vec3 vec3_sub(Vec3 a, Vec3 b) { return vec3(a.x - b.x, a.y - b.y, a.z - b.z); }

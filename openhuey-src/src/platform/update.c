@@ -126,6 +126,11 @@ static int download(const char *url, const char *to) {
     return run(args) == 0 && file_size(to) > 0;
 }
 
+/* a file's own name, no folders in it (the archive is put in update/ by it) */
+static int plain_name(const char *s) {
+    return strchr(s, '/') == NULL && strchr(s, '\\') == NULL && strstr(s, "..") == NULL;
+}
+
 /* version.txt read: the newest build, its archive for this platform and that's size */
 static int check(char *build, size_t nbuild, char *archive, size_t narchive) {
     char url[1400], path[1200], line[600];
@@ -150,7 +155,7 @@ static int check(char *build, size_t nbuild, char *archive, size_t narchive) {
         if (sscanf(line, "openhuey-version %299s", name) == 1) {
             snprintf(build, nbuild, "%s", name);
         } else if (sscanf(line, "%299s %lld", name, &size) == 2 && strlen(name) > ends &&
-                   strcmp(name + strlen(name) - ends, PLATFORM_ARCHIVE) == 0) {
+                   strcmp(name + strlen(name) - ends, PLATFORM_ARCHIVE) == 0 && plain_name(name)) {
             snprintf(archive, narchive, "%s", name);
             sTotal = size;
         }

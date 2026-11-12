@@ -80,8 +80,8 @@ const char *gltf_hga(const cgltf_extras *e, const char *kind) {
 const uint8_t *gltf_bytes(const cgltf_accessor *a, size_t elem) {
     const cgltf_buffer_view *v = a->buffer_view;
 
-    if (v == NULL || v->buffer->data == NULL || a->offset + a->count * elem > v->size ||
-        v->offset + v->size > v->buffer->size) {
+    if (v == NULL || v->buffer->data == NULL || (v->stride != 0 && v->stride != elem) ||   /* (packed: not interleaved) */
+        a->offset + a->count * elem > v->size || v->offset + v->size > v->buffer->size) {
         return NULL;
     }
     return (const uint8_t *)v->buffer->data + v->offset + a->offset;

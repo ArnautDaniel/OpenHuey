@@ -141,8 +141,10 @@ int cutscene_length(void) {
     return C.script != NULL ? rd16(C.script) : -1;
 }
 
-static int records(void) {
-    return C.script != NULL ? rd16(C.script + 2) : 0;
+static int records(void) {   /* (as many as it says, that it holds) */
+    int n = C.script != NULL && C.script_size >= 4 ? rd16(C.script + 2) : 0;
+
+    return C.script_size < 0x24 ? 0 : n < (int)((C.script_size - 0x24) / 12) ? n : (int)((C.script_size - 0x24) / 12);
 }
 
 static const uint8_t *record(int r) {

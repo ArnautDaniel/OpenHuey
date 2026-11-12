@@ -323,7 +323,7 @@ PRIM(p_vec_ahead) {   /* ( dst src -- ) ( F: yaw d -- ) dst = src moved d along 
     dst[2] = src[2] + cosf(yaw) * d;
 }
 PRIM(p_angle_wrap) {   /* ( F: a -- a' ) into -pi .. pi (Angle_Wrap) */
-    float a = (float)FPOP();
+    float a = angle_near((float)FPOP());
 
     while (a > 3.14159265f) {
         a -= 6.28318531f;
@@ -2894,6 +2894,7 @@ static float frame_by(const Actor *a, int motion, float frame, float dt) {
     if (len <= 0) {
         return 0.0f;
     }
+    t = time_near(t, (float)len);
     while (t < 0.0f) {
         t += (float)len;
     }

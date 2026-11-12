@@ -398,7 +398,7 @@ static int read_draw(Model *m, const cgltf_primitive *pr, const int *jmap, int n
     const cgltf_accessor *ap = gltf_attribute(pr, "POSITION"), *an = gltf_attribute(pr, "NORMAL"),
                          *at = gltf_attribute(pr, "TEXCOORD_0"), *aj = gltf_attribute(pr, "JOINTS_0"),
                          *aw = gltf_attribute(pr, "WEIGHTS_0");
-    const uint8_t *bp, *bn, *bt, *bw;
+    const uint8_t *bp, *bn, *bt;
     MeshDraw d;
     size_t k;
     cgltf_uint joints[4];
@@ -407,8 +407,9 @@ static int read_draw(Model *m, const cgltf_primitive *pr, const int *jmap, int n
     memset(&d, 0, sizeof(d));
     if (!draw_from(gltf_hga(&pr->extras, "draw"), &d) || ap == NULL || an == NULL || at == NULL || aj == NULL ||
         aw == NULL || pr->indices == NULL || aj->type != cgltf_type_vec4 ||
-        (bp = gltf_bytes(ap, 12)) == NULL || (bn = gltf_bytes(an, 12)) == NULL || (bt = gltf_bytes(at, 8)) == NULL ||
-        (bw = gltf_bytes(aw, 16)) == NULL) {
+        aw->type != cgltf_type_vec4 || ap->component_type != cgltf_component_type_r_32f ||
+        an->component_type != cgltf_component_type_r_32f || at->component_type != cgltf_component_type_r_32f ||
+        (bp = gltf_bytes(ap, 12)) == NULL || (bn = gltf_bytes(an, 12)) == NULL || (bt = gltf_bytes(at, 8)) == NULL) {
         return 0;
     }
     d.count = (int)pr->indices->count;
@@ -427,8 +428,8 @@ static int read_draw(Model *m, const cgltf_primitive *pr, const int *jmap, int n
         memcpy(&v->normal, bn + e * 12, 12);
         memcpy(&v->s, bt + e * 8, 4);
         memcpy(&v->t, bt + e * 8 + 4, 4);
-        memcpy(v->weights, bw + e * 16, 16);
-        if (!cgltf_accessor_read_uint(aj, e, joints, 4)) {   /* (bytes or shorts: Blender writes either) */
+        if (!cgltf_accessor_read_float(aw, e, v->weights, 4) ||   /* (floats, or normalised bytes / shorts) */
+            !cgltf_accessor_read_uint(aj, e, joints, 4)) {   /* (bytes or shorts: Blender writes either) */
             return 0;
         }
         for (j = 0; j < 4; j++) {   /* the skin's joints, as the model's bones */
@@ -606,6 +607,13 @@ int modelgltf_read(Model *m, const char *json, size_t len, const uint8_t *bin, s
     }
     g->buffers[0].data = (void *)bin;
     g->buffers[0].data_free_method = cgltf_data_free_method_none;
+    if (cgltf_validate(g) != cgltf_result_success) {   /* (every accessor within its buffer: a mod's file) */
+        fprintf(stderr, "model: not valid glTF\n");
+        free(own);
+        free(motions);
+        cgltf_free(g);
+        return 0;
+    }
     if (motions != NULL) {
         memcpy(own + 256, motions, motions_size);
     }

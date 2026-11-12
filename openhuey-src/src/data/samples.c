@@ -85,6 +85,8 @@ Samples *samples_load(const char *name) {
             size_t wsize;
 
             s->ssa[i] = ssa;
+            free(s->pcm[i]);   /* (listed twice: the last) */
+            s->pcm[i] = NULL;
             snprintf(path, sizeof(path), "%s.samples/%d.wav", name, i);
             if ((wav = files_read(path, &wsize)) == NULL ||
                 !vag_wav_read(wav, wsize, &s->pcm[i], &s->frames[i], &s->loop_start[i])) {

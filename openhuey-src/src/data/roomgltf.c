@@ -272,7 +272,8 @@ static int draw_from(const char *w, MeshDraw *d) {
     int part, blend, add_, nz, group, solid, lit, mask, tex, used = 0;
 
     if (w == NULL || sscanf(w, " %d %d %d %d %d %d %d %d %d%n", &part, &blend, &add_, &nz, &group, &solid, &lit, &mask,
-                            &tex, &used) != 9) {
+                            &tex, &used) != 9 ||
+        part < 0 || part >= MESH_PARTS) {   /* (a part the renderer knows) */
         return 0;
     }
     d->part = (uint8_t)part;
@@ -303,6 +304,10 @@ int roomgltf_read(RoomMesh *m, const char *json, size_t len, const uint8_t *bin,
     }
     g->buffers[0].data = (void *)bin;   /* (ours: not freed by cgltf) */
     g->buffers[0].data_free_method = cgltf_data_free_method_none;
+    if (cgltf_validate(g) != cgltf_result_success) {   /* (every accessor within its buffer: a mod's file) */
+        fprintf(stderr, "room: its mesh isn't valid glTF\n");
+        goto done;
+    }
     if ((w = gltf_hga(&g->scenes[0].extras, "room")) == NULL ||
         sscanf(w, " %d %f %f %f %f %f %f", &format, &m->lo.x, &m->lo.y, &m->lo.z, &m->hi.x, &m->hi.y, &m->hi.z) != 7 ||
         format != ROOMGLTF_FORMAT) {

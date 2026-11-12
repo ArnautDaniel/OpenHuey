@@ -28,6 +28,9 @@ int navmesh_build(NavMesh *n, const uint8_t *sec, size_t size) {
             memcpy(c, r + k * 16, 12);
             t->v[k] = vec3(c[0], c[1], c[2]);
             memcpy(&t->next[k], r + 0x30 + k * 4, 4);
+            if (t->next[k] >= (int)count) {   /* (no such neighbour: none) */
+                t->next[k] = -1;
+            }
         }
         memcpy(&t->flags, r + 0x3C, 4);
         memcpy(t->cost, r + 0x40, 12);

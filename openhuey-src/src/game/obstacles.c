@@ -1,10 +1,13 @@
 /* The obstacles' geometry and motion (obstacles.h; the original's room_map.c). */
 #include "obstacles.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "engine.h"
 #include "../data/exetables.h"
+
+#define OBSTACLE_SQUARES 32   /* a part's size or place, in squares, at most (the game's: a few) */
 
 enum {
     BLOCKED = 0x20400000,    /* under it */
@@ -206,6 +209,10 @@ static int32_t s32_at(const uint8_t *p) {
     memcpy(&v, p, 4);
     return v;
 }
+static int part_fits(int dx, int dz, int w, int d) {
+    return w >= 0 && w <= OBSTACLE_SQUARES && d >= 0 && d <= OBSTACLE_SQUARES && abs(dx) <= OBSTACLE_SQUARES &&
+           abs(dz) <= OBSTACLE_SQUARES;
+}
 int obstacle_make(int i, int kind, int a, int b) {   /* (obstacle_make) */
     Obstacle *o = get(i);
     size_t size = 0, at = 0;
@@ -222,6 +229,13 @@ int obstacle_make(int i, int kind, int a, int b) {   /* (obstacle_make) */
         at += k < kind ? 12 + 16 * (size_t)n : 0;
     }
     def = kinds + at;
+    for (k = 0; k < n; k++) {   /* (a broken table's parts: not made) */
+        const uint8_t *src = def + 12 + 16 * k;
+
+        if (!part_fits(s32_at(src), s32_at(src + 4), s32_at(src + 8), s32_at(src + 12))) {
+            return -1;
+        }
+    }
     o->on = 1;
     memcpy(&o->ox, def, 4);
     memcpy(&o->oz, def + 4, 4);
