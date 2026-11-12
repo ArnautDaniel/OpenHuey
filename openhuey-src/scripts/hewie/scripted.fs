@@ -108,7 +108,8 @@ is st-wander
     anim-done? anim@ leap-fall-anim <> and if  leap-fall-anim play-cut  1.2889e his-jump-fall f!  then
     anim@ leap-up-anim = if   \ (rising by the animation)
         stride-len along-leap
-        his-jump-y f@ root-up his-jump-rise f@ f* f+                       ( F: y )
+        his-jump-y f@ root-up  model 0 0 1 motion-events 2 and if  his-jump-rise f@ f*  then  f+   ( F: y )
+        \ (its rise scaled only on its key 2: Hewie_StateLeap)
     else   \ (falling: 3 a frame on, faster down)
         3e along-leap
         his-jump-fall f@ 0.5e f+ 3e fmin his-jump-fall f!

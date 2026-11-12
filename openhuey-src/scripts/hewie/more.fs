@@ -46,9 +46,10 @@ create behind-at /vec allot
 : st-going-limp ( -- )  1 his-no-root !  anim-done? if  knocked-down-act start  then ;
 : go-limp ( -- )  free-mode his-mode !  0 his-cmd !  flung-anim play  yelp-sound make-sound  ['] st-going-limp behave ;
 
-\ ---- scene-pose-act: a scene's pose played out, left alone meanwhile (Hewie_State2358) ----
-: st-scene-pose ( -- )  anim-done? if  0 his-2d !  to-default  then ;
-: scene-pose ( -- )  1 his-2d !  posed-mode his-mode !  scene-pose-anim play  0 his-cmd !  ahead-look look!  ['] st-scene-pose behave ;
+\ ---- dodge-act: stepping aside from a blow (Hewie_CanInteract's +0xF3584; the run's R1), played out,
+\ left alone meanwhile (Hewie_State2358) ----
+: st-dodge ( -- )  anim-done? if  0 his-2d !  to-default  then ;
+: dodge ( -- )  1 his-2d !  posed-mode his-mode !  dodge-anim play  0 his-cmd !  ahead-look look!  ['] st-dodge behave ;
 
 \ ---- back-on-floor-act: off the floor he may stand on - back toward his spot 0.4 a frame,
 \ facing it; on it again, himself (Hewie_StateBackOnMesh) ----

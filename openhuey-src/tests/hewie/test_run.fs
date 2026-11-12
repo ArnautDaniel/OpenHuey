@@ -3,7 +3,7 @@
 \ Hewie the one played, Fiona with him, the stalker (kind 7) in the room next door. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/hewie/test_run.fs
 IN: test-run
-USING: tester engine game-state actors messages common vectors facts keys room-names hewie-names stalker-names game hewie.state fiona.state subscreen.state flag-names debug ;
+USING: tester engine game-state actors messages common vectors facts keys room-names hewie-names stalker-names game hewie.state hewie.body hewie.actions fiona.state subscreen.state flag-names debug ;
 
 : press-key ( key -- )  dup true key-hold  game-tick  false key-hold  game-tick ;
 : his@ ( xt -- x )  hewie enter  execute  leave-actor ;
@@ -28,11 +28,18 @@ testing Fiona there with him, by him; the stalker loaded as kind 7 next door
 T{ fiona body-room  apart 50e f< -> off-map-d9 -1 }T
 T{ stalker-in-game body-room -> off-map-d8 }T
 
+testing the run's buttons (Progress_CommandButtons, him free for one): R1 a dodge ($79), circle readying ($7A)
+: steered-again ( -- )  [: steered-act 0 set-action ;] his@  10 run-frames ;
+: did ( key -- act )  steered-again  press-key  [: his-action @ ;] his@ ;
+T{ key: E did  key: C did -> dodge-act ready-act }T
+steered-again
+
 testing the menu in the run (select): the options alone
 : sub@ ( xt -- x )  s" subscreen" actor-named enter  execute  leave-actor ;
 key: Tab press-key  20 run-frames
 T{ [: stage @ shut <>  options-only @ ;] sub@ -> -1 -1 }T
-key: Tab press-key  40 run-frames
+key: V press-key  40 run-frames   \ (the triangle closes the options alone)
+T{ [: stage @ ;] sub@ -> shut }T
 
 0 hewie-played !
 test-summary

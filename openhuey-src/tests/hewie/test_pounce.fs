@@ -3,7 +3,7 @@
 \ Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/hewie/test_pounce.fs
 IN: test-pounce
-USING: tester engine game-state actors messages common facts room-names game debug flag-names hewie.state hewie.body hewie.model hewie.states hewie.fight hewie.pounce hewie.more fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.bitten creatures ;
+USING: tester engine game-state actors messages common facts room-names game debug flag-names hewie-names hewie.state hewie.body hewie.model hewie.states hewie.fight hewie.pounce hewie.more fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.bitten creatures ;
 
 : his@ ( xt -- x )  game:hewie enter  execute  leave-actor ;
 : his! ( xt -- )  game:hewie enter  execute  leave-actor ;
@@ -21,6 +21,7 @@ fvariable y0  fvariable top
 : pounce-at ( -- )   \ (facing him: as when harrying, within 60 degrees)
     [: game:debilitas his-target !  game:debilitas body-at heading-to his-yaw!
        game:debilitas body-at his-at vec-dist  pounce ;] his! ;
+: point? ( id -- flag )  body-point dup if  nip  then ;   \ (its point of interest told)
 : rising? ( -- flag )  [: his-at 4 + sf@  top f@ fmax top f! false ;] his@ ;
 
 calm-him  5 run-frames
@@ -28,6 +29,12 @@ testing the pounce: the leap ($1E01), up above where he was, down and landing ($
 [: his-at 4 + sf@ fdup y0 f! top f! ;] his!
 pounce-at
 T{ [: anim@ ;] his@ -> $1E01 }T
+testing ... harrying (close-on, $23), the pounce playing: his point is his head (Hewie_PointOfInterest - the rooms' blow zones see it)
+[: close-on-act his-action ! ;] his!  game-tick
+T{ game:hewie point?  -> -1 }T
+[: 0 his-action ! ;] his!   \ (not harrying: none)
+game-tick
+T{ game:hewie point? -> 0 }T
 T{ [: rising? drop [: anim@ $1E03 = ;] his@ ;] 120 soon -> -1 }T
 T{ top f@ y0 f@ 1e f+ f> -> -1 }T
 T{ [: [: his-act @ ['] st-landing <> ;] his@ ;] 120 soon -> -1 }T

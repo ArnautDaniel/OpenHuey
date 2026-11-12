@@ -286,6 +286,7 @@ message meet-now ( type -- )
 message meet-on ( -- )
 message meet-refused ( -- )
 message meet-off ( -- )                      \ either gives it up
+message partner-interrupted ( -- )           \ (Hewie) a script took her in a meeting or command with him (Fiona_Interrupted): his default, unless a script has him
 
 \ ---- the story (docs/subsystems/story.md) ----
 message to-exit ( exit -- )                  \ (a character) put yourself on the exit's outside spot, facing in

@@ -241,7 +241,7 @@ create idle-tricks  sit-trick-act , sit-trick-2-act , lie-down-trick-act , stand
     sit-then-act of  his-next @ sit-then  endof
     keep-behind-act of  keep-behind  endof
     go-limp-act of  go-limp  endof
-    scene-pose-act of  scene-pose  endof
+    dodge-act of  dodge  endof
     back-on-floor-act of  back-on-mesh  endof
     after-attack-act of  after-attack  endof
     step-off-target-act of  step-away-target  endof

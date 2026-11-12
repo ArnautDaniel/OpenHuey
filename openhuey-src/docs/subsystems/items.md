@@ -57,7 +57,7 @@ i -- addr )` and `id@ n@`, `item-at`, `listed`, `items-of ( id -- n )`, `find-it
    (most also set `stalkers-stay`); away from its place one on the altar (the water tower's spot
    $1B: script variable 1 the item, event $14); some file a hint instead (with its sound). The
    remedies change her fear and recovery, calm the panic, or start a timed effect. A bait feeds
-   Hewie only at hand (hers to command, within 20, reachable in a step): her event $8E, his
+   Hewie only at hand (with her, free, not running away or angry, free for a command or down - Hewie_CanTakeCommand; within 20, reachable in a step): her event $8E, his
    $8F / $90 / $91. Results 1 and 2 spend one.
 5. **Timed effects** (the progress' +0x9E0..; they run, and run down, only while no cutscene has
    the camera - StatusTimers_Frame): Lavender calms the panic 0.27 a frame for 300 frames (into

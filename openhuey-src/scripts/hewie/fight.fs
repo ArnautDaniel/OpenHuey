@@ -48,6 +48,10 @@ create upset-chance  14 , 10 , 9 , 8 , 7 , 6 , 5 , 4 , 3 , 2 , 1 ,
 : dares? ( -- flag )
     his-trust @ 2 <  pursuer active? 0= or if  false exit  then
     met dup if  @ 5 / 8 min  then  his-trust @ + 1+  16 roll > ;
+: dares-of? ( who -- flag )   \ (the same against whoever: his leaps counted for the stalker only - her, none)
+    {: who :}  his-trust @ 2 <  who 0< or if  false exit  then
+    who pursuer? if  pursuer active? 0= if  false exit  then  met dup if  @ 5 / 8 min  then  else  0  then
+    his-trust @ + 1+  16 roll > ;
 
 \ ---- a bite (bite_pursuer): its damage (bite-damage), hard by chance - the more hurt the
 \ stalker, the likelier (Hewie_ReactionRoll; the chances' rows by the bite) ----
@@ -451,8 +455,21 @@ defer close-by ( F: rest S: -- done? )   :noname ( -- done? ) ( F: rest -- )  fd
 \ who called him, struck while angry: her, else whoever it was (none: nobody)
 2 constant other-call
 : caller ( from -- n )  dup 0< if  drop no-call exit  then  her = if  0  else  other-call  then ;
+: dodges? ( kind from -- flag )   \ (Hewie_CanInteract: a blow - kinds 1 to 4 - at him standing idle, not
+    \ down, the one striking within 3pi/8 of his heading on the left (the original's signed test), and
+    \ daring: he steps aside - action $79, the original's +0xF3584 - and it misses)
+    {: kind from :}  kind light-blow hard-blow 1+ within 0= if  false exit  then
+    hewie-no-dodge state-flag?  his-mode @ free-mode <> or  his-cond @ down-cond = or  his-action @ dodge-act = or
+    from 0< or if  false exit  then
+    from body? 0= if  false exit  then
+    self body-at from body-at vec-heading his-yaw f- angle-wrap  3e pi f* 8e f/ f< 0= if  false exit  then
+    from dares-of? ;
 : take-blow ( kind damage how from -- taken? )
-    {: kind damage how from :}  from his-by !
+    {: kind damage how from :}
+    his-action @ yelp-anim-act = if  false exit  then   \ (Hewie_CanInteract: none in his yelp, but a door's
+    kind door-blow <>  his-action @ squeeze-out-act = and if  false exit  then   \ while he squeezes out past one)
+    kind from dodges? if  1 his-dodge-req !  false exit  then
+    from his-by !
     his-cond @ down-cond =  kind ignored-blow <> and if   \ (down: he goes limp - not at a grab)
         his-action @ go-limp-act <> if  go-limp-act 0 want  then  true exit
     then

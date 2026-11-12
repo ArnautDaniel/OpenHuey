@@ -63,8 +63,8 @@ variable hewie-blow-n   -2000 hewie-blow-n !   \ (his blows' numbers for the hom
 : land-pounce ( -- )
     floor-y his-y!  settled? if  land-anim play  then
     let-in  4 his-t2 !  ['] st-landing behave ;
-: st-leap-bite ( -- )   \ (past its top: falling, 0.5 faster a frame)
-    tackle-bite  forward
+: st-leap-bite ( -- )   \ (past its top: falling, 0.5 faster a frame - no new bites: Hewie_StateLeapBite
+    mouth!  forward          \ only takes in those that landed, bite_landed; they bite rising, st-tackle)
     his-pounce-y f@ his-pounce-vy f@ f+ fdup his-pounce-y f!  his-y!  his-pounce-vy f@ 0.5e f- his-pounce-vy f!
     his-at v.y sf@ floor-y f< if  land-pounce  then ;
 : st-tackle ( -- )   \ (rising to its top, eased: a quarter sine over the frames to it)

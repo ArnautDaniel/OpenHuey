@@ -34,7 +34,7 @@ USING: engine actors common facts messages hewie-names hewie.state hewie.body he
         lie-anim of in-lying endof  lie-hurt-anim of in-lying endof
         lie-low-anim of in-low endof
         up-from-sitting-anim of in-standing-up endof  up-from-lying-anim of in-standing-up endof
-        yelp-anim of in-standing-up endof  get-up-anim of in-standing-up endof  scene-pose-anim of in-standing-up endof
+        yelp-anim of in-standing-up endof  get-up-anim of in-standing-up endof  dodge-anim of in-standing-up endof
         bark-anim of in-standing-up endof  bark-tense-anim of in-standing-up endof  bark-upset-anim of in-standing-up endof
         bark-limping-anim of in-standing-up endof  ears-up-anim of in-standing-up endof  $2212 of in-standing-up endof   \ ($2212: landed, held on)
         sit-down-anim of in-sitting-down endof  sit-from-lying-anim of in-sitting-down endof  up-from-low-anim of in-sitting-down endof

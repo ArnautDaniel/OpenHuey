@@ -297,6 +297,12 @@ $1C constant softened-layer
     crouch-over  world-frozen state-flag-clear
     hewie-played? 0= if  self cam-on  then  0 0 0 0 0 camera-id send event-shot ;   \ (in the run the camera his)
 
+\ a script takes her (Fiona_Interrupted): met with Hewie - held ($C) - or in a command with him (rouse,
+\ pat, tend, scold close by): he goes back to his default (Hewie_BackToIdle), unless a script has him
+: with-him-interrupted ( -- )
+    her-mode @ held-mode =
+    her-mode @ command-mode =  her-sub @ dup rouse-cmd = over pat-cmd = or over tend-cmd = or swap scold-near-cmd = or  and  or
+    if  hewie-id send partner-interrupted  then ;
 behaviour free
   on spawned ( -- )  self cam-player!
       -1 her-model !  -1 her-hit-who !  -1 her-shake-count !  her-creatures #creatures cells -1 fill  progress pr.vars $26 + c@ wear  2e 15e body-size
@@ -315,7 +321,7 @@ behaviour free
       -1 her-offered !
       her-mode @ 0= her-doing @ 0= and  hands-off? 0= and  action-button? and
       sender alive? and  if  sender send take-offer  else  2drop  then ;   \ (its room gone meanwhile: nobody to answer)
-  on scripted ( on -- )  dup 0= her-scripted @ 0<> and if  script-over  then  her-scripted !  idle ;   \ (idle as she now is: a script's idle step, or free)
+  on scripted ( on -- )  dup if  with-him-interrupted  then  dup 0= her-scripted @ 0<> and if  script-over  then  her-scripted !  idle ;   \ (idle as she now is: a script's idle step, or free)
   on noclip ( on -- )  her-noclip ! ;   \ (the story's 0x20)
   on aside ( on -- )  her-aside ! ;     \ (0x21: out of reach of attacks)
   on activate ( -- )  0 her-noclip !  0 her-aside !  idle ;   \ (the story's 0x15, Fiona_Activate: afresh, standing)

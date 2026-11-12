@@ -2,7 +2,7 @@
 \ notices, his own decisions, his mode's behaviour (calm / wary / tense), what he does next by
 \ his trust (the weighted lists), and his body as it is shown (overlays, neck, feet, sounds).
 IN: hewie.mind
-USING: engine actors common facts paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.fetch hewie.exits hewie.steered flag-names floor-flags ;
+USING: engine actors common facts paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.fetch hewie.exits hewie.steered flag-names floor-flags keys ;
 
 \ report_fiona_near: how near she is, for the story (1 within 20, 2 within 50, 3 further)
 : report-near ( -- )
@@ -212,7 +212,7 @@ USING: engine actors common facts paths vectors messages hewie-names hewie.state
 : off-slope? ( -- flag )   \ (standing, sitting or lying on a slope, facing down it)
     anim-group in-standing-up < his-action @ off-slope-act <> and facing-down-slope? and ;
 : own-decisions ( -- )
-    his-mode @ free-mode <> if  0 his-scene-req !  exit  then
+    his-mode @ free-mode <> if  0 his-dodge-req !  exit  then
     his-cond @ down-cond = if  down-stays-down exit  then
     his-yelp @ 0> his-action @ yelp-anim-act <> and if  yelp-anim-act 0 want  exit  then
     first-door case   \ (in a door's way: Hewie_FirstDoor)
@@ -237,7 +237,7 @@ USING: engine actors common facts paths vectors messages hewie-names hewie.state
     his-danger @ chased <> his-alert-was @ no-alert = and his-alert @ no-alert <> and his-action @ yelp-anim-act <> and if
         prick-ears-act 0 want  exit
     then
-    his-scene-req @ 1 = if  0 his-scene-req !  his-action @ scene-pose-act <> if  scene-pose-act 0 want  exit  then  then
+    his-dodge-req @ 1 = if  0 his-dodge-req !  his-action @ dodge-act <> if  dodge-act 0 want  exit  then  then
     his-danger @ calm <> if  forget-ball  else  ball-ahead? if  fetch-act 0 want  exit  then  then
     off-slope? if  off-slope-act 0 want  exit  then
     on-100 breaks-in?  pursuer with? and if   \ (the stalker - or a creature up - within 10, its back to him)
@@ -500,7 +500,22 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     his-away @ 0= his-no-root @ 0= and if  root-move  then
     turn-head  neck  anim-sounds  feet
     his-yaw his-yaw-was f!  his-action @ his-last-action !  show-him  tell-doing ;
+\ the run's buttons (Progress_CommandButtons, read while he is free for a command - Hewie_FreeForCommand2
+\ - and the buttons aren't locked; Hewie_StateBlock's 11 / 8): R1 a dodge, circle readying, L1 lying
+\ flat, square his "go" (after coming out)
+: run-buttons ( -- )
+    free-for-command? 0=  scene-locked state-flag? or if  exit  then
+    r1 button-pressed? if  dodge-act 0 want exit  then
+    circle button-pressed? if  ready-act 0 want exit  then
+    l1 button-pressed? if  steered-2-act 0 want exit  then
+    square button-pressed? if  after-coming-out-act 0 want  then ;
+$1F constant bite-bone   \ (his head: where his bite is)
+: tell-point ( -- )   \ (Hewie_PointOfInterest, the rooms' char-in-zone: harrying - close-on, $23 - his
+    \ pounce playing, $1E01: his head's place; else none) - told before his frame, as hers
+    his-action @ close-on-act =  anim@ tackle-anim = and if  model bite-bone bone-pos body-point! exit  then
+    body-point-off ;
 : frame ( -- )
+    tell-point
     his-busy @ if  -1 his-was-busy !  gesture!  think exit  then
     his-was-busy @ if  0 his-was-busy !  full-stop  to-default  then   \ (the script let him go)
     upkeep  alert  his-cond @ down-cond <> if  report-near  then  obedience
@@ -516,7 +531,7 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     his-2b @ if  through-mask  else  hewie-floor  then  body-mask!
     his-root-ok @ fit-floor
     0 his-no-root !  1 his-root-ok !
-    hewie-played? if  gesture-bark  then   \ (last frame's gesture: Hewie_StateBlock's end)
+    hewie-played? if  run-buttons  gesture-bark  then   \ (last frame's gesture: Hewie_StateBlock's end)
     cutscene-active? if  standing-frame  else  hewie-played? if  run-decisions  else  own-decisions  then  then
     gesture!
     his-mood-act @ ?dup if  execute  then
