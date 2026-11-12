@@ -25,8 +25,7 @@ $19 constant forest-track   0 constant ash-fx   1 constant heart-area   3 consta
 
 \ ---- the scene ----
 : ash-rises ( on -- )  dup ash-on !  if  effects:ash ash-fx effect!  else  ash-fx effect-off  then ;
-: till-shot ( n -- )  begin  cutscene-frame cutscene-shot-at over <>  while  yield  repeat  drop ;
-: heart-cues ( -- )  1 till-shot  true ash-rises  2 till-shot  false ash-rises  $18 till-shot  -1 doorway-lit ! ;
+: heart-cues ( -- )  1 wait-shot  true ash-rises  2 wait-shot  false ash-rises  $18 wait-shot  -1 doorway-lit ! ;
 : heart-scene ( -- )
     heart-movie scenes:opaque-when-movie heart-cutscene load-scene drop
     heart-slot figure-on  5 cutscene-keep-model  ['] heart-cues along-scene  0 ash-on !

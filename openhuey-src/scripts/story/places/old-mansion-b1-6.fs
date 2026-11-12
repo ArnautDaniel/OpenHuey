@@ -124,18 +124,17 @@ defer leg-05 ( -- next )  defer leg-06 ( -- next )  defer leg-07 ( -- next )
     fig hold  ['] leg-00  begin  ?dup while  execute  repeat ;
 
 \ ---- the race: the golem set going (the first time its scene); the button to run ----
-: hewie-tucked ( -- )  hewie hold  hewie false shown  begin  yield  again ;
 : race ( -- )
     stalkers-stay state!  fiona hold  0 golem-runs !  0 turned !  0 race-done !  -1 lfoot !  -1 rfoot !
     15 screen:to-black-2 with-music or fade  golem golem-slot figure-in  yield
     omb1-6-flag1 fact? 0= if
         1 scenes:keyed-movie 0 load-scene  wait-fade  0 hide-part  4 barred-floor floor-off
-        hewie-in? if  ['] hewie-tucked start drop  then
+        hewie-in? if  ['] hewie-kept-hidden start drop  then
         $28 $78 movie-key  panic-eased  if  -1 run-scene  then  wait-fade
         panic-held state!  fiona 0 idle  fiona $56 -28 83.405e -17.137e place-at
         golem-slot 74.6e 0e 13.8e 0e figure-at  fig 3 1 camera-set  omb1-6-flag1 fact!
     else
-        wait-fade  panic-eased  panic-held state!  hewie-in? if  ['] hewie-tucked start drop  then
+        wait-fade  panic-eased  panic-held state!  hewie-in? if  ['] hewie-kept-hidden start drop  then
         0 hide-part  4 barred-floor floor-off
         fiona $5E -62 92.522e -37.951e place-at  golem-slot 75e 0e -40e 0e figure-at  fig 1 -1 camera-set
     then
@@ -145,7 +144,7 @@ defer leg-05 ( -- next )  defer leg-06 ( -- next )  defer leg-07 ( -- next )
         circle button-pressed?  golem-runs @ 0= and if  text-gone  -1 golem-runs !  -1 turned !  then  yield
     repeat
     15 screen:to-black-2 fade wait-fade  panic-held state-off  text-gone
-    ['] hewie-tucked running? if  ['] hewie-tucked stop-doing  hewie true shown  hewie let-go  then
+    ['] hewie-kept-hidden running? if  ['] hewie-kept-hidden stop-doing  hewie true shown  hewie let-go  then
     ['] its-way stop-doing  golem-slot figure-out  0 show-part  4 barred-floor floor-on
     fiona follow  camera-restart  15 fade-in  stalkers-stay state-off ;
 

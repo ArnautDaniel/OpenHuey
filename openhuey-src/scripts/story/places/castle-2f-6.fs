@@ -34,7 +34,7 @@ own: shelves-remarked  own: book-remarked  own: hewie-noticed
 \ ---- as she comes in ----
 : came-in ( exit -- )
     drop  refractor-had? 0= if  room-sounds  then
-    c2f-3-flag1 fact? 0= if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then
+    c2f-3-flag1 fact? 0= if  daylight-tint  then
     c2f-6-lavender fact? 0= if  lavender-fx -22.26e 8.5e -41.95e flicker-at  then ;
 
 \ ---- the desk: locked (her blows on it); the Study Key used - the drawer, the Lunar Refractor ----

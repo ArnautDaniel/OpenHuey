@@ -25,7 +25,7 @@ $2E constant run-kind-var   0 constant her-motions   0 constant curtain-sound   
 : drawing ( n xt -- )   \ (n frames of her crawl, the curtain drawn by xt each)
     {: n xt :}  0 crawl !  begin  xt execute  yield  crawl @ n < while  1 crawl +!  repeat ;
 : came-in ( exit -- )
-    drop  room-sounds  run-kind-var var@ 1 = if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then
+    drop  room-sounds  run-kind-var var@ 1 = if  daylight-tint  then
     curtain-back  1 $3FFF reverb ;
 
 \ ---- behind the curtain ----

@@ -1,4 +1,4 @@
-\ story/places/castle-1f-16.fs - the TV room in Belli Castle's 1F ($1A): the fan turning, the TV
+\ story/places/castle-1f-16.fs - the TV room in Belli Castle's 1F ($1A): the fan-turning turning, the TV
 \ (her switching it on and off - the first time a fright - its noise heard about), a place to hide
 \ (the kit's; the stalker coming in: Debilitas turns the TV off, else he searches - finding her more
 \ likely each time he comes), the cracked mirror, the red painting, the Magnesia, the clock. A place
@@ -28,8 +28,7 @@ own: painting-remarked     \ the painting's first remark made (in turn with the 
 : tv-on? ( -- flag )  c1f-16-flag2 fact? ;
 : running-at ( F: -- x y z )  23e 11e 9e ;
 
-\ ---- the fan, round 1.15 degrees a frame ----
-: fan ( -- )  begin  s" fan" 0.0200713e object-turn  yield  again ;
+\ ---- the fan-turning, round 1.15 degrees a frame ----
 
 \ ---- the TV: its dark screen away while it's on, its noise heard about ----
 : show-tv ( -- )  tv-on? if  tv-off-part hide-part  1 tv-fx tell-effect  else  tv-off-part show-part  0 tv-fx tell-effect  then ;
@@ -37,7 +36,7 @@ own: painting-remarked     \ the painting's first remark made (in turn with the 
 
 \ ---- as she comes in ----
 : came-in ( exit -- )
-    drop  room-sounds  ['] fan start drop
+    drop  room-sounds  ['] fan-turning start drop
     0e 0e 0e 1 effects:tv-screen tv-fx effect!  show-tv  tv-on? if  1 heard-about  then
     c1f-16-magnesia fact? 0= if  magnesia-fx -25e 10e 13e flicker-at  then ;
 

@@ -66,11 +66,10 @@ $1C constant scene-figure   $21 constant other-figure
     $38383838 4 9  120e 10e 45e  0.4e 0e 0.2e 0.5e  -9.5e shards    $38383838 4 9  120e 10e 41e  0.4e 0e 0.2e 0.5e  -9.5e shards
     $38383838 4 9  120e 4e 45e  0.4e 0e 0.2e 0.5e  -3.5e shards     $38383838 4 9  120e 4e 41e  0.4e 0e 0.2e 0.5e  -3.5e shards
     stalker wait-anim  0 smashing ! ;
-: her-kind? ( -- flag )  partner-kind dup daniella-kind = swap kind34-kind = or ;
 : smash-due ( -- )
-    drawing @ smashing @ or  om2f-13-breakable-broken fact? or  om2f-13-flag1 fact? 0= or  her-kind? 0= or if  exit  then
+    drawing @ smashing @ or  om2f-13-breakable-broken fact? or  om2f-13-flag1 fact? 0= or  daniella-loaded? 0= or if  exit  then
     stalker mirror-area entered?  st-mode-now @ 0= and  stalker held? 0= and if  ['] smashes start drop  then ;   \ (act02, mode 0)
-: smash-given-up ( -- )  her-kind?  stalker held? and 0= if  0 smashing !  then ;   \ (her not at it - or not her: the offers again)
+: smash-given-up ( -- )  daniella-loaded?  stalker held? and 0= if  0 smashing !  then ;   \ (her not at it - or not her: the offers again)
 
 \ ---- brought in by the forced way ----
 : forward ( -- )
@@ -113,6 +112,6 @@ create entries  1 , 1 ,   1 , 1 ,   2 , 2 ,   0 , 0 ,   \ (by exit 0..3: the cam
         fiona 0 at-exit  1 1 player-camera  ['] forward start drop
         room-of-hewie old-mansion-2f-6 = if  old-mansion-2f-13 55 0 hewie-to  then
     then ;
-: went ( -- )  smashing @ if  om2f-13-flag1 fact!  om2f-13-breakable-broken fact!  her-kind? if  true stalker send rage  then  then ;
+: went ( -- )  smashing @ if  om2f-13-flag1 fact!  om2f-13-breakable-broken fact!  daniella-loaded? if  true stalker send rage  then  then ;
 
 ' came-in ' person-in ' each-frame ' went old-mansion-2f-13 place!

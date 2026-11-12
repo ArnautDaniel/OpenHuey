@@ -364,7 +364,6 @@ create cameras   \ (area, set, path)
     1 , 5 , 5 ,   2 , 0 , 0 ,   3 , 1 , 1 ,   4 , 1 , 1 ,   5 , 2 , 2 ,   6 , 3 , 3 ,   7 , 2 , 2 ,   8 , 2 , 2 ,
     9 , 4 , 4 ,   $A , 2 , 2 ,   $B , 5 , 5 ,   $C , 4 , 4 ,   $D , 5 , 5 ,   $E , 0 , 0 ,   $F , 6 , 6 ,
 create ahead  $18 , 1 ,   \ (area, exit loaded ahead)
-: facing? ( area deg within -- flag )  {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 : flames-stir ( -- )  6 0 do  i  i flame@ 8e -4e flame-stirred  loop ;
 : room-sound-on ( -- )   \ (the room's steady sound: begun once its bank is in, then kept up)
     sound-started @ 0= if
@@ -376,15 +375,15 @@ create ahead  $18 , 1 ,   \ (area, exit loaded ahead)
     then
     wtb1-pipe-2-burst fact?  wtb1-miniature fact? 0= and  fiona -48e 1e -296e 5e 5e touches? and if  ['] the-miniature calm-only offer  then
     wtb1-map fact? 0=  fiona $12 50 faces-area? and if  ['] the-map unhurried offer  then
-    out-of-cell fact? 0=  $11 90 50 facing? and if  ['] the-key unhurried offer  then
-    wtb1-figurine fact? 0=  $13 -104 50 facing? and if  ['] the-figurine calm-only offer  then
-    wtb1-disc fact? 0=  $14 -54 50 facing? and if  ['] the-disc calm-only offer  then
-    $15 -90 50 facing? if  ['] into-hole unhurried offer  then
+    out-of-cell fact? 0=  $11 90 50 fiona-faces? and if  ['] the-key unhurried offer  then
+    wtb1-figurine fact? 0=  $13 -104 50 fiona-faces? and if  ['] the-figurine calm-only offer  then
+    wtb1-disc fact? 0=  $14 -54 50 fiona-faces? and if  ['] the-disc calm-only offer  then
+    $15 -90 50 fiona-faces? if  ['] into-hole unhurried offer  then
     fiona $1A in-area? if  ['] the-locked-door unhurried offer  then
-    $1B 64 50 facing? if  ['] the-container unhurried offer  then
-    wtb1-pipe-3-burst fact? 0=  $1C 106 60 facing? and if  ['] the-pipe unhurried offer  then
-    wtb1-pipe-2-burst fact? 0=  $1D -158 60 facing? and if  ['] the-pipe unhurried offer  then
-    wtb1-pipe-1-burst fact? 0=  $1E 12 60 facing? and if  ['] the-pipe unhurried offer  then
+    $1B 64 50 fiona-faces? if  ['] the-container unhurried offer  then
+    wtb1-pipe-3-burst fact? 0=  $1C 106 60 fiona-faces? and if  ['] the-pipe unhurried offer  then
+    wtb1-pipe-2-burst fact? 0=  $1D -158 60 fiona-faces? and if  ['] the-pipe unhurried offer  then
+    wtb1-pipe-1-burst fact? 0=  $1E 12 60 fiona-faces? and if  ['] the-pipe unhurried offer  then
     wtb1-viride-found fact?  wtb1-viride fact? 0= and  fiona -42.27e 1e -5.28e 5e 5e touches? and if  ['] the-viride calm-only offer  then
     wtb1-pipe-3-burst fact?  wtb1-album-medallion fact? 0= and  fiona 84e 1e -220e 5e 5e touches? and if  ['] the-album calm-only offer  then
     wtb1-beef-jerky fact? 0=  fiona 15.77e 1e -102.69e 5e 5e touches? and if  ['] the-jerky calm-only offer  then ;

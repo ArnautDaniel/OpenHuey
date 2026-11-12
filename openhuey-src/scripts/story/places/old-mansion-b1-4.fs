@@ -94,7 +94,6 @@ create flames  -3.3e f, 31.4e f, -4.3e f,   -5.7e f, 31.4e f, 0.3e f,   -2.8e f,
 create cameras  1 , 0 , 0 ,   2 , 1 , 1 ,   3 , 1 , 1 ,   4 , 2 , 2 ,   \ (area, set, path)
 create her-look  -27.99e 0e -19.65e  30e 8e 8e look,
 create looks  19.24e 0e -32.32e  22e 18e 18e look,   -32.619e 0e -33.47e  22e 18e 18e look,   19.13e 0e -1.45e  17e 14e 14e look,
-: facing? ( area deg -- flag )  {: a d :}  fiona a in-area?  fiona d 50 heading? and ;
 : each-frame ( -- )
     hums  0 exit-out  cameras 4 cameras-at
     waiting @ if
@@ -103,13 +102,13 @@ create looks  19.24e 0e -32.32e  22e 18e 18e look,   -32.619e 0e -33.47e  22e 18
         room-sounds-in?  partner-kind daniella-kind = and if  presence-sound keep-playing or room-bank stalker sound-by  then
     then
     looks 3 hewie-looks-at
-    5 180 facing? if  ['] wax unhurried offer  then
-    6 90 facing? if  ['] chess unhurried offer  then
-    7 -90 facing? if  ['] hourglass unhurried offer  then
-    8 -90 facing? if  ['] models unhurried offer  then
-    9 -90 facing? if  ['] flask unhurried offer  then
-    waiting @ 0=  $A -90 facing? and if  ['] kiln unhurried offer  then
-    $B 180 facing? if  ['] still unhurried offer  then
+    5 180 50 fiona-faces? if  ['] wax unhurried offer  then
+    6 90 50 fiona-faces? if  ['] chess unhurried offer  then
+    7 -90 50 fiona-faces? if  ['] hourglass unhurried offer  then
+    8 -90 50 fiona-faces? if  ['] models unhurried offer  then
+    9 -90 50 fiona-faces? if  ['] flask unhurried offer  then
+    waiting @ 0=  $A -90 50 fiona-faces? and if  ['] kiln unhurried offer  then
+    $B 180 50 fiona-faces? if  ['] still unhurried offer  then
     fiona cabinet-area in-area?  fiona 0 60 heading? and if
         waiting @ if  ['] right-there unhurried offer
         else  stalker-in? if  no-time-message offer-remark-now  else  ['] hides hiding-spot offer  then  then

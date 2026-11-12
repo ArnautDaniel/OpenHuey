@@ -119,7 +119,7 @@ defer the-trap ( -- )
         else  0 someone-on-plate !  0 plate-frames !  then  then
     then  drop
     true plate-height
-    c2f-3-flag1 fact? 0= if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then
+    c2f-3-flag1 fact? 0= if  daylight-tint  then
     flame-fx 0 22.8e 14.65e 68.75e flame-at
     weak-wall-broken fact? if
         broken-wall-part show-part  -1 sparkle-shown !
@@ -308,7 +308,7 @@ create entries  1 , 1 ,   0 , 0 ,   0 , 0 ,   0 , 0 ,      \ (by exit 0 .. 3: th
     saturnus-hint-on fact?  c1f-14-flag2 fact? 0= and if  c1f-14-flag2 fact!  0 summon-take  then ;
 : replay-riccardo ( -- )   \ (act19)
     fiona hold  puppet-door-part show-part  2 object-show  3 object-show  4 object-show  wall-part show-part
-    $84 $60 $3C $50 $24 $2A $2A $46 room-tint  flame-fx 0 22.8e 14.65e 68.75e flame-at
+    daylight-tint  flame-fx 0 22.8e 14.65e 68.75e flame-at
     riccardo-kind figure-slot figure-in  yield  2 stalker-ready  yield
     6 scenes:opaque-when-movie 0 load-scene  ['] riccardo-shots at-shots  panic-eased
     if  riccardo-msg run-scene  then  st-kind-now @ false no-shadow

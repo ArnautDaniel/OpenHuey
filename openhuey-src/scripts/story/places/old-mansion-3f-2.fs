@@ -38,9 +38,8 @@ $187 constant far-tri   $11F constant near-tri   $195 constant back-tri   $30 co
     room-sounds  specks-about  1 $2300 reverb ;
 
 \ ---- Hewie through a scene: down, hidden away till it's over ----
-: hewie-held ( -- )  hewie hold  hewie false shown  begin  yield  again ;
-: hewie-hidden-if-down ( -- )  hewie-in?  hewie-cond-now @ down-cond = and if  ['] hewie-held start drop  then ;
-: hewie-back ( -- )  hewie-in?  hewie-cond-now @ down-cond = and if  ['] hewie-held stop-doing  hewie true shown  hewie let-go  then ;
+: hewie-hidden-if-down ( -- )  hewie-in?  hewie-cond-now @ down-cond = and if  ['] hewie-kept-hidden start drop  then ;
+: hewie-back ( -- )  hewie-in?  hewie-cond-now @ down-cond = and if  ['] hewie-kept-hidden stop-doing  hewie true shown  hewie let-go  then ;
 
 \ ---- the first time in: its scene ----
 : intro-scene ( -- )  intro-movie scenes:unseen-movie intro-cutscene load-scene  0 hide-part  panic-eased  if  -1 run-scene  then ;

@@ -137,15 +137,14 @@ $42 constant quies-seen   $44 constant mundus-seen   \ (the sub screen's marks: 
 : leaves ( -- )  fiona wait-move  15 screen:to-black fade  wait-fade  world-held state!  garden-way take-exit ;
 
 \ ---- every frame ----
-: facing? ( area deg within -- flag )  {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 : spots ( -- )
-    way-out-area 90 50 facing? if  ['] leaves unhurried offer  then
-    inscription-area -180 55 facing? if  ['] the-inscription unhurried offer  then
-    chest-area 180 55 facing? if  chests-open? if  ['] the-costumes  else  ['] the-chest  then  unhurried offer  then
+    way-out-area 90 50 fiona-faces? if  ['] leaves unhurried offer  then
+    inscription-area -180 55 fiona-faces? if  ['] the-inscription unhurried offer  then
+    chest-area 180 55 fiona-faces? if  chests-open? if  ['] the-costumes  else  ['] the-chest  then  unhurried offer  then
     fiona -16.2e -5.68e 5e reaches-across?  fiona -100 60 heading? and if  ['] the-slots unhurried offer  then
     fiona -21.456e 6.443e 5e reaches-across?  fiona -90 60 heading? and if  ['] the-machine unhurried offer  then
-    book-area 90 50 facing? if  ['] the-book unhurried offer  then
-    chests-open?  second-chest-area 180 55 facing? and if  ['] the-slot unhurried offer  then ;
+    book-area 90 50 fiona-faces? if  ['] the-book unhurried offer  then
+    chests-open?  second-chest-area 180 55 fiona-faces? and if  ['] the-slot unhurried offer  then ;
 : each-frame ( -- )  spots ;
 : person-in ( i -- )
     fiona-p <> if  exit  then

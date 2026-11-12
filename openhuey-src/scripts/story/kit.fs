@@ -401,6 +401,8 @@ enum: scene-progress  no-scene-yet scene-loading scene-is-ready scene-running sc
     begin  scene-step @ scene-running = while  yield  repeat  0 cue-xt ! ;
 : at-shots ( xt -- )  cue-xt ! ;
 : scene-shot? ( shot -- flag )  cutscene-frame cutscene-shot-at = ;   \ (the scene's frame at that shot's start: cond 0x4A)
+: wait-shot ( shot -- )  begin  cutscene-frame cutscene-shot-at over <> while  yield  repeat  drop ;   \ (in an activity: till the scene is at that shot)
+: wait-scene-frame ( frame -- )  begin  cutscene-frame over < while  yield  repeat  drop ;   \ (... till the scene is that far)
 : scene-at? ( frame -- flag )  cutscene-frame swap < 0= ;            \ (the scene that far: its cue reached, cond 0x38)
 : scene-near-end? ( -- flag )  cutscene-near? ;                       \ (cond 0x40)
 : signal-passed? ( k n -- flag )   \ the scene's signal k, counted, passing its nth this frame (the original's cond 0x3B)
@@ -513,6 +515,7 @@ $2100 constant coat-pose-1   $1F00 constant coat-pose-2   $2000 constant coat-po
 : hewie-eyes-on ( F: x y z -- )  f>cell f>cell f>cell swap rot  hewie send scent-now ;   \ (his look on that point now)
 : hewie-scent ( F: x y z -- )  f>cell f>cell f>cell swap rot  hewie send scent-at ;   \ (something to look to, if he has none)
 : chance? ( pct -- flag )  rnd 100e f* f>s > ;
+: hewie-at-hand? ( -- flag )  hewie-in? hewie-cond-now @ well-cond = and  chased? 0= and  hewie-cmdable-now @ and ;   \ (well, free to command, no chase on)
 
 \ ---- the sub screen ----
 : open-subscreen ( mode -- )   \ (a mode of the menu: 1 saving, 7 the costumes; waited while it is up)
@@ -572,6 +575,7 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 : grab-forget ( -- )  0 grab-last-now ! ;   \ (not by Hewie now: no answer kept)
 : partner ( -- id | -1 )  story.base:slot2 @ ;   \ the story's stalker (its slot 2): loaded, in the game or not
 : partner-kind ( -- kind )  story.base:slot2-kind @ ;
+: daniella-loaded? ( -- flag )  partner-kind dup daniella-kind = swap kind34-kind = or ;   \ (the stalker loaded Daniella, or her kind 34)
 : face-on ( kind sel addr len -- )   \ a character's face: its texture sel the file's first (Progress_LoadSpeech / Speak)
     story.base:speech-load  {: kind sel :}  kind cast-model dup 0< if  drop exit  then
     sel story.base:speech-file story.base:speech-len @ actor-texture-swap drop ;
@@ -619,6 +623,7 @@ $1F constant tint-slot
 create tint-bytes 9 allot
 : room-tint ( gr gg gb ga cr cg cb ca -- )   \ (its mode 0)
     0 tint-bytes 8 + c!  8 0 do  tint-bytes 7 i - + c!  loop  tint-slot tint-bytes 9 look-set ;
+: daylight-tint ( -- )  $84 $60 $3C $50 $24 $2A $2A $46 room-tint ;   \ (the castle's rooms by day)
 \ the look's other slots: the depth range (its far view's: Room_DepthRange), the screen's blend
 $1C constant depth-slot   $1D constant fog-slot   $1E constant blend-slot
 create look-bytes 16 allot
@@ -675,6 +680,7 @@ $14 constant turn-y
 : object-turn ( addr len F: by -- )   \ turned about its upright, wrapping
     {: a n F: by :}  a n placed-here? 0= if  exit  then
     a n turn-y placed-f@ by f+  fdup pi f> if  2e pi f* f-  then  a n turn-y placed-f! ;
+: fan-turning ( -- )  begin  s" fan" 0.0200713e object-turn  yield  again ;   \ (an activity: the room's fan, for good)
 \ the room's motions for a character: a file of them (a room string) loaded, then used (ids from room-motion)
 $8000 constant room-motion
 : model-of ( id -- model | -1 )   \ (a person's model, as the cutscenes find it: by its kind)
@@ -920,6 +926,7 @@ $28 constant place-z
     3 0 do  step i $20 * +  $60 mod  $30 swap - abs  $10 - 0 max  3 lshift  $FF min  loop   \ (its bytes 0..2)
     c3 c4 c5 c6 c7 room-tint ;
 : shown ( id on -- )  over 0< if  2drop exit  then  swap send show ;   \ (drawn, or not)
+: hewie-kept-hidden ( -- )  hewie hold  hewie false shown  begin  yield  again ;   \ (an activity: Hewie held out of sight for good - a scene's)
 : object@ ( addr len off -- ) ( F: -- v )  placed-f@ ;
 : object! ( addr len off F: v -- )  {: a n off F: v :}  a n placed-here? 0= if  exit  then  v a n off placed-f! ;
 $24 constant place-y
@@ -1043,6 +1050,8 @@ $30 constant swing-phase  $34 constant swing-offset  $38 constant swing-left  $3
     summoner-due?  stalker unseen? and if  stalker let-go  1 summon-take  then ;
 : point-unseen? ( F: x y z -- flag )  out-of-view? ;
 : point-seen? ( F: x y z -- flag )  out-of-view? 0= ;   \ (on the screen: the rooms' "point-on-camera? not" - their cond 0x4F is the camera's out-of-view test)
+: fiona-faces? ( area deg within -- flag )   \ she is in the area, facing deg within so many
+    {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 : faces-point? ( id within F: x z -- flag )   \ facing the point, within so many degrees
     {: id within F: x z :}  id here? 0= if  false exit  then
     id body-pos fswap fdrop {: F: mx mz :}  x mx f-  z mz f-  fatan2

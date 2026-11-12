@@ -9,7 +9,7 @@ USING: engine game-state actors messages common flag-names facts room-names stor
     story.places.clock-run ;
 
 $2E constant run-kind-var
-: daylight ( -- )  run-kind-var var@ 1 = if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then ;
+: daylight ( -- )  run-kind-var var@ 1 = if  daylight-tint  then ;
 create flames  6e 21.8e -3.2e f, f, f,   29e 41.8e 41.9e f, f, f,   -46.8e 93.8e 18.5e f, f, f,
 : flame@ ( k -- ) ( F: -- x y z )  3 * floats flames +  dup 2 floats + f@  dup float+ f@  f@ ;
 : flames-lit ( -- )  3 0 do  i 0  i flame@  flame-at  loop ;

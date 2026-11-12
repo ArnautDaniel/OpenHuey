@@ -84,7 +84,6 @@ $40 constant glass-strength
 : at-spot ( tri face F: x z -- )  {: tri face F: x z :}  fiona wait-move  fiona tri face x z walk-to ;
 : looking ( F: dist pitch yaw rise -- )  1 shot ;   \ (the story's shot of her, close)
 : look-done ( -- )  shot-off ;
-: facing? ( area deg within -- flag )  {: area deg within :}  fiona area in-area?  fiona deg within heading? and ;
 
 : remark-fire ( -- )  fiona wait-move  fiona -40e -60e turn-to-xz  fire-msg say ;
 : portrait ( msg tri face F: x z pitch -- )   \ (looked at closely - the camera that far down - a remark said, back)

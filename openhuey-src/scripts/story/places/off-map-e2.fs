@@ -20,7 +20,7 @@ create candles
 : draughts ( -- )  #candles 0 do  i  i candle@  8e -4e  flame-stirred  loop ;
 : came-in ( exit -- )
     drop  candles-lit  plate-key-part hide-part
-    run-kind-var var@ 1 = if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then ;
+    run-kind-var var@ 1 = if  daylight-tint  then ;
 
 \ ---- every frame ----
 create entries  0 , 0 ,  1 , 1 ,   \ (by exit 0, 1: the camera)

@@ -20,7 +20,7 @@ $2E constant run-kind-var   0 constant came-in-sound   5 constant first-ambient 
     goal f0= if  -0.2e  else  0.2e  then  s" fumi_yuka" place-y object@ f+  0e fmax 1e fmin  s" fumi_yuka" place-y object! ;
 : came-in ( exit -- )
     drop  room-sounds  0 hide-part  1 object-show  2 object-show  3 object-show  4 object-hide  5 object-hide
-    run-kind-var var@ 1 = if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then
+    run-kind-var var@ 1 = if  daylight-tint  then
     0 0 22.8e 14.65e 68.75e flame-at
     1 show-part  2 hide-part  3 show-part  4 hide-part  5 show-part
     1 $2300 reverb  true plate ;

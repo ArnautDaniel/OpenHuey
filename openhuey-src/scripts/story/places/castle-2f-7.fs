@@ -33,7 +33,7 @@ own: press-remarked  own: cage-looked
 5 constant old-man-movie   4 constant old-man-cutscene   2 constant press-screen
 1 constant cue-sound   $225 constant plate-file   $25 constant old-man-seen
 : wander-about ( -- )  wander-fx -39e 6e 31e 3e 3e 0e 0e -60e wanderer-at ;
-: tinted ( -- )  c2f-3-flag1 fact? 0= if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then ;
+: tinted ( -- )  c2f-3-flag1 fact? 0= if  daylight-tint  then ;
 
 \ ---- as she comes in ----
 : came-in ( exit -- )  drop  room-sounds  tinted  wander-about  cube-object object-hide ;

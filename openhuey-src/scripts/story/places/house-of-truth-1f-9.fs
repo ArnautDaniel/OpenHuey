@@ -169,20 +169,18 @@ create tint-a  $7B c, $32 c, $2A c, $64 c, $24 c, $2C c, $36 c, $4E c,
 create tint-b  $72 c, $96 c, $94 c, $6E c, $60 c, $56 c, $70 c, $3C c,
 : tinted ( tint -- )  8 0 do  dup i + c@ swap  loop  drop  room-tint ;
 : dark-look ( -- )  tint-a tinted  $8080805E 0 screen-blend ;
-: till-frame ( n -- )  begin  cutscene-frame over < while  yield  repeat  drop ;
-: till-shot ( shot -- )  begin  cutscene-frame cutscene-shot-at over <> while  yield  repeat  drop ;
 : near-view ( -- )   \ (from the scene's frame 825: 1, 1..21, 80..120, 160)
     cutscene-frame 825 - s>f  1e  fover 0.3e f* 1e f+ 21e fmin  frot 0.7e f* 80e f+ 120e fmin  160e  depth-range ;
 : lorenzo-cues ( -- )   \ (an activity: the scene's far view, the door, the light, the haze)
-    depth-range-off  $21C till-frame
+    depth-range-off  $21C wait-scene-frame
     begin  cutscene-frame $2ED < while  1e 1e 80e 160e depth-range  yield  repeat
     begin  cutscene-frame $348 < while  near-view  yield  repeat
-    depth-range-off  4 till-shot  depth-range-off
+    depth-range-off  4 wait-shot  depth-range-off
     locked-door false open-mark  doors-redone  tint-b tinted  $9EEAEAFF 0 screen-blend
-    5 till-shot  dark-look
-    $47E till-frame  haze-on  -1 hazed !  6 256 + haze-fx tell-effect
-    $492 till-frame  2 haze-fx tell-effect
-    8 till-shot  0 haze-fx tell-effect ;
+    5 wait-shot  dark-look
+    $47E wait-scene-frame  haze-on  -1 hazed !  6 256 + haze-fx tell-effect
+    $492 wait-scene-frame  2 haze-fx tell-effect
+    8 wait-shot  0 haze-fx tell-effect ;
 : lorenzo-scene ( -- )
     lorenzo-movie scenes:keyed-movie lorenzo-cutscene load-scene drop  ['] lorenzo-cues along-scene
     $10 $C8 movie-key  panic-eased  naught-msg run-scene  ['] lorenzo-cues stop-doing ;

@@ -47,7 +47,7 @@ $209 constant fled-file   $224 constant his-file   $2302 constant look-round-ani
 : warned? ( -- flag )  c1f-8-flag1 fact?  found-file-209 fact? 0= and ;   \ (the telephone's warning heeded not yet)
 : first-time? ( -- flag )  c2f-2-flag1 fact? 0= ;
 : box-home? ( -- flag )  c2f-2-flag2 fact? ;
-: tinted ( -- )  c2f-3-flag1 fact? 0= if  $84 $60 $3C $50 $24 $2A $2A $46 room-tint  then ;
+: tinted ( -- )  c2f-3-flag1 fact? 0= if  daylight-tint  then ;
 : the-figures ( -- )  daniella-kind 3 figure-in  riccardo-kind 4 figure-in ;   \ (for the room beyond: its scene)
 : no-figures ( -- )  3 figure-out  4 figure-out ;
 : box-placed ( -- )   \ (in its place, or pushed home and fixed there)
@@ -243,9 +243,8 @@ create looks
     -84.16e 0e 90.89e  18e 28e 28e look,
 : wary-by-door ( -- )  -144e 0e 109e hewie-stands-by ;
 : sits-by-box ( -- )  33.656e 0e 111.061e hewie-sits-by ;
-: at-his-command? ( -- flag )  hewie-in?  hewie-cond-now @ well-cond = and  chased? 0= and  hewie-cmdable-now @ and ;
 : hewie-notices ( -- )
-    at-his-command? 0= if  exit  then
+    hewie-at-hand? 0= if  exit  then
     warned?  hewie 2 in-area? 0= and  wary-noticed @ 0= and  hewie -144e 0e 109e 30e 20e centred-in? and if
         -1 wary-noticed !  ['] wary-by-door start drop
     then

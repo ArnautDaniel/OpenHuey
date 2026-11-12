@@ -46,14 +46,12 @@ $1C constant door-track   $81 constant mystic-way
 : marker-in ( -- )   \ (made: both figures shining in its colour - slots 3 and 4, Room8D_Cmd01 - it lit on the first, now and then a spark on the second)
     end-figure $14 layer  end-figure-2 $14 layer
     end-figure cast-model  end-figure-2 cast-model  1 1e effects:marker  marker-fx effect! ;
-: till-shot ( n -- )  begin  cutscene-frame cutscene-shot-at over <> while  yield  repeat  drop ;
-: till-cue ( frame -- )  begin  cutscene-frame over < while  yield  repeat  drop ;
 : marker-cues ( -- )   \ (an activity, along the scene)
-    0 till-shot  marker-in  2 till-shot  marker-done  3 till-shot  marker-in  4 till-shot  -2 marker-to
-    $1E0 till-cue  1000 marker-to  7 till-shot  marker-done  8 till-shot  marker-in  9 till-shot  marker-done
-    $A till-shot  marker-in  $B till-shot  marker-done  $C till-shot  marker-in  500 marker-to
-    $58C till-cue  1000 marker-to  $D till-shot  marker-done  $E till-shot  marker-in
-    $65E till-cue  334 shrink !
+    0 wait-shot  marker-in  2 wait-shot  marker-done  3 wait-shot  marker-in  4 wait-shot  -2 marker-to
+    $1E0 wait-scene-frame  1000 marker-to  7 wait-shot  marker-done  8 wait-shot  marker-in  9 wait-shot  marker-done
+    $A wait-shot  marker-in  $B wait-shot  marker-done  $C wait-shot  marker-in  500 marker-to
+    $58C wait-scene-frame  1000 marker-to  $D wait-shot  marker-done  $E wait-shot  marker-in
+    $65E wait-scene-frame  334 shrink !
     begin  cutscene-frame 0< 0=  while  shrink @ 1- 0 max dup shrink !  1000 334 */ marker-to  yield  repeat ;
 : end-scene ( -- )
     end-movie scenes:unseen-movie end-cutscene load-scene drop  3 figure-on  4 figure-on
