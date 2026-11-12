@@ -225,9 +225,6 @@ create mv-at /vec allot
 : deg>yaw ( deg -- ) ( F: -- yaw )  s>f deg>rad angle-wrap ;
 : walk-to ( id tri face F: x z -- )   \ to (x, z) on tri, then facing face (degrees)
     {: id tri face F: x z :}  id walk-move tri -1  tri x z floor-at  face deg>yaw  move  id wait-move ;
-: run-to ( id tri face F: x z -- )
-    {: id tri face F: x z :}  id run-move tri -1  tri x z floor-at  face deg>yaw  move  id wait-move ;
-: walk-to-tri ( id tri -- )  {: id tri :}  id walk-path-move tri -1  tri tri-center 0e  move  id wait-move ;
 : go-to ( id tri face b kind F: x z -- )   \ (a move to (x, z) on tri, then facing: b its animation, -1 the usual)
     {: id tri face b kind F: x z :}  id kind tri b  tri x z floor-at  face deg>yaw  move  id wait-move ;
 : path-to ( id tri b kind -- )  {: id tri b kind :}  id kind tri b  tri tri-center  id body-yaw  move  id wait-move ;
@@ -632,7 +629,6 @@ create look-bytes 16 allot
     look-bytes 4 + l!  look-bytes l!  look-bytes 12 + sf!  look-bytes 8 + sf!  fog-slot look-bytes 16 look-set ;
 : fog-off ( -- )  fog-slot 0 0 look-set ;
 : screen-blend ( rgba mode -- )  look-bytes 4 + c!  look-bytes l!  blend-slot look-bytes 5 look-set ;
-: screen-blend-off ( -- )  blend-slot 0 0 look-set ;
 : glow-at ( k rgba F: x y z size -- )  effects:glow swap effect! ;   \ effect k: a glow (Effect737D0)
 : preload ( room -- )  rooms-id send room-preload ;
 : thing-lying? ( kind -- flag )   \ (one of the things of that kind lying about, in any room: PlacedThings_FirstOfKind)
