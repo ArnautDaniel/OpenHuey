@@ -84,9 +84,8 @@ create entries  0 , -1 ,   3 , -1 ,   \ (by exit 0, 1: the camera)
 create ahead  2 , 0 ,   3 , 1 ,   \ (area, exit loaded ahead)
 create looks  20.8e 0e -104.26e  30e 15e 15e look,
 : the-walker ( -- )
-    walker-due? 0= if  exit  then
-    fiona $B entered? if  -1 in-further !  then
-    fiona $A entered? if
+    walker-due? if  fiona $B entered? if  -1 in-further !  then  then
+    fiona $A entered?  om1f-6-flag1 fact? 0= and if   \ (dropped once, whether or not it walked)
         walker-slot figure-out  old-mansion-1f-6 0 82 $80 8 $B4 0e creature-dropped  om1f-6-flag1 fact!
     then ;
 : each-frame ( -- )

@@ -113,7 +113,7 @@ create lectern-spots   $36 , -90 , 35e f, -52e f, 25e f, 20e f, -50e f, 2e f,
 : its-own ( p -- )   \ (the lectern's own author: its shelves slide back - the way through)
     {: p :}  hewie-for-scene
     fiona reach-up-anim play  book-sound room-bank fiona sound-by
-    p case  0 of  8  endof  1 of  4  endof  >r 0 r>  endcase  object-hide
+    p case  0 of  8  endof  1 of  4  endof  >r 0 r>  endcase  object-show
     p p 3 * + books-placed + fact!  p book-item spend  fiona reach-down-anim play ;
 : lays-0 ( b -- )
     {: b :}  0 at-lectern

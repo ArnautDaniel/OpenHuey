@@ -40,4 +40,9 @@ T{ shown-soon  300 read-on -> mad-msg }T
 testing the hall flooded: its water, no Daniella
 found-file-234 story-flag-set  partner send stalker-out  room-afresh
 T{ 1 part? -> -1 }T
+testing her going with Daniella at her task: let go, the summoner takes her (room 2E's char-done)
+: summ ( xt -- )  game:summoner enter  execute  leave-actor ;
+found-file-234 story-flag-clear  daniella-kind story.base:partner-load  room-afresh
+[: -1 summoner:took-room ! ;] summ  [: went ;] in-place  deliver
+T{ game:summoner enter summoner:took-room @ leave-actor -> old-mansion-1f-1 }T
 test-summary
