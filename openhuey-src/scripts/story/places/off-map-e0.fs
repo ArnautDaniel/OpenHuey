@@ -34,7 +34,7 @@ $2E constant run-kind-var   1 constant her-motions   $30 constant search-var
     $122 $11D do  i door-shut  loop  $12B $123 do  i door-shut  loop
     $12B $126 do  i lock  loop  doors-redone ;
 : sets-out ( -- )
-    0 prepare-exit  fiona 0 at-exit
+    0 prepare-exit  0 her-exit-is
     $34 $30 do  0 i var!  loop
     fiona activate  fiona $55 180 -40.16e 11.18e place-at  fiona 0 0 camera-set
     hewie activate  off-map-e0 276 0 hewie-to  hewie $114 -127 -32.33e 16.81e place-at  0 0 player-camera

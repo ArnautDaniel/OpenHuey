@@ -550,8 +550,10 @@ only a pause byte of $FF resumes the stream (`bgm-resume`), pause 1 starts a tra
 script-held (+0xE0), on a script track while the track runs (`start-only`). `stalker-kept` holds the
 stalker for the rest of a visit. The shared script $85 is the second clock (`another-clock`:
 "It's another clock...", castle-1f-18 and chaos-forest-8). Water Tower 2F's walkway sets her exit
-by its side (room $C2's command 1, Character_ChooseExit: `exit-chosen`, taken by the stalker and
-the summoner). Left: a Hewie taken off by `char-done` (Character_Deactivate) is only let go here.
+by its side (room $C2's command 1, Character_ChooseExit: `her-exit-is` - the `exit-chosen`
+broadcast, taken by the stalker, the summoner and Fiona's own door with him; the clock run's
+set-out, $D9 / $E0, sets it the same way, she not moved). Areas' cameras by 0x27's relation: 1 the
+crossing in (`area-camera`), -1 out (`camera-out`). Left: a Hewie taken off by `char-done` (Character_Deactivate) is only let go here.
 
 The history below runs from the converted rooms' machinery (S1 .. S5: the rooms' bytecode
 scripts as Forth, their opcode words - gone in 0.2.20, every room a place since) to the places.

@@ -298,11 +298,12 @@ behaviour free
       -1 her-model !  -1 her-hit-who !  -1 her-shake-count !  her-creatures #creatures cells -1 fill  progress pr.vars $26 + c@ wear  2e 15e body-size
       self subscribe tick  self subscribe leaving-room  self subscribe arrived  self subscribe camera-cut  self subscribe write-save  self subscribe creature-doing
       self subscribe danger  self subscribe panic  self subscribe hewie-doing  self subscribe frame-end  self subscribe text-shown  self subscribe scene  self subscribe stalker-doing  self subscribe stalker-stride  self subscribe stalker-ties
-      self subscribe equipment ;
+      self subscribe equipment  self subscribe exit-chosen ;
   on leaving-room ( room exit -- )  hewie-played? if  nip fiona.companion:he-left exit  then  2drop  through-door ;
   on arrived ( room exit -- )   \ (the story's scripts place her too; in the run, she comes with him or not)
       hewie-played? if  fiona.companion:room-came exit  then  nip arrive  1 her act.visible l! ;
-  on to-exit ( exit -- )  hewie-played? if  mate-door ! exit  then  arrive ;   \ (in the run: Character_ChooseExit - the exit she came in by)
+  on to-exit ( exit -- )  hewie-played? if  mate-door ! exit  then  arrive ;
+  on exit-chosen ( exit -- )  mate-door ! ;   \ (her exit set by a room - Character_ChooseExit: the one she makes for with him)   \ (in the run: Character_ChooseExit - the exit she came in by)
   on hewie-told ( what arg -- )  fiona.companion:told ;
   \ examining (Progress_PlayerButtons): an action offered here, taken with the action button
   \ while she is free; a script of the room has her, or lets go; a message on screen

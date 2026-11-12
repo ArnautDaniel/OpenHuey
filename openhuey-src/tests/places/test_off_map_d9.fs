@@ -56,6 +56,7 @@ testing brought in by the forced way: the run set out - Hewie played, the clock 
 T{ off-map-d9 forced-exit room-by!  5 run-frames  hewie-played?  $2F var@  spare@ -> -1 0 off-map-d9 0 leads }T
 T{ [: her-tri @ ;] her  his-tri  game:fiona cam-setup-of  his-camera@ -> $23 $77 0 0 0 0 }T
 T{ [: stalker body-room ;] in-place -> off-map-d8 }T
+T{ [: mate-door @ ;] her -> 0 }T   \ (her exit set - Character_ChooseExit, cmd 2 - she not moved)
 testing ... then the world let go, faded in; the clock going
 T{ [: world-held state-flag? 0= ;] 200 soon  progress pr.play-frames l@ 0> -> -1 -1 }T
 testing by its way in while the run goes on: placed at it, its camera; nothing set out again

@@ -362,6 +362,7 @@ $80 constant forced-exit   \ (an exit's bit: not by a door - to the room loaded 
 : take-exit ( exit -- )  going ! ;   \ (after this frame)
 : at-exit ( id exit -- )  over 0< if  2drop exit  then  swap send to-exit ;   \ (on its outside spot, facing in)
 : prepare-exit ( exit -- )  rooms-actor send exit-prepare ;   \ (the room behind it loaded ahead)
+: her-exit-is ( exit -- )  broadcast exit-chosen ;   \ (Character_ChooseExit: her exit, as a room sets it - she isn't moved)
 
 \ ---- doors (the doors actor's) ----
 : doors-actor ( -- id )  s" doors" actor-named ;

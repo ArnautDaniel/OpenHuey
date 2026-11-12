@@ -65,7 +65,7 @@ end-structure
 : eased ( F: -- deg )  turn-step @ s>f turn-frames s>f f/  180e f* 90e f-  deg>rad fsin 1e f+ 45e f* ;
 : angle ( F: -- deg )  turning-back @ if  90e eased f-  else  eased  then  wk wk.sign @ s>f f* ;
 : exit-follows ( -- )   \ (her exit the side it goes to - Character_ChooseExit: the pursuers make for that half)
-    wk wk.her-exits @ 0= if  exit  then  turning-back @ if  0  else  1  then  broadcast exit-chosen ;
+    wk wk.her-exits @ 0= if  exit  then  turning-back @ if  0  else  1  then  her-exit-is ;
 : walkway-moves ( -- )  angle deg>rad fdup walkway turn-y object!  creak ;
 : hewie-to-spot ( -- )   \ (an activity: Hewie walks to his spot on it, then waits there for the turn)
     hewie hold  hewie wait-move
