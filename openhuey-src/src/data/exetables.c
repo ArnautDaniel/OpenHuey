@@ -42,7 +42,7 @@ static Table sTables[] = {
     {"motions-tintstalker", 0x42AED0, 0x425330, 82 * 6, NULL, 0, 0},
     {"motions-kind12", 0x443FB0, 0x43D640, 74 * 6, NULL, 0, 0},
     {"motions-hanging-lorenzo", 0x424250, 0x41E6F0, 5 * 6, NULL, 0, 0},
-    {"motions-crow", 0x429C10, 0x4240B0, 16 * 6, NULL, 0, 0},
+    {"motions-crow", 0x429C10, 0x4240B0, 3 * 6, NULL, 0, 0},           /* D_00429C10: its 3 motions (0x18 with its padding) */
     {"motions-homunculus", 0x42C730, 0x426B90, 10 * 6, NULL, 0, 0},
     /* D_004157A0: a pose's 5 keys { shape, shape, weight } (Motion_Hands) */
     {"hand-poses", 0x4157A0, 0x4123D0, 16 * 5 * 12, NULL, 0, 0},

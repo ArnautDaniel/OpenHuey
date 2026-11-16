@@ -29,6 +29,9 @@ fvariable fx  fvariable fz
 
 free-play  front-garden-2 room!  20 run-frames
 game:story send story-stop  deliver
+
+testing the crows' motion table: their model's 3 motions (D_00429C10: 0x18 with its padding)
+T{ s" motions-crow" exe-table nip -> 18 }T
 testing the scripts' 0x12: character $1C (its kind's figure O_HMA) into slot 3, not placed
 $1C 3 $FF char-load  2 run-frames
 T{ $1C char-slot  3 $1C char-loaded?  3 char-actor  $1C cast-model model3 = -> 3 -1 -1 -1 }T
