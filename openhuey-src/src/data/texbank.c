@@ -140,11 +140,15 @@ static TexBank *load_converted(const char *path) {
 static void mod_pngs(TexBank *b, const char *path);
 
 TexBank *texbank_load(const char *path) {
-    TexBank *b = load_converted(path);
+    char local[600];
+    TexBank *b = NULL;
     uint8_t *raw;
     size_t size;
 
-    if (b != NULL) {
+    if (files_localized(path, local, sizeof(local)) && (b = load_converted(local)) != NULL) {   /* (the language's) */
+        return b;
+    }
+    if ((b = load_converted(path)) != NULL) {
         return b;
     }
     if ((raw = files_read(path, &size)) == NULL) {

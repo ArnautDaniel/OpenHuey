@@ -1,8 +1,10 @@
 /* The game library (library.h, docs/library-and-mods.md). The import copies an opened disc
- * image's files - DATA.CVM's into library/data/, the disc's own (SYSTEM.CNF, MODULES/) into
- * library/, the executable's tables into library/exe/ (the executable itself not kept), the kinds
- * with a converter converted - into library.new/ first, writes the manifest and only then takes
- * the place of library/: a failed or cancelled import leaves the old one (or none). Read back,
+ * image's files (the USA disc's, or the European one's under the USA disc's names - its
+ * languages beside the English: european_name, convert_text) - DATA.CVM's into library/data/,
+ * the disc's own (SYSTEM.CNF, MODULES/) into library/, the executable's tables into library/exe/
+ * (the executable itself not kept), the kinds with a converter converted - into library.new/
+ * first, writes the manifest and only then takes the place of library/: a failed or cancelled
+ * import leaves the old one (or none). Read back,
  * library/data/ is a folder of the game's files as the disc layer has always read them, its
  * "../" the library itself. */
 #define _FILE_OFFSET_BITS 64
@@ -30,13 +32,27 @@
 #include "../data/roommesh.h"
 #include "../data/roomtext.h"
 #include "../data/modelgltf.h"
+#include "../core/files.h"
 
 #define MUSIC_FORMAT 1             /* "convert music 1": ADX to FLAC, LOOPSTART / LOOPEND / STOPAT (musicsrc.h) */
 
 #define LIBRARY_FORMAT 1           /* the manifest's first line: "hga-library 1" */
-#define EXE_NAME "SLUS_210.75"     /* Haunting Ground (USA) */
-#define EXE_CRC 0xA295AF2Bu
-#define EXE_SIZE 3650608L
+
+/* the discs OpenHuey knows, by their executables: the USA one, and the European one (English,
+ * French, German, Italian and Spanish - the same game, its words and the pictures with words in
+ * them in each language) */
+typedef struct Disc {
+    const char *exe;
+    uint32_t crc;
+    long size;
+    int european;
+} Disc;
+static const Disc kDiscs[] = {
+    {"SLUS_210.75", 0xA295AF2Bu, 3650608L, 0},   /* Haunting Ground (USA) */
+    {"SLES_528.77", 0x99FA72AFu, 3660080L, 1},   /* Haunting Ground (Europe) (En,Fr,De,Es,It) */
+};
+#define NDISCS (int)(sizeof(kDiscs) / sizeof(kDiscs[0]))
+static const Disc *sDisc = &kDiscs[0];   /* the disc being imported */
 
 /* ---- where things are: beside the executable (a portable game folder); if that can't be
  * written, the user's own folder for programs' data ---- */
@@ -155,7 +171,7 @@ const char *library_user_dir(void) {
     return sUser;
 }
 
-/* ---- the disc: Haunting Ground (USA), by its executable's checksum ---- */
+/* ---- the disc: Haunting Ground (USA or Europe), by its executable's checksum ---- */
 
 static uint32_t crc32_of(uint32_t crc, const uint8_t *p, size_t n) {
     static uint32_t table[256];
@@ -180,20 +196,29 @@ static uint32_t crc32_of(uint32_t crc, const uint8_t *p, size_t n) {
     return ~crc;
 }
 
-static int disc_is_ours(char *why, size_t n) {   /* (the disc opened) */
-    size_t size;
-    uint8_t *exe = disc_read_all("../" EXE_NAME, &size);
+static int disc_is_ours(char *why, size_t n) {   /* (the disc opened; sDisc which it is) */
+    char path[64];
+    size_t size = 0;
+    uint8_t *exe = NULL;
     uint32_t crc;
+    int i;
 
+    for (i = 0; i < NDISCS && exe == NULL; i++) {
+        snprintf(path, sizeof(path), "../%s", kDiscs[i].exe);
+        if ((exe = disc_read_all(path, &size)) != NULL) {
+            sDisc = &kDiscs[i];
+        }
+    }
     if (exe == NULL) {
-        snprintf(why, n, "this isn't the USA disc of Haunting Ground (no " EXE_NAME " on it: the European disc "
-                         "is SLES_...)");
+        snprintf(why, n, "this isn't a disc of Haunting Ground that OpenHuey knows (no SLUS_210.75 on it - the USA "
+                         "disc - nor SLES_528.77 - the European)");
         return 0;
     }
     crc = crc32_of(0, exe, size);
     free(exe);
-    if ((long)size != EXE_SIZE || crc != EXE_CRC) {
-        snprintf(why, n, "this disc's " EXE_NAME " isn't the one OpenHuey knows (checksum %08X, not %08X)", crc, EXE_CRC);
+    if ((long)size != sDisc->size || crc != sDisc->crc) {
+        snprintf(why, n, "this disc's %s isn't the one OpenHuey knows (checksum %08X, not %08X)", sDisc->exe, crc,
+                 sDisc->crc);
         return 0;
     }
     return 1;
@@ -215,6 +240,17 @@ static const struct {
 #define NNEWER (int)(sizeof(kNewer) / sizeof(kNewer[0]))
 static int sOlder;   /* the library's converters older than these */
 
+static int known_disc(uint32_t crc) {   /* (a library's: the disc it was made from) */
+    int i;
+
+    for (i = 0; i < NDISCS; i++) {
+        if (kDiscs[i].crc == crc) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static int library_ok(char *why, size_t n) {
     char path[2200], line[1200];
     FILE *f;
@@ -232,8 +268,8 @@ static int library_ok(char *why, size_t n) {
         fclose(f);
         return 0;
     }
-    if (fgets(line, sizeof(line), f) == NULL || sscanf(line, "disc %x", &crc) != 1 || crc != EXE_CRC) {
-        snprintf(why, n, "the library wasn't made from the USA disc");
+    if (fgets(line, sizeof(line), f) == NULL || sscanf(line, "disc %x", &crc) != 1 || !known_disc(crc)) {
+        snprintf(why, n, "the library wasn't made from a disc OpenHuey knows");
         fclose(f);
         return 0;
     }
@@ -391,7 +427,8 @@ static void progress_close(Progress *pr) {
 /* ---- the import ---- */
 
 typedef struct Item {
-    char path[512];   /* as the disc layer names it: "SYSTEM/X.TEX", "../SLUS_210.75" */
+    char path[512];   /* as the disc layer names it: "SYSTEM/X.TEX", "../SLUS_210.75" (copy_item: as the
+                         library does - european_name) */
     long size;
 } Item;
 
@@ -432,7 +469,7 @@ static SDL_EnumerationResult beside_one(void *user, const char *dir, const char 
             strcat(path, "/");
             SDL_EnumerateDirectory(path, beside_one, user);
         }
-    } else if (info.type == SDL_PATHTYPE_FILE && (strchr(rel + 3, '/') != NULL || strcasecmp(name, EXE_NAME) == 0 ||
+    } else if (info.type == SDL_PATHTYPE_FILE && (strchr(rel + 3, '/') != NULL || strcasecmp(name, sDisc->exe) == 0 ||
                                                   strcasecmp(name, "SYSTEM.CNF") == 0)) {
         items_add(l, rel, (long)info.size);
     }
@@ -495,7 +532,9 @@ static int has_kind(const Item *it, const char *ext) {
 }
 static int is_messages(const Item *it) { return has_kind(it, ".BIN") && strncasecmp(it->path, "SUBSCR/MSG_", 11) == 0; }
 /* (a room's .PAC is copied as it is, its text beside it as well) */
-static int is_exe(const Item *it) { return strcasecmp(it->path, "../" EXE_NAME) == 0; }
+static int is_exe(const Item *it) {
+    return strncmp(it->path, "../", 3) == 0 && strcasecmp(it->path + 3, sDisc->exe) == 0;
+}
 static int is_converted(const Item *it) {
     return has_kind(it, ".TEX") || has_kind(it, ".ADX") || has_kind(it, ".PAC") || is_messages(it) || is_exe(it) ||
            has_kind(it, ".BD") || has_kind(it, ".SFD") || has_kind(it, ".PCK");
@@ -565,9 +604,10 @@ static int convert_exe(const char *root, Items *made, const uint8_t *data, size_
     }
     memcpy(copy, data, size);
     if (!exe_take(&e, copy, size)) {
-        snprintf(why, n, "the disc's " EXE_NAME " isn't an executable OpenHuey reads");
+        snprintf(why, n, "the disc's %s isn't an executable OpenHuey reads", sDisc->exe);
         return 0;
     }
+    e.european = sDisc->european;
     for (i = 0; ok && exetables_name(i) != NULL; i++) {
         if ((t = exetables_extract(&e, exetables_name(i), &tsize)) == NULL) {
             snprintf(why, n, "the executable's table %s isn't where it should be", exetables_name(i));
@@ -590,7 +630,8 @@ static int convert_messages(const Item *it, const char *root, Items *made, const
     size_t len;
     int ok;
 
-    snprintf(about, sizeof(about), "%s%s", it->path, strcmp(suffix, ".txt") == 0 ? "" : ": the room's text (section 10)");
+    snprintf(about, sizeof(about), "%s%s", it->path,
+             strstr(suffix, ".room/") == NULL ? "" : ": the room's text (section 10)");
     if ((text = msgtext_write(table, size, about, &len)) == NULL) {
         return -1;   /* (not a table: copied as it is) */
     }
@@ -598,6 +639,126 @@ static int convert_messages(const Item *it, const char *root, Items *made, const
     ok = write_file(root, made, rel, (const uint8_t *)text, len, why, n);
     free(text);
     return ok;
+}
+
+/* ---- the European disc ---- */
+
+/* its pictures with words in them, under the USA disc's names: one a language, by its letter
+ * (E F D I S: files_language_code's order) - English the USA disc's name, the others with their
+ * language's code ("SUBSCR/SUBBACK.fr.TEX"); MSG_B_x the system messages and the second table */
+static const struct {
+    const char *disc, *as;
+} kEuropean[] = {
+    {"EURO/TITLE_", "SYSTEM/TITLE"},   {"EURO/AVOID_", "SYSTEM/AVOID"},     {"EURO/SUBSV_", "SUBSCR/SUBSAVE"},
+    {"EURO/SUB_BK_", "SUBSCR/SUBBACK"}, {"SUBSCR/SUBMG_", "SUBSCR/SUBMG"}, {"EURO/MSG_B_", "SUBSCR/MSG_BASE"},
+};
+static const char kLetters[] = "EFDIS";
+
+/* a European disc's file's name in the library (as it is if it isn't one of those) */
+static void european_name(const char *path, char *out, size_t n) {
+    int i;
+
+    snprintf(out, n, "%s", path);
+    if (!sDisc->european) {
+        return;
+    }
+    if (strcasecmp(path, "EURO/GAME_FIX.TEX") == 0) {   /* (the loading signs: each language's) */
+        snprintf(out, n, "GAME_FIX.TEX");
+        return;
+    }
+    for (i = 0; i < (int)(sizeof(kEuropean) / sizeof(kEuropean[0])); i++) {
+        size_t len = strlen(kEuropean[i].disc);
+        const char *letter;
+
+        if (strncasecmp(path, kEuropean[i].disc, len) == 0 && path[len] != 0 && path[len + 1] == '.' &&
+            (letter = strchr(kLetters, path[len])) != NULL) {
+            int lang = (int)(letter - kLetters);
+
+            snprintf(out, n, "%s%s%s%s", kEuropean[i].as, lang > 0 ? "." : "",
+                     lang > 0 ? files_language_code(lang) : "", path + len + 1);
+            return;
+        }
+    }
+}
+
+/* a European table of tables - u32 count, u32 offsets (each language's: MSG_END.BIN, a room's
+ * text; MSG_B_x's two) - each table's offset and length: their count, 0 if it isn't one */
+static int tables_in(const uint8_t *p, size_t size, size_t off[], size_t len[], int most) {
+    uint32_t count, o;
+    int i;
+
+    if (size < 8) {
+        return 0;
+    }
+    memcpy(&count, p, 4);
+    if (count < 2 || count > (uint32_t)most || size < 4 + 4 * (size_t)count) {
+        return 0;
+    }
+    for (i = 0; i < (int)count; i++) {
+        memcpy(&o, p + 4 + 4 * i, 4);
+        if (o < 4 + 4 * count || o > size || (i > 0 && o < off[i - 1])) {
+            return 0;
+        }
+        off[i] = o;
+    }
+    for (i = 0; i < (int)count; i++) {
+        len[i] = (i + 1 < (int)count ? off[i + 1] : size) - off[i];
+    }
+    return (int)count;
+}
+
+/* a message table or a room's text (convert_messages); the European disc's a table a language,
+ * each where the USA disc's is, the language's code before ".txt" (English none) - a language's
+ * empty table not written, so its English is read (the rooms with no words but placeholders have
+ * them in English only); MSG_B_x's two: MSG_BASE.<code>.txt and MSG_SUB.<code>.txt */
+static int convert_text(const Item *it, const char *root, Items *made, const uint8_t *data, size_t size,
+                        const char *suffix, char *why, size_t n) {
+    size_t off[FILES_LANGUAGES], len[FILES_LANGUAGES];
+    int count = sDisc->european ? tables_in(data, size, off, len, FILES_LANGUAGES) : 0, k, r;
+
+    if (count == 0) {
+        return convert_messages(it, root, made, data, size, suffix, why, n);
+    }
+    for (k = 0; k < count; k++) {
+        Item part = *it;
+        char sfx[64];
+        uint16_t messages = 0;
+
+        snprintf(sfx, sizeof(sfx), "%s", suffix);
+        if (count == 2) {   /* (MSG_B_x: its name the system messages', the second table MSG_SUB) */
+            char *base = strstr(part.path, "MSG_BASE");
+
+            if (base == NULL) {
+                return -1;   /* (two tables in anything else: not one OpenHuey knows - copied as it is) */
+            }
+            if (k == 1) {
+                memmove(base + 7, base + 8, strlen(base + 8) + 1);
+                memcpy(base + 4, "SUB", 3);
+            }
+        } else if (count != FILES_LANGUAGES) {
+            return -1;   /* (not one OpenHuey knows: copied as it is) */
+        } else {
+            const char *dot = strrchr(suffix, '.');
+
+            if (len[k] >= 2) {
+                memcpy(&messages, data + off[k], 2);
+            }
+            if (k > 0 && messages == 0) {
+                continue;
+            }
+            if (k > 0) {
+                snprintf(sfx, sizeof(sfx), "%.*s.%s%s", (int)(dot - suffix), suffix, files_language_code(k), dot);
+            }
+        }
+        if ((r = convert_messages(&part, root, made, data + off[k], len[k], sfx, why, n)) <= 0) {
+            if (r == 0 || k == 0) {
+                return r;
+            }
+            snprintf(why, n, "%s's table %d isn't one OpenHuey reads", it->path, k);
+            return 0;
+        }
+    }
+    return 1;
 }
 
 /* an ADX as a FLAC beside where it was: the same samples, once through; its loop in tags */
@@ -759,7 +920,7 @@ static int convert_room(const Item *it, const char *root, Items *made, const uin
         drop |= 1u << kBanks[i].section;
     }
     if ((sec = pac_section(&pac, PAC_TEXT, &tsize)) != NULL) {
-        if ((r = convert_messages(it, root, made, sec, tsize, ".room/messages.txt", why, n)) == 0) {
+        if ((r = convert_text(it, root, made, sec, tsize, ".room/messages.txt", why, n)) == 0) {
             return 0;
         }
         drop |= r > 0 ? 1u << PAC_TEXT : 0;
@@ -814,18 +975,22 @@ static int convert_room(const Item *it, const char *root, Items *made, const uin
     return r;
 }
 
-static int copy_item(const Item *it, const char *root, Items *made, Progress *pr, char *why, size_t n) {
+static int copy_item(const Item *disc, const char *root, Items *made, Progress *pr, char *why, size_t n) {
     static uint8_t buf[1 << 20];
+    static Item named;   /* (its library name: a European disc's own, european_name) */
+    const Item *it = &named;
     char to[1300], rel[1300];
-    DiscFile *f = disc_file_open(it->path);
+    DiscFile *f = disc_file_open(disc->path);
     FILE *out = NULL;
     uint8_t *bank = NULL;
     size_t got, have = 0;
 
     if (f == NULL) {
-        snprintf(why, n, "the disc's %s can't be read", it->path);
+        snprintf(why, n, "the disc's %s can't be read", disc->path);
         return 0;
     }
+    named = *disc;
+    european_name(disc->path, named.path, sizeof(named.path));
     library_path(to, sizeof(to), root, it->path);
     if (is_converted(it)) {
         bank = malloc((size_t)it->size);
@@ -874,7 +1039,7 @@ static int copy_item(const Item *it, const char *root, Items *made, Progress *pr
         } else if (ok && is_exe(it)) {
             ok = convert_exe(root, made, bank, have, why, n);
         } else if (ok && is_messages(it)) {
-            ok = convert_messages(it, root, made, bank, have, ".txt", why, n);
+            ok = convert_text(it, root, made, bank, have, ".txt", why, n);
         } else if (ok && has_kind(it, ".PCK")) {
             ok = convert_model(it, root, made, bank, have, why, n);
         } else if (ok && has_kind(it, ".PAC")) {
@@ -917,7 +1082,7 @@ static int write_manifest(const char *root, const Items *made) {
         return 0;
     }
     fprintf(f, "hga-library %d\n", LIBRARY_FORMAT);
-    fprintf(f, "disc %08X\n", EXE_CRC);
+    fprintf(f, "disc %08X\n", sDisc->crc);
     fprintf(f, "convert textures %d\n", TEXBANK_FORMAT);
     fprintf(f, "convert music %d\n", MUSIC_FORMAT);
     fprintf(f, "convert messages %d\n", MSGTEXT_FORMAT);
@@ -1076,7 +1241,8 @@ static int offer_reimport(void) {
     if (!SDL_ShowMessageBox(&box, &choice) || choice != 1) {
         return 1;
     }
-    if (!disc_pick("Choose your copy of Haunting Ground (USA): its disc image (.iso), to import it again.")) {
+    if (!disc_pick("Choose your copy of Haunting Ground (USA or Europe): its disc image (.iso), to import it "
+                   "again.")) {
         return open_library();   /* (none chosen: the library as it was) */
     }
     if (import(0, why, sizeof(why)) && open_library()) {
@@ -1126,7 +1292,8 @@ int library_choose(const char *given, const char *fallback, int headless) {
     }
     for (;;) {
         if (!disc_pick(say != NULL ? say
-                                   : "Choose your copy of Haunting Ground (USA): its disc image (.iso).\n\n"
+                                   : "Choose your copy of Haunting Ground (USA or Europe): its disc image "
+                                     "(.iso).\n\n"
                                      "Its files are imported into the game's folder once; the disc isn't "
                                      "needed after that.")) {
             if (SDL_WasInit(SDL_INIT_VIDEO)) {   /* (no window at all: disc_pick said so) */
@@ -1140,6 +1307,6 @@ int library_choose(const char *given, const char *fallback, int headless) {
         }
         snprintf(msg, sizeof(msg), "The disc couldn't be imported: %s.", why);
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "OpenHuey", msg, NULL);
-        say = "Choose the disc image (.iso) of Haunting Ground (USA).";
+        say = "Choose the disc image (.iso) of Haunting Ground (USA or Europe).";
     }
 }

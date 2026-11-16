@@ -6,6 +6,7 @@
 int exe_take(Exe *e, uint8_t *data, size_t size) {
     e->data = data;
     e->size = size;
+    e->european = 0;
     if (data == NULL || size < 0x34 || memcmp(data, "\x7f" "ELF", 4) != 0) {
         exe_free(e);
         return 0;

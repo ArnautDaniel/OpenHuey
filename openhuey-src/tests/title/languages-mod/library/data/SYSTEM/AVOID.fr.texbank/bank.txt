@@ -1,0 +1,3 @@
+hga-texbank 1
+textures 1
+texture 0 64 32 0 1

@@ -6,9 +6,10 @@ Another kind of Hewie (Discord setup at https://discord.gg/7sMGvfBAE)
 
 **Download:** [OpenHuey latest](https://github.com/ArnautDaniel/OpenHuey/releases/tag/openhuey-latest)
 (Linux and Windows, rebuilt on every merge) · [all releases](https://github.com/ArnautDaniel/OpenHuey/releases).
-You need your own copy of Haunting Ground (USA) for the PS2: start `openhuey` and pick its disc
-image (`.iso`) the first time - it is imported once into `library/` beside it. **No game data is
-included.** To update: UPDATE on the title (or `openhuey --update`). When an update reads more of
+You need your own copy of Haunting Ground for the PS2 - the USA disc, or the European one
+(SLES-52877: English, French, German, Italian and Spanish - LANGUAGE on the title picks one): start
+`openhuey` and pick its disc image (`.iso`) the first time - it is imported once into `library/`
+beside it. **No game data is included.** (`hg`, the decompiled build, runs the USA disc only.) To update: UPDATE on the title (or `openhuey --update`). When an update reads more of
 the game than your library has (0.1.18: faces and hands), OpenHuey says so as it starts and offers
 to import the disc again - pick the `.iso` once more; saves and settings are kept (or `openhuey
 --import disc.iso`). Mods: `mods/` beside it

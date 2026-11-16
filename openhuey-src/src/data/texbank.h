@@ -19,8 +19,9 @@
 
 typedef struct TexBank TexBank;
 
-/* the bank at `path` ("FOLDER/NAME.TEX"): its converted form if there is one, else the file;
- * NULL if neither (or the file isn't a bank) */
+/* the bank at `path` ("FOLDER/NAME.TEX"): the language's converted form if there is one
+ * ("FOLDER/NAME.fr.texbank/": core/files.h), else its own, else the file; NULL if none (or the
+ * file isn't a bank) */
 TexBank *texbank_load(const char *path);
 /* a .TEX bank in memory (kept by the caller while the TexBank is in use); NULL if it isn't one */
 TexBank *texbank_wrap(const uint8_t *bank, size_t size);

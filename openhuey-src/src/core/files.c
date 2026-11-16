@@ -54,6 +54,57 @@ static DiscFile *open_in_zip(const Layer *l, const char *path) {
 
 void files_layers_clear(void) { sNLayers = 0; }
 
+/* ---- the language ---- */
+
+static const char *const kLanguages[FILES_LANGUAGES] = {"en", "fr", "de", "it", "es"};
+static int sLanguage;
+static unsigned sLanguageSerial;
+
+const char *files_language_code(int i) { return i >= 0 && i < FILES_LANGUAGES ? kLanguages[i] : NULL; }
+
+int files_language(void) { return sLanguage; }
+
+void files_language_set(const char *code) {
+    int i, to = 0;
+
+    for (i = 0; code != NULL && i < FILES_LANGUAGES; i++) {
+        if (strcmp(code, kLanguages[i]) == 0) {
+            to = i;
+        }
+    }
+    if (to != sLanguage) {
+        sLanguage = to;
+        sLanguageSerial++;
+    }
+}
+
+unsigned files_language_serial(void) { return sLanguageSerial; }
+
+static int localized_as(int lang, const char *path, char *out, size_t n) {
+    const char *slash = strrchr(path, '/'), *dot = strrchr(path, '.');
+
+    if (lang <= 0 || lang >= FILES_LANGUAGES) {
+        return 0;
+    }
+    if (dot == NULL || (slash != NULL && dot < slash)) {   /* (no extension: the code at its end) */
+        snprintf(out, n, "%s.%s", path, kLanguages[lang]);
+    } else {
+        snprintf(out, n, "%.*s.%s%s", (int)(dot - path), path, kLanguages[lang], dot);
+    }
+    return 1;
+}
+
+int files_localized(const char *path, char *out, size_t n) { return localized_as(sLanguage, path, out, n); }
+
+int files_language_present(int i) {   /* (by its system messages: every language has them) */
+    char path[64];
+
+    if (i == 0) {
+        return 1;
+    }
+    return localized_as(i, "SUBSCR/MSG_BASE.txt", path, sizeof(path)) && files_exist(path);
+}
+
 static DiscFile *open_layers(const char *path) {
     DiscFile *f = NULL;
     int i;

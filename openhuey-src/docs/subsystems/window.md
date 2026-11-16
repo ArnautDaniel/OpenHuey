@@ -38,9 +38,10 @@ subtitles, 5 the pause.
 3. 0x10 n: typing stops; the message closes n frames later, no button needed (0: left up until
    the scripts close it).
 4. Colours: 0x03 n draws what follows in the font's palette n (`ui-text-in`), 0x04 back.
-5. The place (0x0A n, Task_Layout / set_position, D_0044B010): the text's centre at line 370 of
-   the PS2's 448 (n 0, the default), 224 (1: the notes on the walls, the tutorials) or 330 (2: the
-   memory card's), the panel 6 lines lower; n's bit 7: no box, the words alone, centred across
+5. The place (0x0A n, Task_Layout / set_position, D_0044B010 - the executable's `box-places`): the
+   text's centre at line 370 of the PS2's 448 (n 0, the default), 224 (1: the notes on the walls,
+   the tutorials) or 330 (2: the memory card's) - and 3, 224 on the USA disc, 360 on the European -
+   the panel 6 lines lower; n's bit 7: no box, the words alone, centred across
    the screen. It holds from the page it is on to the message's end; a new message starts low and
    boxed, but the one a choice's answer opens stays where the choice was, boxed (Task_StateChoice
    keeps x, y; Task_OpenDefault sets the box back on). A page taller than the screen would be drawn

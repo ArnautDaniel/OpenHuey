@@ -706,7 +706,9 @@ Checked by `tests/story/test_effects.fs` (10 tests).
 
 **The start of a game** (`scripts/opening.fs`, 2026-10-08): the title (from new-src: Hewie lying
 in the warm light, NEW GAME / LOAD GAME / OPTIONS - and once a game has been cleared HARD MODE
-(story flag $AF) and EXTRAS (room $37 straight) - / QUIT; a new game: he gets up and barks;
+(story flag $AF) and EXTRAS (room $37 straight) - / QUIT; with a European disc's library LANGUAGE
+too (after OPTIONS: `scripts/languages.fs`, its language screen's art; docs/library-and-mods.md
+"Languages"; `tests/title/languages.fs`); a new game: he gets up and barks;
 `tests/story/test_title.fs`), the opening movie
 (OPENING.SFD, as the original's title plays it; the action or start button skips it), then the
 new game's entry as SceneGame_StateEntry makes it for entry $2A: state flags `new-game-sounds`,

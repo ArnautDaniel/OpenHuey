@@ -63,6 +63,11 @@ mod's `library/` first (the last mod in the order first), then in the library. S
 a file by having one at the **same path**, under `library/data/` for the game's data (or
 `library/` for the few files beside it, e.g. `library/exe/`). Folder names keep the game's case
 (`SYSTEM`, not `system`); a file's own name may be any case (in a zip, case never matters).
+Words and pictures with words in them can be given in a language too: the language's code before
+the extension (`SUBSCR/MSG_BASE.fr.txt`, `SYSTEM/AVOID.de.texbank/`; codes `fr de it es`) is read
+in that language, the file without one otherwise - as a European disc's library has them
+(`docs/library-and-mods.md` "Languages"). A mod's `SUBSCR/MSG_BASE.<code>.txt` (the system
+messages) makes its language one the title's LANGUAGE offers.
 
 The library holds the game's files converted to common formats (an import of the player's disc;
 `docs/library-and-mods.md`). What a mod can replace, and in what form:

@@ -1,0 +1,5 @@
+\ a French SUBSCR/MSG_BASE (tests/title/languages.fs): its first two messages
+#0
+Bonjour
+#1
+Château

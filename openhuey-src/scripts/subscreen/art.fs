@@ -26,13 +26,24 @@ variable at-x  variable at-y  variable size-w  variable size-h
     art-layer blend alpha fix ui-blend ;
 : from ( group tex palette u v uw vh alpha -- )  by-alpha blended-from ;
 
+\ a gallery's bank (GAL_*, back-bank 4) as the European disc has it: its heading in each language
+\ - texture 0 the English, 2..5 French, German, Italian, Spanish - then the page's foot (1, as the
+\ USA disc's), the rest from 6 (the USA disc's from 2); told by its having those
+4 constant gallery-art   2 constant first-heading   4 constant more-headings
+: european-gallery? ( -- flag )
+    back-bank @ gallery-art =  dup if  drop  back-group first-heading more-headings + 1- tex-info 2drop 0>  then ;
+: gallery-texture ( tex -- tex' )   \ a gallery's texture as the USA disc numbers them: the European's
+    european-gallery? 0= if  exit  then
+    dup 0= if  drop  language dup if  first-heading + 1-  then  exit  then
+    dup first-heading < if  exit  then   more-headings + ;
+
 \ a panel (a background piece) and a part (a piece of the menu's own art), by number
 variable piece
 : column ( k -- n )  cells piece @ + @ ;
 : panel ( i alpha -- )   \ panels: texture, u, v, w, h, x, y
     {: i alpha :}  i /panel * panels + piece !
     5 column 6 column 3 column 4 column picture
-    back-group 0 column -1  1 column 2 column 3 column 4 column  alpha mixed blended-from ;   \ (SubScreen_DrawPanel: GS 0x64)
+    back-group 0 column gallery-texture -1  1 column 2 column 3 column 4 column  alpha mixed blended-from ;   \ (SubScreen_DrawPanel: GS 0x64)
 : part ( x y i alpha -- )   \ parts: u, v, w, h, the size drawn, palette, texture, blending
     {: x y i alpha :}  i /part * parts + piece !   \ (its blending: by-alpha .. added, SubScreen_DrawPart's kAlpha)
     x y 4 column 5 column picture

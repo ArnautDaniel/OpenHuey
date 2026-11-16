@@ -10,40 +10,47 @@
 
 typedef struct Table {
     const char *name;
-    uint32_t vaddr, size;   /* (size 0: a table of pointers to whole, below) */
+    uint32_t vaddr, vaddr_eu;   /* its address in SLUS_210.75, and in SLES_528.77 (the European disc's) */
+    uint32_t size;              /* (0: a table of pointers to whole, below) */
     const uint8_t *bytes;   /* read: kept */
     size_t got;
     int tried;
 } Table;
 
 static Table sTables[] = {
-    {"doors", 0x3DCFC0, 400 * 16, NULL, 0, 0},              /* kDoorDefs: two sides each, flags */
-    {"rooms", 0x3D8BC0, 0x110 * 0x40, NULL, 0, 0},          /* D_003D8BC0: the rooms' exits */
-    {"obstacle-kinds", 0x47A938, 0, NULL, 0, 0},            /* ObstacleKinds: pointers to each kind */
-    {"butterflies", 0x412710, 32, NULL, 0, 0},
-    {"sound-curves", 0x41D820, 0x600, NULL, 0, 0},          /* the 3D distance curves */
-    {"sound-pan-right", 0x3DF580, 0x1004, NULL, 0, 0},      /* stereo pan by angle */
-    {"sound-pan-left", 0x3E0580, 0x1004, NULL, 0, 0},
-    {"sound-positioned", 0x3D8990, 16, NULL, 0, 0},         /* kPositionedSounds */
-    {"sound-surround-left", 0x3E4C00, 360 * 4, NULL, 0, 0},  /* the placement's output 2 (the game's own: SndDriver_Start) */
-    {"sound-surround-right", 0x3E4660, 360 * 4, NULL, 0, 0},
-    {"sound-surround-index", 0x3E3580, 360 * 4, NULL, 0, 0}, /* kSurroundIndex: by degree */
-    {"fiona-meet-offsets", 0x3B2460, 16 * 12, NULL, 0, 0},  /* kFionaMeetOffsets: three floats a row */
-    {"deal-rows", 0x3D6B20, 79 * 3, NULL, 0, 0},            /* D_003D6B20: three rooms a row */
-    {"motions-fiona", 0x3D5CC0, 120 * 6, NULL, 0, 0},       /* the models' motion tables: fades, flags */
-    {"motions-hewie", 0x3D5F90, 108 * 6, NULL, 0, 0},
-    {"motions-debilitas", 0x3D89A0, 85 * 6, NULL, 0, 0},
-    {"motions-daniella", 0x419E60, 80 * 6, NULL, 0, 0},
-    {"motions-riccardo", 0x41A2C0, 82 * 6, NULL, 0, 0},
-    {"motions-lorenzo", 0x4246C0, 74 * 6, NULL, 0, 0},
-    {"motions-lorenzo2", 0x424490, 81 * 6, NULL, 0, 0},
-    {"motions-tintstalker", 0x42AED0, 82 * 6, NULL, 0, 0},
-    {"motions-kind12", 0x443FB0, 74 * 6, NULL, 0, 0},
-    {"motions-hanging-lorenzo", 0x424250, 5 * 6, NULL, 0, 0},
-    {"motions-crow", 0x429C10, 16 * 6, NULL, 0, 0},
-    {"motions-homunculus", 0x42C730, 10 * 6, NULL, 0, 0},
-    {"hand-poses", 0x4157A0, 16 * 5 * 12, NULL, 0, 0},     /* D_004157A0: a pose's 5 keys { shape, shape, weight } (Motion_Hands) */
-    {"blink-curve", 0x415B60, 14 * 4, NULL, 0, 0},         /* D_00415B60: the eyelids through a blink (Motion_Eyes) */
+    {"doors", 0x3DCFC0, 0x3DD010, 400 * 16, NULL, 0, 0},           /* kDoorDefs: two sides each, flags */
+    {"rooms", 0x3D8BC0, 0x3D8C10, 0x110 * 0x40, NULL, 0, 0},       /* D_003D8BC0: the rooms' exits */
+    {"obstacle-kinds", 0x47A938, 0x47CEA0, 0, NULL, 0, 0},         /* ObstacleKinds: pointers to each kind */
+    {"butterflies", 0x412710, 0x410E80, 32, NULL, 0, 0},
+    {"sound-curves", 0x41D820, 0x41A450, 0x600, NULL, 0, 0},       /* the 3D distance curves */
+    {"sound-pan-right", 0x3DF580, 0x3DF5D0, 0x1004, NULL, 0, 0},   /* stereo pan by angle */
+    {"sound-pan-left", 0x3E0580, 0x3E05D0, 0x1004, NULL, 0, 0},
+    {"sound-positioned", 0x3D8990, 0x3D89E0, 16, NULL, 0, 0},      /* kPositionedSounds */
+    /* the placement's output 2 (the game's own: SndDriver_Start) */
+    {"sound-surround-left", 0x3E4C00, 0x3E4C50, 360 * 4, NULL, 0, 0},
+    {"sound-surround-right", 0x3E4660, 0x3E46B0, 360 * 4, NULL, 0, 0},
+    {"sound-surround-index", 0x3E3580, 0x3E35D0, 360 * 4, NULL, 0, 0}, /* kSurroundIndex: by degree */
+    {"fiona-meet-offsets", 0x3B2460, 0x3B35B0, 16 * 12, NULL, 0, 0}, /* kFionaMeetOffsets: three floats a row */
+    {"deal-rows", 0x3D6B20, 0x4465A0, 79 * 3, NULL, 0, 0},         /* D_003D6B20: three rooms a row */
+    {"motions-fiona", 0x3D5CC0, 0x3D6DB0, 120 * 6, NULL, 0, 0},    /* the models' motion tables: fades, flags */
+    {"motions-hewie", 0x3D5F90, 0x3D7080, 108 * 6, NULL, 0, 0},
+    {"motions-debilitas", 0x3D89A0, 0x3D89F0, 85 * 6, NULL, 0, 0},
+    {"motions-daniella", 0x419E60, 0x416A90, 80 * 6, NULL, 0, 0},
+    {"motions-riccardo", 0x41A2C0, 0x416EF0, 82 * 6, NULL, 0, 0},
+    {"motions-lorenzo", 0x4246C0, 0x41EB60, 74 * 6, NULL, 0, 0},
+    {"motions-lorenzo2", 0x424490, 0x41E930, 81 * 6, NULL, 0, 0},
+    {"motions-tintstalker", 0x42AED0, 0x425330, 82 * 6, NULL, 0, 0},
+    {"motions-kind12", 0x443FB0, 0x43D640, 74 * 6, NULL, 0, 0},
+    {"motions-hanging-lorenzo", 0x424250, 0x41E6F0, 5 * 6, NULL, 0, 0},
+    {"motions-crow", 0x429C10, 0x4240B0, 3 * 6, NULL, 0, 0},           /* D_00429C10: its 3 motions (0x18 with its padding) */
+    {"motions-homunculus", 0x42C730, 0x426B90, 10 * 6, NULL, 0, 0},
+    /* D_004157A0: a pose's 5 keys { shape, shape, weight } (Motion_Hands) */
+    {"hand-poses", 0x4157A0, 0x4123D0, 16 * 5 * 12, NULL, 0, 0},
+    /* D_0044AD00: the small font's glyphs, by the glyph less $20 (its $1D ones from $E0): high
+     * nibble the blank columns at its right, low nibble its drop */
+    {"glyph-shapes", 0x44AD00, 0x444330, 0x100, NULL, 0, 0},
+    {"box-places", 0x44B010, 0x444660, 8 * 4, NULL, 0, 0},         /* D_0044B010: the box's places (0x0A n): x, y */
+    {"blink-curve", 0x415B60, 0x412790, 14 * 4, NULL, 0, 0},       /* D_00415B60: the eyelids through a blink */
 };
 #define NTABLES (int)(sizeof(sTables) / sizeof(sTables[0]))
 
@@ -68,6 +75,8 @@ static Table *find(const char *name) {
     return NULL;
 }
 
+static uint32_t table_at(const Exe *e, const Table *t) { return e->european ? t->vaddr_eu : t->vaddr; }
+
 static int32_t s32(const uint8_t *p) {
     int32_t v;
 
@@ -83,7 +92,7 @@ static uint8_t *obstacle_kinds(const Exe *e, size_t *size) {
     int k;
 
     for (k = 0; k < 64; k++) {
-        const uint8_t *ptr = exe_at(e, 0x47A938 + (uint32_t)k * 4, 4), *def;
+        const uint8_t *ptr = exe_at(e, table_at(e, find("obstacle-kinds")) + (uint32_t)k * 4, 4), *def;
         int parts;
         size_t len;
 
@@ -114,7 +123,7 @@ uint8_t *exetables_extract(const Exe *e, const char *name, size_t *size) {
     if (t->size == 0) {
         return obstacle_kinds(e, size);
     }
-    if ((p = exe_at(e, t->vaddr, t->size)) == NULL || (out = malloc(t->size)) == NULL) {
+    if ((p = exe_at(e, table_at(e, t), t->size)) == NULL || (out = malloc(t->size)) == NULL) {
         return NULL;
     }
     memcpy(out, p, t->size);

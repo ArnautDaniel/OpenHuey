@@ -75,6 +75,7 @@ This page is OpenHuey's side: its words, its scripts, its tests.
 | `screen-size`, `char-size` | `-- w h` | |
 | `n>s`, `f>s$` | `n -- addr len`, `places F: x -- addr len` | numbers as text |
 | `user-dir`, `file-exists?` | `-- addr len`, `addr len -- flag` | the player's settings folder |
+| `language`, `language!`, `language-present?`, `language-code` | `-- i`, `i --`, `i -- flag`, `i -- addr len` | the language the game's words and art are in (0 English, 1 French, 2 German, 3 Italian, 4 Spanish; one the library hasn't is English); the library has it (a European disc's); its code ("fr") - docs/library-and-mods.md "Languages" |
 | `.mods`, `mod-on?`, `mod-api` | `--`, `addr len -- flag`, `-- n` | the mods in load order (on, or off and why); a mod on; the mod API (major * 100 + minor) - docs/library-and-mods.md |
 | `exe-table`, `motion-table` | `addr len -- addr n`, `id addr len --` | the executable's table of that name (src/data/exetables.c: "deal-rows" ...); a model's motion table by name ("motions-hewie" ...) |
 | `to-file`, `end-file` | `addr len --`, `--` | what Forth prints goes into a file in between |

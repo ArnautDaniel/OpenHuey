@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.2.51 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.2.52 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -192,6 +192,9 @@ set_tests_properties(mods_menu_after PROPERTIES FIXTURES_REQUIRED "mods_menu_fol
 # the title as a player meets it: --title brings it up headless too (not a test_*.fs: those run
 # without it, straight into a new game)
 add_test(NAME title_title COMMAND hga --title --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/title/title.fs")
+# the languages (a European disc's library's): a mod gives the English data a little French
+add_test(NAME title_languages COMMAND hga --title --mod "${CMAKE_CURRENT_SOURCE_DIR}/tests/title/languages-mod"
+    --test "${CMAKE_CURRENT_SOURCE_DIR}/tests/title/languages.fs")
 # back to the title from a game (pause.fs's quit, the game over, the ending all `soft-reset`): the
 # game's particle systems must go with the sprites they draw into, or the title's next tick crashes
 # (300 frames: a full run's - in a quick one it ends at once)

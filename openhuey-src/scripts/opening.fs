@@ -3,8 +3,9 @@
 \ - The title: Hewie lying on the stone circle in the front garden (room $2D, its scenery only), by
 \   the menu - NEW GAME / LOAD GAME / OPTIONS, and once a game has been cleared HARD MODE (a new
 \   game in hard mode: story flag $AF) and EXTRAS (straight into the extras room, $37); QUIT
-\   (Up / Down, the cross; SceneTitle_SeqMenu). OpenHuey's own: MINI-GAME (with EXTRAS), MODS (when
-\   there are mods), UPDATE (a release build's: updater.fs), and mods' entries (title-menu-hook).
+\   (Up / Down, the cross; SceneTitle_SeqMenu). OpenHuey's own: LANGUAGE (a library from the
+\   European disc: languages.fs), MINI-GAME (with EXTRAS), MODS (when there are mods), UPDATE (a
+\   release build's: updater.fs), and mods' entries (title-menu-hook).
 \   A new game: he gets up and barks.
 \   Load Game: the save slots (as the save point's: their places and times), the cross loads one
 \   in use, the triangle goes back.
@@ -15,13 +16,13 @@
 \   variable $26 = 1, Hewie's $27 = 0), room $2A - whose entering script does the rest.
 \ Without a window (tests, screenshots) the game starts at once.
 IN: opening
-USING: engine game-state actors messages keys vectors room-names facts flag-names ps2-screen saves subscreen.art subscreen.saving mods.menu updater ;
+USING: engine game-state actors messages keys vectors room-names facts flag-names ps2-screen saves subscreen.art subscreen.saving mods.menu updater languages ;
 
 6 constant movie-layer   7 constant menu-layer   \ (over everything)
 
 \ its stages: the menu; he gets up; he barks; the opening movie; the game started; the save slots;
-\ the options up; the mods menu; the updater
-enum: opening-stage  on-menu getting-up barking opening-movie started on-slots on-options on-mods on-update ;
+\ the options up; the mods menu; the updater; the languages
+enum: opening-stage  on-menu getting-up barking opening-movie started on-slots on-options on-mods on-update on-language ;
 
 state: opening-state
   cell field stage       \ (enum: opening-stage)
@@ -87,7 +88,8 @@ create spot  -258e f, -10e f, 174e f,   \ (on the circle, between the scarecrows
 \ (MINI-GAME, hga's own: straight into the extras room's mini-game - its menu up, as at its door)
 \ (MODS, hga's own: only when there are mods in mods/ - the mods menu, mods/menu.fs)
 \ (UPDATE, OpenHuey's own: a release build's only - updater.fs)
-enum: menu-entry  e-new e-load e-options e-hard e-extras e-mini e-mods e-update e-quit e-mod ;
+\ (LANGUAGE, OpenHuey's own: only with the European disc's languages - languages.fs)
+enum: menu-entry  e-new e-load e-options e-language e-hard e-extras e-mini e-mods e-update e-quit e-mod ;
 : cleared? ( -- flag )  0 resident-flag? ;
 create entries 16 cells allot   variable #entries
 : +entry ( e -- )  #entries @ 16 < if  entries #entries @ cells + !  1 #entries +!  else  drop  then ;
@@ -108,6 +110,7 @@ defer title-menu-hook ( -- )
 
 : entries! ( -- )   \ the menu's entries, as the title comes up
     0 #entries !  0 #mod-entries !  e-new +entry  e-load +entry  e-options +entry
+    languages? if  e-language +entry  then
     cleared? if  e-hard +entry  e-extras +entry  e-mini +entry  then
     title-menu-hook
     mods-menu-count 0> if  e-mods +entry  then
@@ -117,6 +120,7 @@ defer title-menu-hook ( -- )
 : #items ( -- n )  #entries @ ;
 : item ( i -- addr len )
     entry case  e-new of  s" NEW GAME"  endof  e-load of  s" LOAD GAME"  endof  e-options of  s" OPTIONS"  endof
+                e-language of  s" LANGUAGE"  endof
                 e-hard of  s" HARD MODE"  endof  e-extras of  s" EXTRAS"  endof  e-mini of  s" MINI-GAME"  endof
                 e-mods of  s" MODS"  endof  e-update of  s" UPDATE"  endof
                 e-quit of  s" QUIT"  endof
@@ -149,6 +153,7 @@ defer title-menu-hook ( -- )
     stage @ on-slots = if  slots-draw exit  then
     stage @ on-mods = if  menu-layer mods.menu:draw exit  then
     stage @ on-update = if  menu-layer updater:draw exit  then
+    stage @ on-language = if  menu-layer languages:draw exit  then
     stage @ on-menu <> if  exit  then
     screen-size {: sw sh :}  4 pen-scale
     menu-layer  s" HAUNTING GROUND"  sw 2/ 15 char-size drop * 2/ -  sh 8 /  $D8D0C8FF 4 ui-text
@@ -171,6 +176,7 @@ defer title-menu-hook ( -- )
             e-mini of  title-end  started stage !  -1 mini-game-wanted !  extras  self kill  endof
             e-mods of  mods.menu:open  on-mods stage !  endof
             e-update of  updater:open  on-update stage !  endof
+            e-language of  languages:open  on-language stage !  endof
             e-quit of  bye  endof
             >r  r@ e-mod - cells mod-picks + @ execute  r>   \ (a mod's: what it said picking it does)
         endcase
@@ -206,6 +212,7 @@ behaviour opening-the-game
           on-slots of  slots-keys  endof
           on-mods of  mods.menu:keys if  on-menu stage !  then  endof
           on-update of  updater:keys if  on-menu stage !  then  endof
+          on-language of  languages:keys if  on-menu stage !  then  endof
           on-options of  subscreen-wanted state-flag? 0= if  on-menu stage !  then  endof   \ (back to the menu once they close)
           getting-up of  ended? if  m-bark 0 play  bark-sound common-sound  barking stage !  then  endof
           barking of  ended? if  movie-start  then  endof
