@@ -513,7 +513,8 @@ int disc_pick(const char *why) {
     }
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "OpenHuey",
                              why != NULL ? why
-                                         : "Choose your copy of Haunting Ground (USA): its disc image (.iso).",
+                                         : "Choose your copy of Haunting Ground (USA or Europe): its disc image "
+                                           "(.iso).",
                              NULL);
     for (;;) {
         SDL_PropertiesID props = SDL_CreateProperties();
@@ -537,7 +538,8 @@ int disc_pick(const char *why) {
         if (disc_open(p.path)) {
             return 1;
         }
-        snprintf(msg, sizeof(msg), "That file can't be used: %s.\n\nChoose the disc image (.iso) of Haunting Ground (USA).",
+        snprintf(msg, sizeof(msg),
+                 "That file can't be used: %s.\n\nChoose the disc image (.iso) of Haunting Ground (USA or Europe).",
                  disc_error());
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "OpenHuey", msg, NULL);
     }

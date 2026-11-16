@@ -78,8 +78,8 @@ $2A constant movie-var   $2B constant cursor-var
     thumbnail-in
     $158 $B0 $70 $60 picture
     gal-at @ movie-seen? if  picture-group 0 0 0 0 $70 $60 $80 from
-    else  back-group 2 1 $10 0 $70 $60 $80 from  then
-    $140 $80 $10 $C0 picture  back-group 2 0 0 0 $10 $C0 $80 from ;
+    else  back-group 2 gallery-texture 1 $10 0 $70 $60 $80 from  then
+    $140 $80 $10 $C0 picture  back-group 2 gallery-texture 0 0 0 $10 $C0 $80 from ;
 : movies-keys ( -- )
     #movies list-moved? if  se-cursor exit  then
     back? if  gal-at @ cursor-var var!  $FF movie-var var!  close-menu exit  then

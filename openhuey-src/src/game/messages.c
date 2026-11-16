@@ -55,13 +55,41 @@ static uint8_t *read_text(const char *path, size_t *size) {
     return read_text_file(txt, size);
 }
 
+/* a table in the language set (files.h): its own file, else the English one's */
 static uint8_t *read_table(const char *path, size_t *size) {
-    uint8_t *t = read_text(path, size);
+    char local[300];
+    uint8_t *t;
 
+    if (files_localized(path, local, sizeof(local)) && (t = read_text(local, size)) != NULL) {
+        return t;
+    }
+    t = read_text(path, size);
     return t != NULL ? t : files_read(path, size);
 }
 
+static unsigned sSerial;           /* the language the tables were read in (files_language_serial) */
+static int sRoom = -2;             /* the room whose table is read */
+static char sExtraPath[300];       /* the scene's table's file, to read again in another language */
+
+/* the language changed since the tables were read: read again as they are next wanted */
+static void language_check(void) {
+    if (sSerial == files_language_serial()) {
+        return;
+    }
+    sSerial = files_language_serial();
+    free(sBase);
+    free(sSub);
+    sBase = sSub = NULL;
+    sRoom = -2;
+    if (sExtra != NULL) {
+        free(sExtra);
+        sExtraSize = 0;
+        sExtra = read_table(sExtraPath, &sExtraSize);
+    }
+}
+
 static void load_tables(void) {
+    language_check();
     if (sBase == NULL) {
         sBase = read_table("SUBSCR/MSG_BASE.BIN", &sBaseSize);
     }
@@ -70,21 +98,25 @@ static void load_tables(void) {
     }
 }
 
-/* the room's own table: the library's ST_000/ST_003.room/messages.txt, read when the room is
- * first asked about; else the room's .PAC section */
+/* the room's own table: the library's ST_000/ST_003.room/messages.txt (or the language's,
+ * messages.fr.txt), read when the room is first asked about; else the room's .PAC section */
 static const uint8_t *room_table(size_t *size) {
-    static int room = -2;
     static uint8_t *text;
     static size_t text_size;
-    char path[64];
+    char path[64], local[80];
 
-    if (gEngine.room.id != room) {
-        room = gEngine.room.id;
+    if (gEngine.room.id != sRoom) {
+        sRoom = gEngine.room.id;
         free(text);
         text = NULL;
-        if (room >= 0) {
-            pac_room_part(room, "messages.txt", path, sizeof(path));
-            text = read_text_file(path, &text_size);
+        if (sRoom >= 0) {
+            pac_room_part(sRoom, "messages.txt", path, sizeof(path));
+            if (files_localized(path, local, sizeof(local))) {
+                text = read_text_file(local, &text_size);
+            }
+            if (text == NULL) {
+                text = read_text_file(path, &text_size);
+            }
         }
     }
     if (text != NULL) {
@@ -113,8 +145,10 @@ const uint8_t *message_text(int id) {
 }
 
 int message_file(const char *path) {
+    language_check();
     free(sExtra);
     sExtraSize = 0;
+    snprintf(sExtraPath, sizeof(sExtraPath), "%s", path != NULL ? path : "");
     sExtra = path != NULL ? read_table(path, &sExtraSize) : NULL;
     return sExtra != NULL;
 }

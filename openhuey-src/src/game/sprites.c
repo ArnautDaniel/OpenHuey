@@ -2,6 +2,7 @@
 #include "sprites.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -15,6 +16,7 @@
 typedef struct Group {
     TexBank *bank;
     int count;
+    char path[128];   /* the file it was loaded from (sprites_group_file), "" if none */
 } Group;
 
 typedef struct Decoded {   /* a cache texture on the GPU, in one palette */
@@ -56,6 +58,31 @@ static void set_group(int group, TexBank *bank) {   /* (the group's bank taken) 
     texbank_free(sGroups[group].bank);
     sGroups[group].bank = bank;
     sGroups[group].count = texbank_count(bank);
+    sGroups[group].path[0] = 0;
+}
+
+/* the language changed (core/files.h): the groups loaded from files loaded again - the pictures
+ * with words in them in the new language (or back to English) */
+static void language_check(void) {
+    static unsigned serial;
+    int g;
+
+    if (serial == files_language_serial()) {
+        return;
+    }
+    serial = files_language_serial();
+    for (g = 0; g < CACHE; g++) {
+        char path[sizeof(sGroups[g].path)];
+        TexBank *b;
+
+        if (sGroups[g].bank != NULL && sGroups[g].path[0] != 0) {
+            memcpy(path, sGroups[g].path, sizeof(path));
+            if ((b = texbank_load(path)) != NULL) {
+                set_group(g, b);
+                memcpy(sGroups[g].path, path, sizeof(path));
+            }
+        }
+    }
 }
 
 void sprites_group(int group, const uint8_t *bank, size_t size) {
@@ -72,13 +99,7 @@ void sprites_group_bank(int group, TexBank *bank) {
     }
 }
 
-void sprites_init(void) {
-    TexBank *b = texbank_load("GAME_FIX.TEX");
-
-    if (b != NULL) {
-        set_group(0x10, b);
-    }
-}
+void sprites_init(void) { sprites_group_file(0x10, "GAME_FIX.TEX"); }
 
 /* cache index group + id: the group holding it (the latest added below it that reaches it) */
 static GpuTexture texture(int group, int id, int csa) {
@@ -87,6 +108,7 @@ static GpuTexture texture(int group, int id, int csa) {
     uint8_t *rgba;
     int w = 0, h = 0;
 
+    language_check();
     for (g = idx < CACHE - 1 ? idx : CACHE - 1; g >= 0 && idx < CACHE; g--) {
         if (sGroups[g].bank != NULL && idx - g < sGroups[g].count) {
             gr = &sGroups[g];
@@ -119,6 +141,7 @@ static GpuTexture texture(int group, int id, int csa) {
 int sprites_texture_size(int group, int id, int *w, int *h) {
     int idx = group + id, g;
 
+    language_check();
     for (g = idx < CACHE - 1 ? idx : CACHE - 1; g >= 0 && idx < CACHE; g--) {
         if (sGroups[g].bank != NULL && idx - g < sGroups[g].count) {
             int psm;
@@ -136,12 +159,14 @@ int sprites_group_file(int group, const char *path) {
         return 0;
     }
     set_group(group, b);   /* (its old textures gone from the GPU) */
+    snprintf(sGroups[group].path, sizeof(sGroups[group].path), "%s", path);
     return 1;
 }
 
 unsigned sprites_texture_of(int group, int id, int csa, int *w, int *h) {
     int idx = group + id, g;
 
+    language_check();
     for (g = idx < CACHE - 1 ? idx : CACHE - 1; g >= 0 && idx < CACHE; g--) {
         if (sGroups[g].bank != NULL && idx - g < sGroups[g].count) {
             int psm;

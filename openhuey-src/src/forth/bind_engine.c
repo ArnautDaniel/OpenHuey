@@ -3380,11 +3380,29 @@ PRIM(p_actor_part_show) {   /* ( model part on -- ) one of its parts shown or hi
         a->parts_shown[g >> 5] &= ~(1u << (g & 31));
     }
 }
-PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.32") */
+PRIM(p_hga_version) {   /* ( -- addr len ) hga's version ("0.2.52") */
     static const char v[] = HGA_VERSION;
 
     PUSH((Cell)v);
     PUSH((Cell)(sizeof(v) - 1));
+}
+/* the language (core/files.h): 0 English, 1 French, 2 German, 3 Italian, 4 Spanish */
+PRIM(p_language) { PUSH(files_language()); }   /* ( -- i ) the language set */
+PRIM(p_language_set) {   /* ( i -- ) set, if the library has it (else English) */
+    Cell i = POP();
+
+    files_language_set(files_language_present((int)i) ? files_language_code((int)i) : NULL);
+}
+PRIM(p_language_present) {   /* ( i -- flag ) the library has language i's words */
+    Cell i = POP();
+
+    PUSH(i >= 0 && i < FILES_LANGUAGES && files_language_present((int)i) ? -1 : 0);
+}
+PRIM(p_language_code) {   /* ( i -- addr len ) its code ("fr"), "" past them */
+    const char *code = files_language_code((int)POP());
+
+    PUSH(code != NULL ? code : "");
+    PUSH(code != NULL ? strlen(code) : 0);
 }
 PRIM(p_testing) { PUSH(gEngine.testing ? -1 : 0); }   /* ( -- flag ) run by --test (nothing kept on disk) */
 PRIM(p_user_dir) {   /* ( -- addr len ) where settings are kept (made if needed; ends with /) */
@@ -3936,8 +3954,9 @@ PRIM(p_tex_bank) {   /* ( addr len group -- flag ) a .TEX file into the texture 
     PUSH(sprites_group_file((int)group, path) ? -1 : 0);
 }
 /* ---- the game's own font (SUBSCR/MSG_BASE.TEX, the cache's group $14: 16 x 16 cells, 16 a row
- * from ' ') - each glyph its own width and drop (D_0044AD00: high nibble the blank columns at its
- * right, low nibble how far it sits down, of 16); not there: the built-in font ---- */
+ * from ' ') - each glyph its own width and drop (D_0044AD00, the executable's glyph-shapes: high
+ * nibble the blank columns at its right, low nibble how far it sits down, of 16 - the European
+ * disc's its accented letters' too); not there: the built-in font ---- */
 static const uint8_t kGlyphShape[96] = {
     0x70, 0x80, 0x80, 0x80, 0x80, 0x60, 0x70, 0xC0, 0xB0, 0xA0, 0x10, 0x40, 0x80, 0x60, 0x80, 0x80,
     0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x70, 0x80, 0x80, 0x90, 0x90, 0x70, 0x60,
@@ -3948,6 +3967,21 @@ static const uint8_t kGlyphShape[96] = {
 };
 #define FONT_GROUP 0x14
 #define FONT_TEXTURE 0
+
+/* glyph g's shape (the glyph less 0x20): the executable's table; a library made before it was read
+ * has the letters' (kGlyphShape - the same), the rest whole cells */
+static int glyph_shape(int g) {
+    size_t n = 0;
+    const uint8_t *t = exetable("glyph-shapes", &n);
+
+    if (g < 0) {
+        return 0;
+    }
+    if (t != NULL && (size_t)g < n) {
+        return t[g];
+    }
+    return g < 96 ? kGlyphShape[g] : 0;
+}
 
 static unsigned game_font(int *tw, int *th) {
     static int loaded;
@@ -3970,10 +4004,8 @@ static float text_width(const char *s, int n, float scale) {
     for (i = 0; i < n; i++) {
         int g = (unsigned char)s[i] - 0x20;
 
-        if (g >= 0 && g < 96) {
-            w += (float)(16 - (kGlyphShape[g] >> 4)) * scale / 2.0f + scale * 0.5f;
-        } else if (g >= 96) {
-            w += 8.0f * scale + scale * 0.5f;
+        if (g >= 0) {
+            w += (float)(16 - (glyph_shape(g) >> 4)) * scale / 2.0f + scale * 0.5f;
         }
     }
     return w;
@@ -4002,26 +4034,20 @@ static int game_text(float x, float y, float scale, uint32_t rgba, const char *s
         return 0;
     }
     for (i = 0; s[i] != 0; i++) {
-        int c = (unsigned char)s[i], g = c - 0x20;
+        int c = (unsigned char)s[i], g = c - 0x20, shape;
         float u, v, drop;
 
-        if (g >= 96) {   /* past the letters (the pad's buttons, 0xC0 on): a whole cell */
-            u = (float)((g & 0xF) * 16);
-            v = (float)((g >> 4) * 16);
-            render_image_uv(t, x, y, cell, tall, u / tw, v / th, (u + 16.0f) / tw, (v + 16.0f) / th, rgba);
-            x += cell + scale * 0.5f;
+        if (g < 0) {
             continue;
         }
-        if (g < 0 || g >= 96) {
-            continue;
-        }
+        shape = glyph_shape(g);   /* (the pad's buttons, 0xC0 on: whole cells) */
         u = (float)((g & 0xF) * 16);
         v = (float)((g >> 4) * 16);
-        drop = (float)(kGlyphShape[g] & 0xF) * cell / 16.0f;
+        drop = (float)(shape & 0xF) * cell / 16.0f;
         if (c != ' ') {
             render_image_uv(t, x, y + drop, cell, tall, u / tw, v / th, (u + 16.0f) / tw, (v + 16.0f) / th, rgba);
         }
-        x += (float)(16 - (kGlyphShape[g] >> 4)) * cell / 16.0f + scale * 0.5f;
+        x += (float)(16 - (shape >> 4)) * cell / 16.0f + scale * 0.5f;
     }
     return 1;
 }
@@ -4161,7 +4187,7 @@ void bind_engine(Forth *f) {
         {"on-draw", p_on_draw, "( xt -- )"}, {"off-draw", p_off_draw, "( xt -- )"}, {"pen-color", p_pen_color, "( rgba -- )"},
         {"pen-scale", p_pen_scale, "( n -- )"}, {"draw-text", p_draw_text, "( addr len x y -- )"}, {"draw-rect", p_draw_rect, "( x y w h -- )"},
         {"screen-size", p_screen_size, "( -- w h )"}, {"char-size", p_char_size, "( -- w h )"}, {"n>s", p_n_to_s, "( n -- addr len )"}, {"h>s", p_h_to_s, "( n -- addr len )"}, {"f>s$", p_f_to_s, "( places -- addr len ) ( F: x -- )"},
-        {"gfx", p_gfx, "( -- addr )"}, {"room-look", p_look, "( -- addr )"}, {"room-look-reset", p_look_reset, "( -- )"}, {"look-set", p_look_set, "( slot addr n -- )"}, {"look-keep", p_look_keep, "( -- )"}, {"look-kept", p_look_kept, "( -- )"}, {"look-plain", p_look_plain, "( -- )"}, {"look@", p_look_get, "( slot addr -- n )"}, {"user-dir", p_user_dir, "( -- addr len )"}, {"testing?", p_testing, "( -- flag )"}, {"hga-version", p_hga_version, "( -- addr len )"}, {"actor-part-show", p_actor_part_show, "( model part on -- )"}, {"actor-settle", p_actor_settle, "( model -- )"}, {"doorway-faded", p_doorway_faded, "( model -- ) ( F: -- F: f )"}, {"file-exists?", p_file_exists, "( addr len -- flag )"}, {"to-file", p_to_file, "( addr len -- )"}, {"append-file", p_append_file, "( addr len -- )"}, {"make-dir", p_make_dir, "( addr len -- flag )"}, {"zip-files", p_zip_files, "( names len dir len zip len -- flag )"}, {"zip-has?", p_zip_has, "( name len zip len -- flag )"}, {"date-time", p_date_time, "( -- addr len )"},
+        {"gfx", p_gfx, "( -- addr )"}, {"room-look", p_look, "( -- addr )"}, {"room-look-reset", p_look_reset, "( -- )"}, {"look-set", p_look_set, "( slot addr n -- )"}, {"look-keep", p_look_keep, "( -- )"}, {"look-kept", p_look_kept, "( -- )"}, {"look-plain", p_look_plain, "( -- )"}, {"look@", p_look_get, "( slot addr -- n )"}, {"user-dir", p_user_dir, "( -- addr len )"}, {"language", p_language, "( -- i )"}, {"language!", p_language_set, "( i -- )"}, {"language-present?", p_language_present, "( i -- flag )"}, {"language-code", p_language_code, "( i -- addr len )"}, {"testing?", p_testing, "( -- flag )"}, {"hga-version", p_hga_version, "( -- addr len )"}, {"actor-part-show", p_actor_part_show, "( model part on -- )"}, {"actor-settle", p_actor_settle, "( model -- )"}, {"doorway-faded", p_doorway_faded, "( model -- ) ( F: -- F: f )"}, {"file-exists?", p_file_exists, "( addr len -- flag )"}, {"to-file", p_to_file, "( addr len -- )"}, {"append-file", p_append_file, "( addr len -- )"}, {"make-dir", p_make_dir, "( addr len -- flag )"}, {"zip-files", p_zip_files, "( names len dir len zip len -- flag )"}, {"zip-has?", p_zip_has, "( name len zip len -- flag )"}, {"date-time", p_date_time, "( -- addr len )"},
         {"end-file", p_end_file, "( -- )"}, {"xt>name", p_xt_to_name, "( xt -- addr len )"},
         {"clear-color", p_clear_color, "( F: r g b -- )"}, {"out-of-view?", p_out_of_view, "( -- flag ) ( F: x y z -- )"}, {"screenshot", p_screenshot, "( addr len -- )"}, {"screenshot-pending?", p_screenshot_pending, "( -- flag )"}, {"console!", p_console, "( flag -- )"}, {"console-type", p_console_type, "( addr len -- )"}, {"console-log", p_console_log, "( n -- )"},
 

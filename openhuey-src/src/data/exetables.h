@@ -2,7 +2,8 @@
  * by name. The library holds each as a file of its own (library/exe/<name>.bin: the bytes the
  * game has there, or for a table of pointers the same made whole - obstacle-kinds); the engine
  * reads it through files_read ("../exe/<name>.bin": a mod's over the library's). Without a
- * library (the developers' extracted data) the executable is read, by the table's address. */
+ * library (the developers' extracted data) the executable is read, by the table's address. The
+ * European disc's SLES_528.77 has the same tables at addresses of its own (Exe.european). */
 #ifndef EXETABLES_H
 #define EXETABLES_H
 

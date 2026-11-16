@@ -45,12 +45,17 @@ end-state
 \ scaled with the screen's height (the PS2's glyph 16 x 21 of 448 lines: a pen of height / 224) ----
 $0A0A12D8 constant panel-colour   $8C7A5AC0 constant edge-colour
 $F0EBE0FF constant words-colour   $C8B48CFF constant mark-colour
-\ the places (0x0A n, D_0044B010): the text's centre down the PS2's 448 lines - low (the default),
-\ the middle (the notes on the walls, the tutorials), a little higher (the memory card's); n's
-\ bit 7: no box, the words alone
+\ the places (0x0A n, D_0044B010: the executable's box-places - x, y of each, u16): the text's
+\ centre down the PS2's 448 lines - low (the default), the middle (the notes on the walls, the
+\ tutorials), a little higher (the memory card's); the European disc's 3 low too. n's bit 7: no
+\ box, the words alone. (A library made before the table was read: the USA disc's, here)
 create place-ys  370 , 224 , 330 , 224 , 224 , 224 , 224 , 224 ,
 $80 constant no-box   6 constant box-drop   \ (Task_BoxSize: the box 6 lines below the text's centre)
-: place-y ( n -- y )  $7F and 7 min cells place-ys + @ ;
+4 constant /place
+: place-y ( n -- y )
+    $7F and 7 min  s" box-places" exe-table {: n addr len :}
+    len n 1+ /place * < if  n cells place-ys + @ exit  then
+    addr n /place * + 2 + w@ ;
 : boxed? ( -- flag )  place-now no-box and 0= ;
 : line-width ( line -- px )  page @ swap message-line  scale @ text-width ;
 : widest ( lines -- px )  0 swap 0 ?do  i line-width max  loop ;

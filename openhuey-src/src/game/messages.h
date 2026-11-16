@@ -1,7 +1,8 @@
 /* The game's messages (include/text.h in the decomp has the byte code). Three tables of u16
  * offsets then text: the system messages (SUBSCR/MSG_BASE.BIN; ids with bit 15), the second
  * table (SUBSCR/MSG_SUB.BIN; bit 14), a scene's own (message_file; bit 13) and the room's own
- * (PAC section 10). A message is ASCII
+ * (PAC section 10) - each in the language set, where the library has it (core/files.h: a
+ * European disc's), read again when it changes. A message is ASCII
  * with control codes: 0x01 new line, 0x02 page, 0x0E a choice whose options (0x0F hi lo) each
  * lead to another message, 0x11 hi lo go on with another, 0x15 hi lo a system message inserted,
  * 0x08 n a parameter, colours, speeds, waits.

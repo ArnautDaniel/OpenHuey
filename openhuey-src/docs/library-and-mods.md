@@ -60,8 +60,10 @@ existing picker, then a progress window (the file at hand and how much is done; 
 on a thread of its own, so the window keeps answering while a big file is converted, and closing
 it cancels the import).
 
-1. **Check the disc**: the executable's hash says it is SLUS_210.75 (Haunting Ground, USA).
-   Anything else is refused by name ("this is the PAL disc", "not Haunting Ground").
+1. **Check the disc**: the executable's hash says it is SLUS_210.75 (Haunting Ground, USA) or
+   SLES_528.77 (Haunting Ground, Europe: English, French, German, Italian and Spanish - see
+   "Languages" below). Anything else is refused by name ("not a disc of Haunting Ground that
+   OpenHuey knows", a checksum that doesn't match).
 2. **Unpack and convert**, file by file, into `library/` - converted where the kind has a
    converter, copied otherwise. Written to `library.new/` and renamed when done, so a failed or
    cancelled import leaves no half library.
@@ -181,12 +183,48 @@ game's, so the game's code reads it unchanged. A translation is these files in a
 bytes, measured by its own copy of the game's reader (the decomp's `TextCursor_Step`) - which is
 how this was found to need a choice's two operand bytes (`include/text.h` said one).
 
+### Languages
+
+The European disc (SLES-52877) is the USA disc's game: every model, room, script, sound and
+movie the same files, but the words and the pictures with words in them, which it has in five
+languages. Its library is laid out as the USA disc's - its English where the USA disc's files
+are, so everything reads it as it always has - with the other languages beside each, the
+language's code before the extension (`src/platform/library.c` european_name, convert_text):
+
+| The European disc's | In the library |
+|---|---|
+| `EURO/MSG_B_E.BIN` .. `MSG_B_S.BIN` (two tables each) | `SUBSCR/MSG_BASE.txt` and `MSG_SUB.txt`; `MSG_BASE.fr.txt`, `MSG_SUB.fr.txt` ... |
+| `SUBSCR/MSG_END.BIN` (a table a language) | `SUBSCR/MSG_END.txt`, `MSG_END.fr.txt` ... |
+| a room's text (section 10: a table a language) | `ST_xxx.room/messages.txt`, `messages.fr.txt` ... (a language's empty table not written: 50 rooms have only English placeholders) |
+| `EURO/TITLE_x`, `AVOID_x`, `SUBSV_x`, `SUB_BK_x`, `SUBSCR/SUBMG_x` | `SYSTEM/TITLE`, `SYSTEM/AVOID`, `SUBSCR/SUBSAVE`, `SUBSCR/SUBBACK`, `SUBSCR/SUBMG`: `.texbank/`, `.fr.texbank/` ... |
+| `EURO/GAME_FIX.TEX` (the loading signs in each language) | `GAME_FIX.texbank/` |
+| `EURO/LANGUAGE.TEX` (its language screen) | `EURO/LANGUAGE.texbank/` (the title's LANGUAGE draws it) |
+| `SUBSCR/GAL_*.TEX` (each gallery's heading in each language) | as they are: texture 0 the English heading, 2..5 the others', the rest from 6 (`scripts/subscreen/art.fs` gallery-texture) |
+
+The codes: `en` (none), `fr`, `de`, `it`, `es` (`core/files.h`). Its font (MSG_BASE.TEX) has the
+accented letters' glyphs the USA one lacks; its executable the glyphs' widths (`glyph-shapes`) and
+one box place lower (`box-places` 3). It hasn't the USA disc's unused room $65 (`off-map-65`) nor
+PLAY_DEMO_5.SFD, which nothing reads.
+
+The language is the engine's (`files_language_set`; Forth `language!`, `language`,
+`language-present?`, `language-code`). The readers of words and art ask for the language's file
+first and take the English one when there is none (`files_localized`): the message tables
+(`game/messages.c`: read again when it changes), the texture banks (`texbank_load`; the sprite
+cache's groups loaded from files load again - `game/sprites.c`). So a mod can translate too: a
+`library/data/SUBSCR/MSG_BASE.fr.txt` in it is the French system messages, a
+`SYSTEM/AVOID.fr.texbank/` the French avoid prompt. The title's LANGUAGE (`scripts/languages.fs`,
+shown when the library has another language than English) sets it; `user/language.fs` keeps it
+(read at start-up; not by the tests, which run in English).
+
 ### The executable's tables
 
-The engine and the scripts read 27 tables out of SLUS_210.75: the doors and rooms (how the house
+The engine and the scripts read 29 tables out of SLUS_210.75 (SLES_528.77 has each at an address
+of its own - `Exe.european`, the table's `vaddr_eu`): the doors and rooms (how the house
 connects), the obstacle kinds, the sounds' distance curves, stereo pan and surround pan (format 3,
 0.2.42: the placement the game itself uses - an older library places by the stereo pan), the butterflies, the
-dealt maze rows, Fiona's meeting offsets and twelve models' motion tables (their fades and flags).
+dealt maze rows, Fiona's meeting offsets, twelve models' motion tables (their fades and flags), the
+font's glyph shapes and the message box's places (both since 0.2.52: an older library draws the
+letters' own shapes - the same - and the USA disc's places).
 `src/data/exetables.c` names each with its address and size; the import writes each to
 `library/exe/<name>.bin` and keeps no executable. The engine asks by name -
 `exetable("doors")`, `s" motions-hewie" motion-table`, `s" deal-rows" exe-table` - reading

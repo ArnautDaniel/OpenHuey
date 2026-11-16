@@ -74,7 +74,8 @@ int sprites_glowing(void);
 void sprites_draw_glow(const Mat4 *view_proj);
 
 /* the cache's group `group` from a .TEX file, kept until the group is loaded again (the menus'
- * banks: the sub screen's SUBBASE / SUBBACK, an item's picture): 1 if it loaded */
+ * banks: the sub screen's SUBBASE / SUBBACK, an item's picture) - in the language set, and loaded
+ * again when it changes (core/files.h): 1 if it loaded */
 int sprites_group_file(int group, const char *path);
 /* texture group + id in palette csa (-1 the first) on the GPU, and its size; 0 if none */
 unsigned sprites_texture_of(int group, int id, int csa, int *w, int *h);

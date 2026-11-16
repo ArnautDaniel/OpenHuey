@@ -1,0 +1,3 @@
+\ the title room's text in French (tests/title/languages.fs): its first message
+#0
+Le jardin
