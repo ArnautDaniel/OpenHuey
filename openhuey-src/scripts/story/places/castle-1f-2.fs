@@ -178,13 +178,17 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
         sent?  hewie-breakable-now @ and if  0 at-gap !  ['] fetches start drop exit  then
     then
     fiona gate-far-area in-area?  sent? called? or and if  0 at-gap !  ['] fetches start drop  then ;
+: gate-busy? ( -- flag )   \ (one of his ways under the gate under way)
+    ['] crawls-back running?  ['] fetches running? or  ['] sits-at-gap running? or ;
 : under-the-gate ( -- )
     from-the-gap
     sent?  hewie-cond-now @ down-cond <> and  stalker-in? 0= and
     fiona gate-area in-area? and  hewie hewie-gate-area in-area? and  fiona 50 45e 69e faces-point? and  bark-scene @ 0= and if
         hewie-breakable-now @ if  ['] sits-at-gap start drop  then
     then
-    called?  fiona gate-area in-area? and  hewie 3 on-group? and  at-gap @ 0= and  bark-scene @ and if  ['] crawls-back start drop  then
+    \ (called back beyond the gate - nav group 3 - whatever brought him there: the original's act 4 on
+    \ her "come back"; before 0.2.53 only in the bark scene, so out of it he was left beyond the gate - #129)
+    called?  fiona gate-area in-area? and  hewie 3 on-group? and  at-gap @ 0= and  gate-busy? 0= and if  ['] crawls-back start drop  then
     hewie-going @  hewie held? 0= and if  hewie-done  then ;
 
 \ ---- the hole in the wall: the voices - her hand in it (a scene: the Scrawled Memo) ----

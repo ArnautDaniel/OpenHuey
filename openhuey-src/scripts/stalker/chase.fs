@@ -153,9 +153,12 @@ $1304 constant turn-in-anim   $205 constant charge-anim   $1004 constant stun-an
     bits touched-her and if  move4 m.kind @ how move4 m.threat f@ f>cell fiona send hit  then
     bits touched-him and if  move4 m.kind @ move4 m.damage @ how hewie send blow  then
     -1 sent !  stun ;
+\ his charge's point (Pursuer_AttackPoint: moveMode 8, sub $1C, no combo - +0x1770, set each frame
+\ by Debilitas_StateBlow) all through it - the story's zones see it there
+: charge-point? ( -- flag )  act-xt @ ['] charging = ;
 : turning-in ( -- )
     root-move  fiona body-at turn-rate turn-to fdrop
-    ended? if  charge-anim play-now  ['] charging act-xt !  then ;
+    ended? if  charge-anim play-now  ['] charging act-xt !  charging  then ;   \ (the charge at once: Debilitas3_TurnToFiona's blow(p))
 : turn-at-her ( -- )  turn-in-anim play-now  -1 unshaken !  0 sent !  ['] turning-in own-act-2 act! ;
 \ his own actions (own-act-1 .. of his tables): his `own-acts` table, else the family's
 \ (Debilitas's: his wander, his turn to her, his lunge, his grab at Hewie)

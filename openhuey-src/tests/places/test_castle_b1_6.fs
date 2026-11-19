@@ -4,7 +4,7 @@
 \   build/openhuey --test tests/places/test_castle_b1_6.fs
 IN: test-castle-b1-6
 USING: tester engine game-state actors messages keys room-names game debug facts flag-names story-names
-    stalker-names fiona.state story.kit items.names doors story.places.castle-b1-6 ;
+    stalker-names fiona.state story.kit items.names doors story.base story.places.castle-b1-6 ;
 : window-shown ( -- msg )  game:window enter  window:shown @  leave-actor ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
 : her ( xt -- x )  game:fiona enter  execute  leave-actor ;
@@ -56,6 +56,11 @@ create blow-pt 3 floats allot
 T{ 4 10e 1e 37e blow-held  30 run-frames  [: strength-2 @ ;] in-place -> 15 }T
 cb1-6-flag1 story-flag-clear  room-afresh
 T{ 7 his-blow!  [: strength-1 true weaker  strength-1 @ ;] in-place -> 25 }T
+testing ... his own blow's point (Pursuer_AttackPoint) in a stand's place: struck by him (before 0.2.53 he told none - #129)
+room-afresh  cb1-6-flag1 story-flag-set  stalkers-blind state-flag-set
+27 partner-load  deliver  game:fiona body-tri debug:debilitas-tri  3 run-frames
+T{ [: 10e 12e -37e body-point! ;] game:debilitas enter execute leave-actor  ' stands-struck in-place  [: hit-1-his @ ;] in-place -> -1 }T
+debug:debilitas-out  30 run-frames  cb1-6-flag1 story-flag-clear  room-afresh
 testing ... broken at 0: the stand gone, its fact
 [: 0 strength-1 !  false stand-1-struck ;] in-place  30 run-frames
 T{ cb1-6-flag4 story-flag?  stand-1-part part? -> -1 -1 }T
