@@ -270,7 +270,11 @@ played, seeing it, a way there - not following a noise its noise, following one 
 his search's one stop, `go-for-doll`, taken within 10 or his way's end within 10; away from her
 taken unless she is his lead - docs/subsystems/things.md); the story's 0x20 through blocked floor
 at doors (`noclip`: his floor mask, `my-floor`, to 0 and back); his blow under way told
-(`stalker-blow`, after `stalker-doing`); whether he has her in sight or reach (`stalker-sees`, +0x1544:
+(`stalker-blow`, after `stalker-doing`: vtable +0x108 - a combo's move's damage; Kind27's turn at
+her and charge, action $1001, 50 - since 0.2.53); his blow's point (`body-point!`, vtable +0x74
+Pursuer_AttackPoint: a combo's blow from its key a frame back, Debilitas's charge all through it -
+the story's zones see it: the chapel's stands; before 0.2.53 he told none, so they never broke,
+#129); whether he has her in sight or reach (`stalker-sees`, +0x1544:
 the story's cond 0x23 from her to him asks it - her crouch, the hiding places' "found"); a door
 that won't open for him shakes the pad ($80, 15).
 Leads (`stalker/leads.fs`; the original's +0x16C9..+0x16CC): a noise heard in the room being

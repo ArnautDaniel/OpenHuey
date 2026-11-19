@@ -158,6 +158,8 @@ state: stalker-state
   1 floats field bite-yaw  1 floats field bite-turn
   cell field dog-t  cell field dog-limit  cell field dog-phase
   cell field dog-sent            \ his blow this move has struck Hewie (stalker/attack.fs)
+  cell field blow-set            \ his move's blow has a point (+0x1770: vtable +0x138 at its key, cleared as the next move begins)
+  cell field point-told          \ his blow's point is told (body-point!) - to be taken back (stalker.fs `tell-point`)
   cell field at-dog              \ his combo is at Hewie (after him, his temper up), not her
   \ Hewie as he tells it (hewie-doing): his condition (2 down); the chance roll that calms his temper
   \ with Hewie (Pursuer_ChanceRoll): what has built up on it (+0x16C0), his blow struck Hewie in this

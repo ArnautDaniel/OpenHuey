@@ -294,6 +294,11 @@ face-off  3 strike-combo
 T{ 60 reacted -> $A }T
 300 up drop  face-off  6 strike-combo
 T{ 90 reacted  [: her-mode @ ;] hers -> $20 $B }T
+testing his blow's point (Pursuer_AttackPoint): told at the blow's key (a frame back), gone with the combo
+: point? ( -- flag )  game:debilitas body-point dup if  nip  then ;
+: by-then ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
+300 up drop  face-off
+T{ 0 strike-combo  ' point? 60 by-then  [: point? 0= ;] 120 by-then -> -1 -1 }T
 testing a blow while she is down isn't taken
 300 up drop  face-off  0 strike-combo  60 reacted drop
 T{ [: 2 0 10e f>cell stalker.senses:fiona send hit  0 took ! ;] his  3 run-frames  [: took @ ;] his -> 0 }T

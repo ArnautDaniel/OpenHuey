@@ -93,7 +93,7 @@ defer next-move ( -- )
 \ Pursuer_StateAttackStep: the move to its end, turning to her with it; at its key the blow
 : strike ( -- )
     world-held state-flag?  stalkers-blind state-flag? or if  exit  then
-    move-points
+    move-points  -1 blow-set !
     anim @ 0<>  blow-at walled? and if   \ (into a wall: his stand, a thud)
         still-anim play-now  thud-sound 7 sound  combo-over exit
     then
@@ -140,12 +140,18 @@ defer next-move ( -- )
     combo-step @ 4 < move-no -1 <> and  quarry here? and if
         mv-hold? if  true  else  d-quarry 50e ground-gained fmax f<=  d-quarry f0< 0= and  then
         if
-            0 sent !  0 dog-sent !  unswung swung !  mv-anim play-now  mv-unshaken? unshaken !
+            0 sent !  0 dog-sent !  0 blow-set !  unswung swung !  mv-anim play-now  mv-unshaken? unshaken !
             mv-hold? if  ['] holding  else  ['] striking  then  act-xt !  exit
         then
     then
     combo-over ; is next-move
 : combo-start ( n -- )  0 struck-dog !  combo !  0 combo-step !  0 took !  0 step-done !  combo-act chase-act !  combo-act action-look!  next-move ;
+\ his blow's point (vtable +0x74, Pursuer_AttackPoint) in a combo, at her or at Hewie (moveMode 8 a
+\ blow's sub, or his behaviour $23 bitten): the move a blow, its point set (+0x1770), its key a
+\ frame back (Motion_EventFlags -2) - the story's zones see it there
+: combo-point? ( -- flag )
+    act-xt @ ['] striking =  blow-set @ and  combo @ 0< 0= and  0= if  false exit  then
+    my-model @ 0 -2 1 motion-events 2 and 0<> ;
 
 \ ---- a blow's mark (HitEffect_Spawn: `spray`) on someone, that much of their height up them;
 \ his animation's effect key ($20: where his blows land) ----

@@ -209,12 +209,24 @@ $1300 constant gesture-anims
 : tell-ties ( -- )
     script-held @ in-scene @ or 0<>  apart @ away? or 0<>  linked?  broadcast stalker-ties
     link-t @ if  -1 link-t +!  then ;
+\ his blow under way, its strength (vtable +0x108, Pursuer_PathNodeSound: a combo's move's damage;
+\ Kind27_PathNodeSound: his own turn at her and charge, action $1001, 50), -1 none
+: blow-told ( -- n )
+    away? if  -1 exit  then
+    my-kind @ debilitas-27-kind =  chase-act @ own-act-2 = and if  50 exit  then
+    combo @ 0< if  -1  else  mv-damage  then ;
+\ his blow's point for the others (body-point!, vtable +0x74 Pursuer_AttackPoint): a combo's blow
+\ at its key, his charge; taken back after (a point of his own told elsewhere - Riccardo's shot -
+\ left alone)
+: tell-point ( -- )
+    combo-point? charge-point? or if  blow-at vec@ body-point!  -1 point-told !  exit  then
+    point-told @ if  body-point-off  0 point-told !  then ;
 : tell-doing ( -- )
     my-room  move-mode-told  sub-told
     cond @  hp @  hp-max @  my-kind @  my-mode @  came-by @  broadcast stalker-doing
     d-fiona f@ f>cell broadcast stalker-reach
-    tell-stride
-    away? 0=  combo @ 0< 0= and if  mv-damage  else  -1  then  broadcast stalker-blow
+    tell-stride  tell-point
+    blow-told broadcast stalker-blow
     sees-fiona @ 0<>  away? 0= and  broadcast stalker-sees
     tell-ties ;
 \ the family's setup (Pursuer_Setup): his sight 150 ahead, 60 degrees either side; Fiona and

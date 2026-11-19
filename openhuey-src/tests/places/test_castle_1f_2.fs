@@ -145,6 +145,13 @@ T{ [: room-flag-2d state-flag? ;] 600 soon -> -1 }T
 300 run-frames  gate-far-area 180 at  go-there-cmd started   \ (from by the flowers: sent on, whatever he is doing)
 T{ [: window-shown 0< 0= if  cross press  then  fresh-flowers items:items-of before @ > ;] 1500 soon  withered-flowers items:items-of -> -1 0 }T
 300 read-on  game:hewie send part-from-fiona
+testing ... beyond the gate out of the bark scene: called back, he crawls back all the same (the original's act 4 - #129)
+room-afresh  game:hewie send join-fiona  castle-1f-2 $1DF 0 game:hewie send hewie-place  30 run-frames
+T{ [: bark-scene @  game:hewie 3 on-group? ;] in-place -> 0 -1 }T
+[: gate-floor solid-floor floor-off  gap-floor solid-floor floor-on ;] in-place   \ (the floors as his crawl through left them)
+-90 65e -10e 70e put  come-back-cmd started
+T{ [: [: game:hewie 3 on-group? 0= ;] in-place ;] 900 soon -> -1 }T
+game:hewie send part-from-fiona
 
 testing the hiding place: in (hidden), out by the button
 room-afresh  hiding-area 0 at  circle press  [: hidden? ;] 600 soon drop

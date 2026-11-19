@@ -6,7 +6,7 @@
 \ (Pursuer_BehaviourStalk $19 / $1A). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_debilitas_kinds.fs
 IN: test-debilitas-kinds
-USING: tester engine game-state actors messages common room-names game debug flag-names facts stalker.state stalker.tables stalker.search stalker.struck stalker.chase stalker.pursue stalker.names story.base ;
+USING: tester engine game-state actors messages common room-names game debug flag-names facts stalker.state stalker.tables stalker.search stalker.struck stalker.chase stalker.pursue stalker.names stalker.attack stalker story.base ;
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : as ( kind -- )  partner-load  deliver  2 run-frames ;
@@ -54,6 +54,17 @@ T{ [: 25 hits !  give-up?  85 hits !  give-up? ;] his -> 0 -1 }T
 debug:debilitas-out  2 run-frames
 7 as  castle-1f-10 0 game:debilitas send stalker-in  2 run-frames
 T{ [: 200 hits !  give-up?  after-her mode!  mode-t @ ;] his -> 0 300 }T
+debug:debilitas-out  2 run-frames
+testing kind 27's turn at her and charge (Kind27_PathNodeSound: action $1001): his blow 50; kind 7's none out of a combo
+: blow-in-turn ( -- n )  own-act-2 chase-act !  -1 combo !  blow-told  0 chase-act ! ;
+game:fiona body-tri debug:debilitas-tri  3 run-frames  stalkers-blind state-flag-set
+T{ [: blow-in-turn ;] his -> -1 }T
+debug:debilitas-out  2 run-frames  27 as  game:fiona body-tri debug:debilitas-tri  3 run-frames
+T{ [: blow-in-turn ;] his -> 50 }T
+testing ... his charge's point (Pursuer_AttackPoint: Debilitas_StateBlow's +0x1770) told all through it, taken back after
+: point? ( -- flag )  game:debilitas body-point dup if  nip  then ;
+T{ [: ['] charging act-xt !  1e 2e 3e blow-at vec!  tell-point  point?  game:debilitas body-point drop vec@ f>s f>s f>s ;] his -> -1 3 2 1 }T
+T{ [: ['] noop act-xt !  tell-point  point? ;] his -> 0 }T
 debug:debilitas-out  2 run-frames
 testing ... knocked out, down his setup's frames (kind 7 1350)
 front-garden-2 room!  10 run-frames
