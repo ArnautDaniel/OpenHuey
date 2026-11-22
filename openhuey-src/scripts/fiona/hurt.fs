@@ -21,13 +21,14 @@ defer drop-door ( -- )   ' noop is drop-door   \ (a door she held let go: fiona.
 \ panicking (fear over 90, or the panic attack) ----
 \ not to be gone for (Pursuer_MayGo: +0x2D - stepping back, at a door -, the stalkers blind, grabbed;
 \ aside by the story's 0x21): bit 1; thrown (her mode 4): bit 2; for the creatures: +0x2D (stepping
-\ back, at a door, struck, aside) bit 4, a script has her bit 8, held (led off, grabbed) bit 16
+\ back, at a door, struck, aside) bit 4, a script has her bit 8, held (led off, grabbed) bit 16, grabbed bit 32
 : reach ( -- bits )
     her-out-of-reach @ 0<>  her-sub @ grabbed-r = or  stalkers-blind state-flag? or  1 and
     her-mode @ thrown-mode = 2 and  or
     her-out-of-reach @ 0<>  4 and  or                                           \ (+0x2D itself: the creatures')
     her-scripted @ 0<>  8 and  or                                               \ (a script has her: +0xE0)
-    her-led @ 0<>  her-mode @ thrown-mode =  her-sub @ grabbed-r = and or  16 and  or ;   \ (held: Character_Held - led, grabbed)
+    her-led @ 0<>  her-mode @ thrown-mode =  her-sub @ grabbed-r = and or  16 and  or   \ (held: Character_Held - led, grabbed)
+    her-sub @ grabbed-r = 32 and  or ;   \ (grabbed: Pursuer_MayGoForTarget's moveSub $10, whoever the target)
 \ (her mode 4 with moveSub $A / $B: thrown by a blow or a door, or any fall begun by Fiona_StartAction4 -
 \ which leaves $A - with no reaction's kind after it: her panic's fall, her stumble)
 : floored? ( -- flag )

@@ -164,7 +164,7 @@ defer flurry-blow ( -- )
 : blow-over ( -- )  0 blow-aim !  -1 step-done ! ;
 : after-blow ( -- )   \ (Riccardo_StateAfterBlow: another while it's in front, 90 degrees)
     -1 blows +!
-    blows @ 0> 0= if  blow-over exit  then
+    blows @ 0> 0=  may-go? 0= or if  blow-over exit  then   \ (Pursuer_MayGoForTarget too)
     at-dog @ if
         sees-hewie @ 0=  d-hewie f@ 30e f> or if  blow-over exit  then
         hewie  pi f2/ within-heading? 0= if  blow-over exit  then
@@ -178,7 +178,7 @@ defer flurry-blow ( -- )
 : hold-move? ( -- flag )  blow-entry m.kind @ hold-request = ;
 \ a hold (Riccardo_Blow): at its key, whoever is within its reach
 : blowing ( -- )
-    blow-key? if
+    blow-key?  may-go? and if   \ (only while he may go for his target: Riccardo_Blow)
         quarry body-at my-at vec-dist  blow-entry m.reach f@ f< if
             at-dog @ if  strike-hewie
             else  blow-entry m.kind @  blow-entry m.bone @ $FFFF and  blow-entry m.threat f@ f>cell  fiona send hit  then
@@ -189,7 +189,7 @@ defer flurry-blow ( -- )
 : blowing-dog ( -- )
     blow-key? if
         0 blow-aim !
-        dog-floor?  sees-hewie @ and  d-hewie f@ 30e f< and  hewie 30e deg>rad within-heading? and if
+        may-go?  dog-floor? and  sees-hewie @ and  d-hewie f@ 30e f< and  hewie 30e deg>rad within-heading? and if
             her-in-way? if  d-her attack-for strike-her
             else  d-hewie f@ attack-for if  strike-hewie  else  floor-debris  then  then
         then
@@ -231,7 +231,8 @@ create shot-at /vec allot
 : blowing-her ( -- )
     blow-key? if
         0 blow-aim !
-        sees-fiona @ same-floor? and  fiona 30e deg>rad within-heading? and  target-shot? and if
+        may-go? 0= if   \ (not while he may not go for her: Riccardo_StateBlowFiona)
+        else  sees-fiona @ same-floor? and  fiona 30e deg>rad within-heading? and  target-shot? and if
             shoot-target
         else  sees-fiona @ same-floor? and  fiona 30e deg>rad within-heading? and if
             hewie here?  fiona body-at hewie body-at vec-dist 50e f< and  d-hewie f@ 20e f> and
@@ -240,7 +241,7 @@ create shot-at /vec allot
             else
                 crouched? if  floor-debris  else  d-her attack-for strike-her  then
             then
-        then  then
+        then  then  then
     then
     blow-aim @ if  fiona body-at turn-rate turn-to fdrop  then
     ended? if  after-blow exit  then
@@ -258,7 +259,7 @@ create shot-at /vec allot
 : more? ( n -- n flag ) ( F: roll -- roll )
     dup 6 < if  dup floats flurry-chances + f@ fover f<  else  false  then ;
 : flurry-start ( -- )   \ (Riccardo_StartFlurry: 1..7 blows by his chances)
-    world-held state-flag?  stalkers-blind state-flag? or if  stand-watch exit  then
+    world-held state-flag?  may-go? 0= or if  stand-watch exit  then   \ (Pursuer_MayGoForTarget: the blind stalkers in it)
     rnd 100e f*  0  begin  more?  while  1+  repeat  fdrop  1+ blows !  flurry-blow ;
 
 \ ---- the one he struck cries out (Riccardo_CryHit): in his flurry (not a hold) a mark at a height

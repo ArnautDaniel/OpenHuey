@@ -768,5 +768,7 @@ and since the rooms redo (0.2.20) no place set it - the original's actions set i
 them, so a stalker in the room could take her mid-scene; every place's activity now sets it as its action does
 (story.md, the kit's `aside`). Saves: Pursuer_SaveState's exit he came in by (`came-by`), the room he heads for
 (+0x1594) and the chance roll's build (+0x16C0, kept whole as the original's +0x864) are now kept too (the
-`stalker-way` line). *Left*: MayGoForTarget with Hewie its target (Riccardo's and Lorenzo's attacks on him) - his
-+0x2D isn't told to the stalker.
+`stalker-way` line). MayGoForTarget with Hewie his target: Hewie tells his +0x2D each frame (`hewie-aside`), and
+`may-go?` (chase.fs) reads it after him - with the blind stalkers and her grabbed (her reach bit 32, her moveSub
+$10, whoever the target). Riccardo's flurry had none of it: its start, each next blow and each blow's key (at her,
+at Hewie, a hold) now ask it (Riccardo_StartFlurry / StateAfterBlow / Blow / StateBlowFiona / StateBlowHewie).

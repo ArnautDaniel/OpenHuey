@@ -165,6 +165,7 @@ state: stalker-state
   \ with Hewie (Pursuer_ChanceRoll): what has built up on it (+0x16C0), his blow struck Hewie in this
   \ attack (+0x1760 bit 1)
   cell field dog-cond  1 floats field roll-build  cell field struck-dog
+  cell field dog-aside          \ Hewie set aside (+0x2D: hewie-aside) - not to be gone for
   \ what he tells besides (stalker-ties): a script of the room has him (`scripted`), a scene does
   \ (`scene`) - his +0xE0; out of contact (+0x2A: through a door, on a ladder); frames a joint
   \ action he took stays pending (Progress_IsLinked: its entry settled the next frame)

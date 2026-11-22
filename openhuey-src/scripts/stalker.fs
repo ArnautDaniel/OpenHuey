@@ -239,7 +239,7 @@ $1300 constant gesture-anims
     hear-threshold @ stalker-noise acoustics-id send listen
     pursuer-ladder ladder-offsets !  -1 her-ladder-on !  -1 at-ladder !
     self subscribe zone-target  self subscribe zone-targets-off  self subscribe fiona-unseen
-    self subscribe hewie-doing  self subscribe scene  0 script-held !  0 in-scene !  well-cond dog-cond !
+    self subscribe hewie-doing  self subscribe hewie-aside  self subscribe scene  0 script-held !  0 in-scene !  well-cond dog-cond !
     my-kind @ head-bones!  ahead-look look-mode ! ;
 
 \ the doll (Thing03_StalkerCheck - his part): come upon away from her, he takes it unless she is
@@ -425,6 +425,7 @@ behaviour stalking
   \ Hewie: his attack asked, his letting go, his bites, his growls
   on dog-attack ( kind -- )  dog-attacked ;
   on dog-tackle ( -- )  dog-tackled ;
+  on hewie-aside ( on -- )  dog-aside ! ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       dog-trust !  2drop 2drop 2drop drop  dog-cond !  2drop 2drop ;   \ (his condition: the chance roll's; his trust)
   \ the story's: a script of the room has him (in the room being played: +0xE0) or lets go (posed:

@@ -488,7 +488,7 @@ create foot-bones  $B , $F , $17 , $1C ,   \ (front right, front left, hind righ
     else  his-away @ if  dog-elsewhere  else  dog-with-her  then  his-action @ his-mode @ his-sub @ his-cond @ his-mood @ anim-group
           commandable? near-command? fiona-reachable? breakable? his-way @ his-trust @  then
     broadcast hewie-doing
-    his-hp @ broadcast hewie-health
+    his-hp @ broadcast hewie-health  his-2d @ 0<> broadcast hewie-aside
     hewie-played? if  his-gesture @ broadcast hewie-gesture  then ;
 : think ( -- )   \ Hewie_Think: a frame of his while a script has him
     his-2b @ if  0  else  hewie-floor  then  body-mask!

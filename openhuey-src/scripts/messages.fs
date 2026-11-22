@@ -242,6 +242,7 @@ message unhand ( -- )                        \ to Fiona: the stalker leading her
 \ ---- Hewie (docs/subsystems/hewie.md) ----
 message write-save ( -- )                    \ broadcast: print your line of the save being written (saves.fs)
 message hewie-health ( hp -- )              \ broadcast each frame with hewie-doing: his health, 0..100
+message hewie-aside ( on -- )   \ broadcast each frame: Hewie set aside (+0x2D, the story's 0x21 or his own) - the stalkers' Pursuer_MayGoForTarget with him the target
 message set-hp ( n -- )                    \ (Hewie) his health set (a room's command)
 message hewie-restore ( trust points hp -- )   \ (Hewie) as a save had him
 message hewie-came-by ( exit -- )            \ (Hewie) the exit he came in by, as a save had it (Hewie_LoadState's +0x838)
