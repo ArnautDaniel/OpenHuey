@@ -8,6 +8,15 @@ submodule forward and runs its tests), not here.
 
 This page is OpenHuey's side: its words, its scripts, its tests.
 
+**ClankForth 0.3.0** (its CHANGELOG.md and docs/hosts.md say what a host checks at each version): colon
+definitions run as x86-64 machine code (Linux, and Windows' MinGW build) and every task - each actor's - as a
+coroutine on its own stack (`CLANKFORTH_THREADED=1` in the environment runs it all threaded, to tell whether a
+fault is the backend's). The objects a handler makes (lists, tuples, maps, strings) are freed as it ends unless
+`rescue`d - OpenHuey's scripts make none: their state is fields and variables (`.actors` counts each actor's
+objects: all 0). Built without TLS (`CLANKFORTH_TLS` off: the game gives its scripts no `net`). For looking into
+the running game at the console: `id .actor` (the actor in full: behaviour, state, mail, links), `.mail`,
+`.failures`, `see-handler`; the bug report's per-actor line is `debug`'s `.report-actor`.
+
 - **The order of loading**: ClankForth's prelude (built in), `scripts/base.fs` (OpenHuey's words for
   every script: `seconds`, 30 frames a second), then `game.fs`.
 - **Its warnings** (the scripts load with none): a file's word hiding one of a vocabulary it uses (`x hides

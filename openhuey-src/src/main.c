@@ -50,6 +50,8 @@
 
 #define MAX_EVALS 16
 
+FORTH_SANITIZER_DEFAULTS   /* (an ASan build: its fake stacks off - ClankForth's tasks switch stacks) */
+
 static int sTestStatus;
 static int sFullTests;   /* (a full test run: --full, $OPENHUEY_FULL_TESTS - `full-tests?`) */
 static void p_exit_status(Forth *f, Word *w) {   /* ( n -- ) a test's exit status (--test) */

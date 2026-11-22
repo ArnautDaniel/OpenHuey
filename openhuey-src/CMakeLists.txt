@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.2.54 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.2.55 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -30,6 +30,8 @@ endif()
 # language, prelude and tester built in; its own tests run with ours) ----
 enable_testing()
 set(CLANKFORTH_TESTS ON CACHE BOOL "the language's tests (ctest)")
+# (no TLS: the game gives its scripts no `net`, and OpenSSL would be one more library for the releases)
+set(CLANKFORTH_TLS OFF CACHE BOOL "TLS on net's sockets (OpenHuey: none)" FORCE)
 add_subdirectory(external/clankforth)
 add_library(forth ALIAS clankforth)
 
