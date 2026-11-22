@@ -186,7 +186,9 @@ defer after-her-elsewhere ( -- went? )   ' false is after-her-elsewhere   \ (the
 defer lead-taken? ( -- flag )   ' false is lead-taken?   \ (a lead he heard: stalker/leads.fs)
 defer starting? ( -- flag )   ' false is starting?      \ (starting at one)
 defer leads-forgotten ( -- )   ' noop is leads-forgotten
-: search-again ( -- )  leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  search-stops add-stops  capped  search-start ;
+: search-again ( -- )   \ (Pursuer_ChaseFionaHere: the room he heads for this one - +0x1594)
+    leads-forgotten  -1 drawn-tri !  searching mode!  route-clear  search-stops add-stops  capped  search-start
+    self body-room goal-room !  -1 goal-way ! ;
 \ his lead as he loses her (Pursuer_StanceStep / ModesSearching's mode 0): searching her room 3, alarm 4;
 \ out of her sight - his clock out there, no way to her, she gone by a door - 2, alarm 3 (Hewie's
 \ pull, 1, no longer draws him; the original forgets it only at what it led to: Pursuer_PlanToGoal)

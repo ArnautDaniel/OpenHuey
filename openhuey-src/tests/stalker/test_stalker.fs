@@ -148,6 +148,16 @@ fvariable widest
     0e widest f!  0 step-t !  0e head-yaw f!  0 step-done !
     0  300 0 do  stalker.search:standing  head-yaw f@ fabs widest f@ fmax widest f!  1+  step-done @ if  leave  then  loop  step-done @ ;
 T{ [: look-about nip  widest f@ 0.5e f>  head-yaw f@ f0= ;] his -> -1 -1 -1 }T
+testing no way to her room (NPC_HeadForFiona's fallback, 0.3.3): on to the room he was heading for before; none
+testing ... (nothing before, or his own), that room his goal with no way - the no-way search
+: reachable ( -- room | -1 )   \ (a room behind one of his room's exits he has a route to)
+    -1  8 0 do  my-room i room-exit-leads drop  dup 0< 0= over my-room <> and if
+        dup -1 route-way! 0> if  nip leave  then  then  drop  loop ;
+$C4 constant no-room   \ (no geometry, no route to it)
+T{ [: reachable dup goal-room !  -1 goal-way !  no-room -1 head-for  goal-room @ =  route-over? ;] his -> -1 0 }T
+T{ [: -1 goal-room !  no-room -1 head-for  goal-room @  route-over?  no-way-to-her? ;] his -> no-room -1 -1 }T
+T{ [: my-room goal-room !  no-room -1 head-for  goal-room @  no-way-to-her? ;] his -> no-room -1 }T
+T{ [: no-room goal-room !  search-again  goal-room @ my-room = ;] his -> -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 debug:debilitas-out  2 run-frames
 
