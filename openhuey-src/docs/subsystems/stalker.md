@@ -760,3 +760,13 @@ look's frames and half again (60: LookFrames), a full 0.12 swing in its middle h
 eased back straight by 0.12 a frame; done once straight (search.fs `standing`; before, he stood 90 frames looking
 ahead). `Pursuer_StateKnockedThrough`'s down-between-halves case was ours already (his health 1, his step done).
 
+
+### Third sweep, 2026-11-22 (0.3.2)
+
+Her +0x2D through the story's scenes: Pursuer_MayGoForTarget's first test (the target's +0x2D) reads her reach bit 1,
+and since the rooms redo (0.2.20) no place set it - the original's actions set it (the scripts' 0x21) in 471 of
+them, so a stalker in the room could take her mid-scene; every place's activity now sets it as its action does
+(story.md, the kit's `aside`). Saves: Pursuer_SaveState's exit he came in by (`came-by`), the room he heads for
+(+0x1594) and the chance roll's build (+0x16C0, kept whole as the original's +0x864) are now kept too (the
+`stalker-way` line). *Left*: MayGoForTarget with Hewie its target (Riccardo's and Lorenzo's attacks on him) - his
++0x2D isn't told to the stalker.

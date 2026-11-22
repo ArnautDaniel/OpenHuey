@@ -514,7 +514,10 @@ out of sight (8 a frame; back in when she moves) and `fiona-unseen` is told. Her
 - **Her call while followed** (Fiona_CallAction): a creature within 10 ahead (45 degrees), reached
   straight from her - "go for it" ($2D).
 - **The story's 0x20 / 0x21 for her**: through blocked floor (`noclip`), left alone - out of reach
-  of attacks (`aside`: her plight 3).
+  of attacks (`aside`: her plight 3). 0x21 is +0x2D, the byte her own states set (`her-out-of-reach`):
+  set by the kit's `fiona true aside` wherever the original's action does (471 of its action scripts;
+  the places had dropped it in 0.2.20 - fixed in 0.3.2); a script's idle step keeps it, her idle once
+  let go clears it (Fiona_ToIdle), as do her own states.
 - **Unseen, the stalker walks into her**: he has her (a hold, how 3).
 - **The flee turn**: toward the stalker within 30 (the turn spins her from him); at its end Hewie
   told (reaction 9).

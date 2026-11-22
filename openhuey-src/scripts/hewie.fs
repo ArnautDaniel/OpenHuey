@@ -150,7 +150,7 @@ behaviour hewie-own
   on hewie-side! ( side -- )  dup 3 u< 0= if  drop -1  then  his-way ! ;
   on hewie-stay ( -- )  300 his-pet-time ! ;
   on noclip ( on -- )  0<> 1 and his-2b ! ;
-  on aside ( on -- )  0<> 1 and his-2d ! ;
+  on aside ( on -- )  dup his-busy @ 0= and if  drop exit  then  0<> 1 and his-2d ! ;   \ (set only while a script has him: its end clears it)
   on activate ( -- )  0 his-2b !  0 his-2d !  0 his-stay !  100 hp!  hewie-played? if  start-afresh  then ;   \ (+0xF3588 cleared too)   \ (the story's 0x15, Hewie_Activate: afresh, at full health - in the run, played: Hewie_StartScene)
   on characters-still ( on -- )  his-held-still ! ;   \ (OpenHuey's: a reading on the dimmed screen)
   on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model)
