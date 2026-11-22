@@ -68,7 +68,11 @@ $8000 constant soundless-anims   \ (animations with the top bit: none of their s
 \ ---- his root motion this frame (Motion_RootMovement): turned and moved by it, along walls ----
 : root@ ( F: -- turn x y z )  my-model @ root-delta ;
 : root-move ( -- )  root@ {: F: turn x y z :}  yaw turn f+ angle-wrap yaw!  x z body-move-local ;
-: stride ( F: -- d )  root@ {: F: turn x y z :}  z ;
+: slope-keep ( F: -- k )   \ (his model's +0x44; Lorenzo's chair - LorenzoModel_SlopeKeep - asks its axles (+0xCB0 /
+    \ +0xCB4), which nothing sets: fresh, 0 - all of the step kept)
+    chaired @ if  1e exit  then  my-model @ self body-tri yaw slope-keep-of ;
+: raw-stride ( F: -- d )  root@ {: F: turn x y z :}  z ;   \ (his motion's step ahead as it is: Pursuer_GroundGained's)
+: stride ( F: -- d )  raw-stride slope-keep f* ;
 
 \ ---- his footsteps (Pursuer_Footsteps; Lorenzo's only walking or turning): as a foot comes
 \ down (his feet a frame back), the sound of the floor under it (bank 7, the feet by turns:
