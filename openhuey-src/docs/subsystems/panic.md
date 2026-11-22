@@ -78,7 +78,7 @@ later than in the original (it broadcasts at the frame's end).
 
 The stalker's part (`Panic_FearInputs`) it works out itself each frame: in the room played, by his
 kind and how near he is to her (the level distance and three times the rise; both on a ladder, by
-the rise alone - not checked that it is the same ladder), not while he is down nor under flag $21.
+the rise alone - and only on her ladder: the one he is at, `stalker-ladder`, is hers, `fiona-plight`; since 0.3.2), not while he is down nor under flag $21.
 In the mini-game's run she out of sight with him, her fear grows; away from the room played her
 panic stops at 99.
 

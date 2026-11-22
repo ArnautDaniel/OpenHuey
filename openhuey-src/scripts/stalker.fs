@@ -224,7 +224,7 @@ $1300 constant gesture-anims
 : tell-doing ( -- )
     my-room  move-mode-told  sub-told
     cond @  hp @  hp-max @  my-kind @  my-mode @  came-by @  broadcast stalker-doing
-    d-fiona f@ f>cell broadcast stalker-reach
+    d-fiona f@ f>cell broadcast stalker-reach  at-ladder @ broadcast stalker-ladder
     tell-stride  tell-point
     blow-told broadcast stalker-blow
     sees-fiona @ 0<>  away? 0= and  broadcast stalker-sees

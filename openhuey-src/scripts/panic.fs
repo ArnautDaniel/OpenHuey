@@ -27,6 +27,7 @@ state: panic-state
   cell field the-danger      \ (told)
   cell field her-mode  cell field her-sub  cell field her-cond   \ (told by Fiona each frame)
   cell field st-room  cell field st-mode  cell field st-sub  cell field st-cond  cell field st-kind   \ (told by the stalker)
+  cell field st-ladder  cell field her-ladder   \ (the ladder each is at: stalker-ladder, fiona-plight; -1 none)
 end-state
 
 $29 constant breath-sound   $42 constant scream-sound   \ (hers: the common bank)
@@ -143,7 +144,7 @@ $30 constant grey-limit
 \ the stalker's part (Panic_FearInputs): by his kind and how near he is - the level distance and
 \ three times the rise between them (both on a ladder, by the rise alone); a negative amount is a
 \ fright (held 30 frames, 50 lasting and passing). In the mini-game's run, she out of sight with
-\ him, her fear grows; not while he is down, nor under flag $21
+\ him, her fear grows; not while he is down, nor under flag $21; the ladder's part only on her ladder
 : fear-add ( F: amount -- )
     fdup f0< if  fdrop 30 hold !  fear-d f@ 50e f+ fear-d f!  fright-a f@ 50e f+ fright-a f!  exit  then
     0.0333333e f* fear-d2 f@ f+ fear-d2 f! ;
@@ -175,6 +176,7 @@ create rise-limits  20e f, 30e f, 40e f, 50e f, 60e f, 100e f,
     a v.x sf@ b v.x sf@ f-  a v.z sf@ b v.z sf@ f-  vlen  a v.y sf@ b v.y sf@ f- fabs {: F: level F: rise :}
     level rise 3e f* f+  near-limits 5 band  dup 0< 0= if  row 5 * + floats near-fears + f@ fear-add  else  drop  then
     her-mode @ 3 =  her-sub @ 7 = and  st-mode @ 3 = and  st-sub @ 7 = and 0= if  exit  then
+    her-ladder @ 0<  her-ladder @ st-ladder @ <> or if  exit  then   \ (on her ladder: RoomSlots_Bytes of hers, his slot's bit)
     rise rise-limits 6 band  dup 0< 0= if  floats rise-fears + f@ fear-add  else  drop  then ;
 
 \ the fear's scale: Torva's doubling while it lasts (the progress' +0x9E8); the calming by her
@@ -224,9 +226,11 @@ create weights   \ (fright, fear, calming)
 : updating? ( -- flag )  cam-scene? 0=  panic-held state-flag? 0= and ;
 
 behaviour measuring
-  on spawned ( -- )  1e scale f!  1e fade f!  2 st-cond !  $80 pulse !  self subscribe hewie-near  self subscribe tick  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing  self subscribe stalker-doing  self subscribe write-save ;
+  on spawned ( -- )  1e scale f!  1e fade f!  2 st-cond !  $80 pulse !  self subscribe hewie-near  self subscribe tick  self subscribe frame-end  self subscribe danger  self subscribe fiona-doing  self subscribe stalker-doing  self subscribe stalker-ladder  self subscribe fiona-plight  self subscribe write-save  -1 st-ladder !  -1 her-ladder ! ;
   on stalker-doing ( room mode sub cond hp hp-max kind alert came -- )  2drop st-kind !  2drop st-cond !  st-sub !  st-mode !  st-room ! ;
   on danger ( level -- )  the-danger ! ;
+  on stalker-ladder ( link -- )  st-ladder ! ;
+  on fiona-plight ( state ladder reach -- )  drop her-ladder !  drop ;
   on hewie-near ( near -- )  weighing ! ;   \ (report_fiona_near: Hewie with her - 1 within 20, 2 within 50, 3 further)
   on panic-overlay ( thousandths -- )  s>f 1000e f/ 0e fmax 1e fmin fade f! ;   \ (ScreenFade_Level: the game over's fade, the screen's steps)
   on overlay-held ( -- )  -1 fade-held ! ;

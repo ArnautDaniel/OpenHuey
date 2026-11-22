@@ -781,3 +781,8 @@ ShowUp) is armed once a blow (a new flinch, more damage) and kept full while dow
 not hurt or down, not under Hewie's bite (his action $23, moveSub 9) nor powdered (the powder's hit, $24: moveSub
 $11) (riccardo.fs `blow-arms?`, `tint-counts?`); before, it was re-armed each frame he reeled and ran through those.
 Kind 37's tint hold (Kind37_BehaviourEnded at the same +0x29C, counted by Kind37_Update as the TintStalker's) the same.
+Read last (0.3.2): Kind12_Update / EventState and Lorenzo2_Update (his rage by the panic's stage, his reaches) match.
+NPC_HeadForFiona matches but for its fallback: no route to her room, the original routes on to the room and side he
+was heading for before (+0x1594 / +0x1598); ours sets her room as his goal and stops (travel.fs `route-way!`), which
+the no-way search (`no-way-to-her?`, Pursuer_ChaseFionaHere) was built on - left as is. Lorenzo's chair (lorenzo.c's
+Lorenzo_ class) is still unread line by line.
