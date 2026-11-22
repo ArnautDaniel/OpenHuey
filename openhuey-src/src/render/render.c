@@ -476,6 +476,9 @@ void render_begin(int w, int h, Vec3 clear) {
     float scale = s->scale < 0.25f ? 0.25f : s->scale > 2.0f ? 2.0f : s->scale;
     const float black[4] = {0, 0, 0, 1};
 
+    while (samples > 1 && samples > gl_max_samples()) {   /* (as many as the GPU can: 4 on older ones) */
+        samples >>= 1;
+    }
     R.w = w;
     R.h = h;
     R.n2d = 0;
@@ -492,7 +495,7 @@ void render_begin(int w, int h, Vec3 clear) {
     R.px = (w - R.pw) / 2;
     R.py = (h - R.ph) / 2;
     glClearNamedFramebufferfv(0, GL_COLOR, 0, black);   /* (the bars, when there are any) */
-    if (s->anisotropy != R.sampler_aniso) {
+    if (s->anisotropy != R.sampler_aniso && gl_anisotropy()) {
         R.sampler_aniso = s->anisotropy;
         glSamplerParameterf(R.sampler, GL_TEXTURE_MAX_ANISOTROPY, s->anisotropy < 1.0f ? 1.0f : s->anisotropy);
     }

@@ -7,6 +7,8 @@
  *     --import disc.iso the disc imported into the library beside the executable, then out
  *     --mod folder|zip  a mod turned on (repeatable; with --test the only mods)
  *     --mods folder     the folder of mods (instead of mods/ beside the library)
+ *     --gl33            OpenGL 3.3's way even where 4.6 is there (the low-power path - gl.h; also
+ *                       $OPENHUEY_GL=3.3)
  *     --title           the title even without a window (its tests; else, hidden, a new game at once)
  *     --update          a release updated to the newest build (platform/update.c), then out
  *     --test file.fs    the test file run, headless; its exit status the test's. A quick run: the file
@@ -73,6 +75,7 @@ typedef struct Options {
     const char *mods[MAX_EVALS];   /* --mod DIR: a mod's folder, on (the tests' only mods) */
     const char *mods_folder;       /* --mods DIR: the folder of mods instead of <base>mods/ (the tests' too) */
     int nmods;
+    int gl33;           /* --gl33: OpenGL 3.3's way (gl.h) */
 } Options;
 
 static int parse_options(int argc, char **argv, Options *o) {
@@ -90,6 +93,8 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->evals[o->nevals++] = argv[++i];
         } else if (strcmp(argv[i], "--import") == 0 && i + 1 < argc) {
             o->import = argv[++i];
+        } else if (strcmp(argv[i], "--gl33") == 0) {
+            o->gl33 = 1;
         } else if (strcmp(argv[i], "--title") == 0) {
             o->title = 1;
         } else if (strcmp(argv[i], "--update") == 0) {
@@ -104,7 +109,7 @@ static int parse_options(int argc, char **argv, Options *o) {
             o->test = argv[++i];
             o->hidden = 1;
         } else if (argv[i][0] == '-') {
-            fprintf(stderr, "usage: openhuey [--hidden] [--frames N] [--eval code] [--test file.fs [--full]] [--mod folder|zip] [--mods folder] [--import disc.iso] [--update] [--title] [disc.iso | data folder]\n");
+            fprintf(stderr, "usage: openhuey [--hidden] [--frames N] [--eval code] [--test file.fs [--full]] [--mod folder|zip] [--mods folder] [--import disc.iso] [--update] [--title] [--gl33] [disc.iso | data folder]\n");
             return 0;
         } else {
             o->data = argv[i];
@@ -855,7 +860,7 @@ int main(int argc, char **argv) {
         }
         mods_find(opt.mods_folder != NULL ? folder : opt.test != NULL ? NULL : library_mods_dir(), opt.mods, opt.nmods);
     }
-    if (!platform_open("OpenHuey", 1280, 720, opt.hidden) || !render_init()) {
+    if (!platform_open("OpenHuey", 1280, 720, opt.hidden, opt.gl33) || !render_init()) {
         return 1;
     }
 
