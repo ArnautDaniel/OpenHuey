@@ -32,7 +32,7 @@ PRIVATE>
 \ field (the original's), the characters lit as the game lit them (src/game/model.c light_rgba: no
 \ boost, no rim) - and none of OpenHuey's own effects
 : look-original
-    1 ['] gfx.msaa int!  1 ['] gfx.aspect int!
+    1 ['] gfx.msaa int!  1 ['] gfx.aspect int!  1e ['] gfx.scale float!  16e ['] gfx.anisotropy float!
     ['] gfx.room-lights on  ['] gfx.shadow-maps on  ['] gfx.shadow-soft on   \ (the game lit and shadowed its characters too)
     1 ['] gfx.ps2-lighting int!  1e ['] gfx.character-light float!  0e ['] gfx.rim float!
     ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on
@@ -47,7 +47,7 @@ PRIVATE>
 \ a soft glow on what is past white, highlights eased, a light vignette (0.2: the old 0.35 sank the
 \ corners of rooms dark already). No haze: the rooms have their own fog
 : look-enhanced
-    4 ['] gfx.msaa int!  0 ['] gfx.aspect int!
+    4 ['] gfx.msaa int!  0 ['] gfx.aspect int!  1e ['] gfx.scale float!  16e ['] gfx.anisotropy float!
     ['] gfx.room-lights on  ['] gfx.shadow-maps on  ['] gfx.shadow-soft on
     2 ['] gfx.ps2-lighting int!  1e ['] gfx.character-light float!  0.2e ['] gfx.rim float!
     ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on

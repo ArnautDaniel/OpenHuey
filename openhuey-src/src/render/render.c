@@ -800,10 +800,26 @@ void render_post(void) {
     glViewport(0, 0, R.w, R.h);
 }
 
+/* the 2D waiting to be drawn is one batch of one kind: the font's (rectangles, text), or one
+ * picture's at one blend - pictures in a row from the same texture alike (the game's text: a glyph
+ * each) drawn together. A quad of another kind draws what is waiting first: the order kept */
+static struct {
+    int image;          /* the pictures' (else the font's) */
+    GLuint tex;
+    int blend;
+    float fix;
+} sBatch;
+
+static void image_draw(void);
+
 static void flush_2d(void) {
     Mat4 proj = mat4_ortho2d((float)R.w, (float)R.h);
 
     if (R.n2d == 0) {
+        return;
+    }
+    if (sBatch.image) {
+        image_draw();
         return;
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -846,6 +862,9 @@ GpuTexture render_texture(const uint8_t *rgba, int w, int h) {
 }
 
 void render_texture_free(GpuTexture t) {
+    if (t != 0 && sBatch.image && sBatch.tex == t) {   /* (waiting to be drawn: drawn first) */
+        flush_2d();
+    }
     if (t != 0) {
         glDeleteTextures(1, &t);
     }
@@ -1055,10 +1074,18 @@ static void quad(float x0, float y0, float x1, float y1, float u0, float v0, flo
     }
 }
 
+static void font_batch(void) {
+    if (sBatch.image) {
+        flush_2d();
+        sBatch.image = 0;
+    }
+}
+
 void render_rect(float x, float y, float w, float h, uint32_t rgba) {
     /* the middle of the solid block glyph (127) */
     float u = ((FONT_COUNT - 1) * FONT_CELL_W + 2.5f) / FONT_ATLAS_W, v = 3.5f / FONT_CELL_H;
 
+    font_batch();
     quad(x, y, x + w, y + h, u, v, u, v, rgba);
 }
 
@@ -1073,12 +1100,21 @@ void render_blend_2d(int mode, int fix) {
     sFix2d = (float)(fix < 0 ? 0 : fix > 255 ? 255 : fix) / 128.0f;
 }
 
-static void image_draw(GpuTexture t);
+/* a picture's quad to come: after what is waiting, unless that is this texture's at this blend */
+static void image_batch(GpuTexture t) {
+    if (!sBatch.image || sBatch.tex != t || sBatch.blend != sBlend2d || sBatch.fix != sFix2d) {
+        flush_2d();   /* (what was drawn before stays under it) */
+        sBatch.image = 1;
+        sBatch.tex = t;
+        sBatch.blend = sBlend2d;
+        sBatch.fix = sFix2d;
+    }
+}
+
 void render_image_uv(GpuTexture t, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
                      uint32_t rgba) {
-    flush_2d();   /* (what was drawn before stays under it) */
+    image_batch(t);
     quad(x, y, x + w, y + h, u0, v0, u1, v1, rgba);
-    image_draw(t);
 }
 
 void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, float u1, float v1, uint32_t rgba) {
@@ -1086,7 +1122,7 @@ void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, floa
     const float uv[8] = {u0, v0, u1, v0, u0, v1, u1, v1};
     int i;
 
-    flush_2d();
+    image_batch(t);
     if (R.n2d + 6 > R.cap2d) {
         R.cap2d = R.cap2d * 2 + 6 * 256;
         R.v2d = realloc(R.v2d, (size_t)R.cap2d * sizeof(Vertex2d));
@@ -1101,24 +1137,27 @@ void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, floa
         v->rgba[2] = (uint8_t)(rgba >> 8);
         v->rgba[3] = (uint8_t)rgba;
     }
-    image_draw(t);
 }
 
-static void image_draw(GpuTexture t) {
+static void image_draw(void) {
     Mat4 proj = mat4_ortho2d((float)R.w, (float)R.h);
+    GLuint t = sBatch.tex;
+    int blend = sBatch.blend;
+    float fix = sBatch.fix;
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, R.w, R.h);
     glNamedBufferData(R.vbo2d, (GLsizeiptr)(R.n2d * sizeof(Vertex2d)), R.v2d, GL_STREAM_DRAW);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
-    if (sBlend2d == RENDER_BLEND_NORMAL) {
+    if (blend == RENDER_BLEND_NORMAL) {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     } else {   /* (the GS's ALPHA with C = FIX: the 2D is drawn in display values, as the GS blends) */
-        glBlendColor(sFix2d, sFix2d, sFix2d, sFix2d);
-        glBlendEquation(sBlend2d == RENDER_BLEND_SUBTRACT ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
-        glBlendFunc(GL_CONSTANT_COLOR, sBlend2d == RENDER_BLEND_MIX ? GL_ONE_MINUS_CONSTANT_COLOR : GL_ONE);
+        glBlendColor(fix, fix, fix, fix);
+        glBlendEquation(blend == RENDER_BLEND_SUBTRACT ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
+        glBlendFunc(GL_CONSTANT_COLOR, blend == RENDER_BLEND_MIX ? GL_ONE_MINUS_CONSTANT_COLOR : GL_ONE);
     }
-    glProgramUniform1i(R.prog2d_image, 1, sBlend2d != RENDER_BLEND_NORMAL);
+    glProgramUniform1i(R.prog2d_image, 1, blend != RENDER_BLEND_NORMAL);
     glProgramUniformMatrix4fv(R.prog2d_image, 0, 1, GL_FALSE, proj.m);
     glUseProgram(R.prog2d_image);
     glBindTextureUnit(0, t);
@@ -1132,6 +1171,9 @@ static void image_draw(GpuTexture t) {
 }
 
 GpuTexture render_texture_stream(GpuTexture t, const uint8_t *rgba, int w, int h, int *tw, int *th) {
+    if (t != 0 && sBatch.image && sBatch.tex == t) {   /* (its last picture waiting: drawn first) */
+        flush_2d();
+    }
     if (t == 0 || *tw != w || *th != h) {
         render_texture_free(t);
         glCreateTextures(GL_TEXTURE_2D, 1, &t);
@@ -1150,6 +1192,7 @@ GpuTexture render_texture_stream(GpuTexture t, const uint8_t *rgba, int w, int h
 void render_text(float x, float y, float scale, uint32_t rgba, const char *s, int n) {
     int i;
 
+    font_batch();
     for (i = 0; i < n && s[i] != 0; i++) {
         int c = (unsigned char)s[i];
 
