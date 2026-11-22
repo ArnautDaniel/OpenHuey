@@ -946,10 +946,12 @@ int main(int argc, char **argv) {
             e->input.mouse_dx = e->input.mouse_dy = 0;
         }
 
-        /* fixed ticks: as many as real time asks for (at least one in --frames runs) */
+        /* fixed ticks: as many as real time asks for - in --frames runs exactly one a frame, whatever
+         * the time (else a faster or slower frame gave another count of ticks: not the same frames
+         * each run) */
         lag += now - last;
         last = now;
-        if (opt.frames > 0 && lag < tick_ns) {
+        if (opt.frames > 0) {
             lag = tick_ns;
         }
         while (lag >= tick_ns && ticks < 4) {

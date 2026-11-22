@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.3.0 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.3.1 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -78,7 +78,7 @@ set_target_properties(hga PROPERTIES OUTPUT_NAME openhuey)   # (the target keeps
 target_compile_definitions(hga PRIVATE "HGA_VERSION=\"${PROJECT_VERSION}\"" "HGA_BUILD=\"${HGA_BUILD}\"" "HG2_SCRIPT_DIR=\"${SCRIPT_DIR}\"" "HG2_DEFAULT_DATA=\"${DEFAULT_DATA}\""
     "HG2_DEFAULT_EXE=\"${DEFAULT_EXE}\"")
 if(HGA_RELEASE)
-    target_compile_definitions(hga PRIVATE HGA_UPDATER)   # (a release updates itself: --update, the title's UPDATE)
+    target_compile_definitions(hga PRIVATE HGA_RELEASE HGA_UPDATER)   # (a release updates itself: --update, the title's UPDATE)
     if(WIN32)
         set_target_properties(hga PROPERTIES WIN32_EXECUTABLE ON)   # (SDL3 gives the WinMain)
     else()

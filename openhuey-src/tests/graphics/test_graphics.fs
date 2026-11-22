@@ -28,7 +28,10 @@ T{ ' gfx.room-fog gfx-l ' gfx.room-tint gfx-l ' gfx.room-bloom gfx-l ' gfx.room-
 T{ ' gfx.room-lights gfx-l ' gfx.ps2-lighting gfx-l ' gfx.shadow-maps gfx-l -> 1 1 1 }T
 T{ ' gfx.msaa gfx-l ' gfx.ssao gfx-l ' gfx.bloom gfx-l ' gfx.fog gfx-l ' gfx.shadow-soft gfx-l -> 1 0 0 0 0 }T
 T{ ' gfx.scale gfx-f ' gfx.anisotropy gfx-f -> 1000 4000 }T
-T{ gl-low? dup 0= swap -1 = or -> -1 }T   \ (a flag: which, the driver's)
+testing the fresh start's look by the OpenGL path: the low-power one on 3.3 (gl-low?), else enhanced
+: fresh-wanted ( -- msaa ssao soft )  gl-low? if  1 0 0  else  4 1 1  then ;
+look-original  graphics.private:fresh-look
+T{ ' gfx.msaa gfx-l ' gfx.ssao gfx-l ' gfx.shadow-soft gfx-l -> fresh-wanted }T
 testing a preset sets all it is about: the low-power look's resolution and filtering undone by the others
 look-original
 T{ ' gfx.shadow-soft gfx-l ' gfx.scale gfx-f ' gfx.anisotropy gfx-f -> 1 1000 16000 }T
