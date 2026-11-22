@@ -91,6 +91,14 @@ ts enter  -1 reeling !  tint-frame  0 reeling !  leave-actor  2 run-frames
 T{ ts enter  unseen @  tint-t @ 0>  my-model @ actor act.visible l@  leave-actor -> 0 -1 1 }T
 testing ... its tint (TintStalker_Fade): shown at 112 of 128; its while over, fading out by 4 a frame, then gone
 T{ ts enter  tint-alpha f@ f>s  my-model @ actor act.alpha sf@ 0.875e f- fabs 0.01e f<  leave-actor -> 112 -1 }T
+testing ... its while (0.3.2, TintStalker_SetDelay / _Tint): armed once a blow - counting through his flinch, not re-armed
+testing ... each frame he reels; a blow again arms it again; down, kept full; under Hewie's bite or powdered, paused
+: tint-after ( n -- t )  0 ?do  tint-frame  loop  tint-t @ ;
+T{ ts enter  0 tint-t !  0 cond !  0 bitten !  -1 reeling !  tint-frame  tint-t @  9 tint-after  leave-actor -> 149 140 }T
+T{ ts enter  hits @ 5 + hits !  tint-frame  tint-t @  0 reeling !  leave-actor -> 149 }T
+T{ ts enter  2 cond !  20 tint-after  0 cond !  leave-actor -> 150 }T
+T{ ts enter  tint-frame  -1 bitten !  10 tint-after  0 bitten !  leave-actor -> 149 }T
+
 full-suite   \ (on: waits, scenes, walks - the full run's)
 T{ [: ts enter  tint-fade @ tint-out =  leave-actor ;] 200 soon  ts enter tint-alpha f@ f>s leave-actor  1 run-frames  ts enter tint-alpha f@ f>s leave-actor - -> -1 4 }T
 T{ [: ts enter  unseen @  leave-actor ;] 200 soon -> -1 }T

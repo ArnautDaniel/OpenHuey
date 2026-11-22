@@ -13,7 +13,7 @@
 \ panic's height - or a hard blow; crouched under it, it passes over) - and else its debris
 \ where it lands. Its impact: a noise where he stands.
 IN: stalker.riccardo
-USING: engine game-state actors messages common facts flag-names paths vectors stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue stalker.names stalker.anims stalker.sounds effects floor-flags ;
+USING: engine game-state actors messages common facts flag-names paths vectors stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue stalker.struck stalker.names stalker.anims stalker.sounds effects floor-flags ;
 
 \ his waits (his kit's): frames walking, stalking, walking once seen, stalking when far, the
 \ times he comes on; then the chance to walk
@@ -336,12 +336,19 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
             f0> 0= if  0e tint-alpha f!  tint-still tint-fade !  0 tint-shown !  then
         endof
     endcase ;
+: blow-arms? ( -- flag )   \ (TintStalker_SetDelay as the step after a blow - Pursuer_Hit: once a blow - after a fall
+    \ or lying - KnockedDown, PickStepAlt down: kept at it while down)
+    reeling @ 0<> dup tint-reeled @ 0= and  hits @ tint-hits @ <> or  cond @ down-cond = or
+    swap tint-reeled !  hits @ tint-hits ! ;
+: tint-counts? ( -- flag )   \ (its while counts only while he is free: not hurt nor down (+0xC4 1 / 2), not under
+    \ Hewie's bite (his action $23, moveSub 9) nor powdered (the powder's hit, $24: moveSub $11))
+    struck-or-down? 0=  bitten @ 0= and  powdered? 0= and ;
 : tint-frame ( -- )
-    tint-struck
+    blow-arms? if  150 tint-t !  then
     tint-t @ if
         tint-shown @ 0=  beaten-now? tint-fade @ tint-whole <> and  or
         beaten-now? 0= tint-fade @ tint-whole = and  or if  tint-show  then
-        struck-or-down? 0= if  -1 tint-t +!  then
+        tint-counts? if  -1 tint-t +!  then
     then
     tint-t @ 0=  here-played? and  tint-shown @ and  tint-fade @ tint-out <> and if  tint-out tint-fade !  then
     tint-fading

@@ -186,6 +186,7 @@ state: stalker-state
   cell field tint-t  cell field tint-was  cell field unseen   \ (the TintStalker: shown a while,
   1 floats field tint-alpha  cell field tint-fade  cell field tint-shown   \ how faded: its tint;
   1 floats field tint-phase                                               \ kind 37's: its pulse)
+  cell field tint-reeled  cell field tint-hits   \ (the TintStalker: reeling and his damage last frame - a new blow arms its while)
   cell field mark-id            \ (kind 12) its marker's effect actor (-1 none)
   \ the story's zones a blow may strike instead of her (Events_NearestPoint: their kind's bit 1),
   \ this frame: on, and their centres; Riccardo's shot at one shown as his point for a while

@@ -775,7 +775,8 @@ at Hewie, a hold) now ask it (Riccardo_StartFlurry / StateAfterBlow / Blow / Sta
 Read and found matching (0.3.2): the creatures' tests of her +0x2D / +0xE0 (CreatureA_Seen / Think / Frame,
 CreatureB_StateByProgress / StateAfterFiona - live again now that the places set it), Hewie_Interrupted,
 Riccardo_Update's rage (Riccardo_SetRage's roar), Daniella_SetRage's tables (the kit's [hard][rage] sets), the
-places' flag $18 against the original's (every room's, through the shared words). *Left* (small): the TintStalker's
-150-frame while (TintStalker_SetDelay as a behaviour step after a hit, a fall, lying - Pursuer_Hit / KnockedDown /
-PickStepAlt / ShowUp) starts once at the hit and pauses while his moveSub is 9 or $11; ours re-arms it each frame
-he reels and doesn't pause for those.
+places' flag $18 against the original's (every room's, through the shared words). The TintStalker's 150-frame
+while (TintStalker_SetDelay, a behaviour step after a hit, a fall, lying - Pursuer_Hit / KnockedDown / PickStepAlt /
+ShowUp) is armed once a blow (a new flinch, more damage) and kept full while down, and counts only while he is free -
+not hurt or down, not under Hewie's bite (his action $23, moveSub 9) nor powdered (the powder's hit, $24: moveSub
+$11) (riccardo.fs `blow-arms?`, `tint-counts?`); before, it was re-armed each frame he reeled and ran through those.
