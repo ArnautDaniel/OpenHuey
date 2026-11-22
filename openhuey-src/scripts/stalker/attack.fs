@@ -45,7 +45,7 @@ $8000 constant stumbles   \ (a blow's how: she stumbles)
 : her-stride ( F: -- d )
     0 cast-model dup 0< if  drop 0e exit  then  root-delta {: F: turn x y z :}  z ;
 : ground-gained ( F: -- d )
-    stride 5e f*  her-back-to-me? if  her-stride 5e f* f-  then
+    raw-stride 5e f*  her-back-to-me? if  her-stride 5e f* f-  then
     her-stage @ calming-down = if  10e  else  reach-k f@  then  f+ ;
 
 \ ---- whom a blow at a point reaches (Npc_WhoReachable, Progress_CharNear): their body within

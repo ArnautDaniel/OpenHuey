@@ -782,7 +782,13 @@ not hurt or down, not under Hewie's bite (his action $23, moveSub 9) nor powdere
 $11) (riccardo.fs `blow-arms?`, `tint-counts?`); before, it was re-armed each frame he reeled and ran through those.
 Kind 37's tint hold (Kind37_BehaviourEnded at the same +0x29C, counted by Kind37_Update as the TintStalker's) the same.
 Read last (0.3.2): Kind12_Update / EventState and Lorenzo2_Update (his rage by the panic's stage, his reaches) match.
-NPC_HeadForFiona matches but for its fallback: no route to her room, the original routes on to the room and side he
-was heading for before (+0x1594 / +0x1598); ours sets her room as his goal and stops (travel.fs `route-way!`), which
-the no-way search (`no-way-to-her?`, Pursuer_ChaseFionaHere) was built on - left as is. Lorenzo's chair (lorenzo.c's
-Lorenzo_ class) is still unread line by line.
+NPC_HeadForFiona's fallback (0.3.3): no route to her room, on to the room and half he was heading for before
+(+0x1594 / +0x1598, travel.fs `head-for`); Pursuer_PickExit finds no way from there in turn. With none to fall back
+on - none yet (-1 as he comes in), or his own (set as he searches: Pursuer_ChaseFionaHere) - her room his goal and no
+way, the no-way search as before.
+Lorenzo's class read (0.3.3): his setup, tables (the kit's [hard] sets), turn rate, action offsets, door finish
+(Debilitas's: done at once), reach and range, footsteps only walking or turning ($200 / $400), and his chair's frames
+(chair.c) match. The strides take the motions' slope keep now (Model_SlopeKeep, the motion's +0x44 - Npc_WalkPathStride
+/ StepPath / StepToward, the footsteps' pace; common.fs `slope-keep-of`): on a slope motion facing down the fall only
+ny^2 of the step; the figures' too. Pursuer_GroundGained takes the raw step (`raw-stride`). Lorenzo's chair keeps all
+of it: LorenzoModel_SlopeKeep asks its axles (+0xCB0 / +0xCB4), which no code of his sets - fresh memory, 0.

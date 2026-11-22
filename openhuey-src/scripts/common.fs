@@ -8,6 +8,17 @@ variable seed  12345 seed !
     seed @ 1103515245 * 12345 + $7FFFFFFF and dup seed !  16 rshift swap mod ;
 : rnd ( F: -- r )  32768 random s>f 32768e f/ ;   \ 0 <= r < 1
 : vlen ( F: x z -- l )  fsq fswap fsq f+ fsqrt ;
+\ Model_SlopeKeep (a motion's +0x44): on a slope motion (its flag 4) the part of a step kept - 1 less
+\ (1 - ny^2) of how squarely it faces along the floor's fall; elsewhere, or level, all of it. The
+\ stalkers' and the figures' strides take it (Npc_WalkPathStride / StepPath / StepToward)
+: slope-keep-of ( model tri -- ) ( F: yaw -- k )
+    {: m tri F: yaw :}
+    m actor act.mflags l@ 4 and 0=  tri 0< or if  1e exit  then
+    tri tri-normal {: F: nx ny nz :}
+    ny 1e f< 0= if  1e exit  then
+    nx nz vlen {: F: l :}  l f0= if  1e exit  then
+    nx l f/ yaw fsin f*  nz l f/ yaw fcos f* f+ fabs
+    1e ny fsq f- f*  1e fswap f- ;
 \ a heading turned toward `target` by at most `step`: the new heading, and how far it still is
 : turn-toward ( F: yaw target step -- yaw' left )
     {: F: yaw target step | F: d :}

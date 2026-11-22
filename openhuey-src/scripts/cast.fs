@@ -139,7 +139,7 @@ $201 constant other-walk-anim   \ (Pursuer_SlowWalkAnim: $201 with its +0x16C8 s
     {: tri v :}  tri v goal-at self body-mask walkable dup 0< if  drop 0 exit  then  {: t :}
     my-path self body-tri my-at t goal-at self body-mask path-plan-curved ;
 : way-left ( F: -- d )  my-path path-left? if  my-path my-at path-rest  else  0e  then ;
-: stride ( F: -- d )  root@ fnip fnip ;
+: stride ( F: -- d )  root@ fnip fnip  model @ self body-tri yaw slope-keep-of f* ;   \ (Npc_WalkPathStride: the motion's slope keep)
 : heading-off ( v -- ) ( F: -- d )  self swap body-heading-to yaw f- angle-wrap ;
 : put-at ( v -- )   \ (off the floor: its triangle kept)
     {: v :}  self body-tri {: tri :}

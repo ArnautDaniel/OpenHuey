@@ -71,7 +71,7 @@ state: stalker-state
   \ doors (+0x138C, the next +0x1388, their number +0x1384), the way left to the next
   \ (+0x14C4), the exit he came in by (his door) and the one he makes for (+0x17B0), the doors
   \ that let him down (+0x148C), his search there (+0x17B4), a knock's wait
-  cell field goal-room
+  cell field goal-room  cell field goal-way   \ (+0x1594 / +0x1598: the room he heads for and its half, -1 either)
   16 cells field doors  cell field doors-n  cell field door-i
   1 floats field to-door
   cell field came-by  cell field making-for

@@ -36,7 +36,7 @@ USING: engine game-state actors messages common facts flag-names paths vectors d
 \ to a half of the goal room (`want`; -1 either: Fiona's half when she is across his own room -
 \ stalker/doorway.fs)
 : route-way! ( room want -- n )   \ (planned: the first stretch set)
-    {: room want :}  room goal-room !
+    {: room want :}  room goal-room !  want goal-way !
     my-room my-way room want stalker-kind -1 avoid route-sides
     dup 0> if
         dup 16 min 0 do  i route-door  i cells doors + !  loop
@@ -301,10 +301,19 @@ create fs-a /vec allot  create fs-b /vec allot
 : her-half ( -- way )   \ (Npc_CharSideBehind: the half of her room the exit she came in by opens onto -
     \ Pursuer_PlanWhere's +0x1598; -1 either. Before 0.2.42 either: in a split room he came in on the far one)
     her-came @ dup 0< if  exit  then  her-room swap 1 exit-way ;
+: head-for ( room want -- )   \ (NPC_HeadFor: routed there; none, on as he was - else that room his goal, no way)
+    goal-room @ goal-way @ {: room want old-room old-way :}
+    room want route-way! 0> if  exit  then
+    old-room 0<  old-room room = or  old-room my-room = or if  exit  then
+    old-room old-way route-way! 0> if  exit  then
+    room goal-room !  want goal-way ! ;
 : head-for-her ( -- )   \ (in the run, after Hewie: his room)
+    \ (NPC_HeadForFiona: no way to her room, on to the room and half he was heading for before -
+    \ Pursuer_PickExit finds no way from there in turn; with none there either, her room his goal
+    \ and no way: the no-way search, `no-way-to-her?`)
     hunting-dog @ if  room-id  else  her-room  then  dup 0< if  drop exit  then
     dup goal-room @ = route-over? 0= and if  drop exit  then
-    avoid-clear  hunting-dog @ if  -1  else  her-half  then  route-way! drop ;
+    avoid-clear  hunting-dog @ if  -1  else  her-half  then  head-for ;
 : wander ( -- )   \ (Pursuer_Plan170: an exit at random he can go by)
     8 0 do
         8 s>f rnd f* f>s 7 min  my-room over room-exit-door              ( e door )

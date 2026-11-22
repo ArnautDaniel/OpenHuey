@@ -3,7 +3,7 @@
 \ in front low, behind, behind low. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_tackles.fs
 IN: test-tackles
-USING: tester engine game-state actors messages facts room-names game debug flag-names stalker stalker.state stalker.tables stalker.moving stalker.travel stalker.struck stalker.chase ;
+USING: tester engine game-state actors messages facts room-names game debug flag-names stalker stalker.state stalker.tables stalker.moving stalker.travel stalker.struck stalker.chase common ;
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
@@ -23,6 +23,17 @@ T{ [: -1 at-dog !  0 dog-aside !  0 her-reach !  may-go?  -1 dog-aside !  may-go
 T{ [: 0 at-dog !  -1 dog-aside !  0 her-reach !  may-go?  1 her-reach !  may-go?  0 her-reach !  0 dog-aside ! ;] his -> -1 0 }T
 T{ true game:hewie send scripted  1 game:hewie send aside  deliver  3 run-frames  [: dog-aside @ ;] his  0 game:hewie send aside  false game:hewie send scripted  deliver  3 run-frames  [: dog-aside @ ;] his -> -1 0 }T
 
+testing the slope keep (0.3.3, Model_SlopeKeep: the motions' +0x44 on the strides): on a slope motion, facing down the
+testing ... fall ny^2 of the step kept, across it all; level, or not a slope motion, all
+: ny-sloped? ( tri -- flag )  tri-normal fdrop fswap fdrop {: F: y :}  y 0.95e f< y 0.6e f> and ;
+: a-slope ( -- tri )  -1  nav-tris 0 do  i ny-sloped? if  drop i leave  then  loop ;
+: fall-yaw ( tri -- ) ( F: -- yaw ny )  tri-normal {: F: nx ny nz :}  nx nz fatan2  ny ;
+: as-slope ( model on -- )  swap actor act.mflags dup l@ 4 invert and  rot if  4 or  then  swap l! ;
+front-garden-2 36 game:debilitas send stalker-in  deliver  2 run-frames
+T{ a-slope 0< 0= -> -1 }T
+T{ [: my-model @ true as-slope  my-model @ a-slope  a-slope fall-yaw fsq {: F: yaw sq :} yaw slope-keep-of  sq f- fabs 0.001e f< ;] his -> -1 }T
+T{ [: my-model @ true as-slope  my-model @ a-slope  a-slope fall-yaw fdrop pi f2/ f+ slope-keep-of  1e f- fabs 0.001e f< ;] his -> -1 }T
+T{ [: my-model @ false as-slope  my-model @ a-slope  a-slope fall-yaw fdrop slope-keep-of ;] his -> 1e }T
 testing Hewie let go of his leg (Pursuer_StateKnockedDown $1709): down on his front ($1709, lying as $1806), up again ($1807)
 stalkers-blind state-flag-set  s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames
 T{ [: 70 hp !  leg-down  anim @  lie-anim @ ;] his -> $1709 $1806 }T
