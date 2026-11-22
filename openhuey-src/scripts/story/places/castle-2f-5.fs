@@ -75,10 +75,10 @@ $E constant first-fragment   11 constant #fragments   \ (its objects a_fragment0
 \ ---- resting on the bed: the mirror's scene; she well again, Hewie out from under the other bed,
 \ Daniella left by the door, the doors the chapter locked open, the file ----
 : hewie-comes-out ( -- )
-    hewie hold  hewie true noclip  hewie wait-move  hewie $25 -90 13.928e -57.528e place-at
+    hewie hold  hewie true aside  hewie true noclip  hewie wait-move  hewie $25 -90 13.928e -57.528e place-at
     hewie hewie-hiding-motions motions-for  hewie use-motions  hewie 1 hid-motion play  1 rest-step !
     begin  rest-step @ 2 < while  yield  repeat
-    hewie-out-sound common-bank hewie sound-by  hewie 2 hid-motion 5 start-blend8  hewie wait-anim  hewie false noclip ;
+    hewie-out-sound common-bank hewie sound-by  hewie 2 hid-motion 5 start-blend8  hewie wait-anim  hewie false noclip  hewie false aside ;
 : rests ( -- )
     fiona wait-move
     rest-msg yes? 0= if  exit  then

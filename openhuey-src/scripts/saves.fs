@@ -72,6 +72,7 @@ create was-met  4 cells allot      \ (a save without them: none)
 variable was-stalker   \ his kind (-1: none loaded)
 variable sw-in  variable sw-room  variable sw-tri  variable sw-hp  variable sw-mode
 create sw-more 8 cells allot   variable sw-more?   \ (a save without them: as he was)
+create sw-way 3 cells allot   variable sw-way?     \ (his door, the room he heads for, the roll's build; a save without them: as he came in)
 create sm-was 7 cells allot   variable sm-was?        \ the summoner's record (progress +0x764)
 variable was-map-page                                \ the map's page she was on (the save's +0x18F0; -1 none)
 variable was-spare                                   \ the room loaded ahead (-1 none: a save without it)
@@ -97,8 +98,9 @@ create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7
 : hewie-state ( room tri side mood time hide f0 f1 f2 f3 -- )
     0 6 do  i cells hw-mood + !  -1 +loop  hw-side !  hw-tri !  hw-room ! ;
 
-: stalker-was ( kind in room tri hp mode -- )  sw-mode !  sw-hp !  sw-tri !  sw-room !  sw-in !  was-stalker !  false sw-more? ! ;
+: stalker-was ( kind in room tri hp mode -- )  sw-mode !  sw-hp !  sw-tri !  sw-room !  sw-in !  was-stalker !  false sw-more? !  false sw-way? ! ;
 : stalker-more ( cond hp-max rage temper hits mode-t down-t yaw -- )  0 7 do  i cells sw-more + !  -1 +loop  true sw-more? ! ;
+: stalker-way ( came goal-room roll -- )  0 2 do  i cells sw-way + !  -1 +loop  true sw-way? ! ;
 : summoner-was ( away called cooldown room waited mode kind -- )  0 6 do  i cells sm-was + !  -1 +loop  true sm-was? ! ;
 : map-page-was ( page -- )  was-map-page ! ;
 : spare-was ( room -- )  was-spare ! ;
@@ -157,7 +159,8 @@ create pn-was 7 cells allot   variable pn-was?        \ her panic (progress +0x7
     summoner-back
     sw-in @ if  sw-room @ sw-tri @  was-stalker @ stalker-actor send stalker-in  then
     sw-hp @ sw-mode @  was-stalker @ stalker-actor send stalker-restore
-    sw-more? @ if  8 0 do  i cells sw-more + @  loop  was-stalker @ stalker-actor send stalker-restore-more  then ;
+    sw-more? @ if  8 0 do  i cells sw-more + @  loop  was-stalker @ stalker-actor send stalker-restore-more  then
+    sw-way? @ if  3 0 do  i cells sw-way + @  loop  was-stalker @ stalker-actor send stalker-restore-way  then ;
 
 enum: saves-step  not-saving writing entering settling taking ;
 

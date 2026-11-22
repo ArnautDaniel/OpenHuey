@@ -50,7 +50,7 @@ low-vase 2 frees-floor  low-vase 5 noise-from
     secret-movie scenes:keyed-movie secret-cutscene load-scene  $14 $C8 movie-key
     panic-eased  if  -1 run-scene  then ;
 : the-way-behind ( -- )
-    fiona hold  world-frozen state!  secret-scene  wait-fade
+    fiona hold  fiona true aside  world-frozen state!  secret-scene  wait-fade
     world-held state!  world-frozen state-off  forced-exit take-exit ;
 : replayed ( -- )
     fiona hold  flame-fx 1 -84e -19e 13.7e flame-at  fiona false shown  secret-scene  fiona true shown  replay-over ;
@@ -60,14 +60,14 @@ low-vase 2 frees-floor  low-vase 5 noise-from
     fiona wait-move  fiona -90 turn
     picture-remarked @ if  0 picture-remarked !  lamp-msg  else  -1 picture-remarked !  picture-msg  then  say ;
 : the-mummy ( -- )
-    fiona wait-move  fiona $137 90 57.06e 30.88e walk-to  fiona hold
+    fiona wait-move  fiona $137 90 57.06e 30.88e walk-to  fiona hold  fiona true aside
     mummy-examined fact? 0= if
         seized-sound common-bank fiona sound-by  fiona pull-free-anim 10 start-blend  $5A fright+  1 $FF 8 rumble-pad
         fiona wait-anim  world-frozen state!  1 5e 10e 0e 0e shot  mummy-examined fact!  mummy-msg say
     else
         world-frozen state!  1 5e 10e 0e 0e shot  mummy-2-msg say
     then
-    16 frames  world-frozen state-off  shot-off ;
+    16 frames  world-frozen state-off  shot-off  fiona false aside ;
 : take-jerky ( -- )   \ (reached for, not in a panic)
     fiona wait-move  fiona -137.37e -14.57e turn-to-xz  in-panic? if  exit  then
     fiona reach-out-anim play  4 frames  chicken-jerky om1f-17-chicken-jerky jerky-fx takes-up  fiona reach-back-anim play ;

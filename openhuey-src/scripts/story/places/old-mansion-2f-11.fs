@@ -82,7 +82,7 @@ create key-at /vec allot   fvariable key-speed
     ladder-remarked @ 0=  om2f-11-flag1 fact? or if  ladder-msg say  -1 ladder-remarked !  exit  then
     fiona look-at-anim play  on-top-msg say  0 ladder-remarked ! ;
 : the-journals ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  fiona -20 turn
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona -20 turn
     journals-examined fact? if  dates-msg  else  journals-examined fact!  journals-msg  then  say
     15 screen:to-dim fade wait-fade  journal-msg say  15 screen:from-dim fade wait-fade
     journal-file give-file  stalkers-stay state-off ;
@@ -94,7 +94,7 @@ create key-at /vec allot   fvariable key-speed
     book-looks @ case  0 of  books-msg  endof  1 of  languages-msg  endof  >r titles-msg r>  endcase  say
     book-looks @ 1+ 3 mod book-looks !  fiona wait-anim ;
 : a-note ( msg bit bit' -- )   \ (read; its two recipes marked the first time - her wonder)
-    {: msg bit bit2 :}  stalkers-stay state!  fiona hold  fiona wait-move  fiona -90 turn  written-msg say
+    {: msg bit bit2 :}  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona -90 turn  written-msg say
     15 screen:to-dim fade wait-fade  msg say  15 screen:from-dim fade wait-fade
     bit items:item-bit? 0=  bit2 items:item-bit? 0= or if
         fiona hand-to-mouth-anim start-anim  wonder-msg say  fiona wait-anim

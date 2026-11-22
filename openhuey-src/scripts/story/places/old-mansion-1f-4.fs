@@ -49,7 +49,7 @@ create holes  $77 , $48 , $75 , $46 , $52 , $81 , 2 , $61 , $70 , $3E , $39 , 0 
 : then-bursts ( -- )  om1f-4-flag1 fact? 0= if  bursts  then  stalkers-stay state-off ;
 
 \ ---- the transmuter: its plaque; the White Godstone put in, the Red Godstone out; else nothing ----
-: at-transmuter ( -- )  stalkers-stay state!  fiona hold  fiona wait-move  fiona $E 20 38e 18e walk-to ;
+: at-transmuter ( -- )  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona $E 20 38e 18e walk-to ;
 : the-transmuter ( -- )
     at-transmuter
     plaque-read @ if
@@ -80,7 +80,7 @@ create holes  $77 , $48 , $75 , $46 , $52 , $81 , 2 , $61 , $70 , $3E , $39 , 0 
 : empty ( -- )  fiona look-close-anim start-anim  40 frames  empty-msg say  fiona wait-anim ;
 : incubator-at ( F: x z -- )  fiona wait-move  fiona turn-to-xz  inside ;
 : close-up ( tri deg cam F: x z -- )   \ (placed before it, its own camera; the player's after)
-    {: tri deg cam F: x z :}  stalkers-stay state!  fiona hold  fiona wait-move  4 frames
+    {: tri deg cam F: x z :}  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  4 frames
     fiona tri deg x z place-at  fiona cam -1 camera-set  4 frames  inside  4 frames  stalkers-stay state-off ;
 : by-the-door ( -- )  $62 173 3 6.25e -23.4e close-up  2 2 player-camera ;
 : second ( -- )  -20e -40e incubator-at ;

@@ -50,7 +50,7 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
 
 \ ---- the things to search: a spot of its own, its shot; the question ----
 : spot-at ( tri deg F: x z -- )
-    {: tri deg F: x z :}  stalkers-stay state!  fiona hold  fiona wait-move  4 frames  world-frozen state!  fiona tri deg x z place-at ;
+    {: tri deg F: x z :}  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  4 frames  world-frozen state!  fiona tri deg x z place-at ;
 : asks ( msg F: dist pitch yaw rise -- yes? )  1 shot  16 frames  ask  8 frames  0= ;
 : unasked ( -- )  world-frozen state-off  shot-off ;
 : something-moved ( -- )   \ (back from a scene: "Did something just move?" - the door unlocked again)
@@ -110,7 +110,7 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
 \ ---- the locked door tried: the trap's end ----
 : shadowless ( -- )  3 wait-shot  0 true no-shadow  4 wait-shot  0 false no-shadow ;   \ (her shadow off through two shots)
 : trap-shut ( -- )
-    capture-no-end state!  no-pause state!  stalkers-stay state!  fiona hold  fiona trap-door to-door
+    capture-no-end state!  no-pause state!  stalkers-stay state!  fiona hold  fiona true aside  fiona trap-door to-door
     15 screen:to-black-2 with-music or fade  7 scenes:keyed-movie 6 load-scene  wait-fade
     hewie let-go  stalker let-go  ['] shadowless along-scene
     $10 $28 movie-key  panic-eased  if  -1 run-through  then
@@ -127,7 +127,7 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
     stalker room-motion 3 + start-anim  7 frames  0 room-bank stalker sound-by  stalker wait-anim
     begin  burst-step @ 2 < while  yield  repeat  stalker false noclip ;
 : she-was-inside ( -- )
-    stalkers-stay state!  force-followed state!  fiona hold  fiona $D motions-for  fiona wait-move
+    stalkers-stay state!  force-followed state!  fiona hold  fiona true aside  fiona $D motions-for  fiona wait-move
     fiona $7B 180 16.59e -25.02e walk-to
     partner activate  old-mansion-b1-5 7 stalker-to  stalker-present  stalker 0 0 camera-set  his-own-time
     stalker false shown  stalker true hush  fiona use-motions  0 burst-step !  ['] bursts-out start drop

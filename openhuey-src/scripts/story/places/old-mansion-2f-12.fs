@@ -71,7 +71,7 @@ other-vase $80303030 0 $C shard-look  other-vase 0.812e 0.687e 0.187e 0.312e sha
     unlock-sound common-bank 318e 12e -80e sound-there  far-door unlock  waterway-door unlock  om2f-12-flag1 fact!
     30 frames  unlocked-sound room-bank fiona sound-by  90 frames  fiona -1 look-at  yield ;
 : the-pipe ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     om2f-12-flag1 fact? if  drain-msg say  stalkers-stay state-off exit  then
     pipe-msg yes? if
         fiona $4B 180 293.136e -95e place-at  world-frozen state!  1 5e 0e 0e 2e shot  stick-msg show
@@ -83,7 +83,7 @@ other-vase $80303030 0 $C shard-look  other-vase 0.812e 0.687e 0.187e 0.312e sha
     stalkers-stay state-off ;
 
 \ ---- the synthesizer: its plaque; the Silver Ore put in, the White Godstone out; else nothing ----
-: at-synthesizer ( -- )  stalkers-stay state!  fiona hold  fiona wait-move  fiona $7F -90 -103e -75e walk-to ;
+: at-synthesizer ( -- )  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona $7F -90 -103e -75e walk-to ;
 : the-synthesizer ( -- )
     at-synthesizer
     plaque-read @ if

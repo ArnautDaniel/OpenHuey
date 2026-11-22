@@ -57,7 +57,7 @@ own: locked-remarked  own: box-seen  own: fire-noticed  own: sounds-on  own: pla
 
 \ ---- a plate in a low head's mouth ----
 : in-the-mouth ( F: x z -- )   \ (turned to it, the plate pushed in; its sounds 1 further in)
-    {: F: x z :}  stalkers-stay state!  fiona hold  fiona wait-move  fiona x z turn-to-xz
+    {: F: x z :}  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona x z turn-to-xz
     fiona reach-out-anim play  plate-sound room-bank x 10e z 1e f- sound-there  16 frames  fiona reach-back-anim play ;
 : low-head ( k fact F: x z -- )
     {: k f F: x z :}  word-right-now @ plate-right !  x z in-the-mouth
@@ -83,7 +83,7 @@ own: locked-remarked  own: box-seen  own: fire-noticed  own: sounds-on  own: pla
     hewie activate  old-mansion-1f-12 163 0 hewie-to  hewie $A3 -45 -22.21e -11.73e place-at  50 trust+
     false flames  fire-sound room-bank stop-sound  om1f-12-flag1 fact! ;
 : with-hewie ( -- )
-    word-right-now @ plate-right !  stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade
+    word-right-now @ plate-right !  stalkers-stay state!  fiona hold  fiona true aside  15 screen:to-black-2 with-music or fade
     2 hide-part  smoke-fx effect-off  high-scene  wait-fade
     world-held state!  fiona 0 idle  fiona $11E 180 -5.7e 17e place-at  hewie $A3 -45 -22.21e -11.73e place-at  camera-restart
     plate-right @ if  frozen  else  2 show-part  5 show-part  effects:spiral-smoke smoke-fx effect!  then
@@ -125,14 +125,14 @@ own: locked-remarked  own: box-seen  own: fire-noticed  own: sounds-on  own: pla
     world-frozen state!  fiona hold  fiona $14E 180 -38e -2.5e place-at  1 10e -10e 0e 0e shot  4 frames
     om1f-12-flag4 fact? if  trick-msg  else  statue-msg  then  say  shot-off  world-frozen state-off ;
 : the-pillar ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     om1f-12-flag1 fact? 0= if  fiona 38e -10e turn-to-xz  fiona turn-round-anim play  flame-msg say  stalkers-stay state-off exit  then
     ice-msg yes? if
         15 screen:to-black-2 fade wait-fade  climb-sound room-bank fiona sound-by  fiona $10C 180 place-on-tri
         0 0 player-camera  camera-restart  2 prepare-exit  90 frames  2 map-page  15 screen:from-black fade wait-fade
     then  stalkers-stay state-off ;
 : climbs-down ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     climb-down-msg yes? if
         15 screen:to-black-2 fade wait-fade  climb-sound room-bank fiona sound-by  fiona $141 0 place-on-tri
         1 1 player-camera  camera-restart  1 prepare-exit  90 frames  1 map-page  15 screen:from-black fade wait-fade

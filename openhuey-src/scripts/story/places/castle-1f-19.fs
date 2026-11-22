@@ -50,13 +50,13 @@ $12C constant hole-tri   $47 constant before-hole-tri   $2F constant after-ambus
 : hewie-barks ( -- )  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move ;
 : into-hole ( -- )
     hewie hold  hewie-barks
-    hewie before-hole-tri 0 -1 walk-path-move -12e -125e go-to
+    hewie before-hole-tri 0 -1 walk-path-move -12e -125e go-to  hewie true aside   \ (the scripts' 0x21 from here: its end lets it go)
     hole-group solid-floor floor-off  hole-group keeps-fiona-off keeps-pursuers-off or floor-on
     hewie hole-tri 0 $204 walk-move -12e -106e go-to
     3600 2 hewie send hewie-yelp ;
 : out-of-hole ( -- )
-    hewie hold  hewie before-hole-tri 180 $204 walk-move -12e -125e go-to
-    hewie -1 idle  hewie wait-anim  0 0 hewie send hewie-yelp  0 0 hewie-do
+    hewie hold  hewie true aside  hewie before-hole-tri 180 $204 walk-move -12e -125e go-to
+    hewie -1 idle  hewie wait-anim  0 0 hewie send hewie-yelp  0 0 hewie-do  hewie false aside
     hole-group keeps-fiona-off keeps-pursuers-off or floor-off  hole-group solid-floor floor-on ;
 
 \ ---- the ambush: Debilitas by the hole, Hewie in it - he springs out at him (a scene) ----
@@ -66,14 +66,14 @@ $12C constant hole-tri   $47 constant before-hole-tri   $2F constant after-ambus
     hewie $80808080 tint
     begin  cutscene-frame $1E3 < while  yield  repeat  room-light 0.5e shadows-longer ;
 : ambush ( -- )
-    fiona hold  hewie hold  stalker hold  stalkers-stay state!
+    fiona hold  hewie hold  stalker hold  stalkers-stay state!  fiona true aside  hewie true aside
     15 screen:to-black-2 with-music or fade  no-track 1e background  fiona wait-move
     ambush-movie scenes:keyed-movie ambush-cutscene load-scene  wait-fade
     fiona false shown  force-calm state!  yield  force-calm state-off
     ['] silhouette along-scene  $10 $28 movie-key  panic-eased  if  -1 run-scene  then
     stalker let-go  3 summon-take  fiona 0 idle  fiona true shown  hewie $80808080 tint  room-light light-back
     0 0 hewie send hewie-yelp  0 0 hewie-do  hewie after-ambush-tri -90 place-on-tri  hewie-timid state-off
-    hole-group keeps-fiona-off keeps-pursuers-off or floor-off  hole-group solid-floor floor-on  hewie let-go
+    hole-group keeps-fiona-off keeps-pursuers-off or floor-off  hole-group solid-floor floor-on  hewie false aside  hewie let-go
     passage-track 1e background  15 fade-in
     ambush-file give-file  ambush-seen resident-flag-set  5 trust+  ambush-other-file give-file  stalkers-stay state-off ;
 : ambush? ( -- flag )   \ (Debilitas up, by the hole; she free, or half hidden; not panicking)
@@ -84,7 +84,7 @@ $12C constant hole-tri   $47 constant before-hole-tri   $2F constant after-ambus
 
 \ ---- the Rubrum Medallion across the water: her "go there" toward it - Hewie fetches it ----
 : fetches ( -- )
-    hewie hold  hewie-barks
+    hewie hold  hewie true aside  hewie-barks
     hewie shore-tri 100 $204 walk-move 39.008e -266.892e go-to  hewie sit-a-while-anim 10 play-blend
     hewie true noclip  rouse-sound room-bank hewie sound-by
     hewie $13F 100 $204 walk-move 68.224e -274.752e go-to  hewie sit-a-while-anim 10 play-blend
@@ -93,9 +93,9 @@ $12C constant hole-tri   $47 constant before-hole-tri   $2F constant after-ambus
         rubrum-medallion c1f-19-rubrum-medallion -1 takes-up
     then
     rouse-sound room-bank hewie sound-by
-    hewie shore-tri -80 -1 walk-path-move 39.008e -266.892e go-to  hewie false noclip  stalkers-stay state-off ;
+    hewie shore-tri -80 -1 walk-path-move 39.008e -266.892e go-to  hewie false noclip  hewie false aside  stalkers-stay state-off ;
 : sends-him ( -- )
-    fiona hold  stalkers-stay state!  fiona wait-move
+    fiona hold  stalkers-stay state!  fiona true aside  fiona wait-move
     hewie held? if  stalkers-stay state-off  else  ['] fetches start drop  then
     fiona go-there-gesture-anim start-anim  fiona 1 wait-mark  go-there-call common-bank fiona sound-by
     fiona wait-anim  fiona -1 idle  7 frames ;

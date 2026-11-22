@@ -29,7 +29,7 @@ $16 constant dials-area   $17 constant wall-area   $28 constant came-sound   $72
 \ ---- the dials (their steps not known: the board down at once) ----
 : dial-step ( -- )  0 board-up ! ;   \ (the original's Room5A_Cmd00 1 / 2 - a stub)
 : the-dials ( -- )
-    stalkers-stay state!  fiona wait-move
+    stalkers-stay state!  fiona true aside  fiona wait-move
     dials-msg yes? if
         fiona $D2 180 293.136e -95e place-at  world-frozen state!  1 5e 0e 0e 2e shot
         board-msg show  -1 board-up !
@@ -42,8 +42,8 @@ $16 constant dials-area   $17 constant wall-area   $28 constant came-sound   $72
     then
     stalkers-stay state-off ;
 : the-wall ( -- )
-    fiona wait-move  fiona -115e -75e turn-to-xz
-    first-remarked @ if  wall-2-msg  0  else  wall-msg  -1  then  first-remarked !  say ;
+    fiona true aside  fiona wait-move  fiona -115e -75e turn-to-xz
+    first-remarked @ if  wall-2-msg  0  else  wall-msg  -1  then  first-remarked !  say  fiona false aside ;
 
 \ ---- every frame ----
 create entries  6 , -1 ,  3 , 2 ,  3 , 2 ,  2 , 1 ,   \ (by exit 0 .. 3: the camera)

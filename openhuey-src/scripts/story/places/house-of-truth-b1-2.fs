@@ -35,7 +35,7 @@ create ahead  2 , 0 ,  3 , 1 ,   \ (area, exit loaded ahead)
 
 \ ---- the doors ----
 : to-lorenzo ( -- )   \ (the first time through: to B1-1, by the forced way)
-    stalkers-stay state!  fiona hold  fiona 1 to-door
+    stalkers-stay state!  fiona hold  fiona true aside  fiona 1 to-door
     15 screen:to-black-2 with-music or fade  wait-fade  scene-locked state!
     1 prepare-exit  stalkers-stay state-off  forced-exit take-exit ;
 : tries-it ( -- )  0 true locked-msg tries-locked ;

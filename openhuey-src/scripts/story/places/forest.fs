@@ -65,7 +65,7 @@ variable bush-floor   \ (its floor's flag while she's in: no one stands there - 
     fiona-hidden state-off  fiona follow  stalkers-stay state!
     fiona stalker look-at  yield  fiona hauled-anim $14 play-blend  fiona -1 look-at  yield  out-of-bush ;
 : in-the-bush ( -- )
-    fiona hold  stalkers-stay state!  bush-group bush-floor @ floor-on  0 came-while-hidden !  fiona true noclip  0 found-her !
+    fiona hold  stalkers-stay state!  fiona true aside  bush-group bush-floor @ floor-on  0 came-while-hidden !  fiona true noclip  0 found-her !
     fiona wait-move  fiona crouch-down-anim play  fiona crouching-anim start-anim
     fiona-hidden state!  stalkers-stay state-off  0 avoid-prompt
     begin

@@ -29,7 +29,7 @@ create flames  -42.5e f, 45.4e f, -36.9e f,   -72.4e f, 17.2e f, -7.1e f,   -42.
 \ ---- the first time she goes on from the hall: the scene ----
 : hall-scene ( -- )  hall-movie scenes:unseen-movie hall-cutscene load-scene drop  panic-eased  -1 run-scene ;
 : in-the-hall ( -- )
-    stalkers-stay state!  fiona hold  stalker let-go  0 summon-take
+    stalkers-stay state!  fiona hold  fiona true aside  stalker let-go  0 summon-take
     15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
     hewie-in? dup hewie-sent-off !  if  hewie let-go  hewie false shown  then
     hall-scene

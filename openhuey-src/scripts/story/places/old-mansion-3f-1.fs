@@ -72,7 +72,7 @@ create box-ends  $20A , $4D8 ,  $153 , $415 ,  $15C , $41E ,  $213 , $4DE ,
     scene-figure 3 figure-in  4 cutscene-keep-model  ['] intro-looks along-scene  2 show-part
     panic-eased  if  0 run-scene  then  2 hide-part  3 figure-out ;
 : stepped-in-as ( daniella? -- )
-    {: dan :}  stalker-unloaded  stalkers-stay state!  fiona hold  hewie-no-attack state!  stalkers-blind state!  force-calm state!
+    {: dan :}  stalker-unloaded  stalkers-stay state!  fiona hold  fiona true aside  hewie-no-attack state!  stalkers-blind state!  force-calm state!
     dan if  35 stalker-ready  om3f-1-flag3 fact-off  else  36 stalker-ready  om3f-1-flag3 fact!  then
     summoner-on state-off  yield
     15 screen:to-black-2 with-music or fade  world-held state!
@@ -103,7 +103,7 @@ create box-ends  $20A , $4D8 ,  $153 , $415 ,  $15C , $41E ,  $213 , $4DE ,
     fiona $1E6 27 -22.22e -47.34e place-at  fiona 0 idle  hewie $30 21 -14.71e -55.27e place-at  $29 0 hewie-do
     2 2 player-camera  camera-restart  0 solid-floor floor-on  glow-off  fiona follow ;
 : glass-gives ( -- )
-    15 screen:to-black fade  stalkers-stay state!  hewie-no-attack state!  stalkers-blind state!  fiona hold  wait-fade
+    15 screen:to-black fade  stalkers-stay state!  hewie-no-attack state!  stalkers-blind state!  fiona hold  fiona true aside  wait-fade
     world-held state!  yield  0 stage !  ['] her-fall start drop  begin  stage @ 1 < while  yield  repeat
     fiona false shown  hewie let-go  no-track 1e background  fiona 3 -1 camera-set  0 panic-to
     2 stage !  15 screen:from-black fade  begin  stage @ 3 < while  yield  repeat  wait-fade

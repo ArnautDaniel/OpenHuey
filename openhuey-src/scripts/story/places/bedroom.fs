@@ -139,7 +139,7 @@ $40 constant glass-strength
 
 \ the chest of clothes: her costumes (and his coats), once she has them (the front garden's $AE)
 : chest-costumes ( -- )
-    stalkers-stay state!  fiona wait-move  fiona 180 turn  20e 10e 0e 0e looking
+    stalkers-stay state!  fiona true aside  fiona wait-move  fiona 180 turn  20e 10e 0e 0e looking
     chest-change-msg yes? if
         costume-menu open-subscreen  look-done  wrong-sound clothes-changed
         15 screen:from-black with-music or fade wait-fade
@@ -153,13 +153,13 @@ $40 constant glass-strength
 8 constant hiding-motions   9 constant hewie-hiding-motions
 3 constant under-bed-camera
 : hewie-hides ( -- )   \ (Hewie under the other bed while she hides)
-    hewie hold  hewie hewie-hiding-motions motions-for  hewie wait-move
+    hewie hold  hewie true aside  hewie hewie-hiding-motions motions-for  hewie wait-move
     hewie walk-path-move $88 -1  $88 18.5e -37.5e floor-at  180 deg>yaw  move  hewie wait-move
     hewie use-motions  -1 hewie-in-place !
     begin  hiding-step @ 1 < while  yield  repeat
     hewie true noclip  hewie 0 hid-motion 5 play-blend  hewie 1 hid-motion 10 start-blend  hewie false noclip  hewie-hidden state!
     begin  fiona held?  hiding-step @ 2 <> and while  yield  repeat
-    hewie-hidden state-off  hewie true noclip  hewie 2 hid-motion 5 start-blend8  hewie wait-anim  hewie false noclip ;
+    hewie-hidden state-off  hewie true noclip  hewie 2 hid-motion 5 start-blend8  hewie wait-anim  hewie false noclip  hewie false aside ;
 : crawl-under ( -- )
     fiona hiding-motions motions-for  fiona wait-move
     hewie-along @ if
@@ -185,7 +185,7 @@ $40 constant glass-strength
     again ;
 : hide-under-bed ( under-xt out-xt -- )   \ (under-xt run once she's under it)
     {: under-xt out-xt :}
-    stalkers-stay state!  0 came-while-hidden !  0 hiding-step !  0 hewie-along !  0 hewie-in-place !
+    stalkers-stay state!  fiona true aside  0 came-while-hidden !  0 hiding-step !  0 hewie-along !  0 hewie-in-place !
     hewie-in? if   \ (Hewie, free and near her: under the other bed)
         hewie held? 0=  hewie-near-now @ and  fiona body-at hewie body-at vec-dist 50e f<= and if
             ['] hewie-hides start drop  -1 hewie-along !

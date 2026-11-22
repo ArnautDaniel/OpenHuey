@@ -106,14 +106,14 @@ create stage-tracks   $1E , $1F , 0 , $20 , $21 , $2E , $22 , $23 , $24 , $25 , 
 \ ---- the hiding place behind the cabinet (Hewie hidden beside her if he is by her) ----
 : cabinet ( op -- )  >r  3 1 r@ object  4 1 r> object ;   \ (its two doors' animation)
 : hewie-hides ( -- )
-    hewie hold  hewie $153 -90 -1 walk-path-move 26.2e -63.6e go-to  hewie use-motions  -1 hewie-placed !
+    hewie hold  hewie true aside  hewie $153 -90 -1 walk-path-move 26.2e -63.6e go-to  hewie use-motions  -1 hewie-placed !
     begin  hiding-step @ 1 < while  yield  repeat
     hewie true noclip  hewie 1 room-motion + 5 start-blend8  hewie wait-anim  hewie false noclip  hewie-hidden state!
     begin  fiona held?  hiding-step @ 2 < and while  yield  repeat
-    hewie-hidden state-off  hewie true noclip  hewie 2 room-motion + 0 play-blend  hewie false noclip ;
+    hewie-hidden state-off  hewie true noclip  hewie 2 room-motion + 0 play-blend  hewie false noclip  hewie false aside ;
 : hides ( -- )
     hid @ 0= if  busy-stage stage !  then
-    stalkers-stay state!  fiona wait-move  0 hiding-step !  0 hewie-along !  0 hewie-placed !
+    stalkers-stay state!  fiona true aside  fiona wait-move  0 hiding-step !  0 hewie-along !  0 hewie-placed !
     hewie held? 0=  hewie-near-now @ and  fiona hewie 30e near-her? and if
         -1 hewie-along !  hewie his-motions motions-for  ['] hewie-hides hewie start-holding drop
     then
@@ -133,12 +133,12 @@ create stage-tracks   $1E , $1F , 0 , $20 , $21 , $2E , $22 , $23 , $24 , $25 , 
 : come-scene ( -- )  come-movie scenes:unseen-movie come-cutscene load-scene drop  panic-eased  come-msg run-scene ;
 : come-to-me ( -- )
     busy-stage stage !  ['] taunts stop-doing  stalker let-go  0 summon-take
-    scene-locked state!  stalkers-stay state!  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
+    scene-locked state!  stalkers-stay state!  fiona true aside  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
     come-scene  fiona $1A -21 0.49e -36.88e place-at  0 0 player-camera  camera-restart
     -1 door-opened !  slammed-door true open-mark  slammed-door unlock  doors-redone
     15 fade-in  come-seen resident-flag-set  stalkers-stay state-off  scene-locked state-off ;
 : goes-on ( -- )   \ (after it, her step through the door: on by the forced way)
-    stalkers-stay state!  house-of-truth-b1-2 preload  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
+    stalkers-stay state!  fiona true aside  house-of-truth-b1-2 preload  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
     world-held state!  scene-locked state!  forced-exit take-exit ;
 : replayed ( -- )  fiona hold  flame-fx 0 79.6e 11.1e -39.7e flame-at  come-scene  replay-over ;
 

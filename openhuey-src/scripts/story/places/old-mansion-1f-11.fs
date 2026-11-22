@@ -51,7 +51,7 @@ $13 constant mirror-area   $26 constant scene-figure   3 constant figure-slot
         frames-in @ last <  while  1 frames-in +!
     repeat  fiona wait-anim ;
 : the-curtain ( -- )
-    fiona hold  -1 drawing !  fiona her-motions motions-for  fiona wait-move
+    fiona hold  fiona true aside  -1 drawing !  fiona her-motions motions-for  fiona wait-move
     fiona $56 0 -40e 54.64e walk-to  fiona use-motions  begin  room-sounds-in? 0= while  yield  repeat
     om1f-11-flag1 fact? 0= if
         glass  room-motion 30 12 30 1 0 18e pulls  drawn-back  om1f-11-flag1 fact!
@@ -83,7 +83,7 @@ $13 constant mirror-area   $26 constant scene-figure   3 constant figure-slot
 : floor-ahead ( -- )  0 collapsed ;   : floor-behind ( -- )  180 collapsed ;
 : the-water ( -- )
     water-remarked @ 0= if  fiona wait-move  fiona -90 turn  water-msg say  -1 water-remarked !  exit  then
-    stalkers-stay state!  fiona hold  fiona wait-move  fiona -90 turn
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona -90 turn
     4 frames  4 4 player-camera  far-door-msg say  4 frames  1 1 player-camera  stalkers-stay state-off ;
 : take-medallion ( -- )  album-medallion om1f-11-album-medallion medallion-fx 13.96e -5.34e picks-up ;
 : medallion-sniffed ( -- )  om1f-11-album-medallion-found om1f-11-album-medallion medallion-fx  13.96e 51e -5.34e  hewie-finds ;

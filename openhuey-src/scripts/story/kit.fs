@@ -255,6 +255,8 @@ create mv-at /vec allot
     {: id tri | F: x F: y F: z :}  tri tri-center to z to y to x
     x f>cell y f>cell z f>cell id body-yaw f>cell  id send place  tri id send on-triangle ;
 : noclip ( id on -- )  swap send noclip ;   \ (through blocked floor)
+: aside ( id on -- )  swap send aside ;   \ (the scripts' 0x21 self-scripted, +0x2D: Fiona not to be gone for by stalkers or creatures - her idle
+    \ clears it once let go; Hewie out of her reach till turned off)
 
 \ ---- the message window ----
 : window ( -- id )  window-id ;
@@ -532,7 +534,7 @@ $8024 constant clock-alone-msg    \ (shown when Hewie can't reach her: a system 
 1 constant saving-menu
 : hewie-reachable? ( -- flag )  hewie-in? 0=  hewie-reach-now @ or ;
 : clock-asks ( msg -- )
-    stalkers-stay state!  fiona wait-move
+    stalkers-stay state!  fiona true aside  fiona wait-move
     hewie-reachable? if
         hewie-in? if  hewie hold  then
         yes? if  saving-menu open-subscreen  then
@@ -1255,7 +1257,7 @@ create replay-acts
 $84 constant calmed-sound   $40A8 constant recovery-doc-msg   $A8 constant recovery-doc
 : recovery-point ( msg file sound tri deg F: x z -- )   \ (msg: her question as she reaches it)
     {: msg file snd tri deg F: x z :}
-    stalkers-stay state!  fiona file motions-for  fiona wait-move
+    stalkers-stay state!  fiona true aside  fiona file motions-for  fiona wait-move
     fiona tri deg x z walk-to  1 25e 10e 0e 0e shot  msg say
     fiona use-motions  fiona room-motion 4 + 10 start-blend  22 frames  snd room-bank fiona sound-by  fiona wait-anim
     $E4 ease-panic  fiona send calm-reset  3 avoid-prompt
@@ -1290,7 +1292,7 @@ variable hide-shriek   -1 hide-shriek !   \ (the hiding place next: that sound, 
     hewie-played? if  played-gesture -1 <>  else  circle button-pressed?  then ;
 : hides-in ( file tri deg cam F: x z -- )   \ (her motions' file; where she slips in from, facing it; the
     {: file tri deg cam F: x z :}           \ room's camera set while she's in, -1 hers kept)
-    stalkers-stay state!  0 came-while-hidden !  fiona file motions-for  fiona wait-move  fiona use-motions
+    stalkers-stay state!  0 came-while-hidden !  fiona true aside  fiona file motions-for  fiona wait-move  fiona use-motions
     fiona walk-anim-move 4 hid-motion 5  tri x z floor-at  deg deg>yaw  move  fiona wait-move
     fiona true noclip  fiona.sounds:slide-sound common-bank fiona sound-by  fiona 5 hid-motion 10 start-blend8  fiona wait-anim
     fiona 1 hid-motion 10 start-blend  fiona false noclip
@@ -1381,7 +1383,7 @@ variable cab-searched
     begin  cab-stage @ 2 = 0= while  yield  repeat
     cab-out  2 avoid-prompt  fiona true noclip  fiona room-motion 3 + 0 play-blend  fiona false noclip  cabinet-shut ;
 : cab-hewie-hides ( -- )
-    hewie hold  hewie 3 motions-for  hewie cab @ cb.dog-tri @ cab @ cb.dog-deg @ -1 walk-path-move  cab @ cb.dog-x f@ cab @ cb.dog-z f@ go-to
+    hewie hold  hewie true aside  hewie 3 motions-for  hewie cab @ cb.dog-tri @ cab @ cb.dog-deg @ -1 walk-path-move  cab @ cb.dog-x f@ cab @ cb.dog-z f@ go-to
     hewie use-motions  -1 cab-dog-in !  begin  cab-steps @ 0= while  yield  repeat
     hewie true noclip  hewie room-motion cab-closed @ 0= if  1+  then  5 start-blend8  hewie wait-anim  hewie false noclip
     hewie-hidden state!
@@ -1389,7 +1391,7 @@ variable cab-searched
     hewie-hidden state-off  hewie true noclip
     cab-burst @ if  hewie room-motion 4 + 0 start-blend  7 frames  cab-open-sound room-bank fiona sound-by  hewie wait-anim
     else  hewie room-motion  cab-stage @ 0= if  2 +  else  3 +  then  0 play-blend  then
-    hewie false noclip ;
+    hewie false noclip  hewie false aside ;
 : cab-goes-in ( -- )
     cab @ cb.fact @ fact? if
         fiona room-motion 5 start-blend8  5 frames  0 hide-part  cab-door object-show  cab-door 1+ object-show  0 cab-doors
@@ -1414,7 +1416,7 @@ variable cab-searched
     again ;
 : hides-in-cabinet ( cb -- )   \ (a place's doing: in it, lying low)
     {: a :}  a cab !
-    stalkers-stay state!  0 came-while-hidden !  fiona hold  fiona wait-move
+    stalkers-stay state!  0 came-while-hidden !  fiona hold  fiona true aside  fiona wait-move
     0 cab-stage !  0 cab-held !  a cb.fact @ fact? cab-closed !  0 cab-steps !  0 cab-dog !  0 cab-dog-in !  0 cab-burst !
     hewie 30e near-her?  hewie held? 0= and  hewie-near-now @ and if
         -1 cab-dog !  ['] cab-hewie-hides start drop
@@ -1574,9 +1576,9 @@ end-structure
     fiona front if  fiona.anims:rattle-front-anim  else  fiona.anims:rattle-behind-anim  then  play
     fiona -1 idle  7 frames  msg say ;
 : key-turns ( exit door item anim sound bank -- )
-    {: ex door it anim snd bank :}  stalkers-stay state!  fiona hold  fiona ex to-door
+    {: ex door it anim snd bank :}  stalkers-stay state!  fiona hold  fiona true aside  fiona ex to-door
     fiona anim start-anim  20 frames  snd bank fiona sound-by
-    it item-named  it spend  door unlock  fiona 20 idle  20 frames  used-msg say  stalkers-stay state-off ;
+    it item-named  it spend  door unlock  fiona 20 idle  20 frames  used-msg say  stalkers-stay state-off  fiona false aside ;
 \ a door locked from this side (Progress_CharRequests' request $80000002: she in an exit's door
 \ area, its door locked - the room may let her unlock it, else her own try: locked from the other side)
 $72 constant unlock-sound   $8008 constant unlocked-msg   \ (the common bank's; "You unlocked the door.")

@@ -73,7 +73,7 @@ create runs  $D8 , 89 ,  4 , 89 ,  $6A , -44 ,  $3F , -151 ,  $1B , 111 ,  $FA ,
 : solved-scene ( -- )
     solved-movie scenes:keyed-movie solved-cutscene load-scene drop ;
 : solved ( -- )
-    stalkers-stay state!  fiona wait-move  no-track 1e background
+    stalkers-stay state!  fiona true aside  fiona wait-move  no-track 1e background
     15 screen:to-black-2 with-music or fade  solved-scene  wait-fade
     things-id send clear-things  fiona -1 idle  water-tower-7f-2 preload  $10 $FF movie-key
     ['] glows-out along-scene  panic-eased  -1 run-scene
@@ -123,7 +123,7 @@ create runs  $D8 , 89 ,  4 , 89 ,  $6A , -44 ,  $3F , -151 ,  $1B , 111 ,  $FA ,
 
 \ ---- what she may do or say here ----
 : the-inscription ( -- )
-    stalkers-stay state!  fiona wait-move  fiona 0e -105e turn-to-xz  fiona look-close-anim start-anim  40 frames
+    stalkers-stay state!  fiona true aside  fiona wait-move  fiona 0e -105e turn-to-xz  fiona look-close-anim start-anim  40 frames
     15 screen:to-dim fade wait-fade  inscription-msg say  15 screen:from-dim fade wait-fade  fiona wait-anim
     stalkers-stay state-off ;
 : spots ( -- )

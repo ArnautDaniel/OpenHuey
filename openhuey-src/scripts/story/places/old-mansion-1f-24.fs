@@ -37,13 +37,13 @@ the-vase 0 frees-floor  the-vase $B4 noise-from
     stalker use-motions  0 turning !  hands-empty  partner false hush  scrubs ;
 : turns ( -- )  -1 turning !  begin  turning @ while  yield  repeat ;
 : spoken-to ( -- )
-    fiona hold  hewie-no-attack state!  fiona wait-move  turns
+    fiona hold  fiona true aside  hewie-no-attack state!  fiona wait-move  turns
     hebels-perfume items:items-of 0= if
         presence-sound room-bank stalker sound-by  princess-msg show  30 frames  wait-closed
         hebels-perfume item-named  hebels-perfume 1 give-item  hebels-perfume show-item-tab  fanfare  obtained-2-msg say
         got-hebels-perfume fact!
     else  presence-2-sound room-bank stalker sound-by  cleaning-msg show  90 frames  wait-closed  then
-    turns  hewie-no-attack state-off ;
+    turns  fiona false aside  hewie-no-attack state-off ;
 
 \ ---- as she comes in ----
 : jerky-shows ( -- )  om1f-24-beef-jerky fact? 0= if  jerky-fx -97.5e 1e 1e flicker-at  then ;

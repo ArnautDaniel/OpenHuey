@@ -78,7 +78,7 @@ create belt-cues  $F , $12 , $13 , $14 , $17 , $28 , $29 , $2A , $2B , $2C , $31
     let-in-movie scenes:unseen-movie let-in-cutscene load-scene drop  ['] let-in-cues along-scene
     panic-eased  -1 run-scene  ['] let-in-cues stop-doing ;
 : lets-in ( -- )
-    force-followed state-off  scene-locked state!  stalkers-stay state!  fiona hold  under-gone  yield
+    force-followed state-off  scene-locked state!  stalkers-stay state!  fiona hold  fiona true aside  under-gone  yield
     15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
     hewie-in? if  hewie let-go  then  stalker let-go  0 summon-take
     let-in-scene
@@ -104,7 +104,7 @@ create belt-cues  $F , $12 , $13 , $14 , $17 , $28 , $29 , $2A , $2B , $2C , $31
 : crushed-scene ( -- )
     crushed-movie scenes:keyed-movie crushed-cutscene load-scene drop  $64 $FF movie-key  panic-eased  -1 run-scene ;
 : crushed ( -- )
-    scene-locked state!  fiona hold  under-gone  yield  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
+    scene-locked state!  fiona hold  fiona true aside  under-gone  yield  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
     run-down-sound room-bank stop-sound  ['] runs stop-doing  hewie-in? if  hewie let-go  then  stalker let-go  0 summon-take
     crushed-scene  stalker let-go  3 summon-take  summoner-on state-off  study-door unlock
     fiona $7A 18 -10.04e 37.76e place-at  hewie activate  hewie $9D 18 6.01e 27.57e place-at  50 trust+
@@ -112,7 +112,7 @@ create belt-cues  $F , $12 , $13 , $14 , $17 , $28 , $29 , $2A , $2B , $2C , $31
     sol-fx 0e -2.2e 65e flicker-at  belt-part hide-part  1 prepare-exit  15 fade-in  $48 resident-flag-set
     0 keeps-hewie-off floor-off  scene-locked state-off  scene-5-pending state-off ;
 : she-caught ( -- )
-    capture-no-end state!  no-pause state!  scene-locked state!  fiona hold  under-gone  yield
+    capture-no-end state!  no-pause state!  scene-locked state!  fiona hold  fiona true aside  under-gone  yield
     15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
     ['] runs stop-doing  hewie-in? if  hewie let-go  then  stalker let-go  0 summon-take
     caught-movie scenes:unseen-movie caught-cutscene load-scene drop  panic-eased  -1 run-through
@@ -151,7 +151,7 @@ create belt-cues  $F , $12 , $13 , $14 , $17 , $28 , $29 , $2A , $2B , $2C , $31
     demolisher-remarked @ 0= if  demolisher-msg say  -1 demolisher-remarked ! exit  then
     fiona hand-to-mouth-anim 10 play-blend  not-running-msg say ;
 : takes-sol ( -- )
-    fiona hold  fiona wait-move  fiona 0e 65e turn-to-xz  fiona pick-up-anim play  4 frames
+    fiona hold  fiona true aside  fiona wait-move  fiona 0e 65e turn-to-xz  fiona pick-up-anim play  4 frames
     sol-fx effect-off  sol-key item-named  sol-key 1 give-item  sol-key show-item-tab  fanfare  obtained-2-msg say
     fiona up-from-pick-anim play  got-sol-key fact! ;
 : spots ( -- )

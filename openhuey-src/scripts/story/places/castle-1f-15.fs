@@ -59,13 +59,13 @@ $8278 constant saved-file   $8279 constant failed-file
 
 \ ---- the hole: down it if she will; dropped in from above, she lands ----
 : the-hole ( -- )
-    stalkers-stay state!  fiona wait-move  fiona look-close-anim 10 play-blend
+    stalkers-stay state!  fiona true aside  fiona wait-move  fiona look-close-anim 10 play-blend
     hole-msg ask 0= if
         15 screen:to-black fade  wait-fade  slide-sound common-bank fiona sound-by
         world-held state!  hole-exit take-exit
     else  stalkers-stay state-off  then ;
 : lands ( -- )
-    fiona hold  camera-restart  slide-sound common-bank fiona sound-by  3 map-page
+    fiona hold  fiona true aside  camera-restart  slide-sound common-bank fiona sound-by  3 map-page
     15 screen:from-black fade  wait-fade  stalkers-stay state-off ;
 
 \ ---- chased along the balcony: the encounter ----
@@ -74,7 +74,7 @@ $8278 constant saved-file   $8279 constant failed-file
     st-room-now @ castle-1f-15 <>  stalker-in? 0= or if  true exit  then   \ (elsewhere, or gone from here)
     stalker body-at fiona body-at vec-dist 30e f< 0= ;
 : encounter-begins ( movie cutscene -- movie? )   \ (the stalkers held off, blind; to black, the scene loaded)
-    {: movie cut :}  stalkers-stay state!  fiona hold  stalkers-blind state!
+    {: movie cut :}  stalkers-stay state!  fiona hold  fiona true aside  stalkers-blind state!
     15 screen:to-black-2 with-music or fade  fiona wait-move
     movie scenes:unseen-movie cut load-scene  wait-fade ;
 : encounter-ends ( seen -- )   \ (back in, the stalkers let go; a movie seen)
@@ -123,7 +123,7 @@ $8278 constant saved-file   $8279 constant failed-file
 : armour ( -- )
     fiona wait-move  armour-remarked @ if  armour-2-msg  else  -1 armour-remarked !  armour-msg  then  say ;
 : handrail ( -- )
-    fiona $173 -90 -1 walk-move 33.471e 79.86e go-to  world-frozen state!  1 20e 50e 15e 0e shot
+    fiona $173 -90 -1 walk-move 33.471e 79.86e go-to  world-frozen state!  fiona true aside  1 20e 50e 15e 0e shot
     handrail-remarked @ if  handrail-2-msg  else  -1 handrail-remarked !  handrail-msg  then  say
     16 frames  world-frozen state-off  shot-off ;
 : pick-camomile ( -- )  camomile c1f-15-camomile camomile-fx 34.3e -13.7e picks-up ;

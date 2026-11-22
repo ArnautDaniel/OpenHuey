@@ -51,9 +51,9 @@ own: painting-remarked     \ the painting's first remark made (in turn with the 
 \ ---- the TV switched: on (its noise heard; the first time ever, a fright) or off - not once
 \ the stalker has turned it off twice ----
 : first-fright ( -- )
-    $5A fright+  1 $FF 8 rumble-pad  seized-sound common-bank fiona sound-by
+    fiona true aside  $5A fright+  1 $FF 8 rumble-pad  seized-sound common-bank fiona sound-by
     fiona uneasy-2-anim play  fiona -1 idle  7 frames
-    fiona reach-out-anim play  running-sound running-at room-sound  fiona reach-back-anim play  c1f-16-flag1 fact! ;
+    fiona reach-out-anim play  running-sound running-at room-sound  fiona reach-back-anim play  c1f-16-flag1 fact!  fiona false aside ;
 : tv ( -- )
     fiona $E1 120 -1 walk-move 18.5e 13.6e go-to  1 20e 10e 0e 0e shot
     fiona reach-out-anim play

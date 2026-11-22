@@ -35,7 +35,7 @@ $900A $900B lash-sound hop-sound  39.3e 0e 50.4e -90e  hopper: the-figure
 
 \ ---- brought in by the forced way: dressed afresh, Hewie by her, the stalker off to the 1F ----
 : arrives ( -- )
-    fiona hold  costume-var var@ dress  yield  coat-var var@ coat  yield
+    fiona hold  fiona true aside  costume-var var@ dress  yield  coat-var var@ coat  yield
     fiona 1 at-exit  hewie activate  old-mansion-b1-1 161 1 hewie-to  hewie 1 at-exit
     old-mansion-1f-7 -1 stalker-to  his-own-time  0 stalker-order
     3 3 player-camera  yield  camera-restart  room-sounds  hall-track 1e background
@@ -49,7 +49,7 @@ $900A $900B lash-sound hop-sound  39.3e 0e 50.4e -90e  hopper: the-figure
     fiona-far-side? 0=  medallion-in-sight? 0= or  fiona unseen? or  hewie unseen? or if  false exit  then
     fiona 60 -6e -29e faces-point?  started-now @ go-there-cmd = and  hewie-breakable-now @ and ;
 : fetches ( -- )
-    hewie hold  stalkers-stay state!  -1 fetching !  hewie-bark  hewie wait-move
+    hewie hold  hewie true aside  stalkers-stay state!  -1 fetching !  hewie-bark  hewie wait-move
     hewie below-ledge-tri 90 -1 walk-path-move -59.57e -30.97e go-to
     1 solid-floor floor-off  1 keeps-fiona-off keeps-pursuers-off or floor-on
     hewie leap-move ledge-tri 50  -11.17e 0.3e -29.06e 0e  move  hewie wait-move
@@ -60,7 +60,7 @@ $900A $900B lash-sound hop-sound  39.3e 0e 50.4e -90e  hopper: the-figure
     then
     hewie ledge-tri -90 -1 walk-move -11.46e -30.1e go-to
     hewie leap-move below-ledge-tri 50  -59.57e 2e -30.97e 0e  move  hewie wait-move
-    1 solid-floor floor-on  0 fetching !  stalkers-stay state-off ;
+    1 solid-floor floor-on  0 fetching !  hewie false aside  stalkers-stay state-off ;
 : wary-of-it ( -- )  38.73e 0e 50.28e hewie-stands-by ;
 : barks-at-ledge ( -- )  -9.31e 39.5e -32.27e hewie-barks-at ;
 

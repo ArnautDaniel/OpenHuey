@@ -185,7 +185,7 @@ create tint-b  $72 c, $96 c, $94 c, $6E c, $60 c, $56 c, $70 c, $3C c,
     lorenzo-movie scenes:keyed-movie lorenzo-cutscene load-scene drop  ['] lorenzo-cues along-scene
     $10 $C8 movie-key  panic-eased  naught-msg run-scene  ['] lorenzo-cues stop-doing ;
 : lorenzo-comes ( -- )
-    summoner-on state-off  stalker let-go  stalkers-stay state!  fiona hold
+    summoner-on state-off  stalker let-go  stalkers-stay state!  fiona hold  fiona true aside
     fiona wait-move  fiona 0e 65e turn-to-xz
     15 screen:to-black-2 with-music or fade  wait-fade
     hewie-in? if  hewie let-go  then
@@ -213,7 +213,7 @@ create tint-b  $72 c, $96 c, $94 c, $6E c, $60 c, $56 c, $70 c, $3C c,
     no-track 1e background
     ['] traps stop-doing  ['] left-corner stop-doing  ['] right-corner stop-doing  ['] falling stop-doing
     0 left-on !  0 right-on !  0 left-armed !  0 right-armed !  0 trap-set !  0 fell !
-    stalkers-stay state!  fiona hold
+    stalkers-stay state!  fiona hold  fiona true aside
     15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
     hewie-in? if  hewie let-go  then
     things-id send story-things-off  debris-hidden  at-base left-pace !  at-base right-pace !  embers-fx told-off
@@ -231,7 +231,7 @@ create tint-b  $72 c, $96 c, $94 c, $6E c, $60 c, $56 c, $70 c, $3C c,
 : arrival-scene ( -- )
     arrival-movie scenes:keyed-movie arrival-cutscene load-scene drop  $10 $FF movie-key  panic-eased  -1 run-scene ;
 : brought-in ( -- )
-    fiona hold  hewie-in? if  house-of-truth-1f-8 -1 0 hewie-to  then  fiona wait-move
+    fiona hold  fiona true aside  hewie-in? if  house-of-truth-1f-8 -1 0 hewie-to  then  fiona wait-move
     fiona false shown  stones-fall  haze-on  arrival-scene
     world-held state!  stalker let-go  fiona true shown  wisps-fx told-off
     $4F resident-flag-set  forced-exit take-exit ;
@@ -241,16 +241,16 @@ create tint-b  $72 c, $96 c, $94 c, $6E c, $60 c, $56 c, $70 c, $3C c,
     8 frames  fiona $31 0 0e 58e place-at  1 15e 10e 0e 5e shot  world-frozen state!
     8 frames  say  8 frames  world-frozen state-off  shot-off ;
 : to-the-hole ( -- )   \ (Hewie's: over to it, sitting a while, his bark at her)
-    hewie hold  hewie wait-move  hewie $31 -10 $204 walk-move 3e 55e go-to  hewie 0e 65e turn-to-xz
+    hewie hold  hewie true aside  hewie wait-move  hewie $31 -10 $204 walk-move 3e 55e go-to  hewie 0e 65e turn-to-xz
     hewie hewie.anims:sit-a-while-anim play  hewie fiona look-at  yield  hewie-bark  hewie wait-move
-    -1 hewie-done !  hewie -1 look-at  yield ;
+    -1 hewie-done !  hewie -1 look-at  yield  hewie false aside ;
 : sniffed-out ( -- )   \ (her eyes on him as he goes to it: file 255, his trust)
     fiona hewie look-at  yield  0 hewie-done !  ['] to-the-hole start drop
     begin  hewie-done @ 0= while  yield  repeat
     found-file-255 fact!  50 trust+  scent-msg say  fiona -1 look-at  yield
     hole-file give-file  $828C give-file  stalkers-stay state-off ;
 : sends-him ( -- )   \ (her gesture: go there)
-    stalkers-stay state!  fiona wait-move  fiona go-there-gesture-anim start-anim  fiona 1 wait-mark
+    stalkers-stay state!  fiona true aside  fiona wait-move  fiona go-there-gesture-anim start-anim  fiona 1 wait-mark
     gesture-call common-bank fiona sound-by  fiona wait-anim  fiona -1 idle  7 frames  sniffed-out ;
 : the-hole ( -- )
     fiona wait-move
@@ -262,7 +262,7 @@ create tint-b  $72 c, $96 c, $94 c, $6E c, $60 c, $56 c, $70 c, $3C c,
         fiona 0e 65e turn-to-xz  fiona wait-move  sniff-msg close-look  exit
     then
     hewie-in?  hewie-cond-now @ down-cond <> and  stalker-in? 0= and if
-        stalkers-stay state!  inserted-msg close-look  fiona $62 140 -10e 54e place-at  sniffed-out  exit
+        stalkers-stay state!  fiona true aside  inserted-msg close-look  fiona $62 140 -10e 54e place-at  sniffed-out  exit
     then
     smell-remarked @ 0= if  branch-msg close-look  -1 smell-remarked !  else  smell-msg say  then ;
 : go-there? ( -- flag )   \ (her word to Hewie by the hole, him well, no stalker)

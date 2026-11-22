@@ -31,7 +31,7 @@ $19 constant forest-track   0 constant ash-fx   1 constant heart-area   3 consta
     heart-slot figure-on  5 cutscene-keep-model  ['] heart-cues along-scene  0 ash-on !
     panic-eased  heart-msg run-scene  ['] heart-cues stop-doing ;
 : the-heart ( -- )
-    fiona hold  summoner-on state-off  stalker let-go  0 summon-take  hewie-in? if  hewie let-go  then
+    fiona hold  fiona true aside  summoner-on state-off  stalker let-go  0 summon-take  hewie-in? if  hewie let-go  then
     fiona wait-move  15 screen:to-black-2 with-music or fade  no-track 1e background  wait-fade
     items-40-as-70 fact? if  creatures-on state-off  spirits-gone  then
     0 creatures-id send creatures-clear

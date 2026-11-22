@@ -46,7 +46,7 @@ $1C constant scene-figure   $21 constant other-figure
         frames-in @ last <  while  1 frames-in +!
     repeat  fiona wait-anim ;
 : the-curtain ( -- )
-    fiona hold  -1 drawing !  fiona her-motions motions-for  fiona wait-move
+    fiona hold  fiona true aside  -1 drawing !  fiona her-motions motions-for  fiona wait-move
     fiona $F8 90 114.64e 43e walk-to  fiona use-motions  begin  room-sounds-in? 0= while  yield  repeat
     om2f-13-flag1 fact? 0= if
         glass  room-motion 30 12 30 1 0 18e pulls  drawn-back  om2f-13-flag1 fact!

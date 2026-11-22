@@ -129,7 +129,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
 
 \ ---- the lever: the gate opened (the cage rising; the door beyond unlocked; the creatures out) ----
 : pulls-it ( -- )
-    lever-object 1 0 object  fiona room-motion 10 start-blend  32 frames
+    fiona true aside  lever-object 1 0 object  fiona room-motion 10 start-blend  32 frames
     lever-sound 50e -5e 171e room-sound  62 frames  gate-sound 50e -5e 171e room-sound  fiona wait-anim
     gate-door unlock  fiona -1 idle  fiona wait-anim
     c1f-2-flag1 fact!  $5F $1F9 room-noise  ['] cage-rises start drop
@@ -146,13 +146,13 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
 \ Fresh Flowers back to her; called, he crawls back ----
 : hewie-done ( -- )  0 hewie-going !  0 bark-scene !  stalkers-stay state-off ;
 : crawls-back ( -- )
-    hewie hold  hewie $353 90 -1 walk-path-move 37e 69e go-to  gap-floor solid-floor floor-off
+    hewie hold  hewie true aside  hewie $353 90 -1 walk-path-move 37e 69e go-to  gap-floor solid-floor floor-off
     hewie $267 90 crawl-anim walk-move 52e 69e go-to  gate-floor solid-floor floor-on
-    hewie -1 idle  hewie let-go  room-flag-2d state-off  stalkers-stay state-off  0 bark-scene ! ;
+    hewie -1 idle  hewie false aside  hewie let-go  room-flag-2d state-off  stalkers-stay state-off  0 bark-scene ! ;
 : her-flowers ( -- )   \ (once she is free: he gives them over)
     begin  fiona-free? 0= while  yield  repeat
     1 fetch-step !  panic-eased
-    fiona hold  begin  fetch-step @ 2 < while  yield  repeat
+    fiona hold  fiona true aside  begin  fetch-step @ 2 < while  yield  repeat
     fresh-flowers spend  withered-flowers spend  10 trust+
     fresh-flowers item-named  fresh-flowers 1 give-item  fresh-flowers show-item-tab  fanfare  obtained-2-msg say
     fetched-file give-file  3 fetch-step ! ;
@@ -161,11 +161,11 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
     begin  fetch-step @ 1 < while  yield  repeat
     hewie-bark  hewie wait-move  hewie run-move $1DF -1  $1DF tri-center 0e  move  hewie wait-move
     hewie hand-over-anim play  2 fetch-step !
-    begin  fetch-step @ 3 < while  yield  repeat  hewie let-go ;
+    begin  fetch-step @ 3 < while  yield  repeat  hewie false aside  hewie let-go ;
 : sits-at-gap ( -- )   \ (barking, to the gap, through it; sitting there till she sends him on or calls him)
     stalkers-stay state!  -1 bark-scene !  -1 hewie-going !
     hewie hold  hewie-bark  hewie wait-move  hewie $267 -90 -1 walk-path-move 52e 69e go-to
-    room-flag-2d state!  0 hewie-going !
+    room-flag-2d state!  hewie true aside  0 hewie-going !
     gate-floor solid-floor floor-off  hewie $353 -90 crawl-anim walk-move 40e 69e go-to
     gap-floor solid-floor floor-on  hewie sit-down-anim play  hewie sit-anim play
     -1 at-gap !  begin  at-gap @ while  yield  repeat ;
@@ -198,7 +198,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
     ['] voices-shots at-shots  voices-kind true no-shadow  0.9e near-clip
     panic-eased  if  -1 run-scene  then  1e near-clip ;
 : hand-in ( -- )
-    15 screen:to-black-2 with-music or fade  voices-kind figure-slot figure-in  yield  figure-slot figure-on  fiona wait-move
+    fiona true aside  15 screen:to-black-2 with-music or fade  voices-kind figure-slot figure-in  yield  figure-slot figure-on  fiona wait-move
     voices-movie scenes:unseen-movie voices-cutscene load-scene  wait-fade
     hewie-in?  hewie-cond-now @ down-cond = and if  hewie hold  hewie false shown  then
     voices-scene
@@ -226,7 +226,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
     stalker held?  his-shove @ 0= and  his-far-shove @ 0= and  found-her @ 0= and if  stalker let-go  0 stalker-order  then ;
 : hides ( -- )
     stalkers-stay state!  0 came-while-hidden !  0 searched !
-    fiona her-hide-motions motions-for  fiona wait-move  fiona -1 look-at  yield  fiona use-motions
+    fiona true aside  fiona her-hide-motions motions-for  fiona wait-move  fiona -1 look-at  yield  fiona use-motions
     fiona walk-anim-move 4 hid-motion 5  $132 240e -17.59e floor-at  0 deg>yaw  move  fiona wait-move
     fiona true noclip  slide-sound common-bank fiona sound-by  fiona 5 hid-motion 10 start-blend8  fiona wait-anim
     fiona 1 hid-motion 10 start-blend  fiona false noclip
@@ -300,7 +300,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
 
 \ ---- in by the gate's way: Debilitas knocked down beyond it (a file); Hewie with her, by the gate ----
 : through-the-gate ( -- )
-    fiona hold  force-followed state!  16 frames  force-followed state-off
+    fiona hold  fiona true aside  force-followed state!  16 frames  force-followed state-off
     $28 common-bank fiona sound-by  world-held state-off
     partner dup 0< 0= if  dup >r castle-1f-10 129 r> send stalker-in  send stalker-knock-out  else  drop  then
     15 screen:from-black with-music or fade  wait-fade  through-file give-file ;
@@ -311,7 +311,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
     flowers-remarked @ if  fiona look-low-anim 10 start-blend  fence-msg  else  -1 flowers-remarked !  fiona look-close-anim 10 start-blend  flowers-msg  then
     say  fiona wait-anim ;
 : flowers ( -- )
-    fiona $7D 180 -1 walk-move 6.874e 90e go-to  world-frozen state!  1 10e 20e 0e 0e shot
+    fiona $7D 180 -1 walk-move 6.874e 90e go-to  world-frozen state!  fiona true aside  1 10e 20e 0e 0e shot
     flowers-part hide-part  flowers-msg say  16 frames  world-frozen state-off  shot-off  flowers-part show-part ;
 : fireplace ( -- )   \ (in turn: the fire, the doll inside)
     fiona wait-move  fiona 276.5e -145.9e turn-to-xz

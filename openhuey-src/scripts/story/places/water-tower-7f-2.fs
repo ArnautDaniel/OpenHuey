@@ -26,7 +26,7 @@ $81 constant back-way   \ (the second forced way in)
 
 \ ---- what she may do or say here ----
 : the-inscription ( -- )
-    stalkers-stay state!  fiona wait-move  fiona 0e -105e turn-to-xz  fiona look-close-anim start-anim  40 frames
+    stalkers-stay state!  fiona true aside  fiona wait-move  fiona 0e -105e turn-to-xz  fiona look-close-anim start-anim  40 frames
     15 screen:to-dim fade wait-fade  inscription-msg say  15 screen:from-dim fade wait-fade  fiona wait-anim
     stalkers-stay state-off ;
 : pick-medallion ( -- )  rubrum-medallion wt7f-2-rubrum-medallion medallion-fx -9e -10.23e picks-up ;

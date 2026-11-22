@@ -122,7 +122,7 @@ $28 constant chapel-door   $11 constant far-door   0 constant fallen-floor
     stalker 0 -1 camera-set  partner activate  partner-kind true no-shadow
     panic-eased  if  -1 run-scene  then  partner-kind false no-shadow ;
 : he-comes ( -- )   \ (stepping in with the key: Debilitas after her, the door locked behind)
-    stalkers-stay state!  fiona hold  force-calm state!  fiona wait-move  fiona -1 idle
+    stalkers-stay state!  fiona hold  fiona true aside  force-calm state!  fiona wait-move  fiona -1 idle
     no-track 1e background  15 screen:to-black-2 with-music or fade
     stalker-unloaded  summoner-on state-off  comes-scene
     world-held state!  found-file-209 fact!  far-door unlock  door-part show-part  ev-door object-hide
@@ -134,7 +134,7 @@ $28 constant chapel-door   $11 constant far-door   0 constant fallen-floor
 : doors-open ( -- )   \ (after it, the door open)
     1 0 player-camera  camera-restart  chapel-door false open-mark  chapel-door unlock  doors-redone ;
 : he-goes-down ( -- )   \ (Debilitas down: the way out, a scene)
-    no-track 1e background  stalkers-stay state!  fiona hold  fiona wait-move
+    no-track 1e background  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     15 screen:to-black-2 fade  down-movie scenes:unseen-movie down-cutscene load-scene  wait-fade
     hewie let-go  panic-eased  if  -1 run-scene  then
     scene-5-pending state-off  stalker-unloaded  50 trust+
@@ -154,7 +154,7 @@ $28 constant chapel-door   $11 constant far-door   0 constant fallen-floor
 : falls-scene ( -- )  falls-movie scenes:unseen-movie falls-cutscene load-scene  ['] falls-shots along-scene  panic-eased  if  -1 run-scene  then ;
 : calm-scene ( -- )  calm-movie scenes:unseen-movie calm-cutscene load-scene  ['] calm-shots along-scene  panic-eased  if  calm-down-msg run-scene  then ;
 : chandelier-falls ( -- )   \ (both stands broken: on him - two scenes)
-    no-track 1e background  stalkers-stay state!  fiona hold  fiona wait-move
+    no-track 1e background  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     hewie-no-attack state!  stalkers-blind state!
     15 screen:to-black-2 fade  falls-movie scenes:unseen-movie falls-cutscene load-scene  wait-fade
     hewie let-go  ['] falls-shots along-scene  panic-eased  if  -1 run-scene  then  wait-fade
@@ -186,7 +186,7 @@ $28 constant chapel-door   $11 constant far-door   0 constant fallen-floor
     letters-msg say  15 screen:to-dim fade wait-fade  inscription-msg say  15 screen:from-dim fade wait-fade
     fiona look-at-anim start-anim  40 frames
     got-saturnus-key fact? if  deity-msg say  fiona wait-anim  stalkers-stay state-off  exit  then
-    cane-msg yes?  fiona wait-anim  if
+    cane-msg yes?  fiona true aside  fiona wait-anim  if
         no-track 1e background  15 screen:to-black-2 with-music or fade  key-scene
         fiona 0 idle  fiona $CD -90 place-on-tri  camera-restart
         hewie activate  castle-b1-6 401 0 hewie-to  hewie $191 0 place-on-tri  hewie full-health  hewie well

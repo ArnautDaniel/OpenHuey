@@ -67,7 +67,7 @@ state: fiona-state
   \ defending (F4: fiona/defend.fs): whom her blow struck so far (1 the stalker, 2 Hewie), held
   \ still a moment by it (+0x14D0)
   cell field her-struck  cell field her-recoil
-  cell field her-out-of-reach   \ stepping back or at a door: the stalkers may not take her (+0x2D)
+  cell field her-out-of-reach   \ stepping back, at a door, or set aside by the story (its 0x21): the stalkers may not take her (+0x2D)
   \ her footsteps
   cell field her-step-l   cell field her-step-r   cell field her-steps
   \ what she is doing, run each frame (an xt: the original's state), and its part
@@ -89,7 +89,6 @@ state: fiona-state
   cell field her-apart          \ out of contact (+0x2A): a push out of the stalker found no floor
   cell field her-noclip         \ the story's 0x20: through blocked floor (+0x2B)
   cell field her-feet           \ on her feet this frame (+0x1AD5BC): her model set on the floor by them
-  cell field her-aside          \ the story's 0x21: left alone - nobody attacks her (+0x2D)
   cell field her-ladder         \ the ladder she uses (+0x100: the room's nav link; -1 none)
   cell field her-push           \ +0x1AD560: the obstacle she pushes (-1 none)
   /vec field her-push-dir         \ +0x1AD570: the push (x 0 z)

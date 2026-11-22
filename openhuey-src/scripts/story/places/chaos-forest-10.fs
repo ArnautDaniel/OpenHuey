@@ -30,7 +30,7 @@ the-crate shard-grey 0 9 shard-look  the-crate 0.812e 0.687e 0.187e 0.312e shard
     cf-10-flag1 fact? if  s" O_HEW\HEW_202.TEX" face-from  else  first-face  then ;
 : face-back ( -- )  own-coat? if  1 face-off  then ;
 : lies ( -- )   \ (his doing: down, through anything, his face; for good)
-    hewie hold  hewie true noclip  hewie wait-move  hewie shot-lying 0 start-blend
+    hewie hold  hewie true aside  hewie true noclip  hewie wait-move  hewie shot-lying 0 start-blend
     own-coat? if  hurt-face  then  -1 hewie-lying !
     begin  yield  again ;
 : lying-here ( -- )  hewie activate  hewie lying-tri 180 4.7e 54.573e place-at  ['] lies start drop ;
@@ -45,7 +45,7 @@ the-crate shard-grey 0 9 shard-look  the-crate 0.812e 0.687e 0.187e 0.312e shard
 : shot-scene ( -- )
     shot-movie scenes:unseen-movie shot-cutscene load-scene drop  panic-eased  shot-msg run-scene ;
 : bandaged ( -- )
-    stalkers-stay state!  fiona hold  stalker let-go  0 summon-take  fiona wait-move
+    fiona true aside  stalkers-stay state!  fiona hold  stalker let-go  0 summon-take  fiona wait-move
     15 screen:to-black-2 with-music or fade  no-track 1e background  wait-fade
     0 hewie-lying !  ['] lies stop-doing  yield
     shot-scene  30 trust+  world-held state!  cf-10-flag1 fact!

@@ -97,7 +97,7 @@ create medallion-look  -149.92e 60e -50.71e  54e 36e 36e look,
 2 constant climb-msg       \ "If I choose my footing carefully, I should be able to get down this way... Climb down?..."
 9 constant climb-area   0 constant climb-sound   $82 constant climb-way
 : climbs-down ( -- )
-    stalkers-stay state!  castle-1f-13 preload  fiona wait-move
+    stalkers-stay state!  fiona true aside  castle-1f-13 preload  fiona wait-move
     climb-msg yes? if
         15 screen:to-black-2 fade  wait-fade  world-held state!  scene-locked state!
         climb-sound room-bank bank-sound  180 frames

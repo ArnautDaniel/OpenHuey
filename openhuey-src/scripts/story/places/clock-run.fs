@@ -34,7 +34,7 @@ $C constant results-menu   9 constant after-results-menu
 : goal-track-on ( -- )  goal-track 1 1e f>cell music send bgm-want ;   \ (held till resumed)
 : run-over ( forest? -- )
     {: forest? :}
-    stalkers-blind state!  stalkers-stay state!  fiona hold  clock-save
+    stalkers-blind state!  stalkers-stay state!  fiona hold  fiona true aside  clock-save
     forest? if  no-track 1e background  then
     goal-track-on  0 30 0 stage-music  30 frames  fiona wait-move
     music send bgm-resume  off-map-37 preload
@@ -43,7 +43,7 @@ $C constant results-menu   9 constant after-results-menu
     15 screen:to-black with-music or fade  wait-fade
     clock-stop  off-map-37 -1 0 hewie-to  extras-door door-shut  stalker-unloaded
     stalkers-stay state-off  to-extras take-exit ;
-: waits-out ( -- )  hewie hold  hewie wait-move  begin  yield  again ;   \ (Hewie's, meanwhile: held still)
+: waits-out ( -- )  hewie hold  hewie true aside  hewie wait-move  begin  yield  again ;   \ (Hewie's, meanwhile: held still)
 : at-goal ( forest? -- )   \ (her and Hewie's reaction: her panic eased)
     panic-eased  if  [: true run-over ;]  else  [: false run-over ;]  then  fiona start-holding drop
     ['] waits-out hewie start-holding drop ;

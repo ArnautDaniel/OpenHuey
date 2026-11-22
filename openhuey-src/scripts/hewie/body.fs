@@ -93,6 +93,8 @@ defer adjust-action ( act -- act' ) :noname ( act -- act' ) ; is adjust-action  
 : full-stop ( -- )   \ Hewie_FullStop: what a script's letting go clears
     0 his-broke !  0 his-hits !  -1 his-look-char !  0 his-dodge-req !  0 his-look-pt? !
     hewie-hidden state-flag-clear ;
+: script-let-go ( -- )   \ (a script's end or a door with one on him: Hewie_FullStop whole - Character_EventReset
+    full-stop  0 his-2d !  0 his-2b ! ;   \ clears +0x2D, the story's 0x21, and +0x2B, its 0x20, too)
 : start ( act -- )  adjust-action 0 set-action ;   \ Hewie_Start
 : behave ( xt -- )  his-act ! ;
 \ nothing to do (give_up): sniffing about - in the run (hewie-played?) himself again; and the

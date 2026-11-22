@@ -107,7 +107,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     $35 closed-off  $18 closed-off  $1C closed-off  $1D closed-off  1 closed-off  $D closed-off
     exits-redone ;
 : hewie-held-in-wire ( -- )   \ (caught: he can't get out - held in his animation till she frees him)
-    hewie hold  hewie $168 0 228.1e 77.57e place-at  hewie $1004 0 start-blend
+    hewie hold  hewie $168 0 228.1e 77.57e place-at  hewie true aside  hewie $1004 0 start-blend
     begin  hewie-p mine? while  yield  repeat ;
 : daylight ( -- )  $AC $60 $26 $50 $19 $1F $12 $80 room-tint  effects:leaves ;
 : water-light ( -- )   \ (the light rippling off the fountain)
@@ -146,7 +146,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     begin  box-step @ 6 < while   0.5e deg>rad s" a_koushi" turn-y object+!  yield  repeat
     begin  box-step @ 7 < while  -0.5e deg>rad s" a_koushi" turn-y object+!  yield  repeat ;
 : she-pushes ( -- )   \ (Fiona's act0E)
-    fiona hold  begin  room-sounds-in? 0= while  yield  repeat
+    fiona hold  fiona true aside  begin  room-sounds-in? 0= while  yield  repeat
     1 box-step !  fiona -90 turn
     begin  box-step @ 2 < while  yield  repeat
     8 frames  hewie-effort-sound room-bank hewie sound-by
@@ -164,16 +164,16 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     grate-group barred-floor floor-off  grate-door unlock  5 4 player-camera
     stalkers-stay state-off  0 stalkers-held !  grate-open fact!  8 box-step !
     hewie true doorway-fades  30 trust+
-    hewie $34E -1 run-move path-to  hewie false noclip ;
+    hewie $34E -1 run-move path-to  hewie false noclip  hewie false aside ;
 : push-starts ( -- )   \ (the original's act0D: once she is free, she pushes)
     with-fiona-free  panic-eased  ['] she-pushes start drop ;
 : comes-back ( -- )   \ (Hewie's act0C: back from the box to her)
     hewie hold  hewie-bark  hewie wait-move
     hewie $346 90 -1 walk-move -35e 137e go-to
     hewie $DC 90 $204 walk-move -12.99e 136.933e go-to
-    hewie false noclip  hewie -1 idle  stalkers-stay state-off  0 stalkers-held ! ;
+    hewie false noclip  hewie -1 idle  stalkers-stay state-off  hewie false aside  0 stalkers-held ! ;
 : to-the-box ( -- )   \ (Hewie's act0B: told "go there" by the box - he waits by it, sitting)
-    hewie hold  -1 stalkers-held !  0 pushing !  stalkers-stay state!
+    hewie hold  hewie true aside  -1 stalkers-held !  0 pushing !  stalkers-stay state!
     hewie wait-move  hewie-bark  hewie wait-move
     hewie $DC -90 -1 walk-path-move -12.99e 136.933e go-to
     -1 hewie-at-box !  hewie true noclip
@@ -193,10 +193,10 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     started-now @ dup come-back-cmd =  over go-there-cmd = or  swap go-for-it-cmd = or  and if  2 box-said !  then ;
 : box ( -- )   \ (Fiona's act09: blocked - or, Hewie waiting by it, the push)
     hewie-at-box @ if  0 box-step !  -1 pushing !  she-pushes exit  then
-    4 frames  world-frozen state!
+    4 frames  world-frozen state!  fiona true aside
     fiona $2A7 -80 -25e 168e place-at  1 13e 20e 0e 0e shot  16 frames
     box-msg say  4 frames  shot-off
-    fiona $21D -90 -21e 168e place-at  world-frozen state-off ;
+    fiona $21D -90 -21e 168e place-at  world-frozen state-off  fiona false aside ;
 : hole ( -- )
     fiona $DC -90 -1 walk-move -12.99e 136.933e go-to
     fiona crouch-down-anim play  fiona crouching-anim start-anim  hole-msg say
@@ -204,7 +204,7 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
 
 \ ---- the refined magnesia: she sends him, he digs it up ----
 : digs ( -- )   \ (Hewie's act11)
-    hewie hold  -1 digging !  hewie wait-move  hewie-bark  hewie wait-move
+    hewie hold  hewie true aside  -1 digging !  hewie wait-move  hewie-bark  hewie wait-move
     hewie $1B3 173 -1 walk-path-move 232.55e -97.32e go-to
     dig-group solid-floor floor-off  dig-group keeps-fiona-off keeps-pursuers-off or floor-on
     $1A1 35 238e 1e -135e hewie-leap  hewie wait-move
@@ -217,17 +217,17 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
     then
     hewie 238e -135e turn-to-xz
     $1A1 35 238e 1e -135e hewie-leap  hewie wait-move
-    dig-group solid-floor floor-on  stalkers-stay state-off  0 digging ! ;
+    dig-group solid-floor floor-on  stalkers-stay state-off  hewie false aside  0 digging ! ;
 : go-for-it ( -- )   \ (Fiona's act10: the gesture, him sent)
-    fiona hold  stalkers-stay state!  fiona wait-move
-    hewie held? if  stalkers-stay state-off  exit  then
+    fiona hold  stalkers-stay state!  fiona true aside  fiona wait-move
+    hewie held? if  stalkers-stay state-off  fiona false aside  exit  then
     ['] digs start drop
     fiona go-for-it-gesture-anim start-anim  fiona 1 wait-mark  go-for-it-call common-bank fiona sound-by
     fiona wait-anim  fiona -1 idle  7 frames ;
 
 \ ---- Hewie in the wire, freed (at night, back from the castle's 2F) ----
 : frees-him ( -- )   \ (act00)
-    hewie hold  stalkers-stay state!  hewie-found-in-wire fact!  fiona wait-move
+    hewie hold  stalkers-stay state!  fiona true aside  hewie-found-in-wire fact!  fiona wait-move
     fiona 228.1e 77.57e turn-to-xz
     fiona tend-start-anim 10 play-blend  wire-bound-msg say  fiona tend-lead-in-anim 10 start-blend
     1 scenes:unseen-movie 0 load-scene

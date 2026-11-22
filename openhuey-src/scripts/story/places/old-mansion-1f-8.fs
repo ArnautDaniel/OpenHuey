@@ -140,7 +140,7 @@ $31 constant ambush-seen   $32 constant fed-seen
     endcase
     back-looks @ 1+ 3 mod back-looks ! ;
 : the-back ( -- )
-    fiona $1A2 90 -1 walk-move 113e -122e go-to  1 25e 20e 30e 0e shot
+    fiona $1A2 90 -1 walk-move 113e -122e go-to  1 25e 20e 30e 0e shot  fiona true aside
     white-mandragora-used fact? if
         fiona crouch-down-anim play  substitute-msg say  fiona crouch-up-anim play
     else  om1f-8-flag2 fact? if  back-remark  else
@@ -153,14 +153,14 @@ $31 constant ambush-seen   $32 constant fed-seen
     {: movie cut :}  stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade  no-track 1e background
     movie scenes:unseen-movie cut load-scene drop  wait-fade  world-held state!  hewie-out ;
 : laid-to-rest ( -- )   \ (the White Mandragora given: the hand at rest, the way on open)
-    stalkers-stay state!  fiona hold  fiona wait-move  white-mandragora spend  hand-door unlock  white-mandragora-used fact!  back-group barred-floor floor-off
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  white-mandragora spend  hand-door unlock  white-mandragora-used fact!  back-group barred-floor floor-off
     ['] hand-lunges stop-doing  ['] hand-lurks stop-doing
     rest-movie rest-cutscene scene-start  hand-slot figure-on  panic-eased  -1 run-scene
     15 screen:from-black with-music or fade  yard-track 1e background  hewie-back
     hand-slot figure-out  false shadow-cast  wait-fade
     stalkers-stay state-off  summoner-on state!  old-mansion-1f-8 stalker-slot 0 doors-into  old-mansion-b1-6 stalker-slot 1 doors-into ;
 : fed ( item -- )   \ (another mandragora given: the hand roused, her fright)
-    stalkers-stay state!  fiona hold  fiona wait-move  spend
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  spend
     ['] hand-lunges stop-doing  ['] hand-lurks stop-doing
     fed-movie fed-cutscene scene-start  hand-slot figure-on  panic-eased  -1 run-scene
     fiona $1A2 90 108e -122e place-at  hewie-back  om1f-8-flag2 fact!  ['] hand-lurks start drop
@@ -184,20 +184,20 @@ $31 constant ambush-seen   $32 constant fed-seen
 \ ---- Hewie into the thicket (her "go there" at it) and out (her "come back") ----
 : into-thicket ( -- )
     hewie hold  1 errand !  hewie-bark  hewie wait-move
-    hewie before-thicket-tri -90 -1 walk-path-move 92.855e -13.871e go-to
+    hewie before-thicket-tri -90 -1 walk-path-move 92.855e -13.871e go-to  hewie true aside   \ (the scripts' 0x21 from here: its end lets it go)
     thicket-group solid-floor floor-off  thicket-group keeps-fiona-off keeps-pursuers-off or floor-on
     hewie thicket-tri -90 $204 walk-move 76.218e -13.075e go-to  hewie 90 turn
     hewie lie-down-anim 10 play-blend  3600 2 hewie send hewie-yelp  0 errand ! ;
 : out-of-thicket ( -- )
-    hewie hold  1 errand !  0 splashed !
+    hewie hold  hewie true aside  1 errand !  0 splashed !
     hewie before-thicket-tri 90 $204 walk-move 92.855e -13.871e go-to
-    hewie -1 idle  hewie wait-anim  0 0 hewie send hewie-yelp  0 0 hewie-do
+    hewie -1 idle  hewie wait-anim  0 0 hewie send hewie-yelp  0 0 hewie-do  hewie false aside
     thicket-out  0 errand ! ;
 
 \ ---- the ambush: Daniella by the thicket, Hewie in it - he springs out at her (a scene) ----
 : ambush-looks ( -- )  ambush-movie scenes:unseen-movie ambush-cutscene load-scene drop  4 cutscene-keep-model ;
 : ambush ( -- )   \ (her springs through it - Room48's Cmd03 - not simulated)
-    fiona hold  hewie hold  stalker hold  stalkers-stay state!  fiona true noclip
+    fiona hold  hewie hold  stalker hold  stalkers-stay state!  fiona true noclip  fiona true aside
     15 screen:to-black-2 with-music or fade  no-track 1e background  ambush-looks  wait-fade
     force-calm state!  yield  force-calm state-off  0 true no-shadow
     panic-eased  -1 run-scene
@@ -219,7 +219,7 @@ $31 constant ambush-seen   $32 constant fed-seen
     fiona-half-hidden state?  fiona held? 0= or 0= if  exit  then
     antimony-tube item-full? 0= if  10 trust+  then  antimony-tube om1f-8-antimony-tube -1 takes-up ;
 : fetches-glow ( -- )
-    hewie hold  2 errand !  hewie-bark  hewie wait-move
+    hewie hold  hewie true aside  2 errand !  hewie-bark  hewie wait-move
     hewie $130 -120 -1 walk-path-move -83e -83e go-to  hewie true noclip
     hewie $133 180 $204 walk-move -111e -108e go-to  hewie 180 turn
     hewie sit-a-while-anim 10 play-blend
@@ -228,25 +228,25 @@ $31 constant ambush-seen   $32 constant fed-seen
     -1 fetched !  hewie 0 turn
     hewie $130 60 -1 walk-path-move -83e -83e go-to
     items-40-as-70 fact? if  creatures-on state!  5 0 creatures-id send creature-count  then
-    hewie false noclip  stalkers-stay state-off  0 errand ! ;
+    hewie false noclip  hewie false aside  stalkers-stay state-off  0 errand ! ;
 : gesture ( -- )   \ (her "go for it" at him)
     fiona go-for-it-gesture-anim start-anim  fiona 1 wait-mark  go-for-it-call common-bank fiona sound-by
     fiona wait-anim  fiona -1 idle  7 frames ;
 : sends-for-glow ( -- )
-    fiona hold  stalkers-stay state!  0 fetched !  ['] fetches-glow start drop  fiona wait-move
+    fiona hold  stalkers-stay state!  fiona true aside  0 fetched !  ['] fetches-glow start drop  fiona wait-move
     gesture  begin  fetched @ 0= while  yield  repeat  32 frames  glow-file give-file ;
 : fetches-tube ( -- )
-    hewie hold  3 errand !  hewie-bark  hewie wait-move
+    hewie hold  hewie true aside  3 errand !  hewie-bark  hewie wait-move
     hewie $67 64 -1 walk-path-move 149e 91e go-to  hewie -84 turn
     hewie true noclip  $66 10 129.619e 1.7e 91.48e hewie-leap  hewie wait-move
     hewie sit-a-while-anim 10 play-blend
     om1f-8-antimony-tube fact? 0= if  hands-over  then
     hewie $1ED -90 -1 walk-path-move 43.7e 110.48e go-to  hewie 110 turn
     $1EE 5 76.12e 0.5e 104.76e hewie-leap  hewie wait-move
-    hewie false noclip  stalkers-stay state-off  0 errand ! ;
+    hewie false noclip  hewie false aside  stalkers-stay state-off  0 errand ! ;
 : sends-for-tube ( -- )
-    fiona hold  stalkers-stay state!  fiona wait-move
-    hewie held? if  stalkers-stay state-off exit  then
+    fiona hold  stalkers-stay state!  fiona true aside  fiona wait-move
+    hewie held? if  stalkers-stay state-off  fiona false aside exit  then
     ['] fetches-tube start drop  gesture ;
 
 \ ---- Hewie here: the thicket, the ambush, his errands, his barks and looks ----

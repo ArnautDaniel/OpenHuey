@@ -53,13 +53,13 @@ $129 constant arrival-tri   $EB constant his-arrival-tri
     colour-track 1e background
     colour-group keeps-hewie-off keeps-stalkers-off or floor-on
     this-room @ stalker-slot 1 doors-into  this-room @ hewie-slot 1 doors-into ;
-: comes-to ( -- )  fiona hold  fiona wait-move  15 screen:from-black fade  wait-fade ;   \ (an activity)
+: comes-to ( -- )  fiona hold  fiona true aside  fiona wait-move  15 screen:from-black fade  wait-fade ;   \ (an activity)
 : arrived ( -- )   \ (by the forced way: at the room's spot, Hewie by her; the dark lifting)
     fiona arrival-tri -90 129e 0e place-at  0 0 player-camera
     this-room @ 235 0 hewie-to  hewie his-arrival-tri -90 place-on-tri
     ['] comes-to start drop ;
 : through ( -- )   \ (out through a door: into the dark, the room ahead by the forced way)
-    fiona hold
+    fiona hold  fiona true aside
     all-four @  out-door @ way-on-door @ = and if  no-track 1e background  keep-room-sounds state-off  then
     15 screen:to-black fade  fiona wait-move  wait-fade  world-held state!  forced-exit take-exit ;
 : doors-through ( -- )   \ (into either door's area: out, once a visit)
@@ -76,7 +76,7 @@ $129 constant arrival-tri   $EB constant his-arrival-tri
     colours-done? dup all-four !  if  house-of-truth-1f-2  else  house-of-truth-b1-4  then  preload ;
 variable said-msg
 : inscription ( -- )   \ (an activity: turned to the wall, the screen dimmed, read)
-    stalkers-stay state!  fiona hold  fiona wait-move  fiona -90 turn
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona -90 turn
     15 screen:to-dim fade wait-fade  said-msg @ say  15 screen:from-dim fade wait-fade  stalkers-stay state-off ;
 : reads ( msg -- )   \ (by the wall, facing it: offered)
     fiona inscription-area in-area?  fiona -90 50 heading? and if  said-msg !  ['] inscription unhurried offer  else  drop  then ;
@@ -114,20 +114,20 @@ $31 constant quake-sound
 $FE constant hole-way
 fvariable hole-x   fvariable hole-z   variable hole-msg'
 : into-hole ( -- )   \ (an activity: turned to it, a close look, asked)
-    stalkers-stay state!  fiona wait-move  fiona hole-x f@ hole-z f@ turn-to-xz  fiona look-close-anim 10 play-blend
+    stalkers-stay state!  fiona true aside  fiona wait-move  fiona hole-x f@ hole-z f@ turn-to-xz  fiona look-close-anim 10 play-blend
     hole-msg' @ yes? if
         15 screen:to-black fade  wait-fade  slide-sound common-bank fiona sound-by
         world-held state!  hole-way take-exit
     else  stalkers-stay state-off  then ;
 : hole-offer ( msg F: x z -- )  hole-z f!  hole-x f!  hole-msg' !  ['] into-hole unhurried offer ;
 : out-of-hole ( -- )   \ (an activity)
-    fiona hold  fiona wait-move  camera-restart  slide-sound common-bank fiona sound-by  1 map-page
+    fiona hold  fiona true aside  fiona wait-move  camera-restart  slide-sound common-bank fiona sound-by  1 map-page
     15 screen:from-black fade  wait-fade  stalkers-stay state-off ;
 
 \ ---- the Sol Key turned in a door (exit 0's: 1F-4's, 2F-1's): spent but while the other door is
 \ locked - its turning animation, the room's sound 3 ----
 3 constant key-sound
 : sol-turned ( anim other door -- )   \ (an activity)
-    {: anim other door :}  fiona hold  fiona 0 to-door  fiona anim start-anim  20 frames  key-sound room-bank fiona sound-by
+    {: anim other door :}  fiona hold  fiona true aside  fiona 0 to-door  fiona anim start-anim  20 frames  key-sound room-bank fiona sound-by
     sol-key item-named  other doors:door-locked? 0= if  sol-key spend  then  door unlock
     fiona 20 idle  20 frames  used-msg say  stalkers-stay state-off ;

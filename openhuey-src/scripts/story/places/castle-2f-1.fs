@@ -47,19 +47,19 @@ own: solved-here           \ the dials set right here, this visit: down to castl
     world-frozen state!  $10 $FF movie-key  panic-eased  if  -1 run-scene  then
     world-held state!  world-frozen state-off ;
 : moon-comes ( -- )   \ (up from castle-1f-12)
-    fiona hold  stalker-in? if  ['] stalker-kept start drop  yield  then  world-frozen state!
+    fiona hold  fiona true aside  stalker-in? if  ['] stalker-kept start drop  yield  then  world-frozen state!
     moon-scene  solved-here @ if  forced-exit  else  forced-exit 1 or  then  take-exit ;
 : moon-set ( -- )   \ (set right here: to black, the scene, down)
     -1 solved-here !  force-calm state!  15 screen:to-black-2 with-music or fade
     fiona hold  moon-scene  forced-exit take-exit ;
 : moon-door-open ( -- )   \ (back up from castle-1f-12, set right: the moon door unlocked, the creatures loose)
-    fiona hold  moon-door unlock  c1f-12-flag1 fact!  5 0 creatures-id send creature-count
-    force-calm state-off  stalkers-stay state-off  fiona let-go  camera-restart  0 prepare-exit
+    fiona hold  fiona true aside  moon-door unlock  c1f-12-flag1 fact!  5 0 creatures-id send creature-count
+    force-calm state-off  stalkers-stay state-off  fiona false aside  fiona let-go  camera-restart  0 prepare-exit
     15 screen:from-black with-music or fade ;
 
 \ ---- the device: its dial turned by the stick; all three right, the moon ----
 : the-device ( -- )
-    stalkers-stay state!  fiona wait-move
+    stalkers-stay state!  fiona true aside  fiona wait-move
     moon-let-through? if  moonlight-msg say  stalkers-stay state-off exit  then
     device-remarked @ 0= if  device-msg say  -1 device-remarked !  8 frames  then
     world-frozen state!  fiona $E6 62 -43.61e 1.45e place-at  1 11e 0e 0e 0e shot

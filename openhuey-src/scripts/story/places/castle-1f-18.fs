@@ -81,7 +81,7 @@ create at-scene   \ as the scene begins (the single one by the doorway)
     begin  moths-off-frame frame-reached? 0= while  yield  repeat
     moths-sound-id -34e 0e -44e keep-sound  ['] nothing depth-follows ;
 : lays-flowers ( -- )
-    fiona hold  stalkers-stay state!  15 screen:to-black-2 with-music or fade  fiona wait-move
+    fiona hold  stalkers-stay state!  fiona true aside  15 screen:to-black-2 with-music or fade  fiona wait-move
     moths-movie scenes:unseen-movie moths-cutscene load-scene  wait-fade
     flowers-part show-part  ['] moths-to-vase along-scene
     hewie-in?  hewie-cond-now @ down-cond = and if  hewie hold  hewie false shown  then

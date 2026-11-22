@@ -85,7 +85,7 @@ $803 constant creeping-anim   $207 constant fleeing-anim   \ (her creep behind t
     crows-movie scenes:keyed-movie crows-cutscene load-scene
     hewie false shown  2 cutscene-leave-alone  $1E $C8 movie-key  yield  4 3 figure-dressed-as ;
 : balcony-falls ( -- )
-    fiona hold
+    fiona hold  fiona true aside
     fallen? if
         fiona wait-move  camera-restart  15 screen:from-black fade  wait-fade  scene-locked state-off
     else
@@ -122,7 +122,7 @@ $803 constant creeping-anim   $207 constant fleeing-anim   \ (her creep behind t
     fiona $114 79 fleeing-anim walk-move -258.97e -140.95e go-to
     fiona hug-self-anim 20 play-blend  fiona false noclip  stalkers-stay state-off ;
 : crouches ( -- )
-    stalkers-stay state!  0 came-while-hidden !  0 found-her !
+    stalkers-stay state!  0 came-while-hidden !  0 found-her !  fiona true aside
     fiona $1D4 -110 -1 walk-move -267e -140e go-to
     fiona true noclip  fiona crouch-down-anim play
     fiona $122 -110 creeping-anim walk-move -291.573e -146.706e go-to

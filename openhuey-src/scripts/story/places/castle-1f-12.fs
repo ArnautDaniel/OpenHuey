@@ -59,7 +59,7 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
 \ ---- turning a dial: its number by the stick, a degree a frame to it; at a number, a click - its
 \ lens catching the light at the right one; done, the moon let through if all are right ----
 : moonlight ( -- )   \ (out to castle-2f-1, the light let through there; back by the forced way)
-    stalkers-stay state!  15 screen:to-black-2 with-music or fade  castle-2f-1 preload  wait-fade
+    stalkers-stay state!  fiona true aside  15 screen:to-black-2 with-music or fade  castle-2f-1 preload  wait-fade
     force-calm state!  world-held state!  forced-exit take-exit ;
 : turning ( addr len var right F: sx sy sz turn -- )   \ (at the dial till she is done; then, all right, the moon)
     dial-base rotate-msg dial-turning  text-gone  shot-off  world-frozen state-off
@@ -67,7 +67,7 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
 : remarked-device ( -- )   \ (the first time: what it might be)
     device-remarked @ if  exit  then  -1 device-remarked !  device-msg say  8 frames ;
 : at-dial-2 ( -- )
-    stalkers-stay state!  fiona wait-move
+    stalkers-stay state!  fiona true aside  fiona wait-move
     opened? if  refracts-msg say  stalkers-stay state-off exit  then
     lens-set? 0= if
         8 frames  world-frozen state!  fiona $73 -90 61e 50e place-at  1 13e 0e 0e 0e shot
@@ -76,7 +76,7 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
     remarked-device  world-frozen state!  fiona $73 -90 61e 50e place-at  1 13e 0e 0e 0e shot
     dial-2 5  54e -90e 49e  pi f2/  turning  stalkers-stay state-off ;
 : at-dial-1 ( -- )
-    stalkers-stay state!  fiona wait-move
+    stalkers-stay state!  fiona true aside  fiona wait-move
     opened? if  refracts-msg say  stalkers-stay state-off exit  then
     remarked-device  world-frozen state!  fiona $BE 180 30e -44e place-at  1 13e 0e 0e 0e shot
     dial-1 2  30e -90e -51e  0e  turning  stalkers-stay state-off ;
@@ -90,7 +90,7 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
     lens-movie scenes:keyed-movie lens-cutscene load-scene  ['] lens-reflects along-scene  $1E $C8 movie-key
     panic-eased  if  -1 run-scene  then  lens-fx effect-off ;
 : refractor-set ( -- )
-    fiona hold  stalkers-stay state!  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
+    fiona hold  stalkers-stay state!  fiona true aside  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
     hewie-in?  hewie-cond-now @ down-cond = and if  hewie hold  hewie false shown  then
     lens-scene
     lens-part hide-part  lens-object object-hide  dial-2-object object-show
@@ -104,7 +104,7 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
 \ dial unset there - the moon door unlocked and these doors open ----
 : moon-scene ( -- movie? )  moon-movie scenes:keyed-movie moon-cutscene load-scene  $10 $FF movie-key ;
 : moon-comes ( -- )
-    fiona hold  stalker-in? if  ['] stalker-kept start drop  yield  then  world-frozen state!   \ (held the rest of the visit: act07)
+    fiona hold  fiona true aside  stalker-in? if  ['] stalker-kept start drop  yield  then  world-frozen state!   \ (held the rest of the visit: act07)
     moon-scene  came-by @ forced-exit = if  castle-2f-1 preload  else  castle-b1-4 preload  then  wait-fade   \ (room 7, as the original has it)
     panic-eased  if  -1 run-scene  then
     came-by @ forced-exit = if  world-held state!  world-frozen state-off  forced-exit 1 or take-exit exit  then
@@ -114,9 +114,9 @@ the-vase 0 frees-floor  the-vase $1E3 noise-from
 
 \ ---- what she may do or say here ----
 : the-wall ( -- )
-    fiona wait-move  4 frames  fiona $A0 -90 -76e -15e place-at  world-frozen state!  1 20e -10e 0e 0e shot  4 frames
+    fiona wait-move  4 frames  fiona $A0 -90 -76e -15e place-at  world-frozen state!  fiona true aside  1 20e -10e 0e 0e shot  4 frames
     wall-remarked @ if  moon-msg  else  -1 wall-remarked !  wall-msg  then  say
-    4 frames  world-frozen state-off  shot-off ;
+    4 frames  world-frozen state-off  fiona false aside  shot-off ;
 : pick-medallion ( -- )  medallion c1f-12-medallion medallion-fx -73.5e 55.5e picks-up ;
 : unlocks-it ( -- )  locked-exit unlocks ;
 : spots ( -- )

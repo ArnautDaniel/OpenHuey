@@ -116,7 +116,7 @@ variable feed-step   \ (0 none yet, 1 he is ready, 2 she has put it down, 3 he i
 : waits-for-her ( -- )  begin  fiona held?  feed-step @ 1 = and  while  yield  repeat ;
 : gets-up ( -- )   \ (down: a treat brings him round)
     1 feed-step !  waits-for-her  bark-sound common-bank hewie sound-by
-    hewie hewie.anims:get-up-anim play  hewie 10 idle  10 frames
+    hewie hewie.anims:get-up-anim play  hewie false aside  hewie 10 idle  10 frames
     hewie-full? if  1 hewie send mood!  then  3 feed-step ! ;
 : eating ( -- )   \ (sits a while looking to her, eats: a bark or a limping one)
     hewie hewie.anims:sit-a-while-anim play  hewie fiona look-at  yield
@@ -125,7 +125,7 @@ variable feed-step   \ (0 none yet, 1 he is ready, 2 she has put it down, 3 he i
     1 feed-step !  hewie fiona face-toward  waits-for-her  eating ;
 : treat ( -- )   \ ($8F: a treat)
     hewie hold  hewie wait-move
-    hewie-down? if  gets-up exit  then
+    hewie-down? if  hewie true aside  gets-up exit  then   \ ($8F's 0x21 while he is down, off once up)
     eats  hewie-full? if  1 hewie send mood!  then  3 feed-step !  hewie -1 look-at ;
 : flung ( -- )   \ (down: struck through - a yelp, flung)
     1 feed-step !  waits-for-her  yelp-sound common-bank hewie sound-by

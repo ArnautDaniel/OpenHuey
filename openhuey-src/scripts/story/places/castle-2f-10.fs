@@ -30,7 +30,7 @@ own-reset
 : boxes-home ( -- n )  0  #boxes 0 do  i on-square? if  i obstacle-fixed  1+  then  loop ;
 : way-scene ( -- movie? )  way-movie scenes:keyed-movie way-cutscene load-scene  wait-fade ;
 : way-opens ( -- )
-    stalkers-stay state!  fiona hold  fiona let-go-push-anim 0 play-blend  fiona -1 idle  7 frames
+    stalkers-stay state!  fiona hold  fiona true aside  fiona let-go-push-anim 0 play-blend  fiona -1 idle  7 frames
     fiona 0e 0e turn-to-xz  fiona rest-anim start-anim  60 frames
     15 screen:to-black-2 with-music or fade  way-scene
     things-id send clear-things  fiona -1 idle  castle-2f-9 preload  $28 $B4 movie-key

@@ -44,7 +44,7 @@ create flame-slots  0 , 1 , 2 , 4 ,
     30 1e shaken  1 $80 30 rumble-pad  30 0.5e shaken
     begin  0.1e cam-shake!  yield  again ;
 : first-tremor ( -- )
-    fiona hold  0 prepare-exit  fiona wait-move  over-music-f fact!
+    fiona hold  fiona true aside  0 prepare-exit  fiona wait-move  over-music-f fact!
     this-room @ 493 0 hewie-to  hewie $1ED 45 place-on-tri
     partner activate  house-of-truth-1f-9 -1 stalker-to  0 stalker-order  house-of-truth-1f-5 stalker-slot 1 doors-into
     hewie-no-attack state!  camera-restart  stones-fall  drone
@@ -55,7 +55,7 @@ create flame-slots  0 , 1 , 2 , 4 ,
 
 \ ---- the house coming down: her first step in takes her on ----
 : goes-on ( -- )
-    stalkers-stay state!  fiona hold  2 prepare-exit  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
+    stalkers-stay state!  fiona hold  fiona true aside  2 prepare-exit  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
     world-held state!  forced-exit take-exit ;
 
 \ ---- the snagged door: her blows wear it through, or Hewie leaps in at it ----

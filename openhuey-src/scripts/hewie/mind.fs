@@ -517,7 +517,7 @@ $1F constant bite-bone   \ (his head: where his bite is)
 : frame ( -- )
     tell-point
     his-busy @ if  -1 his-was-busy !  gesture!  think exit  then
-    his-was-busy @ if  0 his-was-busy !  full-stop  to-default  then   \ (the script let him go)
+    his-was-busy @ if  0 his-was-busy !  script-let-go  to-default  then   \ (the script let him go)
     upkeep  alert  his-cond @ down-cond <> if  report-near  then  obedience
     0 his-on-him !
     his-away @ if   \ out of the room being played

@@ -80,7 +80,7 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
 
 \ ---- her cooking scene: the first time she comes near the stove ----
 : cooking-scene ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     15 screen:to-black-2 with-music or fade  ladle 3 0 object
     cooking-movie scenes:keyed-movie cooking-cutscene load-scene  wait-fade  smoke-fx effect-off
     hewie-in?  hewie-cond-now @ down-cond = and if  $86 0 hewie-do  then
@@ -111,7 +111,7 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
 
 \ ---- the sketch taken, before nightfall: stepping in, Riccardo's scene - Debilitas sent in, out by the near door ----
 : the-scene ( -- )
-    stalkers-stay state!  force-calm state!  fiona hold  fiona wait-move
+    stalkers-stay state!  force-calm state!  fiona hold  fiona true aside  fiona wait-move
     15 screen:to-black-2 with-music or fade
     riccardo-movie scenes:unseen-movie riccardo-cutscene load-scene  wait-fade
     castle-b1-1 25 stalker-to  stalker let-go  riccardo-kind daniella-slot figure-in
@@ -152,7 +152,7 @@ the-vase 0 frees-floor  the-vase $209 noise-from  the-vase vase-sound room-bank 
 
 \ ---- what she may do or say here ----
 : the-sketch ( -- )
-    fiona hold  fiona wait-move  fiona -35.35e -34.5e turn-to-xz  fiona reach-out-anim play
+    fiona hold  fiona true aside  fiona wait-move  fiona -35.35e -34.5e turn-to-xz  fiona reach-out-anim play
     sketch-part hide-part  castle-sketch item-named  castle-sketch 1 give-item  castle-sketch show-item-tab  fanfare  obtained-2-msg say
     fiona reach-back-anim play  got-castle-sketch fact!  summoner-on state-off  5 false open-mark  doors-redone ;
 : say-it ( msg -- )  fiona wait-move  say ;

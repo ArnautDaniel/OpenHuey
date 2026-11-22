@@ -46,7 +46,7 @@ $20 constant traps-off            \ the placed things (traps) don't arm or make 
 $21 constant stalker-no-fear      \ the stalker in her room doesn't frighten her
 \ ---- Fiona ----
 $14 constant no-flee              \ she can't flee, and some requests (0x1A kicks, 0x22) are refused
-$15 constant panic-can-max        \ her panic may reach 100
+$15 constant panic-capped         \ her panic kept under 100 (Panic_Update: set, it stops at 99 even by a fright)
 $1E constant no-running           \ the run button does nothing
 $25 constant plain-commands       \ her commands to Hewie get plain lines, no gesture look-around
 $2B constant fiona-occupied       \ at a door, led, dragged, reacting: no gestures (cleared at her idle)

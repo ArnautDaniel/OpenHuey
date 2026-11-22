@@ -44,7 +44,7 @@ create crates  ' crate-1 , ' crate-2 , ' crate-3 , ' crate-4 , ' crate-5 , ' cra
     found-movie scenes:unseen-movie found-cutscene load-scene drop
     scene-slot figure-on  scene-slot-2 scene-slot figure-dressed-as  panic-eased  -1 run-scene ;
 : hewie-found ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     heart-door lock  chaos-forest-13 stalker-slot 1 doors-into
     room-sounds  found-scene  wait-fade
     50 trust+  hewie-in? if  hewie let-go  then

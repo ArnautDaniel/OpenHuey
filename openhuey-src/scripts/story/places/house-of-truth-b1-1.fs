@@ -19,7 +19,7 @@ $4B constant lorenzo-seen
 : daddy-scene ( -- )
     daddy-movie scenes:unseen-movie daddy-cutscene load-scene drop  3 figure-on  panic-eased  daddy-msg run-scene ;
 : lorenzo-meets ( -- )
-    stalkers-stay state!  fiona hold  stalker let-go  0 summon-take  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  stalker let-go  0 summon-take  fiona wait-move
     scene-figure 3 figure-in  yield  lorenzo-part hide-part
     daddy-scene  3 figure-out  stalker let-go  0 summon-take
     fiona $25 0 -1.96e -22.63e place-at  0 0 player-camera  camera-restart

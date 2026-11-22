@@ -42,7 +42,7 @@ create holes  $78 , $41 , $79 , $42 ,
 
 \ ---- the plate pressing machine; a plate given back ----
 : the-press ( -- )
-    stalkers-stay state!  fiona wait-move
+    stalkers-stay state!  fiona true aside  fiona wait-move
     plate-pressable? if
         press-remarked @ 0= if  press-msg say  -1 press-remarked !  then
         plate-made fact-off  press-screen open-subscreen  yield
@@ -77,7 +77,7 @@ create holes  $78 , $41 , $79 , $42 ,
     fiona $74 -107 -32.419e -4.78e place-at  camera-restart  figure-slot figure-out  0 usual-layer layer
     windows-open  haze-on @ if  false hazy  then ;
 : daniella-outside ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     cage-msg yes? if
         om1f-13-flag1 fact!  om1f-9-flag1 fact!  15 screen:to-black-2 with-music or fade
         hewie-in? hewie-sent !  hewie-sent @ if  hewie let-go  then
@@ -101,7 +101,7 @@ create holes  $78 , $41 , $79 , $42 ,
     -1 rested !  water-msg her-motions calm-sound $22 30 18.764e 15.099e recovery-point ;
 : the-tub ( -- )  fiona wait-move  fiona -6e -17e turn-to-xz  tub-msg say ;
 : the-title ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  4 frames
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  4 frames
     fiona $3A 0 -19e 21e place-at  world-frozen state!  1 12e -10e 0e 7e shot  title-msg say
     world-frozen state-off  shot-off  4 frames
     fiona hand-to-mouth-anim 10 start-blend  jumble-msg say  fiona wait-anim  stalkers-stay state-off ;

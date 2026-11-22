@@ -25,7 +25,7 @@ $34 constant the-door   0 constant her-motions
     stalker hold  stalker wait-move  stalker stalker.anims:stand-anim start-anim  1 arrive-step !
     begin  arrive-step @ 2 < while  yield  repeat ;
 : daniella-ahead ( -- )
-    c3f-2-flag1 fact!  stalkers-stay state!  fiona hold
+    c3f-2-flag1 fact!  stalkers-stay state!  fiona hold  fiona true aside
     0 exit-open? 0= if  0 knock  16 frames  then
     0 door-tried  fiona wait-move  0 arrive-step !
     partner activate  castle-3f-2 46 stalker-to  his-own-time

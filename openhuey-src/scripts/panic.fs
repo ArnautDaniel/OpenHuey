@@ -199,7 +199,7 @@ create weights   \ (fright, fear, calming)
 : fears ( F: -- x )    fear-d f@    fear-d2 f@ ['] w-fear weight f* f+  fear-scale f* ;
 : calming ( F: -- x )  calm-b f@    calm-b2 f@ ['] w-calm weight f* f+  earrings f* ;
 : level-from-parts ( -- )  lasting f@ passing f@ f+ level f! ;
-: cap-at-99 ( -- )   \ (it reaches 100 only under flag 0x15 - as the original: never)
+: cap-at-99 ( -- )   \ (without a fright it never reaches 100: only a fright takes it there)
     level f@ 100e f< 0= if  99e level f!  99e lasting f!  then ;
 : weigh-inputs ( -- )
     frights fears calming  {: F: fright fear calmed :}
@@ -211,7 +211,7 @@ create weights   \ (fright, fear, calming)
         level-from-parts  cap-at-99
     then
     \ (under flag $15 - or in the run, she out of the room played - it stops at 99)
-    panic-can-max state-flag?  her-away-played? or if
+    panic-capped state-flag?  her-away-played? or if
         level f@ 100e f< 0= if  cap-at-99  0e passing f!  then
     then ;
 : update ( -- )

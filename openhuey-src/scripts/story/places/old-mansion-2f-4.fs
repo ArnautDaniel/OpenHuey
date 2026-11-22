@@ -29,7 +29,7 @@ $1C constant scene-figure   3 constant figure-slot
     om2f-4-viride-medallion fact? 0= if  medallion-fx 5.64e 9.5e 5.58e flicker-at  then ;
 
 \ ---- the Purifier ----
-: to-purifier ( -- )  stalkers-stay state!  fiona hold  fiona wait-move  fiona $A4 -35 -36e 41e walk-to ;
+: to-purifier ( -- )  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona $A4 -35 -36e 41e walk-to ;
 : purifier ( -- )   \ (its plaque the first time - then in turn its remark; its file)
     to-purifier
     plaque-read @ if  0 plaque-read !  fiona hand-to-mouth-anim 10 start-blend  purifier-msg say  fiona wait-anim
@@ -53,7 +53,7 @@ $1C constant scene-figure   3 constant figure-slot
 
 \ ---- the rest ----
 : the-writing ( -- )
-    stalkers-stay state!  fiona wait-move  fiona 180 turn  written-msg say
+    stalkers-stay state!  fiona true aside  fiona wait-move  fiona 180 turn  written-msg say
     15 screen:to-dim fade wait-fade  names-msg say  15 screen:from-dim fade wait-fade
     $48 items:item-bit? 0=  $49 items:item-bit? 0= or if
         fiona hand-to-mouth-anim start-anim  effects-msg say  fiona wait-anim

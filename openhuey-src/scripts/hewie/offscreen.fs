@@ -137,7 +137,7 @@ create ex-at /vec allot
 : fiona-left ( exit -- )
     \ (a script that has him lets go first - Hewie_FullStop, vtable +0x90 - so he decides to follow her;
     \ before 0.2.42 he stayed held, and as the script let go his default wiped the decision: left behind)
-    his-busy @ if  0 his-busy !  0 his-was-busy !  full-stop  then
+    his-busy @ if  0 his-busy !  0 his-was-busy !  script-let-go  then
     his-room room-id <> if  drop exit  then
     his-hp @ 0=  hard-mode? floor-free? 0= or and if  1 hp!  hurt-cond cond!  then
     0 his-2b !  hewie-floor body-mask!

@@ -23,13 +23,13 @@ $1C constant scene-figure   3 constant figure-slot   $FE constant through-hole  
 
 \ ---- the hole: in, out by the far way; back through it ----
 : the-hole ( -- )
-    stalkers-stay state!  fiona hold  off-map-27 preload  figure-slot figure-out  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  off-map-27 preload  figure-slot figure-out  fiona wait-move
     fiona 180 turn  fiona look-close-anim 10 play-blend
     hole-msg yes? if
         15 screen:to-black fade  wait-fade  slide-sound common-bank fiona sound-by  world-held state!  through-hole take-exit
     else  1 prepare-exit  scene-figure figure-slot 1 figure-in-by  stalkers-stay state-off  then ;
 : back-through ( -- )
-    fiona hold  1 prepare-exit  scene-figure figure-slot 1 figure-in-by  fiona wait-move  camera-restart
+    fiona hold  fiona true aside  1 prepare-exit  scene-figure figure-slot 1 figure-in-by  fiona wait-move  camera-restart
     slide-sound common-bank fiona sound-by  15 screen:from-black fade  wait-fade  world-held state-off  stalkers-stay state-off ;
 
 \ ---- the hiding place (the kit's, out of sight); Daniella's search ----

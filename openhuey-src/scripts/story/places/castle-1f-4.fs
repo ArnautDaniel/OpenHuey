@@ -100,7 +100,7 @@ defer the-trap ( -- )
         floor-plate-pressed fact-off  0 someone-on-plate !  mechanism-starts
     then ;
 :noname ( -- )   \ (act0A: she stands on it alone, the marionette used - down to castle-1f-7, the gate on her)
-    fiona hold  stalkers-stay state!  castle-1f-7-room rooms-id send room-preload  fiona wait-move
+    fiona hold  stalkers-stay state!  fiona true aside  castle-1f-7-room rooms-id send room-preload  fiona wait-move
     15 screen:to-black fade wait-fade
     world-held state!  scene-locked state!  world-frozen state!  subscreen-locked state!  panic-eased  panic-held state!
     forced-exit take-exit ; is the-trap
@@ -142,7 +142,7 @@ defer the-trap ( -- )
     fiona send calm-reset  world-held state!  0 summon-take  figure-slot figure-out
     forced-exit take-exit ;
 : back-by-the-trap ( -- )   \ (act0B: back from it - "What's that noise?")
-    fiona hold  fiona wait-move  world-held state-off  camera-restart
+    fiona hold  fiona true aside  fiona wait-move  world-held state-off  camera-restart
     fiona rest-anim 0 start-blend  panic-held state-off  15 screen:from-black fade wait-fade
     noise-msg show  fiona wait-anim  fiona -1 idle  7 frames  wait-closed
     scene-locked state-off  subscreen-locked state-off  stalkers-stay state-off ;
@@ -158,7 +158,7 @@ defer the-trap ( -- )
     s" hook" turn-y 0e object!  s" a_Puppet" turn-y 0e object!  s" Puppetdoor" turn-y 0e object!
     hewie true shown  -1 marionette-step !  15 fade-in ;
 : marionette-used ( -- )   \ (act01)
-    fiona hold  0 marionette-step !  stalkers-stay state!  fiona wait-move
+    fiona hold  fiona true aside  0 marionette-step !  stalkers-stay state!  fiona wait-move
     items.names:broken-marionette items send take-item  puppet-door unlock  broken-marionette-used fact!
     ['] marionette-scene start drop
     begin  marionette-step @ 0= while  yield  repeat
@@ -190,9 +190,9 @@ defer the-trap ( -- )
 
 \ ---- what she does and says ----
 : no-knob ( -- )
-    fiona $1FD -90 -1 walk-move -16e 14e go-to  world-frozen state!  1 20e -10e 0e 0e shot
+    fiona $1FD -90 -1 walk-move -16e 14e go-to  world-frozen state!  fiona true aside  1 20e -10e 0e 0e shot
     no-knob-remarked @ if  pupa-cella-msg  else  -1 no-knob-remarked !  no-knob-msg  then  say
-    16 frames  world-frozen state-off  shot-off  puppet-file give-file ;
+    16 frames  world-frozen state-off  fiona false aside  shot-off  puppet-file give-file ;
 : wont-open ( -- msg )  locked-remarked @ if  no-luck-msg  else  -1 locked-remarked !  wont-open-msg  then ;
 : strains ( -- )   \ (act06: pushing at the puppet door)
     fiona hold  fiona strain-anim 0 start-blend  16 frames  fiona let-go-push-anim play
@@ -221,12 +221,12 @@ defer the-trap ( -- )
     in-panic? chased? or if  fiona rattle-behind-slow-anim play  fiona -1 idle  7 frames
     else  fiona rattle-behind-anim play  fiona -1 idle  7 frames  locked-msg say  then ;
 : the-slot ( -- )
-    fiona $A6 -90 -1 walk-move 120e 154e go-to  world-frozen state!  1 15e -10e 0e 0e shot
+    fiona $A6 -90 -1 walk-move 120e 154e go-to  world-frozen state!  fiona true aside  1 15e -10e 0e 0e shot
     slot-door doors:door-locked? if  slot-msg  else  key-in-msg  then  say
-    16 frames  world-frozen state-off  shot-off ;
+    16 frames  world-frozen state-off  fiona false aside  shot-off ;
 : at-the-slot ( -- )  fiona $10F -90 -1 walk-move 120.5e 153e go-to  4 frames  fiona reach-out-anim play ;
 : rest ( -- )   \ (act14: REST on the slot - the plate in, the door unlocked)
-    fiona hold  stalkers-stay state!  at-the-slot
+    fiona hold  stalkers-stay state!  fiona true aside  at-the-slot
     reach-sound room-bank fiona sound-by  key-in-slot-part show-part  30 frames
     unlock-sound common-bank fiona sound-by  slot-door unlock
     fiona reach-back-anim start-anim  fiona look-point-move 0 -1  130e -20e 170e 0e move  yield

@@ -28,7 +28,7 @@ $24 constant searches-var   $803 constant crouch-step   $207 constant hauled-ste
     fiona $11F 180 hauled-step walk-move 32.119e -37.94e go-to  fiona hauled-anim $14 play-blend
     fiona false noclip  stalkers-stay state-off ;
 : hides ( -- )
-    stalkers-stay state!  0 came-while-hidden !  0 found-her !
+    stalkers-stay state!  0 came-while-hidden !  0 found-her !  fiona true aside
     fiona wait-move  fiona $11A 0 -1 walk-move 31.33e -24.45e go-to
     fiona true noclip  fiona crouch-down-anim play
     fiona $28 0 crouch-step walk-move 32.119e -7.5e go-to  fiona $28 180 crouch-step walk-move 32.119e -7.5e go-to

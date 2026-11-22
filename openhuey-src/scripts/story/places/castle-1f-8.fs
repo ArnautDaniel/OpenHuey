@@ -63,7 +63,7 @@ create flames  34.2e 18.3e 14.2e f, f, f,   34.2e 18.3e -14.2e f, f, f,
     if  hewie true shown  hewie let-go exit  then
     hewie activate  castle-1f-8 299 0 hewie-to  hewie $12B -100 73.05e 6.36e place-at ;
 : telephone-rings ( -- )
-    {: | was-in down :}  fiona hold  stalkers-stay state!
+    {: | was-in down :}  fiona hold  stalkers-stay state!  fiona true aside
     begin  room-sounds-in? 0= while  yield  repeat
     uneasy-sound 22e 10e -24e room-sound  fiona uneasy-anim 10 play-blend
     15 screen:to-black-2 with-music or fade
@@ -92,7 +92,7 @@ create flames  34.2e 18.3e 14.2e f, f, f,   34.2e 18.3e -14.2e f, f, f,
 \ ---- what she may do or say here ----
 : telephone ( -- )   \ (since the call: the line dead)
     fiona $48 150 -1 walk-move 19e -19e go-to
-    world-frozen state!  1 1e 10e 0e 0e shot  line-cut-msg say  16 frames  shot-off  world-frozen state-off ;
+    world-frozen state!  fiona true aside  1 1e 10e 0e 0e shot  line-cut-msg say  16 frames  shot-off  world-frozen state-off  fiona false aside ;
 : chair ( -- )  fiona wait-move  chair-msg say ;
 : nothing-here ( -- )  fiona wait-move  nothing-msg say ;
 : ornaments ( -- )  fiona wait-move  ornaments-msg say ;

@@ -59,7 +59,7 @@ create flames  -19.7e f, 22.5e f,  -19.7e f, 25e f,  -17.2e f, 22.4e f,  -17.2e 
     godstone-movie scenes:unseen-movie godstone-cutscene load-scene  ['] godstone-shown start drop
     panic-eased  if  -1 run-scene  then ;
 : lays-godstone ( -- )
-    stalkers-stay state!  fiona hold  stalker let-go  0 summon-take  summoner-on state-off
+    stalkers-stay state!  fiona hold  fiona true aside  stalker let-go  0 summon-take  summoner-on state-off
     15 screen:to-black-2 with-music or fade  wait-fade  hewie-for-scene
     godstone-scene  wait-fade
     fiona 0 idle  fiona $158 83 3e 24e place-at  camera-restart
@@ -79,7 +79,7 @@ create flames  -19.7e f, 22.5e f,  -19.7e f, 25e f,  -17.2e f, 22.4e f,  -17.2e 
     ore-movie scenes:keyed-movie ore-cutscene load-scene  ['] ore-shown along-scene  $10 $FF movie-key
     panic-eased  if  -1 run-scene  then ;
 : lays-ore ( -- )
-    stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade  wait-fade
+    stalkers-stay state!  fiona hold  fiona true aside  15 screen:to-black-2 with-music or fade  wait-fade
     hewie-in?  hewie-cond-now @ down-cond = and if  ['] hewie-kept-hidden start drop  then
     ore-scene  wait-fade  ['] ore-shown stop-doing
     laid @ spend  stones-hidden  chains-shown  true scales
@@ -112,7 +112,7 @@ create flames  -19.7e f, 22.5e f,  -19.7e f, 25e f,  -17.2e f, 22.4e f,  -17.2e 
 : the-great-door ( -- )
     inscription-read @ 0= if
         fiona wait-move  fiona 0 turn  fiona look-at-anim play  door-msg say
-        stalkers-stay state!  fiona hold  15 screen:to-dim fade wait-fade  inscription-msg say  -1 inscription-read !
+        stalkers-stay state!  fiona hold  fiona true aside  15 screen:to-dim fade wait-fade  inscription-msg say  -1 inscription-read !
         15 screen:from-dim fade wait-fade  inscription-file give-file  stalkers-stay state-off  exit
     then
     fiona wait-move  fiona $1B9 0 -3.806e 112.773e walk-to

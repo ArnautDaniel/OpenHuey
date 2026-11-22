@@ -27,7 +27,7 @@ own: plaque-read  own: caught-remarked  own: device-remarked  own: sounds-on  ow
 1 constant changes-it   2 constant nothing-from-it   \ (the items' events here: items.fs)
 
 \ ---- the extractor: its plaque; the Prima Materia put in, Sulfuric Ore out; else nothing ----
-: at-extractor ( -- )  stalkers-stay state!  fiona hold  fiona wait-move  fiona $50 -90 -57e 55e walk-to ;
+: at-extractor ( -- )  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona $50 -90 -57e 55e walk-to ;
 : the-extractor ( -- )
     at-extractor
     plaque-read @ if
@@ -79,7 +79,7 @@ create his-rooms   $60 , $63 , $10B ,
 : doors-anew ( -- )
     locked-doors 6 ['] lock each-cell  $79 closed-off  exits-redone  his-rooms 3 ['] kept-from each-cell ;
 : come-with-me ( -- )
-    stalkers-stay state!  fiona hold  hewie let-go  stalker-unloaded  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  hewie let-go  stalker-unloaded  fiona wait-move
     riccardo-kind stalker-ready  yield  in-play state-off
     the-scene
     world-held state!  stalker $91 125 -13.81e 11.69e place-at  0 prepare-exit  forced-exit take-exit

@@ -49,7 +49,7 @@ testing the stalker kept: Debilitas in the game here, saved, let go, back where 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 [: 2 partner-load ;] game:story enter execute leave-actor  deliver  2 run-frames
 front-garden-2 0 game:debilitas send stalker-in  deliver  [: 0 stalker:ordered ;] his  5 run-frames   \ (after her: kept in her room)
-[: 7 hp !  12 hits !  300 temper ! ;] his
+[: 7 hp !  12 hits !  300 temper !  1 came-by !  37.6e roll-build f! ;] his   \ (0.3.2: his door and the roll's build kept - the build whole, as +0x864)
 ' saves:quick-save in-saves  deliver  2 run-frames
 T{ saves:save-path file-exists? -> -1 }T
 [: slot-unload ;] game:story enter execute leave-actor  deliver  5 run-frames
@@ -57,6 +57,7 @@ T{ [: in-game @ ;] his -> 0 }T
 ' saves:quick-load in-saves  deliver  20 run-frames
 T{ [: in-game @ 0<>  hp @ ;] his  game:debilitas body-room -> -1 7 front-garden-2 }T
 T{ [: hits @  temper @ ;] his -> 12 300 }T
+T{ [: came-by @  roll-build f@ f>s ;] his -> 1 37 }T
 
 testing her panic kept (the progress +0x7B0): as she saved, not as she was when loading
 : her-level ( -- n )  game:panic enter  panic:level f@ f>s  leave-actor ;

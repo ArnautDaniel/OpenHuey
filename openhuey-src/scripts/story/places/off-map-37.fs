@@ -85,7 +85,7 @@ create replay-rooms   \ (the theatre's movie: the room that replays it - act03)
     fiona $11B 180 -34e 60e place-at  2 2 player-camera
     off-map-37 267 0 hewie-to  hewie $10B 0 place-on-tri  hewie 1 1 camera-set  yield  camera-restart ;
 : the-theatre ( -- )
-    stalkers-stay state!
+    stalkers-stay state!  fiona true aside
     begin
         fiona wait-move
         cam-set@ 0= if  fiona $115 0 -34e 27e walk-to  1 20e 10e -20e 0e shot
@@ -133,16 +133,16 @@ create challenges   \ (each challenge's first room, loaded ahead; its stalker ki
 
 \ ---- the changing area: the costumes' menu ----
 : changing ( -- )
-    stalkers-stay state!  fiona wait-move  fiona 180 turn  1 20e 10e 0e 0e shot  30 frames
+    stalkers-stay state!  fiona true aside  fiona wait-move  fiona 180 turn  1 20e 10e 0e 0e shot  30 frames
     no-track!  costume-menu open-subscreen  shot-off  wrong-sound clothes-changed
     room-track!  15 screen:from-black with-music or fade  wait-fade  stalkers-stay state-off ;
 
 \ ---- the galleries: at the corner, its menu ----
 : gallery ( menu -- )   \ (looked at closely, the menu, the room's track again)
     1 20e 10e 0e 0e shot  30 frames  no-track!  open-subscreen  room-track! ;
-: models ( -- )  stalkers-stay state!  fiona wait-move  fiona 180 turn  model-menu gallery  stalkers-stay state-off ;
+: models ( -- )  stalkers-stay state!  fiona true aside  fiona wait-move  fiona 180 turn  model-menu gallery  stalkers-stay state-off ;
 : corner ( menu tri deg F: x z -- )   \ (walked to, the menu, a moment)
-    {: m tri deg F: x z :}  stalkers-stay state!  fiona wait-move  fiona tri deg x z walk-to
+    {: m tri deg F: x z :}  stalkers-stay state!  fiona true aside  fiona wait-move  fiona tri deg x z walk-to
     m gallery  8 frames  stalkers-stay state-off ;
 : music-gallery ( -- )  music-menu $121 180 0e 10.5e corner ;
 : art-gallery ( -- )  art-menu 9 -90 -41e -38e corner ;

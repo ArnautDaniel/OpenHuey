@@ -361,6 +361,7 @@ message effect-command ( v -- )                  \ (an effect) a command later (
 \ ---- the stalkers (docs/subsystems/stalker.md) ----
 message stalker-in ( room tri -- )           \ (a stalker) into the game, in that room on that triangle
 message stalker-restore-more ( cond hp-max rage temper hits mode-t down-t yaw -- )   \ (a stalker) the rest of how a save had him (Pursuer_LoadState)
+message stalker-restore-way ( came goal-room roll -- )   \ (a stalker) the exit he came in by, the room he heads for, his chance roll's build (Pursuer_LoadState)
 message stalker-restore ( hp mode -- )      \ (a stalker) as a save had him
 message stalker-out ( -- )                   \ (a stalker) out of the game
 message stalker-hunt ( -- )                  \ (a stalker) heads for Fiona's room (mode 1: the summoner, the console)

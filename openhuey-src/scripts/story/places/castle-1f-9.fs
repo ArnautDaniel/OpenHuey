@@ -56,7 +56,7 @@ vase-1 0 $1E7 vase   vase-2 1 $1F1 vase
 
 \ ---- the garden door: the Garden Key used at it - the Luminessants' scene, the door unlocked ----
 : luminessants ( -- )
-    fiona hold  stalkers-stay state!  15 screen:to-black-2 with-music or fade  fiona wait-move
+    fiona hold  fiona true aside  stalkers-stay state!  15 screen:to-black-2 with-music or fade  fiona wait-move
     luminessants-movie scenes:keyed-movie luminessants-cutscene load-scene  wait-fade  $28 $FF movie-key
     panic-eased  if  -1 run-scene  then
     fiona 8 166 -19.086e -6.777e place-at  scene-locked state!  15 fade-in
@@ -92,7 +92,7 @@ vase-1 0 $1E7 vase   vase-2 1 $1F1 vase
     stairs-floor solid-floor floor-on  drop-floor solid-floor floor-on  stalkers-stay state-off
     castle-1f-9 406 0 hewie-to ;
 : sends-him ( -- )
-    fiona hold  stalkers-stay state!  fiona wait-move  0 hewie-up !  ['] fetches start drop
+    fiona hold  stalkers-stay state!  fiona true aside  fiona wait-move  0 hewie-up !  ['] fetches start drop
     fiona go-there-gesture-anim start-anim  fiona 1 wait-mark  go-there-call common-bank fiona sound-by
     fiona wait-anim  fiona -1 idle  7 frames
     begin  hewie stairs-top-area in-area? 0= while  yield  repeat  hewie 2 -1 camera-set
