@@ -299,12 +299,18 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
 \ blow, a fall, lying down set - vtable +0x29C), counted while it is free; else pulsing - its phase
 \ on by 4 cos of it and up to 10 more, degrees a frame. Before 0.2.42 every turn of what it did set it
 : struck-or-down? ( -- flag )  cond @ hurt-cond down-cond 1+ within ;
-: tint-struck ( -- )  reeling @  cond @ down-cond = or if  150 tint-t !  then ;   \ (the +0x29C step: struck, down)
+: blow-arms? ( -- flag )   \ (TintStalker_SetDelay / Kind37_BehaviourEnded, the +0x29C step after a blow - Pursuer_Hit: once a blow - after a fall
+    \ or lying - KnockedDown, PickStepAlt down: kept at it while down)
+    reeling @ 0<> dup tint-reeled @ 0= and  hits @ tint-hits @ <> or  cond @ down-cond = or
+    swap tint-reeled !  hits @ tint-hits ! ;
+: tint-counts? ( -- flag )   \ (its while counts only while he is free: not hurt, alerted nor down (+0xC4 1 / 2), not under
+    \ Hewie's bite (his action $23, moveSub 9) nor powdered (the powder's hit, $24: moveSub $11))
+    struck-or-down? 0=  bitten @ 0= and  powdered? 0= and ;
 : kind37-tint ( -- )
-    tint-struck
+    blow-arms? if  150 tint-t !  then
     tint-phase f@ fsin 80e f* 80e f+  128e fmin 128e f/  my-model @ actor act.alpha sf!
     tint-t @ if
-        pi f2/ tint-phase f!  struck-or-down? 0= if  -1 tint-t +!  then
+        pi f2/ tint-phase f!  tint-counts? if  -1 tint-t +!  then
     else
         tint-phase f@ fcos 4e f*  rnd 10e f* f+  deg>rad  tint-phase f@ f+ angle-wrap tint-phase f!
     then ;
@@ -336,13 +342,6 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
             f0> 0= if  0e tint-alpha f!  tint-still tint-fade !  0 tint-shown !  then
         endof
     endcase ;
-: blow-arms? ( -- flag )   \ (TintStalker_SetDelay as the step after a blow - Pursuer_Hit: once a blow - after a fall
-    \ or lying - KnockedDown, PickStepAlt down: kept at it while down)
-    reeling @ 0<> dup tint-reeled @ 0= and  hits @ tint-hits @ <> or  cond @ down-cond = or
-    swap tint-reeled !  hits @ tint-hits ! ;
-: tint-counts? ( -- flag )   \ (its while counts only while he is free: not hurt nor down (+0xC4 1 / 2), not under
-    \ Hewie's bite (his action $23, moveSub 9) nor powdered (the powder's hit, $24: moveSub $11))
-    struck-or-down? 0=  bitten @ 0= and  powdered? 0= and ;
 : tint-frame ( -- )
     blow-arms? if  150 tint-t !  then
     tint-t @ if

@@ -780,3 +780,4 @@ while (TintStalker_SetDelay, a behaviour step after a hit, a fall, lying - Pursu
 ShowUp) is armed once a blow (a new flinch, more damage) and kept full while down, and counts only while he is free -
 not hurt or down, not under Hewie's bite (his action $23, moveSub 9) nor powdered (the powder's hit, $24: moveSub
 $11) (riccardo.fs `blow-arms?`, `tint-counts?`); before, it was re-armed each frame he reeled and ran through those.
+Kind 37's tint hold (Kind37_BehaviourEnded at the same +0x29C, counted by Kind37_Update as the TintStalker's) the same.

@@ -80,6 +80,11 @@ T{ k37 enter  0 tint-t !  3 my-mode !  kind37-frame  2 my-mode !  kind37-frame  
 T{ k37 enter  -1 reeling !  kind37-frame  0 reeling !  kind37-frame  tint-t @ 0>  my-model @ actor act.alpha sf@ 1e f=  k37-pulse  leave-actor -> -1 -1 -1 }T
 
 \ ---- the TintStalker (kind 23): the Pursuer's chase, seen only a while once struck ----
+testing ... its hold (0.3.2, Kind37_BehaviourEnded / _Update): armed once a blow, counting through his flinch; paused under Hewie's bite
+: k37-after ( n -- t )  0 ?do  kind37-frame  loop  tint-t @ ;
+T{ k37 enter  0 tint-t !  0 hits !  0 cond !  0 bitten !  0 reeling !  kind37-frame  -1 reeling !  1 k37-after  9 k37-after  leave-actor -> 149 140 }T
+T{ k37 enter  -1 bitten !  10 k37-after  0 bitten !  0 reeling !  leave-actor -> 140 }T
+
 : ts ( -- id )  s" tintstalker" actor-named ;
 testing the TintStalker: its kit, the Pursuer's chase, unseen till it does something
 T{ ts enter  kit @ tintstalker-kit =  base-chase @  hp @  unseen @  leave-actor -> -1 -1 100 -1 }T
