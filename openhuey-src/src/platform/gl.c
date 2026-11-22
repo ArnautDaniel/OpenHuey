@@ -79,6 +79,8 @@ GL_CLASSIC_FUNCTIONS(GL_CLASSIC)
 static PFNGLUSEPROGRAMPROC sUseProgram;
 static PFNGLBINDVERTEXARRAYPROC sBindVertexArray;
 static PFNGLBINDFRAMEBUFFERPROC sBindFramebuffer;
+static PFNGLDELETEFRAMEBUFFERSPROC sDeleteFramebuffers;
+static PFNGLDELETEVERTEXARRAYSPROC sDeleteVertexArrays;
 static GLuint sProgram, sVertexArray, sDrawFbo, sReadFbo;   /* what is bound */
 
 /* a texture unit no shader samples: the fallbacks bind there to change a texture */
@@ -168,6 +170,27 @@ static void APIENTRY bind_framebuffer(GLenum target, GLuint fbo) {
     sBindFramebuffer(target, fbo);
 }
 
+/* one deleted while bound: GL binds 0 in its place - kept track of too (else put back, the deleted
+ * name would be bound again) */
+static void APIENTRY delete_framebuffers(GLsizei n, const GLuint *f) {
+    GLsizei i;
+
+    for (i = 0; i < n; i++) {
+        sDrawFbo = sDrawFbo == f[i] ? 0 : sDrawFbo;
+        sReadFbo = sReadFbo == f[i] ? 0 : sReadFbo;
+    }
+    sDeleteFramebuffers(n, f);
+}
+
+static void APIENTRY delete_vertex_arrays(GLsizei n, const GLuint *a) {
+    GLsizei i;
+
+    for (i = 0; i < n; i++) {
+        sVertexArray = sVertexArray == a[i] ? 0 : sVertexArray;
+    }
+    sDeleteVertexArrays(n, a);
+}
+
 /* a framebuffer bound to change it (draw), then the bindings put back */
 static void fbo_edit(GLuint fbo) {
     sBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
@@ -205,22 +228,22 @@ static GLint location(GLuint p, GLint loc) {
             sUseProgram(sProgram);                                                        \
         }                                                                                 \
     }
-PROGRAM_UNIFORM(f_ProgramUniform1i, c_glUniform1i, (GLuint program, GLint loc, GLint a), (l, a))
-PROGRAM_UNIFORM(f_ProgramUniform1f, c_glUniform1f, (GLuint program, GLint loc, GLfloat a), (l, a))
-PROGRAM_UNIFORM(f_ProgramUniform2f, c_glUniform2f, (GLuint program, GLint loc, GLfloat a, GLfloat b), (l, a, b))
-PROGRAM_UNIFORM(f_ProgramUniform3f, c_glUniform3f, (GLuint program, GLint loc, GLfloat a, GLfloat b, GLfloat c), (l, a, b, c))
-PROGRAM_UNIFORM(f_ProgramUniform4f, c_glUniform4f, (GLuint program, GLint loc, GLfloat a, GLfloat b, GLfloat c, GLfloat d),
+PROGRAM_UNIFORM(f_glProgramUniform1i, c_glUniform1i, (GLuint program, GLint loc, GLint a), (l, a))
+PROGRAM_UNIFORM(f_glProgramUniform1f, c_glUniform1f, (GLuint program, GLint loc, GLfloat a), (l, a))
+PROGRAM_UNIFORM(f_glProgramUniform2f, c_glUniform2f, (GLuint program, GLint loc, GLfloat a, GLfloat b), (l, a, b))
+PROGRAM_UNIFORM(f_glProgramUniform3f, c_glUniform3f, (GLuint program, GLint loc, GLfloat a, GLfloat b, GLfloat c), (l, a, b, c))
+PROGRAM_UNIFORM(f_glProgramUniform4f, c_glUniform4f, (GLuint program, GLint loc, GLfloat a, GLfloat b, GLfloat c, GLfloat d),
                 (l, a, b, c, d))
-PROGRAM_UNIFORM(f_ProgramUniformMatrix4fv, c_glUniformMatrix4fv,
+PROGRAM_UNIFORM(f_glProgramUniformMatrix4fv, c_glUniformMatrix4fv,
                 (GLuint program, GLint loc, GLsizei n, GLboolean transpose, const GLfloat *v), (l, n, transpose, v))
-PROGRAM_UNIFORM(f_ProgramUniform1fv, c_glUniform1fv, (GLuint program, GLint loc, GLsizei n, const GLfloat *v), (l, n, v))
-PROGRAM_UNIFORM(f_ProgramUniform3fv, c_glUniform3fv, (GLuint program, GLint loc, GLsizei n, const GLfloat *v), (l, n, v))
-PROGRAM_UNIFORM(f_ProgramUniform4fv, c_glUniform4fv, (GLuint program, GLint loc, GLsizei n, const GLfloat *v), (l, n, v))
+PROGRAM_UNIFORM(f_glProgramUniform1fv, c_glUniform1fv, (GLuint program, GLint loc, GLsizei n, const GLfloat *v), (l, n, v))
+PROGRAM_UNIFORM(f_glProgramUniform3fv, c_glUniform3fv, (GLuint program, GLint loc, GLsizei n, const GLfloat *v), (l, n, v))
+PROGRAM_UNIFORM(f_glProgramUniform4fv, c_glUniform4fv, (GLuint program, GLint loc, GLsizei n, const GLfloat *v), (l, n, v))
 #undef PROGRAM_UNIFORM
 
 /* ---- buffers: changed bound to the copy target (no vertex array's state) ---- */
 
-static void APIENTRY f_CreateBuffers(GLsizei n, GLuint *b) {
+static void APIENTRY f_glCreateBuffers(GLsizei n, GLuint *b) {
     GLsizei i;
 
     c_glGenBuffers(n, b);
@@ -230,19 +253,19 @@ static void APIENTRY f_CreateBuffers(GLsizei n, GLuint *b) {
     c_glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
 }
 
-static void APIENTRY f_NamedBufferStorage(GLuint b, GLsizeiptr size, const void *data, GLbitfield flags) {
+static void APIENTRY f_glNamedBufferStorage(GLuint b, GLsizeiptr size, const void *data, GLbitfield flags) {
     c_glBindBuffer(GL_COPY_WRITE_BUFFER, b);
     c_glBufferData(GL_COPY_WRITE_BUFFER, size, data, flags & GL_DYNAMIC_STORAGE_BIT ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
     c_glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
 }
 
-static void APIENTRY f_NamedBufferData(GLuint b, GLsizeiptr size, const void *data, GLenum usage) {
+static void APIENTRY f_glNamedBufferData(GLuint b, GLsizeiptr size, const void *data, GLenum usage) {
     c_glBindBuffer(GL_COPY_WRITE_BUFFER, b);
     c_glBufferData(GL_COPY_WRITE_BUFFER, size, data, usage);
     c_glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
 }
 
-static void APIENTRY f_NamedBufferSubData(GLuint b, GLintptr offset, GLsizeiptr size, const void *data) {
+static void APIENTRY f_glNamedBufferSubData(GLuint b, GLintptr offset, GLsizeiptr size, const void *data) {
     c_glBindBuffer(GL_COPY_WRITE_BUFFER, b);
     c_glBufferSubData(GL_COPY_WRITE_BUFFER, offset, size, data);
     c_glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
@@ -269,7 +292,7 @@ static void vao_apply(GLuint vao) {
     sBindVertexArray(sVertexArray);
 }
 
-static void APIENTRY f_CreateVertexArrays(GLsizei n, GLuint *a) {
+static void APIENTRY f_glCreateVertexArrays(GLsizei n, GLuint *a) {
     GLsizei i;
 
     c_glGenVertexArrays(n, a);
@@ -280,13 +303,13 @@ static void APIENTRY f_CreateVertexArrays(GLsizei n, GLuint *a) {
     sBindVertexArray(sVertexArray);
 }
 
-static void APIENTRY f_EnableVertexArrayAttrib(GLuint vao, GLuint index) {
+static void APIENTRY f_glEnableVertexArrayAttrib(GLuint vao, GLuint index) {
     sBindVertexArray(vao);
     c_glEnableVertexAttribArray(index);
     sBindVertexArray(sVertexArray);
 }
 
-static void APIENTRY f_VertexArrayAttribFormat(GLuint vao, GLuint index, GLint size, GLenum type, GLboolean normalized,
+static void APIENTRY f_glVertexArrayAttribFormat(GLuint vao, GLuint index, GLint size, GLenum type, GLboolean normalized,
                                                GLuint offset) {
     VaoInfo *v = vao_info(vao);
 
@@ -300,14 +323,14 @@ static void APIENTRY f_VertexArrayAttribFormat(GLuint vao, GLuint index, GLint s
     }
 }
 
-static void APIENTRY f_VertexArrayAttribBinding(GLuint vao, GLuint index, GLuint binding) {
+static void APIENTRY f_glVertexArrayAttribBinding(GLuint vao, GLuint index, GLuint binding) {
     if (index < VAO_ATTRS) {
         vao_info(vao)->attr[index].binding = binding;
         vao_apply(vao);
     }
 }
 
-static void APIENTRY f_VertexArrayVertexBuffer(GLuint vao, GLuint binding, GLuint buffer, GLintptr offset, GLsizei stride) {
+static void APIENTRY f_glVertexArrayVertexBuffer(GLuint vao, GLuint binding, GLuint buffer, GLintptr offset, GLsizei stride) {
     VaoInfo *v = vao_info(vao);
 
     if (binding < VAO_BINDINGS) {
@@ -320,7 +343,7 @@ static void APIENTRY f_VertexArrayVertexBuffer(GLuint vao, GLuint binding, GLuin
 
 /* ---- textures: each one's target remembered (the binds need it) ---- */
 
-static void APIENTRY f_CreateTextures(GLenum target, GLsizei n, GLuint *t) {
+static void APIENTRY f_glCreateTextures(GLenum target, GLsizei n, GLuint *t) {
     GLsizei i;
 
     c_glGenTextures(n, t);
@@ -347,7 +370,7 @@ static void format_of(GLenum internal, GLenum *format, GLenum *type) {
 
 /* immutable storage's rule kept: its levels and no more (else a one-level texture with the
  * default mipmapped filter is incomplete - black) */
-static void APIENTRY f_TextureStorage2D(GLuint t, GLsizei levels, GLenum internal, GLsizei w, GLsizei h) {
+static void APIENTRY f_glTextureStorage2D(GLuint t, GLsizei levels, GLenum internal, GLsizei w, GLsizei h) {
     GLenum format, type, target = texture_target(t);
     GLsizei i;
 
@@ -362,7 +385,7 @@ static void APIENTRY f_TextureStorage2D(GLuint t, GLsizei levels, GLenum interna
     c_glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, levels - 1);
 }
 
-static void APIENTRY f_TextureStorage3D(GLuint t, GLsizei levels, GLenum internal, GLsizei w, GLsizei h, GLsizei d) {
+static void APIENTRY f_glTextureStorage3D(GLuint t, GLsizei levels, GLenum internal, GLsizei w, GLsizei h, GLsizei d) {
     GLenum format, type, target = texture_target(t);
     GLsizei i;
 
@@ -377,23 +400,23 @@ static void APIENTRY f_TextureStorage3D(GLuint t, GLsizei levels, GLenum interna
     c_glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, levels - 1);
 }
 
-static void APIENTRY f_TextureSubImage2D(GLuint t, GLint level, GLint x, GLint y, GLsizei w, GLsizei h, GLenum format,
+static void APIENTRY f_glTextureSubImage2D(GLuint t, GLint level, GLint x, GLint y, GLsizei w, GLsizei h, GLenum format,
                                          GLenum type, const void *pixels) {
     texture_edit(t);
     c_glTexSubImage2D(texture_target(t), level, x, y, w, h, format, type, pixels);
 }
 
-static void APIENTRY f_TextureParameteri(GLuint t, GLenum pname, GLint value) {
+static void APIENTRY f_glTextureParameteri(GLuint t, GLenum pname, GLint value) {
     texture_edit(t);
     c_glTexParameteri(texture_target(t), pname, value);
 }
 
-static void APIENTRY f_TextureBuffer(GLuint t, GLenum internal, GLuint buffer) {
+static void APIENTRY f_glTextureBuffer(GLuint t, GLenum internal, GLuint buffer) {
     texture_edit(t);   /* (a buffer texture: its texels the buffer's) */
     c_glTexBuffer(GL_TEXTURE_BUFFER, internal, buffer);
 }
 
-static void APIENTRY f_BindTextureUnit(GLuint unit, GLuint t) {
+static void APIENTRY f_glBindTextureUnit(GLuint unit, GLuint t) {
     c_glActiveTexture(GL_TEXTURE0 + unit);
     if (t == 0) {   /* (none: whichever kind was there) */
         c_glBindTexture(GL_TEXTURE_2D, 0);
@@ -404,18 +427,18 @@ static void APIENTRY f_BindTextureUnit(GLuint unit, GLuint t) {
     }
 }
 
-static void APIENTRY f_GenerateTextureMipmap(GLuint t) {
+static void APIENTRY f_glGenerateTextureMipmap(GLuint t) {
     texture_edit(t);
     c_glGenerateMipmap(texture_target(t));
 }
 
-static void APIENTRY f_CopyTextureSubImage2D(GLuint t, GLint level, GLint xoff, GLint yoff, GLint x, GLint y, GLsizei w,
+static void APIENTRY f_glCopyTextureSubImage2D(GLuint t, GLint level, GLint xoff, GLint yoff, GLint x, GLint y, GLsizei w,
                                              GLsizei h) {
     texture_edit(t);   /* (from the framebuffer bound to read, as the 4.5 one) */
     c_glCopyTexSubImage2D(texture_target(t), level, xoff, yoff, x, y, w, h);
 }
 
-static void APIENTRY f_CreateSamplers(GLsizei n, GLuint *s) {
+static void APIENTRY f_glCreateSamplers(GLsizei n, GLuint *s) {
     GLsizei i;
 
     c_glGenSamplers(n, s);
@@ -427,7 +450,7 @@ static void APIENTRY f_CreateSamplers(GLsizei n, GLuint *s) {
 
 /* ---- framebuffers and renderbuffers ---- */
 
-static void APIENTRY f_CreateFramebuffers(GLsizei n, GLuint *f) {
+static void APIENTRY f_glCreateFramebuffers(GLsizei n, GLuint *f) {
     GLsizei i;
 
     c_glGenFramebuffers(n, f);
@@ -437,25 +460,25 @@ static void APIENTRY f_CreateFramebuffers(GLsizei n, GLuint *f) {
     fbo_done();
 }
 
-static void APIENTRY f_NamedFramebufferTexture(GLuint f, GLenum attachment, GLuint t, GLint level) {
+static void APIENTRY f_glNamedFramebufferTexture(GLuint f, GLenum attachment, GLuint t, GLint level) {
     fbo_edit(f);
     c_glFramebufferTexture(GL_DRAW_FRAMEBUFFER, attachment, t, level);
     fbo_done();
 }
 
-static void APIENTRY f_NamedFramebufferTextureLayer(GLuint f, GLenum attachment, GLuint t, GLint level, GLint layer) {
+static void APIENTRY f_glNamedFramebufferTextureLayer(GLuint f, GLenum attachment, GLuint t, GLint level, GLint layer) {
     fbo_edit(f);
     c_glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, attachment, t, level, layer);
     fbo_done();
 }
 
-static void APIENTRY f_NamedFramebufferRenderbuffer(GLuint f, GLenum attachment, GLenum target, GLuint r) {
+static void APIENTRY f_glNamedFramebufferRenderbuffer(GLuint f, GLenum attachment, GLenum target, GLuint r) {
     fbo_edit(f);
     c_glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, attachment, target, r);
     fbo_done();
 }
 
-static GLenum APIENTRY f_CheckNamedFramebufferStatus(GLuint f, GLenum target) {
+static GLenum APIENTRY f_glCheckNamedFramebufferStatus(GLuint f, GLenum target) {
     GLenum status;
 
     (void)target;
@@ -465,25 +488,25 @@ static GLenum APIENTRY f_CheckNamedFramebufferStatus(GLuint f, GLenum target) {
     return status;
 }
 
-static void APIENTRY f_NamedFramebufferDrawBuffer(GLuint f, GLenum buf) {
+static void APIENTRY f_glNamedFramebufferDrawBuffer(GLuint f, GLenum buf) {
     fbo_edit(f);
     c_glDrawBuffer(buf);
     fbo_done();
 }
 
-static void APIENTRY f_NamedFramebufferDrawBuffers(GLuint f, GLsizei n, const GLenum *bufs) {
+static void APIENTRY f_glNamedFramebufferDrawBuffers(GLuint f, GLsizei n, const GLenum *bufs) {
     fbo_edit(f);
     c_glDrawBuffers(n, bufs);
     fbo_done();
 }
 
-static void APIENTRY f_NamedFramebufferReadBuffer(GLuint f, GLenum buf) {
+static void APIENTRY f_glNamedFramebufferReadBuffer(GLuint f, GLenum buf) {
     sBindFramebuffer(GL_READ_FRAMEBUFFER, f);
     c_glReadBuffer(buf);
     fbo_done();
 }
 
-static void APIENTRY f_BlitNamedFramebuffer(GLuint from, GLuint to, GLint x0, GLint y0, GLint x1, GLint y1, GLint dx0,
+static void APIENTRY f_glBlitNamedFramebuffer(GLuint from, GLuint to, GLint x0, GLint y0, GLint x1, GLint y1, GLint dx0,
                                             GLint dy0, GLint dx1, GLint dy1, GLbitfield mask, GLenum filter) {
     sBindFramebuffer(GL_READ_FRAMEBUFFER, from);
     sBindFramebuffer(GL_DRAW_FRAMEBUFFER, to);
@@ -491,19 +514,19 @@ static void APIENTRY f_BlitNamedFramebuffer(GLuint from, GLuint to, GLint x0, GL
     fbo_done();
 }
 
-static void APIENTRY f_ClearNamedFramebufferfv(GLuint f, GLenum buffer, GLint drawbuffer, const GLfloat *value) {
+static void APIENTRY f_glClearNamedFramebufferfv(GLuint f, GLenum buffer, GLint drawbuffer, const GLfloat *value) {
     fbo_edit(f);
     c_glClearBufferfv(buffer, drawbuffer, value);
     fbo_done();
 }
 
-static void APIENTRY f_ClearNamedFramebufferfi(GLuint f, GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil) {
+static void APIENTRY f_glClearNamedFramebufferfi(GLuint f, GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil) {
     fbo_edit(f);
     c_glClearBufferfi(buffer, drawbuffer, depth, stencil);
     fbo_done();
 }
 
-static void APIENTRY f_CreateRenderbuffers(GLsizei n, GLuint *r) {
+static void APIENTRY f_glCreateRenderbuffers(GLsizei n, GLuint *r) {
     GLsizei i;
 
     c_glGenRenderbuffers(n, r);
@@ -513,7 +536,7 @@ static void APIENTRY f_CreateRenderbuffers(GLsizei n, GLuint *r) {
     c_glBindRenderbuffer(GL_RENDERBUFFER, 0);
 }
 
-static void APIENTRY f_NamedRenderbufferStorageMultisample(GLuint r, GLsizei samples, GLenum internal, GLsizei w,
+static void APIENTRY f_glNamedRenderbufferStorageMultisample(GLuint r, GLsizei samples, GLenum internal, GLsizei w,
                                                            GLsizei h) {
     c_glBindRenderbuffer(GL_RENDERBUFFER, r);
     c_glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, internal, w, h);
@@ -521,7 +544,7 @@ static void APIENTRY f_NamedRenderbufferStorageMultisample(GLuint r, GLsizei sam
 }
 
 /* a colour texture's part copied into another's: blitted between two framebuffers of its own */
-static void APIENTRY f_CopyImageSubData(GLuint src, GLenum src_target, GLint src_level, GLint sx, GLint sy, GLint sz,
+static void APIENTRY f_glCopyImageSubData(GLuint src, GLenum src_target, GLint src_level, GLint sx, GLint sy, GLint sz,
                                         GLuint dst, GLenum dst_target, GLint dst_level, GLint dx, GLint dy, GLint dz,
                                         GLsizei w, GLsizei h, GLsizei d) {
     static GLuint from, to;
@@ -543,7 +566,7 @@ static void APIENTRY f_CopyImageSubData(GLuint src, GLenum src_target, GLint src
     fbo_done();
 }
 
-static void APIENTRY f_ReadnPixels(GLint x, GLint y, GLsizei w, GLsizei h, GLenum format, GLenum type, GLsizei size,
+static void APIENTRY f_glReadnPixels(GLint x, GLint y, GLsizei w, GLsizei h, GLenum format, GLenum type, GLsizei size,
                                    void *data) {
     (void)size;
     c_glReadPixels(x, y, w, h, format, type, data);
@@ -565,90 +588,44 @@ static int has_extension(const char *name) {
     return 0;
 }
 
+/* the driver's function of that name into the pointer; ok 0 if it has none (the pointer's name and
+ * the string made where `name` is pasted: the gl* names are macros themselves - gl.h) */
+#define LOAD_INTO(ptr, type, str)                                      \
+    ptr = (type)SDL_GL_GetProcAddress(str);                            \
+    if (ptr == NULL) {                                                 \
+        fprintf(stderr, "gl: missing %s\n", str);                      \
+        ok = 0;                                                        \
+    }
+#define LOAD_P(type, name) LOAD_INTO(p_##name, type, #name)
+#define LOAD_C(type, name) LOAD_INTO(c_##name, type, #name)
+
 int gl_load(int fallbacks) {
     int ok = 1;
 
-#define LOAD_FN(type, name)                                            \
-    p_##name = (type)SDL_GL_GetProcAddress(#name);                     \
-    if (p_##name == NULL) {                                            \
-        fprintf(stderr, "gl: missing %s\n", #name);                    \
-        ok = 0;                                                        \
-    }
-    GL_CORE_FUNCTIONS(LOAD_FN)
-#undef LOAD_FN
+    GL_CORE_FUNCTIONS(LOAD_P)
     if (!ok) {
         return 0;
     }
     sLow = fallbacks;
     if (!fallbacks) {
-#define LOAD_FN(type, name)                                            \
-    p_##name = (type)SDL_GL_GetProcAddress(#name);                     \
-    if (p_##name == NULL) {                                            \
-        fprintf(stderr, "gl: missing %s\n", #name);                    \
-        ok = 0;                                                        \
-    }
-        GL_DSA_FUNCTIONS(LOAD_FN)
-#undef LOAD_FN
+        GL_DSA_FUNCTIONS(LOAD_P)
         sAnisotropy = 1;   /* (4.6 core) */
     } else {
-#define LOAD_FN(type, name)                                            \
-    c_##name = (type)SDL_GL_GetProcAddress(#name);                     \
-    if (c_##name == NULL) {                                            \
-        fprintf(stderr, "gl: missing %s\n", #name);                    \
-        ok = 0;                                                        \
-    }
-        GL_CLASSIC_FUNCTIONS(LOAD_FN)
-#undef LOAD_FN
-        p_glProgramUniform1i = f_ProgramUniform1i;
-        p_glProgramUniform1f = f_ProgramUniform1f;
-        p_glProgramUniform2f = f_ProgramUniform2f;
-        p_glProgramUniform3f = f_ProgramUniform3f;
-        p_glProgramUniform4f = f_ProgramUniform4f;
-        p_glProgramUniformMatrix4fv = f_ProgramUniformMatrix4fv;
-        p_glProgramUniform1fv = f_ProgramUniform1fv;
-        p_glProgramUniform3fv = f_ProgramUniform3fv;
-        p_glProgramUniform4fv = f_ProgramUniform4fv;
-        p_glCreateBuffers = f_CreateBuffers;
-        p_glNamedBufferStorage = f_NamedBufferStorage;
-        p_glNamedBufferData = f_NamedBufferData;
-        p_glNamedBufferSubData = f_NamedBufferSubData;
-        p_glCreateVertexArrays = f_CreateVertexArrays;
-        p_glEnableVertexArrayAttrib = f_EnableVertexArrayAttrib;
-        p_glVertexArrayAttribFormat = f_VertexArrayAttribFormat;
-        p_glVertexArrayAttribBinding = f_VertexArrayAttribBinding;
-        p_glVertexArrayVertexBuffer = f_VertexArrayVertexBuffer;
-        p_glCreateTextures = f_CreateTextures;
-        p_glTextureStorage2D = f_TextureStorage2D;
-        p_glTextureStorage3D = f_TextureStorage3D;
-        p_glTextureSubImage2D = f_TextureSubImage2D;
-        p_glTextureParameteri = f_TextureParameteri;
-        p_glTextureBuffer = f_TextureBuffer;
-        p_glBindTextureUnit = f_BindTextureUnit;
-        p_glGenerateTextureMipmap = f_GenerateTextureMipmap;
-        p_glCopyTextureSubImage2D = f_CopyTextureSubImage2D;
-        p_glCreateSamplers = f_CreateSamplers;
-        p_glCreateFramebuffers = f_CreateFramebuffers;
-        p_glNamedFramebufferTexture = f_NamedFramebufferTexture;
-        p_glNamedFramebufferTextureLayer = f_NamedFramebufferTextureLayer;
-        p_glNamedFramebufferRenderbuffer = f_NamedFramebufferRenderbuffer;
-        p_glCheckNamedFramebufferStatus = f_CheckNamedFramebufferStatus;
-        p_glNamedFramebufferDrawBuffer = f_NamedFramebufferDrawBuffer;
-        p_glNamedFramebufferDrawBuffers = f_NamedFramebufferDrawBuffers;
-        p_glNamedFramebufferReadBuffer = f_NamedFramebufferReadBuffer;
-        p_glBlitNamedFramebuffer = f_BlitNamedFramebuffer;
-        p_glClearNamedFramebufferfv = f_ClearNamedFramebufferfv;
-        p_glClearNamedFramebufferfi = f_ClearNamedFramebufferfi;
-        p_glCreateRenderbuffers = f_CreateRenderbuffers;
-        p_glNamedRenderbufferStorageMultisample = f_NamedRenderbufferStorageMultisample;
-        p_glCopyImageSubData = f_CopyImageSubData;
-        p_glReadnPixels = f_ReadnPixels;
+        GL_CLASSIC_FUNCTIONS(LOAD_C)
+#define FALLBACK(type, name) p_##name = f_##name;   /* (each has one: a missing one doesn't compile) */
+        GL_DSA_FUNCTIONS(FALLBACK)
+#undef FALLBACK
         /* the bindings the fallbacks change and put back: kept track of */
         sUseProgram = p_glUseProgram;
         sBindVertexArray = p_glBindVertexArray;
         sBindFramebuffer = p_glBindFramebuffer;
+        sDeleteFramebuffers = p_glDeleteFramebuffers;
+        sDeleteVertexArrays = p_glDeleteVertexArrays;
         p_glUseProgram = use_program;
         p_glBindVertexArray = bind_vertex_array;
         p_glBindFramebuffer = bind_framebuffer;
+        p_glDeleteFramebuffers = delete_framebuffers;
+        p_glDeleteVertexArrays = delete_vertex_arrays;
         sAnisotropy = has_extension("GL_ARB_texture_filter_anisotropic") || has_extension("GL_EXT_texture_filter_anisotropic");
     }
     if (ok) {
@@ -698,12 +675,15 @@ void gl_debug_output(void) {
  * (4.30 / 4.20) taken out - each kept, by name, for once the program is linked. A declaration
  * written `layout(location = N) uniform TYPE NAME...` or `layout(binding = N) uniform TYPE NAME;`
  * (the inputs' and outputs' locations are 3.30's own: left) */
+#define REWRITE_DECLS 192   /* declarations a shader may have rewritten */
+#define REWRITE_NAME 48     /* ... a name's length (with its 0) */
+
 typedef struct Rewritten {
     char *src;
     struct {
-        char name[48];
+        char name[REWRITE_NAME];
         int at, binding;   /* the location or the unit; binding: a sampler's unit */
-    } decl[192];
+    } decl[REWRITE_DECLS];
     int n;
 } Rewritten;
 
@@ -752,8 +732,15 @@ static int rewrite(const char *src, Rewritten *r) {
         int at, len, binding = 0;
         const char *name;
 
-        if ((read_decl(p, "layout(location = ", &at, &name, &len) ||
-             (binding = read_decl(p, "layout(binding = ", &at, &name, &len))) && r->n < 192 && len < 48) {
+        if (read_decl(p, "layout(location = ", &at, &name, &len) ||
+            (binding = read_decl(p, "layout(binding = ", &at, &name, &len))) {
+            if (r->n == REWRITE_DECLS || len >= REWRITE_NAME) {   /* (left in, GLSL 3.30 would fail on it - said plainly) */
+                fprintf(stderr, "gl: a shader's uniform %.*s can't be made GLSL 3.30's (more than %d, or its name too long)\n",
+                        len, name, REWRITE_DECLS);
+                free(r->src);
+                r->src = NULL;
+                return 0;
+            }
             memcpy(r->decl[r->n].name, name, (size_t)len);
             r->decl[r->n].name[len] = 0;
             r->decl[r->n].at = at;
@@ -821,8 +808,12 @@ unsigned int gl_program(const char *vs, const char *fs, const char *name) {
 
     if (sLow) {
         rw[0].n = rw[1].n = 0;
+        rw[0].src = rw[1].src = NULL;
         if (!rewrite(vs, &rw[0]) || !rewrite(fs, &rw[1])) {
             free(rw[0].src);
+            free(rw[1].src);
+            rw[0].src = rw[1].src = NULL;
+            fprintf(stderr, "gl: program %s not made\n", name);
             return 0;
         }
         vs = rw[0].src;

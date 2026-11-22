@@ -239,7 +239,7 @@ static SDL_GLContext make_context(int major, int minor, int debug) {
 int platform_open(const char *title, int w, int h, int hidden, int low) {
     SDL_WindowFlags flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (hidden ? SDL_WINDOW_HIDDEN : 0);
     const char *want = SDL_getenv("OPENHUEY_GL");
-#ifdef HGA_UPDATER
+#ifdef HGA_RELEASE
     int debug = SDL_getenv("OPENHUEY_GL_DEBUG") != NULL;
 #else
     int debug = 1;

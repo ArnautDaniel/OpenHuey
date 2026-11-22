@@ -98,14 +98,14 @@ enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_CO
  * it by their weights, then placed; the normal the same by their turns, then the placing's, made one
  * long (as actor.c skinned on the CPU before) */
 #define SKIN_STRIDE (MODEL_MAX_BONES + 1)   /* matrices a slot: the placing, then the bones */
-#define STR_(x) #x
-#define STR(x) STR_(x)
+#define SKIN_QUOTE_(x) #x
+#define SKIN_QUOTE(x) SKIN_QUOTE_(x)   /* (the number in the shader's text) */
 #define SKIN_GLSL \
     "layout(location = 4) in vec4 a_bones;\n" \
     "layout(location = 5) in vec4 a_weights;\n" \
     "layout(binding = 2) uniform samplerBuffer u_bones;\n" \
     "mat4 skin_matrix(int i) {\n" \
-    "    int t = ((u_skin - 1) * " STR(SKIN_STRIDE) " + i) * 4;\n" \
+    "    int t = ((u_skin - 1) * " SKIN_QUOTE(SKIN_STRIDE) " + i) * 4;\n" \
     "    return mat4(texelFetch(u_bones, t), texelFetch(u_bones, t + 1), texelFetch(u_bones, t + 2), texelFetch(u_bones, t + 3));\n" \
     "}\n" \
     "void skinned(out vec3 p, out vec3 n) {\n" \
@@ -958,6 +958,10 @@ void render_mesh_upload(GpuMesh *g, const MeshVertex *v, int n) {
 
 /* a mesh refilled every frame (skinned characters): storage that can be replaced */
 void render_mesh_update(GpuMesh *g, const MeshVertex *v, int n) {
+    if (g->skin) {   /* (a skinned mesh's vertices are SkinVertex: render_skin_update) */
+        fprintf(stderr, "render: render_mesh_update of a skinned mesh\n");
+        return;
+    }
     if (g->vao == 0) {
         glCreateBuffers(1, &g->vbo);
         mesh_arrays(g);
@@ -985,7 +989,12 @@ int render_skin_upload(GpuMesh *g, const SkinVertex *v, int n, int morphing) {
     for (slot = 0; slot < RENDER_SKIN_SLOTS && (R.skin_used >> slot & 1); slot++) {
     }
     if (slot == RENDER_SKIN_SLOTS) {
-        fprintf(stderr, "render: more than %d skinned models at once: one not drawn\n", RENDER_SKIN_SLOTS);
+        static int said;   /* (asked again each frame: said once) */
+
+        if (!said) {
+            said = 1;
+            fprintf(stderr, "render: more than %d skinned models at once: the rest not drawn\n", RENDER_SKIN_SLOTS);
+        }
         return 0;
     }
     R.skin_used |= 1ull << slot;

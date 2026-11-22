@@ -28,17 +28,26 @@ PRIVATE>
 : float! ( field -- ) ( F: x -- ) gfx swap execute sf! ;
 PRIVATE>
 
-\ as the PS2 showed it: a 4:3 picture, the room's own fog, tint, bloom and depth of
-\ field (the original's), the characters lit as the game lit them (src/game/model.c light_rgba: no
-\ boost, no rim) - and none of OpenHuey's own effects
-: look-original
-    1 ['] gfx.msaa int!  1 ['] gfx.aspect int!  1e ['] gfx.scale float!  16e ['] gfx.anisotropy float!
-    ['] gfx.room-lights on  ['] gfx.shadow-maps on  ['] gfx.shadow-soft on   \ (the game lit and shadowed its characters too)
-    1 ['] gfx.ps2-lighting int!  1e ['] gfx.character-light float!  0e ['] gfx.rim float!
+<PRIVATE
+\ what every preset sets alike: the picture at the window's size, the room's own fog, tint, bloom,
+\ depth of field and lights (the original's), the characters shadowed from those lights, none of the
+\ haze or film grain, the colours as they are
+: look-base
+    1e ['] gfx.scale float!
+    ['] gfx.room-lights on  ['] gfx.shadow-maps on  1e ['] gfx.character-light float!   \ (the game lit and shadowed its characters too)
     ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on
-    ['] gfx.ssao off  ['] gfx.bloom off  ['] gfx.fog off  ['] gfx.shadows off
-    0 ['] gfx.tonemap int!  0e ['] gfx.vignette float!  0e ['] gfx.grain float!
+    ['] gfx.fog off  0e ['] gfx.grain float!   \ (no grain: in a game this dark it reads as dither)
     1e ['] gfx.saturation float!  1e ['] gfx.contrast float!  1e ['] gfx.exposure float! ;
+PRIVATE>
+
+\ as the PS2 showed it: a 4:3 picture, the room's own look, the characters lit as the game lit them
+\ (src/game/model.c light_rgba: per vertex, no boost, no rim) - and none of OpenHuey's own effects
+: look-original
+    look-base
+    1 ['] gfx.msaa int!  1 ['] gfx.aspect int!  16e ['] gfx.anisotropy float!  ['] gfx.shadow-soft on
+    1 ['] gfx.ps2-lighting int!  0e ['] gfx.rim float!
+    ['] gfx.ssao off  ['] gfx.bloom off  ['] gfx.shadows off
+    0 ['] gfx.tonemap int!  0e ['] gfx.vignette float! ;
 
 \ the original's look with modern polish, the default: antialiased, the wide picture, the characters
 \ lit by the PS2's formula per pixel (smooth, but as bright against the room as the game had them -
@@ -47,31 +56,26 @@ PRIVATE>
 \ a soft glow on what is past white, highlights eased, a light vignette (0.2: the old 0.35 sank the
 \ corners of rooms dark already). No haze: the rooms have their own fog
 : look-enhanced
-    4 ['] gfx.msaa int!  0 ['] gfx.aspect int!  1e ['] gfx.scale float!  16e ['] gfx.anisotropy float!
-    ['] gfx.room-lights on  ['] gfx.shadow-maps on  ['] gfx.shadow-soft on
-    2 ['] gfx.ps2-lighting int!  1e ['] gfx.character-light float!  0.2e ['] gfx.rim float!
-    ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on
+    look-base
+    4 ['] gfx.msaa int!  0 ['] gfx.aspect int!  16e ['] gfx.anisotropy float!  ['] gfx.shadow-soft on
+    2 ['] gfx.ps2-lighting int!  0.2e ['] gfx.rim float!
     ['] gfx.ssao on  0.9e ['] gfx.ssao-strength float!  20e ['] gfx.ssao-radius float!
     ['] gfx.bloom on  0.9e ['] gfx.bloom-threshold float!  0.12e ['] gfx.bloom-strength float!
-    ['] gfx.fog off  0.0012e ['] gfx.fog-density float!  150e ['] gfx.fog-start float!   \ (the rooms have their own)
+    0.0012e ['] gfx.fog-density float!  150e ['] gfx.fog-start float!   \ (the haze's, should it be turned on)
     ['] gfx.shadows on
-    1 ['] gfx.tonemap int!  0.2e ['] gfx.vignette float!  0e ['] gfx.grain float!   \ (no grain: in a game this dark it reads as dither)
-    1e ['] gfx.saturation float!  1e ['] gfx.contrast float!  1e ['] gfx.exposure float! ;
+    1 ['] gfx.tonemap int!  0.2e ['] gfx.vignette float! ;
 
 \ for a low-power computer (an older or smaller GPU - the one OpenGL 3.3 is drawn for, gl-low?): the
-\ original's look kept whole - the room's own fog, tint, bloom and depth of field, the characters lit
-\ and shadowed as the game did it (per vertex, as the PS2) - with only the costly extras off: no
-\ antialiasing, no ambient occlusion or bloom of OpenHuey's own, shadows' edges softened by 4
-\ samples instead of 16, plainer texture filtering. The wide picture and the light grading stay
-\ (nearly free)
+\ original's look kept whole - the room's own, the characters lit and shadowed as the game did it
+\ (per vertex) - with only the costly extras off: no antialiasing, no ambient occlusion or bloom of
+\ OpenHuey's own, shadows' edges softened by 4 samples instead of 16, plainer texture filtering. The
+\ wide picture and the light grading stay (nearly free)
 : look-low-power
-    1 ['] gfx.msaa int!  0 ['] gfx.aspect int!  1e ['] gfx.scale float!  4e ['] gfx.anisotropy float!
-    ['] gfx.room-lights on  ['] gfx.shadow-maps on  ['] gfx.shadow-soft off
-    1 ['] gfx.ps2-lighting int!  1e ['] gfx.character-light float!  0.2e ['] gfx.rim float!
-    ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on
-    ['] gfx.ssao off  ['] gfx.bloom off  ['] gfx.fog off  ['] gfx.shadows off
-    1 ['] gfx.tonemap int!  0.2e ['] gfx.vignette float!  0e ['] gfx.grain float!
-    1e ['] gfx.saturation float!  1e ['] gfx.contrast float!  1e ['] gfx.exposure float! ;
+    look-base
+    1 ['] gfx.msaa int!  0 ['] gfx.aspect int!  4e ['] gfx.anisotropy float!  ['] gfx.shadow-soft off
+    1 ['] gfx.ps2-lighting int!  0.2e ['] gfx.rim float!
+    ['] gfx.ssao off  ['] gfx.bloom off  ['] gfx.shadows off
+    1 ['] gfx.tonemap int!  0.2e ['] gfx.vignette float! ;
 
 \ ---- the menu ----
 \ An item is a record: label (address, length), kind, the field's word, and for numbers
@@ -283,7 +287,9 @@ variable row-h  variable col-w
 
 \ a fresh start: enhanced - or on OpenGL 3.3 (an older GPU) the low-power look; a player's saved
 \ settings over it
+<PRIVATE
 : fresh-look ( -- )  gl-low? if  look-low-power  else  look-enhanced  then ;
+PRIVATE>
 fresh-look
 : load-settings  settings-file file-exists? if  settings-file included  then ;
 ' load-settings catch drop
