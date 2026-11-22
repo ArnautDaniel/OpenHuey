@@ -18,6 +18,22 @@ T{ ' gfx.room-fog gfx-l ' gfx.room-tint gfx-l ' gfx.room-bloom gfx-l ' gfx.room-
 look-enhanced
 T{ ' gfx.ps2-lighting gfx-l ' gfx.aspect gfx-l ' gfx.ssao gfx-l ' gfx.fog gfx-l -> 2 0 1 0 }T
 T{ ' gfx.rim gfx-f ' gfx.character-light gfx-f ' gfx.vignette gfx-f -> 200 1000 200 }T
+T{ ' gfx.shadow-maps gfx-l ' gfx.shadow-soft gfx-l ' gfx.msaa gfx-l -> 1 1 4 }T
+
+testing the low-power look (the fresh start's on OpenGL 3.3): the original's look whole - the room's
+testing own fog, tint, bloom, depth of field, its lighting per vertex, the characters' shadows - and
+testing OpenHuey's costly extras off: no antialiasing, occlusion or bloom; shadows' edges by 4 samples
+look-low-power
+T{ ' gfx.room-fog gfx-l ' gfx.room-tint gfx-l ' gfx.room-bloom gfx-l ' gfx.room-dof gfx-l -> 1 1 1 1 }T
+T{ ' gfx.room-lights gfx-l ' gfx.ps2-lighting gfx-l ' gfx.shadow-maps gfx-l -> 1 1 1 }T
+T{ ' gfx.msaa gfx-l ' gfx.ssao gfx-l ' gfx.bloom gfx-l ' gfx.fog gfx-l ' gfx.shadow-soft gfx-l -> 1 0 0 0 0 }T
+T{ ' gfx.scale gfx-f ' gfx.anisotropy gfx-f -> 1000 4000 }T
+T{ gl-low? dup 0= swap -1 = or -> -1 }T   \ (a flag: which, the driver's)
+testing a preset sets all it is about: the low-power look's resolution and filtering undone by the others
+look-original
+T{ ' gfx.shadow-soft gfx-l ' gfx.scale gfx-f ' gfx.anisotropy gfx-f -> 1 1000 16000 }T
+look-low-power  look-enhanced
+T{ ' gfx.shadow-soft gfx-l ' gfx.msaa gfx-l ' gfx.scale gfx-f ' gfx.anisotropy gfx-f ' gfx.ssao gfx-l -> 1 4 1000 16000 1 }T
 
 testing the placed objects' layers by name (PlacedObject_Draw): "g_" $26 marking the bloom mask
 testing only, "a_" $19 see-through, others 1 (castle-2f-2's chandelier glow, $21's lattice)

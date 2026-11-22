@@ -16,8 +16,9 @@ typedef struct Input {
     bool typed[SDL_SCANCODE_COUNT];   /* the keys themselves pressed this frame, whatever they're bound to (the console) */
 } Input;
 
-/* open the window (hidden: nothing shown, for tests and screenshots); 0 on failure */
-int platform_open(const char *title, int w, int h, int hidden);
+/* open the window (hidden: nothing shown, for tests and screenshots) and its OpenGL - 4.6, else
+ * 3.3 (low: 3.3's way at once; gl.h); 0 on failure */
+int platform_open(const char *title, int w, int h, int hidden, int low);
 void platform_close(void);
 /* gather this frame's events into the input state */
 void platform_poll(Input *in);

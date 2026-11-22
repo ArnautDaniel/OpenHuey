@@ -1,4 +1,4 @@
-/* The renderer: OpenGL 4.6, written 4.5+ style (direct state access).
+/* The renderer: OpenGL 4.6 (else 3.3 - platform/gl.h), written 4.5+ style (direct state access).
  *
  * A frame:
  *   render_begin       the window's size; picks the picture's rectangle (all of the window, or
@@ -64,6 +64,7 @@ typedef struct RenderSettings {
                               * OpenHuey's point lights, times character_light, unclamped */
     int32_t shadow_maps;     /* characters cast shadows from the room's lights onto it */
     float shadow_strength;   /* 0 .. 1 */
+    int32_t shadow_soft;     /* ... their edges softened by 16 samples a pixel (else 4: the low-power look) */
     int32_t room_fog;        /* the room's own fog, tint and bloom (part of the original look) */
     int32_t room_tint;
     int32_t room_bloom;
@@ -108,6 +109,8 @@ void render_shutdown(void);
 
 /* the frame: the window's size in pixels; `clear` the background (display colour) */
 void render_begin(int window_w, int window_h, Vec3 clear);
+/* drawing OpenGL 3.3's way (platform/gl.h: the low-power path) */
+int render_gl_low(void);
 /* the picture's aspect (width / height) - for the camera's projection */
 float render_aspect(void);
 /* the camera (for lighting, ambient occlusion and fog): projection, view, eye, depth range */

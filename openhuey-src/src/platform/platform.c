@@ -224,17 +224,34 @@ void platform_rumble(int small_on, float large) {
     }
 }
 
-int platform_open(const char *title, int w, int h, int hidden) {
-    SDL_WindowFlags flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (hidden ? SDL_WINDOW_HIDDEN : 0);
+/* a context of the version asked for (core); NULL if the driver has none */
+static SDL_GLContext make_context(int major, int minor, int debug) {
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, debug ? SDL_GL_CONTEXT_DEBUG_FLAG : 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    return SDL_GL_CreateContext(sWindow);
+}
 
+/* OpenGL 4.6, else 3.3 (gl.h: the low-power path, gl.c's fallbacks) - or 3.3's way at once when
+ * asked (low: --gl33, $OPENHUEY_GL=3.3). The debug output (the driver checking every call: slower)
+ * in a developer's build, or with $OPENHUEY_GL_DEBUG */
+int platform_open(const char *title, int w, int h, int hidden, int low) {
+    SDL_WindowFlags flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | (hidden ? SDL_WINDOW_HIDDEN : 0);
+    const char *want = SDL_getenv("OPENHUEY_GL");
+#ifdef HGA_UPDATER
+    int debug = SDL_getenv("OPENHUEY_GL_DEBUG") != NULL;
+#else
+    int debug = 1;
+#endif
+
+    if (want != NULL && strcmp(want, "3.3") == 0) {
+        low = 1;
+    }
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
         fprintf(stderr, "platform: SDL_Init: %s\n", SDL_GetError());
         return 0;
     }
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     platform_bindings_reset();
@@ -243,17 +260,41 @@ int platform_open(const char *title, int w, int h, int hidden) {
         fprintf(stderr, "platform: SDL_CreateWindow: %s\n", SDL_GetError());
         return 0;
     }
-    sContext = SDL_GL_CreateContext(sWindow);
+    sContext = low ? NULL : make_context(4, 6, debug);
     if (sContext == NULL) {
-        fprintf(stderr, "platform: no OpenGL 4.6 context: %s\n", SDL_GetError());
+        if (!low) {
+            fprintf(stderr, "platform: no OpenGL 4.6 (%s): the OpenGL 3.3 way\n", SDL_GetError());
+        }
+        low = 1;
+        sContext = make_context(3, 3, debug);
+    }
+    if (sContext == NULL) {
+        char msg[512];
+
+        snprintf(msg, sizeof(msg), "OpenHuey needs OpenGL 3.3 or newer, and this computer's graphics driver has "
+                 "neither 3.3 nor 4.6:\n\n%s\n\nUpdating the graphics driver may help.", SDL_GetError());
+        fprintf(stderr, "platform: %s\n", msg);
+        if (!hidden) {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "OpenHuey", msg, sWindow);
+        }
         return 0;
     }
     SDL_GL_SetSwapInterval(1);
-    if (!gl_load()) {
-        return 0;
+    if (!gl_load(low)) {
+        if (low) {
+            return 0;
+        }
+        fprintf(stderr, "platform: the OpenGL 4.6 driver lacks some of it: the OpenGL 3.3 way\n");   /* (gl.c's fallbacks need only 3.3's) */
+        low = 1;
+        if (!gl_load(1)) {
+            return 0;
+        }
     }
-    gl_debug_output();
-    fprintf(stderr, "platform: OpenGL %s (%s)\n", (const char *)glGetString(GL_VERSION), (const char *)glGetString(GL_RENDERER));
+    if (debug) {
+        gl_debug_output();
+    }
+    fprintf(stderr, "platform: OpenGL %s (%s)%s\n", (const char *)glGetString(GL_VERSION), (const char *)glGetString(GL_RENDERER),
+            low ? " - the 3.3 way" : "");
     return 1;
 }
 

@@ -23,6 +23,7 @@ RenderSettings gRender = {
     .rim = 0.2f,
     .room_fog = 1, .room_tint = 1, .room_bloom = 1, .room_dof = 1, .game_font = 1,
     .room_lights = 1, .character_light = 1.0f, .ps2_lighting = 2, .shadow_maps = 1, .shadow_strength = 0.7f,
+    .shadow_soft = 1,
 };
 
 RoomLook gRoomLook;
@@ -69,7 +70,7 @@ enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_CO
        U_ROOM_LIT, U_LPOS = 12, U_LCOL = 15, U_LRANGE = 18, U_AMBIENT128 = 21, U_NSHADOWS = 22, U_SHADOW_VP = 23,
        U_SHADOW_INFO = 35, U_SHADOW_STRENGTH = 47, U_RECEIVE = 59, U_CHAR_LIGHT = 60, U_ALPHA = 61,
        U_REJECT = 62, U_UNFOGGED = 63, U_SHADOW_LIGHT = 64, U_NBLOCKERS = 76, U_BLOCKER = 77,   /* (12 shadows, 16 blockers) */
-       U_PS2 = 180, U_PDIR = 181, U_PFALL = 184 };
+       U_PS2 = 180, U_PDIR = 181, U_PFALL = 184, U_SHADOW_SOFT = 187 };   /* (arrays: a location an element) */
 
 /* the PS2's lighting (gfx.ps2-lighting; src/game/model.c light_rgba): each light one direction
  * (from the model's root to it; w: -dir.L), a falloff along it, its colour; the ambient; the sum
@@ -159,6 +160,7 @@ static const char *kMeshFs =
     "layout(location = 64) uniform vec4 u_shadow_light[12];\n"   /* where its light shades from, its shadows' reach */
     "layout(location = 76) uniform int u_nblockers;\n"
     "layout(location = 77) uniform vec3 u_blocker[96];\n"   /* 6 each: 4 corners, the facing, the top middle */
+    "layout(location = 187) uniform int u_shadow_soft;\n"   /* 16 samples a pixel (else 4) */
     "layout(location = 0) out vec4 o_color;\n"
     /* the lights' blockers (room.c room_blocked, the original's Shadow_BlockerVolumes): shadow i's
      * light shaded from p by one - p behind a quad facing away from it, in the pyramid from the
@@ -235,7 +237,6 @@ static const char *kMeshFs =
     "            vec2(0.44, -0.94), vec2(-0.19, -0.37));\n"
     "        for (int i = 0; i < 12; i++) {\n"
     "            if (i >= u_nshadows) break;\n"
-    "            if (blocked(i, v_pos)) continue;\n"
     /* (characters receive too - each other's shadows and their own: the point is moved out along
      * the surface's normal first so a surface doesn't shadow itself) */
     "            vec3 at = u_lit != 0 ? v_pos + normalize(v_normal) * 0.35 : v_pos;\n"
@@ -244,13 +245,6 @@ static const char *kMeshFs =
     "            vec3 q = lp.xyz / lp.w * 0.5 + 0.5;\n"
     "            if (any(lessThan(q, vec3(0.0))) || any(greaterThan(q, vec3(1.0)))) continue;\n"
     "            float far = length(v_pos - u_shadow_info[i].xyz) / u_shadow_info[i].w;\n"
-    /* (sharp by the caster, softer the further it falls: the penumbra a lamp's size gives, not a
-     * cut-out's edge all the way to the shadow's end) */
-    "            float spread = mix(1.0, 5.0, smoothstep(0.5, 3.0, far));\n"
-    "            float lit = 0.0;\n"
-    "            for (int k = 0; k < 16; k++)\n"
-    "                lit += texture(u_shadow, vec4(q.xy + disc[k] * spread * texel, float(i), q.z - 0.0005));\n"
-    "            lit /= 16.0;\n"
     "            float fade = 1.0 - smoothstep(1.0, 5.0, far);\n"
     /* (a character's side turned from the light is dark by its lighting already: shadowed again
      * it went near black, cut off hard along the line where the body turns away - its own
@@ -259,6 +253,21 @@ static const char *kMeshFs =
     "                vec3 sn = normalize(v_normal);\n"
     "                if (dot(sn, u_eye - v_pos) < 0.0) sn = -sn;\n"
     "                fade *= smoothstep(0.0, 0.35, dot(sn, normalize(u_shadow_light[i].xyz - v_pos)));\n"
+    "            }\n"
+    /* (nothing to darken: the samples and the blockers - the costly part - not looked at) */
+    "            if (!(fade > 0.0) || !(u_shadow_strength[i] > 0.0) || blocked(i, v_pos)) continue;\n"
+    /* (sharp by the caster, softer the further it falls: the penumbra a lamp's size gives, not a
+     * cut-out's edge all the way to the shadow's end) */
+    "            float spread = mix(1.0, 5.0, smoothstep(0.5, 3.0, far));\n"
+    "            float lit = 0.0;\n"
+    "            if (u_shadow_soft != 0) {\n"
+    "                for (int k = 0; k < 16; k++)\n"
+    "                    lit += texture(u_shadow, vec4(q.xy + disc[k] * spread * texel, float(i), q.z - 0.0005));\n"
+    "                lit /= 16.0;\n"
+    "            } else {\n"   /* (fewer: the low-power look - 4 filtered taps a texel and a half apart) */
+    "                for (int k = 0; k < 4; k++)\n"
+    "                    lit += texture(u_shadow, vec4(q.xy + (vec2(k & 1, k >> 1) * 2.0 - 1.0) * 0.75 * spread * texel, float(i), q.z - 0.0005));\n"
+    "                lit /= 4.0;\n"
     "            }\n"
     /* (darkening by the strength as it looks on screen, not in linear values) */
     "            c.rgb *= pow(1.0 - u_shadow_strength[i] * (1.0 - lit) * fade, 2.2);\n"
@@ -476,6 +485,9 @@ void render_begin(int w, int h, Vec3 clear) {
     float scale = s->scale < 0.25f ? 0.25f : s->scale > 2.0f ? 2.0f : s->scale;
     const float black[4] = {0, 0, 0, 1};
 
+    while (samples > 1 && samples > gl_max_samples()) {   /* (as many as the GPU can: 4 on older ones) */
+        samples >>= 1;
+    }
     R.w = w;
     R.h = h;
     R.n2d = 0;
@@ -492,7 +504,7 @@ void render_begin(int w, int h, Vec3 clear) {
     R.px = (w - R.pw) / 2;
     R.py = (h - R.ph) / 2;
     glClearNamedFramebufferfv(0, GL_COLOR, 0, black);   /* (the bars, when there are any) */
-    if (s->anisotropy != R.sampler_aniso) {
+    if (s->anisotropy != R.sampler_aniso && gl_anisotropy()) {
         R.sampler_aniso = s->anisotropy;
         glSamplerParameterf(R.sampler, GL_TEXTURE_MAX_ANISOTROPY, s->anisotropy < 1.0f ? 1.0f : s->anisotropy);
     }
@@ -501,6 +513,10 @@ void render_begin(int w, int h, Vec3 clear) {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
     glDisable(GL_CULL_FACE);
+}
+
+int render_gl_low(void) {
+    return gl_low();
 }
 
 float render_aspect(void) {
@@ -692,6 +708,7 @@ void render_shadows_end(void) {
         memcpy(vp + i * 16, R.shadow_vp[i].m, sizeof(R.shadow_vp[i].m));
     }
     glProgramUniform1i(R.mesh_prog, U_NSHADOWS, R.nshadows);
+    glProgramUniform1i(R.mesh_prog, U_SHADOW_SOFT, gRender.shadow_soft);
     if (R.nshadows > 0) {
         glProgramUniformMatrix4fv(R.mesh_prog, U_SHADOW_VP, R.nshadows, GL_FALSE, vp);
         glProgramUniform4fv(R.mesh_prog, U_SHADOW_INFO, R.nshadows, &R.shadow_info[0][0]);
@@ -783,10 +800,26 @@ void render_post(void) {
     glViewport(0, 0, R.w, R.h);
 }
 
+/* the 2D waiting to be drawn is one batch of one kind: the font's (rectangles, text), or one
+ * picture's at one blend - pictures in a row from the same texture alike (the game's text: a glyph
+ * each) drawn together. A quad of another kind draws what is waiting first: the order kept */
+static struct {
+    int image;          /* the pictures' (else the font's) */
+    GLuint tex;
+    int blend;
+    float fix;
+} sBatch;
+
+static void image_draw(void);
+
 static void flush_2d(void) {
     Mat4 proj = mat4_ortho2d((float)R.w, (float)R.h);
 
     if (R.n2d == 0) {
+        return;
+    }
+    if (sBatch.image) {
+        image_draw();
         return;
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -829,6 +862,9 @@ GpuTexture render_texture(const uint8_t *rgba, int w, int h) {
 }
 
 void render_texture_free(GpuTexture t) {
+    if (t != 0 && sBatch.image && sBatch.tex == t) {   /* (waiting to be drawn: drawn first) */
+        flush_2d();
+    }
     if (t != 0) {
         glDeleteTextures(1, &t);
     }
@@ -877,6 +913,36 @@ void render_mesh_free(GpuMesh *g) {
 
 static float sTint[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
+/* the mesh shader's per-draw switches, as last set: only a change sent (a room is hundreds of
+ * draws, most alike - each call a trip through the driver, the dearer on an older GPU) */
+static struct {
+    int use_tex, solid_tex, lit, coverage, receive;
+    float mask, tint[4];
+} sSet = {-1, -1, -1, -1, -1, -1.0f, {-1.0f, -1.0f, -1.0f, -1.0f}};
+
+static void set_int(int *was, GLint loc, int v) {
+    if (*was != v) {
+        *was = v;
+        glProgramUniform1i(R.mesh_prog, loc, v);
+    }
+}
+
+static void set_mask(float v) {
+    if (sSet.mask != v) {
+        sSet.mask = v;
+        glProgramUniform1f(R.mesh_prog, U_MASK, v);
+    }
+}
+
+static void draw_switches(int use_tex, int solid_tex, int lit, int coverage, int receive, float mask) {
+    set_mask(mask);
+    set_int(&sSet.use_tex, U_USE_TEX, use_tex);
+    set_int(&sSet.solid_tex, U_SOLID_TEX, solid_tex);
+    set_int(&sSet.lit, U_LIT, lit);
+    set_int(&sSet.coverage, U_COVERAGE, coverage);
+    set_int(&sSet.receive, U_RECEIVE, receive);
+}
+
 /* the character microprograms' clip test (tools/vudis.py: CLIP each corner, FCAND over the
  * triangle's three, the ADC bit then drops it): a triangle with a corner outside the PS2's clip
  * volume - nearer than the camera's near, beyond its far, or past the GS's 4096-wide drawing
@@ -909,13 +975,16 @@ void render_mesh_tint(float r, float g, float b, float a) {
 
 void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, const GpuTexture *textures,
                  int ntextures, const uint32_t groups[8]) {
-    int i, multisampled = gRender.msaa > 1, faded = sTint[3] < 1.0f;
+    int i, multisampled = post_samples() > 1, faded = sTint[3] < 1.0f;
 
     if (g->vao == 0) {
         return;
     }
     glProgramUniformMatrix4fv(R.mesh_prog, U_MVP, 1, GL_FALSE, mvp->m);
-    glProgramUniform4f(R.mesh_prog, U_ALPHA, sTint[0], sTint[1], sTint[2], sTint[3]);
+    if (memcmp(sSet.tint, sTint, sizeof(sTint)) != 0) {
+        memcpy(sSet.tint, sTint, sizeof(sTint));
+        glProgramUniform4f(R.mesh_prog, U_ALPHA, sTint[0], sTint[1], sTint[2], sTint[3]);
+    }
     glUseProgram(R.mesh_prog);
     glDisable(GL_BLEND);   /* (for both targets: only the colour one ever blends) */
     glBindSampler(0, R.sampler);
@@ -935,12 +1004,7 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
         glColorMaski(0, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         glColorMaski(1, GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
         glDepthMask(GL_TRUE);
-        glProgramUniform1f(R.mesh_prog, U_MASK, 0.0f);
-        glProgramUniform1i(R.mesh_prog, U_USE_TEX, tex != 0);
-        glProgramUniform1i(R.mesh_prog, U_SOLID_TEX, x->solid_tex);
-        glProgramUniform1i(R.mesh_prog, U_LIT, x->lit);
-        glProgramUniform1i(R.mesh_prog, U_COVERAGE, 0);
-        glProgramUniform1i(R.mesh_prog, U_RECEIVE, 0);
+        draw_switches(tex != 0, x->solid_tex, x->lit, 0, 0, 0.0f);
         glBindTextureUnit(0, tex);
         glDrawArrays(GL_TRIANGLES, x->first, x->count);
     }
@@ -970,12 +1034,7 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
         glDepthMask(x->no_zwrite || x->mask ? GL_FALSE : GL_TRUE);
         /* (only what writes depth says whether the room's fog is over it) */
         glColorMaski(1, GL_TRUE, x->no_zwrite || x->mask ? GL_FALSE : GL_TRUE, GL_FALSE, GL_FALSE);
-        glProgramUniform1f(R.mesh_prog, U_MASK, x->mask ? 1.0f : 0.0f);
-        glProgramUniform1i(R.mesh_prog, U_USE_TEX, tex != 0);
-        glProgramUniform1i(R.mesh_prog, U_SOLID_TEX, x->solid_tex);
-        glProgramUniform1i(R.mesh_prog, U_LIT, x->lit);
-        glProgramUniform1i(R.mesh_prog, U_COVERAGE, coverage);
-        glProgramUniform1i(R.mesh_prog, U_RECEIVE, !x->mask);
+        draw_switches(tex != 0, x->solid_tex, x->lit, coverage, !x->mask, x->mask ? 1.0f : 0.0f);
         glBindTextureUnit(0, tex);
         glDrawArrays(GL_TRIANGLES, x->first, x->count);
         if (x->mask) {
@@ -1015,10 +1074,18 @@ static void quad(float x0, float y0, float x1, float y1, float u0, float v0, flo
     }
 }
 
+static void font_batch(void) {
+    if (sBatch.image) {
+        flush_2d();
+        sBatch.image = 0;
+    }
+}
+
 void render_rect(float x, float y, float w, float h, uint32_t rgba) {
     /* the middle of the solid block glyph (127) */
     float u = ((FONT_COUNT - 1) * FONT_CELL_W + 2.5f) / FONT_ATLAS_W, v = 3.5f / FONT_CELL_H;
 
+    font_batch();
     quad(x, y, x + w, y + h, u, v, u, v, rgba);
 }
 
@@ -1033,12 +1100,21 @@ void render_blend_2d(int mode, int fix) {
     sFix2d = (float)(fix < 0 ? 0 : fix > 255 ? 255 : fix) / 128.0f;
 }
 
-static void image_draw(GpuTexture t);
+/* a picture's quad to come: after what is waiting, unless that is this texture's at this blend */
+static void image_batch(GpuTexture t) {
+    if (!sBatch.image || sBatch.tex != t || sBatch.blend != sBlend2d || sBatch.fix != sFix2d) {
+        flush_2d();   /* (what was drawn before stays under it) */
+        sBatch.image = 1;
+        sBatch.tex = t;
+        sBatch.blend = sBlend2d;
+        sBatch.fix = sFix2d;
+    }
+}
+
 void render_image_uv(GpuTexture t, float x, float y, float w, float h, float u0, float v0, float u1, float v1,
                      uint32_t rgba) {
-    flush_2d();   /* (what was drawn before stays under it) */
+    image_batch(t);
     quad(x, y, x + w, y + h, u0, v0, u1, v1, rgba);
-    image_draw(t);
 }
 
 void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, float u1, float v1, uint32_t rgba) {
@@ -1046,7 +1122,7 @@ void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, floa
     const float uv[8] = {u0, v0, u1, v0, u0, v1, u1, v1};
     int i;
 
-    flush_2d();
+    image_batch(t);
     if (R.n2d + 6 > R.cap2d) {
         R.cap2d = R.cap2d * 2 + 6 * 256;
         R.v2d = realloc(R.v2d, (size_t)R.cap2d * sizeof(Vertex2d));
@@ -1061,24 +1137,27 @@ void render_image_quad(GpuTexture t, const float xy[8], float u0, float v0, floa
         v->rgba[2] = (uint8_t)(rgba >> 8);
         v->rgba[3] = (uint8_t)rgba;
     }
-    image_draw(t);
 }
 
-static void image_draw(GpuTexture t) {
+static void image_draw(void) {
     Mat4 proj = mat4_ortho2d((float)R.w, (float)R.h);
+    GLuint t = sBatch.tex;
+    int blend = sBatch.blend;
+    float fix = sBatch.fix;
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, R.w, R.h);
     glNamedBufferData(R.vbo2d, (GLsizeiptr)(R.n2d * sizeof(Vertex2d)), R.v2d, GL_STREAM_DRAW);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
-    if (sBlend2d == RENDER_BLEND_NORMAL) {
+    if (blend == RENDER_BLEND_NORMAL) {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     } else {   /* (the GS's ALPHA with C = FIX: the 2D is drawn in display values, as the GS blends) */
-        glBlendColor(sFix2d, sFix2d, sFix2d, sFix2d);
-        glBlendEquation(sBlend2d == RENDER_BLEND_SUBTRACT ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
-        glBlendFunc(GL_CONSTANT_COLOR, sBlend2d == RENDER_BLEND_MIX ? GL_ONE_MINUS_CONSTANT_COLOR : GL_ONE);
+        glBlendColor(fix, fix, fix, fix);
+        glBlendEquation(blend == RENDER_BLEND_SUBTRACT ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_ADD);
+        glBlendFunc(GL_CONSTANT_COLOR, blend == RENDER_BLEND_MIX ? GL_ONE_MINUS_CONSTANT_COLOR : GL_ONE);
     }
-    glProgramUniform1i(R.prog2d_image, 1, sBlend2d != RENDER_BLEND_NORMAL);
+    glProgramUniform1i(R.prog2d_image, 1, blend != RENDER_BLEND_NORMAL);
     glProgramUniformMatrix4fv(R.prog2d_image, 0, 1, GL_FALSE, proj.m);
     glUseProgram(R.prog2d_image);
     glBindTextureUnit(0, t);
@@ -1092,6 +1171,9 @@ static void image_draw(GpuTexture t) {
 }
 
 GpuTexture render_texture_stream(GpuTexture t, const uint8_t *rgba, int w, int h, int *tw, int *th) {
+    if (t != 0 && sBatch.image && sBatch.tex == t) {   /* (its last picture waiting: drawn first) */
+        flush_2d();
+    }
     if (t == 0 || *tw != w || *th != h) {
         render_texture_free(t);
         glCreateTextures(GL_TEXTURE_2D, 1, &t);
@@ -1110,6 +1192,7 @@ GpuTexture render_texture_stream(GpuTexture t, const uint8_t *rgba, int w, int h
 void render_text(float x, float y, float scale, uint32_t rgba, const char *s, int n) {
     int i;
 
+    font_batch();
     for (i = 0; i < n && s[i] != 0; i++) {
         int c = (unsigned char)s[i];
 

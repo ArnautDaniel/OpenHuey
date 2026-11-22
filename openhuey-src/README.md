@@ -31,6 +31,7 @@ build/openhuey-src/openhuey --import disc.iso     # import a disc into the libra
 build/openhuey-src/openhuey --update            # a release: updated to the newest build (the title's UPDATE too)
 build/openhuey-src/openhuey --mod path/to/mod     # with a mod on (mods/ beside OpenHuey holds the installed ones)
 build/openhuey-src/openhuey --hidden --frames 300 --eval "..."   # headless, for tests
+build/openhuey-src/openhuey --gl33                # drawn OpenGL 3.3's way even where 4.6 is there
 ctest --test-dir build/openhuey-src    # the quick tests (OPENHUEY_FULL_TESTS=1: all of them)
 build/openhuey-src/openhuey --test openhuey-src/tests/acoustics/test_hearing.fs   # one subsystem's
 ```
@@ -38,9 +39,10 @@ build/openhuey-src/openhuey --test openhuey-src/tests/acoustics/test_hearing.fs 
 In the game: `` ` `` opens the Forth console (`scripts/debug.fs` has its helpers; Ctrl+V pastes,
 each whole line run, Ctrl+C copies the line typed or, with none, what the last one printed,
 Ctrl+Shift+C the whole log, Ctrl+X cuts), F1 the settings
-(the picture - two presets: *enhanced*, the default, the game with some modern polish, and *as on
-the PS2*, the original's picture exactly, its characters lit by its own formula - fullscreen, the
-controls - saved in `user/`), F11 or Alt+Return fullscreen, F2 the debug
+(the picture - three presets: *enhanced*, the default, the game with some modern polish, *as on
+the PS2*, the original's picture exactly, its characters lit by its own formula, and *low-power
+computer*, the original's look with only the costly extras off - fullscreen, the controls - saved
+in `user/`), F11 or Alt+Return fullscreen, F2 the debug
 overlay (Fiona's meters - panic, breath, fear - the actors alive and their ids down the right, OpenHuey's
 version; F4 hides or shows the actors' list), F3 the free camera,
 F12 a bug report: the moment kept in `user/bugs/<date>_<time>/` (report.txt - where she is, every
@@ -49,6 +51,13 @@ opened with `bug-note ` typed for what happened (into note.txt). All of it is zi
 folder, `user/bugs/<date>_<time>.zip` (again with each note): drag that onto a GitHub issue. At
 the console `bug <what happened>` does both at once; `s" <folder>/save.fs" bug-load` plays the moment again. The
 version is CMake's `project(OpenHuey VERSION ...)`; the release builds carry it in their names.
+
+The picture is OpenGL 4.6, else 3.3 (older and smaller GPUs: Intel's from Sandy Bridge, NVIDIA's
+GeForce 8 on, AMD's Radeon HD 2000 on): the same renderer either way, `src/platform/gl.c` standing
+in for 4.5's functions with 3.3's and rewriting the shaders for GLSL 3.30 (`src/platform/gl.h`).
+On 3.3 a fresh start takes the low-power look. `--gl33` (or `OPENHUEY_GL=3.3`) draws 3.3's way
+on any GPU - for checking it; a developer's build asks the driver to check every call (its debug
+output: slower), a release only with `OPENHUEY_GL_DEBUG=1`.
 
 Tests: `tests/test_*.fs` are the language and the kernel (the `forth` tool, no game data);
 `tests/<subsystem>/test_*.fs` run inside the game headless (`openhuey --test`), with the game's data.
