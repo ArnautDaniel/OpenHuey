@@ -38,6 +38,7 @@ typedef void (APIENTRY *HGA_GLREADBUFFER)(GLenum);
     X(HGA_GLREADBUFFER, glReadBuffer)                                          \
     X(PFNGLACTIVETEXTUREPROC, glActiveTexture)                                 \
     X(PFNGLTEXIMAGE3DPROC, glTexImage3D)                                       \
+    X(PFNGLTEXBUFFERPROC, glTexBuffer)                                         \
     X(PFNGLGENERATEMIPMAPPROC, glGenerateMipmap)                               \
     X(PFNGLGENSAMPLERSPROC, glGenSamplers)                                     \
     X(PFNGLGENFRAMEBUFFERSPROC, glGenFramebuffers)                             \
@@ -387,11 +388,17 @@ static void APIENTRY f_TextureParameteri(GLuint t, GLenum pname, GLint value) {
     c_glTexParameteri(texture_target(t), pname, value);
 }
 
+static void APIENTRY f_TextureBuffer(GLuint t, GLenum internal, GLuint buffer) {
+    texture_edit(t);   /* (a buffer texture: its texels the buffer's) */
+    c_glTexBuffer(GL_TEXTURE_BUFFER, internal, buffer);
+}
+
 static void APIENTRY f_BindTextureUnit(GLuint unit, GLuint t) {
     c_glActiveTexture(GL_TEXTURE0 + unit);
     if (t == 0) {   /* (none: whichever kind was there) */
         c_glBindTexture(GL_TEXTURE_2D, 0);
         c_glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+        c_glBindTexture(GL_TEXTURE_BUFFER, 0);
     } else {
         c_glBindTexture(texture_target(t), t);
     }
@@ -615,6 +622,7 @@ int gl_load(int fallbacks) {
         p_glTextureStorage3D = f_TextureStorage3D;
         p_glTextureSubImage2D = f_TextureSubImage2D;
         p_glTextureParameteri = f_TextureParameteri;
+        p_glTextureBuffer = f_TextureBuffer;
         p_glBindTextureUnit = f_BindTextureUnit;
         p_glGenerateTextureMipmap = f_GenerateTextureMipmap;
         p_glCopyTextureSubImage2D = f_CopyTextureSubImage2D;

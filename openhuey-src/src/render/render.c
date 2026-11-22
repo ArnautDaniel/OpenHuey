@@ -70,7 +70,7 @@ enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_CO
        U_ROOM_LIT, U_LPOS = 12, U_LCOL = 15, U_LRANGE = 18, U_AMBIENT128 = 21, U_NSHADOWS = 22, U_SHADOW_VP = 23,
        U_SHADOW_INFO = 35, U_SHADOW_STRENGTH = 47, U_RECEIVE = 59, U_CHAR_LIGHT = 60, U_ALPHA = 61,
        U_REJECT = 62, U_UNFOGGED = 63, U_SHADOW_LIGHT = 64, U_NBLOCKERS = 76, U_BLOCKER = 77,   /* (12 shadows, 16 blockers) */
-       U_PS2 = 180, U_PDIR = 181, U_PFALL = 184, U_SHADOW_SOFT = 187 };   /* (arrays: a location an element) */
+       U_PS2 = 180, U_PDIR = 181, U_PFALL = 184, U_SHADOW_SOFT = 187, U_SKIN = 188, U_NBONES = 189 };   /* (arrays: a location an element) */
 
 /* the PS2's lighting (gfx.ps2-lighting; src/game/model.c light_rgba): each light one direction
  * (from the model's root to it; w: -dir.L), a falloff along it, its colour; the ambient; the sum
@@ -93,6 +93,38 @@ enum { U_MVP, U_USE_TEX, U_SOLID_TEX, U_LIT, U_COVERAGE, U_LIGHT_DIR, U_LIGHT_CO
     "    return clamp(l, 0.0, 128.0);\n" \
     "}\n"
 
+/* a skinned mesh's vertex posed (render_skin_upload): its slot's matrices in u_bones (each four texels,
+ * its columns) - the placing first, then the bones; the position by the sum of its bones' matrices x
+ * it by their weights, then placed; the normal the same by their turns, then the placing's, made one
+ * long (as actor.c skinned on the CPU before) */
+#define SKIN_STRIDE (MODEL_MAX_BONES + 1)   /* matrices a slot: the placing, then the bones */
+#define STR_(x) #x
+#define STR(x) STR_(x)
+#define SKIN_GLSL \
+    "layout(location = 4) in vec4 a_bones;\n" \
+    "layout(location = 5) in vec4 a_weights;\n" \
+    "layout(binding = 2) uniform samplerBuffer u_bones;\n" \
+    "mat4 skin_matrix(int i) {\n" \
+    "    int t = ((u_skin - 1) * " STR(SKIN_STRIDE) " + i) * 4;\n" \
+    "    return mat4(texelFetch(u_bones, t), texelFetch(u_bones, t + 1), texelFetch(u_bones, t + 2), texelFetch(u_bones, t + 3));\n" \
+    "}\n" \
+    "void skinned(out vec3 p, out vec3 n) {\n" \
+    "    vec3 sp = vec3(0.0), sn = vec3(0.0);\n" \
+    "    for (int j = 0; j < 4; j++) {\n" \
+    "        float w = a_weights[j];\n" \
+    "        if (w == 0.0) continue;\n" \
+    "        int b = int(a_bones[j] + 0.5);\n" \
+    "        mat4 m = skin_matrix(1 + (b < u_nbones ? b : 0));\n" \
+    "        sp += (m * vec4(a_pos, 1.0)).xyz * w;\n" \
+    "        sn += mat3(m) * a_normal * w;\n" \
+    "    }\n" \
+    "    mat4 place = skin_matrix(0);\n" \
+    "    p = (place * vec4(sp, 1.0)).xyz;\n" \
+    "    sn = mat3(place) * sn;\n" \
+    "    float len = length(sn);\n" \
+    "    n = len > 0.0 ? sn / len : vec3(0.0);\n" \
+    "}\n"
+
 static const char *kMeshVs =
     "#version 460 core\n"
     "layout(location = 0) in vec3 a_pos;\n"
@@ -103,6 +135,9 @@ static const char *kMeshVs =
     "layout(location = 62) uniform vec4 u_reject;\n"   /* the PS2's clip volume (x, y bands, near, far); x 0: off */
     "layout(location = 3) uniform int u_lit;\n"
     "layout(location = 11) uniform int u_room_lit;\n"
+    "layout(location = 188) uniform int u_skin;\n"     /* a skinned mesh: its slot + 1 (0: not) */
+    "layout(location = 189) uniform int u_nbones;\n"
+    SKIN_GLSL
     PS2_LIGHT
     "out vec3 v_ps2;\n"
     "out vec2 v_st;\n"
@@ -111,16 +146,22 @@ static const char *kMeshVs =
     "out vec3 v_pos;\n"
     "noperspective out float v_out;\n"
     "void main() {\n"
-    "    gl_Position = u_mvp * vec4(a_pos, 1.0);\n"
+    "    vec3 pos = a_pos, normal = a_normal;\n"
+    "    vec4 col = a_col;\n"
+    "    if (u_skin != 0) {\n"
+    "        skinned(pos, normal);\n"
+    "        col = vec4(128.0 / 255.0);\n"   /* (0x80: the skinned vertices' colour) */
+    "    }\n"
+    "    gl_Position = u_mvp * vec4(pos, 1.0);\n"
     "    vec4 p = gl_Position;\n"
     "    v_out = u_reject.x > 0.0 && (p.w < u_reject.z || p.w > u_reject.w || abs(p.x) > u_reject.x * p.w ||\n"
     "                                 abs(p.y) > u_reject.y * p.w) ? 1.0 : 0.0;\n"
     "    v_st = a_st;\n"
-    "    v_col = a_col * (255.0 / 128.0);\n"   /* 0x80 = 1.0 */
-    "    v_normal = a_normal;\n"
-    "    v_pos = a_pos;\n"
+    "    v_col = col * (255.0 / 128.0);\n"   /* 0x80 = 1.0 */
+    "    v_normal = normal;\n"
+    "    v_pos = pos;\n"
     /* (per vertex, cut to whole steps: the vertex colour the microprograms gave the GS) */
-    "    v_ps2 = u_lit != 0 && u_room_lit != 0 && u_ps2 == 1 ? floor(ps2_light(a_normal, a_pos)) / 128.0 : vec3(1.0);\n"
+    "    v_ps2 = u_lit != 0 && u_room_lit != 0 && u_ps2 == 1 ? floor(ps2_light(normal, pos)) / 128.0 : vec3(1.0);\n"
     "}\n";
 
 /* the GS's modulate (texel times vertex colour), done on linear values; characters lit by a key
@@ -290,8 +331,16 @@ static const char *kMeshFs =
 static const char *kShadowVs =
     "#version 460 core\n"
     "layout(location = 0) in vec3 a_pos;\n"
+    "layout(location = 3) in vec3 a_normal;\n"
     "layout(location = 0) uniform mat4 u_vp;\n"
-    "void main() { gl_Position = u_vp * vec4(a_pos, 1.0); }\n";
+    "layout(location = 1) uniform int u_skin;\n"
+    "layout(location = 2) uniform int u_nbones;\n"
+    SKIN_GLSL
+    "void main() {\n"
+    "    vec3 pos = a_pos, normal;\n"
+    "    if (u_skin != 0) skinned(pos, normal);\n"
+    "    gl_Position = u_vp * vec4(pos, 1.0);\n"
+    "}\n";
 static const char *kShadowFs =
     "#version 460 core\n"
     "void main() {}\n";
@@ -321,6 +370,8 @@ static struct {
     float shadow_info[RENDER_MAX_SHADOWS][4], shadow_strength[RENDER_MAX_SHADOWS];
     float shadow_light[RENDER_MAX_SHADOWS][4];   /* where its light shades from, its reach */
     GLuint shade_prog, shade_vao, shade_vbo;     /* layer 6's draws */
+    GLuint bone_buf, bone_tex;                   /* the skinned meshes' poses: RENDER_SKIN_SLOTS x SKIN_STRIDE matrices */
+    uint64_t skin_used;                          /* the slots taken, a bit each */
 } R;
 
 #define FONT_CELL_W 6
@@ -461,6 +512,12 @@ int render_init(void) {
             glNamedFramebufferDrawBuffer(R.shadow_fbo[i], GL_NONE);
         }
     }
+    /* the skinned meshes' matrices: a buffer seen by the vertex shaders as a texture of RGBA floats
+     * (four texels a matrix - 3.3's buffer textures: at least 65536 texels, this 49344) */
+    glCreateBuffers(1, &R.bone_buf);
+    glNamedBufferStorage(R.bone_buf, (GLsizeiptr)RENDER_SKIN_SLOTS * SKIN_STRIDE * sizeof(Mat4), NULL, GL_DYNAMIC_STORAGE_BIT);
+    glCreateTextures(GL_TEXTURE_BUFFER, 1, &R.bone_tex);
+    glTextureBuffer(R.bone_tex, GL_RGBA32F, R.bone_buf);
     return 1;
 }
 
@@ -602,6 +659,7 @@ static void quad_draw(const Mat4 *vp, const Vec3 q[4]) {   /* (corners 0 1 2 3: 
     }
     glNamedBufferSubData(sQuadVbo, 0, sizeof(v), v);
     glProgramUniformMatrix4fv(R.shadow_prog, 0, 1, GL_FALSE, vp->m);
+    glProgramUniform1i(R.shadow_prog, 1, 0);
     glUseProgram(R.shadow_prog);
     glBindVertexArray(sQuadVao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -688,6 +746,11 @@ void render_shadow_mesh(const GpuMesh *g, const MeshDraw *d, int nd) {
 
     if (g->vao == 0) {
         return;
+    }
+    glProgramUniform1i(R.shadow_prog, 1, g->skin);
+    if (g->skin) {
+        glProgramUniform1i(R.shadow_prog, 2, g->nbones);
+        glBindTextureUnit(2, R.bone_tex);
     }
     glBindVertexArray(g->vao);
     for (i = 0; i < nd; i++) {
@@ -904,6 +967,9 @@ void render_mesh_update(GpuMesh *g, const MeshVertex *v, int n) {
 }
 
 void render_mesh_free(GpuMesh *g) {
+    if (g->skin > 0) {
+        R.skin_used &= ~(1ull << (g->skin - 1));
+    }
     if (g->vbo != 0) {
         glDeleteBuffers(1, &g->vbo);
         glDeleteVertexArrays(1, &g->vao);
@@ -911,14 +977,62 @@ void render_mesh_free(GpuMesh *g) {
     memset(g, 0, sizeof(*g));
 }
 
+/* ---- skinned meshes (render.h: posed by the vertex shaders) ---- */
+
+int render_skin_upload(GpuMesh *g, const SkinVertex *v, int n, int morphing) {
+    int slot;
+
+    for (slot = 0; slot < RENDER_SKIN_SLOTS && (R.skin_used >> slot & 1); slot++) {
+    }
+    if (slot == RENDER_SKIN_SLOTS) {
+        fprintf(stderr, "render: more than %d skinned models at once: one not drawn\n", RENDER_SKIN_SLOTS);
+        return 0;
+    }
+    R.skin_used |= 1ull << slot;
+    glCreateBuffers(1, &g->vbo);
+    glNamedBufferStorage(g->vbo, (GLsizeiptr)((size_t)n * sizeof(SkinVertex)), v, morphing ? GL_DYNAMIC_STORAGE_BIT : 0);
+    glCreateVertexArrays(1, &g->vao);
+    attribute(g->vao, 0, 3, GL_FLOAT, GL_FALSE, offsetof(SkinVertex, pos));
+    attribute(g->vao, 1, 2, GL_FLOAT, GL_FALSE, offsetof(SkinVertex, s));
+    attribute(g->vao, 3, 3, GL_FLOAT, GL_FALSE, offsetof(SkinVertex, normal));
+    attribute(g->vao, 4, 4, GL_UNSIGNED_BYTE, GL_FALSE, offsetof(SkinVertex, bones));   /* (0 .. 255, as floats) */
+    attribute(g->vao, 5, 4, GL_FLOAT, GL_FALSE, offsetof(SkinVertex, weights));
+    glVertexArrayVertexBuffer(g->vao, 0, g->vbo, 0, sizeof(SkinVertex));
+    g->nv = n;
+    g->skin = slot + 1;
+    g->nbones = 0;
+    return 1;
+}
+
+void render_skin_update(GpuMesh *g, const SkinVertex *v, int first, int n) {
+    if (g->skin && n > 0) {
+        glNamedBufferSubData(g->vbo, (GLintptr)((size_t)first * sizeof(SkinVertex)), (GLsizeiptr)((size_t)n * sizeof(SkinVertex)), v);
+    }
+}
+
+void render_skin_pose(GpuMesh *g, const Mat4 *place, const Mat4 *bones, int n) {
+    GLintptr at;
+
+    if (!g->skin) {
+        return;
+    }
+    n = n < 0 ? 0 : n > MODEL_MAX_BONES ? MODEL_MAX_BONES : n;
+    at = (GLintptr)((size_t)(g->skin - 1) * SKIN_STRIDE * sizeof(Mat4));
+    glNamedBufferSubData(R.bone_buf, at, sizeof(Mat4), place);
+    if (n > 0) {
+        glNamedBufferSubData(R.bone_buf, at + (GLintptr)sizeof(Mat4), (GLsizeiptr)((size_t)n * sizeof(Mat4)), bones);
+    }
+    g->nbones = n;
+}
+
 static float sTint[4] = {1.0f, 1.0f, 1.0f, 1.0f};
 
 /* the mesh shader's per-draw switches, as last set: only a change sent (a room is hundreds of
  * draws, most alike - each call a trip through the driver, the dearer on an older GPU) */
 static struct {
-    int use_tex, solid_tex, lit, coverage, receive;
+    int use_tex, solid_tex, lit, coverage, receive, skin, nbones;
     float mask, tint[4];
-} sSet = {-1, -1, -1, -1, -1, -1.0f, {-1.0f, -1.0f, -1.0f, -1.0f}};
+} sSet = {-1, -1, -1, -1, -1, -1, -1, -1.0f, {-1.0f, -1.0f, -1.0f, -1.0f}};
 
 static void set_int(int *was, GLint loc, int v) {
     if (*was != v) {
@@ -984,6 +1098,11 @@ void render_mesh(const GpuMesh *g, const Mat4 *mvp, const MeshDraw *d, int nd, c
     if (memcmp(sSet.tint, sTint, sizeof(sTint)) != 0) {
         memcpy(sSet.tint, sTint, sizeof(sTint));
         glProgramUniform4f(R.mesh_prog, U_ALPHA, sTint[0], sTint[1], sTint[2], sTint[3]);
+    }
+    set_int(&sSet.skin, U_SKIN, g->skin);
+    if (g->skin) {
+        set_int(&sSet.nbones, U_NBONES, g->nbones);
+        glBindTextureUnit(2, R.bone_tex);
     }
     glUseProgram(R.mesh_prog);
     glDisable(GL_BLEND);   /* (for both targets: only the colour one ever blends) */

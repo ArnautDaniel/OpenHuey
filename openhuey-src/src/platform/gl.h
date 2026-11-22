@@ -98,6 +98,7 @@ typedef void (APIENTRY *HGA_GLGETINTEGERV)(GLenum, GLint *);
     X(PFNGLTEXTURESTORAGE3DPROC, glTextureStorage3D)                           \
     X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D)                         \
     X(PFNGLTEXTUREPARAMETERIPROC, glTextureParameteri)                         \
+    X(PFNGLTEXTUREBUFFERPROC, glTextureBuffer)                                 \
     X(PFNGLBINDTEXTUREUNITPROC, glBindTextureUnit)                             \
     X(PFNGLGENERATETEXTUREMIPMAPPROC, glGenerateTextureMipmap)                 \
     X(PFNGLCOPYTEXTURESUBIMAGE2DPROC, glCopyTextureSubImage2D)                 \
@@ -188,6 +189,7 @@ GL_DSA_FUNCTIONS(GL_DECLARE)
 #define glTextureStorage3D p_glTextureStorage3D
 #define glTextureSubImage2D p_glTextureSubImage2D
 #define glTextureParameteri p_glTextureParameteri
+#define glTextureBuffer p_glTextureBuffer
 #define glBindTextureUnit p_glBindTextureUnit
 #define glGenerateTextureMipmap p_glGenerateTextureMipmap
 #define glCopyTextureSubImage2D p_glCopyTextureSubImage2D

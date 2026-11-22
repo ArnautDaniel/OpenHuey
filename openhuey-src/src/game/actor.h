@@ -23,7 +23,6 @@ typedef struct Actor {
     int swap_sel;           /* a texture shown from another file (Message_Show: a face), -1 none */
     GpuTexture swap_orig;   /* ... and its own, to show again */
     GpuMesh gpu;
-    MeshVertex *posed;      /* this frame's skinned vertices */
     GpuMesh shadow;         /* the contact shadow: a soft blob on the floor under it */
     /* what scripts set (fields in Forth) */
     Vec3 pos;
