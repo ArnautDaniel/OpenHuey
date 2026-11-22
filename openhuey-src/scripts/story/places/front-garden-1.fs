@@ -92,7 +92,7 @@ the-crate crate-group frees-floor  the-crate $185 noise-from
     hewie-in?  hewie-cond-now @ down-cond = and if  hewie false shown  then ;
 : hewie-back ( -- )  hewie true shown  hewie let-go ;
 : the-tree ( -- )   \ (her look up at it: the scene - the marionette up there)
-    stalkers-stay state!  fiona wait-move  fiona -201.5e -121.8e turn-to-xz
+    stalkers-stay state!  fiona true aside  fiona wait-move  fiona -201.5e -121.8e turn-to-xz
     fiona look-at-anim start-anim  40 frames  something-up-msg show
     night? if  tree-night-movie  else  tree-movie  then  scenes:keyed-movie tree-cutscene load-scene
     wait-closed  15 screen:to-black-2 with-music or fade  wait-fade
@@ -107,7 +107,7 @@ the-crate crate-group frees-floor  the-crate $185 noise-from
     scene-locked state-off  fiona 0 idle  fiona $148 -11 -350.123e 232.183e place-at  camera-restart  hewie-back
     found-file-222 fact!  15 fade-in  gate-seen resident-flag-set  gate-file give-file  stalkers-stay state-off ;
 : into-the-castle ( -- )   \ (the castle gate key: by the forced way, into the hall)
-    stalkers-stay state!  fiona wait-move  castle-1f-hall preload  15 screen:to-black-2 with-music or fade  wait-fade
+    stalkers-stay state!  fiona true aside  fiona wait-move  castle-1f-hall preload  15 screen:to-black-2 with-music or fade  wait-fade
     hewie let-go  stalker let-go  world-held state!  forced-exit take-exit ;
 : key-used ( who ev var value -- handled? )
     2drop  swap 0= 0= if  drop false exit  then
@@ -115,16 +115,16 @@ the-crate crate-group frees-floor  the-crate $185 noise-from
 
 \ ---- the marionette: Hewie sent up for it ("go there" by the tree) - she watches ----
 : brings-it ( -- )   \ (his: to the tree's foot, sitting there - got it - and back on his way)
-    hewie hold  hewie wait-move  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move
+    hewie hold  hewie true aside  hewie wait-move  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move
     tree-group solid-floor floor-off  tree-group keeps-fiona-off floor-on  tree-group keeps-pursuers-off floor-on
     hewie $208 138 -1 walk-path-move -206e -116e go-to  hewie sit-a-while-anim play
     got-broken-marionette fact!  10 trust+
     broken-marionette item-named  broken-marionette 1 give-item  broken-marionette show-item-tab  fanfare  obtained-2-msg say
     marionette-part hide-part  40 trust+  fiona follow
-    hewie $54 -1 run-path-move path-to  tree-group solid-floor floor-on  -1 fetched ! ;
+    hewie $54 -1 run-path-move path-to  tree-group solid-floor floor-on  -1 fetched !  hewie false aside ;
 : watches ( -- )   \ (hers: her eyes on him, the tree, then him again till he is back)
     begin  fiona-free? 0= while  yield  repeat  panic-eased
-    fiona hold  fiona wait-move  fiona hewie look-at  yield
+    fiona hold  fiona true aside  fiona wait-move  fiona hewie look-at  yield
     begin  hewie by-tree-area in-area? 0= while  yield  repeat
     3 -1 her-camera  fiona -1 look-at  yield
     fiona -201.5e -121.8e turn-to-xz  fiona look-at-anim 10 start-blend  fiona -1 idle  7 frames

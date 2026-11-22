@@ -48,7 +48,7 @@ own: wall-seen  own: looked-round  own: spot-noticed  own: sounds-on  own: frame
     fiona follow  fiona-hidden state-off  curtain-flung
     found-her @ 0= if  stalker let-go  stalker-in? if  0 stalker-order  then  then ;
 : hides ( -- )
-    stalkers-stay state!  0 came-while-hidden !  fiona hold  fiona her-motions motions-for  fiona wait-move
+    stalkers-stay state!  0 came-while-hidden !  fiona hold  fiona true aside  fiona her-motions motions-for  fiona wait-move
     fiona $182 180 -67.8e -119.5e walk-to  fiona use-motions  curtain-in  fiona -1 idle
     stalkers-stay state-off  fiona-hidden state!  0 found-her !  0 avoid-prompt
     mandragora? if  shriek-sound room-bank fiona sound-by  then
@@ -79,18 +79,18 @@ own: wall-seen  own: looked-round  own: spot-noticed  own: sounds-on  own: frame
     om2f-8-flag1 fact? if  3 show-part  then
     flame-fx 0 48.8e 10.3e -50.7e flame-at  1 $2300 reverb ;
 : first-time ( -- )   \ (brought here the first time: Hewie by her, the doors shut behind, the spirits gone)
-    fiona hold  hewie activate  old-mansion-2f-8 302 0 hewie-to
+    fiona hold  fiona true aside  hewie activate  old-mansion-2f-8 302 0 hewie-to
     $62 false open-mark  doors-redone  $62 lock  creatures-on state-off  spirits-gone  found-file-234 fact!
     camera-restart  15 fade-in  $234 give-file  stalkers-stay state-off ;
 : by-the-wall ( -- )   \ (brought back by the way behind the wall: it's open)
-    fiona hold  3 show-part  camera-restart  world-held state-off  om2f-8-flag1 fact!  $54 unlock  2 prepare-exit
+    fiona hold  fiona true aside  3 show-part  camera-restart  world-held state-off  om2f-8-flag1 fact!  $54 unlock  2 prepare-exit
     15 fade-in  stalkers-stay state-off  summoner-on state! ;
 : back-through-hole ( -- )
-    fiona hold  camera-restart  slide-sound common-bank fiona sound-by  15 screen:from-black fade wait-fade  stalkers-stay state-off ;
+    fiona hold  fiona true aside  camera-restart  slide-sound common-bank fiona sound-by  15 screen:from-black fade wait-fade  stalkers-stay state-off ;
 
 \ ---- a spirit put away by the lamp, the first time: the wall gives - out by the forced way ----
 : wall-gives ( -- )
-    stalkers-stay state!  fiona hold  $5D preload  16 frames  3 show-part  8 frames
+    stalkers-stay state!  fiona hold  fiona true aside  $5D preload  16 frames  3 show-part  8 frames
     15 screen:to-black-2 with-music or fade  wait-fade  world-held state!  forced-exit take-exit ;
 : wall-due ( -- )
     wall-seen @  om2f-8-flag1 fact? or  cam-set@ 3 4 1+ within 0= or if  exit  then
@@ -99,7 +99,7 @@ own: wall-seen  own: looked-round  own: spot-noticed  own: sounds-on  own: frame
 \ ---- what she may do or say here ----
 : the-lamp ( -- )  fiona wait-move  fiona 60e 0e turn-to-xz  om2f-8-flag1 fact? if  blue-msg  else  unlit-msg  then  say ;
 : the-hole ( -- )
-    stalkers-stay state!  fiona hold  off-map-27 preload  fiona wait-move  fiona 180 turn  fiona look-close-anim 10 play-blend
+    stalkers-stay state!  fiona hold  fiona true aside  off-map-27 preload  fiona wait-move  fiona 180 turn  fiona look-close-anim 10 play-blend
     hole-msg yes? if
         15 screen:to-black fade wait-fade  slide-sound common-bank fiona sound-by  world-held state!  through-hole take-exit
     else  stalkers-stay state-off  then ;
@@ -112,7 +112,7 @@ own: wall-seen  own: looked-round  own: spot-noticed  own: sounds-on  own: frame
     fiona wait-anim  shot-off ;
 : the-bones ( -- )  fiona wait-move  fiona 78e -70e turn-to-xz  fiona look-low-anim start-anim  40 frames  bones-msg say  fiona wait-anim ;
 : the-book ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  fiona 62e 27e turn-to-xz  written-msg say
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona 62e 27e turn-to-xz  written-msg say
     15 screen:to-dim fade wait-fade  recipes-msg say  15 screen:from-dim fade wait-fade
     $43 items:item-bit? 0=  $45 items:item-bit? 0= or if
         fiona hand-to-mouth-anim start-anim  medicine-msg say  fiona wait-anim

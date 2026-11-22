@@ -52,7 +52,7 @@ the-vase 0 frees-floor  the-vase $1B0 noise-from
     room-flag-2d state-off
     hewie-in?  hewie-way-now @ 1 = and if  castle-1f-19 -1 0 hewie-to  1800 2 hewie send hewie-yelp  then ;
 : takes-key ( -- )
-    fiona hold  begin  key-step @ 2 < while  yield  repeat
+    fiona hold  fiona true aside  begin  key-step @ 2 < while  yield  repeat
     got-study-key fact!  key-fx effect-off  10 trust+
     study-key item-named  study-key 1 give-item  study-key show-item-tab  fanfare  obtained-2-msg say
     40 trust+  fetched-file give-file  3 key-step ! ;

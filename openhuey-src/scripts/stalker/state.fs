@@ -165,6 +165,7 @@ state: stalker-state
   \ with Hewie (Pursuer_ChanceRoll): what has built up on it (+0x16C0), his blow struck Hewie in this
   \ attack (+0x1760 bit 1)
   cell field dog-cond  1 floats field roll-build  cell field struck-dog
+  cell field dog-aside          \ Hewie set aside (+0x2D: hewie-aside) - not to be gone for
   \ what he tells besides (stalker-ties): a script of the room has him (`scripted`), a scene does
   \ (`scene`) - his +0xE0; out of contact (+0x2A: through a door, on a ladder); frames a joint
   \ action he took stays pending (Progress_IsLinked: its entry settled the next frame)
@@ -185,6 +186,7 @@ state: stalker-state
   cell field tint-t  cell field tint-was  cell field unseen   \ (the TintStalker: shown a while,
   1 floats field tint-alpha  cell field tint-fade  cell field tint-shown   \ how faded: its tint;
   1 floats field tint-phase                                               \ kind 37's: its pulse)
+  cell field tint-reeled  cell field tint-hits   \ (the TintStalker: reeling and his damage last frame - a new blow arms its while)
   cell field mark-id            \ (kind 12) its marker's effect actor (-1 none)
   \ the story's zones a blow may strike instead of her (Events_NearestPoint: their kind's bit 1),
   \ this frame: on, and their centres; Riccardo's shot at one shown as his point for a while

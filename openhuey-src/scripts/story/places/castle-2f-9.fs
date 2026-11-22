@@ -35,9 +35,9 @@ own: stood-up              \ she has stood to speak (back to her scrubbing after
     stalker room-motion 5 + 7 play-blend  stalker room-motion 1 + 20 play-blend
     c2f-9-flag2 fact!  -1 stood-up !  scrubs ;
 : speaks-to-her ( -- )
-    fiona hold  hewie-no-attack state!  0 stood-up !  ['] she-stands start drop
-    begin  stood-up @ 0= while  yield  repeat  hewie-no-attack state-off ;
-: her-strangeness ( -- )  fiona hold  hewie-no-attack state!  attacked-msg say  hewie-no-attack state-off ;
+    fiona hold  fiona true aside  hewie-no-attack state!  0 stood-up !  ['] she-stands start drop
+    begin  stood-up @ 0= while  yield  repeat  fiona false aside  hewie-no-attack state-off ;
+: her-strangeness ( -- )  fiona hold  fiona true aside  hewie-no-attack state!  attacked-msg say  fiona false aside  hewie-no-attack state-off ;
 
 \ ---- as she comes in ----
 : came-in ( exit -- )

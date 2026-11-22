@@ -68,10 +68,10 @@ end-structure
     wk wk.her-exits @ 0= if  exit  then  turning-back @ if  0  else  1  then  her-exit-is ;
 : walkway-moves ( -- )  angle deg>rad fdup walkway turn-y object!  creak ;
 : hewie-to-spot ( -- )   \ (an activity: Hewie walks to his spot on it, then waits there for the turn)
-    hewie hold  hewie wait-move
+    hewie hold  hewie true aside  hewie wait-move
     turning-back @ if  hewie wk wk.home @ wk wk.home-face @ -1 walk-path-move wk wk.home-x f@ wk wk.home-z f@ go-to
     else  hewie wk wk.out @ wk wk.out-face @ -1 walk-path-move wk wk.out-x f@ wk wk.out-z f@ go-to  then
-    hewie let-go  begin  hewie-clear @ 0= while  yield  repeat ;
+    hewie false aside  hewie let-go  begin  hewie-clear @ 0= while  yield  repeat ;
 : turns ( -- )   \ (an activity: Hewie kept off its floor once he's off it - the original asks of its home floor either way)
     0 turn-step !
     creak-sound  turning-back @ if  90e  else  0e  then  wk wk.sign @ s>f f* deg>rad  wk wk.edge @ execute  creak-at
@@ -92,7 +92,7 @@ end-structure
     home-part hide-part  across-part hide-part  back-object object-hide  across-object object-hide
     obj object-show  obj 1 lever-anim object ;
 : pulls-lever ( -- )   \ (an activity: to the lever, pulled; the walkway turns)
-    stalkers-stay state!  -1 turning !  0 hewie-clear !  turned? turning-back !
+    stalkers-stay state!  fiona true aside  -1 turning !  0 hewie-clear !  turned? turning-back !
     aboard kept-off hole-floor or floor-on
     hewie-in?  hewie aboard on-group? and if  ['] hewie-to-spot start drop
     else  aboard keeps-hewie-off floor-on  -1 hewie-clear !  then

@@ -105,9 +105,10 @@ $42 constant quies-seen   $44 constant mundus-seen   \ (the sub screen's marks: 
 
 \ ---- what she may read here ----
 : the-inscription ( -- )
-    fiona wait-move  written-msg say  15 screen:to-dim fade wait-fade  variatio-msg say  15 screen:from-dim fade wait-fade ;
+    fiona true aside  fiona wait-move  written-msg say  15 screen:to-dim fade wait-fade  variatio-msg say  15 screen:from-dim fade wait-fade
+    fiona false aside ;
 : the-book ( -- )
-    stalkers-stay state!  fiona wait-move  fiona 8e -4e turn-to-xz
+    stalkers-stay state!  fiona true aside  fiona wait-move  fiona 8e -4e turn-to-xz
     archaic-msg say  15 screen:to-dim fade wait-fade  combinations-msg say  15 screen:from-dim fade wait-fade
     quies-seen items:item-bit? 0=  mundus-seen items:item-bit? 0= or if
         fiona hand-to-mouth-anim start-anim  wonder-msg say  fiona wait-anim

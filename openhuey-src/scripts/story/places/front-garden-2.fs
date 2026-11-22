@@ -56,7 +56,7 @@ crate-1 2 crate   crate-2 3 crate   crate-3 4 crate
 
 \ ---- the grate swung open: Hewie found in the wire, she near it (a scene) ----
 : grate-opens ( -- )
-    fiona hold  stalkers-stay state!  15 screen:to-black-2 with-music or fade
+    fiona hold  stalkers-stay state!  fiona true aside  15 screen:to-black-2 with-music or fade
     grate-movie scenes:unseen-movie grate-cutscene load-scene  fiona wait-move  wait-fade  panic-eased
     if  -1 run-scene  then  wait-fade
     fiona $20A -35 133.34e -76.62e place-at  fiona 0 idle  camera-restart
@@ -68,8 +68,8 @@ crate-1 2 crate   crate-2 3 crate   crate-3 4 crate
     fg-2-flag1 fact!  panic-eased  ['] grate-opens start drop ;
 \ ---- at night, Hewie still caught: heading for the cage she turns back (to the bedroom by the wire) ----
 : turns-back ( -- )
-    fiona hold  stalkers-stay state!  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
-    world-held state!  scene-locked state!  0 prepare-exit  stalkers-stay state-off
+    fiona hold  stalkers-stay state!  fiona true aside  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
+    world-held state!  scene-locked state!  0 prepare-exit  stalkers-stay state-off  fiona false aside
     forced-exit 1 or take-exit  0e sounds-scaled ;
 : toward-the-cage ( -- )
     wire-night? 0=  turned-back @ or if  exit  then

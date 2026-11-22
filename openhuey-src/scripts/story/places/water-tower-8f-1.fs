@@ -152,7 +152,7 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
     hewie -1 look-at ;
 : hides ( -- )   \ (an activity)
     hewie hold  hewie wait-move  hewie-bark  hewie wait-move  hewie-to-hole
-    hewie true noclip  true hole-way  hewie-into-hole
+    hewie true aside  hewie true noclip  true hole-way  hewie-into-hole
     $80808080 $808080 $10000000 negate hewie-fades  hewie-in-it  hewie false noclip
     hewie still-anim-move hewie-walk-anim 0  0e 0e 0e 0e  move
     $808080 $80808080 $10000000 hewie-fades
@@ -171,11 +171,11 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
     else
         hewie-bark  hewie wait-move  hewie-out-of-it  false hole-way
     then
-    0 lying-down !  0 grabbed !  0 called-out ! ;
+    0 lying-down !  0 grabbed !  0 called-out !  hewie false aside ;
 
 \ ---- the final scenes: Riccardo grabbed by the first hole, its model down - her sign; he falls ----
 : final-scene ( -- )
-    no-track 1e background  stalkers-stay state!
+    no-track 1e background  stalkers-stay state!  fiona true aside
     1 scenes:unseen-movie 0 load-scene drop  15 screen:to-black-2 fade  wait-fade
     stalker let-go  0 summon-take  hewie let-go
     ['] riccardo-fades along-scene  -1 final-on !  panic-eased  -1 run-scene  0 final-on !
@@ -191,7 +191,7 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
     tower-track 1e background  15 screen:from-black with-music or fade  wait-fade
     $41 resident-flag-set  $24D give-file  $828B give-file  trust-file  stalkers-stay state-off ;
 : ends-it ( -- )   \ (her "go for it" - he is held: the end)
-    fiona wait-move  fiona stalker look-at  yield
+    fiona true aside  fiona wait-move  fiona stalker look-at  yield
     fiona go-for-it-gesture-anim start-anim  fiona 1 wait-mark  gesture-sound common-bank fiona sound-by  fiona wait-anim
     fiona -1 idle  7 frames  final-scene ;
 : sign-to-hole ( -- )   \ (her sign facing a hole, in its area: he hides there)
@@ -231,9 +231,9 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
     then ;
 : in-its-place? ( -- flag )  cursor-x @ $97 $10E within  cursor-y @ $AB $DC within and ;
 : over-diorama ( -- )   \ (frozen, over it, the camera on it)
-    fiona true noclip  8 frames  world-frozen state!  fiona $36 180 0e 33e place-at  1 10e 60e 0e 5e shot  8 frames ;
+    fiona true aside  fiona true noclip  8 frames  world-frozen state!  fiona $36 180 0e 33e place-at  1 10e 60e 0e 5e shot  8 frames ;
 : back-from-it ( -- )   \ (the camera hers again, back where she stood)
-    shot-off  world-frozen state-off  fiona false noclip  fiona $9D 180 0e 41e place-at ;
+    shot-off  world-frozen state-off  fiona false aside  fiona false noclip  fiona $9D 180 0e 41e place-at ;
 : lorenzo-comes ( -- )
     15 screen:to-black-2 with-music or fade  no-track 1e background  wait-fade
     8 hide-part  light-off  shot-off  world-frozen state-off  stalkers-stay state!  hewie let-go
@@ -275,7 +275,7 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
 
 \ ---- coming up the first time after the garden's scene: Lorenzo takes Riccardo's Azoth ----
 : azoth-scene ( -- )
-    15 screen:to-black-2 with-music or fade  no-track 1e background  stalkers-stay state!
+    15 screen:to-black-2 with-music or fade  no-track 1e background  stalkers-stay state!  fiona true aside
     fiona wait-move  wait-fade  fiona false shown
     $B 3 figure-in  $B before-reflections-layer layer  partner-kind usual-layer layer  3 figure-on  hewie let-go
     7 scenes:keyed-movie 6 load-scene drop  $2D $41 movie-key  panic-eased  azoth-msg run-scene
@@ -287,7 +287,7 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
     fiona wait-move
     c7-second-event fact? 0= if  over-diorama  diorama-msg say  8 frames  back-from-it  exit  then
     folded-memo 1 has-items? if
-        fiona true noclip  8 frames  world-frozen state!  fiona $D2 180 -0.95e 33e place-at  1 2e 50e 0e 5e shot  8 frames
+        fiona true aside  fiona true noclip  8 frames  world-frozen state!  fiona $D2 180 -0.95e 33e place-at  1 2e 50e 0e 5e shot  8 frames
         magisterium-msg say  8 frames  back-from-it  exit
     then
     switch-msg say ;

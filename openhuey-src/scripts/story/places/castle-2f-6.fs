@@ -41,12 +41,12 @@ own: shelves-remarked  own: book-remarked  own: hewie-noticed
 : at-desk ( F: z -- )   \ (to her spot at it, its motions hers)
     {: F: z :}  fiona desk-motions motions-for  fiona $55 0 -1 walk-move 3.622e z go-to  fiona use-motions ;
 : desk-locked ( -- )
-    stalkers-stay state!  32.279e at-desk
+    stalkers-stay state!  fiona true aside  32.279e at-desk
     fiona room-motion 2 + 10 start-blend  22 frames  strike-sound room-bank fiona sound-by
     11 frames  strike-sound room-bank fiona sound-by  8 frames  strike-sound room-bank fiona sound-by
     fiona wait-anim  locked-msg say  stalkers-stay state-off ;
 : drawer-opened ( -- )
-    fiona hold  stalkers-stay state!  31e at-desk
+    fiona hold  stalkers-stay state!  fiona true aside  31e at-desk
     stalker-unloaded  debilitas-7-kind stalker-ready
     fiona reach-out-anim play  reach-sound room-bank fiona sound-by  fiona reach-back-anim play
     study-key item-named  used-msg say
@@ -64,7 +64,7 @@ own: shelves-remarked  own: book-remarked  own: hewie-noticed
 
 \ ---- what she may do or say here ----
 : the-board ( -- )
-    stalkers-stay state!  fiona wait-move  board-msg say
+    stalkers-stay state!  fiona true aside  fiona wait-move  board-msg say
     15 screen:to-dim fade  wait-fade  luminessants-msg say  15 screen:from-dim fade  wait-fade
     got-doc-luminessants fact? if  fireflies-msg say
     else  fiona hand-to-mouth-anim 10 start-blend  no-clue-msg say  fiona wait-anim  then

@@ -38,7 +38,7 @@ create holes  $51 , $21C , $2F , $54 , $23B , $43 , $22C , $350 , $41 , $22D , $
 
 \ ---- in from the B1 (the colours done) ----
 : up-from-below ( -- )
-    fiona hold  fiona wait-move  1 map-page  off-map-27 preload  15 fade-in  summoner-on state! ;
+    fiona hold  fiona true aside  fiona wait-move  1 map-page  off-map-27 preload  15 fade-in  summoner-on state! ;
 
 \ ---- what she may do here ----
 : the-water ( -- )   \ (a recovery point: once a visit it calms her)

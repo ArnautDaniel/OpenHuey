@@ -88,7 +88,7 @@ $18 constant shelf-seen   $19 constant shelf-night-seen   $E constant shelf-door
     else  shelf-movie scenes:unseen-4-movie shelf-cutscene  then  load-scene ;
 : knocks-it-down ( -- )
     chase-scene @ if  stalkers-stay state-off  hint-timer @ ?dup if  1- stop-act  0 hint-timer !  then  then
-    fiona hold  c1f-3-bookshelf-examined fact!  castle-1f-3 hewie-slot true doors-into
+    fiona hold  fiona true aside  c1f-3-bookshelf-examined fact!  castle-1f-3 hewie-slot true doors-into
     103 him-in  partner $67 180 place-on-tri  partner false shown  0 summon-take
     15 screen:to-black-2 with-music or fade
     night? shelf-scene  wait-fade
@@ -109,7 +109,7 @@ $18 constant shelf-seen   $19 constant shelf-night-seen   $E constant shelf-door
     240 frames  begin  key-scene @ while  yield  repeat
     stalkers-stay state-off  force-chased state-off  0 chase-scene !  0 hint-timer ! ;
 : hint ( -- )
-    stalkers-stay state!  force-chased state!  fiona hold  c1f-3-bookshelf-hint fact!  -1 chase-scene !
+    stalkers-stay state!  force-chased state!  fiona hold  fiona true aside  c1f-3-bookshelf-hint fact!  -1 chase-scene !
     fiona wait-move  fiona rest-anim 10 start-blend  hint-msg show  fiona wait-anim  fiona 10 idle  wait-closed
     fiona let-go  ['] hint-over start 1+ hint-timer ! ;
 : hint-due? ( -- flag )
@@ -123,7 +123,7 @@ $18 constant shelf-seen   $19 constant shelf-night-seen   $E constant shelf-door
     begin  $64 frame-reached? 0= while  yield  repeat  no-track 1e background
     begin  4 shot? 0= while  yield  repeat  table-part hide-part  thing-part show-part ;
 : awakening ( -- )
-    15 screen:to-black-2 with-music or fade
+    fiona true aside  15 screen:to-black-2 with-music or fade
     awakened-movie scenes:unseen-4-movie awakened-cutscene load-scene  wait-fade
     0 true no-shadow  ['] awakening-cues along-scene
     panic-eased  if  awakened-msg run-scene  then
@@ -146,7 +146,7 @@ $18 constant shelf-seen   $19 constant shelf-night-seen   $E constant shelf-door
     fiona hold  knock-msg show  fiona -1 idle  7 frames  wait-closed ;
 : shelf ( -- )  shelf-msg say ;
 : behind-shelf ( -- )   \ (from behind it)
-    fiona wait-move  stalkers-stay state!  world-frozen state!
+    fiona wait-move  stalkers-stay state!  world-frozen state!  fiona true aside
     fiona $DA 0 -26.45e -13.04e place-at  1 20e -18e 8e 0e shot  shelf-msg say  shot-off
     world-frozen state-off  stalkers-stay state-off ;
 : books ( -- )
@@ -157,7 +157,7 @@ $18 constant shelf-seen   $19 constant shelf-night-seen   $E constant shelf-door
     harp-remarked @ if  harp-2-msg  else  -1 harp-remarked !  harp-msg  then  say
     fiona wait-anim  16 frames  shot-off ;
 : creepy-thing ( -- )
-    world-frozen state!  fiona $13B -90 20.181e -28.363e place-at  1 10e 20e -30e 0e shot
+    world-frozen state!  fiona true aside  fiona $13B -90 20.181e -28.363e place-at  1 10e 20e -30e 0e shot
     awakened? 0= if  snooping-msg  else  creepy-remarked @ if  creepy-2-msg  else  -1 creepy-remarked !  creepy-msg  then  then  say
     16 frames  world-frozen state-off  shot-off ;
 : reach-camomile ( -- )

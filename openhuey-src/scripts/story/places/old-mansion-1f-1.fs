@@ -56,7 +56,7 @@ $1B constant glass-fx   5 constant presence-sound   2 constant her-motions
     hall-movie scenes:unseen-movie hall-cutscene load-scene  ['] hall-shots along-scene  4 cutscene-keep-model
     panic-eased  if  -1 run-scene  then ;
 : her-scene ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     15 screen:to-black-2 with-music or fade  hall-movie scenes:unseen-movie hall-cutscene load-scene  wait-fade
     hewie full-health  hewie well  old-mansion-1f-1 49 0 hewie-to  $86 0 hewie-do
     ['] hall-shots along-scene  4 cutscene-keep-model  panic-eased  if  -1 run-scene  then
@@ -68,8 +68,8 @@ $1B constant glass-fx   5 constant presence-sound   2 constant her-motions
     5 0 0 stage-music  15 fade-in  hall-file give-file
     stalkers-stay state-off  no-stalker-camera state! ;
 : mad ( -- )
-    fiona hold  -1 mad-remarked !  fiona wait-move  fiona 0 turn  fiona turn-round-anim play
-    fiona stalker look-at  yield  mad-msg say  fiona -1 look-at  yield  0 mad-remarked ! ;
+    fiona hold  fiona true aside  -1 mad-remarked !  fiona wait-move  fiona 0 turn  fiona turn-round-anim play
+    fiona stalker look-at  yield  mad-msg say  fiona -1 look-at  yield  0 mad-remarked !  fiona false aside ;
 : wary-of-her ( -- )  -3.91e 90e 3.23e hewie-stands-by ;
 
 \ ---- the movie replayed (the extras) ----

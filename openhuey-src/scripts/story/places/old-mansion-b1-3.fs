@@ -97,7 +97,7 @@ create plate-tris  $89 , $B1 ,  $90 , $B2 ,  $97 , $B3 ,  $83 , $B0 ,
     corpse cast-model 0< 0= if  corpse true no-shadow  then
     begin  cutscene-frame cutscene-shot-at 2 <> while  yield  repeat  corpse false no-shadow ;
 : all-out ( -- )
-    0 dog-step !  stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade
+    0 dog-step !  stalkers-stay state!  fiona hold  fiona true aside  15 screen:to-black-2 with-music or fade
     7 scenes:keyed-movie 6 load-scene  wait-fade  ['] statue-scene along-scene  fiona false shown
     hewie-in? if  ['] hewie-hidden-by start drop  begin  dog-step @ 1 < while  yield  repeat  then
     $10 $FF movie-key  panic-eased  if  -1 run-scene  then  wait-fade
@@ -126,7 +126,7 @@ create plate-tris  $89 , $B1 ,  $90 , $B2 ,  $97 , $B3 ,  $83 , $B0 ,
     corpse-slot $9003 0 5 figure-play  fiona room-motion 5 + 3 play-blend  $9005 corpse-seated
     near-panic @ if  4 panic-to  then  omb1-3-flag1 fact!  $2F resident-flag-set ;
 : the-corpse ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     omb1-3-flag1 fact? 0= if
         fiona $8D 180 9e 10e walk-to
         corpse-msg yes? 0= if  stalkers-stay state-off exit  then
@@ -153,14 +153,14 @@ create plate-tris  $89 , $B1 ,  $90 , $B2 ,  $97 , $B3 ,  $83 , $B0 ,
     fiona wait-move  fiona 10e 0e turn-to-xz  fiona reach-out-anim play  4 frames
     got-venus-key fact!  false key-shown  venus-key got-venus-key -1 takes-the  fiona reach-back-anim play ;
 : the-tool ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  world-frozen state!  1 20e -15e 0e 0e shot
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  world-frozen state!  1 20e -15e 0e 0e shot
     fiona $97 180 5e -27e place-at  4 frames  tool-msg say
     15 screen:to-dim fade wait-fade  engraved-msg say  15 screen:from-dim fade wait-fade
     shot-off  world-frozen state-off  fire-msg say  stalkers-stay state-off ;
 
 \ ---- the iron maiden: the lever lowering its spikes; inside it, hidden ----
 : the-lever ( -- )
-    stalkers-stay state!  fiona hold  fiona 9 motions-for  fiona wait-move  fiona 5 0 9.83e 27.45e walk-to  fiona use-motions
+    stalkers-stay state!  fiona hold  fiona true aside  fiona 9 motions-for  fiona wait-move  fiona 5 0 9.83e 27.45e walk-to  fiona use-motions
     omb1-3-flag3 fact? 0= if
         fiona room-motion 4 + 5 start-blend8  5 frames  false spikes  $B 1 0 object  $10 1 0 object
         25 frames  open-sound room-bank fiona sound-by  55 frames  shut-sound room-bank fiona sound-by  fiona wait-anim  omb1-3-flag3 fact!
@@ -176,7 +176,7 @@ create plate-tris  $89 , $B1 ,  $90 , $B2 ,  $97 , $B3 ,  $83 , $B0 ,
     found-her @ 0= if  stalker let-go  stalker-in? if  0 stalker-order  then  then ;
 : the-maiden ( -- )
     omb1-3-flag3 fact? 0= if  fiona wait-move  fiona $3C 90 32e 20.63e walk-to  spikes-msg say exit  then
-    stalkers-stay state!  0 came-while-hidden !  fiona hold  fiona 9 motions-for  fiona wait-move
+    stalkers-stay state!  0 came-while-hidden !  fiona hold  fiona true aside  fiona 9 motions-for  fiona wait-move
     fiona $3C 90 32e 20.63e walk-to  fiona true noclip  fiona use-motions  fiona room-motion 5 start-blend8  5 frames
     2 hide-part  $E object-show  $E 1 0 object  36 frames  climb-sound room-bank fiona sound-by  fiona wait-anim
     fiona -1 idle  fiona false noclip  stalkers-stay state-off  fiona-hidden state!  0 found-her !  0 avoid-prompt

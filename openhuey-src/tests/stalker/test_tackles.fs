@@ -3,7 +3,7 @@
 \ in front low, behind, behind low. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_tackles.fs
 IN: test-tackles
-USING: tester engine game-state actors messages facts room-names game debug flag-names stalker stalker.state stalker.tables stalker.moving stalker.travel stalker.struck ;
+USING: tester engine game-state actors messages facts room-names game debug flag-names stalker stalker.state stalker.tables stalker.moving stalker.travel stalker.struck stalker.chase ;
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : soon ( xt n -- flag )  0 ?do  dup execute if  drop true unloop exit  then  game-tick  loop  drop false ;
@@ -16,6 +16,12 @@ testing ... not a bite ($B) or a hold ($A); not from Fiona
 T{ [: hewie striker !  $B 1 tackle  $A 1 tackle  fiona striker !  1 1 tackle ;] his -> 0 0 0 }T
 testing ... at most 1000
 T{ [: hewie striker !  998 temper !  0 0 tackled  temper @ ;] his -> 1000 }T
+
+testing his target Hewie (0.3.2, Pursuer_MayGoForTarget): not while Hewie is set aside (+0x2D), nor with her grabbed;
+testing ... her, by her reach bit 1 as ever
+T{ [: -1 at-dog !  0 dog-aside !  0 her-reach !  may-go?  -1 dog-aside !  may-go?  0 dog-aside !  32 her-reach !  may-go?  0 her-reach !  0 at-dog ! ;] his -> -1 0 0 }T
+T{ [: 0 at-dog !  -1 dog-aside !  0 her-reach !  may-go?  1 her-reach !  may-go?  0 her-reach !  0 dog-aside ! ;] his -> -1 0 }T
+T{ true game:hewie send scripted  1 game:hewie send aside  deliver  3 run-frames  [: dog-aside @ ;] his  0 game:hewie send aside  false game:hewie send scripted  deliver  3 run-frames  [: dog-aside @ ;] his -> -1 0 }T
 
 testing Hewie let go of his leg (Pursuer_StateKnockedDown $1709): down on his front ($1709, lying as $1806), up again ($1807)
 stalkers-blind state-flag-set  s" fiona" actor-named body-tri debug:debilitas-tri  3 run-frames

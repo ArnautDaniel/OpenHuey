@@ -30,14 +30,14 @@ own: locked-remarked  own: stood-in
     1 $3FFF reverb ;
 
 \ ---- the first time by the way in (before the 3F's turn): on by it ----
-: goes-on ( -- )  stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade  world-held state!  2 take-exit ;
+: goes-on ( -- )  stalkers-stay state!  fiona hold  fiona true aside  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade  world-held state!  2 take-exit ;
 
 \ ---- the door to the waterway: Daniella's scene, out by it ----
 : waterway-scene ( -- )
     waterway-movie scenes:keyed-movie waterway-cutscene load-scene  $5A $FF movie-key  0 hide-part
     panic-eased  if  -1 run-scene  then ;
 : by-the-waterway ( -- )
-    stalkers-stay state!  fiona hold  fiona waterway-exit to-door
+    stalkers-stay state!  fiona hold  fiona true aside  fiona waterway-exit to-door
     15 screen:to-black-2 with-music or fade  no-track 1e background
     waterway-movie scenes:keyed-movie waterway-cutscene load-scene  wait-fade
     hewie let-go  0 creatures-id send creatures-clear  $5A $FF movie-key  0 hide-part
@@ -56,9 +56,9 @@ own: locked-remarked  own: stood-in
 
 \ ---- what she may do here ----
 : the-water ( -- )
-    fiona wait-move  fiona $19F 166 -6.04e 30.79e walk-to  fiona true noclip  yield  world-frozen state!
+    fiona wait-move  fiona $19F 166 -6.04e 30.79e walk-to  fiona true aside  fiona true noclip  yield  world-frozen state!
     fiona $19E 166 -4.65e 24.47e place-at  1 35e 55e 0e 0e shot  water-msg say  16 frames
-    fiona false noclip  yield  world-frozen state-off  fiona $19F 166 -6.04e 30.79e place-at  shot-off ;
+    fiona false noclip  yield  world-frozen state-off  fiona $19F 166 -6.04e 30.79e place-at  shot-off  fiona false aside ;
 : take-magnesia ( -- )   \ (reached for, not in a panic)
     fiona wait-move  fiona 65.56e 19.77e turn-to-xz  in-panic? if  exit  then
     fiona reach-out-anim play  4 frames  refined-magnesia om1f-16-refined-magnesia magnesia-fx takes-up  fiona reach-back-anim play ;

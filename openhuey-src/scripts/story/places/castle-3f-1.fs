@@ -66,7 +66,7 @@ create first-squares  $584 , $DF8 ,   $65C , $ED0 ,   $76A , $FDE ,   $36E , $BE
     dinner-movie scenes:unseen-movie dinner-cutscene load-scene ;
 : dinner-served ( movie? -- )  scene-part show-part  panic-eased  if  dinner-msg run-scene  then ;
 : dinner ( -- )   \ (out by the forced way after it)
-    stalkers-stay state!  fiona hold  fiona symbol-door-exit to-door
+    stalkers-stay state!  fiona hold  fiona true aside  fiona symbol-door-exit to-door
     15 screen:to-black-2 with-music or fade  scene-locked state!
     dinner-scene  wait-fade  hewie let-go  castle-1f-6 preload
     dinner-served  wait-fade  world-held state!  stalker let-go  forced-exit take-exit  scene-part hide-part

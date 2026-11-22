@@ -170,13 +170,13 @@ create doll-pt /vec allot
 \ ---- the door beyond (after the warning): it won't open - and inside she is seized; pulled free,
 \ she flees back here ----
 : door-beyond-tried ( -- )
-    stalkers-stay state!  fiona beyond-exit to-door  fiona rattle-behind-anim play  fiona -1 idle  7 frames
+    stalkers-stay state!  fiona true aside  fiona beyond-exit to-door  fiona rattle-behind-anim play  fiona -1 idle  7 frames
     ['] ticking stop-doing
     fiona look-close-anim start-anim  22 frames
     15 screen:to-black-2 with-music or fade  wait-fade  world-held state!  yield
     fiona false shown  forced-exit take-exit ;
 : pulled-free ( -- )   \ (brought back by the forced way: she flees, the file)
-    fiona hold  fiona pull-free-anim 0 start-blend  found-file-209 fact!  world-held state-off
+    fiona hold  fiona true aside  fiona pull-free-anim 0 start-blend  found-file-209 fact!  world-held state-off
     0 0 player-camera  camera-restart  15 screen:from-black with-music or fade  wait-fade
     fled-file give-file  -1 fled !  stalkers-stay state-off  100 threat  fiona wait-anim ;
 : shut-in-there ( -- )  fiona wait-move  fled @ if  must-flee-msg  else  presence-msg  then  say ;

@@ -18,6 +18,10 @@ testing calm at the start
 T{ stage -> 0 }T
 testing a level set by the story: its stage
 T{ 70 game:panic send panic-level!  game-tick  stage -> 1 }T
+testing the ladders each is at, for the stalker's fear on a ladder (0.3.2: only on hers - Panic_FearInputs' RoomSlots_Bytes)
+: ladders ( -- st her )  game:panic enter  panic:st-ladder @  panic:her-ladder @  leave-actor ;
+T{ 2 game:panic send stalker-ladder  deliver  ladders drop -> 2 }T
+T{ -1 game:panic send stalker-ladder  deliver  ladders drop -> -1 }T
 full-suite   \ (on: waits, scenes, walks - the full run's)
 testing calming with time (calm danger: 0.1 a frame) - down to stage 0 under 60
 T{ 99 run-frames  level 60e about -> -1 }T

@@ -57,7 +57,7 @@ own: device-remarked  own: cabinet-remarked
     {: m c kept :}  15 screen:to-black-2 with-music or fade
     m scenes:keyed-movie c load-scene  kept cutscene-keep-model  wait-fade  hewie-for-scene ;
 : near-locker-hides ( -- )   \ (he comes and goes)
-    stalkers-stay state!  fiona hold
+    stalkers-stay state!  fiona hold  fiona true aside
     daniella-loaded? if  3 2 4  else  7 6 5  then  locker-scene  $10 $FF movie-key  ['] knocks start drop
     panic-eased  if  -1 run-scene  then  wait-fade
     near-locker object-hide  fiona 0 idle
@@ -71,7 +71,7 @@ own: device-remarked  own: cabinet-remarked
     2 2 player-camera  camera-restart  3 -7.85e 29.94e 52e hewie-after
     om2f-6-flag2 fact!  15 fade-in  stalkers-stay state-off ;
 : far-locker-hides ( -- )   \ (Daniella knocked down, she slips out; Riccardo taken off)
-    stalkers-stay state!  fiona hold
+    stalkers-stay state!  fiona hold  fiona true aside
     daniella-loaded? if  1 0 4  else  5 4 5  then  locker-scene  $10 $FF movie-key
     force-followed state!  yield  force-followed state-off  ['] knocks start drop
     panic-eased  if  -1 run-scene  then  wait-fade  world-held state!

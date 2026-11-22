@@ -51,7 +51,7 @@ create holes  $51 , $21C , $2F , $54 , $23B , $43 , $22C , $44 , $22D , $45 , $2
     stalker hold  stalker false hush  stalker true shown  stalker his-lying room-motion + start-anim
     begin  yield  again ;
 : blast ( -- )
-    scene-locked state!  stalkers-stay state!  fiona hold
+    scene-locked state!  stalkers-stay state!  fiona hold  fiona true aside
     15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
     hewie-in? dup hewie-sent-off !  if  hewie let-go  hewie false shown  then
     stalker let-go  0 summon-take

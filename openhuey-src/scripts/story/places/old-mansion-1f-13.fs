@@ -42,7 +42,7 @@ own: frames-in  own: hewie-away  own: perfume-step
     garden-movie scenes:unseen-4-movie garden-cutscene load-scene
     0 true no-shadow  panic-eased  if  -1 run-scene  then  0 false no-shadow ;
 : the-garden ( -- )
-    om1f-13-flag2 fact!  stalker let-go  0 summon-take  summoner-on state-off  stalkers-stay state!  fiona hold
+    om1f-13-flag2 fact!  stalker let-go  0 summon-take  summoner-on state-off  stalkers-stay state!  fiona hold  fiona true aside
     15 screen:to-black-2 with-music or fade  no-track 1e background  wait-fade
     hewie-in?  hewie-way-now @ 0= and dup 0= hewie-away !  if
         hewie-cond-now @ down-cond = if  ['] hewie-kept-hidden start drop  else  hewie let-go  then
@@ -63,7 +63,7 @@ own: frames-in  own: hewie-away  own: perfume-step
     old-mansion-1f-8 stalker-slot 1 doors-into
     stalker-told? 0= if  old-mansion-b1-2 217 stalker-to  2 stalker-order  then  his-own-time ;
 : pulls ( item fact -- )   \ (fact 0: none kept)
-    {: it f :}  stalkers-stay state!  hewie-no-attack state!  fiona hold  fiona wait-move
+    {: it f :}  stalkers-stay state!  hewie-no-attack state!  fiona hold  fiona true aside  fiona wait-move
     pull-msg yes? if
         fiona reach-out-anim play  4 frames  it item-named  it 1 give-item  it show-item-tab  fanfare  obtained-2-msg say
         f if  f fact!  then  60 fright+  obtained-sound room-bank fiona sound-by  fiona reach-back-anim play
@@ -89,12 +89,12 @@ own: frames-in  own: hewie-away  own: perfume-step
 \ ---- Hebel's Perfume used by Hewie: he leads her to a spot ----
 : perfume-wait ( n -- )  begin  perfume-step @ over < while  yield  repeat  drop ;
 : hewie-leads ( -- )
-    hewie hold  hewie wait-move  hewie fiona body-pos fswap fdrop turn-to-xz  1 perfume-step !
+    hewie hold  hewie true aside  hewie wait-move  hewie fiona body-pos fswap fdrop turn-to-xz  1 perfume-step !
     2 perfume-wait  hewie-bark  hewie wait-move  hewie 0 0 camera-set  hewie follow
     hewie $8D 0 -18e 29e walk-to  hewie-bark  hewie wait-move  30 frames
-    fiona 0 0 camera-set  fiona follow  3 perfume-step ! ;
+    fiona 0 0 camera-set  fiona follow  hewie false aside  3 perfume-step ! ;
 : sprays ( -- )
-    stalkers-stay state!  fiona hold  0 perfume-step !  ['] hewie-leads start drop  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  0 perfume-step !  ['] hewie-leads start drop  fiona wait-move
     fiona hewie body-pos fswap fdrop turn-to-xz  1 perfume-wait
     fiona $C06 play  fiona 0 start-anim  1 frames  fiona hewie look-at  yield
     2 perfume-step !  3 perfume-wait  stalkers-stay state-off  5 trust+ ;
@@ -105,7 +105,7 @@ own: frames-in  own: hewie-away  own: perfume-step
 \ ---- what she may say here ----
 : the-plant ( -- )  fiona wait-move  dried-msg say ;
 : the-sheet ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  sheet-msg say
+    fiona true aside  stalkers-stay state!  fiona hold  fiona wait-move  sheet-msg say
     15 screen:to-dim fade wait-fade  blood-msg say  15 screen:from-dim fade wait-fade  stalkers-stay state-off ;
 : the-flower-bed ( -- )  fiona wait-move  fiona -180 turn  fiona look-low-anim start-anim  40 frames  flower-bed-msg say  fiona wait-anim ;
 

@@ -44,7 +44,7 @@ $187 constant far-tri   $11F constant near-tri   $195 constant back-tri   $30 co
 \ ---- the first time in: its scene ----
 : intro-scene ( -- )  intro-movie scenes:unseen-movie intro-cutscene load-scene  0 hide-part  panic-eased  if  -1 run-scene  then ;
 : first-in ( -- )
-    stalkers-stay state!  fiona hold  intro-movie scenes:unseen-movie intro-cutscene load-scene  hewie-hidden-if-down
+    stalkers-stay state!  fiona hold  fiona true aside  intro-movie scenes:unseen-movie intro-cutscene load-scene  hewie-hidden-if-down
     0 hide-part  panic-eased  if  -1 run-scene  then  wait-fade
     fiona 0 idle  fiona $135 171 0.064e 100.888e place-at  camera-restart  hewie-back  om3f-2-flag1 fact!
     15 fade-in  stalkers-stay state-off ;
@@ -54,13 +54,13 @@ $187 constant far-tri   $11F constant near-tri   $195 constant back-tri   $30 co
 : shot-scene ( n -- movie? )   \ (the plate's scene n)
     2* cells shot-movies +  dup @ scenes:keyed-movie  rot cell+ @ load-scene ;
 : warned ( n -- )
-    stalkers-stay state!  fiona hold  -1 armor-on !  15 screen:to-black-2 with-music or fade
+    stalkers-stay state!  fiona hold  fiona true aside  -1 armor-on !  15 screen:to-black-2 with-music or fade
     shot-scene  wait-fade  hewie held? 0= if  hewie-hidden-if-down  then
     fiona false shown  0 hide-part  $14 $78 movie-key  panic-eased  if  -1 run-scene  then  wait-fade
     hewie-back  fiona true shown  armor-back  15 fade-in  0 armor-on !  stalkers-stay state-off ;
 : first-shot ( -- )  0 warned ;   : second-shot ( -- )  1 warned ;
 : shot-dead ( -- )
-    capture-no-end state!  stalkers-stay state!  fiona hold  no-pause state!  -1 armor-on !
+    capture-no-end state!  stalkers-stay state!  fiona hold  fiona true aside  no-pause state!  -1 armor-on !
     15 screen:to-black-2 with-music or fade  2 shot-scene  wait-fade
     hewie let-go  fiona false shown  0 hide-part  $10 $46 movie-key  panic-eased  if  -1 run-through  then
     death-seen resident-flag-set  gameover:movie-death game-over ;

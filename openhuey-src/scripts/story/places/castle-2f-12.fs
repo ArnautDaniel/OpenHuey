@@ -125,7 +125,7 @@ $30 constant rock-phase   $34 constant rock-size   $38 constant rock-fade   $3C 
     then
     fiona false noclip  wardrobe-floor barred-floor floor-off ;
 : hewie-hides ( -- )   \ (in with her; out after her)
-    hewie hold  hewie $B4 45 -1 walk-path-move 17.237e 27.889e go-to  hewie use-motions  -1 hewie-in-place !
+    hewie hold  hewie true aside  hewie $B4 45 -1 walk-path-move 17.237e 27.889e go-to  hewie use-motions  -1 hewie-in-place !
     begin  hide-step @ 1 < while  yield  repeat
     hewie true noclip  first-time @ if  hewie room-motion 1 + 5 start-blend8  else  hewie room-motion 5 start-blend8  then
     hewie wait-anim  hewie false noclip  hewie-hidden state!
@@ -133,9 +133,9 @@ $30 constant rock-phase   $34 constant rock-size   $38 constant rock-fade   $3C 
     hewie-hidden state-off  hewie true noclip
     left-in-panic @ if  hewie room-motion 4 + 0 start-blend  7 frames  open-sound room-bank fiona sound-by  hewie wait-anim
     else  stage @ 0= if  hewie room-motion 2 + 0 play-blend  else  hewie room-motion 3 + 0 play-blend  then  then
-    hewie false noclip ;
+    hewie false noclip  hewie false aside ;
 : hides ( -- )
-    stalkers-stay state!  0 came-while-hidden !  fiona wait-move
+    stalkers-stay state!  0 came-while-hidden !  fiona true aside  fiona wait-move
     0 stage !  0 shaking !  open? 0= first-time !  0 hide-step !  0 hewie-along !  0 hewie-in-place !  0 left-in-panic !
     hewie-in? if   \ (Hewie, free and near her: in with her)
         hewie held? 0=  hewie-near-now @ and  fiona body-at hewie body-at vec-dist 30e f<= and if
@@ -214,7 +214,7 @@ $30 constant rock-phase   $34 constant rock-size   $38 constant rock-fade   $3C 
 
 \ ---- the box: its slot - the right thing used, it opens; else nothing ----
 : box-opens ( -- )
-    {: | has-room :}  stalkers-stay state!  fiona hold
+    {: | has-room :}  stalkers-stay state!  fiona hold  fiona true aside
     inquisitor-earrings items:items-of 0>  jade-choker items:items-of 0> and 0= to has-room   \ (not both had: the box holds them)
     fiona wait-move  fiona $35 180 0e -31.5e place-at  1 7e 30e 0e 0e shot  world-frozen state!
     place-sound 0e 5e -39e room-sound  16 frames
@@ -246,9 +246,9 @@ $30 constant rock-phase   $34 constant rock-size   $38 constant rock-fade   $3C 
 : chair-doll ( -- )  fiona wait-move  chair-doll-msg say ;
 : horse ( -- )  fiona wait-move  horse-remarked @ if  childhood-msg  else  -1 horse-remarked !  horse-msg  then  say ;
 : the-box ( -- )
-    fiona $35 180 -1 walk-move 0e -31.5e go-to  world-frozen state!  1 20e 10e 0e 0e shot
+    fiona $35 180 -1 walk-move 0e -31.5e go-to  world-frozen state!  fiona true aside  1 20e 10e 0e 0e shot
     got-jade-choker fact? if  box-open-msg  else  box-remarked @ if  slot-msg  else  -1 box-remarked !  box-msg  then  then  say
-    shot-off  world-frozen state-off ;
+    shot-off  world-frozen state-off  fiona false aside ;
 : crib ( -- )  fiona wait-move  fiona -19e -19e turn-to-xz  crib-msg say ;
 : pick-antimony ( -- )  refined-antimony c2f-12-refined-antimony antimony-fx 22.9e -9.7e picks-up ;
 : pick-medallion ( -- )  medallion c2f-12-medallion medallion-fx -17.5e 47e picks-up ;

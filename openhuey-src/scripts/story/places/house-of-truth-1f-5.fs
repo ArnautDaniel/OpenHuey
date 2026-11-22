@@ -57,7 +57,7 @@ $1C constant door-track   $81 constant mystic-way
     end-movie scenes:unseen-movie end-cutscene load-scene drop  3 figure-on  4 figure-on
     0 show-part  ['] marker-cues along-scene  panic-eased  -1 run-scene  ['] marker-cues stop-doing  marker-done ;
 : lorenzo-ends ( -- )
-    fiona hold  tremor-warned fact-off  no-track 1e background
+    fiona hold  fiona true aside  tremor-warned fact-off  no-track 1e background
     ['] slight-tremors stop-doing  ['] violent-tremors stop-doing
     15 screen:to-black-2 fade  fiona wait-move  wait-fade
     hewie-in? if  hewie let-go  hewie false shown  then  stalker let-go  0 summon-take
@@ -77,7 +77,7 @@ $1C constant door-track   $81 constant mystic-way
 
 \ ---- the doors ----
 : mystic-door ( -- )   \ (asked: open - by the forced way, the music changed, its sounds stopped)
-    stalkers-stay state!  fiona wait-move
+    stalkers-stay state!  fiona true aside  fiona wait-move
     mystic-msg yes? if
         15 screen:to-black-2 with-music or fade  off-map-35 preload  door-track 1 1e f>cell music send bgm-want
         wait-fade  -1 music-changed !

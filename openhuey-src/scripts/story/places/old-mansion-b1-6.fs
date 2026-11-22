@@ -125,7 +125,7 @@ defer leg-05 ( -- next )  defer leg-06 ( -- next )  defer leg-07 ( -- next )
 
 \ ---- the race: the golem set going (the first time its scene); the button to run ----
 : race ( -- )
-    stalkers-stay state!  fiona hold  0 golem-runs !  0 turned !  0 race-done !  -1 lfoot !  -1 rfoot !
+    stalkers-stay state!  fiona hold  fiona true aside  0 golem-runs !  0 turned !  0 race-done !  -1 lfoot !  -1 rfoot !
     15 screen:to-black-2 with-music or fade  golem golem-slot figure-in  yield
     omb1-6-flag1 fact? 0= if
         1 scenes:keyed-movie 0 load-scene  wait-fade  0 hide-part  4 barred-floor floor-off
@@ -150,7 +150,7 @@ defer leg-05 ( -- next )  defer leg-06 ( -- next )  defer leg-07 ( -- next )
 
 \ ---- SALTATIO: it dances ----
 : dance ( -- )
-    stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade  golem golem-slot figure-in
+    stalkers-stay state!  fiona hold  fiona true aside  15 screen:to-black-2 with-music or fade  golem golem-slot figure-in
     $37 1 1e f>cell music send bgm-want  wait-fade  no-pause state!  panic-eased  panic-held state!   \ (its track made ready, held)
     fiona $5D 180 75e -30e place-at  1 30e -10e 0e 4e shot  fiona false shown  0 hide-part
     golem-slot figure-on  4 barred-floor floor-off  golem-slot 75e 0e -40e 0e figure-at  4 barred-floor floor-on
@@ -170,7 +170,7 @@ defer leg-05 ( -- next )  defer leg-06 ( -- next )  defer leg-07 ( -- next )
 
 \ ---- the plate pressing machine; a plate given back ----
 : the-press ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     plate-pressable? if
         press-remarked @ 0= if  press-msg say  -1 press-remarked !  then
         plate-made fact-off  press-screen open-subscreen  yield
@@ -205,7 +205,7 @@ defer leg-05 ( -- next )  defer leg-06 ( -- next )  defer leg-07 ( -- next )
 
 \ ---- what she may look at or take here ----
 : the-altar ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  altar-msg say
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  altar-msg say
     15 screen:to-dim fade wait-fade  sacrifice-msg say  15 screen:from-dim fade wait-fade  stalkers-stay state-off ;
 : the-golem ( -- )  fiona wait-move  fiona look-at-anim start-anim  16 frames  golem-msg say  fiona wait-anim ;
 : meth ( F: x z -- )  fiona wait-move  fiona turn-to-xz  fiona look-low-anim start-anim  16 frames  meth-msg say  fiona wait-anim ;

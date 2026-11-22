@@ -95,20 +95,20 @@ fvariable kiln-phase
     world-held state!  fiona $A8 -160 place-on-tri  camera-restart  golem-door unlock  golem-done fact!
     1 0 0 stage-music  false golem-before-kiln ;
 : comes-alive ( -- )   \ (EMETH: it walks to the door's side - the original's act0A)
-    fiona hold  stalkers-stay state!  golem-kind golem-figure figure-in  fiona wait-move
+    fiona hold  stalkers-stay state!  fiona true aside  golem-kind golem-figure figure-in  fiona wait-move
     golem-kind true no-shadow  1 0 golem-scene  $F $3C movie-key  golem-figure figure-on
     stalker-unloaded  debilitas-6 stalker-ready  panic-eased  if  -1 run-scene  then
     yield  $A object-hide  golem-figure figure-out
     after-golem  golem-at-door  golem-moved-part show-part
     fiona true shown  15 fade-in  emeth-seen resident-flag-set  stalkers-stay state-off ;
 : crumbles ( -- )   \ (METH: to dust, the choker in it - the original's act0B)
-    fiona hold  stalkers-stay state!  fiona wait-move
+    fiona hold  stalkers-stay state!  fiona true aside  fiona wait-move
     3 2 golem-scene  $F $96 movie-key  golem-dust-part show-part  choker-fx 10e 1e -25e flicker-at
     stalker-unloaded  debilitas-6 stalker-ready  panic-eased  if  -1 run-scene  then
     yield  4 object-hide  5 object-hide  6 object-hide  7 object-hide  8 object-hide  9 object-hide  $A object-hide
     after-golem  fiona true shown  15 fade-in  meth-seen resident-flag-set  stalkers-stay state-off ;
 : dances ( -- )   \ (SALTATIO: the golem dances to its music - it calms her, the first time - act0E)
-    fiona hold  stalkers-stay state!  golem-kind golem-figure figure-in  fiona wait-move
+    fiona hold  stalkers-stay state!  fiona true aside  golem-kind golem-figure figure-in  fiona wait-move
     15 screen:to-black-2 with-music or fade  yield  $37 1 1e f>cell music send bgm-want  wait-fade   \ (made ready, held)
     no-pause state!  panic-eased  panic-held state!
     fiona $EE 180 10e -20e place-at  1 23e -12e 0e 5e shot  fiona false shown  golem-part hide-part
@@ -157,9 +157,9 @@ fvariable kiln-phase
 
 \ ---- what she may do or say here ----
 : golem ( -- )
-    fiona $F5 180 -1 walk-move 10e -28e go-to  world-frozen state!  1 10e -40e 0e 0e shot
+    fiona $F5 180 -1 walk-move 10e -28e go-to  world-frozen state!  fiona true aside  1 10e -40e 0e 0e shot
     golem-remarked @ if  golem-again  else  -1 golem-remarked !  golem-msg  then  say
-    16 frames  world-frozen state-off  shot-off ;
+    16 frames  world-frozen state-off  fiona false aside  shot-off ;
 : here-to-stay ( -- )  fiona wait-move  fiona 45e -30e turn-to-xz  here-to-stay-msg say ;
 : looked-at ( anim msg -- )  {: anim msg :}  fiona anim start-anim  40 frames  msg say  fiona wait-anim ;
 : equipment ( -- )  fiona wait-move  fiona 6e 4e turn-to-xz  look-low-anim equipment-msg looked-at ;

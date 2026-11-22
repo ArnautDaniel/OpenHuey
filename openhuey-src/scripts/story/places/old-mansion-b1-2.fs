@@ -50,7 +50,7 @@ rubrum-vase $80101010 0 4 shard-look  rubrum-vase 0.5e 0.5e 0.25e 0.5e shard-uv 
         frames-in @ last <  while  1 frames-in +!
     repeat  fiona wait-anim ;
 : the-curtain ( -- )
-    fiona hold  -1 drawing !  fiona her-motions motions-for  fiona wait-move
+    fiona hold  fiona true aside  -1 drawing !  fiona her-motions motions-for  fiona wait-move
     fiona $21D 0 -59.65e 99.14e walk-to  fiona use-motions  begin  room-sounds-in? 0= while  yield  repeat
     omb1-2-flag1 fact? 0= if
         glass  room-motion 30 12 30 1 0 18e pulls  drawn-back  omb1-2-flag1 fact!
@@ -99,7 +99,7 @@ create flames  132.4e f, -16.6e f, -76.8e f,   85.7e f, -5.3e f, -16.8e f,   85.
 : left-symbol ( -- )  2 locked-remarked $8F 180 145e -75e 143.75e -75.3e symbol-door ;
 : right-symbol ( -- )  3 locked-2-remarked $29 0 145e 75e 146.25e 75.3e symbol-door ;
 : key-in ( exit door other -- )
-    {: ex door other :}  fiona hold  fiona ex to-door  fiona key-turn-anim start-anim  20 frames
+    {: ex door other :}  fiona hold  fiona true aside  fiona ex to-door  fiona key-turn-anim start-anim  20 frames
     key-sound room-bank fiona sound-by  jupiter-key item-named  other doors:door-locked? 0= if  jupiter-key spend  then
     door unlock  fiona 20 idle  20 frames  used-msg say  stalkers-stay state-off ;
 : left-key-in ( -- )  2 left-door right-door key-in ;
@@ -112,12 +112,12 @@ create flames  132.4e f, -16.6e f, -76.8e f,   85.7e f, -5.3e f, -16.8e f,   85.
 
 \ ---- what she may do or say here ----
 : the-plaque ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  fiona 90e 0e turn-to-xz
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona 90e 0e turn-to-xz
     15 screen:to-dim fade wait-fade  paths-msg say  15 screen:from-dim fade wait-fade  stalkers-stay state-off ;
 : a-doll ( F: x z -- )  fiona wait-move  fiona turn-to-xz  doll-msg say ;
 : near-doll ( -- )  -29.58e 75.55e a-doll ;   : far-doll ( -- )  -133.09e 71.35e a-doll ;
 : the-book ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  4 frames
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  4 frames
     fiona $F4 -90 -53e -16e place-at  world-frozen state!  1 12e 0e 0e 5e shot  title-msg say
     world-frozen state-off  shot-off  4 frames
     fiona hand-to-mouth-anim 10 start-blend  words-msg say  fiona wait-anim

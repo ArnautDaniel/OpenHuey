@@ -40,7 +40,7 @@ $2E constant run-kind-var   0 constant her-motions   0 constant curtain-sound   
     fiona room-motion 1+ 0 start-blend8  21 [: $C $15 1 9e drawn ;] drawing  curtain-back
     fiona wait-anim  fiona false noclip ;
 : behind-curtain ( -- )
-    stalkers-stay state!  0 came-while-hidden !  fiona her-motions motions-for  fiona wait-move
+    stalkers-stay state!  0 came-while-hidden !  fiona true aside  fiona her-motions motions-for  fiona wait-move
     fiona $15 180 -1 walk-path-move 60.918e -14.76e go-to  fiona true noclip  fiona use-motions  fiona -1 look-at
     fiona room-motion 5 start-blend8  5 frames  54 [: $2B $36 0 11e drawn ;] drawing
     fiona wait-anim  curtain-drawn  fiona false noclip

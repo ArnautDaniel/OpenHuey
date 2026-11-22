@@ -253,7 +253,10 @@ create side-pt /vec allot
         2e side-pt my-at vec-ahead
         side-pt self body-mask body-tri-to  dup 0< if  drop  else  nav-flags self body-mask and 0= if  true unloop exit  then  then
     loop  false ;
-: may-go? ( -- flag )  her-reach @ 1 and 0= ;   \ (Pursuer_MayGo)
+: may-go? ( -- flag )   \ (Pursuer_MayGo: the target - Hewie, after him - not set aside (+0x2D), the stalkers
+    \ not blind, she not grabbed (her moveSub $10, whoever the target); her reach bit 1 has all three for her)
+    at-dog @ 0= if  her-reach @ 1 and 0= exit  then
+    dog-aside @ 0=  stalkers-blind state-flag? 0= and  her-reach @ 32 and 0= and ;
 : her-up? ( -- flag )  her-reach @ 2 and 0= ;   \ (not thrown: her mode isn't 4)
 : turn-way ( -- way )  fiona body-at 60e deg>rad 150e deg>rad way-past ;   \ (Pursuer_TurnDir; no-turn: none)
 : attack-again ( -- )  took @ if  struck-her  else  missed-her  then  choose ;   \ (Pursuer_AttackAgain)

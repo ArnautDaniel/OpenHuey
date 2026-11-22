@@ -66,6 +66,19 @@ T{ radii fover fover f+ fswap 0.5e f* f+ hewie-ahead  [: story.kit:fiona story.k
 T{ radii fover fover f+ fswap 2e f* f+ 0.5e f+ hewie-ahead  [: story.kit:fiona story.kit:hewie story.kit:self-touching? ;] in-place -> 0 }T
 testing the second clock (shared script $85): its own words, "It's another clock..."
 T{ story.kit:another-clock-msg story.kit:clock-msg -> $8017 $8014 }T
+testing the scripts' 0x21 (self-scripted, +0x2D - 0.3.2): set aside she isn't to be taken (her reach bit 1) nor gone for
+testing by the creatures (bit 4); a script's idle step keeps it, let go her idle clears it (Fiona_ToIdle); Hewie's till turned off
+: her-reach-bits ( -- n )  game:fiona enter  fiona.hurt:reach  leave-actor  5 and ;
+: aside-her ( on -- )  [: story.kit:fiona swap story.kit:aside ;] in-place  deliver ;
+T{ true game:fiona send scripted  deliver  her-reach-bits  true aside-her  her-reach-bits  false aside-her  her-reach-bits -> 0 5 0 }T
+T{ true aside-her  true game:fiona send scripted  deliver  her-reach-bits -> 5 }T
+T{ false game:fiona send scripted  deliver  her-reach-bits -> 0 }T
+T{ true aside-her  her-reach-bits -> 0 }T   \ (free - no script has her: not set, nothing would clear it)
+: his-2d ( -- n )  game:hewie enter  hewie.state:his-2d @  leave-actor ;
+true game:hewie send scripted  deliver
+T{ [: story.kit:hewie true story.kit:aside ;] in-place  deliver  his-2d  [: story.kit:hewie false story.kit:aside ;] in-place  deliver  his-2d -> 1 0 }T
+T{ [: story.kit:hewie true story.kit:aside ;] in-place  deliver  game:hewie enter  hewie.body:script-let-go  leave-actor  his-2d -> 0 }T
+
 full-suite   \ (on: waits, scenes, walks - the full run's)
 
 test-summary

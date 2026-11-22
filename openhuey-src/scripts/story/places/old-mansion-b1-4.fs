@@ -36,7 +36,7 @@ omb1-4-flag1 $11 0  $7B 0  $23 0  $23 0  $3C 28
     x-37-flag1 fact?  partner-kind dup daniella-kind = swap kind34-kind = or 0= or  stalker-told? or if  false exit  then
     om1f-13-flag2 fact? 0=  white-mandragora-used fact? or ;
 : she-turns ( -- )   \ (her scene: she turns - the next of her after Fiona)
-    x-37-flag1 fact!  0 waiting !  stalkers-stay state!  fiona hold
+    x-37-flag1 fact!  0 waiting !  stalkers-stay state!  fiona hold  fiona true aside
     15 screen:to-black-2 with-music or fade  turns-movie scenes:keyed-movie turns-cutscene load-scene  wait-fade
     ['] at-the-kiln stop-doing  4 cutscene-keep-model
     hewie-in? dup hewie-sent !  if  hewie let-go  then
@@ -71,9 +71,9 @@ create flames  -3.3e f, 31.4e f, -4.3e f,   -5.7e f, 31.4e f, 0.3e f,   -2.8e f,
 
 \ ---- what she may look at here (each from a spot of its own, its own shot) ----
 : spot-at ( tri deg F: x z -- )   \ (from a spot of its own, the world still)
-    {: tri deg F: x z :}  fiona wait-move  4 frames  world-frozen state!  fiona hold  fiona tri deg x z place-at ;
+    {: tri deg F: x z :}  fiona wait-move  4 frames  world-frozen state!  fiona hold  fiona true aside  fiona tri deg x z place-at ;
 : framed ( F: dist pitch yaw rise -- )  1 shot  16 frames ;
-: said-there ( msg -- )  say  8 frames  world-frozen state-off  shot-off ;
+: said-there ( msg -- )  say  8 frames  world-frozen state-off  fiona false aside  shot-off ;
 : wax ( -- )  $5F 180 18e -25.5e spot-at  15e 10e 0e 0e framed  wax-msg said-there ;
 : chess ( -- )  $1E 90 12.5e -3e spot-at  1 1 player-camera  1e 45e 0e 5e framed  chess-msg said-there ;
 : hourglass ( -- )  6 -90 -30e -33.5e spot-at  10e 5e 0e 2e framed  hourglass-msg said-there ;

@@ -54,7 +54,7 @@ own: press-remarked  own: cage-looked
         15 screen:to-black-2 fade  wait-fade  plate-scene  cube-object object-hide  plate-done
     then ;
 : first-press ( -- )
-    stalkers-stay state!  15 screen:to-black-2 fade  fiona wait-move
+    stalkers-stay state!  fiona true aside  15 screen:to-black-2 fade  fiona wait-move
     press-movie scenes:unseen-movie press-cutscene load-scene  wait-fade
     panic-eased  if  computer-msg run-scene  then  world-held state!
     c2f-7-flag1 fact!  -1 press-remarked !
@@ -77,7 +77,7 @@ own: press-remarked  own: cage-looked
         plate-made fact? if  plate-shown  then  plate-made fact!
     else  presses  then ;
 : the-press ( -- )
-    stalkers-stay state!  fiona wait-move
+    stalkers-stay state!  fiona true aside  fiona wait-move
     golem-done fact?  c2f-7-flag2 fact? 0= and  nobody-by-the-door? and  0 exit-open? and if  someone-at-door
     else  plate-pressable? if  press-again
     else  press-remarked @ if  none-left-msg  else  -1 press-remarked !  no-plates-msg  then  say  then  then

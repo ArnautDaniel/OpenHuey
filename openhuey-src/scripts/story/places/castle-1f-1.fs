@@ -56,7 +56,7 @@ $28 constant arrival-sound   $2E constant go-for-it-call   0 constant go-for-it-
 
 \ ---- the Refined Magnesia across the pond: her "go for it" facing it - Hewie over, and back ----
 : fetches ( -- )
-    hewie hold  hewie wait-move  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move
+    hewie hold  hewie true aside  hewie wait-move  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move
     hewie $1E0 -10 -1 walk-path-move -35.67e 31.26e go-to
     hewie true noclip  $1BD 45 -42.443e 1e 71.623e hewie-leap  hewie wait-move
     hewie $1BE 150 -1 walk-move -31.549e 70.055e go-to  hewie sit-a-while-anim 10 play-blend
@@ -66,10 +66,10 @@ $28 constant arrival-sound   $2E constant go-for-it-call   0 constant go-for-it-
     then
     hewie $1C0 176 -1 walk-move -42.94e 81.76e go-to
     $FE 45 -40.709e 1e 45.642e hewie-leap  hewie wait-move
-    hewie false noclip  stalkers-stay state-off ;
+    hewie false noclip  hewie false aside  stalkers-stay state-off ;
 : sends-him ( -- )
-    stalkers-stay state!  fiona wait-move
-    hewie held? if  stalkers-stay state-off exit  then
+    stalkers-stay state!  fiona true aside  fiona wait-move
+    hewie held? if  stalkers-stay state-off  fiona false aside exit  then
     ['] fetches start drop
     fiona go-for-it-gesture-anim start-anim  fiona 1 wait-mark  go-for-it-call common-bank fiona sound-by
     fiona wait-anim  fiona -1 idle  7 frames ;
@@ -97,7 +97,7 @@ create pond-look  -33.33e -16.93e 69.69e 40e 6e 6e look,
 
 \ ---- the crouch evasion tip (once: in the hall's crossing, free - not with the stalker near) ----
 : crouch-tip ( -- )   \ (act05, hers: held, her move done first)
-    fiona hold  fiona wait-move  world-frozen state!  draw-when-frozen state!
+    fiona hold  fiona true aside  fiona wait-move  world-frozen state!  draw-when-frozen state!
     15 screen:to-dim fade wait-fade  crouch-doc-msg say  15 screen:from-dim fade wait-fade
     got-doc-crouch-evasion fact!  crouch-doc filed
     draw-when-frozen state-off  world-frozen state-off  fiona let-go ;

@@ -55,7 +55,7 @@ $22 constant chase-seen   $29 constant doll-seen   $20 constant chase-door   3 c
     stalker-told? 0=  st-cond-now @ down-cond = or  debilitas? 0= or  chased? 0= or if  false exit  then
     stalker-in? if  stalker body-at vec@ point-unseen?  else  true  then ;
 : his-scene ( -- )
-    $29 hewie-slot 1 doors-into  fiona hold
+    $29 hewie-slot 1 doors-into  fiona hold  fiona true aside
     $29 116 stalker-to  stalker $74 180 place-on-tri  stalker 0 -1 camera-set  stalker false shown  stalker let-go  0 summon-take
     15 screen:to-black-2 with-music or fade
     chase-movie scenes:unseen-movie chase-cutscene load-scene  wait-fade
@@ -68,7 +68,7 @@ $22 constant chase-seen   $29 constant doll-seen   $20 constant chase-door   3 c
 
 \ ---- his doll: the first time beside him, the scene (the Smudged Key); then its dance ----
 : doll-scene ( -- )
-    stalkers-stay state!  15 screen:to-black-2 with-music or fade  fiona wait-move
+    stalkers-stay state!  fiona true aside  15 screen:to-black-2 with-music or fade  fiona wait-move
     doll-movie scenes:unseen-movie doll-cutscene load-scene  wait-fade
     hewie-in?  hewie-cond-now @ down-cond = and if  hewie hold  hewie false shown  then  panic-eased
     if  -1 run-scene  then  wait-fade
@@ -77,7 +77,7 @@ $22 constant chase-seen   $29 constant doll-seen   $20 constant chase-door   3 c
     doll-seen resident-flag-set  smudged-key item-named  smudged-key 1 give-item  smudged-key show-item-tab  fanfare
     obtained-2-msg say  stalkers-stay state-off ;
 : doll-dance ( -- )
-    fiona wait-move  his-figure his-doll-start 0 7 figure-play  his-figure figure-wait
+    fiona true aside  fiona wait-move  his-figure his-doll-start 0 7 figure-play  his-figure figure-wait
     his-figure his-doll-dance 1 7 figure-play  -1 doll-danced ! ;
 
 \ ---- what she may do or say here ----
@@ -86,8 +86,8 @@ $22 constant chase-seen   $29 constant doll-seen   $20 constant chase-door   3 c
     fiona look-low-anim 10 start-blend  doll-on-show-msg say  fiona wait-anim  16 frames  shot-off ;
 : not-lying ( -- )  fiona wait-move  fiona look-low-anim 10 start-blend  not-lying-msg say  fiona wait-anim ;
 : out-of-sight ( -- )
-    fiona wait-move  fiona $9C 90 12e 15e place-at  1 10e 10e 0e 2e shot  world-frozen state!
-    16 frames  out-of-sight-msg say  4 frames  shot-off  world-frozen state-off ;
+    fiona wait-move  fiona $9C 90 12e 15e place-at  1 10e 10e 0e 2e shot  world-frozen state!  fiona true aside
+    16 frames  out-of-sight-msg say  4 frames  shot-off  world-frozen state-off  fiona false aside ;
 : reach-jerky ( -- )
     fiona wait-move  fiona 11e -58.5e turn-to-xz  in-panic? if  exit  then
     fiona reach-out-anim play  4 frames  beef-jerky c1f-10-beef-jerky jerky-fx takes-up  fiona reach-back-anim play ;

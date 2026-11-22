@@ -28,7 +28,7 @@ $9008 $9009 0 1  22e -16e 145e 0e  hopper: the-figure
 
 \ ---- the way on, before Hewie is found: the scene's figures loaded, out by exit 1 ----
 : goes-on ( -- )
-    stalkers-stay state!  fiona hold  -1 going-on !
+    stalkers-stay state!  fiona hold  fiona true aside  -1 going-on !
     ['] hopping stop-doing  hopper-slot figure-out
     scene-figure 3 figure-in  scene-figure-2 4 figure-in
     15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade  world-held state!  1 take-exit ;

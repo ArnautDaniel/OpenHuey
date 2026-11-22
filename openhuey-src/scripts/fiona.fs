@@ -322,8 +322,10 @@ behaviour free
       sender alive? and  if  sender send take-offer  else  2drop  then ;   \ (its room gone meanwhile: nobody to answer)
   on scripted ( on -- )  dup if  with-him-interrupted  then  dup 0= her-scripted @ 0<> and if  script-over  then  her-scripted !  idle ;   \ (idle as she now is: a script's idle step, or free)
   on noclip ( on -- )  her-noclip ! ;   \ (the story's 0x20)
-  on aside ( on -- )  her-aside ! ;     \ (0x21: out of reach of attacks)
-  on activate ( -- )  0 her-noclip !  0 her-aside !  idle ;   \ (the story's 0x15, Fiona_Activate: afresh, standing)
+  on aside ( on -- )   \ (the story's 0x21: +0x2D, the same byte her own states set - let go of, her idle clears it.
+      \ Set only while a script has her - the original's runs in her action: free, nothing would clear it)
+      dup her-scripted @ 0= and if  drop exit  then  0<> her-out-of-reach ! ;
+  on activate ( -- )  0 her-noclip !  0 her-out-of-reach !  idle ;   \ (the story's 0x15, Fiona_Activate: afresh, standing)
   on costume ( n -- )  wear  show-her  weapon-shown ;
   on fiona-request ( kind x y z threat -- )   \ (a creature's, Progress_Noise: $D a spirit - she falls; 3 a red one
       {: kind x y z threat :}  x y z cells>xyz from-pt vec!   \ going - grabbed; $C homunculi - held down)

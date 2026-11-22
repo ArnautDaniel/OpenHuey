@@ -101,7 +101,7 @@ create lectern-spots   $36 , -90 , 35e f, -52e f, 25e f, 20e f, -50e f, 2e f,
     $C5 , 90 , 30e f, 49e f, 25e f, 20e f, 50e f, 2e f,   $C6 , 180 , 0e f, 43e f, 30e f, 0e f, 0e f, 2e f,
 2 cells 6 floats + constant /lectern-spot
 : to-lectern ( spot -- )   \ (walked to it, its shot)
-    {: a :}  stalkers-stay state!  fiona hold  fiona wait-move
+    {: a :}  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     fiona  a @  a cell+ @  a 2 cells + f@  a 2 cells + float+ f@  walk-to
     1  a 2 cells + 2 floats + f@  a 2 cells + 3 floats + f@  a 2 cells + 4 floats + f@  a 2 cells + 5 floats + f@  shot ;
 : at-lectern ( p -- )  /lectern-spot * lectern-spots + to-lectern ;

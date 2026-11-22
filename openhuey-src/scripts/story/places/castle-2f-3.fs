@@ -277,7 +277,7 @@ own: stalker-gone             \ he has run out (the tutorial's end)
     if  -1 run-scene  then
     world-held state!  scene-locked state-off  0 usual-layer layer  3 light-back  1 1 her-camera
     hewie hold  hewie activate  hewie well  hewie full-health  this-room @ 176 0 hewie-to  hewie $B0 180 -35.452e -8.852e place-at
-    hewie-commandable state!  hewie-no-attack state!  stalkers-blind state!
+    hewie-commandable state!  hewie-no-attack state!  fiona true aside  stalkers-blind state!
     this-room @ 20 stalker-to  stalker activate  2 stalker-order  0 stalker-clock
     stalker $14 0 -15.648e -48.68e place-at  stalker full-health  ['] looks-about start drop
     fiona tutorial-motions motions-for  fiona use-motions  fiona $A 90 -39.575e -27.807e place-at  camera-restart

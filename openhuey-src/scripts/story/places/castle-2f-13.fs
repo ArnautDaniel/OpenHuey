@@ -33,7 +33,7 @@ own: was-idle              \ she stood idle as it gave
     stalker-in? if  ['] stalker-kept start drop  then
     $35 $36 door-as  $36 closed-off  exits-redone ;
 : down-with-it ( way hewie-room rest? -- )   \ (her on it - idle, she rests a moment - or the stalker)
-    {: way hroom rest :}  stalkers-stay state!  stalkers-blind state!  hewie-no-attack state!  fiona hold
+    {: way hroom rest :}  stalkers-stay state!  stalkers-blind state!  hewie-no-attack state!  fiona hold  fiona true aside
     castle-1f-13 preload  cast:crow 3 figure-in  cast:crow-2 4 figure-in  fiona wait-move
     rest if  fiona rest-anim start-anim  then
     it-gives

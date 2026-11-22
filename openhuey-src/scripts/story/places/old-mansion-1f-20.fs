@@ -59,7 +59,7 @@ $900C $900D lash-sound hop-sound  12e 0e 0e -90e  hopper: the-figure
 
 \ ---- after the 3F's turn, the first time in: taken out by the forced way ----
 : taken-away ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  15 screen:to-black-2 with-music or fade  wait-fade
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  15 screen:to-black-2 with-music or fade  wait-fade
     world-held state!  scene-locked state!  hewie let-go  0 prepare-exit  stalkers-stay state-off  forced-exit take-exit ;
 
 \ ---- as she comes in ----

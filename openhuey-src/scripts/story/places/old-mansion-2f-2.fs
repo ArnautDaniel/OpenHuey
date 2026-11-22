@@ -45,7 +45,7 @@ $31 constant call-sound
 \ ---- the blocked door ----
 : to-window ( -- )  fiona $CB 30 -38e -30e walk-to ;
 : the-door ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     hewie-inside @ if  to-window  inside-msg say  0 bark-frames !  stalkers-stay state-off  exit  then
     blocked-remarked @ 0= if
         fiona 0 to-door  fiona rattle-behind-anim play  fiona -1 idle  15 frames
@@ -55,7 +55,7 @@ $31 constant call-sound
 
 \ ---- her call: his scene - the way opened, the door unlocked ----
 : called ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     fiona call-gesture-anim start-anim  fiona 1 wait-mark  call-sound common-bank fiona sound-by  fiona wait-anim
     fiona -1 idle  7 frames
     15 screen:to-black-2 with-music or fade  hewie-movie scenes:unseen-movie hewie-cutscene load-scene  wait-fade

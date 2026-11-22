@@ -111,7 +111,8 @@ fiona hold
 fiona release              \ also run if the room is left, a scene starts, she is caught
 ```
 
-`hold` replaces `self-scripted`, action slots and `char-scripted`. While held, the character
+`hold` replaces the action slots and `char-scripted`; `self-scripted` (0x21, +0x2D: not to be gone
+for) stays its own word, `aside`, set where the original's action sets it. While held, the character
 ignores the player and its own moves. `release` always returns it to its own control,
 standing. Each move replies when done, so a room waits on the move it started, not on a
 counter another script bumps.

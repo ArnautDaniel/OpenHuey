@@ -242,6 +242,7 @@ message unhand ( -- )                        \ to Fiona: the stalker leading her
 \ ---- Hewie (docs/subsystems/hewie.md) ----
 message write-save ( -- )                    \ broadcast: print your line of the save being written (saves.fs)
 message hewie-health ( hp -- )              \ broadcast each frame with hewie-doing: his health, 0..100
+message hewie-aside ( on -- )   \ broadcast each frame: Hewie set aside (+0x2D, the story's 0x21 or his own) - the stalkers' Pursuer_MayGoForTarget with him the target
 message set-hp ( n -- )                    \ (Hewie) his health set (a room's command)
 message hewie-restore ( trust points hp -- )   \ (Hewie) as a save had him
 message hewie-came-by ( exit -- )            \ (Hewie) the exit he came in by, as a save had it (Hewie_LoadState's +0x838)
@@ -361,6 +362,7 @@ message effect-command ( v -- )                  \ (an effect) a command later (
 \ ---- the stalkers (docs/subsystems/stalker.md) ----
 message stalker-in ( room tri -- )           \ (a stalker) into the game, in that room on that triangle
 message stalker-restore-more ( cond hp-max rage temper hits mode-t down-t yaw -- )   \ (a stalker) the rest of how a save had him (Pursuer_LoadState)
+message stalker-restore-way ( came goal-room roll -- )   \ (a stalker) the exit he came in by, the room he heads for, his chance roll's build (Pursuer_LoadState)
 message stalker-restore ( hp mode -- )      \ (a stalker) as a save had him
 message stalker-out ( -- )                   \ (a stalker) out of the game
 message stalker-hunt ( -- )                  \ (a stalker) heads for Fiona's room (mode 1: the summoner, the console)
@@ -368,6 +370,7 @@ message costume ( n -- )                     \ (Fiona) her model for costume n (
 message stalker-load ( slot -- )            \ (a stalker) into the story's character slot (2: the one in play; 3..5 a scene's figure) - the cutscenes' cast
 message stalker-unload ( -- )                \ (a stalker) out of slot 2 (and out of the game)
 message stalker-doing ( room mode sub cond hp hp-max kind alert came -- )   \ broadcast each frame by a stalker in the
+message stalker-ladder ( link -- )   \ broadcast each frame with stalker-doing: the ladder (a nav link of the room) he is at, -1 none - the progress' +0x1000 slot bits (RoomSlots)
 message stalker-stride ( dx dz -- )         \ broadcast each frame by a stalker in the game: his root motion's step this frame in the
                                              \ room (floats in cells) while it takes him ahead, else 0 0 (Fiona_KeepApart pushes her along it)
 message stalker-reach ( d -- )                 \ broadcast each frame by a stalker: how far Fiona is on foot (a float in a cell; -1 no way, elsewhere - Pursuer +0x1588)

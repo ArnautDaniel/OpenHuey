@@ -42,7 +42,7 @@ $43 constant study-seen   $28 constant gasp-sound   $4B constant fortis-bit
     study-movie scenes:unseen-movie study-cutscene load-scene drop  3 figure-on
     ['] no-shadow-cues along-scene  panic-eased  lorenzo-msg run-scene  0 false no-shadow ;   \ (her shadow back, the scene skipped or not)
 : lorenzo-there ( -- )
-    fiona hold  stalker let-go  0 summon-take
+    fiona hold  fiona true aside  stalker let-go  0 summon-take
     scene-figure 3 figure-in  lorenzo-kind stalker-ready  lorenzo-part hide-part
     fiona wait-move  gasp-sound common-bank fiona sound-by  yield
     study-scene  3 figure-out  stalker let-go  0 summon-take
@@ -59,12 +59,12 @@ $43 constant study-seen   $28 constant gasp-sound   $4B constant fortis-bit
     sketch-part hide-part  mystery-sketch got-mystery-sketch -1 takes-the  fiona reach-back-anim play ;
 : the-title ( -- )
     fiona $9F -68 -1 walk-move 5.3e 80.92e go-to
-    world-frozen state!  fiona hold  1 8e 0e 0e 4.5e shot  title-msg say  8 frames  shot-off  world-frozen state-off ;
+    world-frozen state!  fiona hold  fiona true aside  1 8e 0e 0e 4.5e shot  title-msg say  8 frames  shot-off  world-frozen state-off  fiona false aside ;
 : the-closet ( -- )  fiona wait-move  closet-msg say ;
 : the-bobbles ( -- )  fiona wait-move  fiona look-close-anim 10 start-blend  bobbles-msg say  fiona wait-anim ;
 : the-books ( -- )  fiona wait-move  books-msg say ;
 : the-untitled ( -- )   \ (in turn: the books' remark, then the untitled book)
-    stalkers-stay state!  fiona hold  fiona wait-move
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move
     books-remarked @ 0= if  books-msg say  -1 books-remarked !
     else
         fiona look-close-anim start-anim  untitled-msg say  fiona wait-anim
@@ -77,7 +77,7 @@ $43 constant study-seen   $28 constant gasp-sound   $4B constant fortis-bit
     wedged-msg say  fiona reach-out-anim play  4 frames
     rubrum-medallion ht2f-2-rubrum-medallion -1 takes-up  fiona reach-back-anim play ;
 : the-medicine ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  fiona 25 turn
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona 25 turn
     written-msg say  15 screen:to-dim fade wait-fade  fortis-msg say  15 screen:from-dim fade wait-fade
     fortis-bit items:item-bit? 0= if
         fiona hand-to-mouth-anim start-anim  medicine-msg say  fiona wait-anim  fortis-bit items send item-bit

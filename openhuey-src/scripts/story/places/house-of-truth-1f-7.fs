@@ -46,7 +46,7 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
 
 \ ---- Hewie at the wall; his scene (her face for the scene in two of her costumes) ----
 : barks-at-wall ( -- )   \ (his doing: turned to it, barking, till she is chased)
-    hewie hold  -1 hewie-at-wall !  hewie wait-move  hewie -89e 75e turn-to-xz
+    hewie hold  hewie false aside  -1 hewie-at-wall !  hewie wait-move  hewie -89e 75e turn-to-xz
     begin  hewie-bark  hewie wait-move  chased? until  0 hewie-at-wall ! ;
 : her-face ( -- )   \ (costume 3's, 2's)
     costume-var var@ case  3 of  0 0 s" O_FIO\FIO_201.TEX" face-on  endof  2 of  0 0 s" O_FIH\FIH_201.TEX" face-on  endof  endcase ;
@@ -55,7 +55,7 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
     wall-movie scenes:keyed-movie wall-cutscene load-scene drop  ['] face-cue along-scene
     $14 $64 movie-key  panic-eased  -1 run-scene  ['] face-cue stop-doing ;
 : wall-opens ( -- )
-    stalkers-stay state!  fiona wait-move  fiona -89e 75e turn-to-xz  fiona look-close-anim start-anim  16 frames
+    stalkers-stay state!  fiona true aside  fiona wait-move  fiona -89e 75e turn-to-xz  fiona look-close-anim start-anim  16 frames
     barking-msg say  fiona wait-anim  15 screen:to-black-2 with-music or fade  wait-fade
     ['] barks-at-wall stop-doing  hewie let-go  wall-scene
     true wall  0 solid-floor floor-off  ht1f-7-flag1 fact!
@@ -77,7 +77,7 @@ create flames  -59.1e f, 18.5e f, -16e f,   -10.4e f, 17.5e f, -26.3e f,   84.1e
 : trap-loaded ( -- )  trap-movie scenes:unseen-movie trap-cutscene load-scene drop ;
 : trap-scene ( -- )  trap-loaded  panic-eased  -1 run-scene ;
 : struggles ( -- )
-    stalkers-stay state!  fiona hold  stalkers-blind state!
+    stalkers-stay state!  fiona hold  fiona true aside  stalkers-blind state!
     stalker-in? if  stalker hold  then  hewie-in? if  hewie hold  then
     ['] slight-tremors stop-doing  ['] violent-tremors stop-doing
     15 screen:to-black-2 fade  trap-loaded  wait-fade

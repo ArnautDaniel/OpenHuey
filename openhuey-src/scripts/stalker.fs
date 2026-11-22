@@ -224,7 +224,7 @@ $1300 constant gesture-anims
 : tell-doing ( -- )
     my-room  move-mode-told  sub-told
     cond @  hp @  hp-max @  my-kind @  my-mode @  came-by @  broadcast stalker-doing
-    d-fiona f@ f>cell broadcast stalker-reach
+    d-fiona f@ f>cell broadcast stalker-reach  at-ladder @ broadcast stalker-ladder
     tell-stride  tell-point
     blow-told broadcast stalker-blow
     sees-fiona @ 0<>  away? 0= and  broadcast stalker-sees
@@ -239,7 +239,7 @@ $1300 constant gesture-anims
     hear-threshold @ stalker-noise acoustics-id send listen
     pursuer-ladder ladder-offsets !  -1 her-ladder-on !  -1 at-ladder !
     self subscribe zone-target  self subscribe zone-targets-off  self subscribe fiona-unseen
-    self subscribe hewie-doing  self subscribe scene  0 script-held !  0 in-scene !  well-cond dog-cond !
+    self subscribe hewie-doing  self subscribe hewie-aside  self subscribe scene  0 script-held !  0 in-scene !  well-cond dog-cond !
     my-kind @ head-bones!  ahead-look look-mode ! ;
 
 \ the doll (Thing03_StalkerCheck - his part): come upon away from her, he takes it unless she is
@@ -397,7 +397,9 @@ behaviour stalking
       \ (Pursuer_SaveState: his condition, most health, rage, temper with Hewie, the damage he's had,
       \ his mode's clock, his time down, his heading)
       cond @ .  hp-max @ .  raging @ .  temper @ .  hits @ .  mode-t @ .  down-t @ .
-      self body? if  self body-yaw  else  0e  then  f>cell .  ." stalker-more" cr ;
+      self body? if  self body-yaw  else  0e  then  f>cell .  ." stalker-more" cr
+      \ (and the exit he came in by, the room he heads for, the chance roll's build - kept whole, as +0x864)
+      came-by @ .  goal-room @ .  roll-build f@ f>s .  ." stalker-way" cr ;
   on stalker-restore-more ( cond hp-max rage temper hits mode-t down-t yaw -- )   \ (Pursuer_LoadState)
       cell>f  self body? if  body-turn  else  fdrop  then
       down-t !  mode-t !  hits !  temper !  raging !  hp-max !  cond !
@@ -405,6 +407,7 @@ behaviour stalking
           lying-front-anim lie-anim !  lie-anim @ play-now  lying down-stage !  -1 reeling !  ['] downed step!
       then ;
   on stalker-restore ( hp mode -- )  mode!  hp ! ;
+  on stalker-restore-way ( came goal-room roll -- )  s>f roll-build f!  goal-room !  came-by ! ;
   on noclip ( on -- )  dup 0<> noclipped !  if  0  else  my-floor @  then  body-mask! ;   \ (the story's 0x20: through blocked floor - at doors)
   on drawn-to ( tri i away? -- )  in-game @ if  doll-check  else  drop 2drop  then ;
   on stalker-hunt ( -- )  in-game @ if  heading-for-her mode!  away? 0= if  search-again  then  then ;
@@ -422,6 +425,7 @@ behaviour stalking
   \ Hewie: his attack asked, his letting go, his bites, his growls
   on dog-attack ( kind -- )  dog-attacked ;
   on dog-tackle ( -- )  dog-tackled ;
+  on hewie-aside ( on -- )  dog-aside ! ;
   on hewie-doing ( here action mode sub cond mood group commandable near reachable breakable way trust -- )
       dog-trust !  2drop 2drop 2drop drop  dog-cond !  2drop 2drop ;   \ (his condition: the chance roll's; his trust)
   \ the story's: a script of the room has him (in the room being played: +0xE0) or lets go (posed:

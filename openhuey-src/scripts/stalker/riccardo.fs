@@ -13,7 +13,7 @@
 \ panic's height - or a hard blow; crouched under it, it passes over) - and else its debris
 \ where it lands. Its impact: a noise where he stands.
 IN: stalker.riccardo
-USING: engine game-state actors messages common facts flag-names paths vectors stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue stalker.names stalker.anims stalker.sounds effects floor-flags ;
+USING: engine game-state actors messages common facts flag-names paths vectors stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue stalker.struck stalker.names stalker.anims stalker.sounds effects floor-flags ;
 
 \ his waits (his kit's): frames walking, stalking, walking once seen, stalking when far, the
 \ times he comes on; then the chance to walk
@@ -164,7 +164,7 @@ defer flurry-blow ( -- )
 : blow-over ( -- )  0 blow-aim !  -1 step-done ! ;
 : after-blow ( -- )   \ (Riccardo_StateAfterBlow: another while it's in front, 90 degrees)
     -1 blows +!
-    blows @ 0> 0= if  blow-over exit  then
+    blows @ 0> 0=  may-go? 0= or if  blow-over exit  then   \ (Pursuer_MayGoForTarget too)
     at-dog @ if
         sees-hewie @ 0=  d-hewie f@ 30e f> or if  blow-over exit  then
         hewie  pi f2/ within-heading? 0= if  blow-over exit  then
@@ -178,7 +178,7 @@ defer flurry-blow ( -- )
 : hold-move? ( -- flag )  blow-entry m.kind @ hold-request = ;
 \ a hold (Riccardo_Blow): at its key, whoever is within its reach
 : blowing ( -- )
-    blow-key? if
+    blow-key?  may-go? and if   \ (only while he may go for his target: Riccardo_Blow)
         quarry body-at my-at vec-dist  blow-entry m.reach f@ f< if
             at-dog @ if  strike-hewie
             else  blow-entry m.kind @  blow-entry m.bone @ $FFFF and  blow-entry m.threat f@ f>cell  fiona send hit  then
@@ -189,7 +189,7 @@ defer flurry-blow ( -- )
 : blowing-dog ( -- )
     blow-key? if
         0 blow-aim !
-        dog-floor?  sees-hewie @ and  d-hewie f@ 30e f< and  hewie 30e deg>rad within-heading? and if
+        may-go?  dog-floor? and  sees-hewie @ and  d-hewie f@ 30e f< and  hewie 30e deg>rad within-heading? and if
             her-in-way? if  d-her attack-for strike-her
             else  d-hewie f@ attack-for if  strike-hewie  else  floor-debris  then  then
         then
@@ -231,7 +231,8 @@ create shot-at /vec allot
 : blowing-her ( -- )
     blow-key? if
         0 blow-aim !
-        sees-fiona @ same-floor? and  fiona 30e deg>rad within-heading? and  target-shot? and if
+        may-go? 0= if   \ (not while he may not go for her: Riccardo_StateBlowFiona)
+        else  sees-fiona @ same-floor? and  fiona 30e deg>rad within-heading? and  target-shot? and if
             shoot-target
         else  sees-fiona @ same-floor? and  fiona 30e deg>rad within-heading? and if
             hewie here?  fiona body-at hewie body-at vec-dist 50e f< and  d-hewie f@ 20e f> and
@@ -240,7 +241,7 @@ create shot-at /vec allot
             else
                 crouched? if  floor-debris  else  d-her attack-for strike-her  then
             then
-        then  then
+        then  then  then
     then
     blow-aim @ if  fiona body-at turn-rate turn-to fdrop  then
     ended? if  after-blow exit  then
@@ -258,7 +259,7 @@ create shot-at /vec allot
 : more? ( n -- n flag ) ( F: roll -- roll )
     dup 6 < if  dup floats flurry-chances + f@ fover f<  else  false  then ;
 : flurry-start ( -- )   \ (Riccardo_StartFlurry: 1..7 blows by his chances)
-    world-held state-flag?  stalkers-blind state-flag? or if  stand-watch exit  then
+    world-held state-flag?  may-go? 0= or if  stand-watch exit  then   \ (Pursuer_MayGoForTarget: the blind stalkers in it)
     rnd 100e f*  0  begin  more?  while  1+  repeat  fdrop  1+ blows !  flurry-blow ;
 
 \ ---- the one he struck cries out (Riccardo_CryHit): in his flurry (not a hold) a mark at a height
@@ -298,12 +299,18 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
 \ blow, a fall, lying down set - vtable +0x29C), counted while it is free; else pulsing - its phase
 \ on by 4 cos of it and up to 10 more, degrees a frame. Before 0.2.42 every turn of what it did set it
 : struck-or-down? ( -- flag )  cond @ hurt-cond down-cond 1+ within ;
-: tint-struck ( -- )  reeling @  cond @ down-cond = or if  150 tint-t !  then ;   \ (the +0x29C step: struck, down)
+: blow-arms? ( -- flag )   \ (TintStalker_SetDelay / Kind37_BehaviourEnded, the +0x29C step after a blow - Pursuer_Hit: once a blow - after a fall
+    \ or lying - KnockedDown, PickStepAlt down: kept at it while down)
+    reeling @ 0<> dup tint-reeled @ 0= and  hits @ tint-hits @ <> or  cond @ down-cond = or
+    swap tint-reeled !  hits @ tint-hits ! ;
+: tint-counts? ( -- flag )   \ (its while counts only while he is free: not hurt, alerted nor down (+0xC4 1 / 2), not under
+    \ Hewie's bite (his action $23, moveSub 9) nor powdered (the powder's hit, $24: moveSub $11))
+    struck-or-down? 0=  bitten @ 0= and  powdered? 0= and ;
 : kind37-tint ( -- )
-    tint-struck
+    blow-arms? if  150 tint-t !  then
     tint-phase f@ fsin 80e f* 80e f+  128e fmin 128e f/  my-model @ actor act.alpha sf!
     tint-t @ if
-        pi f2/ tint-phase f!  struck-or-down? 0= if  -1 tint-t +!  then
+        pi f2/ tint-phase f!  tint-counts? if  -1 tint-t +!  then
     else
         tint-phase f@ fcos 4e f*  rnd 10e f* f+  deg>rad  tint-phase f@ f+ angle-wrap tint-phase f!
     then ;
@@ -336,11 +343,11 @@ create riccardo-acts  ' flurry-start , ' lunge-start ,
         endof
     endcase ;
 : tint-frame ( -- )
-    tint-struck
+    blow-arms? if  150 tint-t !  then
     tint-t @ if
         tint-shown @ 0=  beaten-now? tint-fade @ tint-whole <> and  or
         beaten-now? 0= tint-fade @ tint-whole = and  or if  tint-show  then
-        struck-or-down? 0= if  -1 tint-t +!  then
+        tint-counts? if  -1 tint-t +!  then
     then
     tint-t @ 0=  here-played? and  tint-shown @ and  tint-fade @ tint-out <> and if  tint-out tint-fade !  then
     tint-fading

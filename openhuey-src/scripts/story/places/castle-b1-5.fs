@@ -26,7 +26,7 @@ $1D constant waits-act   $29 constant waits-sub   \ (his wait there, after: the 
 
 \ ---- into the pit: she falls - the game over ----
 : falls ( -- )
-    capture-no-end state!  fiona hold  fiona use-motions
+    capture-no-end state!  fiona hold  fiona true aside  fiona use-motions
     [: begin  room-sounds-in? 0= while  yield  repeat  wait-sound room-bank fiona sound-by ;] start drop
     fiona room-motion play  60 frames
     begin  room-sounds-in? 0= while  yield  repeat

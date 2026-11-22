@@ -760,3 +760,29 @@ look's frames and half again (60: LookFrames), a full 0.12 swing in its middle h
 eased back straight by 0.12 a frame; done once straight (search.fs `standing`; before, he stood 90 frames looking
 ahead). `Pursuer_StateKnockedThrough`'s down-between-halves case was ours already (his health 1, his step done).
 
+
+### Third sweep, 2026-11-22 (0.3.2)
+
+Her +0x2D through the story's scenes: Pursuer_MayGoForTarget's first test (the target's +0x2D) reads her reach bit 1,
+and since the rooms redo (0.2.20) no place set it - the original's actions set it (the scripts' 0x21) in 471 of
+them, so a stalker in the room could take her mid-scene; every place's activity now sets it as its action does
+(story.md, the kit's `aside`). Saves: Pursuer_SaveState's exit he came in by (`came-by`), the room he heads for
+(+0x1594) and the chance roll's build (+0x16C0, kept whole as the original's +0x864) are now kept too (the
+`stalker-way` line). MayGoForTarget with Hewie his target: Hewie tells his +0x2D each frame (`hewie-aside`), and
+`may-go?` (chase.fs) reads it after him - with the blind stalkers and her grabbed (her reach bit 32, her moveSub
+$10, whoever the target). Riccardo's flurry had none of it: its start, each next blow and each blow's key (at her,
+at Hewie, a hold) now ask it (Riccardo_StartFlurry / StateAfterBlow / Blow / StateBlowFiona / StateBlowHewie).
+Read and found matching (0.3.2): the creatures' tests of her +0x2D / +0xE0 (CreatureA_Seen / Think / Frame,
+CreatureB_StateByProgress / StateAfterFiona - live again now that the places set it), Hewie_Interrupted,
+Riccardo_Update's rage (Riccardo_SetRage's roar), Daniella_SetRage's tables (the kit's [hard][rage] sets), the
+places' flag $18 against the original's (every room's, through the shared words). The TintStalker's 150-frame
+while (TintStalker_SetDelay, a behaviour step after a hit, a fall, lying - Pursuer_Hit / KnockedDown / PickStepAlt /
+ShowUp) is armed once a blow (a new flinch, more damage) and kept full while down, and counts only while he is free -
+not hurt or down, not under Hewie's bite (his action $23, moveSub 9) nor powdered (the powder's hit, $24: moveSub
+$11) (riccardo.fs `blow-arms?`, `tint-counts?`); before, it was re-armed each frame he reeled and ran through those.
+Kind 37's tint hold (Kind37_BehaviourEnded at the same +0x29C, counted by Kind37_Update as the TintStalker's) the same.
+Read last (0.3.2): Kind12_Update / EventState and Lorenzo2_Update (his rage by the panic's stage, his reaches) match.
+NPC_HeadForFiona matches but for its fallback: no route to her room, the original routes on to the room and side he
+was heading for before (+0x1594 / +0x1598); ours sets her room as his goal and stops (travel.fs `route-way!`), which
+the no-way search (`no-way-to-her?`, Pursuer_ChaseFionaHere) was built on - left as is. Lorenzo's chair (lorenzo.c's
+Lorenzo_ class) is still unread line by line.

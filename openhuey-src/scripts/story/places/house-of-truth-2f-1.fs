@@ -39,11 +39,11 @@ ht2f-1-breakable3-broken 4 5  -3e 70e -41e 5e 8e  breakable: crate-3         cra
 
 \ ---- her first steps in: on, by the forced way ----
 : taken ( -- )
-    stalkers-stay state!  fiona hold  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
-    0 creatures-id send creatures-clear  scene-locked state!  0 prepare-exit  forced-exit take-exit ;
+    stalkers-stay state!  fiona hold  fiona true aside  15 screen:to-black-2 with-music or fade  fiona wait-move  wait-fade
+    0 creatures-id send creatures-clear  scene-locked state!  0 prepare-exit  fiona false aside  forced-exit take-exit ;
 \ ---- back from the study: as she was; the doors shut on her, Lorenzo let loose ----
 : back-again ( -- )
-    fiona hold  fiona wait-move  camera-restart
+    fiona hold  fiona true aside  fiona wait-move  camera-restart
     costume-var var@ dress  steps-in  coat-var var@ coat  yield
     other-door lock  $EA lock  $103 lock
     house-of-truth-1f-6 hewie-slot 1 doors-into  house-of-truth-1f-6 stalker-slot 1 doors-into  house-of-truth-1f-4 stalker-slot 1 doors-into

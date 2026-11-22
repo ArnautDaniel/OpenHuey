@@ -81,7 +81,7 @@ the-crate crate-group frees-floor  the-crate $10A noise-from  the-crate crate-so
     hewie hold  hewie wait-move  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move ;
 : over-left ( tri face F: x z -- )   \ (to the wall's foot, then a leap over it)
     {: tri face F: x z :}  barks  hewie tri face -1 walk-path-move x z go-to
-    0 true path-floor  $155 35 -130e 1.5e 115e hewie-leap  hewie wait-move  0 false path-floor ;
+    hewie true aside  0 true path-floor  $155 35 -130e 1.5e 115e hewie-leap  hewie wait-move  0 false path-floor  hewie false aside ;
 : left-from-near ( -- )  $14C -90 -90e 115e over-left ;
 : left-from-far ( -- )  $4E 90 -170e 115e over-left ;
 : round-right ( tri face dest F: x z -- )   \ (round by the right: the floor freed for good)
@@ -92,7 +92,7 @@ the-crate crate-group frees-floor  the-crate $10A noise-from  the-crate crate-so
 : right-from-far ( -- )  $39 90 $1B9 -230e 180e round-right ;
 : up-to ( tri face dest snap F: x z lx ly lz -- )   \ (by a hung thing: a leap up to it - his snap at it meanwhile)
     {: tri face dest snap F: x z lx ly lz :}  barks  snap start drop
-    hewie tri face -1 walk-path-move x z go-to  dest 35 lx ly lz hewie-leap  hewie wait-move ;
+    hewie tri face -1 walk-path-move x z go-to  hewie true aside  dest 35 lx ly lz hewie-leap  hewie wait-move  hewie false aside ;
 : to-hanger-b ( -- )  $1C -90 $193 ['] snaps-at-b  -236e 160e  -276e 1e 160e up-to ;
 : to-hanger-a ( -- )  $161 -90 $8A ['] snaps-at-a  -220e 190e  -259.5e 1e 190.1e up-to ;
 : go-there? ( -- flag )  started-now @ go-there-cmd = ;
@@ -140,7 +140,7 @@ create looks
     fiona $C3 89 fleeing-anim walk-move -67.3e 79.93e go-to
     fiona 4 idle  fiona false noclip  stalkers-stay state-off ;
 : hides ( -- )
-    stalkers-stay state!  0 came-while-hidden !  0 found-her !
+    stalkers-stay state!  0 came-while-hidden !  0 found-her !  fiona true aside
     fiona $E5 -90 -1 walk-move -74.756e 82.505e go-to
     fiona true noclip  fiona crouch-down-anim play
     fiona $D6 -90 creeping-anim walk-move -100.488e 79.931e go-to

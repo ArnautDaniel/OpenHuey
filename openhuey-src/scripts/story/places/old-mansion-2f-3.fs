@@ -53,7 +53,7 @@ $A8 constant before-crawl-tri   $96 constant crawl-tri   1 constant crawl-group
 
 \ ---- the stalker on the weak floor: it gives way under him ----
 : his-fall ( -- )
-    stalkers-stay state!  stalker hold  fiona hold  creak-sound room-bank stalker sound-by
+    stalkers-stay state!  stalker hold  fiona hold  fiona true aside  creak-sound room-bank stalker sound-by
     15 screen:to-black-2 with-music or fade  wait-fade  things-id send clear-things  text-gone
     0 homunculi-off  fall-sound room-bank stalker sound-by  stalker let-go  3 summon-take
     60 frames  fiona 0 on-group? if  fiona $68 160 place-on-tri  then
@@ -61,7 +61,7 @@ $A8 constant before-crawl-tri   $96 constant crawl-tri   1 constant crawl-group
 : gives-way ( -- )  om2f-3-flag1 fact!  panic-eased  ['] his-fall start drop ;
 
 \ ---- the decomposer: its plaque; the Handful of Ash put in, the Prima Materia out; else nothing ----
-: at-decomposer ( -- )  stalkers-stay state!  fiona hold  fiona wait-move  fiona $A0 0 29.5e 34.5e walk-to ;
+: at-decomposer ( -- )  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona $A0 0 29.5e 34.5e walk-to ;
 : the-decomposer ( -- )
     at-decomposer
     plaque-read @ if
@@ -88,13 +88,13 @@ $A8 constant before-crawl-tri   $96 constant crawl-tri   1 constant crawl-group
 \ ---- Hewie into the crawl space (her "go there" at it) and out (her "come back") ----
 : crawls-in ( -- )
     hewie hold  hewie-bark  hewie wait-move
-    hewie before-crawl-tri -90 -1 walk-path-move -30e 0e go-to
+    hewie before-crawl-tri -90 -1 walk-path-move -30e 0e go-to  hewie true aside   \ (the scripts' 0x21 from here: its end lets it go)
     crawl-group solid-floor floor-off
     hewie crawl-tri -90 $204 walk-move -78e 0e go-to
     18000 2 hewie send hewie-yelp ;
 : crawls-out ( -- )
-    hewie hold  hewie before-crawl-tri 90 $204 walk-move -30e 0e go-to
-    hewie -1 idle  hewie wait-anim  0 0 hewie send hewie-yelp  0 0 hewie-do
+    hewie hold  hewie true aside  hewie before-crawl-tri 90 $204 walk-move -30e 0e go-to
+    hewie -1 idle  hewie wait-anim  0 0 hewie send hewie-yelp  0 0 hewie-do  hewie false aside
     crawl-group solid-floor floor-on ;
 : sent-in? ( -- flag )
     started-now @ go-there-cmd =  hewie-cond-now @ down-cond <> and  stalker-in? 0= and  cam-set@ 1 = and
@@ -107,22 +107,22 @@ $A8 constant before-crawl-tri   $96 constant crawl-tri   1 constant crawl-group
 
 \ ---- what she may do or say here ----
 : the-crawl-space ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  fiona -50e 0e turn-to-xz
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona -50e 0e turn-to-xz
     om2f-2-flag1 fact? if  furnace-msg
     else  draught-remarked @ if  too-tight-msg  else  -1 draught-remarked !  draught-msg  then  then
     say  stalkers-stay state-off ;
 : the-notes ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  fiona 180 turn  notes-msg say
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona 180 turn  notes-msg say
     15 screen:to-dim fade wait-fade  dog-notes-msg say  15 screen:from-dim fade wait-fade  a-dog-msg say
     notes-file give-file  stalkers-stay state-off ;
 : looks-down ( msg -- )  fiona look-low-anim start-anim  40 frames  say  fiona wait-anim ;
 : fell-out ( -- )  fiona wait-move  fell-out-msg looks-down ;
-: weak-floor ( -- )  stalkers-stay state!  fiona hold  fiona wait-move  weak-floor-msg looks-down  stalkers-stay state-off ;
+: weak-floor ( -- )  stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  weak-floor-msg looks-down  stalkers-stay state-off ;
 : the-gear ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  fiona -3.17e 12.09e turn-to-xz
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona -3.17e 12.09e turn-to-xz
     gear-remarked @ if  gear-2-msg  else  -1 gear-remarked !  gear-msg  then  looks-down  stalkers-stay state-off ;
 : inside-the-gear ( -- )
-    stalkers-stay state!  fiona hold  fiona wait-move  fiona 5.3e 37.5e turn-to-xz
+    stalkers-stay state!  fiona hold  fiona true aside  fiona wait-move  fiona 5.3e 37.5e turn-to-xz
     fiona look-low-anim start-anim  40 frames
     om2f-3-album-medallion fact? if  nothing-unusual-msg say
     else  inside-msg say  album-medallion om2f-3-album-medallion -1 takes-up  then

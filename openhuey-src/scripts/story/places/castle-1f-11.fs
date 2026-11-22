@@ -74,7 +74,7 @@ vase-1 0 $80505050 $111 vase   vase-2 2 $80404040 $122 vase   vase-3 1 $80404040
 : hewie-back ( -- )   \ (held: let go, by the bridge's end)
     hewie held? if  hewie let-go  hewie $CC 60 32.509e 56.979e place-at  stalkers-stay state-off  then ;
 : bridge-falls ( -- )
-    hewie-back  fiona hold  stalker let-go  fiona wait-anim  fiona -1 idle  7 frames
+    hewie-back  fiona hold  fiona true aside  stalker let-go  fiona wait-anim  fiona -1 idle  7 frames
     15 screen:to-black-2 with-music or fade  no-track 1e background
     bridge-movie scenes:keyed-movie bridge-cutscene load-scene  $10 $FF movie-key  panic-eased
     if  -1 run-scene  then
@@ -100,7 +100,7 @@ vase-1 0 $80505050 $111 vase   vase-2 2 $80404040 $122 vase   vase-3 1 $80404040
 
 \ ---- the Medallion across the gap: her "go for it" toward it - Hewie fetches it ----
 : fetches ( -- )
-    hewie hold  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move
+    hewie hold  hewie true aside  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move
     hewie $13 -90 -1 walk-path-move 53.585e 39.199e go-to  hewie true noclip
     $148 40 0e 1.5e 43.21e hewie-leap  hewie wait-move
     hewie $145 180 -1 walk-move 9.804e 32.761e go-to  hewie sit-a-while-anim 10 play-blend
@@ -111,10 +111,10 @@ vase-1 0 $80505050 $111 vase   vase-2 2 $80404040 $122 vase   vase-3 1 $80404040
         then
     then
     hewie $148 66 -1 walk-move -7.96e 39.28e go-to  $CC 50 32.509e 1.5e 56.979e hewie-leap  hewie wait-move
-    hewie false noclip  stalkers-stay state-off ;
+    hewie false noclip  hewie false aside  stalkers-stay state-off ;
 : sends-him ( -- )
-    fiona hold  stalkers-stay state!  fiona wait-move
-    hewie held? if  stalkers-stay state-off exit  then
+    fiona hold  stalkers-stay state!  fiona true aside  fiona wait-move
+    hewie held? if  stalkers-stay state-off  fiona false aside exit  then
     ['] fetches start drop
     fiona go-for-it-gesture-anim start-anim  fiona 1 wait-mark  $2E common-bank fiona sound-by
     fiona wait-anim  fiona -1 idle  7 frames ;
@@ -131,8 +131,8 @@ create medallion-look  9.646e 0.163e 27.266e 30e 6e 6e look,
 : at-the-clamp ( -- )
     fiona wait-move
     bridge-down? if  clamp-off-msg say  exit  then
-    world-frozen state!  fiona $8E -144 -6.625e -82.651e place-at  1 10e 15e 0e 0e shot
-    hits @ if  loosened-msg  else  clamp-msg  then  say  16 frames  world-frozen state-off  shot-off ;
+    world-frozen state!  fiona true aside  fiona $8E -144 -6.625e -82.651e place-at  1 10e 15e 0e 0e shot
+    hits @ if  loosened-msg  else  clamp-msg  then  say  16 frames  world-frozen state-off  fiona false aside  shot-off ;
 : pick-jerky ( -- )  beef-jerky c1f-11-beef-jerky jerky-fx 72.5e 8.5e picks-up ;
 : pick-magnesia ( -- )  magnesia c1f-11-magnesia magnesia-fx 53e -113.5e picks-up ;
 : spots ( -- )
