@@ -251,7 +251,9 @@ static const char *kCompositeFs =
     "    if (u_debug == 3) { float z = u_proj.w / (texture(u_depth, v_uv).r * 2.0 - 1.0 + u_proj.z);\n"
     "                        o_color = vec4(vec3(clamp(z / 1500.0, 0.0, 1.0)), 1.0); return; }\n"
     "    vec3 c = texture(u_scene, v_uv).rgb;\n"
-    "    float ao = texture(u_ao, v_uv).r;\n"
+    /* (each input looked at only when it counts: one not made this frame holds nothing known -
+     * whatever its memory had, NaN even, which times 0 is still NaN) */
+    "    float ao = u_ao_strength != 0.0 ? texture(u_ao, v_uv).r : 1.0;\n"
     "    c *= mix(1.0, ao * ao, u_ao_strength);\n"
     "    float d = texture(u_depth, v_uv).r;\n"
     "    float z = u_proj.w / (d * 2.0 - 1.0 + u_proj.z);\n"   /* the distance along the view */
@@ -265,7 +267,7 @@ static const char *kCompositeFs =
     /* the room's own look, on display values as the PS2 had them: tint, fog, bloom */
     "    vec3 s = pow(max(c, 0.0), vec3(1.0 / 2.2));\n"
 
-    "    vec3 soft = 3.0 * pow(max(texture(u_soft, v_uv).rgb, 0.0), vec3(1.0 / 2.2));\n"
+    "    vec3 soft = u_tint_glow.a != 0.0 || u_tint_contrast.a != 0.0 ? 3.0 * pow(max(texture(u_soft, v_uv).rgb, 0.0), vec3(1.0 / 2.2)) : vec3(0.0);\n"
     "    s += soft * u_tint_glow.rgb * u_tint_glow.a;\n"
     /* (the second colour sees the screen after the first: its blurred copy has the glow too) */
     "    s += (s - soft * (1.0 + 3.0 * u_tint_glow.rgb * u_tint_glow.a) * u_tint_contrast.rgb) * u_tint_contrast.a;\n"
@@ -278,17 +280,18 @@ static const char *kCompositeFs =
     "        fc.a *= 1.0 - texture(u_mask, v_uv).g;\n"
     "        s = mix(s, fc.rgb, clamp(fc.a, 0.0, 1.0));\n"
     "    }\n"
-    "    s += 5.0 * pow(max(texture(u_glow, v_uv).rgb, 0.0), vec3(1.0 / 2.2)) * u_room_bloom.rgb * u_room_bloom.a;\n"
-    "    s += u_glow_k * pow(max(texture(u_glow_trail, v_uv).rgb, 0.0), vec3(1.0 / 2.2));\n"
+    "    if (any(notEqual(u_room_bloom.rgb * u_room_bloom.a, vec3(0.0))))\n"
+    "        s += 5.0 * pow(max(texture(u_glow, v_uv).rgb, 0.0), vec3(1.0 / 2.2)) * u_room_bloom.rgb * u_room_bloom.a;\n"
+    "    if (u_glow_k != 0.0) s += u_glow_k * pow(max(texture(u_glow_trail, v_uv).rgb, 0.0), vec3(1.0 / 2.2));\n"
 
-    "    s += 0.5 * texture(u_shine, v_uv).rgb * u_shine_col;\n"
+    "    if (any(notEqual(u_shine_col, vec3(0.0)))) s += 0.5 * texture(u_shine, v_uv).rgb * u_shine_col;\n"
     "    c = pow(max(s, 0.0), vec3(2.2));\n"
     /* the modern additions: haze, bloom, grading */
     "    if (u_fog_density > 0.0 && d < 1.0) {\n"
     "        float f = 1.0 - exp(-u_fog_density * max(z - u_fog_start, 0.0));\n"
     "        c = mix(c, u_fog_color, f);\n"
     "    }\n"
-    "    c += texture(u_bloom, v_uv).rgb * u_bloom_strength;\n"
+    "    if (u_bloom_strength != 0.0) c += texture(u_bloom, v_uv).rgb * u_bloom_strength;\n"
     "    c *= u_exposure;\n"
     "    c = u_tonemap == 2 ? aces(c) : u_tonemap == 1 ? soft_shoulder(c) : clamp(c, 0.0, 1.0);\n"
     "    float l = dot(c, vec3(0.2126, 0.7152, 0.0722));\n"
@@ -613,6 +616,10 @@ void post_begin(int w, int h, int msaa, Vec3 clear) {
     if (T.ms_fbo != 0) {
         glEnable(GL_MULTISAMPLE);
     }
+}
+
+int post_samples(void) {
+    return T.msaa > 1 ? T.msaa : 1;
 }
 
 static void fullscreen(GLuint fbo, int w, int h, GLuint prog) {
@@ -997,6 +1004,13 @@ static void tv_copy(void) {
 
 void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, int w, int h, float time) {
     const float *P = cam->proj.m;
+    const RoomLook *l = &gRoomLook;
+    int fog = s->room_fog && l->has_fog, tint = s->room_tint && l->has_tint, room_bloom = s->room_bloom && l->has_bloom;
+    int dof = s->room_dof && l->has_dof;
+    float k = room_bloom ? (l->bloom_subtract ? -l->bloom[3] : l->bloom[3]) : 0.0f;
+    float bloom_rgb[3] = {l->bloom[0] * k + sBloomAdd[0], l->bloom[1] * k + sBloomAdd[1], l->bloom[2] * k + sBloomAdd[2]};
+    int want_soft = dof || (tint && (l->tint_glow[3] != 0.0f || l->tint_contrast[3] != 0.0f));
+    int want_glow = bloom_rgb[0] != 0.0f || bloom_rgb[1] != 0.0f || bloom_rgb[2] != 0.0f;
     int i;
 
     if (T.ms_fbo != 0) {   /* the samples averaged into the textures: colour, mask, depth */
@@ -1033,14 +1047,17 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
         fullscreen(T.ao_fbo[1], T.ao_w, T.ao_h, sBlurProg);
     }
 
-    /* the room's look: the screen at half size blurred (the tint), the masked areas (the bloom) */
-    glProgramUniform1i(sDownProg, 0, 0);
-    glProgramUniform1i(sDownProg, 2, 0);
-    bind(0, T.color, sLinear);
-    fullscreen(T.soft_fbo[0], T.half_w, T.half_h, sDownProg);
-    bind(0, T.soft[0], sLinear);
-    fullscreen(T.soft_fbo[1], T.half_w, T.half_h, sUpProg);
-    if (s->room_dof && gRoomLook.has_dof) {   /* two more tent passes: about the game's 8 */
+    /* the room's look: the screen at half size blurred (the tint, the depth of field), the masked
+     * areas (the bloom) - each made only when it shows this frame */
+    if (want_soft) {
+        glProgramUniform1i(sDownProg, 0, 0);
+        glProgramUniform1i(sDownProg, 2, 0);
+        bind(0, T.color, sLinear);
+        fullscreen(T.soft_fbo[0], T.half_w, T.half_h, sDownProg);
+        bind(0, T.soft[0], sLinear);
+        fullscreen(T.soft_fbo[1], T.half_w, T.half_h, sUpProg);
+    }
+    if (dof) {   /* two more tent passes: about the game's 8 */
         bind(0, T.soft[1], sLinear);
         fullscreen(T.dof_fbo, T.half_w, T.half_h, sUpProg);
         bind(0, T.dof, sLinear);
@@ -1048,15 +1065,18 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
         bind(0, T.soft[0], sLinear);
         fullscreen(T.dof_fbo, T.half_w, T.half_h, sUpProg);
     }
-    glProgramUniform1i(sDownProg, 2, 1);
-    bind(0, T.color, sLinear);
-    bind(1, T.mask, sLinear);
-    fullscreen(T.glow_fbo[0], T.half_w, T.half_h, sDownProg);
-    bind(0, T.glow[0], sLinear);
-    fullscreen(T.glow_fbo[1], T.half_w, T.half_h, sUpProg);
-    bind(0, T.glow[1], sLinear);
-    fullscreen(T.glow_fbo[0], T.half_w, T.half_h, sUpProg);
-    glProgramUniform1i(sDownProg, 2, 0);
+    if (want_glow) {
+        glProgramUniform1i(sDownProg, 0, 0);
+        glProgramUniform1i(sDownProg, 2, 1);
+        bind(0, T.color, sLinear);
+        bind(1, T.mask, sLinear);
+        fullscreen(T.glow_fbo[0], T.half_w, T.half_h, sDownProg);
+        bind(0, T.glow[0], sLinear);
+        fullscreen(T.glow_fbo[1], T.half_w, T.half_h, sUpProg);
+        bind(0, T.glow[1], sLinear);
+        fullscreen(T.glow_fbo[0], T.half_w, T.half_h, sUpProg);
+        glProgramUniform1i(sDownProg, 2, 0);
+    }
 
     if (s->bloom) {
         glProgramUniform1f(sDownProg, 1, s->bloom_threshold);
@@ -1107,28 +1127,20 @@ void post_finish(const PostCamera *cam, const RenderSettings *s, int x, int y, i
     } else {
         glProgramUniform3f(sCompositeProg, 22, 0.0f, 0.0f, 0.0f);
     }
-    if (s->room_dof && gRoomLook.has_dof) {
-        glProgramUniform4f(sCompositeProg, 20, gRoomLook.dof[0], gRoomLook.dof[1], gRoomLook.dof[2], gRoomLook.dof[3]);
+    if (dof) {
+        glProgramUniform4f(sCompositeProg, 20, l->dof[0], l->dof[1], l->dof[2], l->dof[3]);
     } else {
         glProgramUniform4f(sCompositeProg, 20, 1.0f, 0.0f, 0.0f, 0.0f);
     }
-    {
-        const RoomLook *l = &gRoomLook;
-        int fog = s->room_fog && l->has_fog, tint = s->room_tint && l->has_tint, bloom = s->room_bloom && l->has_bloom;
-
-        glProgramUniform4f(sCompositeProg, 14, l->fog_near_color[0], l->fog_near_color[1], l->fog_near_color[2],
-                           fog ? l->fog_near_color[3] : 0.0f);
-        glProgramUniform4f(sCompositeProg, 15, l->fog_far_color[0], l->fog_far_color[1], l->fog_far_color[2],
-                           fog ? l->fog_far_color[3] : 0.0f);
-        glProgramUniform2f(sCompositeProg, 16, l->fog_near, l->fog_far);
-        glProgramUniform4f(sCompositeProg, 17, l->tint_glow[0], l->tint_glow[1], l->tint_glow[2], tint ? l->tint_glow[3] : 0.0f);
-        glProgramUniform4f(sCompositeProg, 18, l->tint_contrast[0], l->tint_contrast[1], l->tint_contrast[2],
-                           tint ? l->tint_contrast[3] : 0.0f);
-        float k = bloom ? (l->bloom_subtract ? -l->bloom[3] : l->bloom[3]) : 0.0f;
-
-        glProgramUniform4f(sCompositeProg, 19, l->bloom[0] * k + sBloomAdd[0], l->bloom[1] * k + sBloomAdd[1],
-                           l->bloom[2] * k + sBloomAdd[2], 1.0f);   /* (the room's and the effects') */
-    }
+    glProgramUniform4f(sCompositeProg, 14, l->fog_near_color[0], l->fog_near_color[1], l->fog_near_color[2],
+                       fog ? l->fog_near_color[3] : 0.0f);
+    glProgramUniform4f(sCompositeProg, 15, l->fog_far_color[0], l->fog_far_color[1], l->fog_far_color[2],
+                       fog ? l->fog_far_color[3] : 0.0f);
+    glProgramUniform2f(sCompositeProg, 16, l->fog_near, l->fog_far);
+    glProgramUniform4f(sCompositeProg, 17, l->tint_glow[0], l->tint_glow[1], l->tint_glow[2], tint ? l->tint_glow[3] : 0.0f);
+    glProgramUniform4f(sCompositeProg, 18, l->tint_contrast[0], l->tint_contrast[1], l->tint_contrast[2],
+                       tint ? l->tint_contrast[3] : 0.0f);
+    glProgramUniform4f(sCompositeProg, 19, bloom_rgb[0], bloom_rgb[1], bloom_rgb[2], 1.0f);   /* (the room's and the effects') */
     glUseProgram(sCompositeProg);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     panic_screens(x, y, w, h);

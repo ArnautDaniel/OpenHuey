@@ -13,6 +13,8 @@ typedef struct PostCamera {
 void post_init(void);
 /* make the scene target current (sized w x h, `msaa` samples) and clear it */
 void post_begin(int w, int h, int msaa, Vec3 clear_linear);
+/* the scene target's samples (1: not multisampled) */
+int post_samples(void);
 /* resolve the scene, run the effects and draw the result into the window's rectangle */
 /* the frames blended with the last (the original's final packet, Renderer_Additive): the new
  * frame's weight `a` (0..1; 1 the frame as it is, 0 the last one held) - from now on, until

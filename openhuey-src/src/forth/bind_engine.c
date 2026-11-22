@@ -3523,6 +3523,7 @@ PRIM(p_screenshot) {   /* ( addr len -- ) save the frame as a PNG once drawn */
 
     snprintf(gEngine.screenshot, sizeof(gEngine.screenshot), "%.*s", (int)n, (const char *)a);
 }
+PRIM(p_gl_low) { PUSH(render_gl_low() ? -1 : 0); }   /* ( -- flag ) drawing OpenGL 3.3's way (platform/gl.h: the low-power path) */
 PRIM(p_screenshot_pending) { PUSH(gEngine.screenshot[0] != 0 ? -1 : 0); }   /* ( -- flag ) one asked for, not yet drawn */
 PRIM(p_console) { gEngine.console.open = (int)POP() != 0; }   /* ( flag -- ) */
 PRIM(p_console_type) {   /* ( addr len -- ) put in the console's line, as if typed */
@@ -4189,7 +4190,7 @@ void bind_engine(Forth *f) {
         {"screen-size", p_screen_size, "( -- w h )"}, {"char-size", p_char_size, "( -- w h )"}, {"n>s", p_n_to_s, "( n -- addr len )"}, {"h>s", p_h_to_s, "( n -- addr len )"}, {"f>s$", p_f_to_s, "( places -- addr len ) ( F: x -- )"},
         {"gfx", p_gfx, "( -- addr )"}, {"room-look", p_look, "( -- addr )"}, {"room-look-reset", p_look_reset, "( -- )"}, {"look-set", p_look_set, "( slot addr n -- )"}, {"look-keep", p_look_keep, "( -- )"}, {"look-kept", p_look_kept, "( -- )"}, {"look-plain", p_look_plain, "( -- )"}, {"look@", p_look_get, "( slot addr -- n )"}, {"user-dir", p_user_dir, "( -- addr len )"}, {"language", p_language, "( -- i )"}, {"language!", p_language_set, "( i -- )"}, {"language-present?", p_language_present, "( i -- flag )"}, {"language-code", p_language_code, "( i -- addr len )"}, {"testing?", p_testing, "( -- flag )"}, {"hga-version", p_hga_version, "( -- addr len )"}, {"actor-part-show", p_actor_part_show, "( model part on -- )"}, {"actor-settle", p_actor_settle, "( model -- )"}, {"doorway-faded", p_doorway_faded, "( model -- ) ( F: -- F: f )"}, {"file-exists?", p_file_exists, "( addr len -- flag )"}, {"to-file", p_to_file, "( addr len -- )"}, {"append-file", p_append_file, "( addr len -- )"}, {"make-dir", p_make_dir, "( addr len -- flag )"}, {"zip-files", p_zip_files, "( names len dir len zip len -- flag )"}, {"zip-has?", p_zip_has, "( name len zip len -- flag )"}, {"date-time", p_date_time, "( -- addr len )"},
         {"end-file", p_end_file, "( -- )"}, {"xt>name", p_xt_to_name, "( xt -- addr len )"},
-        {"clear-color", p_clear_color, "( F: r g b -- )"}, {"out-of-view?", p_out_of_view, "( -- flag ) ( F: x y z -- )"}, {"screenshot", p_screenshot, "( addr len -- )"}, {"screenshot-pending?", p_screenshot_pending, "( -- flag )"}, {"console!", p_console, "( flag -- )"}, {"console-type", p_console_type, "( addr len -- )"}, {"console-log", p_console_log, "( n -- )"},
+        {"clear-color", p_clear_color, "( F: r g b -- )"}, {"out-of-view?", p_out_of_view, "( -- flag ) ( F: x y z -- )"}, {"screenshot", p_screenshot, "( addr len -- )"}, {"screenshot-pending?", p_screenshot_pending, "( -- flag )"}, {"gl-low?", p_gl_low, "( -- flag )"}, {"console!", p_console, "( flag -- )"}, {"console-type", p_console_type, "( addr len -- )"}, {"console-log", p_console_log, "( n -- )"},
 
     };
     size_t i;
@@ -4298,6 +4299,7 @@ void bind_engine(Forth *f) {
     field(f, "gfx.ps2-lighting", offsetof(RenderSettings, ps2_lighting));
     field(f, "gfx.shadow-maps", offsetof(RenderSettings, shadow_maps));
     field(f, "gfx.shadow-strength", offsetof(RenderSettings, shadow_strength));
+    field(f, "gfx.shadow-soft", offsetof(RenderSettings, shadow_soft));
     field(f, "gfx.room-tint", offsetof(RenderSettings, room_tint));
     field(f, "gfx.room-bloom", offsetof(RenderSettings, room_bloom));
     field(f, "gfx.game-font", offsetof(RenderSettings, game_font));

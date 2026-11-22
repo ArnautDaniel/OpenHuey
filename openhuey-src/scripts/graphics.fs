@@ -33,7 +33,7 @@ PRIVATE>
 \ boost, no rim) - and none of OpenHuey's own effects
 : look-original
     1 ['] gfx.msaa int!  1 ['] gfx.aspect int!
-    ['] gfx.room-lights on  ['] gfx.shadow-maps on   \ (the game lit and shadowed its characters too)
+    ['] gfx.room-lights on  ['] gfx.shadow-maps on  ['] gfx.shadow-soft on   \ (the game lit and shadowed its characters too)
     1 ['] gfx.ps2-lighting int!  1e ['] gfx.character-light float!  0e ['] gfx.rim float!
     ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on
     ['] gfx.ssao off  ['] gfx.bloom off  ['] gfx.fog off  ['] gfx.shadows off
@@ -48,7 +48,7 @@ PRIVATE>
 \ corners of rooms dark already). No haze: the rooms have their own fog
 : look-enhanced
     4 ['] gfx.msaa int!  0 ['] gfx.aspect int!
-    ['] gfx.room-lights on  ['] gfx.shadow-maps on
+    ['] gfx.room-lights on  ['] gfx.shadow-maps on  ['] gfx.shadow-soft on
     2 ['] gfx.ps2-lighting int!  1e ['] gfx.character-light float!  0.2e ['] gfx.rim float!
     ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on
     ['] gfx.ssao on  0.9e ['] gfx.ssao-strength float!  20e ['] gfx.ssao-radius float!
@@ -56,6 +56,21 @@ PRIVATE>
     ['] gfx.fog off  0.0012e ['] gfx.fog-density float!  150e ['] gfx.fog-start float!   \ (the rooms have their own)
     ['] gfx.shadows on
     1 ['] gfx.tonemap int!  0.2e ['] gfx.vignette float!  0e ['] gfx.grain float!   \ (no grain: in a game this dark it reads as dither)
+    1e ['] gfx.saturation float!  1e ['] gfx.contrast float!  1e ['] gfx.exposure float! ;
+
+\ for a low-power computer (an older or smaller GPU - the one OpenGL 3.3 is drawn for, gl-low?): the
+\ original's look kept whole - the room's own fog, tint, bloom and depth of field, the characters lit
+\ and shadowed as the game did it (per vertex, as the PS2) - with only the costly extras off: no
+\ antialiasing, no ambient occlusion or bloom of OpenHuey's own, shadows' edges softened by 4
+\ samples instead of 16, plainer texture filtering. The wide picture and the light grading stay
+\ (nearly free)
+: look-low-power
+    1 ['] gfx.msaa int!  0 ['] gfx.aspect int!  1e ['] gfx.scale float!  4e ['] gfx.anisotropy float!
+    ['] gfx.room-lights on  ['] gfx.shadow-maps on  ['] gfx.shadow-soft off
+    1 ['] gfx.ps2-lighting int!  1e ['] gfx.character-light float!  0.2e ['] gfx.rim float!
+    ['] gfx.room-fog on  ['] gfx.room-tint on  ['] gfx.room-bloom on  ['] gfx.room-dof on
+    ['] gfx.ssao off  ['] gfx.bloom off  ['] gfx.fog off  ['] gfx.shadows off
+    1 ['] gfx.tonemap int!  0.2e ['] gfx.vignette float!  0e ['] gfx.grain float!
     1e ['] gfx.saturation float!  1e ['] gfx.contrast float!  1e ['] gfx.exposure float! ;
 
 \ ---- the menu ----
@@ -181,6 +196,7 @@ PRIVATE>
 \ ---- the items ----
 s" Preset: as on the PS2"  ' look-original  action 0 0 0 item
 s" Preset: enhanced"       ' look-enhanced  action 0 0 0 item
+s" Preset: low-power computer" ' look-low-power action 0 0 0 item
 s" Fullscreen (F11)" ' gfx.fullscreen flag 0 1 0 item
 s" Picture"         ' gfx.aspect choice 0 1   s" fill the screen" s" 4:3" 2 names item
 s" Antialiasing"    ' gfx.msaa doubling 1 8 0 item
@@ -205,6 +221,7 @@ s"   how"           ' gfx.ps2-lighting choice 0 2   s" OpenHuey's" s" as the PS2
 s"   strength"      ' gfx.character-light number 500 4000 100 item
 s" Shadows from room lights" ' gfx.shadow-maps flag 0 1 0 item
 s"   strength"      ' gfx.shadow-strength number 0 1000 50 item
+s"   soft edges"    ' gfx.shadow-soft flag 0 1 0 item
 s" Contact blobs"   ' gfx.shadows flag 0 1 0 item
 s" Tone mapping"    ' gfx.tonemap choice 0 2   s" clip" s" soft" s" filmic" 3 names item
 s" Exposure"        ' gfx.exposure number 250 4000 50 item
@@ -264,8 +281,10 @@ variable row-h  variable col-w
 ' watch-controls on-tick
 ' draw-menu on-draw
 
-\ a fresh start: enhanced; a player's saved settings over it
-look-enhanced
+\ a fresh start: enhanced - or on OpenGL 3.3 (an older GPU) the low-power look; a player's saved
+\ settings over it
+: fresh-look ( -- )  gl-low? if  look-low-power  else  look-enhanced  then ;
+fresh-look
 : load-settings  settings-file file-exists? if  settings-file included  then ;
 ' load-settings catch drop
 : load-controls  controls-file file-exists? if  controls-file included  then ;
