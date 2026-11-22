@@ -120,7 +120,6 @@ int actor_load_textured(Actor *actors, const char *name, const char *tex) {
     snprintf(a->name, sizeof(a->name), "%s", name);
     load_textures(a, tex);
     a->cloth = cloth_for(name);
-    a->posed = malloc((size_t)a->model.nv * sizeof(MeshVertex));
     if (a->model.nmorphs > 0) {   /* (its face and hands moved from their rest each frame) */
         a->shaped = malloc((size_t)a->model.nv * sizeof(SkinVertex));
         memcpy(a->shaped, a->model.v, (size_t)a->model.nv * sizeof(SkinVertex));
@@ -193,7 +192,6 @@ void actor_free(Actor *a) {
     render_mesh_free(&a->gpu);
     render_mesh_free(&a->shadow);
     model_free(&a->model);
-    free(a->posed);
     free(a->shaped);
     free(a->events);
     free(a->cloth);
@@ -787,13 +785,13 @@ int actor_drive_place(Actor *a, const uint8_t *drive, size_t size, float frame, 
     return 1;
 }
 
-/* the posed vertices and normals, in room space (the shader lights them) */
+/* the skeleton posed and placed (its bones' matrices for the GPU's skinning; the bones in the room) */
 static void skin(Actor *a) {
     static Mat4 skin_m[MODEL_MAX_BONES];
     Model *m = &a->model;
     Mat4 place = mat4_identity();
     float c = cosf(a->yaw), s = sinf(a->yaw);
-    int i, j;
+    int i;
 
     model_pose_sets(a->sets, a->nsets);
     if (a->drive != NULL) {   /* a cutscene's motion: placed in the room by its root bone */
@@ -823,8 +821,6 @@ static void skin(Actor *a) {
         for (root_bone = 0; root_bone < m->nbones && m->bones[root_bone].parent >= 0; root_bone++) {
         }
         a->pos = vec3(root.x, root.y - (root_bone < m->nbones ? m->bones[root_bone].rest_pos[1] : 0.0f), root.z);
-        c = 1.0f;
-        s = 0.0f;
         place.m[0] = place.m[5] = place.m[10] = a->scale;
     } else {
         float x = a->fade_len > 0.0f && a->fade > 0.0f ? a->fade / a->fade_len : 0.0f;   /* (fade_weight) */
@@ -876,8 +872,11 @@ static void skin(Actor *a) {
         }
     }
     model_pose_sets(NULL, 0);
-    if (a->shaped != NULL) {
+    if (a->shaped != NULL) {   /* (its face and hands moved from their rest: those vertices sent again) */
         model_morph(m, &a->face, a->shaped);
+        for (i = 0; i < m->nmorphs; i++) {
+            render_skin_update(&a->gpu, a->shaped + m->morphs[i].first, m->morphs[i].first, m->morphs[i].count);
+        }
     }
     for (i = 0; i < m->nbones; i++) {   /* the bones' origins and axes, placed */
         Vec3 o = mat4_point(&place, vec3(0.0f, 0.0f, 0.0f));
@@ -888,36 +887,9 @@ static void skin(Actor *a) {
             a->bone_axes[i][k] = vec3_sub(mat4_point(&place, model_pose_axes()[i][k]), o);
         }
     }
-    for (i = 0; i < m->nv; i++) {
-        const SkinVertex *v = a->shaped != NULL ? &a->shaped[i] : &m->v[i];
-        MeshVertex *o = &a->posed[i];
-        Vec3 p = vec3(0, 0, 0), n = vec3(0, 0, 0);
-
-        for (j = 0; j < 4; j++) {
-            const Mat4 *b = &skin_m[v->bones[j] < m->nbones ? v->bones[j] : 0];
-            float w = v->weights[j];
-
-            if (w == 0.0f) {
-                continue;
-            }
-            p = vec3_add(p, vec3_scale(mat4_point(b, v->pos), w));
-            n = vec3_add(n, vec3_scale(vec3(b->m[0] * v->normal.x + b->m[4] * v->normal.y + b->m[8] * v->normal.z,
-                                            b->m[1] * v->normal.x + b->m[5] * v->normal.y + b->m[9] * v->normal.z,
-                                            b->m[2] * v->normal.x + b->m[6] * v->normal.y + b->m[10] * v->normal.z),
-                                       w));
-        }
-        p = mat4_point(&place, p);
-        n = vec3_norm(vec3(c * n.x + s * n.z, n.y, -s * n.x + c * n.z));
-        o->x = p.x;
-        o->y = p.y;
-        o->z = p.z;
-        o->s = v->s;
-        o->t = v->t;
-        o->rgba[0] = o->rgba[1] = o->rgba[2] = o->rgba[3] = 0x80;
-        o->nx = n.x;
-        o->ny = n.y;
-        o->nz = n.z;
-    }
+    /* the vertices posed by the GPU as they are drawn (render_skin_upload): each by its bones'
+     * matrices by their weights, then placed - its normal turned with them */
+    render_skin_pose(&a->gpu, &place, skin_m, m->nbones);
 }
 
 /* a soft dark disc on the floor under the actor, a little above it to stay in front */
@@ -962,8 +934,11 @@ void actor_prepare(Actor *a) {
     if (!actor_shown(a) || a->model.nv == 0) {
         return;
     }
+    if (a->gpu.vao == 0 && !render_skin_upload(&a->gpu, a->shaped != NULL ? a->shaped : a->model.v, a->model.nv,
+                                               a->shaped != NULL)) {
+        return;
+    }
     skin(a);
-    render_mesh_update(&a->gpu, a->posed, a->model.nv);
 }
 
 Vec3 actor_center(const Actor *a) {
