@@ -154,7 +154,7 @@ create bug-text 256 allot   variable bug-text-len   \ (a note waiting for its re
     s" note.txt" in-bug-dir append-file  date-time type ."   " a n type cr  end-file
     ." noted in " s" note.txt" in-bug-dir type cr
     bug-step @ 0= if  zip-report  then ;   \ (still being made: zipped once it is)
-: .actor ( id -- )
+: .report-actor ( id -- )   \ (a line of the bug report; `.actor` is ClankForth's: in full)
     dup .  dup actor-name type  dup body? if
         ."   room " dup body-room h>s type space  ." tri " dup body-tri .  ." at " dup body-pos frot f. fswap f. f.
     then  cr  .state ;
@@ -167,7 +167,7 @@ create bug-text 256 allot   variable bug-text-len   \ (a note waiting for its re
     ." camera set " cam-set@ .  ." followed " cam-followed .  ." scene? " cam-scene? .  ." event? " cam-event? .  cr
     cr ." ---- the actors" cr  .actors
     cr ." ---- each actor's state" cr
-    most-actors 0 do  i alive? if  i .actor  then  loop
+    most-actors 0 do  i alive? if  i .report-actor  then  loop
     cr ." ---- the last messages (oldest first; not the every-frame ones)" cr  256 .recent
     cr ." ---- the console's last lines" cr  120 console-log
     end-file ;
