@@ -93,6 +93,12 @@ the room played, on its triangle, but not while a script walks it through blocke
 scene's not. Lorenzo's hanging figure's legs 2..5 and $12..$15, Fiona's doubles' 2..5 and 6..9
 (each class's Loaded: +0x890..+0x8AC).
 
+**Its root motion** (Character_RootMove): on its floor, a figure set in the air kept up there
+(`stays-up`); through blocked floor - the story's 0x20, +0x2B: `noclip` - Actor_MoveAny: over any
+triangle, at its own height plus the motion's rise (`root-move-any`). The golem of old-mansion-b1-6
+walks through a gate's fire so, and sinks into it 0.1 a frame (Room66_Sink) without the floor
+taking it back up.
+
 As the story shows or hides it (`show`) a figure tells (`figure-shown`): the obstacles leave a
 hidden one out of their way.
 

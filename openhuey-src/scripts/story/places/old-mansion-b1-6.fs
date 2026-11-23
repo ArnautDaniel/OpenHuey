@@ -64,7 +64,7 @@ create camera-areas  $D , 3 , 1 ,   $11 , 5 , 3 ,   $13 , 6 , 4 ,   $F , 4 , 2 ,
 \ ---- its turnings, its ends ----
 : turns ( anim -- )   \ (round at a turning, then walking - or running - on)
     creature-sound room-bank fig sound-by  0 10 fig-anim
-    begin  fig went-round? 0= while  feet  yield  repeat
+    begin  feet  yield  golem-slot figure-came-round? until   \ (a figure's: went-round? is the people's only)
     golem-runs @ if  running-anim  else  walking  then  1 4 fig-anim ;
 : passes ( -- )  fig true noclip ;
 : blaze-up ( spot -- )   \ (a wrong way: into a blaze at the spot)
