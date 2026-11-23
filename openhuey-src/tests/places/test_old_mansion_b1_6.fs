@@ -33,6 +33,7 @@ variable before
 : toward ( area F: px pz -- )
     {: a F: px pz :}  a area-middle drop {: F: x y z :}  px x f-  pz z f-  fatan2 rad>deg f>s  x y z put ;
 : lrl ( -- n )  [char] L  [char] R 8 lshift or  [char] L 16 lshift or ;   \ ('L' 'R' 'L' 0)
+: rrl ( -- n )  [char] R  [char] R 8 lshift or  [char] L 16 lshift or ;   \ ('R' 'R' 'L' 0: the way to the first gate)
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 omb1-6-flag1 story-flag-set  room-afresh
 testing the word's letters: "LRL" - L (on), R wanted (on), R wanted: no (left at the L)
@@ -58,9 +59,16 @@ T{ [: panic-held state-flag? ;] 300 soon  no-pause state-flag? -> -1 -1 }T   \ (
 T{ shown-soon -> calmer-msg }T
 300 read-on
 testing the race begun: the golem set going, the button to run
-room-afresh  lrl 0 swap -1 swap broadcast item-var  0 1 0 broadcast item-var  0 golem-race -1 0 broadcast item-event
+room-afresh  0 lrl broadcast item-var  1 0 broadcast item-var  0 golem-race -1 0 broadcast item-event
 T{ shown-soon  [: golem-slot figure 0< 0= ;] in-place -> run-msg -1 }T
 T{ [: ['] its-way running? ;] in-place -> -1 }T
+testing the race run through by "RRL": round each turning (a figure's animation come round), into the
+\ (first gate's fire - sunk below -25 (through blocked floor, at its own height) - the door beyond unlocked)
+omb1-6-flag2 story-flag-clear  $5E s" doors" actor-named send lock  room-afresh
+0 rrl broadcast item-var  1 0 broadcast item-var  0 golem-race -1 0 broadcast item-event
+60 run-frames  circle press
+T{ [: [: race-done @ ;] in-place ;] 4000 soon  omb1-6-flag2 story-flag?  $5E doors:door-locked? -> -1 -1 0 }T
+[: doing-busy? 0= ;] 600 soon drop
 testing the movie replayed (the extras): played, then back by the forced way
 room-afresh  200 run-frames  events-held state-flag-set  old-mansion-b1-6 -1 rooms send go-to-room  5 run-frames
 T{ [: cutscene-active? movie-status 1 = or ;] 300 soon -> -1 }T

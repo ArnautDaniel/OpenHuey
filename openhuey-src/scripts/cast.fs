@@ -102,7 +102,12 @@ end-state
 \ height it is given, not its floor's. Fitted to the floor only if already near it)
 : stays-up ( F: y -- )
     {: F: was :}  my-at v.y sf@ was f- fabs 4e f> if  room-id self body-tri  my-at v.x sf@ was my-at v.z sf@  body-place  then ;
-: root-move ( -- )
+: root-move-any ( -- )   \ (through blocked floor, Actor_MoveAny: over any triangle, its height its own and the motion's rise)
+    model @ root-delta {: F: turn x rise z :}  yaw turn f+ angle-wrap body-turn
+    yaw fcos yaw fsin {: F: c s :}  c x f* s z f* f+  c z f* s x f* f-  body-move-any
+    room-id self body-tri  my-at v.x sf@  my-at v.y sf@ rise f+  my-at v.z sf@  body-place ;
+: root-move ( -- )   \ (Character_RootMove: on its floor - through blocked floor, the +0x2B, Actor_MoveAny)
+    noclipped @ if  root-move-any exit  then
     my-at v.y sf@  root@ {: F: was turn x z :}  yaw turn f+ angle-wrap body-turn  x z body-move-local  was stays-up ;
 \ ---- the story's moves (Pursuer_EventCommand) ----
 $200 constant walk-anim
