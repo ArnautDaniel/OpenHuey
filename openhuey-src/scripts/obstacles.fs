@@ -7,7 +7,7 @@
 \ model - the room's object "oshi0n" - where it stands, and keeps the places and spots the
 \ story saves.
 IN: obstacles
-USING: engine game-state actors messages vectors stalker-names ;
+USING: engine game-state actors messages vectors stalker-names frames ;
 
 5 constant #obstacles
 : valid? ( i -- flag )  0 #obstacles within ;

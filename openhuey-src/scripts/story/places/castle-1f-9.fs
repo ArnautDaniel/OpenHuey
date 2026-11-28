@@ -78,7 +78,7 @@ vase-1 0 $1E7 vase   vase-2 1 $1F1 vase
 
 \ ---- the Album Medallion up the stairs: her "go there" toward it - Hewie fetches it ----
 : fetches ( -- )
-    hewie hold  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move  hewie follow
+    hewie hold  hewie bark-move 0 0  0e 0e 0e 0e  story.kit:move  hewie wait-move  hewie follow
     hewie $3E 180 -1 walk-path-move -30.81e 100e go-to
     stairs-floor solid-floor floor-off  stairs-floor keeps-fiona-off keeps-pursuers-off or floor-on
     $CF 50 -35e 0.2e 20.3e hewie-leap  hewie wait-move  hewie 2 -1 camera-set

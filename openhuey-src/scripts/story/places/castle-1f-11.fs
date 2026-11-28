@@ -100,7 +100,7 @@ vase-1 0 $80505050 $111 vase   vase-2 2 $80404040 $122 vase   vase-3 1 $80404040
 
 \ ---- the Medallion across the gap: her "go for it" toward it - Hewie fetches it ----
 : fetches ( -- )
-    hewie hold  hewie true aside  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move
+    hewie hold  hewie true aside  hewie bark-move 0 0  0e 0e 0e 0e  story.kit:move  hewie wait-move
     hewie $13 -90 -1 walk-path-move 53.585e 39.199e go-to  hewie true noclip
     $148 40 0e 1.5e 43.21e hewie-leap  hewie wait-move
     hewie $145 180 -1 walk-move 9.804e 32.761e go-to  hewie sit-a-while-anim 10 play-blend

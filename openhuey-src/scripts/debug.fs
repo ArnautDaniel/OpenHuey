@@ -7,11 +7,11 @@
 \   10e 0e 20e walk                 walking there (over the nav mesh)
 \   circle press                    a button pressed for a frame   .here                      where she is
 IN: debug
-USING: engine game-state actors messages keys room-names flag-names facts ;
+USING: engine game-state actors messages keys room-names flag-names facts frames ;
 
 \ a jump (`room!`) - nothing the original can do - leaves her without a camera setup where the
 \ room's scripts give none by an exit: she gets the room's set nearest her (room-label, below)
-variable jumped
+shared-variable jumped
 : room! ( room -- )  fiona-id -1 -1 cam-char-setup  -1 rooms-id send go-to-room  -1 jumped ! ;   \ (hers from the room alone)
 : room-by! ( room exit -- )  rooms-id send go-to-room ;
 : nearest-set ( -- set )   \ (the one looking nearest her, along the floor)
@@ -63,10 +63,10 @@ variable label?  -1 label? !
 \ running she has left once the panic has her scared); and hga's version. Down the right, the
 \ actors alive with their ids (`<id> enter` at the console works inside one, `leave-actor` back):
 \ F4 hides or shows that list (`actors-off` / `actors-on`) ----
-variable debug?
+shared-variable debug?
 : debug-on ( -- )  -1 debug? ! ;
 : debug-off ( -- )  0 debug? ! ;
-variable actors?  -1 actors? !
+shared-variable actors?  -1 actors? !
 : actors-on ( -- )  -1 actors? ! ;
 : actors-off ( -- )  0 actors? ! ;
 $E8E0C8FF constant text-colour   $A09880FF constant dim-colour
@@ -116,8 +116,8 @@ $D0A040FF constant breath-colour   $40A0D0FF constant fear-colour
 \ game then: `s" <folder>/save.fs" bug-load`). F12 opens the console with `bug-note ` typed:
 \ what happened, added to note.txt. All of it zipped beside the folder, user/bugs/<date>_<time>.zip
 \ (made again with each note): one file to drop on an issue ----
-create bug-dir 256 allot   variable bug-dir-len
-create bug-path 256 allot   variable bug-path-len
+create bug-dir 256 allot   shared-variable bug-dir-len
+create bug-path 256 allot   shared-variable bug-path-len
 : bug-dir+ ( addr len -- )  {: a n :}  a  bug-dir bug-dir-len @ +  n move  n bug-dir-len +! ;
 : in-bug-dir ( name len -- addr len )   \ <the report's folder>/name
     {: a n :}  bug-dir bug-path bug-dir-len @ move  a  bug-path bug-dir-len @ +  n move
@@ -136,7 +136,7 @@ create bug-path 256 allot   variable bug-path-len
     bug-dir-len @ to base  1 to n
     begin  taken?  while  base bug-dir-len !  n 1+ to n  s" -" bug-dir+  n n>str bug-dir+  repeat
     bug-dir bug-dir-len @ make-dir drop  s" /" bug-dir+ ;
-create bug-zip 256 allot   variable bug-zip-len
+create bug-zip 256 allot   shared-variable bug-zip-len
 : bug-zip-path ( -- addr len )   \ (the folder's name, .zip)
     bug-dir bug-zip bug-dir-len @ 1- dup bug-zip-len ! move
     s" .zip" {: a n :}  a  bug-zip bug-zip-len @ +  n move  n bug-zip-len +!  bug-zip bug-zip-len @ ;
@@ -147,8 +147,8 @@ create bug-zip 256 allot   variable bug-zip-len
 : zip-report ( -- )
     s" report.txt note.txt screenshot.png save.fs"  bug-dir bug-dir-len @  bug-zip-path zip-files
     if  ." bug report zipped: " bug-zip bug-zip-len @ type cr  then ;
-variable bug-step   \ (0 none; 1 the report wanted; 2 its save, once the screenshot is drawn)
-create bug-text 256 allot   variable bug-text-len   \ (a note waiting for its report)
+shared-variable bug-step   \ (0 none; 1 the report wanted; 2 its save, once the screenshot is drawn)
+create bug-text 256 allot   shared-variable bug-text-len   \ (a note waiting for its report)
 : add-note ( addr len -- )   \ (into the last report's note.txt)
     {: a n :}  bug-dir-len @ 0= if  ." no bug report yet: F12, or bug <what happened>" cr exit  then
     s" note.txt" in-bug-dir append-file  date-time type ."   " a n type cr  end-file

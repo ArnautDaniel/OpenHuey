@@ -3,7 +3,7 @@
 \ (src/game/scene_game.c AvoidPrompt_*). One row of SYSTEM/AVOID.TEX, 160 x 32 each, drawn
 \ 240 x 48 in the middle of the screen.
 IN: avoid
-USING: engine actors messages ps2-screen ;
+USING: engine actors messages ps2-screen frames ;
 
 12 constant avoid-layer   \ (the UI layers: ... 10, 11 the sub screen; 12 this)
 $2D constant avoid-group  \ (the texture cache's group, as the original's)

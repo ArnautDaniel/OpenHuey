@@ -8,15 +8,26 @@ submodule forward and runs its tests), not here.
 
 This page is OpenHuey's side: its words, its scripts, its tests.
 
-**ClankForth 0.3.0** (its CHANGELOG.md and docs/hosts.md say what a host checks at each version): colon
+**ClankForth 0.8.0 and what follows it** (its CHANGELOG.md and docs/hosts.md say what a host checks at each version): colon
 definitions run as x86-64 machine code (Linux, and Windows' MinGW build) and every task - each actor's - as a
 coroutine on its own stack (`CLANKFORTH_THREADED=1` in the environment runs it all threaded, to tell whether a
 fault is the backend's). The objects a handler makes (lists, tuples, maps, strings) are freed as it ends unless
 `rescue`d - OpenHuey's scripts make none: their state is fields and variables (`.actors` counts each actor's
-objects: all 0). Built without TLS (`CLANKFORTH_TLS` off: the game gives its scripts no `net`). For looking into
+objects: all 0). Built without TLS, zlib or the `c` vocabulary (`CLANKFORTH_TLS`, `CLANKFORTH_ZLIB`,
+`CLANKFORTH_FOREIGN` off: the game gives its scripts no `net`, and a release links no library more;
+`compression` is ClankForth's own code). For looking into
 the running game at the console: `id .actor` (the actor in full: behaviour, state, mail, links), `.mail`,
 `.failures`, `see-handler`; the bug report's per-actor line is `debug`'s `.report-actor`.
 
+- **Frames are a vocabulary** (ClankForth 0.8.0): `wait`, `frame`, `await-within`, `tick-tasks`, `actors-frame`
+  and the messages `tick`, `frame-end`, `held-tick` are `frames`' - a script that waits frames or handles one of
+  those says `USING: ... frames ;` (the error names it: `unknown word wait (in vocabulary frames: add it to
+  USING:)`). The engine's loop is a frame at a time (`hactor_frame`), so they mean what they always did.
+- **No slices**: the engine never calls `forth_set_slice`, so a handler runs till it ends or waits - no other
+  actor's handler comes between two of its words. ClankForth's checker still warns of a handler that writes a
+  plain `variable` and reads it back (a race where handlers are sliced): a module's scratch variable that a
+  handler's words use is declared `shared-variable name` - which says it has been looked at: nothing waits
+  between its writing and its reading. New code prefers locals or the actor's state.
 - **The order of loading**: ClankForth's prelude (built in), `scripts/base.fs` (OpenHuey's words for
   every script: `seconds`, 30 frames a second), then `game.fs`.
 - **Its warnings** (the scripts load with none): a file's word hiding one of a vocabulary it uses (`x hides

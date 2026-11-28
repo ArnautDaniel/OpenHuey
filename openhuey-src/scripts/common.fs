@@ -2,7 +2,7 @@
 IN: common
 USING: engine room-names ;
 
-variable seed  12345 seed !
+shared-variable seed  12345 seed !
 
 : random ( n -- r )   \ (0 .. n-1) (a plain linear generator; the original's gRandom: later, if the odds must match)
     seed @ 1103515245 * 12345 + $7FFFFFFF and dup seed !  16 rshift swap mod ;

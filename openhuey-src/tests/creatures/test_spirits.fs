@@ -3,7 +3,7 @@
 \ hanging about her while she hides, following her out, kept in the progress. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/creatures/test_spirits.fs
 IN: test-spirits
-USING: tester engine game-state actors messages room-names flag-names facts paths saves game fiona.state creatures creatures.trip creatures.state creatures.spirit debug ;
+USING: tester engine game-state actors messages room-names flag-names facts paths saves game fiona.state creatures creatures.trip creatures.state creatures.spirit debug frames ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room-actor ( xt -- )  room-actor enter  execute  leave-actor ;

@@ -1,7 +1,7 @@
 \ The summoner (docs/subsystems/summoner.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/summoner/test_summoner.fs
 IN: test-summoner
-USING: tester engine game-state actors messages room-names game facts flag-names doors stalker.state summoner debug ;
+USING: tester engine game-state actors messages room-names game facts flag-names doors stalker.state summoner debug frames ;
 
 : his ( xt -- x )  game:debilitas enter  execute  leave-actor ;
 : its ( xt -- x )  game:summoner enter  execute  leave-actor ;

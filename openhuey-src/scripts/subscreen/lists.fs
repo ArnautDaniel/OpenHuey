@@ -46,7 +46,7 @@ USING: engine actors messages keys facts items items.names items.tables subscree
 
 \ ---- an item's actions: use, wear, throw away (its class's bits, in that order); 0 back ----
 0 constant go-back
-create acts 4 cells allot   variable #acts
+create acts 4 cells allot   shared-variable #acts
 : act+ ( act -- )  #acts @ cells acts + !  1 #acts +! ;
 : gather ( -- )   \ (those its class allows, then back)
     {: | bits :}  0 #acts !

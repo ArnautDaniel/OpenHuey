@@ -129,7 +129,7 @@ variable feed-step   \ (0 none yet, 1 he is ready, 2 she has put it down, 3 he i
     eats  hewie-full? if  1 hewie send mood!  then  3 feed-step !  hewie -1 look-at ;
 : flung ( -- )   \ (down: struck through - a yelp, flung)
     1 feed-step !  waits-for-her  yelp-sound common-bank hewie sound-by
-    hewie still-anim-move hewie.anims:flung-anim 0  0e 0e 0e 0e  move  hewie wait-anim
+    hewie still-anim-move hewie.anims:flung-anim 0  0e 0e 0e 0e  story.kit:move  hewie wait-anim
     hewie hewie.anims:down-anim 5 start-blend  5 frames  3 feed-step ! ;
 : tri-free? ( id -- flag )   \ (a floor one may lie on: no step, no doorway)
     dup here? 0= if  drop false exit  then  dup body-tri dup 0< if  2drop false exit  then

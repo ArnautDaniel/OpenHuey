@@ -87,7 +87,7 @@ $F constant search-var
 : search-odds ( -- pct )  search-var var@ 2 4 within if  25  else  0  then ;
 : finds-her ( -- )
     stalker hold  stalker wait-move  0 door-for-him  1 door-for-him
-    stalker run-move $FA -1  $FA tri-center 0e  move  stalker wait-move
+    stalker run-move $FA -1  $FA tri-center 0e  story.kit:move  stalker wait-move
     stalker $10 180 58.883e -8.841e walk-to
     debilitas? if
         -1 dragged !  yield  stalker use-motions

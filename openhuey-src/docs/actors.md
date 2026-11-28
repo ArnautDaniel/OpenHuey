@@ -41,7 +41,8 @@ void hactor_reset(void);
 
 They are the kernel's calls (`forth_actor_*`, actors.h) for the game's one Forth. The engine sends some messages
 itself. The first kinds are the kernel's: `tick`, `frame-end`, `spawned`, `killed`, `held-tick`, `actor-failed`,
-`start-over`, `died`. The subsystems' own are declared in `scripts/messages.fs` (`entered-room`, ...), each name
+`start-over`, `died` (the frame's three - `tick`, `frame-end`, `held-tick` - and `wait` are the `frames`
+vocabulary's: a script handling or using one says `USING: frames ;`). The subsystems' own are declared in `scripts/messages.fs` (`entered-room`, ...), each name
 also its kind's constant.
 
 **Ids and failures** (ClankForth 698c24e, its docs/hosts.md). An id is its actor's alone: the actor's slot (0 ..

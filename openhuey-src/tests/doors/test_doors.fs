@@ -1,7 +1,7 @@
 \ doors: locks, holding, letting go, noise (docs/subsystems/doors.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/doors/test_doors.fs
 IN: test-doors
-USING: tester engine game-state actors messages room-names game debug ;
+USING: tester engine game-state actors messages room-names game debug frames ;
 
 \ ---- a user of doors, and a listener ----
 state: user-state  cell field dummy  end-state

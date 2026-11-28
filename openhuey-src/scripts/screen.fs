@@ -4,7 +4,7 @@
 \ for the kind in the slot $FA: D_003D6A40), each frame a step (0x5D: ScreenFade_Step), which also
 \ sets the panic's overlay level and tells it a fade's frame is on (Events_ScenePlaying).
 IN: screen
-USING: engine actors messages ;
+USING: engine actors messages frames ;
 
 1 constant fade-layer   \ (the UI layers: 0 the movie, 1 the fade, 2 the message window)
 

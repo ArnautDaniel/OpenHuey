@@ -246,9 +246,9 @@ own: stalker-gone             \ he has run out (the tutorial's end)
     repeat ;
 : runs-off ( -- )   \ (bitten, the stalker flees by the west door)
     stalker hold  stalker wait-move  stalker fiona look-at
-    stalker walk-anim-move fleeing-anim -1  $C4 tri-center 0e  move  stalker wait-move
+    stalker walk-anim-move fleeing-anim -1  $C4 tri-center 0e  story.kit:move  stalker wait-move
     0 exit-open? 0= if  stalker 0 open-door  then
-    stalker walk-anim-move fleeing-anim -1  $76 -17e -83e floor-at  180 deg>yaw  move  stalker wait-move
+    stalker walk-anim-move fleeing-anim -1  $76 -17e -83e floor-at  180 deg>yaw  story.kit:move  stalker wait-move
     -1 stalker-gone ! ;
 : hewie-saved ( -- )
     15 screen:to-black-2 with-music or fade

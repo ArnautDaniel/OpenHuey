@@ -3,7 +3,7 @@
 \ once the next room is in, it ends, then goes. The places: story/places/*.fs (story/places.fs
 \ lists them), written in the kit (story/kit.fs). A room with no place has no actor.
 IN: story
-USING: engine actors messages story.base story.kit story.common story.places ;
+USING: engine actors messages story.base story.kit story.common story.places frames ;
 
 state: story-state
   cell field current       \ the played room's actor (-1: none)

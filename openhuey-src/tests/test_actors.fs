@@ -1,6 +1,6 @@
 \ the actor kernel: messages, behaviours, state, delivery order, safety
 IN: test-actors
-USING: tester actors ;
+USING: tester actors frames ;
 
 message ping ( n -- )
 message pong ( n -- )

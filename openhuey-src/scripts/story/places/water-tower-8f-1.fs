@@ -154,7 +154,7 @@ create out-tris  $33 , $38 , $4C ,   \ (his way out of each: where his leap land
     hewie hold  hewie wait-move  hewie-bark  hewie wait-move  hewie-to-hole
     hewie true aside  hewie true noclip  true hole-way  hewie-into-hole
     $80808080 $808080 $10000000 negate hewie-fades  hewie-in-it  hewie false noclip
-    hewie still-anim-move hewie-walk-anim 0  0e 0e 0e 0e  move
+    hewie still-anim-move hewie-walk-anim 0  0e 0e 0e 0e  story.kit:move
     $808080 $80808080 $10000000 hewie-fades
     hewie hewie.anims:stand-anim 8 start-blend  8 frames
     hewie hewie.anims:lie-down-anim start-anim  hewie wait-anim  hewie hewie.anims:lie-anim 10 start-blend  10 frames

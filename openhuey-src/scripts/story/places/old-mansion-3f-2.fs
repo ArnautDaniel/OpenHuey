@@ -88,10 +88,10 @@ $187 constant far-tri   $11F constant near-tri   $195 constant back-tri   $30 co
 : hewie-moved? ( -- flag )  hewie person-of dup 0< if  drop true exit  then  cells move-done + @ 0<> ;
 : runs-to ( tri -- )   \ (barking, off along the plates)
     {: t :}  hewie-bark  hewie wait-move  0 keeps-hewie-off floor-off
-    hewie run-move t $204  t tri-center 0e  move ;
+    hewie run-move t $204  t tri-center 0e  story.kit:move ;
 : along ( o -- done? )   \ (till he gets there, or is asked otherwise)
     begin  order @ over <> if  drop false exit  then  hewie-moved? if  drop true exit  then  yield  again ;
-: halted ( -- )  hewie idle-step-move 0 -1  0e 0e 0e 0e  move  hewie wait-move ;
+: halted ( -- )  hewie idle-step-move 0 -1  0e 0e 0e 0e  story.kit:move  hewie wait-move ;
 : to-end ( tri -- )
     runs-to  order @ along if  0 keeps-hewie-off floor-on  0 order !  else  halted  then ;
 : to-her-tri ( -- )

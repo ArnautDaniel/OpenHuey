@@ -37,7 +37,7 @@ free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-s
 game:debilitas send stalker-out  5 run-frames
 omb1-3-flag1 story-flag-set  omb1-3-flag2 story-flag-clear  omb1-3-flag3 story-flag-clear  got-venus-key story-flag-clear  room-afresh
 testing a plate stood on: pressed in
-[: fiona $89 0 place-on-tri ;] in-place  20 run-frames
+[: story.kit:fiona $89 0 place-on-tri ;] in-place  20 run-frames
 T{ [: plates-on @  s" fumi0" place-y object@ -0.7e ~= ;] in-place -> 1 -1 }T
 testing two at once put out a flame; side by side, all lit again
 T{ [: 6 plates-on !  flames-puzzle  flames-out @ ;] in-place -> 1 }T

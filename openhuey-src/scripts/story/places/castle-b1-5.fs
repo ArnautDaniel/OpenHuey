@@ -43,7 +43,7 @@ $1D constant waits-act   $29 constant waits-sub   \ (his wait there, after: the 
     2 frames  cb1-5-flag1 fact? 0=  0 hewie-came-by? and if  tense  then ;
 : leads-on ( -- )   \ (a bark, there at a run, turned to her - then his wait)
     hewie hold  hewie wait-move  hewie-bark  hewie wait-move
-    hewie run-move guide-tri @ -1  guide-tri @ tri-center 0e  move  hewie wait-move
+    hewie run-move guide-tri @ -1  guide-tri @ tri-center 0e  story.kit:move  hewie wait-move
     hewie fiona body-pos fswap fdrop turn-to-xz  hewie let-go  waits-act waits-sub hewie-do ;
 create ways-on  -80 , $A7 ,   10 , $AB ,   110 , $9B ,   \ (the point x - z 0 - she faces, his triangle there)
 : off-by ( F: x bx bz -- d )  {: F: x bx bz :}  bx x f- fdup f*  bz fdup f* f+ fsqrt ;   \ ((bx, bz) from (x, 0))

@@ -3,7 +3,7 @@
 \ never a hang (core/mathx.h angle_near, time_near). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/engine/test_limits.fs
 IN: test-limits
-USING: tester engine actors game debug ;
+USING: tester engine actors game debug frames ;
 
 : inf ( F: -- x )  1e 0e f/ ;
 : within-turn? ( F: a -- flag )  fabs 3.1416e f<= ;

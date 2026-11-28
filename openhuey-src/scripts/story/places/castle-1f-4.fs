@@ -229,7 +229,7 @@ defer the-trap ( -- )
     fiona hold  stalkers-stay state!  fiona true aside  at-the-slot
     reach-sound room-bank fiona sound-by  key-in-slot-part show-part  30 frames
     unlock-sound common-bank fiona sound-by  slot-door unlock
-    fiona reach-back-anim start-anim  fiona look-point-move 0 -1  130e -20e 170e 0e move  yield
+    fiona reach-back-anim start-anim  fiona look-point-move 0 -1  130e -20e 170e 0e story.kit:move  yield
     60 frames  fiona -1 look-at  yield  fiona wait-anim  stalkers-stay state-off ;
 : reforge ( -- )  fiona hold  at-the-slot  16 frames  fiona reach-back-anim play  reforge-msg say ;   \ (act16)
 : wrong-word ( -- )   \ (act17)

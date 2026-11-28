@@ -4,7 +4,7 @@
 \ it vanishes in a burst of light and she falls; its time out first, it fades away. Its look -
 \ bobbing, the trail, the burst - is the engine's (`spirit-new`: game/particles.c).
 IN: creatures.spirit
-USING: engine game-state actors messages common facts flag-names paths vectors creatures.trip creatures.state creatures.her floor-flags ;
+USING: engine game-state actors messages common facts flag-names paths vectors creatures.trip creatures.state creatures.her floor-flags frames ;
 
 $8B constant burst-sound   $8C constant fade-sound   \ (its sounds: bank 5)
 $80 constant vanish-noise   \ (a blue one's going: how loud, in its room)

@@ -8,12 +8,12 @@ IN: languages
 USING: engine keys ps2-screen ;
 
 5 constant #languages   \ (the engine's order: 0 English, 1 French, 2 German, 3 Italian, 4 Spanish)
-variable at   \ the language under the cursor
+shared-variable at   \ the language under the cursor
 
 : languages? ( -- flag )  1 language-present? ;   \ (the European disc's: all of them, or none)
 
 \ ---- kept: user/language.fs, read at start-up (not by a test: they run in English) ----
-create file-name 300 allot   variable file-len
+create file-name 300 allot   shared-variable file-len
 : language-file ( -- addr len )
     user-dir dup file-len !  file-name swap move
     s" language.fs" file-name file-len @ + swap dup file-len +! move
@@ -51,7 +51,7 @@ $30 constant art-group   \ (the texture cache's group: free, above the ending's 
 
 \ the keys' line, with the pad's own glyphs (the game's font: $C1 triangle, $C3 cross)
 $C1 constant triangle-glyph   $C3 constant cross-glyph
-create footer-text 64 allot   variable footer-n
+create footer-text 64 allot   shared-variable footer-n
 : +footer ( addr len -- )  footer-text footer-n @ + swap dup footer-n +! move ;
 : +glyph ( c -- )  footer-text footer-n @ + c!  1 footer-n +! ;
 : footer ( -- addr len )

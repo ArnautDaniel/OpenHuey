@@ -159,7 +159,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
 : fetches ( -- )
     hewie hold  0 fetch-step !  ['] her-flowers start drop
     begin  fetch-step @ 1 < while  yield  repeat
-    hewie-bark  hewie wait-move  hewie run-move $1DF -1  $1DF tri-center 0e  move  hewie wait-move
+    hewie-bark  hewie wait-move  hewie run-move $1DF -1  $1DF tri-center 0e  story.kit:move  hewie wait-move
     hewie hand-over-anim play  2 fetch-step !
     begin  fetch-step @ 3 < while  yield  repeat  hewie false aside  hewie let-go ;
 : sits-at-gap ( -- )   \ (barking, to the gap, through it; sitting there till she sends him on or calls him)
@@ -227,7 +227,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
 : hides ( -- )
     stalkers-stay state!  0 came-while-hidden !  0 searched !
     fiona true aside  fiona her-hide-motions motions-for  fiona wait-move  fiona -1 look-at  yield  fiona use-motions
-    fiona walk-anim-move 4 hid-motion 5  $132 240e -17.59e floor-at  0 deg>yaw  move  fiona wait-move
+    fiona walk-anim-move 4 hid-motion 5  $132 240e -17.59e floor-at  0 deg>yaw  story.kit:move  fiona wait-move
     fiona true noclip  slide-sound common-bank fiona sound-by  fiona 5 hid-motion 10 start-blend8  fiona wait-anim
     fiona 1 hid-motion 10 start-blend  fiona false noclip
     bark-scene @ 0= if  stalkers-stay state-off  then
@@ -279,7 +279,7 @@ create holes  $38B , $1B9 , $38C , $38D , $386 , $38E ,   \ (things lying about 
     stalker hold  -1 his-shove !  stalker wait-move  stalker his-shove-motions motions-for
     stalker $11 180 151.535e -15.151e walk-to
     0 49 153e -3.7e -51e 148e -4e -51e shoves
-    stalker 0 0 camera-set  stalker stand-anim 5 play-blend  stalker false noclip
+    stalker 0 0 camera-set  stalker stalker.anims:stand-anim 5 play-blend  stalker false noclip
     0 his-shove !  0 searched !  -1 his-shove-done ! ;
 : shoves-far ( -- )
     stalker hold  -1 his-far-shove !  stalker wait-move  stalker his-shove-motions motions-for

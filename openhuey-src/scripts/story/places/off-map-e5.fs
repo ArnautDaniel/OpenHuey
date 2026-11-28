@@ -55,7 +55,7 @@ $2E constant run-kind-var   0 constant her-motions   0 constant curtain-sound   
 : odds ( -- pct )  search-var var@ 2 4 within if  25  else  0  then ;
 : finds-her ( -- )
     stalker hold  stalker wait-move  0 door-for-him  1 door-for-him
-    stalker run-move $FA -1  $FA tri-center 0e  move  stalker wait-move
+    stalker run-move $FA -1  $FA tri-center 0e  story.kit:move  stalker wait-move
     $10 180 58.883e -8.841e run-finds-her ;
 : stalker-came ( -- )  came-on-her? if  odds search-var ['] finds-her run-searches  then ;
 

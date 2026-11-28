@@ -48,7 +48,7 @@ fvariable ax  fvariable ay  fvariable az  fvariable bx  fvariable bz   \ (a gate
 : across ( area F: d -- )   \ (her put d off the gate's middle, then as far the other side: across it)
     {: a F: d :}  a gate!  0 d gate-side put  0 d fnegate gate-side put ;
 : hewie-to-side ( F: d -- )   \ (Hewie put on her triangle d off the gate's middle - she put there first)
-    0 gate-side put  [: her-tri @ ;] her  [: hewie swap 0 place-on-tri ;] in-place  10 run-frames ;
+    0 gate-side put  [: her-tri @ ;] her  [: story.kit:hewie swap 0 place-on-tri ;] in-place  10 run-frames ;
 : hewie-across ( area F: d -- )  {: a F: d :}  a gate!  d hewie-to-side  d fnegate hewie-to-side ;
 : lever-done ( -- flag )  [: turning @ 0= ;] in-place  doing-busy? 0= and ;
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-set

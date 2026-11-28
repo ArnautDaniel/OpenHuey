@@ -3,7 +3,7 @@
 \ back, and once it is over the mod's has it again; F4 gives it back to the game. Run with the
 \ mod on (CMakeLists.txt).
 IN: test-first-person
-USING: tester engine game-state actors messages keys debug game vectors ;
+USING: tester engine game-state actors messages keys debug game vectors frames ;
 
 : fi ( -- id )  s" fiona" actor-named ;
 : cam ( -- addr )  engine:camera ;

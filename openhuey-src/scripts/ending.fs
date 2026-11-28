@@ -12,7 +12,7 @@
 \ The record is kept as the game goes: the time played here, the rest by their owners (facts.fs:
 \ panics, knock-outs; Hewie's counters, hewie/states.fs).
 IN: ending
-USING: engine game-state actors messages keys facts flag-names ps2-screen ;
+USING: engine game-state actors messages keys facts flag-names ps2-screen frames ;
 
 13 constant ending-layer   14 constant words-layer   \ (over everything: the picture, the words)
 $2E constant picture-group   \ (the texture cache's group for the ending's picture)
@@ -227,7 +227,7 @@ enum: text-colour  white red yellow ;
     track-star type? speed-walker type? or if  yellow exit  then  late-bloomer type? if  red  else  white  then ;
 : dog-colour ( -- c )  dog-beater type? if  red  else  top-breeder type? dog-lover type? or hl  then ;
 
-create time-buf 16 allot   variable time-n
+create time-buf 16 allot   shared-variable time-n
 : put ( c -- )  time-buf time-n @ + c!  1 time-n +! ;
 : two ( n -- )  dup 10 / [char] 0 + put  10 mod [char] 0 + put ;
 : colon ( -- )  [char] : put ;

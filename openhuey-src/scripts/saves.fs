@@ -8,10 +8,10 @@
 \ was. This actor writes the progress, then asks the others (`write-save`) for their own lines -
 \ Fiona's, Hewie's - and closes it. So a save can be read, sent along, or edited by hand.
 IN: saves
-USING: engine game-state actors messages keys facts flag-names story.base ;
+USING: engine game-state actors messages keys facts flag-names story.base frames ;
 
 \ ---- the files ----
-create path-buf 256 allot   variable path-len
+create path-buf 256 allot   shared-variable path-len
 : path+ ( addr len -- )   \ added to the path being made
     {: a n :}  a  path-buf path-len @ +  n move  n path-len +! ;
 : in-user-dir ( name len -- addr len )   \ <user-dir>name
@@ -43,8 +43,8 @@ create slot-frames  #slots cells allot
     ." USING: saves ;" cr
     #slots 0 do  i slot-used? if  i . i slot-place@ . i slot-frames@ . ." slot-was" cr  then  loop
     end-file ;
-variable save-path-n   \ (the file being written or read: -1 the quick save, -2 one named: file-path)
-create file-path 256 allot   variable file-path-len
+shared-variable save-path-n   \ (the file being written or read: -1 the quick save, -2 one named: file-path)
+create file-path 256 allot   shared-variable file-path-len
 : save-path ( -- addr len )
     save-path-n @ -2 = if  file-path file-path-len @ exit  then
     save-path-n @ 0< if  quick-path  else  save-path-n @ slot-path  then ;

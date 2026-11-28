@@ -3,7 +3,7 @@
 \ sequences - the calm music's two parts, the chase, the panic - mixed by their volumes). The
 \ room's scripts ask; it plays them each frame.
 IN: music
-USING: engine game-state actors messages facts flag-names story-names story.strings ;
+USING: engine game-state actors messages facts flag-names story-names story.strings frames ;
 
 \ a value fading toward a goal by a step a frame (MusicDir's volumes and bends)
 begin-structure /fader  ffield: now  ffield: goal  ffield: by  end-structure

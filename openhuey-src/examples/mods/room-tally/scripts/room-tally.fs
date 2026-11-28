@@ -5,7 +5,7 @@
 \ keeps its own state and draws on the mods' layer - it never touches another actor's state.
 \ It answers a question too (rooms-seen?), as the game's actors do: by a message back.
 IN: room-tally
-USING: engine actors messages mods ;
+USING: engine actors messages mods frames ;
 
 message rooms-seen? ( -- )     \ asked: it answers the sender with rooms-seen
 message rooms-seen ( n -- )

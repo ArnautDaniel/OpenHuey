@@ -16,7 +16,7 @@
 \   variable $26 = 1, Hewie's $27 = 0), room $2A - whose entering script does the rest.
 \ Without a window (tests, screenshots) the game starts at once.
 IN: opening
-USING: engine game-state actors messages keys vectors room-names facts flag-names ps2-screen saves subscreen.art subscreen.saving mods.menu updater languages ;
+USING: engine game-state actors messages keys vectors room-names facts flag-names ps2-screen saves subscreen.art subscreen.saving mods.menu updater languages frames ;
 
 6 constant movie-layer   7 constant menu-layer   \ (over everything)
 
@@ -32,7 +32,7 @@ state: opening-state
   cell field titled      \ the title is up (its lights and Hewie to put away)
 end-state
 
-variable hard   \ the new game chosen is a hard one (the title's HARD MODE; new-game runs after the title has gone)
+shared-variable hard   \ the new game chosen is a hard one (the title's HARD MODE; new-game runs after the title has gone)
 \ the story's variables for the costumes (Fiona's, Hewie's): 1 her slip
 : costume-vars! ( fiona hewie -- )  progress pr.vars $27 + c!  progress pr.vars $26 + c! ;
 : flag-on ( n -- )  state-flag-set ;
@@ -91,7 +91,7 @@ create spot  -258e f, -10e f, 174e f,   \ (on the circle, between the scarecrows
 \ (LANGUAGE, OpenHuey's own: only with the European disc's languages - languages.fs)
 enum: menu-entry  e-new e-load e-options e-language e-hard e-extras e-mini e-mods e-update e-quit e-mod ;
 : cleared? ( -- flag )  0 resident-flag? ;
-create entries 16 cells allot   variable #entries
+create entries 16 cells allot   shared-variable #entries
 : +entry ( e -- )  #entries @ 16 < if  entries #entries @ cells + !  1 #entries +!  else  drop  then ;
 
 \ ---- the hook (docs/library-and-mods.md): mods' own entries, after the game's (before MODS, UPDATE and

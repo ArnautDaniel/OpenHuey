@@ -5,7 +5,7 @@
 \ The places themselves: story/places/*.fs. A room without one still runs its converted
 \ scripts (story/room.fs).
 IN: story.kit
-USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names effects hewie-names hewie.anims floor-flags keys mods ;
+USING: engine game-state actors messages common vectors facts flag-names story-names stalker-names room-names effects hewie-names hewie.anims floor-flags keys mods frames ;
 
 \ ---- the characters a place directs: Fiona, Hewie, the stalker in the game ----
 3 constant #people

@@ -14,7 +14,7 @@ enum: update-state-n  not-begun looking downloading unpacking installing current
 : open ( -- )  busy? 0= if  update-start  then ;
 
 \ ---- drawn on the caller's layer ----
-create line-text 160 allot   variable line-n
+create line-text 160 allot   shared-variable line-n
 : +line ( addr len -- )  line-n @ over + 160 > if  2drop exit  then
     line-text line-n @ + swap dup line-n +! move ;
 : mb ( bytes -- addr len )  20 rshift n>s ;

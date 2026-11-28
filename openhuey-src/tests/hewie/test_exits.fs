@@ -3,7 +3,7 @@
 \ on guard, barking. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/hewie/test_exits.fs
 IN: test-exits
-USING: tester engine game-state actors messages common facts room-names game debug flag-names hewie.state hewie.body hewie.model hewie.states hewie.offscreen hewie.exits fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.bitten ;
+USING: tester engine game-state actors messages common facts room-names game debug flag-names hewie.state hewie.body hewie.model hewie.states hewie.offscreen hewie.exits fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.chase stalker.bitten frames ;
 
 : his@ ( xt -- x )  game:hewie enter  execute  leave-actor ;
 : his! ( xt -- )  game:hewie enter  execute  leave-actor ;

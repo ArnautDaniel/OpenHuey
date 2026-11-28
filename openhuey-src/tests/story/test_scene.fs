@@ -2,7 +2,7 @@
 \ pause (docs/subsystems/story.md, screen.md, music.md, pause.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_scene.fs
 IN: test-scene
-USING: tester engine game-state actors messages keys room-names game debug flag-names story-names fiona.state facts screen music pause ;
+USING: tester engine game-state actors messages keys room-names game debug flag-names story-names fiona.state facts screen music pause frames ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;

@@ -1,7 +1,7 @@
 \ danger.fs - calm, followed, chased (docs/subsystems/danger.md; the original's game mode,
 \ SceneGame_Danger). Each frame it collects signals, and at the frame's end decides.
 IN: danger
-USING: engine actors messages facts flag-names ;
+USING: engine actors messages facts flag-names frames ;
 
 state: danger-state
   cell field level        \ calm, followed, chased

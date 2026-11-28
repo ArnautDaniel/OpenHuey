@@ -78,7 +78,7 @@ enum: slot-machine  choosing-medal no-medals rolling came-out ;
     dup 4 >= if  drop 2 exit  then  0> if  3  else  -1  then ;
 : result-item ( k -- id )  result @ 9 * + cells results + @ ;   \ (0..7 its items, 8 its amounts' row)
 : haul ( -- n )  size dup 0< if  drop 0 exit  then  8 result-item 4 * + cells amounts + @ ;
-create candidates 8 cells allot   variable #candidates
+create candidates 8 cells allot   shared-variable #candidates
 : forgeable? ( id -- flag )   \ (-1 none; the boots, earrings and chokers only once)
     dup 0< if  drop false exit  then  dup $80 $90 within if  items-of 0=  else  drop true  then ;
 : gather-candidates ( -- )

@@ -13,7 +13,7 @@ enum: char-slot#  fiona-cs hewie-cs stalker-cs first-figure-cs ;
 6 constant #chars
 \ the stalker's slot: the stalker actor partner-load brought in (the original's progress
 \ character table), -1 none; the kind it was loaded as (its +0x153C)
-variable slot2   -1 slot2 !
+shared-variable slot2   -1 slot2 !
 variable slot2-kind   -1 slot2-kind !
 strings: figure-actor-name  3 cast3 cast4 cast5 ;   \ (by slot)
 : cast-actor ( slot -- id | -1 )   \ the event characters' figures (cast.fs), by their slot
@@ -146,7 +146,7 @@ $109 constant maze-way-out   $10A constant maze-way-out-2
 \ drawn for each frame it is asked for (the place's frame end draws it) ----
 16 constant fill-layer   \ (the UI layers: ... 15 the cursor below; 16 this)
 15 constant cursor-layer   \ (the aiming cursor's: water-tower-8f-1)
-variable fill-alpha
+shared-variable fill-alpha
 : screen-fill ( a -- )  fill-alpha ! ;
 : fill-frame ( -- )   \ (each frame's end)
     fill-layer ui-clear

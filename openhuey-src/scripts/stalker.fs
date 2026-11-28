@@ -3,7 +3,7 @@
 \ tables, his numbers, his model; in the house - placed, standing, growling, telling the danger
 \ he is about; searching the room (stalker/search.fs: his modes, his route of stops, walking).
 IN: stalker
-USING: engine game-state actors messages common facts flag-names room-names paths vectors hewie-names stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.leads stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 stalker.ladder stalker.head stalker.names stalker.anims stalker.sounds stalker.scripted floor-flags ;
+USING: engine game-state actors messages common facts flag-names room-names paths vectors hewie-names stalker-names stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.doorway stalker.tables stalker.attack stalker.chase stalker.leads stalker.pursue stalker.grab stalker.struck stalker.bitten stalker.riccardo stalker.lorenzo2 stalker.ladder stalker.head stalker.names stalker.anims stalker.sounds stalker.scripted floor-flags frames ;
 
 : him ( -- a )  my-model @ actor ;   \ (his model's fields)
 : played? ( -- flag )  in-game @ if  my-room room-id =  else  false  then ;   \ (Npc_InPlayedRoom)

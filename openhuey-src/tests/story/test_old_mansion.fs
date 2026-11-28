@@ -3,7 +3,7 @@
 \ now (tests/places/). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/story/test_old_mansion.fs
 IN: test-old-mansion
-USING: tester engine game-state actors messages common room-names game debug ;
+USING: tester engine game-state actors messages common room-names game debug frames ;
 
 free-play  20 run-frames
 

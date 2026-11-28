@@ -103,7 +103,7 @@ create runs  $D8 , 89 ,  4 , 89 ,  $6A , -44 ,  $3F , -151 ,  $1B , 111 ,  $FA ,
 : runs-to ( -- )   \ (an activity: a bark, over to it, settled)
     hewie hold  hewie wait-move  hewie-bark  hewie wait-move
     gear @ {: k :}  hewie  k runs pair@  hewie-walk-anim walk-move  k plate@  go-to
-    hewie still-anim-move 0 10  0e 0e 0e 0e  move  10 frames ;
+    hewie still-anim-move 0 10  0e 0e 0e 0e  story.kit:move  10 frames ;
 : sends-him ( -- )   \ (she told him to go there, facing the plate to light next - not standing on it, but for
     \ the middle; not while he's held: act01 started with mode 0)
     started-now @ go-there-cmd = 0= if  exit  then

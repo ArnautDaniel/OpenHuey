@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(hga VERSION 0.3.4 LANGUAGES C)   # the version: shown with the debug mode (F2)
+project(hga VERSION 0.4.0 LANGUAGES C)   # the version: shown with the debug mode (F2)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -32,6 +32,10 @@ enable_testing()
 set(CLANKFORTH_TESTS ON CACHE BOOL "the language's tests (ctest)")
 # (no TLS: the game gives its scripts no `net`, and OpenSSL would be one more library for the releases)
 set(CLANKFORTH_TLS OFF CACHE BOOL "TLS on net's sockets (OpenHuey: none)" FORCE)
+# (nor zlib - `compression` is ClankForth's own code, nothing more for a release to link or ship - nor the `c`
+# vocabulary: C libraries called from scripts, which the game never gives them, a mod least of all)
+set(CLANKFORTH_ZLIB OFF CACHE BOOL "compression by zlib (OpenHuey: ClankForth's own code)" FORCE)
+set(CLANKFORTH_FOREIGN OFF CACHE BOOL "the c vocabulary (OpenHuey: none)" FORCE)
 add_subdirectory(external/clankforth)
 add_library(forth ALIAS clankforth)
 

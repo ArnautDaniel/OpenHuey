@@ -9,7 +9,7 @@
 \ bait feeds Hewie (`fed`); a sketch marks its map as held. Each frame the counters count (the
 \ Fresh Flowers wither after 9000 frames) and the timed effects run down.
 IN: items
-USING: engine game-state actors messages common facts flag-names story-names room-names hewie-names items.tables items.names ;
+USING: engine game-state actors messages common facts flag-names story-names room-names hewie-names items.tables items.names frames ;
 
 \ ==== the inventory (facts: anyone may read these) ====
 \ a place: the item's id (-1 empty), how many (a stack: 1..99; a counter: its frames), 8 letters

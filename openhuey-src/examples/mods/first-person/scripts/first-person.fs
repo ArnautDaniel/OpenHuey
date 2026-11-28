@@ -7,7 +7,7 @@
 \ The sample of the mods' camera: an actor of its own; it reads the game (her body) and moves
 \ only its own camera.
 IN: first-person
-USING: engine actors messages vectors ;
+USING: engine actors messages vectors frames ;
 
 0.0025e fconstant mouse-turn     \ radians a pixel of the mouse
 0.04e fconstant key-turn         \ radians a frame an arrow key held

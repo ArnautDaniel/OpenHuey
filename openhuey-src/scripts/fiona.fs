@@ -2,7 +2,7 @@
 \ controls, standing, walking, running and turning, her footsteps, going out by exits; F4: struck
 \ and caught (fiona/hurt.fs).
 IN: fiona
-USING: engine vectors game-state facts actors messages common paths doors saves fiona.companion fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend fiona.voice fiona.letgo flag-names ;
+USING: engine vectors game-state facts actors messages common paths doors saves fiona.companion fiona.state fiona.anims fiona.model fiona.controls fiona.moving fiona.spots fiona.doors fiona.slam fiona.ladder fiona.push fiona.fear fiona.looks fiona.commands fiona.moves fiona.hurt fiona.seized fiona.defend fiona.voice fiona.letgo flag-names frames ;
 
 
 \ ---- her own request here, for the story's prompt (Progress_CharRequests): an exit's door area she

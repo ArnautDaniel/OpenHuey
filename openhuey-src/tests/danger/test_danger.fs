@@ -1,7 +1,7 @@
 \ danger: calm, followed, chased (docs/subsystems/danger.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/danger/test_danger.fs
 IN: test-danger
-USING: tester engine game-state actors messages room-names facts game fiona.state flag-names debug ;
+USING: tester engine game-state actors messages room-names facts game fiona.state flag-names debug frames ;
 
 : flag ( n on -- )   \ (a state flag set by hand: the story isn't built yet)
     over 5 rshift 4 * progress pr.state + >r  swap 31 and 1 swap lshift

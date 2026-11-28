@@ -2,7 +2,7 @@
 \ side (docs/subsystems/hewie.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/hewie/test_commands.fs
 IN: test-commands
-USING: tester engine game-state actors messages common facts room-names game hewie.commands hewie.state hewie.body hewie.model hewie.states fiona.state fiona.model flag-names debug ;
+USING: tester engine game-state actors messages common facts room-names game hewie.commands hewie.state hewie.body hewie.model hewie.states fiona.state fiona.model flag-names debug frames ;
 
 : his@ ( xt -- x )  hewie enter  execute  leave-actor ;
 : his! ( xt -- )  hewie enter  execute  leave-actor ;

@@ -7,7 +7,7 @@
 \   back, Cancel skips - the screen darkens to black and movie-skipped is set for the scene's
 \   script, which ends the scene and closes it (pause-wanted).
 IN: pause
-USING: engine game-state actors messages keys facts flag-names ps2-screen ;
+USING: engine game-state actors messages keys facts flag-names ps2-screen frames ;
 
 5 constant pause-layer   \ (the UI layers: 0 the movie, 1 the fade, 2 the window, 3 unused, 4 subtitles, 5 this)
 
@@ -116,7 +116,7 @@ end-state
 : dim ( -- a )  darkening? if  63e 192e t f@ f* f+  else  63e t f@ f*  then  f>s 2* 255 min ;
 : alpha ( -- a )   \ the words' (fading out as it darkens)
     darkening? if  1e t f@ f-  else  t f@  then  255e f* f>s ;
-variable pen
+shared-variable pen
 $D8D0C400 constant plain-colour   \ (the font's own, palette 0: its white tinted as the window's)
 : text-of ( msg -- addr len )  message-layout drop  0 0 message-line ;
 : width ( msg -- w )   \ (Task_MessageWidth: in the PS2's units)

@@ -13,7 +13,7 @@
 \ - the stone (8): after 15 s a noise that draws the stalker, and gone.
 \ The kinds 0, 2, 3, 5, 7, 8 are kept in the save; ten of a kind at most (the oldest goes).
 IN: things
-USING: engine game-state actors messages common vectors facts flag-names items items.names effects fiona.slam stalker-names ;
+USING: engine game-state actors messages common vectors facts flag-names items items.names effects fiona.slam stalker-names frames ;
 
 \ the kinds (her items' throwables, in their order; then the story's own two)
 enum: thing-kind  ball-thing antimony-thing magnesia-thing doll-thing refined-antimony-thing
@@ -107,7 +107,7 @@ $8000 constant startled   \ (a blow's flag: he flinches)
 : reach-homunculi ( -- )
     [: dup it @  kind reach s>f 10e thing-reaches? if  dup body-at at vec-heading blow-homunculus  else  drop  then ;]
     each-homunculus ;
-variable trodden
+shared-variable trodden
 : tread-homunculi ( -- any? )
     false trodden !
     [: dup 0 treads? if  0e blow-homunculus  true trodden !  else  drop  then ;] each-homunculus  trodden @ ;

@@ -8,7 +8,7 @@
 \ it (a flame, a flickering sprite, butterflies); a scene effect ends by itself, or when the
 \ next room loads (the original's EffectMgr: specks, a splash, dust, shards).
 IN: effects
-USING: engine actors messages ;
+USING: engine actors messages frames ;
 
 state: fx-state
   cell field particles    \ the engine's particle system (-1 none)

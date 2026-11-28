@@ -103,7 +103,8 @@ sequence for the panic's beat - the strongest felt; off while paused or by the o
 - Fields are declared with the actor's state (`state: ... end-state`) and named for what they
   mean. **Anything that lasts beyond one message is a field of the actor that owns it.** A
   module `variable` / `fvariable` is only scratch inside one word (Forth's locals). That's safe
-  because handlers never interrupt one another. What another subsystem decides (the danger
+  because handlers never interrupt one another (no slices: docs/forth.md). One a handler writes and reads
+  back is declared `shared-variable` (ClankForth's checker warns of a plain one). What another subsystem decides (the danger
   level, the panic) reaches an actor as a message, and it keeps its own copy in a field.
 - **Names, not numbers.** Rooms are named (`scripts/room-names.fs`: `front-garden-2`, not
   `$13`). The names are placeholders (the pause map's area and the room's place on its page)

@@ -78,7 +78,7 @@ the-crate crate-group frees-floor  the-crate $10A noise-from  the-crate crate-so
     {: g on | keep :}  keeps-fiona-off keeps-pursuers-off or to keep
     on if  g solid-floor floor-off  g keep floor-on  else  g keep floor-off  g solid-floor floor-on  then ;
 : barks ( -- )   \ (he is taken from what he does: a bark first)
-    hewie hold  hewie wait-move  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move ;
+    hewie hold  hewie wait-move  hewie bark-move 0 0  0e 0e 0e 0e  story.kit:move  hewie wait-move ;
 : over-left ( tri face F: x z -- )   \ (to the wall's foot, then a leap over it)
     {: tri face F: x z :}  barks  hewie tri face -1 walk-path-move x z go-to
     hewie true aside  0 true path-floor  $155 35 -130e 1.5e 115e hewie-leap  hewie wait-move  0 false path-floor  hewie false aside ;

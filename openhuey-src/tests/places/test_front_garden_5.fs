@@ -36,7 +36,7 @@ create blow-pt 3 floats allot
 free-play  10 run-frames  0 game:fiona send costume
 testing a hung thing struck: away from her 12 degrees, settling to still
 room-afresh
-T{ [: hanger-a fiona sway-start ;] in-place  hanger-a swing-offset obj@ 12e deg>rad ~= -> -1 }T
+T{ [: hanger-a story.kit:fiona sway-start ;] in-place  hanger-a swing-offset obj@ 12e deg>rad ~= -> -1 }T
 : settles-in ( -- n )  [: 0  begin  1+  hanger-a hanging sway-step  over 500 > or  until ;] in-place ;
 T{ settles-in 500 <  hanger-a turn-x obj@ 0e ~= -> -1 -1 }T
 testing the chimes: at rest; her steps among them past 5 - swinging, the first ringing

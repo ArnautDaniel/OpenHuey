@@ -17,7 +17,7 @@ $18 constant base-group   $19 constant back-group   $27 constant picture-group
 0 constant by-alpha   1 constant subtracted   2 constant mixed   3 constant added
 
 \ ---- a picture: part of a cache texture, drawn at x y (screen units) ----
-variable at-x  variable at-y  variable size-w  variable size-h
+shared-variable at-x  shared-variable at-y  shared-variable size-w  shared-variable size-h
 : picture ( x y w h -- )  size-h !  size-w !  at-y !  at-x ! ;
 : blended-from ( group tex palette u v uw vh alpha blend -- )   \ (after `picture`: where it comes from)
     {: group tex palette u v uw vh alpha blend :}
@@ -38,7 +38,7 @@ variable at-x  variable at-y  variable size-w  variable size-h
     dup first-heading < if  exit  then   more-headings + ;
 
 \ a panel (a background piece) and a part (a piece of the menu's own art), by number
-variable piece
+shared-variable piece
 : column ( k -- n )  cells piece @ + @ ;
 : panel ( i alpha -- )   \ panels: texture, u, v, w, h, x, y
     {: i alpha :}  i /panel * panels + piece !
@@ -74,7 +74,7 @@ $BFBFBF constant glyph-grey   \ (the glyphs' vertex colour $60606060: three quar
     dup $80 and if  $3F and  dup 4 >= swap 7 < and if  by-alpha  else  subtracted  then  exit  then
     $40 and if  by-alpha  else  added  then ;
 : ink ( chosen? -- colour )  if  chosen-ink  else  menu-ink  then ;
-variable word-alpha   $80 word-alpha !   \ (the words' own alpha, 128 opaque: the galleries' bars fade theirs)
+shared-variable word-alpha   $80 word-alpha !   \ (the words' own alpha, 128 opaque: the galleries' bars fade theirs)
 : glyphs ( layer addr len x y colour scale -- )   \ at x y (window pixels), the alpha the menu's own
     {: layer addr len x y colour sc :}
     layer addr len x y  glyph-grey 8 lshift  word-alpha @ faded $FF and or  sc  colour $3F and  ui-text-in
@@ -82,7 +82,7 @@ variable word-alpha   $80 word-alpha !   \ (the words' own alpha, 128 opaque: th
 : inked-on ( layer addr len x y colour -- )  {: l addr len x y c :}  l addr len  x sx  y sy  c scale glyphs ;
 \ the page's words go on the words' layer - or, a box up over the page, on the art's: drawn before
 \ the box's shade they lie under it, as the original's page does under its Task_DrawBox
-variable page-words   word-layer page-words !
+shared-variable page-words   word-layer page-words !
 : inked ( addr len x y colour -- )  {: a n x y c :}  page-words @ a n x y c inked-on ;
 : text ( addr len x y chosen? -- )  ink inked ;   \ a line of the menu's at x y
 : centred ( addr len x y -- )   \ a line centred on x by its width (Text_LineWidth)
@@ -94,7 +94,7 @@ variable page-words   word-layer page-words !
 : blink ( -- a )  $80 frames @ 4 * $FF and - abs ;        \ the arrows' alpha
 
 \ ---- a few words of text built at a time ----
-create spell 128 allot   variable spelt
+create spell 128 allot   shared-variable spelt
 : spell-reset ( -- )  0 spelt ! ;
 : +spell ( addr len -- )  dup >r  spell spelt @ + swap move  r> spelt +! ;
 : spelled ( -- addr len )  spell spelt @ ;

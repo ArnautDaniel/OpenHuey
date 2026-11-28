@@ -5,7 +5,7 @@
 \ original's order (SceneGame's play frame: CamDirector_Ease first, then whom it follows and their
 \ setup, CamDirector_Track, CamDirector_Update) and takes the story's own shot of the one followed.
 IN: camera
-USING: engine actors messages common vectors ;
+USING: engine actors messages common vectors frames ;
 
 state: camera-state
   cell field held                     \ the game over: the room's next set, nobody followed, no setups taken

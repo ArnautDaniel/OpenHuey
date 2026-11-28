@@ -36,7 +36,7 @@ $16 constant dials-area   $17 constant wall-area   $28 constant came-sound   $72
         begin  dial-step  board-up @ while  yield  repeat
         text-gone  world-frozen state-off  shot-off
         looked-up @ if
-            16 frames  look-up-sound common-bank fiona sound-by  fiona look-point-move 0 0  318e 10e 80e 0e  move  yield
+            16 frames  look-up-sound common-bank fiona sound-by  fiona look-point-move 0 0  318e 10e 80e 0e  story.kit:move  yield
             60 frames  fiona -1 look-at  yield
         then
     then

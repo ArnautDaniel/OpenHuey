@@ -4,7 +4,7 @@
 \ when it gets close; struck it reels and gets up - with no strength left, or its time out, it
 \ leaves. It moves by its animations' root motion.
 IN: creatures.homunculus
-USING: engine game-state actors messages common facts flag-names paths vectors creatures.trip creatures.her floor-flags ;
+USING: engine game-state actors messages common facts flag-names paths vectors creatures.trip creatures.her floor-flags frames ;
 
 \ ---- its states (+0x69 the wanted one, +0x62 the one running): watching her, quiet or
 \ chattering; reeling from a blow; grabbing her; leaving; after her (the doors' 6 and 8:

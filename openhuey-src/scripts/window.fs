@@ -8,7 +8,7 @@
 \ typed (0x10). Closing, it tells whoever showed it, with the option chosen - and so as another
 \ message takes its place (Task_Open). Drawn on the retained UI layer.
 IN: window
-USING: engine actors messages keys ;
+USING: engine actors messages keys frames ;
 
 2 constant text-layer      \ (the UI layers: 0 the movie, 1 the fade, 2 the window)
 

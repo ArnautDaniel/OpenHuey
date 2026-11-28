@@ -5,7 +5,7 @@
 \ stalker) - docs/subsystems/hewie.md. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/hewie/test_alert.fs
 IN: test-alert
-USING: tester engine game-state actors messages common facts vectors room-names game debug flag-names stalker-names hewie-names hewie.state hewie.body hewie.anims hewie.model hewie.states hewie.offscreen hewie.fight hewie.mind ;
+USING: tester engine game-state actors messages common facts vectors room-names game debug flag-names stalker-names hewie-names hewie.state hewie.body hewie.anims hewie.model hewie.states hewie.offscreen hewie.fight hewie.mind frames ;
 
 : his@ ( xt -- x )  game:hewie enter  execute  leave-actor ;
 : his! ( xt -- )  game:hewie enter  execute  leave-actor ;

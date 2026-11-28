@@ -2,7 +2,7 @@
 \ src/game/pursuer.c Summoner_*, summon_via, summoner_take). The stalker in the story's slot 2
 \ tells it where he is each frame (`stalker-status`); at the frame's end it decides.
 IN: summoner
-USING: engine game-state actors messages common facts flag-names doors ;
+USING: engine game-state actors messages common facts flag-names doors frames ;
 
 \ how he was last taken: by the story or a wait, held off, beaten
 enum: taken-by  taken-by-story taken-held-off taken-beaten ;

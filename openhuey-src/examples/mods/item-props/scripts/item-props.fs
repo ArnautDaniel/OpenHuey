@@ -6,7 +6,7 @@
 \ medallion 39 ...), else library/data/PROPS/item.gltf - any glTF or .glb, Y up, one unit a game
 \ unit (Fiona stands about 15 tall). This sample has only the one: a small gold cube.
 IN: item-props
-USING: engine actors messages mods ;
+USING: engine actors messages mods frames ;
 
 32 constant #spots   \ (a place's effects: one item at each at most)
 0.02e fconstant turn-rate   \ (radians a tick)
@@ -17,7 +17,7 @@ state: props-state
 end-state
 
 : spot ( k -- addr )  cells shown + ;
-create path 64 allot  variable path-len
+create path 64 allot  shared-variable path-len
 : add ( addr len -- )  path path-len @ + swap  dup path-len +!  move ;
 : digits ( n -- )  dup 10 >= if  dup 10 / recurse  then  10 mod [char] 0 +  path path-len @ + c!  1 path-len +! ;
 : model ( item -- addr len )   \ its own model if the mod has one, else the one for all

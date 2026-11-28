@@ -2,7 +2,7 @@
 \ notices, his own decisions, his mode's behaviour (calm / wary / tense), what he does next by
 \ his trust (the weighted lists), and his body as it is shown (overlays, neck, feet, sounds).
 IN: hewie.mind
-USING: engine actors common facts paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.fetch hewie.exits hewie.steered flag-names floor-flags keys ;
+USING: engine actors common facts paths vectors messages hewie-names hewie.state hewie.body hewie.tables hewie.anims hewie.sounds hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.fetch hewie.exits hewie.steered flag-names floor-flags keys frames ;
 
 \ report_fiona_near: how near she is, for the story (1 within 20, 2 within 50, 3 further)
 : report-near ( -- )

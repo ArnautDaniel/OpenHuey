@@ -15,7 +15,7 @@ USING: engine keys subscreen.state ;
 : prev-page? ( -- flag )  l1 button-pressed? ;
 
 \ the arrows: pressed, or held (the pad's repeat)
-variable arrows
+shared-variable arrows
 : repeats? ( frames -- flag )   \ held that long: pressed on its first frame, then the 13th, 15th, 17th...
     dup 1 = if  drop true exit  then
     dup 13 < if  drop false exit  then

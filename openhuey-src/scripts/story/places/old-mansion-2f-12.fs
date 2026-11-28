@@ -67,7 +67,7 @@ other-vase $80303030 0 $C shard-look  other-vase 0.812e 0.687e 0.187e 0.312e sha
 : drains ( -- )   \ (the dials right: the doors unlocked, the water drained)
     right-sound room-bank 318e 12e -80e sound-there  1 $FF $D2 rumble-pad
     fiona rest-anim play  fiona stand-anim start-anim  50 frames
-    fiona look-point-move 0 0  318e 10e -80e 0e  move  yield
+    fiona look-point-move 0 0  318e 10e -80e 0e  story.kit:move  yield
     unlock-sound common-bank 318e 12e -80e sound-there  far-door unlock  waterway-door unlock  om2f-12-flag1 fact!
     30 frames  unlocked-sound room-bank fiona sound-by  90 frames  fiona -1 look-at  yield ;
 : the-pipe ( -- )

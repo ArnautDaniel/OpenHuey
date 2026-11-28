@@ -1,7 +1,7 @@
 \ The camera (docs/subsystems/camera.md; src/game/camera.c CamDirector_*, Progress_Camera*). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/camera/test_camera.fs
 IN: test-camera
-USING: tester engine game-state actors messages room-names game fiona.state debug flag-names ;
+USING: tester engine game-state actors messages room-names game fiona.state debug flag-names frames ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;

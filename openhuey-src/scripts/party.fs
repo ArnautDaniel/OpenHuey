@@ -6,7 +6,7 @@
 \ Hewie is brought in, Fiona put in her regular clothes for it. The story is stopped meanwhile;
 \ `party-over` puts the golems away, her own costume back on, and lets Fiona and Hewie go.
 IN: party
-USING: engine game-state actors messages common vectors ;
+USING: engine game-state actors messages common vectors frames ;
 
 \ ---- what they do (edit these lists: each played through, then round again) ----
 create her-dances  $1D00 , $1D01 , $1D02 , $A00 , $A01 , $A02 , $905 ,

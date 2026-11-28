@@ -11,7 +11,7 @@
 \ once, the movie stopped but its last picture kept over everything (the overlay off), then the
 \ tints and on.
 IN: gameover
-USING: engine game-state actors messages keys facts flag-names story-names room-names ps2-screen ;
+USING: engine game-state actors messages keys facts flag-names story-names room-names ps2-screen frames ;
 
 6 constant movie-layer   9 constant black-layer
 

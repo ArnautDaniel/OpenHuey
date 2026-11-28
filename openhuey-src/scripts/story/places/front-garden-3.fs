@@ -299,9 +299,9 @@ $200 constant opening-file   $205 constant freed-file   $8275 constant grate-fil
 : zone-look ( F: x y z dy -- )  {: F: x y z dy :}  x  y dy f+  z  hewie-scent ;
 : wire-stops ( -- )   \ (shared $8A: to the wire's tree, alert, a long look, staying put)
     hewie hold  hewie wait-move
-    hewie spot-move 0 0  244.4e 11e 82.19e 0e move  hewie wait-move
+    hewie spot-move 0 0  244.4e 11e 82.19e 0e story.kit:move  hewie wait-move
     hewie stance-anim start-anim  yield
-    hewie look-point-move 0 0  244.4e 11e 82.19e 0e move  120 frames
+    hewie look-point-move 0 0  244.4e 11e 82.19e 0e story.kit:move  120 frames
     hewie -1 look-at  yield  hewie 10 idle  10 frames  hewie send hewie-stay ;
 : grate-stops ( -- )  -23.45e -10e 138e hewie-barks-at ;
 : dig-stops ( -- )  252.44e 0e -156.9e hewie-barks-at ;

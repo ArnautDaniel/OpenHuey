@@ -38,11 +38,11 @@ the-crate breakable-group frees-floor  the-crate $124 noise-from
     rabbit rabbit-slot figure-in  yield  rabbit-slot figure-on
     rabbit-slot -240e 0e 43e 90e figure-at  rabbit-slot grazing-anim 1 0 figure-play
     rabbit-slot rabbit-steps -290e 42e figure-goes  rabbit-slot figure-out ;
-: rabbit-in? ( -- flag )  rabbit-slot figure dup 0< if  drop false  else  body?  then ;
+: rabbit-in? ( -- flag )  rabbit-slot story.kit:figure dup 0< if  drop false  else  body?  then ;
 : rabbit-calls ( -- )   \ (at the cages' end, once)
     rabbit-heard @  rabbit-in? 0= or if  exit  then
-    rabbit-slot figure -304.86e 49.5e 20e centre-across? 0= if  exit  then
-    -1 rabbit-heard !  rabbit-call room-bank rabbit-slot figure sound-by ;
+    rabbit-slot story.kit:figure -304.86e 49.5e 20e centre-across? 0= if  exit  then
+    -1 rabbit-heard !  rabbit-call room-bank rabbit-slot story.kit:figure sound-by ;
 
 \ ---- as she comes in ----
 : came-in ( exit -- )
@@ -83,8 +83,8 @@ the-crate breakable-group frees-floor  the-crate $124 noise-from
     ['] medallion-sniffed start-only ;
 : watches-rabbit ( -- )   \ (calm, the rabbit within 70 of him: he looks at it)
     rabbit-in?  hewie-in? and  danger-now @ calm = and 0= if  exit  then
-    hewie body-at rabbit-slot figure body-at vec-dist 70e f> if  exit  then
-    rabbit-slot figure body-pos hewie-scent ;
+    hewie body-at rabbit-slot story.kit:figure body-at vec-dist 70e f> if  exit  then
+    rabbit-slot story.kit:figure body-pos hewie-scent ;
 
 \ ---- the stalker, finding her crouched by the open door: he looks about, backs off, shuts it ----
 : shuts-her-in ( -- )

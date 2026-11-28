@@ -70,7 +70,7 @@ create mouth /vec allot
     her-heading f@ her-yaw f@ f- angle-wrap  fdup fabs 0.25e f* 0.5e deg>rad fmax        ( F: a step )
     her-wall-side @ -1 = if  fover f0< if  0  else  1  then  her-wall-side !  then
     fswap fdrop  her-wall-side @ if  her-yaw f@ f+  else  her-yaw f@ fswap f-  then  angle-wrap her-yaw f! ;
-create probe /vec allot  create up-was /vec allot  variable up-tri
+create probe /vec allot  create up-was /vec allot  shared-variable up-tri
 : probe-ok? ( -- flag )   \ (the point 4 ahead of her reached straight over her floor: Actor_TriTo)
     her-yaw f@ 4e probe her-at vec-ahead  her-tri @ her-at probe blocked-floor v-walk 0< 0= ;
 : getting-up ( -- )   \ (Fiona_StateSpecialEntry)

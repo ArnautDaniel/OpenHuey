@@ -6,7 +6,7 @@
 \ walking to a spot, turning; `hold-anim`), reporting each frame's end (`moving`). Given another's
 \ model (`cast-dress`: the scripts' hand-over, Pursuer_GiveMotionBanks) it wears that.
 IN: cast
-USING: engine game-state actors messages common vectors facts floor-flags paths ;
+USING: engine game-state actors messages common vectors facts floor-flags paths frames ;
 
 \ ---- the kinds' figures (their ModelFiles: the first file, its name less the extension) ----
 : kind-file ( kind -- addr len | 0 0 )

@@ -3,7 +3,7 @@
 IN: ps2-screen
 USING: engine ;
 
-variable fw  variable fh  variable fx
+shared-variable fw  shared-variable fh  shared-variable fx
 : frame! ( -- )  screen-size fh !  fh @ 4 * 3 / over min fw !  fw @ - 2/ fx ! ;   \ (each frame: the window may change)
 : sx ( n -- x )  fw @ * 512 / fx @ + ;   \ a screen x, in the window
 : sy ( n -- y )  fh @ * 448 / ;          \ a screen y (or height)

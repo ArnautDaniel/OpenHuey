@@ -154,7 +154,7 @@ $40 constant glass-strength
 3 constant under-bed-camera
 : hewie-hides ( -- )   \ (Hewie under the other bed while she hides)
     hewie hold  hewie true aside  hewie hewie-hiding-motions motions-for  hewie wait-move
-    hewie walk-path-move $88 -1  $88 18.5e -37.5e floor-at  180 deg>yaw  move  hewie wait-move
+    hewie walk-path-move $88 -1  $88 18.5e -37.5e floor-at  180 deg>yaw  story.kit:move  hewie wait-move
     hewie use-motions  -1 hewie-in-place !
     begin  hiding-step @ 1 < while  yield  repeat
     hewie true noclip  hewie 0 hid-motion 5 play-blend  hewie 1 hid-motion 10 start-blend  hewie false noclip  hewie-hidden state!
@@ -169,7 +169,7 @@ $40 constant glass-strength
         fiona 0 hid-motion 5 start-blend8  28 frames  slide-sound common-bank fiona sound-by  fiona wait-anim
     else
         fiona use-motions
-        fiona walk-anim-move 4 hid-motion 5  $27 14.5e -37.5e floor-at  180 deg>yaw  move  fiona wait-move
+        fiona walk-anim-move 4 hid-motion 5  $27 14.5e -37.5e floor-at  180 deg>yaw  story.kit:move  fiona wait-move
         1 hiding-step !  fiona true noclip  slide-sound common-bank fiona sound-by
         fiona 5 hid-motion 10 start-blend8  fiona wait-anim
     then

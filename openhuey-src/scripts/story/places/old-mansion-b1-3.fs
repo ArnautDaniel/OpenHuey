@@ -222,7 +222,7 @@ create plate-tris  $89 , $B1 ,  $90 , $B2 ,  $97 , $B3 ,  $83 , $B0 ,
 : the-sabers ( -- )  -45 sabers-msg turned-say ;
 : the-breaker ( -- )
     breaker-remarked @ 0= if  -1 breaker-remarked !  -90 breaker-msg turned-say exit  then
-    fiona wait-move  fiona -90 turn  fiona look-point-move 0 0  10e 10e 0e 0e  move  yield  chair-msg say  fiona -1 look-at  yield ;
+    fiona wait-move  fiona -90 turn  fiona look-point-move 0 0  10e 10e 0e 0e  story.kit:move  yield  chair-msg say  fiona -1 look-at  yield ;
 : the-tools ( -- )  fiona wait-move  fiona -90 turn  fiona look-low-anim start-anim  16 frames  tools-msg say  fiona wait-anim ;
 : take-camomile ( -- )   \ (reached for, not in a panic)
     fiona wait-move  fiona -20.96e 5.57e turn-to-xz  in-panic? if  exit  then

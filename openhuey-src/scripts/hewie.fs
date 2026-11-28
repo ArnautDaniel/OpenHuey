@@ -6,7 +6,7 @@
 \ He is spawned with the game but comes in only when told (`join-fiona`: the story, or the
 \ console); `part-from-fiona` sends him off.
 IN: hewie
-USING: engine facts actors messages common paths vectors saves story-names hewie-names hewie.state hewie.body hewie.anims hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted hewie.fetch hewie.steered floor-flags ;
+USING: engine facts actors messages common paths vectors saves story-names hewie-names hewie.state hewie.body hewie.anims hewie.model hewie.moving hewie.states hewie.offscreen hewie.fight hewie.actions hewie.commands hewie.mind hewie.scripted hewie.fetch hewie.steered floor-flags frames ;
 
 \ at heel: behind her and a little to her side (where she is when that isn't floor), her way
 create heel-at /vec allot
@@ -154,7 +154,7 @@ behaviour hewie-own
   on activate ( -- )  0 his-2b !  0 his-2d !  0 his-stay !  100 hp!  hewie-played? if  start-afresh  then ;   \ (+0xF3588 cleared too)   \ (the story's 0x15, Hewie_Activate: afresh, at full health - in the run, played: Hewie_StartScene)
   on characters-still ( on -- )  his-held-still ! ;   \ (OpenHuey's: a reading on the dimmed screen)
   on tick ( -- )   \ (a scene having him - Character_Disable - his frame waits: the scene moves his model)
-      along? his-held-still @ 0= and  flag-names:panic-starting facts:state-flag? 0= and if  model scene-has? dup his-in-cast !  if  tell-doing  else  frame  then  else  tell-doing  then
+      along? his-held-still @ 0= and  flag-names:panic-starting facts:state-flag? 0= and if  model scene-has? dup his-in-cast !  if  tell-doing  else  hewie.mind:frame  then  else  tell-doing  then
       -1 his-heard !  0 his-signals ! ;
   \ what he hears (the acoustics, each frame's end), the danger's signals, who has hold of her
   on heard ( loud room tri door source -- )  his-heard-src !  2drop  his-heard-room !  drop ;

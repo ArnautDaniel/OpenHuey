@@ -127,7 +127,7 @@ create lectern-spots   $36 , -90 , 35e f, -52e f, 25e f, 20e f, -50e f, 2e f,
         3 story.base:things-off-group
         $18A hole-floor floor-tri-off  $1D3 hole-floor floor-tri-off
         $187 hole-floor floor-tri-on  $1D0 hole-floor floor-tri-on  $188 hole-floor floor-tri-on  $1D1 hole-floor floor-tri-on
-        1 its-own  fiona look-point-move 0 0  40e 15e 25e 0e  move  yield
+        1 its-own  fiona look-point-move 0 0  40e 15e 25e 0e  story.kit:move  yield
         1 place-z shelves-back  shelves-stop-sound room-bank 39e 21e 10e sound-there
         2 barred-floor floor-off  3 barred-floor floor-on  16 frames  shot-off  $16 -100 -41e -4e hewie-after
         fiona -1 look-at  yield

@@ -81,7 +81,7 @@ own: painting-remarked     \ the painting's first remark made (in turn with the 
     stalker tv-switch-anim start-anim  18 frames
     switch-off-sound room-bank stalker sound-by  running-sound room-bank stop-sound
     c1f-16-flag2 fact-off  0 heard-about  tv-offs-var var@ 1+ tv-offs-var var!
-    3 stalker-order  stalker stand-anim play  16 frames ;
+    3 stalker-order  stalker stalker.anims:stand-anim play  16 frames ;
 : stalker-came ( -- )
     came-on-her? 0= if  exit  then
     tv-on?  2 creature-moving? 0= and  debilitas? and if  120 summoner-sooner  ['] switches-tv-off start drop

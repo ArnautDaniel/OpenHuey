@@ -56,7 +56,7 @@ $28 constant arrival-sound   $2E constant go-for-it-call   0 constant go-for-it-
 
 \ ---- the Refined Magnesia across the pond: her "go for it" facing it - Hewie over, and back ----
 : fetches ( -- )
-    hewie hold  hewie true aside  hewie wait-move  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move
+    hewie hold  hewie true aside  hewie wait-move  hewie bark-move 0 0  0e 0e 0e 0e  story.kit:move  hewie wait-move
     hewie $1E0 -10 -1 walk-path-move -35.67e 31.26e go-to
     hewie true noclip  $1BD 45 -42.443e 1e 71.623e hewie-leap  hewie wait-move
     hewie $1BE 150 -1 walk-move -31.549e 70.055e go-to  hewie sit-a-while-anim 10 play-blend

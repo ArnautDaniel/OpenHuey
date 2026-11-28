@@ -3,7 +3,7 @@
 \ with the mod turned on (CMakeLists.txt):
 \   build/openhuey-src/openhuey --mod openhuey-src/examples/mods/room-tally --test openhuey-src/tests/mods/room-tally.fs
 IN: test-room-tally
-USING: tester engine actors messages room-names game room-tally ;
+USING: tester engine actors messages room-names game room-tally frames ;
 
 \ ---- an asker: sends rooms-seen? and keeps the answer ----
 state: asker-state  cell field answer  end-state

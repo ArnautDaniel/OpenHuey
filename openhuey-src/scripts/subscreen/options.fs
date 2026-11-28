@@ -37,7 +37,7 @@ create run-layouts
     loop
     $73 $130 $74 say  $74 $130 $94 say  5 action-name $130 $B4 say  6 action-name $130 $D4 say ;
 : position$ ( n label len -- addr len )  spell-reset +spell  n>s +spell  spelled ;
-variable line-y
+shared-variable line-y
 : beside ( msg -- )  menu-line $160 line-y @ centred ;   \ a setting's word, centred beside its label
 : setting-of ( i -- )   \ a row's setting
     dup row-y 6 + line-y !
@@ -62,7 +62,8 @@ variable line-y
 : put-back ( answer -- )  0= if  defaults kept  then  back-to-page ;
 \ ---- a row edited (Options_StateVibration / Sound / Volume / Position): each change heard or seen at
 \ once; the cross keeps it, the triangle - or Select - puts back what it was (opt_cancelled) ----
-create was 5 cells allot   \ (the settings as the edit began: vibration, sound out, volume, x, y)
+shared-variable was  4 cells allot   \ (the settings as the edit began: vibration, sound out, volume, x, y - five cells,
+                                       \ the menu's alone: said shared, as the handler that snapshots them reads them back)
 : snapshot ( -- )  vibration @ was !  sound-out @ was cell+ !  volume @ was 2 cells + !  pos-x @ was 3 cells + !  pos-y @ was 4 cells + ! ;
 : undo ( -- )  was @ vibration !  was cell+ @ sound-out !  was 2 cells + @ volume !  was 3 cells + @ pos-x !  was 4 cells + @ pos-y !  apply ;
 : toggled ( -- )   \ (turned on: the pad buzzes)

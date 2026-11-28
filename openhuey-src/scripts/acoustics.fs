@@ -2,7 +2,7 @@
 \ source made this frame, and at the frame's end tells each listener what it heard. The rules
 \ and their sources in the original: docs/subsystems/acoustics.md.
 IN: acoustics
-USING: engine actors messages ;
+USING: engine actors messages frames ;
 
 \ a noise this frame: how loud, the room, its triangle (-1: at a door), the door (-1: none)
 begin-structure /noise  field: n.loud  field: n.room  field: n.tri  field: n.door  end-structure

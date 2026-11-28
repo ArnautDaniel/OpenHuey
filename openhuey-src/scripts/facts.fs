@@ -12,7 +12,7 @@ USING: game-state ;
 : story-flag? ( n -- flag )  progress pr.story bit? ;    \ the scenario flags
 \ the one played: Fiona, or Hewie in the mini-game's run (the original's progress +0x1FBEC1 - not
 \ the saved state: set as the run's clock starts, clear as it stops and with each new game)
-variable hewie-played
+shared-variable hewie-played
 : hewie-played? ( -- flag )  hewie-played @ 0<> ;
 \ ... and its best times (the system data's +0x3C: each challenge A..D its three, hours minutes
 \ seconds; 99:59:59 none), kept across games; the time a run took (clock_save: its frames)

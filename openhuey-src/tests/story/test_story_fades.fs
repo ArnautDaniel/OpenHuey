@@ -5,7 +5,7 @@
 \ the place's doings (SceneGame +0xF6CD24 bit 3).
 \ Headless:  build/openhuey-src/openhuey --test openhuey-src/tests/story/test_story_fades.fs
 IN: test-story-fades
-USING: tester engine game-state actors messages common room-names game debug facts flag-names story.kit ;
+USING: tester engine game-state actors messages common room-names game debug facts flag-names story.kit frames ;
 
 : room-actor ( -- id )  room-id room-name actor-named ;
 : in-room ( xt -- x )  room-actor enter  execute  leave-actor ;

@@ -42,7 +42,7 @@ USING: engine vectors game-state actors messages common keys facts flag-names ru
 create blow-spot /vec allot
 \ her blow, as worked out (blow-power): its kind, damage, how (a stumble), a big one (a burst at
 \ them), its reach
-variable blow-kind  variable blow-dmg  variable blow-how  variable blow-big  fvariable blow-reach
+shared-variable blow-kind  shared-variable blow-dmg  shared-variable blow-how  variable blow-big  fvariable blow-reach
 $8000 constant stumble-blow
 : form ( -- n )  her-costume @ ;
 : special? ( -- flag )  form dup illegal-outfit = swap cowgirl-outfit = or ;
@@ -83,7 +83,7 @@ $8000 constant stumble-blow
 : boosted-power ( -- )  blow-power  blow-dmg @ boosted blow-dmg ! ;
 \ costume 7's revolver fires, once a swing (StrikeMark: its flash along the barrel from her bone
 \ $23, 3.5 out and 1 out; then smoke)
-variable fired
+shared-variable fired
 : fire ( -- )
     form cowgirl-outfit <>  fired @ or if  exit  then
     -1 fired !

@@ -47,7 +47,7 @@ create flames  6e 21.8e -3.2e f, f, f,   29e 41.8e 41.9e f, f, f,   -46.8e 93.8e
 : draughts ( -- )  3 0 do  i  i flame@  8e -4e  flame-stirred  loop ;
 
 \ ---- Debilitas coming in after her (the golem done, she back by exit 1) ----
-: run-to-tri ( id tri -- )  {: id tri :}  id run-path-move tri -1  tri tri-center 0e  move  id wait-move ;
+: run-to-tri ( id tri -- )  {: id tri :}  id run-path-move tri -1  tri tri-center 0e  story.kit:move  id wait-move ;
 : entrance-over ( -- )  hewie-no-attack state-off  force-followed state-off  0 his-entrance !  stalker let-go  0 summon-take ;
 : bursts-in ( -- )   \ (in by the far door, through the near one if shut, on along the gallery)
     yield  stalker -1 -1 camera-set  stalker full-health

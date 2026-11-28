@@ -37,12 +37,12 @@ variable before
 : geared ( -- k )  [: gear @ ;] in-place ;
 : her-on ( k -- )  [: plate@ ;] in-place  0e fswap  0 put ;   \ (on that planet's plate)
 : off-plates ( -- )  0 -90e 0e 0e put ;
-: keeper ( -- )  hewie hold  begin  yield  again ;   \ (Hewie kept where he's put)
+: keeper ( -- )  story.kit:hewie hold  begin  yield  again ;   \ (Hewie kept where he's put)
 : keep-him ( -- )  [: ['] keeper running? 0= if  ['] keeper start drop  then ;] in-place  2 run-frames ;
 : free-him ( -- )  [: ['] keeper stop-doing ;] in-place  2 run-frames ;
 variable which
-: hewie-on ( k -- )  which !  keep-him  [: hewie  which @ runs pair@ drop  0  which @ plate@  place-at ;] in-place  10 run-frames ;
-: hewie-off ( -- )  keep-him  [: hewie $90 0 place-on-tri ;] in-place  10 run-frames ;
+: hewie-on ( k -- )  which !  keep-him  [: story.kit:hewie  which @ runs pair@ drop  0  which @ plate@  place-at ;] in-place  10 run-frames ;
+: hewie-off ( -- )  keep-him  [: story.kit:hewie $90 0 place-on-tri ;] in-place  10 run-frames ;
 free-play  10 run-frames  0 game:fiona send costume  stalkers-blind state-flag-set  summoner-on state-flag-clear
 hewie-freed story-flag-set  hewie-commandable state-flag-set  room-afresh  game:hewie send join-fiona  60 run-frames
 testing coming in: Saturn's glow lit, the next to light Uranus's; hunted

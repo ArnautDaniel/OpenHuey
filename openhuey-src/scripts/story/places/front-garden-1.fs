@@ -115,7 +115,7 @@ the-crate crate-group frees-floor  the-crate $185 noise-from
 
 \ ---- the marionette: Hewie sent up for it ("go there" by the tree) - she watches ----
 : brings-it ( -- )   \ (his: to the tree's foot, sitting there - got it - and back on his way)
-    hewie hold  hewie true aside  hewie wait-move  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move
+    hewie hold  hewie true aside  hewie wait-move  hewie bark-move 0 0  0e 0e 0e 0e  story.kit:move  hewie wait-move
     tree-group solid-floor floor-off  tree-group keeps-fiona-off floor-on  tree-group keeps-pursuers-off floor-on
     hewie $208 138 -1 walk-path-move -206e -116e go-to  hewie sit-a-while-anim play
     got-broken-marionette fact!  10 trust+

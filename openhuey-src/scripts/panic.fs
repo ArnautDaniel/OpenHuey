@@ -2,7 +2,7 @@
 \ a lasting and a passing part, its stage, Fiona's breath and scream. Frights and fear come in
 \ as messages; each frame's end it updates and tells everyone its stage and level.
 IN: panic
-USING: engine vectors common actors messages facts flag-names stalker-names items items.names ;
+USING: engine vectors common actors messages facts flag-names stalker-names items items.names frames ;
 
 state: panic-state
   cell field stage           \ (enum: panic-stage, messages.fs)

@@ -1,7 +1,7 @@
 \ Fiona, phase F1: moving, footsteps, doors, going out (docs/subsystems/fiona.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/fiona/test_fiona.fs
 IN: test-fiona
-USING: tester engine game-state actors messages room-names game fiona.state fiona.model fiona.moving fiona.doors fiona.hurt fiona.fear debug ;
+USING: tester engine game-state actors messages room-names game fiona.state fiona.model fiona.moving fiona.doors fiona.hurt fiona.fear debug frames ;
 
 : her@ ( xt -- x )  fiona enter  execute  leave-actor ;          \ (one of her fields, read inside her)
 : anim ( -- id )  ['] anim@ her@ ;

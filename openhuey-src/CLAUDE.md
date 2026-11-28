@@ -50,6 +50,9 @@ SDL_AUDIO_DRIVER=dummy ./openhuey --hidden --frames 3 --eval "..."    # headless
   are declared in `scripts/messages.fs` with their stack comment.
 - **Stack comments are checked**: the scripts load with no warnings - a word's code must do what its comment says
   (ClankForth's "Stack effects"), and a new C word carries its effect in its table entry (docs/forth.md).
+- **Frames are a vocabulary; no slices**: `wait`, `frame`, `on tick` / `frame-end` / `held-tick` need `frames` in
+  the file's `USING:`. Handlers are never interrupted here, but the checker warns of one that writes a plain
+  `variable` and reads it back: use a local or a field, or declare it `shared-variable` (docs/forth.md).
 - **Docs move with the code**: a subsystem's page (`docs/subsystems/<name>.md`) records its
   messages, rules and status - update it in the same change. Keep "Not yet" / "Left" lists true.
 - **Tests with every change**: a `T{ ... -> ... }T` test in the subsystem's `tests/` folder;

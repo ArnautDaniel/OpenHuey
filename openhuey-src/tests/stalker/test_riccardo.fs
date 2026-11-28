@@ -3,7 +3,7 @@
 \ (docs/subsystems/stalker.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/stalker/test_riccardo.fs
 IN: test-riccardo
-USING: tester engine game-state actors messages common room-names game debug flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue stalker.riccardo fiona.state ;
+USING: tester engine game-state actors messages common room-names game debug flag-names paths stalker.state stalker.senses stalker.moving stalker.search stalker.tables stalker.attack stalker.chase stalker.pursue stalker.riccardo fiona.state frames ;
 
 : ric ( -- id )  s" riccardo" actor-named ;
 : his ( xt -- x )  ric enter  execute  leave-actor ;

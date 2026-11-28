@@ -4,7 +4,7 @@
 \ played through or skipped - that it is over, the world held, the camera given back.
 \ (The original's scenes: the event scripts' idiom 0x60 / 0x61 / 0x62, src/game/director.c.)
 IN: scenes
-USING: engine game-state actors messages facts flag-names story.strings ;
+USING: engine game-state actors messages facts flag-names story.strings frames ;
 
 \ how the movie's picture shows (Progress_PlayMovie's kinds): not drawn - only the scene's timing
 \ and sound; keyed by its brightness; opaque only while movie-opaque; by its own alpha; not
@@ -68,7 +68,7 @@ end-state
 
 \ ---- drawing: the movie on layer 0, the subtitles' page on layer 4 ----
 4 constant subtitle-layer
-variable mx  variable my  variable mw  variable mh
+shared-variable mx  shared-variable my  shared-variable mw  shared-variable mh
 : movie-area ( -- )   \ (the 4:3 picture in the window)
     screen-size  over 3 * 4 / over min  dup mh !  4 * 3 / mw !
     mh @ - 2/ my !  mw @ - 2/ mx ! ;
@@ -84,7 +84,7 @@ variable mx  variable my  variable mw  variable mh
     then
     class @ dup keyed-movie <> swap alpha-movie <> and if  0  0 0 screen-size  $000000FF ui-rect  then
     0  mx @ my @ mw @ mh @ ui-movie ;
-variable sw  variable sh  variable lh
+shared-variable sw  shared-variable sh  shared-variable lh
 : draw-subtitles ( -- )
     subtitle-layer ui-clear
     subtitles @ 0<  page @ 0< or if  exit  then

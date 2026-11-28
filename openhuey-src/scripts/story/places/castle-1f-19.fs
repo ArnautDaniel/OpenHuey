@@ -47,7 +47,7 @@ $12C constant hole-tri   $47 constant before-hole-tri   $2F constant after-ambus
     else  hewie hole-group on-group? if  hewie before-hole-tri put-on-tri  then  then ;
 
 \ ---- Hewie into the hole (her "go there" at it) and out (her "come back") ----
-: hewie-barks ( -- )  hewie bark-move 0 0  0e 0e 0e 0e  move  hewie wait-move ;
+: hewie-barks ( -- )  hewie bark-move 0 0  0e 0e 0e 0e  story.kit:move  hewie wait-move ;
 : into-hole ( -- )
     hewie hold  hewie-barks
     hewie before-hole-tri 0 -1 walk-path-move -12e -125e go-to  hewie true aside   \ (the scripts' 0x21 from here: its end lets it go)

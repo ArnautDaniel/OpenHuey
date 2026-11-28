@@ -1,7 +1,7 @@
 \ acoustics: who hears which noise (docs/subsystems/acoustics.md, rules 1-6). Run headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/acoustics/test_hearing.fs
 IN: test-hearing
-USING: tester engine game-state actors messages acoustics game room-names ;
+USING: tester engine game-state actors messages acoustics game room-names frames ;
 
 \ ---- a listener that writes down what it was told ----
 state: ear-state  cell field dummy  end-state

@@ -93,10 +93,10 @@ create flames  -2.8e f, 31.7e f, -5.1e f,   -5.7e f, 31.4e f, -0.3e f,   -3.3e f
 : slams ( -- )   \ (a trick: the door slams shut and locks)
     fiona reach-out-anim start-anim
     0 exit-open? if
-        0 door-swing-anim story.base:door-play  fiona wait-anim  fiona look-point-move 0 0  0e 10e -40e 0e  move  yield
+        0 door-swing-anim story.base:door-play  fiona wait-anim  fiona look-point-move 0 0  0e 10e -40e 0e  story.kit:move  yield
         fiona reach-back-anim start-anim  0 story.base:door-wait  16 frames
     else
-        fiona wait-anim  fiona look-point-move 0 0  0e 10e -40e 0e  move  yield  fiona reach-back-anim start-anim
+        fiona wait-anim  fiona look-point-move 0 0  0e 10e -40e 0e  story.kit:move  yield  fiona reach-back-anim start-anim
     then
     unlock-sound common-bank 0e 0e -40e sound-there  trap-door false open-mark  doors-redone  trap-door lock
     fiona wait-anim  fiona -1 idle  16 frames  fiona -1 look-at  yield ;

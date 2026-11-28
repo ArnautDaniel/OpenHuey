@@ -4,7 +4,7 @@
 \ clears them, and after a loaded game brings them back from the progress, where each keeps
 \ itself.
 IN: creatures
-USING: engine game-state actors messages common facts flag-names doors creatures.state creatures.spirit creatures.homunculus ;
+USING: engine game-state actors messages common facts flag-names doors creatures.state creatures.spirit creatures.homunculus frames ;
 
 
 state: creatures-state
@@ -52,7 +52,7 @@ enum: which-creatures  all-creatures spirits-only homunculi-only ;   \ (creature
 \ her exits lead to it), sent after her - one gone, another takes its slot. (The homunculi's kind
 \ no room's script asks for: not built) ----
 65 constant most-rooms
-create near-rooms most-rooms cells allot  create next-rooms most-rooms cells allot  variable next-n
+create near-rooms most-rooms cells allot  create next-rooms most-rooms cells allot  shared-variable next-n
 : next-room+ ( room -- )  next-n @ most-rooms < if  next-n @ cells next-rooms + !  1 next-n +!  else  drop  then ;
 : rooms-next-to-hers ( -- n )   \ (once for each of her exits that leads there)
     0 next-n !

@@ -1,7 +1,7 @@
 \ rooms: going from room to room (docs/subsystems/rooms.md). Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/rooms/test_rooms.fs
 IN: test-rooms
-USING: tester engine actors messages room-names game ;
+USING: tester engine actors messages room-names game frames ;
 
 \ ---- a witness: writes down the rooms' broadcasts in order ----
 state: witness-state  cell field dummy  end-state

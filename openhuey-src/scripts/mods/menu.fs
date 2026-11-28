@@ -6,8 +6,8 @@
 IN: mods.menu
 USING: engine keys ;
 
-variable at         \ the mod under the cursor
-variable saved      \ order.txt written this visit (0 not, 1 written, -1 couldn't be)
+shared-variable at         \ the mod under the cursor
+shared-variable saved      \ order.txt written this visit (0 not, 1 written, -1 couldn't be)
 
 : open ( -- )  0 at !  0 saved ! ;
 : rows ( -- n )  mods-menu-count ;
@@ -28,7 +28,7 @@ variable saved      \ order.txt written this visit (0 not, 1 written, -1 couldn'
 \ the keys' line, with the pad's own glyphs (the game's font: from $C0 circle, triangle, square,
 \ cross, L1, L2, R1)
 $C1 constant triangle-glyph   $C3 constant cross-glyph   $C4 constant l1-glyph   $C6 constant r1-glyph
-create footer-text 64 allot   variable footer-n
+create footer-text 64 allot   shared-variable footer-n
 : +footer ( addr len -- )  footer-text footer-n @ + swap dup footer-n +! move ;
 : +glyph ( c -- )  footer-text footer-n @ + c!  1 footer-n +! ;
 : footer ( -- addr len )

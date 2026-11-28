@@ -116,7 +116,8 @@ also a root for `USING:`, so a bigger mod splits into `scripts/<name>/part.fs`
 ```forth
 \ scripts/my-mod.fs
 IN: my-mod
-USING: engine actors messages mods ;     \ the game's vocabularies it uses (see below)
+USING: engine actors messages mods ;     \ the game's vocabularies it uses (see below; `frames` too for
+                                       \ `on tick`, `on frame-end`, `n wait` - Pitfalls)
 
 state: my-state                        \ its own fields (an actor's state)
   cell field rooms-seen
@@ -147,6 +148,7 @@ The rules (they are the game's own: `docs/design.md`, `docs/actors.md`):
   `state-flag?` ...) may be read by anyone; they are `engine`, `facts`, `game-state`.
 - **A sequence over time is a task** (`spawn` a word; `yield`, `n wait`) - or a handler that waits (`await` a
   message, `n wait`): its actor busy meanwhile, its messages kept for after (external/clankforth/docs/actors.md).
+  `wait` counts frames: it is the `frames` vocabulary's (`USING: ... frames ;`).
 
 ### The game's vocabularies a mod usually uses
 
@@ -169,7 +171,7 @@ The rules (they are the game's own: `docs/design.md`, `docs/actors.md`):
 
 | Message | Stack | When |
 |---|---|---|
-| `tick` | `--` | every game tick (30 a second), while play runs |
+| `tick` | `--` | every game tick (30 a second), while play runs (`tick`, `frame-end`, `held-tick`: `USING: frames ;`) |
 | `frame-end` | `--` | after each frame's messages: draw here |
 | `held-tick` | `--` | instead of `tick` while the world is held (a menu up) |
 | `entered-room` | `room exit --` | a room is in play (`leaving-room`, `arrived`: before it) |
@@ -368,11 +370,20 @@ SDL_AUDIO_DRIVER=dummy openhuey --mod path/to/my-mod --test tests/my-mod.fs
 
 ## Pitfalls (each one bit someone)
 
+- **`tick`, `frame-end`, `held-tick`, `wait`, `frame`, `await-within` need `USING: frames ;`** (since OpenHuey
+  0.4.0, ClankForth 0.8.0). A mod written before says `on: tick is a message of a host's frames - USING: frames ;`
+  or `unknown word wait (in vocabulary frames: add it to USING:)` as it loads, and is off: add `frames` to its
+  `USING:` line - nothing else changes.
+- **A handler's scratch in a plain `variable` is warned of** (`... keeps its work in x, which every actor on the
+  node shares`). Use a local or a state field; a variable really meant for all (a path being built by words one
+  handler runs, start to end, with no wait between) is `shared-variable x`.
+- **A name two of your `USING:` vocabularies both have is warned of at each use** (`x is ambiguous here`): write
+  `vocab:x`.
 - **Your own words win over the game's.** A file's own definitions shadow every vocabulary it
   uses - the core too. A mod that defines `move` breaks the core `move` (copying bytes) for the
   rest of its file. Name things after what they mean in your mod (`reorder`, `shift-mod`).
-- **Two used vocabularies with the same word**: in a file, the later in `USING:` wins; `vocab:word`
-  reaches the other. At the console and in `--eval` the order is kept from line to line, and a
+- **Two used vocabularies with the same word**: in a file, the later in `USING:` wins (with a warning: above);
+  `vocab:word` says which. At the console and in `--eval` the order is kept from line to line, and a
   vocabulary already in it keeps its place - say `vocab:word` there (`first-person` has a `pitch`,
   `game` a `camera`: `first-person:pitch`, `engine:camera`). If a word does something unexpected,
   check `see word` and which vocabulary has it.

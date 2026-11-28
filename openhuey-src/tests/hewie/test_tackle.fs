@@ -4,7 +4,7 @@
 \ screen, Fiona kept apart. Headless:
 \   build/openhuey-src/openhuey --test openhuey-src/tests/hewie/test_tackle.fs
 IN: test-tackle
-USING: tester engine game-state actors messages common facts vectors room-names game debug flag-names hewie-names hewie.state hewie.body hewie.model hewie.states hewie.fight fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.chase stalker.grab stalker.bitten stalker ;
+USING: tester engine game-state actors messages common facts vectors room-names game debug flag-names hewie-names hewie.state hewie.body hewie.model hewie.states hewie.fight fiona.state stalker.state stalker.senses stalker.moving stalker.search stalker.travel stalker.chase stalker.grab stalker.bitten stalker frames ;
 
 : his@ ( xt -- x )  game:hewie enter  execute  leave-actor ;
 : his! ( xt -- )  game:hewie enter  execute  leave-actor ;

@@ -2,7 +2,7 @@
 \ Their state is a fact in C (the progress' door words: routes read it); only this actor
 \ changes it. In the played room it also swings the door models and makes their noise.
 IN: doors
-USING: engine game-state actors messages facts ;
+USING: engine game-state actors messages facts frames ;
 
 \ ---- a door's state word: held, opened, stuck, locked; the kinds it is locked against (bits 4..7) ----
 1 constant held-bit   2 constant opened-bit   4 constant stuck-bit   8 constant locked-bit

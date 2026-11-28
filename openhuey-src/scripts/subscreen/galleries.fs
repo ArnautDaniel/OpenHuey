@@ -19,7 +19,7 @@ $16E constant unknown-msg   \ "???"
 
 \ ---- drawn: the texts in the original's colours (art.fs `inked`): on the lists' paper the font's
 \ palettes subtracted (menu-ink | c: 0 plain, 1 marked, 2 the cursor's), in the bars added ----
-variable gal-text-layer   word-layer gal-text-layer !   \ (the words' layer: over the page; under the box; over the bars)
+shared-variable gal-text-layer   word-layer gal-text-layer !   \ (the words' layer: over the page; under the box; over the bars)
 : text-in ( addr len x y colour -- )  {: a n x y c :}  gal-text-layer @ a n x y c inked-on ;
 create number-buf 8 allot
 : number$ ( n width -- addr len )   \ (right-aligned in width: "%2d", "%3d")

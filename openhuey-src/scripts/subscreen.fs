@@ -5,7 +5,7 @@
 \ file opens and closes it, gives the keys to what is showing and draws it. Also the tab that
 \ slides in when the story hands her an item (the scripts' 0xBE, SubScreen_DrawTab).
 IN: subscreen
-USING: engine game-state actors messages keys facts flag-names items items.tables ps2-screen subscreen.state subscreen.art subscreen.input subscreen.box subscreen.lists subscreen.map subscreen.options subscreen.plate subscreen.slots subscreen.saving subscreen.costumes subscreen.extras subscreen.galleries ;
+USING: engine game-state actors messages keys facts flag-names items items.tables ps2-screen subscreen.state subscreen.art subscreen.input subscreen.box subscreen.lists subscreen.map subscreen.options subscreen.plate subscreen.slots subscreen.saving subscreen.costumes subscreen.extras subscreen.galleries frames ;
 
 <PRIVATE
 \ ---- which art is in the background group: the menu's, the plate's, the slot machine's ----
